@@ -1,3 +1,5 @@
+//! Contains definitions and helpers to manipulate variables and constant values.
+
 #![allow(dead_code)]
 
 use crate::common::*;
