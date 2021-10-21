@@ -53,14 +53,6 @@ pub enum BorrowKind {
     TwoPhaseMut,
 }
 
-/// When looking up borrows or loans, we may need to treat shared borrows and
-/// inactivated borrows the same way
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters)]
-pub enum BorrowFilterKind {
-    SharedOrInactivated,
-    Mut,
-}
-
 /// Unary operation
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName)]
 pub enum UnOp {
@@ -219,20 +211,7 @@ pub enum AggregateKind {
     Adt(TypeDefId::Id, Option<VariantId::Id>),
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA)]
-pub enum UseKind {
-    Move,
-    Copy,
-}
-
 impl Place {
-    pub fn from_var(var_id: VarId::Id) -> Place {
-        Place {
-            var_id,
-            projection: Projection::new(),
-        }
-    }
-
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
         T: Formatter<VarId::Id>,

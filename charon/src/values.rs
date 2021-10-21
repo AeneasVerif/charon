@@ -6,7 +6,7 @@ use crate::common::*;
 use crate::formatter::Formatter;
 use crate::types::*;
 use core::hash::Hash;
-use im::{OrdSet, Vector};
+use im::Vector;
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantName};
 
 pub type VarName = String;

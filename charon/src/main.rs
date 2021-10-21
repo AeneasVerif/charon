@@ -48,7 +48,6 @@ use rustc_interface::{
 };
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
-use std::iter::FromIterator;
 use std::{cell::RefCell, rc::Rc};
 
 struct ToInternal {}
@@ -207,62 +206,14 @@ fn translate(
     // by construction.
     let divergent = divergent::compute_divergent_functions(&registered_decls, &ordered_decls);
 
+    // TODO: check if can panic
+
     // # Step 4: translate the types.
     let tt_ctx = translate_types::translate_types(&tcx, &ordered_decls)?;
 
     // # Step 5: translate the functions to IM (our Internal representation of MIR)
-    let ft_ctx =
+    let _ft_ctx =
         translate_functions_to_im::translate_functions(&tcx, tt_ctx, &ordered_decls, divergent)?;
-
-    /*
-    // Sanity check
-    im_interpreter::test_all_unit_functions(&ft_ctx.tt_ctx.types, &ft_ctx.decls)?;
-
-    // Generate the pure signatures
-    for f in &ft_ctx.decls {
-        trace!("Function signature: {}", f.name.to_string());
-        let abs = signatures::compute_abstracted_signature(&f.signature);
-
-        let sig_s = f.signature.fmt_with_decls(&ft_ctx.tt_ctx.types);
-
-        let abs_s: Vec<String> = abs
-            .iter()
-            .map(|abs| abs.fmt_with_decls(&ft_ctx.tt_ctx.types, &f.signature))
-            .collect();
-        let abs_s = abs_s.join("\n\n");
-
-        trace!(
-            "Signature ({}):\n\n{}\n\n{}\n",
-            f.name.to_string(),
-            sig_s,
-            abs_s
-        );
-
-        let sigs: signatures::AbstractionId::Vector<signatures::AbstractionPureSig> =
-            signatures::AbstractionId::Vector::from_iter(
-                abs.iter()
-                    .map(|abs| signatures::abstraction_to_pure_sig(abs)),
-            );
-        let sigs_s: Vec<String> = sigs
-            .iter_indexed_values()
-            .map(|(id, sig)| {
-                format!(
-                    "Abstraction{}:\n{}",
-                    id,
-                    sig.fmt_with_decls(&ft_ctx.tt_ctx.types, &f.signature)
-                )
-                .to_string()
-            })
-            .collect();
-        let sigs_s = sigs_s.join("\n\n");
-
-        trace!(
-            "Signature ({}):\n\n{}\n\n{}\n",
-            f.name.to_string(),
-            sig_s,
-            sigs_s
-        );
-    }*/
 
     // # Step ?: generate the files.
     Ok(())
