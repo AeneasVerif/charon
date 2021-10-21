@@ -215,6 +215,9 @@ fn translate(
     let _ft_ctx =
         translate_functions_to_im::translate_functions(&tcx, tt_ctx, &ordered_decls, divergent)?;
 
+    // TODO: simplify the calls to unops or binops
+    // TODO: reconstruct the control flow (if ... then ... else ...)
+
     // # Step ?: generate the files.
     Ok(())
 }
