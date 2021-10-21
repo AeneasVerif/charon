@@ -118,9 +118,9 @@ pub enum IntegerTy {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumIsA)]
-pub enum Mutability {
+pub enum RefKind {
     Mut,
-    Not,
+    Shared,
 }
 
 /// A type.
@@ -160,9 +160,8 @@ where
     // TODO: there should be a constant with the array
     Array(Box<Ty<R>>),
     Slice(Box<Ty<R>>),
-    // TODO: use BorrowKind instead of mutability
     /// A borrow
-    Ref(R, Box<Ty<R>>, Mutability),
+    Ref(R, Box<Ty<R>>, RefKind),
     /// A tuple. Note that unit is encoded as a 0-tuple.
     Tuple(Vector<Ty<R>>),
     /// Assumed type. A non-primitive type coming from a standard library
@@ -724,11 +723,11 @@ where
             Ty::Str => format!("str").to_owned(),
             Ty::Array(ty) => format!("[{}; ?]", ty.fmt_with_ctx(ctx)).to_owned(),
             Ty::Slice(ty) => format!("[{}]", ty.fmt_with_ctx(ctx)).to_owned(),
-            Ty::Ref(r, ty, mutability) => match mutability {
-                Mutability::Mut => {
+            Ty::Ref(r, ty, kind) => match kind {
+                RefKind::Mut => {
                     format!("&{} mut ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx)).to_owned()
                 }
-                Mutability::Not => {
+                RefKind::Shared => {
                     format!("&{} ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx)).to_owned()
                 }
             },
@@ -963,12 +962,8 @@ where
             Ty::Slice(ty) => {
                 return Ty::Slice(Box::new(ty.substitute(rsubst, tsubst)));
             }
-            Ty::Ref(rid, ty, mutability) => {
-                return Ty::Ref(
-                    rsubst(rid),
-                    Box::new(ty.substitute(rsubst, tsubst)),
-                    *mutability,
-                );
+            Ty::Ref(rid, ty, kind) => {
+                return Ty::Ref(rsubst(rid), Box::new(ty.substitute(rsubst, tsubst)), *kind);
             }
             Ty::Tuple(tys) => {
                 let ntys = tys.iter().map(|ty| ty.substitute(rsubst, tsubst)).collect();

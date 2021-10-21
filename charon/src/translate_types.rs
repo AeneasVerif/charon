@@ -446,11 +446,11 @@ where
 
             let region = region_translator(region);
             let ty = translate_ty(tcx, trans_ctx, region_translator, type_params, ty)?;
-            let mutability = match *mutability {
-                Mutability::Not => ty::Mutability::Not,
-                Mutability::Mut => ty::Mutability::Mut,
+            let kind = match *mutability {
+                Mutability::Not => ty::RefKind::Shared,
+                Mutability::Mut => ty::RefKind::Mut,
             };
-            return Ok(ty::Ty::Ref(region, Box::new(ty), mutability));
+            return Ok(ty::Ty::Ref(region, Box::new(ty), kind));
         }
         TyKind::Tuple(substs) => {
             trace!("Tuple");
