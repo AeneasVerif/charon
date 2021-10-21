@@ -2082,14 +2082,13 @@ pub fn translate_functions(
     }
 
     // Print the functions
-    // TODO:
-    /*    for decl in &ft_ctx.decls {
+    for decl in &ft_ctx.decls {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
             decl.signature.fmt_with_decls(&ft_ctx.tt_ctx.types),
             decl.fmt_with_decls(&ft_ctx.tt_ctx.types, &ft_ctx.decls)
         );
-    }*/
+    }
 
     Ok(ft_ctx)
 }

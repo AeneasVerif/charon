@@ -5,7 +5,6 @@
 
 use crate::expressions::*;
 use crate::formatter::Formatter;
-//use crate::semantics::EvalContext; // We need this for printing
 use crate::types::*;
 use crate::values::*;
 use crate::vars::Name;
@@ -298,7 +297,7 @@ impl Statement {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
         T: Formatter<VarId::Id>
-            + Formatter<ValueId::Id>
+            //            + Formatter<ValueId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
@@ -326,11 +325,11 @@ impl Statement {
     }
 }
 
-/*impl<'ctx, T> Formatter<&Statement> for EvalContext<'ctx, T> {
+impl<'ctx> Formatter<&Statement> for AstFormatter<'ctx> {
     fn format_object(&self, statement: &Statement) -> String {
         statement.fmt_with_ctx(self)
     }
-}*/
+}
 
 impl Terminator {
     pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
@@ -338,7 +337,7 @@ impl Terminator {
         T: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<ValueId::Id>
+            //            + Formatter<ValueId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<DefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>,
@@ -448,7 +447,6 @@ impl BlockData {
         T: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<ValueId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<DefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
@@ -475,7 +473,7 @@ impl Body {
         T: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<ValueId::Id>
+            //            + Formatter<ValueId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<DefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
@@ -641,7 +639,7 @@ impl FunDecl {
             + Formatter<&'a Region<RegionVarId::Id>>,
         T2: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
-            + Formatter<ValueId::Id>
+            //            + Formatter<ValueId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<DefId::Id>
@@ -709,21 +707,134 @@ impl FunDecl {
     }
 }
 
-/*impl<'ctx> Formatter<DefId::Id> for EvalContext<'ctx, FunDecls> {
+impl<'ctx> Formatter<DefId::Id> for AstFormatter<'ctx> {
     fn format_object(&self, id: DefId::Id) -> String {
         let f = self.fun_context.get(id).unwrap();
         f.name.to_string()
     }
 }
 
-impl<'ctx> Formatter<&Terminator> for EvalContext<'ctx, FunDecls> {
+impl<'ctx> Formatter<&Terminator> for AstFormatter<'ctx> {
     fn format_object(&self, terminator: &Terminator) -> String {
         terminator.fmt_with_ctx(self)
     }
-}*/
+}
 
-// TODO
-/*impl FunDecl {
+struct AstFormatter<'ctx> {
+    pub type_context: &'ctx TypeDecls,
+    pub fun_context: &'ctx FunDecls,
+    pub type_vars: &'ctx TypeVarId::Vector<TypeVar>,
+    pub vars: &'ctx VarId::Vector<Var>,
+}
+
+impl<'ctx> AstFormatter<'ctx> {
+    pub fn new(
+        type_context: &'ctx TypeDecls,
+        fun_context: &'ctx FunDecls,
+        type_vars: &'ctx TypeVarId::Vector<TypeVar>,
+        vars: &'ctx VarId::Vector<Var>,
+    ) -> Self {
+        AstFormatter {
+            type_context,
+            fun_context,
+            type_vars,
+            vars,
+        }
+    }
+}
+
+impl<'ctx> Formatter<VarId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: VarId::Id) -> String {
+        let v = self.vars.get(id).unwrap();
+        v.to_string()
+    }
+}
+
+impl<'ctx> Formatter<TypeVarId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: TypeVarId::Id) -> String {
+        self.type_vars.get(id).unwrap().to_string()
+    }
+}
+
+/// For adt types
+impl<'ctx> Formatter<TypeDefId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: TypeDefId::Id) -> String {
+        self.type_context.format_object(id)
+    }
+}
+
+/// For enum values: `List::Cons`
+impl<'ctx> Formatter<(TypeDefId::Id, VariantId::Id)> for AstFormatter<'ctx> {
+    fn format_object(&self, id: (TypeDefId::Id, VariantId::Id)) -> String {
+        let (def_id, variant_id) = id;
+        let ctx = self.type_context;
+        let gen_decl = ctx.get_type_decl(def_id).unwrap();
+        let decl = gen_decl.as_enum();
+        let mut name = gen_decl.get_formatted_name();
+        let variant_name = &decl.variants.get(variant_id).unwrap().name;
+        name.push_str("::");
+        name.push_str(variant_name);
+        name
+    }
+}
+
+/// For struct/enum values: retrieve a field name
+impl<'ctx> Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)> for AstFormatter<'ctx> {
+    fn format_object(&self, id: (TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
+        let (def_id, opt_variant_id, field_id) = id;
+        let ctx = self.type_context;
+        let gen_decl = ctx.get_type_decl(def_id).unwrap();
+        match (gen_decl, opt_variant_id) {
+            (TypeDecl::Enum(decl), Some(variant_id)) => {
+                let field = decl
+                    .variants
+                    .get(variant_id)
+                    .unwrap()
+                    .fields
+                    .get(field_id)
+                    .unwrap();
+                field.name.clone()
+            }
+            (TypeDecl::Struct(decl), None) => {
+                let field = decl.fields.get(field_id).unwrap();
+                field.name.clone()
+            }
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl<'ctx> Formatter<&ErasedRegion> for AstFormatter<'ctx> {
+    fn format_object(&self, _: &ErasedRegion) -> String {
+        "'_".to_owned()
+    }
+}
+
+impl<'ctx> Formatter<&ETy> for AstFormatter<'ctx> {
+    fn format_object(&self, ty: &ETy) -> String {
+        ty.fmt_with_ctx(self)
+    }
+}
+
+impl<'ctx> Formatter<&Rvalue> for AstFormatter<'ctx> {
+    fn format_object(&self, v: &Rvalue) -> String {
+        v.fmt_with_ctx(self)
+    }
+}
+
+impl<'ctx> Formatter<&Place> for AstFormatter<'ctx> {
+    fn format_object(&self, p: &Place) -> String {
+        p.fmt_with_ctx(self)
+    }
+}
+
+impl<'ctx> Formatter<&Operand> for AstFormatter<'ctx> {
+    fn format_object(&self, op: &Operand) -> String {
+        op.fmt_with_ctx(self)
+    }
+}
+
+impl FunDecl {
     pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDecls) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
@@ -731,14 +842,14 @@ impl<'ctx> Formatter<&Terminator> for EvalContext<'ctx, FunDecls> {
             sig: &self.signature,
         };
 
-        let eval_ctx = EvalContext::new(
+        let eval_ctx = AstFormatter::new(
             ty_ctx,
             fun_ctx,
-            self.signature.type_params.clone(),
-            self.body.locals.clone(),
+            &self.signature.type_params,
+            &self.body.locals,
         );
 
         // Use the contexts for printing
         self.fmt_with_ctx("", &fun_sig_ctx, &eval_ctx)
     }
-}*/
+}
