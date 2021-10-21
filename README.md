@@ -11,10 +11,9 @@ Museo del Prado, Madrid.
 
 # Charon
 Charon acts as an interface between the rustc compiler and program verification projects. Its
-purpose is to extract useful information from .rs file and process it into a format easy
-to handle by other projects, with program verification in mind.
+purpose is to process Rust .rs files into files easy to handle by program verifiers.
 
-Charon is, in Greek mythology, an old man taking the souls of the deceased to
-carry them on his boat accross the Styx, a river separating the world of the living from
-the world of the dead. In the present context, Charon allows us to go from the world of
-Rust programs to the world of formal verification.
+Charon is, in Greek mythology, an old man carrying the souls of the deceased accross the
+Styx, a river separating the world of the living from the world of the dead. In the
+present context, Charon allows us to go from the world of Rust programs to the world of
+formal verification.
