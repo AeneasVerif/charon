@@ -26,28 +26,21 @@ extern crate rustc_target;
 
 #[macro_use]
 mod common;
-/*mod avalues;*/
 mod divergent;
 mod expressions;
 mod formatter;
+mod get_mir;
 mod graphs;
 mod id_vector;
 mod im_ast;
-/*mod im_interpreter;
-mod im_multimap;*/
-mod get_mir;
-/*mod pure_types;*/
 mod register;
 mod reorder_decls;
-/*mod semantics;
-mod signatures;*/
 mod translate_functions_to_im;
 mod translate_types;
 mod types;
 mod values;
 mod vars;
 
-//use heck::CamelCase;
 use rustc_driver::{abort_on_err, Callbacks, Compilation, RunCompiler};
 use rustc_interface::{
     interface::{BoxedResolver, Compiler},

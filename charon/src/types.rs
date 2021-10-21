@@ -5,7 +5,6 @@ use crate::id_vector;
 use crate::vars::*;
 use im::{HashMap, OrdSet, Vector};
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantName};
-use rustc_middle::mir::Mutability; // TODO: define our own
 use rustc_middle::ty::{IntTy, UintTy};
 
 pub type FieldName = String;
@@ -116,6 +115,12 @@ pub enum IntegerTy {
     U32,
     U64,
     U128,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumIsA)]
+pub enum Mutability {
+    Mut,
+    Not,
 }
 
 /// A type.

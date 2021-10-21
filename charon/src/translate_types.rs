@@ -6,6 +6,7 @@ use crate::vars::Name;
 use im;
 use im::Vector;
 use rustc_hir::def_id::DefId;
+use rustc_middle::mir::Mutability;
 use rustc_middle::ty::TyCtxt;
 use rustc_middle::ty::{Ty, TyKind};
 use std::collections::HashMap;
@@ -445,7 +446,11 @@ where
 
             let region = region_translator(region);
             let ty = translate_ty(tcx, trans_ctx, region_translator, type_params, ty)?;
-            return Ok(ty::Ty::Ref(region, Box::new(ty), *mutability));
+            let mutability = match *mutability {
+                Mutability::Not => ty::Mutability::Not,
+                Mutability::Mut => ty::Mutability::Mut,
+            };
+            return Ok(ty::Ty::Ref(region, Box::new(ty), mutability));
         }
         TyKind::Tuple(substs) => {
             trace!("Tuple");
