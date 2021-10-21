@@ -722,6 +722,7 @@ impl<'ctx> Formatter<&Terminator> for EvalContext<'ctx, FunDecls> {
     }
 }*/
 
+// TODO
 /*impl FunDecl {
     pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDecls) -> String {
         // Initialize the contexts

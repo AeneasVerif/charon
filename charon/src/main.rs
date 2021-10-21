@@ -40,9 +40,9 @@ mod get_mir;
 mod register;
 mod reorder_decls;
 /*mod semantics;
-mod signatures;
+mod signatures;*/
 mod translate_functions_to_im;
-mod translate_types;*/
+mod translate_types;
 mod types;
 mod values;
 mod vars;
