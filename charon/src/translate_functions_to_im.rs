@@ -27,6 +27,7 @@ use rustc_middle::mir::{
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{BoundRegion, FreeRegion, Region, RegionKind, Ty, TyCtxt, TyKind};
 use rustc_span::Span;
+use rustc_span::{BytePos, SpanData};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::iter::FromIterator;
@@ -1977,17 +1978,57 @@ struct ScopeTree<T: Clone> {
     children: Vec<ScopeTree<T>>,
 }
 
+/// Compare the spans of two scopes by inspecting which one starts first.
+fn compare_scope_spans(body: &Body, scope1: SourceScope, scope2: SourceScope) -> Ordering {
+    // Retrieve the scope data and the spans
+    let span1 = body.source_scopes.get(scope1).unwrap().span.data();
+    let span2 = body.source_scopes.get(scope2).unwrap().span.data();
+
+    // Compare the low positions - note that we should *never* have equal
+    // spans: spans are disjoint.
+    let BytePos(lo1) = span1.lo;
+    let BytePos(lo2) = span2.lo;
+
+    if lo1 < lo2 {
+        Ordering::Less
+    } else {
+        assert!(lo2 > lo1);
+        Ordering::Greater
+    }
+}
+
 fn build_scope_node(
+    body: &Body,
     scopes_to_children: &HashMap<SourceScope, Vec<SourceScope>>,
     scope: SourceScope,
 ) -> ScopeTree<SourceScope> {
     let children = &scopes_to_children[&scope];
+    let mut children = children.clone();
+
+    // Reorder the children, from the scope starting first to the scope starting last.
+    children.sort_by(&|s1: &SourceScope, s2: &SourceScope| compare_scope_spans(body, *s1, *s2));
+
+    // Check that the children scopes are disjoint and are included in the parent scope
+    let parent_span = body.source_scopes.get(scope).unwrap().span.data();
+    let BytePos(parent_lo) = parent_span.lo;
+    let BytePos(parent_hi) = parent_span.hi;
+
+    let mut prev_hi = parent_lo;
+    for child in &children {
+        let child_span = body.source_scopes.get(*child).unwrap().span.data();
+        let BytePos(child_lo) = child_span.lo;
+        let BytePos(child_hi) = child_span.hi;
+        assert!(child_lo >= parent_lo);
+        assert!(child_hi <= parent_hi);
+        assert!(child_lo >= prev_hi);
+        prev_hi = child_hi;
+    }
 
     // Generate the children nodes
     let children = Vec::from_iter(
         children
             .iter()
-            .map(|s| build_scope_node(scopes_to_children, *s)),
+            .map(|s| build_scope_node(body, scopes_to_children, *s)),
     );
 
     ScopeTree { scope, children }
@@ -2044,12 +2085,7 @@ fn build_scope_tree(body: &Body) -> ScopeTree<SourceScope> {
     let (top_scope, _) = top_scope;
 
     // Construct the scope tree starting at the top scope
-    let scope_tree = build_scope_node(&scopes_to_children, top_scope);
-
-    // TODO: check that the tree is "well-formed": parent scopes contain
-    // children scopes, scopes are disjoint, etc.
-
-    scope_tree
+    build_scope_node(body, &scopes_to_children, top_scope)
 }
 
 /// Translate one function.
