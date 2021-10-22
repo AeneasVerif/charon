@@ -26,6 +26,7 @@ extern crate rustc_target;
 
 #[macro_use]
 mod common;
+mod cfim_ast;
 mod divergent;
 mod expressions;
 mod formatter;
