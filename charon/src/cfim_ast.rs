@@ -7,6 +7,7 @@
 //! from MIR to use Statement and Expression. The Statement definition in this
 //! file doesn't correspond at all to the Statement definition from MIR.
 
+#![allow(dead_code)]
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
@@ -71,6 +72,4 @@ pub enum SwitchTargets {
 pub enum Expression {
     Sequence(Statement, Box<Expression>),
     Switch(Operand, SwitchTargets),
-    /// A block of code, with local variables.
-    Block(Vector<VarId::Id>, Box<Expression>),
 }

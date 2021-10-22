@@ -21,13 +21,15 @@ use rustc_hir::def_id::DefId;
 use rustc_hir::definitions::DefPathData;
 use rustc_middle::mir;
 use rustc_middle::mir::{
-    BasicBlock, Body, Operand, Place, PlaceElem, Statement, StatementKind, Terminator,
+    BasicBlock, Body, Operand, Place, PlaceElem, SourceScope, Statement, StatementKind, Terminator,
     TerminatorKind, START_BLOCK,
 };
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{BoundRegion, FreeRegion, Region, RegionKind, Ty, TyCtxt, TyKind};
 use rustc_span::Span;
+use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name, TypeTransContext};
 
 // Assumed functions/trait declarations
@@ -307,7 +309,7 @@ fn translate_sig_ty<'ctx>(
 fn translate_body_locals<'ctx>(
     tcx: &TyCtxt,
     bt_ctx: &mut BodyTransContext<'ctx>,
-    body: &mir::Body,
+    body: &Body,
 ) -> Result<()> {
     // First, retrieve the debug info - we want to retrieve the names
     // of the variables (which otherwise are just referenced with indices).
@@ -1944,7 +1946,6 @@ fn translate_function_signature<'ctx>(
 
     // Now that we instantiated all the binders and introduced identifiers for
     // all the variables, we can translate the function's signature.
-    use std::iter::FromIterator;
     let inputs: v::VarId::Vector<ty::SigTy> = v::VarId::Vector::from_iter(
         signature
             .inputs()
@@ -1968,6 +1969,87 @@ fn translate_function_signature<'ctx>(
     };
 
     (bt_ctx, sig)
+}
+
+#[derive(Debug, Clone)]
+struct ScopeTree<T: Clone> {
+    scope: T,
+    children: Vec<ScopeTree<T>>,
+}
+
+fn build_scope_node(
+    scopes_to_children: &HashMap<SourceScope, Vec<SourceScope>>,
+    scope: SourceScope,
+) -> ScopeTree<SourceScope> {
+    let children = &scopes_to_children[&scope];
+
+    // Generate the children nodes
+    let children = Vec::from_iter(
+        children
+            .iter()
+            .map(|s| build_scope_node(scopes_to_children, *s)),
+    );
+
+    ScopeTree { scope, children }
+}
+
+/// Compute the scope tree of a function body.
+///
+/// Every node of a scope tree gives a scope identifier and its subscopes.
+///
+/// TODO: this function is currently not used, but we might use it might become
+/// useful at some point, so we better maintain it.
+fn build_scope_tree(body: &Body) -> ScopeTree<SourceScope> {
+    // Compute the scopes tree: the function body gives us the list of variable
+    // scopes, with the relation children -> parent. We use it to compute the
+    // tree starting at the top scope (the scope encompassing the whole function)
+    // to the children scope.
+    // We compute the edges
+    // parent -> children.
+    // By
+    let mut scopes_to_children: HashMap<SourceScope, Vec<SourceScope>> = HashMap::from_iter(
+        body.source_scopes
+            .indices()
+            .map(|scope| (scope, Vec::new())),
+    );
+    for (scope, scope_data) in body.source_scopes.iter_enumerated() {
+        match &scope_data.parent_scope {
+            None => (),
+            Some(parent_scope) => {
+                scopes_to_children
+                    .get_mut(parent_scope)
+                    .unwrap()
+                    .push(scope);
+            }
+        }
+    }
+
+    // Find the top scope, which encompasses the whole function - note that there
+    // should be exactly one scope without parents.
+    assert!(
+        body.source_scopes
+            .iter()
+            .filter(|s| s.parent_scope.is_none())
+            .count()
+            == 1
+    );
+    // The top scope is actually always the scope of id 0, but using that fact
+    // seems a bit hacky: the following code combined with the above assert
+    // is a lot more general and robust.
+    let top_scope = body
+        .source_scopes
+        .iter_enumerated()
+        .find(|(scope, source_scope)| source_scope.parent_scope.is_none())
+        .unwrap();
+    let (top_scope, _) = top_scope;
+
+    // Construct the scope tree starting at the top scope
+    let scope_tree = build_scope_node(&scopes_to_children, top_scope);
+
+    // TODO: check that the tree is "well-formed": parent scopes contain
+    // children scopes, scopes are disjoint, etc.
+
+    scope_tree
 }
 
 /// Translate one function.
@@ -1996,6 +2078,9 @@ fn translate_function(
     // Initialize the local variables
     trace!("Translating the body locals");
     translate_body_locals(tcx, &mut bt_ctx, body)?;
+
+    // Build the scope tree
+    let _scope_tree = build_scope_tree(body);
 
     // Translate the function body
     trace!("Translating the function body");
