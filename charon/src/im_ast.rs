@@ -62,7 +62,7 @@ pub struct FunDecl {
     pub divergent: bool,
     pub arg_count: usize,
     pub locals: VarId::Vector<Var>,
-    pub blocks: BlockId::Vector<BlockData>,
+    pub body: BlockId::Vector<BlockData>,
 }
 
 pub type FunDecls = DefId::Vector<FunDecl>;
@@ -495,7 +495,7 @@ impl FunDecl {
         // Format the blocks
         let block_tab = format!("{}{}", tab, TAB);
         let mut blocks: Vec<String> = Vec::new();
-        for (bid, block) in self.blocks.iter_indexed_values() {
+        for (bid, block) in self.body.iter_indexed_values() {
             use crate::id_vector::ToUsize;
             blocks.push(
                 format!(

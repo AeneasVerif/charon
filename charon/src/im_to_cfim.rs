@@ -19,7 +19,7 @@ pub type Decls = tgt::FunDecls;
 type Cfg = DiGraphMap<src::BlockId::Id, ()>;
 
 fn get_block_targets(decl: &src::FunDecl, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
-    let block = decl.blocks.get(block_id).unwrap();
+    let block = decl.body.get(block_id).unwrap();
 
     match &block.terminator {
         src::Terminator::Goto { target }
@@ -65,7 +65,7 @@ fn build_cfg_no_back_edges(decl: &src::FunDecl) -> CfgNoBackEdges {
     };
 
     // Add the nodes
-    for block_id in decl.blocks.iter_indices() {
+    for block_id in decl.body.iter_indices() {
         cfg.cfg.add_node(block_id);
     }
 
@@ -77,7 +77,7 @@ fn build_cfg_no_back_edges(decl: &src::FunDecl) -> CfgNoBackEdges {
 }
 
 fn block_is_switch(decl: &src::FunDecl, block_id: src::BlockId::Id) -> bool {
-    let block = decl.blocks.get(block_id).unwrap();
+    let block = decl.body.get(block_id).unwrap();
     block.terminator.is_switch()
 }
 
@@ -507,7 +507,7 @@ fn translate_expression(
     current_exit_block: Option<src::BlockId::Id>,
     block_id: src::BlockId::Id,
 ) -> Option<tgt::Expression> {
-    let block = decl.blocks.get(block_id).unwrap();
+    let block = decl.body.get(block_id).unwrap();
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
     let is_loop = cfg.loop_entries.contains(&block_id);

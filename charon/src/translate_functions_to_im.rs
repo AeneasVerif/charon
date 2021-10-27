@@ -2132,7 +2132,7 @@ fn translate_function(
         divergent: *bt_ctx.ft_ctx.divergent.get(&def_id).unwrap(),
         arg_count: body.arg_count,
         locals: bt_ctx.vars,
-        blocks: blocks,
+        body: blocks,
     };
 
     Ok(fun_decl)
