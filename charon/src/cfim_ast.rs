@@ -16,9 +16,7 @@ use crate::types::*;
 use crate::values::*;
 use crate::vars::Name;
 use hashlink::linked_hash_map::LinkedHashMap;
-use im::{OrdMap, OrdSet, Vector};
 use macros::{EnumAsGetters, EnumIsA, VariantName};
-use std::ops::Deref;
 
 #[derive(Debug, Clone)]
 pub struct Assert {

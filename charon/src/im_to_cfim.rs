@@ -1,66 +1,22 @@
 //! IM to CFIM (Control-Flow Internal MIR)
 
 use crate::cfim_ast as tgt;
-use crate::common::*;
-use crate::expressions::*;
-use crate::formatter::Formatter;
 use crate::im_ast as src;
 use crate::translate_functions_to_im::FunTransContext;
-use crate::types::*;
 use crate::values::*;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
-use im::{OrdMap, OrdSet, Vector};
-use macros::{EnumAsGetters, EnumIsA, VariantName};
-use petgraph::algo::dominators::simple_fast;
-use petgraph::algo::{tarjan_scc, toposort};
+use im::Vector;
+use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
-use std::ops::Deref;
 
 pub type Decls = tgt::FunDecls;
 
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId::Id, ()>;
-
-/// Build the Control-Flow Graph of a function body
-fn build_cfg(body: &src::Body) -> Cfg {
-    let mut cfg = Cfg::new();
-
-    // Add the nodes
-    for block_id in body.blocks.iter_indices() {
-        cfg.add_node(block_id);
-    }
-
-    // Add the edges
-    let mut explored = HashSet::new();
-    build_cfg_edges(&mut cfg, &mut explored, body, src::BlockId::ZERO);
-
-    cfg
-}
-
-/// Build the CFG for a part of the body, and where we ignore the gotos to
-/// the root (those gotos are backward edges).
-fn build_part_cfg(body: &src::Body, root: src::BlockId::Id, part: &Vec<src::BlockId::Id>) -> Cfg {
-    let mut cfg = Cfg::new();
-
-    // Add the nodes
-    for block_id in body.blocks.iter_indices() {}
-    for block_id in body.blocks.iter_indices() {
-        cfg.add_node(block_id);
-    }
-
-    // Add the edges
-    let mut explored = HashSet::new();
-    build_cfg_edges(&mut cfg, &mut explored, body, src::BlockId::ZERO);
-
-    // TODO: we explore the whole cfg here...
-    unimplemented!();
-
-    cfg
-}
 
 fn get_block_targets(body: &src::Body, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
     let block = body.blocks.get(block_id).unwrap();
@@ -90,64 +46,6 @@ fn get_block_targets(body: &src::Body, block_id: src::BlockId::Id) -> Vec<src::B
     }
 }
 
-/// TODO: remove
-fn block_goes_directly_to_exit(
-    body: &src::Body,
-    directly_exit: &HashSet<src::BlockId::Id>,
-    block_id: src::BlockId::Id,
-) -> bool {
-    let block = body.blocks.get(block_id).unwrap();
-
-    match &block.terminator {
-        src::Terminator::Goto { target: _ }
-        | src::Terminator::Switch {
-            discr: _,
-            targets: _,
-        } => false,
-        src::Terminator::Panic | src::Terminator::Unreachable | src::Terminator::Return => true,
-        src::Terminator::Drop { place: _, target }
-        | src::Terminator::Call {
-            func: _,
-            region_params: _,
-            type_params: _,
-            args: _,
-            dest: _,
-            target,
-        }
-        | src::Terminator::Assert {
-            cond: _,
-            expected: _,
-            target,
-        } => directly_exit.contains(target),
-    }
-}
-
-fn build_cfg_edges(
-    cfg: &mut Cfg,
-    explored: &mut HashSet<src::BlockId::Id>,
-    body: &src::Body,
-    block_id: src::BlockId::Id,
-) {
-    // Check if we already explored this node (there may be loops)
-    if explored.contains(&block_id) {
-        return;
-    }
-    explored.insert(block_id);
-
-    // Retrieve the block targets
-    let targets = get_block_targets(body, block_id);
-
-    // Add edges for all the targets
-    for tgt in &targets {
-        cfg.add_edge(block_id, *tgt, ());
-    }
-
-    // Explore the targets
-    for tgt in &targets {
-        build_cfg_edges(cfg, explored, body, *tgt);
-    }
-}
-
 /// This structure contains the CFG for a function body, where all the backward
 /// edges have been removed.
 struct CfgNoBackEdges {
@@ -157,10 +55,6 @@ struct CfgNoBackEdges {
     pub loop_entries: HashSet<src::BlockId::Id>,
     /// The blocks whose terminators are a switch are stored here.
     pub switch_blocks: HashSet<src::BlockId::Id>,
-    /// The blocks from where we directly go to back-edge, return or panic,
-    /// without going through any goto or switch.
-    /// TODO: remove
-    pub directly_exit: HashSet<src::BlockId::Id>,
 }
 
 fn build_cfg_no_back_edges(body: &src::Body) -> CfgNoBackEdges {
@@ -168,7 +62,6 @@ fn build_cfg_no_back_edges(body: &src::Body) -> CfgNoBackEdges {
         cfg: Cfg::new(),
         loop_entries: HashSet::new(),
         switch_blocks: HashSet::new(),
-        directly_exit: HashSet::new(),
     };
 
     // Add the nodes
@@ -216,11 +109,6 @@ fn build_cfg_no_back_edges_edges(
             cfg.cfg.add_edge(block_id, *tgt, ());
             build_cfg_no_back_edges_edges(cfg, &previous, body, *tgt);
         }
-    }
-
-    // Check if we directly go to an exit point from there
-    if block_goes_directly_to_exit(body, &cfg.directly_exit, block_id) {
-        cfg.directly_exit.insert(block_id);
     }
 }
 
@@ -368,14 +256,6 @@ fn combine_statements_and_expression(
         .fold(next, |e, st| Some(combine_statement_and_expression(st, e)))
 }
 
-fn get_loop_index_if_backward(next_block_id: src::BlockId::Id) -> Option<usize> {
-    unimplemented!();
-}
-
-fn get_loop_index_if_break(next_block_id: src::BlockId::Id) -> Option<usize> {
-    unimplemented!();
-}
-
 fn get_goto_kind(
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: &Vector<src::BlockId::Id>,
@@ -420,8 +300,8 @@ fn translate_child_expression(
     cfg: &CfgNoBackEdges,
     body: &src::Body,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
-    mut parent_loops: Vector<src::BlockId::Id>,
-    mut current_exit_block: Option<src::BlockId::Id>,
+    parent_loops: Vector<src::BlockId::Id>,
+    current_exit_block: Option<src::BlockId::Id>,
     child_id: src::BlockId::Id,
 ) -> Option<tgt::Expression> {
     // Check if this is a backward call
@@ -470,9 +350,8 @@ fn translate_terminator(
     cfg: &CfgNoBackEdges,
     body: &src::Body,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
-    mut parent_loops: Vector<src::BlockId::Id>,
-    mut current_exit_block: Option<src::BlockId::Id>,
-    block_id: src::BlockId::Id,
+    parent_loops: Vector<src::BlockId::Id>,
+    current_exit_block: Option<src::BlockId::Id>,
     terminator: &src::Terminator,
 ) -> Option<tgt::Expression> {
     match terminator {
@@ -655,7 +534,6 @@ fn translate_expression(
         exits_map,
         nparent_loops,
         ncurrent_exit_block,
-        block_id,
         &block.terminator,
     );
 

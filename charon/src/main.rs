@@ -218,11 +218,11 @@ fn translate(
         translate_functions_to_im::translate_functions(&tcx, tt_ctx, &ordered_decls, divergent)?;
 
     // # Step 6: go from IM to CFIM (Control-Flow Internal MIR) by reconstructing
+    // the control flow.
     // Note that from now onwards, we don't interact with rustc anymore.
-    let cfim_decls = im_to_cfim::translate_functions(&im_decls);
+    let _cfim_decls = im_to_cfim::translate_functions(&im_decls);
 
     // TODO: simplify the calls to unops or binops
-    // TODO: reconstruct the control flow (if ... then ... else ...)
 
     // # Step ?: generate the files.
     Ok(())

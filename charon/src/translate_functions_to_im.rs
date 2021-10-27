@@ -26,8 +26,8 @@ use rustc_middle::mir::{
 };
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{BoundRegion, FreeRegion, Region, RegionKind, Ty, TyCtxt, TyKind};
+use rustc_span::BytePos;
 use rustc_span::Span;
-use rustc_span::{BytePos, SpanData};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::iter::FromIterator;
@@ -2073,7 +2073,7 @@ fn build_scope_tree(body: &Body) -> ScopeTree<SourceScope> {
     let top_scope = body
         .source_scopes
         .iter_enumerated()
-        .find(|(scope, source_scope)| source_scope.parent_scope.is_none())
+        .find(|(_scope, source_scope)| source_scope.parent_scope.is_none())
         .unwrap();
     let (top_scope, _) = top_scope;
 
