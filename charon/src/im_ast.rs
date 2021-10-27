@@ -355,7 +355,6 @@ impl Terminator {
         T: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
-            //            + Formatter<ValueId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<DefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>,
@@ -657,7 +656,6 @@ impl FunDecl {
             + Formatter<&'a Region<RegionVarId::Id>>,
         T2: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
-            //            + Formatter<ValueId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<DefId::Id>
@@ -738,7 +736,8 @@ impl<'ctx> Formatter<&Terminator> for AstFormatter<'ctx> {
     }
 }
 
-struct AstFormatter<'ctx> {
+/// This structure is public only so that we can reuse it in `cfim_ast`.
+pub struct AstFormatter<'ctx> {
     pub type_context: &'ctx TypeDecls,
     pub fun_context: &'ctx FunDecls,
     pub type_vars: &'ctx TypeVarId::Vector<TypeVar>,
