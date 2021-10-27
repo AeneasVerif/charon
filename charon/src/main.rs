@@ -223,6 +223,7 @@ fn translate(
     let _cfim_decls = im_to_cfim::translate_functions(&im_decls);
 
     // TODO: simplify the calls to unops or binops
+    // TODO: reconstruct asserts
 
     // # Step ?: generate the files.
     Ok(())
