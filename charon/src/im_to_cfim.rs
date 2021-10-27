@@ -376,13 +376,43 @@ fn get_loop_index_if_break(next_block_id: src::BlockId::Id) -> Option<usize> {
     unimplemented!();
 }
 
-fn get_goto_kind(next_block_id: src::BlockId::Id) -> GotoKind {
-    unimplemented!();
+fn get_goto_kind(
+    exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    parent_loops: &Vector<src::BlockId::Id>,
+    current_exit_block: Option<src::BlockId::Id>,
+    next_block_id: src::BlockId::Id,
+) -> GotoKind {
+    // First explore the parent loops in revert order
+    let len = parent_loops.len();
+    for i in 0..len {
+        let loop_id = parent_loops.get(len - i - 1).unwrap();
+        if next_block_id == *loop_id {
+            return GotoKind::Continue(i);
+        } else {
+            match exits_map.get(&loop_id).unwrap() {
+                None => (),
+                Some(exit_id) => {
+                    if *exit_id == next_block_id {
+                        return GotoKind::Break(i);
+                    }
+                }
+            }
+        }
+    }
+
+    // Check if the goto exits the current block
+    if current_exit_block == Some(next_block_id) {
+        return GotoKind::ExitBlock;
+    }
+
+    // Default
+    return GotoKind::Goto;
 }
 
 enum GotoKind {
     Break(usize),
     Continue(usize),
+    ExitBlock,
     Goto,
 }
 
@@ -395,28 +425,23 @@ fn translate_child_expression(
     child_id: src::BlockId::Id,
 ) -> Option<tgt::Expression> {
     // Check if this is a backward call
-    match get_goto_kind(child_id) {
+    match get_goto_kind(exits_map, &parent_loops, current_exit_block, child_id) {
         GotoKind::Break(index) => Some(tgt::Expression::Statement(tgt::Statement::Break(index))),
         GotoKind::Continue(index) => {
             Some(tgt::Expression::Statement(tgt::Statement::Continue(index)))
         }
+        // If we are going to an exit block we simply ignore the goto
+        GotoKind::ExitBlock => None,
         GotoKind::Goto => {
-            // Check if we are going to an exit block: if it is the case,
-            // we ignore the goto
-            if Some(child_id) == current_exit_block {
-                None
-            }
-            // Otherwise, just recursively translate
-            else {
-                translate_expression(
-                    cfg,
-                    body,
-                    exits_map,
-                    parent_loops,
-                    current_exit_block,
-                    child_id,
-                )
-            }
+            // "Standard" goto: just recursively translate
+            translate_expression(
+                cfg,
+                body,
+                exits_map,
+                parent_loops,
+                current_exit_block,
+                child_id,
+            )
         }
     }
 }
@@ -520,10 +545,6 @@ fn translate_terminator(
             Some(combine_statement_and_expression(st, opt_child))
         }
         src::Terminator::Switch { discr, targets } => {
-            // Get the exit node (if not already done because this is a loop entry
-            // point)
-            current_exit_block = *exits_map.get(&block_id).unwrap();
-
             // Translate the target expressions
             let targets = match &targets {
                 src::SwitchTargets::If(then_tgt, else_tgt) => {
@@ -586,29 +607,54 @@ fn translate_terminator(
     }
 }
 
+fn combine_expressions(
+    exp1: Option<tgt::Expression>,
+    exp2: Option<tgt::Expression>,
+) -> Option<tgt::Expression> {
+    match exp1 {
+        None => exp2,
+        Some(exp1) => match exp2 {
+            None => Some(exp1),
+            Some(exp2) => Some(tgt::Expression::Sequence(Box::new(exp1), Box::new(exp2))),
+        },
+    }
+}
+
 fn translate_expression(
     cfg: &CfgNoBackEdges,
     body: &src::Body,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
-    mut parent_loops: Vector<src::BlockId::Id>,
-    mut current_exit_block: Option<src::BlockId::Id>,
+    parent_loops: Vector<src::BlockId::Id>,
+    current_exit_block: Option<src::BlockId::Id>,
     block_id: src::BlockId::Id,
 ) -> Option<tgt::Expression> {
     let block = body.blocks.get(block_id).unwrap();
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
-    if cfg.loop_entries.contains(&block_id) {
-        parent_loops.push_back(block_id);
-        current_exit_block = *exits_map.get(&block_id).unwrap();
-    }
+    let is_loop = cfg.loop_entries.contains(&block_id);
+    let nparent_loops = if cfg.loop_entries.contains(&block_id) {
+        let mut nparent_loops = parent_loops.clone();
+        nparent_loops.push_back(block_id);
+        nparent_loops
+    } else {
+        parent_loops.clone()
+    };
+
+    // If we enter a switch or a loop, we need to update the current_exit_block
+    let is_switch = block.terminator.is_switch();
+    let ncurrent_exit_block = if is_loop || is_switch {
+        *exits_map.get(&block_id).unwrap()
+    } else {
+        current_exit_block
+    };
 
     // Translate the terminator and the subsequent blocks
     let terminator = translate_terminator(
         cfg,
         body,
         exits_map,
-        parent_loops,
-        current_exit_block,
+        nparent_loops,
+        ncurrent_exit_block,
         block_id,
         &block.terminator,
     );
@@ -622,10 +668,28 @@ fn translate_expression(
     );
 
     // Put the statements and the terminator together
-    combine_statements_and_expression(statements, terminator)
+    let exp = combine_statements_and_expression(statements, terminator);
+
+    // If we just translated a loop or a switch, and there is an exit block,
+    // we need to translate the exit block and concatenate the two expressions
+    // we have as a sequence
+    if (is_loop || is_switch) && current_exit_block.is_some() {
+        let exit_block_id = current_exit_block.unwrap();
+        let next_exp = translate_expression(
+            cfg,
+            body,
+            exits_map,
+            parent_loops,
+            current_exit_block,
+            exit_block_id,
+        );
+        combine_expressions(exp, next_exp)
+    } else {
+        exp
+    }
 }
 
-fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> Result<tgt::FunDecl> {
+fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::FunDecl {
     // Retrieve the function declaration
     let src_decl = im_ctx.decls.get(src_decl_id).unwrap();
 
@@ -650,7 +714,8 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> Resul
     // exists.
     let exits_map = compute_loop_switch_exits(&cfg_no_be, &tsort_map);
 
-    // Translate the body by reconstructing the loops and the conditional branchings
+    // Translate the body by reconstructing the loops and the conditional branchings.
+    // Note that we shouldn't get `None`.
     let body_exp = translate_expression(
         &cfg_no_be,
         &src_decl.body,
@@ -658,19 +723,28 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> Resul
         Vector::new(),
         None,
         src::BlockId::ZERO,
-    );
+    )
+    .unwrap();
 
-    // Find the loops and the conditional branchings
-    unimplemented!();
+    // Return the translated declaration
+    tgt::FunDecl {
+        def_id: src_decl.def_id,
+        name: src_decl.name.clone(),
+        signature: src_decl.signature.clone(),
+        divergent: src_decl.divergent,
+        arg_count: src_decl.body.arg_count,
+        locals: src_decl.body.locals.clone(),
+        body: body_exp,
+    }
 }
 
 // TODO: reducible graphs
-pub fn translate_functions(im_ctx: &FunTransContext) -> Result<Decls> {
+pub fn translate_functions(im_ctx: &FunTransContext) -> Decls {
     let mut out_decls = DefId::Vector::new();
 
     for src_decl_id in im_ctx.decls.iter_indices() {
-        out_decls.push_back(translate_function(im_ctx, src_decl_id)?);
+        out_decls.push_back(translate_function(im_ctx, src_decl_id));
     }
 
-    Ok(out_decls)
+    out_decls
 }

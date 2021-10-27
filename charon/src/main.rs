@@ -219,7 +219,7 @@ fn translate(
 
     // # Step 6: go from IM to CFIM (Control-Flow Internal MIR) by reconstructing
     // Note that from now onwards, we don't interact with rustc anymore.
-    let cfim_decls = im_to_cfim::translate_functions(&im_decls)?;
+    let cfim_decls = im_to_cfim::translate_functions(&im_decls);
 
     // TODO: simplify the calls to unops or binops
     // TODO: reconstruct the control flow (if ... then ... else ...)
