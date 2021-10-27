@@ -548,6 +548,14 @@ fn translate_expression(
     // Put the statements and the terminator together
     let exp = combine_statements_and_expression(statements, terminator);
 
+    // If we just translated a loop, we need to put the loop body inside a
+    // `Loop` wrapper
+    let exp = if is_loop {
+        Some(tgt::Expression::Loop(Box::new(exp.unwrap())))
+    } else {
+        exp
+    };
+
     // If we just translated a loop or a switch, and there is an exit block,
     // we need to translate the exit block and concatenate the two expressions
     // we have as a sequence

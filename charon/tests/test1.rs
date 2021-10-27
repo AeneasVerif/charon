@@ -232,7 +232,7 @@ fn test_loop3(max: u32) -> u32 {
     'outer: while i < max {
         'inner: while j < max {
             if i + j == 17 {
-                //
+                continue;
             }
             s += i;
             j += 1;
