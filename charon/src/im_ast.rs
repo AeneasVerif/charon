@@ -13,7 +13,7 @@ use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, VariantName};
 
 // TODO: move this definition
-pub static TAB: &'static str = "    ";
+pub static TAB_INCR: &'static str = "    ";
 
 // Block identifier. Similar to rust's `BasicBlock`.
 generate_index_type!(BlockId);
@@ -517,7 +517,7 @@ impl FunDecl {
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
-        let block_tab = format!("{}{}", tab, TAB);
+        let block_tab = format!("{}{}", tab, TAB_INCR);
         let mut blocks: Vec<String> = Vec::new();
         for (bid, block) in self.body.iter_indexed_values() {
             use crate::id_vector::ToUsize;
@@ -689,7 +689,7 @@ impl<T: std::fmt::Debug + Clone> GFunDecl<T> {
         };
 
         // Body
-        let body_tab = format!("{}{}", tab, TAB);
+        let body_tab = format!("{}{}", tab, TAB_INCR);
         let body = self.fmt_gbody_with_ctx(&body_tab, body_exp, body_ctx);
 
         // Put everything together

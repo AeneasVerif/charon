@@ -616,12 +616,21 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
     }
 }
 
-// TODO: reducible graphs
 pub fn translate_functions(im_ctx: &FunTransContext) -> Decls {
     let mut out_decls = DefId::Vector::new();
 
+    // Tranlsate the bodies one at a time
     for src_decl_id in im_ctx.decls.iter_indices() {
         out_decls.push_back(translate_function(im_ctx, src_decl_id));
+    }
+
+    // Print the functions
+    for decl in &out_decls {
+        trace!(
+            "# Signature:\n{}\n\n# Function definition:\n{}\n",
+            decl.signature.fmt_with_decls(&im_ctx.tt_ctx.types),
+            decl.fmt_with_decls(&im_ctx.tt_ctx.types, &out_decls)
+        );
     }
 
     out_decls

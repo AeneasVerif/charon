@@ -202,7 +202,7 @@ impl Expression {
             .to_owned(),
             Expression::Switch(discr, targets) => match targets {
                 SwitchTargets::If(true_exp, false_exp) => {
-                    let inner_tab = format!("{}{}", tab, tab);
+                    let inner_tab = format!("{}{}", tab, TAB_INCR);
                     format!(
                         "{}if {} {{\n{}\n{}}}\n{}else {{\n{}\n{}}}",
                         tab,
@@ -216,16 +216,17 @@ impl Expression {
                     .to_owned()
                 }
                 SwitchTargets::SwitchInt(_ty, maps, otherwise) => {
-                    let inner_tab = format!("{}{}", tab, tab);
+                    let inner_tab1 = format!("{}{}", tab, TAB_INCR);
+                    let inner_tab2 = format!("{}{}", inner_tab1, TAB_INCR);
                     let mut maps: Vec<String> = maps
                         .iter()
                         .map(|(v, e)| {
                             format!(
                                 "{}{} => {{\n{}\n{}}}",
-                                tab,
+                                inner_tab1,
                                 v.to_string(),
-                                e.fmt_with_ctx(&inner_tab, ctx),
-                                tab
+                                e.fmt_with_ctx(&inner_tab2, ctx),
+                                inner_tab1
                             )
                             .to_owned()
                         })
@@ -233,9 +234,9 @@ impl Expression {
                     maps.push(
                         format!(
                             "{}_ => {{\n{}\n{}}}",
-                            tab,
-                            otherwise.fmt_with_ctx(&inner_tab, ctx),
-                            tab
+                            inner_tab1,
+                            otherwise.fmt_with_ctx(&inner_tab2, ctx),
+                            inner_tab1
                         )
                         .to_owned(),
                     );
@@ -252,7 +253,7 @@ impl Expression {
                 }
             },
             Expression::Loop(e) => {
-                let inner_tab = format!("{}{}", tab, tab);
+                let inner_tab = format!("{}{}", tab, TAB_INCR);
                 format!(
                     "{}loop {{\n{}\n{}}}",
                     tab,
@@ -288,7 +289,7 @@ impl FunDecl {
         let body_exp = self.body.fmt_with_ctx(tab, body_ctx);
 
         // Format the rest
-        self.gfmt_with_ctx(tab, &body_exp, sig_ctx, body_ctx)
+        self.gfmt_with_ctx("", &body_exp, sig_ctx, body_ctx)
     }
 }
 
@@ -313,6 +314,6 @@ impl FunDecl {
             AstFormatter::new(ty_ctx, fun_ctx, &self.signature.type_params, &self.locals);
 
         // Use the contexts for printing
-        self.fmt_with_ctx("", &fun_sig_ctx, &eval_ctx)
+        self.fmt_with_ctx(TAB_INCR, &fun_sig_ctx, &eval_ctx)
     }
 }
