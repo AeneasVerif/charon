@@ -197,6 +197,56 @@ fn id_borrow1<'a, 'b, 'c>(_x: &'a mut &'b u32, _y: &'a &'a mut u32) {
     ()
 }
 
+/// Simple test with a loop
+fn test_loop1(max: u32) -> u32 {
+    let mut i = 0;
+    let mut s = 0;
+    while i < max {
+        s += i;
+        i += 1;
+    }
+
+    return s;
+}
+
+/// Test with a loop and a break
+fn test_loop2(max: u32) -> u32 {
+    let mut i = 0;
+    let mut s = 0;
+    while i < max {
+        if i == 17 {
+            break;
+        }
+        s += i;
+        i += 1;
+    }
+
+    return s;
+}
+
+/// Test with nested loops and breaks to outer loops
+fn test_loop3(max: u32) -> u32 {
+    let mut i = 0;
+    let mut j = 0;
+    let mut s = 0;
+    'outer: while i < max {
+        'inner: while j < max {
+            if i + j == 17 {
+                //
+            }
+            s += i;
+            j += 1;
+
+            break 'outer;
+        }
+        j = 0;
+        s += i;
+        i += 1;
+    }
+
+    return s;
+}
+
 /*struct WrapShared<'a, T> {
     x: &'a T,
 }

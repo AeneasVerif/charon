@@ -67,9 +67,9 @@ pub struct FunDecl {
 /// We have a separate type definition for this (and don't merge it in
 /// [`FunDecl`](FunDecl) to be able to perform type substitutions to
 /// get instantiated bodies when executing code.
+/// TODO: this is not necessary anymore, we don't execute code
 #[derive(Debug, Clone)]
 pub struct Body {
-    /// TODO: change the name to `num_args`
     pub arg_count: usize,
     pub locals: VarId::Vector<Var>,
     pub blocks: BlockId::Vector<BlockData>,

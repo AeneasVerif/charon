@@ -334,14 +334,6 @@ fn translate_body_locals<'ctx>(
         let span = var.source_info.span;
         let name: Option<String> = span_to_var_name.get(&span).map(|s| s.clone());
 
-        // We use a reserved name for the return variable
-        let name = if index.as_usize() == 0 {
-            assert!(name.is_none());
-            Some("@return".to_owned())
-        } else {
-            name
-        };
-
         // Translate the type
         let ty = translate_ety(tcx, bt_ctx, &var.ty)?;
 
@@ -2074,6 +2066,7 @@ fn build_scope_tree(body: &Body) -> ScopeTree<SourceScope> {
             .count()
             == 1
     );
+
     // The top scope is actually always the scope of id 0, but using that fact
     // seems a bit hacky: the following code combined with the above assert
     // is a lot more general and robust.

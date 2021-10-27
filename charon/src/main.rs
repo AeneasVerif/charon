@@ -34,6 +34,7 @@ mod get_mir;
 mod graphs;
 mod id_vector;
 mod im_ast;
+mod im_to_cfim;
 mod register;
 mod reorder_decls;
 mod translate_functions_to_im;
@@ -213,8 +214,12 @@ fn translate(
     let tt_ctx = translate_types::translate_types(&tcx, &ordered_decls)?;
 
     // # Step 5: translate the functions to IM (our Internal representation of MIR)
-    let _ft_ctx =
+    let im_decls =
         translate_functions_to_im::translate_functions(&tcx, tt_ctx, &ordered_decls, divergent)?;
+
+    // # Step 6: go from IM to CFIM (Control-Flow Internal MIR) by reconstructing
+    // Note that from now onwards, we don't interact with rustc anymore.
+    let cfim_decls = im_to_cfim::translate_functions(&im_decls)?;
 
     // TODO: simplify the calls to unops or binops
     // TODO: reconstruct the control flow (if ... then ... else ...)

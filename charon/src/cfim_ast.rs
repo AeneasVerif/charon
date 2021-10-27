@@ -14,6 +14,7 @@ use crate::formatter::Formatter;
 use crate::im_ast::*;
 use crate::types::*;
 use crate::values::*;
+use crate::vars::Name;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im::{OrdMap, OrdSet, Vector};
 use macros::{EnumAsGetters, EnumIsA, VariantName};
@@ -50,6 +51,12 @@ pub enum Statement {
     /// Panic also handles "unreachable"
     Panic,
     Return,
+    /// Break to outer loops.
+    /// The `usize` gives the index of the outer loop to break to:
+    /// * 0: break to first outer loop
+    /// * 1: break to second outer loop
+    /// * ...
+    Break(usize),
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName)]
@@ -72,4 +79,22 @@ pub enum SwitchTargets {
 pub enum Expression {
     Sequence(Statement, Box<Expression>),
     Switch(Operand, SwitchTargets),
+}
+
+pub type FunDecls = DefId::Vector<FunDecl>;
+
+/// A function declaration
+#[derive(Debug, Clone)]
+pub struct FunDecl {
+    pub def_id: DefId::Id,
+    pub name: Name,
+    /// The signature contains the inputs/output types *with* non-erased regions.
+    /// It also contains the list of region and type parameters.
+    pub signature: FunSig,
+    /// true if the function might diverge (is recursive, part of a mutually
+    /// recursive group, contains loops or calls functions which might diverge)
+    pub divergent: bool,
+    pub arg_count: usize,
+    pub locals: VarId::Vector<Var>,
+    pub body: Expression,
 }
