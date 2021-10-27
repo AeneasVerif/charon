@@ -91,20 +91,7 @@ pub enum Expression {
 pub type FunDecls = DefId::Vector<FunDecl>;
 
 /// A function declaration
-#[derive(Debug, Clone)]
-pub struct FunDecl {
-    pub def_id: DefId::Id,
-    pub name: Name,
-    /// The signature contains the inputs/output types *with* non-erased regions.
-    /// It also contains the list of region and type parameters.
-    pub signature: FunSig,
-    /// true if the function might diverge (is recursive, part of a mutually
-    /// recursive group, contains loops or calls functions which might diverge)
-    pub divergent: bool,
-    pub arg_count: usize,
-    pub locals: VarId::Vector<Var>,
-    pub body: Expression,
-}
+pub type FunDecl = GFunDecl<Expression>;
 
 impl Statement {
     pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
@@ -277,3 +264,46 @@ impl Expression {
         }
     }
 }
+
+impl FunDecl {
+    pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
+        &'a self,
+        tab: &'b str,
+        sig_ctx: &'c T1,
+        body_ctx: &'c T2,
+    ) -> String
+    where
+        T1: Formatter<TypeVarId::Id>
+            + Formatter<TypeDefId::Id>
+            + Formatter<&'a Region<RegionVarId::Id>>,
+        T2: Formatter<VarId::Id>
+            + Formatter<TypeVarId::Id>
+            + Formatter<TypeDefId::Id>
+            + Formatter<&'a ErasedRegion>
+            + Formatter<DefId::Id>
+            + Formatter<(TypeDefId::Id, VariantId::Id)>
+            + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
+    {
+        // Format the body expression
+        let body_exp = self.body.fmt_with_ctx(tab, body_ctx);
+
+        // Format the rest
+        self.gfmt_with_ctx(tab, &body_exp, sig_ctx, body_ctx)
+    }
+}
+
+/*impl FunDecl {
+    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDecls) -> String {
+        // Initialize the contexts
+        let fun_sig_ctx = FunSigFormatter {
+            ty_ctx,
+            sig: &self.signature,
+        };
+
+        let eval_ctx =
+            AstFormatter::new(ty_ctx, fun_ctx, &self.signature.type_params, &self.locals);
+
+        // Use the contexts for printing
+        self.fmt_with_ctx("", &fun_sig_ctx, &eval_ctx)
+    }
+}*/

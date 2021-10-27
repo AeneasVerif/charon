@@ -51,7 +51,7 @@ pub struct FunSig {
 
 /// A function declaration
 #[derive(Debug, Clone)]
-pub struct FunDecl {
+pub struct GFunDecl<T: std::fmt::Debug + Clone> {
     pub def_id: DefId::Id,
     pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
@@ -62,8 +62,10 @@ pub struct FunDecl {
     pub divergent: bool,
     pub arg_count: usize,
     pub locals: VarId::Vector<Var>,
-    pub body: BlockId::Vector<BlockData>,
+    pub body: T,
 }
+
+pub type FunDecl = GFunDecl<BlockId::Vector<BlockData>>;
 
 pub type FunDecls = DefId::Vector<FunDecl>;
 
@@ -443,10 +445,15 @@ impl BlockData {
     }
 }
 
-impl FunDecl {
-    pub fn fmt_body_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
+impl<T: std::fmt::Debug + Clone> GFunDecl<T> {
+    pub fn fmt_gbody_with_ctx<'a, 'b, 'c, C>(
+        &'a self,
+        tab: &'b str,
+        body: &'b str,
+        ctx: &'c C,
+    ) -> String
     where
-        T: Formatter<VarId::Id>
+        C: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDefId::Id>
@@ -492,7 +499,24 @@ impl FunDecl {
         let mut locals = locals.join("");
         locals.push_str("\n");
 
-        // Format the blocks
+        // Put everything together
+        let mut out = locals;
+        out.push_str(body);
+        out
+    }
+}
+
+impl FunDecl {
+    pub fn fmt_body_blocks_with_ctx<'a, 'b, 'c, C>(&'a self, tab: &'b str, ctx: &'c C) -> String
+    where
+        C: Formatter<VarId::Id>
+            + Formatter<TypeVarId::Id>
+            + Formatter<&'a ErasedRegion>
+            + Formatter<TypeDefId::Id>
+            + Formatter<DefId::Id>
+            + Formatter<(TypeDefId::Id, VariantId::Id)>
+            + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
+    {
         let block_tab = format!("{}{}", tab, TAB);
         let mut blocks: Vec<String> = Vec::new();
         for (bid, block) in self.body.iter_indexed_values() {
@@ -508,12 +532,7 @@ impl FunDecl {
                 .to_owned(),
             );
         }
-        let blocks = blocks.join("\n");
-
-        // Put everything together
-        let mut out = locals;
-        out.push_str(&blocks);
-        out
+        blocks.join("\n")
     }
 }
 
@@ -594,7 +613,7 @@ impl FunSig {
     }
 }
 
-impl FunDecl {
+impl<T: std::fmt::Debug + Clone> GFunDecl<T> {
     /// This is an auxiliary function for printing declarations. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function declaration already has the information to print
@@ -602,9 +621,10 @@ impl FunDecl {
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
     /// declaration). See [`fmt_with_decls`](FunDecl::fmt_with_decls).
-    pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
+    pub fn gfmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
+        body_exp: &'b str,
         sig_ctx: &'c T1,
         body_ctx: &'c T2,
     ) -> String
@@ -670,7 +690,7 @@ impl FunDecl {
 
         // Body
         let body_tab = format!("{}{}", tab, TAB);
-        let body = self.fmt_body_with_ctx(&body_tab, body_ctx);
+        let body = self.fmt_gbody_with_ctx(&body_tab, body_exp, body_ctx);
 
         // Put everything together
         format!(
@@ -678,6 +698,40 @@ impl FunDecl {
             tab, name, params, args, ret_ty, body, tab
         )
         .to_owned()
+    }
+}
+
+impl FunDecl {
+    /// This is an auxiliary function for printing declarations. One may wonder
+    /// why we require a formatter to format, for instance, (type) var ids,
+    /// because the function declaration already has the information to print
+    /// variables. The reason is that it is easier for us to write this very
+    /// generic auxiliary function, then apply it on an evaluation context
+    /// properly initialized (with the information contained in the function
+    /// declaration). See [`fmt_with_decls`](FunDecl::fmt_with_decls).
+    pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
+        &'a self,
+        tab: &'b str,
+        sig_ctx: &'c T1,
+        body_ctx: &'c T2,
+    ) -> String
+    where
+        T1: Formatter<TypeVarId::Id>
+            + Formatter<TypeDefId::Id>
+            + Formatter<&'a Region<RegionVarId::Id>>,
+        T2: Formatter<VarId::Id>
+            + Formatter<TypeVarId::Id>
+            + Formatter<TypeDefId::Id>
+            + Formatter<&'a ErasedRegion>
+            + Formatter<DefId::Id>
+            + Formatter<(TypeDefId::Id, VariantId::Id)>
+            + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
+    {
+        // Format the body blocks
+        let body_blocks = self.fmt_body_blocks_with_ctx(tab, body_ctx);
+
+        // Format the rest
+        self.gfmt_with_ctx(tab, &body_blocks, sig_ctx, body_ctx)
     }
 }
 
