@@ -382,7 +382,7 @@ fn translate_basic_block<'ctx>(
     for statement in &block.statements {
         trace!("statement: {:?}", statement);
 
-        // Some statements like Nop are ignored, hence the optional returned value
+        // Some statements might be ignored, hence the optional returned value
         let opt_statement = translate_statement(tcx, bt_ctx, &statement)?;
         match opt_statement {
             Some(statement) => statements.push(statement),

@@ -22,22 +22,21 @@ use std::ops::Deref;
 
 #[derive(Debug, Clone)]
 pub struct Assert {
-    cond: Operand,
-    expected: bool,
-    target: BlockId::Id,
+    pub cond: Operand,
+    pub expected: bool,
 }
 
 #[derive(Debug, Clone)]
 pub struct Call {
-    func: FunId,
+    pub func: FunId,
     /// Technically this is useless, but we still keep it because we might
     /// want to introduce some information (and the way we encode from MIR
     /// is as simple as possible - and in MIR we also have a vector of erased
     /// regions).
-    region_params: Vec<ErasedRegion>,
-    type_params: Vec<ETy>,
-    args: Vec<Operand>,
-    dest: Place,
+    pub region_params: Vec<ErasedRegion>,
+    pub type_params: Vec<ETy>,
+    pub args: Vec<Operand>,
+    pub dest: Place,
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters)]
@@ -53,10 +52,18 @@ pub enum Statement {
     Return,
     /// Break to outer loops.
     /// The `usize` gives the index of the outer loop to break to:
-    /// * 0: break to first outer loop
+    /// * 0: break to first outer loop (the current loop)
     /// * 1: break to second outer loop
     /// * ...
     Break(usize),
+    /// Continue to outer loops.
+    /// The `usize` gives the index of the outer loop to continue to:
+    /// * 0: continue to first outer loop (the current loop)
+    /// * 1: continue to second outer loop
+    /// * ...
+    Continue(usize),
+    /// No-op.
+    Nop,
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName)]
@@ -77,8 +84,10 @@ pub enum SwitchTargets {
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters)]
 pub enum Expression {
-    Sequence(Statement, Box<Expression>),
+    Statement(Statement),
+    Sequence(Box<Expression>, Box<Expression>),
     Switch(Operand, SwitchTargets),
+    Loop(Box<Expression>),
 }
 
 pub type FunDecls = DefId::Vector<FunDecl>;

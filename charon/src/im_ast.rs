@@ -171,6 +171,24 @@ pub struct BlockData {
     pub terminator: Terminator,
 }
 
+impl SwitchTargets {
+    pub fn get_targets(&self) -> Vec<BlockId::Id> {
+        match self {
+            SwitchTargets::If(then_tgt, else_tgt) => {
+                vec![*then_tgt, *else_tgt]
+            }
+            SwitchTargets::SwitchInt(_, targets, otherwise) => {
+                let mut all_targets = vec![];
+                for (_, target) in targets {
+                    all_targets.push(*target);
+                }
+                all_targets.push(*otherwise);
+                all_targets
+            }
+        }
+    }
+}
+
 impl Statement {
     /// Substitute the type variables and return the resulting statement.
     /// Actually simply clones the statement, while performing sanity checks (a
