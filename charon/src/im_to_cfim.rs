@@ -322,11 +322,29 @@ fn find_filtered_successors(
     succs
 }
 
-fn statement_to_expression(
-    statement: src::Statement,
-    next: Option<tgt::Expression>,
-) -> Option<tgt::Expression> {
-    unimplemented!();
+fn compute_loop_switch_exits(
+    cfg: &CfgNoBackEdges,
+    tsort_map: &HashMap<src::BlockId::Id, usize>,
+) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
+    // Compute the filtered successors map, starting at the root node
+    let mut fsuccs_map = HashMap::new();
+    let _ = find_filtered_successors(cfg, tsort_map, &mut fsuccs_map, src::BlockId::ZERO);
+
+    // For every node which is a loop entry or a switch, retrieve the exit.
+    // As the set of filtered successors is topologically sorted, the exit should be
+    // the first node in the set (if the set is non empty)
+    let mut exits = HashMap::new();
+    for bid in cfg.loop_entries.iter().chain(cfg.switch_blocks.iter()) {
+        let fsuccs = fsuccs_map.get(bid).unwrap();
+        if fsuccs.is_empty() {
+            exits.insert(*bid, None);
+        } else {
+            let exit = fsuccs.iter().next().unwrap();
+            exits.insert(*bid, Some(exit.id));
+        }
+    }
+
+    exits
 }
 
 fn combine_statement_and_expression(
@@ -371,7 +389,7 @@ enum GotoKind {
 fn translate_child_expression(
     cfg: &CfgNoBackEdges,
     body: &src::Body,
-    exit_blocks: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     mut parent_loops: Vector<src::BlockId::Id>,
     mut current_exit_block: Option<src::BlockId::Id>,
     child_id: src::BlockId::Id,
@@ -393,7 +411,7 @@ fn translate_child_expression(
                 translate_expression(
                     cfg,
                     body,
-                    exit_blocks,
+                    exits_map,
                     parent_loops,
                     current_exit_block,
                     child_id,
@@ -426,7 +444,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 fn translate_terminator(
     cfg: &CfgNoBackEdges,
     body: &src::Body,
-    exit_blocks: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     mut parent_loops: Vector<src::BlockId::Id>,
     mut current_exit_block: Option<src::BlockId::Id>,
     block_id: src::BlockId::Id,
@@ -440,7 +458,7 @@ fn translate_terminator(
         src::Terminator::Goto { target } => translate_child_expression(
             cfg,
             body,
-            exit_blocks,
+            exits_map,
             parent_loops,
             current_exit_block,
             *target,
@@ -449,7 +467,7 @@ fn translate_terminator(
             let opt_child = translate_child_expression(
                 cfg,
                 body,
-                exit_blocks,
+                exits_map,
                 parent_loops,
                 current_exit_block,
                 *target,
@@ -468,7 +486,7 @@ fn translate_terminator(
             let opt_child = translate_child_expression(
                 cfg,
                 body,
-                exit_blocks,
+                exits_map,
                 parent_loops,
                 current_exit_block,
                 *target,
@@ -490,7 +508,7 @@ fn translate_terminator(
             let opt_child = translate_child_expression(
                 cfg,
                 body,
-                exit_blocks,
+                exits_map,
                 parent_loops,
                 current_exit_block,
                 *target,
@@ -504,7 +522,7 @@ fn translate_terminator(
         src::Terminator::Switch { discr, targets } => {
             // Get the exit node (if not already done because this is a loop entry
             // point)
-            current_exit_block = *exit_blocks.get(&block_id).unwrap();
+            current_exit_block = *exits_map.get(&block_id).unwrap();
 
             // Translate the target expressions
             let targets = match &targets {
@@ -513,7 +531,7 @@ fn translate_terminator(
                     let then_exp = translate_child_expression(
                         cfg,
                         body,
-                        exit_blocks,
+                        exits_map,
                         parent_loops.clone(),
                         current_exit_block,
                         *then_tgt,
@@ -522,7 +540,7 @@ fn translate_terminator(
                     let else_exp = translate_child_expression(
                         cfg,
                         body,
-                        exit_blocks,
+                        exits_map,
                         parent_loops.clone(),
                         current_exit_block,
                         *else_tgt,
@@ -538,7 +556,7 @@ fn translate_terminator(
                         let exp = translate_child_expression(
                             cfg,
                             body,
-                            exit_blocks,
+                            exits_map,
                             parent_loops.clone(),
                             current_exit_block,
                             *bid,
@@ -550,7 +568,7 @@ fn translate_terminator(
                     let otherwise_exp = translate_child_expression(
                         cfg,
                         body,
-                        exit_blocks,
+                        exits_map,
                         parent_loops.clone(),
                         current_exit_block,
                         *otherwise,
@@ -571,7 +589,7 @@ fn translate_terminator(
 fn translate_expression(
     cfg: &CfgNoBackEdges,
     body: &src::Body,
-    exit_blocks: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     mut parent_loops: Vector<src::BlockId::Id>,
     mut current_exit_block: Option<src::BlockId::Id>,
     block_id: src::BlockId::Id,
@@ -581,14 +599,14 @@ fn translate_expression(
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
     if cfg.loop_entries.contains(&block_id) {
         parent_loops.push_back(block_id);
-        current_exit_block = *exit_blocks.get(&block_id).unwrap();
+        current_exit_block = *exits_map.get(&block_id).unwrap();
     }
 
     // Translate the terminator and the subsequent blocks
     let terminator = translate_terminator(
         cfg,
         body,
-        exit_blocks,
+        exits_map,
         parent_loops,
         current_exit_block,
         block_id,
@@ -630,13 +648,17 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> Resul
 
     // Find the exit block for all the loops and switches, if such an exit point
     // exists.
+    let exits_map = compute_loop_switch_exits(&cfg_no_be, &tsort_map);
 
-    // Explore the function body to create the control-flow graph
-    //    let cfg = build_cfg(&src_decl.body);
-
-    // Analyze the graph to look for dominators and strongly connected components (loops)
-    //    let sccs = tarjan_scc(&cfg);
-    //    let dominators = simple_fast(&cfg, src::BlockId::ZERO);
+    // Translate the body by reconstructing the loops and the conditional branchings
+    let body_exp = translate_expression(
+        &cfg_no_be,
+        &src_decl.body,
+        &exits_map,
+        Vector::new(),
+        None,
+        src::BlockId::ZERO,
+    );
 
     // Find the loops and the conditional branchings
     unimplemented!();
