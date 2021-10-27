@@ -735,6 +735,15 @@ impl FunDecl {
     }
 }
 
+pub struct GAstFormatter<'ctx, T> {
+    pub type_context: &'ctx TypeDecls,
+    pub fun_context: &'ctx T,
+    pub type_vars: &'ctx TypeVarId::Vector<TypeVar>,
+    pub vars: &'ctx VarId::Vector<Var>,
+}
+
+type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls>;
+
 impl<'ctx> Formatter<DefId::Id> for AstFormatter<'ctx> {
     fn format_object(&self, id: DefId::Id) -> String {
         let f = self.fun_context.get(id).unwrap();
@@ -748,22 +757,14 @@ impl<'ctx> Formatter<&Terminator> for AstFormatter<'ctx> {
     }
 }
 
-/// This structure is public only so that we can reuse it in `cfim_ast`.
-pub struct AstFormatter<'ctx> {
-    pub type_context: &'ctx TypeDecls,
-    pub fun_context: &'ctx FunDecls,
-    pub type_vars: &'ctx TypeVarId::Vector<TypeVar>,
-    pub vars: &'ctx VarId::Vector<Var>,
-}
-
-impl<'ctx> AstFormatter<'ctx> {
+impl<'ctx, T> GAstFormatter<'ctx, T> {
     pub fn new(
         type_context: &'ctx TypeDecls,
-        fun_context: &'ctx FunDecls,
+        fun_context: &'ctx T,
         type_vars: &'ctx TypeVarId::Vector<TypeVar>,
         vars: &'ctx VarId::Vector<Var>,
     ) -> Self {
-        AstFormatter {
+        GAstFormatter {
             type_context,
             fun_context,
             type_vars,
@@ -772,28 +773,28 @@ impl<'ctx> AstFormatter<'ctx> {
     }
 }
 
-impl<'ctx> Formatter<VarId::Id> for AstFormatter<'ctx> {
+impl<'ctx, T> Formatter<VarId::Id> for GAstFormatter<'ctx, T> {
     fn format_object(&self, id: VarId::Id) -> String {
         let v = self.vars.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'ctx> Formatter<TypeVarId::Id> for AstFormatter<'ctx> {
+impl<'ctx, T> Formatter<TypeVarId::Id> for GAstFormatter<'ctx, T> {
     fn format_object(&self, id: TypeVarId::Id) -> String {
         self.type_vars.get(id).unwrap().to_string()
     }
 }
 
 /// For adt types
-impl<'ctx> Formatter<TypeDefId::Id> for AstFormatter<'ctx> {
+impl<'ctx, T> Formatter<TypeDefId::Id> for GAstFormatter<'ctx, T> {
     fn format_object(&self, id: TypeDefId::Id) -> String {
         self.type_context.format_object(id)
     }
 }
 
 /// For enum values: `List::Cons`
-impl<'ctx> Formatter<(TypeDefId::Id, VariantId::Id)> for AstFormatter<'ctx> {
+impl<'ctx, T> Formatter<(TypeDefId::Id, VariantId::Id)> for GAstFormatter<'ctx, T> {
     fn format_object(&self, id: (TypeDefId::Id, VariantId::Id)) -> String {
         let (def_id, variant_id) = id;
         let ctx = self.type_context;
@@ -808,7 +809,9 @@ impl<'ctx> Formatter<(TypeDefId::Id, VariantId::Id)> for AstFormatter<'ctx> {
 }
 
 /// For struct/enum values: retrieve a field name
-impl<'ctx> Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)> for AstFormatter<'ctx> {
+impl<'ctx, T> Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>
+    for GAstFormatter<'ctx, T>
+{
     fn format_object(&self, id: (TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (def_id, opt_variant_id, field_id) = id;
         let ctx = self.type_context;
@@ -833,31 +836,31 @@ impl<'ctx> Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)> for As
     }
 }
 
-impl<'ctx> Formatter<&ErasedRegion> for AstFormatter<'ctx> {
+impl<'ctx, T> Formatter<&ErasedRegion> for GAstFormatter<'ctx, T> {
     fn format_object(&self, _: &ErasedRegion) -> String {
         "'_".to_owned()
     }
 }
 
-impl<'ctx> Formatter<&ETy> for AstFormatter<'ctx> {
+impl<'ctx, T> Formatter<&ETy> for GAstFormatter<'ctx, T> {
     fn format_object(&self, ty: &ETy) -> String {
         ty.fmt_with_ctx(self)
     }
 }
 
-impl<'ctx> Formatter<&Rvalue> for AstFormatter<'ctx> {
+impl<'ctx, T> Formatter<&Rvalue> for GAstFormatter<'ctx, T> {
     fn format_object(&self, v: &Rvalue) -> String {
         v.fmt_with_ctx(self)
     }
 }
 
-impl<'ctx> Formatter<&Place> for AstFormatter<'ctx> {
+impl<'ctx, T> Formatter<&Place> for GAstFormatter<'ctx, T> {
     fn format_object(&self, p: &Place) -> String {
         p.fmt_with_ctx(self)
     }
 }
 
-impl<'ctx> Formatter<&Operand> for AstFormatter<'ctx> {
+impl<'ctx, T> Formatter<&Operand> for GAstFormatter<'ctx, T> {
     fn format_object(&self, op: &Operand) -> String {
         op.fmt_with_ctx(self)
     }

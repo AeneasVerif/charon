@@ -292,7 +292,16 @@ impl FunDecl {
     }
 }
 
-/*impl FunDecl {
+type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls>;
+
+impl<'ctx> Formatter<DefId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: DefId::Id) -> String {
+        let f = self.fun_context.get(id).unwrap();
+        f.name.to_string()
+    }
+}
+
+impl FunDecl {
     pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDecls) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
@@ -306,4 +315,4 @@ impl FunDecl {
         // Use the contexts for printing
         self.fmt_with_ctx("", &fun_sig_ctx, &eval_ctx)
     }
-}*/
+}
