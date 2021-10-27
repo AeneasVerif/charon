@@ -18,8 +18,8 @@ pub type Decls = tgt::FunDecls;
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId::Id, ()>;
 
-fn get_block_targets(body: &src::Body, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
-    let block = body.blocks.get(block_id).unwrap();
+fn get_block_targets(decl: &src::FunDecl, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
+    let block = decl.blocks.get(block_id).unwrap();
 
     match &block.terminator {
         src::Terminator::Goto { target }
@@ -57,7 +57,7 @@ struct CfgNoBackEdges {
     pub switch_blocks: HashSet<src::BlockId::Id>,
 }
 
-fn build_cfg_no_back_edges(body: &src::Body) -> CfgNoBackEdges {
+fn build_cfg_no_back_edges(decl: &src::FunDecl) -> CfgNoBackEdges {
     let mut cfg = CfgNoBackEdges {
         cfg: Cfg::new(),
         loop_entries: HashSet::new(),
@@ -65,26 +65,26 @@ fn build_cfg_no_back_edges(body: &src::Body) -> CfgNoBackEdges {
     };
 
     // Add the nodes
-    for block_id in body.blocks.iter_indices() {
+    for block_id in decl.blocks.iter_indices() {
         cfg.cfg.add_node(block_id);
     }
 
     // Add the edges
     let previous = im::HashSet::new();
-    build_cfg_no_back_edges_edges(&mut cfg, &previous, body, src::BlockId::ZERO);
+    build_cfg_no_back_edges_edges(&mut cfg, &previous, decl, src::BlockId::ZERO);
 
     cfg
 }
 
-fn block_is_switch(body: &src::Body, block_id: src::BlockId::Id) -> bool {
-    let block = body.blocks.get(block_id).unwrap();
+fn block_is_switch(decl: &src::FunDecl, block_id: src::BlockId::Id) -> bool {
+    let block = decl.blocks.get(block_id).unwrap();
     block.terminator.is_switch()
 }
 
 fn build_cfg_no_back_edges_edges(
     cfg: &mut CfgNoBackEdges,
     previous: &im::HashSet<src::BlockId::Id>,
-    body: &src::Body,
+    decl: &src::FunDecl,
     block_id: src::BlockId::Id,
 ) {
     // Insert the current block in the set of previous blocks
@@ -92,12 +92,12 @@ fn build_cfg_no_back_edges_edges(
     previous.insert(block_id);
 
     // Check if it is a switch
-    if block_is_switch(body, block_id) {
+    if block_is_switch(decl, block_id) {
         cfg.switch_blocks.insert(block_id);
     }
 
     // Retrieve the block targets
-    let targets = get_block_targets(body, block_id);
+    let targets = get_block_targets(decl, block_id);
 
     // Add edges for all the targets and explore them, if they are not predecessors
     for tgt in &targets {
@@ -107,7 +107,7 @@ fn build_cfg_no_back_edges_edges(
         } else {
             // Not a backward edge: insert the edge and explore
             cfg.cfg.add_edge(block_id, *tgt, ());
-            build_cfg_no_back_edges_edges(cfg, &previous, body, *tgt);
+            build_cfg_no_back_edges_edges(cfg, &previous, decl, *tgt);
         }
     }
 }
@@ -298,7 +298,7 @@ enum GotoKind {
 
 fn translate_child_expression(
     cfg: &CfgNoBackEdges,
-    body: &src::Body,
+    decl: &src::FunDecl,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
     current_exit_block: Option<src::BlockId::Id>,
@@ -316,7 +316,7 @@ fn translate_child_expression(
             // "Standard" goto: just recursively translate
             translate_expression(
                 cfg,
-                body,
+                decl,
                 exits_map,
                 parent_loops,
                 current_exit_block,
@@ -348,7 +348,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 
 fn translate_terminator(
     cfg: &CfgNoBackEdges,
-    body: &src::Body,
+    decl: &src::FunDecl,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
     current_exit_block: Option<src::BlockId::Id>,
@@ -361,7 +361,7 @@ fn translate_terminator(
         src::Terminator::Return => Some(tgt::Expression::Statement(tgt::Statement::Return)),
         src::Terminator::Goto { target } => translate_child_expression(
             cfg,
-            body,
+            decl,
             exits_map,
             parent_loops,
             current_exit_block,
@@ -370,7 +370,7 @@ fn translate_terminator(
         src::Terminator::Drop { place, target } => {
             let opt_child = translate_child_expression(
                 cfg,
-                body,
+                decl,
                 exits_map,
                 parent_loops,
                 current_exit_block,
@@ -389,7 +389,7 @@ fn translate_terminator(
         } => {
             let opt_child = translate_child_expression(
                 cfg,
-                body,
+                decl,
                 exits_map,
                 parent_loops,
                 current_exit_block,
@@ -411,7 +411,7 @@ fn translate_terminator(
         } => {
             let opt_child = translate_child_expression(
                 cfg,
-                body,
+                decl,
                 exits_map,
                 parent_loops,
                 current_exit_block,
@@ -430,7 +430,7 @@ fn translate_terminator(
                     // Translate the children expressions
                     let then_exp = translate_child_expression(
                         cfg,
-                        body,
+                        decl,
                         exits_map,
                         parent_loops.clone(),
                         current_exit_block,
@@ -439,7 +439,7 @@ fn translate_terminator(
                     let then_exp = opt_expression_to_nop(then_exp);
                     let else_exp = translate_child_expression(
                         cfg,
-                        body,
+                        decl,
                         exits_map,
                         parent_loops.clone(),
                         current_exit_block,
@@ -455,7 +455,7 @@ fn translate_terminator(
                     let targets_exps = LinkedHashMap::from_iter(targets.iter().map(|(v, bid)| {
                         let exp = translate_child_expression(
                             cfg,
-                            body,
+                            decl,
                             exits_map,
                             parent_loops.clone(),
                             current_exit_block,
@@ -467,7 +467,7 @@ fn translate_terminator(
 
                     let otherwise_exp = translate_child_expression(
                         cfg,
-                        body,
+                        decl,
                         exits_map,
                         parent_loops.clone(),
                         current_exit_block,
@@ -501,13 +501,13 @@ fn combine_expressions(
 
 fn translate_expression(
     cfg: &CfgNoBackEdges,
-    body: &src::Body,
+    decl: &src::FunDecl,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
     current_exit_block: Option<src::BlockId::Id>,
     block_id: src::BlockId::Id,
 ) -> Option<tgt::Expression> {
-    let block = body.blocks.get(block_id).unwrap();
+    let block = decl.blocks.get(block_id).unwrap();
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
     let is_loop = cfg.loop_entries.contains(&block_id);
@@ -530,7 +530,7 @@ fn translate_expression(
     // Translate the terminator and the subsequent blocks
     let terminator = translate_terminator(
         cfg,
-        body,
+        decl,
         exits_map,
         nparent_loops,
         ncurrent_exit_block,
@@ -555,7 +555,7 @@ fn translate_expression(
         let exit_block_id = current_exit_block.unwrap();
         let next_exp = translate_expression(
             cfg,
-            body,
+            decl,
             exits_map,
             parent_loops,
             current_exit_block,
@@ -573,7 +573,7 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
 
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
-    let cfg_no_be = build_cfg_no_back_edges(&src_decl.body);
+    let cfg_no_be = build_cfg_no_back_edges(src_decl);
 
     // Use the CFG without backward edges to topologically sort the nodes.
     // Note that `toposort` returns `Err` if and only if it finds cycles (which
@@ -596,7 +596,7 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
     // Note that we shouldn't get `None`.
     let body_exp = translate_expression(
         &cfg_no_be,
-        &src_decl.body,
+        &src_decl,
         &exits_map,
         Vector::new(),
         None,
@@ -610,8 +610,8 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
         name: src_decl.name.clone(),
         signature: src_decl.signature.clone(),
         divergent: src_decl.divergent,
-        arg_count: src_decl.body.arg_count,
-        locals: src_decl.body.locals.clone(),
+        arg_count: src_decl.arg_count,
+        locals: src_decl.locals.clone(),
         body: body_exp,
     }
 }

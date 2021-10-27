@@ -60,16 +60,6 @@ pub struct FunDecl {
     /// true if the function might diverge (is recursive, part of a mutually
     /// recursive group, contains loops or calls functions which might diverge)
     pub divergent: bool,
-    pub body: Body,
-}
-
-/// A function body.
-/// We have a separate type definition for this (and don't merge it in
-/// [`FunDecl`](FunDecl) to be able to perform type substitutions to
-/// get instantiated bodies when executing code.
-/// TODO: this is not necessary anymore, we don't execute code
-#[derive(Debug, Clone)]
-pub struct Body {
     pub arg_count: usize,
     pub locals: VarId::Vector<Var>,
     pub blocks: BlockId::Vector<BlockData>,
@@ -280,37 +270,6 @@ impl BlockData {
     }
 }
 
-impl Body {
-    /// Substitute the type variables and return the resulting `Body`
-    pub fn substitute(&self, subst: &ETypeSubst) -> Body {
-        use std::iter::FromIterator;
-        let locals = self.locals.iter().map(|var| var.substitute(subst));
-        let locals = VarId::Vector::from_iter(locals);
-        let blocks = self.blocks.iter().map(|block| block.substitute(subst));
-        let blocks = BlockId::Vector::from_iter(blocks);
-
-        Body {
-            arg_count: self.arg_count,
-            locals,
-            blocks,
-        }
-    }
-}
-
-impl FunDecl {
-    /// Substitute the type variables in the function's body and return the resulting
-    /// `Body`
-    pub fn substitute_in_body(&self, subst: &ETypeSubst) -> Body {
-        self.body.substitute(subst)
-    }
-
-    pub fn apply_instantiation_in_body(&self, type_params: &Vec<ETy>) -> Body {
-        let type_vars = self.signature.type_params.iter().map(|x| x.index);
-        let subst = make_type_subst(type_vars, type_params.iter());
-        self.body.substitute(&subst)
-    }
-}
-
 impl Statement {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
@@ -484,13 +443,12 @@ impl BlockData {
     }
 }
 
-impl Body {
-    pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
+impl FunDecl {
+    pub fn fmt_body_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
     where
         T: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
-            //            + Formatter<ValueId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<DefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
@@ -688,7 +646,7 @@ impl FunDecl {
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
-        for i in 1..self.body.arg_count {
+        for i in 1..self.arg_count {
             let id = VarId::Id::new(i);
             let arg_ty = &self.signature.inputs.get(id).unwrap();
             args.push(
@@ -712,7 +670,7 @@ impl FunDecl {
 
         // Body
         let body_tab = format!("{}{}", tab, TAB);
-        let body = self.body.fmt_with_ctx(&body_tab, body_ctx);
+        let body = self.fmt_body_with_ctx(&body_tab, body_ctx);
 
         // Put everything together
         format!(
@@ -859,12 +817,8 @@ impl FunDecl {
             sig: &self.signature,
         };
 
-        let eval_ctx = AstFormatter::new(
-            ty_ctx,
-            fun_ctx,
-            &self.signature.type_params,
-            &self.body.locals,
-        );
+        let eval_ctx =
+            AstFormatter::new(ty_ctx, fun_ctx, &self.signature.type_params, &self.locals);
 
         // Use the contexts for printing
         self.fmt_with_ctx("", &fun_sig_ctx, &eval_ctx)

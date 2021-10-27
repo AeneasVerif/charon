@@ -2125,17 +2125,14 @@ fn translate_function(
         assert!(id.to_usize() == blocks.len());
         blocks.push_back(block);
     }
-    let fun_body = ast::Body {
-        arg_count: body.arg_count,
-        locals: bt_ctx.vars,
-        blocks: blocks,
-    };
     let fun_decl = ast::FunDecl {
         def_id,
         name,
         signature,
         divergent: *bt_ctx.ft_ctx.divergent.get(&def_id).unwrap(),
-        body: fun_body,
+        arg_count: body.arg_count,
+        locals: bt_ctx.vars,
+        blocks: blocks,
     };
 
     Ok(fun_decl)
