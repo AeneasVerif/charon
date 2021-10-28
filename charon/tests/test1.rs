@@ -225,8 +225,33 @@ fn test_loop2(max: u32) -> u32 {
     return s;
 }
 
-/// Test with nested loops and breaks to outer loops
+/// Test with nested loops and continue to outer loops
 fn test_loop3(max: u32) -> u32 {
+    let mut i = 0;
+    let mut j = 0;
+    let mut s = 0;
+    'outer: while i < max {
+        'inner: while j < max {
+            if i + j == 17 {
+                continue;
+            }
+            s += i;
+            j += 1;
+
+            continue 'outer;
+        }
+        j = 0;
+        s += i;
+        i += 1;
+    }
+
+    return s;
+}
+
+/// Test with nested loops and breaks to outer loops.
+/// This test is a bit of a mistake: the `break 'outer` doesn't really make
+/// sense, but it leads to strange results after control-flow reconstruction.
+fn test_loop4(max: u32) -> u32 {
     let mut i = 0;
     let mut j = 0;
     let mut s = 0;

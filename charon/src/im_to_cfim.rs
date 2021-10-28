@@ -677,7 +677,7 @@ fn get_goto_kind(
     }
 
     // Check if the goto exits the current block
-    if current_exit_block == Some(next_block_id) {
+    if Some(next_block_id) == current_exit_block {
         return GotoKind::ExitBlock;
     }
 
