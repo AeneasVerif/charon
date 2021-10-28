@@ -997,7 +997,10 @@ fn translate_expression(
     // we have as a sequence
     if (is_loop || is_switch) && ncurrent_exit_block.is_some() {
         // We need to check that it is actually possible to get to the next
-        // block
+        // block. It might happen that the next block is actually the exit
+        // of an outer loop, and we directly use a break to get there
+        // (so we if we retranslate the next block, we duplicate it for
+        // nothing). This is maybe overkill...
         let exp = exp.unwrap();
         if is_loop || (is_switch && !is_terminal(&exp)) {
             let exit_block_id = ncurrent_exit_block.unwrap();
