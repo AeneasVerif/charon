@@ -7,10 +7,11 @@ use crate::values::*;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
 use im::Vector;
+use petgraph::algo::floyd_warshall::floyd_warshall;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use std::cmp::Ordering;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
 
 pub type Decls = tgt::FunDecls;
@@ -46,8 +47,10 @@ fn get_block_targets(decl: &src::FunDecl, block_id: src::BlockId::Id) -> Vec<src
     }
 }
 
-/// This structure contains various information about a function's CFG
+/// This structure contains various information about a function's CFG.
 struct CfgInfo {
+    /// The CFG
+    pub cfg: Cfg,
     /// The CFG where all the backward edges have been removed
     pub cfg_no_be: Cfg,
     /// We consider the destination of the backward edges to be loop entries and
@@ -57,8 +60,11 @@ struct CfgInfo {
     pub switch_blocks: HashSet<src::BlockId::Id>,
 }
 
-fn build_cfg_no_back_edges(decl: &src::FunDecl) -> CfgInfo {
+/// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
+/// compute some information like the loop entries and the switch blocks.
+fn build_cfg_partial_info(decl: &src::FunDecl) -> CfgInfo {
     let mut cfg = CfgInfo {
+        cfg: Cfg::new(),
         cfg_no_be: Cfg::new(),
         loop_entries: HashSet::new(),
         switch_blocks: HashSet::new(),
@@ -66,12 +72,20 @@ fn build_cfg_no_back_edges(decl: &src::FunDecl) -> CfgInfo {
 
     // Add the nodes
     for block_id in decl.body.iter_indices() {
+        cfg.cfg.add_node(block_id);
         cfg.cfg_no_be.add_node(block_id);
     }
 
     // Add the edges
-    let previous = im::HashSet::new();
-    build_cfg_no_back_edges_edges(&mut cfg, &previous, decl, src::BlockId::ZERO);
+    let ancestors = im::HashSet::new();
+    let mut explored = im::HashSet::new();
+    build_cfg_partial_info_edges(
+        &mut cfg,
+        &ancestors,
+        &mut explored,
+        decl,
+        src::BlockId::ZERO,
+    );
 
     cfg
 }
@@ -81,15 +95,22 @@ fn block_is_switch(decl: &src::FunDecl, block_id: src::BlockId::Id) -> bool {
     block.terminator.is_switch()
 }
 
-fn build_cfg_no_back_edges_edges(
+fn build_cfg_partial_info_edges(
     cfg: &mut CfgInfo,
-    previous: &im::HashSet<src::BlockId::Id>,
+    ancestors: &im::HashSet<src::BlockId::Id>,
+    explored: &mut im::HashSet<src::BlockId::Id>,
     decl: &src::FunDecl,
     block_id: src::BlockId::Id,
 ) {
-    // Insert the current block in the set of previous blocks
-    let mut previous = previous.clone();
-    previous.insert(block_id);
+    // Check if we already explored the current node
+    if explored.contains(&block_id) {
+        return;
+    }
+    explored.insert(block_id);
+
+    // Insert the current block in the set of ancestors blocks
+    let mut ancestors = ancestors.clone();
+    ancestors.insert(block_id);
 
     // Check if it is a switch
     if block_is_switch(decl, block_id) {
@@ -101,13 +122,18 @@ fn build_cfg_no_back_edges_edges(
 
     // Add edges for all the targets and explore them, if they are not predecessors
     for tgt in &targets {
-        if previous.contains(tgt) {
+        // Insert the edge in the "regular" CFG
+        cfg.cfg.add_edge(block_id, *tgt, ());
+
+        // We need to check if it is a backward edge before inserting it in the
+        // CFG without backward edges and exploring it
+        if ancestors.contains(tgt) {
             // This is a backward edge
             cfg.loop_entries.insert(*tgt);
         } else {
             // Not a backward edge: insert the edge and explore
             cfg.cfg_no_be.add_edge(block_id, *tgt, ());
-            build_cfg_no_back_edges_edges(cfg, &previous, decl, *tgt);
+            build_cfg_partial_info_edges(cfg, &ancestors, explored, decl, *tgt);
         }
     }
 }
@@ -131,8 +157,51 @@ impl PartialOrd for OrdBlockId {
     }
 }
 
+#[derive(Clone)]
+struct LoopExitCandidate {
+    pub occurrences: usize,
+    pub outer_switches: usize,
+}
+
+/// Compute the reachability matrix for a graph.
+///
+/// We represent the reachability matrix as a set such R that:
+/// (src, dest) in R <==> there exists a path from src to dest
+fn compute_reachability(cfg: &CfgInfo) -> HashSet<(src::BlockId::Id, src::BlockId::Id)> {
+    // We simply use Floyd-Warshall.
+    // We just need to be a little careful: we have to make sure the value we
+    // use for infinity is never reached. That is to say, that there are stricly
+    // less edges in the graph than usize::MAX.
+    // Note that for now, the assertion will actually always statically succeed,
+    // because `edge_count` returns a usize... It still is good to keep it there.
+    assert!(cfg.cfg.edge_count() < std::usize::MAX);
+
+    let fw_matrix: HashMap<(src::BlockId::Id, src::BlockId::Id), usize> =
+        floyd_warshall(&cfg.cfg, &|_| 1).unwrap();
+
+    // Convert the fw_matrix
+    let reachability: HashSet<(src::BlockId::Id, src::BlockId::Id)> =
+        HashSet::from_iter(fw_matrix.into_iter().filter_map(|((src, dst), dest)| {
+            if dest == std::usize::MAX {
+                None
+            } else {
+                Some((src, dst))
+            }
+        }));
+
+    reachability
+}
+
+fn find_loop_exit_candidates(
+    cfg: &CfgInfo,
+    loop_exits: &mut HashMap<src::BlockId::Id, HashMap<src::BlockId::Id, LoopExitCandidate>>,
+    explored: &mut HashSet<src::BlockId::Id>,
+) {
+    unimplemented!();
+}
+
 /// Explanations: TODO
-fn find_filtered_successors(
+fn perform_exit_analysis(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
     memoized: &mut HashMap<src::BlockId::Id, im::OrdSet<OrdBlockId>>,
@@ -151,7 +220,7 @@ fn find_filtered_successors(
     let mut children_succs: Vec<im::OrdSet<OrdBlockId>> = Vec::from_iter(
         children
             .iter()
-            .map(|bid| find_filtered_successors(cfg, tsort_map, memoized, *bid)),
+            .map(|bid| perform_exit_analysis(cfg, tsort_map, memoized, *bid)),
     );
 
     // If there is exactly one child or less, it is trivial
@@ -216,7 +285,7 @@ fn compute_loop_switch_exits(
 ) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
     // Compute the filtered successors map, starting at the root node
     let mut fsuccs_map = HashMap::new();
-    let _ = find_filtered_successors(cfg, tsort_map, &mut fsuccs_map, src::BlockId::ZERO);
+    let _ = perform_exit_analysis(cfg, tsort_map, &mut fsuccs_map, src::BlockId::ZERO);
 
     // For every node which is a loop entry or a switch, retrieve the exit.
     // As the set of filtered successors is topologically sorted, the exit should be
@@ -581,7 +650,7 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
 
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
-    let cfg_info = build_cfg_no_back_edges(src_decl);
+    let cfg_info = build_cfg_partial_info(src_decl);
 
     // Use the CFG without backward edges to topologically sort the nodes.
     // Note that `toposort` returns `Err` if and only if it finds cycles (which
