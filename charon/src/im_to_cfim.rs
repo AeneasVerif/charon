@@ -9,6 +9,7 @@ use im;
 use im::Vector;
 use petgraph::algo::dominators::simple_fast;
 use petgraph::algo::floyd_warshall::floyd_warshall;
+use petgraph::algo::simple_paths::all_simple_paths;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use std::cmp::Ordering;
@@ -57,6 +58,8 @@ struct CfgPartialInfo {
     /// We consider the destination of the backward edges to be loop entries and
     /// store them here.
     pub loop_entries: HashSet<src::BlockId::Id>,
+    /// The backward edges
+    pub backward_edges: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
     /// The blocks whose terminators are a switch are stored here.
     pub switch_blocks: HashSet<src::BlockId::Id>,
 }
@@ -66,6 +69,7 @@ struct CfgInfo {
     pub cfg: Cfg,
     pub cfg_no_be: Cfg,
     pub loop_entries: HashSet<src::BlockId::Id>,
+    pub backward_edges: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
     pub switch_blocks: HashSet<src::BlockId::Id>,
     /// The reachability graph:
     /// src can reach dest <==> (src, dest) in reachability
@@ -82,6 +86,7 @@ fn build_cfg_partial_info(decl: &src::FunDecl) -> CfgPartialInfo {
         cfg: Cfg::new(),
         cfg_no_be: Cfg::new(),
         loop_entries: HashSet::new(),
+        backward_edges: HashSet::new(),
         switch_blocks: HashSet::new(),
     };
 
@@ -145,6 +150,7 @@ fn build_cfg_partial_info_edges(
         if ancestors.contains(tgt) {
             // This is a backward edge
             cfg.loop_entries.insert(*tgt);
+            cfg.backward_edges.insert((block_id, *tgt));
         } else {
             // Not a backward edge: insert the edge and explore
             cfg.cfg_no_be.add_edge(block_id, *tgt, ());
@@ -170,12 +176,6 @@ impl PartialOrd for OrdBlockId {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
-}
-
-#[derive(Clone)]
-struct LoopExitCandidate {
-    pub occurrences: usize,
-    pub outer_switches: usize,
 }
 
 /// Compute the reachability matrix for a graph.
@@ -239,6 +239,7 @@ fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
         cfg,
         cfg_no_be,
         loop_entries,
+        backward_edges,
         switch_blocks,
     } = cfg;
 
@@ -246,22 +247,301 @@ fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
         cfg,
         cfg_no_be,
         loop_entries,
+        backward_edges,
         switch_blocks,
         reachability,
         dominated_no_be,
     }
 }
 
-fn find_loop_exit_candidates(
-    cfg: &CfgPartialInfo,
-    loop_exits: &mut HashMap<src::BlockId::Id, HashMap<src::BlockId::Id, LoopExitCandidate>>,
-    explored: &mut HashSet<src::BlockId::Id>,
-) {
-    unimplemented!();
+#[derive(Clone)]
+struct LoopExitCandidateInfo {
+    /// The occurrences going to this exit.
+    /// For every occurrence, we register the distance between the loop entry
+    /// and the node from which the edge going to the exit starts.
+    /// If later we have to choose between candidates with the same number
+    /// of occurrences, we choose the one with the smallest distances.
+    pub occurrences: Vec<usize>,
 }
 
-/// Explanations: TODO
-fn perform_exit_analysis(
+/*fn compute_loop_exit_candidates(cfg: &CfgPartialInfo) {
+    let mut loop_exits: HashMap<
+        src::BlockId::Id,
+        HashMap<src::BlockId::Id, LoopExitCandidateInfo>,
+    > = HashMap::new();
+    for loop_id in &cfg.loop_entries {
+        loop_exits.insert(*loop_id, HashMap::new());
+    }
+
+    let mut explored: HashSet<src::BlockId::Id> = HashSet::new();
+    let mut stack: VecDeque<src::BlockId::Id> = VecDeque::new();
+    stack.push_back(src::BlockId::ZERO);
+
+    // We order the loop entries, to make sure we choose the exit nodes
+    // for the outer loops before the inner loops (outer loops and inner
+    // loops may have the same candidates, we give precedence to the outer
+    // loops).
+    let mut ordered_loop_entries: Vec<src::BlockId::Id> = Vec::new();
+
+    // Explore the graph
+    while !stack.is_empty() {
+        let block_id = stack.pop_front().unwrap();
+        if explored.contains(&block_id) {
+            continue;
+        }
+        explored.insert(block_id);
+
+        // Retrieve the children - note that we ignore the back edges
+        let children = cfg.cfg_no_be.neighbors(block_id);
+        for child in children {
+            // If the entry node is not reachable from the child (in the
+            // CFG with back edges), the child is an exit node candidate.
+            //            if (child,
+        }
+
+        unimplemented!();
+    }
+
+    unimplemented!();
+}*/
+
+/// Check if a loop entry is reachable from a node, in a graph where we remove
+/// the backward edges going to the loop entry.
+///
+/// If the loop entry is not reachable, it means that:
+/// - the loop entry is not reachable at all
+/// - it is reachable from an outer loop
+///
+/// The starting node should be a (transitive) child of the loop entry.
+/// We use this to find candidates for loop exits.
+///
+/// Rk.: this is not efficient at all.
+fn loop_entry_is_reachable(
+    cfg: &CfgInfo,
+    loop_entry: src::BlockId::Id,
+    block_id: src::BlockId::Id,
+) -> bool {
+    // Shortcut: the loop entry is not reachable at all
+    if !cfg.reachability.contains(&(block_id, loop_entry)) {
+        return false;
+    }
+
+    // It is reachable in the complete graph. Check if it is reachable through
+    // a backward edge which doesn't go directly to the loop entry (i.e.: through
+    // a backward edge which requires going to an outer loop).
+    // We check this in a very simple way: we just explore all the simple paths,
+    // and eliminate those which contain a backward edge whose destination is
+    // the loop entry. Once again: we're not looking for efficiency here.
+    'outer: for path in
+        all_simple_paths::<Vec<src::BlockId::Id>, &Cfg>(&cfg.cfg, block_id, loop_entry, 0, None)
+    {
+        let mut prev_node = block_id;
+        for n in path {
+            if cfg.backward_edges.contains(&(prev_node, n)) {
+                continue 'outer;
+            } else {
+                prev_node = n;
+            }
+        }
+
+        // If we get there, it means we successfully explored the path without
+        // finding a forbidden backward edge.
+        return true;
+    }
+    // No path was valid
+    return false;
+}
+
+fn filter_loop_parents(
+    cfg: &CfgInfo,
+    parent_loops: &Vector<(src::BlockId::Id, usize)>,
+    block_id: src::BlockId::Id,
+) -> Option<Vector<(src::BlockId::Id, usize)>> {
+    let mut eliminate: usize = 0;
+    let mut distance: usize = 0;
+    for (loop_id, ldist) in parent_loops.iter().rev() {
+        if !loop_entry_is_reachable(cfg, *loop_id, block_id) {
+            eliminate += 1;
+            distance += *ldist;
+        } else {
+            break;
+        }
+    }
+
+    if eliminate > 0 {
+        // Truncate the vector of parents
+        let mut out = Vector::new();
+        for i in 0..(parent_loops.len() - eliminate) {
+            out.push_back(parent_loops[i]);
+        }
+
+        // Update the distance to the last loop
+        if !out.is_empty() {
+            out.get_mut(out.len() - 1).unwrap().1 += distance;
+        }
+
+        Some(out)
+    } else {
+        None
+    }
+}
+
+fn register_loop_exit_candidate(
+    loop_exits: &mut HashMap<src::BlockId::Id, HashMap<src::BlockId::Id, LoopExitCandidateInfo>>,
+    parent_loops: &Vector<(src::BlockId::Id, usize)>,
+    block_id: src::BlockId::Id,
+) {
+    let parent = parent_loops.get(parent_loops.len() - 1).unwrap();
+    let loop_id = parent.0;
+    let distance = parent.1;
+
+    let candidates = loop_exits.get_mut(&loop_id).unwrap();
+    match candidates.get_mut(&block_id) {
+        None => {
+            candidates.insert(
+                block_id,
+                LoopExitCandidateInfo {
+                    occurrences: vec![distance],
+                },
+            );
+        }
+        Some(c) => {
+            c.occurrences.push(distance);
+        }
+    }
+}
+
+fn compute_loop_exit_candidates(
+    cfg: &CfgInfo,
+    explored: &mut HashSet<src::BlockId::Id>,
+    ordered_loops: &mut Vec<src::BlockId::Id>,
+    loop_exits: &mut HashMap<src::BlockId::Id, HashMap<src::BlockId::Id, LoopExitCandidateInfo>>,
+    // List of parent loops, with the distance to the entry of the loop (the distance
+    // is the distance between the current node and the loop entry for the last parent,
+    // and the distance between the parents for the others).
+    mut parent_loops: Vector<(src::BlockId::Id, usize)>,
+    block_id: src::BlockId::Id,
+) {
+    if explored.contains(&block_id) {
+        return;
+    }
+    explored.insert(block_id);
+
+    // Check if we enter a loop - add the corresponding node if necessary
+    if cfg.loop_entries.contains(&block_id) {
+        parent_loops.push_back((block_id, 1));
+        ordered_loops.push(block_id);
+    } else {
+        // Increase the distance with the parent loop
+        if !parent_loops.is_empty() {
+            parent_loops.get_mut(parent_loops.len() - 1).unwrap().1 += 1;
+        }
+    };
+
+    // Retrieve the children - note that we ignore the back edges
+    let children = cfg.cfg_no_be.neighbors(block_id);
+    for child in children {
+        // If the parent loop entry is not reachable from the child without going
+        // through a backward edge which goes directly to the loop entry, consider
+        // this node a potential exit.
+        match filter_loop_parents(cfg, &parent_loops, block_id) {
+            None => {
+                compute_loop_exit_candidates(
+                    cfg,
+                    explored,
+                    ordered_loops,
+                    loop_exits,
+                    parent_loops.clone(),
+                    child,
+                );
+            }
+            Some(fparent_loops) => {
+                // We filtered some parent loops: it means this child is a loop
+                // exit candidate. Register it.
+                register_loop_exit_candidate(loop_exits, &parent_loops, child);
+
+                // Explore, with the filtered parents
+                compute_loop_exit_candidates(
+                    cfg,
+                    explored,
+                    ordered_loops,
+                    loop_exits,
+                    fparent_loops,
+                    child,
+                );
+            }
+        }
+    }
+}
+
+/// TODO: explanations
+fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
+    let mut explored = HashSet::new();
+    let mut ordered_loops = Vec::new();
+    let mut loop_exits = HashMap::new();
+
+    // Initialize the loop exits candidates
+    for loop_id in &cfg.loop_entries {
+        loop_exits.insert(*loop_id, HashMap::new());
+    }
+
+    // Compute the candidates
+    compute_loop_exit_candidates(
+        cfg,
+        &mut explored,
+        &mut ordered_loops,
+        &mut loop_exits,
+        Vector::new(),
+        src::BlockId::ZERO,
+    );
+
+    // Choose one candidate among the potential candidates.
+    let mut exits: HashSet<src::BlockId::Id> = HashSet::new();
+    let mut chosen_loop_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>> = HashMap::new();
+    // For every loop
+    for loop_id in ordered_loops {
+        // Check the candidates.
+        // Ignore the candidates which have already been chosen as exits for other
+        // loops (which should be outer loops).
+        // We choose the exit with:
+        // - the most occurrences
+        // - the least total distance (if there are several possibilities)
+        let mut current_exit: Option<src::BlockId::Id> = None;
+        let mut occurrences = 0;
+        let mut total_dist = std::usize::MAX;
+
+        for (candidate_id, candidate_info) in loop_exits.get(&loop_id).unwrap().iter() {
+            // Candidate already selected for another loop: ignore
+            if exits.contains(candidate_id) {
+                continue;
+            }
+
+            if candidate_info.occurrences.len() > occurrences {
+                current_exit = Some(*candidate_id);
+                occurrences = candidate_info.occurrences.len();
+                total_dist = candidate_info.occurrences.iter().sum();
+            }
+        }
+
+        // Register the exit
+        match current_exit {
+            None => {
+                // No exit was found
+                chosen_loop_exits.insert(loop_id, None);
+            }
+            Some(exit_id) => {
+                exits.insert(exit_id);
+                chosen_loop_exits.insert(loop_id, Some(exit_id));
+            }
+        }
+    }
+
+    // Return the chosen exits
+    chosen_loop_exits
+}
+
+/// TODO: explanations
+fn compute_switch_exits_explore(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
     memoized: &mut HashMap<src::BlockId::Id, im::OrdSet<OrdBlockId>>,
@@ -280,7 +560,7 @@ fn perform_exit_analysis(
     let mut children_succs: Vec<im::OrdSet<OrdBlockId>> = Vec::from_iter(
         children
             .iter()
-            .map(|bid| perform_exit_analysis(cfg, tsort_map, memoized, *bid)),
+            .map(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid)),
     );
 
     // If there is exactly one child or less, it is trivial
@@ -339,13 +619,13 @@ fn perform_exit_analysis(
     succs
 }
 
-fn compute_loop_switch_exits(
+fn compute_switch_exits(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
 ) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
     // Compute the filtered successors map, starting at the root node
     let mut fsuccs_map = HashMap::new();
-    let _ = perform_exit_analysis(cfg, tsort_map, &mut fsuccs_map, src::BlockId::ZERO);
+    let _ = compute_switch_exits_explore(cfg, tsort_map, &mut fsuccs_map, src::BlockId::ZERO);
 
     // For every node which is a loop entry or a switch, retrieve the exit.
     // As the set of filtered successors is topologically sorted, the exit should be
@@ -362,6 +642,21 @@ fn compute_loop_switch_exits(
     }
 
     exits
+}
+
+fn compute_loop_switch_exits(
+    cfg: &CfgInfo,
+    // TODO: compute this one here
+    tsort_map: &HashMap<src::BlockId::Id, usize>,
+) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
+    let mut loop_exits = compute_loop_exits(cfg);
+    let switch_exits = compute_switch_exits(cfg, tsort_map);
+
+    for (bid, exit_id) in switch_exits {
+        loop_exits.insert(bid, exit_id);
+    }
+
+    loop_exits
 }
 
 fn combine_statement_and_expression(
