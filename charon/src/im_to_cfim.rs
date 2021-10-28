@@ -1,6 +1,7 @@
 //! IM to CFIM (Control-Flow Internal MIR)
 
 use crate::cfim_ast as tgt;
+use crate::id_vector::ToUsize;
 use crate::im_ast as src;
 use crate::translate_functions_to_im::FunTransContext;
 use crate::values::*;
@@ -620,7 +621,11 @@ fn compute_loop_switch_exits(
     let switch_exits = compute_switch_exits(cfg, tsort_map);
 
     for (bid, exit_id) in switch_exits {
-        loop_exits.insert(bid, exit_id);
+        // It is possible that a switch is actually a loop entry: *do not*
+        // override the exit in this case
+        if !loop_exits.contains_key(&bid) {
+            loop_exits.insert(bid, exit_id);
+        }
     }
 
     loop_exits
@@ -653,6 +658,15 @@ fn get_goto_kind(
     current_exit_block: Option<src::BlockId::Id>,
     next_block_id: src::BlockId::Id,
 ) -> GotoKind {
+    // TODO: remove
+    if next_block_id.to_usize() == 5 {
+        trace!(
+            "Found 5, parent loops: {:?}, exits_map: {:?}",
+            parent_loops,
+            exits_map
+        );
+    }
+
     // First explore the parent loops in revert order
     let len = parent_loops.len();
     for i in 0..len {
@@ -953,8 +967,8 @@ fn translate_expression(
     // If we just translated a loop or a switch, and there is an exit block,
     // we need to translate the exit block and concatenate the two expressions
     // we have as a sequence
-    if (is_loop || is_switch) && current_exit_block.is_some() {
-        let exit_block_id = current_exit_block.unwrap();
+    if (is_loop || is_switch) && ncurrent_exit_block.is_some() {
+        let exit_block_id = ncurrent_exit_block.unwrap();
         let next_exp = translate_expression(
             cfg,
             decl,

@@ -206,6 +206,7 @@ fn test_loop1(max: u32) -> u32 {
         i += 1;
     }
 
+    s *= 2;
     return s;
 }
 
@@ -319,4 +320,4 @@ fn test_match2() {
 // TODO: functions with no parameters (we should extract them to: () -> ...)
 // Test this on: top-level type declarations and functions and also impls.
 
-fn main() {}
+//fn main() {}
