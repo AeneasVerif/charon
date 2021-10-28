@@ -895,6 +895,46 @@ fn combine_expressions(
     }
 }
 
+fn is_terminal(exp: &tgt::Expression) -> bool {
+    is_terminal_explore(0, exp)
+}
+
+/// Return `true` if whatever the path we take, evaluating the expression
+/// necessarily leads to:
+/// - a panic or return
+/// - a break which goes to a loop outside the expression
+/// - a continue statement
+fn is_terminal_explore(num_loops: usize, exp: &tgt::Expression) -> bool {
+    match exp {
+        tgt::Expression::Statement(st) => match st {
+            tgt::Statement::Assign(_, _)
+            | tgt::Statement::FakeRead(_)
+            | tgt::Statement::SetDiscriminant(_, _)
+            | tgt::Statement::Drop(_)
+            | tgt::Statement::Assert(_)
+            | tgt::Statement::Call(_)
+            | tgt::Statement::Nop => false,
+            tgt::Statement::Panic | tgt::Statement::Return => true,
+            tgt::Statement::Break(index) => *index >= num_loops,
+            tgt::Statement::Continue(_index) => true,
+        },
+        tgt::Expression::Sequence(exp1, exp2) => {
+            if is_terminal_explore(num_loops, exp1) {
+                return true;
+            } else {
+                return is_terminal_explore(num_loops, exp2);
+            }
+        }
+        tgt::Expression::Switch(_, targets) => targets
+            .get_targets()
+            .iter()
+            .all(|tgt_exp| is_terminal_explore(num_loops, tgt_exp)),
+        tgt::Expression::Loop(loop_exp) => {
+            return is_terminal_explore(num_loops + 1, loop_exp);
+        }
+    }
+}
+
 fn translate_expression(
     cfg: &CfgInfo,
     decl: &src::FunDecl,
@@ -956,16 +996,23 @@ fn translate_expression(
     // we need to translate the exit block and concatenate the two expressions
     // we have as a sequence
     if (is_loop || is_switch) && ncurrent_exit_block.is_some() {
-        let exit_block_id = ncurrent_exit_block.unwrap();
-        let next_exp = translate_expression(
-            cfg,
-            decl,
-            exits_map,
-            parent_loops,
-            current_exit_block,
-            exit_block_id,
-        );
-        combine_expressions(exp, next_exp)
+        // We need to check that it is actually possible to get to the next
+        // block
+        let exp = exp.unwrap();
+        if is_loop || (is_switch && !is_terminal(&exp)) {
+            let exit_block_id = ncurrent_exit_block.unwrap();
+            let next_exp = translate_expression(
+                cfg,
+                decl,
+                exits_map,
+                parent_loops,
+                current_exit_block,
+                exit_block_id,
+            );
+            combine_expressions(Some(exp), next_exp)
+        } else {
+            Some(exp)
+        }
     } else {
         exp
     }

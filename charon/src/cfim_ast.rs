@@ -93,6 +93,23 @@ pub type FunDecls = DefId::Vector<FunDecl>;
 /// A function declaration
 pub type FunDecl = GFunDecl<Expression>;
 
+impl SwitchTargets {
+    pub fn get_targets(&self) -> Vec<&Expression> {
+        match self {
+            SwitchTargets::If(exp1, exp2) => {
+                vec![exp1, exp2]
+            }
+            SwitchTargets::SwitchInt(_, targets, otherwise) => {
+                let mut out: Vec<&Expression> = vec![otherwise];
+                for (_, tgt) in targets {
+                    out.push(tgt);
+                }
+                out
+            }
+        }
+    }
+}
+
 impl Statement {
     pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
     where

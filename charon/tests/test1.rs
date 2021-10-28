@@ -250,7 +250,8 @@ fn test_loop3(max: u32) -> u32 {
 
 /// Test with nested loops and breaks to outer loops.
 /// This test is a bit of a mistake: the `break 'outer` doesn't really make
-/// sense, but it leads to strange results after control-flow reconstruction.
+/// sense, but it initially lead to strange results after control-flow reconstruction
+/// (with some code duplicata).
 fn test_loop4(max: u32) -> u32 {
     let mut i = 0;
     let mut j = 0;
@@ -268,6 +269,22 @@ fn test_loop4(max: u32) -> u32 {
         j = 0;
         s += i;
         i += 1;
+    }
+
+    return s;
+}
+
+/// Just checking we don't generate interleaved loops (with the inner loop
+/// using a break or a continue to the outer loop).
+fn test_loop5(max: u32) -> u32 {
+    let mut i = 0;
+    let mut j = 0;
+    let mut s = 0;
+    while i < max {
+        while j < max {
+            s += j;
+        }
+        s += i;
     }
 
     return s;
