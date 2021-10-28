@@ -460,8 +460,6 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         src::BlockId::ZERO,
     );
 
-    trace!("Loop exits candidates: {:?}", loop_exits);
-
     // Choose one candidate among the potential candidates.
     let mut exits: HashSet<src::BlockId::Id> = HashSet::new();
     let mut chosen_loop_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>> = HashMap::new();
@@ -504,7 +502,6 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
     }
 
     // Return the chosen exits
-    trace!("Loop exits: {:?}", chosen_loop_exits);
     chosen_loop_exits
 }
 
@@ -658,15 +655,6 @@ fn get_goto_kind(
     current_exit_block: Option<src::BlockId::Id>,
     next_block_id: src::BlockId::Id,
 ) -> GotoKind {
-    // TODO: remove
-    if next_block_id.to_usize() == 5 {
-        trace!(
-            "Found 5, parent loops: {:?}, exits_map: {:?}",
-            parent_loops,
-            exits_map
-        );
-    }
-
     // First explore the parent loops in revert order
     let len = parent_loops.len();
     for i in 0..len {
