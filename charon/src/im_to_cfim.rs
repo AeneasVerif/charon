@@ -254,7 +254,7 @@ fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct LoopExitCandidateInfo {
     /// The occurrences going to this exit.
     /// For every occurrence, we register the distance between the loop entry
@@ -264,59 +264,18 @@ struct LoopExitCandidateInfo {
     pub occurrences: Vec<usize>,
 }
 
-/*fn compute_loop_exit_candidates(cfg: &CfgPartialInfo) {
-    let mut loop_exits: HashMap<
-        src::BlockId::Id,
-        HashMap<src::BlockId::Id, LoopExitCandidateInfo>,
-    > = HashMap::new();
-    for loop_id in &cfg.loop_entries {
-        loop_exits.insert(*loop_id, HashMap::new());
-    }
-
-    let mut explored: HashSet<src::BlockId::Id> = HashSet::new();
-    let mut stack: VecDeque<src::BlockId::Id> = VecDeque::new();
-    stack.push_back(src::BlockId::ZERO);
-
-    // We order the loop entries, to make sure we choose the exit nodes
-    // for the outer loops before the inner loops (outer loops and inner
-    // loops may have the same candidates, we give precedence to the outer
-    // loops).
-    let mut ordered_loop_entries: Vec<src::BlockId::Id> = Vec::new();
-
-    // Explore the graph
-    while !stack.is_empty() {
-        let block_id = stack.pop_front().unwrap();
-        if explored.contains(&block_id) {
-            continue;
-        }
-        explored.insert(block_id);
-
-        // Retrieve the children - note that we ignore the back edges
-        let children = cfg.cfg_no_be.neighbors(block_id);
-        for child in children {
-            // If the entry node is not reachable from the child (in the
-            // CFG with back edges), the child is an exit node candidate.
-            //            if (child,
-        }
-
-        unimplemented!();
-    }
-
-    unimplemented!();
-}*/
-
 /// Check if a loop entry is reachable from a node, in a graph where we remove
-/// the backward edges going to the loop entry.
+/// the backward edges going directly to the loop entry.
 ///
 /// If the loop entry is not reachable, it means that:
 /// - the loop entry is not reachable at all
-/// - it is reachable from an outer loop
+/// - or it is only reachable through an outer loop
 ///
 /// The starting node should be a (transitive) child of the loop entry.
 /// We use this to find candidates for loop exits.
 ///
 /// Rk.: this is not efficient at all.
-fn loop_entry_is_reachable(
+fn loop_entry_is_reachable_from_inner(
     cfg: &CfgInfo,
     loop_entry: src::BlockId::Id,
     block_id: src::BlockId::Id,
@@ -338,17 +297,22 @@ fn loop_entry_is_reachable(
         let mut prev_node = block_id;
         for n in path {
             if cfg.backward_edges.contains(&(prev_node, n)) {
-                continue 'outer;
+                if n == loop_entry {
+                    return true;
+                } else {
+                    continue 'outer;
+                }
             } else {
                 prev_node = n;
             }
         }
 
-        // If we get there, it means we successfully explored the path without
-        // finding a forbidden backward edge.
-        return true;
+        // If we get there, it means that the path contains no backward edge
+        // which is impossible
+        unreachable!();
     }
-    // No path was valid
+
+    // No path contains a backward edge which goes directly to the loop entry
     return false;
 }
 
@@ -360,7 +324,7 @@ fn filter_loop_parents(
     let mut eliminate: usize = 0;
     let mut distance: usize = 0;
     for (loop_id, ldist) in parent_loops.iter().rev() {
-        if !loop_entry_is_reachable(cfg, *loop_id, block_id) {
+        if !loop_entry_is_reachable_from_inner(cfg, *loop_id, block_id) {
             eliminate += 1;
             distance += *ldist;
         } else {
@@ -444,7 +408,7 @@ fn compute_loop_exit_candidates(
         // If the parent loop entry is not reachable from the child without going
         // through a backward edge which goes directly to the loop entry, consider
         // this node a potential exit.
-        match filter_loop_parents(cfg, &parent_loops, block_id) {
+        match filter_loop_parents(cfg, &parent_loops, child) {
             None => {
                 compute_loop_exit_candidates(
                     cfg,
@@ -495,6 +459,8 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         src::BlockId::ZERO,
     );
 
+    trace!("Loop exits candidates: {:?}", loop_exits);
+
     // Choose one candidate among the potential candidates.
     let mut exits: HashSet<src::BlockId::Id> = HashSet::new();
     let mut chosen_loop_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>> = HashMap::new();
@@ -537,6 +503,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
     }
 
     // Return the chosen exits
+    trace!("Loop exits: {:?}", chosen_loop_exits);
     chosen_loop_exits
 }
 
@@ -690,9 +657,12 @@ fn get_goto_kind(
     let len = parent_loops.len();
     for i in 0..len {
         let loop_id = parent_loops.get(len - i - 1).unwrap();
+
+        // If we goto a loop entry node: this is a 'continue'
         if next_block_id == *loop_id {
             return GotoKind::Continue(i);
         } else {
+            // If we goto a loop exit node: this is a 'break'
             match exits_map.get(&loop_id).unwrap() {
                 None => (),
                 Some(exit_id) => {
