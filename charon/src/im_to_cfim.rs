@@ -1,7 +1,6 @@
 //! IM to CFIM (Control-Flow Internal MIR)
 
 use crate::cfim_ast as tgt;
-use crate::id_vector::ToUsize;
 use crate::im_ast as src;
 use crate::translate_functions_to_im::FunTransContext;
 use crate::values::*;
@@ -14,7 +13,7 @@ use petgraph::algo::simple_paths::all_simple_paths;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use std::cmp::Ordering;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 pub type Decls = tgt::FunDecls;
@@ -485,6 +484,13 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
                 current_exit = Some(*candidate_id);
                 occurrences = candidate_info.occurrences.len();
                 total_dist = candidate_info.occurrences.iter().sum();
+            } else if candidate_info.occurrences.len() > occurrences {
+                let ntotal_dist = candidate_info.occurrences.iter().sum();
+                if ntotal_dist > total_dist {
+                    current_exit = Some(*candidate_id);
+                    occurrences = candidate_info.occurrences.len();
+                    total_dist = ntotal_dist;
+                }
             }
         }
 

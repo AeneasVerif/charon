@@ -8,13 +8,11 @@
 //! file doesn't correspond at all to the Statement definition from MIR.
 
 #![allow(dead_code)]
-use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::im_ast::*;
 use crate::types::*;
 use crate::values::*;
-use crate::vars::Name;
 use hashlink::linked_hash_map::LinkedHashMap;
 use macros::{EnumAsGetters, EnumIsA, VariantName};
 
