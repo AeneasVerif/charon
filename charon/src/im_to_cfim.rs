@@ -46,10 +46,10 @@ fn get_block_targets(decl: &src::FunDecl, block_id: src::BlockId::Id) -> Vec<src
     }
 }
 
-/// This structure contains the CFG for a function body, where all the backward
-/// edges have been removed.
-struct CfgNoBackEdges {
-    pub cfg: Cfg,
+/// This structure contains various information about a function's CFG
+struct CfgInfo {
+    /// The CFG where all the backward edges have been removed
+    pub cfg_no_be: Cfg,
     /// We consider the destination of the backward edges to be loop entries and
     /// store them here.
     pub loop_entries: HashSet<src::BlockId::Id>,
@@ -57,16 +57,16 @@ struct CfgNoBackEdges {
     pub switch_blocks: HashSet<src::BlockId::Id>,
 }
 
-fn build_cfg_no_back_edges(decl: &src::FunDecl) -> CfgNoBackEdges {
-    let mut cfg = CfgNoBackEdges {
-        cfg: Cfg::new(),
+fn build_cfg_no_back_edges(decl: &src::FunDecl) -> CfgInfo {
+    let mut cfg = CfgInfo {
+        cfg_no_be: Cfg::new(),
         loop_entries: HashSet::new(),
         switch_blocks: HashSet::new(),
     };
 
     // Add the nodes
     for block_id in decl.body.iter_indices() {
-        cfg.cfg.add_node(block_id);
+        cfg.cfg_no_be.add_node(block_id);
     }
 
     // Add the edges
@@ -82,7 +82,7 @@ fn block_is_switch(decl: &src::FunDecl, block_id: src::BlockId::Id) -> bool {
 }
 
 fn build_cfg_no_back_edges_edges(
-    cfg: &mut CfgNoBackEdges,
+    cfg: &mut CfgInfo,
     previous: &im::HashSet<src::BlockId::Id>,
     decl: &src::FunDecl,
     block_id: src::BlockId::Id,
@@ -106,7 +106,7 @@ fn build_cfg_no_back_edges_edges(
             cfg.loop_entries.insert(*tgt);
         } else {
             // Not a backward edge: insert the edge and explore
-            cfg.cfg.add_edge(block_id, *tgt, ());
+            cfg.cfg_no_be.add_edge(block_id, *tgt, ());
             build_cfg_no_back_edges_edges(cfg, &previous, decl, *tgt);
         }
     }
@@ -133,7 +133,7 @@ impl PartialOrd for OrdBlockId {
 
 /// Explanations: TODO
 fn find_filtered_successors(
-    cfg: &CfgNoBackEdges,
+    cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
     memoized: &mut HashMap<src::BlockId::Id, im::OrdSet<OrdBlockId>>,
     block_id: src::BlockId::Id,
@@ -147,7 +147,7 @@ fn find_filtered_successors(
     }
 
     // Find the next blocks, and their successors
-    let children: Vec<src::BlockId::Id> = Vec::from_iter(cfg.cfg.neighbors(block_id));
+    let children: Vec<src::BlockId::Id> = Vec::from_iter(cfg.cfg_no_be.neighbors(block_id));
     let mut children_succs: Vec<im::OrdSet<OrdBlockId>> = Vec::from_iter(
         children
             .iter()
@@ -211,7 +211,7 @@ fn find_filtered_successors(
 }
 
 fn compute_loop_switch_exits(
-    cfg: &CfgNoBackEdges,
+    cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
 ) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
     // Compute the filtered successors map, starting at the root node
@@ -297,7 +297,7 @@ enum GotoKind {
 }
 
 fn translate_child_expression(
-    cfg: &CfgNoBackEdges,
+    cfg: &CfgInfo,
     decl: &src::FunDecl,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
@@ -347,7 +347,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 }
 
 fn translate_terminator(
-    cfg: &CfgNoBackEdges,
+    cfg: &CfgInfo,
     decl: &src::FunDecl,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
@@ -500,7 +500,7 @@ fn combine_expressions(
 }
 
 fn translate_expression(
-    cfg: &CfgNoBackEdges,
+    cfg: &CfgInfo,
     decl: &src::FunDecl,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
@@ -581,12 +581,12 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
 
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
-    let cfg_no_be = build_cfg_no_back_edges(src_decl);
+    let cfg_info = build_cfg_no_back_edges(src_decl);
 
     // Use the CFG without backward edges to topologically sort the nodes.
     // Note that `toposort` returns `Err` if and only if it finds cycles (which
     // can't happen).
-    let tsorted: Vec<src::BlockId::Id> = toposort(&cfg_no_be.cfg, None).unwrap();
+    let tsorted: Vec<src::BlockId::Id> = toposort(&cfg_info.cfg_no_be, None).unwrap();
 
     // Build the map: block id -> topological sort rank
     let tsort_map: HashMap<src::BlockId::Id, usize> = HashMap::from_iter(
@@ -598,12 +598,12 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
 
     // Find the exit block for all the loops and switches, if such an exit point
     // exists.
-    let exits_map = compute_loop_switch_exits(&cfg_no_be, &tsort_map);
+    let exits_map = compute_loop_switch_exits(&cfg_info, &tsort_map);
 
     // Translate the body by reconstructing the loops and the conditional branchings.
     // Note that we shouldn't get `None`.
     let body_exp = translate_expression(
-        &cfg_no_be,
+        &cfg_info,
         &src_decl,
         &exits_map,
         Vector::new(),
