@@ -7,6 +7,7 @@ use crate::values::*;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
 use im::Vector;
+use petgraph::algo::dominators::simple_fast;
 use petgraph::algo::floyd_warshall::floyd_warshall;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
@@ -48,7 +49,7 @@ fn get_block_targets(decl: &src::FunDecl, block_id: src::BlockId::Id) -> Vec<src
 }
 
 /// This structure contains various information about a function's CFG.
-struct CfgInfo {
+struct CfgPartialInfo {
     /// The CFG
     pub cfg: Cfg,
     /// The CFG where all the backward edges have been removed
@@ -60,10 +61,24 @@ struct CfgInfo {
     pub switch_blocks: HashSet<src::BlockId::Id>,
 }
 
+/// Similar to `CfgPartialInfo`, but with more information
+struct CfgInfo {
+    pub cfg: Cfg,
+    pub cfg_no_be: Cfg,
+    pub loop_entries: HashSet<src::BlockId::Id>,
+    pub switch_blocks: HashSet<src::BlockId::Id>,
+    /// The reachability graph:
+    /// src can reach dest <==> (src, dest) in reachability
+    pub reachability: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
+    /// Dominators (on the CFG *without* back-edges):
+    /// n dominated by n' <==> (n, n') in dominated
+    pub dominated_no_be: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
+}
+
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
 /// compute some information like the loop entries and the switch blocks.
-fn build_cfg_partial_info(decl: &src::FunDecl) -> CfgInfo {
-    let mut cfg = CfgInfo {
+fn build_cfg_partial_info(decl: &src::FunDecl) -> CfgPartialInfo {
+    let mut cfg = CfgPartialInfo {
         cfg: Cfg::new(),
         cfg_no_be: Cfg::new(),
         loop_entries: HashSet::new(),
@@ -96,7 +111,7 @@ fn block_is_switch(decl: &src::FunDecl, block_id: src::BlockId::Id) -> bool {
 }
 
 fn build_cfg_partial_info_edges(
-    cfg: &mut CfgInfo,
+    cfg: &mut CfgPartialInfo,
     ancestors: &im::HashSet<src::BlockId::Id>,
     explored: &mut im::HashSet<src::BlockId::Id>,
     decl: &src::FunDecl,
@@ -166,8 +181,8 @@ struct LoopExitCandidate {
 /// Compute the reachability matrix for a graph.
 ///
 /// We represent the reachability matrix as a set such R that:
-/// (src, dest) in R <==> there exists a path from src to dest
-fn compute_reachability(cfg: &CfgInfo) -> HashSet<(src::BlockId::Id, src::BlockId::Id)> {
+/// there exists a path from src to dest <==> (src, dest) in R
+fn compute_reachability(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId::Id, src::BlockId::Id)> {
     // We simply use Floyd-Warshall.
     // We just need to be a little careful: we have to make sure the value we
     // use for infinity is never reached. That is to say, that there are stricly
@@ -192,8 +207,53 @@ fn compute_reachability(cfg: &CfgInfo) -> HashSet<(src::BlockId::Id, src::BlockI
     reachability
 }
 
+/// Compute the domination matrix, on the CFG *without* back edges.
+///
+/// We represent the domination matrix as a set R such that:
+/// n dominated by n' <==> (n, n') in R
+fn compute_dominated_no_be(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId::Id, src::BlockId::Id)> {
+    // We simply use tarjan
+    let dominators = simple_fast(&cfg.cfg_no_be, src::BlockId::ZERO);
+
+    let mut matrix = HashSet::new();
+
+    for n in cfg.cfg_no_be.nodes() {
+        match dominators.dominators(n) {
+            None => (),
+            Some(dominators) => {
+                for d in dominators {
+                    matrix.insert((n, d));
+                }
+            }
+        }
+    }
+
+    matrix
+}
+
+fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
+    let reachability = compute_reachability(&cfg);
+    let dominated_no_be = compute_dominated_no_be(&cfg);
+
+    let CfgPartialInfo {
+        cfg,
+        cfg_no_be,
+        loop_entries,
+        switch_blocks,
+    } = cfg;
+
+    CfgInfo {
+        cfg,
+        cfg_no_be,
+        loop_entries,
+        switch_blocks,
+        reachability,
+        dominated_no_be,
+    }
+}
+
 fn find_loop_exit_candidates(
-    cfg: &CfgInfo,
+    cfg: &CfgPartialInfo,
     loop_exits: &mut HashMap<src::BlockId::Id, HashMap<src::BlockId::Id, LoopExitCandidate>>,
     explored: &mut HashSet<src::BlockId::Id>,
 ) {
@@ -651,6 +711,7 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
     let cfg_info = build_cfg_partial_info(src_decl);
+    let cfg_info = compute_cfg_info_from_partial(cfg_info);
 
     // Use the CFG without backward edges to topologically sort the nodes.
     // Note that `toposort` returns `Err` if and only if it finds cycles (which
