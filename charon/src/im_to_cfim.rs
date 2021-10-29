@@ -844,17 +844,28 @@ fn compute_switch_exits(
 /// The following function thus computes the "exits" for loops and switches, which
 /// are basically the points where control-flow joins.
 fn compute_loop_switch_exits(
-    cfg: &CfgInfo,
-    // TODO: compute this one here
-    tsort_map: &HashMap<src::BlockId::Id, usize>,
+    cfg_info: &CfgInfo,
 ) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
+    // Use the CFG without backward edges to topologically sort the nodes.
+    // Note that `toposort` returns `Err` if and only if it finds cycles (which
+    // can't happen).
+    let tsorted: Vec<src::BlockId::Id> = toposort(&cfg_info.cfg_no_be, None).unwrap();
+
+    // Build the map: block id -> topological sort rank
+    let tsort_map: HashMap<src::BlockId::Id, usize> = HashMap::from_iter(
+        tsorted
+            .into_iter()
+            .enumerate()
+            .map(|(i, block_id)| (block_id, i)),
+    );
+
     // Compute the loop exits
-    let mut loop_exits = compute_loop_exits(cfg);
+    let mut loop_exits = compute_loop_exits(cfg_info);
 
     // Compute the switch exits
     let loop_exits_set: HashSet<src::BlockId::Id> =
         HashSet::from_iter(loop_exits.iter().filter_map(|(_, bid)| *bid));
-    let switch_exits = compute_switch_exits(cfg, tsort_map, &loop_exits_set);
+    let switch_exits = compute_switch_exits(cfg_info, &tsort_map, &loop_exits_set);
 
     // Put all this together
     for (bid, exit_id) in switch_exits {
@@ -1306,22 +1317,9 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
     let cfg_info = build_cfg_partial_info(src_decl);
     let cfg_info = compute_cfg_info_from_partial(cfg_info);
 
-    // Use the CFG without backward edges to topologically sort the nodes.
-    // Note that `toposort` returns `Err` if and only if it finds cycles (which
-    // can't happen).
-    let tsorted: Vec<src::BlockId::Id> = toposort(&cfg_info.cfg_no_be, None).unwrap();
-
-    // Build the map: block id -> topological sort rank
-    let tsort_map: HashMap<src::BlockId::Id, usize> = HashMap::from_iter(
-        tsorted
-            .into_iter()
-            .enumerate()
-            .map(|(i, block_id)| (block_id, i)),
-    );
-
     // Find the exit block for all the loops and switches, if such an exit point
     // exists.
-    let exits_map = compute_loop_switch_exits(&cfg_info, &tsort_map);
+    let exits_map = compute_loop_switch_exits(&cfg_info);
 
     // Translate the body by reconstructing the loops and the conditional branchings.
     // Note that we shouldn't get `None`.
