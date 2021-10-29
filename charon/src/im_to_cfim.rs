@@ -497,6 +497,10 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
             },
         ));
 
+        // Sanity check: we handle more general cases, but we should really have
+        // at most one candidate with strictly more than one occurrence.
+        assert!(loop_exits.iter().filter(|(_, occs, _)| *occs > 1).count() <= 1);
+
         // Second: actually select the proper candidate
         let mut best_exit: Option<src::BlockId::Id> = None;
         let mut best_occurrences = 0;
@@ -539,10 +543,10 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
     chosen_loop_exits
 }
 
-/// TODO: explanations
 fn compute_switch_exits_explore(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
+    loop_exits: &HashSet<src::BlockId::Id>,
     memoized: &mut HashMap<src::BlockId::Id, im::OrdSet<OrdBlockId>>,
     block_id: src::BlockId::Id,
 ) -> im::OrdSet<OrdBlockId> {
@@ -559,7 +563,7 @@ fn compute_switch_exits_explore(
     let mut children_succs: Vec<im::OrdSet<OrdBlockId>> = Vec::from_iter(
         children
             .iter()
-            .map(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid)),
+            .map(|bid| compute_switch_exits_explore(cfg, tsort_map, loop_exits, memoized, *bid)),
     );
 
     // If there is exactly one child or less, it is trivial
@@ -590,9 +594,9 @@ fn compute_switch_exits_explore(
     // there shouldn't be too many blocks in a function body), but rather
     // quality of the generated code. If the following works well but proves
     // to be too slow, we'll think of a way of making it faster.
-    // Note: another possibility would be to explore starting at the children
-    // of the current node, and stop once two explorations lead to the same
-    // block at some point: this should be the exit block.
+    // Note: actually, we could look only for *any* two pair of children
+    // whose successors intersection is non empty: I think it works in the
+    // general case.
     else {
         let mut max_inter_succs: im::OrdSet<OrdBlockId> = im::OrdSet::new();
 
@@ -603,7 +607,16 @@ fn compute_switch_exits_explore(
                 let inter_succs = i_succs.intersection(j_succs);
 
                 if inter_succs.len() > max_inter_succs.len() {
-                    max_inter_succs = inter_succs;
+                    // As the set of filtered successors is topologically sorted,
+                    // the exit should be the first node in the set (the set is
+                    // necessarily non empty).
+                    // We ignore candidates where the exit is actually a loop
+                    // exit (it can happen, if two branches of an if call end
+                    // with a `break` for instance).
+                    let exit = inter_succs.iter().next().unwrap();
+                    if !loop_exits.contains(&exit.id) {
+                        max_inter_succs = inter_succs;
+                    }
                 }
             }
         }
@@ -618,19 +631,27 @@ fn compute_switch_exits_explore(
     succs
 }
 
+/// TODO: explanations
 fn compute_switch_exits(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
+    loop_exits: &HashSet<src::BlockId::Id>,
 ) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
     // Compute the filtered successors map, starting at the root node
     let mut fsuccs_map = HashMap::new();
-    let _ = compute_switch_exits_explore(cfg, tsort_map, &mut fsuccs_map, src::BlockId::ZERO);
+    let _ = compute_switch_exits_explore(
+        cfg,
+        tsort_map,
+        loop_exits,
+        &mut fsuccs_map,
+        src::BlockId::ZERO,
+    );
 
-    // For every node which is a loop entry or a switch, retrieve the exit.
+    // For every node which is a switch, retrieve the exit.
     // As the set of filtered successors is topologically sorted, the exit should be
     // the first node in the set (if the set is non empty)
     let mut exits = HashMap::new();
-    for bid in cfg.loop_entries.iter().chain(cfg.switch_blocks.iter()) {
+    for bid in cfg.switch_blocks.iter() {
         let fsuccs = fsuccs_map.get(bid).unwrap();
         if fsuccs.is_empty() {
             exits.insert(*bid, None);
@@ -643,19 +664,40 @@ fn compute_switch_exits(
     exits
 }
 
+/// Compute the exits.
+/// TODO: comment
 fn compute_loop_switch_exits(
     cfg: &CfgInfo,
     // TODO: compute this one here
     tsort_map: &HashMap<src::BlockId::Id, usize>,
 ) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
+    // Compute the loop exits
     let mut loop_exits = compute_loop_exits(cfg);
-    let switch_exits = compute_switch_exits(cfg, tsort_map);
 
+    // Compute the switch exits
+    let loop_exits_set: HashSet<src::BlockId::Id> =
+        HashSet::from_iter(loop_exits.iter().filter_map(|(_, bid)| *bid));
+    let switch_exits = compute_switch_exits(cfg, tsort_map, &loop_exits_set);
+
+    // Put all this together
     for (bid, exit_id) in switch_exits {
         // It is possible that a switch is actually a loop entry: *do not*
-        // override the exit in this case
+        // override the exit in this case.
         if !loop_exits.contains_key(&bid) {
-            loop_exits.insert(bid, exit_id);
+            // Also, we ignore switch exits which are actually loop exits.
+            // Note that doing this shouldn't be necessary, because we actually
+            // don't consider switch exit candidates which are loop exits, but
+            // this may change.
+            match exit_id {
+                None => {
+                    let _ = loop_exits.insert(bid, None);
+                }
+                Some(exit_id) => {
+                    if !loop_exits_set.contains(&exit_id) {
+                        loop_exits.insert(bid, Some(exit_id));
+                    }
+                }
+            }
         }
     }
 
@@ -1054,6 +1096,7 @@ fn translate_expression(
         let exp = terminator.unwrap();
 
         // Concatenate the exit expression, if needs be
+        // TODO: I don't think the check is necessary anymore...
         let exp = if ncurrent_exit_block.is_some() && !is_terminal(&exp) {
             let exit_block_id = ncurrent_exit_block.unwrap();
             let next_exp = translate_expression(
