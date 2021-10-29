@@ -11,6 +11,7 @@ use crate::cfim_ast::*;
 use crate::expressions::*;
 use crate::types::*;
 use crate::values::*;
+use hashlink::linked_hash_map::LinkedHashMap;
 use std::iter::FromIterator;
 
 /// Return true iff: `place ++ [pelem] == full_place`
@@ -213,8 +214,22 @@ fn simplify_exp(exp: Expression) -> Expression {
             assert!(!statement_is_faillible_binop(&st));
             Expression::Statement(st)
         }
-        Expression::Switch(op, targets) => Expression::Switch(op, targets),
-        Expression::Loop(loop_body) => Expression::Loop(loop_body),
+        Expression::Switch(op, targets) => {
+            let targets = match targets {
+                SwitchTargets::If(exp1, exp2) => {
+                    SwitchTargets::If(Box::new(simplify_exp(*exp1)), Box::new(simplify_exp(*exp2)))
+                }
+                SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
+                    let targets = LinkedHashMap::from_iter(
+                        targets.into_iter().map(|(v, e)| (v, simplify_exp(e))),
+                    );
+                    let otherwise = simplify_exp(*otherwise);
+                    SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise))
+                }
+            };
+            Expression::Switch(op, targets)
+        }
+        Expression::Loop(loop_body) => Expression::Loop(Box::new(simplify_exp(*loop_body))),
         Expression::Sequence(exp1, exp2) => match *exp2 {
             Expression::Sequence(exp2, exp3) => {
                 match *exp3 {
