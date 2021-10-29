@@ -132,13 +132,9 @@ fn check_if_faillible_unchecked_binop(
     exp3: &Expression,
 ) -> bool {
     match exp3 {
-        Expression::Statement(Statement::Assign(_, Rvalue::BinaryOp(binop, _, _))) => match binop {
-            BinOp::Div | BinOp::Rem => {
-                check_if_simplifiable_unchecked_binop(exp1, exp2, exp3);
-                true
-            }
-            _ => false,
-        },
+        Expression::Statement(Statement::Assign(_, Rvalue::BinaryOp(binop, _, _))) => {
+            unchecked_binop_is_faillible(*binop)
+        }
         _ => false,
     }
 }
@@ -173,7 +169,7 @@ fn check_if_simplifiable_unchecked_binop(exp1: &Expression, exp2: &Expression, e
                 Rvalue::BinaryOp(binop, _dividend, Operand::Move(divisor)),
             )),
         ) => {
-            assert!(*binop == BinOp::Div || *binop == BinOp::Rem);
+            assert!(unchecked_binop_is_faillible(*binop));
             assert!(!(*expected));
             assert!(eq_op1 == divisor);
             assert!(eq_dest == cond_op);
@@ -205,23 +201,27 @@ fn simplify_unchecked_binop(_exp1: Expression, _exp2: Expression, exp3: Expressi
     exp3
 }
 
+fn unchecked_binop_is_faillible(binop: BinOp) -> bool {
+    match binop {
+        BinOp::BitXor
+        | BinOp::BitAnd
+        | BinOp::BitOr
+        | BinOp::Eq
+        | BinOp::Lt
+        | BinOp::Le
+        | BinOp::Ne
+        | BinOp::Ge
+        | BinOp::Gt => false,
+        BinOp::Div | BinOp::Rem => true,
+    }
+}
+
 /// Check if the statement is an assignment which uses a binop which can fail
 /// (it is a checked binop, or a binop with a precondition like division)
 fn statement_is_faillible_binop(st: &Statement) -> bool {
     match st {
         Statement::Assign(_, Rvalue::CheckedBinaryOp(_, _, _)) => true,
-        Statement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => match binop {
-            BinOp::BitXor
-            | BinOp::BitAnd
-            | BinOp::BitOr
-            | BinOp::Eq
-            | BinOp::Lt
-            | BinOp::Le
-            | BinOp::Ne
-            | BinOp::Ge
-            | BinOp::Gt => false,
-            BinOp::Div | BinOp::Rem => true,
-        },
+        Statement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => unchecked_binop_is_faillible(*binop),
         _ => false,
     }
 }
