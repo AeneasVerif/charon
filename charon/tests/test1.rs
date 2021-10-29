@@ -40,6 +40,26 @@ enum Sum<T1, T2> {
     Right(T2),
 }
 
+/// Testing binop simplification
+fn add_test(x: u32, y: u32) -> u32 {
+    x + y
+}
+
+/// Testing binop simplification
+fn subs_test(x: u32, y: u32) -> u32 {
+    x - y
+}
+
+/// Testing binop simplification
+fn div_test(x: u32, y: u32) -> u32 {
+    x / y
+}
+
+/// Testing binop simplification
+fn rem_test(x: u32, y: u32) -> u32 {
+    x % y
+}
+
 fn test2() {
     let x: u32 = 23;
     let y: u32 = 44;
@@ -231,7 +251,7 @@ fn test_loop3(max: u32) -> u32 {
     let mut j = 0;
     let mut s = 0;
     'outer: while i < max {
-        'inner: while j < max {
+        while j < max {
             if i + j == 17 {
                 continue;
             }
@@ -257,7 +277,7 @@ fn test_loop4(max: u32) -> u32 {
     let mut j = 0;
     let mut s = 0;
     'outer: while i < max {
-        'inner: while j < max {
+        while j < max {
             if i + j == 17 {
                 continue;
             }
@@ -277,8 +297,8 @@ fn test_loop4(max: u32) -> u32 {
 /// Just checking we don't generate interleaved loops (with the inner loop
 /// using a break or a continue to the outer loop).
 fn test_loop5(max: u32) -> u32 {
-    let mut i = 0;
-    let mut j = 0;
+    let i = 0;
+    let j = 0;
     let mut s = 0;
     while i < max {
         while j < max {
@@ -288,14 +308,6 @@ fn test_loop5(max: u32) -> u32 {
     }
 
     return s;
-}
-
-fn add_test(x: u32, y: u32) -> u32 {
-    x + y
-}
-
-fn div_test(x: u32, y: u32) -> u32 {
-    x / y
 }
 
 /*struct WrapShared<'a, T> {

@@ -62,16 +62,16 @@ fn check_if_simplifiable_checked_binop(
             }
 
             // We must have:
-            // cond_op == bp.0
-            // mr == bp.1
+            // cond_op == bp.1
+            // mr == bp.0
 
             return check_places_similar_but_last_proj_elem(
                 bp,
-                &ProjectionElem::Field(FieldId::Id::new(0)),
+                &ProjectionElem::Field(FieldId::Id::new(1)),
                 cond_op,
             ) && check_places_similar_but_last_proj_elem(
                 bp,
-                &ProjectionElem::Field(FieldId::Id::new(1)),
+                &ProjectionElem::Field(FieldId::Id::new(0)),
                 mr,
             );
         }
@@ -129,7 +129,7 @@ fn check_if_simplifiable_unchecked_binop(
                 eq_dest,
                 Rvalue::BinaryOp(
                     BinOp::Eq,
-                    eq_op1,
+                    Operand::Copy(eq_op1),
                     Operand::Constant(
                         _,
                         OperandConstantValue::ConstantValue(ConstantValue::Scalar(scalar_value)),
@@ -142,10 +142,10 @@ fn check_if_simplifiable_unchecked_binop(
             })),
             Expression::Statement(Statement::Assign(
                 _mp,
-                Rvalue::BinaryOp(binop, _dividend, divisor),
+                Rvalue::BinaryOp(binop, _dividend, Operand::Move(divisor)),
             )),
         ) => {
-            if *binop != BinOp::Div || *binop != BinOp::Rem {
+            if *binop != BinOp::Div && *binop != BinOp::Rem {
                 return false;
             }
 
@@ -153,8 +153,9 @@ fn check_if_simplifiable_unchecked_binop(
                 return false;
             }
 
-            assert!(eq_op1 == divisor);
-            assert!(eq_dest == cond_op);
+            if eq_op1 != divisor || eq_dest != cond_op {
+                return false;
+            }
             if scalar_value.is_int() {
                 return scalar_value.as_int().unwrap() == 0;
             } else {
@@ -263,6 +264,7 @@ fn simplify_exp(exp: Expression) -> Expression {
 }
 
 fn simplify_decl(mut decl: FunDecl) -> FunDecl {
+    trace!("About to simplify: {}", decl.name);
     decl.body = simplify_exp(decl.body);
     decl
 }
