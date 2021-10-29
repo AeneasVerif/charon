@@ -40,6 +40,16 @@ fn check_places_similar_but_last_proj_elem(
 fn check_if_checked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) -> bool {
     match exp1 {
         Expression::Statement(Statement::Assign(_, Rvalue::CheckedBinaryOp(_, _, _))) => {
+            // We found a checked binary op.
+            // Make sure this group of expressions should exactly match the
+            // following pattern:
+            //   ```
+            //   tmp := copy x + copy y; // Possibly a different binop
+            //   assert(move (tmp.1) == false);
+            //   dest := move (tmp.0);
+            //   ...
+            //   ```
+            // If it is note the case, we can't collapse...
             check_if_simplifiable_checked_binop(exp1, exp2, exp3);
             true
         }
@@ -49,9 +59,9 @@ fn check_if_checked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expressio
 
 /// Make sure the expressions match the following pattern:
 ///   ```
-///   var@5 := copy (var@3) + copy (var@4);
-///   assert(move ((var@5).1) == false);
-///   var@0 := move ((var@5).0);
+///   tmp := copy x + copy y; // Possibly a different binop
+///   assert(move (tmp.1) == false);
+///   dest := move (tmp.0);
 ///   ...
 ///   ```
 fn check_if_simplifiable_checked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) {
@@ -95,14 +105,14 @@ fn check_if_simplifiable_checked_binop(exp1: &Expression, exp2: &Expression, exp
 
 /// Simplify patterns of the form:
 ///   ```
-///   var@5 := copy (var@3) + copy (var@4);
-///   assert(move ((var@5).1) == false);
-///   var@0 := move ((var@5).0);
+///   tmp := copy x + copy y; // Possibly a different binop
+///   assert(move (tmp.1) == false);
+///   dest := move (tmp.0);
 ///   ...
 ///   ```
 /// to:
 ///   ```
-///   var@0 := copy (var@3) + copy (var@4);
+///   tmp := copy x + copy y; // Possibly a different binop
 ///   ...
 ///   ```
 /// Note that the type of the binop changes in the two situations (in the
@@ -133,7 +143,23 @@ fn check_if_faillible_unchecked_binop(
 ) -> bool {
     match exp3 {
         Expression::Statement(Statement::Assign(_, Rvalue::BinaryOp(binop, _, _))) => {
-            unchecked_binop_is_faillible(*binop)
+            if unchecked_binop_is_faillible(*binop) {
+                // We found an unchecked binop which should be simplified (division
+                // or remainder computation).
+                // Make sure the group of expressions exactly matches the following
+                // pattern:
+                //   ```
+                //   tmp := (copy divisor) == 0;
+                //   assert((move tmp) == false);
+                //   dest := move dividend / move divisor; // Can also be a `%`
+                //   ...
+                //   ```
+                // If it is note the case, we can't collapse...
+                check_if_simplifiable_unchecked_binop(exp1, exp2, exp3);
+                true
+            } else {
+                false
+            }
         }
         _ => false,
     }
@@ -141,9 +167,9 @@ fn check_if_faillible_unchecked_binop(
 
 /// Make sure the expressions match the following pattern:
 ///   ```
-///   var@5 := copy (var@4) == const (0 : u32);
-///   assert(move (var@5) == false);
-///   var@0 := move (var@3) / move (var@4);
+///   tmp := (copy divisor) == 0;
+///   assert((move tmp) == false);
+///   dest := move dividend / move divisor; // Can also be a `%`
 ///   ...
 ///   ```
 fn check_if_simplifiable_unchecked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) {
@@ -187,14 +213,14 @@ fn check_if_simplifiable_unchecked_binop(exp1: &Expression, exp2: &Expression, e
 
 /// Simplify patterns of the form:
 ///   ```
-///   var@5 := copy (var@4) == const (0 : u32);
-///   assert(move (var@5) == false);
-///   var@0 := move (var@3) / move (var@4);
+///   tmp := (copy divisor) == 0;
+///   assert((move tmp) == false);
+///   dest := move dividend / move divisor; // Can also be a `%`
 ///   ...
 ///   ```
 /// to:
 ///   ```
-///   var@0 := move (var@3) / move (var@4);
+///   dest := move dividend / move divisor; // Can also be a `%`
 ///   ...
 ///   ```
 fn simplify_unchecked_binop(_exp1: Expression, _exp2: Expression, exp3: Expression) -> Expression {
