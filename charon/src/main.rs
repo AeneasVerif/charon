@@ -221,12 +221,17 @@ fn translate(
     // # Step 6: go from IM to CFIM (Control-Flow Internal MIR) by reconstructing
     // the control flow.
     // Note that from now onwards, we don't interact with rustc anymore.
+    // TODO: write detailed comments in the file
     let cfim_decls = im_to_cfim::translate_functions(&im_decls);
 
     // # Step 7: simplify the calls to unops or binops
     let _cfim_decls = simplify_binops::simplify(cfim_decls);
 
     // # Step 8: reconstruct the asserts
+    // In the MIR AST, it seems `assert` are introduced to check preconditions
+    // (for the binops for example). The `assert!` introduced by the user
+    // introduce `if ... then { panic!(...) } else { ...}`.
+    // This pass introduces `assert` instead in order to make the code shorter.
     // TODO
 
     // # Step ?: generate the files.
