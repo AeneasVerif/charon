@@ -231,13 +231,20 @@ fn translate(
 
     for decl in &cfim_decls {
         trace!(
-            "# AFter binop simplification:\n{}\n",
+            "# After binop simplification:\n{}\n",
             decl.fmt_with_decls(&im_decls.tt_ctx.types, &cfim_decls)
         );
     }
 
     // # Step 8: reconstruct the asserts
     let cfim_decls = reconstruct_asserts::simplify(cfim_decls);
+
+    for decl in &cfim_decls {
+        trace!(
+            "# After asserts reconstruction:\n{}\n",
+            decl.fmt_with_decls(&im_decls.tt_ctx.types, &cfim_decls)
+        );
+    }
 
     // # Step ?: generate the files.
     Ok(())

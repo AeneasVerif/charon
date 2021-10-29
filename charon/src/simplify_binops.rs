@@ -34,7 +34,9 @@ fn check_places_similar_but_last_proj_elem(
     return false;
 }
 
-/// Simple check: just make sure the first expression is a binop
+/// Check if this is a group of expressions which should be collapsed to a
+/// single checked binop.
+/// Simply check if the first expression is a checked binop.
 fn check_if_checked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) -> bool {
     match exp1 {
         Expression::Statement(Statement::Assign(_, Rvalue::CheckedBinaryOp(_, _, _))) => {
@@ -121,6 +123,9 @@ fn simplify_checked_binop(exp1: Expression, exp2: Expression, exp3: Expression) 
     }
 }
 
+/// Check if this is a group of expressions which should be collapsed to a
+/// single unchecked binop.
+/// Simply check if the last expression is a division or a remainder computation.
 fn check_if_faillible_unchecked_binop(
     exp1: &Expression,
     exp2: &Expression,
