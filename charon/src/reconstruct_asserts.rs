@@ -48,14 +48,9 @@ fn simplify_exp(exp: Expression) -> Expression {
             }
         }
         Expression::Loop(loop_body) => Expression::Loop(Box::new(simplify_exp(*loop_body))),
-        Expression::Sequence(exp1, exp2) => match *exp2 {
-            Expression::Sequence(exp2, exp3) => {
-                Expression::Sequence(Box::new(simplify_exp(*exp2)), Box::new(simplify_exp(*exp3)))
-            }
-            exp2 => {
-                Expression::Sequence(Box::new(simplify_exp(*exp1)), Box::new(simplify_exp(exp2)))
-            }
-        },
+        Expression::Sequence(exp1, exp2) => {
+            Expression::Sequence(Box::new(simplify_exp(*exp1)), Box::new(simplify_exp(*exp2)))
+        }
     }
 }
 fn simplify_decl(mut decl: FunDecl) -> FunDecl {
