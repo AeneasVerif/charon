@@ -37,6 +37,7 @@ mod im_ast;
 mod im_to_cfim;
 mod register;
 mod reorder_decls;
+mod simplify_binops;
 mod translate_functions_to_im;
 mod translate_types;
 mod types;
@@ -220,7 +221,10 @@ fn translate(
     // # Step 6: go from IM to CFIM (Control-Flow Internal MIR) by reconstructing
     // the control flow.
     // Note that from now onwards, we don't interact with rustc anymore.
-    let _cfim_decls = im_to_cfim::translate_functions(&im_decls);
+    let cfim_decls = im_to_cfim::translate_functions(&im_decls);
+
+    // # Step 7: simplify the calls to unops or binops
+    let _cfim_decls = simplify_binops::simplify(cfim_decls);
 
     // TODO: simplify the calls to unops or binops
     // TODO: reconstruct asserts

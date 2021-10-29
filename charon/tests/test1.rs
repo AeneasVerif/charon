@@ -290,6 +290,14 @@ fn test_loop5(max: u32) -> u32 {
     return s;
 }
 
+fn add_test(x: u32, y: u32) -> u32 {
+    x + y
+}
+
+fn div_test(x: u32, y: u32) -> u32 {
+    x / y
+}
+
 /*struct WrapShared<'a, T> {
     x: &'a T,
 }
