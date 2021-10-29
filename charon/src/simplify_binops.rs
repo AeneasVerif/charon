@@ -34,18 +34,25 @@ fn check_places_similar_but_last_proj_elem(
     return false;
 }
 
-/// Look for pattern of the form:
+/// Simple check: just make sure the first expression is a binop
+fn check_if_checked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) -> bool {
+    match exp1 {
+        Expression::Statement(Statement::Assign(_, Rvalue::CheckedBinaryOp(_, _, _))) => {
+            check_if_simplifiable_checked_binop(exp1, exp2, exp3);
+            true
+        }
+        _ => false,
+    }
+}
+
+/// Make sure the expressions match the following pattern:
 ///   ```
 ///   var@5 := copy (var@3) + copy (var@4);
 ///   assert(move ((var@5).1) == false);
 ///   var@0 := move ((var@5).0);
 ///   ...
 ///   ```
-fn check_if_simplifiable_checked_binop(
-    exp1: &Expression,
-    exp2: &Expression,
-    exp3: &Expression,
-) -> bool {
+fn check_if_simplifiable_checked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) {
     match (exp1, exp2, exp3) {
         (
             Expression::Statement(Statement::Assign(
@@ -58,26 +65,28 @@ fn check_if_simplifiable_checked_binop(
             })),
             Expression::Statement(Statement::Assign(_mp, Rvalue::Use(Operand::Move(mr)))),
         ) => {
-            if *expected {
-                return false;
-            }
+            assert!(!(*expected));
 
             // We must have:
             // cond_op == bp.1
             // mr == bp.0
 
-            return check_places_similar_but_last_proj_elem(
+            let check1 = check_places_similar_but_last_proj_elem(
                 bp,
                 &ProjectionElem::Field(FieldId::Id::new(1)),
                 cond_op,
-            ) && check_places_similar_but_last_proj_elem(
+            );
+            assert!(check1);
+
+            let check2 = check_places_similar_but_last_proj_elem(
                 bp,
                 &ProjectionElem::Field(FieldId::Id::new(0)),
                 mr,
             );
+            assert!(check2);
         }
         _ => {
-            return false;
+            unreachable!();
         }
     }
 }
@@ -112,18 +121,31 @@ fn simplify_checked_binop(exp1: Expression, exp2: Expression, exp3: Expression) 
     }
 }
 
-/// Look for pattern of the form:
+fn check_if_faillible_unchecked_binop(
+    exp1: &Expression,
+    exp2: &Expression,
+    exp3: &Expression,
+) -> bool {
+    match exp3 {
+        Expression::Statement(Statement::Assign(_, Rvalue::BinaryOp(binop, _, _))) => match binop {
+            BinOp::Div | BinOp::Rem => {
+                check_if_simplifiable_unchecked_binop(exp1, exp2, exp3);
+                true
+            }
+            _ => false,
+        },
+        _ => false,
+    }
+}
+
+/// Make sure the expressions match the following pattern:
 ///   ```
 ///   var@5 := copy (var@4) == const (0 : u32);
 ///   assert(move (var@5) == false);
 ///   var@0 := move (var@3) / move (var@4);
 ///   ...
 ///   ```
-fn check_if_simplifiable_unchecked_binop(
-    exp1: &Expression,
-    exp2: &Expression,
-    exp3: &Expression,
-) -> bool {
+fn check_if_simplifiable_unchecked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) {
     match (exp1, exp2, exp3) {
         (
             Expression::Statement(Statement::Assign(
@@ -146,25 +168,18 @@ fn check_if_simplifiable_unchecked_binop(
                 Rvalue::BinaryOp(binop, _dividend, Operand::Move(divisor)),
             )),
         ) => {
-            if *binop != BinOp::Div && *binop != BinOp::Rem {
-                return false;
-            }
-
-            if *expected {
-                return false;
-            }
-
-            if eq_op1 != divisor || eq_dest != cond_op {
-                return false;
-            }
+            assert!(*binop == BinOp::Div || *binop == BinOp::Rem);
+            assert!(!(*expected));
+            assert!(eq_op1 == divisor);
+            assert!(eq_dest == cond_op);
             if scalar_value.is_int() {
-                return scalar_value.as_int().unwrap() == 0;
+                assert!(scalar_value.as_int().unwrap() == 0);
             } else {
-                return scalar_value.as_uint().unwrap() == 0;
+                assert!(scalar_value.as_uint().unwrap() == 0);
             }
         }
         _ => {
-            return false;
+            unreachable!();
         }
     }
 }
@@ -209,8 +224,7 @@ fn statement_is_faillible_binop(st: &Statement) -> bool {
 fn simplify_exp(exp: Expression) -> Expression {
     match exp {
         Expression::Statement(st) => {
-            // Check that we never have to simplify a statement which should
-            // have been simplified when seen in a statement sequence.
+            // Check that we never failed to simplify a binop
             assert!(!statement_is_faillible_binop(&st));
             Expression::Statement(st)
         }
@@ -235,33 +249,26 @@ fn simplify_exp(exp: Expression) -> Expression {
                 match *exp3 {
                     Expression::Sequence(exp3, exp4) => {
                         // Simplify checked binops
-                        if check_if_simplifiable_checked_binop(&exp1, &exp2, &exp3) {
+                        if check_if_checked_binop(&exp1, &exp2, &exp3) {
                             let exp = simplify_checked_binop(*exp1, *exp2, *exp3);
                             let exp4 = simplify_exp(*exp4);
                             return Expression::Sequence(Box::new(exp), Box::new(exp4));
                         }
-
                         // Simplify unchecked binops (division, modulo)
-                        // Pattern:
-                        //   ```
-                        //   var@5 := copy (var@4) == const (0 : u32);
-                        //   assert(move (var@5) == false);
-                        //   var@0 := move (var@3) / move (var@4);
-                        //   ```
-                        if check_if_simplifiable_unchecked_binop(&exp1, &exp2, &exp3) {
+                        if check_if_faillible_unchecked_binop(&exp1, &exp2, &exp3) {
                             let exp = simplify_unchecked_binop(*exp1, *exp2, *exp3);
                             let exp4 = simplify_exp(*exp4);
-                            Expression::Sequence(Box::new(exp), Box::new(exp4))
+                            return Expression::Sequence(Box::new(exp), Box::new(exp4));
                         }
                         // Not simplifyable
                         else {
-                            let exp2 = Expression::Sequence(
+                            let next_exp = Expression::Sequence(
                                 exp2,
                                 Box::new(Expression::Sequence(exp3, exp4)),
                             );
                             Expression::Sequence(
                                 Box::new(simplify_exp(*exp1)),
-                                Box::new(simplify_exp(exp2)),
+                                Box::new(simplify_exp(next_exp)),
                             )
                         }
                     }
