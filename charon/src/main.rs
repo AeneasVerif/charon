@@ -225,8 +225,16 @@ fn translate(
     // TODO: write detailed comments in the file
     let cfim_decls = im_to_cfim::translate_functions(&im_decls);
 
-    // # Step 7: simplify the calls to unops or binops
+    // # Step 7: simplify the calls to binops
+    // Note that we assume that the sequences have been flattened.
     let cfim_decls = simplify_binops::simplify(cfim_decls);
+
+    for decl in &cfim_decls {
+        trace!(
+            "# AFter binop simplification:\n{}\n",
+            decl.fmt_with_decls(&im_decls.tt_ctx.types, &cfim_decls)
+        );
+    }
 
     // # Step 8: reconstruct the asserts
     let cfim_decls = reconstruct_asserts::simplify(cfim_decls);

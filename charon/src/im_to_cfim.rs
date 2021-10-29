@@ -987,28 +987,25 @@ fn translate_expression(
             .filter_map(|st| translate_statement(st)),
     );
 
-    // Put the statements and the terminator together
-    let exp = combine_statements_and_expression(statements, terminator);
+    // We do different things if this is a loop, a switch (which is not
+    // a loop) or something else.
+    // Note that we need to do different treatments, because we don't
+    // concatenate the exit block the same way for loops and switches.
+    // In particular, for switches, we have to make sure we concatenate
+    // the exit block *before* concatenating the statements preceding
+    // the terminator, in order to avoid generating code of the form:
+    // ```
+    // e_prev; (s1; ...: sn; switch ...); e_switch_exit
+    // ```
+    if is_loop {
+        // Put the statements and the terminator together
+        let exp = combine_statements_and_expression(statements, terminator);
 
-    // If we just translated a loop, we need to put the loop body inside a
-    // `Loop` wrapper
-    let exp = if is_loop {
-        Some(tgt::Expression::Loop(Box::new(exp.unwrap())))
-    } else {
-        exp
-    };
+        // Put the whole loop body inside a `Loop` wrapper
+        let exp = tgt::Expression::Loop(Box::new(exp.unwrap()));
 
-    // If we just translated a loop or a switch, and there is an exit block,
-    // we need to translate the exit block and concatenate the two expressions
-    // we have as a sequence
-    if (is_loop || is_switch) && ncurrent_exit_block.is_some() {
-        // We need to check that it is actually possible to get to the next
-        // block. It might happen that the next block is actually the exit
-        // of an outer loop, and we directly use a break to get there
-        // (so we if we retranslate the next block, we duplicate it for
-        // nothing). This is maybe overkill...
-        let exp = exp.unwrap();
-        if is_loop || (is_switch && !is_terminal(&exp)) {
+        // Add the exit block
+        let exp = if ncurrent_exit_block.is_some() {
             let exit_block_id = ncurrent_exit_block.unwrap();
             let next_exp = translate_expression(
                 cfg,
@@ -1021,9 +1018,34 @@ fn translate_expression(
             combine_expressions(Some(exp), next_exp)
         } else {
             Some(exp)
-        }
-    } else {
+        };
+
         exp
+    } else if is_switch {
+        // Use the terminator
+        let exp = terminator.unwrap();
+
+        // Concatenate the exit expression, if needs be
+        let exp = if ncurrent_exit_block.is_some() && !is_terminal(&exp) {
+            let exit_block_id = ncurrent_exit_block.unwrap();
+            let next_exp = translate_expression(
+                cfg,
+                decl,
+                exits_map,
+                parent_loops,
+                current_exit_block,
+                exit_block_id,
+            );
+            combine_expressions(Some(exp), next_exp)
+        } else {
+            Some(exp)
+        };
+
+        // Concatenate the statements
+        combine_statements_and_expression(statements, exp)
+    } else {
+        // Simply concatenate the statements and the terminator
+        combine_statements_and_expression(statements, terminator)
     }
 }
 
