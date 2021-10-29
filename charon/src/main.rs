@@ -35,6 +35,7 @@ mod graphs;
 mod id_vector;
 mod im_ast;
 mod im_to_cfim;
+mod reconstruct_asserts;
 mod register;
 mod reorder_decls;
 mod simplify_binops;
@@ -228,7 +229,7 @@ fn translate(
     let cfim_decls = simplify_binops::simplify(cfim_decls);
 
     // # Step 8: reconstruct the asserts
-    //    let cfim_decls = reconstruct_asserts::reconstruct(cfim_decls);
+    let cfim_decls = reconstruct_asserts::simplify(cfim_decls);
 
     // # Step ?: generate the files.
     Ok(())
