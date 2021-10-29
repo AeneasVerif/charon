@@ -438,7 +438,75 @@ fn compute_loop_exit_candidates(
     }
 }
 
-/// TODO: explanations
+/// See [`compute_loop_switch_exits`](compute_loop_switch_exits) for
+/// explanations about what "exits" are.
+///
+/// The following function computes the loop exits. It acts as follows.
+///
+/// We keep track of a stack of the loops in which we entered.
+/// It is very easy to check when we enter a loop: loop entries are destinations
+/// of backward edges, which can be spotted with a simple graph exploration (see
+/// [`build_cfg_partial_info`](build_cfg_partial_info).
+/// The criteria to consider whether we exit a loop is the following:
+/// - we exit a loop if we go to a block from which we can't reach the loop
+///   entry at all
+/// - or if we can reach the loop entry, but must use a backward edge which goes
+///   to an outer loop
+///
+/// It is better explained on the following example:
+/// ```
+/// 'outer while i < max {
+///     'inner while j < max {
+///        j += 1;
+///     }
+///     // (i)
+///     i += 1;
+/// }
+/// ```
+/// If we enter the inner loop then go to (i) from the inner loop, we consider
+/// that we exited the outer loop because:
+/// - we can reach the entry of the inner loop from (i) (by finishing then
+///   starting again an iteration of the outer loop)
+/// - but doing this requires taking a backward edge which goes to the outer loop
+///
+/// Whenever we exit a loop, we save the block we went to as an exit candidate
+/// for this loop. Note that there may by many exit candidates. For instance,
+/// in the below example:
+/// ```
+/// while ... {
+///    ...
+///    if ... {
+///        // We can't reach the loop entry from here: this is an exit
+///        // candidate
+///        return;
+///    }
+/// }
+/// // This is another exit candidate - and this is the one we want to use
+/// // as the "real" exit...
+/// ...
+/// ```
+///
+/// Also note that it may happen that we go several times to the same exit (if
+/// we use breaks for instance): we record the number of times an exit candidate
+/// is used.
+///
+/// Once we listed all the exit candidates, we find the "best" one for every
+/// loop, starting with the outer loops. We start with outer loops because
+/// inner loops might use breaks to exit to the exit of outer loops: if we
+/// start with the inner loops, the exit which is "natural" for the outer loop
+/// might end up being used for one of the inner loops...
+///
+/// The best exit is the following one:
+/// - it is the one which is used the most times (actually, there should be
+///   at most one candidate which is referenced strictly more than once)
+/// - if several exits have the same number of occurrences (in which case all
+///   those candidates should be referenced once actually), we choose the one
+///   for which we goto the "earliest" (earliest meaning that the goto is close to
+///   the loop entry node in the AST). The reason is that all the loops should
+///   have an outer if ... then ... else ... which executes the loop body or goes
+///   to the exit (note that this is not necessarily the first
+///   if ... then ... else ... we find: loop conditions can be arbitrary
+///   expressions, containing branchings).
 fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
     let mut explored = HashSet::new();
     let mut ordered_loops = Vec::new();
@@ -631,7 +699,27 @@ fn compute_switch_exits_explore(
     succs
 }
 
-/// TODO: explanations
+/// See [`compute_loop_switch_exits`](compute_loop_switch_exits) for
+/// explanations about what "exits" are.
+///
+/// In order to compute the switch exits, we simply recursively compute a
+/// topologically ordered set of "filtered successors" as follows (note
+/// that we work in the CFG *without* back edges):
+/// - for a block which doesn't branch (only one successor), the filtered
+///   successors are the filtered sucessors of the successor, plus the
+///   successor itself
+/// - for a block which branches, we compute the filtered successors of
+///   all the successors (i.e, all the branches), and find the "best"
+///   intersection of successors.
+///   Note that we find the "best" intersection (a pair of branches which
+///   maximize the intersection of filtered successors) because some branches
+///   might never join the control-flow of the other branches, if they contain
+///   a `break`, `return`, `panic`, etc., like here:
+///   ```
+///   if b { x = 3; } { return; }
+///   y += x;
+///   ...
+///   ```
 fn compute_switch_exits(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
@@ -664,8 +752,97 @@ fn compute_switch_exits(
     exits
 }
 
-/// Compute the exits.
-/// TODO: comment
+/// Compute the exits for the loops and the switches (switch on integer and
+/// if ... then ... else ...). We need to do this because control-flow in MIR
+/// is destructured: we have gotos everywhere.
+///
+/// Let's consider the following piece of code:
+/// ```
+/// if cond1 { ... } else { ... };
+/// if cond2 { ... } else { ... };
+/// ```
+/// Once converted to MIR, the control-flow is destructured, which means we
+/// have gotos everywhere. When reconstructing the control-flow, we have
+/// to be careful about the point where we should join the two branches of
+/// the first if.
+/// For instance, if we don't notice they should be joined at some point (i.e,
+/// whatever the branch we take, there is a moment when we go to the exact
+/// same place, just before the second if), we might generate code like
+/// this, with some duplicata:
+/// ```
+/// if cond1 { ...; if cond2 { ... } else { ...} }
+/// else { ...; if cond2 { ... } else { ...} }
+/// ```
+///
+/// Such a reconstructed program is valid, but it is definitely non-optimal:
+/// it is very different from the original program (making it less clean and
+/// clear), more bloated, and might involve duplicating the proof effort.
+///
+/// For this reason, we need to find the "exit" of the first loop, which is
+/// the point where the two branches join. Note that this can be a bit tricky,
+/// because there may be more than two branches (if we do `switch(x) { ... }`),
+/// and some of them might not join (if they contain a `break`, `panic`,
+/// `return`, etc.).
+///
+/// Finally, some similar issues arise for loops. For instance, let's consider
+/// the following piece of code:
+/// ```
+/// while cond1 {
+///   e1;
+///   if cond2 {
+///     break;
+///   }
+///   e2;
+/// }
+/// e3;
+/// return;
+/// ```
+///
+/// Note that in MIR, the loop gets desugared to an if ... then ... else ....
+/// From the MIR, We want to generate something like this:
+/// ```
+/// loop {
+///   if cond1 {
+///     e1;
+///     if cond2 {
+///       break;
+///     }
+///     e2;
+///     continue;
+///   }
+///   else {
+///     break;
+///   }
+/// };
+/// e3;
+/// return;
+/// ```
+///
+/// But if we don't pay attention, we might end up with that, once again with
+/// duplications:
+/// ```
+/// loop {
+///   if cond1 {
+///     e1;
+///     if cond2 {
+///       e3;
+///       return;
+///     }
+///     e2;
+///     continue;
+///   }
+///   else {
+///     e3;
+///     return;
+///   }
+/// }
+/// ```
+/// We thus have to notice that if the loop condition is false, we goto the same
+/// block as when following the goto introduced by the break inside the loop, and
+/// this block is dubbed the "loop exit".
+///
+/// The following function thus computes the "exits" for loops and switches, which
+/// are basically the points where control-flow joins.
 fn compute_loop_switch_exits(
     cfg: &CfgInfo,
     // TODO: compute this one here
