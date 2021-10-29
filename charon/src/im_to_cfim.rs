@@ -459,6 +459,15 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         src::BlockId::ZERO,
     );
 
+    {
+        // Debugging
+        let mut candidates: Vec<String> = loop_exits
+            .iter()
+            .map(|(loop_id, candidates)| format!("{} -> {:?}", loop_id, candidates))
+            .collect();
+        trace!("Loop exit candidates:\n{}", candidates.join("\n"));
+    }
+
     // Choose one candidate among the potential candidates.
     let mut exits: HashSet<src::BlockId::Id> = HashSet::new();
     let mut chosen_loop_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>> = HashMap::new();
@@ -470,32 +479,51 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         // We choose the exit with:
         // - the most occurrences
         // - the least total distance (if there are several possibilities)
-        let mut current_exit: Option<src::BlockId::Id> = None;
-        let mut occurrences = 0;
-        let mut total_dist = std::usize::MAX;
 
-        for (candidate_id, candidate_info) in loop_exits.get(&loop_id).unwrap().iter() {
-            // Candidate already selected for another loop: ignore
-            if exits.contains(candidate_id) {
-                continue;
-            }
-
-            if candidate_info.occurrences.len() > occurrences {
-                current_exit = Some(*candidate_id);
-                occurrences = candidate_info.occurrences.len();
-                total_dist = candidate_info.occurrences.iter().sum();
-            } else if candidate_info.occurrences.len() > occurrences {
-                let ntotal_dist = candidate_info.occurrences.iter().sum();
-                if ntotal_dist > total_dist {
-                    current_exit = Some(*candidate_id);
-                    occurrences = candidate_info.occurrences.len();
-                    total_dist = ntotal_dist;
+        // First:
+        // - filter the candidates
+        // - compute the number of occurrences
+        // - compute the sum of distances
+        let loop_exits = Vec::from_iter(loop_exits.get(&loop_id).unwrap().iter().filter_map(
+            |(candidate_id, candidate_info)| {
+                // If candidate already selected for another loop: ignore
+                if exits.contains(candidate_id) {
+                    None
+                } else {
+                    let num_occurrences = candidate_info.occurrences.len();
+                    let dist_sum = candidate_info.occurrences.iter().sum();
+                    Some((*candidate_id, num_occurrences, dist_sum))
                 }
+            },
+        ));
+
+        // Second: actually select the proper candidate
+        let mut best_exit: Option<src::BlockId::Id> = None;
+        let mut best_occurrences = 0;
+        let mut best_dist_sum = std::usize::MAX;
+
+        for (candidate_id, occurrences, dist_sum) in loop_exits.iter() {
+            if (*occurrences > best_occurrences)
+                || (*occurrences == best_occurrences && *dist_sum < best_dist_sum)
+            {
+                best_exit = Some(*candidate_id);
+                best_occurrences = *occurrences;
+                best_dist_sum = *dist_sum;
             }
         }
 
+        // Sanity check: there are no two different candidates with exactly the
+        // same number of occurrences and dist sum (if it is the case, the exit
+        // node will not be deterministically chosen, which is a problem because
+        // the reconstruction algorithm is then non-deterministic).
+        let num_possible_candidates = loop_exits
+            .iter()
+            .filter(|(_, occs, dsum)| *occs == best_occurrences && *dsum == best_dist_sum)
+            .count();
+        assert!(num_possible_candidates <= 1);
+
         // Register the exit
-        match current_exit {
+        match best_exit {
             None => {
                 // No exit was found
                 chosen_loop_exits.insert(loop_id, None);
