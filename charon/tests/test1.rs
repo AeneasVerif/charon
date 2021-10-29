@@ -297,14 +297,16 @@ fn test_loop4(max: u32) -> u32 {
 /// Just checking we don't generate interleaved loops (with the inner loop
 /// using a break or a continue to the outer loop).
 fn test_loop5(max: u32) -> u32 {
-    let i = 0;
-    let j = 0;
+    let mut i = 0;
+    let mut j = 0;
     let mut s = 0;
     while i < max {
         while j < max {
             s += j;
+            j += 1;
         }
         s += i;
+        i += 1;
     }
 
     return s;

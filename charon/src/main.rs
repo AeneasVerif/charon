@@ -226,8 +226,8 @@ fn translate(
     // # Step 7: simplify the calls to unops or binops
     let _cfim_decls = simplify_binops::simplify(cfim_decls);
 
-    // TODO: simplify the calls to unops or binops
-    // TODO: reconstruct asserts
+    // # Step 8: reconstruct the asserts
+    // TODO
 
     // # Step ?: generate the files.
     Ok(())
