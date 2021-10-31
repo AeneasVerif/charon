@@ -25,7 +25,7 @@ macro_rules! index_generic_code {
         "pub mod {} {{
     #[derive(std::fmt::Debug, std::clone::Clone, std::marker::Copy,
              std::hash::Hash, std::cmp::PartialEq, std::cmp::Eq,
-             std::cmp::PartialOrd, std::cmp::Ord, serde::Serialize)]
+             std::cmp::PartialOrd, std::cmp::Ord)]
     pub struct Id {{
         index: usize,
     }}
@@ -77,6 +77,17 @@ macro_rules! index_generic_code {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) ->
           std::result::Result<(), std::fmt::Error> {{
             f.write_str(self.index.to_string().as_str())
+        }}
+    }}
+    
+    impl serde::Serialize for Id {{
+        fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {{
+            // usize is not necessarily contained in u32
+            assert!(self.index <= std::u32::MAX as usize);
+            serializer.serialize_u32(self.index as u32)
         }}
     }}
  
