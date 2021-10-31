@@ -8,21 +8,24 @@
 //! file doesn't correspond at all to the Statement definition from MIR.
 
 #![allow(dead_code)]
+use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::im_ast::*;
 use crate::types::*;
 use crate::values::*;
 use hashlink::linked_hash_map::LinkedHashMap;
-use macros::{EnumAsGetters, EnumIsA, VariantName};
+use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use serde::ser::SerializeTupleVariant;
+use serde::{Serialize, Serializer};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Assert {
     pub cond: Operand,
     pub expected: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Call {
     pub func: FunId,
     /// Technically this is useless, but we still keep it because we might
@@ -35,7 +38,7 @@ pub struct Call {
     pub dest: Place,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum Statement {
     Assign(Place, Rvalue),
     FakeRead(Place),
@@ -62,7 +65,7 @@ pub enum Statement {
     Nop,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
 pub enum SwitchTargets {
     /// Gives the `if` block and the `else` block
     If(Box<Expression>, Box<Expression>),
@@ -78,7 +81,7 @@ pub enum SwitchTargets {
     ),
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum Expression {
     Statement(Statement),
     Sequence(Box<Expression>, Box<Expression>),
@@ -105,6 +108,36 @@ impl SwitchTargets {
                 out
             }
         }
+    }
+}
+
+impl Serialize for SwitchTargets {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let enum_name = "SwitchTargets";
+        let variant_name = self.variant_name();
+        let (variant_index, variant_arity) = self.variant_index_arity();
+        let mut vs = serializer.serialize_tuple_variant(
+            enum_name,
+            variant_index,
+            variant_name,
+            variant_arity,
+        )?;
+        match self {
+            SwitchTargets::If(e1, e2) => {
+                vs.serialize_field(e1)?;
+                vs.serialize_field(e2)?;
+            }
+            SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
+                vs.serialize_field(int_ty)?;
+                let targets = LinkedHashMapSerializer::new(targets);
+                vs.serialize_field(&targets)?;
+                vs.serialize_field(otherwise)?;
+            }
+        }
+        vs.end()
     }
 }
 

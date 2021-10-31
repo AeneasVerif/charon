@@ -3,6 +3,7 @@
 //! at this point.
 #![allow(dead_code)]
 
+use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::types::*;
@@ -10,7 +11,9 @@ use crate::values::*;
 use crate::vars::Name;
 use hashlink::linked_hash_map::LinkedHashMap;
 use macros::generate_index_type;
-use macros::{EnumAsGetters, EnumIsA, VariantName};
+use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use serde::ser::SerializeTupleVariant;
+use serde::{Serialize, Serializer};
 use std::iter::FromIterator;
 
 // TODO: move this definition
@@ -27,7 +30,7 @@ pub static START_BLOCK_ID: BlockId::Id = BlockId::ZERO;
 /// We need the functions' signatures *with* the region parameters in order
 /// to correctly abstract those functions (number and signature of the backward
 /// functions) - we only use regions for this purpose.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct FunSig {
     pub region_params: RegionVarId::Vector<RegionVar>,
     /// The region parameters contain early bound and late bound parameters.
@@ -48,8 +51,8 @@ pub struct FunSig {
 }
 
 /// A function definition
-#[derive(Debug, Clone)]
-pub struct GFunDef<T: std::fmt::Debug + Clone> {
+#[derive(Debug, Clone, Serialize)]
+pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
     pub def_id: DefId::Id,
     pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
@@ -67,7 +70,7 @@ pub type FunDef = GFunDef<BlockId::Vector<BlockData>>;
 
 pub type FunDefs = DefId::Vector<FunDef>;
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum Statement {
     Assign(Place, Rvalue),
     FakeRead(Place),
@@ -75,7 +78,7 @@ pub enum Statement {
     StorageDead(VarId::Id),
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
 pub enum SwitchTargets {
     /// Gives the `if` block and the `else` block
     If(BlockId::Id, BlockId::Id),
@@ -92,7 +95,7 @@ pub enum SwitchTargets {
 }
 
 /// A function identifier. See [`Terminator`](Terminator)
-#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName)]
+#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum FunId {
     /// A function local to the crate, whose body we will translate.
     Local(DefId::Id),
@@ -103,7 +106,7 @@ pub enum FunId {
 
 /// An assumed function identifier, identifying a function coming from a
 /// standard library.
-#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters)]
+#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, Serialize)]
 pub enum AssumedFunId {
     /// `alloc::boxed::Box::new`
     BoxNew,
@@ -118,7 +121,7 @@ pub enum AssumedFunId {
     BoxFree,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum Terminator {
     Goto {
         target: BlockId::Id,
@@ -155,7 +158,7 @@ pub enum Terminator {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct BlockData {
     pub statements: Vec<Statement>,
     pub terminator: Terminator,
@@ -181,6 +184,36 @@ impl SwitchTargets {
     /// Perform a type substitution - actually simply clone the object
     pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
         self.clone()
+    }
+}
+
+impl Serialize for SwitchTargets {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let enum_name = "SwitchTargets";
+        let variant_name = self.variant_name();
+        let (variant_index, variant_arity) = self.variant_index_arity();
+        let mut vs = serializer.serialize_tuple_variant(
+            enum_name,
+            variant_index,
+            variant_name,
+            variant_arity,
+        )?;
+        match self {
+            SwitchTargets::If(id1, id2) => {
+                vs.serialize_field(id1)?;
+                vs.serialize_field(id2)?;
+            }
+            SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
+                vs.serialize_field(int_ty)?;
+                let targets = LinkedHashMapSerializer::new(targets);
+                vs.serialize_field(&targets)?;
+                vs.serialize_field(otherwise)?;
+            }
+        }
+        vs.end()
     }
 }
 
@@ -436,7 +469,7 @@ impl BlockData {
     }
 }
 
-impl<T: std::fmt::Debug + Clone> GFunDef<T> {
+impl<T: std::fmt::Debug + Clone + Serialize> GFunDef<T> {
     pub fn fmt_gbody_with_ctx<'a, 'b, 'c, C>(
         &'a self,
         tab: &'b str,
@@ -604,7 +637,7 @@ impl FunSig {
     }
 }
 
-impl<T: std::fmt::Debug + Clone> GFunDef<T> {
+impl<T: std::fmt::Debug + Clone + Serialize> GFunDef<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function definition already has the information to print

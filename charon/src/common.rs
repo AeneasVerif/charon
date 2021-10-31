@@ -1,10 +1,12 @@
 #![allow(dead_code)]
 
+use hashlink::linked_hash_map::LinkedHashMap;
 use im::Vector;
 use rustc_errors::DiagnosticId;
 use rustc_session::Session;
 use rustc_span::MultiSpan;
 use serde::{Serialize, Serializer};
+use std::iter::FromIterator;
 
 /// Our redefinition of Result - we don't care much about the I/O part.
 pub type Result<T> = std::result::Result<T, ()>;
@@ -219,5 +221,28 @@ impl<'a, T: Clone + Serialize> Serialize for VectorSerializer<'a, T> {
         S: Serializer,
     {
         serialize_vector(&self.vector, serializer)
+    }
+}
+
+/// Wrapper to serialize linked hash maps.
+///
+/// We need this because serialization is implemented via the trait system.
+pub struct LinkedHashMapSerializer<'a, K, V> {
+    pub map: &'a LinkedHashMap<K, V>,
+}
+
+impl<'a, K, V> LinkedHashMapSerializer<'a, K, V> {
+    pub fn new(map: &'a LinkedHashMap<K, V>) -> Self {
+        LinkedHashMapSerializer { map }
+    }
+}
+
+impl<'a, K: Serialize, V: Serialize> Serialize for LinkedHashMapSerializer<'a, K, V> {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let v = Vector::from_iter(self.map.iter());
+        serialize_vector(&v, serializer)
     }
 }
