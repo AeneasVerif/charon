@@ -1,4 +1,22 @@
 //! IM to CFIM (Control-Flow Internal MIR)
+//!
+//! The reconstruction algorithm is not written to be efficient (its complexity
+//! is probably very bad), but it was not written to be: this is still an early
+//! stage and we want the algorithm to generate the best reconstruction as
+//! possible. We still need to test the algorithm on more interesting examples,
+//! and will consider making it more efficient once it is a bit mature and well
+//! tested.
+//! Also note that we more importantly focus on making the algorithm sound: the
+//! reconstructed program must always be equivalent to the original MIR program,
+//! and the fact that the reconstruction preserves this property must be obvious.
+//!
+//! Finally, we conjecture the execution time shouldn't be too much a problem:
+//! we don't expect the translation mechanism to be applied on super huge functions
+//! (which will be difficult to formally analyze), and the MIR graphs are actually
+//! not that big because statements are grouped into code blocks (a block is made
+//! of a list of statements, followed by a terminator - branchings and jumps can
+//! only be performed by terminators -, meaning that MIR graphs don't have that many
+//! nodes and edges).
 
 use crate::cfim_ast as tgt;
 use crate::im_ast as src;
