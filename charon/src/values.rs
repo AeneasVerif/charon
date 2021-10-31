@@ -6,8 +6,8 @@ use crate::common::*;
 use crate::formatter::Formatter;
 use crate::types::*;
 use core::hash::Hash;
-use im::Vector;
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantName};
+use serde::Serialize;
 
 pub type VarName = String;
 
@@ -19,10 +19,8 @@ pub type VarName = String;
 generate_index_type!(DefId);
 generate_index_type!(VarId);
 
-pub type Queue<T> = Vector<T>;
-
 /// Variable
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Var {
     /// Unique index identifying the variable
     pub index: VarId::Id,
@@ -55,12 +53,6 @@ impl Var {
             ty: self.ty.substitute_types(subst),
         }
     }
-}
-
-/// We could use `()`, but having a dedicated type makes things more explicit
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum UnexpandedSymbolic {
-    Unexpanded,
 }
 
 pub fn var_id_to_pretty_string(id: VarId::Id) -> String {
@@ -101,7 +93,7 @@ impl Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)> for DummyFor
 }
 
 /// Constant value
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters)]
+#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, Serialize)]
 pub enum ConstantValue {
     Scalar(ScalarValue),
     Bool(bool),
@@ -109,7 +101,9 @@ pub enum ConstantValue {
     String(String),
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, VariantName, Hash)]
+#[derive(
+    Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, VariantName, Hash, Serialize,
+)]
 pub enum ScalarValue {
     Isize(isize),
     I8(i8),

@@ -1,10 +1,14 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
+use crate::common::*;
 use crate::formatter::Formatter;
 use crate::types::*;
 use crate::values;
 use crate::values::*;
+use im::Vector;
 use macros::{EnumAsGetters, EnumIsA, VariantName};
+use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Place {
@@ -12,9 +16,9 @@ pub struct Place {
     pub projection: Projection,
 }
 
-pub type Projection = Queue<ProjectionElem>;
+pub type Projection = Vector<ProjectionElem>;
 
-#[derive(Debug, PartialEq, Eq, Clone, VariantName)]
+#[derive(Debug, PartialEq, Eq, Clone, VariantName, Serialize)]
 pub enum ProjectionElem {
     /// Dereference a shared/mutable reference.
     Deref,
@@ -50,14 +54,14 @@ pub enum ProjectionElem {
     Downcast(VariantId::Id),
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum FieldProjKind {
     Adt(TypeDefId::Id, Option<VariantId::Id>),
     /// If we project from a tuple, the projection kind gives the arity of the
     Tuple(usize),
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum BorrowKind {
     Shared,
     Mut,
@@ -65,7 +69,7 @@ pub enum BorrowKind {
 }
 
 /// Unary operation
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
 pub enum UnOp {
     Not,
     /// This can overflow. In practice, rust introduces an assert before
@@ -76,7 +80,7 @@ pub enum UnOp {
 }
 
 /// Binary operation which requires no check.
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
 pub enum BinOp {
     BitXor,
     BitAnd,
@@ -97,7 +101,7 @@ pub enum BinOp {
 }
 
 /// Binary operation which requires a check
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
 pub enum CheckedBinOp {
     Add,
     Sub,
@@ -105,6 +109,19 @@ pub enum CheckedBinOp {
     Shl,
     Shr,
     // No Offset binary operation: this is an operation on raw pointers
+}
+
+impl Serialize for Place {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut s = serializer.serialize_struct("Place", 2)?;
+        s.serialize_field("var_id", &self.var_id)?;
+        let projection = VectorSerializer::new(&self.projection);
+        s.serialize_field("projection", &projection)?;
+        s.end()
+    }
 }
 
 impl std::fmt::Display for BorrowKind {
@@ -156,7 +173,7 @@ impl std::string::ToString for CheckedBinOp {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, EnumIsA, EnumAsGetters, VariantName)]
+#[derive(Debug, PartialEq, Eq, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum Operand {
     Copy(Place),
     Move(Place),
@@ -175,7 +192,7 @@ pub enum Operand {
 /// special cases in assignments. They are converted to "normal" values
 /// when evaluating the assignment (which is why we don't put them in the
 /// [`ConstantValue`](crate::ConstantValue] enumeration.
-#[derive(Debug, PartialEq, Eq, Clone, VariantName)]
+#[derive(Debug, PartialEq, Eq, Clone, VariantName, Serialize)]
 pub enum OperandConstantValue {
     ConstantValue(ConstantValue),
     /// Enumeration with one variant with no fields, or structure with
@@ -185,7 +202,7 @@ pub enum OperandConstantValue {
     Unit,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum Rvalue {
     Use(Operand),
     Ref(Place, BorrowKind),
@@ -216,7 +233,7 @@ pub enum Rvalue {
     Aggregate(AggregateKind, Vec<Operand>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum AggregateKind {
     Tuple,
     Adt(TypeDefId::Id, Option<VariantId::Id>),
