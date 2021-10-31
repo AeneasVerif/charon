@@ -617,8 +617,7 @@ fn compute_loop_exit_candidates(
 /// The best exit is the following one:
 /// - it is the one which is used the most times (actually, there should be
 ///   at most one candidate which is referenced strictly more than once)
-/// - if several exits have the same number of occurrences (in which case all
-///   those candidates should be referenced once actually), we choose the one
+/// - if several exits have the same number of occurrences, we choose the one
 ///   for which we goto the "earliest" (earliest meaning that the goto is close to
 ///   the loop entry node in the AST). The reason is that all the loops should
 ///   have an outer if ... then ... else ... which executes the loop body or goes
@@ -682,20 +681,6 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
                 }
             },
         ));
-
-        // Sanity check: we handle more general cases, but we should really have
-        // at most one candidate with strictly more than one occurrence.
-        // This check is not necessary: we don't actually use the fact that
-        // this assertion is true. However, we believe it should be true, and
-        // if it is not always the case it means there is something we
-        // misunderstood about the way MIR is generated, and it would be good
-        // to spot a counter-example and understand it correctly. Finally, in the
-        // future we might want to make explicit the fact that there can't be
-        // more than one candidate (after we selected the exits for the outer
-        // loops) with more than one occurrence, and thus, for instance, not
-        // store the distance between the gotos and the loop entries in such
-        // cases.
-        assert!(loop_exits.iter().filter(|(_, occs, _)| *occs > 1).count() <= 1);
 
         // Second: actually select the proper candidate
         let mut best_exit: Option<src::BlockId::Id> = None;

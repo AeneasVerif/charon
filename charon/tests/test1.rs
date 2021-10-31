@@ -312,6 +312,24 @@ fn test_loop5(max: u32) -> u32 {
     return s;
 }
 
+/// In this function, the loop has several exit candidates with a number of
+/// occurrences > 1.
+fn test_loop6(max: u32) -> u32 {
+    let mut i = 0;
+    let mut s = 0;
+    while i < max {
+        if i > 3 {
+            break;
+        }
+        s += i;
+        i += 1;
+    }
+
+    // All the below nodes are exit candidates (each of them is referenced twice)
+    s += 1;
+    return s;
+}
+
 /*struct WrapShared<'a, T> {
     x: &'a T,
 }
