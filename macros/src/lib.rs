@@ -25,7 +25,7 @@ macro_rules! index_generic_code {
         "pub mod {} {{
     #[derive(std::fmt::Debug, std::clone::Clone, std::marker::Copy,
              std::hash::Hash, std::cmp::PartialEq, std::cmp::Eq,
-             std::cmp::PartialOrd, std::cmp::Ord)]
+             std::cmp::PartialOrd, std::cmp::Ord, serde::Serialize)]
     pub struct Id {{
         index: usize,
     }}

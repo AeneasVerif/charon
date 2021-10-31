@@ -6,6 +6,7 @@ use crate::vars::*;
 use im::{HashMap, OrdSet, Vector};
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantName};
 use rustc_middle::ty::{IntTy, UintTy};
+use serde::Serialize;
 
 pub type FieldName = String;
 
@@ -23,7 +24,7 @@ generate_index_type!(RegionVarId);
 /// Type variable.
 /// We make sure not to mix variables and type variables by having two distinct
 /// definitions.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TypeVar {
     /// Unique index identifying the variable
     pub index: TypeVarId::Id,
@@ -32,7 +33,7 @@ pub struct TypeVar {
 }
 
 /// Region variable.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct RegionVar {
     /// Unique index identifying the variable
     pub index: RegionVarId::Id,
@@ -687,46 +688,6 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
                 }) && tys.iter().any(|x| x.contains_region_var(rset))
             }
         }
-    }
-}
-
-impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
-    fn region_vars_aux(&self, rset: &mut OrdSet<Rid>) {
-        match self {
-            Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => (),
-            Ty::Array(ty) | Ty::Slice(ty) => ty.region_vars_aux(rset),
-            Ty::Ref(r, _, _) => match r {
-                Region::Static => (),
-                Region::Var(rid) => {
-                    let _ = rset.insert(*rid);
-                }
-            },
-            Ty::Tuple(tys) => {
-                for ty in tys {
-                    ty.region_vars_aux(rset)
-                }
-            }
-            Ty::Adt(_, regions, tys) | Ty::Assumed(_, regions, tys) => {
-                for r in regions {
-                    match r {
-                        Region::Static => (),
-                        Region::Var(rid) => {
-                            let _ = rset.insert(*rid);
-                        }
-                    }
-                }
-                for ty in tys {
-                    ty.region_vars_aux(rset)
-                }
-            }
-        }
-    }
-
-    /// Return the list of region ids appearing in this type
-    pub fn region_vars(&self) -> OrdSet<Rid> {
-        let mut rset = OrdSet::new();
-        self.region_vars_aux(&mut rset);
-        rset
     }
 }
 
