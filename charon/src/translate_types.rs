@@ -193,7 +193,6 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
     // Explore the variants
     let mut var_id = ty::VariantId::Id::new(0); // Variant index
     let mut variants: Vec<ty::Variant> = vec![];
-    let mut variants_map: im::HashMap<String, ty::VariantId::Id> = im::HashMap::new();
     for var_def in adt.variants.iter() {
         trace!("variant {}: {:?}", var_id, var_def);
 
@@ -223,7 +222,6 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
         }
 
         let variant_name = var_def.ident.name.to_ident_string();
-        variants_map.insert(variant_name.clone(), var_id);
         variants.push(ty::Variant {
             name: variant_name,
             fields: ty::FieldId::Vector::from(fields),
@@ -242,20 +240,12 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
 
             let name = type_def_id_to_name(tcx, def_id)?;
             let fields = variants[0].fields.clone();
-            let mut fields_map = im::HashMap::new();
-            for i in 0..fields.len() {
-                let id = ty::FieldId::Id::new(i);
-                let f = fields.get(id).unwrap();
-                fields_map.insert(f.name.clone(), id);
-            }
-
             ty::TypeDecl::Struct(ty::StructDecl {
                 def_id: *trans_id,
                 name: Name::from(name),
                 region_params: region_params,
                 type_params: type_params,
                 fields: fields,
-                fields_map: fields_map,
             })
         }
         rustc_middle::ty::AdtKind::Enum => {
@@ -267,7 +257,6 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
                 region_params: region_params,
                 type_params: type_params,
                 variants: ty::VariantId::Vector::from(variants),
-                variants_map: variants_map,
             })
         }
         rustc_middle::ty::AdtKind::Union => {

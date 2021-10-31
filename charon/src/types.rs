@@ -73,8 +73,6 @@ pub struct EnumDecl {
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub variants: VariantId::Vector<Variant>,
-    // TODO: remove this field
-    pub variants_map: HashMap<String, VariantId::Id>,
 }
 
 #[derive(Debug, Clone)]
@@ -84,8 +82,6 @@ pub struct StructDecl {
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub fields: FieldId::Vector<Field>,
-    // TODO: remove this field
-    pub fields_map: HashMap<String, FieldId::Id>,
 }
 
 #[derive(Debug, Clone)]
