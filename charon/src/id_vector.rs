@@ -8,6 +8,7 @@
 //! Note that this data structure is implemented by using persistent vectors.
 //! This makes the clone operation almost a no-op.
 
+use serde::{Serialize, Serializer};
 use std::iter::{FromIterator, IntoIterator};
 
 pub use std::collections::hash_map::Iter as IterAll;
@@ -244,5 +245,20 @@ where
             vector: v.clone(),
             phantom: std::marker::PhantomData,
         }
+    }
+}
+
+impl<I: ToUsize, T: Clone + Serialize> Serialize for Vector<I, T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(Some(self.len()))?;
+        for e in self {
+            seq.serialize_element(e)?;
+        }
+        seq.end()
     }
 }

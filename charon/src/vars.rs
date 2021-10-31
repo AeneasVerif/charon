@@ -1,7 +1,9 @@
 //! Defines some utilities for the variables
 #![allow(dead_code)]
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+use serde::Serialize;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Name {
     name: Vec<String>,
 }

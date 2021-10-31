@@ -131,10 +131,22 @@ pub fn generate_index_type(item: TokenStream) -> TokenStream {
     }
 }
 
-macro_rules! derive_variant_printer_impl_code {
+macro_rules! derive_variant_name_impl_code {
     () => {
         "impl{} {}{}{} {{
-    pub fn variant_name(&self) -> String {{
+    pub fn variant_name(&self) -> &'static str {{
+        match self {{
+{}
+        }}
+    }}
+}}"
+    };
+}
+
+macro_rules! derive_variant_index_arity_impl_code {
+    () => {
+        "impl{} {}{}{} {{
+    pub fn variant_index_arity(&self) -> (u32, usize) {{
         match self {{
 {}
         }}
@@ -636,7 +648,7 @@ pub fn derive_variant_name(item: TokenStream) -> TokenStream {
                 .iter()
                 .map(|mp| {
                     format!(
-                        "{}{} => {{ \"{}\".to_string() }},",
+                        "{}{} => {{ \"{}\" }},",
                         THREE_TABS,
                         mp.match_pattern,
                         mp.variant_id.to_string()
@@ -656,7 +668,70 @@ pub fn derive_variant_name(item: TokenStream) -> TokenStream {
     if match_branches.len() > 0 {
         let match_branches = match_branches.join("\n");
         let impl_code = format!(
-            derive_variant_printer_impl_code!(),
+            derive_variant_name_impl_code!(),
+            generic_params_with_constraints,
+            adt_name,
+            generic_params_without_constraints,
+            where_clause,
+            match_branches
+        )
+        .to_string();
+        return impl_code.parse().unwrap();
+    } else {
+        "".parse().unwrap()
+    }
+}
+
+/// Macro to derive a function `fn variant_index_arity(&self) -> (u32, usize)`
+/// the pair (variant index, variant arity).
+/// Only works on enumerations, of course.
+#[proc_macro_derive(VariantIndexArity)]
+pub fn derive_variant_index_arity(item: TokenStream) -> TokenStream {
+    // Parse the input
+    let ast: DeriveInput = parse(item).unwrap();
+
+    // Generate the code
+    let adt_name = ast.ident.to_string();
+
+    // Retrieve and format the generic parameters
+    let generic_params_with_constraints = generic_params_to_string(&ast.generics.params);
+    let generic_params_without_constraints =
+        generic_params_without_constraints_to_string(&ast.generics.params);
+
+    // Generat the code for the `where` clause
+    let where_clause = opt_where_clause_to_string(&ast.generics.where_clause);
+
+    // Generate the code for the matches
+    let match_branches: Vec<String> = match &ast.data {
+        Data::Enum(data) => {
+            let patterns = generate_variant_match_patterns(&adt_name, data, None);
+            patterns
+                .iter()
+                .enumerate()
+                .map(|(i, mp)| {
+                    format!(
+                        "{}{} => {{ ({}, {}) }},",
+                        THREE_TABS,
+                        mp.match_pattern,
+                        i,
+                        mp.args.len()
+                    )
+                    .to_string()
+                })
+                .collect()
+        }
+        Data::Struct(_) => {
+            panic!("VariantIndex macro can not be called on structs");
+        }
+        Data::Union(_) => {
+            panic!("VariantIndex macro can not be called on unions");
+        }
+    };
+
+    if match_branches.len() > 0 {
+        let match_branches = match_branches.join("\n");
+        let impl_code = format!(
+            derive_variant_index_arity_impl_code!(),
             generic_params_with_constraints,
             adt_name,
             generic_params_without_constraints,

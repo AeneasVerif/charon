@@ -1,8 +1,10 @@
 #![allow(dead_code)]
 
+use im::Vector;
 use rustc_errors::DiagnosticId;
 use rustc_session::Session;
 use rustc_span::MultiSpan;
+use serde::{Serialize, Serializer};
 
 /// Our redefinition of Result - we don't care much about the I/O part.
 pub type Result<T> = std::result::Result<T, ()>;
@@ -184,4 +186,38 @@ macro_rules! error {
         let msg = format!($($arg)+);
         log::error!("[{}]:\n{}", function_name!(), msg)
     }};
+}
+
+pub fn serialize_vector<T: Clone + Serialize, S: Serializer>(
+    v: &Vector<T>,
+    serializer: S,
+) -> std::result::Result<S::Ok, S::Error> {
+    use serde::ser::SerializeSeq;
+    let mut seq = serializer.serialize_seq(Some(v.len()))?;
+    for e in v {
+        seq.serialize_element(e)?;
+    }
+    seq.end()
+}
+
+/// Wrapper to serialize vectors from im::Vector.
+///
+/// We need this because serialization is implemented via the trait system.
+pub struct VectorSerializer<'a, T: Clone> {
+    pub vector: &'a Vector<T>,
+}
+
+impl<'a, T: Clone> VectorSerializer<'a, T> {
+    pub fn new(vector: &'a Vector<T>) -> Self {
+        VectorSerializer { vector }
+    }
+}
+
+impl<'a, T: Clone + Serialize> Serialize for VectorSerializer<'a, T> {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serialize_vector(&self.vector, serializer)
+    }
 }

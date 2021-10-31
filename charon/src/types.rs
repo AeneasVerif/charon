@@ -1,12 +1,14 @@
 #![allow(dead_code)]
 
+use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector;
 use crate::vars::*;
 use im::{HashMap, OrdSet, Vector};
-use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantName};
+use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use rustc_middle::ty::{IntTy, UintTy};
-use serde::Serialize;
+use serde::ser::SerializeTupleVariant;
+use serde::{Serialize, Serializer};
 
 pub type FieldName = String;
 
@@ -44,7 +46,9 @@ pub struct RegionVar {
 /// Region as used in afunction's signatures (in which case we use region variable
 /// ids) and in symbolic variables and projections (in which case we use region
 /// ids).
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord, EnumIsA, EnumAsGetters)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord, EnumIsA, EnumAsGetters, Serialize,
+)]
 pub enum Region<Rid: Copy + Eq> {
     /// Static region
     Static,
@@ -54,7 +58,7 @@ pub enum Region<Rid: Copy + Eq> {
 
 /// The type of erased regions. See [`Ty`](Ty) for more explanations.
 /// We could use `()`, but having a dedicated type makes things more explicit.
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize)]
 pub enum ErasedRegion {
     Erased,
 }
@@ -62,7 +66,7 @@ pub enum ErasedRegion {
 /// A type definition.
 /// Can only be an ADT (structure or enumeration), as type aliases are inlined
 /// in MIR.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TypeDef {
     pub def_id: TypeDefId::Id,
     pub name: Name,
@@ -71,25 +75,25 @@ pub struct TypeDef {
     pub kind: TypeDefKind,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum TypeDefKind {
     Struct(FieldId::Vector<Field>),
     Enum(VariantId::Vector<Variant>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Variant {
     pub name: String,
     pub fields: FieldId::Vector<Field>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Field {
     pub name: String,
     pub ty: RTy,
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
 pub enum IntegerTy {
     Isize,
     I8,
@@ -105,7 +109,7 @@ pub enum IntegerTy {
     U128,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumIsA)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumIsA, Serialize)]
 pub enum RefKind {
     Mut,
     Shared,
@@ -119,7 +123,7 @@ pub enum RefKind {
 /// error prone) in our encoding by using two different types: [`Region`](Region)
 /// and [`ErasedRegion`](ErasedRegion), the latter being an enumeration with only
 /// one variant.
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters)]
+#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum Ty<R>
 where
     R: Clone + std::cmp::Eq,
@@ -173,7 +177,7 @@ pub type ETy = Ty<ErasedRegion>;
 /// parameters (if there are). Adding types which don't satisfy this
 /// will require to update the code abstracting the signatures (to properly
 /// take into account the lifetime constraints).
-#[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIsA, EnumAsGetters, VariantName)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum AssumedTy {
     /// Boxes have a special treatment: we translate them as identity.
     Box,
@@ -927,5 +931,63 @@ impl Formatter<TypeDefId::Id> for TypeDefs {
     fn format_object(&self, id: TypeDefId::Id) -> String {
         let def = self.get_type_def(id).unwrap();
         def.name.to_string()
+    }
+}
+
+impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let enum_name = "Ty";
+        let variant_name = self.variant_name();
+        let (variant_index, variant_arity) = self.variant_index_arity();
+        let mut vs = serializer.serialize_tuple_variant(
+            enum_name,
+            variant_index,
+            variant_name,
+            variant_arity,
+        )?;
+        match self {
+            Ty::Adt(def_id, regions, tys) => {
+                vs.serialize_field(def_id)?;
+                let regions = VectorSerializer::new(regions);
+                vs.serialize_field(&regions)?;
+                let tys = VectorSerializer::new(tys);
+                vs.serialize_field(&tys)?;
+            }
+            Ty::TypeVar(var_id) => {
+                vs.serialize_field(var_id)?;
+            }
+            Ty::Bool | Ty::Char | Ty::Never | Ty::Str => {
+                // No fields to serialize
+            }
+            Ty::Integer(int_ty) => {
+                vs.serialize_field(int_ty)?;
+            }
+            Ty::Array(ty) => {
+                vs.serialize_field(ty)?;
+            }
+            Ty::Slice(ty) => {
+                vs.serialize_field(ty)?;
+            }
+            Ty::Ref(region, ty, ref_kind) => {
+                vs.serialize_field(region)?;
+                vs.serialize_field(ty)?;
+                vs.serialize_field(ref_kind)?;
+            }
+            Ty::Tuple(tys) => {
+                let tys = VectorSerializer::new(tys);
+                vs.serialize_field(&tys)?;
+            }
+            Ty::Assumed(aty, regions, tys) => {
+                vs.serialize_field(aty)?;
+                let regions = VectorSerializer::new(regions);
+                vs.serialize_field(&regions)?;
+                let tys = VectorSerializer::new(tys);
+                vs.serialize_field(&tys)?;
+            }
+        }
+        vs.end()
     }
 }
