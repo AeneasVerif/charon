@@ -158,7 +158,7 @@ where
 }
 
 /// Type with *R*egions.
-/// Used in function signatures and type declarations.
+/// Used in function signatures and type definitions.
 pub type RTy = Ty<Region<RegionVarId::Id>>;
 
 /// Type with *E*rased regions.
@@ -225,7 +225,7 @@ impl<Rid1: Copy + Eq + Ord + std::hash::Hash> Region<Rid1> {
 }
 
 /// Type context.
-/// Contains type declarations and function signatures.
+/// Contains type definitions and function signatures.
 #[derive(Clone)]
 pub struct TypeDefs {
     pub types: TypeDefId::Vector<TypeDef>,
@@ -957,14 +957,14 @@ impl TypeDefs {
         }
     }
 
-    pub fn get_type_decl(&self, type_id: TypeDefId::Id) -> Option<&TypeDef> {
+    pub fn get_type_def(&self, type_id: TypeDefId::Id) -> Option<&TypeDef> {
         self.types.get(type_id)
     }
 }
 
 impl Formatter<TypeDefId::Id> for TypeDefs {
     fn format_object(&self, id: TypeDefId::Id) -> String {
-        let decl = self.get_type_decl(id).unwrap();
-        decl.name.to_string()
+        let def = self.get_type_def(id).unwrap();
+        def.name.to_string()
     }
 }

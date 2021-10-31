@@ -33,7 +33,7 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name, TypeTransContext};
 
-// Assumed functions/trait declarations
+// Assumed functions/trait definitions
 pub static PANIC_NAME: [&str; 3] = ["core", "panicking", "panic"];
 pub static BEGIN_PANIC_NAME: [&str; 3] = ["std", "panicking", "begin_panic"];
 pub static BOX_NEW_NAME: [&str; 4] = ["alloc", "boxed", "Box", "new"];
@@ -41,15 +41,15 @@ pub static DEREF_DEREF_NAME: [&str; 5] = ["core", "ops", "deref", "Deref", "dere
 pub static DEREF_DEREF_MUT_NAME: [&str; 5] = ["core", "ops", "deref", "DerefMut", "deref_mut"];
 pub static BOX_FREE_NAME: [&str; 3] = ["alloc", "alloc", "box_free"];
 
-/// Translation context for function declarations (contains a type context)
+/// Translation context for function definitions (contains a type context)
 pub struct FunTransContext {
     /// Type translation context
     pub tt_ctx: TypeTransContext,
-    /// The function declarations
-    pub decls: ast::FunDefs,
+    /// The function definitions
+    pub defs: ast::FunDefs,
     /// A map telling us whether functions are divergent or not
     pub divergent: HashMap<v::DefId::Id, bool>,
-    fun_decl_id_generator: v::DefId::Generator,
+    fun_def_id_generator: v::DefId::Generator,
     /// Map from rust function identifiers to translation identifiers.
     /// The equivalent map for types is in the type translation context.
     pub fun_rid_to_id: HashMap<DefId, v::DefId::Id>,
@@ -106,15 +106,15 @@ impl FunTransContext {
     fn new(tt_ctx: TypeTransContext) -> FunTransContext {
         FunTransContext {
             tt_ctx: tt_ctx,
-            decls: ast::FunDefs::new(),
+            defs: ast::FunDefs::new(),
             divergent: HashMap::new(),
-            fun_decl_id_generator: v::DefId::Generator::new(),
+            fun_def_id_generator: v::DefId::Generator::new(),
             fun_rid_to_id: HashMap::new(),
         }
     }
 
     fn fresh_def_id(&mut self) -> v::DefId::Id {
-        self.fun_decl_id_generator.fresh_id()
+        self.fun_def_id_generator.fresh_id()
     }
 
     fn get_def_id_from_rid(&self, def_id: DefId) -> Option<v::DefId::Id> {
@@ -217,7 +217,7 @@ impl<'ctx> BodyTransContext<'ctx> {
         self.blocks.insert(id, block);
     }
 
-    fn get_type_decls(&self) -> &ty::TypeDefs {
+    fn get_type_defs(&self) -> &ty::TypeDefs {
         &self.ft_ctx.tt_ctx.types
     }
 }
@@ -315,7 +315,7 @@ fn translate_body_locals<'ctx>(
     // First, retrieve the debug info - we want to retrieve the names
     // of the variables (which otherwise are just referenced with indices).
     // This is mostly to generate a clean and readable translation later on.
-    // It seems the only way of linking the local decls to the debug info is
+    // It seems the only way of linking the locals to the debug info is
     // through the spans.
     let mut span_to_var_name: im::OrdMap<Span, String> = im::OrdMap::new();
     for info in &body.var_debug_info {
@@ -428,7 +428,7 @@ fn translate_place<'ctx, 'tcx>(
 /// references and to move values from inside a box. On our side, we distinguish
 /// the two kinds of dereferences.
 fn translate_projection<'tcx>(
-    type_decls: &ty::TypeDefs,
+    type_defs: &ty::TypeDefs,
     var_ty: ty::ETy,
     rprojection: &'tcx rustc_middle::ty::List<PlaceElem<'tcx>>,
 ) -> e::Projection {
@@ -470,7 +470,7 @@ fn translate_projection<'tcx>(
                 let field_id = translate_field(field);
                 match path_type {
                     ty::Ty::Adt(type_id, _regions, tys) => {
-                        let type_def = type_decls.get_type_decl(type_id).unwrap();
+                        let type_def = type_defs.get_type_def(type_id).unwrap();
 
                         // If (and only if) the ADT is an enumartion, we should
                         // have downcast knformation (that we need to figure out
@@ -694,13 +694,13 @@ fn translate_operand_constant_value<'tcx>(
 
                     // Retrieve the definition
                     let id = tt_ctx.rid_to_id.get(&adt_def.did).unwrap();
-                    let decl = tt_ctx.types.get_type_decl(*id).unwrap();
+                    let def = tt_ctx.types.get_type_def(*id).unwrap();
 
                     // Check that there is only one variant, with no fields
                     // and no parameters. Construct the value at the same time.
                     assert!(substs.len() == 0);
-                    assert!(decl.type_params.len() == 0);
-                    match &decl.kind {
+                    assert!(def.type_params.len() == 0);
+                    match &def.kind {
                         ty::TypeDefKind::Enum(variants) => {
                             assert!(variants.len() == 1);
                         }
@@ -1014,11 +1014,11 @@ fn translate_rvalue<'ctx, 'tcx>(
                     assert!(user_annotation.is_none());
                     assert!(field_index.is_none());
 
-                    // Retrieve the declaration
+                    // Retrieve the definition
                     let id_t = *bt_ctx.ft_ctx.tt_ctx.rid_to_id.get(&adt_def.did).unwrap();
-                    let decl = bt_ctx.get_type_decls().get_type_decl(id_t).unwrap();
+                    let def = bt_ctx.get_type_defs().get_type_def(id_t).unwrap();
 
-                    let akind = match &decl.kind {
+                    let akind = match &def.kind {
                         ty::TypeDefKind::Enum(variants) => {
                             let variant_id = translate_variant_id(*variant_idx);
                             assert!(
@@ -1361,7 +1361,7 @@ fn defpathdata_to_value_ns(data: DefPathData) -> Option<String> {
     }
 }
 
-/// A function declaration can be top-level, or can be defined in an `impl`
+/// A function definition can be top-level, or can be defined in an `impl`
 /// block. In this case, we might want to retrieve the type for which the
 /// impl block was defined. This function returns this type's def id if
 /// the function def id given as input was defined in an impl block, and
@@ -1394,7 +1394,7 @@ fn get_impl_parent_type_def_id(tcx: &TyCtxt, def_id: DefId) -> Option<DefId> {
     // Match on the parent key
     let parent = match parent_def_key.disambiguated_data.data {
         rustc_hir::definitions::DefPathData::Impl => {
-            // Parent is an impl block! Retrieve the type declaration (it
+            // Parent is an impl block! Retrieve the type definition (it
             // seems that `type_of` is the only way of getting it)
             let parent_type = tcx.type_of(parent_def_id);
 
@@ -1425,7 +1425,7 @@ fn function_def_id_to_name(tcx: &TyCtxt, def_id: DefId) -> Name {
     // We have to be a bit careful when retrieving the name. For instance, due
     // to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
     // different names depending on the def id on which it is called, even though
-    // those def ids might actually identify the same declaration.
+    // those def ids might actually identify the same definition.
     // For instance: `std::boxed::Box` and `alloc::boxed::Box` are actually
     // the same (the first one is a reexport).
 
@@ -2124,7 +2124,7 @@ fn translate_function(
         assert!(id.to_usize() == blocks.len());
         blocks.push_back(block);
     }
-    let fun_decl = ast::FunDef {
+    let fun_def = ast::FunDef {
         def_id,
         name,
         signature,
@@ -2134,7 +2134,7 @@ fn translate_function(
         body: blocks,
     };
 
-    Ok(fun_decl)
+    Ok(fun_def)
 }
 
 /// Translate the functions
@@ -2171,17 +2171,17 @@ pub fn translate_functions(
         use crate::id_vector::ToUsize;
         match decl {
             Declaration::Fun(def_id) => {
-                let fun_decl = translate_function(tcx, &mut ft_ctx, *def_id)?;
+                let fun_def = translate_function(tcx, &mut ft_ctx, *def_id)?;
                 let id = ft_ctx.fun_rid_to_id.get(def_id).unwrap();
-                assert!(id.to_usize() == ft_ctx.decls.len());
-                ft_ctx.decls.push_back(fun_decl);
+                assert!(id.to_usize() == ft_ctx.defs.len());
+                ft_ctx.defs.push_back(fun_def);
             }
             Declaration::RecFuns(ids) => {
                 for def_id in ids {
-                    let fun_decl = translate_function(tcx, &mut ft_ctx, *def_id)?;
+                    let fun_def = translate_function(tcx, &mut ft_ctx, *def_id)?;
                     let id = ft_ctx.fun_rid_to_id.get(def_id).unwrap();
-                    assert!(id.to_usize() == ft_ctx.decls.len());
-                    ft_ctx.decls.push_back(fun_decl);
+                    assert!(id.to_usize() == ft_ctx.defs.len());
+                    ft_ctx.defs.push_back(fun_def);
                 }
             }
             Declaration::Type(_) | Declaration::RecTypes(_) => {
@@ -2192,11 +2192,11 @@ pub fn translate_functions(
     }
 
     // Print the functions
-    for decl in &ft_ctx.decls {
+    for def in &ft_ctx.defs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            decl.signature.fmt_with_decls(&ft_ctx.tt_ctx.types),
-            decl.fmt_with_decls(&ft_ctx.tt_ctx.types, &ft_ctx.decls)
+            def.signature.fmt_with_defs(&ft_ctx.tt_ctx.types),
+            def.fmt_with_defs(&ft_ctx.tt_ctx.types, &ft_ctx.defs)
         );
     }
 

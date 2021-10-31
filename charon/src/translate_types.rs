@@ -11,11 +11,11 @@ use rustc_middle::ty::TyCtxt;
 use rustc_middle::ty::{Ty, TyKind};
 use std::collections::HashMap;
 
-/// Translation context for type declarations
+/// Translation context for type definitions
 #[derive(Clone)]
 pub struct TypeTransContext {
     pub types: ty::TypeDefs,
-    type_decl_id_generator: ty::TypeDefId::Generator,
+    type_def_id_generator: ty::TypeDefId::Generator,
     /// Rust identifiers to translation identifiers
     pub rid_to_id: HashMap<DefId, ty::TypeDefId::Id>,
 }
@@ -24,13 +24,13 @@ impl TypeTransContext {
     fn new() -> TypeTransContext {
         TypeTransContext {
             types: ty::TypeDefs::new(),
-            type_decl_id_generator: ty::TypeDefId::Generator::new(),
+            type_def_id_generator: ty::TypeDefId::Generator::new(),
             rid_to_id: HashMap::new(),
         }
     }
 
     fn fresh_def_id(&mut self) -> ty::TypeDefId::Id {
-        self.type_decl_id_generator.fresh_id()
+        self.type_def_id_generator.fresh_id()
     }
 }
 
@@ -40,13 +40,13 @@ impl Formatter<ty::TypeDefId::Id> for TypeTransContext {
     }
 }
 
-/// Auxiliary definition used to format declarations.
+/// Auxiliary definition used to format definitions.
 struct TypeDefFormatter<'a> {
     tt_ctx: &'a TypeTransContext,
-    /// The region parameters of the declaration we are printing (needed to
+    /// The region parameters of the definition we are printing (needed to
     /// correctly pretty print region var ids)
     region_params: &'a ty::RegionVarId::Vector<ty::RegionVar>,
-    /// The type parameters of the declaration we are printing (needed to
+    /// The type parameters of the definition we are printing (needed to
     /// correctly pretty print type var ids)
     type_params: &'a ty::TypeVarId::Vector<ty::TypeVar>,
 }
@@ -82,8 +82,8 @@ impl<'a> Formatter<&ty::ErasedRegion> for TypeDefFormatter<'a> {
 }
 
 impl<'a> Formatter<&ty::TypeDef> for TypeDefFormatter<'a> {
-    fn format_object(&self, decl: &ty::TypeDef) -> String {
-        decl.fmt_with_ctx(self)
+    fn format_object(&self, def: &ty::TypeDef) -> String {
+        def.fmt_with_ctx(self)
     }
 }
 
@@ -285,7 +285,7 @@ pub fn translate_erased_region<'tcx>(region: rustc_middle::ty::Region<'tcx>) -> 
 /// Translate a Ty.
 ///
 /// Typically used in this module to translate the fields of a structure/
-/// enumeration declaration, or later to translate the type of a variable.
+/// enumeration definition, or later to translate the type of a variable.
 ///
 /// This function is also used in other modules, like
 /// [`translate_functions`](crate::translate_functions).
@@ -450,7 +450,7 @@ where
             // instantiated (in our environment, we may map it to another
             // type): we just have to look it up.
             // Note that if we are using this function to translate a field
-            // type in a type declaration, it should actually map to a type
+            // type in a type definition, it should actually map to a type
             // parameter.
             trace!("Param");
 

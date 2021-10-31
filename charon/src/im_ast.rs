@@ -46,7 +46,7 @@ pub struct FunSig {
     pub output: RTy,
 }
 
-/// A function declaration
+/// A function definition
 #[derive(Debug, Clone)]
 pub struct GFunDef<T: std::fmt::Debug + Clone> {
     pub def_id: DefId::Id,
@@ -601,7 +601,7 @@ impl<'a> Formatter<TypeDefId::Id> for FunSigFormatter<'a> {
 }
 
 impl FunSig {
-    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDefs) -> String {
+    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDefs) -> String {
         // Initialize the formatting context
         let ctx = FunSigFormatter { ty_ctx, sig: self };
 
@@ -611,13 +611,13 @@ impl FunSig {
 }
 
 impl<T: std::fmt::Debug + Clone> GFunDef<T> {
-    /// This is an auxiliary function for printing declarations. One may wonder
+    /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
-    /// because the function declaration already has the information to print
+    /// because the function definition already has the information to print
     /// variables. The reason is that it is easier for us to write this very
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
-    /// declaration). See [`fmt_with_decls`](FunDef::fmt_with_decls).
+    /// definition). See [`fmt_with_defs`](FunDef::fmt_with_defs).
     pub fn gfmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
@@ -699,13 +699,13 @@ impl<T: std::fmt::Debug + Clone> GFunDef<T> {
 }
 
 impl FunDef {
-    /// This is an auxiliary function for printing declarations. One may wonder
+    /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
-    /// because the function declaration already has the information to print
+    /// because the function definition already has the information to print
     /// variables. The reason is that it is easier for us to write this very
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
-    /// declaration). See [`fmt_with_decls`](FunDef::fmt_with_decls).
+    /// definition). See [`fmt_with_defs`](FunDef::fmt_with_defs).
     pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
@@ -795,7 +795,7 @@ impl<'ctx, T> Formatter<(TypeDefId::Id, VariantId::Id)> for GAstFormatter<'ctx, 
     fn format_object(&self, id: (TypeDefId::Id, VariantId::Id)) -> String {
         let (def_id, variant_id) = id;
         let ctx = self.type_context;
-        let def = ctx.get_type_decl(def_id).unwrap();
+        let def = ctx.get_type_def(def_id).unwrap();
         let variants = def.kind.as_enum();
         let mut name = def.name.to_string();
         let variant_name = &variants.get(variant_id).unwrap().name;
@@ -812,7 +812,7 @@ impl<'ctx, T> Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>
     fn format_object(&self, id: (TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (def_id, opt_variant_id, field_id) = id;
         let ctx = self.type_context;
-        let gen_def = ctx.get_type_decl(def_id).unwrap();
+        let gen_def = ctx.get_type_def(def_id).unwrap();
         match (&gen_def.kind, opt_variant_id) {
             (TypeDefKind::Enum(variants), Some(variant_id)) => {
                 let field = variants
@@ -863,7 +863,7 @@ impl<'ctx, T> Formatter<&Operand> for GAstFormatter<'ctx, T> {
 }
 
 impl FunDef {
-    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDefs, fun_ctx: &'ctx FunDefs) -> String {
+    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDefs, fun_ctx: &'ctx FunDefs) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,

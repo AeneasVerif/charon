@@ -53,12 +53,12 @@ fn simplify_exp(exp: Expression) -> Expression {
         }
     }
 }
-fn simplify_decl(mut decl: FunDef) -> FunDef {
-    trace!("About to update: {}", decl.name);
-    decl.body = simplify_exp(decl.body);
-    decl
+fn simplify_def(mut def: FunDef) -> FunDef {
+    trace!("About to update: {}", def.name);
+    def.body = simplify_exp(def.body);
+    def
 }
 
-pub fn simplify(decls: FunDefs) -> FunDefs {
-    FunDefs::from_iter(decls.into_iter().map(|decl| simplify_decl(decl)))
+pub fn simplify(defs: FunDefs) -> FunDefs {
+    FunDefs::from_iter(defs.into_iter().map(|def| simplify_def(def)))
 }

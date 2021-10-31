@@ -88,7 +88,7 @@ pub enum Expression {
 
 pub type FunDefs = DefId::Vector<FunDef>;
 
-/// A function declaration
+/// A function definition
 pub type FunDef = GFunDef<Expression>;
 
 impl SwitchTargets {
@@ -318,7 +318,7 @@ impl<'ctx> Formatter<DefId::Id> for AstFormatter<'ctx> {
 }
 
 impl FunDef {
-    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDefs, fun_ctx: &'ctx FunDefs) -> String {
+    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDefs, fun_ctx: &'ctx FunDefs) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,

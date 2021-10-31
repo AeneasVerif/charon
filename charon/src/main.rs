@@ -181,7 +181,7 @@ fn translate(
     // We can iterate over the items directly, but we want to do it module
     // by module.
 
-    // # Step 1: check and register all the declarations, to build the graph
+    // # Step 1: check and register all the definitions, to build the graph
     // of dependencies between them (we need to know in which
     // order to extract the definitions, and which ones are mutually
     // recursive). While building this graph, we perform as many checks as
@@ -190,7 +190,7 @@ fn translate(
     // not (ex.: raw pointers, inline ASM, etc.). More complex checks are
     // performed later. In general, whenever there is ambiguity on the potential
     // step in which a step could be performed, we perform it as soon as possible.
-    // Building the graph of dependencies allows us to translate the declarations
+    // Building the graph of dependencies allows us to translate the definitions
     // in the proper order, and to figure out which definitions are mutually
     // recursive.
     // We iterate over the HIR items, and explore their MIR bodies/ADTs/etc.
@@ -216,32 +216,32 @@ fn translate(
     let tt_ctx = translate_types::translate_types(&tcx, &ordered_decls)?;
 
     // # Step 5: translate the functions to IM (our Internal representation of MIR)
-    let im_decls =
+    let im_defs =
         translate_functions_to_im::translate_functions(&tcx, tt_ctx, &ordered_decls, divergent)?;
 
     // # Step 6: go from IM to CFIM (Control-Flow Internal MIR) by reconstructing
     // the control flow.
     // Note that from now onwards, we don't interact with rustc anymore.
-    let cfim_decls = im_to_cfim::translate_functions(&im_decls);
+    let cfim_defs = im_to_cfim::translate_functions(&im_defs);
 
     // # Step 7: simplify the calls to binops
     // Note that we assume that the sequences have been flattened.
-    let cfim_decls = simplify_binops::simplify(cfim_decls);
+    let cfim_defs = simplify_binops::simplify(cfim_defs);
 
-    for decl in &cfim_decls {
+    for def in &cfim_defs {
         trace!(
             "# After binop simplification:\n{}\n",
-            decl.fmt_with_decls(&im_decls.tt_ctx.types, &cfim_decls)
+            def.fmt_with_defs(&im_defs.tt_ctx.types, &cfim_defs)
         );
     }
 
     // # Step 8: reconstruct the asserts
-    let cfim_decls = reconstruct_asserts::simplify(cfim_decls);
+    let cfim_defs = reconstruct_asserts::simplify(cfim_defs);
 
-    for decl in &cfim_decls {
+    for def in &cfim_defs {
         trace!(
             "# After asserts reconstruction:\n{}\n",
-            decl.fmt_with_decls(&im_decls.tt_ctx.types, &cfim_decls)
+            def.fmt_with_defs(&im_defs.tt_ctx.types, &cfim_defs)
         );
     }
 
