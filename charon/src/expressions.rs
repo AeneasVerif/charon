@@ -31,9 +31,9 @@ pub enum ProjectionElem {
     /// should have been expanded before through a match).
     /// Note that in MIR, field projections don't contain any type information
     /// (adt identifier, variant id, etc.). This information can be valuable
-    /// (for instance, to know how to expand `Bottom`. We retrieve it through
+    /// (for pretty printing for instance). We retrieve it through
     /// type-checking.
-    Field(FieldId::Id),
+    Field(FieldProjKind, FieldId::Id),
     /// Downcast of an enumeration to a specific variant.
     /// For example, the left value in:
     /// `((_0 as Right).0: T2) = move _1;`
@@ -48,6 +48,13 @@ pub enum ProjectionElem {
     /// `SetDiscriminant` statement, we just check that the variant is the proper
     /// one (for sanity).
     Downcast(VariantId::Id),
+}
+
+#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters)]
+pub enum FieldProjKind {
+    Adt(TypeDefId::Id, Option<VariantId::Id>),
+    /// If we project from a tuple, the projection kind gives the arity of the
+    Tuple(usize),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters)]
@@ -218,7 +225,7 @@ pub enum AggregateKind {
 impl Place {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<VarId::Id>,
+        T: Formatter<VarId::Id> + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         let mut out = ctx.format_object(self.var_id);
 
@@ -230,9 +237,15 @@ impl Place {
                 ProjectionElem::DerefBox => {
                     out = format!("deref_box ({})", out);
                 }
-                ProjectionElem::Field(field_id) => {
-                    out = format!("({}).{}", out, field_id);
-                }
+                ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
+                    FieldProjKind::Adt(adt_id, opt_variant_id) => {
+                        let field_name = ctx.format_object((*adt_id, *opt_variant_id, *field_id));
+                        out = format!("({}).{}", out, field_name);
+                    }
+                    FieldProjKind::Tuple(_) => {
+                        out = format!("({}).{}", out, field_id);
+                    }
+                },
                 ProjectionElem::Downcast(variant_id) => {
                     out = format!("({} as variant @{})", out, variant_id);
                 }
@@ -278,7 +291,9 @@ impl std::string::ToString for OperandConstantValue {
 impl Operand {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<VarId::Id> + Formatter<TypeDefId::Id>,
+        T: Formatter<VarId::Id>
+            + Formatter<TypeDefId::Id>
+            + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
             Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)).to_owned(),

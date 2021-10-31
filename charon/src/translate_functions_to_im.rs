@@ -468,12 +468,14 @@ fn translate_projection<'tcx>(
             }
             mir::ProjectionElem::Field(field, _) => {
                 let field_id = translate_field(field);
-                match path_type {
+                // Update the path type and generate the proj kind at the
+                // same time.
+                let proj_kind = match path_type {
                     ty::Ty::Adt(type_id, _regions, tys) => {
                         let type_def = type_defs.get_type_def(type_id).unwrap();
 
-                        // If (and only if) the ADT is an enumartion, we should
-                        // have downcast knformation (that we need to figure out
+                        // If (and only if) the ADT is an enumeration, we should
+                        // have downcast information (that we need to figure out
                         // the variant, and thus know how to project).
                         assert!(type_def.kind.is_enum() == downcast_id.is_some());
 
@@ -482,17 +484,20 @@ fn translate_projection<'tcx>(
                             &tys,
                             field_id,
                         );
+
+                        e::FieldProjKind::Adt(type_id, downcast_id)
                     }
                     ty::Ty::Tuple(tys) => {
                         assert!(downcast_id.is_none());
                         path_type = tys.get(field.as_usize()).unwrap().clone();
+                        e::FieldProjKind::Tuple(tys.len())
                     }
                     _ => {
                         trace!("{:?}", path_type);
                         unreachable!();
                     }
-                }
-                projection.push_back(e::ProjectionElem::Field(field_id));
+                };
+                projection.push_back(e::ProjectionElem::Field(proj_kind, field_id));
                 downcast_id = None;
             }
             mir::ProjectionElem::Index(_local) => {

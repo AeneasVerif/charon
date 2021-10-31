@@ -267,7 +267,6 @@ impl Statement {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
         T: Formatter<VarId::Id>
-            //            + Formatter<ValueId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
@@ -309,7 +308,8 @@ impl Terminator {
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDefId::Id>
             + Formatter<DefId::Id>
-            + Formatter<(TypeDefId::Id, VariantId::Id)>,
+            + Formatter<(TypeDefId::Id, VariantId::Id)>
+            + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
             Terminator::Goto { target } => format!("goto bb{}", target.to_string()).to_owned(),

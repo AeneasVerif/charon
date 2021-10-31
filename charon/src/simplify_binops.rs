@@ -82,17 +82,16 @@ fn check_if_simplifiable_checked_binop(exp1: &Expression, exp2: &Expression, exp
             // We must have:
             // cond_op == bp.1
             // mr == bp.0
-
             let check1 = check_places_similar_but_last_proj_elem(
                 bp,
-                &ProjectionElem::Field(FieldId::Id::new(1)),
+                &ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(1)),
                 cond_op,
             );
             assert!(check1);
 
             let check2 = check_places_similar_but_last_proj_elem(
                 bp,
-                &ProjectionElem::Field(FieldId::Id::new(0)),
+                &ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(0)),
                 mr,
             );
             assert!(check2);
