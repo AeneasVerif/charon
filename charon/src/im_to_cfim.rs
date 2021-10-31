@@ -457,13 +457,6 @@ fn register_children_as_loop_exit_candidates(
     }
 }
 
-fn register_loop_exit_candidate(
-    loop_exits: &mut HashMap<src::BlockId::Id, HashMap<src::BlockId::Id, LoopExitCandidateInfo>>,
-    parent_loops: &Vector<(src::BlockId::Id, usize)>,
-    block_id: src::BlockId::Id,
-) {
-}
-
 fn compute_loop_exit_candidates(
     cfg: &CfgInfo,
     explored: &mut HashSet<src::BlockId::Id>,
