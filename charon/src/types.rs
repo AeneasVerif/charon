@@ -19,7 +19,6 @@ generate_index_type!(TypeDefId);
 generate_index_type!(VariantId);
 generate_index_type!(FieldId);
 generate_index_type!(RegionVarId);
-generate_index_type!(RegionId); // TODO: remove
 
 /// Type variable.
 /// We make sure not to mix variables and type variables by having two distinct
@@ -169,13 +168,10 @@ where
     /// category include: Box, Vec, Cell...
     Assumed(AssumedTy, Vector<R>, Vector<Ty<R>>),
 }
+
+/// TODO: rename to RTy: Type with *R*egions.
 /// Signature types, used in function signatures and type declarations.
 pub type SigTy = Ty<Region<RegionVarId::Id>>;
-
-/// Type with *R*egions.
-///
-/// Used in symbolic values and abstractions.
-pub type RTy = Ty<Region<RegionId::Id>>;
 
 /// Type with *E*rased regions.
 ///
@@ -200,8 +196,6 @@ pub type TypeSubst<R> = HashMap<TypeVarId::Id, Ty<R>>;
 /// Erased region substitution - trivial substitution
 /// TODO: remove this
 pub type ERegionSubst = RegionSubst<ErasedRegion>;
-/// Type substitution where the regions are not erased
-pub type RTypeSubst = TypeSubst<Region<RegionId::Id>>;
 /// Type substitution where the regions are erased
 pub type ETypeSubst = TypeSubst<ErasedRegion>;
 
@@ -331,39 +325,6 @@ impl TypeDecl {
                 &decl.fields
             }
         }
-    }
-
-    /// The variant id should be `None` if it is a structure and `Some` if it
-    /// is an enumeration.
-    pub fn get_instantiated_field_types_with_regions(
-        &self,
-        variant_id: Option<VariantId::Id>,
-        inst_regions: &Vector<Region<RegionId::Id>>,
-        inst_types: &Vector<RTy>,
-    ) -> Vector<RTy> {
-        // Introduce the substitutions
-        let r_subst = make_subst(
-            self.get_region_params().iter().map(|x| x.index),
-            inst_regions.iter(),
-        );
-        let ty_subst = make_type_subst(
-            self.get_type_params().iter().map(|x| x.index),
-            inst_types.iter(),
-        );
-
-        let r_subst: &dyn Fn(&Region<RegionVarId::Id>) -> Region<RegionId::Id> = &|r| match r {
-            Region::Static => Region::Static,
-            Region::Var(rid) => r_subst.get(rid).unwrap().clone(),
-        };
-        let ty_subst: &dyn Fn(&TypeVarId::Id) -> RTy = &|id| ty_subst.get(id).unwrap().clone();
-
-        let fields = self.get_fields(variant_id);
-        let field_types: Vector<RTy> = fields
-            .iter()
-            .map(|f| f.ty.substitute(r_subst, ty_subst))
-            .collect();
-
-        Vector::from(field_types)
     }
 
     /// The variant id should be `None` if it is a structure and `Some` if it
@@ -589,10 +550,6 @@ pub fn type_def_id_to_pretty_string(id: TypeDefId::Id) -> String {
 }
 
 pub fn region_var_id_to_pretty_string(id: RegionVarId::Id) -> String {
-    format!("@R{}", id.to_string()).to_owned()
-}
-
-pub fn region_id_to_pretty_string(id: RegionId::Id) -> String {
     format!("@R{}", id.to_string()).to_owned()
 }
 
@@ -909,12 +866,6 @@ impl Formatter<&ErasedRegion> for DummyFormatter {
 impl Formatter<RegionVarId::Id> for DummyFormatter {
     fn format_object(&self, id: RegionVarId::Id) -> String {
         region_var_id_to_pretty_string(id)
-    }
-}
-
-impl Formatter<RegionId::Id> for DummyFormatter {
-    fn format_object(&self, id: RegionId::Id) -> String {
-        region_id_to_pretty_string(id)
     }
 }
 
