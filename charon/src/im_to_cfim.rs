@@ -27,9 +27,9 @@ use im;
 use im::Vector;
 use petgraph::algo::dominators::simple_fast;
 use petgraph::algo::floyd_warshall::floyd_warshall;
-use petgraph::algo::simple_paths::all_simple_paths;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
+use petgraph::Direction;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
@@ -307,34 +307,47 @@ fn loop_entry_is_reachable_from_inner(
         return false;
     }
 
-    // It is reachable in the complete graph. Check if it is reachable through
-    // a backward edge which doesn't go directly to the loop entry (i.e.: through
-    // a backward edge which requires going to an outer loop).
-    // We check this in a very simple way: we just explore all the simple paths,
-    // and eliminate those which contain a backward edge whose destination is
-    // the loop entry. Once again: we're not looking for efficiency here.
-    'outer: for path in
-        all_simple_paths::<Vec<src::BlockId::Id>, &Cfg>(&cfg.cfg, block_id, loop_entry, 0, None)
-    {
-        let mut prev_node = block_id;
-        for n in path {
-            if cfg.backward_edges.contains(&(prev_node, n)) {
-                if n == loop_entry {
+    // It is reachable in the complete graph. Check if it is reachable by not
+    // going through backward edges which go to outer loops. In practice, we
+    // just need to forbid the use of any backward edges at the exception of
+    // those which go directly to the current loop's entry. This means that we
+    // ignore backward edges to outer loops of course, but also backward edges
+    // to inner loops because we shouldn't need to follow those (there should be
+    // more direct paths).
+
+    // Explore the graph starting at block_id
+    let mut explored: HashSet<src::BlockId::Id> = HashSet::new();
+    let mut stack: VecDeque<src::BlockId::Id> = VecDeque::new();
+    stack.push_back(block_id);
+    while !stack.is_empty() {
+        let bid = stack.pop_front().unwrap();
+        if explored.contains(&bid) {
+            continue;
+        }
+        explored.insert(bid);
+
+        let next_ids = cfg.cfg.neighbors_directed(bid, Direction::Outgoing);
+        for next_id in next_ids {
+            // Check if this is a backward edge
+            if cfg.backward_edges.contains(&(bid, next_id)) {
+                // Backward edge: only allow those going directly to the current
+                // loop's entry
+                if next_id == loop_entry {
+                    // The loop entry is reachable
                     return true;
                 } else {
-                    continue 'outer;
+                    // Forbidden edge: ignore
+                    continue;
                 }
             } else {
-                prev_node = n;
+                // Nothing special: add the node to the stack for further
+                // exploration
+                stack.push_back(next_id);
             }
         }
-
-        // If we get there, it means that the path contains no backward edge
-        // which is impossible
-        unreachable!();
     }
 
-    // No path contains a backward edge which goes directly to the loop entry
+    // The loop entry is not reachable
     return false;
 }
 
