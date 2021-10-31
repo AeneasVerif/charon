@@ -11,6 +11,7 @@ use crate::vars::Name;
 use hashlink::linked_hash_map::LinkedHashMap;
 use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, VariantName};
+use std::iter::FromIterator;
 
 // TODO: move this definition
 pub static TAB_INCR: &'static str = "    ";
@@ -176,21 +177,23 @@ impl SwitchTargets {
             }
         }
     }
+
+    /// Perform a type substitution - actually simply clone the object
+    pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
+        self.clone()
+    }
 }
 
 impl Statement {
     /// Substitute the type variables and return the resulting statement.
-    /// Actually simply clones the statement, while performing sanity checks (a
-    /// statement shouldn't contain references to type variables anywhere).
-    pub fn substitute(&self, _subst: &ETypeSubst) -> Statement {
+    pub fn substitute(&self, subst: &ETypeSubst) -> Statement {
         match self {
             Statement::Assign(place, rvalue) => {
-                assert!(rvalue.contains_no_variables());
-                Statement::Assign(place.clone(), rvalue.clone())
+                Statement::Assign(place.substitute(subst), rvalue.substitute(subst))
             }
-            Statement::FakeRead(place) => Statement::FakeRead(place.clone()),
+            Statement::FakeRead(place) => Statement::FakeRead(place.substitute(subst)),
             Statement::SetDiscriminant(place, variant_id) => {
-                Statement::SetDiscriminant(place.clone(), *variant_id)
+                Statement::SetDiscriminant(place.substitute(subst), *variant_id)
             }
             Statement::StorageDead(var_id) => Statement::StorageDead(*var_id),
         }
@@ -202,18 +205,15 @@ impl Terminator {
     pub fn substitute(&self, subst: &ETypeSubst) -> Terminator {
         match self {
             Terminator::Goto { target } => Terminator::Goto { target: *target },
-            Terminator::Switch { discr, targets } => {
-                assert!(discr.contains_no_variables());
-                Terminator::Switch {
-                    discr: discr.clone(),
-                    targets: targets.clone(),
-                }
-            }
+            Terminator::Switch { discr, targets } => Terminator::Switch {
+                discr: discr.substitute(subst),
+                targets: targets.substitute(subst),
+            },
             Terminator::Panic => Terminator::Panic,
             Terminator::Return => Terminator::Return,
             Terminator::Unreachable => Terminator::Unreachable,
             Terminator::Drop { place, target } => Terminator::Drop {
-                place: place.clone(),
+                place: place.substitute(subst),
                 target: *target,
             },
             Terminator::Call {
@@ -223,32 +223,26 @@ impl Terminator {
                 args,
                 dest,
                 target,
-            } => {
-                assert!(args.iter().all(|x| x.contains_no_variables()));
-                Terminator::Call {
-                    func: func.clone(),
-                    region_params: region_params.clone(),
-                    type_params: type_params
-                        .iter()
-                        .map(|ty| ty.substitute_types(subst))
-                        .collect(),
-                    args: args.clone(),
-                    dest: dest.clone(),
-                    target: *target,
-                }
-            }
+            } => Terminator::Call {
+                func: func.clone(),
+                region_params: region_params.clone(),
+                type_params: type_params
+                    .iter()
+                    .map(|ty| ty.substitute_types(subst))
+                    .collect(),
+                args: Vec::from_iter(args.iter().map(|arg| arg.substitute(subst))),
+                dest: dest.substitute(subst),
+                target: *target,
+            },
             Terminator::Assert {
                 cond,
                 expected,
                 target,
-            } => {
-                assert!(cond.contains_no_variables());
-                Terminator::Assert {
-                    cond: cond.clone(),
-                    expected: *expected,
-                    target: *target,
-                }
-            }
+            } => Terminator::Assert {
+                cond: cond.substitute(subst),
+                expected: *expected,
+                target: *target,
+            },
         }
     }
 }

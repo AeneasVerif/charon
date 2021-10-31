@@ -29,6 +29,10 @@ pub enum ProjectionElem {
     /// We allow projections to be used as left-values and right-values.
     /// We should never have projections to fields of symbolic variants (they
     /// should have been expanded before through a match).
+    /// Note that in MIR, field projections don't contain any type information
+    /// (adt identifier, variant id, etc.). This information can be valuable
+    /// (for instance, to know how to expand `Bottom`. We retrieve it through
+    /// type-checking.
     Field(FieldId::Id),
     /// Downcast of an enumeration to a specific variant.
     /// For example, the left value in:
@@ -237,6 +241,11 @@ impl Place {
 
         out
     }
+
+    /// Perform a type substitution - actually simply clone the object
+    pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
+        self.clone()
+    }
 }
 
 impl std::string::ToString for Place {
@@ -278,13 +287,9 @@ impl Operand {
         }
     }
 
-    /// Small utility used for sanity checks: constant operands' types shouldn't
-    /// contain region or type variables.
-    pub fn contains_no_variables(&self) -> bool {
-        match self {
-            Operand::Constant(ty, _) => !ty.contains_variables(),
-            _ => true,
-        }
+    /// Perform a type substitution - actually simply clone the object
+    pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
+        self.clone()
     }
 }
 
@@ -358,18 +363,9 @@ impl Rvalue {
         }
     }
 
-    /// Small utility used for sanity checks
-    pub fn contains_no_variables(&self) -> bool {
-        match self {
-            Rvalue::Use(op) => op.contains_no_variables(),
-            Rvalue::Ref(_, _) => true,
-            Rvalue::UnaryOp(_, op) => op.contains_no_variables(),
-            Rvalue::BinaryOp(_, op1, op2) | Rvalue::CheckedBinaryOp(_, op1, op2) => {
-                op1.contains_no_variables() && op2.contains_no_variables()
-            }
-            Rvalue::Discriminant(_) => true,
-            Rvalue::Aggregate(_, ops) => ops.iter().all(|op| op.contains_no_variables()),
-        }
+    /// Perform a type substitution - actually simply clone the object
+    pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
+        self.clone()
     }
 }
 
