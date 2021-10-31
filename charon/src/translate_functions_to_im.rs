@@ -82,7 +82,7 @@ struct BodyTransContext<'ctx> {
     rtype_vars_to_ids: im::OrdMap<u32, ty::TypeVarId::Id>,
     /// Redundant with `rtype_vars_to_ids`. We need this for [`translate_ty`](translate_ty).
     /// This maps type variables to types with regions used in signatures.
-    rtype_vars_to_rtypes: im::OrdMap<u32, ty::SigTy>,
+    rtype_vars_to_rtypes: im::OrdMap<u32, ty::RTy>,
     /// Redundant with `rtype_vars_to_ids`. We need this for [`translate_ty`](translate_ty).
     /// This maps type variables to types with erased regions.
     rtype_vars_to_etypes: im::OrdMap<u32, ty::ETy>,
@@ -296,7 +296,7 @@ fn translate_sig_ty<'ctx>(
     tcx: &TyCtxt,
     bt_ctx: &BodyTransContext<'ctx>,
     ty: &mir_ty::Ty,
-) -> Result<ty::SigTy> {
+) -> Result<ty::RTy> {
     translate_types::translate_sig_ty(
         tcx,
         &bt_ctx.ft_ctx.tt_ctx,
@@ -1939,7 +1939,7 @@ fn translate_function_signature<'ctx>(
 
     // Now that we instantiated all the binders and introduced identifiers for
     // all the variables, we can translate the function's signature.
-    let inputs: v::VarId::Vector<ty::SigTy> = v::VarId::Vector::from_iter(
+    let inputs: v::VarId::Vector<ty::RTy> = v::VarId::Vector::from_iter(
         signature
             .inputs()
             .iter()

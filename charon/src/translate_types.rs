@@ -152,7 +152,7 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
         im::OrdMap::new();
     let mut region_params_counter = ty::RegionVarId::Generator::new();
     let mut type_params: Vec<ty::TypeVar> = vec![];
-    let mut type_params_map: im::OrdMap<u32, ty::SigTy> = im::OrdMap::new();
+    let mut type_params_map: im::OrdMap<u32, ty::RTy> = im::OrdMap::new();
     let mut type_params_counter = ty::TypeVarId::Generator::new();
     for p in substs.iter() {
         match p.unpack() {
@@ -551,9 +551,9 @@ pub fn translate_sig_ty(
     tcx: &TyCtxt,
     trans_ctx: &TypeTransContext,
     region_params: &im::OrdMap<rustc_middle::ty::RegionKind, ty::RegionVarId::Id>,
-    type_params: &im::OrdMap<u32, ty::SigTy>,
+    type_params: &im::OrdMap<u32, ty::RTy>,
     ty: &Ty,
-) -> Result<ty::SigTy> {
+) -> Result<ty::RTy> {
     translate_ty(
         tcx,
         trans_ctx,

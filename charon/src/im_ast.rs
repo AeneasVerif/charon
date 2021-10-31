@@ -45,8 +45,8 @@ pub struct FunSig {
     ///  ```
     pub num_early_bound_regions: usize,
     pub type_params: TypeVarId::Vector<TypeVar>,
-    pub inputs: VarId::Vector<SigTy>,
-    pub output: SigTy,
+    pub inputs: VarId::Vector<RTy>,
+    pub output: RTy,
 }
 
 /// A function declaration

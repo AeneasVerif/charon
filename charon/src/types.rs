@@ -97,7 +97,7 @@ pub struct Variant {
 #[derive(Debug, Clone)]
 pub struct Field {
     pub name: String,
-    pub ty: SigTy,
+    pub ty: RTy,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName)]
@@ -169,9 +169,9 @@ where
     Assumed(AssumedTy, Vector<R>, Vector<Ty<R>>),
 }
 
-/// TODO: rename to RTy: Type with *R*egions.
-/// Signature types, used in function signatures and type declarations.
-pub type SigTy = Ty<Region<RegionVarId::Id>>;
+/// Type with *R*egions.
+/// Used in function signatures and type declarations.
+pub type RTy = Ty<Region<RegionVarId::Id>>;
 
 /// Type with *E*rased regions.
 ///
