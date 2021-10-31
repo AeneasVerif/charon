@@ -46,7 +46,7 @@ pub struct FunTransContext {
     /// Type translation context
     pub tt_ctx: TypeTransContext,
     /// The function declarations
-    pub decls: ast::FunDecls,
+    pub decls: ast::FunDefs,
     /// A map telling us whether functions are divergent or not
     pub divergent: HashMap<v::DefId::Id, bool>,
     fun_decl_id_generator: v::DefId::Generator,
@@ -106,7 +106,7 @@ impl FunTransContext {
     fn new(tt_ctx: TypeTransContext) -> FunTransContext {
         FunTransContext {
             tt_ctx: tt_ctx,
-            decls: ast::FunDecls::new(),
+            decls: ast::FunDefs::new(),
             divergent: HashMap::new(),
             fun_decl_id_generator: v::DefId::Generator::new(),
             fun_rid_to_id: HashMap::new(),
@@ -217,7 +217,7 @@ impl<'ctx> BodyTransContext<'ctx> {
         self.blocks.insert(id, block);
     }
 
-    fn get_type_decls(&self) -> &ty::TypeDecls {
+    fn get_type_decls(&self) -> &ty::TypeDefs {
         &self.ft_ctx.tt_ctx.types
     }
 }
@@ -428,7 +428,7 @@ fn translate_place<'ctx, 'tcx>(
 /// references and to move values from inside a box. On our side, we distinguish
 /// the two kinds of dereferences.
 fn translate_projection<'tcx>(
-    type_decls: &ty::TypeDecls,
+    type_decls: &ty::TypeDefs,
     var_ty: ty::ETy,
     rprojection: &'tcx rustc_middle::ty::List<PlaceElem<'tcx>>,
 ) -> e::Projection {
@@ -700,11 +700,11 @@ fn translate_operand_constant_value<'tcx>(
                     // and no parameters. Construct the value at the same time.
                     assert!(substs.len() == 0);
                     match decl {
-                        ty::TypeDecl::Enum(decl) => {
+                        ty::TypeDef::Enum(decl) => {
                             assert!(decl.type_params.len() == 0);
                             assert!(decl.variants.len() == 1);
                         }
-                        ty::TypeDecl::Struct(decl) => {
+                        ty::TypeDef::Struct(decl) => {
                             assert!(decl.type_params.len() == 0);
                         }
                     };
@@ -1019,7 +1019,7 @@ fn translate_rvalue<'ctx, 'tcx>(
                     let decl = bt_ctx.get_type_decls().get_type_decl(id_t).unwrap();
 
                     let akind = match decl {
-                        ty::TypeDecl::Enum(decl) => {
+                        ty::TypeDef::Enum(decl) => {
                             let variant_id = translate_variant_id(*variant_idx);
                             assert!(
                                 operands_t.len()
@@ -1028,7 +1028,7 @@ fn translate_rvalue<'ctx, 'tcx>(
 
                             e::AggregateKind::Adt(id_t, Some(variant_id))
                         }
-                        ty::TypeDecl::Struct(_) => {
+                        ty::TypeDef::Struct(_) => {
                             assert!(variant_idx.as_usize() == 0);
                             e::AggregateKind::Adt(id_t, None)
                         }
@@ -2089,7 +2089,7 @@ fn translate_function(
     tcx: &TyCtxt,
     ft_ctx: &mut FunTransContext,
     def_id: DefId,
-) -> Result<ast::FunDecl> {
+) -> Result<ast::FunDef> {
     trace!("{:?}", def_id);
 
     // Translate the function name
@@ -2125,7 +2125,7 @@ fn translate_function(
         assert!(id.to_usize() == blocks.len());
         blocks.push_back(block);
     }
-    let fun_decl = ast::FunDecl {
+    let fun_decl = ast::FunDef {
         def_id,
         name,
         signature,

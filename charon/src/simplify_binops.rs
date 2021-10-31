@@ -316,12 +316,12 @@ fn simplify_exp(exp: Expression) -> Expression {
     }
 }
 
-fn simplify_decl(mut decl: FunDecl) -> FunDecl {
+fn simplify_decl(mut decl: FunDef) -> FunDef {
     trace!("About to simplify: {}", decl.name);
     decl.body = simplify_exp(decl.body);
     decl
 }
 
-pub fn simplify(decls: FunDecls) -> FunDecls {
-    FunDecls::from_iter(decls.into_iter().map(|decl| simplify_decl(decl)))
+pub fn simplify(decls: FunDefs) -> FunDefs {
+    FunDefs::from_iter(decls.into_iter().map(|decl| simplify_decl(decl)))
 }

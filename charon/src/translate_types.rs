@@ -14,7 +14,7 @@ use std::collections::HashMap;
 /// Translation context for type declarations
 #[derive(Clone)]
 pub struct TypeTransContext {
-    pub types: ty::TypeDecls,
+    pub types: ty::TypeDefs,
     type_decl_id_generator: ty::TypeDefId::Generator,
     /// Rust identifiers to translation identifiers
     pub rid_to_id: HashMap<DefId, ty::TypeDefId::Id>,
@@ -23,7 +23,7 @@ pub struct TypeTransContext {
 impl TypeTransContext {
     fn new() -> TypeTransContext {
         TypeTransContext {
-            types: ty::TypeDecls::new(),
+            types: ty::TypeDefs::new(),
             type_decl_id_generator: ty::TypeDefId::Generator::new(),
             rid_to_id: HashMap::new(),
         }
@@ -41,7 +41,7 @@ impl Formatter<ty::TypeDefId::Id> for TypeTransContext {
 }
 
 /// Auxiliary definition used to format declarations.
-struct TypeDeclFormatter<'a> {
+struct TypeDefFormatter<'a> {
     tt_ctx: &'a TypeTransContext,
     /// The region parameters of the declaration we are printing (needed to
     /// correctly pretty print region var ids)
@@ -51,7 +51,7 @@ struct TypeDeclFormatter<'a> {
     type_params: &'a ty::TypeVarId::Vector<ty::TypeVar>,
 }
 
-impl<'a> Formatter<ty::RegionVarId::Id> for TypeDeclFormatter<'a> {
+impl<'a> Formatter<ty::RegionVarId::Id> for TypeDefFormatter<'a> {
     fn format_object(&self, id: ty::RegionVarId::Id) -> String {
         // Lookup the region parameter
         let v = self.region_params.get(id).unwrap();
@@ -60,7 +60,7 @@ impl<'a> Formatter<ty::RegionVarId::Id> for TypeDeclFormatter<'a> {
     }
 }
 
-impl<'a> Formatter<ty::TypeVarId::Id> for TypeDeclFormatter<'a> {
+impl<'a> Formatter<ty::TypeVarId::Id> for TypeDefFormatter<'a> {
     fn format_object(&self, id: ty::TypeVarId::Id) -> String {
         // Lookup the type parameter
         let v = self.type_params.get(id).unwrap();
@@ -69,39 +69,39 @@ impl<'a> Formatter<ty::TypeVarId::Id> for TypeDeclFormatter<'a> {
     }
 }
 
-impl<'a> Formatter<&ty::Region<ty::RegionVarId::Id>> for TypeDeclFormatter<'a> {
+impl<'a> Formatter<&ty::Region<ty::RegionVarId::Id>> for TypeDefFormatter<'a> {
     fn format_object(&self, r: &ty::Region<ty::RegionVarId::Id>) -> String {
         r.fmt_with_ctx(self)
     }
 }
 
-impl<'a> Formatter<&ty::ErasedRegion> for TypeDeclFormatter<'a> {
+impl<'a> Formatter<&ty::ErasedRegion> for TypeDefFormatter<'a> {
     fn format_object(&self, _: &ty::ErasedRegion) -> String {
         "".to_owned()
     }
 }
 
-impl<'a> Formatter<&ty::TypeDecl> for TypeDeclFormatter<'a> {
-    fn format_object(&self, decl: &ty::TypeDecl) -> String {
+impl<'a> Formatter<&ty::TypeDef> for TypeDefFormatter<'a> {
+    fn format_object(&self, decl: &ty::TypeDef) -> String {
         decl.fmt_with_ctx(self)
     }
 }
 
-impl<'a> Formatter<ty::TypeDefId::Id> for TypeDeclFormatter<'a> {
+impl<'a> Formatter<ty::TypeDefId::Id> for TypeDefFormatter<'a> {
     fn format_object(&self, id: ty::TypeDefId::Id) -> String {
         self.tt_ctx.format_object(id)
     }
 }
 
-impl Formatter<&ty::TypeDecl> for TypeTransContext {
-    fn format_object(&self, decl: &ty::TypeDecl) -> String {
+impl Formatter<&ty::TypeDef> for TypeTransContext {
+    fn format_object(&self, decl: &ty::TypeDef) -> String {
         // Create a type decl formatter (which will take care of the
         // type parameters)
         let (region_params, type_params) = match decl {
-            ty::TypeDecl::Enum(decl) => (&decl.region_params, &decl.type_params),
-            ty::TypeDecl::Struct(decl) => (&decl.region_params, &decl.type_params),
+            ty::TypeDef::Enum(decl) => (&decl.region_params, &decl.type_params),
+            ty::TypeDef::Struct(decl) => (&decl.region_params, &decl.type_params),
         };
-        let formatter = TypeDeclFormatter {
+        let formatter = TypeDefFormatter {
             tt_ctx: self,
             region_params,
             type_params,
@@ -234,13 +234,13 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
     let trans_id = trans_ctx.rid_to_id.get(&def_id).unwrap();
     let region_params = ty::RegionVarId::Vector::from(region_params);
     let type_params = ty::TypeVarId::Vector::from(type_params);
-    let type_decl: ty::TypeDecl = match adt.adt_kind() {
+    let type_decl: ty::TypeDef = match adt.adt_kind() {
         rustc_middle::ty::AdtKind::Struct => {
             assert!(variants.len() == 1);
 
             let name = type_def_id_to_name(tcx, def_id)?;
             let fields = variants[0].fields.clone();
-            ty::TypeDecl::Struct(ty::StructDecl {
+            ty::TypeDef::Struct(ty::StructDef {
                 def_id: *trans_id,
                 name: Name::from(name),
                 region_params: region_params,
@@ -251,7 +251,7 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
         rustc_middle::ty::AdtKind::Enum => {
             let name = type_def_id_to_name(tcx, def_id)?;
 
-            ty::TypeDecl::Enum(ty::EnumDecl {
+            ty::TypeDef::Enum(ty::EnumDef {
                 def_id: *trans_id,
                 name: Name::from(name),
                 region_params: region_params,

@@ -34,12 +34,12 @@ use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
 
-pub type Decls = tgt::FunDecls;
+pub type Defs = tgt::FunDefs;
 
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId::Id, ()>;
 
-fn get_block_targets(decl: &src::FunDecl, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
+fn get_block_targets(decl: &src::FunDef, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
     let block = decl.body.get(block_id).unwrap();
 
     match &block.terminator {
@@ -103,7 +103,7 @@ struct CfgInfo {
 
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
 /// compute some information like the loop entries and the switch blocks.
-fn build_cfg_partial_info(decl: &src::FunDecl) -> CfgPartialInfo {
+fn build_cfg_partial_info(decl: &src::FunDef) -> CfgPartialInfo {
     let mut cfg = CfgPartialInfo {
         cfg: Cfg::new(),
         cfg_no_be: Cfg::new(),
@@ -132,7 +132,7 @@ fn build_cfg_partial_info(decl: &src::FunDecl) -> CfgPartialInfo {
     cfg
 }
 
-fn block_is_switch(decl: &src::FunDecl, block_id: src::BlockId::Id) -> bool {
+fn block_is_switch(decl: &src::FunDef, block_id: src::BlockId::Id) -> bool {
     let block = decl.body.get(block_id).unwrap();
     block.terminator.is_switch()
 }
@@ -141,7 +141,7 @@ fn build_cfg_partial_info_edges(
     cfg: &mut CfgPartialInfo,
     ancestors: &im::HashSet<src::BlockId::Id>,
     explored: &mut im::HashSet<src::BlockId::Id>,
-    decl: &src::FunDecl,
+    decl: &src::FunDef,
     block_id: src::BlockId::Id,
 ) {
     // Check if we already explored the current node
@@ -1089,7 +1089,7 @@ enum GotoKind {
 
 fn translate_child_expression(
     cfg: &CfgInfo,
-    decl: &src::FunDecl,
+    decl: &src::FunDef,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
     current_exit_block: Option<src::BlockId::Id>,
@@ -1141,7 +1141,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 
 fn translate_terminator(
     cfg: &CfgInfo,
-    decl: &src::FunDecl,
+    decl: &src::FunDef,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
     current_exit_block: Option<src::BlockId::Id>,
@@ -1343,7 +1343,7 @@ fn is_terminal_explore(num_loops: usize, exp: &tgt::Expression) -> bool {
 
 fn translate_expression(
     cfg: &CfgInfo,
-    decl: &src::FunDecl,
+    decl: &src::FunDef,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
     current_exit_block: Option<src::BlockId::Id>,
@@ -1472,7 +1472,7 @@ fn translate_expression(
     }
 }
 
-fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::FunDecl {
+fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::FunDef {
     // Retrieve the function declaration
     let src_decl = im_ctx.decls.get(src_decl_id).unwrap();
     trace!("Reconstructing: {}", src_decl.name);
@@ -1500,7 +1500,7 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
     .unwrap();
 
     // Return the translated declaration
-    tgt::FunDecl {
+    tgt::FunDef {
         def_id: src_decl.def_id,
         name: src_decl.name.clone(),
         signature: src_decl.signature.clone(),
@@ -1511,7 +1511,7 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
     }
 }
 
-pub fn translate_functions(im_ctx: &FunTransContext) -> Decls {
+pub fn translate_functions(im_ctx: &FunTransContext) -> Defs {
     let mut out_decls = DefId::Vector::new();
 
     // Tranlsate the bodies one at a time

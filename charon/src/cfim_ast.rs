@@ -86,10 +86,10 @@ pub enum Expression {
     Loop(Box<Expression>),
 }
 
-pub type FunDecls = DefId::Vector<FunDecl>;
+pub type FunDefs = DefId::Vector<FunDef>;
 
 /// A function declaration
-pub type FunDecl = GFunDecl<Expression>;
+pub type FunDef = GFunDef<Expression>;
 
 impl SwitchTargets {
     pub fn get_targets(&self) -> Vec<&Expression> {
@@ -281,7 +281,7 @@ impl Expression {
     }
 }
 
-impl FunDecl {
+impl FunDef {
     pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
@@ -308,7 +308,7 @@ impl FunDecl {
     }
 }
 
-type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls>;
+type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDefs>;
 
 impl<'ctx> Formatter<DefId::Id> for AstFormatter<'ctx> {
     fn format_object(&self, id: DefId::Id) -> String {
@@ -317,8 +317,8 @@ impl<'ctx> Formatter<DefId::Id> for AstFormatter<'ctx> {
     }
 }
 
-impl FunDecl {
-    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDecls) -> String {
+impl FunDef {
+    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDefs, fun_ctx: &'ctx FunDefs) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,

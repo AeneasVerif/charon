@@ -48,7 +48,7 @@ pub struct FunSig {
 
 /// A function declaration
 #[derive(Debug, Clone)]
-pub struct GFunDecl<T: std::fmt::Debug + Clone> {
+pub struct GFunDef<T: std::fmt::Debug + Clone> {
     pub def_id: DefId::Id,
     pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
@@ -62,9 +62,9 @@ pub struct GFunDecl<T: std::fmt::Debug + Clone> {
     pub body: T,
 }
 
-pub type FunDecl = GFunDecl<BlockId::Vector<BlockData>>;
+pub type FunDef = GFunDef<BlockId::Vector<BlockData>>;
 
-pub type FunDecls = DefId::Vector<FunDecl>;
+pub type FunDefs = DefId::Vector<FunDef>;
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName)]
 pub enum Statement {
@@ -442,7 +442,7 @@ impl BlockData {
     }
 }
 
-impl<T: std::fmt::Debug + Clone> GFunDecl<T> {
+impl<T: std::fmt::Debug + Clone> GFunDef<T> {
     pub fn fmt_gbody_with_ctx<'a, 'b, 'c, C>(
         &'a self,
         tab: &'b str,
@@ -503,7 +503,7 @@ impl<T: std::fmt::Debug + Clone> GFunDecl<T> {
     }
 }
 
-impl FunDecl {
+impl FunDef {
     pub fn fmt_body_blocks_with_ctx<'a, 'b, 'c, C>(&'a self, tab: &'b str, ctx: &'c C) -> String
     where
         C: Formatter<VarId::Id>
@@ -572,7 +572,7 @@ impl FunSig {
 }
 
 pub struct FunSigFormatter<'a> {
-    pub ty_ctx: &'a TypeDecls,
+    pub ty_ctx: &'a TypeDefs,
     pub sig: &'a FunSig,
 }
 
@@ -601,7 +601,7 @@ impl<'a> Formatter<TypeDefId::Id> for FunSigFormatter<'a> {
 }
 
 impl FunSig {
-    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDecls) -> String {
+    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDefs) -> String {
         // Initialize the formatting context
         let ctx = FunSigFormatter { ty_ctx, sig: self };
 
@@ -610,14 +610,14 @@ impl FunSig {
     }
 }
 
-impl<T: std::fmt::Debug + Clone> GFunDecl<T> {
+impl<T: std::fmt::Debug + Clone> GFunDef<T> {
     /// This is an auxiliary function for printing declarations. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function declaration already has the information to print
     /// variables. The reason is that it is easier for us to write this very
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
-    /// declaration). See [`fmt_with_decls`](FunDecl::fmt_with_decls).
+    /// declaration). See [`fmt_with_decls`](FunDef::fmt_with_decls).
     pub fn gfmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
@@ -698,14 +698,14 @@ impl<T: std::fmt::Debug + Clone> GFunDecl<T> {
     }
 }
 
-impl FunDecl {
+impl FunDef {
     /// This is an auxiliary function for printing declarations. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function declaration already has the information to print
     /// variables. The reason is that it is easier for us to write this very
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
-    /// declaration). See [`fmt_with_decls`](FunDecl::fmt_with_decls).
+    /// declaration). See [`fmt_with_decls`](FunDef::fmt_with_decls).
     pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
@@ -733,13 +733,13 @@ impl FunDecl {
 }
 
 pub struct GAstFormatter<'ctx, T> {
-    pub type_context: &'ctx TypeDecls,
+    pub type_context: &'ctx TypeDefs,
     pub fun_context: &'ctx T,
     pub type_vars: &'ctx TypeVarId::Vector<TypeVar>,
     pub vars: &'ctx VarId::Vector<Var>,
 }
 
-type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls>;
+type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDefs>;
 
 impl<'ctx> Formatter<DefId::Id> for AstFormatter<'ctx> {
     fn format_object(&self, id: DefId::Id) -> String {
@@ -756,7 +756,7 @@ impl<'ctx> Formatter<&Terminator> for AstFormatter<'ctx> {
 
 impl<'ctx, T> GAstFormatter<'ctx, T> {
     pub fn new(
-        type_context: &'ctx TypeDecls,
+        type_context: &'ctx TypeDefs,
         fun_context: &'ctx T,
         type_vars: &'ctx TypeVarId::Vector<TypeVar>,
         vars: &'ctx VarId::Vector<Var>,
@@ -814,7 +814,7 @@ impl<'ctx, T> Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>
         let ctx = self.type_context;
         let gen_decl = ctx.get_type_decl(def_id).unwrap();
         match (gen_decl, opt_variant_id) {
-            (TypeDecl::Enum(decl), Some(variant_id)) => {
+            (TypeDef::Enum(decl), Some(variant_id)) => {
                 let field = decl
                     .variants
                     .get(variant_id)
@@ -824,7 +824,7 @@ impl<'ctx, T> Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>
                     .unwrap();
                 field.name.clone()
             }
-            (TypeDecl::Struct(decl), None) => {
+            (TypeDef::Struct(decl), None) => {
                 let field = decl.fields.get(field_id).unwrap();
                 field.name.clone()
             }
@@ -863,8 +863,8 @@ impl<'ctx, T> Formatter<&Operand> for GAstFormatter<'ctx, T> {
     }
 }
 
-impl FunDecl {
-    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDecls) -> String {
+impl FunDef {
+    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDefs, fun_ctx: &'ctx FunDefs) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,
