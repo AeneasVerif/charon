@@ -31,7 +31,7 @@ use petgraph::algo::simple_paths::all_simple_paths;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use std::cmp::Ordering;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
 
 pub type Decls = tgt::FunDecls;
@@ -334,37 +334,122 @@ fn loop_entry_is_reachable_from_inner(
     return false;
 }
 
+struct FilteredLoopParents {
+    remaining_parents: Vector<(src::BlockId::Id, usize)>,
+    removed_parents: Vector<(src::BlockId::Id, usize)>,
+}
+
 fn filter_loop_parents(
     cfg: &CfgInfo,
     parent_loops: &Vector<(src::BlockId::Id, usize)>,
     block_id: src::BlockId::Id,
-) -> Option<Vector<(src::BlockId::Id, usize)>> {
+) -> Option<FilteredLoopParents> {
     let mut eliminate: usize = 0;
-    let mut distance: usize = 0;
-    for (loop_id, ldist) in parent_loops.iter().rev() {
+    for (loop_id, _ldist) in parent_loops.iter().rev() {
         if !loop_entry_is_reachable_from_inner(cfg, *loop_id, block_id) {
             eliminate += 1;
-            distance += *ldist;
         } else {
             break;
         }
     }
 
     if eliminate > 0 {
-        // Truncate the vector of parents
-        let mut out = Vector::new();
-        for i in 0..(parent_loops.len() - eliminate) {
-            out.push_back(parent_loops[i]);
+        // Split the vector of parents
+        let (mut remaining_parents, removed_parents) = parent_loops
+            .clone()
+            .split_at(parent_loops.len() - eliminate);
+        //        let removed_parents = Vector::from_iter(removed_parents.into_iter().map(|(bid, _)| bid));
+
+        // Update the distance to the last loop - we just increment the distance
+        // by 1, because from the point of view of the parent loop, we just exited
+        // a block and go to the next sequence of instructions.
+        if !remaining_parents.is_empty() {
+            remaining_parents
+                .get_mut(remaining_parents.len() - 1)
+                .unwrap()
+                .1 += 1;
         }
 
-        // Update the distance to the last loop
-        if !out.is_empty() {
-            out.get_mut(out.len() - 1).unwrap().1 += distance;
-        }
-
-        Some(out)
+        Some(FilteredLoopParents {
+            remaining_parents,
+            removed_parents,
+        })
     } else {
         None
+    }
+}
+
+/// List the nodes reachable from a starting point.
+/// We list the nodes and the depth (in the AST) at which they were found.
+fn list_reachable(cfg: &Cfg, start: src::BlockId::Id) -> HashMap<src::BlockId::Id, usize> {
+    let mut reachable: HashMap<src::BlockId::Id, usize> = HashMap::new();
+    let mut stack: VecDeque<(src::BlockId::Id, usize)> = VecDeque::new();
+    stack.push_back((start, 0));
+
+    while !stack.is_empty() {
+        let (bid, dist) = stack.pop_front().unwrap();
+
+        // Ignore this node if we already registered it with a better distance
+        match reachable.get(&bid) {
+            None => (),
+            Some(original_dist) => {
+                if *original_dist < dist {
+                    continue;
+                }
+            }
+        }
+
+        // Inset the node with its distance
+        reachable.insert(bid, dist);
+
+        // Add the children to the stack
+        for child in cfg.neighbors(bid) {
+            stack.push_back((child, dist + 1));
+        }
+    }
+
+    // Return
+    return reachable;
+}
+
+/// Register a node and its children as exit candidates for a list of
+/// parent loops.
+fn register_children_as_loop_exit_candidates(
+    cfg: &CfgInfo,
+    loop_exits: &mut HashMap<src::BlockId::Id, HashMap<src::BlockId::Id, LoopExitCandidateInfo>>,
+    removed_parent_loops: &Vector<(src::BlockId::Id, usize)>,
+    block_id: src::BlockId::Id,
+) {
+    // List the reachable nodes
+    let reachable = list_reachable(&cfg.cfg_no_be, block_id);
+
+    let mut base_dist = 0;
+    // For every parent loop, in reverse order (we go from last to first in
+    // order to correctly compute the distances)
+    for (loop_id, loop_dist) in removed_parent_loops.iter().rev() {
+        // Update the distance to the loop entry
+        base_dist += *loop_dist;
+
+        // Retrieve the candidates
+        let candidates = loop_exits.get_mut(loop_id).unwrap();
+
+        // Update them
+        for (bid, dist) in reachable.iter() {
+            let distance = base_dist + *dist;
+            match candidates.get_mut(bid) {
+                None => {
+                    candidates.insert(
+                        *bid,
+                        LoopExitCandidateInfo {
+                            occurrences: vec![distance],
+                        },
+                    );
+                }
+                Some(c) => {
+                    c.occurrences.push(distance);
+                }
+            }
+        }
     }
 }
 
@@ -373,24 +458,6 @@ fn register_loop_exit_candidate(
     parent_loops: &Vector<(src::BlockId::Id, usize)>,
     block_id: src::BlockId::Id,
 ) {
-    let parent = parent_loops.get(parent_loops.len() - 1).unwrap();
-    let loop_id = parent.0;
-    let distance = parent.1;
-
-    let candidates = loop_exits.get_mut(&loop_id).unwrap();
-    match candidates.get_mut(&block_id) {
-        None => {
-            candidates.insert(
-                block_id,
-                LoopExitCandidateInfo {
-                    occurrences: vec![distance],
-                },
-            );
-        }
-        Some(c) => {
-            c.occurrences.push(distance);
-        }
-    }
 }
 
 fn compute_loop_exit_candidates(
@@ -438,9 +505,32 @@ fn compute_loop_exit_candidates(
                 );
             }
             Some(fparent_loops) => {
-                // We filtered some parent loops: it means this child is a loop
-                // exit candidate. Register it.
-                register_loop_exit_candidate(loop_exits, &parent_loops, child);
+                // We filtered some parent loops: it means this child and its
+                // children are loop exit candidates for all those loops: we must
+                // thus register them.
+                // Note that we register the child *and* its children: the reason
+                // is that we might do something *then* actually jump to the exit.
+                // For instance, the following block of code:
+                // ```
+                // if cond { break; } else { ... }
+                // ```
+                //
+                // Gets translated in MIR to something like this:
+                // ```
+                // bb1: {
+                //   if cond -> bb2 else -> bb3; // bb2 is not the real exit
+                // }
+                //
+                // bb2: {
+                //   goto bb4; // bb4 is the real exit
+                // }
+                // ```
+                register_children_as_loop_exit_candidates(
+                    cfg,
+                    loop_exits,
+                    &fparent_loops.removed_parents,
+                    child,
+                );
 
                 // Explore, with the filtered parents
                 compute_loop_exit_candidates(
@@ -448,7 +538,7 @@ fn compute_loop_exit_candidates(
                     explored,
                     ordered_loops,
                     loop_exits,
-                    fparent_loops,
+                    fparent_loops.remaining_parents,
                     child,
                 );
             }
@@ -547,7 +637,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
 
     {
         // Debugging
-        let mut candidates: Vec<String> = loop_exits
+        let candidates: Vec<String> = loop_exits
             .iter()
             .map(|(loop_id, candidates)| format!("{} -> {:?}", loop_id, candidates))
             .collect();
@@ -636,6 +726,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
     }
 
     // Return the chosen exits
+    trace!("Chosen loop exits: {:?}", chosen_loop_exits);
     chosen_loop_exits
 }
 
@@ -990,6 +1081,7 @@ fn translate_child_expression(
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
     current_exit_block: Option<src::BlockId::Id>,
+    explored: &mut HashSet<src::BlockId::Id>,
     child_id: src::BlockId::Id,
 ) -> Option<tgt::Expression> {
     // Check if this is a backward call
@@ -1008,6 +1100,7 @@ fn translate_child_expression(
                 exits_map,
                 parent_loops,
                 current_exit_block,
+                explored,
                 child_id,
             )
         }
@@ -1040,6 +1133,7 @@ fn translate_terminator(
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
     current_exit_block: Option<src::BlockId::Id>,
+    explored: &mut HashSet<src::BlockId::Id>,
     terminator: &src::Terminator,
 ) -> Option<tgt::Expression> {
     match terminator {
@@ -1053,6 +1147,7 @@ fn translate_terminator(
             exits_map,
             parent_loops,
             current_exit_block,
+            explored,
             *target,
         ),
         src::Terminator::Drop { place, target } => {
@@ -1062,6 +1157,7 @@ fn translate_terminator(
                 exits_map,
                 parent_loops,
                 current_exit_block,
+                explored,
                 *target,
             );
             let st = tgt::Statement::Drop(place.clone());
@@ -1081,6 +1177,7 @@ fn translate_terminator(
                 exits_map,
                 parent_loops,
                 current_exit_block,
+                explored,
                 *target,
             );
             let st = tgt::Statement::Call(tgt::Call {
@@ -1103,6 +1200,7 @@ fn translate_terminator(
                 exits_map,
                 parent_loops,
                 current_exit_block,
+                explored,
                 *target,
             );
             let st = tgt::Statement::Assert(tgt::Assert {
@@ -1122,6 +1220,7 @@ fn translate_terminator(
                         exits_map,
                         parent_loops.clone(),
                         current_exit_block,
+                        explored,
                         *then_tgt,
                     );
                     let then_exp = opt_expression_to_nop(then_exp);
@@ -1131,6 +1230,7 @@ fn translate_terminator(
                         exits_map,
                         parent_loops.clone(),
                         current_exit_block,
+                        explored,
                         *else_tgt,
                     );
                     let else_exp = opt_expression_to_nop(else_exp);
@@ -1147,6 +1247,7 @@ fn translate_terminator(
                             exits_map,
                             parent_loops.clone(),
                             current_exit_block,
+                            explored,
                             *bid,
                         );
                         let exp = opt_expression_to_nop(exp);
@@ -1159,6 +1260,7 @@ fn translate_terminator(
                         exits_map,
                         parent_loops.clone(),
                         current_exit_block,
+                        explored,
                         *otherwise,
                     );
                     let otherwise_exp = opt_expression_to_nop(otherwise_exp);
@@ -1233,8 +1335,23 @@ fn translate_expression(
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
     current_exit_block: Option<src::BlockId::Id>,
+    explored: &mut HashSet<src::BlockId::Id>,
     block_id: src::BlockId::Id,
 ) -> Option<tgt::Expression> {
+    // Check that we didn't already translate this block, and insert the block id
+    // in the set of already translated blocks.
+    // This is not necessary for the algorithm correctness. We enforce this only
+    // to guarantee the quality of the translation: if a block gets translated
+    // twice, it means we didn't correctly identify how to reconstruct the control-
+    // flow, and that the reconstructed program contains duplicated pieces of code.
+    // As this is still an early stage, we want to make sure we spot such
+    // duplication, to update the reconstruction accordingly. In the future, we
+    // might want to make this test optional, and let the user control its
+    // activation.
+    trace!("Parent loops: {:?}, Block id: {}", parent_loops, block_id);
+    assert!(!explored.contains(&block_id));
+    explored.insert(block_id);
+
     let block = decl.body.get(block_id).unwrap();
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
@@ -1262,6 +1379,7 @@ fn translate_expression(
         exits_map,
         nparent_loops,
         ncurrent_exit_block,
+        explored,
         &block.terminator,
     );
 
@@ -1299,6 +1417,7 @@ fn translate_expression(
                 exits_map,
                 parent_loops,
                 current_exit_block,
+                explored,
                 exit_block_id,
             );
             combine_expressions(Some(exp), next_exp)
@@ -1321,6 +1440,7 @@ fn translate_expression(
                 exits_map,
                 parent_loops,
                 current_exit_block,
+                explored,
                 exit_block_id,
             );
             combine_expressions(Some(exp), next_exp)
@@ -1339,6 +1459,7 @@ fn translate_expression(
 fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::FunDecl {
     // Retrieve the function declaration
     let src_decl = im_ctx.decls.get(src_decl_id).unwrap();
+    trace!("Reconstructing: {}", src_decl.name);
 
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
@@ -1357,6 +1478,7 @@ fn translate_function(im_ctx: &FunTransContext, src_decl_id: DefId::Id) -> tgt::
         &exits_map,
         Vector::new(),
         None,
+        &mut HashSet::new(),
         src::BlockId::ZERO,
     )
     .unwrap();
