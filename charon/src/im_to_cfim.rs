@@ -89,11 +89,15 @@ struct CfgInfo {
     pub loop_entries: HashSet<src::BlockId::Id>,
     pub backward_edges: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
     pub switch_blocks: HashSet<src::BlockId::Id>,
-    /// The reachability graph:
+    /// The reachability matrix:
     /// src can reach dest <==> (src, dest) in reachability
+    /// TODO: this is not necessary anymore. There is a place where we use it
+    /// as a test to shortcut some computations, but computing this matrix
+    /// is actually probably too expensive for the shortcut to be useful...
     pub reachability: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
     /// Dominators (on the CFG *without* back-edges):
     /// n dominated by n' <==> (n, n') in dominated
+    /// TODO: this is not used.
     pub dominated_no_be: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
 }
 
@@ -1431,8 +1435,12 @@ fn translate_expression(
         let exp = terminator.unwrap();
 
         // Concatenate the exit expression, if needs be
-        // TODO: I don't think the check is necessary anymore...
-        let exp = if ncurrent_exit_block.is_some() && !is_terminal(&exp) {
+        let exp = if ncurrent_exit_block.is_some() {
+            // Sanity check: if there is an exit block, this block must be
+            // reachable (i.e, there must exist a path in the switch which
+            // doesn't end with `panic`, `return`, etc.).
+            assert!(!is_terminal(&exp));
+
             let exit_block_id = ncurrent_exit_block.unwrap();
             let next_exp = translate_expression(
                 cfg,
