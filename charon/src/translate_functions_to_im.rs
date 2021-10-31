@@ -1048,6 +1048,9 @@ fn translate_rvalue<'ctx, 'tcx>(
                 }
             }
         }
+        mir::Rvalue::ShallowInitBox(_, _) => {
+            unimplemented!();
+        }
     }
 }
 

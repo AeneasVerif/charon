@@ -18,7 +18,14 @@ extern crate rustc_hir;
 extern crate rustc_index;
 extern crate rustc_interface;
 extern crate rustc_middle;
-extern crate rustc_mir;
+//extern crate rustc_mir;
+// TODO: filter
+extern crate rustc_borrowck;
+extern crate rustc_const_eval;
+extern crate rustc_mir_dataflow;
+extern crate rustc_mir_transform;
+extern crate rustc_monomorphize;
+
 extern crate rustc_resolve;
 extern crate rustc_session;
 extern crate rustc_span;
@@ -58,13 +65,6 @@ struct ToInternal {}
 
 impl Callbacks for ToInternal {
     fn after_expansion<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
-        let session = c.session();
-        let resolver = {
-            let parts = abort_on_err(queries.expansion(), session).peek();
-            let resolver = parts.1.borrow();
-            resolver.clone()
-        };
-
         // TODO: extern crates
         queries
             .global_ctxt()
@@ -72,7 +72,7 @@ impl Callbacks for ToInternal {
             .peek_mut()
             .enter(|tcx| {
                 let session = c.session();
-                translate(session, tcx, resolver)
+                translate(session, tcx)
             })
             .unwrap();
         Compilation::Stop
@@ -170,11 +170,7 @@ fn main() {
 
 type TranslationResult<T> = Result<T, ()>;
 
-fn translate(
-    sess: &Session,
-    tcx: TyCtxt,
-    _resolver: Rc<RefCell<BoxedResolver>>,
-) -> TranslationResult<()> {
+fn translate(sess: &Session, tcx: TyCtxt) -> TranslationResult<()> {
     trace!();
 
     // Explore the modules in the crate, then items in the modules.

@@ -101,7 +101,6 @@ fn register_hir_type(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
     tcx: &TyCtxt,
-    mod_id: LocalDefId,
     item: &Item,
     def_id: DefId,
 ) -> Result<()> {
@@ -121,7 +120,7 @@ fn register_hir_type(
             // Retrieve the MIR adt from the def id and register it, retrieve
             // the list of dependencies at the same time.
             let adt = tcx.adt_def(def_id);
-            return register_mir_adt(rdecls, sess, tcx, mod_id, adt);
+            return register_mir_adt(rdecls, sess, tcx, adt);
         }
         _ => {
             unreachable!();
@@ -136,7 +135,6 @@ fn register_mir_adt(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
     tcx: &TyCtxt,
-    mod_id: LocalDefId,
     adt: &AdtDef,
 ) -> Result<()> {
     trace!("> adt: {:?}", adt);
@@ -188,15 +186,7 @@ fn register_mir_adt(
             trace!("field_def");
             let ty = field_def.ty(*tcx, substs);
             trace!("ty");
-            register_mir_ty(
-                rdecls,
-                sess,
-                tcx,
-                mod_id,
-                var_span,
-                &mut rtype_decl.deps,
-                &ty,
-            )?;
+            register_mir_ty(rdecls, sess, tcx, var_span, &mut rtype_decl.deps, &ty)?;
         }
 
         i += 1;
@@ -212,7 +202,6 @@ fn register_mir_substs<'tcx>(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
     tcx: &TyCtxt,
-    mod_id: LocalDefId,
     span: &Span,
     deps: &mut TypeDependencies,
     substs: &rustc_middle::ty::subst::SubstsRef<'tcx>,
@@ -221,7 +210,7 @@ fn register_mir_substs<'tcx>(
     for param in substs.iter() {
         match param.unpack() {
             rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
-                register_mir_ty(rdecls, sess, tcx, mod_id, span, deps, &param_ty)?;
+                register_mir_ty(rdecls, sess, tcx, span, deps, &param_ty)?;
             }
             rustc_middle::ty::subst::GenericArgKind::Lifetime(_)
             | rustc_middle::ty::subst::GenericArgKind::Const(_) => {
@@ -239,7 +228,6 @@ fn register_mir_ty(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
     tcx: &TyCtxt,
-    mod_id: LocalDefId,
     span: &Span,
     deps: &mut TypeDependencies,
     ty: &Ty,
@@ -273,14 +261,14 @@ fn register_mir_ty(
                 assert!(substs.iter().len() == 2);
                 match substs.iter().next().unwrap().unpack() {
                     rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
-                        register_mir_ty(rdecls, sess, tcx, mod_id, span, deps, &param_ty)?;
+                        register_mir_ty(rdecls, sess, tcx, span, deps, &param_ty)?;
                     }
                     _ => {
                         unreachable!();
                     }
                 }
             } else {
-                register_mir_substs(rdecls, sess, tcx, mod_id, span, deps, substs)?;
+                register_mir_substs(rdecls, sess, tcx, span, deps, substs)?;
             }
 
             // Register the ADT itself, if it is local (i.e.: defined in the
@@ -297,30 +285,30 @@ fn register_mir_ty(
             rdecls.decls.insert(adt.did);
 
             // Register
-            return register_mir_adt(rdecls, sess, tcx, mod_id, adt);
+            return register_mir_adt(rdecls, sess, tcx, adt);
         }
         TyKind::Array(ty, const_param) => {
             trace!("Array");
 
-            register_mir_ty(rdecls, sess, tcx, mod_id, span, deps, ty)?;
-            return register_mir_ty(rdecls, sess, tcx, mod_id, span, deps, &const_param.ty);
+            register_mir_ty(rdecls, sess, tcx, span, deps, ty)?;
+            return register_mir_ty(rdecls, sess, tcx, span, deps, &const_param.ty);
         }
         TyKind::Slice(ty) => {
             trace!("Slice");
 
-            return register_mir_ty(rdecls, sess, tcx, mod_id, span, deps, ty);
+            return register_mir_ty(rdecls, sess, tcx, span, deps, ty);
         }
         TyKind::Ref(_, ty, _) => {
             trace!("Ref");
 
-            return register_mir_ty(rdecls, sess, tcx, mod_id, span, deps, ty);
+            return register_mir_ty(rdecls, sess, tcx, span, deps, ty);
         }
         TyKind::Tuple(substs) => {
             trace!("Tuple");
 
             for param in substs.iter() {
                 let param_ty = param.expect_ty();
-                register_mir_ty(rdecls, sess, tcx, mod_id, span, deps, &param_ty)?;
+                register_mir_ty(rdecls, sess, tcx, span, deps, &param_ty)?;
             }
 
             return Ok(());
@@ -357,7 +345,7 @@ fn register_mir_ty(
         TyKind::FnPtr(sig) => {
             trace!("FnPtr");
             for param_ty in sig.inputs_and_output().no_bound_vars().unwrap().iter() {
-                register_mir_ty(rdecls, sess, tcx, mod_id, span, deps, &param_ty)?;
+                register_mir_ty(rdecls, sess, tcx, span, deps, &param_ty)?;
             }
             return Ok(());
         }
@@ -429,7 +417,6 @@ fn register_function(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
     tcx: &TyCtxt,
-    mod_id: LocalDefId,
     def_id: LocalDefId,
 ) -> Result<()> {
     trace!("{:?}", def_id);
@@ -456,7 +443,6 @@ fn register_function(
             rdecls,
             sess,
             tcx,
-            mod_id,
             &v.source_info.span,
             &mut fn_decl.deps_tys,
             &v.ty,
@@ -573,30 +559,14 @@ fn register_function(
                 fn_decl.deps_funs.insert(fid);
 
                 // Register the types given as parameters
-                register_mir_substs(
-                    rdecls,
-                    sess,
-                    tcx,
-                    mod_id,
-                    &fn_span,
-                    &mut fn_decl.deps_tys,
-                    &substs,
-                )?;
+                register_mir_substs(rdecls, sess, tcx, &fn_span, &mut fn_decl.deps_tys, &substs)?;
 
                 // Register the argument types
                 for a in args.iter() {
                     trace!("terminator: Call: arg: {:?}", a);
 
                     let ty = a.ty(&body.local_decls, *tcx);
-                    register_mir_ty(
-                        rdecls,
-                        sess,
-                        tcx,
-                        mod_id,
-                        &fn_span,
-                        &mut fn_decl.deps_tys,
-                        &ty,
-                    )?;
+                    register_mir_ty(rdecls, sess, tcx, &fn_span, &mut fn_decl.deps_tys, &ty)?;
                 }
 
                 // Note that we don't need to register the "bare" function
@@ -611,10 +581,10 @@ fn register_function(
                     Some(f_node) => match f_node {
                         rustc_hir::Node::Item(f_item) => {
                             assert!(is_fn_decl(f_item));
-                            register_hir_item(rdecls, sess, tcx, mod_id, f_item)?;
+                            register_hir_item(rdecls, sess, tcx, f_item)?;
                         }
                         rustc_hir::Node::ImplItem(impl_item) => {
-                            register_hir_impl_item(rdecls, sess, tcx, mod_id, impl_item)?;
+                            register_hir_impl_item(rdecls, sess, tcx, impl_item)?;
                         }
                         _ => {
                             unreachable!();
@@ -678,7 +648,6 @@ fn register_hir_item(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
     tcx: &TyCtxt,
-    mod_id: LocalDefId,
     item: &Item,
 ) -> Result<()> {
     trace!("{:?}", item);
@@ -701,13 +670,13 @@ fn register_hir_item(
         }
         rustc_hir::ItemKind::Enum(_, _) | rustc_hir::ItemKind::Struct(_, _) => {
             rdecls.decls.insert(def_id);
-            return register_hir_type(rdecls, sess, tcx, mod_id, item, def_id);
+            return register_hir_type(rdecls, sess, tcx, item, def_id);
         }
         rustc_hir::ItemKind::OpaqueTy(_) => unimplemented!(),
         rustc_hir::ItemKind::Union(_, _) => unimplemented!(),
         rustc_hir::ItemKind::Fn(_, _, _) => {
             rdecls.decls.insert(def_id);
-            return register_function(rdecls, sess, tcx, mod_id, item.def_id);
+            return register_function(rdecls, sess, tcx, item.def_id);
         }
         rustc_hir::ItemKind::Impl(impl_block) => {
             trace!("impl");
@@ -725,7 +694,7 @@ fn register_hir_item(
                 // we need to look it up
                 let impl_item = hir_map.impl_item(impl_item_ref.id);
 
-                register_hir_impl_item(rdecls, sess, tcx, mod_id, impl_item)?;
+                register_hir_impl_item(rdecls, sess, tcx, impl_item)?;
             }
             return Ok(());
         }
@@ -754,7 +723,6 @@ fn register_hir_impl_item(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
     tcx: &TyCtxt,
-    mod_id: LocalDefId,
     impl_item: &ImplItem,
 ) -> Result<()> {
     // TODO: make proper error message
@@ -768,7 +736,7 @@ fn register_hir_impl_item(
             let local_def_id = impl_item.def_id;
             let def_id = local_def_id.to_def_id();
             rdecls.decls.insert(def_id);
-            register_function(rdecls, sess, tcx, mod_id, local_def_id)
+            register_function(rdecls, sess, tcx, local_def_id)
         }
     }
 }
@@ -778,11 +746,9 @@ pub fn register_crate(sess: &Session, tcx: TyCtxt) -> Result<RegisteredDeclarati
     let hir_map = tcx.hir();
     let mut registered_decls = RegisteredDeclarations::new();
 
-    for (mod_id, mod_items) in tcx.hir_crate(()).modules.iter() {
-        for item_id in mod_items.items.iter() {
-            let item = hir_map.item(*item_id);
-            register_hir_item(&mut registered_decls, sess, &tcx, *mod_id, item)?;
-        }
+    for item_id in tcx.hir_crate(()).module().item_ids.iter() {
+        let item = hir_map.item(*item_id);
+        register_hir_item(&mut registered_decls, sess, &tcx, item)?;
     }
 
     return Ok(registered_decls);
