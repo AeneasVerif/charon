@@ -189,9 +189,6 @@ pub enum AssumedTy {
 
 pub type RegionSubst<R> = HashMap<RegionVarId::Id, R>;
 pub type TypeSubst<R> = HashMap<TypeVarId::Id, Ty<R>>;
-/// Erased region substitution - trivial substitution
-/// TODO: remove this
-pub type ERegionSubst = RegionSubst<ErasedRegion>;
 /// Type substitution where the regions are erased
 pub type ETypeSubst = TypeSubst<ErasedRegion>;
 

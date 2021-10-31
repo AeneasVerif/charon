@@ -26,9 +26,6 @@ pub static START_BLOCK_ID: BlockId::Id = BlockId::ZERO;
 /// We need the functions' signatures *with* the region parameters in order
 /// to correctly abstract those functions (number and signature of the backward
 /// functions) - we only use regions for this purpose.
-/// TODO: still unsure about where we should put the region and type parameters.
-/// In the FunSig or in the FunDecl? And should we have an FunSig data structure
-/// at all actually?
 #[derive(Debug, Clone)]
 pub struct FunSig {
     pub region_params: RegionVarId::Vector<RegionVar>,
