@@ -59,29 +59,21 @@ pub enum ErasedRegion {
 }
 
 /// A type definition.
-/// Can only be an ADT (structure or enumeration), as type aliases are inlined.
+/// Can only be an ADT (structure or enumeration), as type aliases are inlined
+/// in MIR.
+#[derive(Debug, Clone)]
+pub struct TypeDef {
+    pub def_id: TypeDefId::Id,
+    pub name: Name,
+    pub region_params: RegionVarId::Vector<RegionVar>,
+    pub type_params: TypeVarId::Vector<TypeVar>,
+    pub kind: TypeDefKind,
+}
+
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters)]
-pub enum TypeDef {
-    Enum(EnumDef),
-    Struct(StructDef),
-}
-
-#[derive(Debug, Clone)]
-pub struct EnumDef {
-    pub def_id: TypeDefId::Id,
-    pub name: Name,
-    pub region_params: RegionVarId::Vector<RegionVar>,
-    pub type_params: TypeVarId::Vector<TypeVar>,
-    pub variants: VariantId::Vector<Variant>,
-}
-
-#[derive(Debug, Clone)]
-pub struct StructDef {
-    pub def_id: TypeDefId::Id,
-    pub name: Name,
-    pub region_params: RegionVarId::Vector<RegionVar>,
-    pub type_params: TypeVarId::Vector<TypeVar>,
-    pub fields: FieldId::Vector<Field>,
+pub enum TypeDefKind {
+    Struct(FieldId::Vector<Field>),
+    Enum(VariantId::Vector<Variant>),
 }
 
 #[derive(Debug, Clone)]
@@ -276,46 +268,14 @@ impl std::string::ToString for RegionVar {
 }
 
 impl TypeDef {
-    pub fn get_id(&self) -> TypeDefId::Id {
-        match self {
-            TypeDef::Enum(decl) => decl.def_id,
-            TypeDef::Struct(decl) => decl.def_id,
-        }
-    }
-
-    pub fn get_name(&self) -> &Name {
-        match self {
-            TypeDef::Enum(decl) => &decl.name,
-            TypeDef::Struct(decl) => &decl.name,
-        }
-    }
-
-    pub fn get_formatted_name(&self) -> String {
-        self.get_name().to_string()
-    }
-
-    pub fn get_region_params(&self) -> &RegionVarId::Vector<RegionVar> {
-        match self {
-            TypeDef::Enum(decl) => &decl.region_params,
-            TypeDef::Struct(decl) => &decl.region_params,
-        }
-    }
-
-    pub fn get_type_params(&self) -> &TypeVarId::Vector<TypeVar> {
-        match self {
-            TypeDef::Enum(decl) => &decl.type_params,
-            TypeDef::Struct(decl) => &decl.type_params,
-        }
-    }
-
     /// The variant id should be `None` if it is a structure and `Some` if it
     /// is an enumeration.
     pub fn get_fields(&self, variant_id: Option<VariantId::Id>) -> &FieldId::Vector<Field> {
-        match self {
-            TypeDef::Enum(decl) => &decl.variants.get(variant_id.unwrap()).unwrap().fields,
-            TypeDef::Struct(decl) => {
+        match &self.kind {
+            TypeDefKind::Enum(variants) => &variants.get(variant_id.unwrap()).unwrap().fields,
+            TypeDefKind::Struct(fields) => {
                 assert!(variant_id.is_none());
-                &decl.fields
+                fields
             }
         }
     }
@@ -328,10 +288,7 @@ impl TypeDef {
         inst_types: &Vector<ETy>,
     ) -> Vector<ETy> {
         // Introduce the substitution
-        let ty_subst = make_type_subst(
-            self.get_type_params().iter().map(|x| x.index),
-            inst_types.iter(),
-        );
+        let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
 
         let fields = self.get_fields(variant_id);
         let field_types: Vec<ETy> = fields
@@ -351,10 +308,7 @@ impl TypeDef {
         field_id: FieldId::Id,
     ) -> ETy {
         // Introduce the substitution
-        let ty_subst = make_type_subst(
-            self.get_type_params().iter().map(|x| x.index),
-            inst_types.iter(),
-        );
+        let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
 
         let fields = self.get_fields(variant_id);
         let field_type = fields
@@ -373,9 +327,34 @@ impl TypeDef {
             + Formatter<&'a Region<RegionVarId::Id>>
             + Formatter<TypeDefId::Id>,
     {
-        match self {
-            TypeDef::Enum(d) => d.fmt_with_ctx(ctx),
-            TypeDef::Struct(d) => d.fmt_with_ctx(ctx),
+        let params = TypeDef::fmt_params(&self.region_params, &self.type_params);
+        match &self.kind {
+            TypeDefKind::Struct(fields) => {
+                if fields.len() > 0 {
+                    let fields: Vec<String> = fields
+                        .iter()
+                        .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)).to_owned())
+                        .collect();
+                    let fields = fields.join(",");
+                    format!(
+                        "struct {}{} = {{{}\n}}",
+                        self.name.to_string(),
+                        params,
+                        fields
+                    )
+                    .to_owned()
+                } else {
+                    format!("struct {}{} = {{}}", self.name.to_string(), params).to_owned()
+                }
+            }
+            TypeDefKind::Enum(variants) => {
+                let variants: Vec<String> = variants
+                    .iter()
+                    .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)).to_owned())
+                    .collect();
+                let variants = variants.join("\n");
+                format!("enum {}{} =\n{}", self.name.to_string(), params, variants).to_owned()
+            }
         }
     }
 
@@ -397,54 +376,6 @@ impl TypeDef {
 impl std::string::ToString for TypeDef {
     fn to_string(&self) -> String {
         self.fmt_with_ctx(&DummyFormatter {})
-    }
-}
-
-impl EnumDef {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &'a T) -> String
-    where
-        T: Formatter<TypeVarId::Id>
-            + Formatter<RegionVarId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDefId::Id>,
-    {
-        let params = TypeDef::fmt_params(&self.region_params, &self.type_params);
-        let variants: Vec<String> = self
-            .variants
-            .iter()
-            .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)).to_owned())
-            .collect();
-        let variants = variants.join("\n");
-        format!("enum {}{} =\n{}", self.name.to_string(), params, variants).to_owned()
-    }
-}
-
-impl StructDef {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &'a T) -> String
-    where
-        T: Formatter<TypeVarId::Id>
-            + Formatter<RegionVarId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDefId::Id>,
-    {
-        let params = TypeDef::fmt_params(&self.region_params, &self.type_params);
-        if self.fields.len() > 0 {
-            let fields: Vec<String> = self
-                .fields
-                .iter()
-                .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)).to_owned())
-                .collect();
-            let fields = fields.join(",");
-            format!(
-                "struct {}{} = {{{}\n}}",
-                self.name.to_string(),
-                params,
-                fields
-            )
-            .to_owned()
-        } else {
-            format!("struct {}{} = {{}}", self.name.to_string(), params).to_owned()
-        }
     }
 }
 
@@ -471,18 +402,6 @@ impl Field {
             + Formatter<TypeDefId::Id>,
     {
         format!("{}: {}", self.name, self.ty.fmt_with_ctx(ctx)).to_owned()
-    }
-}
-
-impl std::string::ToString for EnumDef {
-    fn to_string(&self) -> String {
-        self.fmt_with_ctx(&DummyFormatter {})
-    }
-}
-
-impl std::string::ToString for StructDef {
-    fn to_string(&self) -> String {
-        self.fmt_with_ctx(&DummyFormatter {})
     }
 }
 
@@ -1046,6 +965,6 @@ impl TypeDefs {
 impl Formatter<TypeDefId::Id> for TypeDefs {
     fn format_object(&self, id: TypeDefId::Id) -> String {
         let decl = self.get_type_decl(id).unwrap();
-        decl.get_formatted_name()
+        decl.name.to_string()
     }
 }

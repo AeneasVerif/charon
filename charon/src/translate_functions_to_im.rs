@@ -475,7 +475,7 @@ fn translate_projection<'tcx>(
                         // If (and only if) the ADT is an enumartion, we should
                         // have downcast knformation (that we need to figure out
                         // the variant, and thus know how to project).
-                        assert!(type_def.is_enum() == downcast_id.is_some());
+                        assert!(type_def.kind.is_enum() == downcast_id.is_some());
 
                         path_type = type_def.get_erased_regions_instantiated_field_type(
                             downcast_id,
@@ -699,13 +699,13 @@ fn translate_operand_constant_value<'tcx>(
                     // Check that there is only one variant, with no fields
                     // and no parameters. Construct the value at the same time.
                     assert!(substs.len() == 0);
-                    match decl {
-                        ty::TypeDef::Enum(decl) => {
-                            assert!(decl.type_params.len() == 0);
-                            assert!(decl.variants.len() == 1);
+                    assert!(decl.type_params.len() == 0);
+                    match &decl.kind {
+                        ty::TypeDefKind::Enum(variants) => {
+                            assert!(variants.len() == 1);
                         }
-                        ty::TypeDef::Struct(decl) => {
-                            assert!(decl.type_params.len() == 0);
+                        ty::TypeDefKind::Struct(_) => {
+                            // OK
                         }
                     };
 
@@ -1018,17 +1018,16 @@ fn translate_rvalue<'ctx, 'tcx>(
                     let id_t = *bt_ctx.ft_ctx.tt_ctx.rid_to_id.get(&adt_def.did).unwrap();
                     let decl = bt_ctx.get_type_decls().get_type_decl(id_t).unwrap();
 
-                    let akind = match decl {
-                        ty::TypeDef::Enum(decl) => {
+                    let akind = match &decl.kind {
+                        ty::TypeDefKind::Enum(variants) => {
                             let variant_id = translate_variant_id(*variant_idx);
                             assert!(
-                                operands_t.len()
-                                    == decl.variants.get(variant_id).unwrap().fields.len()
+                                operands_t.len() == variants.get(variant_id).unwrap().fields.len()
                             );
 
                             e::AggregateKind::Adt(id_t, Some(variant_id))
                         }
-                        ty::TypeDef::Struct(_) => {
+                        ty::TypeDefKind::Struct(_) => {
                             assert!(variant_idx.as_usize() == 0);
                             e::AggregateKind::Adt(id_t, None)
                         }

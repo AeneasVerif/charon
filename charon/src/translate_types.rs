@@ -94,19 +94,15 @@ impl<'a> Formatter<ty::TypeDefId::Id> for TypeDefFormatter<'a> {
 }
 
 impl Formatter<&ty::TypeDef> for TypeTransContext {
-    fn format_object(&self, decl: &ty::TypeDef) -> String {
-        // Create a type decl formatter (which will take care of the
+    fn format_object(&self, def: &ty::TypeDef) -> String {
+        // Create a type def formatter (which will take care of the
         // type parameters)
-        let (region_params, type_params) = match decl {
-            ty::TypeDef::Enum(decl) => (&decl.region_params, &decl.type_params),
-            ty::TypeDef::Struct(decl) => (&decl.region_params, &decl.type_params),
-        };
         let formatter = TypeDefFormatter {
             tt_ctx: self,
-            region_params,
-            type_params,
+            region_params: &def.region_params,
+            type_params: &def.type_params,
         };
-        formatter.format_object(decl)
+        formatter.format_object(def)
     }
 }
 
@@ -129,7 +125,7 @@ pub fn translate_region_name(region: &rustc_middle::ty::RegionKind) -> Option<St
     }
 }
 
-/// Translate one type declaration.
+/// Translate one type definition.
 ///
 /// Note that we translate the types one by one: we don't need to take into
 /// account the fact that some types are mutually recursive at this point
@@ -232,32 +228,13 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
 
     // Register the type
     let trans_id = trans_ctx.rid_to_id.get(&def_id).unwrap();
+    let name = type_def_id_to_name(tcx, def_id)?;
     let region_params = ty::RegionVarId::Vector::from(region_params);
     let type_params = ty::TypeVarId::Vector::from(type_params);
-    let type_decl: ty::TypeDef = match adt.adt_kind() {
-        rustc_middle::ty::AdtKind::Struct => {
-            assert!(variants.len() == 1);
-
-            let name = type_def_id_to_name(tcx, def_id)?;
-            let fields = variants[0].fields.clone();
-            ty::TypeDef::Struct(ty::StructDef {
-                def_id: *trans_id,
-                name: Name::from(name),
-                region_params: region_params,
-                type_params: type_params,
-                fields: fields,
-            })
-        }
+    let type_def_kind: ty::TypeDefKind = match adt.adt_kind() {
+        rustc_middle::ty::AdtKind::Struct => ty::TypeDefKind::Struct(variants[0].fields.clone()),
         rustc_middle::ty::AdtKind::Enum => {
-            let name = type_def_id_to_name(tcx, def_id)?;
-
-            ty::TypeDef::Enum(ty::EnumDef {
-                def_id: *trans_id,
-                name: Name::from(name),
-                region_params: region_params,
-                type_params: type_params,
-                variants: ty::VariantId::Vector::from(variants),
-            })
+            ty::TypeDefKind::Enum(ty::VariantId::Vector::from(variants))
         }
         rustc_middle::ty::AdtKind::Union => {
             // Should have been filtered during the registration phase
@@ -265,8 +242,16 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
         }
     };
 
-    trace!("{} -> {}", trans_id.to_string(), type_decl.to_string());
-    trans_ctx.types.types.push_back(type_decl);
+    let type_def = ty::TypeDef {
+        def_id: *trans_id,
+        name: Name::from(name),
+        region_params: region_params,
+        type_params: type_params,
+        kind: type_def_kind,
+    };
+
+    trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
+    trans_ctx.types.types.push_back(type_def);
     Ok(())
 }
 

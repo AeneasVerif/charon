@@ -795,10 +795,10 @@ impl<'ctx, T> Formatter<(TypeDefId::Id, VariantId::Id)> for GAstFormatter<'ctx, 
     fn format_object(&self, id: (TypeDefId::Id, VariantId::Id)) -> String {
         let (def_id, variant_id) = id;
         let ctx = self.type_context;
-        let gen_decl = ctx.get_type_decl(def_id).unwrap();
-        let decl = gen_decl.as_enum();
-        let mut name = gen_decl.get_formatted_name();
-        let variant_name = &decl.variants.get(variant_id).unwrap().name;
+        let def = ctx.get_type_decl(def_id).unwrap();
+        let variants = def.kind.as_enum();
+        let mut name = def.name.to_string();
+        let variant_name = &variants.get(variant_id).unwrap().name;
         name.push_str("::");
         name.push_str(variant_name);
         name
@@ -812,11 +812,10 @@ impl<'ctx, T> Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>
     fn format_object(&self, id: (TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (def_id, opt_variant_id, field_id) = id;
         let ctx = self.type_context;
-        let gen_decl = ctx.get_type_decl(def_id).unwrap();
-        match (gen_decl, opt_variant_id) {
-            (TypeDef::Enum(decl), Some(variant_id)) => {
-                let field = decl
-                    .variants
+        let gen_def = ctx.get_type_decl(def_id).unwrap();
+        match (&gen_def.kind, opt_variant_id) {
+            (TypeDefKind::Enum(variants), Some(variant_id)) => {
+                let field = variants
                     .get(variant_id)
                     .unwrap()
                     .fields
@@ -824,8 +823,8 @@ impl<'ctx, T> Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>
                     .unwrap();
                 field.name.clone()
             }
-            (TypeDef::Struct(decl), None) => {
-                let field = decl.fields.get(field_id).unwrap();
+            (TypeDefKind::Struct(fields), None) => {
+                let field = fields.get(field_id).unwrap();
                 field.name.clone()
             }
             _ => unreachable!(),
