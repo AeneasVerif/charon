@@ -283,6 +283,25 @@ struct LoopExitCandidateInfo {
     /// and the node from which the edge going to the exit starts.
     /// If later we have to choose between candidates with the same number
     /// of occurrences, we choose the one with the smallest distances.
+    ///
+    /// Note that it *may* happen that we have several exit candidates referenced
+    /// more than once for one loop. This comes from the fact that whenever we
+    /// reach a node from which the loop entry is not reachable (without using a
+    /// backward edge leading to an outer loop entry), we register this node
+    /// as well as all its children as exit candidates.
+    /// Consider the following example:
+    /// ```
+    /// while i < max {
+    ///     if cond {
+    ///         break;
+    ///     }
+    ///     s += i;
+    ///     i += 1
+    /// }
+    /// // All the below nodes are exit candidates (each of them is referenced twice)
+    /// s += 1;
+    /// return s;
+    /// ```
     pub occurrences: Vec<usize>,
 }
 
@@ -295,8 +314,6 @@ struct LoopExitCandidateInfo {
 ///
 /// The starting node should be a (transitive) child of the loop entry.
 /// We use this to find candidates for loop exits.
-///
-/// Rk.: this is not efficient at all.
 fn loop_entry_is_reachable_from_inner(
     cfg: &CfgInfo,
     loop_entry: src::BlockId::Id,
