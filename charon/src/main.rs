@@ -12,20 +12,17 @@ extern crate im;
 extern crate linked_hash_set;
 extern crate log;
 extern crate rustc_ast;
+extern crate rustc_borrowck;
+extern crate rustc_const_eval;
 extern crate rustc_driver;
 extern crate rustc_errors;
 extern crate rustc_hir;
 extern crate rustc_index;
 extern crate rustc_interface;
 extern crate rustc_middle;
-//extern crate rustc_mir;
-// TODO: filter
-extern crate rustc_borrowck;
-extern crate rustc_const_eval;
 extern crate rustc_mir_dataflow;
 extern crate rustc_mir_transform;
 extern crate rustc_monomorphize;
-
 extern crate rustc_resolve;
 extern crate rustc_session;
 extern crate rustc_span;
@@ -52,14 +49,10 @@ mod types;
 mod values;
 mod vars;
 
-use rustc_driver::{abort_on_err, Callbacks, Compilation, RunCompiler};
-use rustc_interface::{
-    interface::{BoxedResolver, Compiler},
-    Queries,
-};
+use rustc_driver::{Callbacks, Compilation, RunCompiler};
+use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
-use std::{cell::RefCell, rc::Rc};
 
 struct ToInternal {}
 
