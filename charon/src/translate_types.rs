@@ -17,7 +17,7 @@ pub struct TypeTransContext {
     pub types: ty::TypeDefs,
     type_def_id_generator: ty::TypeDefId::Generator,
     /// Rust identifiers to translation identifiers
-    pub rid_to_id: HashMap<DefId, ty::TypeDefId::Id>,
+    pub type_rid_to_id: HashMap<DefId, ty::TypeDefId::Id>,
 }
 
 impl TypeTransContext {
@@ -25,7 +25,7 @@ impl TypeTransContext {
         TypeTransContext {
             types: ty::TypeDefs::new(),
             type_def_id_generator: ty::TypeDefId::Generator::new(),
-            rid_to_id: HashMap::new(),
+            type_rid_to_id: HashMap::new(),
         }
     }
 
@@ -227,7 +227,7 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
     }
 
     // Register the type
-    let trans_id = trans_ctx.rid_to_id.get(&def_id).unwrap();
+    let trans_id = trans_ctx.type_rid_to_id.get(&def_id).unwrap();
     let name = type_def_id_to_name(tcx, def_id)?;
     let region_params = ty::RegionVarId::Vector::from(region_params);
     let type_params = ty::TypeVarId::Vector::from(type_params);
@@ -392,7 +392,7 @@ where
                     let _ = translate_non_local_defid(tcx, trans_ctx, type_params, adt.did);
                     unimplemented!();
                 } else {
-                    let id = trans_ctx.rid_to_id.get(&adt.did).unwrap();
+                    let id = trans_ctx.type_rid_to_id.get(&adt.did).unwrap();
 
                     // Return the instantiated ADT
                     return Ok(ty::Ty::Adt(
@@ -626,7 +626,7 @@ pub fn translate_types(tcx: &TyCtxt, decls: &Declarations) -> Result<TypeTransCo
     // Generate indices for all the types
     for def_id in &decls.type_ids {
         let id = trans_ctx.fresh_def_id();
-        trans_ctx.rid_to_id.insert(*def_id, id);
+        trans_ctx.type_rid_to_id.insert(*def_id, id);
     }
 
     // Translate the types.

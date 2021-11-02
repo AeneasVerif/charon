@@ -6,6 +6,7 @@ use rustc_errors::DiagnosticId;
 use rustc_session::Session;
 use rustc_span::MultiSpan;
 use serde::{Serialize, Serializer};
+use std::fmt::Display;
 use std::iter::FromIterator;
 
 /// Our redefinition of Result - we don't care much about the I/O part.
@@ -130,8 +131,37 @@ pub fn iterator_to_string<T>(
 }
 
 /// Custom function to pretty-print a vector.
-pub fn vector_to_string<T>(t_to_string: &dyn Fn(&T) -> String, v: &Vec<T>) -> String {
+pub fn vec_to_string<T>(t_to_string: &dyn Fn(&T) -> String, v: &Vec<T>) -> String {
     iterator_to_string(t_to_string, v.iter())
+}
+
+/// Rk.: in practice, T should be a shared ref
+pub fn write_iterator<T: Copy>(
+    write_t: &dyn Fn(&mut std::fmt::Formatter<'_>, T) -> std::result::Result<(), std::fmt::Error>,
+    f: &mut std::fmt::Formatter<'_>,
+    it: impl Iterator<Item = T>,
+) -> std::result::Result<(), std::fmt::Error> {
+    let elems: Vec<T> = it.collect();
+    if elems.len() == 0 {
+        write!(f, "[]")
+    } else {
+        write!(f, "[\n")?;
+        for i in 0..elems.len() {
+            write_t(f, elems[i])?;
+            if i + 1 < elems.len() {
+                write!(f, ",\n")?;
+            }
+        }
+        write!(f, "\n]")
+    }
+}
+
+pub fn write_vec<T>(
+    write_t: &dyn Fn(&mut std::fmt::Formatter<'_>, &T) -> std::result::Result<(), std::fmt::Error>,
+    f: &mut std::fmt::Formatter<'_>,
+    v: &Vec<T>,
+) -> std::result::Result<(), std::fmt::Error> {
+    write_iterator(write_t, f, v.iter())
 }
 
 /// Assertion which doesn't panick
@@ -190,8 +220,9 @@ macro_rules! error {
     }};
 }
 
-pub fn serialize_vector<T: Clone + Serialize, S: Serializer>(
-    v: &Vector<T>,
+/// Serialize a vector
+pub fn serialize_vec<T: Serialize, S: Serializer>(
+    v: &Vec<T>,
     serializer: S,
 ) -> std::result::Result<S::Ok, S::Error> {
     use serde::ser::SerializeSeq;
@@ -200,6 +231,45 @@ pub fn serialize_vector<T: Clone + Serialize, S: Serializer>(
         seq.serialize_element(e)?;
     }
     seq.end()
+}
+
+/// Serialize a collection by using an iterator on this collection
+pub fn serialize_collection<T: Serialize, I: IntoIterator<Item = T>, S: Serializer>(
+    it: I,
+    serializer: S,
+) -> std::result::Result<S::Ok, S::Error> {
+    // For simplicity, we convert to a vec (this gives us the length)
+    let v = Vec::from_iter(it);
+    serialize_vec(&v, serializer)
+}
+
+pub fn serialize_vector<T: Clone + Serialize, S: Serializer>(
+    v: &Vector<T>,
+    serializer: S,
+) -> std::result::Result<S::Ok, S::Error> {
+    serialize_collection(v.iter(), serializer)
+}
+
+/// Wrapper to serialize std::vec::Vec
+///
+/// We need this because serialization is implemented via the trait system.
+pub struct VecSerializer<'a, T> {
+    pub vector: &'a Vec<T>,
+}
+
+impl<'a, T> VecSerializer<'a, T> {
+    pub fn new(vector: &'a Vec<T>) -> Self {
+        VecSerializer { vector }
+    }
+}
+
+impl<'a, T: Serialize> Serialize for VecSerializer<'a, T> {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serialize_vec(&self.vector, serializer)
+    }
 }
 
 /// Wrapper to serialize vectors from im::Vector.
@@ -242,7 +312,6 @@ impl<'a, K: Serialize, V: Serialize> Serialize for LinkedHashMapSerializer<'a, K
     where
         S: Serializer,
     {
-        let v = Vector::from_iter(self.map.iter());
-        serialize_vector(&v, serializer)
+        serialize_collection(self.map.iter(), serializer)
     }
 }

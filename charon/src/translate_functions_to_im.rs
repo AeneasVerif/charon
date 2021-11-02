@@ -698,7 +698,7 @@ fn translate_operand_constant_value<'tcx>(
                     // variant, and this variant doesn't take parameters
 
                     // Retrieve the definition
-                    let id = tt_ctx.rid_to_id.get(&adt_def.did).unwrap();
+                    let id = tt_ctx.type_rid_to_id.get(&adt_def.did).unwrap();
                     let def = tt_ctx.types.get_type_def(*id).unwrap();
 
                     // Check that there is only one variant, with no fields
@@ -1020,7 +1020,12 @@ fn translate_rvalue<'ctx, 'tcx>(
                     assert!(field_index.is_none());
 
                     // Retrieve the definition
-                    let id_t = *bt_ctx.ft_ctx.tt_ctx.rid_to_id.get(&adt_def.did).unwrap();
+                    let id_t = *bt_ctx
+                        .ft_ctx
+                        .tt_ctx
+                        .type_rid_to_id
+                        .get(&adt_def.did)
+                        .unwrap();
                     let def = bt_ctx.get_type_defs().get_type_def(id_t).unwrap();
 
                     let akind = match &def.kind {

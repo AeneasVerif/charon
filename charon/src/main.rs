@@ -32,6 +32,7 @@ extern crate rustc_target;
 mod common;
 mod cfim_ast;
 mod divergent;
+mod export_cfim;
 mod expressions;
 mod formatter;
 mod get_mir;
@@ -234,6 +235,14 @@ fn translate(sess: &Session, tcx: TyCtxt) -> TranslationResult<()> {
         );
     }
 
-    // # Step ?: generate the files.
+    // # Step 9: generate the files.
+    export_cfim::export(
+        &ordered_decls,
+        &im_defs.tt_ctx.type_rid_to_id,
+        &im_defs.tt_ctx.types,
+        &im_defs.fun_rid_to_id,
+        &cfim_defs,
+    )?;
+
     Ok(())
 }

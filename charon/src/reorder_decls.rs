@@ -28,12 +28,12 @@ impl Declaration {
             Declaration::Fun(id) => format!("{{ Fun: {:?} }}", id).to_string(),
             Declaration::RecTypes(ids) => format!(
                 "{{ RecTypes: {} }}",
-                vector_to_string(&|id| format!("    {:?}", id).to_string(), ids)
+                vec_to_string(&|id| format!("    {:?}", id).to_string(), ids)
             )
             .to_string(),
             Declaration::RecFuns(ids) => format!(
                 "{{ RecFuns: {} }}",
-                vector_to_string(&|id| format!("    {:?}", id).to_string(), ids)
+                vec_to_string(&|id| format!("    {:?}", id).to_string(), ids)
             )
             .to_string(),
         }
@@ -65,7 +65,7 @@ impl Declarations {
     }
 
     fn to_string(decls: &Declarations) -> String {
-        vector_to_string(&|d: &Declaration| d.to_string(), &decls.decls)
+        vec_to_string(&|d: &Declaration| d.to_string(), &decls.decls)
     }
 
     fn push(&mut self, decl: Declaration) {
