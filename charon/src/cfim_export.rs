@@ -1,13 +1,8 @@
 use crate::cfim_ast::*;
 use crate::common::*;
-use crate::expressions::*;
-use crate::formatter::Formatter;
 use crate::reorder_decls::*;
 use crate::types::*;
 use crate::values::*;
-use hashlink::linked_hash_map::LinkedHashMap;
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
-use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 use std::collections::HashMap;
 use std::fs::File;

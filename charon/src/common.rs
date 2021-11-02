@@ -6,7 +6,6 @@ use rustc_errors::DiagnosticId;
 use rustc_session::Session;
 use rustc_span::MultiSpan;
 use serde::{Serialize, Serializer};
-use std::fmt::Display;
 use std::iter::FromIterator;
 
 /// Our redefinition of Result - we don't care much about the I/O part.
