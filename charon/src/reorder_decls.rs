@@ -7,6 +7,7 @@ use rustc_hir::def_id::DefId;
 use std::vec::Vec;
 
 /// A (group of) top-level declaration(s), properly reordered.
+/// TODO: rename to DeclarationGroup
 #[derive(Debug)]
 pub enum Declaration {
     /// A non-recursive type declaration.

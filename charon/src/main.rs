@@ -55,7 +55,9 @@ use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 
-struct ToInternal {}
+struct ToInternal {
+    source_file: String,
+}
 
 impl Callbacks for ToInternal {
     fn after_expansion<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
@@ -66,7 +68,7 @@ impl Callbacks for ToInternal {
             .peek_mut()
             .enter(|tcx| {
                 let session = c.session();
-                translate(session, tcx)
+                translate(session, tcx, &self.source_file)
             })
             .unwrap();
         Compilation::Stop
@@ -155,16 +157,23 @@ fn main() {
     let args = vec![
         myself,
         sysroot_arg,
-        input_file,
+        input_file.clone(),
         "--crate-type=lib".to_owned(),
         "--edition=2018".to_owned(),
     ];
-    RunCompiler::new(&args, &mut ToInternal {}).run().unwrap();
+    RunCompiler::new(
+        &args,
+        &mut ToInternal {
+            source_file: input_file,
+        },
+    )
+    .run()
+    .unwrap();
 }
 
 type TranslationResult<T> = Result<T, ()>;
 
-fn translate(sess: &Session, tcx: TyCtxt) -> TranslationResult<()> {
+fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationResult<()> {
     trace!();
 
     // Explore the modules in the crate, then items in the modules.
@@ -242,6 +251,7 @@ fn translate(sess: &Session, tcx: TyCtxt) -> TranslationResult<()> {
         &im_defs.tt_ctx.types,
         &im_defs.fun_rid_to_id,
         &cfim_defs,
+        source_file,
     )?;
 
     Ok(())
