@@ -89,7 +89,7 @@ pub enum Expression {
     Loop(Box<Expression>),
 }
 
-pub type FunDefs = DefId::Vector<FunDef>;
+pub type FunDefs = FunDefId::Vector<FunDef>;
 
 /// A function definition
 pub type FunDef = GFunDef<Expression>;
@@ -148,7 +148,7 @@ impl Statement {
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<DefId::Id>
+            + Formatter<FunDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -236,7 +236,7 @@ impl Expression {
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<DefId::Id>
+            + Formatter<FunDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -329,7 +329,7 @@ impl FunDef {
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<DefId::Id>
+            + Formatter<FunDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -343,8 +343,8 @@ impl FunDef {
 
 type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDefs>;
 
-impl<'ctx> Formatter<DefId::Id> for AstFormatter<'ctx> {
-    fn format_object(&self, id: DefId::Id) -> String {
+impl<'ctx> Formatter<FunDefId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: FunDefId::Id) -> String {
         let f = self.fun_context.get(id).unwrap();
         f.name.to_string()
     }

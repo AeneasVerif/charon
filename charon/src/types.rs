@@ -163,6 +163,7 @@ where
 }
 
 /// Type with *R*egions.
+///
 /// Used in function signatures and type definitions.
 pub type RTy = Ty<Region<RegionVarId::Id>>;
 

@@ -48,11 +48,11 @@ pub struct FunTransContext {
     /// The function definitions
     pub defs: ast::FunDefs,
     /// A map telling us whether functions are divergent or not
-    pub divergent: HashMap<v::DefId::Id, bool>,
-    fun_def_id_generator: v::DefId::Generator,
+    pub divergent: HashMap<v::FunDefId::Id, bool>,
+    fun_def_id_generator: v::FunDefId::Generator,
     /// Map from rust function identifiers to translation identifiers.
     /// The equivalent map for types is in the type translation context.
-    pub fun_rid_to_id: HashMap<DefId, v::DefId::Id>,
+    pub fun_rid_to_id: HashMap<DefId, v::FunDefId::Id>,
 }
 
 /// A translation context for function bodies.
@@ -108,16 +108,16 @@ impl FunTransContext {
             tt_ctx: tt_ctx,
             defs: ast::FunDefs::new(),
             divergent: HashMap::new(),
-            fun_def_id_generator: v::DefId::Generator::new(),
+            fun_def_id_generator: v::FunDefId::Generator::new(),
             fun_rid_to_id: HashMap::new(),
         }
     }
 
-    fn fresh_def_id(&mut self) -> v::DefId::Id {
+    fn fresh_def_id(&mut self) -> v::FunDefId::Id {
         self.fun_def_id_generator.fresh_id()
     }
 
-    fn get_def_id_from_rid(&self, def_id: DefId) -> Option<v::DefId::Id> {
+    fn get_def_id_from_rid(&self, def_id: DefId) -> Option<v::FunDefId::Id> {
         self.fun_rid_to_id.get(&def_id).map(|x| *x)
     }
 }

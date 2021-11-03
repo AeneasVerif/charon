@@ -53,7 +53,7 @@ pub struct FunSig {
 /// A function definition
 #[derive(Debug, Clone, Serialize)]
 pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
-    pub def_id: DefId::Id,
+    pub def_id: FunDefId::Id,
     pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
@@ -68,7 +68,7 @@ pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
 
 pub type FunDef = GFunDef<BlockId::Vector<BlockData>>;
 
-pub type FunDefs = DefId::Vector<FunDef>;
+pub type FunDefs = FunDefId::Vector<FunDef>;
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum Statement {
@@ -98,7 +98,7 @@ pub enum SwitchTargets {
 #[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum FunId {
     /// A function local to the crate, whose body we will translate.
-    Local(DefId::Id),
+    Local(FunDefId::Id),
     /// An assumed function, coming from a standard library (for instance:
     /// `alloc::boxed::Box::new`).
     Assumed(AssumedFunId),
@@ -340,7 +340,7 @@ impl Terminator {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDefId::Id>
-            + Formatter<DefId::Id>
+            + Formatter<FunDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -450,7 +450,7 @@ impl BlockData {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDefId::Id>
-            + Formatter<DefId::Id>
+            + Formatter<FunDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -481,7 +481,7 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDef<T> {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDefId::Id>
-            + Formatter<DefId::Id>
+            + Formatter<FunDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -537,7 +537,7 @@ impl FunDef {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDefId::Id>
-            + Formatter<DefId::Id>
+            + Formatter<FunDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -660,7 +660,7 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDef<T> {
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<DefId::Id>
+            + Formatter<FunDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -747,7 +747,7 @@ impl FunDef {
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDefId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<DefId::Id>
+            + Formatter<FunDefId::Id>
             + Formatter<(TypeDefId::Id, VariantId::Id)>
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -768,8 +768,8 @@ pub struct GAstFormatter<'ctx, T> {
 
 type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDefs>;
 
-impl<'ctx> Formatter<DefId::Id> for AstFormatter<'ctx> {
-    fn format_object(&self, id: DefId::Id) -> String {
+impl<'ctx> Formatter<FunDefId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: FunDefId::Id) -> String {
         let f = self.fun_context.get(id).unwrap();
         f.name.to_string()
     }

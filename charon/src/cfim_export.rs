@@ -32,16 +32,16 @@ impl<T: Serialize> Serialize for VecSW<T> {
 #[serde(rename = "DeclarationGroup")]
 enum DeclarationSerializer {
     Type(TypeDefId::Id),
-    Fun(DefId::Id),
+    Fun(FunDefId::Id),
     RecTypes(VecSW<TypeDefId::Id>),
-    RecFuns(VecSW<DefId::Id>),
+    RecFuns(VecSW<FunDefId::Id>),
 }
 
 type DeclarationsSerializer = VecSW<DeclarationSerializer>;
 
 fn map_declaration(
     type_rid_to_id: &HashMap<rustc_hir::def_id::DefId, TypeDefId::Id>,
-    fun_rid_to_id: &HashMap<rustc_hir::def_id::DefId, DefId::Id>,
+    fun_rid_to_id: &HashMap<rustc_hir::def_id::DefId, FunDefId::Id>,
     decl: &Declaration,
 ) -> DeclarationSerializer {
     match decl {
@@ -68,7 +68,7 @@ fn map_declaration(
 
 fn map_declarations(
     type_rid_to_id: &HashMap<rustc_hir::def_id::DefId, TypeDefId::Id>,
-    fun_rid_to_id: &HashMap<rustc_hir::def_id::DefId, DefId::Id>,
+    fun_rid_to_id: &HashMap<rustc_hir::def_id::DefId, FunDefId::Id>,
     decls: &Declarations,
 ) -> DeclarationsSerializer {
     VecSW::new(
@@ -85,7 +85,7 @@ fn map_declarations(
 struct ModSerializer<'a> {
     declarations: DeclarationsSerializer,
     types: &'a TypeDefId::Vector<TypeDef>,
-    functions: &'a DefId::Vector<FunDef>,
+    functions: &'a FunDefId::Vector<FunDef>,
 }
 
 /// Export the translated definitions to a JSON file.
@@ -93,7 +93,7 @@ pub fn export(
     ordered_decls: &Declarations,
     type_rid_to_id: &HashMap<rustc_hir::def_id::DefId, TypeDefId::Id>,
     type_defs: &TypeDefs,
-    fun_rid_to_id: &HashMap<rustc_hir::def_id::DefId, DefId::Id>,
+    fun_rid_to_id: &HashMap<rustc_hir::def_id::DefId, FunDefId::Id>,
     fun_defs: &FunDefs,
     sourcefile: &str,
 ) -> Result<()> {

@@ -1466,7 +1466,7 @@ fn translate_expression(
     }
 }
 
-fn translate_function(im_ctx: &FunTransContext, src_def_id: DefId::Id) -> tgt::FunDef {
+fn translate_function(im_ctx: &FunTransContext, src_def_id: FunDefId::Id) -> tgt::FunDef {
     // Retrieve the function definition
     let src_def = im_ctx.defs.get(src_def_id).unwrap();
     trace!("Reconstructing: {}", src_def.name);
@@ -1506,7 +1506,7 @@ fn translate_function(im_ctx: &FunTransContext, src_def_id: DefId::Id) -> tgt::F
 }
 
 pub fn translate_functions(im_ctx: &FunTransContext) -> Defs {
-    let mut out_defs = DefId::Vector::new();
+    let mut out_defs = FunDefId::Vector::new();
 
     // Tranlsate the bodies one at a time
     for src_def_id in im_ctx.defs.iter_indices() {
