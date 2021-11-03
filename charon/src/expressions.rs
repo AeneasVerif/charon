@@ -80,6 +80,7 @@ pub enum UnOp {
 }
 
 /// Binary operation which requires no check.
+/// TODO: merge unchecked binops and checked binops.
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
 pub enum BinOp {
     BitXor,
@@ -191,7 +192,7 @@ pub enum Operand {
 /// For our translation, we use the following enumeration to encode those
 /// special cases in assignments. They are converted to "normal" values
 /// when evaluating the assignment (which is why we don't put them in the
-/// [`ConstantValue`](crate::ConstantValue] enumeration.
+/// [`ConstantValue`](crate::ConstantValue) enumeration.
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, Serialize)]
 pub enum OperandConstantValue {
     ConstantValue(ConstantValue),
