@@ -887,6 +887,11 @@ fn translate_binaryop_kind(binop: mir::BinOp) -> e::BinOp {
         BinOp::Gt => e::BinOp::Gt,
         BinOp::Div => e::BinOp::Div,
         BinOp::Rem => e::BinOp::Rem,
+        BinOp::Add => e::BinOp::Add,
+        BinOp::Sub => e::BinOp::Sub,
+        BinOp::Mul => e::BinOp::Mul,
+        BinOp::Shl => e::BinOp::Shl,
+        BinOp::Shr => e::BinOp::Shr,
         _ => {
             unreachable!();
         }
@@ -898,20 +903,6 @@ fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
     match binop {
         UnOp::Not => e::UnOp::Not,
         UnOp::Neg => e::UnOp::Neg,
-    }
-}
-
-fn translate_checked_binaryop_kind(binop: mir::BinOp) -> e::CheckedBinOp {
-    use mir::BinOp;
-    match binop {
-        BinOp::Add => e::CheckedBinOp::Add,
-        BinOp::Sub => e::CheckedBinOp::Sub,
-        BinOp::Mul => e::CheckedBinOp::Mul,
-        BinOp::Shl => e::CheckedBinOp::Shl,
-        BinOp::Shr => e::CheckedBinOp::Shr,
-        _ => {
-            unreachable!();
-        }
     }
 }
 
@@ -945,18 +936,11 @@ fn translate_rvalue<'ctx, 'tcx>(
         mir::Rvalue::Cast(_, _, _) => {
             unimplemented!();
         }
-        mir::Rvalue::BinaryOp(binop, operands) => {
+        mir::Rvalue::BinaryOp(binop, operands) | mir::Rvalue::CheckedBinaryOp(binop, operands) => {
+            // We merge checked and unchecked binary operations
             let (left, right) = operands.deref();
             e::Rvalue::BinaryOp(
                 translate_binaryop_kind(*binop),
-                translate_operand(bt_ctx, left),
-                translate_operand(bt_ctx, right),
-            )
-        }
-        mir::Rvalue::CheckedBinaryOp(binop, operands) => {
-            let (left, right) = operands.deref();
-            e::Rvalue::CheckedBinaryOp(
-                translate_checked_binaryop_kind(*binop),
                 translate_operand(bt_ctx, left),
                 translate_operand(bt_ctx, right),
             )

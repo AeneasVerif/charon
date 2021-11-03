@@ -79,8 +79,7 @@ pub enum UnOp {
     Neg,
 }
 
-/// Binary operation which requires no check.
-/// TODO: merge unchecked binops and checked binops.
+/// Binary operations.
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
 pub enum BinOp {
     BitXor,
@@ -92,22 +91,19 @@ pub enum BinOp {
     Ne,
     Ge,
     Gt,
-    /// Div is not a checked binary operation, because rust introduces an assert
-    /// to check that we don't divide by 0 before calling the division. In our
-    /// semantics, we define division by 0 as always returning 0.
+    /// Can fail if the divisor is 0.
     Div,
-    /// Rem is not a checked binary operation for the same reason as Div. In our
-    /// semantics, we define the remainder of a division by 0 as 0.
+    /// Can fail if the divisor is 0.
     Rem,
-}
-
-/// Binary operation which requires a check
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
-pub enum CheckedBinOp {
+    /// Can overflow
     Add,
+    /// Can overflow
     Sub,
+    /// Can overflow
     Mul,
+    /// Can fail if the shift is too big
     Shl,
+    /// Can fail if the shift is too big
     Shr,
     // No Offset binary operation: this is an operation on raw pointers
 }
@@ -158,18 +154,11 @@ impl std::string::ToString for BinOp {
             BinOp::Gt => ">".to_owned(),
             BinOp::Div => "/".to_owned(),
             BinOp::Rem => "%".to_owned(),
-        }
-    }
-}
-
-impl std::string::ToString for CheckedBinOp {
-    fn to_string(&self) -> String {
-        match self {
-            CheckedBinOp::Add => "+".to_owned(),
-            CheckedBinOp::Sub => "-".to_owned(),
-            CheckedBinOp::Mul => "*".to_owned(),
-            CheckedBinOp::Shl => "<<".to_owned(),
-            CheckedBinOp::Shr => ">>".to_owned(),
+            BinOp::Add => "+".to_owned(),
+            BinOp::Sub => "-".to_owned(),
+            BinOp::Mul => "*".to_owned(),
+            BinOp::Shl => "<<".to_owned(),
+            BinOp::Shr => ">>".to_owned(),
         }
     }
 }
@@ -209,10 +198,8 @@ pub enum Rvalue {
     Ref(Place, BorrowKind),
     /// Unary operation (not, neg)
     UnaryOp(UnOp, Operand),
-    /// Unchecked binary operations (bit xor, less than, etc.)
+    /// Binary operations (note that we merge "checked" and "unchecked" binops)
     BinaryOp(BinOp, Operand, Operand),
-    /// Checked binary operations (addition, division, etc.)
-    CheckedBinaryOp(CheckedBinOp, Operand, Operand),
     /// Discriminant (for enumerations).
     /// Note that discriminant values have type isize
     Discriminant(Place),
@@ -353,13 +340,6 @@ impl Rvalue {
                 format!("{}({})", unop.to_string(), x.fmt_with_ctx(ctx)).to_owned()
             }
             Rvalue::BinaryOp(binop, x, y) => format!(
-                "{} {} {}",
-                x.fmt_with_ctx(ctx),
-                binop.to_string(),
-                y.fmt_with_ctx(ctx)
-            )
-            .to_owned(),
-            Rvalue::CheckedBinaryOp(binop, x, y) => format!(
                 "{} {} {}",
                 x.fmt_with_ctx(ctx),
                 binop.to_string(),

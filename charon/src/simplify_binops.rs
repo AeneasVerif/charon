@@ -34,24 +34,77 @@ fn check_places_similar_but_last_proj_elem(
     return false;
 }
 
+/// Return true if the binary operation might fail and thus requires its result
+/// to be checked (overflows, for instance).
+fn binop_requires_assert_after(binop: BinOp) -> bool {
+    match binop {
+        BinOp::BitXor
+        | BinOp::BitAnd
+        | BinOp::BitOr
+        | BinOp::Eq
+        | BinOp::Lt
+        | BinOp::Le
+        | BinOp::Ne
+        | BinOp::Ge
+        | BinOp::Gt
+        | BinOp::Div
+        | BinOp::Rem => false,
+        BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Shl | BinOp::Shr => true,
+    }
+}
+
+/// Return true if the binary operation has a precondition (divisor is non zero
+/// for instance) and must thus be preceded by an assertion.
+fn binop_requires_assert_before(binop: BinOp) -> bool {
+    match binop {
+        BinOp::BitXor
+        | BinOp::BitAnd
+        | BinOp::BitOr
+        | BinOp::Eq
+        | BinOp::Lt
+        | BinOp::Le
+        | BinOp::Ne
+        | BinOp::Ge
+        | BinOp::Gt
+        | BinOp::Add
+        | BinOp::Sub
+        | BinOp::Mul
+        | BinOp::Shl
+        | BinOp::Shr => false,
+        BinOp::Div | BinOp::Rem => true,
+    }
+}
+
+fn binop_can_fail(binop: BinOp) -> bool {
+    binop_requires_assert_after(binop) || binop_requires_assert_before(binop)
+}
+
+/// Check if this is a group of expressions of the form: "do an operation,
+/// then check it succeeded (didn't overflow, etc.)".
+///   ```
+///   ```
 /// Check if this is a group of expressions which should be collapsed to a
 /// single checked binop.
 /// Simply check if the first expression is a checked binop.
-fn check_if_checked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) -> bool {
+fn check_if_binop_then_assert(exp1: &Expression, exp2: &Expression, exp3: &Expression) -> bool {
     match exp1 {
-        Expression::Statement(Statement::Assign(_, Rvalue::CheckedBinaryOp(_, _, _))) => {
-            // We found a checked binary op.
-            // Make sure this group of expressions should exactly match the
-            // following pattern:
-            //   ```
-            //   tmp := copy x + copy y; // Possibly a different binop
-            //   assert(move (tmp.1) == false);
-            //   dest := move (tmp.0);
-            //   ...
-            //   ```
-            // If it is note the case, we can't collapse...
-            check_if_simplifiable_checked_binop(exp1, exp2, exp3);
-            true
+        Expression::Statement(Statement::Assign(_, Rvalue::BinaryOp(binop, _, _))) => {
+            if binop_requires_assert_after(*binop) {
+                // We found a checked binary op.
+                // Make sure this group of expressions should exactly match the
+                // following pattern:
+                //   ```
+                //   tmp := copy x + copy y; // Possibly a different binop
+                //   assert(move (tmp.1) == false);
+                //   dest := move (tmp.0);
+                //   ...
+                //   ```
+                // If it is note the case, we can't collapse...
+                check_if_simplifiable_binop_then_assert(exp1, exp2, exp3);
+                true
+            } else {
+                false
+            }
         }
         _ => false,
     }
@@ -64,19 +117,21 @@ fn check_if_checked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expressio
 ///   dest := move (tmp.0);
 ///   ...
 ///   ```
-fn check_if_simplifiable_checked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) {
+fn check_if_simplifiable_binop_then_assert(
+    exp1: &Expression,
+    exp2: &Expression,
+    exp3: &Expression,
+) {
     match (exp1, exp2, exp3) {
         (
-            Expression::Statement(Statement::Assign(
-                bp,
-                Rvalue::CheckedBinaryOp(_binop, _op1, _op2),
-            )),
+            Expression::Statement(Statement::Assign(bp, Rvalue::BinaryOp(binop, _op1, _op2))),
             Expression::Statement(Statement::Assert(Assert {
                 cond: Operand::Move(cond_op),
                 expected,
             })),
             Expression::Statement(Statement::Assign(_mp, Rvalue::Use(Operand::Move(mr)))),
         ) => {
+            assert!(binop_requires_assert_after(*binop));
             assert!(!(*expected));
 
             // We must have:
@@ -117,7 +172,7 @@ fn check_if_simplifiable_checked_binop(exp1: &Expression, exp2: &Expression, exp
 /// Note that the type of the binop changes in the two situations (in the
 /// translation, before the transformation `+` returns a pair (bool, int),
 /// after it has a monadic type).
-fn simplify_checked_binop(exp1: Expression, exp2: Expression, exp3: Expression) -> Expression {
+fn simplify_binop_then_assert(exp1: Expression, exp2: Expression, exp3: Expression) -> Expression {
     match (exp1, exp2, exp3) {
         (
             Expression::Statement(Statement::Assign(_, binop)),
@@ -132,17 +187,13 @@ fn simplify_checked_binop(exp1: Expression, exp2: Expression, exp3: Expression) 
     }
 }
 
-/// Check if this is a group of expressions which should be collapsed to a
-/// single unchecked binop.
-/// Simply check if the last expression is a division or a remainder computation.
-fn check_if_faillible_unchecked_binop(
-    exp1: &Expression,
-    exp2: &Expression,
-    exp3: &Expression,
-) -> bool {
+/// Check if this is a group of expressions of the form: "check that we can do
+/// an binary operation, then do this operation (ex.: check that a divisor is
+/// non zero before doing a division, panic otherwise)"
+fn check_if_assert_then_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) -> bool {
     match exp3 {
         Expression::Statement(Statement::Assign(_, Rvalue::BinaryOp(binop, _, _))) => {
-            if unchecked_binop_is_faillible(*binop) {
+            if binop_requires_assert_before(*binop) {
                 // We found an unchecked binop which should be simplified (division
                 // or remainder computation).
                 // Make sure the group of expressions exactly matches the following
@@ -154,7 +205,7 @@ fn check_if_faillible_unchecked_binop(
                 //   ...
                 //   ```
                 // If it is note the case, we can't collapse...
-                check_if_simplifiable_unchecked_binop(exp1, exp2, exp3);
+                check_if_simplifiable_assert_then_binop(exp1, exp2, exp3);
                 true
             } else {
                 false
@@ -171,7 +222,11 @@ fn check_if_faillible_unchecked_binop(
 ///   dest := move dividend / move divisor; // Can also be a `%`
 ///   ...
 ///   ```
-fn check_if_simplifiable_unchecked_binop(exp1: &Expression, exp2: &Expression, exp3: &Expression) {
+fn check_if_simplifiable_assert_then_binop(
+    exp1: &Expression,
+    exp2: &Expression,
+    exp3: &Expression,
+) {
     match (exp1, exp2, exp3) {
         (
             Expression::Statement(Statement::Assign(
@@ -194,7 +249,7 @@ fn check_if_simplifiable_unchecked_binop(exp1: &Expression, exp2: &Expression, e
                 Rvalue::BinaryOp(binop, _dividend, Operand::Move(divisor)),
             )),
         ) => {
-            assert!(unchecked_binop_is_faillible(*binop));
+            assert!(binop_requires_assert_before(*binop));
             assert!(!(*expected));
             assert!(eq_op1 == divisor);
             assert!(eq_dest == cond_op);
@@ -222,31 +277,19 @@ fn check_if_simplifiable_unchecked_binop(exp1: &Expression, exp2: &Expression, e
 ///   dest := move dividend / move divisor; // Can also be a `%`
 ///   ...
 ///   ```
-fn simplify_unchecked_binop(_exp1: Expression, _exp2: Expression, exp3: Expression) -> Expression {
+fn simplify_assert_then_binop(
+    _exp1: Expression,
+    _exp2: Expression,
+    exp3: Expression,
+) -> Expression {
     exp3
-}
-
-fn unchecked_binop_is_faillible(binop: BinOp) -> bool {
-    match binop {
-        BinOp::BitXor
-        | BinOp::BitAnd
-        | BinOp::BitOr
-        | BinOp::Eq
-        | BinOp::Lt
-        | BinOp::Le
-        | BinOp::Ne
-        | BinOp::Ge
-        | BinOp::Gt => false,
-        BinOp::Div | BinOp::Rem => true,
-    }
 }
 
 /// Check if the statement is an assignment which uses a binop which can fail
 /// (it is a checked binop, or a binop with a precondition like division)
 fn statement_is_faillible_binop(st: &Statement) -> bool {
     match st {
-        Statement::Assign(_, Rvalue::CheckedBinaryOp(_, _, _)) => true,
-        Statement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => unchecked_binop_is_faillible(*binop),
+        Statement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => binop_can_fail(*binop),
         _ => false,
     }
 }
@@ -279,14 +322,14 @@ fn simplify_exp(exp: Expression) -> Expression {
                 match *exp3 {
                     Expression::Sequence(exp3, exp4) => {
                         // Simplify checked binops
-                        if check_if_checked_binop(&exp1, &exp2, &exp3) {
-                            let exp = simplify_checked_binop(*exp1, *exp2, *exp3);
+                        if check_if_binop_then_assert(&exp1, &exp2, &exp3) {
+                            let exp = simplify_binop_then_assert(*exp1, *exp2, *exp3);
                             let exp4 = simplify_exp(*exp4);
                             return Expression::Sequence(Box::new(exp), Box::new(exp4));
                         }
                         // Simplify unchecked binops (division, modulo)
-                        if check_if_faillible_unchecked_binop(&exp1, &exp2, &exp3) {
-                            let exp = simplify_unchecked_binop(*exp1, *exp2, *exp3);
+                        if check_if_assert_then_binop(&exp1, &exp2, &exp3) {
+                            let exp = simplify_assert_then_binop(*exp1, *exp2, *exp3);
                             let exp4 = simplify_exp(*exp4);
                             return Expression::Sequence(Box::new(exp), Box::new(exp4));
                         }
