@@ -535,10 +535,13 @@ struct MatchPattern {
     /// The match pattern as a string.
     /// For instance: `List::Cons(hd, tl)`
     match_pattern: String,
+    /// The number of arguments in the match pattern (including anonymous
+    /// arguments).
+    num_args: usize,
     /// The variables we introduced in the match pattern.
     /// `["hd", "tl"]` if the pattern is `List::Cons(hd, tl)`.
     /// Empty vector if the variables are anonymous (i.e.: `_`).
-    args: Vec<String>,
+    named_args: Vec<String>,
     /// The types of the variables introduced in the match pattern
     arg_types: Vec<String>,
 }
@@ -570,7 +573,7 @@ fn generate_variant_match_patterns(
 
         // Compute the pattern (without the variant constructor), the list
         // of introduced arguments and the list of field types.
-        let (pattern, vars, vartypes) = match &variant.fields {
+        let (pattern, num_vars, named_vars, vartypes) = match &variant.fields {
             Fields::Named(fields) => {
                 let fields_vars: Vec<(String, String)> = fields
                     .named
@@ -585,13 +588,15 @@ fn generate_variant_match_patterns(
                 let (fields_pats, vars): (Vec<String>, Vec<String>) =
                     fields_vars.into_iter().unzip();
 
+                let num_vars = fields.named.iter().count();
+
                 let vars = if patvar_name.is_none() { vec![] } else { vars };
 
                 let vartypes: Vec<String> =
                     fields.named.iter().map(|f| type_to_string(&f.ty)).collect();
 
                 let pattern = format!("{{ {} }}", fields_pats.join(", ")).to_string();
-                (pattern, vars, vartypes)
+                (pattern, num_vars, vars, vartypes)
             }
             Fields::Unnamed(fields) => {
                 let fields_vars: Vec<(String, String)> = fields
@@ -606,6 +611,8 @@ fn generate_variant_match_patterns(
                 let (fields_pats, vars): (Vec<String>, Vec<String>) =
                     fields_vars.into_iter().unzip();
 
+                let num_vars = fields.unnamed.iter().count();
+
                 let vars = if patvar_name.is_none() { vec![] } else { vars };
 
                 let vartypes: Vec<String> = fields
@@ -616,16 +623,17 @@ fn generate_variant_match_patterns(
 
                 let pattern = format!("({})", fields_pats.join(", ")).to_string();
 
-                (pattern, vars, vartypes)
+                (pattern, num_vars, vars, vartypes)
             }
-            Fields::Unit => ("".to_string(), vec![], vec![]),
+            Fields::Unit => ("".to_string(), 0, vec![], vec![]),
         };
 
         let pattern = format!("{}::{}{}", enum_name, variant_name, pattern).to_string();
         patterns.push(MatchPattern {
             variant_id: variant.ident.clone(),
             match_pattern: pattern,
-            args: vars,
+            num_args: num_vars,
+            named_args: named_vars,
             arg_types: vartypes,
         });
     }
@@ -722,10 +730,7 @@ pub fn derive_variant_index_arity(item: TokenStream) -> TokenStream {
                 .map(|(i, mp)| {
                     format!(
                         "{}{} => {{ ({}, {}) }},",
-                        THREE_TABS,
-                        mp.match_pattern,
-                        i,
-                        mp.args.len()
+                        THREE_TABS, mp.match_pattern, i, mp.num_args
                     )
                     .to_string()
                 })
@@ -851,7 +856,7 @@ fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind) ->
                         .iter()
                         .map(|mp| {
                             // Generate the branch for the target variant
-                            let vars = format!("({})", mp.args.join(", ")); // return value
+                            let vars = format!("({})", mp.named_args.join(", ")); // return value
                             let variant_pat =
                                 format!("{}{} => {},", THREE_TABS, mp.match_pattern, vars)
                                     .to_string();

@@ -225,6 +225,9 @@ pub fn serialize_vec<T: Serialize, S: Serializer>(
     serializer: S,
 ) -> std::result::Result<S::Ok, S::Error> {
     use serde::ser::SerializeSeq;
+    // Note that we don't write the sequence length in the json file: it causes
+    // errors with OCaml's Yojson (because then we mix named fields with unnamed
+    // fields).
     let mut seq = serializer.serialize_seq(Some(v.len()))?;
     for e in v {
         seq.serialize_element(e)?;
