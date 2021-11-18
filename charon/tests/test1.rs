@@ -330,9 +330,14 @@ fn test_loop6(max: u32) -> u32 {
     return s;
 }
 
-/// Test with a static lifetime
+/// Test with a static lifetime - testing serialization
 fn test_static(x: &'static u32) -> &'static u32 {
     x
+}
+
+/// Test with a char literal - testing serialization
+fn test_char() -> char {
+    'a'
 }
 
 /*struct WrapShared<'a, T> {
