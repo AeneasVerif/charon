@@ -943,52 +943,60 @@ impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
         let enum_name = "Ty";
         let variant_name = self.variant_name();
         let (variant_index, variant_arity) = self.variant_index_arity();
-        let mut vs = serializer.serialize_tuple_variant(
-            enum_name,
-            variant_index,
-            variant_name,
-            variant_arity,
-        )?;
-        match self {
-            Ty::Adt(def_id, regions, tys) => {
-                vs.serialize_field(def_id)?;
-                let regions = VectorSerializer::new(regions);
-                vs.serialize_field(&regions)?;
-                let tys = VectorSerializer::new(tys);
-                vs.serialize_field(&tys)?;
+        // It seems the "standard" way of doing is the following (this is
+        // consistent with what the automatically generated serializer does):
+        // - if the arity is > 0, use `serialize_tuple_variant`
+        // - otherwise simply serialize a string with the variant name
+        if variant_arity > 0 {
+            let mut vs = serializer.serialize_tuple_variant(
+                enum_name,
+                variant_index,
+                variant_name,
+                variant_arity,
+            )?;
+            match self {
+                Ty::Adt(def_id, regions, tys) => {
+                    vs.serialize_field(def_id)?;
+                    let regions = VectorSerializer::new(regions);
+                    vs.serialize_field(&regions)?;
+                    let tys = VectorSerializer::new(tys);
+                    vs.serialize_field(&tys)?;
+                }
+                Ty::TypeVar(var_id) => {
+                    vs.serialize_field(var_id)?;
+                }
+                Ty::Bool | Ty::Char | Ty::Never | Ty::Str => {
+                    unreachable!();
+                }
+                Ty::Integer(int_ty) => {
+                    vs.serialize_field(int_ty)?;
+                }
+                Ty::Array(ty) => {
+                    vs.serialize_field(ty)?;
+                }
+                Ty::Slice(ty) => {
+                    vs.serialize_field(ty)?;
+                }
+                Ty::Ref(region, ty, ref_kind) => {
+                    vs.serialize_field(region)?;
+                    vs.serialize_field(ty)?;
+                    vs.serialize_field(ref_kind)?;
+                }
+                Ty::Tuple(tys) => {
+                    let tys = VectorSerializer::new(tys);
+                    vs.serialize_field(&tys)?;
+                }
+                Ty::Assumed(aty, regions, tys) => {
+                    vs.serialize_field(aty)?;
+                    let regions = VectorSerializer::new(regions);
+                    vs.serialize_field(&regions)?;
+                    let tys = VectorSerializer::new(tys);
+                    vs.serialize_field(&tys)?;
+                }
             }
-            Ty::TypeVar(var_id) => {
-                vs.serialize_field(var_id)?;
-            }
-            Ty::Bool | Ty::Char | Ty::Never | Ty::Str => {
-                // No fields to serialize
-            }
-            Ty::Integer(int_ty) => {
-                vs.serialize_field(int_ty)?;
-            }
-            Ty::Array(ty) => {
-                vs.serialize_field(ty)?;
-            }
-            Ty::Slice(ty) => {
-                vs.serialize_field(ty)?;
-            }
-            Ty::Ref(region, ty, ref_kind) => {
-                vs.serialize_field(region)?;
-                vs.serialize_field(ty)?;
-                vs.serialize_field(ref_kind)?;
-            }
-            Ty::Tuple(tys) => {
-                let tys = VectorSerializer::new(tys);
-                vs.serialize_field(&tys)?;
-            }
-            Ty::Assumed(aty, regions, tys) => {
-                vs.serialize_field(aty)?;
-                let regions = VectorSerializer::new(regions);
-                vs.serialize_field(&regions)?;
-                let tys = VectorSerializer::new(tys);
-                vs.serialize_field(&tys)?;
-            }
+            vs.end()
+        } else {
+            variant_name.serialize(serializer)
         }
-        vs.end()
     }
 }

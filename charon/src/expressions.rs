@@ -56,8 +56,10 @@ pub enum ProjectionElem {
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum FieldProjKind {
+    #[serde(rename = "ProjAdt")]
     Adt(TypeDefId::Id, Option<VariantId::Id>),
     /// If we project from a tuple, the projection kind gives the arity of the
+    #[serde(rename = "ProjTuple")]
     Tuple(usize),
 }
 
@@ -187,6 +189,7 @@ pub enum OperandConstantValue {
     ConstantValue(ConstantValue),
     /// Enumeration with one variant with no fields, or structure with
     /// no fields.
+    #[serde(rename = "ConstantAdt")]
     Adt(TypeDefId::Id),
     /// In MIR, unit is actually encoded as a 0-tuple
     Unit,
@@ -223,7 +226,9 @@ pub enum Rvalue {
 
 #[derive(Debug, Clone, Serialize)]
 pub enum AggregateKind {
+    #[serde(rename = "AggregatedTuple")]
     Tuple,
+    #[serde(rename = "AggregatedAdt")]
     Adt(TypeDefId::Id, Option<VariantId::Id>),
 }
 

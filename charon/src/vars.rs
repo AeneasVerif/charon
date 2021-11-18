@@ -1,9 +1,9 @@
 //! Defines some utilities for the variables
 #![allow(dead_code)]
 
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Name {
     name: Vec<String>,
 }
@@ -31,5 +31,16 @@ impl Name {
 impl std::fmt::Display for Name {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(f, "{}", self.name.join("::"))
+    }
+}
+
+impl Serialize for Name {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use crate::common::*;
+        let name = VecSerializer::new(&self.name);
+        name.serialize(serializer)
     }
 }

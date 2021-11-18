@@ -330,6 +330,11 @@ fn test_loop6(max: u32) -> u32 {
     return s;
 }
 
+/// Test with a static lifetime
+fn test_static(x: &'static u32) -> &'static u32 {
+    x
+}
+
 /*struct WrapShared<'a, T> {
     x: &'a T,
 }
