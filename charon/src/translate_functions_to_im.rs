@@ -526,7 +526,13 @@ fn translate_projection<'tcx>(
                 let vid = translate_variant_id(variant_id);
                 // Retrieve the type def id
                 let type_def_id = match path_type {
-                    ty::Ty::Adt(type_id, _, _) => type_defs.get_type_def(type_id).unwrap().def_id,
+                    ty::Ty::Adt(type_id, _, _) => {
+                        let type_def = type_defs.get_type_def(type_id).unwrap();
+                        // Of course, the type should be an enum
+                        assert!(type_def.kind.is_enum());
+
+                        type_def.def_id
+                    }
                     _ => {
                         trace!("{:?}", path_type);
                         unreachable!();
