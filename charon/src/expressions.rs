@@ -51,7 +51,7 @@ pub enum ProjectionElem {
     /// happens *after* the fields have been initialized... Upon executing a
     /// `SetDiscriminant` statement, we just check that the variant is the proper
     /// one (for sanity).
-    Downcast(VariantId::Id),
+    Downcast(TypeDefId::Id, VariantId::Id), // TODO: also put the type def id
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
@@ -256,7 +256,7 @@ impl Place {
                         out = format!("({}).{}", out, field_id);
                     }
                 },
-                ProjectionElem::Downcast(variant_id) => {
+                ProjectionElem::Downcast(_, variant_id) => {
                     out = format!("({} as variant @{})", out, variant_id);
                 }
             }

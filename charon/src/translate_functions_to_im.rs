@@ -524,10 +524,18 @@ fn translate_projection<'tcx>(
                 // Note that on the above example, the downcast preceeds the
                 // field projection.
                 let vid = translate_variant_id(variant_id);
+                // Retrieve the type def id
+                let type_def_id = match path_type {
+                    ty::Ty::Adt(type_id, _, _) => type_defs.get_type_def(type_id).unwrap().def_id,
+                    _ => {
+                        trace!("{:?}", path_type);
+                        unreachable!();
+                    }
+                };
                 // Don't update the variable type
                 // Remember the new downcast
                 downcast_id = Some(vid);
-                projection.push_back(e::ProjectionElem::Downcast(vid));
+                projection.push_back(e::ProjectionElem::Downcast(type_def_id, vid));
             }
         }
     }
