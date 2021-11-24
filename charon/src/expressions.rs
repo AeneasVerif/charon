@@ -8,6 +8,7 @@ use crate::values::*;
 use im::Vector;
 use macros::{EnumAsGetters, EnumIsA, VariantName};
 use serde::ser::SerializeStruct;
+use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -218,12 +219,15 @@ pub enum Rvalue {
     Aggregate(AggregateKind, Vec<Operand>),
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub enum AggregateKind {
-    #[serde(rename = "AggregatedTuple")]
     Tuple,
-    #[serde(rename = "AggregatedAdt")]
-    Adt(TypeDefId::Id, Option<VariantId::Id>),
+    Adt(
+        TypeDefId::Id,
+        Option<VariantId::Id>,
+        Vec<ErasedRegion>,
+        Vec<ETy>,
+    ),
 }
 
 impl Place {
@@ -353,7 +357,7 @@ impl Rvalue {
                 let ops_s: Vec<String> = ops.iter().map(|op| op.fmt_with_ctx(ctx)).collect();
                 match kind {
                     AggregateKind::Tuple => format!("({})", ops_s.join(", ")).to_owned(),
-                    AggregateKind::Adt(def_id, variant_id) => {
+                    AggregateKind::Adt(def_id, variant_id, _, _) => {
                         // Format every field
                         let mut fields = vec![];
                         for i in 0..ops.len() {
@@ -385,5 +389,34 @@ impl Rvalue {
 impl std::string::ToString for Rvalue {
     fn to_string(&self) -> String {
         self.fmt_with_ctx(&values::DummyFormatter {})
+    }
+}
+
+impl Serialize for AggregateKind {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // Note that we rename the variant names
+        // Also, it seems the "standard" way of doing is the following (this is
+        // consistent with what the automatically generated serializer does):
+        // - if the arity is > 0, use `serialize_tuple_variant`
+        // - otherwise simply serialize a string with the variant name
+        match self {
+            AggregateKind::Tuple => "AggregatedTuple".serialize(serializer),
+            AggregateKind::Adt(def_id, opt_variant_id, regions, tys) => {
+                let mut vs =
+                    serializer.serialize_tuple_variant("AggregateKind", 1, "AggregatedAdt", 4)?;
+
+                vs.serialize_field(def_id)?;
+                vs.serialize_field(opt_variant_id)?;
+                let regions = VecSerializer::new(regions);
+                vs.serialize_field(&regions)?;
+                let tys = VecSerializer::new(tys);
+                vs.serialize_field(&tys)?;
+
+                vs.end()
+            }
+        }
     }
 }

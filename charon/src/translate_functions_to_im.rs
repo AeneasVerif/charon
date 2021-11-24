@@ -909,7 +909,7 @@ fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
 
 /// Translate an rvalue
 fn translate_rvalue<'ctx, 'tcx>(
-    _tcx: &TyCtxt,
+    tcx: &TyCtxt,
     bt_ctx: &'ctx BodyTransContext<'ctx>,
     rvalue: &'tcx mir::Rvalue<'tcx>,
 ) -> e::Rvalue {
@@ -990,7 +990,7 @@ fn translate_rvalue<'ctx, 'tcx>(
                 mir::AggregateKind::Adt(
                     adt_def,
                     variant_idx,
-                    _subst,
+                    substs,
                     user_annotation,
                     field_index,
                 ) => {
@@ -1004,6 +1004,10 @@ fn translate_rvalue<'ctx, 'tcx>(
                     assert!(user_annotation.is_none());
                     assert!(field_index.is_none());
 
+                    // Translate the substitution
+                    let (region_params, type_params) =
+                        translate_subst_in_body(tcx, bt_ctx, substs).unwrap();
+
                     // Retrieve the definition
                     let id_t = *bt_ctx
                         .ft_ctx
@@ -1013,20 +1017,24 @@ fn translate_rvalue<'ctx, 'tcx>(
                         .unwrap();
                     let def = bt_ctx.get_type_defs().get_type_def(id_t).unwrap();
 
-                    let akind = match &def.kind {
+                    assert!(region_params.len() == def.region_params.len());
+                    assert!(type_params.len() == def.type_params.len());
+
+                    let variant_id = match &def.kind {
                         ty::TypeDefKind::Enum(variants) => {
                             let variant_id = translate_variant_id(*variant_idx);
                             assert!(
                                 operands_t.len() == variants.get(variant_id).unwrap().fields.len()
                             );
 
-                            e::AggregateKind::Adt(id_t, Some(variant_id))
+                            Some(variant_id)
                         }
                         ty::TypeDefKind::Struct(_) => {
                             assert!(variant_idx.as_usize() == 0);
-                            e::AggregateKind::Adt(id_t, None)
+                            None
                         }
                     };
+                    let akind = e::AggregateKind::Adt(id_t, variant_id, region_params, type_params);
 
                     e::Rvalue::Aggregate(akind, operands_t)
                 }
