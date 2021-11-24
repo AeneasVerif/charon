@@ -18,6 +18,14 @@ pub struct Place {
 
 pub type Projection = Vector<ProjectionElem>;
 
+/// Note that we don't have the equivalent of "downcasts".
+/// Downcasts are actually necessary, for instance when initializing enumeration
+/// values: the value is initially `Bottom`, and we need a way of knowing the
+/// variant.
+/// For example:
+/// `((_0 as Right).0: T2) = move _1;`
+/// In MIR, downcasts always happen before field projections: in our internal
+/// language, we thus merge downcasts and field projections.
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, Serialize)]
 pub enum ProjectionElem {
     /// Dereference a shared/mutable reference.
@@ -38,20 +46,6 @@ pub enum ProjectionElem {
     /// (for pretty printing for instance). We retrieve it through
     /// type-checking.
     Field(FieldProjKind, FieldId::Id),
-    /// Downcast of an enumeration to a specific variant.
-    /// For example, the left value in:
-    /// `((_0 as Right).0: T2) = move _1;`
-    /// Note that the downcast is always performed *before* the field projection.
-    /// This means that we can use it to correctly expand `Bottom` values.
-    /// Note that MIR uses downcasts because the variant fields are initialized
-    /// one by one. When initializing a variant value (which is thus initially
-    /// `Bottom`), we use the first downcast to freeze the enumeration to the proper
-    /// variant, by replacing the value `Bottom` with `Variant_i Bottom ... Bottom`.
-    /// Note that we can't use the `SetDiscriminant` statement, because it always
-    /// happens *after* the fields have been initialized... Upon executing a
-    /// `SetDiscriminant` statement, we just check that the variant is the proper
-    /// one (for sanity).
-    Downcast(TypeDefId::Id, VariantId::Id), // TODO: also put the type def id
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
@@ -250,15 +244,16 @@ impl Place {
                 ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                     FieldProjKind::Adt(adt_id, opt_variant_id) => {
                         let field_name = ctx.format_object((*adt_id, *opt_variant_id, *field_id));
-                        out = format!("({}).{}", out, field_name);
+                        let downcast = match opt_variant_id {
+                            None => "".to_string(),
+                            Some(variant_id) => format!(" as variant @{}", variant_id),
+                        };
+                        out = format!("({}{}).{}", out, downcast, field_name);
                     }
                     FieldProjKind::Tuple(_) => {
                         out = format!("({}).{}", out, field_id);
                     }
                 },
-                ProjectionElem::Downcast(_, variant_id) => {
-                    out = format!("({} as variant @{})", out, variant_id);
-                }
             }
         }
 

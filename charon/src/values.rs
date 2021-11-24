@@ -100,6 +100,9 @@ pub enum ConstantValue {
     String(String),
 }
 
+/// TODO: it would be better to have a structure:
+/// `{ value: ??; int_ty: IntegerTy; }`
+/// But not sure what type to use to store the integer (in OCaml I use big_int).
 #[derive(
     Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, VariantName, Hash, Serialize,
 )]
