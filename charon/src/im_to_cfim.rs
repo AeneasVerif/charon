@@ -1017,25 +1017,23 @@ fn compute_loop_switch_exits(
     loop_exits
 }
 
-fn combine_statement_and_expression(
+fn combine_statement_and_statement(
     statement: tgt::Statement,
-    next_exp: Option<tgt::Expression>,
-) -> tgt::Expression {
-    let st = tgt::Expression::Statement(statement);
-    match next_exp {
-        Some(e) => tgt::Expression::Sequence(Box::new(st), Box::new(e)),
-        None => st,
+    next_st: Option<tgt::Statement>,
+) -> tgt::Statement {
+    match next_st {
+        Some(next_st) => tgt::Statement::Sequence(Box::new(statement), Box::new(next_st)),
+        None => statement,
     }
 }
 
-fn combine_statements_and_expression(
+fn combine_statements_and_statement(
     statements: Vec<tgt::Statement>,
-    next: Option<tgt::Expression>,
-) -> Option<tgt::Expression> {
-    statements
-        .into_iter()
-        .rev()
-        .fold(next, |e, st| Some(combine_statement_and_expression(st, e)))
+    next: Option<tgt::Statement>,
+) -> Option<tgt::Statement> {
+    statements.into_iter().rev().fold(next, |seq, st| {
+        Some(combine_statement_and_statement(st, seq))
+    })
 }
 
 fn get_goto_kind(
@@ -1081,7 +1079,7 @@ enum GotoKind {
     Goto,
 }
 
-fn translate_child_expression(
+fn translate_child_block(
     cfg: &CfgInfo,
     def: &src::FunDef,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
@@ -1089,18 +1087,16 @@ fn translate_child_expression(
     current_exit_block: Option<src::BlockId::Id>,
     explored: &mut HashSet<src::BlockId::Id>,
     child_id: src::BlockId::Id,
-) -> Option<tgt::Expression> {
+) -> Option<tgt::Statement> {
     // Check if this is a backward call
     match get_goto_kind(exits_map, &parent_loops, current_exit_block, child_id) {
-        GotoKind::Break(index) => Some(tgt::Expression::Statement(tgt::Statement::Break(index))),
-        GotoKind::Continue(index) => {
-            Some(tgt::Expression::Statement(tgt::Statement::Continue(index)))
-        }
+        GotoKind::Break(index) => Some(tgt::Statement::Break(index)),
+        GotoKind::Continue(index) => Some(tgt::Statement::Continue(index)),
         // If we are going to an exit block we simply ignore the goto
         GotoKind::ExitBlock => None,
         GotoKind::Goto => {
             // "Standard" goto: just recursively translate
-            translate_expression(
+            translate_block(
                 cfg,
                 def,
                 exits_map,
@@ -1113,10 +1109,10 @@ fn translate_child_expression(
     }
 }
 
-fn opt_expression_to_nop(opt_exp: Option<tgt::Expression>) -> tgt::Expression {
-    match opt_exp {
-        Some(exp) => exp,
-        None => tgt::Expression::Statement(tgt::Statement::Nop),
+fn opt_statement_to_nop_if_none(opt_st: Option<tgt::Statement>) -> tgt::Statement {
+    match opt_st {
+        Some(st) => st,
+        None => tgt::Statement::Nop,
     }
 }
 
@@ -1141,13 +1137,11 @@ fn translate_terminator(
     current_exit_block: Option<src::BlockId::Id>,
     explored: &mut HashSet<src::BlockId::Id>,
     terminator: &src::Terminator,
-) -> Option<tgt::Expression> {
+) -> Option<tgt::Statement> {
     match terminator {
-        src::Terminator::Panic | src::Terminator::Unreachable => {
-            Some(tgt::Expression::Statement(tgt::Statement::Panic))
-        }
-        src::Terminator::Return => Some(tgt::Expression::Statement(tgt::Statement::Return)),
-        src::Terminator::Goto { target } => translate_child_expression(
+        src::Terminator::Panic | src::Terminator::Unreachable => Some(tgt::Statement::Panic),
+        src::Terminator::Return => Some(tgt::Statement::Return),
+        src::Terminator::Goto { target } => translate_child_block(
             cfg,
             def,
             exits_map,
@@ -1157,7 +1151,7 @@ fn translate_terminator(
             *target,
         ),
         src::Terminator::Drop { place, target } => {
-            let opt_child = translate_child_expression(
+            let opt_child = translate_child_block(
                 cfg,
                 def,
                 exits_map,
@@ -1167,7 +1161,7 @@ fn translate_terminator(
                 *target,
             );
             let st = tgt::Statement::Drop(place.clone());
-            Some(combine_statement_and_expression(st, opt_child))
+            Some(combine_statement_and_statement(st, opt_child))
         }
         src::Terminator::Call {
             func,
@@ -1177,7 +1171,7 @@ fn translate_terminator(
             dest,
             target,
         } => {
-            let opt_child = translate_child_expression(
+            let opt_child = translate_child_block(
                 cfg,
                 def,
                 exits_map,
@@ -1193,14 +1187,14 @@ fn translate_terminator(
                 args: args.clone(),
                 dest: dest.clone(),
             });
-            Some(combine_statement_and_expression(st, opt_child))
+            Some(combine_statement_and_statement(st, opt_child))
         }
         src::Terminator::Assert {
             cond,
             expected,
             target,
         } => {
-            let opt_child = translate_child_expression(
+            let opt_child = translate_child_block(
                 cfg,
                 def,
                 exits_map,
@@ -1213,14 +1207,14 @@ fn translate_terminator(
                 cond: cond.clone(),
                 expected: *expected,
             });
-            Some(combine_statement_and_expression(st, opt_child))
+            Some(combine_statement_and_statement(st, opt_child))
         }
         src::Terminator::Switch { discr, targets } => {
             // Translate the target expressions
             let targets = match &targets {
                 src::SwitchTargets::If(then_tgt, else_tgt) => {
                     // Translate the children expressions
-                    let then_exp = translate_child_expression(
+                    let then_exp = translate_child_block(
                         cfg,
                         def,
                         exits_map,
@@ -1229,8 +1223,8 @@ fn translate_terminator(
                         explored,
                         *then_tgt,
                     );
-                    let then_exp = opt_expression_to_nop(then_exp);
-                    let else_exp = translate_child_expression(
+                    let then_exp = opt_statement_to_nop_if_none(then_exp);
+                    let else_exp = translate_child_block(
                         cfg,
                         def,
                         exits_map,
@@ -1239,7 +1233,7 @@ fn translate_terminator(
                         explored,
                         *else_tgt,
                     );
-                    let else_exp = opt_expression_to_nop(else_exp);
+                    let else_exp = opt_statement_to_nop_if_none(else_exp);
 
                     // Translate
                     tgt::SwitchTargets::If(Box::new(then_exp), Box::new(else_exp))
@@ -1247,7 +1241,7 @@ fn translate_terminator(
                 src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
                     // Translate the children expressions
                     let targets_exps = LinkedHashMap::from_iter(targets.iter().map(|(v, bid)| {
-                        let exp = translate_child_expression(
+                        let exp = translate_child_block(
                             cfg,
                             def,
                             exits_map,
@@ -1256,11 +1250,11 @@ fn translate_terminator(
                             explored,
                             *bid,
                         );
-                        let exp = opt_expression_to_nop(exp);
+                        let exp = opt_statement_to_nop_if_none(exp);
                         (*v, exp)
                     }));
 
-                    let otherwise_exp = translate_child_expression(
+                    let otherwise_exp = translate_child_block(
                         cfg,
                         def,
                         exits_map,
@@ -1269,7 +1263,7 @@ fn translate_terminator(
                         explored,
                         *otherwise,
                     );
-                    let otherwise_exp = opt_expression_to_nop(otherwise_exp);
+                    let otherwise_exp = opt_statement_to_nop_if_none(otherwise_exp);
 
                     // Translate
                     tgt::SwitchTargets::SwitchInt(*int_ty, targets_exps, Box::new(otherwise_exp))
@@ -1277,65 +1271,63 @@ fn translate_terminator(
             };
 
             // Return
-            Some(tgt::Expression::Switch(discr.clone(), targets))
+            Some(tgt::Statement::Switch(discr.clone(), targets))
         }
     }
 }
 
 fn combine_expressions(
-    exp1: Option<tgt::Expression>,
-    exp2: Option<tgt::Expression>,
-) -> Option<tgt::Expression> {
+    exp1: Option<tgt::Statement>,
+    exp2: Option<tgt::Statement>,
+) -> Option<tgt::Statement> {
     match exp1 {
         None => exp2,
         Some(exp1) => match exp2 {
             None => Some(exp1),
-            Some(exp2) => Some(tgt::Expression::Sequence(Box::new(exp1), Box::new(exp2))),
+            Some(exp2) => Some(tgt::Statement::Sequence(Box::new(exp1), Box::new(exp2))),
         },
     }
 }
 
-fn is_terminal(exp: &tgt::Expression) -> bool {
+fn is_terminal(exp: &tgt::Statement) -> bool {
     is_terminal_explore(0, exp)
 }
 
-/// Return `true` if whatever the path we take, evaluating the expression
+/// Return `true` if whatever the path we take, evaluating the statement
 /// necessarily leads to:
 /// - a panic or return
 /// - a break which goes to a loop outside the expression
 /// - a continue statement
-fn is_terminal_explore(num_loops: usize, exp: &tgt::Expression) -> bool {
-    match exp {
-        tgt::Expression::Statement(st) => match st {
-            tgt::Statement::Assign(_, _)
-            | tgt::Statement::FakeRead(_)
-            | tgt::Statement::SetDiscriminant(_, _)
-            | tgt::Statement::Drop(_)
-            | tgt::Statement::Assert(_)
-            | tgt::Statement::Call(_)
-            | tgt::Statement::Nop => false,
-            tgt::Statement::Panic | tgt::Statement::Return => true,
-            tgt::Statement::Break(index) => *index >= num_loops,
-            tgt::Statement::Continue(_index) => true,
-        },
-        tgt::Expression::Sequence(exp1, exp2) => {
-            if is_terminal_explore(num_loops, exp1) {
+fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
+    match st {
+        tgt::Statement::Assign(_, _)
+        | tgt::Statement::FakeRead(_)
+        | tgt::Statement::SetDiscriminant(_, _)
+        | tgt::Statement::Drop(_)
+        | tgt::Statement::Assert(_)
+        | tgt::Statement::Call(_)
+        | tgt::Statement::Nop => false,
+        tgt::Statement::Panic | tgt::Statement::Return => true,
+        tgt::Statement::Break(index) => *index >= num_loops,
+        tgt::Statement::Continue(_index) => true,
+        tgt::Statement::Sequence(st1, st2) => {
+            if is_terminal_explore(num_loops, st1) {
                 return true;
             } else {
-                return is_terminal_explore(num_loops, exp2);
+                return is_terminal_explore(num_loops, st2);
             }
         }
-        tgt::Expression::Switch(_, targets) => targets
+        tgt::Statement::Switch(_, targets) => targets
             .get_targets()
             .iter()
-            .all(|tgt_exp| is_terminal_explore(num_loops, tgt_exp)),
-        tgt::Expression::Loop(loop_exp) => {
-            return is_terminal_explore(num_loops + 1, loop_exp);
+            .all(|tgt_st| is_terminal_explore(num_loops, tgt_st)),
+        tgt::Statement::Loop(loop_st) => {
+            return is_terminal_explore(num_loops + 1, loop_st);
         }
     }
 }
 
-fn translate_expression(
+fn translate_block(
     cfg: &CfgInfo,
     def: &src::FunDef,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
@@ -1343,7 +1335,7 @@ fn translate_expression(
     current_exit_block: Option<src::BlockId::Id>,
     explored: &mut HashSet<src::BlockId::Id>,
     block_id: src::BlockId::Id,
-) -> Option<tgt::Expression> {
+) -> Option<tgt::Statement> {
     // Check that we didn't already translate this block, and insert the block id
     // in the set of already translated blocks.
     // This is not necessary for the algorithm correctness. We enforce this only
@@ -1389,7 +1381,7 @@ fn translate_expression(
         &block.terminator,
     );
 
-    // Translate the statements
+    // Translate the statements inside the block
     let statements = Vec::from_iter(
         block
             .statements
@@ -1409,15 +1401,15 @@ fn translate_expression(
     // ```
     if is_loop {
         // Put the statements and the terminator together
-        let exp = combine_statements_and_expression(statements, terminator);
+        let exp = combine_statements_and_statement(statements, terminator);
 
         // Put the whole loop body inside a `Loop` wrapper
-        let exp = tgt::Expression::Loop(Box::new(exp.unwrap()));
+        let exp = tgt::Statement::Loop(Box::new(exp.unwrap()));
 
         // Add the exit block
         let exp = if ncurrent_exit_block.is_some() {
             let exit_block_id = ncurrent_exit_block.unwrap();
-            let next_exp = translate_expression(
+            let next_exp = translate_block(
                 cfg,
                 def,
                 exits_map,
@@ -1444,7 +1436,7 @@ fn translate_expression(
             assert!(!is_terminal(&exp));
 
             let exit_block_id = ncurrent_exit_block.unwrap();
-            let next_exp = translate_expression(
+            let next_exp = translate_block(
                 cfg,
                 def,
                 exits_map,
@@ -1459,10 +1451,10 @@ fn translate_expression(
         };
 
         // Concatenate the statements
-        combine_statements_and_expression(statements, exp)
+        combine_statements_and_statement(statements, exp)
     } else {
         // Simply concatenate the statements and the terminator
-        combine_statements_and_expression(statements, terminator)
+        combine_statements_and_statement(statements, terminator)
     }
 }
 
@@ -1482,7 +1474,7 @@ fn translate_function(im_ctx: &FunTransContext, src_def_id: FunDefId::Id) -> tgt
 
     // Translate the body by reconstructing the loops and the conditional branchings.
     // Note that we shouldn't get `None`.
-    let body_exp = translate_expression(
+    let body_exp = translate_block(
         &cfg_info,
         &src_def,
         &exits_map,

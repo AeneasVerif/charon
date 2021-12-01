@@ -4,8 +4,7 @@
 //! `while ...`, ...).
 //!
 //! Also note that we completely break the definitions Statement and Terminator
-//! from MIR to use Statement and Expression. The Statement definition in this
-//! file doesn't correspond at all to the Statement definition from MIR.
+//! from MIR to use Statement only.
 
 #![allow(dead_code)]
 use crate::common::*;
@@ -63,12 +62,15 @@ pub enum Statement {
     Continue(usize),
     /// No-op.
     Nop,
+    Sequence(Box<Statement>, Box<Statement>),
+    Switch(Operand, SwitchTargets),
+    Loop(Box<Statement>),
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
 pub enum SwitchTargets {
     /// Gives the `if` block and the `else` block
-    If(Box<Expression>, Box<Expression>),
+    If(Box<Statement>, Box<Statement>),
     /// Gives the integer type, a map linking values to switch branches, and the
     /// otherwise block. Note that matches over enumerations are performed by
     /// switching over the discriminant, which is an integer.
@@ -76,32 +78,24 @@ pub enum SwitchTargets {
     /// branches is preserved.
     SwitchInt(
         IntegerTy,
-        LinkedHashMap<ScalarValue, Expression>,
-        Box<Expression>,
+        LinkedHashMap<ScalarValue, Statement>,
+        Box<Statement>,
     ),
-}
-
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
-pub enum Expression {
-    Statement(Statement),
-    Sequence(Box<Expression>, Box<Expression>),
-    Switch(Operand, SwitchTargets),
-    Loop(Box<Expression>),
 }
 
 pub type FunDefs = FunDefId::Vector<FunDef>;
 
 /// A function definition
-pub type FunDef = GFunDef<Expression>;
+pub type FunDef = GFunDef<Statement>;
 
 impl SwitchTargets {
-    pub fn get_targets(&self) -> Vec<&Expression> {
+    pub fn get_targets(&self) -> Vec<&Statement> {
         match self {
             SwitchTargets::If(exp1, exp2) => {
                 vec![exp1, exp2]
             }
             SwitchTargets::SwitchInt(_, targets, otherwise) => {
-                let mut out: Vec<&Expression> = vec![otherwise];
+                let mut out: Vec<&Statement> = vec![otherwise];
                 for (_, tgt) in targets {
                     out.push(tgt);
                 }
@@ -142,7 +136,7 @@ impl Serialize for SwitchTargets {
 }
 
 impl Statement {
-    pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
+    pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
     where
         T: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
@@ -225,40 +219,23 @@ impl Statement {
             Statement::Break(index) => format!("break {}", index).to_owned(),
             Statement::Continue(index) => format!("continue {}", index).to_owned(),
             Statement::Nop => "nop".to_owned(),
-        }
-    }
-}
-
-impl Expression {
-    pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
-    where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<TypeDefId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<FunDefId::Id>
-            + Formatter<(TypeDefId::Id, VariantId::Id)>
-            + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
-    {
-        match self {
-            Expression::Statement(st) => format!("{}{};", tab, st.fmt_with_ctx(ctx)),
-            Expression::Sequence(e1, e2) => format!(
+            Statement::Sequence(st1, st2) => format!(
                 "{}\n{}",
-                e1.fmt_with_ctx(tab, ctx),
-                e2.fmt_with_ctx(tab, ctx)
+                st1.fmt_with_ctx(tab, ctx),
+                st2.fmt_with_ctx(tab, ctx)
             )
             .to_owned(),
-            Expression::Switch(discr, targets) => match targets {
-                SwitchTargets::If(true_exp, false_exp) => {
+            Statement::Switch(discr, targets) => match targets {
+                SwitchTargets::If(true_st, false_st) => {
                     let inner_tab = format!("{}{}", tab, TAB_INCR);
                     format!(
                         "{}if {} {{\n{}\n{}}}\n{}else {{\n{}\n{}}}",
                         tab,
                         discr.fmt_with_ctx(ctx),
-                        true_exp.fmt_with_ctx(&inner_tab, ctx),
+                        true_st.fmt_with_ctx(&inner_tab, ctx),
                         tab,
                         tab,
-                        false_exp.fmt_with_ctx(&inner_tab, ctx),
+                        false_st.fmt_with_ctx(&inner_tab, ctx),
                         tab,
                     )
                     .to_owned()
@@ -268,12 +245,12 @@ impl Expression {
                     let inner_tab2 = format!("{}{}", inner_tab1, TAB_INCR);
                     let mut maps: Vec<String> = maps
                         .iter()
-                        .map(|(v, e)| {
+                        .map(|(v, st)| {
                             format!(
                                 "{}{} => {{\n{}\n{}}}",
                                 inner_tab1,
                                 v.to_string(),
-                                e.fmt_with_ctx(&inner_tab2, ctx),
+                                st.fmt_with_ctx(&inner_tab2, ctx),
                                 inner_tab1
                             )
                             .to_owned()
@@ -300,12 +277,12 @@ impl Expression {
                     .to_owned()
                 }
             },
-            Expression::Loop(e) => {
+            Statement::Loop(body) => {
                 let inner_tab = format!("{}{}", tab, TAB_INCR);
                 format!(
                     "{}loop {{\n{}\n{}}}",
                     tab,
-                    e.fmt_with_ctx(&inner_tab, ctx),
+                    body.fmt_with_ctx(&inner_tab, ctx),
                     tab
                 )
                 .to_owned()
@@ -334,10 +311,10 @@ impl FunDef {
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         // Format the body expression
-        let body_exp = self.body.fmt_with_ctx(tab, body_ctx);
+        let body_st = self.body.fmt_with_ctx(tab, body_ctx);
 
         // Format the rest
-        self.gfmt_with_ctx("", &body_exp, sig_ctx, body_ctx)
+        self.gfmt_with_ctx("", &body_st, sig_ctx, body_ctx)
     }
 }
 
