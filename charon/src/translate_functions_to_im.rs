@@ -48,11 +48,11 @@ pub struct FunTransContext {
     /// The function definitions
     pub defs: ast::FunDefs,
     /// A map telling us whether functions are divergent or not
-    pub divergent: HashMap<v::FunDefId::Id, bool>,
-    fun_def_id_generator: v::FunDefId::Generator,
+    pub divergent: HashMap<ast::FunDefId::Id, bool>,
+    fun_def_id_generator: ast::FunDefId::Generator,
     /// Map from rust function identifiers to translation identifiers.
     /// The equivalent map for types is in the type translation context.
-    pub fun_rid_to_id: HashMap<DefId, v::FunDefId::Id>,
+    pub fun_rid_to_id: HashMap<DefId, ast::FunDefId::Id>,
 }
 
 /// A translation context for function bodies.
@@ -89,7 +89,7 @@ struct BodyTransContext<'ctx> {
     /// Id counter for the variables
     vars_counter: v::VarId::Generator,
     /// The "regular" variables
-    vars: v::VarId::Vector<v::Var>,
+    vars: v::VarId::Vector<ast::Var>,
     /// The map from rust variable indices to translated variables indices.
     rvars_to_ids: im::OrdMap<u32, v::VarId::Id>,
     /// Block id counter
@@ -108,16 +108,16 @@ impl FunTransContext {
             tt_ctx: tt_ctx,
             defs: ast::FunDefs::new(),
             divergent: HashMap::new(),
-            fun_def_id_generator: v::FunDefId::Generator::new(),
+            fun_def_id_generator: ast::FunDefId::Generator::new(),
             fun_rid_to_id: HashMap::new(),
         }
     }
 
-    fn fresh_def_id(&mut self) -> v::FunDefId::Id {
+    fn fresh_def_id(&mut self) -> ast::FunDefId::Id {
         self.fun_def_id_generator.fresh_id()
     }
 
-    fn get_def_id_from_rid(&self, def_id: DefId) -> Option<v::FunDefId::Id> {
+    fn get_def_id_from_rid(&self, def_id: DefId) -> Option<ast::FunDefId::Id> {
         self.fun_rid_to_id.get(&def_id).map(|x| *x)
     }
 }
@@ -152,7 +152,7 @@ impl<'ctx> BodyTransContext<'ctx> {
         self.rblocks_to_ids.get(&rid).map(|x| *x)
     }
 
-    fn get_var_from_id(&self, var_id: v::VarId::Id) -> Option<&v::Var> {
+    fn get_var_from_id(&self, var_id: v::VarId::Id) -> Option<&ast::Var> {
         self.vars.get(var_id)
     }
 
@@ -198,7 +198,7 @@ impl<'ctx> BodyTransContext<'ctx> {
         use crate::id_vector::ToUsize;
         let var_id = self.vars_counter.fresh_id();
         assert!(var_id.to_usize() == self.vars.len());
-        let var = v::Var {
+        let var = ast::Var {
             index: var_id,
             name: name.clone(),
             ty,

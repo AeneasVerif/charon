@@ -19,10 +19,48 @@ use std::iter::FromIterator;
 // TODO: move this definition
 pub static TAB_INCR: &'static str = "    ";
 
+generate_index_type!(FunDefId);
+
 // Block identifier. Similar to rust's `BasicBlock`.
 generate_index_type!(BlockId);
 
 pub static START_BLOCK_ID: BlockId::Id = BlockId::ZERO;
+
+/// A variable
+#[derive(Debug, Clone, Serialize)]
+pub struct Var {
+    /// Unique index identifying the variable
+    pub index: VarId::Id,
+    /// Variable name - may be `None` if the variable was introduced by Rust
+    /// through desugaring.
+    pub name: Option<String>,
+    /// The variable type
+    pub ty: ETy,
+}
+
+impl std::string::ToString for Var {
+    fn to_string(&self) -> String {
+        let id = var_id_to_pretty_string(self.index);
+        match &self.name {
+            // We display both the variable name and its id because some
+            // variables may have the same name (in different scopes)
+            Some(name) => format!("{}({})", name, id),
+            None => id,
+        }
+    }
+}
+
+impl Var {
+    /// Substitute the region parameters and type variables and return
+    /// the resulting variable
+    pub fn substitute(&self, subst: &ETypeSubst) -> Var {
+        Var {
+            index: self.index,
+            name: self.name.clone(),
+            ty: self.ty.substitute_types(subst),
+        }
+    }
+}
 
 /// A function signature.
 /// Note that a signature uses unerased lifetimes, while function bodies (and

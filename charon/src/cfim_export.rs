@@ -1,8 +1,8 @@
 use crate::cfim_ast::*;
 use crate::common::*;
+use crate::im_ast::FunDefId;
 use crate::reorder_decls::*;
 use crate::types::*;
-use crate::values::*;
 use serde::{Serialize, Serializer};
 use std::collections::HashMap;
 use std::fs::File;

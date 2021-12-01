@@ -20,8 +20,8 @@
 
 use crate::cfim_ast as tgt;
 use crate::im_ast as src;
+use crate::im_ast::FunDefId;
 use crate::translate_functions_to_im::FunTransContext;
-use crate::values::*;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
 use im::Vector;
