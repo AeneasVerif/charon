@@ -25,7 +25,6 @@ use crate::translate_functions_to_im::FunTransContext;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
 use im::Vector;
-use petgraph::algo::dominators::simple_fast;
 use petgraph::algo::floyd_warshall::floyd_warshall;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
@@ -95,10 +94,6 @@ struct CfgInfo {
     /// as a test to shortcut some computations, but computing this matrix
     /// is actually probably too expensive for the shortcut to be useful...
     pub reachability: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
-    /// Dominators (on the CFG *without* back-edges):
-    /// n dominated by n' <==> (n, n') in dominated
-    /// TODO: this is not used.
-    pub dominated_no_be: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
 }
 
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
@@ -223,33 +218,8 @@ fn compute_reachability(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId::Id, src:
     reachability
 }
 
-/// Compute the domination matrix, on the CFG *without* back edges.
-///
-/// We represent the domination matrix as a set R such that:
-/// n dominated by n' <==> (n, n') in R
-fn compute_dominated_no_be(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId::Id, src::BlockId::Id)> {
-    // We simply use tarjan
-    let dominators = simple_fast(&cfg.cfg_no_be, src::BlockId::ZERO);
-
-    let mut matrix = HashSet::new();
-
-    for n in cfg.cfg_no_be.nodes() {
-        match dominators.dominators(n) {
-            None => (),
-            Some(dominators) => {
-                for d in dominators {
-                    matrix.insert((n, d));
-                }
-            }
-        }
-    }
-
-    matrix
-}
-
 fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
     let reachability = compute_reachability(&cfg);
-    let dominated_no_be = compute_dominated_no_be(&cfg);
 
     let CfgPartialInfo {
         cfg,
@@ -266,7 +236,6 @@ fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
         backward_edges,
         switch_blocks,
         reachability,
-        dominated_no_be,
     }
 }
 

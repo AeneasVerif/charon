@@ -128,8 +128,8 @@ pub enum Ty<R>
 where
     R: Clone + std::cmp::Eq,
 {
-    /// An ADT. Contains the type def id and the vector of instantiations for
-    /// type parameters.
+    /// An ADT. Contains the type def id and the vectors of instantiations for
+    /// region and type parameters.
     Adt(TypeDefId::Id, Vector<R>, Vector<Ty<R>>),
     TypeVar(TypeVarId::Id),
     Bool,
@@ -145,6 +145,7 @@ where
     /// ```
     /// the second branch will have type `Never`. Also note that `Never`
     /// can be coerced to any type.
+    /// TODO: but do we really use this type for variables?...
     Never,
     Integer(IntegerTy),
     // We don't support floating point numbers on purpose
