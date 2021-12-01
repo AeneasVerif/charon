@@ -454,8 +454,7 @@ fn translate_projection<'tcx>(
                         path_type = ty.deref().clone();
                         projection.push_back(e::ProjectionElem::Deref);
                     }
-                    ty::Ty::Assumed(aty, regions, tys) => {
-                        assert!(aty.is_box());
+                    ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Box), regions, tys) => {
                         assert!(regions.is_empty());
                         assert!(tys.len() == 1);
                         path_type = tys[0].clone();
@@ -471,7 +470,7 @@ fn translate_projection<'tcx>(
                 // Update the path type and generate the proj kind at the
                 // same time.
                 let proj_kind = match path_type {
-                    ty::Ty::Adt(type_id, _regions, tys) => {
+                    ty::Ty::Adt(ty::TypeId::Adt(type_id), _regions, tys) => {
                         let type_def = type_defs.get_type_def(type_id).unwrap();
 
                         // If (and only if) the ADT is an enumeration, we should
@@ -487,7 +486,8 @@ fn translate_projection<'tcx>(
 
                         e::FieldProjKind::Adt(type_id, downcast_id)
                     }
-                    ty::Ty::Tuple(tys) => {
+                    ty::Ty::Adt(ty::TypeId::Tuple, regions, tys) => {
+                        assert!(regions.len() == 0);
                         assert!(downcast_id.is_none());
                         path_type = tys.get(field.as_usize()).unwrap().clone();
                         e::FieldProjKind::Tuple(tys.len())
@@ -715,14 +715,14 @@ fn translate_operand_constant_value<'tcx>(
                         }
                     };
 
-                    let ty = ty::Ty::Adt(*id, Vector::new(), Vector::new());
+                    let ty = ty::Ty::Adt(ty::TypeId::Adt(*id), Vector::new(), Vector::new());
                     let v = e::OperandConstantValue::Adt(*id);
                     (ty, v)
                 }
                 TyKind::Tuple(substs) => {
                     // There can be tuple([]) for unit
                     assert!(substs.len() == 0);
-                    let ty = ty::Ty::Tuple(Vector::new());
+                    let ty = ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), Vector::new());
                     (ty, e::OperandConstantValue::Unit)
                 }
                 TyKind::Never => {

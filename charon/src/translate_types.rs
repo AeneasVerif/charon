@@ -357,7 +357,11 @@ where
                 let regions = Vector::new();
                 let tys = Vector::from(vec![ty]);
 
-                return Ok(ty::Ty::Assumed(ty::AssumedTy::Box, regions, tys));
+                return Ok(ty::Ty::Adt(
+                    ty::TypeId::Assumed(ty::AssumedTy::Box),
+                    regions,
+                    tys,
+                ));
             } else {
                 // Translate the type parameters instantiation
                 let mut regions: Vec<R> = vec![];
@@ -396,7 +400,7 @@ where
 
                     // Return the instantiated ADT
                     return Ok(ty::Ty::Adt(
-                        *id,
+                        ty::TypeId::Adt(*id),
                         Vector::from(regions),
                         Vector::from(params),
                     ));
@@ -437,7 +441,11 @@ where
                 params.push(param_ty);
             }
 
-            return Ok(ty::Ty::Tuple(Vector::from(params)));
+            return Ok(ty::Ty::Adt(
+                ty::TypeId::Tuple,
+                Vector::new(),
+                Vector::from(params),
+            ));
         }
 
         TyKind::FnPtr(_) => {

@@ -115,6 +115,19 @@ pub enum RefKind {
     Shared,
 }
 
+/// Type identifier.
+///
+/// Allows us to factorize the code for assumed types, adts and tuples
+#[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumAsGetters, EnumIsA, Serialize)]
+pub enum TypeId {
+    Adt(TypeDefId::Id),
+    Tuple,
+    /// Assumed type. A non-primitive type coming from a standard library
+    /// and that we handle like a primitive type. Types falling into this
+    /// category include: Box, Vec, Cell...
+    Assumed(AssumedTy),
+}
+
 /// A type.
 ///
 /// Types are parameterized by a type parameter used for regions (or lifetimes).
@@ -128,9 +141,13 @@ pub enum Ty<R>
 where
     R: Clone + std::cmp::Eq,
 {
-    /// An ADT. Contains the type def id and the vectors of instantiations for
-    /// region and type parameters.
-    Adt(TypeDefId::Id, Vector<R>, Vector<Ty<R>>),
+    /// An ADT.
+    /// Note that here ADTs are very general. They can be:
+    /// - user-defined ADTs
+    /// - tuples (including `unit`, which is a 0-tuple)
+    /// - assumed types
+    /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
+    Adt(TypeId, Vector<R>, Vector<Ty<R>>),
     TypeVar(TypeVarId::Id),
     Bool,
     Char,
@@ -155,12 +172,6 @@ where
     Slice(Box<Ty<R>>),
     /// A borrow
     Ref(R, Box<Ty<R>>, RefKind),
-    /// A tuple. Note that unit is encoded as a 0-tuple.
-    Tuple(Vector<Ty<R>>),
-    /// Assumed type. A non-primitive type coming from a standard library
-    /// and that we handle like a primitive type. Types falling into this
-    /// category include: Box, Vec, Cell...
-    Assumed(AssumedTy, Vector<R>, Vector<Ty<R>>),
 }
 
 /// Type with *R*egions.
@@ -511,6 +522,21 @@ fn uintty_to_string(ty: UintTy) -> String {
     }
 }
 
+impl TypeId {
+    pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
+    where
+        T: Formatter<TypeDefId::Id>,
+    {
+        match self {
+            TypeId::Tuple => "".to_string(),
+            TypeId::Adt(def_id) => ctx.format_object(*def_id),
+            TypeId::Assumed(aty) => match aty {
+                AssumedTy::Box => "std::boxed::Box".to_string(),
+            },
+        }
+    }
+}
+
 impl<R> Ty<R>
 where
     R: Clone + Eq,
@@ -518,14 +544,17 @@ where
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
         match self {
-            Ty::Tuple(tys) => tys.is_empty(),
+            Ty::Adt(TypeId::Tuple, regions, tys) => {
+                assert!(regions.is_empty());
+                tys.is_empty()
+            }
             _ => false,
         }
     }
 
     /// Return the unit type
     pub fn mk_unit() -> Ty<R> {
-        Ty::Tuple(Vector::new())
+        Ty::Adt(TypeId::Tuple, Vector::new(), Vector::new())
     }
 
     /// Return true if this is a scalar type
@@ -552,12 +581,7 @@ where
     /// - false if adt, array...
     pub fn is_leaf(&self) -> bool {
         match self {
-            Ty::Adt(_, _, _)
-            | Ty::Array(_)
-            | Ty::Slice(_)
-            | Ty::Ref(_, _, _)
-            | Ty::Tuple(_)
-            | Ty::Assumed(_, _, _) => false,
+            Ty::Adt(_, _, _) | Ty::Array(_) | Ty::Slice(_) | Ty::Ref(_, _, _) => false,
             Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => true,
         }
     }
@@ -574,21 +598,25 @@ where
     {
         match self {
             Ty::Adt(id, regions, inst_types) => {
-                let adt_ident = ctx.format_object(*id);
+                let adt_ident = id.fmt_with_ctx(ctx);
 
-                if regions.len() + inst_types.len() > 0 {
-                    let regions: Vec<String> =
-                        regions.iter().map(|r| ctx.format_object(r)).collect();
-                    let mut types: Vec<String> = inst_types
-                        .iter()
-                        .map(|ty| format!("{}", ty.fmt_with_ctx(ctx)).to_owned())
-                        .collect();
-                    let mut all_params = regions;
-                    all_params.append(&mut types);
-                    let all_params = all_params.join(", ");
+                let num_params = regions.len() + inst_types.len();
+
+                let regions: Vec<String> = regions.iter().map(|r| ctx.format_object(r)).collect();
+                let mut types: Vec<String> = inst_types
+                    .iter()
+                    .map(|ty| format!("{}", ty.fmt_with_ctx(ctx)).to_owned())
+                    .collect();
+                let mut all_params = regions;
+                all_params.append(&mut types);
+                let all_params = all_params.join(", ");
+
+                if id.is_tuple() {
+                    format!("({})", all_params).to_owned()
+                } else if num_params > 0 {
                     format!("{}<{}>", adt_ident, all_params).to_owned()
                 } else {
-                    format!("{}", adt_ident).to_owned()
+                    adt_ident
                 }
             }
             Ty::TypeVar(id) => ctx.format_object(*id),
@@ -607,38 +635,28 @@ where
                     format!("&{} ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx)).to_owned()
                 }
             },
-            Ty::Tuple(types) => {
-                let types: Vec<String> = types.iter().map(|ty| ty.fmt_with_ctx(ctx)).collect();
-                let types = types.join(", ");
-                format!("({})", types).to_owned()
-            }
-            Ty::Assumed(aty, regions, tys) => match aty {
-                AssumedTy::Box => {
-                    assert!(regions.is_empty());
-                    assert!(tys.len() == 1);
-                    format!("std::boxed::Box<{}>", tys.get(0).unwrap().fmt_with_ctx(ctx)).to_owned()
-                }
-            },
         }
     }
 
     /// Return true if the type is Box
     pub fn is_box(&self) -> bool {
         match self {
-            Ty::Assumed(ty, _, _) => ty.is_box(),
+            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys) => {
+                assert!(regions.is_empty());
+                assert!(tys.len() == 1);
+                true
+            }
             _ => false,
         }
     }
 
     pub fn as_box(&self) -> Option<&Ty<R>> {
         match self {
-            Ty::Assumed(aty, regions, tys) => match aty {
-                AssumedTy::Box => {
-                    assert!(regions.is_empty());
-                    assert!(tys.len() == 1);
-                    Some(tys.get(0).unwrap())
-                }
-            },
+            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys) => {
+                assert!(regions.is_empty());
+                assert!(tys.len() == 1);
+                Some(tys.get(0).unwrap())
+            }
             _ => None,
         }
     }
@@ -653,46 +671,9 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
             Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
             Ty::Array(ty) | Ty::Slice(ty) => ty.contains_region_var(rset),
             Ty::Ref(r, _, _) => r.contains_var(rset),
-            Ty::Tuple(tys) => tys.iter().any(|x| x.contains_region_var(rset)),
-            Ty::Adt(_, regions, tys) | Ty::Assumed(_, regions, tys) => regions
+            Ty::Adt(_, regions, tys) => regions
                 .iter()
                 .any(|r| r.contains_var(rset) || tys.iter().any(|x| x.contains_region_var(rset))),
-        }
-    }
-
-    /// Returns `true` if the type contains a subtype which is not below a
-    /// reference whose region does not belong to the set of regions given
-    /// as parameters.
-    /// This function is particularly useful to figure out what the type of
-    /// the propagated functions should be (does ending a reference requires
-    /// us to propagate something or not?). We need it in the case that some
-    /// references with the same lifetime are interleaved, like in the below
-    /// examples:
-    /// ```
-    /// fn f1<'a>(x : &'a mut &'a mut u32) -> ...;
-    /// fn f2<'a>(x : &'a mut (&'a mut u32, u32)) -> ...;
-    /// ```
-    pub fn contains_subtype_not_in_region(&self, rset: &OrdSet<Rid>) -> bool {
-        match self {
-            Ty::TypeVar(_) => true,
-            Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => true,
-            Ty::Array(ty) | Ty::Slice(ty) => ty.contains_subtype_not_in_region(rset),
-            Ty::Ref(region, _, _) => match region {
-                Region::Static => true,
-                Region::Var(r) => !rset.contains(r),
-            },
-            Ty::Tuple(tys) => tys.iter().any(|x| x.contains_subtype_not_in_region(rset)),
-            Ty::Adt(_, regions, tys) | Ty::Assumed(_, regions, tys) => {
-                // This case is a bit tricky, and we can't be too precise.
-                // We are sure that there is a subtype not included in rset
-                // if none of the regions given as parameters are included
-                // in rset, and if at least one of the types given as
-                // parameter contains a subtype not included in rset.
-                regions.iter().all(|r| match r {
-                    Region::Static => true,
-                    Region::Var(r) => !rset.contains(r),
-                }) && tys.iter().any(|x| x.contains_region_var(rset))
-            }
         }
     }
 }
@@ -773,10 +754,10 @@ where
         R1: Clone + Eq,
     {
         match self {
-            Ty::Adt(def_id, regions, tys) => {
+            Ty::Adt(id, regions, tys) => {
                 let nregions = Ty::substitute_regions(regions, rsubst);
                 let ntys = tys.iter().map(|ty| ty.substitute(rsubst, tsubst)).collect();
-                return Ty::Adt(*def_id, nregions, ntys);
+                return Ty::Adt(*id, nregions, ntys);
             }
             Ty::TypeVar(id) => {
                 return tsubst(id);
@@ -794,15 +775,6 @@ where
             }
             Ty::Ref(rid, ty, kind) => {
                 return Ty::Ref(rsubst(rid), Box::new(ty.substitute(rsubst, tsubst)), *kind);
-            }
-            Ty::Tuple(tys) => {
-                let ntys = tys.iter().map(|ty| ty.substitute(rsubst, tsubst)).collect();
-                return Ty::Tuple(ntys);
-            }
-            Ty::Assumed(aty, regions, tys) => {
-                let nregions = Ty::substitute_regions(regions, rsubst);
-                let ntys = tys.iter().map(|ty| ty.substitute(rsubst, tsubst)).collect();
-                return Ty::Assumed(*aty, nregions, ntys);
             }
         }
     }
@@ -839,8 +811,7 @@ where
             Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
             Ty::Array(ty) | Ty::Slice(ty) => ty.contains_variables(),
             Ty::Ref(_, _, _) => true, // Always contains a region identifier
-            Ty::Tuple(tys) => tys.iter().any(|x| x.contains_variables()),
-            Ty::Adt(_, regions, tys) | Ty::Assumed(_, regions, tys) => {
+            Ty::Adt(_, regions, tys) => {
                 !regions.is_empty() || tys.iter().any(|x| x.contains_variables())
             }
         }
@@ -853,8 +824,7 @@ where
             Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
             Ty::Array(ty) | Ty::Slice(ty) => ty.contains_regions(),
             Ty::Ref(_, _, _) => true,
-            Ty::Tuple(tys) => tys.iter().any(|x| x.contains_regions()),
-            Ty::Adt(_, regions, tys) | Ty::Assumed(_, regions, tys) => {
+            Ty::Adt(_, regions, tys) => {
                 !regions.is_empty() || tys.iter().any(|x| x.contains_regions())
             }
         }
@@ -956,8 +926,8 @@ impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
                 variant_arity,
             )?;
             match self {
-                Ty::Adt(def_id, regions, tys) => {
-                    vs.serialize_field(def_id)?;
+                Ty::Adt(id, regions, tys) => {
+                    vs.serialize_field(id)?;
                     let regions = VectorSerializer::new(regions);
                     vs.serialize_field(&regions)?;
                     let tys = VectorSerializer::new(tys);
@@ -982,17 +952,6 @@ impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
                     vs.serialize_field(region)?;
                     vs.serialize_field(ty)?;
                     vs.serialize_field(ref_kind)?;
-                }
-                Ty::Tuple(tys) => {
-                    let tys = VectorSerializer::new(tys);
-                    vs.serialize_field(&tys)?;
-                }
-                Ty::Assumed(aty, regions, tys) => {
-                    vs.serialize_field(aty)?;
-                    let regions = VectorSerializer::new(regions);
-                    vs.serialize_field(&regions)?;
-                    let tys = VectorSerializer::new(tys);
-                    vs.serialize_field(&tys)?;
                 }
             }
             vs.end()
