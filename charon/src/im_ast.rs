@@ -755,7 +755,7 @@ impl FunDef {
         let body_blocks = self.fmt_body_blocks_with_ctx(tab, body_ctx);
 
         // Format the rest
-        self.gfmt_with_ctx(tab, &body_blocks, sig_ctx, body_ctx)
+        self.gfmt_with_ctx("", &body_blocks, sig_ctx, body_ctx)
     }
 }
 
