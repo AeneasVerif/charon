@@ -285,7 +285,7 @@ fn test_loop3(max: u32) -> u32 {
 /// sense, but it initially lead to strange results after control-flow reconstruction
 /// (with some code duplicata).
 fn test_loop4(max: u32) -> u32 {
-    let mut i = 0;
+    let mut i = 1;
     let mut j = 0;
     let mut s = 0;
     'outer: while i < max {
@@ -350,6 +350,22 @@ fn test_static(x: &'static u32) -> &'static u32 {
 /// Test with a char literal - testing serialization
 fn test_char() -> char {
     'a'
+}
+
+#[test]
+fn test_loops() {
+    let x = test_loop1(2);
+    assert!(x == 2);
+    let x = test_loop2(2);
+    assert!(x == 1);
+    let x = test_loop3(2);
+    assert!(x == 3);
+    let x = test_loop4(20);
+    assert!(x == 1);
+    let x = test_loop5(2);
+    assert!(x == 2);
+    let x = test_loop6(2);
+    assert!(x == 2);
 }
 
 /*struct WrapShared<'a, T> {
