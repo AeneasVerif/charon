@@ -99,7 +99,19 @@ fn test_neg1() {
     assert!(y == -3);
 }
 
-fn refs_test() {
+/// Testing nested references.
+fn refs_test1() {
+    let mut x = 0;
+    let mut px = &mut x;
+    let ppx = &mut px;
+    **ppx = 1;
+    // The interesting thing happening here is that the borrow of x is inside
+    // the borrow of px: ending the borrow of x requires ending the borrow of
+    // px first.
+    assert!(x == 1);
+}
+
+fn refs_test2() {
     let mut x = 0;
     let mut y = 1;
     let mut px = &mut x;
