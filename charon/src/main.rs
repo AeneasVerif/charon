@@ -208,6 +208,7 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
     // Note that in the future, we may complement this basic analysis with a
     // finer analysis to detect recursive functions which are actually total
     // by construction.
+    // TODO: we might want to move this to the additional analyses
     let divergent = divergent::compute_divergent_functions(&registered_decls, &ordered_decls);
 
     // TODO: check if can panic
@@ -224,7 +225,10 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
     // Note that from now onwards, we don't interact with rustc anymore.
     let cfim_defs = im_to_cfim::translate_functions(&im_defs);
 
-    // # Step 7: simplify the calls to binops
+    // # Step 7: Compute the region hierarchy for all the function signatures
+    let fun_defs_regions = signatures::compute_regions_hierarchies(&cfim_defs);
+
+    // # Step 8: simplify the calls to binops
     // Note that we assume that the sequences have been flattened.
     let cfim_defs = simplify_binops::simplify(cfim_defs);
 
@@ -235,7 +239,7 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
         );
     }
 
-    // # Step 8: reconstruct the asserts
+    // # Step 9: reconstruct the asserts
     let cfim_defs = reconstruct_asserts::simplify(cfim_defs);
 
     for def in &cfim_defs {
@@ -245,7 +249,7 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
         );
     }
 
-    // # Step 9: generate the files.
+    // # Step 10: generate the files.
     cfim_export::export(
         &ordered_decls,
         &im_defs.tt_ctx.type_rid_to_id,

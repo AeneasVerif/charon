@@ -1,9 +1,10 @@
 //! Function signature analysis
 #![allow(dead_code)]
 
+use crate::cfim_ast::FunDefs;
 use crate::common::*;
 use crate::graphs::*;
-use crate::im_ast::*;
+use crate::im_ast::{FunDefId, FunSig};
 use crate::types::*;
 use macros::generate_index_type;
 use petgraph::algo::tarjan_scc;
@@ -189,4 +190,14 @@ fn compute_region_groups_hierarchy_for_sig(sig: &FunSig) -> RegionGroups {
 
     // Return
     groups
+}
+
+/// Compute the region hierarchy (the order between the region's lifetimes) for
+/// a set of function definitions.
+pub fn compute_regions_hierarchies(defs: &FunDefs) -> FunDefId::Vector<RegionGroups> {
+    use std::iter::FromIterator;
+    FunDefId::Vector::from_iter(
+        defs.iter()
+            .map(|def| compute_region_groups_hierarchy_for_sig(&def.signature)),
+    )
 }
