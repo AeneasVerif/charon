@@ -1460,6 +1460,7 @@ fn translate_function(im_ctx: &FunTransContext, src_def_id: FunDefId::Id) -> tgt
         name: src_def.name.clone(),
         signature: src_def.signature.clone(),
         divergent: src_def.divergent,
+        regions_hierarchy: src_def.regions_hierarchy.clone(),
         arg_count: src_def.arg_count,
         locals: src_def.locals.clone(),
         body: body_exp,

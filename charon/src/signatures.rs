@@ -10,6 +10,7 @@ use macros::generate_index_type;
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::Direction;
+use serde::Serialize;
 
 generate_index_type!(RegionGroupId);
 
@@ -21,7 +22,7 @@ type LifetimeConstraints = DiGraphMap<Region<RegionVarId::Id>, ()>;
 ///
 /// Is used to group regions with the same lifetime together, and express
 /// the lifetime hierarchy between different groups of regions.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct RegionGroup {
     /// The region group identifier
     pub id: RegionGroupId::Id,
@@ -147,7 +148,7 @@ fn compute_region_constraints_for_sig(sig: &FunSig) -> SCCs<Region<RegionVarId::
 }
 
 /// Compute the region hierarchy (the order between the region's lifetimes)
-fn compute_region_groups_hierarchy_for_sig(sig: &FunSig) -> RegionGroups {
+pub fn compute_region_groups_hierarchy_for_sig(sig: &FunSig) -> RegionGroups {
     // Compute the constraints between the regions and group them accordingly
     let mut sccs = compute_region_constraints_for_sig(sig);
 

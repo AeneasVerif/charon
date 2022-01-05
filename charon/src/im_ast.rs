@@ -6,6 +6,7 @@
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
+use crate::signatures::RegionGroups;
 use crate::types::*;
 use crate::values::*;
 use crate::vars::Name;
@@ -99,6 +100,8 @@ pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
     /// true if the function might diverge (is recursive, part of a mutually
     /// recursive group, contains loops or calls functions which might diverge)
     pub divergent: bool,
+    /// The lifetime's hierarchy between the different regions.
+    pub regions_hierarchy: RegionGroups,
     pub arg_count: usize,
     pub locals: VarId::Vector<Var>,
     pub body: T,
