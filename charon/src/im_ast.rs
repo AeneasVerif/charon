@@ -84,6 +84,8 @@ pub struct FunSig {
     /// `'a` is early-bound while `'b` is late-bound.
     ///  ```
     pub num_early_bound_regions: usize,
+    /// The lifetime's hierarchy between the different regions.
+    pub regions_hierarchy: RegionGroups,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub inputs: VarId::Vector<RTy>,
     pub output: RTy,
@@ -100,8 +102,6 @@ pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
     /// true if the function might diverge (is recursive, part of a mutually
     /// recursive group, contains loops or calls functions which might diverge)
     pub divergent: bool,
-    /// The lifetime's hierarchy between the different regions.
-    pub regions_hierarchy: RegionGroups,
     pub arg_count: usize,
     pub locals: VarId::Vector<Var>,
     pub body: T,

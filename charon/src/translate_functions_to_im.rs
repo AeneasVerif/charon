@@ -1962,9 +1962,17 @@ fn translate_function_signature<'ctx>(
     let sig = ast::FunSig {
         region_params: bt_ctx.regions.clone(),
         num_early_bound_regions: late_bound_regions.len(),
+        regions_hierarchy: sig::RegionGroups::new(), // Hierarchy not yet computed
         type_params: bt_ctx.type_vars.clone(),
         inputs,
         output,
+    };
+
+    // Analyze the signature to compute the regions hierarchy
+    let regions_hierarchy = sig::compute_region_groups_hierarchy_for_sig(&sig);
+    let sig = ast::FunSig {
+        regions_hierarchy,
+        ..sig
     };
 
     (bt_ctx, sig)
@@ -2110,9 +2118,6 @@ fn translate_function(
     trace!("Translating function signature");
     let (mut bt_ctx, signature) = translate_function_signature(tcx, ft_ctx, def_id);
 
-    // Analyze the signature
-    let regions_hierarchy = sig::compute_region_groups_hierarchy_for_sig(&signature);
-
     // Initialize the local variables
     trace!("Translating the body locals");
     translate_body_locals(tcx, &mut bt_ctx, body)?;
@@ -2139,7 +2144,6 @@ fn translate_function(
         name,
         signature,
         divergent: *bt_ctx.ft_ctx.divergent.get(&def_id).unwrap(),
-        regions_hierarchy,
         arg_count: body.arg_count,
         locals: bt_ctx.vars,
         body: blocks,

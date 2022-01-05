@@ -147,7 +147,10 @@ fn compute_region_constraints_for_sig(sig: &FunSig) -> SCCs<Region<RegionVarId::
     sccs
 }
 
-/// Compute the region hierarchy (the order between the region's lifetimes)
+/// Compute the region hierarchy (the order between the region's lifetimes).
+/// Note that [FunSig] already contains a regions hierarchy: when translating
+/// function signatures, we first translate the signature without this hierarchy,
+/// then compute this hierarchy and add it to the signature information.
 pub fn compute_region_groups_hierarchy_for_sig(sig: &FunSig) -> RegionGroups {
     // Compute the constraints between the regions and group them accordingly
     let mut sccs = compute_region_constraints_for_sig(sig);
