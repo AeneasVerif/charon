@@ -43,6 +43,7 @@ mod im_to_cfim;
 mod reconstruct_asserts;
 mod register;
 mod reorder_decls;
+mod signatures;
 mod simplify_binops;
 mod translate_functions_to_im;
 mod translate_types;

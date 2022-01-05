@@ -177,6 +177,8 @@ where
 /// Type with *R*egions.
 ///
 /// Used in function signatures and type definitions.
+/// TODO: rename to sty (*signature* type). Region types are used by the
+/// interpreter.
 pub type RTy = Ty<Region<RegionVarId::Id>>;
 
 /// Type with *E*rased regions.
