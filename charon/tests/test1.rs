@@ -352,7 +352,6 @@ fn test_char() -> char {
     'a'
 }
 
-#[test]
 fn test_loops() {
     let x = test_loop1(2);
     assert!(x == 2);
@@ -366,6 +365,38 @@ fn test_loops() {
     assert!(x == 2);
     let x = test_loop6(2);
     assert!(x == 2);
+}
+
+/// For symbolic execution: testing what happens with several abstractions
+fn id_mut_mut_test1() {
+    let mut x = 0;
+    let mut px = &mut x;
+    let ppx = &mut px;
+    let ppy = id_mut_mut(ppx);
+    **ppy = 1;
+    // Ending one abstraction
+    assert!(*px == 1);
+    // Ending the other abstraction
+    assert!(x == 1);
+}
+
+/// For symbolic execution: testing what happens with several abstractions
+fn id_mut_mut_test2() {
+    let mut x = 0;
+    let mut px = &mut x;
+    let ppx = &mut px;
+    let ppy = id_mut_mut(ppx);
+    **ppy = 1;
+    // This time, we replace one of the borrows
+    let mut y = 2;
+    let py = &mut y;
+    *ppy = py;
+    // Ending one abstraction
+    assert!(*px == 2);
+    *px = 3;
+    // Ending the other abstraction
+    assert!(x == 1);
+    assert!(y == 3);
 }
 
 /*struct WrapShared<'a, T> {
