@@ -367,7 +367,7 @@ fn test_loops() {
     assert!(x == 2);
 }
 
-/// For symbolic execution: testing what happens with several abstractions
+/// For symbolic execution: testing what happens with several abstractions.
 fn id_mut_mut_test1() {
     let mut x = 0;
     let mut px = &mut x;
@@ -380,7 +380,11 @@ fn id_mut_mut_test1() {
     assert!(x == 1);
 }
 
-/// For symbolic execution: testing what happens with several abstractions
+/*
+/// For symbolic execution: testing what happens with several abstractions.
+/// This case is a bit trickier, because we modify the borrow graph through
+/// a value returned by a function call.
+/// TODO: not supported! We overwrite a borrow in a returned value.
 fn id_mut_mut_test2() {
     let mut x = 0;
     let mut px = &mut x;
@@ -398,6 +402,46 @@ fn id_mut_mut_test2() {
     assert!(x == 1);
     assert!(y == 3);
 }
+*/
+
+/*
+/// For symbolic execution: testing what happens with several abstractions.
+/// See what happens when chaining function calls.
+/// TODO: not supported! We overwrite a borrow in a returned value.
+fn id_mut_mut_test3() {
+    let mut x = 0;
+    let mut px = &mut x;
+    let ppx = &mut px;
+    let ppy = id_mut_mut(ppx); // &'a mut &'b mut i32
+    **ppy = 1;
+    let ppz = id_mut_mut(ppy); // &'c mut &'b mut i32
+    **ppz = 2;
+    // End 'a and 'c
+    assert!(*px == 2);
+    // End 'b (2 abstractions at once)
+    assert!(x == 2);
+}*/
+
+/*
+/// For symbolic execution: testing what happens with several abstractions.
+/// See what happens when chaining function calls.
+/// This one is slightly more complex than the previous one.
+fn id_mut_mut_test4() {
+    let mut x = 0;
+    let mut px = &mut x;
+    let ppx = &mut px;
+    let ppy = id_mut_mut(ppx); // &'a mut &'b mut i32
+    **ppy = 1;
+    let ppz = id_mut_mut(ppy); // &'c mut &'b mut i32
+    **ppz = 2;
+    // End 'c
+    assert!(**ppy == 2);
+    // End 'a
+    assert!(*px == 2);
+    // End 'b (2 abstractions at once)
+    assert!(x == 2);
+}
+*/
 
 /*struct WrapShared<'a, T> {
     x: &'a T,
