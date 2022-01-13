@@ -1,9 +1,9 @@
-struct Pair<T1, T2> {
+pub struct Pair<T1, T2> {
     x: T1,
     y: T2,
 }
 
-enum List<T> {
+pub enum List<T> {
     Cons(T, Box<List<T>>),
     Nil,
 }
@@ -14,28 +14,28 @@ enum List<T> {
 /// A downcast is the cast of an enum to a specific variant, like
 /// in the left value of:
 /// `((_0 as Right).0: T2) = move _1;`
-enum One<T1> {
+pub enum One<T1> {
     One(T1),
 }
 
 /// Truely degenerate case
 /// Instanciations of this are encoded as constant values by rust.
-enum EmptyEnum {
+pub enum EmptyEnum {
     Empty,
 }
 
 /// Enumeration (several variants with no parameters)
 /// Those are not encoded as constant values.
-enum Enum {
+pub enum Enum {
     Variant1,
     Variant2,
 }
 
 /// Degenerate struct
 /// Instanciations of this are encoded as constant values by rust.
-struct EmptyStruct {}
+pub struct EmptyStruct {}
 
-enum Sum<T1, T2> {
+pub enum Sum<T1, T2> {
     Left(T1),
     Right(T2),
 }
@@ -442,6 +442,35 @@ fn id_mut_mut_test4() {
     assert!(x == 2);
 }
 */
+
+pub fn list_length<'a, T>(l: &'a List<T>) -> u32 {
+    match l {
+        List::Nil => {
+            return 0;
+        }
+        List::Cons(_, l1) => {
+            return 1 + list_length(l1);
+        }
+    }
+}
+
+pub fn list_nth<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
+    // (i)
+    match l {
+        List::Nil => {
+            panic!()
+        }
+        List::Cons(x, tl) => {
+            // (ii)
+            if i == 0 {
+                return x; // (iii)
+            } else {
+                // (iv)
+                return list_nth(tl, i - 1);
+            }
+        }
+    }
+}
 
 /*struct WrapShared<'a, T> {
     x: &'a T,
