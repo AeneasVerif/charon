@@ -341,7 +341,7 @@ fn simplify_st(st: Statement) -> Statement {
 }
 
 fn simplify_def(mut def: FunDef) -> FunDef {
-    trace!("About to simplify: {}", def.name);
+    trace!("# About to simplify: {}", def.name);
     def.body = simplify_st(def.body);
     def
 }

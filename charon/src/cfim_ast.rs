@@ -148,23 +148,28 @@ impl Statement {
     {
         match self {
             Statement::Assign(place, rvalue) => format!(
-                "{} := {}",
+                "{}{} := {}",
+                tab,
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             )
             .to_owned(),
             Statement::FakeRead(place) => {
-                format!("@fake_read({})", place.fmt_with_ctx(ctx),).to_owned()
+                format!("{}@fake_read({})", tab, place.fmt_with_ctx(ctx),).to_owned()
             }
             Statement::SetDiscriminant(place, variant_id) => format!(
-                "@discriminant({}) := {}",
+                "{}@discriminant({}) := {}",
+                tab,
                 place.fmt_with_ctx(ctx),
                 variant_id.to_string()
             )
             .to_owned(),
-            Statement::Drop(place) => format!("drop {}", place.fmt_with_ctx(ctx),).to_owned(),
+            Statement::Drop(place) => {
+                format!("{}drop {}", tab, place.fmt_with_ctx(ctx),).to_owned()
+            }
             Statement::Assert(assert) => format!(
-                "assert({} == {})",
+                "{}assert({} == {})",
+                tab,
                 assert.cond.fmt_with_ctx(ctx),
                 assert.expected,
             )
@@ -212,13 +217,13 @@ impl Statement {
                     },
                 };
 
-                format!("{} := {}({})", dest.fmt_with_ctx(ctx), f, args,).to_owned()
+                format!("{}{} := {}({})", tab, dest.fmt_with_ctx(ctx), f, args,).to_owned()
             }
-            Statement::Panic => "panic".to_owned(),
-            Statement::Return => "return".to_owned(),
-            Statement::Break(index) => format!("break {}", index).to_owned(),
-            Statement::Continue(index) => format!("continue {}", index).to_owned(),
-            Statement::Nop => "nop".to_owned(),
+            Statement::Panic => format!("{}panic", tab).to_owned(),
+            Statement::Return => format!("{}return", tab).to_owned(),
+            Statement::Break(index) => format!("{}break {}", tab, index).to_owned(),
+            Statement::Continue(index) => format!("{}continue {}", tab, index).to_owned(),
+            Statement::Nop => format!("{}nop", tab).to_owned(),
             Statement::Sequence(st1, st2) => format!(
                 "{}\n{}",
                 st1.fmt_with_ctx(tab, ctx),
