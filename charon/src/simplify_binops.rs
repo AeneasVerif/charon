@@ -113,7 +113,7 @@ fn check_if_binop_then_assert(st1: &Statement, st2: &Statement, st3: &Statement)
 
 /// Make sure the statements match the following pattern:
 ///   ```
-///   tmp := copy x + copy y; // Possibly a different binop
+///   tmp := op1 + op2; // Possibly a different binop
 ///   assert(move (tmp.1) == false);
 ///   dest := move (tmp.0);
 ///   ...
@@ -156,7 +156,7 @@ fn check_if_simplifiable_binop_then_assert(st1: &Statement, st2: &Statement, st3
 
 /// Simplify patterns of the form:
 ///   ```
-///   tmp := copy x + copy y; // Possibly a different binop
+///   tmp := op1 + op2; // Possibly a different binop
 ///   assert(move (tmp.1) == false);
 ///   dest := move (tmp.0);
 ///   ...
@@ -267,6 +267,44 @@ fn simplify_assert_then_binop(_st1: Statement, _st2: Statement, st3: Statement) 
     st3
 }
 
+/// Attempt to simplify a sequence of statemnets
+fn simplify_st_seq(
+    st1: Statement,
+    st2: Statement,
+    st3: Statement,
+    st4: Option<Statement>,
+) -> Statement {
+    // Simplify checked binops
+    if check_if_binop_then_assert(&st1, &st2, &st3) {
+        let st = simplify_binop_then_assert(st1, st2, st3);
+        match st4 {
+            Option::Some(st4) => {
+                let st4 = simplify_st(st4);
+                return Statement::Sequence(Box::new(st), Box::new(st4));
+            }
+            Option::None => return st,
+        }
+    }
+    // Simplify unchecked binops (division, modulo)
+    if check_if_assert_then_binop(&st1, &st2, &st3) {
+        let st = simplify_assert_then_binop(st1, st2, st3);
+        match st4 {
+            Option::Some(st4) => {
+                let st4 = simplify_st(st4);
+                return Statement::Sequence(Box::new(st), Box::new(st4));
+            }
+            Option::None => return st,
+        }
+    }
+    // Not simplifyable
+    let next_st = match st4 {
+        Option::Some(st4) => Statement::Sequence(Box::new(st3), Box::new(st4)),
+        Option::None => st3,
+    };
+    let next_st = Statement::Sequence(Box::new(st2), Box::new(next_st));
+    Statement::Sequence(Box::new(simplify_st(st1)), Box::new(simplify_st(next_st)))
+}
+
 fn simplify_st(st: Statement) -> Statement {
     match st {
         Statement::Assign(p, rv) => {
@@ -304,37 +342,12 @@ fn simplify_st(st: Statement) -> Statement {
         }
         Statement::Loop(loop_body) => Statement::Loop(Box::new(simplify_st(*loop_body))),
         Statement::Sequence(st1, st2) => match *st2 {
-            Statement::Sequence(st2, st3) => {
-                match *st3 {
-                    Statement::Sequence(st3, st4) => {
-                        // Simplify checked binops
-                        if check_if_binop_then_assert(&st1, &st2, &st3) {
-                            let st = simplify_binop_then_assert(*st1, *st2, *st3);
-                            let st4 = simplify_st(*st4);
-                            return Statement::Sequence(Box::new(st), Box::new(st4));
-                        }
-                        // Simplify unchecked binops (division, modulo)
-                        if check_if_assert_then_binop(&st1, &st2, &st3) {
-                            let st = simplify_assert_then_binop(*st1, *st2, *st3);
-                            let st4 = simplify_st(*st4);
-                            return Statement::Sequence(Box::new(st), Box::new(st4));
-                        }
-                        // Not simplifyable
-                        else {
-                            let next_st =
-                                Statement::Sequence(st2, Box::new(Statement::Sequence(st3, st4)));
-                            Statement::Sequence(
-                                Box::new(simplify_st(*st1)),
-                                Box::new(simplify_st(next_st)),
-                            )
-                        }
-                    }
-                    st3 => Statement::Sequence(
-                        Box::new(simplify_st(*st1)),
-                        Box::new(simplify_st(Statement::Sequence(st2, Box::new(st3)))),
-                    ),
+            Statement::Sequence(st2, st3) => match *st3 {
+                Statement::Sequence(st3, st4) => {
+                    simplify_st_seq(*st1, *st2, *st3, Option::Some(*st4))
                 }
-            }
+                st3 => simplify_st_seq(*st1, *st2, st3, Option::None),
+            },
             st2 => Statement::Sequence(Box::new(simplify_st(*st1)), Box::new(simplify_st(st2))),
         },
     }
