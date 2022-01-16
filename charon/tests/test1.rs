@@ -342,11 +342,6 @@ fn test_loop6(max: u32) -> u32 {
     return s;
 }
 
-/// Test with a static lifetime - testing serialization
-fn test_static(x: &'static u32) -> &'static u32 {
-    x
-}
-
 /// Test with a char literal - testing serialization
 fn test_char() -> char {
     'a'
@@ -470,6 +465,44 @@ pub fn list_nth<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
             }
         }
     }
+}
+
+/// TODO: this one is not supported by Aeneas, but it is completely degenerate...
+/// Are there non-degenerate assignments which are not supported?
+#[test]
+pub fn test_weird_borrows1() {
+    let mut x = 0;
+    let mut px = &mut x;
+    // Context:
+    // x -> [l0]
+    // px -> &mut l0 (0:i32)
+
+    px = &mut (*px);
+
+    // After evaluation of the rvalue:
+    // x -> [l0]
+    // px -> &mut l0 [l1]
+    // rval -> &mut l1 (0:i32) // <-- this is a dummy/temporary variable
+    //
+    // In order to move rval to px we need to drop the loan l1 first, which
+    // gives:
+    // x -> [l0]
+    // px -> &mut l0 (0:i32)
+    // rval -> Bottom           (!)
+    // We can't move rval to its destination because it now contains Bottom!
+
+    // We could solve this by not dropping the loans/borrows at the destination,
+    // but moving the value we are about to overwrite to a dummy variable:
+    // x -> [l0]
+    // px -> Bottom
+    // rval -> &mut l1 (0:i32)
+    // _ -> &mut l0 [l1]
+    //
+    // Then do the assignment:
+    // x -> [l0]
+    // px -> &mut l1 (0:i32)
+    // rval -> Bottom         // we then remove this temporary variable from the environment
+    // _ -> &mut l0 [l1]
 }
 
 /*struct WrapShared<'a, T> {

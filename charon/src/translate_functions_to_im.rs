@@ -8,8 +8,8 @@ use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::im_ast as ast;
+use crate::regions_hierarchy as rh;
 use crate::reorder_decls::{Declaration, Declarations};
-use crate::signatures as sig;
 use crate::translate_types;
 use crate::types as ty;
 use crate::types::{FieldId, VariantId};
@@ -1962,14 +1962,14 @@ fn translate_function_signature<'ctx>(
     let sig = ast::FunSig {
         region_params: bt_ctx.regions.clone(),
         num_early_bound_regions: late_bound_regions.len(),
-        regions_hierarchy: sig::RegionGroups::new(), // Hierarchy not yet computed
+        regions_hierarchy: rh::RegionGroups::new(), // Hierarchy not yet computed
         type_params: bt_ctx.type_vars.clone(),
         inputs,
         output,
     };
 
     // Analyze the signature to compute the regions hierarchy
-    let regions_hierarchy = sig::compute_region_groups_hierarchy_for_sig(&sig);
+    let regions_hierarchy = rh::compute_region_groups_hierarchy_for_sig(&sig);
     let sig = ast::FunSig {
         regions_hierarchy,
         ..sig

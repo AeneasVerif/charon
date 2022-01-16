@@ -1,4 +1,5 @@
-//! Function signature analysis
+//! Analysis of type defintions and function signatures to compute the
+//! hierarchy between regions.
 #![allow(dead_code)]
 
 use crate::cfim_ast::FunDefs;

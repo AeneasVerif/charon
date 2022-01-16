@@ -6,7 +6,7 @@
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
-use crate::signatures::RegionGroups;
+use crate::regions_hierarchy::RegionGroups;
 use crate::types::*;
 use crate::values::*;
 use crate::vars::Name;
