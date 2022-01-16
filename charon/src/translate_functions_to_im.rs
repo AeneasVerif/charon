@@ -9,7 +9,7 @@ use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::im_ast as ast;
 use crate::regions_hierarchy as rh;
-use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
+use crate::rust_to_local_ids::*;
 use crate::translate_types;
 use crate::types as ty;
 use crate::types::{FieldId, VariantId};
@@ -43,17 +43,14 @@ pub static DEREF_DEREF_MUT_NAME: [&str; 5] = ["core", "ops", "deref", "DerefMut"
 pub static BOX_FREE_NAME: [&str; 3] = ["alloc", "alloc", "box_free"];
 
 /// Translation context for function definitions (contains a type context)
-pub struct FunTransContext {
-    /// Type translation context
-    pub tt_ctx: TypeTransContext,
+pub struct FunTransContext<'ctx> {
+    /// The ordered declarations
+    pub ordered: &'ctx OrderedDecls,
+    /// Type definitions
+    pub type_defs: &'ctx ty::TypeDefs,
     /// The function definitions
-    pub defs: ast::FunDefs,
-    /// A map telling us whether functions are divergent or not
-    pub divergent: HashMap<ast::FunDefId::Id, bool>,
-    fun_def_id_generator: ast::FunDefId::Generator,
-    /// Map from rust function identifiers to translation identifiers.
-    /// The equivalent map for types is in the type translation context.
-    pub fun_rid_to_id: HashMap<DefId, ast::FunDefId::Id>,
+    /// TODO: rename to fun_defs
+    pub defs: &'ctx ast::FunDefs,
 }
 
 /// A translation context for function bodies.
@@ -64,10 +61,10 @@ pub struct FunTransContext {
 /// not to mix too many very similar data structures, but we might consider
 /// using `std::collections::BTreeMap` instead.
 #[derive(Clone)]
-struct BodyTransContext<'ctx> {
+struct BodyTransContext<'ctx, 'ctx1> {
     /// The function translation context, containing the function definitions.
     /// Also contains the type translation context.
-    ft_ctx: &'ctx FunTransContext,
+    ft_ctx: &'ctx FunTransContext<'ctx1>,
     /// Region counter
     regions_counter: ty::RegionVarId::Generator,
     /// The regions
@@ -103,29 +100,19 @@ struct BodyTransContext<'ctx> {
     rblocks_to_ids: im::OrdMap<BasicBlock, ast::BlockId::Id>,
 }
 
-impl FunTransContext {
-    fn new(tt_ctx: TypeTransContext) -> FunTransContext {
-        FunTransContext {
-            tt_ctx: tt_ctx,
-            defs: ast::FunDefs::new(),
-            divergent: HashMap::new(),
-            fun_def_id_generator: ast::FunDefId::Generator::new(),
-            fun_rid_to_id: HashMap::new(),
-        }
-    }
-
-    fn fresh_def_id(&mut self) -> ast::FunDefId::Id {
-        self.fun_def_id_generator.fresh_id()
-    }
-
+impl<'ctx> FunTransContext<'ctx> {
     fn get_def_id_from_rid(&self, def_id: DefId) -> Option<ast::FunDefId::Id> {
-        self.fun_rid_to_id.get(&def_id).map(|x| *x)
+        self.ordered.fun_rid_to_id.get(&def_id).map(|x| *x)
+    }
+
+    fn get_def_rid_from_id(&self, def_id: ast::FunDefId::Id) -> Option<DefId> {
+        self.ordered.fun_id_to_rid.get(&def_id).map(|x| *x)
     }
 }
 
-impl<'ctx> BodyTransContext<'ctx> {
+impl<'ctx, 'ctx1> BodyTransContext<'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
-    fn new(ft_ctx: &'ctx FunTransContext) -> BodyTransContext<'ctx> {
+    fn new(ft_ctx: &'ctx FunTransContext<'ctx1>) -> BodyTransContext<'ctx, 'ctx1> {
         BodyTransContext {
             ft_ctx,
             regions_counter: ty::RegionVarId::Generator::new(),
@@ -219,88 +206,95 @@ impl<'ctx> BodyTransContext<'ctx> {
     }
 
     fn get_type_defs(&self) -> &ty::TypeDefs {
-        &self.ft_ctx.tt_ctx.types
+        &self.ft_ctx.type_defs
     }
 }
 
-impl Formatter<ty::TypeDefId::Id> for FunTransContext {
+impl<'ctx> Formatter<ty::TypeDefId::Id> for FunTransContext<'ctx> {
     fn format_object(&self, id: ty::TypeDefId::Id) -> String {
-        self.tt_ctx.format_object(id)
+        self.type_defs.format_object(id)
     }
 }
 
-impl<'ctx> Formatter<ty::TypeVarId::Id> for BodyTransContext<'ctx> {
+impl<'ctx, 'ctx1> Formatter<ty::TypeVarId::Id> for BodyTransContext<'ctx, 'ctx1> {
     fn format_object(&self, id: ty::TypeVarId::Id) -> String {
         let v = self.type_vars.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'ctx> Formatter<v::VarId::Id> for BodyTransContext<'ctx> {
+impl<'ctx, 'ctx1> Formatter<v::VarId::Id> for BodyTransContext<'ctx, 'ctx1> {
     fn format_object(&self, id: v::VarId::Id) -> String {
         let v = self.vars.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'ctx> Formatter<ty::RegionVarId::Id> for BodyTransContext<'ctx> {
+impl<'ctx, 'ctx1> Formatter<ty::RegionVarId::Id> for BodyTransContext<'ctx, 'ctx1> {
     fn format_object(&self, id: ty::RegionVarId::Id) -> String {
         let v = self.regions.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'ctx> Formatter<&ty::Region<ty::RegionVarId::Id>> for BodyTransContext<'ctx> {
+impl<'ctx, 'ctx1> Formatter<&ty::Region<ty::RegionVarId::Id>> for BodyTransContext<'ctx, 'ctx1> {
     fn format_object(&self, r: &ty::Region<ty::RegionVarId::Id>) -> String {
         r.fmt_with_ctx(self)
     }
 }
 
-impl<'ctx> Formatter<&ty::ErasedRegion> for BodyTransContext<'ctx> {
+impl<'ctx, 'ctx1> Formatter<&ty::ErasedRegion> for BodyTransContext<'ctx, 'ctx1> {
     fn format_object(&self, _: &ty::ErasedRegion) -> String {
         "'_".to_owned()
     }
 }
 
-impl<'ctx> Formatter<ty::TypeDefId::Id> for BodyTransContext<'ctx> {
+impl<'ctx, 'ctx1> Formatter<ty::TypeDefId::Id> for BodyTransContext<'ctx, 'ctx1> {
     fn format_object(&self, id: ty::TypeDefId::Id) -> String {
-        self.ft_ctx.format_object(id)
+        self.ft_ctx.type_defs.format_object(id)
     }
 }
 
-impl<'ctx> Formatter<&ty::Ty<ty::Region<ty::RegionVarId::Id>>> for BodyTransContext<'ctx> {
+impl<'ctx, 'ctx1> Formatter<&ty::Ty<ty::Region<ty::RegionVarId::Id>>>
+    for BodyTransContext<'ctx, 'ctx1>
+{
     fn format_object(&self, ty: &ty::Ty<ty::Region<ty::RegionVarId::Id>>) -> String {
         ty.fmt_with_ctx(self)
     }
 }
 
-impl<'ctx> Formatter<&ty::Ty<ty::ErasedRegion>> for BodyTransContext<'ctx> {
+impl<'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>> for BodyTransContext<'ctx, 'ctx1> {
     fn format_object(&self, ty: &ty::Ty<ty::ErasedRegion>) -> String {
         ty.fmt_with_ctx(self)
     }
 }
 
-fn translate_ety<'ctx>(
+fn translate_ety<'ctx, 'ctx1>(
     tcx: &TyCtxt,
-    bt_ctx: &BodyTransContext<'ctx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     ty: &mir_ty::Ty,
 ) -> Result<ty::ETy> {
-    translate_types::translate_ety(
-        tcx,
-        &bt_ctx.ft_ctx.tt_ctx,
-        &bt_ctx.rtype_vars_to_etypes,
-        &ty,
-    )
+    let ty_ctx = TypeTransContext {
+        types: &bt_ctx.ft_ctx.type_defs,
+        type_rid_to_id: &bt_ctx.ft_ctx.ordered.type_rid_to_id,
+        type_id_to_rid: &bt_ctx.ft_ctx.ordered.type_id_to_rid,
+    };
+    translate_types::translate_ety(tcx, &ty_ctx, &bt_ctx.rtype_vars_to_etypes, &ty)
 }
 
-fn translate_sig_ty<'ctx>(
+fn translate_sig_ty<'ctx, 'ctx1>(
     tcx: &TyCtxt,
-    bt_ctx: &BodyTransContext<'ctx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     ty: &mir_ty::Ty,
 ) -> Result<ty::RTy> {
+    let ty_ctx = TypeTransContext {
+        types: &bt_ctx.ft_ctx.type_defs,
+        type_rid_to_id: &bt_ctx.ft_ctx.ordered.type_rid_to_id,
+        type_id_to_rid: &bt_ctx.ft_ctx.ordered.type_id_to_rid,
+    };
     translate_types::translate_sig_ty(
         tcx,
-        &bt_ctx.ft_ctx.tt_ctx,
+        &ty_ctx,
         &bt_ctx.rregions_to_ids,
         &bt_ctx.rtype_vars_to_rtypes,
         &ty,
@@ -308,9 +302,9 @@ fn translate_sig_ty<'ctx>(
 }
 
 /// Translate a function's local variables by adding them in the environment.
-fn translate_body_locals<'ctx>(
+fn translate_body_locals<'ctx, 'ctx1>(
     tcx: &TyCtxt,
-    bt_ctx: &mut BodyTransContext<'ctx>,
+    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body,
 ) -> Result<()> {
     // First, retrieve the debug info - we want to retrieve the names
@@ -349,9 +343,9 @@ fn translate_body_locals<'ctx>(
 ///
 /// The local variables should already have been translated and inserted in
 /// the context.
-fn translate_function_body<'ctx>(
+fn translate_function_body<'ctx, 'ctx1>(
     tcx: &TyCtxt,
-    bt_ctx: &mut BodyTransContext<'ctx>,
+    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body,
 ) -> Result<()> {
     trace!();
@@ -362,9 +356,9 @@ fn translate_function_body<'ctx>(
     Ok(())
 }
 
-fn translate_basic_block<'ctx>(
+fn translate_basic_block<'ctx, 'ctx1>(
     tcx: &TyCtxt,
-    bt_ctx: &mut BodyTransContext<'ctx>,
+    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body,
     block_id: BasicBlock,
 ) -> Result<ast::BlockId::Id> {
@@ -407,17 +401,14 @@ fn translate_basic_block<'ctx>(
 }
 
 /// Translate a place
-fn translate_place<'ctx, 'tcx>(
-    bt_ctx: &'ctx BodyTransContext<'ctx>,
+fn translate_place<'ctx, 'ctx1, 'tcx>(
+    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
     place: &'tcx Place<'tcx>,
 ) -> e::Place {
     let var_id = bt_ctx.get_local(&place.local).unwrap();
     let var = bt_ctx.get_var_from_id(var_id).unwrap();
-    let projection = translate_projection(
-        &bt_ctx.ft_ctx.tt_ctx.types,
-        var.ty.clone(),
-        place.projection,
-    );
+    let projection =
+        translate_projection(&bt_ctx.ft_ctx.type_defs, var.ty.clone(), place.projection);
 
     e::Place { var_id, projection }
 }
@@ -673,7 +664,7 @@ fn translate_operand_constant_value_constant_value<'tcx>(
 
 /// Translate a constant operand
 fn translate_operand_constant_value<'tcx>(
-    tt_ctx: &TypeTransContext,
+    ft_ctx: &FunTransContext,
     ty: &'tcx Ty,
     value: &'tcx mir::interpret::ConstValue<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
@@ -700,8 +691,8 @@ fn translate_operand_constant_value<'tcx>(
                     // variant, and this variant doesn't take parameters
 
                     // Retrieve the definition
-                    let id = tt_ctx.type_rid_to_id.get(&adt_def.did).unwrap();
-                    let def = tt_ctx.types.get_type_def(*id).unwrap();
+                    let id = ft_ctx.ordered.type_rid_to_id.get(&adt_def.did).unwrap();
+                    let def = ft_ctx.type_defs.get_type_def(*id).unwrap();
 
                     // Check that there is only one variant, with no fields
                     // and no parameters. Construct the value at the same time.
@@ -755,7 +746,7 @@ fn translate_operand_constant_value<'tcx>(
 
 /// Translate a constant
 fn translate_operand_constant<'tcx>(
-    tt_ctx: &TypeTransContext,
+    ft_ctx: &FunTransContext,
     constant: &'tcx mir::Constant<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
     trace!();
@@ -765,7 +756,7 @@ fn translate_operand_constant<'tcx>(
         // This is the "normal" constant case
         mir::ConstantKind::Ty(c) => match c.val {
             rustc_middle::ty::ConstKind::Value(cvalue) => {
-                translate_operand_constant_value(tt_ctx, &c.ty, &cvalue)
+                translate_operand_constant_value(ft_ctx, &c.ty, &cvalue)
             }
             rustc_middle::ty::ConstKind::Param(_)
             | rustc_middle::ty::ConstKind::Infer(_)
@@ -784,8 +775,8 @@ fn translate_operand_constant<'tcx>(
 }
 
 /// Translate an operand
-fn translate_operand<'ctx, 'tcx>(
-    bt_ctx: &'ctx BodyTransContext<'ctx>,
+fn translate_operand<'ctx, 'ctx1, 'tcx>(
+    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
     operand: &'tcx mir::Operand<'tcx>,
 ) -> e::Operand {
     trace!();
@@ -793,7 +784,7 @@ fn translate_operand<'ctx, 'tcx>(
         Operand::Copy(place) => e::Operand::Copy(translate_place(bt_ctx, place)),
         Operand::Move(place) => e::Operand::Move(translate_place(bt_ctx, place)),
         Operand::Constant(constant) => {
-            let (ty, constant) = translate_operand_constant(&bt_ctx.ft_ctx.tt_ctx, constant);
+            let (ty, constant) = translate_operand_constant(&bt_ctx.ft_ctx, constant);
             e::Operand::Constant(ty, constant)
         }
     }
@@ -809,8 +800,8 @@ fn translate_operand<'ctx, 'tcx>(
 /// ad-hoc behaviour (which comes from the fact that we abstract boxes, while
 /// the rust compiler is too precise when manipulating those boxes, which
 /// reveals implementation details).
-fn translate_move_box_first_projector_operand<'ctx, 'tcx>(
-    bt_ctx: &'ctx BodyTransContext<'ctx>,
+fn translate_move_box_first_projector_operand<'ctx, 'ctx1, 'tcx>(
+    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
     operand: &'tcx mir::Operand<'tcx>,
 ) -> e::Operand {
     trace!();
@@ -909,9 +900,9 @@ fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
 }
 
 /// Translate an rvalue
-fn translate_rvalue<'ctx, 'tcx>(
+fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
     tcx: &TyCtxt,
-    bt_ctx: &'ctx BodyTransContext<'ctx>,
+    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
     rvalue: &'tcx mir::Rvalue<'tcx>,
 ) -> e::Rvalue {
     use std::ops::Deref;
@@ -1012,7 +1003,7 @@ fn translate_rvalue<'ctx, 'tcx>(
                     // Retrieve the definition
                     let id_t = *bt_ctx
                         .ft_ctx
-                        .tt_ctx
+                        .ordered
                         .type_rid_to_id
                         .get(&adt_def.did)
                         .unwrap();
@@ -1056,9 +1047,9 @@ fn translate_rvalue<'ctx, 'tcx>(
 /// Translate a statement
 ///
 /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
-fn translate_statement<'ctx>(
+fn translate_statement<'ctx, 'ctx1>(
     tcx: &TyCtxt,
-    bt_ctx: &BodyTransContext<'ctx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     statement: &Statement,
 ) -> Result<Option<ast::Statement>> {
     trace!("About to translate statement (MIR) {:?}", statement);
@@ -1128,9 +1119,9 @@ fn translate_statement<'ctx>(
 }
 
 /// Translate a terminator
-fn translate_terminator<'ctx>(
+fn translate_terminator<'ctx, 'ctx1>(
     tcx: &TyCtxt,
-    bt_ctx: &mut BodyTransContext<'ctx>,
+    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body,
     terminator: &Terminator,
 ) -> Result<ast::Terminator> {
@@ -1261,9 +1252,9 @@ fn translate_terminator<'ctx>(
 }
 
 /// Translate switch targets
-fn translate_switch_targets<'ctx>(
+fn translate_switch_targets<'ctx, 'ctx1>(
     tcx: &TyCtxt,
-    bt_ctx: &mut BodyTransContext<'ctx>,
+    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body,
     switch_ty: &ty::ETy,
     targets: &mir::SwitchTargets,
@@ -1530,9 +1521,9 @@ fn function_def_id_to_name(tcx: &TyCtxt, def_id: DefId) -> Name {
 /// Note that `body` is the body of the function being translated, not of the
 /// function referenced in the function call: we need it in order to translate
 /// the blocks we go to after the function call returns.
-fn translate_function_call<'ctx, 'tcx>(
+fn translate_function_call<'ctx, 'ctx1, 'tcx>(
     tcx: &TyCtxt,
-    bt_ctx: &mut BodyTransContext<'ctx>,
+    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &mir::Body,
     func: &Operand<'tcx>,
     args: &Vec<Operand<'tcx>>,
@@ -1658,9 +1649,9 @@ fn translate_function_call<'ctx, 'tcx>(
 /// Translate a parameter substitution used inside a function body.
 ///
 /// Note that the regions parameters are expected to have been erased.
-fn translate_subst_in_body<'ctx, 'tcx>(
+fn translate_subst_in_body<'ctx, 'ctx1, 'tcx>(
     tcx: &TyCtxt,
-    bt_ctx: &BodyTransContext<'ctx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     substs: &'tcx rustc_middle::ty::subst::InternalSubsts<'tcx>,
 ) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>)> {
     let mut t_params_regions = Vec::new();
@@ -1686,8 +1677,8 @@ fn translate_subst_in_body<'ctx, 'tcx>(
 
 /// Evaluate function arguments in a context, and return the list of computed
 /// values.
-fn translate_arguments<'ctx, 'tcx>(
-    bt_ctx: &BodyTransContext<'ctx>,
+fn translate_arguments<'ctx, 'ctx1, 'tcx>(
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     args: &Vec<Operand<'tcx>>,
 ) -> Vec<e::Operand> {
     let mut t_args: Vec<e::Operand> = Vec::new();
@@ -1823,26 +1814,14 @@ fn translate_deref_deref_mut(
     })
 }
 
-/// Small utility
-fn register_function_id(
-    ft_ctx: &mut FunTransContext,
-    divergent: &HashMap<DefId, bool>,
-    def_id: DefId,
-) {
-    let id = ft_ctx.fresh_def_id();
-    ft_ctx.fun_rid_to_id.insert(def_id, id);
-    let is_div = divergent.get(&def_id).unwrap();
-    ft_ctx.divergent.insert(id, *is_div);
-}
-
 /// Translate a function's signature, and initialize a body translation context
 /// at the same time - the function signature gives us the list of region and
 /// type parameters, that we put in the translation context.
-fn translate_function_signature<'ctx>(
+fn translate_function_signature<'ctx, 'ctx1>(
     tcx: &TyCtxt,
-    ft_ctx: &'ctx FunTransContext,
+    ft_ctx: &'ctx FunTransContext<'ctx1>,
     def_id: DefId,
-) -> (BodyTransContext<'ctx>, ast::FunSig) {
+) -> (BodyTransContext<'ctx, 'ctx1>, ast::FunSig) {
     // Retrieve the function signature, which includes the lifetimes
     let signature = tcx.fn_sig(def_id);
 
@@ -2101,22 +2080,33 @@ fn build_scope_tree(body: &Body) -> ScopeTree<SourceScope> {
 /// we translate its body to a very close representation.
 fn translate_function(
     tcx: &TyCtxt,
-    ft_ctx: &mut FunTransContext,
-    def_id: DefId,
+    ordered: &OrderedDecls,
+    type_defs: &ty::TypeDefs,
+    fun_defs: &mut ast::FunDefs,
+    def_id: ast::FunDefId::Id,
 ) -> Result<ast::FunDef> {
     trace!("{:?}", def_id);
 
+    let rid = *ordered.fun_id_to_rid.get(&def_id).unwrap();
+
+    // Initialize the function translation context
+    let mut ft_ctx = FunTransContext {
+        ordered: ordered,
+        type_defs: type_defs,
+        defs: &fun_defs,
+    };
+
     // Translate the function name
-    let name = function_def_id_to_name(tcx, def_id);
+    let name = function_def_id_to_name(tcx, rid);
 
     // Retrieve the MIR body
-    let body = crate::get_mir::get_mir_for_def_id(tcx, def_id.expect_local());
+    let body = crate::get_mir::get_mir_for_def_id(tcx, rid.expect_local());
 
-    // Translate the function signature and initialize the body translation context
+    // Translate the function signaure and initialize the body translation context
     // at the same time (the signature gives us the region and type parameters,
     // that we put in the translation context).
     trace!("Translating function signature");
-    let (mut bt_ctx, signature) = translate_function_signature(tcx, ft_ctx, def_id);
+    let (mut bt_ctx, signature) = translate_function_signature(tcx, &ft_ctx, rid);
 
     // Initialize the local variables
     trace!("Translating the body locals");
@@ -2130,7 +2120,6 @@ fn translate_function(
     translate_function_body(tcx, &mut bt_ctx, body)?;
 
     // Return the new function
-    let def_id = *bt_ctx.ft_ctx.fun_rid_to_id.get(&def_id).unwrap();
     // We need to convert the blocks map to an index vector
     let mut blocks = ast::BlockId::Vector::new();
     for (id, block) in bt_ctx.blocks {
@@ -2143,7 +2132,6 @@ fn translate_function(
         def_id,
         name,
         signature,
-        divergent: *bt_ctx.ft_ctx.divergent.get(&def_id).unwrap(),
         arg_count: body.arg_count,
         locals: bt_ctx.vars,
         body: blocks,
@@ -2155,48 +2143,30 @@ fn translate_function(
 /// Translate the functions
 pub fn translate_functions(
     tcx: &TyCtxt,
-    tt_ctx: TypeTransContext,
-    decls: &DeclarationsGroups<DefId, DefId>,
-    divergent: HashMap<DefId, bool>,
-) -> Result<FunTransContext> {
-    // Initialize the function translation context
-    let mut ft_ctx = FunTransContext::new(tt_ctx);
-
-    // Generate indices for all the functions, and generate the internal
-    // divergent map at the same time.
-    for decl in &decls.decls {
-        match decl {
-            DeclarationGroup::Fun(GDeclarationGroup::NonRec(def_id)) => {
-                register_function_id(&mut ft_ctx, &divergent, *def_id);
-            }
-            DeclarationGroup::Fun(GDeclarationGroup::Rec(ids)) => {
-                for def_id in ids {
-                    register_function_id(&mut ft_ctx, &divergent, *def_id);
-                }
-            }
-            DeclarationGroup::Type(_) => {
-                // Ignore the type declarations
-                continue;
-            }
-        }
-    }
+    ordered: &OrderedDecls,
+    type_defs: &ty::TypeDefs,
+) -> Result<ast::FunDefs> {
+    let mut fun_defs = ast::FunDefs::new();
 
     // Translate the bodies one at a time
-    for decl in &decls.decls {
+    for decl in &ordered.decls {
         use crate::id_vector::ToUsize;
         match decl {
             DeclarationGroup::Fun(GDeclarationGroup::NonRec(def_id)) => {
-                let fun_def = translate_function(tcx, &mut ft_ctx, *def_id)?;
-                let id = ft_ctx.fun_rid_to_id.get(def_id).unwrap();
-                assert!(id.to_usize() == ft_ctx.defs.len());
-                ft_ctx.defs.push_back(fun_def);
+                let fun_def = translate_function(tcx, ordered, type_defs, &mut fun_defs, *def_id)?;
+                // We have to make sure we translate the definitions in the
+                // proper order, otherwise we mess with the vector of ids
+                assert!(def_id.to_usize() == fun_defs.len());
+                fun_defs.push_back(fun_def);
             }
             DeclarationGroup::Fun(GDeclarationGroup::Rec(ids)) => {
                 for def_id in ids {
-                    let fun_def = translate_function(tcx, &mut ft_ctx, *def_id)?;
-                    let id = ft_ctx.fun_rid_to_id.get(def_id).unwrap();
-                    assert!(id.to_usize() == ft_ctx.defs.len());
-                    ft_ctx.defs.push_back(fun_def);
+                    let fun_def =
+                        translate_function(tcx, ordered, type_defs, &mut fun_defs, *def_id)?;
+                    // We have to make sure we translate the definitions in the
+                    // proper order, otherwise we mess with the vector of ids
+                    assert!(def_id.to_usize() == fun_defs.len());
+                    fun_defs.push_back(fun_def);
                 }
             }
             DeclarationGroup::Type(_) => {
@@ -2207,13 +2177,13 @@ pub fn translate_functions(
     }
 
     // Print the functions
-    for def in &ft_ctx.defs {
+    for def in &fun_defs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            def.signature.fmt_with_defs(&ft_ctx.tt_ctx.types),
-            def.fmt_with_defs(&ft_ctx.tt_ctx.types, &ft_ctx.defs)
+            def.signature.fmt_with_defs(type_defs),
+            def.fmt_with_defs(type_defs, &fun_defs)
         );
     }
 
-    Ok(ft_ctx)
+    Ok(fun_defs)
 }

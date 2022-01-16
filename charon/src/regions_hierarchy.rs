@@ -65,7 +65,7 @@ fn add_opt_region_constraints(
 /// - then we compute the hierarchy from those accumulated constraints
 /// This function performs the second step.
 fn compute_regions_hierarchy_from_constraints(
-    constraints: &SCCs<Region<RegionVarId::Id>>,
+    mut constraints: SCCs<Region<RegionVarId::Id>>,
 ) -> RegionGroups {
     // The last SCC **MUST** contain the static region.
     // For now, we don't handle cases where regions different from 'static
@@ -224,7 +224,7 @@ pub fn compute_region_groups_hierarchy_for_sig(sig: &FunSig) -> RegionGroups {
     let mut sccs = compute_region_constraints_for_sig(sig);
 
     // Compute the regions hierarchy
-    compute_regions_hierarchy_from_constraints(&sccs)
+    compute_regions_hierarchy_from_constraints(sccs)
 }
 
 /// Compute the region hierarchy (the order between the region's lifetimes) for

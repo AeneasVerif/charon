@@ -22,6 +22,7 @@ use crate::cfim_ast as tgt;
 use crate::im_ast as src;
 use crate::im_ast::FunDefId;
 use crate::translate_functions_to_im::FunTransContext;
+use crate::types::TypeDefs;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
 use im::Vector;
@@ -1427,9 +1428,13 @@ fn translate_block(
     }
 }
 
-fn translate_function(im_ctx: &FunTransContext, src_def_id: FunDefId::Id) -> tgt::FunDef {
+fn translate_function(
+    type_defs: &TypeDefs,
+    src_defs: &src::FunDefs,
+    src_def_id: FunDefId::Id,
+) -> tgt::FunDef {
     // Retrieve the function definition
-    let src_def = im_ctx.defs.get(src_def_id).unwrap();
+    let src_def = src_defs.get(src_def_id).unwrap();
     trace!("Reconstructing: {}", src_def.name);
 
     // Explore the function body to create the control-flow graph without backward
@@ -1459,27 +1464,26 @@ fn translate_function(im_ctx: &FunTransContext, src_def_id: FunDefId::Id) -> tgt
         def_id: src_def.def_id,
         name: src_def.name.clone(),
         signature: src_def.signature.clone(),
-        divergent: src_def.divergent,
         arg_count: src_def.arg_count,
         locals: src_def.locals.clone(),
         body: body_exp,
     }
 }
 
-pub fn translate_functions(im_ctx: &FunTransContext) -> Defs {
+pub fn translate_functions(type_defs: &TypeDefs, src_defs: &src::FunDefs) -> Defs {
     let mut out_defs = FunDefId::Vector::new();
 
     // Tranlsate the bodies one at a time
-    for src_def_id in im_ctx.defs.iter_indices() {
-        out_defs.push_back(translate_function(im_ctx, src_def_id));
+    for src_def_id in src_defs.iter_indices() {
+        out_defs.push_back(translate_function(type_defs, src_defs, src_def_id));
     }
 
     // Print the functions
     for def in &out_defs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            def.signature.fmt_with_defs(&im_ctx.tt_ctx.types),
-            def.fmt_with_defs(&im_ctx.tt_ctx.types, &out_defs)
+            def.signature.fmt_with_defs(&type_defs),
+            def.fmt_with_defs(&type_defs, &out_defs)
         );
     }
 

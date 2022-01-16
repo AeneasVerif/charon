@@ -1,6 +1,7 @@
 use crate::common::*;
 use crate::formatter::Formatter;
-use crate::reorder_decls::DeclarationsGroups;
+use crate::id_vector::ToUsize;
+use crate::rust_to_local_ids::*;
 use crate::types as ty;
 use crate::vars::Name;
 use im;
@@ -13,36 +14,18 @@ use std::collections::HashMap;
 
 /// Translation context for type definitions
 #[derive(Clone)]
-pub struct TypeTransContext {
-    pub types: ty::TypeDefs,
-    type_def_id_generator: ty::TypeDefId::Generator,
+pub struct TypeTransContext<'ctx> {
+    /// The type definitions - TODO: rename to type_defs
+    pub types: &'ctx ty::TypeDefs,
     /// Rust identifiers to translation identifiers
-    pub type_rid_to_id: HashMap<DefId, ty::TypeDefId::Id>,
-}
-
-impl TypeTransContext {
-    fn new() -> TypeTransContext {
-        TypeTransContext {
-            types: ty::TypeDefs::new(),
-            type_def_id_generator: ty::TypeDefId::Generator::new(),
-            type_rid_to_id: HashMap::new(),
-        }
-    }
-
-    fn fresh_def_id(&mut self) -> ty::TypeDefId::Id {
-        self.type_def_id_generator.fresh_id()
-    }
-}
-
-impl Formatter<ty::TypeDefId::Id> for TypeTransContext {
-    fn format_object(&self, id: ty::TypeDefId::Id) -> String {
-        self.types.format_object(id)
-    }
+    pub type_rid_to_id: &'ctx HashMap<DefId, ty::TypeDefId::Id>,
+    /// Translation type identifiers to rust identifiers
+    pub type_id_to_rid: &'ctx HashMap<ty::TypeDefId::Id, DefId>,
 }
 
 /// Auxiliary definition used to format definitions.
-struct TypeDefFormatter<'a> {
-    tt_ctx: &'a TypeTransContext,
+struct TypeDefFormatter<'a, 'ctx> {
+    tt_ctx: &'a TypeTransContext<'ctx>,
     /// The region parameters of the definition we are printing (needed to
     /// correctly pretty print region var ids)
     region_params: &'a ty::RegionVarId::Vector<ty::RegionVar>,
@@ -51,7 +34,13 @@ struct TypeDefFormatter<'a> {
     type_params: &'a ty::TypeVarId::Vector<ty::TypeVar>,
 }
 
-impl<'a> Formatter<ty::RegionVarId::Id> for TypeDefFormatter<'a> {
+impl<'ctx> Formatter<ty::TypeDefId::Id> for TypeTransContext<'ctx> {
+    fn format_object(&self, id: ty::TypeDefId::Id) -> String {
+        self.types.format_object(id)
+    }
+}
+
+impl<'a, 'ctx> Formatter<ty::RegionVarId::Id> for TypeDefFormatter<'a, 'ctx> {
     fn format_object(&self, id: ty::RegionVarId::Id) -> String {
         // Lookup the region parameter
         let v = self.region_params.get(id).unwrap();
@@ -60,7 +49,7 @@ impl<'a> Formatter<ty::RegionVarId::Id> for TypeDefFormatter<'a> {
     }
 }
 
-impl<'a> Formatter<ty::TypeVarId::Id> for TypeDefFormatter<'a> {
+impl<'a, 'ctx> Formatter<ty::TypeVarId::Id> for TypeDefFormatter<'a, 'ctx> {
     fn format_object(&self, id: ty::TypeVarId::Id) -> String {
         // Lookup the type parameter
         let v = self.type_params.get(id).unwrap();
@@ -69,31 +58,31 @@ impl<'a> Formatter<ty::TypeVarId::Id> for TypeDefFormatter<'a> {
     }
 }
 
-impl<'a> Formatter<&ty::Region<ty::RegionVarId::Id>> for TypeDefFormatter<'a> {
+impl<'a, 'ctx> Formatter<&ty::Region<ty::RegionVarId::Id>> for TypeDefFormatter<'a, 'ctx> {
     fn format_object(&self, r: &ty::Region<ty::RegionVarId::Id>) -> String {
         r.fmt_with_ctx(self)
     }
 }
 
-impl<'a> Formatter<&ty::ErasedRegion> for TypeDefFormatter<'a> {
+impl<'a, 'ctx> Formatter<&ty::ErasedRegion> for TypeDefFormatter<'a, 'ctx> {
     fn format_object(&self, _: &ty::ErasedRegion) -> String {
         "".to_owned()
     }
 }
 
-impl<'a> Formatter<&ty::TypeDef> for TypeDefFormatter<'a> {
+impl<'a, 'ctx> Formatter<&ty::TypeDef> for TypeDefFormatter<'a, 'ctx> {
     fn format_object(&self, def: &ty::TypeDef) -> String {
         def.fmt_with_ctx(self)
     }
 }
 
-impl<'a> Formatter<ty::TypeDefId::Id> for TypeDefFormatter<'a> {
+impl<'a, 'ctx> Formatter<ty::TypeDefId::Id> for TypeDefFormatter<'a, 'ctx> {
     fn format_object(&self, id: ty::TypeDefId::Id) -> String {
         self.tt_ctx.format_object(id)
     }
 }
 
-impl Formatter<&ty::TypeDef> for TypeTransContext {
+impl<'ctx> Formatter<&ty::TypeDef> for TypeTransContext<'ctx> {
     fn format_object(&self, def: &ty::TypeDef) -> String {
         // Create a type def formatter (which will take care of the
         // type parameters)
@@ -130,10 +119,24 @@ pub fn translate_region_name(region: &rustc_middle::ty::RegionKind) -> Option<St
 /// Note that we translate the types one by one: we don't need to take into
 /// account the fact that some types are mutually recursive at this point
 /// (we will need to take that into account when generating the code in a file).
-fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId) -> Result<()> {
-    trace!("{:?}", def_id);
+fn translate_type<'ctx>(
+    tcx: &TyCtxt,
+    decls: &OrderedDecls,
+    type_defs: &mut ty::TypeDefs,
+    trans_id: ty::TypeDefId::Id,
+) -> Result<()> {
+    trace!("{}", trans_id);
+
+    // Initialize the type translation context
+    let trans_ctx = TypeTransContext {
+        types: &type_defs,
+        type_rid_to_id: &decls.type_rid_to_id,
+        type_id_to_rid: &decls.type_id_to_rid,
+    };
 
     // Retrieve the definition
+    let def_id = *trans_ctx.type_id_to_rid.get(&trans_id).unwrap();
+    trace!("{:?}", def_id);
     let adt = tcx.adt_def(def_id);
 
     // Use a dummy substitution to instantiate the type parameters
@@ -201,7 +204,7 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
             let ty = field_def.ty(*tcx, substs);
 
             // Translate the field type
-            let ty = translate_sig_ty(tcx, trans_ctx, &region_params_map, &type_params_map, &ty)?;
+            let ty = translate_sig_ty(tcx, &trans_ctx, &region_params_map, &type_params_map, &ty)?;
 
             // Retrieve the field name
             let field_name = field_def.ident.name.to_ident_string();
@@ -227,7 +230,6 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
     }
 
     // Register the type
-    let trans_id = trans_ctx.type_rid_to_id.get(&def_id).unwrap();
     let name = type_def_id_to_name(tcx, def_id)?;
     let region_params = ty::RegionVarId::Vector::from(region_params);
     let type_params = ty::TypeVarId::Vector::from(type_params);
@@ -243,7 +245,7 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
     };
 
     let type_def = ty::TypeDef {
-        def_id: *trans_id,
+        def_id: trans_id,
         name: Name::from(name),
         region_params: region_params,
         type_params: type_params,
@@ -251,7 +253,10 @@ fn translate_type(tcx: &TyCtxt, trans_ctx: &mut TypeTransContext, def_id: DefId)
     };
 
     trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
-    trans_ctx.types.types.push_back(type_def);
+    // Small sanity check - we have to translate the definitions in the proper
+    // order, otherwise we mess up with the vector of ids
+    assert!(type_defs.types.len() == trans_id.to_usize());
+    type_defs.types.push_back(type_def);
     Ok(())
 }
 
@@ -625,33 +630,37 @@ pub fn type_def_id_to_name(tcx: &TyCtxt, def_id: DefId) -> Result<Vec<String>> {
 /// necessary), because what is important is the file generation later.
 /// Still, now that the order is computed, it's better to use it (leads to a
 /// better indexing, for instance).
-pub fn translate_types(
-    tcx: &TyCtxt,
-    decls: &DeclarationsGroups<DefId, DefId>,
-) -> Result<TypeTransContext> {
+pub fn translate_types(tcx: &TyCtxt, decls: &OrderedDecls) -> Result<ty::TypeDefs> {
     trace!();
 
-    // Initialize the type context
-    let mut trans_ctx = TypeTransContext::new();
-
-    // Generate indices for all the types
-    for def_id in &decls.type_ids {
-        let id = trans_ctx.fresh_def_id();
-        trans_ctx.type_rid_to_id.insert(*def_id, id);
-    }
+    let mut type_defs = ty::TypeDefs::new();
 
     // Translate the types.
-    // Note that we can translate them one by one: what is important is to
-    // generate code for all the types in a mutually recursive group at once,
-    // when generating the files.
-    for def_id in &decls.type_ids {
-        translate_type(tcx, &mut trans_ctx, *def_id)?;
+    for decl in &decls.decls {
+        match decl {
+            DeclarationGroup::Type(TypeDeclarationGroup::NonRec(id)) => {
+                translate_type(tcx, decls, &mut type_defs, *id)?;
+            }
+            DeclarationGroup::Type(TypeDeclarationGroup::Rec(ids)) => {
+                for id in ids {
+                    translate_type(tcx, decls, &mut type_defs, *id)?;
+                }
+            }
+            DeclarationGroup::Fun(_) => {
+                // Ignore the functions
+            }
+        }
     }
 
     // Print the translated types
-    for d in trans_ctx.types.types.iter() {
+    let trans_ctx = TypeTransContext {
+        types: &type_defs,
+        type_rid_to_id: &decls.type_rid_to_id,
+        type_id_to_rid: &decls.type_id_to_rid,
+    };
+    for d in type_defs.types.iter() {
         trace!("translated type:\n{}", trans_ctx.format_object(d));
     }
 
-    Ok(trans_ctx)
+    Ok(type_defs)
 }

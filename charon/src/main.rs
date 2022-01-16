@@ -44,6 +44,7 @@ mod reconstruct_asserts;
 mod regions_hierarchy;
 mod register;
 mod reorder_decls;
+mod rust_to_local_ids;
 mod simplify_binops;
 mod translate_functions_to_im;
 mod translate_types;
@@ -202,28 +203,21 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
     // connex components (i.e.: the mutually recursive definitions).
     let ordered_decls = reorder_decls::reorder_declarations(&registered_decls)?;
 
-    // # Step 3: compute which functions are potentially divergent. A function
-    // is potentially divergent if it is recursive or transitively calls a
-    // potentially divergent function.
-    // Note that in the future, we may complement this basic analysis with a
-    // finer analysis to detect recursive functions which are actually total
-    // by construction.
-    // TODO: we might want to move this to the additional analyses
-    let divergent = divergent::compute_divergent_functions(&registered_decls, &ordered_decls);
-
-    // TODO: check if can panic
+    // # Step 3: generate identifiers for the types and functions, and compute
+    // the mappings from rustc identifiers to our own identifiers.
+    let ordered_decls = rust_to_local_ids::rust_to_local_ids(&ordered_decls);
 
     // # Step 4: translate the types.
-    let tt_ctx = translate_types::translate_types(&tcx, &ordered_decls)?;
+    let type_defs = translate_types::translate_types(&tcx, &ordered_decls)?;
 
     // # Step 5: translate the functions to IM (our Internal representation of MIR)
-    let im_defs =
-        translate_functions_to_im::translate_functions(&tcx, tt_ctx, &ordered_decls, divergent)?;
+    let im_defs = translate_functions_to_im::translate_functions(&tcx, &ordered_decls, &type_defs)?;
 
     // # Step 6: go from IM to CFIM (Control-Flow Internal MIR) by reconstructing
     // the control flow.
+    //
     // Note that from now onwards, we don't interact with rustc anymore.
-    let cfim_defs = im_to_cfim::translate_functions(&im_defs);
+    let cfim_defs = im_to_cfim::translate_functions(&type_defs, &im_defs);
 
     // # Step 7: simplify the calls to binops
     // Note that we assume that the sequences have been flattened.
@@ -232,7 +226,7 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
     for def in &cfim_defs {
         trace!(
             "# After binop simplification:\n{}\n",
-            def.fmt_with_defs(&im_defs.tt_ctx.types, &cfim_defs)
+            def.fmt_with_defs(&type_defs, &cfim_defs)
         );
     }
 
@@ -242,19 +236,20 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
     for def in &cfim_defs {
         trace!(
             "# After asserts reconstruction:\n{}\n",
-            def.fmt_with_defs(&im_defs.tt_ctx.types, &cfim_defs)
+            def.fmt_with_defs(&type_defs, &cfim_defs)
         );
     }
 
-    // # Step 9: generate the files.
-    cfim_export::export(
-        &ordered_decls,
-        &im_defs.tt_ctx.type_rid_to_id,
-        &im_defs.tt_ctx.types,
-        &im_defs.fun_rid_to_id,
-        &cfim_defs,
-        source_file,
-    )?;
+    // # Step 9: compute which functions are potentially divergent. A function
+    // is potentially divergent if it is recursive or transitively calls a
+    // potentially divergent function.
+    // Note that in the future, we may complement this basic analysis with a
+    // finer analysis to detect recursive functions which are actually total
+    // by construction.
+    let _divergent = divergent::compute_divergent_functions(&ordered_decls, &cfim_defs);
+
+    // # Step 10: generate the files.
+    cfim_export::export(&ordered_decls, &type_defs, &cfim_defs, source_file)?;
 
     Ok(())
 }

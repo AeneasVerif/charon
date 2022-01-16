@@ -99,9 +99,6 @@ pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,
-    /// true if the function might diverge (is recursive, part of a mutually
-    /// recursive group, contains loops or calls functions which might diverge)
-    pub divergent: bool,
     pub arg_count: usize,
     pub locals: VarId::Vector<Var>,
     pub body: T,
