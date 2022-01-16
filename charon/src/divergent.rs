@@ -1,8 +1,6 @@
 use crate::cfim_ast as cfim;
 use crate::im_ast as ast;
-use crate::register::RegisteredDeclarations;
 use crate::rust_to_local_ids::*;
-use rustc_hir::def_id::DefId;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
@@ -81,10 +79,10 @@ pub fn compute_divergent_functions(
     }
 
     // Convert the map to a set
-    let mut divergent_set: HashSet<ast::FunDefId::Id> = HashSet::from_iter(
+    let divergent_set: HashSet<ast::FunDefId::Id> = HashSet::from_iter(
         divergent_map
             .iter()
-            .filter(|(id, div)| **div)
+            .filter(|(_, div)| **div)
             .map(|(id, _)| *id),
     );
     divergent_set

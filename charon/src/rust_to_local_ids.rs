@@ -1,14 +1,9 @@
-use crate::common::*;
+#![allow(dead_code)]
 use crate::im_ast as ast;
-use crate::register::RegisteredDeclarations;
 use crate::reorder_decls as rd;
 use crate::types as ty;
-use macros::{VariantIndexArity, VariantName};
 use rustc_hir::def_id::DefId;
-use serde::ser::SerializeTupleVariant;
-use serde::{Serialize, Serializer};
 use std::collections::HashMap;
-use std::fmt::{Debug, Display, Error, Formatter};
 use std::vec::Vec;
 
 pub type GDeclarationGroup<Id> = rd::GDeclarationGroup<Id>;

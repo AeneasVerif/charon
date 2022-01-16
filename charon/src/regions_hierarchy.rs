@@ -221,7 +221,7 @@ fn compute_region_constraints_for_sig(sig: &FunSig) -> SCCs<Region<RegionVarId::
 /// then compute this hierarchy and add it to the signature information.
 pub fn compute_region_groups_hierarchy_for_sig(sig: &FunSig) -> RegionGroups {
     // Compute the constraints between the regions and group them accordingly
-    let mut sccs = compute_region_constraints_for_sig(sig);
+    let sccs = compute_region_constraints_for_sig(sig);
 
     // Compute the regions hierarchy
     compute_regions_hierarchy_from_constraints(sccs)

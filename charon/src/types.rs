@@ -3,7 +3,6 @@
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector;
-use crate::regions_hierarchy::*;
 use crate::vars::*;
 use im::{HashMap, OrdSet, Vector};
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};

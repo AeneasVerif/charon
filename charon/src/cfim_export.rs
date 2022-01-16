@@ -4,7 +4,6 @@ use crate::im_ast::FunDefId;
 use crate::rust_to_local_ids::*;
 use crate::types::*;
 use serde::{Serialize, Serializer};
-use std::collections::HashMap;
 use std::fs::File;
 
 /// Serialization wrapper for vectors
@@ -58,9 +57,7 @@ pub fn export(
 
     // Serialize
     let mod_serializer = ModSerializer {
-        declarations: VecSW {
-            vector: &ordered_decls.decls,
-        },
+        declarations: VecSW::new(&ordered_decls.decls),
         types: &type_defs.types,
         functions: &fun_defs,
     };

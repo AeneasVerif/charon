@@ -2090,7 +2090,7 @@ fn translate_function(
     let rid = *ordered.fun_id_to_rid.get(&def_id).unwrap();
 
     // Initialize the function translation context
-    let mut ft_ctx = FunTransContext {
+    let ft_ctx = FunTransContext {
         ordered: ordered,
         type_defs: type_defs,
         defs: &fun_defs,

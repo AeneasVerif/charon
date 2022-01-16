@@ -31,18 +31,18 @@ pub enum DeclarationGroup<TypeId: Copy, FunId: Copy> {
 
 /// The top-level declarations in a module
 pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy> {
-    /// The properly grouped and ordered def ids
+    /// The properly grouped and ordered declarations
     pub decls: Vec<DeclarationGroup<TypeId, FunId>>,
     /// All the type ids
     pub type_ids: Vec<TypeId>,
-    /// All the fun ids
+    /// All the function ids
     pub fun_ids: Vec<FunId>,
 }
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
 impl<Id: Copy + Debug> Display for GDeclarationGroup<Id> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
             GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {:?}", id),
             GDeclarationGroup::Rec(ids) => write!(
@@ -87,7 +87,7 @@ impl<Id: Copy + Serialize> Serialize for GDeclarationGroup<Id> {
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
 impl<TypeId: Copy + Debug, FunId: Copy + Debug> Display for DeclarationGroup<TypeId, FunId> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
             DeclarationGroup::Type(decl) => write!(f, "{{ Type(s): {} }}", decl),
             DeclarationGroup::Fun(decl) => write!(f, "{{ Fun(s): {} }}", decl),
@@ -161,7 +161,7 @@ impl<TypeId: Copy, FunId: Copy> DeclarationsGroups<TypeId, FunId> {
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
 impl<TypeId: Copy + Debug, FunId: Copy + Debug> Display for DeclarationsGroups<TypeId, FunId> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         write!(
             f,
             "{}",

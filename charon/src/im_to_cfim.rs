@@ -21,7 +21,6 @@
 use crate::cfim_ast as tgt;
 use crate::im_ast as src;
 use crate::im_ast::FunDefId;
-use crate::translate_functions_to_im::FunTransContext;
 use crate::types::TypeDefs;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
@@ -1428,11 +1427,7 @@ fn translate_block(
     }
 }
 
-fn translate_function(
-    type_defs: &TypeDefs,
-    src_defs: &src::FunDefs,
-    src_def_id: FunDefId::Id,
-) -> tgt::FunDef {
+fn translate_function(src_defs: &src::FunDefs, src_def_id: FunDefId::Id) -> tgt::FunDef {
     // Retrieve the function definition
     let src_def = src_defs.get(src_def_id).unwrap();
     trace!("Reconstructing: {}", src_def.name);
@@ -1475,7 +1470,7 @@ pub fn translate_functions(type_defs: &TypeDefs, src_defs: &src::FunDefs) -> Def
 
     // Tranlsate the bodies one at a time
     for src_def_id in src_defs.iter_indices() {
-        out_defs.push_back(translate_function(type_defs, src_defs, src_def_id));
+        out_defs.push_back(translate_function(src_defs, src_def_id));
     }
 
     // Print the functions
