@@ -9,7 +9,7 @@ use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::im_ast as ast;
 use crate::regions_hierarchy as rh;
-use crate::reorder_decls::{Declaration, Declarations};
+use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
 use crate::translate_types;
 use crate::types as ty;
 use crate::types::{FieldId, VariantId};
@@ -2156,7 +2156,7 @@ fn translate_function(
 pub fn translate_functions(
     tcx: &TyCtxt,
     tt_ctx: TypeTransContext,
-    decls: &Declarations,
+    decls: &DeclarationsGroups<DefId, DefId>,
     divergent: HashMap<DefId, bool>,
 ) -> Result<FunTransContext> {
     // Initialize the function translation context
@@ -2166,15 +2166,15 @@ pub fn translate_functions(
     // divergent map at the same time.
     for decl in &decls.decls {
         match decl {
-            Declaration::Fun(def_id) => {
+            DeclarationGroup::Fun(GDeclarationGroup::NonRec(def_id)) => {
                 register_function_id(&mut ft_ctx, &divergent, *def_id);
             }
-            Declaration::RecFuns(ids) => {
+            DeclarationGroup::Fun(GDeclarationGroup::Rec(ids)) => {
                 for def_id in ids {
                     register_function_id(&mut ft_ctx, &divergent, *def_id);
                 }
             }
-            Declaration::Type(_) | Declaration::RecTypes(_) => {
+            DeclarationGroup::Type(_) => {
                 // Ignore the type declarations
                 continue;
             }
@@ -2185,13 +2185,13 @@ pub fn translate_functions(
     for decl in &decls.decls {
         use crate::id_vector::ToUsize;
         match decl {
-            Declaration::Fun(def_id) => {
+            DeclarationGroup::Fun(GDeclarationGroup::NonRec(def_id)) => {
                 let fun_def = translate_function(tcx, &mut ft_ctx, *def_id)?;
                 let id = ft_ctx.fun_rid_to_id.get(def_id).unwrap();
                 assert!(id.to_usize() == ft_ctx.defs.len());
                 ft_ctx.defs.push_back(fun_def);
             }
-            Declaration::RecFuns(ids) => {
+            DeclarationGroup::Fun(GDeclarationGroup::Rec(ids)) => {
                 for def_id in ids {
                     let fun_def = translate_function(tcx, &mut ft_ctx, *def_id)?;
                     let id = ft_ctx.fun_rid_to_id.get(def_id).unwrap();
@@ -2199,7 +2199,7 @@ pub fn translate_functions(
                     ft_ctx.defs.push_back(fun_def);
                 }
             }
-            Declaration::Type(_) | Declaration::RecTypes(_) => {
+            DeclarationGroup::Type(_) => {
                 // Ignore the type declarations
                 continue;
             }

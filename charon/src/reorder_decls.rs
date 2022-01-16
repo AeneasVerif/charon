@@ -1,90 +1,156 @@
 use crate::common::*;
 use crate::graphs::*;
 use crate::register::RegisteredDeclarations;
+use macros::{VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
 use rustc_hir::def_id::DefId;
+use serde::ser::SerializeTupleVariant;
+use serde::{Serialize, Serializer};
+use std::fmt::{Debug, Display, Error, Formatter};
 use std::vec::Vec;
 
 /// A (group of) top-level declaration(s), properly reordered.
-/// TODO: rename to DeclarationGroup
-#[derive(Debug)]
-pub enum Declaration {
-    /// A non-recursive type declaration.
-    Type(DefId),
-    /// A non-recursive function declaration
-    Fun(DefId),
-    /// A group of mutually recursive function declarations. If only one
-    /// declaration, it means it is a simply recursive one.
-    RecTypes(Vec<DefId>),
-    /// A group of mutually recursive function declarations. If only one
-    /// declaration, it means it is a simply recursive one.
-    RecFuns(Vec<DefId>),
+/// "G" stands for "generic"
+#[derive(Debug, VariantIndexArity, VariantName)]
+pub enum GDeclarationGroup<Id: Copy> {
+    /// A non-recursive declaration
+    NonRec(Id),
+    /// A (group of mutually) recursive declaration(s)
+    Rec(Vec<Id>),
 }
 
-impl Declaration {
-    fn to_string(decl: &Declaration) -> String {
-        match decl {
-            Declaration::Type(id) => format!("{{ Type: {:?} }}", id).to_string(),
-            Declaration::Fun(id) => format!("{{ Fun: {:?} }}", id).to_string(),
-            Declaration::RecTypes(ids) => format!(
-                "{{ RecTypes: {} }}",
+/// A (group of) top-level declaration(s), properly reordered.
+#[derive(Debug, VariantIndexArity, VariantName)]
+pub enum DeclarationGroup<TypeId: Copy, FunId: Copy> {
+    /// A type declaration group
+    Type(GDeclarationGroup<TypeId>),
+    /// A function declaration group
+    Fun(GDeclarationGroup<FunId>),
+}
+
+/// The top-level declarations in a module
+pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy> {
+    /// The properly grouped and ordered def ids
+    pub decls: Vec<DeclarationGroup<TypeId, FunId>>,
+    /// All the type ids
+    pub type_ids: Vec<TypeId>,
+    /// All the fun ids
+    pub fun_ids: Vec<FunId>,
+}
+
+/// We use the [Debug] trait instead of [Display] for the identifiers, because
+/// the rustc [DefId] doesn't implement [Display]...
+impl<Id: Copy + Debug> Display for GDeclarationGroup<Id> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {:?}", id),
+            GDeclarationGroup::Rec(ids) => write!(
+                f,
+                "rec: {}",
                 vec_to_string(&|id| format!("    {:?}", id).to_string(), ids)
-            )
-            .to_string(),
-            Declaration::RecFuns(ids) => format!(
-                "{{ RecFuns: {} }}",
-                vec_to_string(&|id| format!("    {:?}", id).to_string(), ids)
-            )
-            .to_string(),
+            ),
         }
     }
 }
 
-impl ToString for Declaration {
-    fn to_string(&self) -> String {
-        Declaration::to_string(self)
+/// This is a bit annoying: because [DefId] and [Vec] doe't implement the
+/// [Serialize] trait, we can't automatically derive the serializing trait...
+impl<Id: Copy + Serialize> Serialize for GDeclarationGroup<Id> {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let enum_name = "GDeclarationGroup";
+        let variant_name = self.variant_name();
+        let (variant_index, variant_arity) = self.variant_index_arity();
+        assert!(variant_arity > 0);
+        let mut vs = serializer.serialize_tuple_variant(
+            enum_name,
+            variant_index,
+            variant_name,
+            variant_arity,
+        )?;
+        match self {
+            GDeclarationGroup::NonRec(id) => {
+                vs.serialize_field(id)?;
+            }
+            GDeclarationGroup::Rec(ids) => {
+                let ids = VecSerializer::new(ids);
+                vs.serialize_field(&ids)?;
+            }
+        }
+        vs.end()
     }
 }
 
-pub struct Declarations {
-    /// The properly grouped and ordered def ids
-    pub decls: Vec<Declaration>,
-    /// All the type ids
-    pub type_ids: Vec<DefId>,
-    /// All the fun ids
-    pub fun_ids: Vec<DefId>,
+/// We use the [Debug] trait instead of [Display] for the identifiers, because
+/// the rustc [DefId] doesn't implement [Display]...
+impl<TypeId: Copy + Debug, FunId: Copy + Debug> Display for DeclarationGroup<TypeId, FunId> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            DeclarationGroup::Type(decl) => write!(f, "{{ Type(s): {} }}", decl),
+            DeclarationGroup::Fun(decl) => write!(f, "{{ Fun(s): {} }}", decl),
+        }
+    }
 }
 
-impl Declarations {
-    pub fn new() -> Declarations {
-        Declarations {
+/// This is a bit annoying: because [DefId] and [Vec] doe't implement the
+/// [Serialize] trait, we can't automatically derive the serializing trait...
+impl<TypeId: Copy + Serialize, FunId: Copy + Serialize> Serialize
+    for DeclarationGroup<TypeId, FunId>
+{
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let enum_name = "DeclarationGroup";
+        let variant_name = self.variant_name();
+        let (variant_index, variant_arity) = self.variant_index_arity();
+        assert!(variant_arity > 0);
+        let mut vs = serializer.serialize_tuple_variant(
+            enum_name,
+            variant_index,
+            variant_name,
+            variant_arity,
+        )?;
+        match self {
+            DeclarationGroup::Type(decl) => {
+                vs.serialize_field(decl)?;
+            }
+            DeclarationGroup::Fun(decl) => {
+                vs.serialize_field(decl)?;
+            }
+        }
+        vs.end()
+    }
+}
+
+impl<TypeId: Copy, FunId: Copy> DeclarationsGroups<TypeId, FunId> {
+    pub fn new() -> DeclarationsGroups<TypeId, FunId> {
+        DeclarationsGroups {
             decls: vec![],
             type_ids: vec![],
             fun_ids: vec![],
         }
     }
 
-    fn to_string(decls: &Declarations) -> String {
-        vec_to_string(&|d: &Declaration| d.to_string(), &decls.decls)
-    }
-
-    fn push(&mut self, decl: Declaration) {
+    fn push(&mut self, decl: DeclarationGroup<TypeId, FunId>) {
         match &decl {
-            Declaration::Type(def_id) => {
-                self.type_ids.push(*def_id);
+            DeclarationGroup::Type(GDeclarationGroup::NonRec(id)) => {
+                self.type_ids.push(*id);
             }
-            Declaration::RecTypes(def_ids) => {
-                for def_id in def_ids {
-                    self.type_ids.push(*def_id);
+            DeclarationGroup::Type(GDeclarationGroup::Rec(ids)) => {
+                for id in ids {
+                    self.type_ids.push(*id);
                 }
             }
-            Declaration::Fun(def_id) => {
-                self.fun_ids.push(*def_id);
+            DeclarationGroup::Fun(GDeclarationGroup::NonRec(id)) => {
+                self.fun_ids.push(*id);
             }
-            Declaration::RecFuns(def_ids) => {
-                for def_id in def_ids {
-                    self.fun_ids.push(*def_id);
+            DeclarationGroup::Fun(GDeclarationGroup::Rec(ids)) => {
+                for id in ids {
+                    self.fun_ids.push(*id);
                 }
             }
         }
@@ -92,15 +158,26 @@ impl Declarations {
     }
 }
 
-impl ToString for Declarations {
-    fn to_string(&self) -> String {
-        Declarations::to_string(self)
+/// We use the [Debug] trait instead of [Display] for the identifiers, because
+/// the rustc [DefId] doesn't implement [Display]...
+impl<TypeId: Copy + Debug, FunId: Copy + Debug> Display for DeclarationsGroups<TypeId, FunId> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(
+            f,
+            "{}",
+            vec_to_string(
+                &|d: &DeclarationGroup<TypeId, FunId>| d.to_string(),
+                &self.decls,
+            )
+        )
     }
 }
 
-impl<'a> std::iter::IntoIterator for &'a Declarations {
-    type Item = &'a Declaration;
-    type IntoIter = std::slice::Iter<'a, Declaration>;
+impl<'a, TypeId: Copy, FunId: Copy> std::iter::IntoIterator
+    for &'a DeclarationsGroups<TypeId, FunId>
+{
+    type Item = &'a DeclarationGroup<TypeId, FunId>;
+    type IntoIter = std::slice::Iter<'a, DeclarationGroup<TypeId, FunId>>;
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
@@ -118,7 +195,9 @@ fn def_id_is_type(decls: &RegisteredDeclarations, def_id: &DefId) -> bool {
     }
 }
 
-pub fn reorder_declarations(decls: &RegisteredDeclarations) -> Result<Declarations> {
+pub fn reorder_declarations(
+    decls: &RegisteredDeclarations,
+) -> Result<DeclarationsGroups<DefId, DefId>> {
     trace!();
 
     // Step 1: Start by building a graph
@@ -202,7 +281,7 @@ pub fn reorder_declarations(decls: &RegisteredDeclarations) -> Result<Declaratio
     );
 
     // Finally, generate the list of declarations
-    let mut reordered_decls = Declarations::new();
+    let mut reordered_decls = DeclarationsGroups::new();
 
     // Iterate over the SCC ids in the proper order
     for scc in reordered_sccs.iter() {
@@ -241,15 +320,15 @@ pub fn reorder_declarations(decls: &RegisteredDeclarations) -> Result<Declaratio
         // be pretty small.
         if is_type {
             if scc.len() == 1 && !is_simply_recursive {
-                reordered_decls.push(Declaration::Type(*id0));
+                reordered_decls.push(DeclarationGroup::Type(GDeclarationGroup::NonRec(*id0)));
             } else {
-                reordered_decls.push(Declaration::RecTypes(scc.clone()));
+                reordered_decls.push(DeclarationGroup::Type(GDeclarationGroup::Rec(scc.clone())));
             }
         } else {
             if scc.len() == 1 && !is_simply_recursive {
-                reordered_decls.push(Declaration::Fun(*id0));
+                reordered_decls.push(DeclarationGroup::Fun(GDeclarationGroup::NonRec(*id0)));
             } else {
-                reordered_decls.push(Declaration::RecFuns(scc.clone()));
+                reordered_decls.push(DeclarationGroup::Fun(GDeclarationGroup::Rec(scc.clone())));
             }
         }
     }

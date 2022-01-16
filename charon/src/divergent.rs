@@ -1,6 +1,6 @@
 use crate::register::RegisteredDeclarations;
 use crate::reorder_decls;
-use crate::reorder_decls::Declaration;
+use crate::reorder_decls::{DeclarationGroup, GDeclarationGroup};
 use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
 
@@ -12,7 +12,7 @@ use std::collections::HashMap;
 /// terminating by construction.
 pub fn compute_divergent_functions(
     deps: &RegisteredDeclarations,
-    decls: &reorder_decls::Declarations,
+    decls: &reorder_decls::DeclarationsGroups<DefId, DefId>,
 ) -> HashMap<DefId, bool> {
     let mut divergent_map: HashMap<DefId, bool> = HashMap::new();
 
@@ -22,7 +22,7 @@ pub fn compute_divergent_functions(
     // before in the list of declarations.
     for decl in &decls.decls {
         match decl {
-            Declaration::Fun(id) => {
+            DeclarationGroup::Fun(GDeclarationGroup::NonRec(id)) => {
                 // We have to explore the dependencies to see if some of them
                 // can loop.
                 let deps = deps.funs.get(&id).unwrap();
@@ -44,13 +44,13 @@ pub fn compute_divergent_functions(
 
                 divergent_map.insert(*id, can_diverge);
             }
-            Declaration::RecFuns(ids) => {
+            DeclarationGroup::Fun(GDeclarationGroup::Rec(ids)) => {
                 // Trivial case: recursive declarations can diverge
                 for id in ids {
                     divergent_map.insert(*id, true);
                 }
             }
-            Declaration::Type(_) | Declaration::RecTypes(_) => {
+            DeclarationGroup::Type(_) => {
                 // Ignore the type declarations
                 continue;
             }

@@ -59,8 +59,74 @@ fn add_opt_region_constraints(
     constraints.add_edge(Region::Static, region, ());
 }
 
+/// The computation of a regions hierarchy is done in two steps:
+/// - first we visit the type definition/function signature to register the
+///   constraints between the different regions
+/// - then we compute the hierarchy from those accumulated constraints
+/// This function performs the second step.
+fn compute_regions_hierarchy_from_constraints(
+    constraints: &SCCs<Region<RegionVarId::Id>>,
+) -> RegionGroups {
+    // The last SCC **MUST** contain the static region.
+    // For now, we don't handle cases where regions different from 'static
+    // can live as long as 'static, so we check that the last scc is the
+    // {static} singleton.
+    // TODO: general support for 'static
+    assert!(constraints.sccs.len() >= 1);
+    assert!(constraints.sccs.last().unwrap() == &vec![Region::Static]);
+
+    // Pop the last SCC (which is {'static}).
+    let _ = constraints.sccs.pop();
+    let _ = constraints.scc_deps.pop();
+
+    // Compute the hierarchy
+    let mut groups = RegionGroups::new();
+    for (i, scc) in constraints.sccs.into_iter().enumerate() {
+        // Compute the id
+        let id = RegionGroupId::Id::new(i);
+
+        // Retrieve the set of regions in the group
+        let regions: Vec<RegionVarId::Id> = scc.into_iter().map(|r| *r.as_var()).collect();
+
+        // Compute the set of parent region groups
+        let parents: Vec<RegionGroupId::Id> = constraints
+            .scc_deps
+            .get(i)
+            .unwrap()
+            .iter()
+            .map(|j| RegionGroupId::Id::new(*j))
+            .collect();
+
+        // Push the group
+        groups.push_back(RegionGroup {
+            id,
+            regions,
+            parents,
+        });
+    }
+
+    // Return
+    groups
+}
+
+/*
+/// Compute the region hierarchy (the order between the region's lifetimes)
+/// for a (group of mutually recursive) type definitions.
+/// Note that [TypeDef] already contains a regions hierarchy: when translating
+/// function signatures, we first translate the signature without this hierarchy,
+/// then compute this hierarchy and add it to the signature information.
+pub fn compute_regions_group_hierarchy_for_type_decl(
+    types: &TypeDefs,
+    decl :
+    def: &TypeDef,
+) -> RegionsGroup {
+
+}*/
+
 /// Compute the constraints between the different regions of a type (which
 /// region lasts longer than which other region, etc.).
+/// Note that the region hierarchies should already have been computed for all
+/// the types.
 fn compute_region_constraints_for_ty(
     constraints: &mut LifetimeConstraints,
     parent_region: Option<Region<RegionVarId::Id>>,
@@ -148,7 +214,8 @@ fn compute_region_constraints_for_sig(sig: &FunSig) -> SCCs<Region<RegionVarId::
     sccs
 }
 
-/// Compute the region hierarchy (the order between the region's lifetimes).
+/// Compute the region hierarchy (the order between the region's lifetimes)
+/// for a function signature.
 /// Note that [FunSig] already contains a regions hierarchy: when translating
 /// function signatures, we first translate the signature without this hierarchy,
 /// then compute this hierarchy and add it to the signature information.
@@ -156,45 +223,8 @@ pub fn compute_region_groups_hierarchy_for_sig(sig: &FunSig) -> RegionGroups {
     // Compute the constraints between the regions and group them accordingly
     let mut sccs = compute_region_constraints_for_sig(sig);
 
-    // The last SCC **MUST** contain the static region.
-    // For now, we don't handle cases where regions different from 'static
-    // can live as long as 'static, so we check that the last scc is the
-    // {static} singleton.
-    assert!(sccs.sccs.len() >= 1);
-    assert!(sccs.sccs.last().unwrap() == &vec![Region::Static]);
-
-    // Pop the last SCC (which is {'static}).
-    let _ = sccs.sccs.pop();
-    let _ = sccs.scc_deps.pop();
-
-    // Compute the hierarchy
-    let mut groups = RegionGroups::new();
-    for (i, scc) in sccs.sccs.into_iter().enumerate() {
-        // Compute the id
-        let id = RegionGroupId::Id::new(i);
-
-        // Retrieve the set of regions in the group
-        let regions: Vec<RegionVarId::Id> = scc.into_iter().map(|r| *r.as_var()).collect();
-
-        // Compute the set of parent region groups
-        let parents: Vec<RegionGroupId::Id> = sccs
-            .scc_deps
-            .get(i)
-            .unwrap()
-            .iter()
-            .map(|j| RegionGroupId::Id::new(*j))
-            .collect();
-
-        // Push the group
-        groups.push_back(RegionGroup {
-            id,
-            regions,
-            parents,
-        });
-    }
-
-    // Return
-    groups
+    // Compute the regions hierarchy
+    compute_regions_hierarchy_from_constraints(&sccs)
 }
 
 /// Compute the region hierarchy (the order between the region's lifetimes) for

@@ -1,6 +1,6 @@
 use crate::common::*;
 use crate::formatter::Formatter;
-use crate::reorder_decls::Declarations;
+use crate::reorder_decls::DeclarationsGroups;
 use crate::types as ty;
 use crate::vars::Name;
 use im;
@@ -625,7 +625,10 @@ pub fn type_def_id_to_name(tcx: &TyCtxt, def_id: DefId) -> Result<Vec<String>> {
 /// necessary), because what is important is the file generation later.
 /// Still, now that the order is computed, it's better to use it (leads to a
 /// better indexing, for instance).
-pub fn translate_types(tcx: &TyCtxt, decls: &Declarations) -> Result<TypeTransContext> {
+pub fn translate_types(
+    tcx: &TyCtxt,
+    decls: &DeclarationsGroups<DefId, DefId>,
+) -> Result<TypeTransContext> {
     trace!();
 
     // Initialize the type context

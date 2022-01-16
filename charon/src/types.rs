@@ -3,6 +3,7 @@
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector;
+use crate::regions_hierarchy::*;
 use crate::vars::*;
 use im::{HashMap, OrdSet, Vector};
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
@@ -73,6 +74,8 @@ pub struct TypeDef {
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub kind: TypeDefKind,
+    // The lifetime's hierarchy between the different regions.
+    //pub regions_hierarchy: RegionGroups,
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
