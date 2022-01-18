@@ -564,7 +564,7 @@ fn types_vars_constraints_map_fmt_with_ctx<'a, 'b, 'c, T>(
     indent: &'c str,
 ) -> String
 where
-    T: Formatter<&'a Region<RegionVarId::Id>>,
+    T: Formatter<TypeVarId::Id> + Formatter<&'a Region<RegionVarId::Id>>,
 {
     let var_constraints: Vec<String> = cs
         .iter()
@@ -572,7 +572,7 @@ where
             format!(
                 "{}{} -> {{{}}}",
                 indent,
-                type_var_id_to_pretty_string(*vid),
+                ctx.format_object(*vid),
                 regions
                     .iter()
                     .map(|r| ctx.format_object(r))
