@@ -208,10 +208,15 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
     let ordered_decls = rust_to_local_ids::rust_to_local_ids(&ordered_decls);
 
     // # Step 4: translate the types.
-    let type_defs = translate_types::translate_types(&tcx, &ordered_decls)?;
+    let (types_constraints, type_defs) = translate_types::translate_types(&tcx, &ordered_decls)?;
 
     // # Step 5: translate the functions to IM (our Internal representation of MIR)
-    let im_defs = translate_functions_to_im::translate_functions(&tcx, &ordered_decls, &type_defs)?;
+    let im_defs = translate_functions_to_im::translate_functions(
+        &tcx,
+        &ordered_decls,
+        &types_constraints,
+        &type_defs,
+    )?;
 
     // # Step 6: go from IM to CFIM (Control-Flow Internal MIR) by reconstructing
     // the control flow.

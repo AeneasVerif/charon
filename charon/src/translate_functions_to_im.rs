@@ -9,6 +9,7 @@ use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::im_ast as ast;
 use crate::regions_hierarchy as rh;
+use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
 use crate::translate_types;
 use crate::types as ty;
@@ -1819,6 +1820,7 @@ fn translate_deref_deref_mut(
 /// type parameters, that we put in the translation context.
 fn translate_function_signature<'ctx, 'ctx1>(
     tcx: &TyCtxt,
+    types_constraints: &TypesConstraintsMap,
     ft_ctx: &'ctx FunTransContext<'ctx1>,
     def_id: DefId,
 ) -> (BodyTransContext<'ctx, 'ctx1>, ast::FunSig) {
@@ -1948,7 +1950,7 @@ fn translate_function_signature<'ctx, 'ctx1>(
     };
 
     // Analyze the signature to compute the regions hierarchy
-    let regions_hierarchy = rh::compute_regions_hierarchy_for_sig(&sig);
+    let regions_hierarchy = rh::compute_regions_hierarchy_for_sig(types_constraints, &sig);
     let sig = ast::FunSig {
         regions_hierarchy,
         ..sig
@@ -2081,6 +2083,7 @@ fn build_scope_tree(body: &Body) -> ScopeTree<SourceScope> {
 fn translate_function(
     tcx: &TyCtxt,
     ordered: &OrderedDecls,
+    types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDefs,
     fun_defs: &mut ast::FunDefs,
     def_id: ast::FunDefId::Id,
@@ -2106,7 +2109,8 @@ fn translate_function(
     // at the same time (the signature gives us the region and type parameters,
     // that we put in the translation context).
     trace!("Translating function signature");
-    let (mut bt_ctx, signature) = translate_function_signature(tcx, &ft_ctx, rid);
+    let (mut bt_ctx, signature) =
+        translate_function_signature(tcx, types_constraints, &ft_ctx, rid);
 
     // Initialize the local variables
     trace!("Translating the body locals");
@@ -2144,6 +2148,7 @@ fn translate_function(
 pub fn translate_functions(
     tcx: &TyCtxt,
     ordered: &OrderedDecls,
+    types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDefs,
 ) -> Result<ast::FunDefs> {
     let mut fun_defs = ast::FunDefs::new();
@@ -2153,7 +2158,14 @@ pub fn translate_functions(
         use crate::id_vector::ToUsize;
         match decl {
             DeclarationGroup::Fun(GDeclarationGroup::NonRec(def_id)) => {
-                let fun_def = translate_function(tcx, ordered, type_defs, &mut fun_defs, *def_id)?;
+                let fun_def = translate_function(
+                    tcx,
+                    ordered,
+                    &types_constraints,
+                    type_defs,
+                    &mut fun_defs,
+                    *def_id,
+                )?;
                 // We have to make sure we translate the definitions in the
                 // proper order, otherwise we mess with the vector of ids
                 assert!(def_id.to_usize() == fun_defs.len());
@@ -2161,8 +2173,14 @@ pub fn translate_functions(
             }
             DeclarationGroup::Fun(GDeclarationGroup::Rec(ids)) => {
                 for def_id in ids {
-                    let fun_def =
-                        translate_function(tcx, ordered, type_defs, &mut fun_defs, *def_id)?;
+                    let fun_def = translate_function(
+                        tcx,
+                        ordered,
+                        &types_constraints,
+                        type_defs,
+                        &mut fun_defs,
+                        *def_id,
+                    )?;
                     // We have to make sure we translate the definitions in the
                     // proper order, otherwise we mess with the vector of ids
                     assert!(def_id.to_usize() == fun_defs.len());

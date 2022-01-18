@@ -18,13 +18,6 @@ use std::iter::FromIterator;
 
 generate_index_type!(RegionGroupId);
 
-/// The maximum number of recursive types from a type declaration group we can
-/// explore before failing, when computing regions hierarchy for recursive types.
-/// map before failing. See [compute_regions_hierarchy_for_type_decl_group]
-/// for more details.
-/// TODO: remove?
-static TYPE_REGIONS_HIERARCHY_MAX_NUM_ENTRIES: usize = 1000;
-
 #[derive(Copy, Clone)]
 pub struct LifetimeConstraint {
     region: Region<RegionVarId::Id>,
@@ -51,32 +44,8 @@ pub struct RegionGroup {
 
 pub type RegionGroups = RegionGroupId::Vector<RegionGroup>;
 
-fn add_opt_region_constraints(
-    constraints: &mut LifetimeConstraints,
-    region: Region<RegionVarId::Id>,
-    opt_parent: &Option<Region<RegionVarId::Id>>,
-) {
-    if !constraints.contains_node(region) {
-        constraints.add_node(region);
-    }
-
-    match opt_parent {
-        None => (),
-        Some(parent) => {
-            let parent = *parent;
-            if !constraints.contains_node(parent) {
-                constraints.add_node(parent);
-            }
-            constraints.add_edge(region, parent, ());
-        }
-    }
-
-    // Also constrain with regards to static:
-    constraints.add_edge(Region::Static, region, ());
-}
-
 /// Compute the region strongly connected components from a constraints graph.
-fn compute_SCCs_from_lifetime_constraints(
+fn compute_sccs_from_lifetime_constraints(
     constraints_graph: &LifetimeConstraints,
     region_params: &RegionVarId::Vector<RegionVar>,
 ) -> SCCs<Region<RegionVarId::Id>> {
@@ -221,7 +190,7 @@ fn compute_full_regions_constraints_for_ty(
     updated: &mut bool,
     constraints_map: &TypesConstraintsMap,
     acc_constraints: &mut LifetimeConstraints,
-    type_vars_constraints: &mut TypeVarsConstraintsMap,
+    type_vars_constraints: &mut Option<TypeVarsConstraintsMap>, // TODO: rename
     parent_regions: im::HashSet<Region<RegionVarId::Id>>,
     ty: &RTy,
 ) {
@@ -313,11 +282,16 @@ fn compute_full_regions_constraints_for_ty(
         }
         Ty::TypeVar(var_id) => {
             // Add the parent regions in the set of parent regions for the type variable
-            let parents_set = type_vars_constraints.get_mut(var_id).unwrap();
-            for parent in parent_regions {
-                if !parents_set.contains(&parent) {
-                    *updated = true;
-                    parents_set.insert(parent);
+            match type_vars_constraints {
+                None => (),
+                Some(type_vars_constraints) => {
+                    let parents_set = type_vars_constraints.get_mut(var_id).unwrap();
+                    for parent in parent_regions {
+                        if !parents_set.contains(&parent) {
+                            *updated = true;
+                            parents_set.insert(parent);
+                        }
+                    }
                 }
             }
         }
@@ -337,23 +311,11 @@ fn compute_full_regions_constraints_for_ty(
 /// }
 /// ```
 ///
-/// They can also be used to build "infinite", non constructible types:
-/// ```
-/// struct S<T> {
-///   x : Box<S<T>>,
-/// }
-/// ```
-///
-/// Following the first point, we compute the constraints by computing a fixed
+/// Following this, we compute the constraints by computing a fixed
 /// point: for every variant of every type appearing in the type declaration
 /// group, we compute a properly initialized set of constraints.
 /// We then explore all those types: as long as exploring one of those types
 /// leads to a new constraint, we reexplore them all.
-/// Of course, this might lead to an infinite loop because of the "infinite"
-/// types: we thus set a limit on the number of iterations we can do. Note
-/// that such infinite types are not supported anyway (we can't define them
-/// in, say, Coq).
-/// TODO: update comment
 fn compute_regions_constraints_for_type_decl_group(
     constraints_map: &mut TypesConstraintsMap,
     types: &TypeDefs,
@@ -413,8 +375,8 @@ fn compute_regions_constraints_for_type_decl_group(
 
             // Clone the type vars constraints map - we can't accumulate in the
             // original map, so we have to clone
-            // TODO: this is not very efficient
-            let mut updt_type_vars_constraints = constraints_map.get(id).unwrap().clone();
+            // TODO: this is not very efficient - though the sets should be super small
+            let mut updt_type_vars_constraints = Some(constraints_map.get(id).unwrap().clone());
 
             // Explore the field types of all the variants
             for field_tys in variants_fields_tys.iter() {
@@ -431,6 +393,7 @@ fn compute_regions_constraints_for_type_decl_group(
             }
 
             // Update the type vars constraints map
+            let updt_type_vars_constraints = updt_type_vars_constraints.unwrap();
             let type_vars_constraints = constraints_map.get_mut(id).unwrap();
             for (var_id, updt_set) in updt_type_vars_constraints.iter() {
                 let set = type_vars_constraints.get_mut(var_id).unwrap();
@@ -445,7 +408,7 @@ fn compute_regions_constraints_for_type_decl_group(
     let mut sccs_vec: Vec<SCCs<Region<RegionVarId::Id>>> = Vec::new();
     for id in type_ids.iter() {
         let type_def = types.get_type_def(*id).unwrap();
-        let sccs = compute_SCCs_from_lifetime_constraints(
+        let sccs = compute_sccs_from_lifetime_constraints(
             acc_constraints_map.get(id).unwrap(),
             &type_def.region_params,
         );
@@ -491,43 +454,23 @@ pub fn compute_regions_hierarchy_for_type_decl_group(
 /// the types: this function should be used when computing constraints for
 /// **function signatures** only.
 fn compute_regions_constraints_for_ty(
-    constraints: &mut LifetimeConstraints,
-    parent_region: Option<Region<RegionVarId::Id>>,
+    constraints_map: &TypesConstraintsMap,
+    acc_constraints: &mut LifetimeConstraints,
     ty: &RTy,
 ) {
-    match ty {
-        Ty::Adt(_type_id, regions, types) => {
-            // TODO: check the type's lifetime constraints (written in the type
-            // declaration) if the type is a user-defined ADT
-            unimplemented!();
-
-            // Introduce constraints for all the regions
-            for r in regions {
-                add_opt_region_constraints(constraints, *r, &parent_region);
-            }
-
-            // Explore the types given as parameters
-            for fty in types {
-                compute_regions_constraints_for_ty(constraints, parent_region, fty);
-            }
-        }
-        Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => {
-            // Nothing to do
-        }
-        Ty::Array(_aty) => {
-            unimplemented!();
-        }
-        Ty::Slice(_sty) => {
-            unimplemented!();
-        }
-        Ty::Ref(region, ref_ty, _mutability) => {
-            // Add the constraint for the region in the reference
-            add_opt_region_constraints(constraints, *region, &parent_region);
-
-            // Update the parent region, then continue exploring
-            compute_regions_constraints_for_ty(constraints, Some(*region), ref_ty);
-        }
-    }
+    // We need to provide some values to [compute_full_regions_constraints_for_ty],
+    // but we don't use them in the present case (they are use by this function
+    // to communicate us information).
+    let mut updated = false;
+    let type_vars_constraints = &mut None;
+    compute_full_regions_constraints_for_ty(
+        &mut updated,
+        constraints_map,
+        acc_constraints,
+        type_vars_constraints,
+        im::HashSet::new(),
+        ty,
+    )
 }
 
 /// Compute the constraints between the different regions of a function
@@ -535,17 +478,20 @@ fn compute_regions_constraints_for_ty(
 /// This is used to compute the order (in given by the region lifetime's)
 /// between the regions.
 /// TODO: rename. compute_ordered_regions_constraints...?
-fn compute_regions_constraints_for_sig(sig: &FunSig) -> SCCs<Region<RegionVarId::Id>> {
+fn compute_regions_constraints_for_sig(
+    types_constraints: &TypesConstraintsMap,
+    sig: &FunSig,
+) -> SCCs<Region<RegionVarId::Id>> {
     let mut constraints_graph = LifetimeConstraints::new();
     constraints_graph.add_node(Region::Static);
 
     for input_ty in &sig.inputs {
-        compute_regions_constraints_for_ty(&mut constraints_graph, None, input_ty);
+        compute_regions_constraints_for_ty(types_constraints, &mut constraints_graph, input_ty);
     }
-    compute_regions_constraints_for_ty(&mut constraints_graph, None, &sig.output);
+    compute_regions_constraints_for_ty(types_constraints, &mut constraints_graph, &sig.output);
 
     // Compute the SCCs from the region constraints
-    compute_SCCs_from_lifetime_constraints(&constraints_graph, &sig.region_params)
+    compute_sccs_from_lifetime_constraints(&constraints_graph, &sig.region_params)
 }
 
 /// Compute the region hierarchy (the order between the region's lifetimes)
@@ -553,9 +499,12 @@ fn compute_regions_constraints_for_sig(sig: &FunSig) -> SCCs<Region<RegionVarId:
 /// Note that [FunSig] already contains a regions hierarchy: when translating
 /// function signatures, we first translate the signature without this hierarchy,
 /// then compute this hierarchy and add it to the signature information.
-pub fn compute_regions_hierarchy_for_sig(sig: &FunSig) -> RegionGroups {
+pub fn compute_regions_hierarchy_for_sig(
+    types_constraints: &TypesConstraintsMap,
+    sig: &FunSig,
+) -> RegionGroups {
     // Compute the constraints between the regions and group them accordingly
-    let sccs = compute_regions_constraints_for_sig(sig);
+    let sccs = compute_regions_constraints_for_sig(types_constraints, sig);
 
     // Compute the regions hierarchy
     compute_regions_hierarchy_from_constraints(sccs)
@@ -563,9 +512,12 @@ pub fn compute_regions_hierarchy_for_sig(sig: &FunSig) -> RegionGroups {
 
 /// Compute the region hierarchy (the order between the region's lifetimes) for
 /// a set of function definitions.
-pub fn compute_regions_hierarchies_for_functions(defs: &FunDefs) -> FunDefId::Vector<RegionGroups> {
+pub fn compute_regions_hierarchies_for_functions(
+    types_constraints: &TypesConstraintsMap,
+    defs: &FunDefs,
+) -> FunDefId::Vector<RegionGroups> {
     FunDefId::Vector::from_iter(
         defs.iter()
-            .map(|def| compute_regions_hierarchy_for_sig(&def.signature)),
+            .map(|def| compute_regions_hierarchy_for_sig(types_constraints, &def.signature)),
     )
 }

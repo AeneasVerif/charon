@@ -2,6 +2,7 @@ use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector::ToUsize;
 use crate::regions_hierarchy;
+use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
 use crate::types as ty;
 use crate::vars::Name;
@@ -634,10 +635,13 @@ fn translate_type<'ctx>(
 /// necessary), because what is important is the file generation later.
 /// Still, now that the order is computed, it's better to use it (leads to a
 /// better indexing, for instance).
-pub fn translate_types(tcx: &TyCtxt, decls: &OrderedDecls) -> Result<ty::TypeDefs> {
+pub fn translate_types(
+    tcx: &TyCtxt,
+    decls: &OrderedDecls,
+) -> Result<(TypesConstraintsMap, ty::TypeDefs)> {
     trace!();
 
-    let mut types_cover_regions = regions_hierarchy::TypesConstraintsMap::new();
+    let mut types_cover_regions = TypesConstraintsMap::new();
     let mut type_defs = ty::TypeDefs::new();
 
     // Translate the types.
@@ -679,5 +683,5 @@ pub fn translate_types(tcx: &TyCtxt, decls: &OrderedDecls) -> Result<ty::TypeDef
         trace!("translated type:\n{}", trans_ctx.format_object(d));
     }
 
-    Ok(type_defs)
+    Ok((types_cover_regions, type_defs))
 }
