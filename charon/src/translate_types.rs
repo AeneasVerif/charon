@@ -680,7 +680,7 @@ pub fn translate_types(
         type_id_to_rid: &decls.type_id_to_rid,
     };
     for d in type_defs.types.iter() {
-        trace!("translated type:\n{}", trans_ctx.format_object(d));
+        trace!("translated type:\n{}\n", trans_ctx.format_object(d));
     }
 
     Ok((types_cover_regions, type_defs))

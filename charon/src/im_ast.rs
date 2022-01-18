@@ -603,6 +603,7 @@ impl FunSig {
     where
         T: Formatter<TypeVarId::Id>
             + Formatter<TypeDefId::Id>
+            + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>,
     {
         // Type parameters
@@ -631,8 +632,20 @@ impl FunSig {
             format!(" -> {}", ret_ty.fmt_with_ctx(ctx)).to_owned()
         };
 
+        // Regions hierarchy
+        let regions_hierarchy: Vec<String> = self
+            .regions_hierarchy
+            .iter()
+            .map(|rg| rg.fmt_with_ctx(ctx))
+            .collect();
+        let regions_hierarchy = regions_hierarchy.join("\n");
+
         // Put everything together
-        format!("fn{}({}){}", params, args, ret_ty).to_owned()
+        format!(
+            "fn{}({}){}\n\nRegions hierarchy:\n{}",
+            params, args, ret_ty, regions_hierarchy
+        )
+        .to_owned()
     }
 }
 

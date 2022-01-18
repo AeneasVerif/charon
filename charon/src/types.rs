@@ -383,6 +383,13 @@ impl TypeDef {
             + Formatter<&'a Region<RegionVarId::Id>>
             + Formatter<TypeDefId::Id>,
     {
+        let regions_hierarchy: Vec<String> = self
+            .regions_hierarchy
+            .iter()
+            .map(|rg| rg.fmt_with_ctx(ctx))
+            .collect();
+        let regions_hierarchy = regions_hierarchy.join("\n");
+
         let params = TypeDef::fmt_params(&self.region_params, &self.type_params);
         match &self.kind {
             TypeDefKind::Struct(fields) => {
@@ -393,10 +400,11 @@ impl TypeDef {
                         .collect();
                     let fields = fields.join(",");
                     format!(
-                        "struct {}{} = {{{}\n}}",
+                        "struct {}{} = {{{}\n}}\n{}",
                         self.name.to_string(),
                         params,
-                        fields
+                        fields,
+                        regions_hierarchy
                     )
                     .to_owned()
                 } else {
@@ -409,7 +417,14 @@ impl TypeDef {
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)).to_owned())
                     .collect();
                 let variants = variants.join("\n");
-                format!("enum {}{} =\n{}", self.name.to_string(), params, variants).to_owned()
+                format!(
+                    "enum {}{} =\n{}\n\nRegions hierarchy:\n{}",
+                    self.name.to_string(),
+                    params,
+                    variants,
+                    regions_hierarchy
+                )
+                .to_owned()
             }
         }
     }
@@ -738,6 +753,7 @@ impl std::fmt::Display for ErasedRegion {
     }
 }
 
+// TODO: take a type definition as parameter, and use the TypeDef formatting
 pub struct DummyFormatter {}
 
 impl Formatter<TypeVarId::Id> for DummyFormatter {
@@ -952,6 +968,35 @@ impl TypeDefs {
 
     pub fn get_type_def(&self, type_id: TypeDefId::Id) -> Option<&TypeDef> {
         self.types.get(type_id)
+    }
+}
+
+impl Formatter<TypeVarId::Id> for TypeDef {
+    fn format_object(&self, id: TypeVarId::Id) -> String {
+        let var = self.type_params.get(id).unwrap();
+        var.to_string()
+    }
+}
+
+impl Formatter<RegionVarId::Id> for TypeDef {
+    fn format_object(&self, id: RegionVarId::Id) -> String {
+        let var = self.region_params.get(id).unwrap();
+        var.to_string()
+    }
+}
+
+impl<Rid: Copy + Eq> Formatter<&Region<Rid>> for TypeDef
+where
+    TypeDef: Formatter<Rid>,
+{
+    fn format_object(&self, r: &Region<Rid>) -> String {
+        r.fmt_with_ctx(self)
+    }
+}
+
+impl Formatter<&ErasedRegion> for TypeDef {
+    fn format_object(&self, _: &ErasedRegion) -> String {
+        "'_".to_string()
     }
 }
 

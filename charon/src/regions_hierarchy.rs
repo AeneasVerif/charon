@@ -4,9 +4,11 @@
 
 use crate::cfim_ast::FunDefs;
 use crate::common::*;
+use crate::formatter::Formatter;
 use crate::graphs::*;
 use crate::im_ast::{FunDefId, FunSig};
 use crate::rust_to_local_ids::TypeDeclarationGroup;
+use crate::types as ty;
 use crate::types::*;
 use macros::generate_index_type;
 use petgraph::algo::tarjan_scc;
@@ -17,6 +19,10 @@ use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 generate_index_type!(RegionGroupId);
+
+pub fn region_group_id_to_pretty_string(rid: RegionGroupId::Id) -> String {
+    format!("rg@{}", rid).to_string()
+}
 
 #[derive(Copy, Clone)]
 pub struct LifetimeConstraint {
@@ -521,3 +527,74 @@ pub fn compute_regions_hierarchies_for_functions(
             .map(|def| compute_regions_hierarchy_for_sig(types_constraints, &def.signature)),
     )
 }
+
+impl RegionGroup {
+    pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
+    where
+        T: Formatter<RegionVarId::Id>,
+    {
+        // The parent region groups
+        let parents: Vec<String> = self.parents.iter().map(|gid| gid.to_string()).collect();
+        let parents = format!("{{{}}}", parents.join(",")).to_string();
+
+        // The regions included in the group
+        let regions: Vec<String> = self
+            .regions
+            .iter()
+            .map(|rid| ctx.format_object(*rid))
+            .collect();
+        let regions = format!("{{{}}}", regions.join(",")).to_string();
+
+        // Put everything together
+        format!(
+            "{}{{parents={}}}={}",
+            region_group_id_to_pretty_string(self.id),
+            parents,
+            regions
+        )
+        .to_string()
+    }
+}
+
+fn types_vars_constraints_map_fmt_with_ctx<'a, 'b, 'c, T>(
+    cs: &'a TypeVarsConstraintsMap,
+    ctx: &'b T,
+    indent: &'c str,
+) -> String
+where
+    T: Formatter<&'a Region<RegionVarId::Id>>,
+{
+    let var_constraints: Vec<String> = cs
+        .iter()
+        .map(|(vid, regions)| {
+            format!(
+                "{}{} -> {{{}}}",
+                indent,
+                type_var_id_to_pretty_string(*vid),
+                regions
+                    .iter()
+                    .map(|r| ctx.format_object(r))
+                    .collect::<Vec<String>>()
+                    .join(",")
+            )
+            .to_string()
+        })
+        .collect();
+    var_constraints.join("\n")
+}
+
+/*fn types_constraints_map_fmt_with_ctx(cs: &TypesConstraintsMap, types: &ty::TypesDefs) -> String {
+    let types_constraints: Vec<String> = cs
+        .iter()
+        .map(|(tid, cmap)| {
+            let type_def = types.get(*tid).unwrap();
+            format!(
+                "{} -> {}",
+                types.format_object(*tid),
+                types_vars_constraints_map_fmt_with_ctx(cmap, ctx, "  ")
+            )
+            .to_string()
+        })
+        .collect();
+    types_constraints.join("\n")
+}*/

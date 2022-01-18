@@ -31,6 +31,10 @@ enum E3<'a, 'b, 'c, T1, T2> {
     V4(&'c &'a T1),
 }
 
+struct S1<'a, 'b, 'c, 'd> {
+    x: E1<'a, 'b, &'c mut u32, &'d u32>,
+}
+
 fn id<'a, T>(x: &'a mut T) -> &'a mut T {
     x
 }
