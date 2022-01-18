@@ -3,12 +3,14 @@
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector;
+use crate::regions_hierarchy::RegionGroups;
 use crate::vars::*;
 use im::{HashMap, OrdSet, Vector};
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use rustc_middle::ty::{IntTy, UintTy};
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
+use std::iter::FromIterator;
 
 pub type FieldName = String;
 
@@ -73,8 +75,8 @@ pub struct TypeDef {
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub kind: TypeDefKind,
-    // The lifetime's hierarchy between the different regions.
-    //pub regions_hierarchy: RegionGroups,
+    /// The lifetime's hierarchy between the different regions.
+    pub regions_hierarchy: RegionGroups,
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
@@ -248,6 +250,7 @@ impl<Rid1: Copy + Eq + Ord + std::hash::Hash> Region<Rid1> {
 
 /// Type context.
 /// Contains type definitions and function signatures.
+/// TODO: remove the wrapper?
 #[derive(Clone)]
 pub struct TypeDefs {
     pub types: TypeDefId::Vector<TypeDef>,
@@ -299,6 +302,37 @@ impl TypeDef {
                 assert!(variant_id.is_none());
                 fields
             }
+        }
+    }
+
+    /// Instantiate the fields of every variant of a type definition.
+    pub fn get_instantiated_variants(
+        &self,
+        inst_regions: &Vector<Region<RegionVarId::Id>>,
+        inst_types: &Vector<RTy>,
+    ) -> VariantId::Vector<FieldId::Vector<RTy>> {
+        // Introduce the substitutions
+        let r_subst = make_region_subst(
+            self.region_params.iter().map(|x| x.index),
+            inst_regions.iter(),
+        );
+        let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
+
+        match &self.kind {
+            TypeDefKind::Struct(fields) => {
+                VariantId::Vector::from(vec![FieldId::Vector::from_iter(
+                    fields
+                        .iter()
+                        .map(|f| f.ty.substitute_regions_types(&r_subst, &ty_subst)),
+                )])
+            }
+            TypeDefKind::Enum(variants) => VariantId::Vector::from_iter(variants.iter().map(|v| {
+                FieldId::Vector::from_iter(
+                    v.fields
+                        .iter()
+                        .map(|f| f.ty.substitute_regions_types(&r_subst, &ty_subst)),
+                )
+            })),
         }
     }
 
@@ -745,9 +779,10 @@ impl std::string::ToString for Ty<ErasedRegion> {
     }
 }
 
+// TODO: mixing Copy and Clone in the trait requirements below. Update to only use Copy.
 impl<R> Ty<R>
 where
-    R: Clone + Eq,
+    R: Copy + Clone + Eq,
 {
     pub fn substitute<R1>(
         &self,
@@ -787,7 +822,6 @@ where
     where
         R1: Clone + Eq,
     {
-        use std::iter::FromIterator;
         Vector::from_iter(regions.iter().map(|rid| rsubst(rid)))
     }
 
@@ -832,6 +866,24 @@ where
                 !regions.is_empty() || tys.iter().any(|x| x.contains_regions())
             }
         }
+    }
+}
+
+// TODO: mixing Copy and Clone in the trait requirements below. Update to only use Copy.
+impl RTy {
+    /// Substitute the regions and type parameters
+    pub fn substitute_regions_types(
+        &self,
+        rsubst: &RegionSubst<Region<RegionVarId::Id>>,
+        tsubst: &TypeSubst<Region<RegionVarId::Id>>,
+    ) -> Self {
+        self.substitute(
+            &|rid| match rid {
+                Region::Static => Region::Static,
+                Region::Var(rid) => rsubst.get(rid).unwrap().clone(),
+            },
+            &|tid| tsubst.get(tid).unwrap().clone(),
+        )
     }
 }
 

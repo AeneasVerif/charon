@@ -1948,7 +1948,7 @@ fn translate_function_signature<'ctx, 'ctx1>(
     };
 
     // Analyze the signature to compute the regions hierarchy
-    let regions_hierarchy = rh::compute_region_groups_hierarchy_for_sig(&sig);
+    let regions_hierarchy = rh::compute_regions_hierarchy_for_sig(&sig);
     let sig = ast::FunSig {
         regions_hierarchy,
         ..sig

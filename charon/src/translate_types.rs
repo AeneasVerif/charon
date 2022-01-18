@@ -1,6 +1,7 @@
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector::ToUsize;
+use crate::regions_hierarchy;
 use crate::rust_to_local_ids::*;
 use crate::types as ty;
 use crate::vars::Name;
@@ -112,152 +113,6 @@ pub fn translate_region_name(region: &rustc_middle::ty::RegionKind) -> Option<St
             unreachable!();
         }
     }
-}
-
-/// Translate one type definition.
-///
-/// Note that we translate the types one by one: we don't need to take into
-/// account the fact that some types are mutually recursive at this point
-/// (we will need to take that into account when generating the code in a file).
-fn translate_type<'ctx>(
-    tcx: &TyCtxt,
-    decls: &OrderedDecls,
-    type_defs: &mut ty::TypeDefs,
-    trans_id: ty::TypeDefId::Id,
-) -> Result<()> {
-    trace!("{}", trans_id);
-
-    // Initialize the type translation context
-    let trans_ctx = TypeTransContext {
-        types: &type_defs,
-        type_rid_to_id: &decls.type_rid_to_id,
-        type_id_to_rid: &decls.type_id_to_rid,
-    };
-
-    // Retrieve the definition
-    let def_id = *trans_ctx.type_id_to_rid.get(&trans_id).unwrap();
-    trace!("{:?}", def_id);
-    let adt = tcx.adt_def(def_id);
-
-    // Use a dummy substitution to instantiate the type parameters
-    let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(*tcx, adt.did);
-
-    // Handle the region and type parameters.
-    // - we need to know how many parameters there are
-    // - we need to create a map linking the rust parameters to our pure
-    //   parameters
-    let mut region_params: Vec<ty::RegionVar> = vec![];
-    let mut region_params_map: im::OrdMap<rustc_middle::ty::RegionKind, ty::RegionVarId::Id> =
-        im::OrdMap::new();
-    let mut region_params_counter = ty::RegionVarId::Generator::new();
-    let mut type_params: Vec<ty::TypeVar> = vec![];
-    let mut type_params_map: im::OrdMap<u32, ty::RTy> = im::OrdMap::new();
-    let mut type_params_counter = ty::TypeVarId::Generator::new();
-    for p in substs.iter() {
-        match p.unpack() {
-            rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
-                // The type should be a Param:
-                match param_ty.kind() {
-                    rustc_middle::ty::TyKind::Param(param_ty) => {
-                        let type_var = ty::TypeVar {
-                            index: type_params_counter.fresh_id(),
-                            name: param_ty.name.to_ident_string(),
-                        };
-                        type_params.push(type_var.clone());
-                        let type_var = ty::Ty::TypeVar(type_var.index);
-                        type_params_map.insert(param_ty.index, type_var);
-                    }
-                    _ => {
-                        panic!("Inconsistent state");
-                    }
-                }
-            }
-            rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
-                let name = translate_region_name(region);
-                let t_region = ty::RegionVar {
-                    index: region_params_counter.fresh_id(),
-                    name: name,
-                };
-                region_params_map.insert(*region, t_region.index);
-                region_params.push(t_region);
-            }
-            rustc_middle::ty::subst::GenericArgKind::Const(_) => {
-                unimplemented!();
-            }
-        }
-    }
-
-    trace!("type parameters:\n{:?}", type_params_map);
-
-    // Explore the variants
-    let mut var_id = ty::VariantId::Id::new(0); // Variant index
-    let mut variants: Vec<ty::Variant> = vec![];
-    for var_def in adt.variants.iter() {
-        trace!("variant {}: {:?}", var_id, var_def);
-
-        let mut fields: Vec<ty::Field> = vec![];
-        let mut fields_map: im::HashMap<String, ty::FieldId::Id> = im::HashMap::new();
-        let mut field_id = ty::FieldId::Id::new(0);
-        for field_def in var_def.fields.iter() {
-            trace!("variant {}: field {}: {:?}", var_id, field_id, field_def);
-
-            let ty = field_def.ty(*tcx, substs);
-
-            // Translate the field type
-            let ty = translate_sig_ty(tcx, &trans_ctx, &region_params_map, &type_params_map, &ty)?;
-
-            // Retrieve the field name
-            let field_name = field_def.ident.name.to_ident_string();
-
-            // Store the field
-            let field = ty::Field {
-                name: field_name.clone(),
-                ty: ty,
-            };
-            fields.push(field);
-            fields_map.insert(field_name, field_id);
-
-            field_id.incr();
-        }
-
-        let variant_name = var_def.ident.name.to_ident_string();
-        variants.push(ty::Variant {
-            name: variant_name,
-            fields: ty::FieldId::Vector::from(fields),
-        });
-
-        var_id.incr();
-    }
-
-    // Register the type
-    let name = type_def_id_to_name(tcx, def_id)?;
-    let region_params = ty::RegionVarId::Vector::from(region_params);
-    let type_params = ty::TypeVarId::Vector::from(type_params);
-    let type_def_kind: ty::TypeDefKind = match adt.adt_kind() {
-        rustc_middle::ty::AdtKind::Struct => ty::TypeDefKind::Struct(variants[0].fields.clone()),
-        rustc_middle::ty::AdtKind::Enum => {
-            ty::TypeDefKind::Enum(ty::VariantId::Vector::from(variants))
-        }
-        rustc_middle::ty::AdtKind::Union => {
-            // Should have been filtered during the registration phase
-            unreachable!();
-        }
-    };
-
-    let type_def = ty::TypeDef {
-        def_id: trans_id,
-        name: Name::from(name),
-        region_params: region_params,
-        type_params: type_params,
-        kind: type_def_kind,
-    };
-
-    trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
-    // Small sanity check - we have to translate the definitions in the proper
-    // order, otherwise we mess up with the vector of ids
-    assert!(type_defs.types.len() == trans_id.to_usize());
-    type_defs.types.push_back(type_def);
-    Ok(())
 }
 
 pub fn translate_non_erased_region<'tcx>(
@@ -623,6 +478,155 @@ pub fn type_def_id_to_name(tcx: &TyCtxt, def_id: DefId) -> Result<Vec<String>> {
     Ok(name)
 }
 
+/// Translate one type definition.
+///
+/// Note that we translate the types one by one: we don't need to take into
+/// account the fact that some types are mutually recursive at this point
+/// (we will need to take that into account when generating the code in a file).
+fn translate_type<'ctx>(
+    tcx: &TyCtxt,
+    decls: &OrderedDecls,
+    type_defs: &mut ty::TypeDefs,
+    trans_id: ty::TypeDefId::Id,
+) -> Result<()> {
+    trace!("{}", trans_id);
+
+    // Initialize the type translation context
+    let trans_ctx = TypeTransContext {
+        types: &type_defs,
+        type_rid_to_id: &decls.type_rid_to_id,
+        type_id_to_rid: &decls.type_id_to_rid,
+    };
+
+    // Retrieve the definition
+    let def_id = *trans_ctx.type_id_to_rid.get(&trans_id).unwrap();
+    trace!("{:?}", def_id);
+    let adt = tcx.adt_def(def_id);
+
+    // Use a dummy substitution to instantiate the type parameters
+    let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(*tcx, adt.did);
+
+    // Handle the region and type parameters.
+    // - we need to know how many parameters there are
+    // - we need to create a map linking the rust parameters to our pure
+    //   parameters
+    let mut region_params: Vec<ty::RegionVar> = vec![];
+    let mut region_params_map: im::OrdMap<rustc_middle::ty::RegionKind, ty::RegionVarId::Id> =
+        im::OrdMap::new();
+    let mut region_params_counter = ty::RegionVarId::Generator::new();
+    let mut type_params: Vec<ty::TypeVar> = vec![];
+    let mut type_params_map: im::OrdMap<u32, ty::RTy> = im::OrdMap::new();
+    let mut type_params_counter = ty::TypeVarId::Generator::new();
+    for p in substs.iter() {
+        match p.unpack() {
+            rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
+                // The type should be a Param:
+                match param_ty.kind() {
+                    rustc_middle::ty::TyKind::Param(param_ty) => {
+                        let type_var = ty::TypeVar {
+                            index: type_params_counter.fresh_id(),
+                            name: param_ty.name.to_ident_string(),
+                        };
+                        type_params.push(type_var.clone());
+                        let type_var = ty::Ty::TypeVar(type_var.index);
+                        type_params_map.insert(param_ty.index, type_var);
+                    }
+                    _ => {
+                        panic!("Inconsistent state");
+                    }
+                }
+            }
+            rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
+                let name = translate_region_name(region);
+                let t_region = ty::RegionVar {
+                    index: region_params_counter.fresh_id(),
+                    name: name,
+                };
+                region_params_map.insert(*region, t_region.index);
+                region_params.push(t_region);
+            }
+            rustc_middle::ty::subst::GenericArgKind::Const(_) => {
+                unimplemented!();
+            }
+        }
+    }
+
+    trace!("type parameters:\n{:?}", type_params_map);
+
+    // Explore the variants
+    let mut var_id = ty::VariantId::Id::new(0); // Variant index
+    let mut variants: Vec<ty::Variant> = vec![];
+    for var_def in adt.variants.iter() {
+        trace!("variant {}: {:?}", var_id, var_def);
+
+        let mut fields: Vec<ty::Field> = vec![];
+        let mut fields_map: im::HashMap<String, ty::FieldId::Id> = im::HashMap::new();
+        let mut field_id = ty::FieldId::Id::new(0);
+        for field_def in var_def.fields.iter() {
+            trace!("variant {}: field {}: {:?}", var_id, field_id, field_def);
+
+            let ty = field_def.ty(*tcx, substs);
+
+            // Translate the field type
+            let ty = translate_sig_ty(tcx, &trans_ctx, &region_params_map, &type_params_map, &ty)?;
+
+            // Retrieve the field name
+            let field_name = field_def.ident.name.to_ident_string();
+
+            // Store the field
+            let field = ty::Field {
+                name: field_name.clone(),
+                ty: ty,
+            };
+            fields.push(field);
+            fields_map.insert(field_name, field_id);
+
+            field_id.incr();
+        }
+
+        let variant_name = var_def.ident.name.to_ident_string();
+        variants.push(ty::Variant {
+            name: variant_name,
+            fields: ty::FieldId::Vector::from(fields),
+        });
+
+        var_id.incr();
+    }
+
+    // Register the type
+    let name = type_def_id_to_name(tcx, def_id)?;
+    let region_params = ty::RegionVarId::Vector::from(region_params);
+    let type_params = ty::TypeVarId::Vector::from(type_params);
+    let type_def_kind: ty::TypeDefKind = match adt.adt_kind() {
+        rustc_middle::ty::AdtKind::Struct => ty::TypeDefKind::Struct(variants[0].fields.clone()),
+        rustc_middle::ty::AdtKind::Enum => {
+            ty::TypeDefKind::Enum(ty::VariantId::Vector::from(variants))
+        }
+        rustc_middle::ty::AdtKind::Union => {
+            // Should have been filtered during the registration phase
+            unreachable!();
+        }
+    };
+
+    let type_def = ty::TypeDef {
+        def_id: trans_id,
+        name: Name::from(name),
+        region_params: region_params,
+        type_params: type_params,
+        kind: type_def_kind,
+        // For now, initialize the regions hierarchy with a dummy value:
+        // we compute it later (after returning to [translate_types]
+        regions_hierarchy: regions_hierarchy::RegionGroups::new(),
+    };
+
+    trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
+    // Small sanity check - we have to translate the definitions in the proper
+    // order, otherwise we mess up with the vector of ids
+    assert!(type_defs.types.len() == trans_id.to_usize());
+    type_defs.types.push_back(type_def);
+    Ok(())
+}
+
 /// Translate the types.
 ///
 /// Note that in practice, we don't really need to know in which order we should
@@ -633,19 +637,32 @@ pub fn type_def_id_to_name(tcx: &TyCtxt, def_id: DefId) -> Result<Vec<String>> {
 pub fn translate_types(tcx: &TyCtxt, decls: &OrderedDecls) -> Result<ty::TypeDefs> {
     trace!();
 
+    let mut types_cover_regions = regions_hierarchy::TypesConstraintsMap::new();
     let mut type_defs = ty::TypeDefs::new();
 
     // Translate the types.
     for decl in &decls.decls {
         match decl {
-            DeclarationGroup::Type(TypeDeclarationGroup::NonRec(id)) => {
-                translate_type(tcx, decls, &mut type_defs, *id)?;
-            }
-            DeclarationGroup::Type(TypeDeclarationGroup::Rec(ids)) => {
-                for id in ids {
+            DeclarationGroup::Type(decl) => match decl {
+                TypeDeclarationGroup::NonRec(id) => {
                     translate_type(tcx, decls, &mut type_defs, *id)?;
+                    regions_hierarchy::compute_regions_hierarchy_for_type_decl_group(
+                        &mut types_cover_regions,
+                        &mut type_defs,
+                        decl,
+                    );
                 }
-            }
+                TypeDeclarationGroup::Rec(ids) => {
+                    for id in ids {
+                        translate_type(tcx, decls, &mut type_defs, *id)?;
+                    }
+                    regions_hierarchy::compute_regions_hierarchy_for_type_decl_group(
+                        &mut types_cover_regions,
+                        &mut type_defs,
+                        decl,
+                    );
+                }
+            },
             DeclarationGroup::Fun(_) => {
                 // Ignore the functions
             }
