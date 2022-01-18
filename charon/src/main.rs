@@ -31,6 +31,7 @@ extern crate rustc_target;
 #[macro_use]
 mod common;
 mod cfim_ast;
+mod cfim_ast_utils;
 mod cfim_export;
 mod divergent;
 mod expressions;
@@ -39,6 +40,7 @@ mod get_mir;
 mod graphs;
 mod id_vector;
 mod im_ast;
+mod im_ast_utils;
 mod im_to_cfim;
 mod reconstruct_asserts;
 mod regions_hierarchy;
@@ -49,6 +51,7 @@ mod simplify_binops;
 mod translate_functions_to_im;
 mod translate_types;
 mod types;
+mod types_utils;
 mod values;
 mod vars;
 
