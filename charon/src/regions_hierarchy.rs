@@ -10,6 +10,7 @@ use crate::im_ast::{FunDefId, FunSig};
 use crate::rust_to_local_ids::TypeDeclarationGroup;
 use crate::types as ty;
 use crate::types::*;
+use hashlink::linked_hash_map::LinkedHashMap;
 use macros::generate_index_type;
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
@@ -141,7 +142,8 @@ fn compute_regions_hierarchy_from_constraints(
 }
 
 /// See [TypesConstraintsMap]
-pub type TypeVarsConstraintsMap = HashMap<TypeVarId::Id, HashSet<Region<RegionVarId::Id>>>;
+/// We use linked hash maps to preserve the order for printing.
+pub type TypeVarsConstraintsMap = LinkedHashMap<TypeVarId::Id, HashSet<Region<RegionVarId::Id>>>;
 
 /// This map gives, for every type parameter of every type definition, the set
 /// of regions under which the type parameter appears.
@@ -158,7 +160,7 @@ pub type TypeVarsConstraintsMap = HashMap<TypeVarId::Id, HashSet<Region<RegionVa
 /// T1 -> {}
 /// T2 -> {'a, 'b}
 /// ```
-pub type TypesConstraintsMap = HashMap<TypeDefId::Id, TypeVarsConstraintsMap>;
+pub type TypesConstraintsMap = LinkedHashMap<TypeDefId::Id, TypeVarsConstraintsMap>;
 
 fn add_region_constraints(
     updated: &mut bool,
@@ -340,7 +342,7 @@ fn compute_regions_constraints_for_type_decl_group(
     // Initialize the constraints map
     for id in type_ids.iter() {
         let type_def = types.get_type_def(*id).unwrap();
-        let var_to_constraints = HashMap::from_iter(
+        let var_to_constraints = TypeVarsConstraintsMap::from_iter(
             type_def
                 .type_params
                 .iter()
@@ -580,21 +582,32 @@ where
             .to_string()
         })
         .collect();
-    var_constraints.join("\n")
+    var_constraints.join(",\n")
 }
 
-/*fn types_constraints_map_fmt_with_ctx(cs: &TypesConstraintsMap, types: &ty::TypesDefs) -> String {
-    let types_constraints: Vec<String> = cs
+pub fn types_constraints_map_fmt_with_ctx(
+    cs: &TypesConstraintsMap,
+    types: &ty::TypeDefs,
+) -> String {
+    // We iterate over the type definitions, not the types constraints map,
+    // in order to make sure we preserve the type definitions order
+    let types_constraints: Vec<String> = types
+        .types
         .iter()
-        .map(|(tid, cmap)| {
-            let type_def = types.get(*tid).unwrap();
-            format!(
-                "{} -> {}",
-                types.format_object(*tid),
-                types_vars_constraints_map_fmt_with_ctx(cmap, ctx, "  ")
-            )
-            .to_string()
+        .map(|type_def| {
+            let cmap = cs.get(&type_def.def_id).unwrap();
+            if type_def.type_params.is_empty() {
+                format!("{} -> []", types.format_object(type_def.def_id)).to_string()
+            } else {
+                let ctx = type_def;
+                format!(
+                    "{} -> [\n{}\n]",
+                    types.format_object(type_def.def_id),
+                    types_vars_constraints_map_fmt_with_ctx(cmap, ctx, "  ")
+                )
+                .to_string()
+            }
         })
         .collect();
     types_constraints.join("\n")
-}*/
+}

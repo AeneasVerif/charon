@@ -673,6 +673,12 @@ pub fn translate_types(
         }
     }
 
+    // Print the type constraints map
+    trace!(
+        "types constraints map:\n{}\n",
+        regions_hierarchy::types_constraints_map_fmt_with_ctx(&types_cover_regions, &type_defs)
+    );
+
     // Print the translated types
     let trans_ctx = TypeTransContext {
         types: &type_defs,

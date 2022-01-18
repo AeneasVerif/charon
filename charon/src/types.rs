@@ -446,7 +446,7 @@ impl TypeDef {
 
 impl std::string::ToString for TypeDef {
     fn to_string(&self) -> String {
-        self.fmt_with_ctx(&DummyFormatter {})
+        self.fmt_with_ctx(&IncompleteFormatter { def: self })
     }
 }
 
@@ -753,7 +753,45 @@ impl std::fmt::Display for ErasedRegion {
     }
 }
 
-// TODO: take a type definition as parameter, and use the TypeDef formatting
+pub struct IncompleteFormatter<'a> {
+    def: &'a TypeDef,
+}
+
+impl<'a> Formatter<TypeVarId::Id> for IncompleteFormatter<'a> {
+    fn format_object(&self, id: TypeVarId::Id) -> String {
+        self.def.format_object(id)
+    }
+}
+
+impl<'a, 'b, Rid: Copy + Eq> Formatter<&'b Region<Rid>> for IncompleteFormatter<'a>
+where
+    TypeDef: Formatter<&'b Region<Rid>>,
+{
+    fn format_object(&self, r: &'b Region<Rid>) -> String {
+        self.def.format_object(r)
+    }
+}
+
+impl<'a, 'b> Formatter<&'b ErasedRegion> for IncompleteFormatter<'a> {
+    fn format_object(&self, r: &'b ErasedRegion) -> String {
+        self.def.format_object(r)
+    }
+}
+
+impl<'a> Formatter<RegionVarId::Id> for IncompleteFormatter<'a> {
+    fn format_object(&self, id: RegionVarId::Id) -> String {
+        self.def.format_object(id)
+    }
+}
+
+impl<'a> Formatter<TypeDefId::Id> for IncompleteFormatter<'a> {
+    fn format_object(&self, id: TypeDefId::Id) -> String {
+        // For type def ids, we simply print the def id because
+        // we lack context
+        type_def_id_to_pretty_string(id)
+    }
+}
+
 pub struct DummyFormatter {}
 
 impl Formatter<TypeVarId::Id> for DummyFormatter {
@@ -985,14 +1023,20 @@ impl Formatter<RegionVarId::Id> for TypeDef {
     }
 }
 
-impl<Rid: Copy + Eq> Formatter<&Region<Rid>> for TypeDef
+impl Formatter<&Region<RegionVarId::Id>> for TypeDef {
+    fn format_object(&self, r: &Region<RegionVarId::Id>) -> String {
+        r.fmt_with_ctx(self)
+    }
+}
+
+/*impl<Rid: Copy + Eq> Formatter<&Region<Rid>> for TypeDef
 where
     TypeDef: Formatter<Rid>,
 {
     fn format_object(&self, r: &Region<Rid>) -> String {
         r.fmt_with_ctx(self)
     }
-}
+}*/
 
 impl Formatter<&ErasedRegion> for TypeDef {
     fn format_object(&self, _: &ErasedRegion) -> String {
