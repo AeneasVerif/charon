@@ -142,11 +142,35 @@ fn compute_regions_hierarchy_from_constraints(
 }
 
 /// See [TypesConstraintsMap]
-/// We use linked hash maps to preserve the order for printing.
+pub type RegionVarsConstraintsMap =
+    LinkedHashMap<RegionVarId::Id, HashSet<Region<RegionVarId::Id>>>;
+
+/// See [TypesConstraintsMap]
 pub type TypeVarsConstraintsMap = LinkedHashMap<TypeVarId::Id, HashSet<Region<RegionVarId::Id>>>;
 
-/// This map gives, for every type parameter of every type definition, the set
-/// of regions under which the type parameter appears.
+/// See [TypesConstraintsMap]
+#[derive(Debug, Clone)]
+pub struct TypeDefConstraintsMap {
+    regions_vars_constraints: RegionVarsConstraintsMap, // TODO: rename (remove 's')
+    type_vars_constraints: TypeVarsConstraintsMap,
+}
+
+impl TypeDefConstraintsMap {
+    fn new() -> Self {
+        TypeDefConstraintsMap {
+            regions_vars_constraints: RegionVarsConstraintsMap::new(),
+            type_vars_constraints: TypeVarsConstraintsMap::new(),
+        }
+    }
+}
+
+/// This map gives, for every definition:
+/// - for every region parameter: the set of regions which outlive this region
+///   parameter.
+/// - for every type parameter: the set of regions under which the type parameter
+///   appears. This means that every region appearing in this type parameter's
+///   instantiation must outlive the regions in this set.
+///
 /// For instance, for the following type definition:
 /// ```
 /// struct S<'a, 'b, T1, T2> {
@@ -157,14 +181,20 @@ pub type TypeVarsConstraintsMap = LinkedHashMap<TypeVarId::Id, HashSet<Region<Re
 ///
 /// We would have:
 /// ```
+/// 'a -> {}
+/// 'b -> {'a}
+///
 /// T1 -> {}
 /// T2 -> {'a, 'b}
 /// ```
-pub type TypesConstraintsMap = LinkedHashMap<TypeDefId::Id, TypeVarsConstraintsMap>;
+///
+/// Note: we use linked hash maps to preserve the order for printing.
+pub type TypesConstraintsMap = LinkedHashMap<TypeDefId::Id, TypeDefConstraintsMap>;
 
 fn add_region_constraints(
     updated: &mut bool,
     acc_constraints: &mut LifetimeConstraints,
+    type_def_constraints: &mut Option<TypeDefConstraintsMap>,
     region: Region<RegionVarId::Id>,
     parent_regions: &im::HashSet<Region<RegionVarId::Id>>,
 ) {
@@ -186,6 +216,22 @@ fn add_region_constraints(
         }
     }
 
+    match (&region, type_def_constraints) {
+        (_, None) | (Region::Static, _) => (),
+        (Region::Var(rid), Some(type_def_constraints)) => {
+            let current_parents = type_def_constraints
+                .regions_vars_constraints
+                .get_mut(rid)
+                .unwrap();
+            for parent in parent_regions.iter() {
+                if !current_parents.contains(parent) {
+                    *updated = true;
+                    current_parents.insert(*parent);
+                }
+            }
+        }
+    }
+
     // Also constrain with regards to static:
     if !acc_constraints.contains_edge(Region::Static, region) {
         *updated = true;
@@ -198,7 +244,7 @@ fn compute_full_regions_constraints_for_ty(
     updated: &mut bool,
     constraints_map: &TypesConstraintsMap,
     acc_constraints: &mut LifetimeConstraints,
-    type_vars_constraints: &mut Option<TypeVarsConstraintsMap>, // TODO: rename
+    type_vars_constraints: &mut Option<TypeDefConstraintsMap>, // TODO: rename
     parent_regions: im::HashSet<Region<RegionVarId::Id>>,
     ty: &RTy,
 ) {
@@ -206,7 +252,13 @@ fn compute_full_regions_constraints_for_ty(
         Ty::Adt(type_id, regions, types) => {
             // Introduce constraints for all the regions given as parameters
             for r in regions {
-                add_region_constraints(updated, acc_constraints, *r, &parent_regions);
+                add_region_constraints(
+                    updated,
+                    acc_constraints,
+                    type_vars_constraints,
+                    *r,
+                    &parent_regions,
+                );
             }
 
             // Compute the map from region param id to region instantation, for
@@ -220,12 +272,38 @@ fn compute_full_regions_constraints_for_ty(
                     // Lookup the type parameter constraints for this ADT
                     let type_def_constraints = constraints_map.get(type_def_id).unwrap();
 
+                    // Add the region constraints
+                    for (region_param_id, region) in region_inst.iter_indexed_values() {
+                        let additional_parents = type_def_constraints
+                            .regions_vars_constraints
+                            .get(&region_param_id)
+                            .unwrap();
+
+                        // We need to instantiate the additional parents
+                        let additional_parents =
+                            im::HashSet::from_iter(additional_parents.iter().map(|r| match r {
+                                Region::Static => Region::Static,
+                                Region::Var(rid) => *region_inst.get(*rid).unwrap(),
+                            }));
+
+                        // Add the constraints
+                        add_region_constraints(
+                            updated,
+                            acc_constraints,
+                            type_vars_constraints,
+                            *region,
+                            &additional_parents,
+                        );
+                    }
+
                     // Explore the types given as parameters
                     let types: TypeVarId::Vector<&RTy> = TypeVarId::Vector::from_iter(types.iter());
                     for (type_param_id, fty) in types.iter_indexed_values() {
                         // Retrieve the parent regions for this type param
-                        let type_param_constraints =
-                            type_def_constraints.get(&type_param_id).unwrap();
+                        let type_param_constraints = type_def_constraints
+                            .type_vars_constraints
+                            .get(&type_param_id)
+                            .unwrap();
 
                         // Instantiate the parent regions constraints
                         let mut parent_regions = parent_regions.clone();
@@ -274,7 +352,13 @@ fn compute_full_regions_constraints_for_ty(
         }
         Ty::Ref(region, ref_ty, _mutability) => {
             // Add the constraint for the region in the reference
-            add_region_constraints(updated, acc_constraints, *region, &parent_regions);
+            add_region_constraints(
+                updated,
+                acc_constraints,
+                type_vars_constraints,
+                *region,
+                &parent_regions,
+            );
 
             // Update the parent regions, then continue exploring
             let mut parent_regions = parent_regions.clone();
@@ -293,7 +377,10 @@ fn compute_full_regions_constraints_for_ty(
             match type_vars_constraints {
                 None => (),
                 Some(type_vars_constraints) => {
-                    let parents_set = type_vars_constraints.get_mut(var_id).unwrap();
+                    let parents_set = type_vars_constraints
+                        .type_vars_constraints
+                        .get_mut(var_id)
+                        .unwrap();
                     for parent in parent_regions {
                         if !parents_set.contains(&parent) {
                             *updated = true;
@@ -342,13 +429,23 @@ fn compute_regions_constraints_for_type_decl_group(
     // Initialize the constraints map
     for id in type_ids.iter() {
         let type_def = types.get_type_def(*id).unwrap();
-        let var_to_constraints = TypeVarsConstraintsMap::from_iter(
+        let regions_vars_constraints = RegionVarsConstraintsMap::from_iter(
+            type_def
+                .region_params
+                .iter()
+                .map(|var| (var.index, HashSet::new())),
+        );
+        let type_vars_constraints = TypeVarsConstraintsMap::from_iter(
             type_def
                 .type_params
                 .iter()
                 .map(|var| (var.index, HashSet::new())),
         );
-        constraints_map.insert(*id, var_to_constraints);
+        let type_def_constraints = TypeDefConstraintsMap {
+            regions_vars_constraints,
+            type_vars_constraints,
+        };
+        constraints_map.insert(*id, type_def_constraints);
     }
 
     let mut updated = true;
@@ -402,8 +499,20 @@ fn compute_regions_constraints_for_type_decl_group(
 
             // Update the type vars constraints map
             let updt_type_vars_constraints = updt_type_vars_constraints.unwrap();
-            let type_vars_constraints = constraints_map.get_mut(id).unwrap();
-            for (var_id, updt_set) in updt_type_vars_constraints.iter() {
+            let type_def_constraints = constraints_map.get_mut(id).unwrap();
+            let regions_vars_constraints = &mut type_def_constraints.regions_vars_constraints;
+            let type_vars_constraints = &mut type_def_constraints.type_vars_constraints;
+
+            // The constraints over region parameters
+            for (r_id, updt_set) in updt_type_vars_constraints.regions_vars_constraints.iter() {
+                let set = regions_vars_constraints.get_mut(r_id).unwrap();
+                for r in updt_set.iter() {
+                    set.insert(*r);
+                }
+            }
+
+            // The constraints over type parameters
+            for (var_id, updt_set) in updt_type_vars_constraints.type_vars_constraints.iter() {
                 let set = type_vars_constraints.get_mut(var_id).unwrap();
                 for r in updt_set.iter() {
                     set.insert(*r);
@@ -470,12 +579,12 @@ fn compute_regions_constraints_for_ty(
     // but we don't use them in the present case (they are use by this function
     // to communicate us information).
     let mut updated = false;
-    let type_vars_constraints = &mut None;
+    let type_def_constraints = &mut None;
     compute_full_regions_constraints_for_ty(
         &mut updated,
         constraints_map,
         acc_constraints,
-        type_vars_constraints,
+        type_def_constraints,
         im::HashSet::new(),
         ty,
     )
@@ -558,31 +667,44 @@ impl RegionGroup {
     }
 }
 
-fn types_vars_constraints_map_fmt_with_ctx<'a, 'b, 'c, T>(
-    cs: &'a TypeVarsConstraintsMap,
+fn types_def_constraints_map_fmt_with_ctx<'a, 'b, 'c, T>(
+    cs: &'a TypeDefConstraintsMap,
     ctx: &'b T,
     indent: &'c str,
 ) -> String
 where
-    T: Formatter<TypeVarId::Id> + Formatter<&'a Region<RegionVarId::Id>>,
+    T: Formatter<TypeVarId::Id>
+        + Formatter<RegionVarId::Id>
+        + Formatter<&'a Region<RegionVarId::Id>>,
 {
-    let var_constraints: Vec<String> = cs
-        .iter()
-        .map(|(vid, regions)| {
-            format!(
-                "{}{} -> {{{}}}",
-                indent,
-                ctx.format_object(*vid),
-                regions
-                    .iter()
-                    .map(|r| ctx.format_object(r))
-                    .collect::<Vec<String>>()
-                    .join(",")
-            )
-            .to_string()
-        })
-        .collect();
-    var_constraints.join(",\n")
+    let region_constraints = cs.regions_vars_constraints.iter().map(|(rid, regions)| {
+        format!(
+            "{}{} -> {{{}}}",
+            indent,
+            ctx.format_object(*rid),
+            regions
+                .iter()
+                .map(|r| ctx.format_object(r))
+                .collect::<Vec<String>>()
+                .join(",")
+        )
+        .to_string()
+    });
+    let type_constraints = cs.type_vars_constraints.iter().map(|(vid, regions)| {
+        format!(
+            "{}{} -> {{{}}}",
+            indent,
+            ctx.format_object(*vid),
+            regions
+                .iter()
+                .map(|r| ctx.format_object(r))
+                .collect::<Vec<String>>()
+                .join(",")
+        )
+        .to_string()
+    });
+    let all_constraints: Vec<String> = region_constraints.chain(type_constraints).collect();
+    all_constraints.join(",\n")
 }
 
 pub fn types_constraints_map_fmt_with_ctx(
@@ -596,14 +718,14 @@ pub fn types_constraints_map_fmt_with_ctx(
         .iter()
         .map(|type_def| {
             let cmap = cs.get(&type_def.def_id).unwrap();
-            if type_def.type_params.is_empty() {
+            if type_def.region_params.len() + type_def.type_params.len() == 0 {
                 format!("{} -> []", types.format_object(type_def.def_id)).to_string()
             } else {
                 let ctx = type_def;
                 format!(
                     "{} -> [\n{}\n]",
                     types.format_object(type_def.def_id),
-                    types_vars_constraints_map_fmt_with_ctx(cmap, ctx, "  ")
+                    types_def_constraints_map_fmt_with_ctx(cmap, ctx, "  ")
                 )
                 .to_string()
             }
