@@ -450,7 +450,13 @@ fn compute_regions_constraints_for_type_decl_group(
 
     let mut updated = true;
     let mut acc_constraints_map: HashMap<TypeDefId::Id, LifetimeConstraints> =
-        HashMap::from_iter(type_ids.iter().map(|id| (*id, LifetimeConstraints::new())));
+        HashMap::from_iter(type_ids.iter().map(|id| {
+            (*id, {
+                let mut graph = LifetimeConstraints::new();
+                graph.add_node(Region::Static);
+                graph
+            })
+        }));
 
     while updated {
         updated = false;
