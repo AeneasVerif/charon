@@ -40,6 +40,15 @@ enum E4<'a, 'b, 'c, T1, T2, T3> {
     V2(Box<E4<'a, 'b, 'c, T2, T1, T3>>),
     /// Invert the region parameters, but not the type parameters
     V3(Box<E4<'b, 'a, 'c, T1, T2, T3>>),
+    V4(&'c &'a T3),
+}
+
+enum E5<'a, 'b, 'c, T1, T2, T3> {
+    V1(&'a mut T1, &'b mut T2),
+    /// Invert the type parameters, but not the region parameters
+    V2(Box<E5<'a, 'b, 'c, T2, T1, T3>>),
+    /// Invert the region parameters, but not the type parameters
+    V3(Box<E5<'b, 'a, 'c, T1, T2, T3>>),
     V4(&'a &'c T3),
 }
 
