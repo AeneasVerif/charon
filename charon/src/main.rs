@@ -42,6 +42,7 @@ mod id_vector;
 mod im_ast;
 mod im_ast_utils;
 mod im_to_cfim;
+mod insert_assign_return_unit;
 mod reconstruct_asserts;
 mod regions_hierarchy;
 mod register;
@@ -249,7 +250,15 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
         );
     }
 
-    // # Step 9: compute which functions are potentially divergent. A function
+    // # Step 9: add the missing assignments to the return value.
+    // When the function's return type is unit, the generated MIR doesn't
+    // set the return value to `()`. This can be a concern: in the case
+    // of AENEAS, it means the return variable contains ⊥ upon returning.
+    // For this reason, when the function has return type unit, we insert
+    // an extra assignment just before returning.
+    let cfim_defs = insert_assign_return_unit::transform(cfim_defs);
+
+    // # Step 10: compute which functions are potentially divergent. A function
     // is potentially divergent if it is recursive or transitively calls a
     // potentially divergent function.
     // Note that in the future, we may complement this basic analysis with a
@@ -257,7 +266,7 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
     // by construction.
     let _divergent = divergent::compute_divergent_functions(&ordered_decls, &cfim_defs);
 
-    // # Step 10: generate the files.
+    // # Step 11: generate the files.
     cfim_export::export(&ordered_decls, &type_defs, &cfim_defs, source_file)?;
 
     Ok(())
