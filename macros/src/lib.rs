@@ -22,7 +22,8 @@ const THREE_TABS: &'static str = "            ";
 /// we need to define a macro to return a string literal.
 macro_rules! index_generic_code {
     () => {
-        "pub mod {} {{
+        "
+pub mod {} {{
     #[derive(std::fmt::Debug, std::clone::Clone, std::marker::Copy,
              std::hash::Hash, std::cmp::PartialEq, std::cmp::Eq,
              std::cmp::PartialOrd, std::cmp::Ord)]
