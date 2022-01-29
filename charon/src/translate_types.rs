@@ -562,6 +562,9 @@ fn translate_type<'ctx>(
 
         let mut fields: Vec<ty::Field> = vec![];
         let mut field_id = ty::FieldId::Id::new(0);
+        /* This is for sanity: check that either all the fields have names, or
+         * none of them has */
+        let mut have_names: Option<bool> = Option::None;
         for field_def in var_def.fields.iter() {
             trace!("variant {}: field {}: {:?}", var_id, field_id, field_def);
 
@@ -581,6 +584,17 @@ fn translate_type<'ctx>(
                 match field_id {
                     std::result::Result::Ok(_) => None,
                     std::result::Result::Err(_) => Some(field_name),
+                }
+            };
+            match &have_names {
+                Option::None => {
+                    have_names = match &field_name {
+                        Option::None => Some(false),
+                        Option::Some(_) => Some(true),
+                    }
+                }
+                Option::Some(b) => {
+                    assert!(*b == field_name.is_some());
                 }
             };
 
