@@ -160,7 +160,7 @@ pub fn translate_erased_region<'tcx>(region: rustc_middle::ty::Region<'tcx>) -> 
 /// regions can be translated in several manners (non-erased region or erased
 /// regions), in which case the return type is different.
 pub fn translate_ty<R>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     trans_ctx: &TypeTransContext,
     region_translator: &dyn Fn(&rustc_middle::ty::RegionKind) -> R,
     type_params: &im::OrdMap<u32, ty::Ty<R>>,
@@ -391,7 +391,7 @@ where
 /// variable ids.
 /// Simply calls [`translate_ty`](translate_ty)
 pub fn translate_sig_ty(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     trans_ctx: &TypeTransContext,
     region_params: &im::OrdMap<rustc_middle::ty::RegionKind, ty::RegionVarId::Id>,
     type_params: &im::OrdMap<u32, ty::RTy>,
@@ -409,7 +409,7 @@ pub fn translate_sig_ty(
 /// Translate a type where the regions are erased
 /// Simply calls [`translate_ty`](translate_ty)
 pub fn translate_ety(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     trans_ctx: &TypeTransContext,
     type_params: &im::OrdMap<u32, ty::ETy>,
     ty: &Ty,
@@ -430,7 +430,7 @@ pub fn translate_ety(
 /// In the future, we'll implement proper support for projects divided into
 /// different crates.
 fn translate_non_local_defid<R>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     _trans_ctx: &TypeTransContext,
     _type_params: &im::OrdMap<u32, ty::Ty<R>>,
     def_id: DefId,
@@ -450,7 +450,7 @@ where
 ///
 /// This only works for def ids coming from types! For values, it is a bit
 /// more complex.
-pub fn type_def_id_to_name(tcx: &TyCtxt, def_id: DefId) -> Result<Vec<String>> {
+pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Result<Vec<String>> {
     trace!("{:?}", def_id);
 
     let def_path = tcx.def_path(def_id);
@@ -485,7 +485,7 @@ pub fn type_def_id_to_name(tcx: &TyCtxt, def_id: DefId) -> Result<Vec<String>> {
 /// account the fact that some types are mutually recursive at this point
 /// (we will need to take that into account when generating the code in a file).
 fn translate_type<'ctx>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     decls: &OrderedDecls,
     type_defs: &mut ty::TypeDefs,
     trans_id: ty::TypeDefId::Id,
@@ -505,7 +505,7 @@ fn translate_type<'ctx>(
     let adt = tcx.adt_def(def_id);
 
     // Use a dummy substitution to instantiate the type parameters
-    let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(*tcx, adt.did);
+    let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, adt.did);
 
     // Handle the region and type parameters.
     // - we need to know how many parameters there are
@@ -566,13 +566,13 @@ fn translate_type<'ctx>(
         for field_def in var_def.fields.iter() {
             trace!("variant {}: field {}: {:?}", var_id, field_id, field_def);
 
-            let ty = field_def.ty(*tcx, substs);
+            let ty = field_def.ty(tcx, substs);
 
             // Translate the field type
             let ty = translate_sig_ty(tcx, &trans_ctx, &region_params_map, &type_params_map, &ty)?;
 
             // Retrieve the field name
-            let field_name = field_def.ident(*tcx).name.to_ident_string();
+            let field_name = field_def.ident(tcx).name.to_ident_string();
 
             // Store the field
             let field = ty::Field {
@@ -585,7 +585,7 @@ fn translate_type<'ctx>(
             field_id.incr();
         }
 
-        let variant_name = var_def.ident(*tcx).name.to_ident_string();
+        let variant_name = var_def.ident(tcx).name.to_ident_string();
         variants.push(ty::Variant {
             name: variant_name,
             fields: ty::FieldId::Vector::from(fields),
@@ -636,7 +636,7 @@ fn translate_type<'ctx>(
 /// Still, now that the order is computed, it's better to use it (leads to a
 /// better indexing, for instance).
 pub fn translate_types(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     decls: &OrderedDecls,
 ) -> Result<(TypesConstraintsMap, ty::TypeDefs)> {
     trace!();

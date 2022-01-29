@@ -100,7 +100,7 @@ impl RegisteredDeclarations {
 fn register_hir_type(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     item: &Item,
     def_id: DefId,
 ) -> Result<()> {
@@ -134,7 +134,7 @@ fn register_hir_type(
 fn register_mir_adt(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     adt: &AdtDef,
 ) -> Result<()> {
     trace!("> adt: {:?}", adt);
@@ -155,7 +155,7 @@ fn register_mir_adt(
     let mut rtype_decl = RegisteredTypeDeclaration::new(adt.did);
 
     // Use a dummy substitution to instantiate the type parameters
-    let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(*tcx, adt.did);
+    let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, adt.did);
 
     // Explore all the variants. Note that we also explore the HIR to retrieve
     // precise spans: for instance, to indicate which variant is problematic
@@ -184,7 +184,7 @@ fn register_mir_adt(
 
         for field_def in var_def.fields.iter() {
             trace!("field_def");
-            let ty = field_def.ty(*tcx, substs);
+            let ty = field_def.ty(tcx, substs);
             trace!("ty");
             register_mir_ty(rdecls, sess, tcx, var_span, &mut rtype_decl.deps, &ty)?;
         }
@@ -201,7 +201,7 @@ fn register_mir_adt(
 fn register_mir_substs<'tcx>(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     span: &Span,
     deps: &mut TypeDependencies,
     substs: &rustc_middle::ty::subst::SubstsRef<'tcx>,
@@ -227,7 +227,7 @@ fn register_mir_substs<'tcx>(
 fn register_mir_ty(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     span: &Span,
     deps: &mut TypeDependencies,
     ty: &Ty,
@@ -416,7 +416,7 @@ fn get_fun_from_operand<'tcx>(
 fn register_function(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     def_id: LocalDefId,
 ) -> Result<()> {
     trace!("{:?}", def_id);
@@ -557,7 +557,7 @@ fn register_function(
                 for a in args.iter() {
                     trace!("terminator: Call: arg: {:?}", a);
 
-                    let ty = a.ty(&body.local_decls, *tcx);
+                    let ty = a.ty(&body.local_decls, tcx);
                     register_mir_ty(rdecls, sess, tcx, &fn_span, &mut fn_decl.deps_tys, &ty)?;
                 }
 
@@ -640,7 +640,7 @@ fn register_function(
 fn register_hir_item(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     item: &Item,
 ) -> Result<()> {
     trace!("{:?}", item);
@@ -715,7 +715,7 @@ fn register_hir_item(
 fn register_hir_impl_item(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     impl_item: &ImplItem,
 ) -> Result<()> {
     // TODO: make proper error message
@@ -739,7 +739,7 @@ pub fn register_crate(sess: &Session, tcx: TyCtxt) -> Result<RegisteredDeclarati
     let mut registered_decls = RegisteredDeclarations::new();
 
     for item in tcx.hir().items() {
-        register_hir_item(&mut registered_decls, sess, &tcx, item)?;
+        register_hir_item(&mut registered_decls, sess, tcx, item)?;
     }
 
     return Ok(registered_decls);

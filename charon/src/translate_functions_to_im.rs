@@ -271,7 +271,7 @@ impl<'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>> for BodyTransContext<'ctx
 }
 
 fn translate_ety<'ctx, 'ctx1>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     ty: &mir_ty::Ty,
 ) -> Result<ty::ETy> {
@@ -284,7 +284,7 @@ fn translate_ety<'ctx, 'ctx1>(
 }
 
 fn translate_sig_ty<'ctx, 'ctx1>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     ty: &mir_ty::Ty,
 ) -> Result<ty::RTy> {
@@ -304,7 +304,7 @@ fn translate_sig_ty<'ctx, 'ctx1>(
 
 /// Translate a function's local variables by adding them in the environment.
 fn translate_body_locals<'ctx, 'ctx1>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body,
 ) -> Result<()> {
@@ -345,7 +345,7 @@ fn translate_body_locals<'ctx, 'ctx1>(
 /// The local variables should already have been translated and inserted in
 /// the context.
 fn translate_function_body<'ctx, 'ctx1>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body,
 ) -> Result<()> {
@@ -358,7 +358,7 @@ fn translate_function_body<'ctx, 'ctx1>(
 }
 
 fn translate_basic_block<'ctx, 'ctx1>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body,
     block_id: BasicBlock,
@@ -902,7 +902,7 @@ fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
 
 /// Translate an rvalue
 fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
     rvalue: &'tcx mir::Rvalue<'tcx>,
 ) -> e::Rvalue {
@@ -1044,7 +1044,7 @@ fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
 ///
 /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
 fn translate_statement<'ctx, 'ctx1>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     statement: &Statement,
 ) -> Result<Option<ast::Statement>> {
@@ -1111,7 +1111,7 @@ fn translate_statement<'ctx, 'ctx1>(
 
 /// Translate a terminator
 fn translate_terminator<'ctx, 'ctx1>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body,
     terminator: &Terminator,
@@ -1245,7 +1245,7 @@ fn translate_terminator<'ctx, 'ctx1>(
 
 /// Translate switch targets
 fn translate_switch_targets<'ctx, 'ctx1>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body,
     switch_ty: &ty::ETy,
@@ -1367,7 +1367,7 @@ fn defpathdata_to_value_ns(data: DefPathData) -> Option<String> {
 /// blocks (and retrieve `Foo`'s identifier).
 ///
 /// TODO: this might gives us the same as TyCtxt::generics_of
-fn get_impl_parent_type_def_id(tcx: &TyCtxt, def_id: DefId) -> Option<DefId> {
+fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
     // Retrieve the definition def id
     let def_key = tcx.def_key(def_id);
 
@@ -1409,7 +1409,7 @@ fn get_impl_parent_type_def_id(tcx: &TyCtxt, def_id: DefId) -> Option<DefId> {
 }
 
 /// Retrieve the name from a `DefId`.
-fn function_def_id_to_name(tcx: &TyCtxt, def_id: DefId) -> Name {
+fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Name {
     trace!("{:?}", def_id);
 
     // We have to be a bit careful when retrieving the name. For instance, due
@@ -1514,7 +1514,7 @@ fn function_def_id_to_name(tcx: &TyCtxt, def_id: DefId) -> Name {
 /// function referenced in the function call: we need it in order to translate
 /// the blocks we go to after the function call returns.
 fn translate_function_call<'ctx, 'ctx1, 'tcx>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &mir::Body,
     func: &Operand<'tcx>,
@@ -1642,7 +1642,7 @@ fn translate_function_call<'ctx, 'ctx1, 'tcx>(
 ///
 /// Note that the regions parameters are expected to have been erased.
 fn translate_subst_in_body<'ctx, 'ctx1, 'tcx>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     substs: &'tcx rustc_middle::ty::subst::InternalSubsts<'tcx>,
 ) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>)> {
@@ -1693,7 +1693,7 @@ fn translate_arguments<'ctx, 'ctx1, 'tcx>(
 }
 
 fn translate_non_local_function<'ctx, 'tcx>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     def_id: DefId,
     region_params: Vec<ty::ErasedRegion>,
     type_params: Vec<ty::ETy>,
@@ -1810,7 +1810,7 @@ fn translate_deref_deref_mut(
 /// at the same time - the function signature gives us the list of region and
 /// type parameters, that we put in the translation context.
 fn translate_function_signature<'ctx, 'ctx1>(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     types_constraints: &TypesConstraintsMap,
     ft_ctx: &'ctx FunTransContext<'ctx1>,
     def_id: DefId,
@@ -2072,7 +2072,7 @@ fn build_scope_tree(body: &Body) -> ScopeTree<SourceScope> {
 /// Note that we don't care whether the function is (mutually) recursive or not:
 /// we translate its body to a very close representation.
 fn translate_function(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDefs,
@@ -2137,7 +2137,7 @@ fn translate_function(
 
 /// Translate the functions
 pub fn translate_functions(
-    tcx: &TyCtxt,
+    tcx: TyCtxt,
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDefs,
