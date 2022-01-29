@@ -1082,11 +1082,6 @@ fn translate_statement<'ctx, 'ctx1>(
             let var_id = bt_ctx.get_local(local).unwrap();
             Ok(Some(ast::Statement::StorageDead(var_id)))
         }
-        StatementKind::LlvmInlineAsm(_) => {
-            // The program should have been rejected before
-            error!("LLVM Inline ASM");
-            unreachable!();
-        }
         StatementKind::CopyNonOverlapping(_) => {
             // The program should have been rejected before
             error!("Copy non overlapping");

@@ -483,14 +483,6 @@ fn register_function(
                         "Copy non overlapping not supported",
                     );
                 }
-                rustc_middle::mir::StatementKind::LlvmInlineAsm(_) => {
-                    trace!("LLVM Inline ASM");
-                    span_err(
-                        sess,
-                        statement.source_info.span.clone(),
-                        "LLVM Inline ASM not supported",
-                    );
-                }
                 rustc_middle::mir::StatementKind::Retag(_, _) => {
                     // retag statements are only used by MIRI, so we have nothing
                     // to do

@@ -572,7 +572,7 @@ fn translate_type<'ctx>(
             let ty = translate_sig_ty(tcx, &trans_ctx, &region_params_map, &type_params_map, &ty)?;
 
             // Retrieve the field name
-            let field_name = field_def.ident.name.to_ident_string();
+            let field_name = field_def.ident(*tcx).name.to_ident_string();
 
             // Store the field
             let field = ty::Field {
@@ -585,7 +585,7 @@ fn translate_type<'ctx>(
             field_id.incr();
         }
 
-        let variant_name = var_def.ident.name.to_ident_string();
+        let variant_name = var_def.ident(*tcx).name.to_ident_string();
         variants.push(ty::Variant {
             name: variant_name,
             fields: ty::FieldId::Vector::from(fields),
