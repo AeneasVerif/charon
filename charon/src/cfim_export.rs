@@ -32,6 +32,7 @@ type DeclarationsSerializer<'a> = VecSW<'a, DeclarationGroup>;
 #[derive(Serialize)]
 #[serde(rename = "Module")]
 struct ModSerializer<'a> {
+    name: String,
     declarations: DeclarationsSerializer<'a>,
     types: &'a TypeDefId::Vector<TypeDef>,
     functions: &'a FunDefId::Vector<FunDef>,
@@ -39,6 +40,7 @@ struct ModSerializer<'a> {
 
 /// Export the translated definitions to a JSON file.
 pub fn export(
+    name: String,
     ordered_decls: &OrderedDecls,
     type_defs: &TypeDefs,
     fun_defs: &FunDefs,
@@ -57,6 +59,7 @@ pub fn export(
 
     // Serialize
     let mod_serializer = ModSerializer {
+        name,
         declarations: VecSW::new(&ordered_decls.decls),
         types: &type_defs.types,
         functions: &fun_defs,
