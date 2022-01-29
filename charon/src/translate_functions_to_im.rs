@@ -981,7 +981,7 @@ fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
                     e::Rvalue::Aggregate(e::AggregateKind::Tuple, operands_t)
                 }
                 mir::AggregateKind::Adt(
-                    adt_def,
+                    adt_id,
                     variant_idx,
                     substs,
                     user_annotation,
@@ -1002,12 +1002,7 @@ fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
                         translate_subst_in_body(tcx, bt_ctx, substs).unwrap();
 
                     // Retrieve the definition
-                    let id_t = *bt_ctx
-                        .ft_ctx
-                        .ordered
-                        .type_rid_to_id
-                        .get(&adt_def.did)
-                        .unwrap();
+                    let id_t = *bt_ctx.ft_ctx.ordered.type_rid_to_id.get(adt_id).unwrap();
                     let def = bt_ctx.get_type_defs().get_type_def(id_t).unwrap();
 
                     assert!(region_params.len() == def.region_params.len());
@@ -1245,6 +1240,7 @@ fn translate_terminator<'ctx, 'ctx1>(
             options: _,
             line_spans: _,
             destination: _,
+            cleanup: _,
         } => {
             // This case should have been eliminated during the registration phase
             unreachable!();

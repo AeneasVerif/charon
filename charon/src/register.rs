@@ -622,6 +622,7 @@ fn register_function(
                 options: _,
                 line_spans: _,
                 destination: _,
+                cleanup: _,
             } => {
                 trace!("terminator: InlineASM");
                 span_err(
@@ -743,11 +744,9 @@ fn register_hir_impl_item(
 
 /// General function to register the declarations in a crate.
 pub fn register_crate(sess: &Session, tcx: TyCtxt) -> Result<RegisteredDeclarations> {
-    let hir_map = tcx.hir();
     let mut registered_decls = RegisteredDeclarations::new();
 
-    for item_id in tcx.hir_crate(()).module().item_ids.iter() {
-        let item = hir_map.item(*item_id);
+    for item in tcx.hir().items() {
         register_hir_item(&mut registered_decls, sess, &tcx, item)?;
     }
 
