@@ -277,7 +277,10 @@ impl Field {
             + Formatter<&'a Region<RegionVarId::Id>>
             + Formatter<TypeDefId::Id>,
     {
-        format!("{}: {}", self.name, self.ty.fmt_with_ctx(ctx)).to_owned()
+        match &self.name {
+            Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)).to_owned(),
+            Option::None => format!("{}", self.ty.fmt_with_ctx(ctx)).to_owned(),
+        }
     }
 }
 

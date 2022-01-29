@@ -732,11 +732,17 @@ impl<'ctx, T> Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>
                     .fields
                     .get(field_id)
                     .unwrap();
-                field.name.clone()
+                match &field.name {
+                    Option::Some(name) => name.clone(),
+                    Option::None => field_id.to_string(),
+                }
             }
             (TypeDefKind::Struct(fields), None) => {
                 let field = fields.get(field_id).unwrap();
-                field.name.clone()
+                match &field.name {
+                    Option::Some(name) => name.clone(),
+                    Option::None => field_id.to_string(),
+                }
             }
             _ => unreachable!(),
         }

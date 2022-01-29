@@ -88,7 +88,7 @@ pub struct Variant {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Field {
-    pub name: String,
+    pub name: Option<String>,
     pub ty: RTy,
 }
 
