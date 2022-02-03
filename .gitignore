@@ -27,3 +27,4 @@ nohup.out
 *.mir
 *.txt
 *#
+*.smt2
