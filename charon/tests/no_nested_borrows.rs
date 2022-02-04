@@ -207,6 +207,41 @@ fn test_char() -> char {
     'a'
 }
 
+/// Mutually recursive types
+enum Tree<T> {
+    Leaf(T),
+    Node(T, NodeElem<T>, Box<Tree<T>>),
+}
+
+enum NodeElem<T> {
+    Cons(Box<Tree<T>>, Box<NodeElem<T>>),
+    Nil,
+}
+
+/// Mutually recursive functions
+fn even(x: u32) -> bool {
+    if x == 0 {
+        true
+    } else {
+        odd(x - 1)
+    }
+}
+
+fn odd(x: u32) -> bool {
+    if x == 0 {
+        false
+    } else {
+        even(x - 1)
+    }
+}
+
+fn test_even_odd() {
+    assert!(even(0));
+    assert!(even(4));
+    assert!(odd(1));
+    assert!(odd(5));
+}
+
 pub fn list_length<'a, T>(l: &'a List<T>) -> u32 {
     match l {
         List::Nil => {
