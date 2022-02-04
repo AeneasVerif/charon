@@ -236,10 +236,18 @@ pub fn list_nth<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
     }
 }
 
-pub fn id_mut_pair1<'a, 'b, T1, T2>(x: &'a mut T1, y: &'b mut T2) -> (&'a mut T1, &'b mut T2) {
+pub fn id_mut_pair1<'a, T1, T2>(x: &'a mut T1, y: &'a mut T2) -> (&'a mut T1, &'a mut T2) {
     (x, y)
 }
 
-pub fn id_mut_pair2<'a, 'b, T1, T2>(p: (&'a mut T1, &'b mut T2)) -> (&'a mut T1, &'b mut T2) {
+pub fn id_mut_pair2<'a, T1, T2>(p: (&'a mut T1, &'a mut T2)) -> (&'a mut T1, &'a mut T2) {
+    p
+}
+
+pub fn id_mut_pair3<'a, 'b, T1, T2>(x: &'a mut T1, y: &'b mut T2) -> (&'a mut T1, &'b mut T2) {
+    (x, y)
+}
+
+pub fn id_mut_pair4<'a, 'b, T1, T2>(p: (&'a mut T1, &'b mut T2)) -> (&'a mut T1, &'b mut T2) {
     p
 }
