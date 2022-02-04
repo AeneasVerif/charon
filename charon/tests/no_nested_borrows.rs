@@ -253,7 +253,22 @@ pub fn list_length<'a, T>(l: &'a List<T>) -> u32 {
     }
 }
 
-pub fn list_nth<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
+pub fn list_nth_shared<'a, T>(l: &'a List<T>, i: u32) -> &'a T {
+    match l {
+        List::Nil => {
+            panic!()
+        }
+        List::Cons(x, tl) => {
+            if i == 0 {
+                return x;
+            } else {
+                return list_nth_shared(tl, i - 1);
+            }
+        }
+    }
+}
+
+pub fn list_nth_mut<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
     // (i)
     match l {
         List::Nil => {
@@ -265,10 +280,26 @@ pub fn list_nth<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
                 return x; // (iii)
             } else {
                 // (iv)
-                return list_nth(tl, i - 1);
+                return list_nth_mut(tl, i - 1);
             }
         }
     }
+}
+
+fn test_list_functions() {
+    let mut ls = List::Cons(
+        0,
+        Box::new(List::Cons(1, Box::new(List::Cons(2, Box::new(List::Nil))))),
+    );
+    assert!(list_length(&ls) == 3);
+    assert!(*list_nth_shared(&ls, 0) == 0);
+    assert!(*list_nth_shared(&ls, 1) == 1);
+    assert!(*list_nth_shared(&ls, 2) == 2);
+    let x = list_nth_mut(&mut ls, 1);
+    *x = 3;
+    assert!(*list_nth_shared(&ls, 0) == 0);
+    assert!(*list_nth_shared(&ls, 1) == 3); // Updated
+    assert!(*list_nth_shared(&ls, 2) == 2);
 }
 
 pub fn id_mut_pair1<'a, T1, T2>(x: &'a mut T1, y: &'a mut T2) -> (&'a mut T1, &'a mut T2) {
