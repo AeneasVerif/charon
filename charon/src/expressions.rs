@@ -187,13 +187,12 @@ pub enum Operand {
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
     ConstantValue(ConstantValue),
-    /// Enumeration with one variant with no fields, or structure with
-    /// no fields.
-    Adt(TypeDefId::Id),
-    /// There can be constant values made of tuples.
-    /// Unit is also encoded as a 0-tuple.
-    /// TODO: merge with above
-    Tuple(Vector<OperandConstantValue>),
+    /// In most situations:
+    /// Enumeration with one variant with no fields, structure with
+    /// no fields, unit (encoded as a 0-tuple).
+    ///
+    /// Less frequently: arbitrary ADT values.
+    Adt(Option<VariantId::Id>, Vector<OperandConstantValue>),
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -289,12 +288,16 @@ impl OperandConstantValue {
     {
         match self {
             OperandConstantValue::ConstantValue(c) => c.to_string(),
-            OperandConstantValue::Adt(def_id) => {
-                format!("ConstAdt {}", ctx.format_object(*def_id)).to_owned()
-            }
-            OperandConstantValue::Tuple(values) => {
+            OperandConstantValue::Adt(variant_id, values) => {
+                // It is a bit annoying: in order to properly format the value,
+                // we need the type (which contains the type def id).
+                // Anyway, the printing utilities are mostly for debugging.
+                let variant_id = match variant_id {
+                    Option::Some(id) => format!("Some({})", id).to_string(),
+                    Option::None => "None".to_string(),
+                };
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
-                format!("({})", values.join(", ")).to_owned()
+                format!("ConstAdt {} [{}]", variant_id, values.join(", ")).to_owned()
             }
         }
     }
@@ -439,8 +442,7 @@ impl Serialize for OperandConstantValue {
         // We change the variant names for serialization
         let variant_name = match self {
             OperandConstantValue::ConstantValue(_) => "ConstantValue",
-            OperandConstantValue::Adt(_) => "ConstantAdt",
-            OperandConstantValue::Tuple(_) => "ConstantTuple",
+            OperandConstantValue::Adt(_, _) => "ConstantAdt",
         };
         let (variant_index, variant_arity) = self.variant_index_arity();
         // It seems the "standard" way of doing is the following (this is
@@ -458,10 +460,8 @@ impl Serialize for OperandConstantValue {
                 OperandConstantValue::ConstantValue(cv) => {
                     vs.serialize_field(cv)?;
                 }
-                OperandConstantValue::Adt(id) => {
-                    vs.serialize_field(id)?;
-                }
-                OperandConstantValue::Tuple(values) => {
+                OperandConstantValue::Adt(variant_id, values) => {
+                    vs.serialize_field(variant_id)?;
                     let values = VectorSerializer::new(values);
                     vs.serialize_field(&values)?;
                 }

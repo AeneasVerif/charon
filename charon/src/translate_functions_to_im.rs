@@ -23,18 +23,16 @@ use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_hir::definitions::DefPathData;
 use rustc_middle::mir;
-use rustc_middle::mir::interpret::{Allocation, ConstValue};
 use rustc_middle::mir::{
     BasicBlock, Body, Operand, Place, PlaceElem, SourceScope, Statement, StatementKind, Terminator,
     TerminatorKind, START_BLOCK,
 };
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{
-    BoundRegion, Const, ConstKind, FreeRegion, Region, RegionKind, Ty, TyCtxt, TyKind,
+    BoundRegion, ConstKind, FreeRegion, Region, RegionKind, Ty, TyCtxt, TyKind,
 };
 use rustc_span::BytePos;
 use rustc_span::Span;
-use rustc_target::abi::Size;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::iter::FromIterator;
@@ -727,7 +725,7 @@ fn translate_operand_constant_value_non_scalar<'tcx, 'ctx, 'ctx1>(
 
                     // Return
                     let ty = ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), field_tys);
-                    let value = e::OperandConstantValue::Tuple(field_values);
+                    let value = e::OperandConstantValue::Adt(Option::None, field_values);
                     (ty, value)
                 }
                 _ => {
@@ -801,24 +799,24 @@ fn translate_operand_constant_value<'tcx, 'ctx, 'ctx1>(
                     // and no parameters. Construct the value at the same time.
                     assert!(substs.len() == 0);
                     assert!(def.type_params.len() == 0);
-                    match &def.kind {
+                    let variant_id = match &def.kind {
                         ty::TypeDefKind::Enum(variants) => {
                             assert!(variants.len() == 1);
+                            Option::Some(ty::VariantId::ZERO)
                         }
-                        ty::TypeDefKind::Struct(_) => {
-                            // OK
-                        }
+                        ty::TypeDefKind::Struct(_) => Option::None,
                     };
 
                     let ty = ty::Ty::Adt(ty::TypeId::Adt(*id), Vector::new(), Vector::new());
-                    let v = e::OperandConstantValue::Adt(*id);
+                    let v = e::OperandConstantValue::Adt(variant_id, Vector::new());
                     (ty, v)
                 }
                 TyKind::Tuple(substs) => {
                     // There can be tuple([]) for unit
                     assert!(substs.len() == 0);
                     let ty = ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), Vector::new());
-                    (ty, e::OperandConstantValue::Tuple(Vector::new()))
+                    let cv = e::OperandConstantValue::Adt(Option::None, Vector::new());
+                    (ty, cv)
                 }
                 TyKind::Never => {
                     // Not sure what to do here
