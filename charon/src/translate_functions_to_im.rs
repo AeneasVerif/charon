@@ -4,7 +4,7 @@
 //! independently.
 
 #![allow(dead_code)]
-use crate::assumed::*;
+use crate::assumed;
 use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
@@ -1442,8 +1442,9 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Name {
     let parent_def_key = tcx.def_key(parent_def_id);
 
     // Not sure what to do with the disambiguator yet, so for now I check that
-    // it is always equal to 0.
-    assert!(parent_def_key.disambiguated_data.disambiguator == 0);
+    // it is always equal to 0, in case of local functions.
+    // Rk.: I think there is a unique disambiguator per `impl` block.
+    assert!(!def_id.is_local() || parent_def_key.disambiguated_data.disambiguator == 0);
 
     // Check the parent key
     match parent_def_key.disambiguated_data.data {
@@ -1532,7 +1533,9 @@ fn translate_function_call<'ctx, 'ctx1, 'tcx>(
 
     // If the call is `panic!`, then the destination is `None`.
     // I don't know in which other cases it can be `None`.
-    if name.equals_ref_name(&PANIC_NAME) || name.equals_ref_name(&BEGIN_PANIC_NAME) {
+    if name.equals_ref_name(&assumed::PANIC_NAME)
+        || name.equals_ref_name(&assumed::BEGIN_PANIC_NAME)
+    {
         assert!(!def_id.is_local());
         assert!(destination.is_none());
 
@@ -1551,7 +1554,7 @@ fn translate_function_call<'ctx, 'ctx1, 'tcx>(
         // sometimes introduces very low-level functions, which we need to
         // catch early - in particular, before we start translating types and
         // arguments, because we won't be able to translate some of them.
-        if name.equals_ref_name(&BOX_FREE_NAME) {
+        if name.equals_ref_name(&assumed::BOX_FREE_NAME) {
             assert!(!def_id.is_local());
 
             // This deallocates a box.
@@ -1591,9 +1594,10 @@ fn translate_function_call<'ctx, 'ctx1, 'tcx>(
             let (used_type_params, used_args) = if def_id.is_local() {
                 (Option::None, Option::None)
             } else {
+                let used = assumed::function_to_info(&name);
                 (
-                    Option::Some(function_to_used_type_params(&name)),
-                    Option::Some(function_to_used_args(&name)),
+                    Option::Some(used.used_type_params),
+                    Option::Some(used.used_args),
                 )
             };
 
@@ -1727,6 +1731,8 @@ fn translate_arguments<'ctx, 'ctx1, 'tcx>(
     return t_args;
 }
 
+/// Translate a non-local function which is not: panic, begin_panic, box_free
+/// (those have a special treatment).
 fn translate_non_local_function<'ctx, 'tcx>(
     tcx: TyCtxt,
     def_id: DefId,
@@ -1742,33 +1748,51 @@ fn translate_non_local_function<'ctx, 'tcx>(
     let name = function_def_id_to_name(tcx, def_id);
     trace!("name: {}", name);
 
-    // Execute the function body - here we call custom functions to perform
-    // the proper manipulations: we don't have access to a body (actually, we
-    // do, but its is often written in the unsafe subset).
-    // As we couldn't introduce a local variable to store the return value before,
-    // those functions should simply return the return value, which we then
-    // store in a newly pushed variable below.
-    if name.equals_ref_name(&BOX_NEW_NAME) {
-        Ok(ast::Terminator::Call {
-            func: ast::FunId::Assumed(ast::AssumedFunId::BoxNew),
+    // Retrieve the translated id from the name
+    let aid = assumed::get_fun_id_from_name(&name);
+
+    // Translate the function body.
+    // Note that some functions are actually traits (deref, index, etc.):
+    // we assume that they are called only on a limited set of types
+    // (ex.: box, vec...).
+    // For those trait functions, we need a custom treatment to retrieve
+    // and check the type information.
+    // For instance, derefencing boxes generates MIR of the following form:
+    // ```
+    // _2 = <Box<u32> as Deref>::deref(move _3)
+    // ```
+    // We have to retrieve the type `Box<u32>` and check that it is of the
+    // form `Box<T>` (and we generate `box_deref<u32>`).
+    match aid {
+        ast::AssumedFunId::Replace
+        | ast::AssumedFunId::BoxNew
+        | ast::AssumedFunId::VecNew
+        | ast::AssumedFunId::VecPush
+        | ast::AssumedFunId::VecInsert
+        | ast::AssumedFunId::VecLen => Ok(ast::Terminator::Call {
+            func: ast::FunId::Assumed(aid),
             region_params,
             type_params,
             args,
             dest,
             target,
-        })
-    } else if name.equals_ref_name(&DEREF_DEREF_NAME) {
-        translate_deref_deref(region_params, type_params, args, dest, target)
-    } else if name.equals_ref_name(&DEREF_DEREF_MUT_NAME) {
-        translate_deref_deref_mut(region_params, type_params, args, dest, target)
-    } else {
-        trace!("Unhandled non-local function: {}", name);
-        unreachable!()
+        }),
+        ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => {
+            translate_box_deref(aid, region_params, type_params, args, dest, target)
+        }
+        ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
+            translate_vec_index(aid, region_params, type_params, args, dest, target)
+        }
+        ast::AssumedFunId::BoxFree => {
+            unreachable!();
+        }
     }
 }
 
-/// Translate `std::Deref::deref`
-fn translate_deref_deref(
+/// Translate `std::Deref::deref` or `std::DerefMut::deref_mut` applied
+/// on boxes. We need a custom function because it is a trait.
+fn translate_box_deref(
+    aid: ast::AssumedFunId,
     region_params: Vec<ty::ErasedRegion>,
     type_params: Vec<ty::ETy>,
     args: Vec<e::Operand>,
@@ -1786,16 +1810,15 @@ fn translate_deref_deref(
     let boxed_ty = param_ty.as_box();
     if boxed_ty.is_none() {
         panic!(
-            "Deref trait applied with parameter {:?} while it is only supported on Box<T> values",
+            "Deref/DerefMut trait applied with parameter {:?} while it is only supported on Box<T> values",
             param_ty
         );
     }
     let boxed_ty = boxed_ty.unwrap();
-    let mut type_params = Vec::new();
-    type_params.push(boxed_ty.clone());
+    let type_params = vec![boxed_ty.clone()];
 
     Ok(ast::Terminator::Call {
-        func: ast::FunId::Assumed(ast::AssumedFunId::BoxDeref),
+        func: ast::FunId::Assumed(aid),
         region_params,
         type_params,
         args,
@@ -1804,8 +1827,10 @@ fn translate_deref_deref(
     })
 }
 
-/// Translate `std::DerefMut::deref_mut`
-fn translate_deref_deref_mut(
+/// Translate `core::ops::index::{Index,IndexMut}::{index,index_mut}`
+/// applied on `Vec`. We need a custom function because it is a trait.
+fn translate_vec_index(
+    aid: ast::AssumedFunId,
     region_params: Vec<ty::ErasedRegion>,
     type_params: Vec<ty::ETy>,
     args: Vec<e::Operand>,
@@ -1815,24 +1840,24 @@ fn translate_deref_deref_mut(
     // Check the arguments
     assert!(region_params.len() == 0);
     assert!(type_params.len() == 1);
-    assert!(args.len() == 1);
+    assert!(args.len() == 2);
 
-    // For now we only support deref_mut on boxes
+    // For now we only support index on vectors
     // Retrieve the boxed value
-    let param_ty = type_params.get(0).unwrap(); // should be `Box<...>`
-    let boxed_ty = param_ty.as_box();
-    if boxed_ty.is_none() {
-        panic!(
-            "Deref trait applied with parameter {:?} while it is only supported on Box<T> values",
+    let param_ty = type_params.get(0).unwrap(); // should be `Vec<...>`
+    let param_ty = match param_ty.as_vec() {
+        Option::Some(ty) => (ty),
+        Option::None => {
+            panic!(
+            "Index/IndexMut trait applied with parameter {:?} while it is only supported on Vec<T> values",
             param_ty
         );
-    }
-    let boxed_ty = boxed_ty.unwrap();
-    let mut type_params = Vec::new();
-    type_params.push(boxed_ty.clone());
+        }
+    };
 
+    let type_params = vec![param_ty.clone()];
     Ok(ast::Terminator::Call {
-        func: ast::FunId::Assumed(ast::AssumedFunId::BoxDerefMut),
+        func: ast::FunId::Assumed(aid),
         region_params,
         type_params,
         args,

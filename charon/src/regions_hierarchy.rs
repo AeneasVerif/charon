@@ -326,7 +326,8 @@ fn compute_full_regions_constraints_for_ty(
                         );
                     }
                 }
-                TypeId::Tuple | TypeId::Assumed(AssumedTy::Box | AssumedTy::Vec) => {
+                TypeId::Tuple
+                | TypeId::Assumed(AssumedTy::Box | AssumedTy::Vec | AssumedTy::Option) => {
                     // Explore the types given as parameters
                     for fty in types {
                         compute_full_regions_constraints_for_ty(

@@ -119,6 +119,8 @@ pub enum FunId {
 /// standard library.
 #[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, Serialize)]
 pub enum AssumedFunId {
+    /// `core::mem::replace`
+    Replace,
     /// `alloc::boxed::Box::new`
     BoxNew,
     /// `core::ops::deref::Deref::<alloc::boxed::Box::>::deref`
@@ -128,8 +130,20 @@ pub enum AssumedFunId {
     /// `alloc::alloc::box_free`
     /// This is actually an unsafe function, but the rust compiler sometimes
     /// introduces it when going to MIR. We add it only to track it: in practice,
-    /// it is only implemented with a drop.
+    /// its semantic is given by a "drop".
     BoxFree,
+    /// `alloc::vec::Vec::new`
+    VecNew,
+    /// `alloc::vec::Vec::push`
+    VecPush,
+    /// `alloc::vec::Vec::insert`
+    VecInsert,
+    /// `alloc::vec::Vec::len`
+    VecLen,
+    /// `core::ops::index::Index::index<alloc::vec::Vec<T>, usize>`
+    VecIndex,
+    /// `core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>`
+    VecIndexMut,
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]

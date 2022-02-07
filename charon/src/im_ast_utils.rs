@@ -204,6 +204,68 @@ impl<'ctx> Formatter<&Statement> for AstFormatter<'ctx> {
     }
 }
 
+pub fn fmt_call<'a, 'b, T>(
+    ctx: &'b T,
+    func: FunId,
+    region_params: &'a Vec<ErasedRegion>,
+    type_params: &'a Vec<ETy>,
+    args: &'a Vec<Operand>,
+) -> String
+where
+    T: Formatter<VarId::Id>
+        + Formatter<TypeVarId::Id>
+        + Formatter<&'a ErasedRegion>
+        + Formatter<TypeDefId::Id>
+        + Formatter<FunDefId::Id>
+        + Formatter<(TypeDefId::Id, VariantId::Id)>
+        + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
+{
+    let params = if region_params.len() + type_params.len() == 0 {
+        "".to_owned()
+    } else {
+        let regions_s: Vec<String> = region_params.iter().map(|x| x.to_string()).collect();
+        let mut types_s: Vec<String> = type_params.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
+        let mut s = regions_s;
+        s.append(&mut types_s);
+        format!("<{}>", s.join(", ")).to_owned()
+    };
+    let args: Vec<String> = args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
+    let args = args.join(", ");
+
+    let f = match func {
+        FunId::Local(def_id) => format!("{}{}", ctx.format_object(def_id), params).to_owned(),
+        FunId::Assumed(assumed) => match assumed {
+            AssumedFunId::Replace => format!("core::mem::replace{}", params).to_owned(),
+            AssumedFunId::BoxNew => format!("alloc::boxed::Box{}::new", params).to_owned(),
+            AssumedFunId::BoxDeref => format!(
+                "core::ops::deref::Deref<alloc::boxed::Box{}>::deref",
+                params
+            )
+            .to_owned(),
+            AssumedFunId::BoxDerefMut => format!(
+                "core::ops::deref::DerefMut<alloc::boxed::Box{}>::deref_mut",
+                params
+            )
+            .to_owned(),
+            AssumedFunId::BoxFree => format!("alloc::alloc::box_free{}", params).to_owned(),
+            AssumedFunId::VecNew => format!("alloc::vec::Vec::new{}", params).to_owned(),
+            AssumedFunId::VecPush => format!("alloc::vec::Vec::push{}", params).to_owned(),
+            AssumedFunId::VecInsert => format!("alloc::vec::Vec::insert{}", params).to_owned(),
+            AssumedFunId::VecLen => format!("alloc::vec::Vec::len{}", params).to_owned(),
+            AssumedFunId::VecIndex => {
+                format!("core::ops::index::Index<alloc::vec::Vec{}>::index", params).to_owned()
+            }
+            AssumedFunId::VecIndexMut => format!(
+                "core::ops::index::IndexMut<alloc::vec::Vec{}>::index_mut",
+                params
+            )
+            .to_owned(),
+        },
+    };
+
+    format!("{}({})", f, args,).to_owned()
+}
+
 impl Terminator {
     pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
     where
@@ -255,46 +317,12 @@ impl Terminator {
                 dest,
                 target,
             } => {
-                let params = if region_params.len() + type_params.len() == 0 {
-                    "".to_owned()
-                } else {
-                    let regions_s: Vec<String> =
-                        region_params.iter().map(|x| x.to_string()).collect();
-                    let mut types_s: Vec<String> =
-                        type_params.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
-                    let mut s = regions_s;
-                    s.append(&mut types_s);
-                    format!("<{}>", s.join(", ")).to_owned()
-                };
-                let args: Vec<String> = args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
-                let args = args.join(", ");
-
-                let f = match func {
-                    FunId::Local(def_id) => {
-                        format!("{}{}", ctx.format_object(*def_id), params).to_owned()
-                    }
-                    FunId::Assumed(assumed) => match assumed {
-                        AssumedFunId::BoxNew => {
-                            format!("alloc::boxed::Box{}::new", params).to_owned()
-                        }
-                        AssumedFunId::BoxDeref => {
-                            format!("core::ops::deref::Deref<Box{}>::deref", params).to_owned()
-                        }
-                        AssumedFunId::BoxDerefMut => {
-                            format!("core::ops::deref::DerefMut<Box{}>::deref_mut", params)
-                                .to_owned()
-                        }
-                        AssumedFunId::BoxFree => {
-                            format!("alloc::alloc::box_free<{}>", params).to_owned()
-                        }
-                    },
-                };
+                let call = fmt_call(ctx, *func, region_params, type_params, args);
 
                 format!(
-                    "{} := {}({}) -> bb{}",
+                    "{} := {} -> bb{}",
                     dest.fmt_with_ctx(ctx),
-                    f,
-                    args,
+                    call,
                     target.to_string(),
                 )
                 .to_owned()

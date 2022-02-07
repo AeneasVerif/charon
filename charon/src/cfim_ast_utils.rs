@@ -4,7 +4,7 @@
 use crate::cfim_ast::*;
 use crate::common::*;
 use crate::formatter::Formatter;
-use crate::im_ast::{AssumedFunId, FunDefId, FunId, FunSigFormatter, GAstFormatter, TAB_INCR};
+use crate::im_ast::{fmt_call, FunDefId, FunSigFormatter, GAstFormatter, TAB_INCR};
 use crate::types::*;
 use crate::values::*;
 use serde::ser::SerializeTupleVariant;
@@ -104,42 +104,8 @@ impl Statement {
                     args,
                     dest,
                 } = call;
-                let params = if region_params.len() + type_params.len() == 0 {
-                    "".to_owned()
-                } else {
-                    let regions_s: Vec<String> =
-                        region_params.iter().map(|x| x.to_string()).collect();
-                    let mut types_s: Vec<String> =
-                        type_params.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
-                    let mut s = regions_s;
-                    s.append(&mut types_s);
-                    format!("<{}>", s.join(", ")).to_owned()
-                };
-                let args: Vec<String> = args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
-                let args = args.join(", ");
-
-                let f = match func {
-                    FunId::Local(def_id) => {
-                        format!("{}{}", ctx.format_object(*def_id), params).to_owned()
-                    }
-                    FunId::Assumed(assumed) => match assumed {
-                        AssumedFunId::BoxNew => {
-                            format!("alloc::boxed::Box{}::new", params).to_owned()
-                        }
-                        AssumedFunId::BoxDeref => {
-                            format!("core::ops::deref::Deref<Box{}>::deref", params).to_owned()
-                        }
-                        AssumedFunId::BoxDerefMut => {
-                            format!("core::ops::deref::DerefMut<Box{}>::deref_mut", params)
-                                .to_owned()
-                        }
-                        AssumedFunId::BoxFree => {
-                            format!("alloc::alloc::box_free<{}>", params).to_owned()
-                        }
-                    },
-                };
-
-                format!("{}{} := {}({})", tab, dest.fmt_with_ctx(ctx), f, args,).to_owned()
+                let call = fmt_call(ctx, *func, region_params, type_params, args);
+                format!("{}{} := {}", tab, dest.fmt_with_ctx(ctx), call).to_owned()
             }
             Statement::Panic => format!("{}panic", tab).to_owned(),
             Statement::Return => format!("{}return", tab).to_owned(),

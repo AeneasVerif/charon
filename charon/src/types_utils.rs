@@ -392,8 +392,9 @@ impl TypeId {
             TypeId::Tuple => "".to_string(),
             TypeId::Adt(def_id) => ctx.format_object(*def_id),
             TypeId::Assumed(aty) => match aty {
-                AssumedTy::Box => "std::boxed::Box".to_string(),
-                AssumedTy::Vec => "std::vec::Vec".to_string(),
+                AssumedTy::Box => "alloc::boxed::Box".to_string(),
+                AssumedTy::Vec => "alloc::vec::Vec".to_string(),
+                AssumedTy::Option => "core::option::Option".to_string(),
             },
         }
     }
@@ -515,6 +516,29 @@ where
     pub fn as_box(&self) -> Option<&Ty<R>> {
         match self {
             Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys) => {
+                assert!(regions.is_empty());
+                assert!(tys.len() == 1);
+                Some(tys.get(0).unwrap())
+            }
+            _ => None,
+        }
+    }
+
+    /// Return true if the type is Vec
+    pub fn is_vec(&self) -> bool {
+        match self {
+            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys) => {
+                assert!(regions.is_empty());
+                assert!(tys.len() == 1);
+                true
+            }
+            _ => false,
+        }
+    }
+
+    pub fn as_vec(&self) -> Option<&Ty<R>> {
+        match self {
+            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys) => {
                 assert!(regions.is_empty());
                 assert!(tys.len() == 1);
                 Some(tys.get(0).unwrap())

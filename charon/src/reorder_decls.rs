@@ -190,6 +190,7 @@ fn def_id_is_type(decls: &RegisteredDeclarations, def_id: &DefId) -> bool {
     if decls.types.get(def_id).is_some() {
         return true;
     } else {
+        trace!("{:?}", def_id);
         assert!(decls.funs.get(def_id).is_some());
         return false;
     }

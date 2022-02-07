@@ -582,9 +582,11 @@ fn register_function(
                 let (used_types, used_args) = if fid.is_local() {
                     (Option::None, Option::None)
                 } else {
-                    let used_types = assumed::function_to_used_type_params(&name);
-                    let used_args = assumed::function_to_used_args(&name);
-                    (Option::Some(used_types), Option::Some(used_args))
+                    let used = assumed::function_to_info(&name);
+                    (
+                        Option::Some(used.used_type_params),
+                        Option::Some(used.used_args),
+                    )
                 };
 
                 // Register the types given as parameters.
@@ -655,12 +657,7 @@ fn register_function(
                                 // [register_hir_impl_item doesn't check if the item
                                 // has already been registered, so we need to
                                 // check it before calling it.
-                                let def_id = impl_item.def_id.to_def_id();
-                                if rdecls.decls.contains(&def_id) {
-                                    return Ok(());
-                                } else {
-                                    register_hir_impl_item(rdecls, sess, tcx, impl_item)?;
-                                }
+                                register_hir_impl_item(rdecls, sess, tcx, impl_item)?;
                             }
                             _ => {
                                 unreachable!();
@@ -804,6 +801,12 @@ fn register_hir_impl_item(
     tcx: TyCtxt,
     impl_item: &ImplItem,
 ) -> Result<()> {
+    // Check if the item has already been registered
+    let def_id = impl_item.def_id.to_def_id();
+    if rdecls.decls.contains(&def_id) {
+        return Ok(());
+    }
+
     // TODO: make proper error message
     assert!(impl_item.defaultness == Defaultness::Final);
 

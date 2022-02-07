@@ -19,10 +19,17 @@ fn statement_diverges(divergent: &HashMap<ast::FunDefId::Id, bool>, st: &cfim::S
         cfim::Statement::Call(call) => match &call.func {
             ast::FunId::Local(id) => *divergent.get(id).unwrap(),
             ast::FunId::Assumed(id) => match id {
-                ast::AssumedFunId::BoxNew
+                ast::AssumedFunId::Replace
+                | ast::AssumedFunId::BoxNew
                 | ast::AssumedFunId::BoxDeref
                 | ast::AssumedFunId::BoxDerefMut
-                | ast::AssumedFunId::BoxFree => false,
+                | ast::AssumedFunId::BoxFree
+                | ast::AssumedFunId::VecNew
+                | ast::AssumedFunId::VecPush
+                | ast::AssumedFunId::VecInsert
+                | ast::AssumedFunId::VecLen
+                | ast::AssumedFunId::VecIndex
+                | ast::AssumedFunId::VecIndexMut => false,
             },
         },
         cfim::Statement::Sequence(st1, st2) => {
