@@ -206,7 +206,7 @@ fn register_mir_substs<'tcx>(
     deps: &mut TypeDependencies,
     substs: &rustc_middle::ty::subst::SubstsRef<'tcx>,
 ) -> Result<()> {
-    trace!();
+    trace!("substs: {:?}", substs);
     for param in substs.iter() {
         match param.unpack() {
             rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
@@ -570,20 +570,34 @@ fn register_function(
                 let hir_map = tcx.hir();
                 let f_node = hir_map.get_if_local(fid);
                 match f_node {
-                    Some(f_node) => match f_node {
-                        rustc_hir::Node::Item(f_item) => {
-                            assert!(is_fn_decl(f_item));
-                            register_hir_item(rdecls, sess, tcx, f_item)?;
+                    Some(f_node) => {
+                        trace!("Function is local");
+                        match f_node {
+                            rustc_hir::Node::Item(f_item) => {
+                                trace!("Item");
+                                assert!(is_fn_decl(f_item));
+                                register_hir_item(rdecls, sess, tcx, f_item)?;
+                            }
+                            rustc_hir::Node::ImplItem(impl_item) => {
+                                trace!("Impl item");
+                                // [register_hir_impl_item doesn't check if the item
+                                // has already been registered, so we need to
+                                // check it before calling it.
+                                let def_id = impl_item.def_id.to_def_id();
+                                if rdecls.decls.contains(&def_id) {
+                                    return Ok(());
+                                } else {
+                                    register_hir_impl_item(rdecls, sess, tcx, impl_item)?;
+                                }
+                            }
+                            _ => {
+                                unreachable!();
+                            }
                         }
-                        rustc_hir::Node::ImplItem(impl_item) => {
-                            register_hir_impl_item(rdecls, sess, tcx, impl_item)?;
-                        }
-                        _ => {
-                            unreachable!();
-                        }
-                    },
+                    }
                     None => {
                         // Nothing to do
+                        trace!("Function is not local");
                     }
                 }
             }
