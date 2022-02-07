@@ -23,14 +23,18 @@ use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_hir::definitions::DefPathData;
 use rustc_middle::mir;
+use rustc_middle::mir::interpret::{Allocation, ConstValue};
 use rustc_middle::mir::{
     BasicBlock, Body, Operand, Place, PlaceElem, SourceScope, Statement, StatementKind, Terminator,
     TerminatorKind, START_BLOCK,
 };
 use rustc_middle::ty as mir_ty;
-use rustc_middle::ty::{BoundRegion, FreeRegion, Region, RegionKind, Ty, TyCtxt, TyKind};
+use rustc_middle::ty::{
+    BoundRegion, Const, ConstKind, FreeRegion, Region, RegionKind, Ty, TyCtxt, TyKind,
+};
 use rustc_span::BytePos;
 use rustc_span::Span;
+use rustc_target::abi::Size;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::iter::FromIterator;
@@ -56,6 +60,8 @@ pub struct FunTransContext<'ctx> {
 /// using `std::collections::BTreeMap` instead.
 #[derive(Clone)]
 struct BodyTransContext<'ctx, 'ctx1> {
+    /// This is used in very specific situations.
+    def_id: DefId,
     /// The function translation context, containing the function definitions.
     /// Also contains the type translation context.
     ft_ctx: &'ctx FunTransContext<'ctx1>,
@@ -106,8 +112,9 @@ impl<'ctx> FunTransContext<'ctx> {
 
 impl<'ctx, 'ctx1> BodyTransContext<'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
-    fn new(ft_ctx: &'ctx FunTransContext<'ctx1>) -> BodyTransContext<'ctx, 'ctx1> {
+    fn new(def_id: DefId, ft_ctx: &'ctx FunTransContext<'ctx1>) -> BodyTransContext<'ctx, 'ctx1> {
         BodyTransContext {
+            def_id,
             ft_ctx,
             regions_counter: ty::RegionVarId::Generator::new(),
             regions: ty::RegionVarId::Vector::new(),
@@ -263,7 +270,7 @@ impl<'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>> for BodyTransContext<'ctx
     }
 }
 
-fn translate_ety<'ctx, 'ctx1>(
+fn translate_ety<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     ty: &mir_ty::Ty,
@@ -276,10 +283,10 @@ fn translate_ety<'ctx, 'ctx1>(
     translate_types::translate_ety(tcx, &ty_ctx, &bt_ctx.rtype_vars_to_etypes, &ty)
 }
 
-fn translate_sig_ty<'ctx, 'ctx1>(
-    tcx: TyCtxt,
+fn translate_sig_ty<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
-    ty: &mir_ty::Ty,
+    ty: &mir_ty::Ty<'tcx>,
 ) -> Result<ty::RTy> {
     let ty_ctx = TypeTransContext {
         types: &bt_ctx.ft_ctx.type_defs,
@@ -296,10 +303,10 @@ fn translate_sig_ty<'ctx, 'ctx1>(
 }
 
 /// Translate a function's local variables by adding them in the environment.
-fn translate_body_locals<'ctx, 'ctx1>(
-    tcx: TyCtxt,
+fn translate_body_locals<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
-    body: &Body,
+    body: &Body<'tcx>,
 ) -> Result<()> {
     // First, retrieve the debug info - we want to retrieve the names
     // of the variables (which otherwise are just referenced with indices).
@@ -337,10 +344,10 @@ fn translate_body_locals<'ctx, 'ctx1>(
 ///
 /// The local variables should already have been translated and inserted in
 /// the context.
-fn translate_function_body<'ctx, 'ctx1>(
-    tcx: TyCtxt,
+fn translate_function_body<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
-    body: &Body,
+    body: &Body<'tcx>,
 ) -> Result<()> {
     trace!();
 
@@ -350,10 +357,10 @@ fn translate_function_body<'ctx, 'ctx1>(
     Ok(())
 }
 
-fn translate_basic_block<'ctx, 'ctx1>(
-    tcx: TyCtxt,
+fn translate_basic_block<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
-    body: &Body,
+    body: &Body<'tcx>,
     block_id: BasicBlock,
 ) -> Result<ast::BlockId::Id> {
     // Check if the block has already been translated
@@ -395,9 +402,9 @@ fn translate_basic_block<'ctx, 'ctx1>(
 }
 
 /// Translate a place
-fn translate_place<'ctx, 'ctx1, 'tcx>(
+fn translate_place<'tcx, 'ctx, 'ctx1>(
     bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
-    place: &'tcx Place<'tcx>,
+    place: &Place<'tcx>,
 ) -> e::Place {
     let var_id = bt_ctx.get_local(&place.local).unwrap();
     let var = bt_ctx.get_var_from_id(var_id).unwrap();
@@ -416,7 +423,7 @@ fn translate_place<'ctx, 'ctx1, 'tcx>(
 fn translate_projection<'tcx>(
     type_defs: &ty::TypeDefs,
     var_ty: ty::ETy,
-    rprojection: &'tcx rustc_middle::ty::List<PlaceElem<'tcx>>,
+    rprojection: &rustc_middle::ty::List<PlaceElem<'tcx>>,
 ) -> e::Projection {
     trace!("{:?}", rprojection);
 
@@ -531,14 +538,14 @@ fn translate_projection<'tcx>(
 /// primitive type cases: the other cases should have been filtered and
 /// handled elsewhere.
 fn translate_operand_constant_value_constant_value<'tcx>(
-    ty: &'tcx Ty,
-    value: &'tcx mir::interpret::ConstValue<'tcx>,
+    ty: &Ty<'tcx>,
+    value: &mir::interpret::ConstValue<'tcx>,
 ) -> (ty::ETy, v::ConstantValue) {
     trace!();
     match value {
         mir::interpret::ConstValue::Scalar(scalar) => {
             // The documentation explicitly says not to match on a
-            // salar. We match on the type and convert the value
+            // scalar. We match on the type and convert the value
             // following this, by calling the appropriate `to_*`
             // method
             match ty.kind() {
@@ -656,13 +663,114 @@ fn translate_operand_constant_value_constant_value<'tcx>(
     }
 }
 
-/// Translate a constant operand
-fn translate_operand_constant_value<'tcx>(
-    ft_ctx: &FunTransContext,
-    ty: &'tcx Ty,
-    value: &'tcx mir::interpret::ConstValue<'tcx>,
+/// Translate a constant value in the case it is not a scalar constant
+/// ([ConstValue::Slice] and [ConstValue::ByRef]).
+fn translate_operand_constant_value_non_scalar<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    ty: &Ty<'tcx>,
+    value: &mir::interpret::ConstValue<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
-    trace!();
+    match value {
+        mir::interpret::ConstValue::Scalar(_) => {
+            // Should have been treated elsewhere
+            unreachable!();
+        }
+        mir::interpret::ConstValue::ByRef {
+            alloc: _,
+            offset: _,
+        } => {
+            // If we are here, the constant is likely a tuple or an enumration
+            // variant.
+            // We use [destructure_const] to destructure the constant
+            let param_env = tcx.param_env(bt_ctx.def_id);
+            // I have to clone some values: it is a bit annoying, but I manage
+            // to get the lifetimes working otherwise...
+            let cvalue = rustc_middle::ty::Const::from_value(tcx, value.clone(), ty.clone());
+            let param_env_and_const = rustc_middle::ty::ParamEnvAnd {
+                param_env,
+                value: cvalue,
+            };
+            let dc = tcx.destructure_const(param_env_and_const);
+            trace!("{:?}", dc);
+
+            // Match on the type to destructure
+            match ty.kind() {
+                TyKind::Tuple(substs) => {
+                    let (region_params, type_params) =
+                        translate_subst_in_body(tcx, bt_ctx, None, substs).unwrap();
+                    assert!(region_params.is_empty());
+                    trace!("{:?}", type_params);
+
+                    // Check that there are as many fields as there are constant
+                    // values in the destructured constant
+                    assert!(type_params.len() == dc.fields.len());
+
+                    let mut field_tys: Vector<ty::ETy> = Vector::new();
+                    let mut field_values: Vector<e::OperandConstantValue> = Vector::new();
+
+                    // Iterate over the fields
+                    for (field, field_trans_ty) in dc.fields.iter().zip(type_params.iter()) {
+                        let (field_ty, field_v) = match &field.val {
+                            ConstKind::Value(v) => (&field.ty, v),
+                            _ => {
+                                unreachable!()
+                            }
+                        };
+                        let (field_trans_ty1, field_cv) =
+                            translate_operand_constant_value(tcx, bt_ctx, field_ty, field_v);
+                        assert!(field_trans_ty1 == *field_trans_ty);
+
+                        field_tys.push_back(field_trans_ty1);
+                        field_values.push_back(field_cv);
+                    }
+
+                    // Return
+                    let ty = ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), field_tys);
+                    let value = e::OperandConstantValue::Tuple(field_values);
+                    (ty, value)
+                }
+                _ => {
+                    // The remaining types should not be used for constants, or
+                    // should have been filtered by the caller.
+                    error!("unexpected type: {:?}", ty.kind());
+                    unreachable!();
+                }
+            }
+        }
+        mir::interpret::ConstValue::Slice {
+            data: _,
+            start: _,
+            end: _,
+        } => {
+            unimplemented!();
+        }
+    }
+
+    //    let dc = rustc_const_eval::destructure_const(tcx, , value);
+    /*    match ty.kind() {
+        TyKind::Tuple(substs) => {
+            let (region_params, type_params) =
+                translate_subst_in_body(tcx, bt_ctx, None, substs).unwrap();
+            assert!(region_params.is_empty());
+            trace!("{:?}", type_params);
+            unimplemented!()
+        }
+        _ => {
+            error!("unexpected type: {:?}", ty.kind());
+            unimplemented!();
+        }
+    }*/
+}
+
+/// Translate a constant operand
+fn translate_operand_constant_value<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    ty: &Ty<'tcx>,
+    value: &mir::interpret::ConstValue<'tcx>,
+) -> (ty::ETy, e::OperandConstantValue) {
+    trace!("{:?}", value);
     match value {
         mir::interpret::ConstValue::Scalar(_scalar) => {
             // The documentation explicitly says not to match on a
@@ -683,6 +791,7 @@ fn translate_operand_constant_value<'tcx>(
                 TyKind::Adt(adt_def, substs) => {
                     // It seems we can have ADTs when there is only one
                     // variant, and this variant doesn't take parameters
+                    let ft_ctx = &bt_ctx.ft_ctx;
 
                     // Retrieve the definition
                     let id = ft_ctx.ordered.type_rid_to_id.get(&adt_def.did).unwrap();
@@ -709,7 +818,7 @@ fn translate_operand_constant_value<'tcx>(
                     // There can be tuple([]) for unit
                     assert!(substs.len() == 0);
                     let ty = ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), Vector::new());
-                    (ty, e::OperandConstantValue::Unit)
+                    (ty, e::OperandConstantValue::Tuple(Vector::new()))
                 }
                 TyKind::Never => {
                     // Not sure what to do here
@@ -726,31 +835,31 @@ fn translate_operand_constant_value<'tcx>(
             data: _,
             start: _,
             end: _,
-        } => {
-            unimplemented!();
         }
-        mir::interpret::ConstValue::ByRef {
+        | mir::interpret::ConstValue::ByRef {
             alloc: _,
             offset: _,
         } => {
-            unimplemented!();
+            // Note that we should get here only for types like string, tuple, etc.
+            translate_operand_constant_value_non_scalar(tcx, bt_ctx, ty, value)
         }
     }
 }
 
 /// Translate a constant
-fn translate_operand_constant<'tcx>(
-    ft_ctx: &FunTransContext,
-    constant: &'tcx mir::Constant<'tcx>,
+fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    constant: &mir::Constant<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
-    trace!();
+    trace!("{:?}", constant);
     use std::ops::Deref;
     let constant = &constant.deref();
     match constant.literal {
         // This is the "normal" constant case
         mir::ConstantKind::Ty(c) => match c.val {
             rustc_middle::ty::ConstKind::Value(cvalue) => {
-                translate_operand_constant_value(ft_ctx, &c.ty, &cvalue)
+                translate_operand_constant_value(tcx, bt_ctx, &c.ty, &cvalue)
             }
             rustc_middle::ty::ConstKind::Param(_)
             | rustc_middle::ty::ConstKind::Infer(_)
@@ -769,16 +878,17 @@ fn translate_operand_constant<'tcx>(
 }
 
 /// Translate an operand
-fn translate_operand<'ctx, 'ctx1, 'tcx>(
-    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
-    operand: &'tcx mir::Operand<'tcx>,
+fn translate_operand<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    operand: &mir::Operand<'tcx>,
 ) -> e::Operand {
     trace!();
     match operand {
         Operand::Copy(place) => e::Operand::Copy(translate_place(bt_ctx, place)),
         Operand::Move(place) => e::Operand::Move(translate_place(bt_ctx, place)),
         Operand::Constant(constant) => {
-            let (ty, constant) = translate_operand_constant(&bt_ctx.ft_ctx, constant);
+            let (ty, constant) = translate_operand_constant(tcx, bt_ctx, constant);
             e::Operand::Constant(ty, constant)
         }
     }
@@ -794,9 +904,9 @@ fn translate_operand<'ctx, 'ctx1, 'tcx>(
 /// ad-hoc behaviour (which comes from the fact that we abstract boxes, while
 /// the rust compiler is too precise when manipulating those boxes, which
 /// reveals implementation details).
-fn translate_move_box_first_projector_operand<'ctx, 'ctx1, 'tcx>(
-    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
-    operand: &'tcx mir::Operand<'tcx>,
+fn translate_move_box_first_projector_operand<'tcx, 'ctx, 'ctx1>(
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    operand: &mir::Operand<'tcx>,
 ) -> e::Operand {
     trace!();
     match operand {
@@ -894,14 +1004,14 @@ fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
 }
 
 /// Translate an rvalue
-fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
-    tcx: TyCtxt,
-    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
-    rvalue: &'tcx mir::Rvalue<'tcx>,
+fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    rvalue: &mir::Rvalue<'tcx>,
 ) -> e::Rvalue {
     use std::ops::Deref;
     match rvalue {
-        mir::Rvalue::Use(operand) => e::Rvalue::Use(translate_operand(bt_ctx, operand)),
+        mir::Rvalue::Use(operand) => e::Rvalue::Use(translate_operand(tcx, bt_ctx, operand)),
         mir::Rvalue::Repeat(_operand, _const) => {
             // [x; 32]
             unimplemented!();
@@ -928,8 +1038,8 @@ fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
             let (left, right) = operands.deref();
             e::Rvalue::BinaryOp(
                 translate_binaryop_kind(*binop),
-                translate_operand(bt_ctx, left),
-                translate_operand(bt_ctx, right),
+                translate_operand(tcx, bt_ctx, left),
+                translate_operand(tcx, bt_ctx, right),
             )
         }
         mir::Rvalue::NullaryOp(nullop, _ty) => {
@@ -940,7 +1050,7 @@ fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
         }
         mir::Rvalue::UnaryOp(unop, operand) => e::Rvalue::UnaryOp(
             translate_unaryop_kind(*unop),
-            translate_operand(bt_ctx, operand),
+            translate_operand(tcx, bt_ctx, operand),
         ),
         mir::Rvalue::Discriminant(place) => e::Rvalue::Discriminant(translate_place(bt_ctx, place)),
         mir::Rvalue::Aggregate(aggregate_kind, operands) => {
@@ -963,7 +1073,7 @@ fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
             // First translate the operands
             let operands_t: Vec<e::Operand> = operands
                 .iter()
-                .map(|op| translate_operand(bt_ctx, op))
+                .map(|op| translate_operand(tcx, bt_ctx, op))
                 .collect();
 
             match aggregate_kind.deref() {
@@ -1038,10 +1148,10 @@ fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
 /// Translate a statement
 ///
 /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
-fn translate_statement<'ctx, 'ctx1>(
-    tcx: TyCtxt,
+fn translate_statement<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
-    statement: &Statement,
+    statement: &Statement<'tcx>,
 ) -> Result<Option<ast::Statement>> {
     trace!("About to translate statement (MIR) {:?}", statement);
 
@@ -1105,11 +1215,11 @@ fn translate_statement<'ctx, 'ctx1>(
 }
 
 /// Translate a terminator
-fn translate_terminator<'ctx, 'ctx1>(
-    tcx: TyCtxt,
+fn translate_terminator<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
-    body: &Body,
-    terminator: &Terminator,
+    body: &Body<'tcx>,
+    terminator: &Terminator<'tcx>,
 ) -> Result<ast::Terminator> {
     trace!("About to translate terminator (MIR) {:?}", terminator);
 
@@ -1127,7 +1237,7 @@ fn translate_terminator<'ctx, 'ctx1>(
             let switch_ty = translate_ety(tcx, bt_ctx, switch_ty)?;
 
             // Translate the operand which gives the discriminant
-            let discr = translate_operand(bt_ctx, discr);
+            let discr = translate_operand(tcx, bt_ctx, discr);
 
             // Translate the switch targets
             let targets = translate_switch_targets(tcx, bt_ctx, body, &switch_ty, targets)?;
@@ -1180,7 +1290,7 @@ fn translate_terminator<'ctx, 'ctx1>(
             target,
             cleanup: _, // If we panic, the state gets stuck: we don't need to model cleanup
         } => {
-            let cond = translate_operand(bt_ctx, cond);
+            let cond = translate_operand(tcx, bt_ctx, cond);
             let target = translate_basic_block(tcx, bt_ctx, body, *target)?;
             Ok(ast::Terminator::Assert {
                 cond,
@@ -1239,10 +1349,10 @@ fn translate_terminator<'ctx, 'ctx1>(
 }
 
 /// Translate switch targets
-fn translate_switch_targets<'ctx, 'ctx1>(
-    tcx: TyCtxt,
+fn translate_switch_targets<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
-    body: &Body,
+    body: &Body<'tcx>,
     switch_ty: &ty::ETy,
     targets: &mir::SwitchTargets,
 ) -> Result<ast::SwitchTargets> {
@@ -1511,10 +1621,10 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Name {
 /// Note that `body` is the body of the function being translated, not of the
 /// function referenced in the function call: we need it in order to translate
 /// the blocks we go to after the function call returns.
-fn translate_function_call<'ctx, 'ctx1, 'tcx>(
-    tcx: TyCtxt,
+fn translate_function_call<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
-    body: &mir::Body,
+    body: &mir::Body<'tcx>,
     func: &Operand<'tcx>,
     args: &Vec<Operand<'tcx>>,
     destination: &Option<(Place<'tcx>, BasicBlock)>,
@@ -1606,7 +1716,7 @@ fn translate_function_call<'ctx, 'ctx1, 'tcx>(
                 translate_subst_in_body(tcx, bt_ctx, used_type_params, substs)?;
 
             // Translate the arguments
-            let args = translate_arguments(bt_ctx, used_args, args);
+            let args = translate_arguments(tcx, bt_ctx, used_args, args);
 
             // Retrieve the function identifier
             // - this is a local function, in which case we need to retrieve the
@@ -1654,11 +1764,11 @@ fn translate_function_call<'ctx, 'ctx1, 'tcx>(
 /// Translate a parameter substitution used inside a function body.
 ///
 /// Note that the regions parameters are expected to have been erased.
-fn translate_subst_in_body<'ctx, 'ctx1, 'tcx>(
-    tcx: TyCtxt,
+fn translate_subst_in_body<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     used_params: Option<Vec<bool>>,
-    substs: &'tcx rustc_middle::ty::subst::InternalSubsts<'tcx>,
+    substs: &rustc_middle::ty::subst::InternalSubsts<'tcx>,
 ) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>)> {
     let substs: Vec<rustc_middle::ty::subst::GenericArg<'tcx>> = match used_params {
         Option::None => substs.iter().collect(),
@@ -1695,7 +1805,8 @@ fn translate_subst_in_body<'ctx, 'ctx1, 'tcx>(
 
 /// Evaluate function arguments in a context, and return the list of computed
 /// values.
-fn translate_arguments<'ctx, 'ctx1, 'tcx>(
+fn translate_arguments<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     used_args: Option<Vec<bool>>,
     args: &Vec<Operand<'tcx>>,
@@ -1724,7 +1835,7 @@ fn translate_arguments<'ctx, 'ctx1, 'tcx>(
         }
 
         // Translate
-        let op = translate_operand(bt_ctx, arg);
+        let op = translate_operand(tcx, bt_ctx, arg);
         t_args.push(op);
     }
 
@@ -1733,8 +1844,8 @@ fn translate_arguments<'ctx, 'ctx1, 'tcx>(
 
 /// Translate a non-local function which is not: panic, begin_panic, box_free
 /// (those have a special treatment).
-fn translate_non_local_function<'ctx, 'tcx>(
-    tcx: TyCtxt,
+fn translate_non_local_function<'tcx>(
+    tcx: TyCtxt<'tcx>,
     def_id: DefId,
     region_params: Vec<ty::ErasedRegion>,
     type_params: Vec<ty::ETy>,
@@ -1869,8 +1980,8 @@ fn translate_vec_index(
 /// Translate a function's signature, and initialize a body translation context
 /// at the same time - the function signature gives us the list of region and
 /// type parameters, that we put in the translation context.
-fn translate_function_signature<'ctx, 'ctx1>(
-    tcx: TyCtxt,
+fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
     types_constraints: &TypesConstraintsMap,
     ft_ctx: &'ctx FunTransContext<'ctx1>,
     def_id: DefId,
@@ -1905,7 +2016,7 @@ fn translate_function_signature<'ctx, 'ctx1>(
     //   functions.
 
     // We need a body translation context to keep track of all the variables
-    let mut bt_ctx = BodyTransContext::new(ft_ctx);
+    let mut bt_ctx = BodyTransContext::new(def_id, ft_ctx);
 
     // Start by translating the "normal" substitution (which lists the function's
     // parameters). As written above, this substitution contains all the type

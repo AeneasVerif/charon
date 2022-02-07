@@ -2,9 +2,11 @@
 
 #![allow(dead_code)]
 
+use crate::types::*;
 pub use crate::values_utils::DummyFormatter; // Don't understand why we need to to this
 pub use crate::values_utils::*;
 use core::hash::Hash;
+use im::Vector;
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantName};
 use serde::Serialize;
 

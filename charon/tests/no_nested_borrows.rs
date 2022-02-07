@@ -317,3 +317,27 @@ pub fn id_mut_pair3<'a, 'b, T1, T2>(x: &'a mut T1, y: &'b mut T2) -> (&'a mut T1
 pub fn id_mut_pair4<'a, 'b, T1, T2>(p: (&'a mut T1, &'b mut T2)) -> (&'a mut T1, &'b mut T2) {
     p
 }
+
+struct StructWithPair<T1, T2> {
+    p: (T1, T2),
+}
+
+/// Testing constants (some constants are hard to retrieve from MIR, because
+/// they are compiled to very low values).
+fn new_pair1() -> StructWithPair<u32, u32> {
+    StructWithPair { p: (1, 2) }
+}
+
+fn new_pair2() -> StructWithPair<i16, i16> {
+    StructWithPair { p: (1, 2) }
+}
+
+fn new_pair3() -> StructWithPair<u64, i64> {
+    StructWithPair { p: (1, 2) }
+}
+
+fn test_constants() {
+    assert!(new_pair1().p.0 == 1);
+    assert!(new_pair2().p.0 == 1);
+    assert!(new_pair3().p.0 == 1);
+}

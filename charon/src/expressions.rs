@@ -6,7 +6,7 @@ use crate::types::*;
 use crate::values;
 use crate::values::*;
 use im::Vector;
-use macros::{EnumAsGetters, EnumIsA, VariantName};
+use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::ser::SerializeStruct;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
@@ -175,19 +175,25 @@ pub enum Operand {
 /// For instance, an enumeration with one variant and no fields is a constant.
 /// A structure with no field is a constant.
 ///
+/// Also, sometimes, some tuples/enumerations/structures are considered
+/// as constants (if their field values are constants, of course).
+///
 /// For our translation, we use the following enumeration to encode those
 /// special cases in assignments. They are converted to "normal" values
 /// when evaluating the assignment (which is why we don't put them in the
 /// [`ConstantValue`](crate::ConstantValue) enumeration.
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, Serialize)]
+///
+/// TODO: merge Adt and Tuple
+#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
     ConstantValue(ConstantValue),
     /// Enumeration with one variant with no fields, or structure with
     /// no fields.
-    #[serde(rename = "ConstantAdt")]
     Adt(TypeDefId::Id),
-    /// In MIR, unit is actually encoded as a 0-tuple
-    Unit,
+    /// There can be constant values made of tuples.
+    /// Unit is also encoded as a 0-tuple.
+    /// TODO: merge with above
+    Tuple(Vector<OperandConstantValue>),
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -286,7 +292,10 @@ impl OperandConstantValue {
             OperandConstantValue::Adt(def_id) => {
                 format!("ConstAdt {}", ctx.format_object(*def_id)).to_owned()
             }
-            OperandConstantValue::Unit => "()".to_owned(),
+            OperandConstantValue::Tuple(values) => {
+                let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
+                format!("({})", values.join(", ")).to_owned()
+            }
         }
     }
 }
@@ -417,6 +426,49 @@ impl Serialize for AggregateKind {
 
                 vs.end()
             }
+        }
+    }
+}
+
+impl Serialize for OperandConstantValue {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let enum_name = "OperandConstantValue";
+        // We change the variant names for serialization
+        let variant_name = match self {
+            OperandConstantValue::ConstantValue(_) => "ConstantValue",
+            OperandConstantValue::Adt(_) => "ConstantAdt",
+            OperandConstantValue::Tuple(_) => "ConstantTuple",
+        };
+        let (variant_index, variant_arity) = self.variant_index_arity();
+        // It seems the "standard" way of doing is the following (this is
+        // consistent with what the automatically generated serializer does):
+        // - if the arity is > 0, use `serialize_tuple_variant`
+        // - otherwise simply serialize a string with the variant name
+        if variant_arity > 0 {
+            let mut vs = serializer.serialize_tuple_variant(
+                enum_name,
+                variant_index,
+                variant_name,
+                variant_arity,
+            )?;
+            match self {
+                OperandConstantValue::ConstantValue(cv) => {
+                    vs.serialize_field(cv)?;
+                }
+                OperandConstantValue::Adt(id) => {
+                    vs.serialize_field(id)?;
+                }
+                OperandConstantValue::Tuple(values) => {
+                    let values = VectorSerializer::new(values);
+                    vs.serialize_field(&values)?;
+                }
+            }
+            vs.end()
+        } else {
+            variant_name.serialize(serializer)
         }
     }
 }
