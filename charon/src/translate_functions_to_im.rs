@@ -423,7 +423,7 @@ fn translate_projection<'tcx>(
     var_ty: ty::ETy,
     rprojection: &rustc_middle::ty::List<PlaceElem<'tcx>>,
 ) -> e::Projection {
-    trace!("{:?}", rprojection);
+    trace!("- projection: {:?}\n- var_ty: {:?}", rprojection, var_ty);
 
     // We need to track the type of the value we look at, while exploring the path.
     // This is important to disambiguate, for instance, dereferencement operations.
@@ -482,6 +482,15 @@ fn translate_projection<'tcx>(
                         assert!(downcast_id.is_none());
                         path_type = tys.get(field.as_usize()).unwrap().clone();
                         e::FieldProjKind::Tuple(tys.len())
+                    }
+                    ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Option), regions, tys) => {
+                        assert!(regions.len() == 0);
+                        assert!(tys.len() == 1);
+                        assert!(downcast_id.is_some());
+                        assert!(field_id == ty::FieldId::ZERO);
+
+                        path_type = tys.get(0).unwrap().clone();
+                        e::FieldProjKind::Option(downcast_id.unwrap())
                     }
                     _ => {
                         trace!("{:?}", path_type);

@@ -55,6 +55,7 @@ pub mod {} {{
     }}
 
     pub static ZERO: Id = Id {{ index: 0 }};
+    pub static ONE: Id = Id {{ index: 1 }};
 
     impl crate::id_vector::ToUsize for Id {{
         fn to_usize(&self) -> usize {{

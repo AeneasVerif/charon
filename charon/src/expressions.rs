@@ -53,6 +53,8 @@ pub enum ProjectionElem {
 pub enum FieldProjKind {
     #[serde(rename = "ProjAdt")]
     Adt(TypeDefId::Id, Option<VariantId::Id>),
+    /// The option type is assumed (it comes from the standard library)
+    Option(VariantId::Id),
     /// If we project from a tuple, the projection kind gives the arity of the
     #[serde(rename = "ProjTuple")]
     Tuple(usize),
@@ -260,6 +262,9 @@ impl Place {
                         out = format!("({}{}).{}", out, downcast, field_name);
                     }
                     FieldProjKind::Tuple(_) => {
+                        out = format!("({}).{}", out, field_id);
+                    }
+                    FieldProjKind::Option(_) => {
                         out = format!("({}).{}", out, field_id);
                     }
                 },
