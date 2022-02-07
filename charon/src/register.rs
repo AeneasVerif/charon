@@ -1,4 +1,8 @@
+use crate::assumed;
 use crate::common::*;
+use crate::translate_functions_to_im;
+use crate::translate_types;
+use crate::vars::Name;
 use hashlink::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
 use rustc_hir::{
@@ -204,10 +208,31 @@ fn register_mir_substs<'tcx>(
     tcx: TyCtxt,
     span: &Span,
     deps: &mut TypeDependencies,
+    used_params: Option<Vec<bool>>,
     substs: &rustc_middle::ty::subst::SubstsRef<'tcx>,
 ) -> Result<()> {
     trace!("substs: {:?}", substs);
-    for param in substs.iter() {
+
+    // Filter the arguments, if necessary
+    let params: Vec<rustc_middle::ty::subst::GenericArg<'tcx>> = match used_params {
+        Option::None => substs.iter().collect(),
+        Option::Some(used_params) => {
+            // Note that the substs doesn't necessarily define a substitution
+            // for all the parameters, because some of them have default
+            // values: for this reason we can't check the length and used the
+            // fact that `zip` below stops once one of the two iterators is
+            // consumed. TODO:
+            assert!(substs.len() == used_params.len());
+            substs
+                .iter()
+                .zip(used_params.into_iter())
+                .filter_map(|(param, used)| if used { Some(param) } else { None })
+                .collect()
+        }
+    };
+
+    // Register the arguments
+    for param in params.into_iter() {
         match param.unpack() {
             rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
                 register_mir_ty(rdecls, sess, tcx, span, deps, &param_ty)?;
@@ -253,39 +278,40 @@ fn register_mir_ty(
             // Add this ADT to the list of dependencies
             deps.insert(adt.did);
 
-            // Explore the type parameters instantiation
-            if adt.is_box() {
-                // If the ADT is a box, there are two type parameters: the
-                // type of the value stored in the box, and the type of the
-                // allocator. We ignore this one.
-                assert!(substs.iter().len() == 2);
-                match substs.iter().next().unwrap().unpack() {
-                    rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
-                        register_mir_ty(rdecls, sess, tcx, span, deps, &param_ty)?;
-                    }
-                    _ => {
-                        unreachable!();
-                    }
-                }
-            } else {
-                register_mir_substs(rdecls, sess, tcx, span, deps, substs)?;
-            }
-
-            // Register the ADT itself, if it is local (i.e.: defined in the
-            // current crate).
+            // From now onwards, we do something different depending on
+            // whether the type is a local type (i.e., defined in the current
+            // crate) or an assumed (external) type like box or vec
             if !adt.did.is_local() {
-                return Ok(());
-            }
-            // First check if we have already registered it
-            if rdecls.decls.contains(&adt.did) {
-                trace!("Adt already registered");
-                return Ok(());
-            }
-            trace!("Adt not registered");
-            rdecls.decls.insert(adt.did);
+                // Explore the type parameters instantiation
+                // Note that we might ignore some of the types because some types
+                // like box or vec take an allocator as parameter.
 
-            // Register
-            return register_mir_adt(rdecls, sess, tcx, adt);
+                // First, we need to identify the type by retrieving its name
+                let name = Name::from(translate_types::type_def_id_to_name(tcx, adt.did).unwrap());
+
+                // Second, filter and register the types given as parameters
+                let used_params = assumed::type_to_used_params(&name);
+                // Explore the type parameters instantiation
+                register_mir_substs(rdecls, sess, tcx, span, deps, Some(used_params), substs)?;
+
+                // We don't need to explore the ADT itself: it is assumed
+                return Ok(());
+            } else {
+                // Explore the type parameters instantiation
+                register_mir_substs(rdecls, sess, tcx, span, deps, Option::None, substs)?;
+
+                // Explore the ADT, if we haven't already registered it
+                // Check if registered
+                if rdecls.decls.contains(&adt.did) {
+                    trace!("Adt already registered");
+                    return Ok(());
+                }
+                trace!("Adt not registered");
+                rdecls.decls.insert(adt.did);
+
+                // Register and explore
+                return register_mir_adt(rdecls, sess, tcx, adt);
+            }
         }
         TyKind::Array(ty, const_param) => {
             trace!("Array");
@@ -550,15 +576,61 @@ fn register_function(
                 // Add this function to the list of dependencies
                 fn_decl.deps_funs.insert(fid);
 
-                // Register the types given as parameters
-                register_mir_substs(rdecls, sess, tcx, &fn_span, &mut fn_decl.deps_tys, &substs)?;
+                let name = translate_functions_to_im::function_def_id_to_name(tcx, fid);
 
-                // Register the argument types
-                for a in args.iter() {
-                    trace!("terminator: Call: arg: {:?}", a);
+                // We may need to filter the types and arguments
+                let (used_types, used_args) = if fid.is_local() {
+                    (Option::None, Option::None)
+                } else {
+                    let used_types = assumed::function_to_used_type_params(&name);
+                    let used_args = assumed::function_to_used_args(&name);
+                    (Option::Some(used_types), Option::Some(used_args))
+                };
 
-                    let ty = a.ty(&body.local_decls, tcx);
-                    register_mir_ty(rdecls, sess, tcx, &fn_span, &mut fn_decl.deps_tys, &ty)?;
+                // Register the types given as parameters.
+                register_mir_substs(
+                    rdecls,
+                    sess,
+                    tcx,
+                    &fn_span,
+                    &mut fn_decl.deps_tys,
+                    used_types,
+                    &substs,
+                )?;
+
+                // Filter and register the argument types.
+                // There is something very annoying, which is that MIR is quite
+                // low level.
+                // Very specifically, when introducing `box_free`, rustc introduces
+                // something of the following form:
+                // ```
+                // _9 = alloc::alloc::box_free::<T, std::alloc::Global>(
+                //   move (_4.0: std::ptr::Unique<T>),
+                //   move (_4.1: std::alloc::Global)) -> bb3;
+                // ```
+                // We don't support unique pointers, so we have to ignore the
+                // arguments in this case (and the `box_free` case has a
+                // special treatment when translating function bodies).
+                // Note that the type parameters have already been registered.
+                if !name.equals_ref_name(&assumed::BOX_FREE_NAME) {
+                    let args: Vec<&rustc_middle::mir::Operand<'_>> = match used_args {
+                        Option::None => args.iter().collect(),
+                        Option::Some(used_args) => {
+                            // Filter
+                            trace!("args: {:?}, used_args: {:?}", args, used_args);
+                            assert!(args.len() == used_args.len());
+                            args.iter()
+                                .zip(used_args.into_iter())
+                                .filter_map(|(param, used)| if used { Some(param) } else { None })
+                                .collect()
+                        }
+                    };
+                    for a in args.into_iter() {
+                        trace!("terminator: Call: arg: {:?}", a);
+
+                        let ty = a.ty(&body.local_decls, tcx);
+                        register_mir_ty(rdecls, sess, tcx, &fn_span, &mut fn_decl.deps_tys, &ty)?;
+                    }
                 }
 
                 // Note that we don't need to register the "bare" function

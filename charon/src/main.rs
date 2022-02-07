@@ -29,6 +29,7 @@ extern crate rustc_target;
 
 #[macro_use]
 mod common;
+mod assumed;
 mod cfim_ast;
 mod cfim_ast_utils;
 mod cfim_export;
@@ -183,6 +184,7 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
     trace!();
     // Retrieve the crate name.
     // I don't see how to do that without using the name of the source file...
+    // TODO: use TyCtxt.crate_name(??.krate)
     let crate_file_name = sess
         .local_crate_source_file
         .as_ref()

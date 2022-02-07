@@ -4,6 +4,7 @@
 //! independently.
 
 #![allow(dead_code)]
+use crate::assumed::*;
 use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
@@ -34,14 +35,6 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name, TypeTransContext};
-
-// Assumed functions/trait definitions
-pub static PANIC_NAME: [&str; 3] = ["core", "panicking", "panic"];
-pub static BEGIN_PANIC_NAME: [&str; 3] = ["std", "panicking", "begin_panic"];
-pub static BOX_NEW_NAME: [&str; 4] = ["alloc", "boxed", "Box", "new"];
-pub static DEREF_DEREF_NAME: [&str; 5] = ["core", "ops", "deref", "Deref", "deref"];
-pub static DEREF_DEREF_MUT_NAME: [&str; 5] = ["core", "ops", "deref", "DerefMut", "deref_mut"];
-pub static BOX_FREE_NAME: [&str; 3] = ["alloc", "alloc", "box_free"];
 
 /// Translation context for function definitions (contains a type context)
 pub struct FunTransContext<'ctx> {
@@ -988,6 +981,8 @@ fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
                     field_index,
                 ) => {
                     trace!("{:?}", rvalue);
+                    assert!(adt_id.is_local());
+
                     // Not sure what those two parameters are used for, so
                     // panicking if they are not none (to catch a use case).
                     // I'm not even sure that "field_index" is a proper name:
@@ -999,7 +994,7 @@ fn translate_rvalue<'ctx, 'ctx1, 'tcx>(
 
                     // Translate the substitution
                     let (region_params, type_params) =
-                        translate_subst_in_body(tcx, bt_ctx, substs).unwrap();
+                        translate_subst_in_body(tcx, bt_ctx, None, substs).unwrap();
 
                     // Retrieve the definition
                     let id_t = *bt_ctx.ft_ctx.ordered.type_rid_to_id.get(adt_id).unwrap();
@@ -1408,8 +1403,8 @@ fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
     parent
 }
 
-/// Retrieve the name from a `DefId`.
-fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Name {
+/// Retrieve the function name from a `DefId`.
+pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Name {
     trace!("{:?}", def_id);
 
     // We have to be a bit careful when retrieving the name. For instance, due
@@ -1418,6 +1413,7 @@ fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Name {
     // those def ids might actually identify the same definition.
     // For instance: `std::boxed::Box` and `alloc::boxed::Box` are actually
     // the same (the first one is a reexport).
+    // This is why we implement a custom function to retrieve the original name.
 
     // There are two cases:
     // - either the function is a top-level function, and we simply convert
@@ -1493,10 +1489,11 @@ fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Name {
         }
         rustc_hir::definitions::DefPathData::CrateRoot => {
             // Top-level function
-            return Name::from(vec![defpathdata_to_value_ns(
-                def_key.disambiguated_data.data,
-            )
-            .unwrap()]);
+            let crate_name = tcx.crate_name(def_id.krate).to_ident_string();
+            return Name::from(vec![
+                crate_name,
+                defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap(),
+            ]);
         }
         _ => {
             trace!(
@@ -1589,11 +1586,23 @@ fn translate_function_call<'ctx, 'ctx1, 'tcx>(
                 target: next_block,
             })
         } else {
+            // Retrieve the lists of used parameters, in case of non-local
+            // definitions
+            let (used_type_params, used_args) = if def_id.is_local() {
+                (Option::None, Option::None)
+            } else {
+                (
+                    Option::Some(function_to_used_type_params(&name)),
+                    Option::Some(function_to_used_args(&name)),
+                )
+            };
+
             // Translate the type parameters
-            let (region_params, type_params) = translate_subst_in_body(tcx, bt_ctx, substs)?;
+            let (region_params, type_params) =
+                translate_subst_in_body(tcx, bt_ctx, used_type_params, substs)?;
 
             // Translate the arguments
-            let args = translate_arguments(bt_ctx, args);
+            let args = translate_arguments(bt_ctx, used_args, args);
 
             // Retrieve the function identifier
             // - this is a local function, in which case we need to retrieve the
@@ -1644,8 +1653,21 @@ fn translate_function_call<'ctx, 'ctx1, 'tcx>(
 fn translate_subst_in_body<'ctx, 'ctx1, 'tcx>(
     tcx: TyCtxt,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    used_params: Option<Vec<bool>>,
     substs: &'tcx rustc_middle::ty::subst::InternalSubsts<'tcx>,
 ) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>)> {
+    let substs: Vec<rustc_middle::ty::subst::GenericArg<'tcx>> = match used_params {
+        Option::None => substs.iter().collect(),
+        Option::Some(used_params) => {
+            assert!(substs.len() == used_params.len());
+            substs
+                .iter()
+                .zip(used_params.into_iter())
+                .filter_map(|(param, used)| if used { Some(param) } else { None })
+                .collect()
+        }
+    };
+
     let mut t_params_regions = Vec::new();
     let mut t_params_tys = Vec::new();
     for param in substs.iter() {
@@ -1671,12 +1693,24 @@ fn translate_subst_in_body<'ctx, 'ctx1, 'tcx>(
 /// values.
 fn translate_arguments<'ctx, 'ctx1, 'tcx>(
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    used_args: Option<Vec<bool>>,
     args: &Vec<Operand<'tcx>>,
 ) -> Vec<e::Operand> {
+    let args: Vec<&Operand<'tcx>> = match used_args {
+        Option::None => args.iter().collect(),
+        Option::Some(used_args) => {
+            assert!(args.len() == used_args.len());
+            args.iter()
+                .zip(used_args.into_iter())
+                .filter_map(|(param, used)| if used { Some(param) } else { None })
+                .collect()
+        }
+    };
+
     let mut t_args: Vec<e::Operand> = Vec::new();
     for arg in args {
         // There should only be moved arguments, or constants
-        match &arg {
+        match arg {
             mir::Operand::Move(_) | mir::Operand::Constant(_) => {
                 // OK
             }
@@ -1685,6 +1719,7 @@ fn translate_arguments<'ctx, 'ctx1, 'tcx>(
             }
         }
 
+        // Translate
         let op = translate_operand(bt_ctx, arg);
         t_args.push(op);
     }

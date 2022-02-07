@@ -195,5 +195,5 @@ pub type ETy = Ty<ErasedRegion>;
 pub enum AssumedTy {
     /// Boxes have a special treatment: we translate them as identity.
     Box,
-    // TODO: Vec
+    Vec,
 }

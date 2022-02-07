@@ -1,3 +1,4 @@
+use crate::assumed;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector::ToUsize;
@@ -192,81 +193,38 @@ where
         TyKind::Adt(adt, substs) => {
             trace!("Adt: {:?}", adt.did);
 
-            // Case disjunction on whether this is a box
-            if adt.is_box() {
-                trace!("Adt: is box");
-
-                // Boxes have two type parameters: the stored type and the
-                // allocator type. We ignore the allocator type.
-
-                // Sanity check:
-                let mut it = substs.iter();
-                assert!(it.len() == 2);
-
-                // The first parameter is the type of the stored element
-                let param = it.next().unwrap();
-                let param_ty = match param.unpack() {
-                    rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => param_ty,
-                    _ => {
-                        unreachable!();
-                    }
-                };
-
-                // Translate the parameter type
-                let ty = translate_ty(tcx, trans_ctx, region_translator, type_params, &param_ty)?;
-
-                let regions = Vector::new();
-                let tys = Vector::from(vec![ty]);
-
-                return Ok(ty::Ty::Adt(
-                    ty::TypeId::Assumed(ty::AssumedTy::Box),
-                    regions,
-                    tys,
-                ));
+            // Retrieve the list of used arguments
+            let used_params = if adt.did.is_local() {
+                Option::None
             } else {
-                // Translate the type parameters instantiation
-                let mut regions: Vec<R> = vec![];
-                let mut params = vec![];
-                let mut param_i = 0;
-                for param in substs.iter() {
-                    trace!("Adt: param {}: {:?}", param_i, param);
-                    match param.unpack() {
-                        rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
-                            let param_ty = translate_ty(
-                                tcx,
-                                trans_ctx,
-                                region_translator,
-                                type_params,
-                                &param_ty,
-                            )?;
-                            params.push(param_ty);
-                        }
-                        rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
-                            regions.push(region_translator(region));
-                        }
-                        rustc_middle::ty::subst::GenericArgKind::Const(_) => {
-                            unimplemented!();
-                        }
-                    }
-                    param_i += 1;
-                }
+                let name = Name::from(type_def_id_to_name(tcx, adt.did).unwrap());
+                Option::Some(assumed::type_to_used_params(&name))
+            };
 
-                // Retrieve the ADT identifier - should be a local def id
-                if !adt.did.is_local() {
-                    trace!("non local defid: {:?}", adt.did);
-                    let _ = translate_non_local_defid(tcx, trans_ctx, type_params, adt.did);
-                    unimplemented!();
-                } else {
-                    let id = trans_ctx.type_rid_to_id.get(&adt.did).unwrap();
+            // Translate the type parameters instantiation
+            let (regions, params) = translate_substs(
+                tcx,
+                trans_ctx,
+                region_translator,
+                type_params,
+                used_params,
+                substs,
+            )?;
 
-                    // Return the instantiated ADT
-                    return Ok(ty::Ty::Adt(
-                        ty::TypeId::Adt(*id),
-                        Vector::from(regions),
-                        Vector::from(params),
-                    ));
-                }
-            }
+            // Retrieve the ADT identifier
+            let def_id = if adt.did.is_local() {
+                let id = trans_ctx.type_rid_to_id.get(&adt.did).unwrap();
+                ty::TypeId::Adt(*id)
+            } else {
+                translate_non_local_defid(tcx, adt.did)
+            };
+
+            // Return the instantiated ADT
+            return Ok(ty::Ty::Adt(
+                def_id,
+                Vector::from(regions),
+                Vector::from(params),
+            ));
         }
         TyKind::Array(ty, _const_param) => {
             trace!("Array");
@@ -423,27 +381,79 @@ pub fn translate_ety(
     )
 }
 
+fn translate_substs<'tcx, R>(
+    tcx: TyCtxt,
+    trans_ctx: &TypeTransContext,
+    region_translator: &dyn Fn(&rustc_middle::ty::RegionKind) -> R,
+    type_params: &im::OrdMap<u32, ty::Ty<R>>,
+    used_params: Option<Vec<bool>>,
+    substs: &rustc_middle::ty::subst::SubstsRef<'tcx>,
+) -> Result<(Vec<R>, Vec<ty::Ty<R>>)>
+where
+    R: Clone + Eq,
+{
+    // Filter the parameters
+    let mut param_i = 0;
+    let substs: Vec<(rustc_middle::ty::subst::GenericArg<'_>, u32)> = match used_params {
+        Option::None => substs
+            .iter()
+            .map(|p| {
+                let i = param_i;
+                param_i += 1;
+                (p, i)
+            })
+            .collect(),
+        Option::Some(used_params) => substs
+            .iter()
+            .zip(used_params.into_iter())
+            .filter_map(|(param, used)| {
+                let i = param_i;
+                param_i += 1;
+                if used {
+                    Some((param, i))
+                } else {
+                    None
+                }
+            })
+            .collect(),
+    };
+
+    let mut regions: Vec<R> = vec![];
+    let mut params = vec![];
+    for (param, param_i) in substs.iter() {
+        trace!("Adt: param {}: {:?}", param_i, param);
+        match param.unpack() {
+            rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
+                let param_ty =
+                    translate_ty(tcx, trans_ctx, region_translator, type_params, &param_ty)?;
+                params.push(param_ty);
+            }
+            rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
+                regions.push(region_translator(region));
+            }
+            rustc_middle::ty::subst::GenericArgKind::Const(_) => {
+                unimplemented!();
+            }
+        }
+    }
+
+    Result::Ok((regions, params))
+}
+
 /// The non-local def ids benefit from a special treatment.
 ///
 /// For now, we spot some specific def ids from the Rust standard libraries,
 /// that we translate to specific types.
 /// In the future, we'll implement proper support for projects divided into
 /// different crates.
-fn translate_non_local_defid<R>(
-    tcx: TyCtxt,
-    _trans_ctx: &TypeTransContext,
-    _type_params: &im::OrdMap<u32, ty::Ty<R>>,
-    def_id: DefId,
-) -> Result<ty::Ty<R>>
-where
-    R: Clone + Eq,
-{
+fn translate_non_local_defid(tcx: TyCtxt, def_id: DefId) -> ty::TypeId {
     trace!("{:?}", def_id);
 
-    let _def_path = tcx.def_path(def_id);
-    let _def_kind = tcx.def_kind(def_id);
-    let _crate_name = tcx.crate_name(def_id.krate).to_string();
-    unimplemented!();
+    // Retrieve the type name
+    let name = Name::from(type_def_id_to_name(tcx, def_id).unwrap());
+    let id = assumed::get_type_id_from_name(&name);
+
+    ty::TypeId::Assumed(id)
 }
 
 /// Compute a name from a type [`DefId`](DefId).

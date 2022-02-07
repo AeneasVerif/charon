@@ -3,6 +3,7 @@
 
 use serde::{Serialize, Serializer};
 
+// TODO: move this. Rename the module to "name"?
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Name {
     name: Vec<String>,

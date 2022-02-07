@@ -393,6 +393,7 @@ impl TypeId {
             TypeId::Adt(def_id) => ctx.format_object(*def_id),
             TypeId::Assumed(aty) => match aty {
                 AssumedTy::Box => "std::boxed::Box".to_string(),
+                AssumedTy::Vec => "std::vec::Vec".to_string(),
             },
         }
     }
