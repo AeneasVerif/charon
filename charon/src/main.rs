@@ -183,18 +183,9 @@ type TranslationResult<T> = Result<T, ()>;
 fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationResult<()> {
     trace!();
     // Retrieve the crate name.
-    // I don't see how to do that without using the name of the source file...
-    // TODO: use TyCtxt.crate_name(??.krate)
-    let crate_file_name = sess
-        .local_crate_source_file
-        .as_ref()
-        .unwrap()
-        .clone()
-        .into_boxed_path();
-    let crate_name = crate_file_name.file_stem().unwrap();
-    // Note that the conversion to string succeeds only if the file name is
-    // valid unicode.
-    let crate_name = crate_name.to_str().unwrap().to_string();
+    let crate_name = tcx
+        .crate_name(rustc_span::def_id::LOCAL_CRATE)
+        .to_ident_string();
     trace!("# Crate: {}", crate_name);
 
     // Explore the items in the module.
