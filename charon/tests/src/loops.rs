@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 /// Simple test with a loop
 fn test_loop1(max: u32) -> u32 {
     let mut i = 0;
@@ -53,6 +55,7 @@ fn test_loop3(max: u32) -> u32 {
 /// This test is a bit of a mistake: the `break 'outer` doesn't really make
 /// sense, but it initially lead to strange results after control-flow reconstruction
 /// (with some code duplicata).
+#[allow(unused_assignments)]
 fn test_loop4(max: u32) -> u32 {
     let mut i = 1;
     let mut j = 0;

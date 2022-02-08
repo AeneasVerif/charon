@@ -1,4 +1,5 @@
 //! This module contains functions with nested borrows in their signatures.
+#![allow(dead_code)]
 
 fn id_mut_mut<'a, 'b, T>(x: &'a mut &'b mut T) -> &'a mut &'b mut T {
     x

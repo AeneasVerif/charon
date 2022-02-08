@@ -1,5 +1,6 @@
 //! This module doesn't contain **functions which use nested borrows in their
 //! signatures**, and doesn't contain functions with loops.
+#![allow(dead_code)]
 
 pub struct Pair<T1, T2> {
     x: T1,
@@ -22,7 +23,7 @@ pub enum One<T1> {
 }
 
 /// Truely degenerate case
-/// Instanciations of this are encoded as constant values by rust.
+/// Instantiations of this are encoded as constant values by rust.
 pub enum EmptyEnum {
     Empty,
 }
@@ -63,6 +64,7 @@ fn rem_test(x: u32, y: u32) -> u32 {
     x % y
 }
 
+#[allow(unused_variables)]
 fn test2() {
     let x: u32 = 23;
     let y: u32 = 44;
@@ -129,6 +131,7 @@ fn refs_test2() {
 }
 
 /// Box creation
+#[allow(unused_variables)]
 fn test_list1() {
     let l: List<i32> = List::Cons(0, Box::new(List::Nil));
 }
@@ -176,6 +179,7 @@ fn split_list<T>(l: List<T>) -> (T, List<T>) {
     }
 }
 
+#[allow(unused_variables)]
 fn test_split_list() {
     let l: List<i32> = List::Cons(0, Box::new(List::Nil));
 
