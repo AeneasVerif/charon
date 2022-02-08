@@ -75,7 +75,7 @@ impl<T> HashMap<T> {
         self.num_values
     }
 
-    fn insert_in_list(key: Key, value: T, ls: &mut List<T>) {
+    fn insert_in_list<'a>(key: Key, value: T, ls: &'a mut List<T>) {
         match ls {
             List::Nil => *ls = List::Cons(key, value, Box::new(List::Nil)),
             List::Cons(ckey, cvalue, ls) => {
@@ -88,7 +88,7 @@ impl<T> HashMap<T> {
         }
     }
 
-    pub fn insert(&mut self, key: Key, value: T) {
+    pub fn insert<'a>(&'a mut self, key: Key, value: T) {
         let hash = hash_key(&key);
         let hash_mod = hash % self.slots.len();
         // We may want to use slots[...] instead of get_mut...
@@ -97,7 +97,7 @@ impl<T> HashMap<T> {
 
     /// We don't support borrows inside of enumerations for now, so we
     /// can't return an option...
-    fn get_in_list<'l, 'k>(key: &'k Key, ls: &'l List<T>) -> &'l T {
+    fn get_in_list<'a, 'k>(key: &'k Key, ls: &'a List<T>) -> &'a T {
         match ls {
             List::Nil => panic!(),
             List::Cons(ckey, cvalue, ls) => {
@@ -110,14 +110,14 @@ impl<T> HashMap<T> {
         }
     }
 
-    pub fn get<'l, 'k>(&'l self, key: &'k Key) -> &'l T {
+    pub fn get<'a, 'k>(&'a self, key: &'k Key) -> &'a T {
         let hash = hash_key(key);
         let hash_mod = hash % self.slots.len();
         HashMap::get_in_list(key, &self.slots[hash_mod])
     }
 
     /// Same remark as for [get_in_list]
-    fn get_mut_in_list<'l, 'k>(key: &'k Key, ls: &'l mut List<T>) -> &'l mut T {
+    fn get_mut_in_list<'a, 'k>(key: &'k Key, ls: &'a mut List<T>) -> &'a mut T {
         match ls {
             List::Nil => panic!(),
             List::Cons(ckey, cvalue, ls) => {
@@ -131,7 +131,7 @@ impl<T> HashMap<T> {
     }
 
     /// Same remark as for [get].
-    pub fn get_mut<'l, 'k>(&'l mut self, key: &'k Key) -> &'l mut T {
+    pub fn get_mut<'a, 'k>(&'a mut self, key: &'k Key) -> &'a mut T {
         let hash = hash_key(key);
         let hash_mod = hash % self.slots.len();
         HashMap::get_mut_in_list(key, &mut self.slots[hash_mod])
@@ -179,7 +179,7 @@ impl<T> HashMap<T> {
         HashMap::get_mut_in_list(key, &mut self.slots[hash_mod])
     }*/
 
-    fn remove_from_list(key: &Key, ls: &mut List<T>) -> Option<T> {
+    fn remove_from_list<'a>(key: &Key, ls: &'a mut List<T>) -> Option<T> {
         match ls {
             List::Nil => None,
             List::Cons(ckey, _, tl) => {
@@ -205,7 +205,7 @@ impl<T> HashMap<T> {
     }
 
     /// Same remark as for [get].
-    pub fn remove(&mut self, key: &Key) -> Option<T> {
+    pub fn remove<'a>(&'a mut self, key: &Key) -> Option<T> {
         let hash = hash_key(key);
         let hash_mod = hash % self.slots.len();
         HashMap::remove_from_list(key, &mut self.slots[hash_mod])
