@@ -708,13 +708,53 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
     chosen_loop_exits
 }
 
+/// Information used to compute the switch exits.
+/// We compute this information for every block in the graph.
+/// Note that we make sure to use immutable sets because we rely a lot
+/// on cloning.
+#[derive(Debug, Clone)]
+struct BlockSuccsInfo {
+    /// All the successors of the block
+    succs: im::OrdSet<OrdBlockId>,
+    /// The "best" intersection between the successors of the different
+    /// direct children of the block. We use this to find switch exits
+    /// candidates: if the intersection is non-empty and because the
+    /// elements are topologically sorted, the first block in the set
+    /// should be the exit.
+    /// Note that we can ignore children when computing the intersection,
+    /// which is why we call it the "best" intersection. For instance, in
+    /// the following:
+    /// ```
+    /// switch i {
+    ///   0 => x = 1,
+    ///   1 => x = 2,
+    ///   _ => panic,
+    /// }
+    /// ```
+    /// The branches 0 and 1 have successors which intersect, but the branch 2
+    /// doesn't because it terminates: we thus ignore it.
+    best_inter_succs: im::OrdSet<OrdBlockId>,
+}
+
+/// Create an [OrdBlockId] from a block id and a rank given by a map giving
+/// a sort (topological in our use cases) over the graph.
+fn make_ord_block_id(
+    block_id: src::BlockId::Id,
+    sort_map: &HashMap<src::BlockId::Id, usize>,
+) -> OrdBlockId {
+    let rank = *sort_map.get(&block_id).unwrap();
+    OrdBlockId { id: block_id, rank }
+}
+
+/// Compute [BlockSuccsInfo] for every block in the graph.
+/// This information is then used to compute the switch exits.
 fn compute_switch_exits_explore(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
     loop_exits: &HashSet<src::BlockId::Id>,
-    memoized: &mut HashMap<src::BlockId::Id, im::OrdSet<OrdBlockId>>,
+    memoized: &mut HashMap<src::BlockId::Id, BlockSuccsInfo>,
     block_id: src::BlockId::Id,
-) -> im::OrdSet<OrdBlockId> {
+) -> BlockSuccsInfo {
     // Shortcut
     match memoized.get(&block_id) {
         Some(res) => {
@@ -725,32 +765,29 @@ fn compute_switch_exits_explore(
 
     // Find the next blocks, and their successors
     let children: Vec<src::BlockId::Id> = Vec::from_iter(cfg.cfg_no_be.neighbors(block_id));
-    let mut children_succs: Vec<im::OrdSet<OrdBlockId>> = Vec::from_iter(
-        children
-            .iter()
-            .map(|bid| compute_switch_exits_explore(cfg, tsort_map, loop_exits, memoized, *bid)),
-    );
+    let mut children_succs: Vec<im::OrdSet<OrdBlockId>> =
+        Vec::from_iter(children.iter().map(|bid| {
+            compute_switch_exits_explore(cfg, tsort_map, loop_exits, memoized, *bid).succs
+        }));
     trace!("block: {}, children: {:?}", block_id, children);
 
-    // If there is exactly one child or less, it is trivial
-    let succs = if children.len() == 0 {
-        im::OrdSet::new()
-    } else if children.len() == 1 {
-        let child_id = children[0];
-        let mut succs = children_succs.pop().unwrap();
-
-        // Retrieve the rank, given by the topological order
-        let child_rank = *tsort_map.get(&child_id).unwrap();
-        let child_ord_block_id = OrdBlockId {
-            id: child_id,
-            rank: child_rank,
-        };
-
-        succs.insert(child_ord_block_id);
-        succs
+    // Add the children themselves in their sets of successors
+    for i in 0..children.len() {
+        children_succs[i].insert(make_ord_block_id(children[i], tsort_map));
     }
-    // Otherwise, there is a branching: we need to find the "best" minimal
-    // successor, which allows to factorize the code as much as possible.
+
+    // Compute the full sets of successors of the children
+    let all_succs: im::OrdSet<OrdBlockId> = children_succs
+        .iter()
+        .fold(im::OrdSet::new(), |acc, s| acc.union(s.clone()));
+
+    // Then, compute the "best" intersection of the successors
+    // If there is exactly one child or less, it is trivial
+    let best_inter_succs = if children.len() <= 1 {
+        all_succs.clone()
+    }
+    // Otherwise, there is a branching: we need to find the "best" intersection
+    // of successors, which allows to factorize the code as much as possible.
     // We do it in a very "brutal" manner:
     // - we look for the pair of children blocks which have the maximum
     //   intersection of successors.
@@ -771,20 +808,9 @@ fn compute_switch_exits_explore(
                 // Note that we need to add the children themselves to the
                 // sets of successors
                 let mut i_succs = children_succs.get(i).unwrap().clone();
-                // Note that the rank is given by the topological order
-                let child_i = children[i];
-                let child_i = OrdBlockId {
-                    id: child_i,
-                    rank: *tsort_map.get(&child_i).unwrap(),
-                };
-                i_succs.insert(child_i);
+                i_succs.insert(make_ord_block_id(children[i], tsort_map));
                 let mut j_succs = children_succs.get(j).unwrap().clone();
-                let child_j = children[j];
-                let child_j = OrdBlockId {
-                    id: child_j,
-                    rank: *tsort_map.get(&child_j).unwrap(),
-                };
-                j_succs.insert(child_j);
+                j_succs.insert(make_ord_block_id(children[j], tsort_map));
                 let inter_succs = i_succs.intersection(j_succs);
 
                 if inter_succs.len() > max_inter_succs.len() {
@@ -805,13 +831,22 @@ fn compute_switch_exits_explore(
         max_inter_succs
     };
 
-    trace!("block: {}, successors: {:?}", block_id, succs);
+    trace!(
+        "block: {}, all successors: {:?}, best intersection: {:?}",
+        block_id,
+        all_succs,
+        best_inter_succs
+    );
 
     // Memoize
-    memoized.insert(block_id, succs.clone());
+    let info = BlockSuccsInfo {
+        succs: all_succs,
+        best_inter_succs,
+    };
+    memoized.insert(block_id, info.clone());
 
     // Return
-    succs
+    info
 }
 
 /// See [`compute_loop_switch_exits`](compute_loop_switch_exits) for
@@ -843,13 +878,13 @@ fn compute_switch_exits(
     tsort_map: &HashMap<src::BlockId::Id, usize>,
     loop_exits: &HashSet<src::BlockId::Id>,
 ) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
-    // Compute the filtered successors map, starting at the root node
-    let mut fsuccs_map = HashMap::new();
+    // Compute the successors info map, starting at the root node
+    let mut succs_info_map = HashMap::new();
     let _ = compute_switch_exits_explore(
         cfg,
         tsort_map,
         loop_exits,
-        &mut fsuccs_map,
+        &mut succs_info_map,
         src::BlockId::ZERO,
     );
 
@@ -857,28 +892,43 @@ fn compute_switch_exits(
     // over the switch blocks in topological order.
     let mut sorted_switch_blocks: im::OrdSet<OrdBlockId> = im::OrdSet::new();
     for bid in cfg.switch_blocks.iter() {
-        let rank = *tsort_map.get(bid).unwrap();
-        sorted_switch_blocks.insert(OrdBlockId { id: *bid, rank });
+        sorted_switch_blocks.insert(make_ord_block_id(*bid, tsort_map));
+    }
+
+    // Debugging: print all the successors
+    {
+        let mut out = vec![];
+        for (bid, info) in &succs_info_map {
+            out.push(
+                format!(
+                    "{} -> {{succs: {:?}, best inter: {:?}}}",
+                    bid, &info.succs, &info.best_inter_succs
+                )
+                .to_string(),
+            );
+        }
+        trace!("Successors info:\n{}\n", out.join("\n"));
     }
 
     // For every node which is a switch, retrieve the exit.
-    // As the set of filtered successors is topologically sorted, the exit should be
-    // the first node in the set (if the set is non empty).
+    // As the set of intersection of successors is topologically sorted, the
+    // exit should be the first node in the set (if the set is non empty).
     // Also, we need to explore the nodes in topological order, to give
     // precedence to the outer switches.
     let mut exits_set = HashSet::new();
     let mut exits = HashMap::new();
     for bid in sorted_switch_blocks {
         let bid = bid.id;
-        let fsuccs = fsuccs_map.get(&bid).unwrap();
+        let info = succs_info_map.get(&bid).unwrap();
+        let succs = &info.best_inter_succs;
         // Check if there are successors
-        if fsuccs.is_empty() {
+        if succs.is_empty() {
             // No successors shared by the branches: no exit
             exits.insert(bid, None);
         } else {
             // We have an exit candidate: check that it was not already
             // taken by an external switch
-            let exit = fsuccs.iter().next().unwrap();
+            let exit = succs.iter().next().unwrap();
             if exits_set.contains(&exit.id) {
                 exits.insert(bid, None);
             } else {
@@ -1360,7 +1410,12 @@ fn translate_block(
     // duplication, to update the reconstruction accordingly. In the future, we
     // might want to make this test optional, and let the user control its
     // activation.
-    trace!("Parent loops: {:?}, Block id: {}", parent_loops, block_id);
+    trace!(
+        "Parent loops: {:?}, Parent switch exits: {:?}, Block id: {}",
+        parent_loops,
+        switch_exit_blocks,
+        block_id
+    );
     assert!(!explored.contains(&block_id));
     explored.insert(block_id);
 
@@ -1491,7 +1546,7 @@ fn translate_block(
 fn translate_function(src_defs: &src::FunDefs, src_def_id: FunDefId::Id) -> tgt::FunDef {
     // Retrieve the function definition
     let src_def = src_defs.get(src_def_id).unwrap();
-    trace!("Reconstructing: {}", src_def.name);
+    trace!("# Reconstructing: {}\n", src_def.name);
 
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
@@ -1503,7 +1558,7 @@ fn translate_function(src_defs: &src::FunDefs, src_def_id: FunDefId::Id) -> tgt:
     let exits_map = compute_loop_switch_exits(&cfg_info);
 
     // Debugging
-    trace!("exist map:\n{:?}", exits_map);
+    trace!("exits map:\n{:?}", exits_map);
 
     // Translate the body by reconstructing the loops and the conditional branchings.
     // Note that we shouldn't get `None`.
