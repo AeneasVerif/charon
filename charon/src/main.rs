@@ -62,9 +62,11 @@ use rustc_driver::{Callbacks, Compilation, RunCompiler};
 use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
+use std::path::PathBuf;
 
 struct ToInternal {
-    source_file: String,
+    dest_dir: Option<PathBuf>,
+    source_file: PathBuf,
 }
 
 impl Callbacks for ToInternal {
@@ -76,7 +78,7 @@ impl Callbacks for ToInternal {
             .peek_mut()
             .enter(|tcx| {
                 let session = c.session();
-                translate(session, tcx, &self.source_file)
+                translate(session, tcx, &self.dest_dir, &self.source_file)
             })
             .unwrap();
         Compilation::Stop
@@ -132,20 +134,134 @@ use structopt::StructOpt;
 #[derive(StructOpt)]
 #[structopt(name = "Charon")]
 struct CliOpts {
+    /// The input file
     #[structopt(parse(from_os_str))]
-    path: std::path::PathBuf,
+    input_file: PathBuf,
+    /// The destination directory, if we don't want to generate the output
+    /// in the same directory as the input file.
+    #[structopt(short = "dest", long = "dest", parse(from_os_str))]
+    dest_dir: Option<PathBuf>,
 }
+
+/*struct ArgInfo<'a> {
+    /// The keyword for the argument: "-o", "-dest", etc.
+    keyword: String,
+    /// The function to call if we found the argument
+    register: &'a mut dyn FnMut(String) -> (),
+}
+
+struct Args {
+    pub dest_dir: Option<String>,
+    /// The path to the current executable (should be the first argument of
+    /// the command line)
+    pub exec_path: String,
+    /// The input Rust file, to analyze
+    pub input_file: String,
+}
+
+/// Process the command-line arguments.
+/// The way this function works is mildly inspired by the [Arg] module in OCaml.
+fn process_args() -> Args {
+    // Retrieve the arguments
+    let mut args = std::env::args();
+
+    // The first argument is always the path to the executable
+    let exec_path = match args.next() {
+        Some(s) => s.to_owned(),
+        None => panic!("Impossible: zero arguments on the command-line!"),
+    };
+
+    // Collect the remaining arguments to process them
+    let args: Vec<String> = args.collect();
+    trace!("Command-line arguments: {:?}", args);
+
+    // The anonymous arguments
+    let mut anonymous_args: Vec<String> = Vec::new();
+
+    // All the arguments we will process
+    let mut dest_dir: Option<String> = Option::None;
+    let dest_dir_arg = ArgInfo {
+        keyword: "-dest".to_string(),
+        register: &mut { |s: String| dest_dir = Some(s) },
+    };
+
+    // The list of all the arguments and their registration functions.
+    // Note that as the registration functions are `FnMut`, we have to
+    // make this mutable (and iterate with mutable iterators) otherwise
+    // we can't apply the closures.
+    let mut valid_args = vec![dest_dir_arg];
+
+    // Process the arguments
+    let mut i = 0;
+    while i < args.len() {
+        let arg = &args[i];
+
+        // Check if this argument is an option (starts with '-')
+        // Note that arguments can't be empty (otherwise they are not parsed!)
+        if arg.chars().next().unwrap() == '-' {
+            // Find the argument
+            match valid_args.iter_mut().find(|a| a.keyword == *arg) {
+                None => {
+                    panic!("Unsupported option: {}", arg);
+                }
+                Some(a) => {
+                    // Find the option value
+                    i += 1;
+                    if i >= args.len() {
+                        panic!("The value for option {} is missing", arg);
+                    }
+                    let value = &args[i];
+
+                    // Check that the value doesn't start with '-'
+                    // Note that arguments can't be empty
+                    if value.chars().next().unwrap() == '_' {
+                        panic!(
+                            "Invalid value for option {}: {} (values don't start with '-')",
+                            arg, value
+                        );
+                    }
+
+                    // Register the value
+                    (a.register)(value.clone());
+                }
+            }
+        } else {
+            // Anonymous argument
+            anonymous_args.push(arg.clone());
+        }
+
+        i += 1;
+    }
+
+    if anonymous_args.len() != 1 {
+        panic!("There should always be exactly one anonymous argument for the input file name, we received: {:?}", anonymous_args);
+    }
+    let input_file = anonymous_args.pop().unwrap();
+
+    // Return
+    Args {
+        dest_dir,
+        exec_path,
+        input_file,
+    }
+}*/
 
 fn main() {
     // Initialize the logger
     initialize_logger();
 
-    let args = CliOpts::from_args();
-
-    let myself = match std::env::args().next() {
+    // Retrieve the executable path - this is not considered an argument,
+    // and won't be parsed by CliOpts
+    let exec_path = match std::env::args().next() {
         Some(s) => s.to_owned(),
         None => panic!("Impossible: zero arguments on the command-line!"),
     };
+
+    // Parse the command-line
+    let args = CliOpts::from_args();
+
+    // Process the arguments
+    //    let args = process_args();
 
     // Retrieve the sysroot (the path to the executable of the compiler extended
     // with our analysis).
@@ -157,22 +273,18 @@ fn main() {
     let sysroot = std::str::from_utf8(&out.stdout).unwrap().trim();
     let sysroot_arg = format!("--sysroot={}", sysroot).to_owned();
 
-    let input_file = match args.path.to_str() {
-        Some(s) => s.to_owned(),
-        None => panic!("Illegal path for the input file argument"),
-    };
-
-    let args = vec![
-        myself,
+    let compiler_args = vec![
+        exec_path,
         sysroot_arg,
-        input_file.clone(),
+        args.input_file.as_path().to_str().unwrap().to_string(),
         "--crate-type=lib".to_owned(),
         "--edition=2018".to_owned(),
     ];
     RunCompiler::new(
-        &args,
+        &compiler_args,
         &mut ToInternal {
-            source_file: input_file,
+            dest_dir: args.dest_dir,
+            source_file: args.input_file,
         },
     )
     .run()
@@ -181,7 +293,12 @@ fn main() {
 
 type TranslationResult<T> = Result<T, ()>;
 
-fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationResult<()> {
+fn translate(
+    sess: &Session,
+    tcx: TyCtxt,
+    dest_dir: &Option<PathBuf>,
+    source_file: &PathBuf,
+) -> TranslationResult<()> {
     trace!();
     // Retrieve the crate name.
     let crate_name = tcx
@@ -276,6 +393,7 @@ fn translate(sess: &Session, tcx: TyCtxt, source_file: &String) -> TranslationRe
         &ordered_decls,
         &type_defs,
         &cfim_defs,
+        dest_dir,
         source_file,
     )?;
 
