@@ -347,7 +347,7 @@ fn test_constants() {
 }
 
 /// This assignment is trickier than it seems
-#[test]
+#[allow(unused_assignments)]
 pub fn test_weird_borrows1() {
     let mut x = 0;
     let mut px = &mut x;
