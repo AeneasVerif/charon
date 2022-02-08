@@ -737,6 +737,15 @@ fn translate_operand_constant_value_non_scalar<'tcx, 'ctx, 'ctx1>(
                     let value = e::OperandConstantValue::Adt(Option::None, field_values);
                     (ty, value)
                 }
+                TyKind::Adt(_, _) => {
+                    // Following tests, it seems rustc doesn't introduce constants
+                    // when initializing ADTs, only when initializing tuples.
+                    // Anyway, our `OperandConstantValue` handles all cases
+                    // so updating the code to handle ADTs in a general manner
+                    // wouldn't be a problem.
+                    error!("unexpected type: Adt");
+                    unreachable!();
+                }
                 _ => {
                     // The remaining types should not be used for constants, or
                     // should have been filtered by the caller.
@@ -753,21 +762,6 @@ fn translate_operand_constant_value_non_scalar<'tcx, 'ctx, 'ctx1>(
             unimplemented!();
         }
     }
-
-    //    let dc = rustc_const_eval::destructure_const(tcx, , value);
-    /*    match ty.kind() {
-        TyKind::Tuple(substs) => {
-            let (region_params, type_params) =
-                translate_subst_in_body(tcx, bt_ctx, None, substs).unwrap();
-            assert!(region_params.is_empty());
-            trace!("{:?}", type_params);
-            unimplemented!()
-        }
-        _ => {
-            error!("unexpected type: {:?}", ty.kind());
-            unimplemented!();
-        }
-    }*/
 }
 
 /// Translate a constant operand
