@@ -199,7 +199,10 @@ fn compute_reachability(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId::Id, src:
     // use for infinity is never reached. That is to say, that there are stricly
     // less edges in the graph than usize::MAX.
     // Note that for now, the assertion will actually always statically succeed,
-    // because `edge_count` returns a usize... It still is good to keep it there.
+    // because `edge_count` returns a usize...
+    // Also, if we have as many edges as usize::MAX, the computer will probably
+    // be out of memory...
+    // It still is good to keep it there.
     assert!(cfg.cfg.edge_count() < std::usize::MAX);
 
     let fw_matrix: HashMap<(src::BlockId::Id, src::BlockId::Id), usize> =
@@ -727,6 +730,7 @@ fn compute_switch_exits_explore(
             .iter()
             .map(|bid| compute_switch_exits_explore(cfg, tsort_map, loop_exits, memoized, *bid)),
     );
+    trace!("block: {}, children: {:?}", block_id, children);
 
     // If there is exactly one child or less, it is trivial
     let succs = if children.len() == 0 {
@@ -764,8 +768,23 @@ fn compute_switch_exits_explore(
 
         for i in 0..children_succs.len() {
             for j in (i + 1)..children_succs.len() {
-                let i_succs = children_succs.get(i).unwrap().clone();
-                let j_succs = children_succs.get(j).unwrap().clone();
+                // Note that we need to add the children themselves to the
+                // sets of successors
+                let mut i_succs = children_succs.get(i).unwrap().clone();
+                // Note that the rank is given by the topological order
+                let child_i = children[i];
+                let child_i = OrdBlockId {
+                    id: child_i,
+                    rank: *tsort_map.get(&child_i).unwrap(),
+                };
+                i_succs.insert(child_i);
+                let mut j_succs = children_succs.get(j).unwrap().clone();
+                let child_j = children[j];
+                let child_j = OrdBlockId {
+                    id: child_j,
+                    rank: *tsort_map.get(&child_j).unwrap(),
+                };
+                j_succs.insert(child_j);
                 let inter_succs = i_succs.intersection(j_succs);
 
                 if inter_succs.len() > max_inter_succs.len() {
@@ -785,6 +804,8 @@ fn compute_switch_exits_explore(
 
         max_inter_succs
     };
+
+    trace!("block: {}, successors: {:?}", block_id, succs);
 
     // Memoize
     memoized.insert(block_id, succs.clone());
@@ -814,6 +835,9 @@ fn compute_switch_exits_explore(
 ///   y += x;
 ///   ...
 ///   ```
+/// Note that with nested switches, the branches of the inner switches might
+/// goto the exits of the outer switches: for this reason, we give precedence
+/// to the outer switches.
 fn compute_switch_exits(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
@@ -829,17 +853,38 @@ fn compute_switch_exits(
         src::BlockId::ZERO,
     );
 
+    // We need to give precedence to the outer switches: we thus iterate
+    // over the switch blocks in topological order.
+    let mut sorted_switch_blocks: im::OrdSet<OrdBlockId> = im::OrdSet::new();
+    for bid in cfg.switch_blocks.iter() {
+        let rank = *tsort_map.get(bid).unwrap();
+        sorted_switch_blocks.insert(OrdBlockId { id: *bid, rank });
+    }
+
     // For every node which is a switch, retrieve the exit.
     // As the set of filtered successors is topologically sorted, the exit should be
-    // the first node in the set (if the set is non empty)
+    // the first node in the set (if the set is non empty).
+    // Also, we need to explore the nodes in topological order, to give
+    // precedence to the outer switches.
+    let mut exits_set = HashSet::new();
     let mut exits = HashMap::new();
-    for bid in cfg.switch_blocks.iter() {
-        let fsuccs = fsuccs_map.get(bid).unwrap();
+    for bid in sorted_switch_blocks {
+        let bid = bid.id;
+        let fsuccs = fsuccs_map.get(&bid).unwrap();
+        // Check if there are successors
         if fsuccs.is_empty() {
-            exits.insert(*bid, None);
+            // No successors shared by the branches: no exit
+            exits.insert(bid, None);
         } else {
+            // We have an exit candidate: check that it was not already
+            // taken by an external switch
             let exit = fsuccs.iter().next().unwrap();
-            exits.insert(*bid, Some(exit.id));
+            if exits_set.contains(&exit.id) {
+                exits.insert(bid, None);
+            } else {
+                exits_set.insert(exit.id);
+                exits.insert(bid, Some(exit.id));
+            }
         }
     }
 
@@ -1008,7 +1053,7 @@ fn combine_statements_and_statement(
 fn get_goto_kind(
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: &Vector<src::BlockId::Id>,
-    current_exit_block: Option<src::BlockId::Id>,
+    switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     next_block_id: src::BlockId::Id,
 ) -> GotoKind {
     // First explore the parent loops in revert order
@@ -1033,7 +1078,7 @@ fn get_goto_kind(
     }
 
     // Check if the goto exits the current block
-    if Some(next_block_id) == current_exit_block {
+    if switch_exit_blocks.contains(&next_block_id) {
         return GotoKind::ExitBlock;
     }
 
@@ -1053,12 +1098,12 @@ fn translate_child_block(
     def: &src::FunDef,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
-    current_exit_block: Option<src::BlockId::Id>,
+    switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     explored: &mut HashSet<src::BlockId::Id>,
     child_id: src::BlockId::Id,
 ) -> Option<tgt::Statement> {
     // Check if this is a backward call
-    match get_goto_kind(exits_map, &parent_loops, current_exit_block, child_id) {
+    match get_goto_kind(exits_map, &parent_loops, switch_exit_blocks, child_id) {
         GotoKind::Break(index) => Some(tgt::Statement::Break(index)),
         GotoKind::Continue(index) => Some(tgt::Statement::Continue(index)),
         // If we are going to an exit block we simply ignore the goto
@@ -1070,7 +1115,7 @@ fn translate_child_block(
                 def,
                 exits_map,
                 parent_loops,
-                current_exit_block,
+                switch_exit_blocks,
                 explored,
                 child_id,
             )
@@ -1103,7 +1148,7 @@ fn translate_terminator(
     def: &src::FunDef,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
-    current_exit_block: Option<src::BlockId::Id>,
+    switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     explored: &mut HashSet<src::BlockId::Id>,
     terminator: &src::Terminator,
 ) -> Option<tgt::Statement> {
@@ -1115,7 +1160,7 @@ fn translate_terminator(
             def,
             exits_map,
             parent_loops,
-            current_exit_block,
+            switch_exit_blocks,
             explored,
             *target,
         ),
@@ -1125,7 +1170,7 @@ fn translate_terminator(
                 def,
                 exits_map,
                 parent_loops,
-                current_exit_block,
+                switch_exit_blocks,
                 explored,
                 *target,
             );
@@ -1145,7 +1190,7 @@ fn translate_terminator(
                 def,
                 exits_map,
                 parent_loops,
-                current_exit_block,
+                switch_exit_blocks,
                 explored,
                 *target,
             );
@@ -1168,7 +1213,7 @@ fn translate_terminator(
                 def,
                 exits_map,
                 parent_loops,
-                current_exit_block,
+                switch_exit_blocks,
                 explored,
                 *target,
             );
@@ -1188,7 +1233,7 @@ fn translate_terminator(
                         def,
                         exits_map,
                         parent_loops.clone(),
-                        current_exit_block,
+                        switch_exit_blocks,
                         explored,
                         *then_tgt,
                     );
@@ -1198,7 +1243,7 @@ fn translate_terminator(
                         def,
                         exits_map,
                         parent_loops.clone(),
-                        current_exit_block,
+                        switch_exit_blocks,
                         explored,
                         *else_tgt,
                     );
@@ -1215,7 +1260,7 @@ fn translate_terminator(
                             def,
                             exits_map,
                             parent_loops.clone(),
-                            current_exit_block,
+                            switch_exit_blocks,
                             explored,
                             *bid,
                         );
@@ -1228,7 +1273,7 @@ fn translate_terminator(
                         def,
                         exits_map,
                         parent_loops.clone(),
-                        current_exit_block,
+                        switch_exit_blocks,
                         explored,
                         *otherwise,
                     );
@@ -1301,7 +1346,7 @@ fn translate_block(
     def: &src::FunDef,
     exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
     parent_loops: Vector<src::BlockId::Id>,
-    current_exit_block: Option<src::BlockId::Id>,
+    switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     explored: &mut HashSet<src::BlockId::Id>,
     block_id: src::BlockId::Id,
 ) -> Option<tgt::Statement> {
@@ -1336,16 +1381,32 @@ fn translate_block(
     let ncurrent_exit_block = if is_loop || is_switch {
         *exits_map.get(&block_id).unwrap()
     } else {
-        current_exit_block
+        Option::None
+    };
+    // If we enter a switch and not a loop, add the exit block to the set
+    // of outer exit blocks
+    let nswitch_exit_blocks = if is_switch && !(is_loop) {
+        let mut nexit_blocks = switch_exit_blocks.clone();
+        match ncurrent_exit_block {
+            Option::None => nexit_blocks,
+            Option::Some(bid) => {
+                nexit_blocks.insert(bid);
+                nexit_blocks
+            }
+        }
+    } else {
+        switch_exit_blocks.clone()
     };
 
-    // Translate the terminator and the subsequent blocks
+    // Translate the terminator and the subsequent blocks.
+    // Note that this terminator is an option: we might ignore it
+    // (if it is an exit).
     let terminator = translate_terminator(
         cfg,
         def,
         exits_map,
         nparent_loops,
-        ncurrent_exit_block,
+        &nswitch_exit_blocks,
         explored,
         &block.terminator,
     );
@@ -1383,7 +1444,7 @@ fn translate_block(
                 def,
                 exits_map,
                 parent_loops,
-                current_exit_block,
+                switch_exit_blocks,
                 explored,
                 exit_block_id,
             );
@@ -1410,7 +1471,7 @@ fn translate_block(
                 def,
                 exits_map,
                 parent_loops,
-                current_exit_block,
+                switch_exit_blocks,
                 explored,
                 exit_block_id,
             );
@@ -1441,18 +1502,27 @@ fn translate_function(src_defs: &src::FunDefs, src_def_id: FunDefId::Id) -> tgt:
     // exists.
     let exits_map = compute_loop_switch_exits(&cfg_info);
 
+    // Debugging
+    trace!("exist map:\n{:?}", exits_map);
+
     // Translate the body by reconstructing the loops and the conditional branchings.
     // Note that we shouldn't get `None`.
+    let mut explored = HashSet::new();
     let body_exp = translate_block(
         &cfg_info,
         &src_def,
         &exits_map,
         Vector::new(),
-        None,
-        &mut HashSet::new(),
+        &im::HashSet::new(),
+        &mut explored,
         src::BlockId::ZERO,
     )
     .unwrap();
+
+    // Sanity: check that we translated all the blocks
+    for (bid, _) in src_def.body.iter_indexed_values() {
+        assert!(explored.contains(&bid));
+    }
 
     // Return the translated definition
     tgt::FunDef {
