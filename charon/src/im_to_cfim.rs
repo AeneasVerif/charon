@@ -1105,13 +1105,13 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
             // Check if we "own" the exit
             match exit_id {
                 None => {
-                    // No exit: nothing to do
-                    ()
+                    // No exit
+                    exit_info.owned_loop_exits.insert(bid, None);
                 }
                 Some(exit_id) => {
                     if all_exits.contains(exit_id) {
                         // We don't own it
-                        ()
+                        exit_info.owned_loop_exits.insert(bid, None);
                     } else {
                         // We own it
                         exit_info.owned_loop_exits.insert(bid, Some(*exit_id));

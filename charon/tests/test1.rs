@@ -342,6 +342,27 @@ fn test_loop6(max: u32) -> u32 {
     return s;
 }
 
+/// In this function, the loop is inside an `if ... then ... else ...`, so
+/// that the loop exit coincides with the `if ... then ... else ...` exit.
+fn test_loop7(max: u32) -> u32 {
+    let mut i = 0;
+    let mut s = 0;
+    if i < max {
+        while i < max {
+            if i > 3 {
+                break;
+            }
+            s += i;
+            i += 1;
+        }
+    } else {
+        s = 2;
+    }
+
+    s += 1;
+    return s;
+}
+
 /// Test with a char literal - testing serialization
 fn test_char() -> char {
     'a'
