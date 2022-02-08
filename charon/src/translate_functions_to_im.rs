@@ -490,7 +490,9 @@ fn translate_projection<'tcx>(
                         assert!(field_id == ty::FieldId::ZERO);
 
                         path_type = tys.get(0).unwrap().clone();
-                        e::FieldProjKind::Option(downcast_id.unwrap())
+                        let variant_id = downcast_id.unwrap();
+                        assert!(variant_id == assumed::OPTION_SOME_VARIANT_ID);
+                        e::FieldProjKind::Option(variant_id)
                     }
                     _ => {
                         trace!("{:?}", path_type);
