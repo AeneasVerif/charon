@@ -35,6 +35,7 @@ mod cfim_ast_utils;
 mod cfim_export;
 mod divergent;
 mod expressions;
+mod expressions_utils;
 mod formatter;
 mod get_mir;
 mod graphs;
