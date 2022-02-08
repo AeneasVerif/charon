@@ -248,10 +248,10 @@ where
             )
             .to_owned(),
             AssumedFunId::BoxFree => format!("alloc::alloc::box_free{}", params).to_owned(),
-            AssumedFunId::VecNew => format!("alloc::vec::Vec::new{}", params).to_owned(),
-            AssumedFunId::VecPush => format!("alloc::vec::Vec::push{}", params).to_owned(),
-            AssumedFunId::VecInsert => format!("alloc::vec::Vec::insert{}", params).to_owned(),
-            AssumedFunId::VecLen => format!("alloc::vec::Vec::len{}", params).to_owned(),
+            AssumedFunId::VecNew => format!("alloc::vec::Vec{}::new", params).to_owned(),
+            AssumedFunId::VecPush => format!("alloc::vec::Vec{}::push", params).to_owned(),
+            AssumedFunId::VecInsert => format!("alloc::vec::Vec{}::insert", params).to_owned(),
+            AssumedFunId::VecLen => format!("alloc::vec::Vec{}::len", params).to_owned(),
             AssumedFunId::VecIndex => {
                 format!("core::ops::index::Index<alloc::vec::Vec{}>::index", params).to_owned()
             }
