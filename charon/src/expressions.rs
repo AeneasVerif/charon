@@ -113,20 +113,17 @@ pub enum Operand {
 
 /// Constant value for an operand.
 ///
-/// It is a bit annoying, but Rust treats some ADT and tuple instances as
-/// constants.
-/// For instance, an enumeration with one variant and no fields is a constant.
-/// A structure with no field is a constant.
-///
-/// Also, sometimes, some tuples/enumerations/structures are considered
-/// as constants (if their field values are constants, of course).
+/// It is a bit annoying, but rustc treats some ADT and tuple instances as
+/// constants when generating MIR:
+/// - an enumeration with one variant and no fields is a constant.
+/// - a structure with no field is a constant.
+/// - sometimes, Rust stores the initialization of an ADT as a constant
+///   (if all the fields are constant) rather than as an aggregated value
 ///
 /// For our translation, we use the following enumeration to encode those
 /// special cases in assignments. They are converted to "normal" values
 /// when evaluating the assignment (which is why we don't put them in the
 /// [`ConstantValue`](crate::ConstantValue) enumeration.
-///
-/// TODO: merge Adt and Tuple
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
     ConstantValue(ConstantValue),

@@ -1,5 +1,5 @@
-//! This module doesn't contain function using nested borrows in their signatures,
-//! and doesn't contain functions with loops.
+//! This module doesn't contain **functions which use nested borrows in their
+//! signatures**, and doesn't contain functions with loops.
 
 pub struct Pair<T1, T2> {
     x: T1,
@@ -340,4 +340,16 @@ fn test_constants() {
     assert!(new_pair1().p.0 == 1);
     assert!(new_pair2().p.0 == 1);
     assert!(new_pair3().p.0 == 1);
+}
+
+/// This assignment is trickier than it seems
+#[test]
+pub fn test_weird_borrows1() {
+    let mut x = 0;
+    let mut px = &mut x;
+    // Context:
+    // x -> [l0]
+    // px -> &mut l0 (0:i32)
+
+    px = &mut (*px);
 }

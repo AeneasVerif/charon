@@ -123,9 +123,9 @@ pub enum AssumedFunId {
     Replace,
     /// `alloc::boxed::Box::new`
     BoxNew,
-    /// `core::ops::deref::Deref::<alloc::boxed::Box::>::deref`
+    /// `core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref`
     BoxDeref,
-    /// `core::ops::deref::DerefMut::<alloc::boxed::Box::>::deref_mut`
+    /// `core::ops::deref::DerefMut::<alloc::boxed::Box<T>>::deref_mut`
     BoxDerefMut,
     /// `alloc::alloc::box_free`
     /// This is actually an unsafe function, but the rust compiler sometimes
