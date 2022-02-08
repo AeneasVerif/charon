@@ -75,12 +75,19 @@ impl<T> HashMap<T> {
         self.num_values
     }
 
-    fn insert_in_list<'a>(key: Key, value: T, ls: &'a mut List<T>) {
+    /// Insert in a list.
+    /// Return `true` if we inserted an element, `false` if we simply updated
+    /// a value.
+    fn insert_in_list<'a>(key: Key, value: T, ls: &'a mut List<T>) -> bool {
         match ls {
-            List::Nil => *ls = List::Cons(key, value, Box::new(List::Nil)),
+            List::Nil => {
+                *ls = List::Cons(key, value, Box::new(List::Nil));
+                true
+            }
             List::Cons(ckey, cvalue, ls) => {
                 if *ckey == key {
                     *cvalue = value;
+                    false
                 } else {
                     HashMap::insert_in_list(key, value, ls)
                 }
@@ -92,7 +99,11 @@ impl<T> HashMap<T> {
         let hash = hash_key(&key);
         let hash_mod = hash % self.slots.len();
         // We may want to use slots[...] instead of get_mut...
-        HashMap::insert_in_list(key, value, &mut self.slots[hash_mod]);
+        let inserted = HashMap::insert_in_list(key, value, &mut self.slots[hash_mod]);
+        if inserted {
+            self.num_values += 1;
+        }
+        // TODO: resize the hashmap
     }
 
     /// We don't support borrows inside of enumerations for now, so we
@@ -179,6 +190,8 @@ impl<T> HashMap<T> {
         HashMap::get_mut_in_list(key, &mut self.slots[hash_mod])
     }*/
 
+    /// Remove an element from the list.
+    /// Return the removed element.
     fn remove_from_list<'a>(key: &Key, ls: &'a mut List<T>) -> Option<T> {
         match ls {
             List::Nil => None,
@@ -208,7 +221,14 @@ impl<T> HashMap<T> {
     pub fn remove<'a>(&'a mut self, key: &Key) -> Option<T> {
         let hash = hash_key(key);
         let hash_mod = hash % self.slots.len();
-        HashMap::remove_from_list(key, &mut self.slots[hash_mod])
+        let x = HashMap::remove_from_list(key, &mut self.slots[hash_mod]);
+        match x {
+            Option::None => Option::None,
+            Option::Some(x) => {
+                self.num_values -= 1;
+                Option::Some(x)
+            }
+        }
     }
 }
 
