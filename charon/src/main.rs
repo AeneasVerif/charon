@@ -63,6 +63,7 @@ use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::path::PathBuf;
+use structopt::StructOpt;
 
 struct ToInternal {
     dest_dir: Option<PathBuf>,
@@ -129,8 +130,6 @@ fn initialize_logger() {
     builder.init();
 }
 
-use structopt::StructOpt;
-
 #[derive(StructOpt)]
 #[structopt(name = "Charon")]
 struct CliOpts {
@@ -142,109 +141,6 @@ struct CliOpts {
     #[structopt(short = "dest", long = "dest", parse(from_os_str))]
     dest_dir: Option<PathBuf>,
 }
-
-/*struct ArgInfo<'a> {
-    /// The keyword for the argument: "-o", "-dest", etc.
-    keyword: String,
-    /// The function to call if we found the argument
-    register: &'a mut dyn FnMut(String) -> (),
-}
-
-struct Args {
-    pub dest_dir: Option<String>,
-    /// The path to the current executable (should be the first argument of
-    /// the command line)
-    pub exec_path: String,
-    /// The input Rust file, to analyze
-    pub input_file: String,
-}
-
-/// Process the command-line arguments.
-/// The way this function works is mildly inspired by the [Arg] module in OCaml.
-fn process_args() -> Args {
-    // Retrieve the arguments
-    let mut args = std::env::args();
-
-    // The first argument is always the path to the executable
-    let exec_path = match args.next() {
-        Some(s) => s.to_owned(),
-        None => panic!("Impossible: zero arguments on the command-line!"),
-    };
-
-    // Collect the remaining arguments to process them
-    let args: Vec<String> = args.collect();
-    trace!("Command-line arguments: {:?}", args);
-
-    // The anonymous arguments
-    let mut anonymous_args: Vec<String> = Vec::new();
-
-    // All the arguments we will process
-    let mut dest_dir: Option<String> = Option::None;
-    let dest_dir_arg = ArgInfo {
-        keyword: "-dest".to_string(),
-        register: &mut { |s: String| dest_dir = Some(s) },
-    };
-
-    // The list of all the arguments and their registration functions.
-    // Note that as the registration functions are `FnMut`, we have to
-    // make this mutable (and iterate with mutable iterators) otherwise
-    // we can't apply the closures.
-    let mut valid_args = vec![dest_dir_arg];
-
-    // Process the arguments
-    let mut i = 0;
-    while i < args.len() {
-        let arg = &args[i];
-
-        // Check if this argument is an option (starts with '-')
-        // Note that arguments can't be empty (otherwise they are not parsed!)
-        if arg.chars().next().unwrap() == '-' {
-            // Find the argument
-            match valid_args.iter_mut().find(|a| a.keyword == *arg) {
-                None => {
-                    panic!("Unsupported option: {}", arg);
-                }
-                Some(a) => {
-                    // Find the option value
-                    i += 1;
-                    if i >= args.len() {
-                        panic!("The value for option {} is missing", arg);
-                    }
-                    let value = &args[i];
-
-                    // Check that the value doesn't start with '-'
-                    // Note that arguments can't be empty
-                    if value.chars().next().unwrap() == '_' {
-                        panic!(
-                            "Invalid value for option {}: {} (values don't start with '-')",
-                            arg, value
-                        );
-                    }
-
-                    // Register the value
-                    (a.register)(value.clone());
-                }
-            }
-        } else {
-            // Anonymous argument
-            anonymous_args.push(arg.clone());
-        }
-
-        i += 1;
-    }
-
-    if anonymous_args.len() != 1 {
-        panic!("There should always be exactly one anonymous argument for the input file name, we received: {:?}", anonymous_args);
-    }
-    let input_file = anonymous_args.pop().unwrap();
-
-    // Return
-    Args {
-        dest_dir,
-        exec_path,
-        input_file,
-    }
-}*/
 
 fn main() {
     // Initialize the logger
@@ -259,9 +155,6 @@ fn main() {
 
     // Parse the command-line
     let args = CliOpts::from_args();
-
-    // Process the arguments
-    //    let args = process_args();
 
     // Retrieve the sysroot (the path to the executable of the compiler extended
     // with our analysis).
