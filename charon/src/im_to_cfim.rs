@@ -751,7 +751,6 @@ fn make_ord_block_id(
 fn compute_switch_exits_explore(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
-    loop_exits: &HashSet<src::BlockId::Id>,
     memoized: &mut HashMap<src::BlockId::Id, BlockSuccsInfo>,
     block_id: src::BlockId::Id,
 ) -> BlockSuccsInfo {
@@ -765,10 +764,11 @@ fn compute_switch_exits_explore(
 
     // Find the next blocks, and their successors
     let children: Vec<src::BlockId::Id> = Vec::from_iter(cfg.cfg_no_be.neighbors(block_id));
-    let mut children_succs: Vec<im::OrdSet<OrdBlockId>> =
-        Vec::from_iter(children.iter().map(|bid| {
-            compute_switch_exits_explore(cfg, tsort_map, loop_exits, memoized, *bid).succs
-        }));
+    let mut children_succs: Vec<im::OrdSet<OrdBlockId>> = Vec::from_iter(
+        children
+            .iter()
+            .map(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid).succs),
+    );
     trace!("block: {}, children: {:?}", block_id, children);
 
     // Add the children themselves in their sets of successors
@@ -814,16 +814,7 @@ fn compute_switch_exits_explore(
                 let inter_succs = i_succs.intersection(j_succs);
 
                 if inter_succs.len() > max_inter_succs.len() {
-                    // As the set of filtered successors is topologically sorted,
-                    // the exit should be the first node in the set (the set is
-                    // necessarily non empty).
-                    // We ignore candidates where the exit is actually a loop
-                    // exit (it can happen, if two branches of an if call end
-                    // with a `break` for instance).
-                    let exit = inter_succs.iter().next().unwrap();
-                    if !loop_exits.contains(&exit.id) {
-                        max_inter_succs = inter_succs;
-                    }
+                    max_inter_succs = inter_succs;
                 }
             }
         }
@@ -856,11 +847,9 @@ fn compute_switch_exits_explore(
 /// topologically ordered set of "filtered successors" as follows (note
 /// that we work in the CFG *without* back edges):
 /// - for a block which doesn't branch (only one successor), the filtered
-///   successors are the filtered sucessors of the successor, plus the
-///   successor itself
-/// - for a block which branches, we compute the filtered successors of
-///   all the successors (i.e, all the branches), and find the "best"
-///   intersection of successors.
+///   successors is the set of reachable nodes.
+/// - for a block which branches, we compute the nodes reachable from all
+///   the children, and find the "best" intersection between those.
 ///   Note that we find the "best" intersection (a pair of branches which
 ///   maximize the intersection of filtered successors) because some branches
 ///   might never join the control-flow of the other branches, if they contain
@@ -876,17 +865,10 @@ fn compute_switch_exits_explore(
 fn compute_switch_exits(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
-    loop_exits: &HashSet<src::BlockId::Id>,
 ) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
     // Compute the successors info map, starting at the root node
     let mut succs_info_map = HashMap::new();
-    let _ = compute_switch_exits_explore(
-        cfg,
-        tsort_map,
-        loop_exits,
-        &mut succs_info_map,
-        src::BlockId::ZERO,
-    );
+    let _ = compute_switch_exits_explore(cfg, tsort_map, &mut succs_info_map, src::BlockId::ZERO);
 
     // We need to give precedence to the outer switches: we thus iterate
     // over the switch blocks in topological order.
@@ -939,6 +921,41 @@ fn compute_switch_exits(
     }
 
     exits
+}
+
+/// The exits of a graph
+#[derive(Debug, Clone)]
+struct ExitInfo {
+    /// The loop exits
+    loop_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    /// Some loop exits actually belong to outer switches. We still need
+    /// to track them in the loop exits, in order to know when we should
+    /// insert a break. However, we need to make sure we don't add the
+    /// corresponding block in a sequence, after having translated the
+    /// loop, like so:
+    /// ```
+    /// loop {
+    ///   loop_body
+    /// };
+    /// exit_blocks // OK if the exit "belongs" to the loop
+    /// ```
+    ///
+    /// In case the exit doesn't belong to the loop:
+    /// ```
+    /// if b {
+    ///   loop {
+    ///     loop_body
+    ///   } // no exit blocks after the loop
+    /// }
+    /// else {
+    ///   ...
+    /// };
+    /// exit_blocks // the exit blocks are here
+    /// ```
+    owned_loop_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    /// The switch exits.
+    /// Note that the switch exits are always owned.
+    owned_switch_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
 }
 
 /// Compute the exits for the loops and the switches (switch on integer and
@@ -1032,9 +1049,7 @@ fn compute_switch_exits(
 ///
 /// The following function thus computes the "exits" for loops and switches, which
 /// are basically the points where control-flow joins.
-fn compute_loop_switch_exits(
-    cfg_info: &CfgInfo,
-) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
+fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
     // Use the CFG without backward edges to topologically sort the nodes.
     // Note that `toposort` returns `Err` if and only if it finds cycles (which
     // can't happen).
@@ -1049,36 +1064,86 @@ fn compute_loop_switch_exits(
     );
 
     // Compute the loop exits
-    let mut loop_exits = compute_loop_exits(cfg_info);
+    let loop_exits = compute_loop_exits(cfg_info);
 
     // Compute the switch exits
-    let loop_exits_set: HashSet<src::BlockId::Id> =
-        HashSet::from_iter(loop_exits.iter().filter_map(|(_, bid)| *bid));
-    let switch_exits = compute_switch_exits(cfg_info, &tsort_map, &loop_exits_set);
+    let switch_exits = compute_switch_exits(cfg_info, &tsort_map);
+
+    // Compute the exit info
+    let mut exit_info = ExitInfo {
+        loop_exits: HashMap::new(),
+        owned_loop_exits: HashMap::new(),
+        owned_switch_exits: HashMap::new(),
+    };
+
+    // We need to give precedence to the outer switches and loops: we thus iterate
+    // over the blocks in topological order.
+    let mut sorted_blocks: im::OrdSet<OrdBlockId> = im::OrdSet::new();
+    for bid in cfg_info
+        .loop_entries
+        .iter()
+        .chain(cfg_info.switch_blocks.iter())
+    {
+        sorted_blocks.insert(make_ord_block_id(*bid, &tsort_map));
+    }
+
+    // Keep track of the exits which were already attributed
+    let mut all_exits = HashSet::new();
 
     // Put all this together
-    for (bid, exit_id) in switch_exits {
-        // It is possible that a switch is actually a loop entry: *do not*
-        // override the exit in this case.
-        if !loop_exits.contains_key(&bid) {
-            // Also, we ignore switch exits which are actually loop exits.
-            // Note that doing this shouldn't be necessary, because we actually
-            // don't consider switch exit candidates which are loop exits, but
-            // this may change.
+    for bid in sorted_blocks {
+        let bid = bid.id;
+        // Check if loop or switch block
+        if cfg_info.loop_entries.contains(&bid) {
+            // For loops, we always register the exit (if there is one).
+            // However, the exit may be owned by an outer switch (note
+            // that we already took care of spreading the exits between
+            // the inner/outer loops)
+            let exit_id = loop_exits.get(&bid).unwrap();
+            exit_info.loop_exits.insert(bid, *exit_id);
+
+            // Check if we "own" the exit
             match exit_id {
                 None => {
-                    let _ = loop_exits.insert(bid, None);
+                    // No exit: nothing to do
+                    ()
                 }
                 Some(exit_id) => {
-                    if !loop_exits_set.contains(&exit_id) {
-                        loop_exits.insert(bid, Some(exit_id));
+                    if all_exits.contains(exit_id) {
+                        // We don't own it
+                        ()
+                    } else {
+                        // We own it
+                        exit_info.owned_loop_exits.insert(bid, Some(*exit_id));
+                        all_exits.insert(*exit_id);
+                    }
+                }
+            }
+        } else {
+            // For switches: check that the exit was not already given to a
+            // loop
+            let exit_id = switch_exits.get(&bid).unwrap();
+
+            match exit_id {
+                None => {
+                    // No exit
+                    exit_info.owned_switch_exits.insert(bid, None);
+                }
+                Some(exit_id) => {
+                    if all_exits.contains(exit_id) {
+                        // We don't own it
+                        exit_info.owned_switch_exits.insert(bid, None);
+                    } else {
+                        // We own it
+                        exit_info.owned_switch_exits.insert(bid, Some(*exit_id));
+                        all_exits.insert(*exit_id);
                     }
                 }
             }
         }
     }
 
-    loop_exits
+    exit_info
 }
 
 fn combine_statement_and_statement(
@@ -1101,7 +1166,7 @@ fn combine_statements_and_statement(
 }
 
 fn get_goto_kind(
-    exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    exits_info: &ExitInfo,
     parent_loops: &Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     next_block_id: src::BlockId::Id,
@@ -1116,7 +1181,7 @@ fn get_goto_kind(
             return GotoKind::Continue(i);
         } else {
             // If we goto a loop exit node: this is a 'break'
-            match exits_map.get(&loop_id).unwrap() {
+            match exits_info.loop_exits.get(&loop_id).unwrap() {
                 None => (),
                 Some(exit_id) => {
                     if *exit_id == next_block_id {
@@ -1146,14 +1211,14 @@ enum GotoKind {
 fn translate_child_block(
     cfg: &CfgInfo,
     def: &src::FunDef,
-    exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    exits_info: &ExitInfo,
     parent_loops: Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     explored: &mut HashSet<src::BlockId::Id>,
     child_id: src::BlockId::Id,
 ) -> Option<tgt::Statement> {
     // Check if this is a backward call
-    match get_goto_kind(exits_map, &parent_loops, switch_exit_blocks, child_id) {
+    match get_goto_kind(exits_info, &parent_loops, switch_exit_blocks, child_id) {
         GotoKind::Break(index) => Some(tgt::Statement::Break(index)),
         GotoKind::Continue(index) => Some(tgt::Statement::Continue(index)),
         // If we are going to an exit block we simply ignore the goto
@@ -1163,7 +1228,7 @@ fn translate_child_block(
             translate_block(
                 cfg,
                 def,
-                exits_map,
+                exits_info,
                 parent_loops,
                 switch_exit_blocks,
                 explored,
@@ -1196,7 +1261,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 fn translate_terminator(
     cfg: &CfgInfo,
     def: &src::FunDef,
-    exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    exits_info: &ExitInfo,
     parent_loops: Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     explored: &mut HashSet<src::BlockId::Id>,
@@ -1208,7 +1273,7 @@ fn translate_terminator(
         src::Terminator::Goto { target } => translate_child_block(
             cfg,
             def,
-            exits_map,
+            exits_info,
             parent_loops,
             switch_exit_blocks,
             explored,
@@ -1218,7 +1283,7 @@ fn translate_terminator(
             let opt_child = translate_child_block(
                 cfg,
                 def,
-                exits_map,
+                exits_info,
                 parent_loops,
                 switch_exit_blocks,
                 explored,
@@ -1238,7 +1303,7 @@ fn translate_terminator(
             let opt_child = translate_child_block(
                 cfg,
                 def,
-                exits_map,
+                exits_info,
                 parent_loops,
                 switch_exit_blocks,
                 explored,
@@ -1261,7 +1326,7 @@ fn translate_terminator(
             let opt_child = translate_child_block(
                 cfg,
                 def,
-                exits_map,
+                exits_info,
                 parent_loops,
                 switch_exit_blocks,
                 explored,
@@ -1281,7 +1346,7 @@ fn translate_terminator(
                     let then_exp = translate_child_block(
                         cfg,
                         def,
-                        exits_map,
+                        exits_info,
                         parent_loops.clone(),
                         switch_exit_blocks,
                         explored,
@@ -1291,7 +1356,7 @@ fn translate_terminator(
                     let else_exp = translate_child_block(
                         cfg,
                         def,
-                        exits_map,
+                        exits_info,
                         parent_loops.clone(),
                         switch_exit_blocks,
                         explored,
@@ -1308,7 +1373,7 @@ fn translate_terminator(
                         let exp = translate_child_block(
                             cfg,
                             def,
-                            exits_map,
+                            exits_info,
                             parent_loops.clone(),
                             switch_exit_blocks,
                             explored,
@@ -1321,7 +1386,7 @@ fn translate_terminator(
                     let otherwise_exp = translate_child_block(
                         cfg,
                         def,
-                        exits_map,
+                        exits_info,
                         parent_loops.clone(),
                         switch_exit_blocks,
                         explored,
@@ -1394,7 +1459,7 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
 fn translate_block(
     cfg: &CfgInfo,
     def: &src::FunDef,
-    exits_map: &HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    exits_info: &ExitInfo,
     parent_loops: Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     explored: &mut HashSet<src::BlockId::Id>,
@@ -1431,18 +1496,23 @@ fn translate_block(
         parent_loops.clone()
     };
 
-    // If we enter a switch or a loop, we need to update the current_exit_block
+    // If we enter a switch or a loop, we need to check if we own the exit
+    // block, in which case we need to append it to the loop/switch body
+    // in a sequence
     let is_switch = block.terminator.is_switch();
-    let ncurrent_exit_block = if is_loop || is_switch {
-        *exits_map.get(&block_id).unwrap()
+    let next_block = if is_loop {
+        *exits_info.owned_loop_exits.get(&block_id).unwrap()
+    } else if is_switch {
+        *exits_info.owned_switch_exits.get(&block_id).unwrap()
     } else {
         Option::None
     };
-    // If we enter a switch and not a loop, add the exit block to the set
+
+    // If we enter a switch, add the exit block to the set
     // of outer exit blocks
-    let nswitch_exit_blocks = if is_switch && !(is_loop) {
+    let nswitch_exit_blocks = if is_switch {
         let mut nexit_blocks = switch_exit_blocks.clone();
-        match ncurrent_exit_block {
+        match next_block {
             Option::None => nexit_blocks,
             Option::Some(bid) => {
                 nexit_blocks.insert(bid);
@@ -1459,7 +1529,7 @@ fn translate_block(
     let terminator = translate_terminator(
         cfg,
         def,
-        exits_map,
+        exits_info,
         nparent_loops,
         &nswitch_exit_blocks,
         explored,
@@ -1492,12 +1562,12 @@ fn translate_block(
         let exp = tgt::Statement::Loop(Box::new(exp.unwrap()));
 
         // Add the exit block
-        let exp = if ncurrent_exit_block.is_some() {
-            let exit_block_id = ncurrent_exit_block.unwrap();
+        let exp = if next_block.is_some() {
+            let exit_block_id = next_block.unwrap();
             let next_exp = translate_block(
                 cfg,
                 def,
-                exits_map,
+                exits_info,
                 parent_loops,
                 switch_exit_blocks,
                 explored,
@@ -1514,17 +1584,17 @@ fn translate_block(
         let exp = terminator.unwrap();
 
         // Concatenate the exit expression, if needs be
-        let exp = if ncurrent_exit_block.is_some() {
+        let exp = if next_block.is_some() {
             // Sanity check: if there is an exit block, this block must be
             // reachable (i.e, there must exist a path in the switch which
             // doesn't end with `panic`, `return`, etc.).
             assert!(!is_terminal(&exp));
 
-            let exit_block_id = ncurrent_exit_block.unwrap();
+            let exit_block_id = next_block.unwrap();
             let next_exp = translate_block(
                 cfg,
                 def,
-                exits_map,
+                exits_info,
                 parent_loops,
                 switch_exit_blocks,
                 explored,
@@ -1555,10 +1625,10 @@ fn translate_function(src_defs: &src::FunDefs, src_def_id: FunDefId::Id) -> tgt:
 
     // Find the exit block for all the loops and switches, if such an exit point
     // exists.
-    let exits_map = compute_loop_switch_exits(&cfg_info);
+    let exits_info = compute_loop_switch_exits(&cfg_info);
 
     // Debugging
-    trace!("exits map:\n{:?}", exits_map);
+    trace!("exits map:\n{:?}", exits_info);
 
     // Translate the body by reconstructing the loops and the conditional branchings.
     // Note that we shouldn't get `None`.
@@ -1566,7 +1636,7 @@ fn translate_function(src_defs: &src::FunDefs, src_def_id: FunDefId::Id) -> tgt:
     let body_exp = translate_block(
         &cfg_info,
         &src_def,
-        &exits_map,
+        &exits_info,
         Vector::new(),
         &im::HashSet::new(),
         &mut explored,
