@@ -6,6 +6,8 @@ use crate::common::*;
 use crate::formatter::Formatter;
 use crate::types::*;
 use crate::values::*;
+use serde::ser::SerializeTupleVariant;
+use serde::{Serialize, Serializer};
 
 pub fn var_id_to_pretty_string(id: VarId::Id) -> String {
     format!("var@{}", id.to_string()).to_owned()
@@ -208,6 +210,42 @@ impl std::string::ToString for ConstantValue {
             ConstantValue::Bool(v) => v.to_string(),
             ConstantValue::Char(v) => v.to_string(),
             ConstantValue::String(v) => v.to_string(),
+        }
+    }
+}
+
+impl Serialize for ScalarValue {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let enum_name = "ScalarValue";
+        let variant_name = self.variant_name();
+        let (variant_index, variant_arity) = self.variant_index_arity();
+        if variant_arity > 0 {
+            let mut vs = serializer.serialize_tuple_variant(
+                enum_name,
+                variant_index,
+                variant_name,
+                variant_arity,
+            )?;
+            match self {
+                ScalarValue::Isize(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::I8(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::I16(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::I32(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::I64(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::I128(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::Usize(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::U8(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::U16(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::U32(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::U64(i) => vs.serialize_field(&i.to_string())?,
+                ScalarValue::U128(i) => vs.serialize_field(&i.to_string())?,
+            };
+            vs.end()
+        } else {
+            variant_name.serialize(serializer)
         }
     }
 }

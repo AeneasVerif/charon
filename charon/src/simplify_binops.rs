@@ -93,6 +93,7 @@ fn check_if_binop_then_assert(st1: &Statement, st2: &Statement, st3: &Statement)
         Statement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => {
             if binop_requires_assert_after(*binop) {
                 // We found a checked binary op.
+                //
                 // This group of statements should exactly match the following pattern:
                 //   ```
                 //   tmp := copy x + copy y; // Possibly a different binop
@@ -189,17 +190,19 @@ fn check_if_assert_then_binop(st1: &Statement, st2: &Statement, st3: &Statement)
             if binop_requires_assert_before(*binop) {
                 // We found an unchecked binop which should be simplified (division
                 // or remainder computation).
-                // Make sure the group of statements exactly matches the following
-                // pattern:
+                //
+                // There are two situations:
+                // - if the divisor is a non-zero constant, rust may not insert
+                //   an assertion (because it can statically check it)
+                // - otherwise, the group of statements must match the following
+                //   pattern exactly:
                 //   ```
                 //   tmp := (copy divisor) == 0;
                 //   assert((move tmp) == false);
                 //   dest := move dividend / move divisor; // Can also be a `%`
                 //   ...
                 //   ```
-                // If it is note the case, we can't collapse...
-                check_if_simplifiable_assert_then_binop(st1, st2, st3);
-                true
+                check_if_simplifiable_assert_then_binop(st1, st2, st3)
             } else {
                 false
             }
@@ -215,7 +218,12 @@ fn check_if_assert_then_binop(st1: &Statement, st2: &Statement, st3: &Statement)
 ///   dest := move dividend / move divisor; // Can also be a `%`
 ///   ...
 ///   ```
-fn check_if_simplifiable_assert_then_binop(st1: &Statement, st2: &Statement, st3: &Statement) {
+/// Or that there is no assert but the divisor is a non-zero constant.
+fn check_if_simplifiable_assert_then_binop(
+    st1: &Statement,
+    st2: &Statement,
+    st3: &Statement,
+) -> bool {
     match (st1, st2, st3) {
         (
             Statement::Assign(
@@ -235,6 +243,7 @@ fn check_if_simplifiable_assert_then_binop(st1: &Statement, st2: &Statement, st3
             }),
             Statement::Assign(_mp, Rvalue::BinaryOp(binop, _dividend, Operand::Move(divisor))),
         ) => {
+            // Case 1: pattern with assertion
             assert!(binop_requires_assert_before(*binop));
             assert!(!(*expected));
             assert!(eq_op1 == divisor);
@@ -244,6 +253,18 @@ fn check_if_simplifiable_assert_then_binop(st1: &Statement, st2: &Statement, st3
             } else {
                 assert!(scalar_value.as_uint().unwrap() == 0);
             }
+            true
+        }
+        (_, _, Statement::Assign(_mp, Rvalue::BinaryOp(_, _, Operand::Constant(_, divisor)))) => {
+            // Case 2: no assertion, the dividend must be a non-zero constant
+            let cv = divisor.as_constantvalue();
+            let cv = cv.as_scalar();
+            if cv.is_uint() {
+                assert!(cv.as_uint().unwrap() != 0)
+            } else {
+                assert!(cv.as_int().unwrap() != 0)
+            };
+            false
         }
         _ => {
             unreachable!();
@@ -310,7 +331,27 @@ fn simplify_st(st: Statement) -> Statement {
         Statement::Assign(p, rv) => {
             // Check that we never failed to simplify a binop
             match &rv {
-                Rvalue::BinaryOp(binop, _, _) => assert!(!binop_can_fail(*binop)),
+                Rvalue::BinaryOp(binop, _, divisor) => {
+                    // If it is an unsimplified binop, it must be / or %
+                    // and the divisor must be a non-zero constant
+                    if binop_can_fail(*binop) {
+                        match binop {
+                            BinOp::Div | BinOp::Rem => {
+                                let (_, cv) = divisor.as_constant();
+                                let cv = cv.as_constantvalue();
+                                let cv = cv.as_scalar();
+                                if cv.is_uint() {
+                                    assert!(cv.as_uint().unwrap() != 0)
+                                } else {
+                                    assert!(cv.as_int().unwrap() != 0)
+                                };
+                            }
+                            _ => {
+                                unreachable!();
+                            }
+                        }
+                    }
+                }
                 _ => (),
             }
             Statement::Assign(p, rv)

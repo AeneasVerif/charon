@@ -26,8 +26,10 @@ pub struct HashMap<T> {
     /// The current number of values in the table
     num_values: usize,
     /// The max load factor, expressed as a fraction
-    /// TODO: use
     max_load_factor: (usize, usize),
+    /// The max load factor applied to the current table length:
+    /// gives the threshold at which to resize the table.
+    max_load: usize,
     /// The table itself
     slots: Vec<List<T>>,
 }
@@ -44,22 +46,33 @@ impl<T> HashMap<T> {
         }
     }
 
-    pub fn new() -> Self {
-        let slots = HashMap::allocate_slots(Vec::new(), 32);
+    /// Create a new table, with a given capacity
+    fn new_with_capacity(
+        capacity: usize,
+        max_load_dividend: usize,
+        max_load_divisor: usize,
+    ) -> Self {
+        // TODO: better to use `Vec::with_capacity(32)` instead
+        // of `Vec::new()`
+        let slots = HashMap::allocate_slots(Vec::new(), capacity);
         HashMap {
             num_values: 0,
-            max_load_factor: (4, 5),
+            max_load_factor: (max_load_dividend, max_load_divisor),
+            max_load: (capacity * max_load_dividend) / max_load_divisor,
             slots,
         }
     }
 
-    /// We need a loop here too...
-    /// Also, we start with the end, so that F* sees that the function terminates.
+    pub fn new() -> Self {
+        // For now we create a table with 32 slots and a max load factor of 4/5
+        HashMap::new_with_capacity(32, 4, 5)
+    }
+
+    /// TODO: we need a loop
     fn clear_slots(slots: &mut Vec<List<T>>, i: usize) {
-        if i > 0 {
-            let i = i - 1;
+        if i < slots.len() {
             slots[i] = List::Nil;
-            HashMap::clear_slots(slots, i)
+            HashMap::clear_slots(slots, i + 1)
         } else {
             ()
         }
@@ -67,8 +80,7 @@ impl<T> HashMap<T> {
 
     pub fn clear(&mut self) {
         self.num_values = 0;
-        let len = self.slots.len();
-        HashMap::clear_slots(&mut self.slots, len);
+        HashMap::clear_slots(&mut self.slots, 0);
     }
 
     pub fn len(&self) -> usize {
@@ -95,7 +107,8 @@ impl<T> HashMap<T> {
         }
     }
 
-    pub fn insert<'a>(&'a mut self, key: Key, value: T) {
+    /// Auxiliary function to insert in the hashmap without triggering a resize
+    fn insert_no_resize<'a>(&'a mut self, key: Key, value: T) {
         let hash = hash_key(&key);
         let hash_mod = hash % self.slots.len();
         // We may want to use slots[...] instead of get_mut...
@@ -103,11 +116,75 @@ impl<T> HashMap<T> {
         if inserted {
             self.num_values += 1;
         }
-        // TODO: resize the hashmap
+    }
+
+    /// Insertion function.
+    /// May trigger a resize of the hash table.
+    pub fn insert<'a>(&'a mut self, key: Key, value: T) {
+        // Insert
+        self.insert_no_resize(key, value);
+        // Resize if necessary
+        if self.len() >= self.max_load {
+            self.try_resize()
+        }
+    }
+
+    /// The resize function, called if we need to resize the table after
+    /// an insertion.
+    fn try_resize<'a>(&'a mut self) {
+        // Check that we can resize - note that we are conservative about
+        // the upper bound. Also note that `as usize` is a trait, but we
+        // apply it to a constant here, which gets compiled by the MIR
+        // interpreter (so we don't see the conversion, actually).
+        let max_usize = u32::MAX as usize;
+        if self.slots.len() <= max_usize / 2 {
+            // Create a new table with a higher capacity
+            let mut ntable = HashMap::new_with_capacity(
+                self.slots.len() * 2,
+                self.max_load_factor.0,
+                self.max_load_factor.1,
+            );
+
+            // Move the elements to the new table
+            HashMap::move_elements(&mut ntable, &mut self.slots, 0);
+
+            // Replace the current table with the new table
+            let _ = std::mem::replace(&mut self.slots, ntable.slots);
+            self.max_load = ntable.max_load;
+        }
+    }
+
+    /// Auxiliary function called by [try_resize] to move all the elements
+    /// from the table to a new table
+    fn move_elements<'a>(ntable: &'a mut HashMap<T>, slots: &'a mut Vec<List<T>>, i: usize) {
+        if i < slots.len() {
+            // Move the elements out of the slot i
+            let ls = std::mem::replace(&mut slots[i], List::Nil);
+            // Move all those elements to the new table
+            HashMap::move_elements_from_list(ntable, ls);
+            // Do the same for slot i+1
+            HashMap::move_elements(ntable, slots, i + 1);
+        }
+    }
+
+    /// Auxiliary function.
+    /// TODO: better with a loop
+    fn move_elements_from_list<'a>(ntable: &'a mut HashMap<T>, ls: List<T>) {
+        // As long as there are elements in the list, move them
+        match ls {
+            List::Nil => (), // We're done
+            List::Cons(k, v, tl) => {
+                // Insert the element in the new table
+                ntable.insert_no_resize(k, v);
+                // Move the elements out of the tail
+                HashMap::move_elements_from_list(ntable, *tl);
+            }
+        }
     }
 
     /// We don't support borrows inside of enumerations for now, so we
     /// can't return an option...
+    /// TODO: add support for that
     fn get_in_list<'a, 'k>(key: &'k Key, ls: &'a List<T>) -> &'a T {
         match ls {
             List::Nil => panic!(),
@@ -147,48 +224,6 @@ impl<T> HashMap<T> {
         let hash_mod = hash % self.slots.len();
         HashMap::get_mut_in_list(key, &mut self.slots[hash_mod])
     }
-
-    /*fn get_in_list<'l, 'k>(key: &'k Key, ls: &'l List<T>) -> Option<&'l T> {
-        match ls {
-            List::Nil => None,
-            List::Cons(ckey, cvalue, ls) => {
-                if *ckey == *key {
-                    Some(cvalue)
-                } else {
-                    HashMap::get_in_list(key, ls)
-                }
-            }
-        }
-    }
-
-    /// The signature is not exactly the same as the one in
-    /// [https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.get_mut]
-    /// (the region paramaters are more precise here).
-    pub fn get<'l, 'k>(&'l self, key: &'k Key) -> Option<&'l T> {
-        let hash = hash_key(key);
-        let hash_mod = hash % self.slots.len();
-        HashMap::get_in_list(key, &self.slots[hash_mod])
-    }
-
-    fn get_mut_in_list<'l, 'k>(key: &'k Key, ls: &'l mut List<T>) -> Option<&'l mut T> {
-        match ls {
-            List::Nil => None,
-            List::Cons(ckey, cvalue, ls) => {
-                if *ckey == *key {
-                    Some(cvalue)
-                } else {
-                    HashMap::get_mut_in_list(key, ls)
-                }
-            }
-        }
-    }
-
-    /// Same remark as for [get].
-    pub fn get_mut<'l, 'k>(&'l mut self, key: &'k Key) -> Option<&'l mut T> {
-        let hash = hash_key(key);
-        let hash_mod = hash % self.slots.len();
-        HashMap::get_mut_in_list(key, &mut self.slots[hash_mod])
-    }*/
 
     /// Remove an element from the list.
     /// Return the removed element.
