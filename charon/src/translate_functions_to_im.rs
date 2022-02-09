@@ -2163,7 +2163,7 @@ fn compare_scope_spans(body: &Body, scope1: SourceScope, scope2: SourceScope) ->
     if lo1 < lo2 {
         Ordering::Less
     } else {
-        assert!(lo2 > lo1);
+        assert!(lo1 > lo2);
         Ordering::Greater
     }
 }

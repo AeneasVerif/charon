@@ -238,12 +238,15 @@ fn test1() {
     hm.insert(128, 18);
     hm.insert(1024, 138);
     hm.insert(1056, 256);
-    // Rk.: `&128` introduces an unevaluated constant value
-    assert!(*hm.get(&128) == 18);
-    let x = hm.get_mut(&1024);
+    // Rk.: `&128` introduces a ref constant value
+    // TODO: add support for this
+    let k = 128;
+    assert!(*hm.get(&k) == 18);
+    let k = 1024;
+    let x = hm.get_mut(&k);
     *x = 56;
-    assert!(*hm.get(&1024) == 56);
-    let x = hm.remove(&1024);
+    assert!(*hm.get(&k) == 56);
+    let x = hm.remove(&k);
     // If we write `x == Option::Some(56)` rust introduces
     // a call to `core::cmp::PartialEq::eq`, which is a trait
     // I don't support for now.
@@ -252,9 +255,12 @@ fn test1() {
         Option::None => panic!(),
         Option::Some(x) => assert!(x == 56),
     };
-    assert!(*hm.get(&0) == 42);
-    assert!(*hm.get(&128) == 18);
-    assert!(*hm.get(&1056) == 256);
+    let k = 0;
+    assert!(*hm.get(&k) == 42);
+    let k = 128;
+    assert!(*hm.get(&k) == 18);
+    let k = 1056;
+    assert!(*hm.get(&k) == 256);
 }
 
 /// It is a bit stupid, but I can't retrieve functions marked as "tests",
