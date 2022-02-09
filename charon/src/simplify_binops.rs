@@ -257,7 +257,7 @@ fn check_if_simplifiable_assert_then_binop(
         }
         (_, _, Statement::Assign(_mp, Rvalue::BinaryOp(_, _, Operand::Constant(_, divisor)))) => {
             // Case 2: no assertion, the dividend must be a non-zero constant
-            let cv = divisor.as_constantvalue();
+            let cv = divisor.as_constant_value();
             let cv = cv.as_scalar();
             if cv.is_uint() {
                 assert!(cv.as_uint().unwrap() != 0)
@@ -338,7 +338,7 @@ fn simplify_st(st: Statement) -> Statement {
                         match binop {
                             BinOp::Div | BinOp::Rem => {
                                 let (_, cv) = divisor.as_constant();
-                                let cv = cv.as_constantvalue();
+                                let cv = cv.as_constant_value();
                                 let cv = cv.as_scalar();
                                 if cv.is_uint() {
                                     assert!(cv.as_uint().unwrap() != 0)

@@ -212,6 +212,7 @@ fn to_snake_case(s: &str) -> String {
             last_is_lowercase = false;
             snake_case.push(c.to_lowercase().next().unwrap());
         } else {
+            last_is_lowercase = true;
             snake_case.push(c);
         }
     }
@@ -953,4 +954,11 @@ pub fn derive_enum_is_a(item: TokenStream) -> TokenStream {
 #[proc_macro_derive(EnumAsGetters)]
 pub fn derive_enum_as_getters(item: TokenStream) -> TokenStream {
     derive_enum_variant_method(item, EnumMethodKind::EnumAsGetters)
+}
+
+#[test]
+fn test_snake_case() {
+    let s = to_snake_case("ConstantValue");
+    println!("{}", s);
+    assert!(s == "constant_value".to_string());
 }
