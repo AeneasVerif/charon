@@ -692,6 +692,7 @@ fn translate_operand_constant_value_non_scalar<'tcx, 'ctx, 'ctx1>(
             // If we are here, the constant is likely a tuple or an enumration
             // variant.
             // We use [destructure_const] to destructure the constant
+            // We need a param_env: we use the function def id as a dummy id...
             let param_env = tcx.param_env(bt_ctx.def_id);
             // I have to clone some values: it is a bit annoying, but I manage
             // to get the lifetimes working otherwise...
@@ -829,7 +830,11 @@ fn translate_operand_constant_value<'tcx, 'ctx, 'ctx1>(
                 }
                 _ => {
                     // The remaining types should not be used for constants
-                    error!("unexpected type: {:?}", ty.kind());
+                    error!(
+                        "unexpected type: {:?}, for constant value: {:?}",
+                        ty.kind(),
+                        value
+                    );
                     unreachable!();
                 }
             }
@@ -864,13 +869,27 @@ fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
             rustc_middle::ty::ConstKind::Value(cvalue) => {
                 translate_operand_constant_value(tcx, bt_ctx, &c.ty, &cvalue)
             }
+            rustc_middle::ty::ConstKind::Unevaluated(unev) => {
+                // Evaluate the constant
+                // We need a param_env: we use the function def id as a dummy id...
+                let param_env = tcx.param_env(bt_ctx.def_id);
+                let evaluated = tcx.const_eval_resolve(param_env, unev, Option::None);
+                match evaluated {
+                    std::result::Result::Ok(c) => {
+                        let ty = constant.ty();
+                        translate_operand_constant_value(tcx, bt_ctx, &ty, &c)
+                    }
+                    std::result::Result::Err(_) => {
+                        unreachable!("Could not evaluate an unevaluated constant");
+                    }
+                }
+            }
             rustc_middle::ty::ConstKind::Param(_)
             | rustc_middle::ty::ConstKind::Infer(_)
             | rustc_middle::ty::ConstKind::Bound(_, _)
             | rustc_middle::ty::ConstKind::Placeholder(_)
-            | rustc_middle::ty::ConstKind::Unevaluated(_)
             | rustc_middle::ty::ConstKind::Error(_) => {
-                unreachable!();
+                unreachable!("Unexpected: {:?}", constant.literal);
             }
         },
         // I'm not sure what this is about: the documentation is weird.
@@ -2256,6 +2275,7 @@ fn translate_function(
     trace!("{:?}", def_id);
 
     let rid = *ordered.fun_id_to_rid.get(&def_id).unwrap();
+    trace!("About to translate function:\n{:?}", rid);
 
     // Initialize the function translation context
     let ft_ctx = FunTransContext {

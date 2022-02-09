@@ -10,3 +10,4 @@ test:
 	cargo run tests/src/nested_borrows.rs --dest tests/cfim
 	cargo run tests/src/no_nested_borrows.rs --dest tests/cfim
 	cargo run tests/src/loops.rs --dest tests/cfim
+	cargo run tests/src/hashmap.rs --dest tests/cfim

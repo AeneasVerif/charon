@@ -232,21 +232,34 @@ impl<T> HashMap<T> {
     }
 }
 
-#[test]
 fn test1() {
     let mut hm: HashMap<u64> = HashMap::new();
     hm.insert(0, 42);
     hm.insert(128, 18);
     hm.insert(1024, 138);
     hm.insert(1056, 256);
-    assert!(*hm.get(&128).unwrap() == 18);
-    let x = hm.get_mut(&1024).unwrap();
+    // Rk.: `&128` introduces an unevaluated constant value
+    assert!(*hm.get(&128) == 18);
+    let x = hm.get_mut(&1024);
     *x = 56;
-    assert!(*hm.get(&1024).unwrap() == 56);
-    assert!(hm.get(&10).is_none());
-    let x = hm.remove(&1024).unwrap();
-    assert!(x == 56);
-    assert!(*hm.get(&0).unwrap() == 42);
-    assert!(*hm.get(&128).unwrap() == 18);
-    assert!(*hm.get(&1056).unwrap() == 256);
+    assert!(*hm.get(&1024) == 56);
+    let x = hm.remove(&1024);
+    // If we write `x == Option::Some(56)` rust introduces
+    // a call to `core::cmp::PartialEq::eq`, which is a trait
+    // I don't support for now.
+    // Also, I haven't implemented support for `unwrap` yet...
+    match x {
+        Option::None => panic!(),
+        Option::Some(x) => assert!(x == 56),
+    };
+    assert!(*hm.get(&0) == 42);
+    assert!(*hm.get(&128) == 18);
+    assert!(*hm.get(&1056) == 256);
+}
+
+/// It is a bit stupid, but I can't retrieve functions marked as "tests",
+/// while I want to extract the unit tests.
+#[test]
+fn tests() {
+    test1();
 }
