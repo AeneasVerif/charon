@@ -23,8 +23,8 @@ pub fn hash_key(k: &Key) -> Hash {
 
 /// A hash map from [u64] to values
 pub struct HashMap<T> {
-    /// The current number of values in the table
-    num_values: usize,
+    /// The current number of entries in the table
+    num_entries: usize,
     /// The max load factor, expressed as a fraction
     max_load_factor: (usize, usize),
     /// The max load factor applied to the current table length:
@@ -56,7 +56,7 @@ impl<T> HashMap<T> {
         // of `Vec::new()`
         let slots = HashMap::allocate_slots(Vec::new(), capacity);
         HashMap {
-            num_values: 0,
+            num_entries: 0,
             max_load_factor: (max_load_dividend, max_load_divisor),
             max_load: (capacity * max_load_dividend) / max_load_divisor,
             slots,
@@ -79,12 +79,12 @@ impl<T> HashMap<T> {
     }
 
     pub fn clear(&mut self) {
-        self.num_values = 0;
+        self.num_entries = 0;
         HashMap::clear_slots(&mut self.slots, 0);
     }
 
     pub fn len(&self) -> usize {
-        self.num_values
+        self.num_entries
     }
 
     /// Insert in a list.
@@ -114,7 +114,7 @@ impl<T> HashMap<T> {
         // We may want to use slots[...] instead of get_mut...
         let inserted = HashMap::insert_in_list(key, value, &mut self.slots[hash_mod]);
         if inserted {
-            self.num_values += 1;
+            self.num_entries += 1;
         }
     }
 
@@ -132,15 +132,18 @@ impl<T> HashMap<T> {
     /// The resize function, called if we need to resize the table after
     /// an insertion.
     fn try_resize<'a>(&'a mut self) {
-        // Check that we can resize - note that we are conservative about
-        // the upper bound. Also note that `as usize` is a trait, but we
-        // apply it to a constant here, which gets compiled by the MIR
-        // interpreter (so we don't see the conversion, actually).
+        // Check that we can resize: we need to check that there are no overflows.
+        // Note that we are conservative about the usize::MAX.
+        // Also note that `as usize` is a trait, but we apply it to a constant
+        // here, which gets compiled by the MIR interpreter (so we don't see
+        // the conversion, actually).
+        // Rk.: this is a hit heavy...
         let max_usize = u32::MAX as usize;
-        if self.slots.len() <= max_usize / 2 {
+        let capacity = self.slots.len();
+        if (capacity <= max_usize / 2) && (capacity <= max_usize / self.max_load_factor.0) {
             // Create a new table with a higher capacity
             let mut ntable = HashMap::new_with_capacity(
-                self.slots.len() * 2,
+                capacity * 2,
                 self.max_load_factor.0,
                 self.max_load_factor.1,
             );
@@ -260,7 +263,7 @@ impl<T> HashMap<T> {
         match x {
             Option::None => Option::None,
             Option::Some(x) => {
-                self.num_values -= 1;
+                self.num_entries -= 1;
                 Option::Some(x)
             }
         }
