@@ -7,9 +7,10 @@
 //!   generic in the key type (having function pointers allows to mimic traits)
 //! - for the "get" functions: we don't support borrows inside of enumerations
 //!   for now, so we can't return a type like `Option<&T>`. The real restriction
-//!   we currently have on borrows is that we forbid borrows in function
-//!   signatures: getting the borrows inside of enumerations mostly requires
-//!   to pour some implementation time in it.
+//!   we currently have on borrows is that we forbid *nested* borrows in function
+//!   signatures, like in `&'a mut &'b mut T` (and the real problem comes from
+//!   nested *lifetimes*, not nested borrows). Getting the borrows inside of
+//!   enumerations mostly requires to pour some implementation time in it.
 #![allow(dead_code)]
 
 use std::vec::Vec;
