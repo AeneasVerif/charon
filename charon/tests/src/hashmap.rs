@@ -1,6 +1,15 @@
 //! A hashmap implementation.
-//! TODO: we will need function pointers/closures if we want to make the map
-//! generic in the key type.
+//!
+//! Current limitations:
+//! - all the recursive functions should be rewritten with loops, once
+//!   we have support for this.
+//! - we will need function pointers/closures if we want to make the map
+//!   generic in the key type (having function pointers allows to mimic traits)
+//! - for the "get" functions: we don't support borrows inside of enumerations
+//!   for now, so we can't return a type like `Option<&T>`. The real restriction
+//!   we currently have on borrows is that we forbid borrows in function
+//!   signatures: getting the borrows inside of enumerations mostly requires
+//!   to pour some implementation time in it.
 #![allow(dead_code)]
 
 use std::vec::Vec;
@@ -17,7 +26,8 @@ pub enum List<T> {
 /// hash map version.
 pub fn hash_key(k: &Key) -> Hash {
     // Do nothing for now, we might want to implement something smarter
-    // in the future
+    // in the future, or to call an external function (which will be
+    // abstract): we don't need to reason about the hash function.
     *k
 }
 
@@ -68,7 +78,6 @@ impl<T> HashMap<T> {
         HashMap::new_with_capacity(32, 4, 5)
     }
 
-    /// TODO: we need a loop
     fn clear_slots(slots: &mut Vec<List<T>>, i: usize) {
         if i < slots.len() {
             slots[i] = List::Nil;
@@ -124,7 +133,7 @@ impl<T> HashMap<T> {
         // Insert
         self.insert_no_resize(key, value);
         // Resize if necessary
-        if self.len() >= self.max_load {
+        if self.len() > self.max_load {
             self.try_resize()
         }
     }
@@ -140,7 +149,10 @@ impl<T> HashMap<T> {
         // Rk.: this is a hit heavy...
         let max_usize = u32::MAX as usize;
         let capacity = self.slots.len();
-        if (capacity <= max_usize / 2) && (capacity <= max_usize / self.max_load_factor.0) {
+        // Checking that there won't be overflows by using the fact that, if m > 0:
+        // n * m <= p <==> n <= p / m
+        let n1 = max_usize / 2;
+        if capacity <= n1 / self.max_load_factor.0 {
             // Create a new table with a higher capacity
             let mut ntable = HashMap::new_with_capacity(
                 capacity * 2,
@@ -171,7 +183,6 @@ impl<T> HashMap<T> {
     }
 
     /// Auxiliary function.
-    /// TODO: better with a loop
     fn move_elements_from_list<'a>(ntable: &'a mut HashMap<T>, ls: List<T>) {
         // As long as there are elements in the list, move them
         match ls {
@@ -181,6 +192,27 @@ impl<T> HashMap<T> {
                 ntable.insert_no_resize(k, v);
                 // Move the elements out of the tail
                 HashMap::move_elements_from_list(ntable, *tl);
+            }
+        }
+    }
+
+    /// Returns `true` if the map contains a value for the specified key.
+    pub fn contains_key(&self, key: &Key) -> bool {
+        let hash = hash_key(key);
+        let hash_mod = hash % self.slots.len();
+        HashMap::contains_key_in_list(key, &self.slots[hash_mod])
+    }
+
+    /// Returns `true` if the list contains a value for the specified key.
+    pub fn contains_key_in_list(key: &Key, ls: &List<T>) -> bool {
+        match ls {
+            List::Nil => false,
+            List::Cons(ckey, _, ls) => {
+                if *ckey == *key {
+                    true
+                } else {
+                    HashMap::contains_key_in_list(key, ls)
+                }
             }
         }
     }
@@ -270,6 +302,11 @@ impl<T> HashMap<T> {
     }
 }
 
+/// I currently can't retrieve functions marked with the attribute #[test],
+/// while I want to extract the unit tests and use the normalize on them,
+/// so I have to define the test functions somewhere and call them from
+/// a test function.
+/// TODO: find a way to do that.
 fn test1() {
     let mut hm: HashMap<u64> = HashMap::new();
     hm.insert(0, 42);
@@ -301,8 +338,6 @@ fn test1() {
     assert!(*hm.get(&k) == 256);
 }
 
-/// It is a bit stupid, but I can't retrieve functions marked as "tests",
-/// while I want to extract the unit tests.
 #[test]
 fn tests() {
     test1();
