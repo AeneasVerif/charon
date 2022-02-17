@@ -1,3 +1,4 @@
+mod betree;
 mod hashmap;
 mod loops;
 mod nested_borrows;
