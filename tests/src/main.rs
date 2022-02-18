@@ -1,4 +1,5 @@
 mod betree;
+mod betree_utils;
 mod hashmap;
 mod loops;
 mod nested_borrows;
