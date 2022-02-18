@@ -175,7 +175,7 @@ pub struct BeTree {
 /// we took inspiration from [https://github.com/oscarlab/Be-Tree], where
 /// in case the binding is not present, the closure stored in upsert is
 /// given a default value.
-pub fn update(prev: Option<Value>, add: Value) -> Value {
+pub fn upsert_update(prev: Option<Value>, add: Value) -> Value {
     // We just compute the sum, until it saturates
     match prev {
         Option::None => {
@@ -237,6 +237,10 @@ impl Node {
                     List::Cons(Message::Upsert(_), _) => {
                         // There are pending upserts: we have no choice but to
                         // apply them.
+                        // Rk.: rather than calling [lookup], we could actually
+                        // go down the tree accumulating upserts. On the other
+                        // hand, the key is now "hotter", so it is not a bad
+                        // idea to keep it as close to the root as possible.
                         // First, lookup the value from the children
                         let v = if key < *pivot {
                             left.lookup(key)
@@ -284,14 +288,50 @@ impl Node {
         unimplemented!();
     }
 
-    /// TODO:
-    fn apply_upserts(v: Option<Value>, upserts: List<Message>) -> Value {
-        unimplemented!();
+    /// Apply a list of upserts to a looked up value.
+    /// They must be sorted from the first upsert to apply to the last upsert.
+    /// Note that if the list of upserts is empty, then the value must be `Some`.
+    fn apply_upserts(prev: Option<Value>, upserts: List<Message>) -> Value {
+        match upserts {
+            List::Nil => prev.unwrap(),
+            List::Cons(Message::Upsert(s), next_upserts) => {
+                let v = upsert_update(prev, s);
+                Node::apply_upserts(Option::Some(v), *next_upserts)
+            }
+            _ => {
+                // This is unreachable: we must only have [Upsert] messages
+                // in the list
+                panic!();
+            }
+        }
     }
 
-    /// TODO:
-    fn insert_in_messages_stack(msgs: &mut Map<Key, Message>, key: Key, v: Value) {
-        unimplemented!();
+    /// This is used by [lookup].
+    ///
+    /// If when looking up the value associated to a key we find pending upserts
+    /// in an internal node, we apply them then insert an [Insert] message with
+    /// the resulting value in the pending messages of the node.
+    fn insert_in_messages_stack(mut msgs: &mut Map<Key, Message>, key: Key, v: Value) {
+        match msgs {
+            List::Nil => {
+                let _ = std::mem::replace(
+                    msgs,
+                    List::Cons((key, Message::Insert(v)), Box::new(List::Nil)),
+                );
+            }
+            List::Cons(x, next_msgs) => {
+                if x.0 > key {
+                    // Insert here - note that we have to do annoying swappings
+                    // because we can't move out of borrows...
+                    let tl = std::mem::replace(msgs, List::Nil);
+                    let tl = List::Cons((key, Message::Insert(v)), Box::new(tl));
+                    *msgs = tl;
+                } else {
+                    // Continue
+                    Node::insert_in_messages_stack(next_msgs, key, v)
+                }
+            }
+        }
     }
 }
 
