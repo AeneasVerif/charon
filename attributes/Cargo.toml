@@ -1,0 +1,10 @@
+[package]
+name = "attributes"
+version = "0.1.0"
+authors = ["Son Ho <hosonmarc@gmail.com>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
