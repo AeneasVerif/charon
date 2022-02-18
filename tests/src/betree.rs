@@ -47,12 +47,12 @@ fn store_node(id: Id, content: Map<Key, Value>) {
     serde_json::to_writer(&f, &content).unwrap();
 }
 
-/// A message
+/// A message - note that all those messages have to be linked to a key
 enum Message {
     /// Insert a binding from value to key
-    Insert(Key, Value),
+    Insert(Value),
     /// Delete a binding from value to key
-    Delete(Key),
+    Delete,
     /// [Upsert] is "query then update" (query a value, then update the binding
     /// by using the result of the query). This is pretty expensive if we
     /// actually *do* query, *then* update: queries are expensive, because
@@ -82,14 +82,14 @@ enum Message {
     ///
     /// Also note that if we don't have [Upsert], there is no point in using
     /// b-epsilon trees: b-trees work very well.
-    Upsert(Key, Value),
+    Upsert(Value),
 }
 
-/// Whenever we insert a message in the tree, we actually need time-stamped
-/// message. The reason is that otherwise we don't know in which order to
+/// Whenever we insert a message in the tree, we actually need to use a timestamp
+/// with the key. The reason is that otherwise we don't know in which order to
 /// apply the [Upsert] messages.
-struct TsMessage {
-    msg: Message,
+struct MessageKey {
+    key: Key,
     ts: Timestamp,
 }
 
@@ -99,18 +99,15 @@ enum Node {
     ///
     /// The fields:
     /// - id
-    /// - messages
+    /// - messages (map from time-stamped keys to messages)
     /// - pivot
     /// - left child
     /// - right child
-    /// TODO: Key -> MessageKey
-    /// TODO: Map: linked list
-    Internal(Id, Map<Key, Message>, Key, Box<Node>, Box<Node>),
+    Internal(Id, Map<MessageKey, Message>, Key, Box<Node>, Box<Node>),
     /// A leaf node.
     ///
     /// The fields:
     /// - id
-    /// - messages
     /// - map from keys to values
     Leaf(Id, Map<Key, Value>),
 }
@@ -126,23 +123,26 @@ pub struct BeTree {
 }
 
 impl BeTree {
-    fn add_message(&mut self, msg: TsMessage) {
+    fn add_message(&mut self, key: MessageKey, msg: Message) {
         unimplemented!();
     }
 
     pub fn insert(&mut self, key: Key, value: Value) {
-        let msg = self.wrap_message(Message::Insert(key, value));
-        self.add_message(msg);
+        let key = self.wrap_key(key);
+        let msg = Message::Insert(value);
+        self.add_message(key, msg);
     }
 
     pub fn delete(&mut self, key: Key) {
-        let msg = self.wrap_message(Message::Delete(key));
-        self.add_message(msg);
+        let key = self.wrap_key(key);
+        let msg = Message::Delete;
+        self.add_message(key, msg);
     }
 
     pub fn upsert(&mut self, key: Key, value: Value) {
-        let msg = self.wrap_message(Message::Upsert(key, value));
-        self.add_message(msg);
+        let key = self.wrap_key(key);
+        let msg = Message::Upsert(value);
+        self.add_message(key, msg);
     }
 
     pub fn get(&mut self, key: Key) {
@@ -155,9 +155,9 @@ impl BeTree {
         timestamp
     }
 
-    fn wrap_message(&mut self, msg: Message) -> TsMessage {
+    fn wrap_key(&mut self, key: Key) -> MessageKey {
         let ts = self.fresh_timestamp();
-        TsMessage { msg, ts }
+        MessageKey { key, ts }
     }
 
     // TODO: rename to lookup
