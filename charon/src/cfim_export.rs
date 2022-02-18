@@ -60,9 +60,12 @@ pub fn export(
             // There is a destination directory
             let mut tgt = dest_dir.clone();
 
-            // Retrieve the file name
+            // Retrieve the file name (without the source directory)
             let filename = sourcefile.file_name().unwrap();
+
+            // Put together, and change the extension
             tgt.push(filename);
+            assert!(tgt.set_extension("cfim"));
             tgt
         }
     };
