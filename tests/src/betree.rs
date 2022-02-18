@@ -14,6 +14,7 @@ type Map<K, V> = List<(K, V)>;
 
 /// Timestamps are used to identify the order in which to process the messages.
 /// This is important for the updates.
+/// TODO: we don't need those...
 pub(crate) type Timestamp = u64;
 
 /// We use linked lists for the maps from keys to messages/bindings
@@ -120,7 +121,15 @@ pub(crate) struct MessageKey {
 /// Internal node content.
 ///
 /// An internal node contains a map from keys to pending messages
-pub(crate) type InternalContent = Map<MessageKey, Message>;
+///
+/// Invariants:
+/// - the pairs (key, message) are sorted so that the keys are in increasing order
+/// - for a given key, there can be:
+///   - no message
+///   - one insert or delete message
+///   - a list of upsert messages. In that case, the upsert message are sorted
+///     from the *first* to the *last* added in the betree.
+pub(crate) type InternalContent = Map<Key, Message>;
 
 /// Leaf node content.
 ///
@@ -138,6 +147,9 @@ enum Node {
     /// - pivot
     /// - left child
     /// - right child
+    ///
+    /// Note that the bindings for the keys < pivot are in the left child,
+    /// and the keys >= pivot are in the right child.
     Internal(Id, Key, Box<Node>, Box<Node>),
     /// A leaf node.
     ///
@@ -156,7 +168,6 @@ pub struct BeTree {
     next_node_id: Id,
 }
 
-/*
 /// The update function used for [Upsert].
 /// Will be removed once we have closures (or at least function pointers).
 /// This function just computes a saturated sum.
@@ -200,13 +211,54 @@ impl Node {
             }
             Node::Internal(id, pivot, left, right) => {
                 // Load the node content
-                // Check if there is a message for the key
-                unimplemented!();
+                let mut msgs = load_internal_node(*id);
+                // Check if there are pending messages for the key
+                // (note that if there are upserts messages, we filter
+                // them from the stack of messages, because those upserts
+                // messages *must* be applied immediately).
+                let pending = Node::lookup_filter_pending_messages(&mut msgs);
+                match &pending {
+                    List::Nil => {
+                        // Nothing: dive into the children
+                        if key < *pivot {
+                            left.lookup(key)
+                        } else {
+                            right.lookup(key)
+                        }
+                    }
+                    List::Cons(Message::Insert(v), _) => {
+                        // Note that the tail must be Nil
+                        Some(*v)
+                    }
+                    List::Cons(Message::Delete, _) => {
+                        // Note that the tail must be Nil
+                        None
+                    }
+                    List::Cons(Message::Upsert(_), _) => {
+                        // There are pending upserts: we have no choice but to
+                        // apply them.
+                        // First, lookup the value from the children
+                        let v = if key < *pivot {
+                            left.lookup(key)
+                        } else {
+                            right.lookup(key)
+                        };
+                        // Apply the pending updates
+                        let v = Node::apply_upserts(v, pending);
+                        // Add an [Insert] message in the messages stack, to
+                        // account for the update
+                        Node::insert_in_messages_stack(&mut msgs, key, v);
+                        // Update the node content
+                        store_internal_node(*id, msgs);
+                        // Return the value
+                        Option::Some(v)
+                    }
+                }
             }
         }
     }
 
-    /// Helper function
+    /// Lookup a value in a list of bindings.
     fn lookup_in_bindings(bindings: &Map<Key, Value>, key: Key) -> Option<Value> {
         match bindings {
             List::Nil => Option::None,
@@ -220,38 +272,48 @@ impl Node {
         }
     }
 
-    /// Retrieve the messages pending for a key (and remove them from the stack
-    /// of messages).
+    /// Retrieve the messages pending for a key.
     /// Note that we maintain the following invariants:
     /// - if there are > 1 messages, they must be update messages only
-    /// - the update messages are sorted by order of timestamp (earliest first)
-    fn filter_pending_messages(msgs: &mut Map<Key, Value>) -> Map<Key, Value> {
+    /// - the upsert messages we return are sorted from the *first* added to the
+    ///   *last* added to the betree.
+    /// We remove the pending messages from the messages stack if they are upserts:
+    /// as this function is used for lookups,if we find an upsert, we need to apply
+    /// it.
+    fn lookup_filter_pending_messages(msgs: &mut Map<Key, Message>) -> List<Message> {
+        unimplemented!();
+    }
+
+    /// TODO:
+    fn apply_upserts(v: Option<Value>, upserts: List<Message>) -> Value {
+        unimplemented!();
+    }
+
+    /// TODO:
+    fn insert_in_messages_stack(msgs: &mut Map<Key, Message>, key: Key, v: Value) {
         unimplemented!();
     }
 }
 
 impl BeTree {
-    fn add_message(&mut self, key: MessageKey, msg: Message) {
+    fn add_message(&mut self, key: Key, msg: Message) {
         unimplemented!();
     }
 
     /// Insert a binding from [key] to [value]
     pub fn insert(&mut self, key: Key, value: Value) {
-        let key = self.wrap_key(key);
         let msg = Message::Insert(value);
         self.add_message(key, msg);
     }
 
     /// Delete the bindings for [key]
     pub fn delete(&mut self, key: Key) {
-        let key = self.wrap_key(key);
         let msg = Message::Delete;
         self.add_message(key, msg);
     }
 
     /// Apply a query-update
     pub fn upsert(&mut self, key: Key, value: Value) {
-        let key = self.wrap_key(key);
         let msg = Message::Upsert(value);
         self.add_message(key, msg);
     }
@@ -275,4 +337,3 @@ impl BeTree {
         MessageKey { key, ts }
     }
 }
-*/

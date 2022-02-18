@@ -81,10 +81,10 @@ pub(crate) fn load_internal_node(id: Id) -> InternalContent {
     // Read
     let f = File::open(filename).unwrap();
     // Serde makes things easy
-    let c: Vec<(Key, Timestamp, MessageSerde)> = serde_json::from_reader(&f).unwrap();
-    let c: Vec<(MessageKey, Message)> = c
+    let c: Vec<(Key, MessageSerde)> = serde_json::from_reader(&f).unwrap();
+    let c: Vec<(Key, Message)> = c
         .into_iter()
-        .map(|(key, ts, msg)| (MessageKey { key, ts }, msg.to_msg()))
+        .map(|(key, msg)| (key, msg.to_msg()))
         .collect();
     // Convert
     list_from_vec(c)
@@ -98,10 +98,10 @@ pub(crate) fn store_internal_node(id: Id, content: InternalContent) {
     // Write
     let f = File::create(filename).unwrap();
     // Convert
-    let v: Vec<(MessageKey, Message)> = list_to_vec(content);
-    let v: Vec<(Key, Timestamp, MessageSerde)> = v
+    let v: Vec<(Key, Message)> = list_to_vec(content);
+    let v: Vec<(Key, MessageSerde)> = v
         .into_iter()
-        .map(|(k, msg)| (k.key, k.ts, MessageSerde::from_msg(msg)))
+        .map(|(k, msg)| (k, MessageSerde::from_msg(msg)))
         .collect();
     // Serde makes things easy
     serde_json::to_writer(&f, &v).unwrap();
