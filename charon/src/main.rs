@@ -169,8 +169,9 @@ fn main() {
         exec_path,
         sysroot_arg,
         args.input_file.as_path().to_str().unwrap().to_string(),
-        "--crate-type=lib".to_owned(),
-        "--edition=2018".to_owned(),
+        "--crate-type=lib".to_string(),
+        "--edition=2018".to_string(),
+        //"-Zpolonius".to_string(),
     ];
     RunCompiler::new(
         &compiler_args,
@@ -288,6 +289,8 @@ fn translate(
         dest_dir,
         source_file,
     )?;
+
+    trace!("Done");
 
     Ok(())
 }
