@@ -216,7 +216,7 @@ impl Node {
                 // (note that if there are upserts messages, we filter
                 // them from the stack of messages, because those upserts
                 // messages *must* be applied immediately).
-                let pending = Node::lookup_filter_pending_messages(&mut msgs);
+                let pending = Node::lookup_filter_pending_messages(&mut msgs, key);
                 match &pending {
                     List::Nil => {
                         // Nothing: dive into the children
@@ -284,8 +284,32 @@ impl Node {
     /// We remove the pending messages from the messages stack if they are upserts:
     /// as this function is used for lookups,if we find an upsert, we need to apply
     /// it.
-    fn lookup_filter_pending_messages(msgs: &mut Map<Key, Message>) -> List<Message> {
-        unimplemented!();
+    fn lookup_filter_pending_messages(msgs: &mut Map<Key, Message>, key: Key) -> List<Message> {
+        match msgs {
+            List::Nil => List::Nil,
+            List::Cons(x, next_msgs) => {
+                let removed = Node::lookup_filter_pending_messages(next_msgs, key);
+                if x.0 == key {
+                    // Remove the message - can't move below a borrow...
+                    // This is really annoying: there must be a more efficient
+                    // way to do. Maybe we could move the whole list before
+                    // filtering, then filter it, then move the filtered list
+                    // back?
+                    let x_and_next = std::mem::replace(msgs, List::Nil);
+                    match x_and_next {
+                        List::Nil => {
+                            unreachable!()
+                        }
+                        List::Cons(x, next_msgs) => {
+                            *msgs = *next_msgs;
+                            List::Cons(x.1, Box::new(removed))
+                        }
+                    }
+                } else {
+                    removed
+                }
+            }
+        }
     }
 
     /// Apply a list of upserts to a looked up value.
