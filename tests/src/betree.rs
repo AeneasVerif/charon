@@ -216,6 +216,9 @@ impl Node {
                 // (note that if there are upserts messages, we filter
                 // them from the stack of messages, because those upserts
                 // messages *must* be applied immediately).
+                // TODO: would be better to do the following: lookup the first
+                // message which concerns the key. If there is one, then
+                //
                 let pending = Node::lookup_filter_pending_messages(&mut msgs, key);
                 match &pending {
                     List::Nil => {
@@ -257,6 +260,25 @@ impl Node {
                         // Return the value
                         Option::Some(v)
                     }
+                }
+            }
+        }
+    }
+
+    /// Return a mutable borrow to the first message which concerns the given key
+    /// (if we reach the end of the list, we return it)
+    fn lookup_first_message_for_key<'a>(
+        msgs: &'a mut Map<Key, Message>,
+        key: Key,
+    ) -> &'a mut Map<Key, Message> {
+        match msgs {
+            List::Nil => msgs,
+            List::Cons(x, next_msgs) => {
+                // Annoying: we need Polonius here
+                if x.0 == key {
+                    msgs
+                } else {
+                    Node::lookup_first_message_for_key(next_msgs, key)
                 }
             }
         }
