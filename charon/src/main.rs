@@ -1,6 +1,5 @@
 #![feature(rustc_private, register_tool)]
 #![feature(box_syntax, box_patterns)]
-#![register_tool(creusot)]
 #![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
