@@ -1,6 +1,8 @@
 //! The following module implements a minimal betree.
 //! We don't have loops for now, so we will need to update the code to remove
 //! the recursive functions at some point.
+//! We drew a lot of inspiration from the C++ [Be-Tree](https://github.com/oscarlab/Be-Tree).
+//! implementation.
 #![allow(dead_code)]
 
 use crate::betree_utils as utils;
@@ -172,7 +174,7 @@ pub struct BeTree {
 /// Will be removed once we have closures (or at least function pointers).
 /// This function just computes a saturated sum.
 /// Also note that it takes an option as input, for the previous value:
-/// we took inspiration from [https://github.com/oscarlab/Be-Tree], where
+/// we draw inspiration from the C++ Be-Tree implemenation, where
 /// in case the binding is not present, the closure stored in upsert is
 /// given a default value.
 pub fn upsert_update(prev: Option<Value>, add: Value) -> Value {
@@ -225,7 +227,8 @@ impl Node {
                 // we will apply the messages, filter them while doing so,
                 // insert an [Insert] message, etc.). Should be interesting
                 // to see how the proof experience with the backward functions
-                // is at this for this piece of code.
+                // is at this for this piece of code. Note that this was inpired
+                // by Be-Tree.
                 // Also, this should be all the more interesting once we have
                 // loops.
                 let pending = Node::lookup_first_message_for_key(&mut msgs, key);
@@ -247,7 +250,7 @@ impl Node {
                         // go down the tree accumulating upserts. On the other
                         // hand, the key is now "hotter", so it is not a bad
                         // idea to keep it as close to the root as possible.
-                        // First, lookup the value from the children
+                        // First, lookup the value from the children.
                         let v = if key < *pivot {
                             left.lookup(key)
                         } else {
