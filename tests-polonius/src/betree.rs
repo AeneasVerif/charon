@@ -184,6 +184,7 @@ enum Node {
 }
 
 /// Parameters and indices used in the BeTree
+/// TODO: split
 struct Params {
     /// The minimum number of messages we flush to the children.
     /// We wait to reach 2 * min_flush_size before flushing to children.
@@ -245,7 +246,7 @@ pub fn upsert_update(prev: Option<Value>, st: UpsertFunState) -> Value {
                     let margin = u64::MAX - prev;
                     // Check if we saturate
                     if margin >= v {
-                        prev + margin
+                        prev + v
                     } else {
                         u64::MAX
                     }
@@ -797,26 +798,38 @@ impl Node {
 }
 
 impl BeTree {
-    fn add_message(&mut self, key: Key, msg: Message) {
+    fn new(min_flush_size: u64, split_size: u64) -> Self {
+        let id = 0;
+        let root = Node::Leaf(Leaf { id, size: 0 });
+        store_leaf_node(id, List::Nil);
+        let params = Params {
+            min_flush_size,
+            split_size,
+            next_node_id: 1,
+        };
+        BeTree { params, root }
+    }
+
+    fn apply(&mut self, key: Key, msg: Message) {
         self.root.apply(&mut self.params, key, msg)
     }
 
     /// Insert a binding from [key] to [value]
     pub fn insert(&mut self, key: Key, value: Value) {
         let msg = Message::Insert(value);
-        self.add_message(key, msg);
+        self.apply(key, msg);
     }
 
     /// Delete the bindings for [key]
     pub fn delete(&mut self, key: Key) {
         let msg = Message::Delete;
-        self.add_message(key, msg);
+        self.apply(key, msg);
     }
 
     /// Apply a query-update
     pub fn upsert(&mut self, key: Key, upd: UpsertFunState) {
         let msg = Message::Upsert(upd);
-        self.add_message(key, msg);
+        self.apply(key, msg);
     }
 
     /// Returns the value bound to a key.
@@ -829,5 +842,192 @@ impl BeTree {
 
     fn fresh_node_id(&mut self) -> NodeId {
         self.params.fresh_node_id()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::betree::*;
+    use std::collections::HashMap;
+    use std::fmt::{Display, Error, Formatter};
+    use std::vec::Vec;
+
+    struct Maps {
+        betree: BeTree,
+        refmap: HashMap<Key, Value>,
+    }
+
+    impl Maps {
+        fn insert(&mut self, k: Key, v: Value) {
+            self.betree.insert(k, v);
+            self.refmap.insert(k, v);
+        }
+
+        fn delete(&mut self, k: Key) {
+            self.betree.delete(k);
+            self.refmap.remove(&k);
+        }
+
+        /// This function doesn't return a value: it simply checks that the
+        /// b-epsilon tree and the reference map have the same bindings.
+        fn lookup(&mut self, k: Key) {
+            let v0 = self.betree.lookup(k);
+            let v1 = self.refmap.get(&k).map(|x| *x);
+            log::trace!("lookup {k}: betree: {:?}, ref: {:?}", v0, v1);
+            assert!(v0 == v1);
+        }
+
+        /// Only testing the addition (the choice of the update function doesn't
+        /// make much difference)
+        fn upsert(&mut self, k: Key, v: Value) {
+            self.betree.upsert(k, UpsertFunState::Add(v));
+            let prev = self.refmap.get(&k).map(|x| *x);
+            let nv = upsert_update(prev, UpsertFunState::Add(v));
+            self.refmap.insert(k, nv);
+        }
+
+        /// Check that all the bindings in the betree give the same result as the
+        /// reference.
+        ///
+        /// Rk.: looking up actually updates the b-epsilon tree.
+        fn check_equal(&mut self) {
+            let keys: Vec<Key> = self.refmap.keys().map(|k| *k).collect();
+            for k in keys {
+                self.lookup(k);
+            }
+        }
+    }
+
+    impl Display for Map<Key, Value> {
+        fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+            match self {
+                List::Nil => write!(f, ""),
+                List::Cons(hd, tl) => {
+                    write!(f, "{} -> {}, ", hd.0, hd.1).unwrap();
+                    tl.fmt(f)
+                }
+            }
+        }
+    }
+
+    impl Display for UpsertFunState {
+        fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+            match self {
+                UpsertFunState::Add(v) => write!(f, "add({})", v),
+                UpsertFunState::Sub(v) => write!(f, "sub({})", v),
+            }
+        }
+    }
+
+    impl Display for Message {
+        fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+            match self {
+                Message::Insert(v) => write!(f, "insert({})", v),
+                Message::Delete => write!(f, "delete"),
+                Message::Upsert(v) => write!(f, "upsert({})", v),
+            }
+        }
+    }
+
+    impl Display for Map<Key, Message> {
+        fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+            match self {
+                List::Nil => write!(f, ""),
+                List::Cons(hd, tl) => {
+                    write!(f, "{} -> {}, ", hd.0, hd.1).unwrap();
+                    tl.fmt(f)
+                }
+            }
+        }
+    }
+
+    impl Node {
+        fn fmt(&self, indent: &String, f: &mut Formatter<'_>) -> Result<(), Error> {
+            match self {
+                Node::Leaf(node) => {
+                    let content = load_leaf_node(node.id);
+                    write!(f, "{}{}: [{}]", indent, node.id, content)
+                }
+                Node::Internal(node) => {
+                    let content = load_internal_node(node.id);
+                    let indent1 = format!("{}  ", indent).to_string();
+                    write!(
+                        f,
+                        "{}{{\n{}{},\n{}[{}],",
+                        indent, indent1, node.id, indent1, &content
+                    )
+                    .unwrap();
+                    write!(f, "\n{}", indent1).unwrap();
+                    node.left.fmt(&indent1, f).unwrap();
+                    write!(f, "\n{}", indent1).unwrap();
+                    node.right.fmt(&indent1, f).unwrap();
+                    write!(f, "\n{}}}", indent)
+                }
+            }
+        }
+    }
+
+    impl Display for BeTree {
+        fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+            self.root.fmt(&"".to_string(), f)
+        }
+    }
+
+    #[test]
+    fn test1() {
+        // Initialize the logger
+        env_logger::init();
+
+        let mut m = Maps {
+            betree: BeTree::new(5, 5),
+            refmap: HashMap::new(),
+        };
+        let num_keys = 10;
+
+        // Insert bindings
+        for k in 0..num_keys {
+            let v = 2 * k + 1;
+            log::trace!("insert: {} -> {}", k, v);
+            m.insert(k, v);
+            log::trace!("\n{}", &m.betree);
+        }
+
+        // Make various queries
+        for kb in 0..(10 * num_keys) {
+            let k = kb % num_keys;
+            match k % 4 {
+                0 => {
+                    let v = 3 * k + 2;
+                    log::trace!("insert: {} -> {}", k, v);
+                    m.insert(k, v);
+                }
+                1 => {
+                    log::trace!("delete: {}", k);
+                    m.delete(k);
+                }
+                2 => {
+                    let v = kb % 7;
+                    log::trace!("upsert: {} -> {}", k, v);
+                    m.upsert(k, v);
+                }
+                3 => {
+                    m.lookup(k);
+                }
+                _ => {
+                    unreachable!();
+                }
+            }
+            log::trace!("\n{}", &m.betree);
+        }
+
+        // Check that the b-epsilon tree didn't diverge (we check twice,
+        // because looking up performs updates that we also want to test)
+        m.check_equal();
+        m.check_equal();
+    }
+    fn range_insert(tree: &mut BeTree, start: Key, end: Key) {
+        for k in start..end {
+            tree.insert(k, 2 * k + 1);
+        }
     }
 }

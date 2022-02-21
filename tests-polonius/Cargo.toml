@@ -8,3 +8,5 @@ edition = "2018"
 attributes = { path = "../attributes" }
 serde_json = "1.0.59"
 serde = { version = "1.0.117", features = ["derive"] }
+log = "0.4.14"
+env_logger = "0.8.4"
