@@ -141,6 +141,9 @@ pub(crate) type LeafContent = Map<Key, Value>;
 /// A node in the BeTree.
 /// Note that the node's content is stored on disk (and hence absent from the
 /// node itself).
+///
+/// Note that we don't have clean/dirty nodes: all nodes are immediately
+/// written on disk upon being updated.
 enum Node {
     /// An internal node (with children).
     ///
@@ -152,6 +155,15 @@ enum Node {
     ///
     /// Note that the bindings for the keys < pivot are in the left child,
     /// and the keys >= pivot are in the right child.
+    ///
+    /// Note that in Be-Tree the internal nodes have lists of children, which
+    /// allows to do even smarter things: if an internal node has too many
+    /// messages, then:
+    /// - either it can transmit big batches of those messages to some of its
+    ///   children, in which case it does
+    /// - or it can't, in which case it splits, because otherwise we have too
+    ///   many unefficient updates to perform (the aim really is to amortize
+    ///   the cost of I/O)
     Internal(Id, Key, Box<Node>, Box<Node>),
     /// A leaf node.
     ///
@@ -198,7 +210,87 @@ pub fn upsert_update(prev: Option<Value>, add: Value) -> Value {
     }
 }
 
+impl<T> List<T> {
+    /// Push an element at the front of the list.
+    fn push_front(&mut self, x: T) {
+        // Move under borrows: annoying...
+        let tl = std::mem::replace(self, List::Nil);
+        *self = List::Cons(x, Box::new(tl));
+    }
+
+    /// Pop the element at the front of the list
+    fn pop_front(&mut self) -> T {
+        // Move under borrows: annoying...
+        let ls = std::mem::replace(self, List::Nil);
+        match ls {
+            List::Nil => panic!(),
+            List::Cons(x, tl) => {
+                *self = *tl;
+                x
+            }
+        }
+    }
+}
+
 impl Node {
+    /// Apply a message to ourselves
+    ///
+    /// This basically inserts a message in a messages stack. However,
+    /// we may need to filter previous messages: for insert, if we insert an
+    /// [Insert] in a stack which contains an [Insert] or a [Delete] for the
+    /// same key, we replace this old message with the new one.
+    fn apply<'a>(msgs: &'a mut Map<Key, Message>, key: Key, new_msg: Message) {
+        // Lookup the first message for [key]
+        let pending = Node::lookup_first_message_for_key(msgs, key);
+        // What we do is not the same, depending on whether there is already
+        // a message or not.
+        match pending {
+            List::Nil => {
+                // Nothing: simply add the new message
+                *pending = List::Cons((key, new_msg), Box::new(List::Nil));
+            }
+            List::Cons((k, msg), next_msgs) => {
+                // Check if this is the same key:
+                // - if not, we simply insert the new message
+                // - if yes, we need to take the current message into account
+                if *k != key {
+                    // Simply insert
+                    pending.push_front((key, new_msg));
+                } else {
+                    // We need to check the current message
+                    match &new_msg {
+                        Message::Insert(_) | Message::Delete => {
+                            // If [Insert] or [Delete]: filter the current
+                            // messages, and insert the new one
+                            Node::filter_messages_for_key(key, pending);
+                            pending.push_front((key, new_msg));
+                        }
+                        Message::Upsert(s) => {
+                            // If [Update]: we need to take into account the
+                            // previous messages.
+                            match msg {
+                                Message::Insert(_) => {
+                                    unimplemented!()
+                                }
+                                Message::Delete => {
+                                    // There should be exactly one message
+                                    unimplemented!()
+                                }
+                                Message::Upsert(_) => {
+                                    unimplemented!()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn filter_messages_for_key<'a>(key: Key, msgs: &'a mut Map<Key, Message>) {
+        unimplemented!()
+    }
+
     /// Returns the value bound to a key.
     /// Note that while looking for the binding, we might reorganize the
     /// internals of the betree to apply or flush messages: hence the mutable
@@ -229,51 +321,74 @@ impl Node {
                 // to see how the proof experience with the backward functions
                 // is at this for this piece of code. Note that this was inpired
                 // by Be-Tree.
-                // Also, this should be all the more interesting once we have
-                // loops.
+                // Also, can't wait to see how all this will work with loops.
                 let pending = Node::lookup_first_message_for_key(&mut msgs, key);
                 match pending {
                     List::Nil => {
                         // Nothing: dive into the children
-                        if key < *pivot {
-                            left.lookup(key)
-                        } else {
-                            right.lookup(key)
-                        }
+                        Node::lookup_in_children(*pivot, left, right, key)
                     }
-                    List::Cons((_, Message::Insert(v)), _) => Some(*v),
-                    List::Cons((_, Message::Delete), _) => None,
-                    List::Cons((_, Message::Upsert(_)), _) => {
-                        // There are pending upserts: we have no choice but to
-                        // apply them.
-                        //
-                        // Rk.: rather than calling [lookup], we could actually
-                        // go down the tree accumulating upserts. On the other
-                        // hand, the key is now "hotter", so it is not a bad
-                        // idea to keep it as close to the root as possible.
-                        // Note that what we do is what Be-Tree does.
-                        //
-                        // First, lookup the value from the children.
-                        let v = if key < *pivot {
-                            left.lookup(key)
+                    List::Cons((k, msg), _) => {
+                        // Check if the borrow which points inside the messages
+                        // stack points to a message for [key]
+                        if *k != key {
+                            // Note the same key: dive into the children
+                            Node::lookup_in_children(*pivot, left, right, key)
                         } else {
-                            right.lookup(key)
-                        };
-                        // Apply the pending updates, and replace them with
-                        // an [Insert] containing the updated value.
-                        let v = Node::apply_upserts(pending, v, key);
-                        // Update the node content
-                        store_internal_node(*id, msgs);
-                        // Return the value
-                        Option::Some(v)
+                            // Same key: match over the message for this key
+                            match msg {
+                                Message::Insert(v) => Some(*v),
+                                Message::Delete => None,
+                                Message::Upsert(_) => {
+                                    // There are pending upserts: we have no choice but to
+                                    // apply them.
+                                    //
+                                    // Rk.: rather than calling [lookup], we could actually
+                                    // go down the tree accumulating upserts. On the other
+                                    // hand, the key is now "hotter", so it is not a bad
+                                    // idea to keep it as close to the root as possible.
+                                    // Note that what we do is what Be-Tree does.
+                                    //
+                                    // First, lookup the value from the children.
+                                    let v = Node::lookup_in_children(*pivot, left, right, key);
+                                    // Apply the pending updates, and replace them with
+                                    // an [Insert] containing the updated value.
+                                    //
+                                    // Rk.: Be-Tree doesn't seem to store the newly computed
+                                    // value, which I don't understand.
+                                    let v = Node::apply_upserts(pending, v, key);
+                                    // Update the node content
+                                    store_internal_node(*id, msgs);
+                                    // Return the value
+                                    Option::Some(v)
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    /// Return a mutable borrow to the first message which concerns the given key
-    /// (if we reach the end of the list, we return it)
+    /// Small utility: lookup a value in the children nodes.
+    fn lookup_in_children(
+        pivot: Key,
+        left: &mut Box<Node>,
+        right: &mut Box<Node>,
+        key: Key,
+    ) -> Option<Value> {
+        if key < pivot {
+            left.lookup(key)
+        } else {
+            right.lookup(key)
+        }
+    }
+
+    /// Return a mutable borrow to the first message whose key is <= than [key].
+    /// If the key is [key], then it is the first message about [key].
+    /// Otherwise, it gives us a mutable borrow to the place where we need
+    /// to insert new messages (note that the borrow may point to the end
+    /// of the list).
     fn lookup_first_message_for_key<'a>(
         msgs: &'a mut Map<Key, Message>,
         key: Key,
@@ -287,7 +402,7 @@ impl Node {
                 // need to return anything). However, it would not be very
                 // idiomatic, especially with regards to the fact that we will
                 // rewrite everything with loops at some point.
-                if x.0 == key {
+                if x.0 >= key {
                     msgs
                 } else {
                     Node::lookup_first_message_for_key(next_msgs, key)
@@ -310,13 +425,14 @@ impl Node {
         }
     }
 
-    /// Apply a list of upserts to a looked up value.
+    /// Apply the upserts from the current messages stack to a looked up value.
     ///
     /// The input mutable borrow must point to the first upsert message in the
-    /// messages stack. We filter the messages while applying them.
+    /// messages stack of the current node. We remove the messages from the stack
+    /// while applying them.
     /// Note that if there are no more upserts to apply, then the value must be
-    /// `Some`. Also note that we must maintain the invariants that upsert messages
-    /// are sorted from the first to the last to apply, in the message stacks.
+    /// `Some`. Also note that we use the invariant that in the message stack,
+    /// upsert messages are sorted from the first to the last to apply.
     fn apply_upserts(msgs: &mut Map<Key, Message>, prev: Option<Value>, key: Key) -> Value {
         match msgs {
             List::Nil => {
@@ -336,9 +452,8 @@ impl Node {
                             // Apply the update
                             let v = upsert_update(prev, *s);
                             let prev = Option::Some(v);
-                            // Filter the message - move under borrows: annoying...
-                            let next_msgs = std::mem::replace(&mut (**next_msgs), List::Nil);
-                            *msgs = next_msgs;
+                            // Pop the message the message we just applied
+                            let _ = msgs.pop_front();
                             // Continue
                             Node::apply_upserts(msgs, prev, key)
                         }
@@ -352,8 +467,7 @@ impl Node {
                     // Not the proper key: we applied all the upsert messages.
                     // Simply put an [Insert] message and return the value.
                     let v = prev.unwrap();
-                    let next_msgs = std::mem::replace(msgs, List::Nil);
-                    *msgs = List::Cons((key, Message::Insert(v)), Box::new(next_msgs));
+                    msgs.push_front((key, Message::Insert(v)));
                     return v;
                 }
             }
