@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+/// The example the Rust team uses to illustrate why we need Polonius.
 pub fn get_or_insert(map: &mut HashMap<u32, u32>) -> &u32 {
     match map.get(&22) {
         Some(v) => v,
@@ -15,7 +16,8 @@ pub enum List<T> {
     Nil,
 }
 
-/// Return a mutable borrow to the portion of the list where we find [x]
+/// Return a mutable borrow to the first portion of the list where we can find [x].
+/// Allow to do in-place modifications (this example comes from the b-epsilon tree).
 pub fn get_list_at_x<'a>(ls: &'a mut List<u32>, x: u32) -> &'a mut List<u32> {
     match ls {
         List::Nil => {
