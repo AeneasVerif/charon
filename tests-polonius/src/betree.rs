@@ -797,8 +797,8 @@ impl Node {
 }
 
 impl BeTree {
-    fn add_message(&mut self, _key: Key, _msg: Message) {
-        unimplemented!();
+    fn add_message(&mut self, key: Key, msg: Message) {
+        self.root.apply(&mut self.params, key, msg)
     }
 
     /// Insert a binding from [key] to [value]
