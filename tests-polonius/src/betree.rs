@@ -219,8 +219,16 @@ impl Node {
                 //   *last* added to the betree.
                 // Also note that if there are upsert messages, we have to apply
                 // them immediately.
+                //
+                // Rk.: [lookup_first_message_for_key] below returns a borrow to
+                // the portion of the list we will update (if we have upserts,
+                // we will apply the messages, filter them while doing so,
+                // insert an [Insert] message, etc.). Should be interesting
+                // to see how the proof experience with the backward functions
+                // is at this for this piece of code.
+                // Also, this should be all the more interesting once we have
+                // loops.
                 let pending = Node::lookup_first_message_for_key(&mut msgs, key);
-                //                let pending = Node::lookup_filter_pending_messages(&mut msgs, key);
                 match pending {
                     List::Nil => {
                         // Nothing: dive into the children
@@ -245,12 +253,9 @@ impl Node {
                         } else {
                             right.lookup(key)
                         };
-                        // Apply the pending updates
+                        // Apply the pending updates, and replace them with
+                        // an [Insert] containing the updated value.
                         let v = Node::apply_upserts(pending, v, key);
-                        // Add an [Insert] message in the messages stack, to
-                        // account for the update.
-                        // TODO: insert directly
-                        Node::insert_in_messages_stack(&mut msgs, key, v);
                         // Update the node content
                         store_internal_node(*id, msgs);
                         // Return the value
@@ -271,6 +276,11 @@ impl Node {
             List::Nil => msgs,
             List::Cons(x, next_msgs) => {
                 // Rk.: we need Polonius here
+                // We wouldn't need Polonius if directly called the proper
+                // function to make the modifications here (because we wouldn't
+                // need to return anything). However, it would not be very
+                // idiomatic, especially with regards to the fact that we will
+                // rewrite everything with loops at some point.
                 if x.0 == key {
                     msgs
                 } else {
@@ -294,43 +304,6 @@ impl Node {
         }
     }
 
-    /*
-    /// Retrieve the messages pending for a key.
-    /// Note that we maintain the following invariants:
-    /// - if there are > 1 messages, they must be update messages only
-    /// - the upsert messages we return are sorted from the *first* added to the
-    ///   *last* added to the betree.
-    /// We remove the pending messages from the messages stack if they are upserts:
-    /// as this function is used for lookups,if we find an upsert, we need to apply
-    /// it.
-    fn lookup_filter_pending_messages(msgs: &mut Map<Key, Message>, key: Key) -> List<Message> {
-        match msgs {
-            List::Nil => List::Nil,
-            List::Cons(x, next_msgs) => {
-                let removed = Node::lookup_filter_pending_messages(next_msgs, key);
-                if x.0 == key {
-                    // Remove the message - can't move below a borrow...
-                    // This is really annoying: there must be a more efficient
-                    // way to do. Maybe we could move the whole list before
-                    // filtering, then filter it, then move the filtered list
-                    // back?
-                    let x_and_next = std::mem::replace(msgs, List::Nil);
-                    match x_and_next {
-                        List::Nil => {
-                            unreachable!()
-                        }
-                        List::Cons(x, next_msgs) => {
-                            *msgs = *next_msgs;
-                            List::Cons(x.1, Box::new(removed))
-                        }
-                    }
-                } else {
-                    removed
-                }
-            }
-        }
-    }*/
-
     /// Apply a list of upserts to a looked up value.
     ///
     /// The input mutable borrow must point to the first upsert message in the
@@ -341,8 +314,11 @@ impl Node {
     fn apply_upserts(msgs: &mut Map<Key, Message>, prev: Option<Value>, key: Key) -> Value {
         match msgs {
             List::Nil => {
-                // We reached the end of the list: we applied all the upsert messages
-                prev.unwrap()
+                // We reached the end of the list: we applied all the upsert
+                // messages. Simply put an [Insert] message.
+                let v = prev.unwrap();
+                *msgs = List::Cons((key, Message::Insert(v)), Box::new(List::Nil));
+                return v;
             }
             List::Cons((k, msg), next_msgs) => {
                 // Check if we should stop here
@@ -367,36 +343,12 @@ impl Node {
                         }
                     }
                 } else {
-                    // Not the proper key: stop
-                    prev.unwrap()
-                }
-            }
-        }
-    }
-
-    /// This is used by [lookup].
-    ///
-    /// If when looking up the value associated to a key we find pending upserts
-    /// in an internal node, we apply them then insert an [Insert] message with
-    /// the resulting value in the pending messages of the node.
-    fn insert_in_messages_stack(msgs: &mut Map<Key, Message>, key: Key, v: Value) {
-        match msgs {
-            List::Nil => {
-                let _ = std::mem::replace(
-                    msgs,
-                    List::Cons((key, Message::Insert(v)), Box::new(List::Nil)),
-                );
-            }
-            List::Cons(x, next_msgs) => {
-                if x.0 > key {
-                    // Insert here - note that we have to do annoying swappings
-                    // because we can't move out of borrows...
-                    let tl = std::mem::replace(msgs, List::Nil);
-                    let tl = List::Cons((key, Message::Insert(v)), Box::new(tl));
-                    *msgs = tl;
-                } else {
-                    // Continue
-                    Node::insert_in_messages_stack(next_msgs, key, v)
+                    // Not the proper key: we applied all the upsert messages.
+                    // Simply put an [Insert] message and return the value.
+                    let v = prev.unwrap();
+                    let next_msgs = std::mem::replace(msgs, List::Nil);
+                    *msgs = List::Cons((key, Message::Insert(v)), Box::new(next_msgs));
+                    return v;
                 }
             }
         }
