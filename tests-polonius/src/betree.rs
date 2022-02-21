@@ -134,6 +134,19 @@ pub(crate) type InternalContent = Map<Key, Message>;
 /// We store the bindings in order of increasing key.
 pub(crate) type LeafContent = Map<Key, Value>;
 
+/// Internal node. See [Node].
+struct Internal {
+    id: NodeId,
+    pivot: Key,
+    left: Box<Node>,
+    right: Box<Node>,
+}
+
+/// Leaf node. See [Node]
+struct Leaf {
+    id: NodeId,
+}
+
 /// A node in the BeTree.
 /// Note that the node's content is stored on disk (and hence absent from the
 /// node itself).
@@ -160,12 +173,12 @@ enum Node {
     /// - or it can't, in which case it splits, because otherwise we have too
     ///   many unefficient updates to perform (the aim really is to amortize
     ///   the cost of I/O)
-    Internal(NodeId, Key, Box<Node>, Box<Node>),
+    Internal(Internal),
     /// A leaf node.
     ///
     /// The fields:
     /// - id
-    Leaf(NodeId),
+    Leaf(Leaf),
 }
 
 /// Parameters and indices used in the BeTree
@@ -286,6 +299,17 @@ impl<T> Map<Key, T> {
     }
 }
 
+impl Internal {
+    /// Small utility: lookup a value in the children nodes.
+    fn lookup_in_children(&mut self, key: Key) -> Option<Value> {
+        if key < self.pivot {
+            self.left.lookup(key)
+        } else {
+            self.right.lookup(key)
+        }
+    }
+}
+
 impl Node {
     /// Apply a message to ourselves: leaf node case
     ///
@@ -394,25 +418,25 @@ impl Node {
     /// Apply a message to ourselves
     fn apply(&mut self, params: &mut Params, key: Key, new_msg: Message) {
         match self {
-            Node::Leaf(id) => {
+            Node::Leaf(node) => {
                 // Load the content from disk
-                let mut content = load_leaf_node(*id);
+                let mut content = load_leaf_node(node.id);
                 // Insert
                 Node::apply_to_leaf(&mut content, key, new_msg);
                 // Check if we need to split
                 unimplemented!();
                 // Store the content to disk
-                store_leaf_node(*id, content);
+                store_leaf_node(node.id, content);
             }
-            Node::Internal(id, pivot, left, right) => {
+            Node::Internal(node) => {
                 // Load the content from disk
-                let mut content = load_internal_node(*id);
+                let mut content = load_internal_node(node.id);
                 // Insert
                 Node::apply_to_internal(&mut content, key, new_msg);
                 // Check if we need to flush
                 unimplemented!();
                 // Store the content to disk
-                store_internal_node(*id, content);
+                store_internal_node(node.id, content);
                 unimplemented!()
             }
         }
@@ -495,15 +519,15 @@ impl Node {
     /// borrow.
     fn lookup<'a>(&'a mut self, key: Key) -> Option<Value> {
         match self {
-            Node::Leaf(id) => {
+            Node::Leaf(node) => {
                 // Load the node content
-                let bindings = load_leaf_node(*id);
+                let bindings = load_leaf_node(node.id);
                 // Just lookup the binding in the map
                 Node::lookup_in_bindings(key, &bindings)
             }
-            Node::Internal(id, pivot, left, right) => {
+            Node::Internal(node) => {
                 // Load the node content
-                let mut msgs = load_internal_node(*id);
+                let mut msgs = load_internal_node(node.id);
                 // Look for the first message pending for the key.
                 // Note that we maintain the following invariants:
                 // - if there are > 1 messages, they must be upsert messages only
@@ -524,14 +548,14 @@ impl Node {
                 match pending {
                     List::Nil => {
                         // Nothing: dive into the children
-                        Node::lookup_in_children(*pivot, left, right, key)
+                        node.lookup_in_children(key)
                     }
                     List::Cons((k, msg), _) => {
                         // Check if the borrow which points inside the messages
                         // stack points to a message for [key]
                         if *k != key {
                             // Note the same key: dive into the children
-                            Node::lookup_in_children(*pivot, left, right, key)
+                            node.lookup_in_children(key)
                         } else {
                             // Same key: match over the message for this key
                             match msg {
@@ -548,7 +572,7 @@ impl Node {
                                     // Note that what we do is what Be-Tree does.
                                     //
                                     // First, lookup the value from the children.
-                                    let v = Node::lookup_in_children(*pivot, left, right, key);
+                                    let v = node.lookup_in_children(key);
                                     // Apply the pending updates, and replace them with
                                     // an [Insert] containing the updated value.
                                     //
@@ -556,7 +580,7 @@ impl Node {
                                     // value, which I don't understand.
                                     let v = Node::apply_upserts(pending, v, key);
                                     // Update the node content
-                                    store_internal_node(*id, msgs);
+                                    store_internal_node(node.id, msgs);
                                     // Return the value
                                     Option::Some(v)
                                 }
@@ -565,20 +589,6 @@ impl Node {
                     }
                 }
             }
-        }
-    }
-
-    /// Small utility: lookup a value in the children nodes.
-    fn lookup_in_children(
-        pivot: Key,
-        left: &mut Box<Node>,
-        right: &mut Box<Node>,
-        key: Key,
-    ) -> Option<Value> {
-        if key < pivot {
-            left.lookup(key)
-        } else {
-            right.lookup(key)
         }
     }
 
