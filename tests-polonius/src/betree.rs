@@ -591,7 +591,7 @@ impl Node {
             List::Cons(hd, tl) => {
                 if hd.0 == key {
                     Option::Some(hd.1)
-                } else if hd.0 < key {
+                } else if hd.0 > key {
                     Option::None
                 } else {
                     Node::lookup_in_bindings(key, tl)
@@ -610,7 +610,7 @@ impl Node {
             List::Nil => bindings,
             List::Cons(hd, tl) => {
                 // This requires Polonius
-                if hd.0 <= key {
+                if hd.0 >= key {
                     bindings
                 } else {
                     Node::lookup_mut_in_bindings(key, tl)
@@ -751,7 +751,7 @@ impl Node {
                 // need to return anything). However, it would not be very
                 // idiomatic, especially with regards to the fact that we will
                 // rewrite everything with loops at some point.
-                if x.0 <= key {
+                if x.0 >= key {
                     msgs
                 } else {
                     Node::lookup_first_message_for_key(key, next_msgs)
@@ -859,11 +859,13 @@ mod tests {
 
     impl Maps {
         fn insert(&mut self, k: Key, v: Value) {
+            log::trace!("insert: {} -> {}", k, v);
             self.betree.insert(k, v);
             self.refmap.insert(k, v);
         }
 
         fn delete(&mut self, k: Key) {
+            log::trace!("delete: {}", k);
             self.betree.delete(k);
             self.refmap.remove(&k);
         }
@@ -880,6 +882,7 @@ mod tests {
         /// Only testing the addition (the choice of the update function doesn't
         /// make much difference)
         fn upsert(&mut self, k: Key, v: Value) {
+            log::trace!("upsert: {} -> add({})", k, v);
             self.betree.upsert(k, UpsertFunState::Add(v));
             let prev = self.refmap.get(&k).map(|x| *x);
             let nv = upsert_update(prev, UpsertFunState::Add(v));
@@ -954,7 +957,7 @@ mod tests {
                     write!(
                         f,
                         "{}{{\n{}{},\n{}[{}],",
-                        indent, indent1, node.id, indent1, &content
+                        indent, indent, node.id, indent, &content
                     )
                     .unwrap();
                     write!(f, "\n{}", indent1).unwrap();
@@ -987,7 +990,6 @@ mod tests {
         // Insert bindings
         for k in 0..num_keys {
             let v = 2 * k + 1;
-            log::trace!("insert: {} -> {}", k, v);
             m.insert(k, v);
             log::trace!("\n{}", &m.betree);
         }
@@ -998,16 +1000,13 @@ mod tests {
             match k % 4 {
                 0 => {
                     let v = 3 * k + 2;
-                    log::trace!("insert: {} -> {}", k, v);
                     m.insert(k, v);
                 }
                 1 => {
-                    log::trace!("delete: {}", k);
                     m.delete(k);
                 }
                 2 => {
                     let v = kb % 7;
-                    log::trace!("upsert: {} -> {}", k, v);
                     m.upsert(k, v);
                 }
                 3 => {

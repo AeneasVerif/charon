@@ -69,9 +69,9 @@ impl MessageSerde {
 }
 
 // For some reason, I don't manage to make that in an impl...
-pub(crate) fn list_from_vec<T>(v: Vec<T>) -> List<T> {
-    // Note that the list and the vector are in reverse order: it is ok
-    // because [list_to_vec] does the same
+pub(crate) fn list_from_vec<T>(mut v: Vec<T>) -> List<T> {
+    // We need to reverse
+    v.reverse();
     let mut l = List::Nil;
     for x in v.into_iter() {
         l = List::Cons(x, Box::new(l));
@@ -82,8 +82,6 @@ pub(crate) fn list_from_vec<T>(v: Vec<T>) -> List<T> {
 // For some reason, I don't manage to make that in an impl...
 pub(crate) fn list_to_vec<T>(mut l: List<T>) -> Vec<T> {
     let mut v = Vec::new();
-    // Note that the list and the vector are in reverse order: it is ok
-    // because [list_from_vec] does the same
     loop {
         match l {
             List::Nil => break,
