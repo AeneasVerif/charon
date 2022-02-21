@@ -246,10 +246,13 @@ impl Node {
                     List::Cons((_, Message::Upsert(_)), _) => {
                         // There are pending upserts: we have no choice but to
                         // apply them.
+                        //
                         // Rk.: rather than calling [lookup], we could actually
                         // go down the tree accumulating upserts. On the other
                         // hand, the key is now "hotter", so it is not a bad
                         // idea to keep it as close to the root as possible.
+                        // Note that what we do is what Be-Tree does.
+                        //
                         // First, lookup the value from the children.
                         let v = if key < *pivot {
                             left.lookup(key)
