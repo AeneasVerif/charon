@@ -10,7 +10,7 @@
 //! difficult to write and maintain anyway.
 #![allow(dead_code)]
 
-use crate::betree::{Id, InternalContent, Key, LeafContent, List, Message, Value};
+use crate::betree::{InternalContent, Key, LeafContent, List, Message, NodeId, Value};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::vec::Vec;
@@ -72,7 +72,7 @@ pub(crate) fn list_to_vec<T>(mut l: List<T>) -> Vec<T> {
 }
 
 /// See the equivalent function in betree.rs
-pub(crate) fn load_internal_node(id: Id) -> InternalContent {
+pub(crate) fn load_internal_node(id: NodeId) -> InternalContent {
     // Open the file
     std::fs::create_dir_all("tmp").unwrap();
     let filename = format!("tmp/node{}", id).to_string();
@@ -89,7 +89,7 @@ pub(crate) fn load_internal_node(id: Id) -> InternalContent {
 }
 
 /// See the equivalent function in betree.rs
-pub(crate) fn store_internal_node(id: Id, content: InternalContent) {
+pub(crate) fn store_internal_node(id: NodeId, content: InternalContent) {
     // Open the file
     std::fs::create_dir_all("tmp").unwrap();
     let filename = format!("tmp/node{}", id).to_string();
@@ -106,7 +106,7 @@ pub(crate) fn store_internal_node(id: Id, content: InternalContent) {
 }
 
 /// See the equivalent function in betree.rs
-pub(crate) fn load_leaf_node(id: Id) -> LeafContent {
+pub(crate) fn load_leaf_node(id: NodeId) -> LeafContent {
     // Open the file
     std::fs::create_dir_all("tmp").unwrap();
     let filename = format!("tmp/node{}", id).to_string();
@@ -119,7 +119,7 @@ pub(crate) fn load_leaf_node(id: Id) -> LeafContent {
 }
 
 /// See the equivalent function in betree.rs
-pub(crate) fn store_leaf_node(id: Id, content: LeafContent) {
+pub(crate) fn store_leaf_node(id: NodeId, content: LeafContent) {
     // Open the file
     std::fs::create_dir_all("tmp").unwrap();
     let filename = format!("tmp/node{}", id).to_string();

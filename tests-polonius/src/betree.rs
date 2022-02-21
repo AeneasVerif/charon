@@ -8,16 +8,11 @@
 use crate::betree_utils as utils;
 use attributes::assume;
 
-pub type Id = u64;
+pub type NodeId = u64;
 pub type Key = u64;
 pub type Value = u64;
 
 type Map<K, V> = List<(K, V)>;
-
-/// Timestamps are used to identify the order in which to process the messages.
-/// This is important for the updates.
-/// TODO: we don't need those...
-pub(crate) type Timestamp = u64;
 
 /// We use linked lists for the maps from keys to messages/bindings
 pub(crate) enum List<T> {
@@ -40,25 +35,25 @@ pub(crate) enum List<T> {
 /// and setup the translation to consider this module as assumed (i.e., no
 /// wrappers)
 #[assume]
-fn load_internal_node(id: Id) -> InternalContent {
+fn load_internal_node(id: NodeId) -> InternalContent {
     utils::load_internal_node(id)
 }
 
 /// See [load_internal_node].
 #[assume]
-fn store_internal_node(id: Id, content: InternalContent) {
+fn store_internal_node(id: NodeId, content: InternalContent) {
     utils::store_internal_node(id, content)
 }
 
 /// See [load_internal_node].
 #[assume]
-fn load_leaf_node(id: Id) -> LeafContent {
+fn load_leaf_node(id: NodeId) -> LeafContent {
     utils::load_leaf_node(id)
 }
 
 /// See [load_internal_node].
 #[assume]
-fn store_leaf_node(id: Id, content: LeafContent) {
+fn store_leaf_node(id: NodeId, content: LeafContent) {
     utils::store_leaf_node(id, content)
 }
 
@@ -113,14 +108,6 @@ pub(crate) enum Message {
     Upsert(Value),
 }
 
-/// Whenever we insert a message in the tree, we actually need to use a timestamp
-/// with the key. The reason is that otherwise we don't know in which order to
-/// apply the [Upsert] messages.
-pub(crate) struct MessageKey {
-    pub key: Key,
-    pub ts: Timestamp,
-}
-
 /// Internal node content.
 ///
 /// An internal node contains a map from keys to pending messages
@@ -136,7 +123,8 @@ pub(crate) type InternalContent = Map<Key, Message>;
 
 /// Leaf node content.
 ///
-/// A leaf node contains a map from keys to values
+/// A leaf node contains a map from keys to values.
+/// We store the bindings in order of increasing key.
 pub(crate) type LeafContent = Map<Key, Value>;
 
 /// A node in the BeTree.
@@ -165,22 +153,44 @@ enum Node {
     /// - or it can't, in which case it splits, because otherwise we have too
     ///   many unefficient updates to perform (the aim really is to amortize
     ///   the cost of I/O)
-    Internal(Id, Key, Box<Node>, Box<Node>),
+    Internal(NodeId, Key, Box<Node>, Box<Node>),
     /// A leaf node.
     ///
     /// The fields:
     /// - id
-    Leaf(Id),
+    Leaf(NodeId),
+}
+
+/// Parameters and indices used in the BeTree
+struct Params {
+    /// The minimum number of messages we flush to the children.
+    /// We wait to reach 2 * min_flush_size before flushing to children.
+    /// If one of the children doesn't receive a number of
+    /// messages >= min_flush_size, we keep those messages in the parent
+    /// node. Of course, at least one of the two children will receive
+    /// flushed messages: this gives us that an internal node has at most
+    /// 2 * min_flush_size pending messages - 1.
+    min_flush_size: u64,
+    /// The maximum number of bindings we can store in a leaf node (if we
+    /// reach this number, we split).
+    split_size: u64,
+    /// Every node has a unique id
+    next_node_id: NodeId,
+}
+
+impl Params {
+    fn fresh_node_id(&mut self) -> NodeId {
+        let id = self.next_node_id;
+        self.next_node_id += 1;
+        id
+    }
 }
 
 /// The BeTree itself
 pub struct BeTree {
-    min_flush_size: u64,
-    max_node_size: u64,
-    min_node_size: u64,
+    params: Params,
+    /// The root of the tree
     root: Node,
-    next_timestamp: Timestamp,
-    next_node_id: Id,
 }
 
 /// The update function used for [Upsert].
@@ -234,18 +244,72 @@ impl<T> List<T> {
     }
 }
 
+impl Map<Key, Value> {
+    fn head_has_key(&self, key: Key) -> bool {
+        match self {
+            List::Nil => false,
+            List::Cons(hd, _) => hd.0 == key,
+        }
+    }
+}
+
 impl Node {
-    /// Apply a message to ourselves
+    /// Apply a message to ourselves: leaf node case
+    ///
+    /// This simply update the bindings.
+    fn apply_to_leaf<'a>(bindings: &'a mut Map<Key, Value>, key: Key, new_msg: Message) {
+        // Retrieve a mutable borrow to the position of the binding, if there is
+        // one, or to the end of the list
+        let bindings = Node::lookup_mut_in_bindings(key, bindings);
+        // Check if we point to a binding which has the key we are looking for
+        if bindings.head_has_key(key) {
+            // We need to pop the binding, and may need to reuse the
+            // previous value (for an upsert)
+            let hd = bindings.pop_front();
+            // Match over the message
+            match new_msg {
+                Message::Insert(v) => {
+                    bindings.push_front((key, v));
+                }
+                Message::Delete => {
+                    // Nothing to do: we popped the binding
+                    ()
+                }
+                Message::Upsert(s) => {
+                    let v = upsert_update(Option::Some(hd.1), s);
+                    bindings.push_front((key, v));
+                }
+            }
+        } else {
+            // Key not found: simply insert
+            match new_msg {
+                Message::Insert(v) => {
+                    bindings.push_front((key, v));
+                }
+                Message::Delete => {
+                    // Nothing to do
+                    ()
+                }
+                Message::Upsert(s) => {
+                    let v = upsert_update(Option::None, s);
+                    bindings.push_front((key, v));
+                }
+            }
+        }
+    }
+
+    /// Apply a message to ourselves: internal node case
     ///
     /// This basically inserts a message in a messages stack. However,
     /// we may need to filter previous messages: for insert, if we insert an
     /// [Insert] in a stack which contains an [Insert] or a [Delete] for the
     /// same key, we replace this old message with the new one.
-    fn apply<'a>(msgs: &'a mut Map<Key, Message>, key: Key, new_msg: Message) {
+    fn apply_to_internal<'a>(msgs: &'a mut Map<Key, Message>, key: Key, new_msg: Message) {
         // Lookup the first message for [key]
-        let msgs = Node::lookup_first_message_for_key(msgs, key);
+        let msgs = Node::lookup_first_message_for_key(key, msgs);
         // What we do is not the same, depending on whether there is already
         // a message or not.
+        // TODO: use [head_has_key] below
         match msgs {
             List::Nil => {
                 // Nothing: simply add the new message
@@ -304,6 +368,69 @@ impl Node {
         }
     }
 
+    /// Apply a message to ourselves
+    fn apply(&mut self, params: &mut Params, key: Key, new_msg: Message) {
+        match self {
+            Node::Leaf(id) => {
+                // Load the content from disk
+                let mut content = load_leaf_node(*id);
+                // Insert
+                Node::apply_to_leaf(&mut content, key, new_msg);
+                // Check if we need to split
+                unimplemented!();
+                // Store the content to disk
+                store_leaf_node(*id, content);
+            }
+            Node::Internal(id, pivot, left, right) => {
+                // Load the content from disk
+                let mut content = load_internal_node(*id);
+                // Insert
+                Node::apply_to_internal(&mut content, key, new_msg);
+                // Check if we need to flush
+                unimplemented!();
+                // Store the content to disk
+                store_internal_node(*id, content);
+                unimplemented!()
+            }
+        }
+    }
+
+    /// Lookup a value in a list of bindings.
+    /// Note that the values should be stored in order of increasing key.
+    fn lookup_in_bindings(key: Key, bindings: &Map<Key, Value>) -> Option<Value> {
+        match bindings {
+            List::Nil => Option::None,
+            List::Cons(hd, tl) => {
+                if hd.0 == key {
+                    Option::Some(hd.1)
+                } else if hd.0 < key {
+                    Option::None
+                } else {
+                    Node::lookup_in_bindings(key, tl)
+                }
+            }
+        }
+    }
+
+    /// Lookup a value in a list of bindings, and return a borrow to the position
+    /// where the value is (or should be inserted, if the key is not in the bindings).
+    fn lookup_mut_in_bindings<'a>(
+        key: Key,
+        bindings: &'a mut Map<Key, Value>,
+    ) -> &'a mut Map<Key, Value> {
+        match bindings {
+            List::Nil => bindings,
+            List::Cons(hd, tl) => {
+                // This requires Polonius
+                if hd.0 <= key {
+                    bindings
+                } else {
+                    Node::lookup_mut_in_bindings(key, tl)
+                }
+            }
+        }
+    }
+
     /// Filter all the messages which concern [key].
     ///
     /// Note that the stack of messages must start with a message for [key]:
@@ -349,7 +476,7 @@ impl Node {
                 // Load the node content
                 let bindings = load_leaf_node(*id);
                 // Just lookup the binding in the map
-                Node::lookup_in_bindings(&bindings, key)
+                Node::lookup_in_bindings(key, &bindings)
             }
             Node::Internal(id, pivot, left, right) => {
                 // Load the node content
@@ -370,7 +497,7 @@ impl Node {
                 // is at this for this piece of code. Note that this was inpired
                 // by Be-Tree.
                 // Also, can't wait to see how all this will work with loops.
-                let pending = Node::lookup_first_message_for_key(&mut msgs, key);
+                let pending = Node::lookup_first_message_for_key(key, &mut msgs);
                 match pending {
                     List::Nil => {
                         // Nothing: dive into the children
@@ -438,8 +565,8 @@ impl Node {
     /// to insert new messages (note that the borrow may point to the end
     /// of the list).
     fn lookup_first_message_for_key<'a>(
-        msgs: &'a mut Map<Key, Message>,
         key: Key,
+        msgs: &'a mut Map<Key, Message>,
     ) -> &'a mut Map<Key, Message> {
         match msgs {
             List::Nil => msgs,
@@ -450,24 +577,10 @@ impl Node {
                 // need to return anything). However, it would not be very
                 // idiomatic, especially with regards to the fact that we will
                 // rewrite everything with loops at some point.
-                if x.0 >= key {
+                if x.0 <= key {
                     msgs
                 } else {
-                    Node::lookup_first_message_for_key(next_msgs, key)
-                }
-            }
-        }
-    }
-
-    /// Lookup a value in a list of bindings.
-    fn lookup_in_bindings(bindings: &Map<Key, Value>, key: Key) -> Option<Value> {
-        match bindings {
-            List::Nil => Option::None,
-            List::Cons(hd, tl) => {
-                if hd.0 == key {
-                    Option::Some(hd.1)
-                } else {
-                    Node::lookup_in_bindings(tl, key)
+                    Node::lookup_first_message_for_key(key, next_msgs)
                 }
             }
         }
@@ -508,7 +621,7 @@ impl Node {
                         _ => {
                             // Unreachable: we can only have [Upsert] messages
                             // for the key
-                            panic!();
+                            unreachable!();
                         }
                     }
                 } else {
@@ -554,14 +667,7 @@ impl BeTree {
         self.root.lookup(key)
     }
 
-    fn fresh_timestamp(&mut self) -> Timestamp {
-        let timestamp = self.next_timestamp;
-        self.next_timestamp += 1;
-        timestamp
-    }
-
-    fn wrap_key(&mut self, key: Key) -> MessageKey {
-        let ts = self.fresh_timestamp();
-        MessageKey { key, ts }
+    fn fresh_node_id(&mut self) -> NodeId {
+        self.params.fresh_node_id()
     }
 }
