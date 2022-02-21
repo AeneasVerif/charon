@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::collections::HashMap;
 
 /// The example the Rust team uses to illustrate why we need Polonius.

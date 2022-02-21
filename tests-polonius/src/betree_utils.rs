@@ -10,9 +10,7 @@
 //! difficult to write and maintain anyway.
 #![allow(dead_code)]
 
-use crate::betree::{
-    Id, InternalContent, Key, LeafContent, List, Message, MessageKey, Timestamp, Value,
-};
+use crate::betree::{Id, InternalContent, Key, LeafContent, List, Message, Value};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::vec::Vec;

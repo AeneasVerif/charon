@@ -212,15 +212,16 @@ impl Node {
             Node::Internal(id, pivot, left, right) => {
                 // Load the node content
                 let mut msgs = load_internal_node(*id);
-                // Check if there are pending messages for the key
-                // (note that if there are upserts messages, we filter
-                // them from the stack of messages, because those upserts
-                // messages *must* be applied immediately).
-                // TODO: would be better to do the following: lookup the first
-                // message which concerns the key. If there is one, then
-                //
-                let pending = Node::lookup_filter_pending_messages(&mut msgs, key);
-                match &pending {
+                // Look for the first message pending for the key.
+                // Note that we maintain the following invariants:
+                // - if there are > 1 messages, they must be upsert messages only
+                // - the upsert messages are sorted from the *first* added to the
+                //   *last* added to the betree.
+                // Also note that if there are upsert messages, we have to apply
+                // them immediately.
+                let pending = Node::lookup_first_message_for_key(&mut msgs, key);
+                //                let pending = Node::lookup_filter_pending_messages(&mut msgs, key);
+                match pending {
                     List::Nil => {
                         // Nothing: dive into the children
                         if key < *pivot {
@@ -229,15 +230,9 @@ impl Node {
                             right.lookup(key)
                         }
                     }
-                    List::Cons(Message::Insert(v), _) => {
-                        // Note that the tail must be Nil
-                        Some(*v)
-                    }
-                    List::Cons(Message::Delete, _) => {
-                        // Note that the tail must be Nil
-                        None
-                    }
-                    List::Cons(Message::Upsert(_), _) => {
+                    List::Cons((_, Message::Insert(v)), _) => Some(*v),
+                    List::Cons((_, Message::Delete), _) => None,
+                    List::Cons((_, Message::Upsert(_)), _) => {
                         // There are pending upserts: we have no choice but to
                         // apply them.
                         // Rk.: rather than calling [lookup], we could actually
@@ -251,9 +246,10 @@ impl Node {
                             right.lookup(key)
                         };
                         // Apply the pending updates
-                        let v = Node::apply_upserts(v, pending);
+                        let v = Node::apply_upserts(pending, v, key);
                         // Add an [Insert] message in the messages stack, to
-                        // account for the update
+                        // account for the update.
+                        // TODO: insert directly
                         Node::insert_in_messages_stack(&mut msgs, key, v);
                         // Update the node content
                         store_internal_node(*id, msgs);
@@ -298,6 +294,7 @@ impl Node {
         }
     }
 
+    /*
     /// Retrieve the messages pending for a key.
     /// Note that we maintain the following invariants:
     /// - if there are > 1 messages, they must be update messages only
@@ -332,22 +329,47 @@ impl Node {
                 }
             }
         }
-    }
+    }*/
 
     /// Apply a list of upserts to a looked up value.
-    /// They must be sorted from the first upsert to apply to the last upsert.
-    /// Note that if the list of upserts is empty, then the value must be `Some`.
-    fn apply_upserts(prev: Option<Value>, upserts: List<Message>) -> Value {
-        match upserts {
-            List::Nil => prev.unwrap(),
-            List::Cons(Message::Upsert(s), next_upserts) => {
-                let v = upsert_update(prev, s);
-                Node::apply_upserts(Option::Some(v), *next_upserts)
+    ///
+    /// The input mutable borrow must point to the first upsert message in the
+    /// messages stack. We filter the messages while applying them.
+    /// Note that if there are no more upserts to apply, then the value must be
+    /// `Some`. Also note that we must maintain the invariants that upsert messages
+    /// are sorted from the first to the last to apply, in the message stacks.
+    fn apply_upserts(msgs: &mut Map<Key, Message>, prev: Option<Value>, key: Key) -> Value {
+        match msgs {
+            List::Nil => {
+                // We reached the end of the list: we applied all the upsert messages
+                prev.unwrap()
             }
-            _ => {
-                // This is unreachable: we must only have [Upsert] messages
-                // in the list
-                panic!();
+            List::Cons((k, msg), next_msgs) => {
+                // Check if we should stop here
+                if *k == key {
+                    // This message still applies to the key. Note that it
+                    // *must* be an upsert message.
+                    match msg {
+                        Message::Upsert(s) => {
+                            // Apply the update
+                            let v = upsert_update(prev, *s);
+                            let prev = Option::Some(v);
+                            // Filter the message - move under borrows: annoying...
+                            let next_msgs = std::mem::replace(&mut (**next_msgs), List::Nil);
+                            *msgs = next_msgs;
+                            // Continue
+                            Node::apply_upserts(msgs, prev, key)
+                        }
+                        _ => {
+                            // Unreachable: we can only have [Upsert] messages
+                            // for the key
+                            panic!();
+                        }
+                    }
+                } else {
+                    // Not the proper key: stop
+                    prev.unwrap()
+                }
             }
         }
     }
@@ -357,7 +379,7 @@ impl Node {
     /// If when looking up the value associated to a key we find pending upserts
     /// in an internal node, we apply them then insert an [Insert] message with
     /// the resulting value in the pending messages of the node.
-    fn insert_in_messages_stack(mut msgs: &mut Map<Key, Message>, key: Key, v: Value) {
+    fn insert_in_messages_stack(msgs: &mut Map<Key, Message>, key: Key, v: Value) {
         match msgs {
             List::Nil => {
                 let _ = std::mem::replace(
@@ -382,7 +404,7 @@ impl Node {
 }
 
 impl BeTree {
-    fn add_message(&mut self, key: Key, msg: Message) {
+    fn add_message(&mut self, _key: Key, _msg: Message) {
         unimplemented!();
     }
 
