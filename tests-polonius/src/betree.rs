@@ -321,6 +321,10 @@ impl<T> Map<Key, T> {
             List::Cons(hd, _) => hd.0 == key,
         }
     }
+
+    fn partition_at_pivot(self, pivot: Key) -> (Map<Key, T>, Map<Key, T>) {
+        unimplemented!();
+    }
 }
 
 impl Leaf {
@@ -371,8 +375,33 @@ impl Internal {
     /// Note that when flushing, we send messages to a child only if there
     /// are more than min_flush_size messages to send. Also, we flush only
     /// if the number of messages in the current node is >= 2* num_flush_size.
-    fn flush(&mut self, params: &mut Params) {
-        unimplemented!();
+    ///
+    /// The function returns the messages we couldn't flush to the children
+    /// nodes.
+    fn flush(&mut self, params: &mut Params, content: Map<Key, Message>) -> Map<Key, Message> {
+        // Partition the messages
+        let (msgs_left, msgs_right) = content.partition_at_pivot(self.pivot);
+        // Check if we need to flush to the left child
+        let len_left = msgs_left.len();
+        if len_left >= params.min_flush_size {
+            // Flush to the left
+            self.left.apply_messages(params, msgs_left);
+            // Check if we need to flush to the right
+            let len_right = msgs_right.len();
+            if len_right >= params.min_flush_size {
+                self.right.apply_messages(params, msgs_right);
+                // No messages remain in the current node
+                List::Nil
+            } else {
+                // We keep the messages which belong to the right node
+                msgs_right
+            }
+        } else {
+            // Don't flush to the left: we necessarily flush to the right
+            self.right.apply_messages(params, msgs_right);
+            // We keep the messages which belong to the left node
+            msgs_left
+        }
     }
 }
 
@@ -519,10 +548,21 @@ impl Node {
                 // do something smarter to compute the number of messages
                 let num_msgs = content.len();
                 if num_msgs >= params.min_flush_size {
-                    node.flush(params);
+                    content = node.flush(params, content);
                 }
                 // Store the content to disk
                 store_internal_node(node.id, content)
+            }
+        }
+    }
+
+    /// Apply a list of messages to ourselves
+    fn apply_messages(&mut self, params: &mut Params, msgs: List<(Key, Message)>) {
+        match msgs {
+            List::Nil => (),
+            List::Cons((key, msg), msgs) => {
+                self.apply(params, key, msg);
+                self.apply_messages(params, *msgs);
             }
         }
     }
