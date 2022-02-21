@@ -264,6 +264,13 @@ pub fn upsert_update(prev: Option<Value>, st: UpsertFunState) -> Value {
 }
 
 impl<T> List<T> {
+    fn len(&self) -> u64 {
+        match self {
+            List::Nil => 0,
+            List::Cons(_, tl) => 1 + tl.len(),
+        }
+    }
+
     /// Push an element at the front of the list.
     fn push_front(&mut self, x: T) {
         // Move under borrows: annoying...
@@ -316,6 +323,10 @@ impl Internal {
         } else {
             self.right.lookup(key)
         }
+    }
+
+    fn flush(&mut self, params: &mut Params) {
+        unimplemented!();
     }
 }
 
@@ -437,7 +448,7 @@ impl Node {
                 // Insert
                 let already_key = Node::apply_to_leaf(&mut content, key, new_msg);
                 // Check if we need to split
-                if !already_key && (node.size + 1 >= 2 * params.min_flush_size) {
+                if !already_key && (node.size + 1 >= 2 * params.split_size) {
                     // Split
                     let new_node = node.split(content, params);
                     // Store the content to disk
@@ -458,11 +469,14 @@ impl Node {
                 let mut content = load_internal_node(node.id);
                 // Insert
                 Node::apply_to_internal(&mut content, key, new_msg);
-                // Check if we need to flush
-                unimplemented!();
+                // Check if we need to flush - in the future, we might want to
+                // do something smarter to compute the number of messages
+                let num_msgs = content.len();
+                if num_msgs >= params.min_flush_size {
+                    node.flush(params);
+                }
                 // Store the content to disk
-                store_internal_node(node.id, content);
-                unimplemented!()
+                store_internal_node(node.id, content)
             }
         }
     }
