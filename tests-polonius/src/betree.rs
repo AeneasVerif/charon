@@ -145,6 +145,8 @@ struct Internal {
 /// Leaf node. See [Node]
 struct Leaf {
     id: NodeId,
+    /// The number of bindings in the node
+    size: u64,
 }
 
 /// A node in the BeTree.
@@ -299,6 +301,13 @@ impl<T> Map<Key, T> {
     }
 }
 
+impl Leaf {
+    /// Split a leaf into an internal node with two children.
+    fn split(&self, content: Map<Key, Value>, params: &mut Params) -> Internal {
+        unimplemented!();
+    }
+}
+
 impl Internal {
     /// Small utility: lookup a value in the children nodes.
     fn lookup_in_children(&mut self, key: Key) -> Option<Value> {
@@ -313,8 +322,10 @@ impl Internal {
 impl Node {
     /// Apply a message to ourselves: leaf node case
     ///
-    /// This simply update the bindings.
-    fn apply_to_leaf<'a>(bindings: &'a mut Map<Key, Value>, key: Key, new_msg: Message) {
+    /// This simply updates the bindings.
+    /// We return `true` if there was already a binding for `key`, `false`
+    /// otherwise.
+    fn apply_to_leaf<'a>(bindings: &'a mut Map<Key, Value>, key: Key, new_msg: Message) -> bool {
         // Retrieve a mutable borrow to the position of the binding, if there is
         // one, or to the end of the list
         let bindings = Node::lookup_mut_in_bindings(key, bindings);
@@ -336,7 +347,8 @@ impl Node {
                     let v = upsert_update(Option::Some(hd.1), s);
                     bindings.push_front((key, v));
                 }
-            }
+            };
+            return true;
         } else {
             // Key not found: simply insert
             match new_msg {
@@ -351,7 +363,8 @@ impl Node {
                     let v = upsert_update(Option::None, s);
                     bindings.push_front((key, v));
                 }
-            }
+            };
+            return false;
         }
     }
 
@@ -422,11 +435,23 @@ impl Node {
                 // Load the content from disk
                 let mut content = load_leaf_node(node.id);
                 // Insert
-                Node::apply_to_leaf(&mut content, key, new_msg);
+                let already_key = Node::apply_to_leaf(&mut content, key, new_msg);
                 // Check if we need to split
-                unimplemented!();
-                // Store the content to disk
-                store_leaf_node(node.id, content);
+                if !already_key && (node.size + 1 >= 2 * params.min_flush_size) {
+                    // Split
+                    let new_node = node.split(content, params);
+                    // Store the content to disk
+                    store_leaf_node(node.id, List::Nil);
+                    // Update the node
+                    *self = Node::Internal(new_node);
+                } else {
+                    // Update the size if necessary
+                    if already_key {
+                        node.size += 1;
+                    }
+                    // Store the content to disk
+                    store_leaf_node(node.id, content);
+                }
             }
             Node::Internal(node) => {
                 // Load the content from disk
