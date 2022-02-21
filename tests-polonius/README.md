@@ -1,1 +1,1 @@
-This project contains tests for Charon which require the Polonius borrow checker.
+This project contains tests which require the Polonius borrow checker.
