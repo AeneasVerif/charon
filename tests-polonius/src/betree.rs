@@ -189,6 +189,7 @@ pub struct BeTree {
 /// we draw inspiration from the C++ Be-Tree implemenation, where
 /// in case the binding is not present, the closure stored in upsert is
 /// given a default value.
+/// TODO: for add: use State
 pub fn upsert_update(prev: Option<Value>, add: Value) -> Value {
     // We just compute the sum, until it saturates
     match prev {
@@ -269,12 +270,21 @@ impl Node {
                             // If [Update]: we need to take into account the
                             // previous messages.
                             match msg {
-                                Message::Insert(_) => {
-                                    unimplemented!()
+                                Message::Insert(prev) => {
+                                    // There should be exactly one [Insert]:
+                                    // pop it, compute the result of the [Upsert]
+                                    // and insert this result
+                                    let v = upsert_update(Option::Some(*prev), *s);
+                                    let _ = pending.pop_front();
+                                    pending.push_front((key, Message::Insert(v)));
                                 }
                                 Message::Delete => {
-                                    // There should be exactly one message
-                                    unimplemented!()
+                                    // There should be exactly one [Delete]
+                                    // message : pop it, compute the result of
+                                    // the [Upsert], and insert this result
+                                    let _ = pending.pop_front();
+                                    let v = upsert_update(Option::None, *s);
+                                    pending.push_front((key, Message::Insert(v)));
                                 }
                                 Message::Upsert(_) => {
                                     unimplemented!()
