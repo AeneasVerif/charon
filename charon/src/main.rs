@@ -171,6 +171,7 @@ fn main() {
         args.input_file.as_path().to_str().unwrap().to_string(),
         "--crate-type=lib".to_string(),
         "--edition=2018".to_string(),
+        // TODO: add an option to use Polonius' borrow checker
         //"-Zpolonius".to_string(),
     ];
     RunCompiler::new(

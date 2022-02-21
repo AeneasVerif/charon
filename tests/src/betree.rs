@@ -274,7 +274,7 @@ impl Node {
         match msgs {
             List::Nil => msgs,
             List::Cons(x, next_msgs) => {
-                // Annoying: we need Polonius here
+                // Rk.: we need Polonius here
                 if x.0 == key {
                     msgs
                 } else {
