@@ -227,12 +227,12 @@ pub fn upsert_update(prev: Option<Value>, st: UpsertFunState) -> Value {
     match prev {
         Option::None => {
             match st {
-                UpsertFunState::Add(add) => {
-                    // We consider the default value is 0, so we return 0 + add -
-                    // or we could fail (it doesn't matter)
-                    add
+                UpsertFunState::Add(v) => {
+                    // We consider the default value is 0, so we return 0 + v
+                    // (or we could fail - it doesn't really matter)
+                    v
                 }
-                UpsertFunState::Sub(add) => {
+                UpsertFunState::Sub(_) => {
                     // Same logic as for [sub], but this time we saturate at 0
                     0
                 }
@@ -322,8 +322,23 @@ impl<T> Map<Key, T> {
         }
     }
 
+    /// Partition the map between two maps:
+    /// - a first map where the keys < pivot
+    /// - a second map where the keys >= pivot
+    /// Note that the bindings in the map are supposed to be sorted in
+    /// order of increasing keys.
     fn partition_at_pivot(self, pivot: Key) -> (Map<Key, T>, Map<Key, T>) {
-        unimplemented!();
+        match self {
+            List::Nil => (List::Nil, List::Nil),
+            List::Cons(hd, tl) => {
+                if hd.0 >= pivot {
+                    (List::Nil, List::Cons(hd, tl))
+                } else {
+                    let (ls0, ls1) = tl.partition_at_pivot(pivot);
+                    (List::Cons(hd, Box::new(ls0)), ls1)
+                }
+            }
+        }
     }
 }
 
