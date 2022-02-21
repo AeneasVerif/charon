@@ -71,7 +71,7 @@ pub(crate) enum Message {
     /// [Upsert] is "query then update" (query a value, then update the binding
     /// by using the result of the query). This is pretty expensive if we
     /// actually *do* query, *then* update: queries are expensive, because
-    /// we potentially have to explore the whole tree (and every time we
+    /// we potentially have to explore the tree in depth (and every time we
     /// lookup a node, we have an expensive I/O operation).
     /// Instead, we insert this [Upsert] message in the tree, which progressively
     /// gets propagated to the children untils it gets applied (when we find an
@@ -96,7 +96,8 @@ pub(crate) enum Message {
     /// straightforward.
     ///
     /// Also note that if we don't have [Upsert], there is no point in using
-    /// b-epsilon trees: b-trees work very well.
+    /// b-epsilon trees, which have the particularity of storing messages:
+    /// b-trees and their variants work very well (and don't use messages).
     ///
     /// Note there is something interesting about the proofs we do for [Upsert].
     /// When we use [Insert] or [Delete], we remove the upserts which are pending
@@ -242,29 +243,29 @@ impl Node {
     /// same key, we replace this old message with the new one.
     fn apply<'a>(msgs: &'a mut Map<Key, Message>, key: Key, new_msg: Message) {
         // Lookup the first message for [key]
-        let pending = Node::lookup_first_message_for_key(msgs, key);
+        let msgs = Node::lookup_first_message_for_key(msgs, key);
         // What we do is not the same, depending on whether there is already
         // a message or not.
-        match pending {
+        match msgs {
             List::Nil => {
                 // Nothing: simply add the new message
-                *pending = List::Cons((key, new_msg), Box::new(List::Nil));
+                *msgs = List::Cons((key, new_msg), Box::new(List::Nil));
             }
-            List::Cons((k, msg), next_msgs) => {
+            List::Cons((k, msg), _) => {
                 // Check if this is the same key:
                 // - if not, we simply insert the new message
                 // - if yes, we need to take the current message into account
                 if *k != key {
                     // Simply insert
-                    pending.push_front((key, new_msg));
+                    msgs.push_front((key, new_msg));
                 } else {
                     // We need to check the current message
                     match &new_msg {
                         Message::Insert(_) | Message::Delete => {
                             // If [Insert] or [Delete]: filter the current
                             // messages, and insert the new one
-                            Node::filter_messages_for_key(key, pending);
-                            pending.push_front((key, new_msg));
+                            Node::filter_messages_for_key(key, msgs);
+                            msgs.push_front((key, new_msg));
                         }
                         Message::Upsert(s) => {
                             // If [Update]: we need to take into account the
@@ -275,19 +276,25 @@ impl Node {
                                     // pop it, compute the result of the [Upsert]
                                     // and insert this result
                                     let v = upsert_update(Option::Some(*prev), *s);
-                                    let _ = pending.pop_front();
-                                    pending.push_front((key, Message::Insert(v)));
+                                    let _ = msgs.pop_front();
+                                    msgs.push_front((key, Message::Insert(v)));
                                 }
                                 Message::Delete => {
                                     // There should be exactly one [Delete]
                                     // message : pop it, compute the result of
                                     // the [Upsert], and insert this result
-                                    let _ = pending.pop_front();
+                                    let _ = msgs.pop_front();
                                     let v = upsert_update(Option::None, *s);
-                                    pending.push_front((key, Message::Insert(v)));
+                                    msgs.push_front((key, Message::Insert(v)));
                                 }
                                 Message::Upsert(_) => {
-                                    unimplemented!()
+                                    // There may be several msgs upserts:
+                                    // we need to insert the new message at
+                                    // the end of the list of upserts (so
+                                    // that later we can apply them all in
+                                    // proper order).
+                                    let msgs = Node::lookup_first_message_after_key(key, msgs);
+                                    msgs.push_front((key, new_msg));
                                 }
                             }
                         }
@@ -299,6 +306,13 @@ impl Node {
 
     fn filter_messages_for_key<'a>(key: Key, msgs: &'a mut Map<Key, Message>) {
         unimplemented!()
+    }
+
+    fn lookup_first_message_after_key<'a>(
+        key: Key,
+        msgs: &'a mut Map<Key, Message>,
+    ) -> &'a mut Map<Key, Message> {
+        unimplemented!();
     }
 
     /// Returns the value bound to a key.
