@@ -304,15 +304,39 @@ impl Node {
         }
     }
 
+    /// Filter all the messages which concern [key].
+    ///
+    /// Note that the stack of messages must start with a message for [key]:
+    /// we stop filtering at the first message which is not about [key].
     fn filter_messages_for_key<'a>(key: Key, msgs: &'a mut Map<Key, Message>) {
-        unimplemented!()
+        match msgs {
+            List::Nil => (),
+            List::Cons((k, _), _) => {
+                if *k == key {
+                    msgs.pop_front();
+                    Node::filter_messages_for_key(key, msgs);
+                } else {
+                    // Stop
+                    ()
+                }
+            }
+        }
     }
 
     fn lookup_first_message_after_key<'a>(
         key: Key,
         msgs: &'a mut Map<Key, Message>,
     ) -> &'a mut Map<Key, Message> {
-        unimplemented!();
+        match msgs {
+            List::Nil => msgs,
+            List::Cons((k, _), next_msgs) => {
+                if *k == key {
+                    Node::lookup_first_message_after_key(key, next_msgs)
+                } else {
+                    msgs
+                }
+            }
+        }
     }
 
     /// Returns the value bound to a key.
@@ -466,7 +490,7 @@ impl Node {
                 *msgs = List::Cons((key, Message::Insert(v)), Box::new(List::Nil));
                 return v;
             }
-            List::Cons((k, msg), next_msgs) => {
+            List::Cons((k, msg), _) => {
                 // Check if we should stop here
                 if *k == key {
                     // This message still applies to the key. Note that it
