@@ -425,8 +425,6 @@ impl Node {
     /// Apply a message to ourselves: leaf node case
     ///
     /// This simply updates the bindings.
-    /// We return `true` if there was already a binding for `key`, `false`
-    /// otherwise.
     fn apply_to_leaf<'a>(bindings: &'a mut Map<Key, Value>, key: Key, new_msg: Message) {
         // Retrieve a mutable borrow to the position of the binding, if there is
         // one, or to the end of the list
