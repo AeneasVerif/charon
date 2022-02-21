@@ -10,7 +10,9 @@
 //! difficult to write and maintain anyway.
 #![allow(dead_code)]
 
-use crate::betree::{InternalContent, Key, LeafContent, List, Message, NodeId, Value};
+use crate::betree::{
+    InternalContent, Key, LeafContent, List, Message, NodeId, UpsertFunState, Value,
+};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::vec::Vec;
@@ -19,10 +21,33 @@ use std::vec::Vec;
 /// deserialization functions for external types, but it proved cumbersome
 /// for the betree case.
 #[derive(Serialize, Deserialize)]
+pub enum UpsertFunStateSerde {
+    Add(u64),
+    Sub(u64),
+}
+
+impl UpsertFunStateSerde {
+    fn to_state(self) -> UpsertFunState {
+        match self {
+            UpsertFunStateSerde::Add(v) => UpsertFunState::Add(v),
+            UpsertFunStateSerde::Sub(v) => UpsertFunState::Sub(v),
+        }
+    }
+
+    fn from_state(msg: UpsertFunState) -> Self {
+        match msg {
+            UpsertFunState::Add(v) => UpsertFunStateSerde::Add(v),
+            UpsertFunState::Sub(v) => UpsertFunStateSerde::Sub(v),
+        }
+    }
+}
+
+/// Same remark as for [UpsertFunStateSerde]
+#[derive(Serialize, Deserialize)]
 enum MessageSerde {
     Insert(Value),
     Delete,
-    Upsert(Value),
+    Upsert(UpsertFunStateSerde),
 }
 
 impl MessageSerde {
@@ -30,7 +55,7 @@ impl MessageSerde {
         match self {
             MessageSerde::Insert(v) => Message::Insert(v),
             MessageSerde::Delete => Message::Delete,
-            MessageSerde::Upsert(v) => Message::Upsert(v),
+            MessageSerde::Upsert(v) => Message::Upsert(v.to_state()),
         }
     }
 
@@ -38,7 +63,7 @@ impl MessageSerde {
         match msg {
             Message::Insert(v) => MessageSerde::Insert(v),
             Message::Delete => MessageSerde::Delete,
-            Message::Upsert(v) => MessageSerde::Upsert(v),
+            Message::Upsert(v) => MessageSerde::Upsert(UpsertFunStateSerde::from_state(v)),
         }
     }
 }

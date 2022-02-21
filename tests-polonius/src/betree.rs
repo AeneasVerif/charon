@@ -57,6 +57,13 @@ fn store_leaf_node(id: NodeId, content: LeafContent) {
     utils::store_leaf_node(id, content)
 }
 
+/// We use this type to encode closures.
+/// See [Message::Upsert] and [upsert_update]
+pub enum UpsertFunState {
+    Add(u64),
+    Sub(u64),
+}
+
 /// A message - note that all those messages have to be linked to a key
 pub(crate) enum Message {
     /// Insert a binding from value to key
@@ -105,7 +112,7 @@ pub(crate) enum Message {
     /// implementation refines the specification only if we make sure that the
     /// update function used for the upsert doesn't fail on the input we give it
     /// (all this can be seen in the specification we prove about the be-tree).
-    Upsert(Value),
+    Upsert(UpsertFunState),
 }
 
 /// Internal node content.
@@ -200,23 +207,42 @@ pub struct BeTree {
 /// we draw inspiration from the C++ Be-Tree implemenation, where
 /// in case the binding is not present, the closure stored in upsert is
 /// given a default value.
-/// TODO: for add: use State
-pub fn upsert_update(prev: Option<Value>, add: Value) -> Value {
+pub fn upsert_update(prev: Option<Value>, st: UpsertFunState) -> Value {
     // We just compute the sum, until it saturates
     match prev {
         Option::None => {
-            // We consider the default value is 0, so we return 0 + add -
-            // or we could fail (it doesn't matter)
-            add
+            match st {
+                UpsertFunState::Add(add) => {
+                    // We consider the default value is 0, so we return 0 + add -
+                    // or we could fail (it doesn't matter)
+                    add
+                }
+                UpsertFunState::Sub(add) => {
+                    // Same logic as for [sub], but this time we saturate at 0
+                    0
+                }
+            }
         }
         Option::Some(prev) => {
-            // Note that Aeneas is a bit conservative about the max_usize
-            let margin = u64::MAX - prev;
-            // Check if we saturate
-            if margin >= add {
-                prev + margin
-            } else {
-                u64::MAX
+            match st {
+                UpsertFunState::Add(v) => {
+                    // Note that Aeneas is a bit conservative about the max_usize
+                    let margin = u64::MAX - prev;
+                    // Check if we saturate
+                    if margin >= v {
+                        prev + margin
+                    } else {
+                        u64::MAX
+                    }
+                }
+                UpsertFunState::Sub(v) => {
+                    // Check if we saturate
+                    if prev >= v {
+                        prev - v
+                    } else {
+                        0
+                    }
+                }
             }
         }
     }
@@ -242,9 +268,16 @@ impl<T> List<T> {
             }
         }
     }
+
+    fn hd(&self) -> &T {
+        match self {
+            List::Nil => panic!(),
+            List::Cons(hd, _) => hd,
+        }
+    }
 }
 
-impl Map<Key, Value> {
+impl<T> Map<Key, T> {
     fn head_has_key(&self, key: Key) -> bool {
         match self {
             List::Nil => false,
@@ -305,66 +338,56 @@ impl Node {
     /// [Insert] in a stack which contains an [Insert] or a [Delete] for the
     /// same key, we replace this old message with the new one.
     fn apply_to_internal<'a>(msgs: &'a mut Map<Key, Message>, key: Key, new_msg: Message) {
-        // Lookup the first message for [key]
+        // Lookup the first message for [key] (if there is no message for [key],
+        // we get a mutable borrow to the position in the list where we need
+        // to insert the new message).
         let msgs = Node::lookup_first_message_for_key(key, msgs);
         // What we do is not the same, depending on whether there is already
         // a message or not.
-        // TODO: use [head_has_key] below
-        match msgs {
-            List::Nil => {
-                // Nothing: simply add the new message
-                *msgs = List::Cons((key, new_msg), Box::new(List::Nil));
-            }
-            List::Cons((k, msg), _) => {
-                // Check if this is the same key:
-                // - if not, we simply insert the new message
-                // - if yes, we need to take the current message into account
-                if *k != key {
-                    // Simply insert
+        if msgs.head_has_key(key) {
+            // We need to check the current message
+            match new_msg {
+                Message::Insert(_) | Message::Delete => {
+                    // If [Insert] or [Delete]: filter the current
+                    // messages, and insert the new one
+                    Node::filter_messages_for_key(key, msgs);
                     msgs.push_front((key, new_msg));
-                } else {
-                    // We need to check the current message
-                    match &new_msg {
-                        Message::Insert(_) | Message::Delete => {
-                            // If [Insert] or [Delete]: filter the current
-                            // messages, and insert the new one
-                            Node::filter_messages_for_key(key, msgs);
-                            msgs.push_front((key, new_msg));
+                }
+                Message::Upsert(s) => {
+                    // If [Update]: we need to take into account the
+                    // previous messages.
+                    match msgs.hd().1 {
+                        Message::Insert(prev) => {
+                            // There should be exactly one [Insert]:
+                            // pop it, compute the result of the [Upsert]
+                            // and insert this result
+                            let v = upsert_update(Option::Some(prev), s);
+                            let _ = msgs.pop_front();
+                            msgs.push_front((key, Message::Insert(v)));
                         }
-                        Message::Upsert(s) => {
-                            // If [Update]: we need to take into account the
-                            // previous messages.
-                            match msg {
-                                Message::Insert(prev) => {
-                                    // There should be exactly one [Insert]:
-                                    // pop it, compute the result of the [Upsert]
-                                    // and insert this result
-                                    let v = upsert_update(Option::Some(*prev), *s);
-                                    let _ = msgs.pop_front();
-                                    msgs.push_front((key, Message::Insert(v)));
-                                }
-                                Message::Delete => {
-                                    // There should be exactly one [Delete]
-                                    // message : pop it, compute the result of
-                                    // the [Upsert], and insert this result
-                                    let _ = msgs.pop_front();
-                                    let v = upsert_update(Option::None, *s);
-                                    msgs.push_front((key, Message::Insert(v)));
-                                }
-                                Message::Upsert(_) => {
-                                    // There may be several msgs upserts:
-                                    // we need to insert the new message at
-                                    // the end of the list of upserts (so
-                                    // that later we can apply them all in
-                                    // proper order).
-                                    let msgs = Node::lookup_first_message_after_key(key, msgs);
-                                    msgs.push_front((key, new_msg));
-                                }
-                            }
+                        Message::Delete => {
+                            // There should be exactly one [Delete]
+                            // message : pop it, compute the result of
+                            // the [Upsert], and insert this result
+                            let _ = msgs.pop_front();
+                            let v = upsert_update(Option::None, s);
+                            msgs.push_front((key, Message::Insert(v)));
+                        }
+                        Message::Upsert(_) => {
+                            // There may be several msgs upserts:
+                            // we need to insert the new message at
+                            // the end of the list of upserts (so
+                            // that later we can apply them all in
+                            // proper order).
+                            let msgs = Node::lookup_first_message_after_key(key, msgs);
+                            msgs.push_front((key, Message::Upsert(s)));
                         }
                     }
                 }
             }
+        } else {
+            // No pending message for [key]: simply add the new message
+            msgs.push_front((key, new_msg))
         }
     }
 
@@ -595,43 +618,30 @@ impl Node {
     /// `Some`. Also note that we use the invariant that in the message stack,
     /// upsert messages are sorted from the first to the last to apply.
     fn apply_upserts(msgs: &mut Map<Key, Message>, prev: Option<Value>, key: Key) -> Value {
-        match msgs {
-            List::Nil => {
-                // We reached the end of the list: we applied all the upsert
-                // messages. Simply put an [Insert] message.
-                let v = prev.unwrap();
-                *msgs = List::Cons((key, Message::Insert(v)), Box::new(List::Nil));
-                return v;
-            }
-            List::Cons((k, msg), _) => {
-                // Check if we should stop here
-                if *k == key {
-                    // This message still applies to the key. Note that it
-                    // *must* be an upsert message.
-                    match msg {
-                        Message::Upsert(s) => {
-                            // Apply the update
-                            let v = upsert_update(prev, *s);
-                            let prev = Option::Some(v);
-                            // Pop the message the message we just applied
-                            let _ = msgs.pop_front();
-                            // Continue
-                            Node::apply_upserts(msgs, prev, key)
-                        }
-                        _ => {
-                            // Unreachable: we can only have [Upsert] messages
-                            // for the key
-                            unreachable!();
-                        }
-                    }
-                } else {
-                    // Not the proper key: we applied all the upsert messages.
-                    // Simply put an [Insert] message and return the value.
-                    let v = prev.unwrap();
-                    msgs.push_front((key, Message::Insert(v)));
-                    return v;
+        if msgs.head_has_key(key) {
+            // Pop the front message.
+            // Note that it *must* be an upsert.
+            let msg = msgs.pop_front();
+            match msg.1 {
+                Message::Upsert(s) => {
+                    // Apply the update
+                    let v = upsert_update(prev, s);
+                    let prev = Option::Some(v);
+                    // Continue
+                    Node::apply_upserts(msgs, prev, key)
+                }
+                _ => {
+                    // Unreachable: we can only have [Upsert] messages
+                    // for the key
+                    unreachable!();
                 }
             }
+        } else {
+            // We applied all the upsert messages: simply put an [Insert]
+            // message and return the value.
+            let v = prev.unwrap();
+            msgs.push_front((key, Message::Insert(v)));
+            return v;
         }
     }
 }
@@ -654,8 +664,8 @@ impl BeTree {
     }
 
     /// Apply a query-update
-    pub fn upsert(&mut self, key: Key, value: Value) {
-        let msg = Message::Upsert(value);
+    pub fn upsert(&mut self, key: Key, upd: UpsertFunState) {
+        let msg = Message::Upsert(upd);
         self.add_message(key, msg);
     }
 
