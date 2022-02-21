@@ -271,6 +271,21 @@ impl<T> List<T> {
         }
     }
 
+    /// Split a list at a given length
+    fn split_at(self, n: u64) -> (List<T>, List<T>) {
+        if n == 0 {
+            (List::Nil, self)
+        } else {
+            match self {
+                List::Nil => unreachable!(),
+                List::Cons(hd, tl) => {
+                    let (ls0, ls1) = tl.split_at(n - 1);
+                    (List::Cons(hd, Box::new(ls0)), ls1)
+                }
+            }
+        }
+    }
+
     /// Push an element at the front of the list.
     fn push_front(&mut self, x: T) {
         // Move under borrows: annoying...
@@ -310,8 +325,35 @@ impl<T> Map<Key, T> {
 
 impl Leaf {
     /// Split a leaf into an internal node with two children.
+    ///
+    /// The leaf should have exactly 2 * split_size elements.
+    /// Also, we use the fact that the keys are sorted in increasing order.
     fn split(&self, content: Map<Key, Value>, params: &mut Params) -> Internal {
-        unimplemented!();
+        // Split the content
+        let (content0, content1) = content.split_at(params.split_size);
+        // Get the pivot
+        let pivot = content1.hd().0;
+        // Create the two nodes
+        let id0 = params.fresh_node_id();
+        let id1 = params.fresh_node_id();
+        let left = Leaf {
+            id: id0,
+            size: params.split_size,
+        };
+        let right = Leaf {
+            id: id1,
+            size: params.split_size,
+        };
+        // Store the content
+        store_leaf_node(id0, content0);
+        store_leaf_node(id1, content1);
+        // Return
+        Internal {
+            id: self.id,
+            pivot,
+            left: Box::new(Node::Leaf(left)),
+            right: Box::new(Node::Leaf(right)),
+        }
     }
 }
 
@@ -325,6 +367,10 @@ impl Internal {
         }
     }
 
+    /// Flush the messages in an internal node to its children.
+    /// Note that when flushing, we send messages to a child only if there
+    /// are more than min_flush_size messages to send. Also, we flush only
+    /// if the number of messages in the current node is >= 2* num_flush_size.
     fn flush(&mut self, params: &mut Params) {
         unimplemented!();
     }
