@@ -33,9 +33,9 @@ pub static VEC_NEW_NAME: [&str; 4] = ["alloc", "vec", "Vec", "new"];
 pub static VEC_PUSH_NAME: [&str; 4] = ["alloc", "vec", "Vec", "push"];
 pub static VEC_INSERT_NAME: [&str; 4] = ["alloc", "vec", "Vec", "insert"];
 pub static VEC_LEN_NAME: [&str; 4] = ["alloc", "vec", "Vec", "len"];
-// This is a trait: for now we assumed it is only used on vectors
+// This is a trait: for now we assume it is only used on vectors
 pub static INDEX_NAME: [&str; 5] = ["core", "ops", "index", "Index", "index"];
-// This is a trait: for now we assumed it is only used on vectors
+// This is a trait: for now we assume it is only used on vectors
 pub static INDEX_MUT_NAME: [&str; 5] = ["core", "ops", "index", "IndexMut", "index_mut"];
 
 /// We redefine identifiers for assumed functions here, instead of reusing the

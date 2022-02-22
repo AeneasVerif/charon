@@ -70,7 +70,7 @@ struct ToInternal {
 }
 
 impl Callbacks for ToInternal {
-    fn after_expansion<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
+    fn after_analysis<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
         // TODO: extern crates
         queries
             .global_ctxt()
@@ -94,7 +94,8 @@ fn initialize_logger() {
     use std::io::Write;
 
     // Initialize the log builder in the default way - we do this in
-    // particular to let the user choose how to filter the log.
+    // particular to let the user choose the log level (i.e.: trace,
+    // debug, warning, etc.)
     let mut builder = Builder::from_default_env();
 
     // Modify the output format - we add the line number
@@ -129,16 +130,21 @@ fn initialize_logger() {
     builder.init();
 }
 
+/// This structure is used to store the command-line instructions.
+/// We automatically derive a command-line parser based on this structure.
 #[derive(StructOpt)]
 #[structopt(name = "Charon")]
 struct CliOpts {
-    /// The input file
+    /// The input file.
     #[structopt(parse(from_os_str))]
     input_file: PathBuf,
     /// The destination directory, if we don't want to generate the output
     /// in the same directory as the input file.
     #[structopt(short = "dest", long = "dest", parse(from_os_str))]
     dest_dir: Option<PathBuf>,
+    /// If `true`, use Polonius' non-lexical lifetimes (NLL) analysis.
+    #[structopt(short = "nll", long = "nll")]
+    use_polonius: bool,
 }
 
 fn main() {
@@ -165,15 +171,17 @@ fn main() {
     let sysroot = std::str::from_utf8(&out.stdout).unwrap().trim();
     let sysroot_arg = format!("--sysroot={}", sysroot).to_owned();
 
-    let compiler_args = vec![
+    let mut compiler_args = vec![
         exec_path,
         sysroot_arg,
         args.input_file.as_path().to_str().unwrap().to_string(),
         "--crate-type=lib".to_string(),
         "--edition=2018".to_string(),
-        // TODO: add an option to use Polonius' borrow checker
-        //"-Zpolonius".to_string(),
     ];
+    if args.use_polonius {
+        compiler_args.push("-Zpolonius".to_string());
+    }
+
     RunCompiler::new(
         &compiler_args,
         &mut ToInternal {
@@ -199,8 +207,6 @@ fn translate(
         .crate_name(rustc_span::def_id::LOCAL_CRATE)
         .to_ident_string();
     trace!("# Crate: {}", crate_name);
-
-    // Explore the items in the module.
 
     // # Step 1: check and register all the definitions, to build the graph
     // of dependencies between them (we need to know in which
