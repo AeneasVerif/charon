@@ -379,7 +379,7 @@ fn test_constants() {
 
 /// This assignment is trickier than it seems
 #[allow(unused_assignments)]
-pub fn test_weird_borrows1() {
+fn test_weird_borrows1() {
     let mut x = 0;
     let mut px = &mut x;
     // Context:
@@ -387,4 +387,10 @@ pub fn test_weird_borrows1() {
     // px -> &mut l0 (0:i32)
 
     px = &mut (*px);
+}
+
+fn test_mem_replace(px: &mut u32) {
+    let y = std::mem::replace(px, 1);
+    assert!(y == 0);
+    *px = 2;
 }
