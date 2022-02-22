@@ -141,6 +141,23 @@ pub(crate) type InternalContent = Map<Key, Message>;
 pub(crate) type LeafContent = Map<Key, Value>;
 
 /// Internal node. See [Node].
+///
+/// An internal node contains a stack of messages (stored on disk and thus
+/// absent from the node itself), and two children.
+///
+/// When transmitting messages to the children: the messages/bindings for the
+/// keys < pivot are given to the left child, and those for the keys >= pivot
+/// are given to the right child.
+///
+/// Note that in Be-Tree the internal nodes have lists of children, which
+/// allows to do even smarter things: if an internal node has too many
+/// messages, then:
+/// - either it can transmit big batches of those messages to some of its
+///   children, in which case it does
+/// - or it can't, in which case it splits, because otherwise we have too
+///   many unefficient updates to perform (the aim really is to amortize
+///   the cost of I/O, which is achieved by minimizing the number of
+///   accesses to node contents)
 struct Internal {
     id: NodeId,
     pivot: Key,
@@ -149,6 +166,9 @@ struct Internal {
 }
 
 /// Leaf node. See [Node]
+///
+/// A leaf node contains bindings (stored on disk, and thus absent from the
+/// node itself).
 struct Leaf {
     id: NodeId,
     /// The number of bindings in the node
@@ -156,36 +176,15 @@ struct Leaf {
 }
 
 /// A node in the BeTree.
-/// Note that the node's content is stored on disk (and hence absent from the
-/// node itself).
 ///
-/// Note that we don't have clean/dirty nodes: all nodes are immediately
+/// The node's content is stored on disk (and hence absent from the node itself).
+///
+/// Note that we don't have clean/dirty nodes: all node contents are immediately
 /// written on disk upon being updated.
 enum Node {
     /// An internal node (with children).
-    ///
-    /// The fields:
-    /// - id
-    /// - pivot
-    /// - left child
-    /// - right child
-    ///
-    /// Note that the bindings for the keys < pivot are in the left child,
-    /// and the keys >= pivot are in the right child.
-    ///
-    /// Note that in Be-Tree the internal nodes have lists of children, which
-    /// allows to do even smarter things: if an internal node has too many
-    /// messages, then:
-    /// - either it can transmit big batches of those messages to some of its
-    ///   children, in which case it does
-    /// - or it can't, in which case it splits, because otherwise we have too
-    ///   many unefficient updates to perform (the aim really is to amortize
-    ///   the cost of I/O)
     Internal(Internal),
     /// A leaf node.
-    ///
-    /// The fields:
-    /// - id
     Leaf(Leaf),
 }
 
