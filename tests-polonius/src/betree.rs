@@ -57,6 +57,12 @@ fn store_leaf_node(id: NodeId, content: LeafContent) {
     utils::store_leaf_node(id, content)
 }
 
+fn fresh_node_id(counter: &mut NodeId) -> NodeId {
+    let id = *counter;
+    *counter += 1;
+    id
+}
+
 /// We use this type to encode closures.
 /// See [Message::Upsert] and [upsert_update]
 pub enum UpsertFunState {
@@ -183,8 +189,7 @@ enum Node {
     Leaf(Leaf),
 }
 
-/// Parameters and indices used in the BeTree
-/// TODO: split
+/// The parameters of a BeTree, which control when to flush or split.
 struct Params {
     /// The minimum number of messages we flush to the children.
     /// We wait to reach 2 * min_flush_size before flushing to children.
@@ -197,12 +202,18 @@ struct Params {
     /// The maximum number of bindings we can store in a leaf node (if we
     /// reach this number, we split).
     split_size: u64,
-    /// Every node has a unique id
+}
+
+struct NodeIdCounter {
     next_node_id: NodeId,
 }
 
-impl Params {
-    fn fresh_node_id(&mut self) -> NodeId {
+impl NodeIdCounter {
+    fn new() -> Self {
+        NodeIdCounter { next_node_id: 0 }
+    }
+
+    fn fresh_id(&mut self) -> NodeId {
         let id = self.next_node_id;
         self.next_node_id += 1;
         id
@@ -211,7 +222,10 @@ impl Params {
 
 /// The BeTree itself
 pub struct BeTree {
+    /// The parameters of the BeTree
     params: Params,
+    /// Every node has a unique id: we keep a counter to generate fresh ids
+    node_id_cnt: NodeIdCounter,
     /// The root of the tree
     root: Node,
 }
@@ -348,14 +362,19 @@ impl Leaf {
     ///
     /// The leaf should have exactly 2 * split_size elements.
     /// Also, we use the fact that the keys are sorted in increasing order.
-    fn split(&self, content: Map<Key, Value>, params: &mut Params) -> Internal {
+    fn split(
+        &self,
+        content: Map<Key, Value>,
+        params: &Params,
+        node_id_cnt: &mut NodeIdCounter,
+    ) -> Internal {
         // Split the content
         let (content0, content1) = content.split_at(params.split_size);
         // Get the pivot
         let pivot = content1.hd().0;
         // Create the two nodes
-        let id0 = params.fresh_node_id();
-        let id1 = params.fresh_node_id();
+        let id0 = node_id_cnt.fresh_id();
+        let id1 = node_id_cnt.fresh_id();
         let left = Leaf {
             id: id0,
             size: params.split_size,
@@ -394,18 +413,23 @@ impl Internal {
     ///
     /// The function returns the messages we couldn't flush to the children
     /// nodes.
-    fn flush(&mut self, params: &mut Params, content: Map<Key, Message>) -> Map<Key, Message> {
+    fn flush<'a>(
+        &'a mut self,
+        params: &Params,
+        node_id_cnt: &'a mut NodeIdCounter,
+        content: Map<Key, Message>,
+    ) -> Map<Key, Message> {
         // Partition the messages
         let (msgs_left, msgs_right) = content.partition_at_pivot(self.pivot);
         // Check if we need to flush to the left child
         let len_left = msgs_left.len();
         if len_left >= params.min_flush_size {
             // Flush to the left
-            self.left.apply_messages(params, msgs_left);
+            self.left.apply_messages(params, node_id_cnt, msgs_left);
             // Check if we need to flush to the right
             let len_right = msgs_right.len();
             if len_right >= params.min_flush_size {
-                self.right.apply_messages(params, msgs_right);
+                self.right.apply_messages(params, node_id_cnt, msgs_right);
                 // No messages remain in the current node
                 List::Nil
             } else {
@@ -414,7 +438,7 @@ impl Internal {
             }
         } else {
             // Don't flush to the left: we necessarily flush to the right
-            self.right.apply_messages(params, msgs_right);
+            self.right.apply_messages(params, node_id_cnt, msgs_right);
             // We keep the messages which belong to the left node
             msgs_left
         }
@@ -527,7 +551,13 @@ impl Node {
     }
 
     /// Apply a message to ourselves
-    fn apply(&mut self, params: &mut Params, key: Key, new_msg: Message) {
+    fn apply<'a>(
+        &'a mut self,
+        params: &Params,
+        node_id_cnt: &'a mut NodeIdCounter,
+        key: Key,
+        new_msg: Message,
+    ) {
         match self {
             Node::Leaf(node) => {
                 // Load the content from disk
@@ -539,7 +569,7 @@ impl Node {
                 let len = content.len();
                 if len >= 2 * params.split_size {
                     // Split
-                    let new_node = node.split(content, params);
+                    let new_node = node.split(content, params, node_id_cnt);
                     // Store the content to disk
                     store_leaf_node(node.id, List::Nil);
                     // Update the node
@@ -560,7 +590,7 @@ impl Node {
                 // do something smarter to compute the number of messages
                 let num_msgs = content.len();
                 if num_msgs >= params.min_flush_size {
-                    content = node.flush(params, content);
+                    content = node.flush(params, node_id_cnt, content);
                 }
                 // Store the content to disk
                 store_internal_node(node.id, content)
@@ -569,12 +599,17 @@ impl Node {
     }
 
     /// Apply a list of messages to ourselves
-    fn apply_messages(&mut self, params: &mut Params, msgs: List<(Key, Message)>) {
+    fn apply_messages<'a>(
+        &'a mut self,
+        params: &Params,
+        node_id_cnt: &'a mut NodeIdCounter,
+        msgs: List<(Key, Message)>,
+    ) {
         match msgs {
             List::Nil => (),
             List::Cons((key, msg), msgs) => {
-                self.apply(params, key, msg);
-                self.apply_messages(params, *msgs);
+                self.apply(params, node_id_cnt, key, msg);
+                self.apply_messages(params, node_id_cnt, *msgs);
             }
         }
     }
@@ -795,19 +830,24 @@ impl Node {
 
 impl BeTree {
     fn new(min_flush_size: u64, split_size: u64) -> Self {
-        let id = 0;
+        let mut node_id_cnt = NodeIdCounter::new();
+        let id = node_id_cnt.fresh_id();
         let root = Node::Leaf(Leaf { id, size: 0 });
         store_leaf_node(id, List::Nil);
         let params = Params {
             min_flush_size,
             split_size,
-            next_node_id: 1,
         };
-        BeTree { params, root }
+        BeTree {
+            params,
+            node_id_cnt,
+            root,
+        }
     }
 
     fn apply(&mut self, key: Key, msg: Message) {
-        self.root.apply(&mut self.params, key, msg)
+        self.root
+            .apply(&self.params, &mut self.node_id_cnt, key, msg)
     }
 
     /// Insert a binding from [key] to [value]
@@ -837,7 +877,7 @@ impl BeTree {
     }
 
     fn fresh_node_id(&mut self) -> NodeId {
-        self.params.fresh_node_id()
+        self.node_id_cnt.fresh_id()
     }
 }
 
