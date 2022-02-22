@@ -12,7 +12,6 @@ use crate::expressions::*;
 use crate::im_ast::*;
 use crate::types::*;
 use crate::values::*;
-use hashlink::linked_hash_map::LinkedHashMap;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
 
@@ -74,9 +73,18 @@ pub enum SwitchTargets {
     /// switching over the discriminant, which is an integer.
     /// Also, we use a `LinkedHashMap` to make sure the order of the switch
     /// branches is preserved.
+    ///
+    /// Rk.: we use a vector of values, because some of the branches may
+    /// be grouped together, like for the following code:
+    /// ```
+    /// match e {
+    ///   E::V1 | E::V2 => ..., // Grouped
+    ///   E::V3 => ...
+    /// }
+    /// ```
     SwitchInt(
         IntegerTy,
-        LinkedHashMap<ScalarValue, Statement>,
+        Vec<(Vec<ScalarValue>, Statement)>,
         Box<Statement>,
     ),
 }

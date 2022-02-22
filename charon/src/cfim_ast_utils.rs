@@ -48,7 +48,11 @@ impl Serialize for SwitchTargets {
             }
             SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
                 vs.serialize_field(int_ty)?;
-                let targets = LinkedHashMapSerializer::new(targets);
+                let targets: Vec<(VecSerializer<ScalarValue>, &Statement)> = targets
+                    .iter()
+                    .map(|(values, st)| (VecSerializer::new(values), st))
+                    .collect();
+                let targets = VecSerializer::new(&targets);
                 vs.serialize_field(&targets)?;
                 vs.serialize_field(otherwise)?;
             }
@@ -138,11 +142,13 @@ impl Statement {
                     let inner_tab2 = format!("{}{}", inner_tab1, TAB_INCR);
                     let mut maps: Vec<String> = maps
                         .iter()
-                        .map(|(v, st)| {
+                        .map(|(pvl, st)| {
+                            // Note that there may be several pattern values
+                            let pvl: Vec<String> = pvl.iter().map(|v| v.to_string()).collect();
                             format!(
                                 "{}{} => {{\n{}\n{}}}",
                                 inner_tab1,
-                                v.to_string(),
+                                pvl.join(" | "),
                                 st.fmt_with_ctx(&inner_tab2, ctx),
                                 inner_tab1
                             )

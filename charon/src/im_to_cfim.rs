@@ -15,13 +15,14 @@
 //! (which will be difficult to formally analyze), and the MIR graphs are actually
 //! not that big because statements are grouped into code blocks (a block is made
 //! of a list of statements, followed by a terminator - branchings and jumps can
-//! only be performed by terminators -, meaning that MIR graphs don't have that many
-//! nodes and edges).
+//! only be performed by terminators -, meaning that MIR graphs don't have that
+//! many nodes and edges).
 
 use crate::cfim_ast as tgt;
 use crate::im_ast as src;
 use crate::im_ast::FunDefId;
 use crate::types::TypeDefs;
+use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
 use im::Vector;
@@ -1209,6 +1210,7 @@ enum GotoKind {
 }
 
 fn translate_child_block(
+    no_code_duplication: bool,
     cfg: &CfgInfo,
     def: &src::FunDef,
     exits_info: &ExitInfo,
@@ -1226,6 +1228,7 @@ fn translate_child_block(
         GotoKind::Goto => {
             // "Standard" goto: just recursively translate
             translate_block(
+                no_code_duplication,
                 cfg,
                 def,
                 exits_info,
@@ -1259,6 +1262,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 }
 
 fn translate_terminator(
+    no_code_duplication: bool,
     cfg: &CfgInfo,
     def: &src::FunDef,
     exits_info: &ExitInfo,
@@ -1271,6 +1275,7 @@ fn translate_terminator(
         src::Terminator::Panic | src::Terminator::Unreachable => Some(tgt::Statement::Panic),
         src::Terminator::Return => Some(tgt::Statement::Return),
         src::Terminator::Goto { target } => translate_child_block(
+            no_code_duplication,
             cfg,
             def,
             exits_info,
@@ -1281,6 +1286,7 @@ fn translate_terminator(
         ),
         src::Terminator::Drop { place, target } => {
             let opt_child = translate_child_block(
+                no_code_duplication,
                 cfg,
                 def,
                 exits_info,
@@ -1301,6 +1307,7 @@ fn translate_terminator(
             target,
         } => {
             let opt_child = translate_child_block(
+                no_code_duplication,
                 cfg,
                 def,
                 exits_info,
@@ -1324,6 +1331,7 @@ fn translate_terminator(
             target,
         } => {
             let opt_child = translate_child_block(
+                no_code_duplication,
                 cfg,
                 def,
                 exits_info,
@@ -1344,6 +1352,7 @@ fn translate_terminator(
                 src::SwitchTargets::If(then_tgt, else_tgt) => {
                     // Translate the children expressions
                     let then_exp = translate_child_block(
+                        no_code_duplication,
                         cfg,
                         def,
                         exits_info,
@@ -1354,6 +1363,7 @@ fn translate_terminator(
                     );
                     let then_exp = opt_statement_to_nop_if_none(then_exp);
                     let else_exp = translate_child_block(
+                        no_code_duplication,
                         cfg,
                         def,
                         exits_info,
@@ -1368,22 +1378,55 @@ fn translate_terminator(
                     tgt::SwitchTargets::If(Box::new(then_exp), Box::new(else_exp))
                 }
                 src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
+                    // Note that some branches can be grouped together, like
+                    // here:
+                    // ```
+                    // match e {
+                    //   E::V1 | E::V2 => ..., // Grouped
+                    //   E::V3 => ...
+                    // }
+                    // ```
+                    // We detect this by checking if a block has already been
+                    // translated as one of the branches of the switch.
+
+                    // We link block ids to:
+                    // - vector of matched integer values
+                    // - translated blocks
+                    let mut branches: LinkedHashMap<
+                        src::BlockId::Id,
+                        (Vec<v::ScalarValue>, tgt::Statement),
+                    > = LinkedHashMap::new();
+
                     // Translate the children expressions
-                    let targets_exps = LinkedHashMap::from_iter(targets.iter().map(|(v, bid)| {
-                        let exp = translate_child_block(
-                            cfg,
-                            def,
-                            exits_info,
-                            parent_loops.clone(),
-                            switch_exit_blocks,
-                            explored,
-                            *bid,
-                        );
-                        let exp = opt_statement_to_nop_if_none(exp);
-                        (*v, exp)
-                    }));
+                    for (v, bid) in targets.iter() {
+                        // Check if the block has already been translated:
+                        // if yes, it means we need to group branches
+                        if branches.contains_key(bid) {
+                            // Already translated: add the matched value to
+                            // the list of values
+                            let branch = branches.get_mut(bid).unwrap();
+                            branch.0.push(*v);
+                        } else {
+                            // Not translated: translate it
+                            let exp = translate_child_block(
+                                no_code_duplication,
+                                cfg,
+                                def,
+                                exits_info,
+                                parent_loops.clone(),
+                                switch_exit_blocks,
+                                explored,
+                                *bid,
+                            );
+                            let exp = opt_statement_to_nop_if_none(exp);
+                            branches.insert(*bid, (vec![*v], exp));
+                        }
+                    }
+                    let targets_exps: Vec<(Vec<v::ScalarValue>, tgt::Statement)> =
+                        branches.into_iter().map(|(_, x)| x).collect();
 
                     let otherwise_exp = translate_child_block(
+                        no_code_duplication,
                         cfg,
                         def,
                         exits_info,
@@ -1457,6 +1500,7 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
 }
 
 fn translate_block(
+    no_code_duplication: bool,
     cfg: &CfgInfo,
     def: &src::FunDef,
     exits_info: &ExitInfo,
@@ -1465,23 +1509,17 @@ fn translate_block(
     explored: &mut HashSet<src::BlockId::Id>,
     block_id: src::BlockId::Id,
 ) -> Option<tgt::Statement> {
-    // Check that we didn't already translate this block, and insert the block id
-    // in the set of already translated blocks.
-    // This is not necessary for the algorithm correctness. We enforce this only
-    // to guarantee the quality of the translation: if a block gets translated
-    // twice, it means we didn't correctly identify how to reconstruct the control-
-    // flow, and that the reconstructed program contains duplicated pieces of code.
-    // As this is still an early stage, we want to make sure we spot such
-    // duplication, to update the reconstruction accordingly. In the future, we
-    // might want to make this test optional, and let the user control its
-    // activation.
+    // If the user activated this check: check that we didn't already translate
+    // this block, and insert the block id in the set of already translated blocks.
     trace!(
         "Parent loops: {:?}, Parent switch exits: {:?}, Block id: {}",
         parent_loops,
         switch_exit_blocks,
         block_id
     );
-    assert!(!explored.contains(&block_id));
+    if no_code_duplication {
+        assert!(!explored.contains(&block_id));
+    }
     explored.insert(block_id);
 
     let block = def.body.get(block_id).unwrap();
@@ -1527,6 +1565,7 @@ fn translate_block(
     // Note that this terminator is an option: we might ignore it
     // (if it is an exit).
     let terminator = translate_terminator(
+        no_code_duplication,
         cfg,
         def,
         exits_info,
@@ -1565,6 +1604,7 @@ fn translate_block(
         let exp = if next_block.is_some() {
             let exit_block_id = next_block.unwrap();
             let next_exp = translate_block(
+                no_code_duplication,
                 cfg,
                 def,
                 exits_info,
@@ -1592,6 +1632,7 @@ fn translate_block(
 
             let exit_block_id = next_block.unwrap();
             let next_exp = translate_block(
+                no_code_duplication,
                 cfg,
                 def,
                 exits_info,
@@ -1613,7 +1654,11 @@ fn translate_block(
     }
 }
 
-fn translate_function(src_defs: &src::FunDefs, src_def_id: FunDefId::Id) -> tgt::FunDef {
+fn translate_function(
+    no_code_duplication: bool,
+    src_defs: &src::FunDefs,
+    src_def_id: FunDefId::Id,
+) -> tgt::FunDef {
     // Retrieve the function definition
     let src_def = src_defs.get(src_def_id).unwrap();
     trace!("# Reconstructing: {}\n", src_def.name);
@@ -1634,6 +1679,7 @@ fn translate_function(src_defs: &src::FunDefs, src_def_id: FunDefId::Id) -> tgt:
     // Note that we shouldn't get `None`.
     let mut explored = HashSet::new();
     let body_exp = translate_block(
+        no_code_duplication,
         &cfg_info,
         &src_def,
         &exits_info,
@@ -1660,12 +1706,26 @@ fn translate_function(src_defs: &src::FunDefs, src_def_id: FunDefId::Id) -> tgt:
     }
 }
 
-pub fn translate_functions(type_defs: &TypeDefs, src_defs: &src::FunDefs) -> Defs {
+/// Translate the functions by reconstructing the control-flow.
+///
+/// [no_code_duplication]: if true, check that no block is translated twice (this
+/// can be a sign that the reconstruction is of poor quality, but sometimes
+/// code duplication is necessary, in the presence of "fused" match branches for
+/// instance).
+pub fn translate_functions(
+    no_code_duplication: bool,
+    type_defs: &TypeDefs,
+    src_defs: &src::FunDefs,
+) -> Defs {
     let mut out_defs = FunDefId::Vector::new();
 
     // Tranlsate the bodies one at a time
     for src_def_id in src_defs.iter_indices() {
-        out_defs.push_back(translate_function(src_defs, src_def_id));
+        out_defs.push_back(translate_function(
+            no_code_duplication,
+            src_defs,
+            src_def_id,
+        ));
     }
 
     // Print the functions

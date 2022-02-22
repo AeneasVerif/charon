@@ -6,7 +6,6 @@
 use crate::cfim_ast::*;
 use crate::expressions::*;
 use crate::values::*;
-use hashlink::linked_hash_map::LinkedHashMap;
 use std::iter::FromIterator;
 
 fn transform_st(st: Statement) -> Statement {
@@ -39,9 +38,8 @@ fn transform_st(st: Statement) -> Statement {
                 Statement::Switch(op, SwitchTargets::If(st1, st2))
             }
             SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
-                let targets = LinkedHashMap::from_iter(
-                    targets.into_iter().map(|(v, e)| (v, transform_st(e))),
-                );
+                let targets =
+                    Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
                 let otherwise = transform_st(*otherwise);
                 let targets = SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise));
                 Statement::Switch(op, targets)

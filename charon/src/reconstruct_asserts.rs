@@ -4,7 +4,6 @@
 //! This pass introduces `assert` instead in order to make the code shorter.
 
 use crate::cfim_ast::*;
-use hashlink::linked_hash_map::LinkedHashMap;
 use std::iter::FromIterator;
 
 fn simplify_st(st: Statement) -> Statement {
@@ -41,9 +40,8 @@ fn simplify_st(st: Statement) -> Statement {
                     }
                 }
                 SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
-                    let targets = LinkedHashMap::from_iter(
-                        targets.into_iter().map(|(v, e)| (v, simplify_st(e))),
-                    );
+                    let targets =
+                        Vec::from_iter(targets.into_iter().map(|(v, e)| (v, simplify_st(e))));
                     let otherwise = simplify_st(*otherwise);
                     let targets = SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise));
                     Statement::Switch(op, targets)

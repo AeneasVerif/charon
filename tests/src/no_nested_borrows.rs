@@ -151,6 +151,22 @@ fn copy_int(x: i32) -> i32 {
     x
 }
 
+/// Just checking the parameters given to unreachable
+/// Rk.: the input parameter prevents using the function as a unit test.
+fn test_unreachable(b: bool) {
+    if b {
+        unreachable!();
+    }
+}
+
+/// Just checking the parameters given to panic
+/// Rk.: the input parameter prevents using the function as a unit test.
+fn test_panic(b: bool) {
+    if b {
+        panic!("Panicked!");
+    }
+}
+
 // Just testing that shared loans are correctly handled
 fn test_copy_int() {
     let x = 0;

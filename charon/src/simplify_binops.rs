@@ -11,7 +11,6 @@ use crate::cfim_ast::*;
 use crate::expressions::*;
 use crate::types::*;
 use crate::values::*;
-use hashlink::linked_hash_map::LinkedHashMap;
 use std::iter::FromIterator;
 
 /// Return true iff: `place ++ [pelem] == full_place`
@@ -372,9 +371,8 @@ fn simplify_st(st: Statement) -> Statement {
                     SwitchTargets::If(Box::new(simplify_st(*st1)), Box::new(simplify_st(*st2)))
                 }
                 SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
-                    let targets = LinkedHashMap::from_iter(
-                        targets.into_iter().map(|(v, e)| (v, simplify_st(e))),
-                    );
+                    let targets =
+                        Vec::from_iter(targets.into_iter().map(|(v, e)| (v, simplify_st(e))));
                     let otherwise = simplify_st(*otherwise);
                     SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise))
                 }

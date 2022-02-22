@@ -67,6 +67,7 @@ use structopt::StructOpt;
 struct ToInternal {
     dest_dir: Option<PathBuf>,
     source_file: PathBuf,
+    no_code_duplication: bool,
 }
 
 impl Callbacks for ToInternal {
@@ -78,7 +79,7 @@ impl Callbacks for ToInternal {
             .peek_mut()
             .enter(|tcx| {
                 let session = c.session();
-                translate(session, tcx, &self.dest_dir, &self.source_file)
+                translate(session, tcx, &self)
             })
             .unwrap();
         Compilation::Stop
@@ -140,11 +141,17 @@ struct CliOpts {
     input_file: PathBuf,
     /// The destination directory, if we don't want to generate the output
     /// in the same directory as the input file.
-    #[structopt(short = "dest", long = "dest", parse(from_os_str))]
+    #[structopt(long = "dest", parse(from_os_str))]
     dest_dir: Option<PathBuf>,
     /// If `true`, use Polonius' non-lexical lifetimes (NLL) analysis.
-    #[structopt(short = "nll", long = "nll")]
+    #[structopt(long = "nll")]
     use_polonius: bool,
+    /// Check that no code duplication happens during control-flow reconstruction.
+    /// This is only used to make sure the reconstructed code is of good quality,
+    /// and preventing duplication is not always possible (if match branches are
+    /// "fused").
+    #[structopt(long = "no-code-duplication")]
+    no_code_duplication: bool,
 }
 
 fn main() {
@@ -187,6 +194,7 @@ fn main() {
         &mut ToInternal {
             dest_dir: args.dest_dir,
             source_file: args.input_file,
+            no_code_duplication: args.no_code_duplication,
         },
     )
     .run()
@@ -198,8 +206,10 @@ type TranslationResult<T> = Result<T, ()>;
 fn translate(
     sess: &Session,
     tcx: TyCtxt,
-    dest_dir: &Option<PathBuf>,
-    source_file: &PathBuf,
+    internal: &ToInternal,
+    //    dest_dir: &Option<PathBuf>,
+    //    source_file: &PathBuf,
+    //    no_code_duplication: bool,
 ) -> TranslationResult<()> {
     trace!();
     // Retrieve the crate name.
@@ -248,7 +258,8 @@ fn translate(
     // the control flow.
     //
     // Note that from now onwards, we don't interact with rustc anymore.
-    let cfim_defs = im_to_cfim::translate_functions(&type_defs, &im_defs);
+    let cfim_defs =
+        im_to_cfim::translate_functions(internal.no_code_duplication, &type_defs, &im_defs);
 
     // # Step 7: simplify the calls to binops
     // Note that we assume that the sequences have been flattened.
@@ -293,8 +304,8 @@ fn translate(
         &ordered_decls,
         &type_defs,
         &cfim_defs,
-        dest_dir,
-        source_file,
+        &internal.dest_dir,
+        &internal.source_file,
     )?;
 
     trace!("Done");
