@@ -829,7 +829,7 @@ impl Node {
 }
 
 impl BeTree {
-    fn new(min_flush_size: u64, split_size: u64) -> Self {
+    pub fn new(min_flush_size: u64, split_size: u64) -> Self {
         let mut node_id_cnt = NodeIdCounter::new();
         let id = node_id_cnt.fresh_id();
         let root = Node::Leaf(Leaf { id, size: 0 });
@@ -845,6 +845,9 @@ impl BeTree {
         }
     }
 
+    /// Apply a message to the tree.
+    ///
+    /// This is an auxiliary function.
     fn apply(&mut self, key: Key, msg: Message) {
         self.root
             .apply(&self.params, &mut self.node_id_cnt, key, msg)
@@ -874,10 +877,6 @@ impl BeTree {
     /// borrow.
     pub fn lookup<'a>(&'a mut self, key: Key) -> Option<Value> {
         self.root.lookup(key)
-    }
-
-    fn fresh_node_id(&mut self) -> NodeId {
-        self.node_id_cnt.fresh_id()
     }
 }
 
