@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 
 use crate::im_ast;
-use crate::names::Name;
+use crate::names::*;
 use crate::types;
 
 // Assumed types
@@ -59,7 +59,7 @@ enum FunId {
     VecIndexMut,
 }
 
-pub fn get_type_id_from_name(name: &Name) -> types::AssumedTy {
+pub fn get_type_id_from_name(name: &TypeName) -> types::AssumedTy {
     if name.equals_ref_name(&BOX_NAME) {
         types::AssumedTy::Box
     } else if name.equals_ref_name(&VEC_NAME) {
@@ -72,7 +72,7 @@ pub fn get_type_id_from_name(name: &Name) -> types::AssumedTy {
     }
 }
 
-fn get_fun_id_from_name_full(name: &Name) -> FunId {
+fn get_fun_id_from_name_full(name: &FunName) -> FunId {
     if name.equals_ref_name(&PANIC_NAME) {
         FunId::Panic
     } else if name.equals_ref_name(&BEGIN_PANIC_NAME) {
@@ -105,7 +105,7 @@ fn get_fun_id_from_name_full(name: &Name) -> FunId {
     }
 }
 
-pub fn get_fun_id_from_name(name: &Name) -> im_ast::AssumedFunId {
+pub fn get_fun_id_from_name(name: &FunName) -> im_ast::AssumedFunId {
     match get_fun_id_from_name_full(name) {
         FunId::Panic | FunId::BeginPanic => unreachable!(),
         FunId::Replace => im_ast::AssumedFunId::Replace,
@@ -126,7 +126,7 @@ pub fn get_fun_id_from_name(name: &Name) -> im_ast::AssumedFunId {
 /// For instance, many types like box or vec are parameterized by an allocator
 /// (`std::alloc::Allocator`): we ignore it, because it is not useful to reason
 /// about the functional behaviour.
-pub fn type_to_used_params(name: &Name) -> Vec<bool> {
+pub fn type_to_used_params(name: &TypeName) -> Vec<bool> {
     trace!("{}", name);
     match get_type_id_from_name(name) {
         types::AssumedTy::Box => {
@@ -147,7 +147,7 @@ pub struct FunInfo {
 }
 
 /// See the comments for [type_to_used_params]
-pub fn function_to_info(name: &Name) -> FunInfo {
+pub fn function_to_info(name: &FunName) -> FunInfo {
     trace!("{}", name);
     match get_fun_id_from_name_full(name) {
         FunId::Panic => FunInfo {

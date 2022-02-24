@@ -9,7 +9,7 @@ use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::im_ast as ast;
-use crate::names::Name;
+use crate::names::{FunName, ImplId, Name};
 use crate::regions_hierarchy as rh;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
@@ -1536,7 +1536,7 @@ fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
 }
 
 /// Retrieve the function name from a `DefId`.
-pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Name {
+pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
     trace!("{:?}", def_id);
 
     // We have to be a bit careful when retrieving the name. For instance, due
@@ -1591,7 +1591,7 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Name {
             let parent_type = tcx.type_of(parent_def_id);
 
             // Retrieve the parent type name
-            let mut name = match parent_type.kind() {
+            let type_name = match parent_type.kind() {
                 rustc_middle::ty::TyKind::Adt(adt_def, _) => {
                     // We can compute the type's name
                     translate_types::type_def_id_to_name(tcx, adt_def.did).unwrap()
@@ -1602,31 +1602,34 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Name {
             };
 
             // Retrieve the function name
-            assert!(def_key.disambiguated_data.disambiguator == 0);
+            let impl_id = ImplId::Id::new(def_key.disambiguated_data.disambiguator as usize);
             let fun_name = defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap();
 
-            name.push(fun_name);
-            return Name::from(name);
+            return FunName::Impl(type_name, impl_id, fun_name);
         }
         rustc_hir::definitions::DefPathData::TypeNs(_ns) => {
             // Not an `impl` block.
             // The function can be a trait function, like: `std::ops::Deref::deref`
             // Translating the parent path is straightforward: it should be a type path.
-            let mut name = translate_types::type_def_id_to_name(tcx, parent_def_id).unwrap();
+            let mut name = translate_types::type_def_id_to_name(tcx, parent_def_id)
+                .unwrap()
+                .to_vec();
             trace!("parent name: {:?}", name);
 
             // Retrieve the function name
             assert!(def_key.disambiguated_data.disambiguator == 0);
             name.push(defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap());
-            return Name::from(name);
+            let name = Name::from(name);
+            FunName::Regular(name)
         }
         rustc_hir::definitions::DefPathData::CrateRoot => {
             // Top-level function
             let crate_name = tcx.crate_name(def_id.krate).to_ident_string();
-            return Name::from(vec![
+            let name = Name::from(vec![
                 crate_name,
                 defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap(),
             ]);
+            return FunName::Regular(name);
         }
         _ => {
             trace!(

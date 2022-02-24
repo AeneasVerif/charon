@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::names::*;
+use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
 use im::Vector;
@@ -66,7 +66,7 @@ pub enum ErasedRegion {
 #[derive(Debug, Clone, Serialize)]
 pub struct TypeDef {
     pub def_id: TypeDefId::Id,
-    pub name: Name,
+    pub name: TypeName,
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub kind: TypeDefKind,

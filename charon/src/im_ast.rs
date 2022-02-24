@@ -5,7 +5,7 @@
 
 use crate::expressions::*;
 pub use crate::im_ast_utils::*;
-use crate::names::Name;
+use crate::names::FunName;
 use crate::regions_hierarchy::RegionGroups;
 use crate::types::*;
 use crate::values::*;
@@ -68,7 +68,7 @@ pub struct FunSig {
 #[derive(Debug, Clone, Serialize)]
 pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
     pub def_id: FunDefId::Id,
-    pub name: Name,
+    pub name: FunName,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,

@@ -2,7 +2,7 @@ use crate::assumed;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector::ToUsize;
-use crate::names::Name;
+use crate::names::TypeName;
 use crate::regions_hierarchy;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
@@ -197,7 +197,7 @@ where
             let used_params = if adt.did.is_local() {
                 Option::None
             } else {
-                let name = Name::from(type_def_id_to_name(tcx, adt.did).unwrap());
+                let name = type_def_id_to_name(tcx, adt.did).unwrap();
                 Option::Some(assumed::type_to_used_params(&name))
             };
 
@@ -450,7 +450,7 @@ fn translate_non_local_defid(tcx: TyCtxt, def_id: DefId) -> ty::TypeId {
     trace!("{:?}", def_id);
 
     // Retrieve the type name
-    let name = Name::from(type_def_id_to_name(tcx, def_id).unwrap());
+    let name = type_def_id_to_name(tcx, def_id).unwrap();
     let id = assumed::get_type_id_from_name(&name);
 
     ty::TypeId::Assumed(id)
@@ -460,7 +460,7 @@ fn translate_non_local_defid(tcx: TyCtxt, def_id: DefId) -> ty::TypeId {
 ///
 /// This only works for def ids coming from types! For values, it is a bit
 /// more complex.
-pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Result<Vec<String>> {
+pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Result<TypeName> {
     trace!("{:?}", def_id);
 
     let def_path = tcx.def_path(def_id);
@@ -486,7 +486,7 @@ pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Result<Vec<String>> {
 
     trace!("resulting name: {:?}", &name);
 
-    Ok(name)
+    Ok(TypeName::from(name))
 }
 
 /// Translate one type definition.
@@ -644,7 +644,7 @@ fn translate_type<'ctx>(
 
     let type_def = ty::TypeDef {
         def_id: trans_id,
-        name: Name::from(name),
+        name,
         region_params: region_params,
         type_params: type_params,
         kind: type_def_kind,

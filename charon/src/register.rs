@@ -1,6 +1,5 @@
 use crate::assumed;
 use crate::common::*;
-use crate::names::Name;
 use crate::translate_functions_to_im;
 use crate::translate_types;
 use hashlink::LinkedHashMap;
@@ -287,7 +286,7 @@ fn register_mir_ty(
                 // like box or vec take an allocator as parameter.
 
                 // First, we need to identify the type by retrieving its name
-                let name = Name::from(translate_types::type_def_id_to_name(tcx, adt.did).unwrap());
+                let name = translate_types::type_def_id_to_name(tcx, adt.did).unwrap();
 
                 // Second, filter and register the types given as parameters
                 let used_params = assumed::type_to_used_params(&name);
