@@ -1594,7 +1594,7 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
             let type_name = match parent_type.kind() {
                 rustc_middle::ty::TyKind::Adt(adt_def, _) => {
                     // We can compute the type's name
-                    translate_types::type_def_id_to_name(tcx, adt_def.did).unwrap()
+                    translate_types::type_def_id_to_name(tcx, adt_def.did)
                 }
                 _ => {
                     unreachable!();
@@ -1611,9 +1611,7 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
             // Not an `impl` block.
             // The function can be a trait function, like: `std::ops::Deref::deref`
             // Translating the parent path is straightforward: it should be a type path.
-            let mut name = translate_types::type_def_id_to_name(tcx, parent_def_id)
-                .unwrap()
-                .to_vec();
+            let mut name = translate_types::type_def_id_to_name(tcx, parent_def_id).to_vec();
             trace!("parent name: {:?}", name);
 
             // Retrieve the function name
@@ -1729,11 +1727,13 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
             let (used_type_params, used_args) = if def_id.is_local() {
                 (Option::None, Option::None)
             } else {
-                let used = assumed::function_to_info(&name);
-                (
-                    Option::Some(used.used_type_params),
-                    Option::Some(used.used_args),
-                )
+                match assumed::function_to_info(&name) {
+                    Option::None => (Option::None, Option::None),
+                    Option::Some(used) => (
+                        Option::Some(used.used_type_params),
+                        Option::Some(used.used_args),
+                    ),
+                }
             };
 
             // Translate the type parameters
@@ -1747,8 +1747,7 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
             // - this is a local function, in which case we need to retrieve the
             //   function id by doing a lookup
             // - this is a non-local function, in which case there is a special
-            //   treatment: we need to check it is one of the assumed functions
-            //   (and identify which one it is)
+            //   treatment: we need to check if it benefits from primitive support
             if def_id.is_local() {
                 // Retrieve the def id
                 let def_id = bt_ctx.ft_ctx.get_def_id_from_rid(def_id).unwrap();
@@ -1772,7 +1771,7 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
                 // is translated to:
                 // `box_deref<T>`
                 // (the type parameter is not `Box<T>` but `T`).
-                translate_non_local_function(
+                translate_non_local_function_call(
                     tcx,
                     def_id,
                     region_params,
@@ -1867,9 +1866,9 @@ fn translate_arguments<'tcx, 'ctx, 'ctx1>(
     return t_args;
 }
 
-/// Translate a non-local function which is not: panic, begin_panic, box_free
-/// (those have a special treatment).
-fn translate_non_local_function<'tcx>(
+/// Translate a non-local function call which is not: panic, begin_panic,
+/// box_free (those have a special treatment).
+fn translate_non_local_function_call<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: DefId,
     region_params: Vec<ty::ErasedRegion>,
@@ -1884,43 +1883,60 @@ fn translate_non_local_function<'tcx>(
     let name = function_def_id_to_name(tcx, def_id);
     trace!("name: {}", name);
 
-    // Retrieve the translated id from the name
-    let aid = assumed::get_fun_id_from_name(&name);
+    // Check if the function has primitive support, by trying to look up
+    // its primitive identifier
+    match assumed::get_fun_id_from_name(&name) {
+        Option::Some(aid) => {
+            // The function is considered primitive
 
-    // Translate the function body.
-    // Note that some functions are actually traits (deref, index, etc.):
-    // we assume that they are called only on a limited set of types
-    // (ex.: box, vec...).
-    // For those trait functions, we need a custom treatment to retrieve
-    // and check the type information.
-    // For instance, derefencing boxes generates MIR of the following form:
-    // ```
-    // _2 = <Box<u32> as Deref>::deref(move _3)
-    // ```
-    // We have to retrieve the type `Box<u32>` and check that it is of the
-    // form `Box<T>` (and we generate `box_deref<u32>`).
-    match aid {
-        ast::AssumedFunId::Replace
-        | ast::AssumedFunId::BoxNew
-        | ast::AssumedFunId::VecNew
-        | ast::AssumedFunId::VecPush
-        | ast::AssumedFunId::VecInsert
-        | ast::AssumedFunId::VecLen => Ok(ast::Terminator::Call {
-            func: ast::FunId::Assumed(aid),
-            region_params,
-            type_params,
-            args,
-            dest,
-            target,
-        }),
-        ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => {
-            translate_box_deref(aid, region_params, type_params, args, dest, target)
+            // Translate the function call
+            // Note that some functions are actually traits (deref, index, etc.):
+            // we assume that they are called only on a limited set of types
+            // (ex.: box, vec...).
+            // For those trait functions, we need a custom treatment to retrieve
+            // and check the type information.
+            // For instance, derefencing boxes generates MIR of the following form:
+            // ```
+            // _2 = <Box<u32> as Deref>::deref(move _3)
+            // ```
+            // We have to retrieve the type `Box<u32>` and check that it is of the
+            // form `Box<T>` (and we generate `box_deref<u32>`).
+            match aid {
+                ast::AssumedFunId::Replace
+                | ast::AssumedFunId::BoxNew
+                | ast::AssumedFunId::VecNew
+                | ast::AssumedFunId::VecPush
+                | ast::AssumedFunId::VecInsert
+                | ast::AssumedFunId::VecLen => Ok(ast::Terminator::Call {
+                    func: ast::FunId::Assumed(aid),
+                    region_params,
+                    type_params,
+                    args,
+                    dest,
+                    target,
+                }),
+                ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => {
+                    translate_box_deref(aid, region_params, type_params, args, dest, target)
+                }
+                ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
+                    translate_vec_index(aid, region_params, type_params, args, dest, target)
+                }
+                ast::AssumedFunId::BoxFree => {
+                    unreachable!();
+                }
+            }
         }
-        ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
-            translate_vec_index(aid, region_params, type_params, args, dest, target)
-        }
-        ast::AssumedFunId::BoxFree => {
-            unreachable!();
+        Option::None => {
+            // The function is not considered primitive - it is an external
+            // dependency
+            Ok(ast::Terminator::Call {
+                func: ast::FunId::External(name),
+                region_params,
+                type_params,
+                args,
+                dest,
+                target,
+            })
         }
     }
 }

@@ -1,4 +1,5 @@
 //! This file contains information about the assumed functions/types/traits definitions
+//! TODO: rename to "primitive"
 #![allow(dead_code)]
 
 use crate::im_ast;
@@ -59,66 +60,70 @@ enum FunId {
     VecIndexMut,
 }
 
-pub fn get_type_id_from_name(name: &TypeName) -> types::AssumedTy {
+pub fn get_type_id_from_name(name: &TypeName) -> Option<types::AssumedTy> {
     if name.equals_ref_name(&BOX_NAME) {
-        types::AssumedTy::Box
+        Option::Some(types::AssumedTy::Box)
     } else if name.equals_ref_name(&VEC_NAME) {
-        types::AssumedTy::Vec
+        Option::Some(types::AssumedTy::Vec)
     } else if name.equals_ref_name(&OPTION_NAME) {
-        types::AssumedTy::Option
+        Option::Some(types::AssumedTy::Option)
     } else {
-        error!("Unsupported non-local type: {}", name);
-        panic!("Unsupported non-local type: {}", name)
+        Option::None
     }
 }
 
-fn get_fun_id_from_name_full(name: &FunName) -> FunId {
+fn get_fun_id_from_name_full(name: &FunName) -> Option<FunId> {
     if name.equals_ref_name(&PANIC_NAME) {
-        FunId::Panic
+        Option::Some(FunId::Panic)
     } else if name.equals_ref_name(&BEGIN_PANIC_NAME) {
-        FunId::BeginPanic
+        Option::Some(FunId::BeginPanic)
     } else if name.equals_ref_name(&REPLACE_NAME) {
-        FunId::Replace
+        Option::Some(FunId::Replace)
     } else if name.equals_ref_name(&BOX_NEW_NAME) {
-        FunId::BoxNew
+        Option::Some(FunId::BoxNew)
     } else if name.equals_ref_name(&DEREF_DEREF_NAME) {
-        FunId::BoxDeref
+        Option::Some(FunId::BoxDeref)
     } else if name.equals_ref_name(&DEREF_DEREF_MUT_NAME) {
-        FunId::BoxDerefMut
+        Option::Some(FunId::BoxDerefMut)
     } else if name.equals_ref_name(&BOX_FREE_NAME) {
-        FunId::BoxFree
+        Option::Some(FunId::BoxFree)
     } else if name.equals_ref_name(&VEC_NEW_NAME) {
-        FunId::VecNew
+        Option::Some(FunId::VecNew)
     } else if name.equals_ref_name(&VEC_PUSH_NAME) {
-        FunId::VecPush
+        Option::Some(FunId::VecPush)
     } else if name.equals_ref_name(&VEC_INSERT_NAME) {
-        FunId::VecInsert
+        Option::Some(FunId::VecInsert)
     } else if name.equals_ref_name(&VEC_LEN_NAME) {
-        FunId::VecLen
+        Option::Some(FunId::VecLen)
     } else if name.equals_ref_name(&INDEX_NAME) {
-        FunId::VecIndex
+        Option::Some(FunId::VecIndex)
     } else if name.equals_ref_name(&INDEX_MUT_NAME) {
-        FunId::VecIndexMut
+        Option::Some(FunId::VecIndexMut)
     } else {
-        error!("Unsupported non-local function: {}", name);
-        panic!("Unsupported non-local function: {}", name)
+        Option::None
     }
 }
 
-pub fn get_fun_id_from_name(name: &FunName) -> im_ast::AssumedFunId {
+pub fn get_fun_id_from_name(name: &FunName) -> Option<im_ast::AssumedFunId> {
     match get_fun_id_from_name_full(name) {
-        FunId::Panic | FunId::BeginPanic => unreachable!(),
-        FunId::Replace => im_ast::AssumedFunId::Replace,
-        FunId::BoxNew => im_ast::AssumedFunId::BoxNew,
-        FunId::BoxDeref => im_ast::AssumedFunId::BoxDeref,
-        FunId::BoxDerefMut => im_ast::AssumedFunId::BoxDerefMut,
-        FunId::BoxFree => im_ast::AssumedFunId::BoxFree,
-        FunId::VecNew => im_ast::AssumedFunId::VecNew,
-        FunId::VecPush => im_ast::AssumedFunId::VecPush,
-        FunId::VecInsert => im_ast::AssumedFunId::VecInsert,
-        FunId::VecLen => im_ast::AssumedFunId::VecLen,
-        FunId::VecIndex => im_ast::AssumedFunId::VecIndex,
-        FunId::VecIndexMut => im_ast::AssumedFunId::VecIndexMut,
+        Option::Some(id) => {
+            let id = match id {
+                FunId::Panic | FunId::BeginPanic => unreachable!(),
+                FunId::Replace => im_ast::AssumedFunId::Replace,
+                FunId::BoxNew => im_ast::AssumedFunId::BoxNew,
+                FunId::BoxDeref => im_ast::AssumedFunId::BoxDeref,
+                FunId::BoxDerefMut => im_ast::AssumedFunId::BoxDerefMut,
+                FunId::BoxFree => im_ast::AssumedFunId::BoxFree,
+                FunId::VecNew => im_ast::AssumedFunId::VecNew,
+                FunId::VecPush => im_ast::AssumedFunId::VecPush,
+                FunId::VecInsert => im_ast::AssumedFunId::VecInsert,
+                FunId::VecLen => im_ast::AssumedFunId::VecLen,
+                FunId::VecIndex => im_ast::AssumedFunId::VecIndex,
+                FunId::VecIndexMut => im_ast::AssumedFunId::VecIndexMut,
+            };
+            Option::Some(id)
+        }
+        Option::None => Option::None,
     }
 }
 
@@ -126,17 +131,23 @@ pub fn get_fun_id_from_name(name: &FunName) -> im_ast::AssumedFunId {
 /// For instance, many types like box or vec are parameterized by an allocator
 /// (`std::alloc::Allocator`): we ignore it, because it is not useful to reason
 /// about the functional behaviour.
-pub fn type_to_used_params(name: &TypeName) -> Vec<bool> {
+pub fn type_to_used_params(name: &TypeName) -> Option<Vec<bool>> {
     trace!("{}", name);
     match get_type_id_from_name(name) {
-        types::AssumedTy::Box => {
-            vec![true, false]
-        }
-        types::AssumedTy::Vec => {
-            vec![true, false]
-        }
-        types::AssumedTy::Option => {
-            vec![true]
+        Option::None => Option::None,
+        Option::Some(id) => {
+            let id = match id {
+                types::AssumedTy::Box => {
+                    vec![true, false]
+                }
+                types::AssumedTy::Vec => {
+                    vec![true, false]
+                }
+                types::AssumedTy::Option => {
+                    vec![true]
+                }
+            };
+            Option::Some(id)
         }
     }
 }
@@ -147,62 +158,68 @@ pub struct FunInfo {
 }
 
 /// See the comments for [type_to_used_params]
-pub fn function_to_info(name: &FunName) -> FunInfo {
+pub fn function_to_info(name: &FunName) -> Option<FunInfo> {
     trace!("{}", name);
     match get_fun_id_from_name_full(name) {
-        FunId::Panic => FunInfo {
-            used_type_params: vec![],
-            used_args: vec![true],
-        },
-        FunId::BeginPanic => FunInfo {
-            used_type_params: vec![true],
-            used_args: vec![true],
-        },
-        FunId::Replace => FunInfo {
-            used_type_params: vec![true],
-            used_args: vec![true, true],
-        },
-        FunId::BoxNew => FunInfo {
-            used_type_params: vec![true],
-            used_args: vec![true],
-        },
-        FunId::BoxDeref => FunInfo {
-            used_type_params: vec![true],
-            used_args: vec![true],
-        },
-        FunId::BoxDerefMut => FunInfo {
-            used_type_params: vec![true],
-            used_args: vec![true],
-        },
-        FunId::BoxFree => FunInfo {
-            used_type_params: vec![true, false],
-            used_args: vec![true, false],
-        },
-        FunId::VecNew => FunInfo {
-            used_type_params: vec![true],
-            used_args: vec![],
-        },
-        FunId::VecPush => FunInfo {
-            used_type_params: vec![true, false],
-            used_args: vec![true, true],
-        },
-        FunId::VecInsert => FunInfo {
-            used_type_params: vec![true, false],
-            used_args: vec![true, true, true],
-        },
-        FunId::VecLen => FunInfo {
-            used_type_params: vec![true, false],
-            used_args: vec![true],
-        },
-        FunId::VecIndex => FunInfo {
-            // The second type parameter is for the index type (`usize` for vectors)
-            used_type_params: vec![true, false],
-            used_args: vec![true, true],
-        },
-        FunId::VecIndexMut => FunInfo {
-            // The second type parameter is for the index type (`usize` for vectors)
-            used_type_params: vec![true, false],
-            used_args: vec![true, true],
-        },
+        Option::None => Option::None,
+        Option::Some(id) => {
+            let info = match id {
+                FunId::Panic => FunInfo {
+                    used_type_params: vec![],
+                    used_args: vec![true],
+                },
+                FunId::BeginPanic => FunInfo {
+                    used_type_params: vec![true],
+                    used_args: vec![true],
+                },
+                FunId::Replace => FunInfo {
+                    used_type_params: vec![true],
+                    used_args: vec![true, true],
+                },
+                FunId::BoxNew => FunInfo {
+                    used_type_params: vec![true],
+                    used_args: vec![true],
+                },
+                FunId::BoxDeref => FunInfo {
+                    used_type_params: vec![true],
+                    used_args: vec![true],
+                },
+                FunId::BoxDerefMut => FunInfo {
+                    used_type_params: vec![true],
+                    used_args: vec![true],
+                },
+                FunId::BoxFree => FunInfo {
+                    used_type_params: vec![true, false],
+                    used_args: vec![true, false],
+                },
+                FunId::VecNew => FunInfo {
+                    used_type_params: vec![true],
+                    used_args: vec![],
+                },
+                FunId::VecPush => FunInfo {
+                    used_type_params: vec![true, false],
+                    used_args: vec![true, true],
+                },
+                FunId::VecInsert => FunInfo {
+                    used_type_params: vec![true, false],
+                    used_args: vec![true, true, true],
+                },
+                FunId::VecLen => FunInfo {
+                    used_type_params: vec![true, false],
+                    used_args: vec![true],
+                },
+                FunId::VecIndex => FunInfo {
+                    // The second type parameter is for the index type (`usize` for vectors)
+                    used_type_params: vec![true, false],
+                    used_args: vec![true, true],
+                },
+                FunId::VecIndexMut => FunInfo {
+                    // The second type parameter is for the index type (`usize` for vectors)
+                    used_type_params: vec![true, false],
+                    used_args: vec![true, true],
+                },
+            };
+            Option::Some(info)
+        }
     }
 }

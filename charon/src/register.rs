@@ -282,16 +282,29 @@ fn register_mir_ty(
             // crate) or an assumed (external) type like box or vec
             if !adt.did.is_local() {
                 // Explore the type parameters instantiation
-                // Note that we might ignore some of the types because some types
-                // like box or vec take an allocator as parameter.
+                // There are two possibilities:
+                // - either the type is considered primitive (i.e., it belongs
+                //   to a well-identified list of types like `Box` which benefit
+                //   from primitive treatment)
+                // - or the type is external, in which case we register it as such
 
                 // First, we need to identify the type by retrieving its name
-                let name = translate_types::type_def_id_to_name(tcx, adt.did).unwrap();
+                let name = translate_types::type_def_id_to_name(tcx, adt.did);
 
-                // Second, filter and register the types given as parameters
+                // Second, check if the type is primitive.
+                //
+                // Note that if the type is primitive, we might ignore
+                // some of its parameters (for instance, we ignore the Allocator
+                // parameter of `Box` and `Vec`).
+                //
+                // [used_params] below is an option:
+                // - `Some` if the type is primitive and we need to filter some
+                //   of its parameters
+                // - `None` if it is not primitive (no filter information)
                 let used_params = assumed::type_to_used_params(&name);
+
                 // Explore the type parameters instantiation
-                register_mir_substs(rdecls, sess, tcx, span, deps, Some(used_params), substs)?;
+                register_mir_substs(rdecls, sess, tcx, span, deps, used_params, substs)?;
 
                 // We don't need to explore the ADT itself: it is assumed
                 return Ok(());
@@ -577,15 +590,24 @@ fn register_function(
 
                 let name = translate_functions_to_im::function_def_id_to_name(tcx, fid);
 
-                // We may need to filter the types and arguments
+                // We may need to filter the types and arguments, if the type
+                // is considered primitive
                 let (used_types, used_args) = if fid.is_local() {
                     (Option::None, Option::None)
                 } else {
-                    let used = assumed::function_to_info(&name);
-                    (
-                        Option::Some(used.used_type_params),
-                        Option::Some(used.used_args),
-                    )
+                    match assumed::function_to_info(&name) {
+                        Option::Some(used) => {
+                            // The type is primitive
+                            (
+                                Option::Some(used.used_type_params),
+                                Option::Some(used.used_args),
+                            )
+                        }
+                        Option::None => {
+                            // The type is non-primitive (i.e., external)
+                            (Option::None, Option::None)
+                        }
+                    }
                 };
 
                 // Register the types given as parameters.

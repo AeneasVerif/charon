@@ -197,8 +197,8 @@ where
             let used_params = if adt.did.is_local() {
                 Option::None
             } else {
-                let name = type_def_id_to_name(tcx, adt.did).unwrap();
-                Option::Some(assumed::type_to_used_params(&name))
+                let name = type_def_id_to_name(tcx, adt.did);
+                assumed::type_to_used_params(&name)
             };
 
             // Translate the type parameters instantiation
@@ -450,17 +450,26 @@ fn translate_non_local_defid(tcx: TyCtxt, def_id: DefId) -> ty::TypeId {
     trace!("{:?}", def_id);
 
     // Retrieve the type name
-    let name = type_def_id_to_name(tcx, def_id).unwrap();
-    let id = assumed::get_type_id_from_name(&name);
+    let name = type_def_id_to_name(tcx, def_id);
 
-    ty::TypeId::Assumed(id)
+    // Check if the type has primitive support
+    match assumed::get_type_id_from_name(&name) {
+        Option::Some(id) => {
+            // The type has primitive support
+            ty::TypeId::Assumed(id)
+        }
+        Option::None => {
+            // The type is external
+            ty::TypeId::External(name)
+        }
+    }
 }
 
 /// Compute a name from a type [`DefId`](DefId).
 ///
 /// This only works for def ids coming from types! For values, it is a bit
 /// more complex.
-pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Result<TypeName> {
+pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
     trace!("{:?}", def_id);
 
     let def_path = tcx.def_path(def_id);
@@ -486,7 +495,7 @@ pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> Result<TypeName> {
 
     trace!("resulting name: {:?}", &name);
 
-    Ok(TypeName::from(name))
+    TypeName::from(name)
 }
 
 /// Translate one type definition.
@@ -628,7 +637,7 @@ fn translate_type<'ctx>(
     }
 
     // Register the type
-    let name = type_def_id_to_name(tcx, def_id)?;
+    let name = type_def_id_to_name(tcx, def_id);
     let region_params = ty::RegionVarId::Vector::from(region_params);
     let type_params = ty::TypeVarId::Vector::from(type_params);
     let type_def_kind: ty::TypeDefKind = match adt.adt_kind() {

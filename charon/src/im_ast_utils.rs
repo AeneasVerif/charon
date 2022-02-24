@@ -206,7 +206,7 @@ impl<'ctx> Formatter<&Statement> for AstFormatter<'ctx> {
 
 pub fn fmt_call<'a, 'b, T>(
     ctx: &'b T,
-    func: FunId,
+    func: &'a FunId,
     region_params: &'a Vec<ErasedRegion>,
     type_params: &'a Vec<ETy>,
     args: &'a Vec<Operand>,
@@ -233,37 +233,38 @@ where
     let args = args.join(", ");
 
     let f = match func {
-        FunId::Local(def_id) => format!("{}{}", ctx.format_object(def_id), params).to_owned(),
+        FunId::Local(def_id) => format!("{}{}", ctx.format_object(*def_id), params).to_string(),
         FunId::Assumed(assumed) => match assumed {
-            AssumedFunId::Replace => format!("core::mem::replace{}", params).to_owned(),
-            AssumedFunId::BoxNew => format!("alloc::boxed::Box{}::new", params).to_owned(),
+            AssumedFunId::Replace => format!("core::mem::replace{}", params).to_string(),
+            AssumedFunId::BoxNew => format!("alloc::boxed::Box{}::new", params).to_string(),
             AssumedFunId::BoxDeref => format!(
                 "core::ops::deref::Deref<alloc::boxed::Box{}>::deref",
                 params
             )
-            .to_owned(),
+            .to_string(),
             AssumedFunId::BoxDerefMut => format!(
                 "core::ops::deref::DerefMut<alloc::boxed::Box{}>::deref_mut",
                 params
             )
-            .to_owned(),
-            AssumedFunId::BoxFree => format!("alloc::alloc::box_free{}", params).to_owned(),
-            AssumedFunId::VecNew => format!("alloc::vec::Vec{}::new", params).to_owned(),
-            AssumedFunId::VecPush => format!("alloc::vec::Vec{}::push", params).to_owned(),
-            AssumedFunId::VecInsert => format!("alloc::vec::Vec{}::insert", params).to_owned(),
-            AssumedFunId::VecLen => format!("alloc::vec::Vec{}::len", params).to_owned(),
+            .to_string(),
+            AssumedFunId::BoxFree => format!("alloc::alloc::box_free{}", params).to_string(),
+            AssumedFunId::VecNew => format!("alloc::vec::Vec{}::new", params).to_string(),
+            AssumedFunId::VecPush => format!("alloc::vec::Vec{}::push", params).to_string(),
+            AssumedFunId::VecInsert => format!("alloc::vec::Vec{}::insert", params).to_string(),
+            AssumedFunId::VecLen => format!("alloc::vec::Vec{}::len", params).to_string(),
             AssumedFunId::VecIndex => {
-                format!("core::ops::index::Index<alloc::vec::Vec{}>::index", params).to_owned()
+                format!("core::ops::index::Index<alloc::vec::Vec{}>::index", params).to_string()
             }
             AssumedFunId::VecIndexMut => format!(
                 "core::ops::index::IndexMut<alloc::vec::Vec{}>::index_mut",
                 params
             )
-            .to_owned(),
+            .to_string(),
         },
+        FunId::External(name) => name.to_string(),
     };
 
-    format!("{}({})", f, args,).to_owned()
+    format!("{}({})", f, args,).to_string()
 }
 
 impl Terminator {
@@ -278,7 +279,7 @@ impl Terminator {
             + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
-            Terminator::Goto { target } => format!("goto bb{}", target.to_string()).to_owned(),
+            Terminator::Goto { target } => format!("goto bb{}", target.to_string()).to_string(),
             Terminator::Switch { discr, targets } => match targets {
                 SwitchTargets::If(true_block, false_block) => format!(
                     "if {} -> bb{} else -> bb{}",
@@ -286,29 +287,29 @@ impl Terminator {
                     true_block.to_string(),
                     false_block.to_string()
                 )
-                .to_owned(),
+                .to_string(),
                 SwitchTargets::SwitchInt(_ty, maps, otherwise) => {
                     let mut maps: Vec<String> = maps
                         .iter()
                         .map(|(v, bid)| {
-                            format!("{}: bb{}", v.to_string(), bid.to_string()).to_owned()
+                            format!("{}: bb{}", v.to_string(), bid.to_string()).to_string()
                         })
                         .collect();
-                    maps.push(format!("otherwise: bb{}", otherwise.to_string()).to_owned());
+                    maps.push(format!("otherwise: bb{}", otherwise.to_string()).to_string());
                     let maps = maps.join(", ");
 
-                    format!("switch {} -> {}", discr.fmt_with_ctx(ctx), maps).to_owned()
+                    format!("switch {} -> {}", discr.fmt_with_ctx(ctx), maps).to_string()
                 }
             },
-            Terminator::Panic => "panic".to_owned(),
-            Terminator::Return => "return".to_owned(),
-            Terminator::Unreachable => "unreachable".to_owned(),
+            Terminator::Panic => "panic".to_string(),
+            Terminator::Return => "return".to_string(),
+            Terminator::Unreachable => "unreachable".to_string(),
             Terminator::Drop { place, target } => format!(
                 "drop {} -> bb{}",
                 place.fmt_with_ctx(ctx),
                 target.to_string()
             )
-            .to_owned(),
+            .to_string(),
             Terminator::Call {
                 func,
                 region_params,
@@ -317,7 +318,7 @@ impl Terminator {
                 dest,
                 target,
             } => {
-                let call = fmt_call(ctx, *func, region_params, type_params, args);
+                let call = fmt_call(ctx, func, region_params, type_params, args);
 
                 format!(
                     "{} := {} -> bb{}",
@@ -325,7 +326,7 @@ impl Terminator {
                     call,
                     target.to_string(),
                 )
-                .to_owned()
+                .to_string()
             }
             Terminator::Assert {
                 cond,
@@ -337,7 +338,7 @@ impl Terminator {
                 expected,
                 target.to_string()
             )
-            .to_owned(),
+            .to_string(),
         }
     }
 }

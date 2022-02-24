@@ -106,13 +106,17 @@ pub enum SwitchTargets {
 }
 
 /// A function identifier. See [`Terminator`](Terminator)
-#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum FunId {
     /// A function local to the crate, whose body we will translate.
     Local(FunDefId::Id),
-    /// An assumed function, coming from a standard library (for instance:
+    /// A primitive function, coming from a standard library (for instance:
     /// `alloc::boxed::Box::new`).
+    /// TODO: rename to "Primitive"
     Assumed(AssumedFunId),
+    /// An external function.
+    /// TODO: we might want to merge this with "Assumed"
+    External(FunName),
 }
 
 /// An assumed function identifier, identifying a function coming from a

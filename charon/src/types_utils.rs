@@ -396,6 +396,7 @@ impl TypeId {
                 AssumedTy::Vec => "alloc::vec::Vec".to_string(),
                 AssumedTy::Option => "core::option::Option".to_string(),
             },
+            TypeId::External(name) => name.to_string(),
         }
     }
 }
@@ -683,7 +684,7 @@ where
             Ty::Adt(id, regions, tys) => {
                 let nregions = Ty::substitute_regions(regions, rsubst);
                 let ntys = tys.iter().map(|ty| ty.substitute(rsubst, tsubst)).collect();
-                return Ty::Adt(*id, nregions, ntys);
+                return Ty::Adt(id.clone(), nregions, ntys);
             }
             Ty::TypeVar(id) => {
                 return tsubst(id);

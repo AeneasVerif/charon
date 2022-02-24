@@ -117,7 +117,7 @@ pub enum RefKind {
 /// Type identifier.
 ///
 /// Allows us to factorize the code for assumed types, adts and tuples
-#[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumAsGetters, EnumIsA, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumAsGetters, EnumIsA, Serialize)]
 pub enum TypeId {
     Adt(TypeDefId::Id),
     Tuple,
@@ -125,6 +125,9 @@ pub enum TypeId {
     /// and that we handle like a primitive type. Types falling into this
     /// category include: Box, Vec, Cell...
     Assumed(AssumedTy),
+    /// An external type.
+    /// TODO: merge this with Assumed
+    External(TypeName),
 }
 
 /// A type.

@@ -31,6 +31,11 @@ fn statement_diverges(divergent: &HashMap<ast::FunDefId::Id, bool>, st: &cfim::S
                 | ast::AssumedFunId::VecIndex
                 | ast::AssumedFunId::VecIndexMut => false,
             },
+            ast::FunId::External(_) => {
+                // Being conservative: we consider all the external functions
+                // can diverge.
+                true
+            }
         },
         cfim::Statement::Sequence(st1, st2) => {
             statement_diverges(divergent, &st1) || statement_diverges(divergent, &st2)
