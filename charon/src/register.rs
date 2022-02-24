@@ -1,13 +1,11 @@
 use crate::assumed;
 use crate::common::*;
+use crate::names::TypeName;
 use crate::translate_functions_to_im;
 use crate::translate_types;
 use hashlink::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
-use rustc_hir::{
-    def_id::DefId, def_id::LocalDefId, Constness, Defaultness, ImplItem, ImplItemKind,
-    ImplPolarity, Item, Unsafety,
-};
+use rustc_hir::{def_id::DefId, def_id::LocalDefId, Defaultness, ImplItem, ImplItemKind, Item};
 use rustc_middle::ty::{AdtDef, Ty, TyCtxt, TyKind};
 use rustc_session::Session;
 use rustc_span::Span;
@@ -153,6 +151,9 @@ fn register_mir_adt(
         unreachable!();
     };
 
+    // TODO: check the generics
+    let generics = tcx.generics_of(adt.did);
+
     // Initialize the type declaration that we will register (in particular,
     // initilize the list of local dependancies to empty).
     let mut rtype_decl = RegisteredTypeDeclaration::new(adt.did);
@@ -200,6 +201,37 @@ fn register_mir_adt(
     return Ok(());
 }
 
+/// Register a a non-local MIR ADT.
+/// Note that the def id of the ADT should already have been stored in the set of
+/// explored def ids.
+///
+/// For now, we don't do much.
+/// In the future, we will explore the ADT, to reveal its public information
+/// (public fields in case of a structure, variants in case of a public
+/// enumeration).
+fn register_non_local_mir_adt(
+    rdecls: &mut RegisteredDeclarations,
+    sess: &Session,
+    tcx: TyCtxt,
+    adt: &AdtDef,
+    name: TypeName,
+) -> Result<()> {
+    trace!("> non-local adt: {:?}", adt);
+
+    // First, check if the ADT has primitive support: if it is the case, there
+    // is nothing to do
+    if assumed::type_to_used_params(&name).is_some() {
+        // Primitive
+        return Ok(());
+    }
+
+    // Non-primitive (i.e.: external)
+    // TODO: we need to do sanity checks, like about the generics, however those
+    // are only available in the HIR, to which we don't have access (we only
+    // have access to the MIR of non-local definitions).
+    return Ok(());
+}
+
 /// Auxiliary function to register a list of type parameters.
 fn register_mir_substs<'tcx>(
     rdecls: &mut RegisteredDeclarations,
@@ -220,7 +252,7 @@ fn register_mir_substs<'tcx>(
             // for all the parameters, because some of them have default
             // values: for this reason we can't check the length and used the
             // fact that `zip` below stops once one of the two iterators is
-            // consumed. TODO:
+            // consumed.
             assert!(substs.len() == used_params.len());
             substs
                 .iter()
@@ -306,8 +338,8 @@ fn register_mir_ty(
                 // Explore the type parameters instantiation
                 register_mir_substs(rdecls, sess, tcx, span, deps, used_params, substs)?;
 
-                // We don't need to explore the ADT itself: it is assumed
-                return Ok(());
+                // We may need to explore the ADT itself
+                return register_non_local_mir_adt(rdecls, sess, tcx, adt, name);
             } else {
                 // Explore the type parameters instantiation
                 register_mir_substs(rdecls, sess, tcx, span, deps, Option::None, substs)?;
@@ -777,12 +809,8 @@ fn register_hir_item(
         }
         rustc_hir::ItemKind::Impl(impl_block) => {
             trace!("impl");
-            // TODO: make proper error messages
-            assert!(impl_block.unsafety == Unsafety::Normal);
-            assert!(impl_block.polarity == ImplPolarity::Positive); // This is because I don't know what to do the in other case
-            assert!(impl_block.defaultness == Defaultness::Final); // This is because I don't know what to do the in other case
-            assert!(impl_block.constness == Constness::NotConst);
-            assert!(impl_block.of_trait.is_none()); // We don't support traits for now
+            // Sanity checks
+            translate_functions_to_im::check_impl_item(impl_block);
 
             // Explore the items
             let hir_map = tcx.hir();

@@ -13,6 +13,7 @@ use crate::names::{FunName, ImplId, Name};
 use crate::regions_hierarchy as rh;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
+use crate::substs;
 use crate::translate_types;
 use crate::types as ty;
 use crate::types::{FieldId, VariantId};
@@ -28,9 +29,7 @@ use rustc_middle::mir::{
     TerminatorKind, START_BLOCK,
 };
 use rustc_middle::ty as mir_ty;
-use rustc_middle::ty::{
-    BoundRegion, ConstKind, FreeRegion, Region, RegionKind, Ty, TyCtxt, TyKind,
-};
+use rustc_middle::ty::{ConstKind, PredicateKind, Ty, TyCtxt, TyKind};
 use rustc_span::BytePos;
 use rustc_span::Span;
 use std::cmp::Ordering;
@@ -1478,6 +1477,17 @@ fn defpathdata_to_value_ns(data: DefPathData) -> Option<String> {
     }
 }
 
+fn defpathdata_to_type_ns(data: DefPathData) -> Option<String> {
+    match data {
+        // The def path data should be in the type namespace
+        rustc_hir::definitions::DefPathData::TypeNs(symbol) => Some(symbol.to_ident_string()),
+        _ => {
+            trace!("Unexpected DefPathData: {:?}", data);
+            None
+        }
+    }
+}
+
 /// A function definition can be top-level, or can be defined in an `impl`
 /// block. In this case, we might want to retrieve the type for which the
 /// impl block was defined. This function returns this type's def id if
@@ -1628,6 +1638,55 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
                 defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap(),
             ]);
             return FunName::Regular(name);
+        }
+        _ => {
+            trace!(
+                "DefId {:?}: Unexpected DefPathData: {:?}",
+                def_id,
+                parent_def_key.disambiguated_data.data
+            );
+            unreachable!();
+        }
+    }
+}
+
+/// Retrieve the trait name from a `DefId`.
+/// TODO: very similar to [function_def_id_to_name] (see the comments).
+/// We may want to factorize at some point.
+pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
+    trace!("{:?}", def_id);
+
+    let def_key = tcx.def_key(def_id);
+
+    // Reconstruct the parent def id: it's the same as the function's def id,
+    // at the exception of the index.
+    let parent_def_id = DefId {
+        index: def_key.parent.unwrap(),
+        ..def_id
+    };
+
+    // Retrieve the parent's key
+    let parent_def_key = tcx.def_key(parent_def_id);
+
+    // Not sure what to do with the disambiguator yet, so for now I check that
+    // it is always equal to 0, in case of local functions.
+    // Rk.: I think there is a unique disambiguator per `impl` block.
+    assert!(!def_id.is_local() || parent_def_key.disambiguated_data.disambiguator == 0);
+
+    // Check the parent key
+    match parent_def_key.disambiguated_data.data {
+        rustc_hir::definitions::DefPathData::TypeNs(_ns) => {
+            // Not an `impl` block.
+            // The function can be a trait function, like: `std::ops::Deref::deref`
+            // Translating the parent path is straightforward: it should be a type path.
+            let mut name = translate_types::type_def_id_to_name(tcx, parent_def_id).to_vec();
+            trace!("parent name: {:?}", name);
+
+            // Retrieve the function name
+            assert!(def_key.disambiguated_data.disambiguator == 0);
+            name.push(defpathdata_to_type_ns(def_key.disambiguated_data.data).unwrap());
+            let name = Name::from(name);
+            FunName::Regular(name)
         }
         _ => {
             trace!(
@@ -2018,6 +2077,71 @@ fn translate_vec_index(
     })
 }
 
+/// Small utility
+pub(crate) fn check_impl_item<'hir>(impl_item: &rustc_hir::Impl<'hir>) {
+    // TODO: make proper error messages
+    use rustc_hir::{Constness, Defaultness, ImplPolarity, Unsafety};
+    assert!(impl_item.unsafety == Unsafety::Normal);
+    // About polarity:
+    // [https://doc.rust-lang.org/beta/unstable-book/language-features/negative-impls.html]
+    // Not sure about what I should do about it. Should I do anything, actually?
+    // This seems useful to enforce some discipline on the user-side, but not
+    // necessary for analysis purposes.
+    assert!(impl_item.polarity == ImplPolarity::Positive);
+    // Note sure what this is about
+    assert!(impl_item.defaultness == Defaultness::Final);
+    // Note sure what this is about
+    assert!(impl_item.constness == Constness::NotConst);
+    assert!(impl_item.of_trait.is_none()); // We don't support traits for now
+}
+
+/// Function used for sanity checks: check the constraints given by a function's
+/// generics (lifetime constraints, traits, etc.).
+/// For now we check that there are no such constraints.
+fn check_function_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+    // Retrieve the generics and the predicates (where-clauses)
+    let _generics = tcx.generics_of(def_id);
+    let preds = tcx.predicates_of(def_id);
+
+    // For now, simply check that there are no where-clauses
+    trace!("{:?}", def_id);
+    trace!("{:?}", &preds.predicates);
+    for (pred, _span) in preds.predicates {
+        // Instantiate the predicate (it is wrapped in a binder: we need to
+        // instantiate the bound region variables with free variables).
+        let (pred_kind, _late_bound_regions) =
+            substs::replace_late_bound_regions(tcx, pred.kind(), def_id);
+        match pred_kind {
+            PredicateKind::Trait(trait_pred) => {
+                // Slightly annoying: some traits are implicit.
+                //
+                // For instance, whenever we use a type parameter in a definition,
+                // Rust implicitly considers it as implementing trait `std::marker::Sized`.
+                // For now, we check that there are only instances of this trait,
+                // and ignore it.
+                use rustc_middle::ty::{BoundConstness, ImplPolarity};
+                assert!(trait_pred.polarity == ImplPolarity::Positive);
+                // Note sure what this is about
+                assert!(trait_pred.constness == BoundConstness::NotConst);
+                let trait_name = trait_def_id_to_name(tcx, trait_pred.trait_ref.def_id);
+                trace!("{}", trait_name);
+                assert!(trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME));
+            }
+            PredicateKind::RegionOutlives(_) => unimplemented!(),
+            PredicateKind::TypeOutlives(_) => unimplemented!(),
+            PredicateKind::Projection(_) => unimplemented!(),
+            PredicateKind::WellFormed(_) => unimplemented!(),
+            PredicateKind::ObjectSafe(_) => unimplemented!(),
+            PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
+            PredicateKind::Subtype(_) => unimplemented!(),
+            PredicateKind::Coerce(_) => unimplemented!(),
+            PredicateKind::ConstEvaluatable(_) => unimplemented!(),
+            PredicateKind::ConstEquate(_, _) => unimplemented!(),
+            PredicateKind::TypeWellFormedFromEnv(_) => unimplemented!(),
+        }
+    }
+}
+
 /// Translate a function's signature, and initialize a body translation context
 /// at the same time - the function signature gives us the list of region and
 /// type parameters, that we put in the translation context.
@@ -2055,9 +2179,17 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     //   of the translation: we will have to generate one backward function per
     //   region, and we need to know in which order to introduce those backward
     //   functions.
+    //   Actually, `liberate_late_bound_regions` returns a b-tree: maybe the
+    //   order between the bound regions is such that when iterating over the
+    //   keys of this tree, we iterator over the bound regions in the order in
+    //   which they are bound. As we are not too sure about that, we prefer
+    //   reimplementing our own function, which is quite simple.
 
     // We need a body translation context to keep track of all the variables
     let mut bt_ctx = BodyTransContext::new(def_id, ft_ctx);
+
+    // **Sanity checks on the HIR**
+    check_function_generics(tcx, def_id);
 
     // Start by translating the "normal" substitution (which lists the function's
     // parameters). As written above, this substitution contains all the type
@@ -2102,7 +2234,9 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     // the regions were introduced (the map is a BTreeMap, so I guess it depends
     // on how the the bound variables were numbered) and it doesn't cost us
     // much to create this mapping ourselves.
-    let mut late_bound_regions: LinkedHashMap<BoundRegion, Region> = LinkedHashMap::new();
+    let (signature, late_bound_regions) =
+        substs::replace_late_bound_regions(tcx, signature, def_id);
+    /*    let mut late_bound_regions: LinkedHashMap<BoundRegion, Region> = LinkedHashMap::new();
     let (signature, _) = tcx.replace_late_bound_regions(signature, |br| {
         let nregion = tcx.mk_region(RegionKind::ReFree(FreeRegion {
             scope: def_id,
@@ -2110,7 +2244,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
         }));
         late_bound_regions.insert(br, nregion);
         nregion
-    });
+    });*/
 
     // Introduce identifiers and translated regions for the late-bound regions
     for (_, region) in &late_bound_regions {

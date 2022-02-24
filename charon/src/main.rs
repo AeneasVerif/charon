@@ -50,6 +50,7 @@ mod register;
 mod reorder_decls;
 mod rust_to_local_ids;
 mod simplify_binops;
+mod substs;
 mod translate_functions_to_im;
 mod translate_types;
 mod types;

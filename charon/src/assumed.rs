@@ -39,6 +39,9 @@ pub static INDEX_NAME: [&str; 5] = ["core", "ops", "index", "Index", "index"];
 // This is a trait: for now we assume it is only used on vectors
 pub static INDEX_MUT_NAME: [&str; 5] = ["core", "ops", "index", "IndexMut", "index_mut"];
 
+// We ignore this trait, which is implicitly given to all the type parameters
+pub static MARKER_SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
+
 /// We redefine identifiers for assumed functions here, instead of reusing the
 /// identifiers from [im_ast], because some of the functions (the panic functions)
 /// will actually not be translated to functions: there are thus missing identifiers.
