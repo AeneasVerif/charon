@@ -1,8 +1,8 @@
 use crate::assumed;
 use crate::common::*;
+use crate::names::Name;
 use crate::translate_functions_to_im;
 use crate::translate_types;
-use crate::vars::Name;
 use hashlink::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
 use rustc_hir::{

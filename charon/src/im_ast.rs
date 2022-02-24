@@ -5,10 +5,10 @@
 
 use crate::expressions::*;
 pub use crate::im_ast_utils::*;
+use crate::names::Name;
 use crate::regions_hierarchy::RegionGroups;
 use crate::types::*;
 use crate::values::*;
-use crate::vars::Name;
 use hashlink::linked_hash_map::LinkedHashMap;
 use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};

@@ -43,6 +43,7 @@ mod im_ast;
 mod im_ast_utils;
 mod im_to_cfim;
 mod insert_assign_return_unit;
+mod names;
 mod reconstruct_asserts;
 mod regions_hierarchy;
 mod register;
@@ -55,7 +56,6 @@ mod types;
 mod types_utils;
 mod values;
 mod values_utils;
-mod vars;
 
 use rustc_driver::{Callbacks, Compilation, RunCompiler};
 use rustc_interface::{interface::Compiler, Queries};

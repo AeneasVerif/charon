@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
+use crate::names::*;
 use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
-use crate::vars::*;
 use im::Vector;
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;

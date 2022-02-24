@@ -2,8 +2,8 @@
 #![allow(dead_code)]
 
 use crate::im_ast;
+use crate::names::Name;
 use crate::types;
-use crate::vars::Name;
 
 // Assumed types
 pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
