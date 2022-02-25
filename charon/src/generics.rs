@@ -1,4 +1,6 @@
-//! This file contains various substitution utilities
+//! This file contains various utilities to manipulate generics:
+//! - instantiation of binders
+//! - checks
 
 #![allow(dead_code)]
 use hashlink::linked_hash_map::LinkedHashMap;

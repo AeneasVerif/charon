@@ -8,12 +8,12 @@ use crate::assumed;
 use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
+use crate::generics;
 use crate::im_ast as ast;
 use crate::names::{function_def_id_to_name, trait_def_id_to_name};
 use crate::regions_hierarchy as rh;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
-use crate::substs;
 use crate::translate_types;
 use crate::types as ty;
 use crate::types::{FieldId, VariantId};
@@ -1934,7 +1934,7 @@ pub(crate) fn check_function_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
         // Instantiate the predicate (it is wrapped in a binder: we need to
         // instantiate the bound region variables with free variables).
         let (pred_kind, _late_bound_regions) =
-            substs::replace_late_bound_regions(tcx, pred.kind(), def_id);
+            generics::replace_late_bound_regions(tcx, pred.kind(), def_id);
         match pred_kind {
             PredicateKind::Trait(trait_pred) => {
                 // Slightly annoying: some traits are implicit.
@@ -2059,7 +2059,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     // on how the the bound variables were numbered) and it doesn't cost us
     // much to create this mapping ourselves.
     let (signature, late_bound_regions) =
-        substs::replace_late_bound_regions(tcx, signature, def_id);
+        generics::replace_late_bound_regions(tcx, signature, def_id);
 
     // Introduce identifiers and translated regions for the late-bound regions
     for (_, region) in &late_bound_regions {

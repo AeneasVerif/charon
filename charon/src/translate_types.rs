@@ -1,12 +1,12 @@
 use crate::assumed;
 use crate::common::*;
 use crate::formatter::Formatter;
+use crate::generics;
 use crate::id_vector::ToUsize;
 use crate::names::{trait_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
-use crate::substs;
 use crate::types as ty;
 use im;
 use im::Vector;
@@ -482,7 +482,7 @@ pub(crate) fn check_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
         // Instantiate the predicate (it is wrapped in a binder: we need to
         // instantiate the bound region variables with free variables).
         let (pred_kind, _late_bound_regions) =
-            substs::replace_late_bound_regions(tcx, pred.kind(), def_id);
+            generics::replace_late_bound_regions(tcx, pred.kind(), def_id);
         match pred_kind {
             PredicateKind::Trait(trait_pred) => {
                 // Slightly annoying: some traits are implicit.
