@@ -6,6 +6,7 @@ use crate::names::TypeName;
 use crate::regions_hierarchy;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
+use crate::substs;
 use crate::types as ty;
 use im;
 use im::Vector;
@@ -442,10 +443,8 @@ where
 
 /// The non-local def ids benefit from a special treatment.
 ///
-/// For now, we spot some specific def ids from the Rust standard libraries,
-/// that we translate to specific types.
-/// In the future, we'll implement proper support for projects divided into
-/// different crates.
+/// We have to make the distinction between non-local definitions which
+/// are considered primitive (e.g., `Box`) and external dependencise.
 fn translate_non_local_defid(tcx: TyCtxt, def_id: DefId) -> ty::TypeId {
     trace!("{:?}", def_id);
 
@@ -498,6 +497,60 @@ pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
     TypeName::from(name)
 }
 
+/// Function used for sanity checks: check the constraints given by a type's
+/// generics (lifetime constraints, traits, etc.).
+/// For now we check that there are no such constraints.
+/// TODO: factorize with [translate_functions::check_function_generics]
+pub(crate) fn check_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+    use rustc_middle::ty::PredicateKind;
+
+    // Retrieve the generics and the predicates (where-clauses)
+    let _generics = tcx.generics_of(def_id);
+    let preds = tcx.predicates_of(def_id);
+
+    // For now, simply check that there are no where-clauses
+    trace!("{:?}", def_id);
+    trace!("{:?}", &preds.predicates);
+    for (pred, _span) in preds.predicates {
+        // Instantiate the predicate (it is wrapped in a binder: we need to
+        // instantiate the bound region variables with free variables).
+        let (pred_kind, _late_bound_regions) =
+            substs::replace_late_bound_regions(tcx, pred.kind(), def_id);
+        match pred_kind {
+            PredicateKind::Trait(trait_pred) => {
+                // Slightly annoying: some traits are implicit.
+                //
+                // For instance, whenever we use a type parameter in a definition,
+                // Rust implicitly considers it as implementing trait `std::marker::Sized`.
+                // For now, we check that there are only instances of this trait,
+                // and ignore it.
+                use rustc_middle::ty::{BoundConstness, ImplPolarity};
+                assert!(trait_pred.polarity == ImplPolarity::Positive);
+                // Note sure what this is about
+                assert!(trait_pred.constness == BoundConstness::NotConst);
+                // TODO: move the "..._def_id_to_name" functions
+                let trait_name = crate::translate_functions_to_im::trait_def_id_to_name(
+                    tcx,
+                    trait_pred.trait_ref.def_id,
+                );
+                trace!("{}", trait_name);
+                assert!(trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME));
+            }
+            PredicateKind::RegionOutlives(_) => unimplemented!(),
+            PredicateKind::TypeOutlives(_) => unimplemented!(),
+            PredicateKind::Projection(_) => unimplemented!(),
+            PredicateKind::WellFormed(_) => unimplemented!(),
+            PredicateKind::ObjectSafe(_) => unimplemented!(),
+            PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
+            PredicateKind::Subtype(_) => unimplemented!(),
+            PredicateKind::Coerce(_) => unimplemented!(),
+            PredicateKind::ConstEvaluatable(_) => unimplemented!(),
+            PredicateKind::ConstEquate(_, _) => unimplemented!(),
+            PredicateKind::TypeWellFormedFromEnv(_) => unimplemented!(),
+        }
+    }
+}
+
 /// Translate one type definition.
 ///
 /// Note that we translate the types one by one: we don't need to take into
@@ -522,6 +575,9 @@ fn translate_type<'ctx>(
     let def_id = *trans_ctx.type_id_to_rid.get(&trans_id).unwrap();
     trace!("{:?}", def_id);
     let adt = tcx.adt_def(def_id);
+
+    // Check the generics
+    check_type_generics(tcx, def_id);
 
     // Use a dummy substitution to instantiate the type parameters
     let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, adt.did);

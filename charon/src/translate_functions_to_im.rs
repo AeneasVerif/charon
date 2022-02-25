@@ -2098,7 +2098,8 @@ pub(crate) fn check_impl_item<'hir>(impl_item: &rustc_hir::Impl<'hir>) {
 /// Function used for sanity checks: check the constraints given by a function's
 /// generics (lifetime constraints, traits, etc.).
 /// For now we check that there are no such constraints.
-fn check_function_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+/// TODO: factorize with [translate_types::check_type_generics]
+pub(crate) fn check_function_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
     // Retrieve the generics and the predicates (where-clauses)
     let _generics = tcx.generics_of(def_id);
     let preds = tcx.predicates_of(def_id);
@@ -2236,15 +2237,6 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     // much to create this mapping ourselves.
     let (signature, late_bound_regions) =
         substs::replace_late_bound_regions(tcx, signature, def_id);
-    /*    let mut late_bound_regions: LinkedHashMap<BoundRegion, Region> = LinkedHashMap::new();
-    let (signature, _) = tcx.replace_late_bound_regions(signature, |br| {
-        let nregion = tcx.mk_region(RegionKind::ReFree(FreeRegion {
-            scope: def_id,
-            bound_region: br.kind,
-        }));
-        late_bound_regions.insert(br, nregion);
-        nregion
-    });*/
 
     // Introduce identifiers and translated regions for the late-bound regions
     for (_, region) in &late_bound_regions {

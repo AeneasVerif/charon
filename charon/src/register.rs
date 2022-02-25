@@ -151,8 +151,8 @@ fn register_mir_adt(
         unreachable!();
     };
 
-    // TODO: check the generics
-    let generics = tcx.generics_of(adt.did);
+    // Check the generics - TODO: I check this here and in translate_typesx
+    crate::translate_types::check_type_generics(tcx, adt.did);
 
     // Initialize the type declaration that we will register (in particular,
     // initilize the list of local dependancies to empty).
@@ -499,6 +499,9 @@ fn register_function(
     // ``
     let body = crate::get_mir::get_mir_for_def_id(tcx, def_id);
     let def_id = def_id.to_def_id();
+
+    // Check the generics - TODO: I check this here and in translate_functions_to_im
+    crate::translate_functions_to_im::check_function_generics(tcx, def_id);
 
     // Initialize the function declaration that we will register in the
     // declarations map, and in particular its list of dependencies that
