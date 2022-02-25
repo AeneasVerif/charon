@@ -44,6 +44,7 @@ mod im_ast_utils;
 mod im_to_cfim;
 mod insert_assign_return_unit;
 mod names;
+mod names_utils;
 mod reconstruct_asserts;
 mod regions_hierarchy;
 mod register;

@@ -2,7 +2,7 @@ use crate::assumed;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector::ToUsize;
-use crate::names::TypeName;
+use crate::names::{trait_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
@@ -464,39 +464,6 @@ fn translate_non_local_defid(tcx: TyCtxt, def_id: DefId) -> ty::TypeId {
     }
 }
 
-/// Compute a name from a type [`DefId`](DefId).
-///
-/// This only works for def ids coming from types! For values, it is a bit
-/// more complex.
-pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
-    trace!("{:?}", def_id);
-
-    let def_path = tcx.def_path(def_id);
-    let crate_name = tcx.crate_name(def_id.krate).to_string();
-
-    trace!("def path: {:?}", def_path);
-    let mut name: Vec<String> = vec![crate_name];
-    for path in def_path.data.iter() {
-        // The path disambiguator may be <> 0, but I'm not sure in which cases
-        // nor how to handle that case. For sanity, we thus check that it is
-        // equal to 0.
-        assert!(path.disambiguator == 0);
-        match &path.data {
-            rustc_hir::definitions::DefPathData::TypeNs(symbol) => {
-                name.push(symbol.to_ident_string());
-            }
-            _ => {
-                trace!("unexpected DefPathData: {:?}", &path.data);
-                unreachable!();
-            }
-        }
-    }
-
-    trace!("resulting name: {:?}", &name);
-
-    TypeName::from(name)
-}
-
 /// Function used for sanity checks: check the constraints given by a type's
 /// generics (lifetime constraints, traits, etc.).
 /// For now we check that there are no such constraints.
@@ -529,10 +496,7 @@ pub(crate) fn check_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
                 // Note sure what this is about
                 assert!(trait_pred.constness == BoundConstness::NotConst);
                 // TODO: move the "..._def_id_to_name" functions
-                let trait_name = crate::translate_functions_to_im::trait_def_id_to_name(
-                    tcx,
-                    trait_pred.trait_ref.def_id,
-                );
+                let trait_name = trait_def_id_to_name(tcx, trait_pred.trait_ref.def_id);
                 trace!("{}", trait_name);
                 assert!(trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME));
             }

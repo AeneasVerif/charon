@@ -9,7 +9,7 @@ use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::im_ast as ast;
-use crate::names::{FunName, ImplId, Name};
+use crate::names::{function_def_id_to_name, trait_def_id_to_name};
 use crate::regions_hierarchy as rh;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
@@ -22,7 +22,6 @@ use hashlink::linked_hash_map::LinkedHashMap;
 use im;
 use im::Vector;
 use rustc_hir::def_id::DefId;
-use rustc_hir::definitions::DefPathData;
 use rustc_middle::mir;
 use rustc_middle::mir::{
     BasicBlock, Body, Operand, Place, PlaceElem, SourceScope, Statement, StatementKind, Terminator,
@@ -1466,28 +1465,6 @@ fn get_function_from_operand<'tcx>(
     }
 }
 
-fn defpathdata_to_value_ns(data: DefPathData) -> Option<String> {
-    match data {
-        // The def path data should be in the value namespace
-        rustc_hir::definitions::DefPathData::ValueNs(symbol) => Some(symbol.to_ident_string()),
-        _ => {
-            trace!("Unexpected DefPathData: {:?}", data);
-            None
-        }
-    }
-}
-
-fn defpathdata_to_type_ns(data: DefPathData) -> Option<String> {
-    match data {
-        // The def path data should be in the type namespace
-        rustc_hir::definitions::DefPathData::TypeNs(symbol) => Some(symbol.to_ident_string()),
-        _ => {
-            trace!("Unexpected DefPathData: {:?}", data);
-            None
-        }
-    }
-}
-
 /// A function definition can be top-level, or can be defined in an `impl`
 /// block. In this case, we might want to retrieve the type for which the
 /// impl block was defined. This function returns this type's def id if
@@ -1543,160 +1520,6 @@ fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
     assert!(parent == tcx.generics_of(def_id).parent);
 
     parent
-}
-
-/// Retrieve the function name from a `DefId`.
-pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
-    trace!("{:?}", def_id);
-
-    // We have to be a bit careful when retrieving the name. For instance, due
-    // to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
-    // different names depending on the def id on which it is called, even though
-    // those def ids might actually identify the same definition.
-    // For instance: `std::boxed::Box` and `alloc::boxed::Box` are actually
-    // the same (the first one is a reexport).
-    // This is why we implement a custom function to retrieve the original name.
-
-    // There are two cases:
-    // - either the function is a top-level function, and we simply convert
-    //   every element of the path to a string.
-    // - or it is a function in an `impl` block, in which case we retrieve the
-    //   function name (ex.: "new") and append it to the type name from which
-    //   the `impl` block is a child (ex.: "alloc::boxed::Box"). Note that the
-    //   way we convert the path to a name gives us the "original" name, before
-    //   reexports.
-    // In order to distinguish the cases, we use the definition key, which
-    // combines the parent def index (from which we reconstruct a def id to
-    // retrieve its path) with some path data. We then check the parent's key
-    // data to see if it is an `Impl`.
-    // Note that those peculiarities only apply to values: types can't be defined
-    // in impl blocks.
-    let def_key = tcx.def_key(def_id);
-
-    // Reconstruct the parent def id: it's the same as the function's def id,
-    // at the exception of the index.
-    let parent_def_id = DefId {
-        index: def_key.parent.unwrap(),
-        ..def_id
-    };
-
-    // Retrieve the parent's key
-    let parent_def_key = tcx.def_key(parent_def_id);
-
-    // Not sure what to do with the disambiguator yet, so for now I check that
-    // it is always equal to 0, in case of local functions.
-    // Rk.: I think there is a unique disambiguator per `impl` block.
-    assert!(!def_id.is_local() || parent_def_key.disambiguated_data.disambiguator == 0);
-
-    // Check the parent key
-    match parent_def_key.disambiguated_data.data {
-        rustc_hir::definitions::DefPathData::Impl => {
-            // The parent is an `impl` block: use the parent path.
-            // This is a bit indirect, but in order to get a usable parent
-            // path, we need to retrieve the type of the impl block (it actually
-            // gives the type the impl block was defined for). This type should
-            // be an ADT, because it was user defined. We can then retrieve
-            // its def id, and convert it to a path (which is simpler, because
-            // types can't be defined in impl blocks).
-            let parent_type = tcx.type_of(parent_def_id);
-
-            // Retrieve the parent type name
-            let type_name = match parent_type.kind() {
-                rustc_middle::ty::TyKind::Adt(adt_def, _) => {
-                    // We can compute the type's name
-                    translate_types::type_def_id_to_name(tcx, adt_def.did)
-                }
-                _ => {
-                    unreachable!();
-                }
-            };
-
-            // Retrieve the function name
-            let impl_id = ImplId::Id::new(def_key.disambiguated_data.disambiguator as usize);
-            let fun_name = defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap();
-
-            return FunName::Impl(type_name, impl_id, fun_name);
-        }
-        rustc_hir::definitions::DefPathData::TypeNs(_ns) => {
-            // Not an `impl` block.
-            // The function can be a trait function, like: `std::ops::Deref::deref`
-            // Translating the parent path is straightforward: it should be a type path.
-            let mut name = translate_types::type_def_id_to_name(tcx, parent_def_id).to_vec();
-            trace!("parent name: {:?}", name);
-
-            // Retrieve the function name
-            assert!(def_key.disambiguated_data.disambiguator == 0);
-            name.push(defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap());
-            let name = Name::from(name);
-            FunName::Regular(name)
-        }
-        rustc_hir::definitions::DefPathData::CrateRoot => {
-            // Top-level function
-            let crate_name = tcx.crate_name(def_id.krate).to_ident_string();
-            let name = Name::from(vec![
-                crate_name,
-                defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap(),
-            ]);
-            return FunName::Regular(name);
-        }
-        _ => {
-            trace!(
-                "DefId {:?}: Unexpected DefPathData: {:?}",
-                def_id,
-                parent_def_key.disambiguated_data.data
-            );
-            unreachable!();
-        }
-    }
-}
-
-/// Retrieve the trait name from a `DefId`.
-/// TODO: very similar to [function_def_id_to_name] (see the comments).
-/// We may want to factorize at some point.
-pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
-    trace!("{:?}", def_id);
-
-    let def_key = tcx.def_key(def_id);
-
-    // Reconstruct the parent def id: it's the same as the function's def id,
-    // at the exception of the index.
-    let parent_def_id = DefId {
-        index: def_key.parent.unwrap(),
-        ..def_id
-    };
-
-    // Retrieve the parent's key
-    let parent_def_key = tcx.def_key(parent_def_id);
-
-    // Not sure what to do with the disambiguator yet, so for now I check that
-    // it is always equal to 0, in case of local functions.
-    // Rk.: I think there is a unique disambiguator per `impl` block.
-    assert!(!def_id.is_local() || parent_def_key.disambiguated_data.disambiguator == 0);
-
-    // Check the parent key
-    match parent_def_key.disambiguated_data.data {
-        rustc_hir::definitions::DefPathData::TypeNs(_ns) => {
-            // Not an `impl` block.
-            // The function can be a trait function, like: `std::ops::Deref::deref`
-            // Translating the parent path is straightforward: it should be a type path.
-            let mut name = translate_types::type_def_id_to_name(tcx, parent_def_id).to_vec();
-            trace!("parent name: {:?}", name);
-
-            // Retrieve the function name
-            assert!(def_key.disambiguated_data.disambiguator == 0);
-            name.push(defpathdata_to_type_ns(def_key.disambiguated_data.data).unwrap());
-            let name = Name::from(name);
-            FunName::Regular(name)
-        }
-        _ => {
-            trace!(
-                "DefId {:?}: Unexpected DefPathData: {:?}",
-                def_id,
-                parent_def_key.disambiguated_data.data
-            );
-            unreachable!();
-        }
-    }
 }
 
 /// Translate a function call statement.

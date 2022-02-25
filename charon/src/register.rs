@@ -1,8 +1,7 @@
 use crate::assumed;
 use crate::common::*;
-use crate::names::TypeName;
+use crate::names::{function_def_id_to_name, type_def_id_to_name, TypeName};
 use crate::translate_functions_to_im;
-use crate::translate_types;
 use hashlink::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
 use rustc_hir::{def_id::DefId, def_id::LocalDefId, Defaultness, ImplItem, ImplItemKind, Item};
@@ -321,7 +320,7 @@ fn register_mir_ty(
                 // - or the type is external, in which case we register it as such
 
                 // First, we need to identify the type by retrieving its name
-                let name = translate_types::type_def_id_to_name(tcx, adt.did);
+                let name = type_def_id_to_name(tcx, adt.did);
 
                 // Second, check if the type is primitive.
                 //
@@ -623,7 +622,7 @@ fn register_function(
                 // Add this function to the list of dependencies
                 fn_decl.deps_funs.insert(fid);
 
-                let name = translate_functions_to_im::function_def_id_to_name(tcx, fid);
+                let name = function_def_id_to_name(tcx, fid);
 
                 // We may need to filter the types and arguments, if the type
                 // is considered primitive
