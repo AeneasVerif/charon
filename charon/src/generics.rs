@@ -3,9 +3,11 @@
 //! - checks
 
 #![allow(dead_code)]
+use crate::assumed;
+use crate::names::trait_def_id_to_name;
 use hashlink::linked_hash_map::LinkedHashMap;
 use rustc_hir::def_id::DefId;
-use rustc_middle::ty::{BoundRegion, FreeRegion, Region, RegionKind, TyCtxt};
+use rustc_middle::ty::{BoundRegion, FreeRegion, PredicateKind, Region, RegionKind, TyCtxt};
 
 /// Instantiate the bound region variables in a binder, by turning the bound
 /// regions variables into free region variables. Note that the indices used
@@ -70,4 +72,60 @@ where
         nregion
     });
     (value, late_bound_regions)
+}
+
+/// Function used for sanity checks: check the constraints given by a definition's
+/// generics (lifetime constraints, traits, etc.).
+/// For now we simply check that there are no such constraints...
+fn check_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+    // Retrieve the generics and the predicates (where-clauses)
+    let _generics = tcx.generics_of(def_id);
+    let preds = tcx.predicates_of(def_id);
+
+    // For now, simply check that there are no where-clauses
+    trace!("{:?}", def_id);
+    trace!("{:?}", &preds.predicates);
+    for (pred, _span) in preds.predicates {
+        // Instantiate the predicate (it is wrapped in a binder: we need to
+        // instantiate the bound region variables with free variables).
+        let (pred_kind, _late_bound_regions) = replace_late_bound_regions(tcx, pred.kind(), def_id);
+        match pred_kind {
+            PredicateKind::Trait(trait_pred) => {
+                // Slightly annoying: some traits are implicit.
+                //
+                // For instance, whenever we use a type parameter in a definition,
+                // Rust implicitly considers it as implementing trait `std::marker::Sized`.
+                // For now, we check that there are only instances of this trait,
+                // and ignore it.
+                use rustc_middle::ty::{BoundConstness, ImplPolarity};
+                assert!(trait_pred.polarity == ImplPolarity::Positive);
+                // Note sure what this is about
+                assert!(trait_pred.constness == BoundConstness::NotConst);
+                let trait_name = trait_def_id_to_name(tcx, trait_pred.trait_ref.def_id);
+                trace!("{}", trait_name);
+                assert!(trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME));
+            }
+            PredicateKind::RegionOutlives(_) => unimplemented!(),
+            PredicateKind::TypeOutlives(_) => unimplemented!(),
+            PredicateKind::Projection(_) => unimplemented!(),
+            PredicateKind::WellFormed(_) => unimplemented!(),
+            PredicateKind::ObjectSafe(_) => unimplemented!(),
+            PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
+            PredicateKind::Subtype(_) => unimplemented!(),
+            PredicateKind::Coerce(_) => unimplemented!(),
+            PredicateKind::ConstEvaluatable(_) => unimplemented!(),
+            PredicateKind::ConstEquate(_, _) => unimplemented!(),
+            PredicateKind::TypeWellFormedFromEnv(_) => unimplemented!(),
+        }
+    }
+}
+
+/// Check a function's generics
+pub(crate) fn check_function_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+    check_generics(tcx, def_id)
+}
+
+/// Check a type's generics
+pub(crate) fn check_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+    check_generics(tcx, def_id)
 }

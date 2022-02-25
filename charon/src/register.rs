@@ -1,5 +1,6 @@
 use crate::assumed;
 use crate::common::*;
+use crate::generics;
 use crate::names::{function_def_id_to_name, type_def_id_to_name, TypeName};
 use crate::translate_functions_to_im;
 use hashlink::LinkedHashMap;
@@ -150,8 +151,8 @@ fn register_mir_adt(
         unreachable!();
     };
 
-    // Check the generics - TODO: I check this here and in translate_typesx
-    crate::translate_types::check_type_generics(tcx, adt.did);
+    // Check the generics - TODO: we check this here and in translate_types
+    generics::check_type_generics(tcx, adt.did);
 
     // Initialize the type declaration that we will register (in particular,
     // initilize the list of local dependancies to empty).
@@ -209,8 +210,8 @@ fn register_mir_adt(
 /// (public fields in case of a structure, variants in case of a public
 /// enumeration).
 fn register_non_local_mir_adt(
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
+    _rdecls: &mut RegisteredDeclarations,
+    _sess: &Session,
     tcx: TyCtxt,
     adt: &AdtDef,
     name: TypeName,
@@ -225,9 +226,10 @@ fn register_non_local_mir_adt(
     }
 
     // Non-primitive (i.e.: external)
-    // TODO: we need to do sanity checks, like about the generics, however those
-    // are only available in the HIR, to which we don't have access (we only
-    // have access to the MIR of non-local definitions).
+
+    // Check the generics - TODO: we check this here and in translate_types
+    generics::check_type_generics(tcx, adt.did);
+
     return Ok(());
 }
 
@@ -499,8 +501,8 @@ fn register_function(
     let body = crate::get_mir::get_mir_for_def_id(tcx, def_id);
     let def_id = def_id.to_def_id();
 
-    // Check the generics - TODO: I check this here and in translate_functions_to_im
-    crate::translate_functions_to_im::check_function_generics(tcx, def_id);
+    // Check the generics - TODO: we check this here and in translate_functions_to_im
+    generics::check_function_generics(tcx, def_id);
 
     // Initialize the function declaration that we will register in the
     // declarations map, and in particular its list of dependencies that
