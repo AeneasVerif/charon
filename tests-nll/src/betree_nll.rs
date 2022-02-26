@@ -18,7 +18,7 @@ pub fn get_list_at_x<'a>(ls: &'a mut List<u32>, x: u32) -> &'a mut List<u32> {
         }
         List::Cons(hd, tl) => {
             if *hd == x {
-                ls
+                ls // Doing this requires NLL
             } else {
                 get_list_at_x(tl, x)
             }
