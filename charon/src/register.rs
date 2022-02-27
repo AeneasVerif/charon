@@ -837,9 +837,20 @@ fn register_hir_item(
             trace!("extern crate");
             return Ok(());
         }
+        rustc_hir::ItemKind::Mod(module) => {
+            println!("module");
+
+            // Explore the module
+            let hir_map = tcx.hir();
+            for item_id in module.item_ids {
+                // Lookup and register the item
+                let item = hir_map.item(*item_id);
+                register_hir_item(rdecls, sess, tcx, item)?;
+            }
+            return Ok(());
+        }
         _ => {
-            println!("Unimplemented: {:?}", item.kind);
-            unimplemented!();
+            unimplemented!("{:?}", item.kind);
         }
     }
 }
@@ -880,6 +891,11 @@ fn register_hir_impl_item(
 pub fn register_crate(sess: &Session, tcx: TyCtxt) -> Result<RegisteredDeclarations> {
     let mut registered_decls = RegisteredDeclarations::new();
 
+    // The way rustc works is as follows:
+    // - we call it on the root of the crate (for instance "main.rs"), and it
+    //   explores all the files from there (typically listed through statements
+    //   of the form "mod MODULE_NAME")
+    // - the other files in the crate are Module items in the HIR graph
     for item in tcx.hir().items() {
         register_hir_item(&mut registered_decls, sess, tcx, item)?;
     }

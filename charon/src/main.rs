@@ -529,6 +529,13 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
         .to_ident_string();
     trace!("# Crate: {}", crate_name);
 
+    // Some important notes about crates and how to interact with rustc:
+    // - when calling rustc, we should give it the root of the crate, for
+    //   instance the "main.rs" file. From there, rustc will load all the
+    //   *modules* (i.e., files) in the crate
+    // - whenever there is a `mod MODULE` in a file (for instance, in the
+    //   "main.rs" file), it becomes a Module HIR item
+
     // # Step 1: check and register all the definitions, to build the graph
     // of dependencies between them (we need to know in which
     // order to extract the definitions, and which ones are mutually
