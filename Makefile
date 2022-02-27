@@ -1,5 +1,5 @@
 .PHONY: all
-all: build tests
+all: build build-tests build-tests-nll
 
 .PHONY: build
 build:
@@ -8,8 +8,17 @@ build:
 SRC = $(TESTS)/src
 OPTIONS = --dest $(TESTS)/cfim
 
+.PHONY: build-tests
+build-tests:
+	cd tests && make
+
+.PHONY: build-tests-nll
+build-tests-nll:
+	cd tests-nll && make
+
 .PHONY: tests
-tests: test-nested_borrows test-no_nested_borrows test-loops test-hashmap test-paper \
+tests: build-tests build-tests-nll \
+	test-nested_borrows test-no_nested_borrows test-loops test-hashmap test-paper \
 	test-matches test-matches_duplicate test-external \
 	test-nll-betree_nll test-nll-betree_main
 
