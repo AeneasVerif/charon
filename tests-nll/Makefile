@@ -5,11 +5,11 @@ all: build tests
 
 .PHONY: build
 build:
-	cargo +nightly rustc -- -Zpolonius
+	cargo +nightly-2022-01-29 -v rustc -- -Zpolonius
 
 .PHONY: build-tests
 build-tests:
-	cargo +nightly rustc -- --test -Zpolonius
+	cargo +nightly-2022-01-29 rustc -- --test -Zpolonius
 
 .PHONY: tests
 tests: build-tests

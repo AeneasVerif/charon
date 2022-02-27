@@ -6,7 +6,6 @@
 #![allow(dead_code)]
 
 use crate::betree_utils as utils;
-use attributes::assume;
 
 pub type NodeId = u64;
 pub type Key = u64;
@@ -34,25 +33,21 @@ pub(crate) enum List<T> {
 /// Rk.: in the future, we will directly use the functions from betree_utils
 /// and setup the translation to consider this module as assumed (i.e., no
 /// wrappers)
-#[assume]
 fn load_internal_node(id: NodeId) -> InternalContent {
     utils::load_internal_node(id)
 }
 
 /// See [load_internal_node].
-#[assume]
 fn store_internal_node(id: NodeId, content: InternalContent) {
     utils::store_internal_node(id, content)
 }
 
 /// See [load_internal_node].
-#[assume]
 fn load_leaf_node(id: NodeId) -> LeafContent {
     utils::load_leaf_node(id)
 }
 
 /// See [load_internal_node].
-#[assume]
 fn store_leaf_node(id: NodeId, content: LeafContent) {
     utils::store_leaf_node(id, content)
 }

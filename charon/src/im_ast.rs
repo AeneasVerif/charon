@@ -77,8 +77,15 @@ pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
     pub body: T,
 }
 
+/// An external function - simply a signature
+pub struct ExternalFun {
+    pub name: FunName,
+    pub signature: FunSig,
+}
+
 pub type FunDef = GFunDef<BlockId::Vector<BlockData>>;
 
+pub type ExternalFuns = Vec<ExternalFun>;
 pub type FunDefs = FunDefId::Vector<FunDef>;
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]

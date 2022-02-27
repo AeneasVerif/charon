@@ -3,8 +3,3 @@ name = "tests"
 version = "0.1.0"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2018"
-
-[dependencies]
-attributes = { path = "../attributes" }
-serde_json = "1.0.59"
-serde = { version = "1.0.117", features = ["derive"] }

@@ -71,7 +71,7 @@ pub enum SwitchTargets {
     /// Gives the integer type, a map linking values to switch branches, and the
     /// otherwise block. Note that matches over enumerations are performed by
     /// switching over the discriminant, which is an integer.
-    /// Also, we use a `LinkedHashMap` to make sure the order of the switch
+    /// Also, we use a `Vec` to make sure the order of the switch
     /// branches is preserved.
     ///
     /// Rk.: we use a vector of values, because some of the branches may
