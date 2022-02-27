@@ -67,7 +67,6 @@ use rustc_session::Session;
 use serde::Deserialize;
 use serde_json;
 use std::collections::{HashMap, HashSet};
-use std::ffi::OsStr;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -169,30 +168,38 @@ struct CliOpts {
 // The following helpers are used to read crate manifests (the `Cargo.toml` files),
 // and come from [hacspec](https://github.com/hacspec/): all credits to them.
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Default, Deserialize)]
 struct Dependency {
     name: String,
+    #[allow(dead_code)]
     kind: Option<String>,
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Default, Deserialize)]
 struct Target {
+    #[allow(dead_code)]
     name: String,
+    #[allow(dead_code)]
     kind: Vec<String>,
+    #[allow(dead_code)]
     crate_types: Vec<String>,
+    #[allow(dead_code)]
     src_path: String,
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Default, Deserialize)]
 struct Package {
+    #[allow(dead_code)]
     name: String,
+    #[allow(dead_code)]
     targets: Vec<Target>,
     dependencies: Vec<Dependency>,
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Default, Deserialize)]
 struct Manifest {
     packages: Vec<Package>,
+    #[allow(dead_code)]
     target_directory: String,
 }
 
@@ -281,7 +288,7 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     info!("Reading manifest: {:?}", manifest_path);
 
     // Compute the command to apply
-    let mut output_args = vec![
+    let output_args = vec![
         // We want to read the metadata
         "metadata".to_string(),
         // Don't list the dependencies of the dependencies (useful if we

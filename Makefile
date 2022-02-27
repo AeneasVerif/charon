@@ -3,7 +3,7 @@ all: build build-tests build-tests-nll
 
 .PHONY: build
 build:
-	cd charon && cargo build
+	cd charon && make
 
 SRC = $(TESTS)/src
 OPTIONS = --dest $(TESTS)/cfim
