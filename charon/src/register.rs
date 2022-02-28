@@ -272,6 +272,12 @@ fn register_non_local_adt(
     // Non-primitive (i.e.: external)
     let type_id = adt.did;
 
+    // Check if registered
+    if rdecls.decls.contains(&type_id) {
+        return Ok(());
+    }
+    rdecls.decls.insert(type_id);
+
     // Check the generics - TODO: we check this here and in translate_types
     generics::check_type_generics(tcx, type_id);
 
@@ -359,8 +365,35 @@ fn register_mir_ty(
         TyKind::Adt(adt, substs) => {
             trace!("Adt");
 
-            // Add this ADT to the list of dependencies
-            deps.insert(adt.did);
+            // Identify the type by retrieving its name
+            let name = type_def_id_to_name(tcx, adt.did);
+
+            // Check if the type is primitive
+
+            // Check if the type is primitive.
+            //
+            // Note that if the type is primitive, we might ignore
+            // some of its parameters (for instance, we ignore the Allocator
+            // parameter of `Box` and `Vec`).
+            //
+            // [used_params] below is an option:
+            // - `Some` if the type is primitive and we need to filter some
+            //   of its parameters
+            // - `None` if it is not primitive (no filter information)
+            let used_params = if adt.did.is_local() {
+                // We probably do not need to check if the type is local...
+                Option::None
+            } else {
+                assumed::type_to_used_params(&name)
+            };
+
+            // We probably don't need to check if the type is local...
+            let is_prim = !adt.did.is_local() && used_params.is_some();
+            // Add this ADT to the list of dependencies, only if it is not
+            // primitive
+            if !is_prim {
+                deps.insert(adt.did);
+            }
 
             // From now onwards, we do something different depending on
             // whether the type is a local type (i.e., defined in the current
@@ -372,21 +405,6 @@ fn register_mir_ty(
                 //   to a well-identified list of types like `Box` which benefit
                 //   from primitive treatment)
                 // - or the type is external, in which case we register it as such
-
-                // First, we need to identify the type by retrieving its name
-                let name = type_def_id_to_name(tcx, adt.did);
-
-                // Second, check if the type is primitive.
-                //
-                // Note that if the type is primitive, we might ignore
-                // some of its parameters (for instance, we ignore the Allocator
-                // parameter of `Box` and `Vec`).
-                //
-                // [used_params] below is an option:
-                // - `Some` if the type is primitive and we need to filter some
-                //   of its parameters
-                // - `None` if it is not primitive (no filter information)
-                let used_params = assumed::type_to_used_params(&name);
 
                 // Explore the type parameters instantiation
                 register_mir_substs(
@@ -400,7 +418,12 @@ fn register_mir_ty(
                     substs,
                 )?;
 
-                // We may need to explore the ADT itself
+                // Register the ADT.
+                // Note that [register_non_local_adt] checks if the def id
+                // has already been registered, and inserts it in the list
+                // of def ids if necessary (not the same behaviour as the
+                // "local" case, where we do that *before*).
+                // TODO: we may want to do this more consistent.
                 return register_non_local_adt(crate_info, rdecls, sess, tcx, adt, name);
             } else {
                 // Explore the type parameters instantiation
@@ -550,6 +573,9 @@ fn get_fun_from_operand<'tcx>(
     }
 }
 
+/// Rk.: contrary to the "local" case, [register_non_local_function] inserts
+/// itself the def id in the declarations list. The reason is that we need
+/// to check if the function has primitive support first.
 fn register_non_local_function(
     _crate_info: &CrateInfo,
     rdecls: &mut RegisteredDeclarations,
@@ -564,6 +590,12 @@ fn register_non_local_function(
         // Primitive
         return Ok(());
     }
+
+    // Check if registered
+    if rdecls.decls.contains(&def_id) {
+        return Ok(());
+    }
+    rdecls.decls.insert(def_id);
 
     // Check the generics - TODO: we check this here and in translate_functions_to_im
     generics::check_function_generics(tcx, def_id);
@@ -701,15 +733,13 @@ fn register_local_function_body(
                 let (fid, substs) = get_fun_from_operand(func).expect("Expected a function call");
                 trace!("terminator:Call:fid {:?}", fid);
 
-                // Add this function to the list of dependencies
-                fn_decl.deps_funs.insert(fid);
-
                 let name = function_def_id_to_name(tcx, fid);
 
                 // We may need to filter the types and arguments, if the type
                 // is considered primitive
-                let (used_types, used_args) = if fid.is_local() {
-                    (Option::None, Option::None)
+                let (used_types, used_args, is_prim) = if fid.is_local() {
+                    // We probably do not need to check if the function is local...
+                    (Option::None, Option::None, false)
                 } else {
                     match assumed::function_to_info(&name) {
                         Option::Some(used) => {
@@ -717,14 +747,21 @@ fn register_local_function_body(
                             (
                                 Option::Some(used.used_type_params),
                                 Option::Some(used.used_args),
+                                true,
                             )
                         }
                         Option::None => {
                             // The type is non-primitive (i.e., external)
-                            (Option::None, Option::None)
+                            (Option::None, Option::None, false)
                         }
                     }
                 };
+
+                // Add this function to the list of dependencies, only if
+                // it is non-primitive
+                if !is_prim {
+                    fn_decl.deps_funs.insert(fid);
+                }
 
                 // Register the types given as parameters.
                 register_mir_substs(
@@ -812,6 +849,11 @@ fn register_local_function_body(
                     }
                     None => {
                         trace!("Function external");
+                        // Register
+                        // Rk.: [register_non_local_function] checks if the def
+                        // id has already been registered, and inserts it in the
+                        // decls set if necessary (not the same behaviour as
+                        // the "local" case).
                         register_non_local_function(crate_info, rdecls, sess, tcx, fid, name)?;
                     }
                 }

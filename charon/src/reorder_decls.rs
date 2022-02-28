@@ -229,19 +229,15 @@ pub fn reorder_declarations(
     decls.funs.iter().for_each(|(id, d)| {
         // Functions -> types
         d.deps_tys.iter().for_each(|dep_id| {
-            if dep_id.is_local() {
-                let _ = graph.add_edge(*id, *dep_id, ());
-                ()
-            }
+            let _ = graph.add_edge(*id, *dep_id, ());
         });
         // Functions -> functions
         d.deps_funs.iter().for_each(|dep_id| {
-            if dep_id.is_local() {
-                let _ = graph.add_edge(*id, *dep_id, ());
-                ()
-            }
+            let _ = graph.add_edge(*id, *dep_id, ());
         })
     });
+
+    trace!("Graph: {:?}", graph);
 
     // Step 2: Apply Tarjan's SCC (Strongly Connected Components) algorithm
     let sccs = tarjan_scc(&graph);
@@ -260,7 +256,6 @@ pub fn reorder_declarations(
                 .deps
                 .iter()
                 .map(|id| *id)
-                .filter(|id| id.is_local())
                 .collect()
         } else {
             let decl = &decls.funs.get(&id).unwrap();
@@ -270,7 +265,6 @@ pub fn reorder_declarations(
                 .iter()
                 .chain(decl.deps_funs.iter())
                 .map(|id| *id)
-                .filter(|id| id.is_local())
                 .collect()
         }
     };
