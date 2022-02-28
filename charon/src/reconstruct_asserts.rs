@@ -57,7 +57,7 @@ fn simplify_st(st: Statement) -> Statement {
 fn simplify_def(mut def: FunDecl) -> FunDecl {
     trace!("About to update: {}", def.name);
     def.body = match def.body {
-        Option::Some(body) => {
+        Option::Some(mut body) => {
             body.body = simplify_st(body.body);
             Option::Some(body)
         }
