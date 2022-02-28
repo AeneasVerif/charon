@@ -77,16 +77,29 @@ pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
     pub body: T,
 }
 
-/// An external function - simply a signature
-pub struct ExternalFun {
+/// A function declaration - simply a signature.
+///
+/// We use this for opaque local functions and external functions.
+#[derive(Debug, Clone, Serialize)]
+pub struct FunDecl {
     pub name: FunName,
     pub signature: FunSig,
 }
 
-pub type FunDef = GFunDef<BlockId::Vector<BlockData>>;
+/// A function accessible from a crate.
+///
+/// A function is either a transparent local definition, or an opaque local or
+/// external function declaration.
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
+pub enum GFun<T: std::fmt::Debug + Clone + Serialize> {
+    Transparent(GFunDef<T>),
+    Opaque(FunDecl),
+}
 
-pub type ExternalFuns = Vec<ExternalFun>;
+pub type FunDef = GFunDef<BlockId::Vector<BlockData>>;
 pub type FunDefs = FunDefId::Vector<FunDef>;
+pub type Fun = GFun<BlockId::Vector<BlockData>>;
+pub type Funs = FunDefId::Vector<Fun>;
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum Statement {

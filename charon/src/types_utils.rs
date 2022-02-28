@@ -75,7 +75,7 @@ impl TypeVar {
 
 impl std::string::ToString for TypeVar {
     fn to_string(&self) -> String {
-        format!("{}", self.name).to_owned()
+        format!("{}", self.name).to_string()
     }
 }
 
@@ -83,21 +83,24 @@ impl std::string::ToString for RegionVar {
     fn to_string(&self) -> String {
         let id = region_var_id_to_pretty_string(self.index);
         match &self.name {
-            Some(name) => format!("{}", name).to_owned(),
-            None => format!("{}", id).to_owned(),
+            Some(name) => format!("{}", name).to_string(),
+            None => format!("{}", id).to_string(),
         }
     }
 }
 
-impl TypeDef {
+impl TypeDecl {
     /// The variant id should be `None` if it is a structure and `Some` if it
     /// is an enumeration.
     pub fn get_fields(&self, variant_id: Option<VariantId::Id>) -> &FieldId::Vector<Field> {
         match &self.kind {
-            TypeDefKind::Enum(variants) => &variants.get(variant_id.unwrap()).unwrap().fields,
-            TypeDefKind::Struct(fields) => {
+            TypeDeclKind::Enum(variants) => &variants.get(variant_id.unwrap()).unwrap().fields,
+            TypeDeclKind::Struct(fields) => {
                 assert!(variant_id.is_none());
                 fields
+            }
+            TypeDeclKind::Opaque => {
+                unreachable!("Opaque type")
             }
         }
     }
@@ -116,20 +119,25 @@ impl TypeDef {
         let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
 
         match &self.kind {
-            TypeDefKind::Struct(fields) => {
+            TypeDeclKind::Struct(fields) => {
                 VariantId::Vector::from(vec![FieldId::Vector::from_iter(
                     fields
                         .iter()
                         .map(|f| f.ty.substitute_regions_types(&r_subst, &ty_subst)),
                 )])
             }
-            TypeDefKind::Enum(variants) => VariantId::Vector::from_iter(variants.iter().map(|v| {
-                FieldId::Vector::from_iter(
-                    v.fields
-                        .iter()
-                        .map(|f| f.ty.substitute_regions_types(&r_subst, &ty_subst)),
-                )
-            })),
+            TypeDeclKind::Enum(variants) => {
+                VariantId::Vector::from_iter(variants.iter().map(|v| {
+                    FieldId::Vector::from_iter(
+                        v.fields
+                            .iter()
+                            .map(|f| f.ty.substitute_regions_types(&r_subst, &ty_subst)),
+                    )
+                }))
+            }
+            TypeDeclKind::Opaque => {
+                unreachable!("Opaque type");
+            }
         }
     }
 
@@ -178,7 +186,7 @@ impl TypeDef {
         T: Formatter<TypeVarId::Id>
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDefId::Id>,
+            + Formatter<TypeDeclId::Id>,
     {
         let regions_hierarchy: Vec<String> = self
             .regions_hierarchy
@@ -187,13 +195,13 @@ impl TypeDef {
             .collect();
         let regions_hierarchy = regions_hierarchy.join("\n");
 
-        let params = TypeDef::fmt_params(&self.region_params, &self.type_params);
+        let params = TypeDecl::fmt_params(&self.region_params, &self.type_params);
         match &self.kind {
-            TypeDefKind::Struct(fields) => {
+            TypeDeclKind::Struct(fields) => {
                 if fields.len() > 0 {
                     let fields: Vec<String> = fields
                         .iter()
-                        .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)).to_owned())
+                        .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)).to_string())
                         .collect();
                     let fields = fields.join(",");
                     format!(
@@ -203,15 +211,15 @@ impl TypeDef {
                         fields,
                         regions_hierarchy
                     )
-                    .to_owned()
+                    .to_string()
                 } else {
-                    format!("struct {}{} = {{}}", self.name.to_string(), params).to_owned()
+                    format!("struct {}{} = {{}}", self.name.to_string(), params).to_string()
                 }
             }
-            TypeDefKind::Enum(variants) => {
+            TypeDeclKind::Enum(variants) => {
                 let variants: Vec<String> = variants
                     .iter()
-                    .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)).to_owned())
+                    .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)).to_string())
                     .collect();
                 let variants = variants.join("\n");
                 format!(
@@ -221,8 +229,15 @@ impl TypeDef {
                     variants,
                     regions_hierarchy
                 )
-                .to_owned()
+                .to_string()
             }
+            TypeDeclKind::Opaque => format!(
+                "opaque type {}{}\nRegions hierarchy:\n{}",
+                self.name.to_string(),
+                params,
+                regions_hierarchy
+            )
+            .to_string(),
         }
     }
 
@@ -234,14 +249,14 @@ impl TypeDef {
             let regions = region_params.iter().map(|r| r.to_string());
             let type_params = type_params.iter().map(|p| p.to_string());
             let params: Vec<String> = regions.chain(type_params).collect();
-            format!("<{}>", params.join(", ")).to_owned()
+            format!("<{}>", params.join(", ")).to_string()
         } else {
             "".to_string()
         }
     }
 }
 
-impl std::string::ToString for TypeDef {
+impl std::string::ToString for TypeDecl {
     fn to_string(&self) -> String {
         self.fmt_with_ctx(&IncompleteFormatter { def: self })
     }
@@ -253,11 +268,11 @@ impl Variant {
         T: Formatter<TypeVarId::Id>
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDefId::Id>,
+            + Formatter<TypeDeclId::Id>,
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
-        format!("{}({})", self.name, fields).to_owned()
+        format!("{}({})", self.name, fields).to_string()
     }
 }
 
@@ -267,11 +282,11 @@ impl Field {
         T: Formatter<TypeVarId::Id>
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDefId::Id>,
+            + Formatter<TypeDeclId::Id>,
     {
         match &self.name {
-            Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)).to_owned(),
-            Option::None => format!("{}", self.ty.fmt_with_ctx(ctx)).to_owned(),
+            Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)).to_string(),
+            Option::None => format!("{}", self.ty.fmt_with_ctx(ctx)).to_string(),
         }
     }
 }
@@ -328,57 +343,57 @@ impl IntegerTy {
     }
 }
 
-pub fn type_def_id_to_pretty_string(id: TypeDefId::Id) -> String {
-    format!("@Adt{}", id).to_owned()
+pub fn type_def_id_to_pretty_string(id: TypeDeclId::Id) -> String {
+    format!("@Adt{}", id).to_string()
 }
 
 pub fn region_var_id_to_pretty_string(id: RegionVarId::Id) -> String {
-    format!("@R{}", id.to_string()).to_owned()
+    format!("@R{}", id.to_string()).to_string()
 }
 
 pub fn integer_ty_to_string(ty: IntegerTy) -> String {
     match ty {
-        IntegerTy::Isize => "isize".to_owned(),
-        IntegerTy::I8 => "i8".to_owned(),
-        IntegerTy::I16 => "i16".to_owned(),
-        IntegerTy::I32 => "i32".to_owned(),
-        IntegerTy::I64 => "i64".to_owned(),
-        IntegerTy::I128 => "i128".to_owned(),
-        IntegerTy::Usize => "usize".to_owned(),
-        IntegerTy::U8 => "u8".to_owned(),
-        IntegerTy::U16 => "u16".to_owned(),
-        IntegerTy::U32 => "u32".to_owned(),
-        IntegerTy::U64 => "u64".to_owned(),
-        IntegerTy::U128 => "u128".to_owned(),
+        IntegerTy::Isize => "isize".to_string(),
+        IntegerTy::I8 => "i8".to_string(),
+        IntegerTy::I16 => "i16".to_string(),
+        IntegerTy::I32 => "i32".to_string(),
+        IntegerTy::I64 => "i64".to_string(),
+        IntegerTy::I128 => "i128".to_string(),
+        IntegerTy::Usize => "usize".to_string(),
+        IntegerTy::U8 => "u8".to_string(),
+        IntegerTy::U16 => "u16".to_string(),
+        IntegerTy::U32 => "u32".to_string(),
+        IntegerTy::U64 => "u64".to_string(),
+        IntegerTy::U128 => "u128".to_string(),
     }
 }
 
 pub fn intty_to_string(ty: IntTy) -> String {
     match ty {
-        IntTy::Isize => "isize".to_owned(),
-        IntTy::I8 => "i8".to_owned(),
-        IntTy::I16 => "i16".to_owned(),
-        IntTy::I32 => "i32".to_owned(),
-        IntTy::I64 => "i64".to_owned(),
-        IntTy::I128 => "i128".to_owned(),
+        IntTy::Isize => "isize".to_string(),
+        IntTy::I8 => "i8".to_string(),
+        IntTy::I16 => "i16".to_string(),
+        IntTy::I32 => "i32".to_string(),
+        IntTy::I64 => "i64".to_string(),
+        IntTy::I128 => "i128".to_string(),
     }
 }
 
 fn uintty_to_string(ty: UintTy) -> String {
     match ty {
-        UintTy::Usize => "usize".to_owned(),
-        UintTy::U8 => "u8".to_owned(),
-        UintTy::U16 => "u16".to_owned(),
-        UintTy::U32 => "u32".to_owned(),
-        UintTy::U64 => "u64".to_owned(),
-        UintTy::U128 => "u128".to_owned(),
+        UintTy::Usize => "usize".to_string(),
+        UintTy::U8 => "u8".to_string(),
+        UintTy::U16 => "u16".to_string(),
+        UintTy::U32 => "u32".to_string(),
+        UintTy::U64 => "u64".to_string(),
+        UintTy::U128 => "u128".to_string(),
     }
 }
 
 impl TypeId {
     pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
     where
-        T: Formatter<TypeDefId::Id>,
+        T: Formatter<TypeDeclId::Id>,
     {
         match self {
             TypeId::Tuple => "".to_string(),
@@ -450,7 +465,7 @@ where
     pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
     where
         R: 'a,
-        T: Formatter<TypeVarId::Id> + Formatter<TypeDefId::Id> + Formatter<&'a R>,
+        T: Formatter<TypeVarId::Id> + Formatter<TypeDeclId::Id> + Formatter<&'a R>,
     {
         match self {
             Ty::Adt(id, regions, inst_types) => {
@@ -461,34 +476,34 @@ where
                 let regions: Vec<String> = regions.iter().map(|r| ctx.format_object(r)).collect();
                 let mut types: Vec<String> = inst_types
                     .iter()
-                    .map(|ty| format!("{}", ty.fmt_with_ctx(ctx)).to_owned())
+                    .map(|ty| format!("{}", ty.fmt_with_ctx(ctx)).to_string())
                     .collect();
                 let mut all_params = regions;
                 all_params.append(&mut types);
                 let all_params = all_params.join(", ");
 
                 if id.is_tuple() {
-                    format!("({})", all_params).to_owned()
+                    format!("({})", all_params).to_string()
                 } else if num_params > 0 {
-                    format!("{}<{}>", adt_ident, all_params).to_owned()
+                    format!("{}<{}>", adt_ident, all_params).to_string()
                 } else {
                     adt_ident
                 }
             }
             Ty::TypeVar(id) => ctx.format_object(*id),
-            Ty::Bool => "bool".to_owned(),
-            Ty::Char => "char".to_owned(),
-            Ty::Never => "!".to_owned(),
-            Ty::Integer(int_ty) => format!("{}", integer_ty_to_string(*int_ty)).to_owned(),
-            Ty::Str => format!("str").to_owned(),
-            Ty::Array(ty) => format!("[{}; ?]", ty.fmt_with_ctx(ctx)).to_owned(),
-            Ty::Slice(ty) => format!("[{}]", ty.fmt_with_ctx(ctx)).to_owned(),
+            Ty::Bool => "bool".to_string(),
+            Ty::Char => "char".to_string(),
+            Ty::Never => "!".to_string(),
+            Ty::Integer(int_ty) => format!("{}", integer_ty_to_string(*int_ty)).to_string(),
+            Ty::Str => format!("str").to_string(),
+            Ty::Array(ty) => format!("[{}; ?]", ty.fmt_with_ctx(ctx)).to_string(),
+            Ty::Slice(ty) => format!("[{}]", ty.fmt_with_ctx(ctx)).to_string(),
             Ty::Ref(r, ty, kind) => match kind {
                 RefKind::Mut => {
-                    format!("&{} mut ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx)).to_owned()
+                    format!("&{} mut ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx)).to_string()
                 }
                 RefKind::Shared => {
-                    format!("&{} ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx)).to_owned()
+                    format!("&{} ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx)).to_string()
                 }
             },
         }
@@ -558,7 +573,7 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
 }
 
 pub fn type_var_id_to_pretty_string(id: TypeVarId::Id) -> String {
-    format!("@T{}", id.to_string()).to_owned()
+    format!("@T{}", id.to_string()).to_string()
 }
 
 impl<Rid: Copy + Eq> std::fmt::Display for Region<Rid>
@@ -580,7 +595,7 @@ impl std::fmt::Display for ErasedRegion {
 }
 
 pub struct IncompleteFormatter<'a> {
-    def: &'a TypeDef,
+    def: &'a TypeDecl,
 }
 
 impl<'a> Formatter<TypeVarId::Id> for IncompleteFormatter<'a> {
@@ -591,7 +606,7 @@ impl<'a> Formatter<TypeVarId::Id> for IncompleteFormatter<'a> {
 
 impl<'a, 'b, Rid: Copy + Eq> Formatter<&'b Region<Rid>> for IncompleteFormatter<'a>
 where
-    TypeDef: Formatter<&'b Region<Rid>>,
+    TypeDecl: Formatter<&'b Region<Rid>>,
 {
     fn format_object(&self, r: &'b Region<Rid>) -> String {
         self.def.format_object(r)
@@ -610,8 +625,8 @@ impl<'a> Formatter<RegionVarId::Id> for IncompleteFormatter<'a> {
     }
 }
 
-impl<'a> Formatter<TypeDefId::Id> for IncompleteFormatter<'a> {
-    fn format_object(&self, id: TypeDefId::Id) -> String {
+impl<'a> Formatter<TypeDeclId::Id> for IncompleteFormatter<'a> {
+    fn format_object(&self, id: TypeDeclId::Id) -> String {
         // For type def ids, we simply print the def id because
         // we lack context
         type_def_id_to_pretty_string(id)
@@ -647,8 +662,8 @@ impl Formatter<RegionVarId::Id> for DummyFormatter {
     }
 }
 
-impl Formatter<TypeDefId::Id> for DummyFormatter {
-    fn format_object(&self, id: TypeDefId::Id) -> String {
+impl Formatter<TypeDeclId::Id> for DummyFormatter {
+    fn format_object(&self, id: TypeDeclId::Id) -> String {
         type_def_id_to_pretty_string(id)
     }
 }
@@ -821,49 +836,49 @@ where
     make_subst(keys, values)
 }
 
-impl TypeDefs {
-    pub fn new() -> TypeDefs {
-        TypeDefs {
+impl TypeDecls {
+    pub fn new() -> TypeDecls {
+        TypeDecls {
             types: id_vector::Vector::new(),
         }
     }
 
-    pub fn get_type_def(&self, type_id: TypeDefId::Id) -> Option<&TypeDef> {
+    pub fn get_type_def(&self, type_id: TypeDeclId::Id) -> Option<&TypeDecl> {
         self.types.get(type_id)
     }
 }
 
-impl Formatter<TypeVarId::Id> for TypeDef {
+impl Formatter<TypeVarId::Id> for TypeDecl {
     fn format_object(&self, id: TypeVarId::Id) -> String {
         let var = self.type_params.get(id).unwrap();
         var.to_string()
     }
 }
 
-impl Formatter<RegionVarId::Id> for TypeDef {
+impl Formatter<RegionVarId::Id> for TypeDecl {
     fn format_object(&self, id: RegionVarId::Id) -> String {
         let var = self.region_params.get(id).unwrap();
         var.to_string()
     }
 }
 
-impl<Rid: Copy + Eq> Formatter<&Region<Rid>> for TypeDef
+impl<Rid: Copy + Eq> Formatter<&Region<Rid>> for TypeDecl
 where
-    TypeDef: Formatter<Rid>,
+    TypeDecl: Formatter<Rid>,
 {
     fn format_object(&self, r: &Region<Rid>) -> String {
         r.fmt_with_ctx(self)
     }
 }
 
-impl Formatter<&ErasedRegion> for TypeDef {
+impl Formatter<&ErasedRegion> for TypeDecl {
     fn format_object(&self, _: &ErasedRegion) -> String {
         "'_".to_string()
     }
 }
 
-impl Formatter<TypeDefId::Id> for TypeDefs {
-    fn format_object(&self, id: TypeDefId::Id) -> String {
+impl Formatter<TypeDeclId::Id> for TypeDecls {
+    fn format_object(&self, id: TypeDeclId::Id) -> String {
         let def = self.get_type_def(id).unwrap();
         def.name.to_string()
     }

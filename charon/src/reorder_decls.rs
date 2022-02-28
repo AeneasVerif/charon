@@ -351,6 +351,10 @@ pub fn reorder_declarations(
         }
     }
 
+    // TODO: check that the mutually recursive groups don't mix opaque and
+    // transparent definitions (this is for sanity: this really *shoudln't*
+    // happen).
+
     return Ok(reordered_decls);
 }
 

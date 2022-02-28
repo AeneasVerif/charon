@@ -69,7 +69,7 @@ impl std::string::ToString for BinOp {
 impl Place {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<VarId::Id> + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
+        T: Formatter<VarId::Id> + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         let mut out = ctx.format_object(self.var_id);
 
@@ -118,7 +118,7 @@ impl std::string::ToString for Place {
 impl OperandConstantValue {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<TypeDefId::Id>,
+        T: Formatter<TypeDeclId::Id>,
     {
         match self {
             OperandConstantValue::ConstantValue(c) => c.to_string(),
@@ -147,8 +147,8 @@ impl Operand {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
         T: Formatter<VarId::Id>
-            + Formatter<TypeDefId::Id>
-            + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
+            + Formatter<TypeDeclId::Id>
+            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
             Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)).to_owned(),
@@ -173,9 +173,9 @@ impl Rvalue {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
         T: Formatter<VarId::Id>
-            + Formatter<TypeDefId::Id>
-            + Formatter<(TypeDefId::Id, VariantId::Id)>
-            + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
+            + Formatter<TypeDeclId::Id>
+            + Formatter<(TypeDeclId::Id, VariantId::Id)>
+            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),

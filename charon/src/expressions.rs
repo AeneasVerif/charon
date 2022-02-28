@@ -48,7 +48,7 @@ pub enum ProjectionElem {
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum FieldProjKind {
     #[serde(rename = "ProjAdt")]
-    Adt(TypeDefId::Id, Option<VariantId::Id>),
+    Adt(TypeDeclId::Id, Option<VariantId::Id>),
     /// The option type is assumed (it comes from the standard library)
     #[serde(rename = "ProjOption")]
     Option(VariantId::Id),
@@ -169,7 +169,7 @@ pub enum Rvalue {
 pub enum AggregateKind {
     Tuple,
     Adt(
-        TypeDefId::Id,
+        TypeDeclId::Id,
         Option<VariantId::Id>,
         Vec<ErasedRegion>,
         Vec<ETy>,

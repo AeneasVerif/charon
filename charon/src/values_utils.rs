@@ -21,14 +21,14 @@ impl Formatter<VarId::Id> for DummyFormatter {
     }
 }
 
-impl Formatter<TypeDefId::Id> for DummyFormatter {
-    fn format_object(&self, id: TypeDefId::Id) -> String {
+impl Formatter<TypeDeclId::Id> for DummyFormatter {
+    fn format_object(&self, id: TypeDeclId::Id) -> String {
         type_def_id_to_pretty_string(id)
     }
 }
 
-impl Formatter<(TypeDefId::Id, VariantId::Id)> for DummyFormatter {
-    fn format_object(&self, id: (TypeDefId::Id, VariantId::Id)) -> String {
+impl Formatter<(TypeDeclId::Id, VariantId::Id)> for DummyFormatter {
+    fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
         let (def_id, variant_id) = id;
         format!(
             "{}::@Variant{}",
@@ -39,8 +39,8 @@ impl Formatter<(TypeDefId::Id, VariantId::Id)> for DummyFormatter {
     }
 }
 
-impl Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)> for DummyFormatter {
-    fn format_object(&self, id: (TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
+impl Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)> for DummyFormatter {
+    fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (_def_id, _opt_variant_id, field_id) = id;
         format!("@field{}", field_id.to_string()).to_owned()
     }

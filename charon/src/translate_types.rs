@@ -20,15 +20,15 @@ use std::collections::HashMap;
 #[derive(Clone)]
 pub struct TypeTransContext<'ctx> {
     /// The type definitions - TODO: rename to type_defs
-    pub types: &'ctx ty::TypeDefs,
+    pub types: &'ctx ty::TypeDecls,
     /// Rust identifiers to translation identifiers
-    pub type_rid_to_id: &'ctx HashMap<DefId, ty::TypeDefId::Id>,
+    pub type_rid_to_id: &'ctx HashMap<DefId, ty::TypeDeclId::Id>,
     /// Translation type identifiers to rust identifiers
-    pub type_id_to_rid: &'ctx HashMap<ty::TypeDefId::Id, DefId>,
+    pub type_id_to_rid: &'ctx HashMap<ty::TypeDeclId::Id, DefId>,
 }
 
 /// Auxiliary definition used to format definitions.
-struct TypeDefFormatter<'a, 'ctx> {
+struct TypeDeclFormatter<'a, 'ctx> {
     tt_ctx: &'a TypeTransContext<'ctx>,
     /// The region parameters of the definition we are printing (needed to
     /// correctly pretty print region var ids)
@@ -38,13 +38,13 @@ struct TypeDefFormatter<'a, 'ctx> {
     type_params: &'a ty::TypeVarId::Vector<ty::TypeVar>,
 }
 
-impl<'ctx> Formatter<ty::TypeDefId::Id> for TypeTransContext<'ctx> {
-    fn format_object(&self, id: ty::TypeDefId::Id) -> String {
+impl<'ctx> Formatter<ty::TypeDeclId::Id> for TypeTransContext<'ctx> {
+    fn format_object(&self, id: ty::TypeDeclId::Id) -> String {
         self.types.format_object(id)
     }
 }
 
-impl<'a, 'ctx> Formatter<ty::RegionVarId::Id> for TypeDefFormatter<'a, 'ctx> {
+impl<'a, 'ctx> Formatter<ty::RegionVarId::Id> for TypeDeclFormatter<'a, 'ctx> {
     fn format_object(&self, id: ty::RegionVarId::Id) -> String {
         // Lookup the region parameter
         let v = self.region_params.get(id).unwrap();
@@ -53,7 +53,7 @@ impl<'a, 'ctx> Formatter<ty::RegionVarId::Id> for TypeDefFormatter<'a, 'ctx> {
     }
 }
 
-impl<'a, 'ctx> Formatter<ty::TypeVarId::Id> for TypeDefFormatter<'a, 'ctx> {
+impl<'a, 'ctx> Formatter<ty::TypeVarId::Id> for TypeDeclFormatter<'a, 'ctx> {
     fn format_object(&self, id: ty::TypeVarId::Id) -> String {
         // Lookup the type parameter
         let v = self.type_params.get(id).unwrap();
@@ -62,35 +62,35 @@ impl<'a, 'ctx> Formatter<ty::TypeVarId::Id> for TypeDefFormatter<'a, 'ctx> {
     }
 }
 
-impl<'a, 'ctx> Formatter<&ty::Region<ty::RegionVarId::Id>> for TypeDefFormatter<'a, 'ctx> {
+impl<'a, 'ctx> Formatter<&ty::Region<ty::RegionVarId::Id>> for TypeDeclFormatter<'a, 'ctx> {
     fn format_object(&self, r: &ty::Region<ty::RegionVarId::Id>) -> String {
         r.fmt_with_ctx(self)
     }
 }
 
-impl<'a, 'ctx> Formatter<&ty::ErasedRegion> for TypeDefFormatter<'a, 'ctx> {
+impl<'a, 'ctx> Formatter<&ty::ErasedRegion> for TypeDeclFormatter<'a, 'ctx> {
     fn format_object(&self, _: &ty::ErasedRegion) -> String {
         "".to_owned()
     }
 }
 
-impl<'a, 'ctx> Formatter<&ty::TypeDef> for TypeDefFormatter<'a, 'ctx> {
-    fn format_object(&self, def: &ty::TypeDef) -> String {
+impl<'a, 'ctx> Formatter<&ty::TypeDecl> for TypeDeclFormatter<'a, 'ctx> {
+    fn format_object(&self, def: &ty::TypeDecl) -> String {
         def.fmt_with_ctx(self)
     }
 }
 
-impl<'a, 'ctx> Formatter<ty::TypeDefId::Id> for TypeDefFormatter<'a, 'ctx> {
-    fn format_object(&self, id: ty::TypeDefId::Id) -> String {
+impl<'a, 'ctx> Formatter<ty::TypeDeclId::Id> for TypeDeclFormatter<'a, 'ctx> {
+    fn format_object(&self, id: ty::TypeDeclId::Id) -> String {
         self.tt_ctx.format_object(id)
     }
 }
 
-impl<'ctx> Formatter<&ty::TypeDef> for TypeTransContext<'ctx> {
-    fn format_object(&self, def: &ty::TypeDef) -> String {
+impl<'ctx> Formatter<&ty::TypeDecl> for TypeTransContext<'ctx> {
+    fn format_object(&self, def: &ty::TypeDecl) -> String {
         // Create a type def formatter (which will take care of the
         // type parameters)
-        let formatter = TypeDefFormatter {
+        let formatter = TypeDeclFormatter {
             tt_ctx: self,
             region_params: &def.region_params,
             type_params: &def.type_params,
@@ -465,15 +465,11 @@ fn translate_non_local_defid(tcx: TyCtxt, def_id: DefId) -> ty::TypeId {
 }
 
 /// Translate one local type definition which has not been flagged as opaque.
-///
-/// Note that we translate the types one by one: we don't need to take into
-/// account the fact that some types are mutually recursive at this point
-/// (we will need to take that into account when generating the code in a file).
-fn translate_non_external_type<'ctx>(
+fn translate_transparent_type<'ctx>(
     tcx: TyCtxt,
     decls: &OrderedDecls,
-    type_defs: &mut ty::TypeDefs,
-    trans_id: ty::TypeDefId::Id,
+    type_defs: &mut ty::TypeDecls,
+    trans_id: ty::TypeDeclId::Id,
 ) -> Result<()> {
     trace!("{}", trans_id);
 
@@ -609,10 +605,10 @@ fn translate_non_external_type<'ctx>(
     let name = type_def_id_to_name(tcx, def_id);
     let region_params = ty::RegionVarId::Vector::from(region_params);
     let type_params = ty::TypeVarId::Vector::from(type_params);
-    let type_def_kind: ty::TypeDefKind = match adt.adt_kind() {
-        rustc_middle::ty::AdtKind::Struct => ty::TypeDefKind::Struct(variants[0].fields.clone()),
+    let type_def_kind: ty::TypeDeclKind = match adt.adt_kind() {
+        rustc_middle::ty::AdtKind::Struct => ty::TypeDeclKind::Struct(variants[0].fields.clone()),
         rustc_middle::ty::AdtKind::Enum => {
-            ty::TypeDefKind::Enum(ty::VariantId::Vector::from(variants))
+            ty::TypeDeclKind::Enum(ty::VariantId::Vector::from(variants))
         }
         rustc_middle::ty::AdtKind::Union => {
             // Should have been filtered during the registration phase
@@ -620,7 +616,7 @@ fn translate_non_external_type<'ctx>(
         }
     };
 
-    let type_def = ty::TypeDef {
+    let type_def = ty::TypeDecl {
         def_id: trans_id,
         name,
         region_params: region_params,
@@ -639,16 +635,40 @@ fn translate_non_external_type<'ctx>(
     Ok(())
 }
 
-/// TODO
-fn translate_external_type<'ctx>(
+/// Translate one opaque type.
+///
+/// Opaque types are:
+/// - external types
+/// - local types flagged as opaque
+fn translate_opaque_type<'ctx>(
     tcx: TyCtxt,
     decls: &OrderedDecls,
-    type_defs: &mut ty::TypeDefs,
-    trans_id: ty::TypeDefId::Id,
+    type_defs: &mut ty::TypeDecls,
+    trans_id: ty::TypeDeclId::Id,
 ) -> Result<()> {
     trace!("{}", trans_id);
 
     unimplemented!();
+}
+
+/// Translate type definition.
+///
+/// Note that we translate the types one by one: we don't need to take into
+/// account the fact that some types are mutually recursive at this point
+/// (we will need to take that into account when generating the code in a file).
+fn translate_type<'ctx>(
+    tcx: TyCtxt,
+    decls: &OrderedDecls,
+    type_defs: &mut ty::TypeDecls,
+    trans_id: ty::TypeDeclId::Id,
+) -> Result<()> {
+    // Check if the type is opaque or transparent, and delegate to the proper
+    // function
+    if decls.opaque_types.contains(&trans_id) {
+        translate_opaque_type(tcx, decls, type_defs, trans_id)
+    } else {
+        translate_transparent_type(tcx, decls, type_defs, trans_id)
+    }
 }
 
 /// Translate the types.
@@ -661,11 +681,11 @@ fn translate_external_type<'ctx>(
 pub fn translate_types(
     tcx: TyCtxt,
     decls: &OrderedDecls,
-) -> Result<(TypesConstraintsMap, ty::TypeDefs)> {
+) -> Result<(TypesConstraintsMap, ty::TypeDecls)> {
     trace!();
 
     let mut types_cover_regions = TypesConstraintsMap::new();
-    let mut type_defs = ty::TypeDefs::new();
+    let mut type_defs = ty::TypeDecls::new();
 
     // Translate the external and opaque types
 
@@ -674,7 +694,7 @@ pub fn translate_types(
         match decl {
             DeclarationGroup::Type(decl) => match decl {
                 TypeDeclarationGroup::NonRec(id) => {
-                    translate_non_external_type(tcx, decls, &mut type_defs, *id)?;
+                    translate_type(tcx, decls, &mut type_defs, *id)?;
                     regions_hierarchy::compute_regions_hierarchy_for_type_decl_group(
                         &mut types_cover_regions,
                         &mut type_defs,
@@ -683,7 +703,7 @@ pub fn translate_types(
                 }
                 TypeDeclarationGroup::Rec(ids) => {
                     for id in ids {
-                        translate_non_external_type(tcx, decls, &mut type_defs, *id)?;
+                        translate_type(tcx, decls, &mut type_defs, *id)?;
                     }
                     regions_hierarchy::compute_regions_hierarchy_for_type_decl_group(
                         &mut types_cover_regions,

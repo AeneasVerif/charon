@@ -150,14 +150,14 @@ pub type TypeVarsConstraintsMap = LinkedHashMap<TypeVarId::Id, HashSet<Region<Re
 
 /// See [TypesConstraintsMap]
 #[derive(Debug, Clone)]
-pub struct TypeDefConstraintsMap {
+pub struct TypeDeclConstraintsMap {
     region_vars_constraints: RegionVarsConstraintsMap,
     type_vars_constraints: TypeVarsConstraintsMap,
 }
 
-impl TypeDefConstraintsMap {
+impl TypeDeclConstraintsMap {
     fn new() -> Self {
-        TypeDefConstraintsMap {
+        TypeDeclConstraintsMap {
             region_vars_constraints: RegionVarsConstraintsMap::new(),
             type_vars_constraints: TypeVarsConstraintsMap::new(),
         }
@@ -189,12 +189,12 @@ impl TypeDefConstraintsMap {
 /// ```
 ///
 /// Note: we use linked hash maps to preserve the order for printing.
-pub type TypesConstraintsMap = LinkedHashMap<TypeDefId::Id, TypeDefConstraintsMap>;
+pub type TypesConstraintsMap = LinkedHashMap<TypeDeclId::Id, TypeDeclConstraintsMap>;
 
 fn add_region_constraints(
     updated: &mut bool,
     acc_constraints: &mut LifetimeConstraints,
-    type_def_constraints: &mut Option<TypeDefConstraintsMap>,
+    type_def_constraints: &mut Option<TypeDeclConstraintsMap>,
     region: Region<RegionVarId::Id>,
     parent_regions: &im::HashSet<Region<RegionVarId::Id>>,
 ) {
@@ -244,7 +244,7 @@ fn compute_full_regions_constraints_for_ty(
     updated: &mut bool,
     constraints_map: &TypesConstraintsMap,
     acc_constraints: &mut LifetimeConstraints,
-    type_def_constraints: &mut Option<TypeDefConstraintsMap>, // TODO: rename
+    type_def_constraints: &mut Option<TypeDeclConstraintsMap>, // TODO: rename
     parent_regions: im::HashSet<Region<RegionVarId::Id>>,
     ty: &RTy,
 ) {
@@ -415,11 +415,11 @@ fn compute_full_regions_constraints_for_ty(
 /// leads to a new constraint, we reexplore them all.
 fn compute_regions_constraints_for_type_decl_group(
     constraints_map: &mut TypesConstraintsMap,
-    types: &TypeDefs,
+    types: &TypeDecls,
     decl: &TypeDeclarationGroup,
 ) -> Vec<SCCs<Region<RegionVarId::Id>>> {
     // List the type ids in the type declaration group
-    let type_ids: HashSet<TypeDefId::Id> = match decl {
+    let type_ids: HashSet<TypeDeclId::Id> = match decl {
         TypeDeclarationGroup::NonRec(id) => {
             let mut ids = HashSet::new();
             ids.insert(*id);
@@ -443,7 +443,7 @@ fn compute_regions_constraints_for_type_decl_group(
                 .iter()
                 .map(|var| (var.index, HashSet::new())),
         );
-        let type_def_constraints = TypeDefConstraintsMap {
+        let type_def_constraints = TypeDeclConstraintsMap {
             region_vars_constraints,
             type_vars_constraints,
         };
@@ -451,7 +451,7 @@ fn compute_regions_constraints_for_type_decl_group(
     }
 
     let mut updated = true;
-    let mut acc_constraints_map: HashMap<TypeDefId::Id, LifetimeConstraints> =
+    let mut acc_constraints_map: HashMap<TypeDeclId::Id, LifetimeConstraints> =
         HashMap::from_iter(type_ids.iter().map(|id| {
             (*id, {
                 let mut graph = LifetimeConstraints::new();
@@ -546,14 +546,14 @@ fn compute_regions_constraints_for_type_decl_group(
 
 /// Compute the region hierarchy (the order between the region's lifetimes)
 /// for a (group of mutually recursive) type definitions.
-/// Note that [TypeDef] already contains a regions hierarchy: when translating
+/// Note that [TypeDecl] already contains a regions hierarchy: when translating
 /// function signatures, we first translate the signature without this hierarchy,
 /// then compute this hierarchy and add it to the type definition: this is
 /// why this function performs in-place modifications instead of returning
 /// a [RegionsGroup].
 pub fn compute_regions_hierarchy_for_type_decl_group(
     constraints_map: &mut TypesConstraintsMap,
-    types: &mut TypeDefs,
+    types: &mut TypeDecls,
     decl: &TypeDeclarationGroup,
 ) {
     // Compute the constraints for every definition in the declaration group
@@ -561,7 +561,7 @@ pub fn compute_regions_hierarchy_for_type_decl_group(
 
     // Compute the regions hierarchies from every set of constraints, and
     // update the type definitions
-    let type_ids: Vec<TypeDefId::Id> = match decl {
+    let type_ids: Vec<TypeDeclId::Id> = match decl {
         TypeDeclarationGroup::NonRec(id) => vec![*id],
         TypeDeclarationGroup::Rec(ids) => ids.clone(),
     };
@@ -676,7 +676,7 @@ impl RegionGroup {
 }
 
 fn types_def_constraints_map_fmt_with_ctx<'a, 'b, 'c, T>(
-    cs: &'a TypeDefConstraintsMap,
+    cs: &'a TypeDeclConstraintsMap,
     ctx: &'b T,
     indent: &'c str,
 ) -> String
@@ -717,7 +717,7 @@ where
 
 pub fn types_constraints_map_fmt_with_ctx(
     cs: &TypesConstraintsMap,
-    types: &ty::TypeDefs,
+    types: &ty::TypeDecls,
 ) -> String {
     // We iterate over the type definitions, not the types constraints map,
     // in order to make sure we preserve the type definitions order

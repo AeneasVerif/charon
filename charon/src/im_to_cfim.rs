@@ -21,7 +21,7 @@
 use crate::cfim_ast as tgt;
 use crate::im_ast as src;
 use crate::im_ast::FunDefId;
-use crate::types::TypeDefs;
+use crate::types::TypeDecls;
 use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
@@ -1714,7 +1714,7 @@ fn translate_function(
 /// instance).
 pub fn translate_functions(
     no_code_duplication: bool,
-    type_defs: &TypeDefs,
+    type_defs: &TypeDecls,
     src_defs: &src::FunDefs,
 ) -> Defs {
     let mut out_defs = FunDefId::Vector::new();

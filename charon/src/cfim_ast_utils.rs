@@ -66,11 +66,11 @@ impl Statement {
     where
         T: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
-            + Formatter<TypeDefId::Id>
+            + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<FunDefId::Id>
-            + Formatter<(TypeDefId::Id, VariantId::Id)>
-            + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
+            + Formatter<(TypeDeclId::Id, VariantId::Id)>
+            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
             Statement::Assign(place, rvalue) => format!(
@@ -199,15 +199,15 @@ impl FunDef {
     ) -> String
     where
         T1: Formatter<TypeVarId::Id>
-            + Formatter<TypeDefId::Id>
+            + Formatter<TypeDeclId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>,
         T2: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
-            + Formatter<TypeDefId::Id>
+            + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<FunDefId::Id>
-            + Formatter<(TypeDefId::Id, VariantId::Id)>
-            + Formatter<(TypeDefId::Id, Option<VariantId::Id>, FieldId::Id)>,
+            + Formatter<(TypeDeclId::Id, VariantId::Id)>
+            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         // Format the body expression
         let body_st = self.body.fmt_with_ctx(tab, body_ctx);
@@ -227,7 +227,7 @@ impl<'ctx> Formatter<FunDefId::Id> for AstFormatter<'ctx> {
 }
 
 impl FunDef {
-    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDefs, fun_ctx: &'ctx FunDefs) -> String {
+    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDefs) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,

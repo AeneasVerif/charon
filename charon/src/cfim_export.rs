@@ -35,7 +35,7 @@ type DeclarationsSerializer<'a> = VecSW<'a, DeclarationGroup>;
 struct ModSerializer<'a> {
     name: String,
     declarations: DeclarationsSerializer<'a>,
-    types: &'a TypeDefId::Vector<TypeDef>,
+    types: &'a TypeDeclId::Vector<TypeDecl>,
     functions: &'a FunDefId::Vector<FunDef>,
 }
 
@@ -43,7 +43,7 @@ struct ModSerializer<'a> {
 pub fn export(
     name: String,
     ordered_decls: &OrderedDecls,
-    type_defs: &TypeDefs,
+    type_defs: &TypeDecls,
     fun_defs: &FunDefs,
     dest_dir: &Option<PathBuf>,
     sourcefile: &PathBuf,

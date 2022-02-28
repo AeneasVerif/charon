@@ -41,7 +41,7 @@ pub struct FunTransContext<'ctx> {
     /// The ordered declarations
     pub ordered: &'ctx OrderedDecls,
     /// Type definitions
-    pub type_defs: &'ctx ty::TypeDefs,
+    pub type_defs: &'ctx ty::TypeDecls,
     /// The function definitions
     /// TODO: rename to fun_defs
     pub defs: &'ctx ast::FunDefs,
@@ -202,13 +202,13 @@ impl<'ctx, 'ctx1> BodyTransContext<'ctx, 'ctx1> {
         self.blocks.insert(id, block);
     }
 
-    fn get_type_defs(&self) -> &ty::TypeDefs {
+    fn get_type_defs(&self) -> &ty::TypeDecls {
         &self.ft_ctx.type_defs
     }
 }
 
-impl<'ctx> Formatter<ty::TypeDefId::Id> for FunTransContext<'ctx> {
-    fn format_object(&self, id: ty::TypeDefId::Id) -> String {
+impl<'ctx> Formatter<ty::TypeDeclId::Id> for FunTransContext<'ctx> {
+    fn format_object(&self, id: ty::TypeDeclId::Id) -> String {
         self.type_defs.format_object(id)
     }
 }
@@ -246,8 +246,8 @@ impl<'ctx, 'ctx1> Formatter<&ty::ErasedRegion> for BodyTransContext<'ctx, 'ctx1>
     }
 }
 
-impl<'ctx, 'ctx1> Formatter<ty::TypeDefId::Id> for BodyTransContext<'ctx, 'ctx1> {
-    fn format_object(&self, id: ty::TypeDefId::Id) -> String {
+impl<'ctx, 'ctx1> Formatter<ty::TypeDeclId::Id> for BodyTransContext<'ctx, 'ctx1> {
+    fn format_object(&self, id: ty::TypeDeclId::Id) -> String {
         self.ft_ctx.type_defs.format_object(id)
     }
 }
@@ -340,7 +340,7 @@ fn translate_body_locals<'tcx, 'ctx, 'ctx1>(
 ///
 /// The local variables should already have been translated and inserted in
 /// the context.
-fn translate_function_body<'tcx, 'ctx, 'ctx1>(
+fn translate_transparent_function_body<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
     body: &Body<'tcx>,
@@ -417,7 +417,7 @@ fn translate_place<'tcx, 'ctx, 'ctx1>(
 /// references and to move values from inside a box. On our side, we distinguish
 /// the two kinds of dereferences.
 fn translate_projection<'tcx>(
-    type_defs: &ty::TypeDefs,
+    type_defs: &ty::TypeDecls,
     var_ty: ty::ETy,
     rprojection: &rustc_middle::ty::List<PlaceElem<'tcx>>,
 ) -> e::Projection {
@@ -804,11 +804,14 @@ fn translate_operand_constant_value<'tcx, 'ctx, 'ctx1>(
                     assert!(substs.len() == 0);
                     assert!(def.type_params.len() == 0);
                     let variant_id = match &def.kind {
-                        ty::TypeDefKind::Enum(variants) => {
+                        ty::TypeDeclKind::Enum(variants) => {
                             assert!(variants.len() == 1);
                             Option::Some(ty::VariantId::ZERO)
                         }
-                        ty::TypeDefKind::Struct(_) => Option::None,
+                        ty::TypeDeclKind::Struct(_) => Option::None,
+                        ty::TypeDeclKind::Opaque => {
+                            unreachable!("Can't analyze a constant value built from an opaque type")
+                        }
                     };
 
                     let ty = ty::Ty::Adt(ty::TypeId::Adt(*id), Vector::new(), Vector::new());
@@ -1134,7 +1137,7 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
                     assert!(type_params.len() == def.type_params.len());
 
                     let variant_id = match &def.kind {
-                        ty::TypeDefKind::Enum(variants) => {
+                        ty::TypeDeclKind::Enum(variants) => {
                             let variant_id = translate_variant_id(*variant_idx);
                             assert!(
                                 operands_t.len() == variants.get(variant_id).unwrap().fields.len()
@@ -1142,9 +1145,12 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
 
                             Some(variant_id)
                         }
-                        ty::TypeDefKind::Struct(_) => {
+                        ty::TypeDeclKind::Struct(_) => {
                             assert!(variant_idx.as_usize() == 0);
                             None
+                        }
+                        ty::TypeDeclKind::Opaque => {
+                            unreachable!("Can't build an aggregate from an opaque type")
                         }
                     };
                     let akind = e::AggregateKind::Adt(id_t, variant_id, region_params, type_params);
@@ -2184,11 +2190,11 @@ fn build_scope_tree(body: &Body) -> ScopeTree<SourceScope> {
 ///
 /// Note that we don't care whether the function is (mutually) recursive or not:
 /// we translate its body to a very close representation.
-fn translate_function(
+fn translate_transparent_function(
     tcx: TyCtxt,
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
-    type_defs: &ty::TypeDefs,
+    type_defs: &ty::TypeDecls,
     fun_defs: &mut ast::FunDefs,
     def_id: ast::FunDefId::Id,
 ) -> Result<ast::FunDef> {
@@ -2226,7 +2232,7 @@ fn translate_function(
 
     // Translate the function body
     trace!("Translating the function body");
-    translate_function_body(tcx, &mut bt_ctx, body)?;
+    translate_transparent_function_body(tcx, &mut bt_ctx, body)?;
 
     // Return the new function
     // We need to convert the blocks map to an index vector
@@ -2249,12 +2255,51 @@ fn translate_function(
     Ok(fun_def)
 }
 
+/// Translate one opaque function.
+///
+/// Opaque functions are:
+/// - external functions
+/// - local functions flagged as opaque
+fn translate_opaque_function(
+    tcx: TyCtxt,
+    ordered: &OrderedDecls,
+    types_constraints: &TypesConstraintsMap,
+    type_defs: &ty::TypeDecls,
+    fun_defs: &mut ast::FunDefs,
+    def_id: ast::FunDefId::Id,
+) -> Result<ast::FunDef> {
+    trace!("{}", def_id);
+
+    unimplemented!();
+}
+
+/// Translate one function.
+///
+/// Note that we don't care whether the function is (mutually) recursive or not:
+/// we translate its body to a very close representation.
+fn translate_function(
+    tcx: TyCtxt,
+    ordered: &OrderedDecls,
+    types_constraints: &TypesConstraintsMap,
+    type_defs: &ty::TypeDecls,
+    fun_defs: &mut ast::FunDefs,
+    def_id: ast::FunDefId::Id,
+) -> Result<ast::FunDef> {
+    // Check if the type is opaque or transparent, and delegate to the proper
+    // function
+    if ordered.opaque_funs.contains(&def_id) {
+        translate_opaque_function(tcx, ordered, types_constraints, type_defs, fun_defs, def_id)
+    } else {
+        translate_transparent_function(tcx, ordered, types_constraints, type_defs, fun_defs, def_id)
+    }
+}
+
 /// Translate the functions
 pub fn translate_functions(
     tcx: TyCtxt,
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
-    type_defs: &ty::TypeDefs,
+    type_defs: &ty::TypeDecls,
 ) -> Result<ast::FunDefs> {
     let mut fun_defs = ast::FunDefs::new();
 
