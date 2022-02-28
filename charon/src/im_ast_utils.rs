@@ -374,36 +374,6 @@ impl BlockData {
     }
 }
 
-/*impl FunBody {
-    pub fn fmt_body_blocks_with_ctx<'a, 'b, 'c, C>(&'a self, tab: &'b str, ctx: &'c C) -> String
-    where
-        C: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
-    {
-        let block_tab = format!("{}{}", tab, TAB_INCR);
-        let mut blocks: Vec<String> = Vec::new();
-        for (bid, block) in self.body.iter_indexed_values() {
-            use crate::id_vector::ToUsize;
-            blocks.push(
-                format!(
-                    "{}bb{}: {{\n{}\n{}}}\n",
-                    tab,
-                    bid.to_usize(),
-                    block.fmt_with_ctx(&block_tab, ctx),
-                    tab
-                )
-                .to_owned(),
-            );
-        }
-        blocks.join("\n")
-    }
-}*/
-
 fn fmt_body_blocks_with_ctx<'a, 'b, 'c, C>(
     body: &'a BlockId::Vector<BlockData>,
     tab: &'b str,
@@ -495,30 +465,12 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunBody<T> {
 
         // Format the body blocks
         let body = ctx.format_object(&self.body);
-        //        let body_blocks = self.fmt_body_blocks_with_ctx(tab, ctx);
 
         // Put everything together
         let mut out = locals;
         out.push_str(&body);
         out
     }
-
-    /*    pub fn fmt_with_ctx<'a, 'b, 'c, C>(&'a self, tab: &'b str, ctx: &'c C) -> String
-    where
-        C: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
-    {
-        // Format the body blocks
-        let body_blocks = self.fmt_body_blocks_with_ctx(tab, ctx);
-
-        // Format the rest
-        self.gfmt_with_ctx("", &body_blocks, ctx)
-    }*/
 }
 
 impl FunSig {
@@ -696,7 +648,6 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDecl<T> {
                 // Body
                 let body_tab = format!("{}{}", tab, TAB_INCR);
                 let body = body.fmt_with_ctx(&body_tab, body_ctx);
-                //                let body = self.fmt_gbody_with_ctx(&body_tab, body_exp, body_ctx);
 
                 // Put everything together
                 format!(
@@ -708,43 +659,6 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDecl<T> {
         }
     }
 }
-
-/*impl FunDecl {
-    /// This is an auxiliary function for printing definitions. One may wonder
-    /// why we require a formatter to format, for instance, (type) var ids,
-    /// because the function definition already has the information to print
-    /// variables. The reason is that it is easier for us to write this very
-    /// generic auxiliary function, then apply it on an evaluation context
-    /// properly initialized (with the information contained in the function
-    /// definition). See [`fmt_with_defs`](FunDecl::fmt_with_defs).
-    pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
-        &'a self,
-        tab: &'b str,
-        sig_ctx: &'c T1,
-        body_ctx: &'c T2,
-    ) -> String
-    where
-        T1: Formatter<TypeVarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>,
-        T2: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<FunDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
-    {
-        // Format the body blocks
-        let body_blocks = match &self.body {
-            Option::Some(body) => Option::Some(body.fmt_body_blocks_with_ctx(tab, body_ctx)),
-            Option::None => Option::None,
-        };
-
-        // Format the rest
-        self.gfmt_with_ctx("", body_blocks, sig_ctx, body_ctx)
-    }
-}*/
 
 pub struct GAstFormatter<'ctx, T> {
     pub type_context: &'ctx TypeDecls,
@@ -898,16 +812,6 @@ impl FunDecl {
         };
 
         let eval_ctx = AstFormatter::new(ty_ctx, fun_ctx, &self.signature.type_params, locals);
-
-        /*
-        // Format the body expression:
-          let body_exp = match &self.body {
-              None => "".to_string(),
-              Some(body) => {
-                  let body_exp = body.fmt_body_blocks_with_ctx("", eval_ctx);
-                  body.fmt_with_ctx()
-              }
-          };*/
 
         // Use the contexts for printing
         self.gfmt_with_ctx("", &fun_sig_ctx, &eval_ctx)

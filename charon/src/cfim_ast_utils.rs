@@ -190,33 +190,6 @@ impl Statement {
     }
 }
 
-/*impl FunDecl {
-    pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
-        &'a self,
-        tab: &'b str,
-        sig_ctx: &'c T1,
-        body_ctx: &'c T2,
-    ) -> String
-    where
-        T1: Formatter<TypeVarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>,
-        T2: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<FunDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
-    {
-        // Format the body expression
-        let body_st = self.body.fmt_with_ctx(tab, body_ctx);
-
-        // Format the rest
-        self.gfmt_with_ctx("", &body_st, sig_ctx, body_ctx)
-    }
-}*/
-
 type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls>;
 
 impl<'ctx> Formatter<FunDeclId::Id> for AstFormatter<'ctx> {
