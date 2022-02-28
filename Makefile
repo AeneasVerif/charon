@@ -17,7 +17,7 @@ build-tests-nll:
 	cd tests-nll && make
 
 .PHONY: tests
-tests: build-tests build-tests-nll \
+tests: build build-tests build-tests-nll \
 	test-nested_borrows test-no_nested_borrows test-loops test-hashmap test-paper \
 	test-matches test-matches_duplicate test-external \
 	test-nll-betree_nll test-nll-betree_main
@@ -38,6 +38,9 @@ test-nll-betree_main: OPTIONS += --opaque=betree_utils
 test-%: TESTS=../tests
 test-%:
 	cd charon && cargo run $(SRC)/$*.rs $(OPTIONS)
+# I would like to do this, however there is a problem when loading libstd.so.
+# I guess we need to indicate the path to the installed Rust library, sth?
+#	charon/target/debug/charon $(SRC)/$*.rs $(OPTIONS)
 
 .PHONY: test-nll-%
 test-nll-%: TESTS=../tests-nll
