@@ -6,6 +6,7 @@ use rustc_hir::def_id::DefId;
 use rustc_hir::definitions::DefPathData;
 use rustc_middle::ty::TyCtxt;
 use serde::{Serialize, Serializer};
+use std::collections::HashSet;
 
 impl Name {
     pub fn from(name: Vec<String>) -> Name {
@@ -32,6 +33,24 @@ impl Name {
             }
         }
         return true;
+    }
+
+    /// Return `true` if the name identifies an item inside the module: `krate::module`
+    pub fn is_in_module(&self, krate: &String, module: &String) -> bool {
+        if self.len() >= 2 {
+            &self.name[0] == krate && &self.name[1] == module
+        } else {
+            false
+        }
+    }
+
+    /// Similar to [is_in_module]
+    pub fn is_in_modules(&self, krate: &String, modules: &HashSet<String>) -> bool {
+        if self.len() >= 2 {
+            &self.name[0] == krate && modules.contains(&self.name[1])
+        } else {
+            false
+        }
     }
 }
 
@@ -78,6 +97,22 @@ impl FunName {
                 // non-primitive, and always return false in this branch.
                 module_ident_equals_ref_name(type_name, ident, ref_name)
             }
+        }
+    }
+
+    /// Return `true` if the name identifies an item inside the module: `krate::module`
+    pub fn is_in_module(&self, krate: &String, module: &String) -> bool {
+        match self {
+            FunName::Regular(name) => name.is_in_module(krate, module),
+            FunName::Impl(type_name, _impl_id, _ident) => type_name.is_in_module(krate, module),
+        }
+    }
+
+    /// Similar to [is_in_module]
+    pub fn is_in_modules(&self, krate: &String, modules: &HashSet<String>) -> bool {
+        match self {
+            FunName::Regular(name) => name.is_in_modules(krate, modules),
+            FunName::Impl(type_name, _impl_id, _ident) => type_name.is_in_modules(krate, modules),
         }
     }
 }

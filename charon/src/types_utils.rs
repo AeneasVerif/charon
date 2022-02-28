@@ -57,14 +57,6 @@ impl<Rid1: Copy + Eq + Ord + std::hash::Hash> Region<Rid1> {
     }
 }
 
-/// Type context.
-/// Contains type definitions and function signatures.
-/// TODO: remove the wrapper?
-#[derive(Clone)]
-pub struct TypeDefs {
-    pub types: TypeDefId::Vector<TypeDef>,
-}
-
 impl TypeVar {
     pub fn new(index: TypeVarId::Id, name: String) -> TypeVar {
         TypeVar {

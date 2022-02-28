@@ -67,6 +67,7 @@ use rustc_session::Session;
 use serde::Deserialize;
 use serde_json;
 use std::collections::{HashMap, HashSet};
+use std::iter::FromIterator;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -74,6 +75,7 @@ struct ToInternal {
     dest_dir: Option<PathBuf>,
     source_file: PathBuf,
     no_code_duplication: bool,
+    opaque_modules: Vec<String>,
 }
 
 impl Callbacks for ToInternal {
@@ -144,6 +146,8 @@ fn initialize_logger() {
 
 /// This structure is used to store the command-line instructions.
 /// We automatically derive a command-line parser based on this structure.
+///
+/// TODO: give the possibility of changing the crate name.
 #[derive(StructOpt)]
 #[structopt(name = "Charon")]
 struct CliOpts {
@@ -163,6 +167,9 @@ struct CliOpts {
     /// "fused").
     #[structopt(long = "no-code-duplication")]
     no_code_duplication: bool,
+    /// A list of modules considered as opaque
+    #[structopt(long = "opaque")]
+    opaque: Vec<String>,
 }
 
 // The following helpers are used to read crate manifests (the `Cargo.toml` files),
@@ -353,7 +360,7 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     let deps_dir = PathBuf::from_str("target/debug/deps/").unwrap();
     let deps_dir = crate_path.join(deps_dir);
     info!(
-        "Looking for the compiled external dependencies in {:?}",
+        "Looking for the compiled external dependencies in: {:?}",
         deps_dir
     );
 
@@ -512,6 +519,7 @@ fn main() {
             dest_dir: args.dest_dir,
             source_file: args.input_file,
             no_code_duplication: args.no_code_duplication,
+            opaque_modules: args.opaque,
         },
     )
     .run()
@@ -551,7 +559,11 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // We iterate over the HIR items, and explore their MIR bodies/ADTs/etc.
     // (when those exist - for instance, type aliases don't have MIR translations
     // so we just ignore them).
-    let registered_decls = register::register_crate(sess, tcx)?;
+    let crate_info = register::CrateInfo {
+        crate_name: crate_name.clone(),
+        opaque: HashSet::from_iter(internal.opaque_modules.clone().into_iter()),
+    };
+    let registered_decls = register::register_crate(&crate_info, sess, tcx)?;
 
     // # Step 2: reorder the graph of dependencies and compute the strictly
     // connex components to:

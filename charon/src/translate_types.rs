@@ -464,12 +464,12 @@ fn translate_non_local_defid(tcx: TyCtxt, def_id: DefId) -> ty::TypeId {
     }
 }
 
-/// Translate one type definition.
+/// Translate one local type definition which has not been flagged as opaque.
 ///
 /// Note that we translate the types one by one: we don't need to take into
 /// account the fact that some types are mutually recursive at this point
 /// (we will need to take that into account when generating the code in a file).
-fn translate_type<'ctx>(
+fn translate_non_external_type<'ctx>(
     tcx: TyCtxt,
     decls: &OrderedDecls,
     type_defs: &mut ty::TypeDefs,
@@ -639,6 +639,18 @@ fn translate_type<'ctx>(
     Ok(())
 }
 
+/// TODO
+fn translate_external_type<'ctx>(
+    tcx: TyCtxt,
+    decls: &OrderedDecls,
+    type_defs: &mut ty::TypeDefs,
+    trans_id: ty::TypeDefId::Id,
+) -> Result<()> {
+    trace!("{}", trans_id);
+
+    unimplemented!();
+}
+
 /// Translate the types.
 ///
 /// Note that in practice, we don't really need to know in which order we should
@@ -655,12 +667,14 @@ pub fn translate_types(
     let mut types_cover_regions = TypesConstraintsMap::new();
     let mut type_defs = ty::TypeDefs::new();
 
-    // Translate the types.
+    // Translate the external and opaque types
+
+    // Translate the local, non-opaque types
     for decl in &decls.decls {
         match decl {
             DeclarationGroup::Type(decl) => match decl {
                 TypeDeclarationGroup::NonRec(id) => {
-                    translate_type(tcx, decls, &mut type_defs, *id)?;
+                    translate_non_external_type(tcx, decls, &mut type_defs, *id)?;
                     regions_hierarchy::compute_regions_hierarchy_for_type_decl_group(
                         &mut types_cover_regions,
                         &mut type_defs,
@@ -669,7 +683,7 @@ pub fn translate_types(
                 }
                 TypeDeclarationGroup::Rec(ids) => {
                     for id in ids {
-                        translate_type(tcx, decls, &mut type_defs, *id)?;
+                        translate_non_external_type(tcx, decls, &mut type_defs, *id)?;
                     }
                     regions_hierarchy::compute_regions_hierarchy_for_type_decl_group(
                         &mut types_cover_regions,

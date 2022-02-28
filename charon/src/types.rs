@@ -80,6 +80,16 @@ pub enum TypeDefKind {
     Enum(VariantId::Vector<Variant>),
 }
 
+/// An external type - all the information which matters is the region
+/// and type parameters
+#[derive(Debug, Clone, Serialize)]
+pub struct ExternalType {
+    pub region_params: RegionVarId::Vector<RegionVar>,
+    pub type_params: TypeVarId::Vector<TypeVar>,
+    /// The lifetime's hierarchy between the different regions.
+    pub regions_hierarchy: RegionGroups,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Variant {
     pub name: String,
@@ -128,6 +138,13 @@ pub enum TypeId {
     /// An external type.
     /// TODO: merge this with Assumed
     External(TypeName),
+}
+
+/// Type context.
+/// Contains type definitions.
+#[derive(Clone)]
+pub struct TypeDefs {
+    pub types: TypeDefId::Vector<TypeDef>,
 }
 
 /// A type.

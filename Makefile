@@ -32,6 +32,7 @@ test-external: OPTIONS += --no-code-duplication
 test-matches_duplicate:
 test-nll-betree_nll: OPTIONS += --no-code-duplication
 test-nll-betree_main: OPTIONS += --no-code-duplication
+test-nll-betree_main: OPTIONS += --opaque=betree_utils
 
 .PHONY: test-%
 test-%: TESTS=../tests

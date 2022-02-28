@@ -7,6 +7,7 @@ use petgraph::graphmap::DiGraphMap;
 use rustc_hir::def_id::DefId;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
+use std::collections::HashSet;
 use std::fmt::{Debug, Display, Error, Formatter};
 use std::vec::Vec;
 
@@ -37,6 +38,10 @@ pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy> {
     pub type_ids: Vec<TypeId>,
     /// All the function ids
     pub fun_ids: Vec<FunId>,
+    /// All the opaque/external type ids
+    pub external_type_ids: HashSet<TypeId>,
+    /// All the opaque/external fun ids
+    pub external_fun_ids: HashSet<FunId>,
 }
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
@@ -132,6 +137,8 @@ impl<TypeId: Copy, FunId: Copy> DeclarationsGroups<TypeId, FunId> {
             decls: vec![],
             type_ids: vec![],
             fun_ids: vec![],
+            external_type_ids: HashSet::new(),
+            external_fun_ids: HashSet::new(),
         }
     }
 
@@ -201,26 +208,21 @@ pub fn reorder_declarations(
 ) -> Result<DeclarationsGroups<DefId, DefId>> {
     trace!();
 
-    // Step 1: Start by building a graph
+    // Step 1: Start by building the graph
     let mut graph = DiGraphMap::<DefId, ()>::new();
 
-    // Add the nodes - note that decls.decls only contains local def ids
-    // (but the dependency vectors might contain foreign def ids).
+    // Add the nodes - note that we are using both local and external def ids.
     for d in decls.decls.iter() {
-        assert!(d.is_local());
         graph.add_node(*d);
     }
 
     // Add the edges.
     // Note that some of the dependencies might be foreign depedencies (i.e.:
-    // not defined in the local crate). We ignore those.
+    // not defined in the local crate).
     // Types -> types
     decls.types.iter().for_each(|(id, d)| {
         d.deps.iter().for_each(|dep_id| {
-            if dep_id.is_local() {
-                let _ = graph.add_edge(*id, *dep_id, ());
-                ()
-            }
+            let _ = graph.add_edge(*id, *dep_id, ());
         })
     });
     // Functions -> types
@@ -335,6 +337,19 @@ pub fn reorder_declarations(
     }
 
     trace!("{}", reordered_decls.to_string());
+
+    // We list the external definitions (opaque local, and non-local)
+    for id in decls.decls.iter() {
+        if def_id_is_type(decls, id) {
+            if !id.is_local() || decls.opaque_types.contains(id) {
+                reordered_decls.external_type_ids.insert(*id);
+            }
+        } else {
+            if !id.is_local() || decls.opaque_funs.contains(id) {
+                reordered_decls.external_fun_ids.insert(*id);
+            }
+        }
+    }
 
     return Ok(reordered_decls);
 }
