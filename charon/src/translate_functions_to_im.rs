@@ -2177,10 +2177,7 @@ fn build_scope_tree(body: &Body) -> ScopeTree<SourceScope> {
 }
 
 /// Translate one function.
-///
-/// Note that we don't care whether the function is (mutually) recursive or not:
-/// we translate its body to a very close representation.
-fn translate_transparent_function(
+fn translate_function(
     tcx: TyCtxt,
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
@@ -2203,9 +2200,6 @@ fn translate_transparent_function(
     // Translate the function name
     let name = function_def_id_to_name(tcx, rid);
 
-    // Retrieve the MIR body
-    let body = crate::get_mir::get_mir_for_def_id(tcx, rid.expect_local());
-
     // Translate the function signature and initialize the body translation context
     // at the same time (the signature gives us the region and type parameters,
     // that we put in the translation context).
@@ -2218,6 +2212,9 @@ fn translate_transparent_function(
     let body = if is_opaque {
         Option::None
     } else {
+        // Retrieve the MIR body
+        let body = crate::get_mir::get_mir_for_def_id(tcx, rid.expect_local());
+
         // Initialize the local variables
         trace!("Translating the body locals");
         translate_body_locals(tcx, &mut bt_ctx, body)?;
@@ -2249,7 +2246,6 @@ fn translate_transparent_function(
     };
 
     // Return the new function
-
     let fun_def = ast::FunDecl {
         def_id,
         name,
@@ -2258,60 +2254,6 @@ fn translate_transparent_function(
     };
 
     Ok(fun_def)
-}
-
-/// Translate one opaque function.
-///
-/// Opaque functions are:
-/// - external functions
-/// - local functions flagged as opaque
-fn translate_opaque_function(
-    tcx: TyCtxt,
-    ordered: &OrderedDecls,
-    types_constraints: &TypesConstraintsMap,
-    type_defs: &ty::TypeDecls,
-    fun_defs: &mut ast::FunDecls,
-    def_id: ast::FunDeclId::Id,
-) -> Result<ast::FunDecl> {
-    trace!("{}", def_id);
-
-    let rid = *ordered.fun_id_to_rid.get(&def_id).unwrap();
-
-    // Translate the function name
-    let _name = function_def_id_to_name(tcx, rid);
-
-    // Initialize the function translation context
-    let ft_ctx = FunTransContext {
-        ordered: ordered,
-        type_defs: type_defs,
-        defs: &fun_defs,
-    };
-
-    // Translate the function signature
-    let (_, _signature) = translate_function_signature(tcx, types_constraints, &ft_ctx, rid);
-
-    unimplemented!();
-}
-
-/// Translate one function.
-///
-/// Note that we don't care whether the function is (mutually) recursive or not:
-/// we translate its body to a very close representation.
-fn translate_function(
-    tcx: TyCtxt,
-    ordered: &OrderedDecls,
-    types_constraints: &TypesConstraintsMap,
-    type_defs: &ty::TypeDecls,
-    fun_defs: &mut ast::FunDecls,
-    def_id: ast::FunDeclId::Id,
-) -> Result<ast::FunDecl> {
-    // Check if the type is opaque or transparent, and delegate to the proper
-    // function
-    if ordered.opaque_funs.contains(&def_id) {
-        translate_opaque_function(tcx, ordered, types_constraints, type_defs, fun_defs, def_id)
-    } else {
-        translate_transparent_function(tcx, ordered, types_constraints, type_defs, fun_defs, def_id)
-    }
 }
 
 /// Translate the functions
