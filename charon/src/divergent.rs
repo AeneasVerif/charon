@@ -4,7 +4,7 @@ use crate::rust_to_local_ids::*;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-fn statement_diverges(divergent: &HashMap<ast::FunDefId::Id, bool>, st: &cfim::Statement) -> bool {
+fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &cfim::Statement) -> bool {
     match st {
         cfim::Statement::Assign(_, _)
         | cfim::Statement::FakeRead(_)
@@ -17,7 +17,7 @@ fn statement_diverges(divergent: &HashMap<ast::FunDefId::Id, bool>, st: &cfim::S
         | cfim::Statement::Continue(_)
         | cfim::Statement::Nop => false,
         cfim::Statement::Call(call) => match &call.func {
-            ast::FunId::Local(id) => *divergent.get(id).unwrap(),
+            ast::FunId::Regular(id) => *divergent.get(id).unwrap(),
             ast::FunId::Assumed(id) => match id {
                 ast::AssumedFunId::Replace
                 | ast::AssumedFunId::BoxNew
@@ -31,11 +31,6 @@ fn statement_diverges(divergent: &HashMap<ast::FunDefId::Id, bool>, st: &cfim::S
                 | ast::AssumedFunId::VecIndex
                 | ast::AssumedFunId::VecIndexMut => false,
             },
-            ast::FunId::External(_) => {
-                // Being conservative: we consider all the external functions
-                // can diverge.
-                true
-            }
         },
         cfim::Statement::Sequence(st1, st2) => {
             statement_diverges(divergent, &st1) || statement_diverges(divergent, &st2)
@@ -48,7 +43,7 @@ fn statement_diverges(divergent: &HashMap<ast::FunDefId::Id, bool>, st: &cfim::S
     }
 }
 
-fn fun_diverges(divergent: &HashMap<ast::FunDefId::Id, bool>, def: &cfim::FunDef) -> bool {
+fn fun_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, def: &cfim::FunDecl) -> bool {
     statement_diverges(divergent, &def.body)
 }
 
@@ -60,12 +55,12 @@ fn fun_diverges(divergent: &HashMap<ast::FunDefId::Id, bool>, def: &cfim::FunDef
 /// terminating.
 pub fn compute_divergent_functions(
     decls: &OrderedDecls,
-    defs: &cfim::FunDefs,
-) -> HashSet<ast::FunDefId::Id> {
+    defs: &cfim::FunDecls,
+) -> HashSet<ast::FunDeclId::Id> {
     // For sanity, we use a map rather than a set, so that we can check
     // that we have indeed computed the divergence for the previous
     // declarations.
-    let mut divergent_map: HashMap<ast::FunDefId::Id, bool> = HashMap::new();
+    let mut divergent_map: HashMap<ast::FunDeclId::Id, bool> = HashMap::new();
 
     // The declarations in decls have been reordered so that the dependencies
     // of every group of declarations is either in the group itself (in case
@@ -91,7 +86,7 @@ pub fn compute_divergent_functions(
     }
 
     // Convert the map to a set
-    let divergent_set: HashSet<ast::FunDefId::Id> = HashSet::from_iter(
+    let divergent_set: HashSet<ast::FunDeclId::Id> = HashSet::from_iter(
         divergent_map
             .iter()
             .filter(|(_, div)| **div)

@@ -2,11 +2,11 @@
 //! hierarchy between regions.
 #![allow(dead_code)]
 
-use crate::cfim_ast::FunDefs;
+use crate::cfim_ast::FunDecls;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::graphs::*;
-use crate::im_ast::{FunDefId, FunSig};
+use crate::im_ast::{FunDeclId, FunSig};
 use crate::rust_to_local_ids::TypeDeclarationGroup;
 use crate::types as ty;
 use crate::types::*;
@@ -660,9 +660,9 @@ pub fn compute_regions_hierarchy_for_sig(
 /// a set of function definitions.
 pub fn compute_regions_hierarchies_for_functions(
     types_constraints: &TypesConstraintsMap,
-    defs: &FunDefs,
-) -> FunDefId::Vector<RegionGroups> {
-    FunDefId::Vector::from_iter(
+    defs: &FunDecls,
+) -> FunDeclId::Vector<RegionGroups> {
+    FunDeclId::Vector::from_iter(
         defs.iter()
             .map(|def| compute_regions_hierarchy_for_sig(types_constraints, &def.signature)),
     )

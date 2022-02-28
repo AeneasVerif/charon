@@ -4,7 +4,7 @@
 use crate::cfim_ast::*;
 use crate::common::*;
 use crate::formatter::Formatter;
-use crate::im_ast::{fmt_call, FunDefId, FunSigFormatter, GAstFormatter, TAB_INCR};
+use crate::im_ast::{fmt_call, FunDeclId, FunSigFormatter, GAstFormatter, TAB_INCR};
 use crate::types::*;
 use crate::values::*;
 use serde::ser::SerializeTupleVariant;
@@ -68,7 +68,7 @@ impl Statement {
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<FunDefId::Id>
+            + Formatter<FunDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -190,7 +190,7 @@ impl Statement {
     }
 }
 
-impl FunDef {
+impl FunDecl {
     pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
@@ -205,7 +205,7 @@ impl FunDef {
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<FunDefId::Id>
+            + Formatter<FunDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -217,17 +217,17 @@ impl FunDef {
     }
 }
 
-type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDefs>;
+type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls>;
 
-impl<'ctx> Formatter<FunDefId::Id> for AstFormatter<'ctx> {
-    fn format_object(&self, id: FunDefId::Id) -> String {
+impl<'ctx> Formatter<FunDeclId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: FunDeclId::Id) -> String {
         let f = self.fun_context.get(id).unwrap();
         f.name.to_string()
     }
 }
 
-impl FunDef {
-    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDefs) -> String {
+impl FunDecl {
+    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDecls) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,

@@ -44,7 +44,7 @@ pub struct FunTransContext<'ctx> {
     pub type_defs: &'ctx ty::TypeDecls,
     /// The function definitions
     /// TODO: rename to fun_defs
-    pub defs: &'ctx ast::FunDefs,
+    pub defs: &'ctx ast::FunDecls,
 }
 
 /// A translation context for function bodies.
@@ -97,11 +97,11 @@ struct BodyTransContext<'ctx, 'ctx1> {
 }
 
 impl<'ctx> FunTransContext<'ctx> {
-    fn get_def_id_from_rid(&self, def_id: DefId) -> Option<ast::FunDefId::Id> {
+    fn get_def_id_from_rid(&self, def_id: DefId) -> Option<ast::FunDeclId::Id> {
         self.ordered.fun_rid_to_id.get(&def_id).map(|x| *x)
     }
 
-    fn get_def_rid_from_id(&self, def_id: ast::FunDefId::Id) -> Option<DefId> {
+    fn get_def_rid_from_id(&self, def_id: ast::FunDeclId::Id) -> Option<DefId> {
         self.ordered.fun_id_to_rid.get(&def_id).map(|x| *x)
     }
 }
@@ -1631,16 +1631,20 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
             // Translate the arguments
             let args = translate_arguments(tcx, bt_ctx, used_args, args);
 
-            // Retrieve the function identifier
-            // - this is a local function, in which case we need to retrieve the
-            //   function id by doing a lookup
-            // - this is a non-local function, in which case there is a special
-            //   treatment: we need to check if it benefits from primitive support
-            if def_id.is_local() {
+            // Check if the function is considered primitive: primitive
+            // functions benefit from special treatment.
+            let name = function_def_id_to_name(tcx, def_id);
+            let is_prim = if def_id.is_local() {
+                false
+            } else {
+                assumed::get_fun_id_from_name(&name).is_some()
+            };
+
+            if !is_prim {
                 // Retrieve the def id
                 let def_id = bt_ctx.ft_ctx.get_def_id_from_rid(def_id).unwrap();
 
-                let func = ast::FunId::Local(def_id);
+                let func = ast::FunId::Regular(def_id);
 
                 Ok(ast::Terminator::Call {
                     func,
@@ -1651,7 +1655,8 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
                     target: next_block,
                 })
             } else {
-                // Non local function.
+                // Primitive function.
+                //
                 // Note that there are subtleties with regards to the way types parameters
                 // are translated, because some functions are actually traits, where the
                 // types are used for the resolution. For instance, the following:
@@ -1659,7 +1664,7 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
                 // is translated to:
                 // `box_deref<T>`
                 // (the type parameter is not `Box<T>` but `T`).
-                translate_non_local_function_call(
+                translate_primitive_function_call(
                     tcx,
                     def_id,
                     region_params,
@@ -1754,9 +1759,9 @@ fn translate_arguments<'tcx, 'ctx, 'ctx1>(
     return t_args;
 }
 
-/// Translate a non-local function call which is not: panic, begin_panic,
-/// box_free (those have a special treatment).
-fn translate_non_local_function_call<'tcx>(
+/// Translate a call to a function considered primitive and which is not:
+/// panic, begin_panic, box_free (those have a *very* special treatment).
+fn translate_primitive_function_call<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: DefId,
     region_params: Vec<ty::ErasedRegion>,
@@ -1773,58 +1778,43 @@ fn translate_non_local_function_call<'tcx>(
 
     // Check if the function has primitive support, by trying to look up
     // its primitive identifier
-    match assumed::get_fun_id_from_name(&name) {
-        Option::Some(aid) => {
-            // The function is considered primitive
+    let aid = assumed::get_fun_id_from_name(&name).unwrap();
+    // The function is considered primitive
 
-            // Translate the function call
-            // Note that some functions are actually traits (deref, index, etc.):
-            // we assume that they are called only on a limited set of types
-            // (ex.: box, vec...).
-            // For those trait functions, we need a custom treatment to retrieve
-            // and check the type information.
-            // For instance, derefencing boxes generates MIR of the following form:
-            // ```
-            // _2 = <Box<u32> as Deref>::deref(move _3)
-            // ```
-            // We have to retrieve the type `Box<u32>` and check that it is of the
-            // form `Box<T>` (and we generate `box_deref<u32>`).
-            match aid {
-                ast::AssumedFunId::Replace
-                | ast::AssumedFunId::BoxNew
-                | ast::AssumedFunId::VecNew
-                | ast::AssumedFunId::VecPush
-                | ast::AssumedFunId::VecInsert
-                | ast::AssumedFunId::VecLen => Ok(ast::Terminator::Call {
-                    func: ast::FunId::Assumed(aid),
-                    region_params,
-                    type_params,
-                    args,
-                    dest,
-                    target,
-                }),
-                ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => {
-                    translate_box_deref(aid, region_params, type_params, args, dest, target)
-                }
-                ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
-                    translate_vec_index(aid, region_params, type_params, args, dest, target)
-                }
-                ast::AssumedFunId::BoxFree => {
-                    unreachable!();
-                }
-            }
+    // Translate the function call
+    // Note that some functions are actually traits (deref, index, etc.):
+    // we assume that they are called only on a limited set of types
+    // (ex.: box, vec...).
+    // For those trait functions, we need a custom treatment to retrieve
+    // and check the type information.
+    // For instance, derefencing boxes generates MIR of the following form:
+    // ```
+    // _2 = <Box<u32> as Deref>::deref(move _3)
+    // ```
+    // We have to retrieve the type `Box<u32>` and check that it is of the
+    // form `Box<T>` (and we generate `box_deref<u32>`).
+    match aid {
+        ast::AssumedFunId::Replace
+        | ast::AssumedFunId::BoxNew
+        | ast::AssumedFunId::VecNew
+        | ast::AssumedFunId::VecPush
+        | ast::AssumedFunId::VecInsert
+        | ast::AssumedFunId::VecLen => Ok(ast::Terminator::Call {
+            func: ast::FunId::Assumed(aid),
+            region_params,
+            type_params,
+            args,
+            dest,
+            target,
+        }),
+        ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => {
+            translate_box_deref(aid, region_params, type_params, args, dest, target)
         }
-        Option::None => {
-            // The function is not considered primitive - it is an external
-            // dependency
-            Ok(ast::Terminator::Call {
-                func: ast::FunId::External(name),
-                region_params,
-                type_params,
-                args,
-                dest,
-                target,
-            })
+        ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
+            translate_vec_index(aid, region_params, type_params, args, dest, target)
+        }
+        ast::AssumedFunId::BoxFree => {
+            unreachable!();
         }
     }
 }
@@ -2195,9 +2185,9 @@ fn translate_transparent_function(
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDecls,
-    fun_defs: &mut ast::FunDefs,
-    def_id: ast::FunDefId::Id,
-) -> Result<ast::FunDef> {
+    fun_defs: &mut ast::FunDecls,
+    def_id: ast::FunDeclId::Id,
+) -> Result<ast::FunDecl> {
     trace!("{:?}", def_id);
 
     let rid = *ordered.fun_id_to_rid.get(&def_id).unwrap();
@@ -2243,7 +2233,7 @@ fn translate_transparent_function(
         assert!(id.to_usize() == blocks.len());
         blocks.push_back(block);
     }
-    let fun_def = ast::FunDef {
+    let fun_def = ast::FunDecl {
         def_id,
         name,
         signature,
@@ -2265,9 +2255,9 @@ fn translate_opaque_function(
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDecls,
-    fun_defs: &mut ast::FunDefs,
-    def_id: ast::FunDefId::Id,
-) -> Result<ast::FunDef> {
+    fun_defs: &mut ast::FunDecls,
+    def_id: ast::FunDeclId::Id,
+) -> Result<ast::FunDecl> {
     trace!("{}", def_id);
 
     let rid = *ordered.fun_id_to_rid.get(&def_id).unwrap();
@@ -2297,9 +2287,9 @@ fn translate_function(
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDecls,
-    fun_defs: &mut ast::FunDefs,
-    def_id: ast::FunDefId::Id,
-) -> Result<ast::FunDef> {
+    fun_defs: &mut ast::FunDecls,
+    def_id: ast::FunDeclId::Id,
+) -> Result<ast::FunDecl> {
     // Check if the type is opaque or transparent, and delegate to the proper
     // function
     if ordered.opaque_funs.contains(&def_id) {
@@ -2315,8 +2305,8 @@ pub fn translate_functions(
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDecls,
-) -> Result<ast::FunDefs> {
-    let mut fun_defs = ast::FunDefs::new();
+) -> Result<ast::FunDecls> {
+    let mut fun_defs = ast::FunDecls::new();
 
     // Translate the bodies one at a time
     for decl in &ordered.decls {

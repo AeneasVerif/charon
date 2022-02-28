@@ -51,7 +51,7 @@ fn transform_st(st: Statement) -> Statement {
         }
     }
 }
-fn transform_def(mut def: FunDef) -> FunDef {
+fn transform_def(mut def: FunDecl) -> FunDecl {
     trace!("About to update: {}", def.name);
     // If the return type is unit: apply the transformation
     if def.signature.output.is_unit() {
@@ -64,6 +64,6 @@ fn transform_def(mut def: FunDef) -> FunDef {
     }
 }
 
-pub fn transform(defs: FunDefs) -> FunDefs {
-    FunDefs::from_iter(defs.into_iter().map(|def| transform_def(def)))
+pub fn transform(defs: FunDecls) -> FunDecls {
+    FunDecls::from_iter(defs.into_iter().map(|def| transform_def(def)))
 }

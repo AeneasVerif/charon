@@ -216,7 +216,7 @@ where
         + Formatter<TypeVarId::Id>
         + Formatter<&'a ErasedRegion>
         + Formatter<TypeDeclId::Id>
-        + Formatter<FunDefId::Id>
+        + Formatter<FunDeclId::Id>
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
         + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
 {
@@ -233,7 +233,7 @@ where
     let args = args.join(", ");
 
     let f = match func {
-        FunId::Local(def_id) => format!("{}{}", ctx.format_object(*def_id), params).to_string(),
+        FunId::Regular(def_id) => format!("{}{}", ctx.format_object(*def_id), params).to_string(),
         FunId::Assumed(assumed) => match assumed {
             AssumedFunId::Replace => format!("core::mem::replace{}", params).to_string(),
             AssumedFunId::BoxNew => format!("alloc::boxed::Box{}::new", params).to_string(),
@@ -261,7 +261,6 @@ where
             )
             .to_string(),
         },
-        FunId::External(name) => name.to_string(),
     };
 
     format!("{}({})", f, args,).to_string()
@@ -274,7 +273,7 @@ impl Terminator {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
-            + Formatter<FunDefId::Id>
+            + Formatter<FunDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -350,7 +349,7 @@ impl BlockData {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
-            + Formatter<FunDefId::Id>
+            + Formatter<FunDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -369,7 +368,7 @@ impl BlockData {
     }
 }
 
-impl<T: std::fmt::Debug + Clone + Serialize> GFunDef<T> {
+impl<T: std::fmt::Debug + Clone + Serialize> GFunDecl<T> {
     pub fn fmt_gbody_with_ctx<'a, 'b, 'c, C>(
         &'a self,
         tab: &'b str,
@@ -381,7 +380,7 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDef<T> {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
-            + Formatter<FunDefId::Id>
+            + Formatter<FunDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -430,14 +429,14 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDef<T> {
     }
 }
 
-impl FunDef {
+impl FunDecl {
     pub fn fmt_body_blocks_with_ctx<'a, 'b, 'c, C>(&'a self, tab: &'b str, ctx: &'c C) -> String
     where
         C: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
-            + Formatter<FunDefId::Id>
+            + Formatter<FunDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -550,14 +549,14 @@ impl FunSig {
     }
 }
 
-impl<T: std::fmt::Debug + Clone + Serialize> GFunDef<T> {
+impl<T: std::fmt::Debug + Clone + Serialize> GFunDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function definition already has the information to print
     /// variables. The reason is that it is easier for us to write this very
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
-    /// definition). See [`fmt_with_defs`](FunDef::fmt_with_defs).
+    /// definition). See [`fmt_with_defs`](FunDecl::fmt_with_defs).
     pub fn gfmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
@@ -573,7 +572,7 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDef<T> {
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<FunDefId::Id>
+            + Formatter<FunDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -638,14 +637,14 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDef<T> {
     }
 }
 
-impl FunDef {
+impl FunDecl {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function definition already has the information to print
     /// variables. The reason is that it is easier for us to write this very
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
-    /// definition). See [`fmt_with_defs`](FunDef::fmt_with_defs).
+    /// definition). See [`fmt_with_defs`](FunDecl::fmt_with_defs).
     pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
@@ -660,7 +659,7 @@ impl FunDef {
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
-            + Formatter<FunDefId::Id>
+            + Formatter<FunDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -679,10 +678,10 @@ pub struct GAstFormatter<'ctx, T> {
     pub vars: &'ctx VarId::Vector<Var>,
 }
 
-type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDefs>;
+type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls>;
 
-impl<'ctx> Formatter<FunDefId::Id> for AstFormatter<'ctx> {
-    fn format_object(&self, id: FunDefId::Id) -> String {
+impl<'ctx> Formatter<FunDeclId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: FunDeclId::Id) -> String {
         let f = self.fun_context.get(id).unwrap();
         f.name.to_string()
     }
@@ -808,8 +807,8 @@ impl<'ctx, T> Formatter<&Operand> for GAstFormatter<'ctx, T> {
     }
 }
 
-impl FunDef {
-    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDefs) -> String {
+impl FunDecl {
+    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDecls) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,

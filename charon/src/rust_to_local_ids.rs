@@ -8,8 +8,8 @@ use std::vec::Vec;
 
 pub type GDeclarationGroup<Id> = rd::GDeclarationGroup<Id>;
 pub type TypeDeclarationGroup = rd::GDeclarationGroup<ty::TypeDeclId::Id>;
-pub type FunDeclarationGroup = rd::GDeclarationGroup<ast::FunDefId::Id>;
-pub type DeclarationGroup = rd::DeclarationGroup<ty::TypeDeclId::Id, ast::FunDefId::Id>;
+pub type FunDeclarationGroup = rd::GDeclarationGroup<ast::FunDeclId::Id>;
+pub type DeclarationGroup = rd::DeclarationGroup<ty::TypeDeclId::Id, ast::FunDeclId::Id>;
 
 pub struct OrderedDecls {
     /// The properly grouped and ordered declarations
@@ -17,15 +17,15 @@ pub struct OrderedDecls {
     /// The opaque type ids
     pub opaque_types: HashSet<ty::TypeDeclId::Id>,
     /// The opaque fun ids
-    pub opaque_funs: HashSet<ast::FunDefId::Id>,
+    pub opaque_funs: HashSet<ast::FunDeclId::Id>,
     /// Rust type identifiers to translation identifiers
     pub type_rid_to_id: HashMap<DefId, ty::TypeDeclId::Id>,
     /// Translation type identifiers to rust identifiers
     pub type_id_to_rid: HashMap<ty::TypeDeclId::Id, DefId>,
     /// Rust function identifiers to translation identifiers
-    pub fun_rid_to_id: HashMap<DefId, ast::FunDefId::Id>,
+    pub fun_rid_to_id: HashMap<DefId, ast::FunDeclId::Id>,
     /// Translation function identifiers to rust identifiers
-    pub fun_id_to_rid: HashMap<ast::FunDefId::Id, DefId>,
+    pub fun_id_to_rid: HashMap<ast::FunDeclId::Id, DefId>,
 }
 
 /// Convert the definition ids used by the rust compiler to our own definition
@@ -34,12 +34,12 @@ pub fn rust_to_local_ids(reordered: &rd::DeclarationsGroups<DefId, DefId>) -> Or
     let mut opaque_types = HashSet::new();
     let mut opaque_funs = HashSet::new();
     let mut type_rid_to_id: HashMap<DefId, ty::TypeDeclId::Id> = HashMap::new();
-    let mut fun_rid_to_id: HashMap<DefId, ast::FunDefId::Id> = HashMap::new();
+    let mut fun_rid_to_id: HashMap<DefId, ast::FunDeclId::Id> = HashMap::new();
     let mut type_id_to_rid: HashMap<ty::TypeDeclId::Id, DefId> = HashMap::new();
-    let mut fun_id_to_rid: HashMap<ast::FunDefId::Id, DefId> = HashMap::new();
+    let mut fun_id_to_rid: HashMap<ast::FunDeclId::Id, DefId> = HashMap::new();
 
     let mut type_counter = ty::TypeDeclId::Generator::new();
-    let mut fun_counter = ast::FunDefId::Generator::new();
+    let mut fun_counter = ast::FunDeclId::Generator::new();
 
     let mut decls: Vec<DeclarationGroup> = Vec::new();
 
@@ -80,7 +80,7 @@ pub fn rust_to_local_ids(reordered: &rd::DeclarationsGroups<DefId, DefId>) -> Or
                 decls.push(DeclarationGroup::Fun(GDeclarationGroup::NonRec(id)));
             }
             rd::DeclarationGroup::Fun(rd::GDeclarationGroup::Rec(rids)) => {
-                let mut ids: Vec<ast::FunDefId::Id> = Vec::new();
+                let mut ids: Vec<ast::FunDeclId::Id> = Vec::new();
                 for rid in rids {
                     let id = fun_counter.fresh_id();
                     fun_rid_to_id.insert(*rid, id);

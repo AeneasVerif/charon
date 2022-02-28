@@ -17,7 +17,7 @@ use serde::Serialize;
 // TODO: move this definition
 pub static TAB_INCR: &'static str = "    ";
 
-generate_index_type!(FunDefId);
+generate_index_type!(FunDeclId);
 
 // Block identifier. Similar to rust's `BasicBlock`.
 generate_index_type!(BlockId);
@@ -66,8 +66,8 @@ pub struct FunSig {
 
 /// A function definition
 #[derive(Debug, Clone, Serialize)]
-pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
-    pub def_id: FunDefId::Id,
+pub struct GFunDecl<T: std::fmt::Debug + Clone + Serialize> {
+    pub def_id: FunDeclId::Id,
     pub name: FunName,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
@@ -77,29 +77,8 @@ pub struct GFunDef<T: std::fmt::Debug + Clone + Serialize> {
     pub body: T,
 }
 
-/// A function declaration - simply a signature.
-///
-/// We use this for opaque local functions and external functions.
-#[derive(Debug, Clone, Serialize)]
-pub struct FunDecl {
-    pub name: FunName,
-    pub signature: FunSig,
-}
-
-/// A function accessible from a crate.
-///
-/// A function is either a transparent local definition, or an opaque local or
-/// external function declaration.
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
-pub enum GFun<T: std::fmt::Debug + Clone + Serialize> {
-    Transparent(GFunDef<T>),
-    Opaque(FunDecl),
-}
-
-pub type FunDef = GFunDef<BlockId::Vector<BlockData>>;
-pub type FunDefs = FunDefId::Vector<FunDef>;
-pub type Fun = GFun<BlockId::Vector<BlockData>>;
-pub type Funs = FunDefId::Vector<Fun>;
+pub type FunDecl = GFunDecl<BlockId::Vector<BlockData>>;
+pub type FunDecls = FunDeclId::Vector<FunDecl>;
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum Statement {
@@ -128,15 +107,13 @@ pub enum SwitchTargets {
 /// A function identifier. See [`Terminator`](Terminator)
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum FunId {
-    /// A function local to the crate, whose body we will translate.
-    Local(FunDefId::Id),
+    /// A "regular" function (function local to the crate, external function
+    /// not treated as a primitive one).
+    Regular(FunDeclId::Id),
     /// A primitive function, coming from a standard library (for instance:
     /// `alloc::boxed::Box::new`).
     /// TODO: rename to "Primitive"
     Assumed(AssumedFunId),
-    /// An external function.
-    /// TODO: we might want to merge this with "Assumed"
-    External(FunName),
 }
 
 /// An assumed function identifier, identifying a function coming from a

@@ -54,12 +54,12 @@ fn simplify_st(st: Statement) -> Statement {
         }
     }
 }
-fn simplify_def(mut def: FunDef) -> FunDef {
+fn simplify_def(mut def: FunDecl) -> FunDecl {
     trace!("About to update: {}", def.name);
     def.body = simplify_st(def.body);
     def
 }
 
-pub fn simplify(defs: FunDefs) -> FunDefs {
-    FunDefs::from_iter(defs.into_iter().map(|def| simplify_def(def)))
+pub fn simplify(defs: FunDecls) -> FunDecls {
+    FunDecls::from_iter(defs.into_iter().map(|def| simplify_def(def)))
 }

@@ -20,7 +20,7 @@
 
 use crate::cfim_ast as tgt;
 use crate::im_ast as src;
-use crate::im_ast::FunDefId;
+use crate::im_ast::FunDeclId;
 use crate::types::TypeDecls;
 use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
@@ -34,12 +34,12 @@ use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
 
-pub type Defs = tgt::FunDefs;
+pub type Defs = tgt::FunDecls;
 
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId::Id, ()>;
 
-fn get_block_targets(def: &src::FunDef, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
+fn get_block_targets(def: &src::FunDecl, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
     let block = def.body.get(block_id).unwrap();
 
     match &block.terminator {
@@ -99,7 +99,7 @@ struct CfgInfo {
 
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
 /// compute some information like the loop entries and the switch blocks.
-fn build_cfg_partial_info(def: &src::FunDef) -> CfgPartialInfo {
+fn build_cfg_partial_info(def: &src::FunDecl) -> CfgPartialInfo {
     let mut cfg = CfgPartialInfo {
         cfg: Cfg::new(),
         cfg_no_be: Cfg::new(),
@@ -122,7 +122,7 @@ fn build_cfg_partial_info(def: &src::FunDef) -> CfgPartialInfo {
     cfg
 }
 
-fn block_is_switch(def: &src::FunDef, block_id: src::BlockId::Id) -> bool {
+fn block_is_switch(def: &src::FunDecl, block_id: src::BlockId::Id) -> bool {
     let block = def.body.get(block_id).unwrap();
     block.terminator.is_switch()
 }
@@ -131,7 +131,7 @@ fn build_cfg_partial_info_edges(
     cfg: &mut CfgPartialInfo,
     ancestors: &im::HashSet<src::BlockId::Id>,
     explored: &mut im::HashSet<src::BlockId::Id>,
-    def: &src::FunDef,
+    def: &src::FunDecl,
     block_id: src::BlockId::Id,
 ) {
     // Check if we already explored the current node
@@ -1212,7 +1212,7 @@ enum GotoKind {
 fn translate_child_block(
     no_code_duplication: bool,
     cfg: &CfgInfo,
-    def: &src::FunDef,
+    def: &src::FunDecl,
     exits_info: &ExitInfo,
     parent_loops: Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
@@ -1264,7 +1264,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 fn translate_terminator(
     no_code_duplication: bool,
     cfg: &CfgInfo,
-    def: &src::FunDef,
+    def: &src::FunDecl,
     exits_info: &ExitInfo,
     parent_loops: Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
@@ -1502,7 +1502,7 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
 fn translate_block(
     no_code_duplication: bool,
     cfg: &CfgInfo,
-    def: &src::FunDef,
+    def: &src::FunDecl,
     exits_info: &ExitInfo,
     parent_loops: Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
@@ -1656,9 +1656,9 @@ fn translate_block(
 
 fn translate_function(
     no_code_duplication: bool,
-    src_defs: &src::FunDefs,
-    src_def_id: FunDefId::Id,
-) -> tgt::FunDef {
+    src_defs: &src::FunDecls,
+    src_def_id: FunDeclId::Id,
+) -> tgt::FunDecl {
     // Retrieve the function definition
     let src_def = src_defs.get(src_def_id).unwrap();
     trace!("# Reconstructing: {}\n", src_def.name);
@@ -1696,7 +1696,7 @@ fn translate_function(
     }
 
     // Return the translated definition
-    tgt::FunDef {
+    tgt::FunDecl {
         def_id: src_def.def_id,
         name: src_def.name.clone(),
         signature: src_def.signature.clone(),
@@ -1715,9 +1715,9 @@ fn translate_function(
 pub fn translate_functions(
     no_code_duplication: bool,
     type_defs: &TypeDecls,
-    src_defs: &src::FunDefs,
+    src_defs: &src::FunDecls,
 ) -> Defs {
-    let mut out_defs = FunDefId::Vector::new();
+    let mut out_defs = FunDeclId::Vector::new();
 
     // Tranlsate the bodies one at a time
     for src_def_id in src_defs.iter_indices() {

@@ -1,6 +1,6 @@
 use crate::cfim_ast::*;
 use crate::common::*;
-use crate::im_ast::FunDefId;
+use crate::im_ast::FunDeclId;
 use crate::rust_to_local_ids::*;
 use crate::types::*;
 use serde::{Serialize, Serializer};
@@ -36,7 +36,7 @@ struct ModSerializer<'a> {
     name: String,
     declarations: DeclarationsSerializer<'a>,
     types: &'a TypeDeclId::Vector<TypeDecl>,
-    functions: &'a FunDefId::Vector<FunDef>,
+    functions: &'a FunDeclId::Vector<FunDecl>,
 }
 
 /// Export the translated definitions to a JSON file.
@@ -44,7 +44,7 @@ pub fn export(
     name: String,
     ordered_decls: &OrderedDecls,
     type_defs: &TypeDecls,
-    fun_defs: &FunDefs,
+    fun_defs: &FunDecls,
     dest_dir: &Option<PathBuf>,
     sourcefile: &PathBuf,
 ) -> Result<()> {
