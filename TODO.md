@@ -1,2 +1,6 @@
+* Update the reordering of definitions which was not thought for crates with
+  several modules and external dependencies. We might want to group the
+  definitions into modules (or not, because of potentially mutually recursive
+  definitions).
 * better support for external dependencies
 * use `pub(crate)` more (instead of `pub`)
