@@ -562,18 +562,17 @@ fn translate_transparent_type<'tcx>(
     };
 
     // Retrieve the definition
-    let def_id = *trans_ctx.type_id_to_rid.get(&trans_id).unwrap();
     trace!("{:?}", def_id);
     let adt = tcx.adt_def(def_id);
 
     // Check and translate the generics (type and region parameters)
     let TypeGenericsInfo {
         substs,
-        region_params,
+        region_params: _,
         region_params_map,
-        type_params,
+        type_params: _,
         type_params_map,
-    } = translate_type_generics(tcx, def_id);
+    } = generics;
 
     // Explore the variants
     let mut var_id = ty::VariantId::Id::new(0); // Variant index
