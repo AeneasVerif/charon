@@ -55,7 +55,13 @@ fn transform_def(mut def: FunDecl) -> FunDecl {
     trace!("About to update: {}", def.name);
     // If the return type is unit: apply the transformation
     if def.signature.output.is_unit() {
-        def.body = transform_st(def.body);
+        def.body = match def.body {
+            Option::Some(body) => {
+                body.body = transform_st(body.body);
+                Option::Some(body)
+            }
+            Option::None => Option::None,
+        };
         def
     }
     // Otherwise, do nothing

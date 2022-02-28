@@ -64,6 +64,14 @@ pub struct FunSig {
     pub output: RTy,
 }
 
+/// A function body
+#[derive(Debug, Clone, Serialize)]
+pub struct GFunBody<T: std::fmt::Debug + Clone + Serialize> {
+    pub arg_count: usize,
+    pub locals: VarId::Vector<Var>,
+    pub body: T,
+}
+
 /// A function definition
 #[derive(Debug, Clone, Serialize)]
 pub struct GFunDecl<T: std::fmt::Debug + Clone + Serialize> {
@@ -72,11 +80,13 @@ pub struct GFunDecl<T: std::fmt::Debug + Clone + Serialize> {
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,
-    pub arg_count: usize,
-    pub locals: VarId::Vector<Var>,
-    pub body: T,
+    /// The function body, in case the function is not opaque.
+    /// Opaque functions are: external functions, or local functions tagged
+    /// as opaque.
+    pub body: Option<GFunBody<T>>,
 }
 
+pub type FunBody = GFunBody<BlockId::Vector<BlockData>>;
 pub type FunDecl = GFunDecl<BlockId::Vector<BlockData>>;
 pub type FunDecls = FunDeclId::Vector<FunDecl>;
 

@@ -39,8 +39,8 @@ pub type Defs = tgt::FunDecls;
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId::Id, ()>;
 
-fn get_block_targets(def: &src::FunDecl, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
-    let block = def.body.get(block_id).unwrap();
+fn get_block_targets(body: &src::FunBody, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
+    let block = body.body.get(block_id).unwrap();
 
     match &block.terminator {
         src::Terminator::Goto { target }
@@ -99,7 +99,7 @@ struct CfgInfo {
 
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
 /// compute some information like the loop entries and the switch blocks.
-fn build_cfg_partial_info(def: &src::FunDecl) -> CfgPartialInfo {
+fn build_cfg_partial_info(body: &src::FunBody) -> CfgPartialInfo {
     let mut cfg = CfgPartialInfo {
         cfg: Cfg::new(),
         cfg_no_be: Cfg::new(),
@@ -109,7 +109,7 @@ fn build_cfg_partial_info(def: &src::FunDecl) -> CfgPartialInfo {
     };
 
     // Add the nodes
-    for block_id in def.body.iter_indices() {
+    for block_id in body.body.iter_indices() {
         cfg.cfg.add_node(block_id);
         cfg.cfg_no_be.add_node(block_id);
     }
@@ -117,13 +117,19 @@ fn build_cfg_partial_info(def: &src::FunDecl) -> CfgPartialInfo {
     // Add the edges
     let ancestors = im::HashSet::new();
     let mut explored = im::HashSet::new();
-    build_cfg_partial_info_edges(&mut cfg, &ancestors, &mut explored, def, src::BlockId::ZERO);
+    build_cfg_partial_info_edges(
+        &mut cfg,
+        &ancestors,
+        &mut explored,
+        body,
+        src::BlockId::ZERO,
+    );
 
     cfg
 }
 
-fn block_is_switch(def: &src::FunDecl, block_id: src::BlockId::Id) -> bool {
-    let block = def.body.get(block_id).unwrap();
+fn block_is_switch(body: &src::FunBody, block_id: src::BlockId::Id) -> bool {
+    let block = body.body.get(block_id).unwrap();
     block.terminator.is_switch()
 }
 
@@ -131,7 +137,7 @@ fn build_cfg_partial_info_edges(
     cfg: &mut CfgPartialInfo,
     ancestors: &im::HashSet<src::BlockId::Id>,
     explored: &mut im::HashSet<src::BlockId::Id>,
-    def: &src::FunDecl,
+    body: &src::FunBody,
     block_id: src::BlockId::Id,
 ) {
     // Check if we already explored the current node
@@ -145,12 +151,12 @@ fn build_cfg_partial_info_edges(
     ancestors.insert(block_id);
 
     // Check if it is a switch
-    if block_is_switch(def, block_id) {
+    if block_is_switch(body, block_id) {
         cfg.switch_blocks.insert(block_id);
     }
 
     // Retrieve the block targets
-    let targets = get_block_targets(def, block_id);
+    let targets = get_block_targets(body, block_id);
 
     // Add edges for all the targets and explore them, if they are not predecessors
     for tgt in &targets {
@@ -166,7 +172,7 @@ fn build_cfg_partial_info_edges(
         } else {
             // Not a backward edge: insert the edge and explore
             cfg.cfg_no_be.add_edge(block_id, *tgt, ());
-            build_cfg_partial_info_edges(cfg, &ancestors, explored, def, *tgt);
+            build_cfg_partial_info_edges(cfg, &ancestors, explored, body, *tgt);
         }
     }
 }
@@ -1212,7 +1218,7 @@ enum GotoKind {
 fn translate_child_block(
     no_code_duplication: bool,
     cfg: &CfgInfo,
-    def: &src::FunDecl,
+    body: &src::FunBody,
     exits_info: &ExitInfo,
     parent_loops: Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
@@ -1230,7 +1236,7 @@ fn translate_child_block(
             translate_block(
                 no_code_duplication,
                 cfg,
-                def,
+                body,
                 exits_info,
                 parent_loops,
                 switch_exit_blocks,
@@ -1264,7 +1270,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 fn translate_terminator(
     no_code_duplication: bool,
     cfg: &CfgInfo,
-    def: &src::FunDecl,
+    body: &src::FunBody,
     exits_info: &ExitInfo,
     parent_loops: Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
@@ -1277,7 +1283,7 @@ fn translate_terminator(
         src::Terminator::Goto { target } => translate_child_block(
             no_code_duplication,
             cfg,
-            def,
+            body,
             exits_info,
             parent_loops,
             switch_exit_blocks,
@@ -1288,7 +1294,7 @@ fn translate_terminator(
             let opt_child = translate_child_block(
                 no_code_duplication,
                 cfg,
-                def,
+                body,
                 exits_info,
                 parent_loops,
                 switch_exit_blocks,
@@ -1309,7 +1315,7 @@ fn translate_terminator(
             let opt_child = translate_child_block(
                 no_code_duplication,
                 cfg,
-                def,
+                body,
                 exits_info,
                 parent_loops,
                 switch_exit_blocks,
@@ -1333,7 +1339,7 @@ fn translate_terminator(
             let opt_child = translate_child_block(
                 no_code_duplication,
                 cfg,
-                def,
+                body,
                 exits_info,
                 parent_loops,
                 switch_exit_blocks,
@@ -1354,7 +1360,7 @@ fn translate_terminator(
                     let then_exp = translate_child_block(
                         no_code_duplication,
                         cfg,
-                        def,
+                        body,
                         exits_info,
                         parent_loops.clone(),
                         switch_exit_blocks,
@@ -1365,7 +1371,7 @@ fn translate_terminator(
                     let else_exp = translate_child_block(
                         no_code_duplication,
                         cfg,
-                        def,
+                        body,
                         exits_info,
                         parent_loops.clone(),
                         switch_exit_blocks,
@@ -1411,7 +1417,7 @@ fn translate_terminator(
                             let exp = translate_child_block(
                                 no_code_duplication,
                                 cfg,
-                                def,
+                                body,
                                 exits_info,
                                 parent_loops.clone(),
                                 switch_exit_blocks,
@@ -1428,7 +1434,7 @@ fn translate_terminator(
                     let otherwise_exp = translate_child_block(
                         no_code_duplication,
                         cfg,
-                        def,
+                        body,
                         exits_info,
                         parent_loops.clone(),
                         switch_exit_blocks,
@@ -1502,7 +1508,7 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
 fn translate_block(
     no_code_duplication: bool,
     cfg: &CfgInfo,
-    def: &src::FunDecl,
+    body: &src::FunBody,
     exits_info: &ExitInfo,
     parent_loops: Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
@@ -1522,7 +1528,7 @@ fn translate_block(
     }
     explored.insert(block_id);
 
-    let block = def.body.get(block_id).unwrap();
+    let block = body.body.get(block_id).unwrap();
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
     let is_loop = cfg.loop_entries.contains(&block_id);
@@ -1567,7 +1573,7 @@ fn translate_block(
     let terminator = translate_terminator(
         no_code_duplication,
         cfg,
-        def,
+        body,
         exits_info,
         nparent_loops,
         &nswitch_exit_blocks,
@@ -1606,7 +1612,7 @@ fn translate_block(
             let next_exp = translate_block(
                 no_code_duplication,
                 cfg,
-                def,
+                body,
                 exits_info,
                 parent_loops,
                 switch_exit_blocks,
@@ -1634,7 +1640,7 @@ fn translate_block(
             let next_exp = translate_block(
                 no_code_duplication,
                 cfg,
-                def,
+                body,
                 exits_info,
                 parent_loops,
                 switch_exit_blocks,
@@ -1663,46 +1669,70 @@ fn translate_function(
     let src_def = src_defs.get(src_def_id).unwrap();
     trace!("# Reconstructing: {}\n", src_def.name);
 
-    // Explore the function body to create the control-flow graph without backward
-    // edges, and identify the loop entries (which are destinations of backward edges).
-    let cfg_info = build_cfg_partial_info(src_def);
-    let cfg_info = compute_cfg_info_from_partial(cfg_info);
+    // Translate the body if the function is transparent, ignore otherwise
+    // (if the function is opaque)
+    let body = match &src_def.body {
+        Option::Some(src_body) => {
+            // Explore the function body to create the control-flow graph without backward
+            // edges, and identify the loop entries (which are destinations of backward edges).
+            let cfg_info = build_cfg_partial_info(src_body);
+            let cfg_info = compute_cfg_info_from_partial(cfg_info);
 
-    // Find the exit block for all the loops and switches, if such an exit point
-    // exists.
-    let exits_info = compute_loop_switch_exits(&cfg_info);
+            // Find the exit block for all the loops and switches, if such an exit point
+            // exists.
+            let exits_info = compute_loop_switch_exits(&cfg_info);
 
-    // Debugging
-    trace!("exits map:\n{:?}", exits_info);
+            // Debugging
+            trace!("exits map:\n{:?}", exits_info);
 
-    // Translate the body by reconstructing the loops and the conditional branchings.
-    // Note that we shouldn't get `None`.
-    let mut explored = HashSet::new();
-    let body_exp = translate_block(
-        no_code_duplication,
-        &cfg_info,
-        &src_def,
-        &exits_info,
-        Vector::new(),
-        &im::HashSet::new(),
-        &mut explored,
-        src::BlockId::ZERO,
-    )
-    .unwrap();
+            // Translate the body by reconstructing the loops and the
+            // conditional branchings.
+            // Note that we shouldn't get `None`.
+            let mut explored = HashSet::new();
+            let body_exp = translate_block(
+                no_code_duplication,
+                &cfg_info,
+                src_body,
+                &exits_info,
+                Vector::new(),
+                &im::HashSet::new(),
+                &mut explored,
+                src::BlockId::ZERO,
+            )
+            .unwrap();
 
-    // Sanity: check that we translated all the blocks
-    for (bid, _) in src_def.body.iter_indexed_values() {
-        assert!(explored.contains(&bid));
-    }
+            // Sanity: check that we translated all the blocks
+            for (bid, _) in src_body.body.iter_indexed_values() {
+                assert!(explored.contains(&bid));
+            }
+
+            // Create the new body
+            let src::FunBody {
+                arg_count,
+                locals,
+                body: _,
+            } = src_body;
+
+            let body = tgt::FunBody {
+                arg_count: *arg_count,
+                locals: locals.clone(),
+                body: body_exp,
+            };
+
+            Option::Some(body)
+        }
+        Option::None => {
+            // Opaque definition
+            Option::None
+        }
+    };
 
     // Return the translated definition
     tgt::FunDecl {
         def_id: src_def.def_id,
         name: src_def.name.clone(),
         signature: src_def.signature.clone(),
-        arg_count: src_def.arg_count,
-        locals: src_def.locals.clone(),
-        body: body_exp,
+        body,
     }
 }
 

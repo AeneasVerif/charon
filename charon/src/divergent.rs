@@ -44,7 +44,13 @@ fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &cfim::
 }
 
 fn fun_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, def: &cfim::FunDecl) -> bool {
-    statement_diverges(divergent, &def.body)
+    match &def.body {
+        Option::Some(body) => statement_diverges(divergent, &body.body),
+        Option::None => {
+            // Opaque function: we are being a bit conservative here
+            true
+        }
+    }
 }
 
 /// Compute which functions can loop.
