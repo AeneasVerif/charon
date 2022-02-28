@@ -551,9 +551,9 @@ fn get_fun_from_operand<'tcx>(
 }
 
 fn register_non_local_function(
-    crate_info: &CrateInfo,
+    _crate_info: &CrateInfo,
     rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
+    _sess: &Session,
     tcx: TyCtxt,
     def_id: DefId,
     name: FunName,
@@ -587,7 +587,6 @@ fn register_local_function_body(
 ) -> Result<()> {
     // Retrieve the MIR code
     let body = crate::get_mir::get_mir_for_def_id(tcx, def_id);
-    let def_id = def_id.to_def_id();
 
     // Start by registering the types found in the local variable declarations.
     // Note that those local variables include the parameters as well as the
