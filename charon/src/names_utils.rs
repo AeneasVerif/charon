@@ -223,11 +223,6 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
     // Retrieve the parent's key
     let parent_def_key = tcx.def_key(parent_def_id);
 
-    // Not sure what to do with the disambiguator yet, so for now I check that
-    // it is always equal to 0, in case of local functions.
-    // Rk.: I think there is a unique disambiguator per `impl` block.
-    assert!(!def_id.is_local() || parent_def_key.disambiguated_data.disambiguator == 0);
-
     // Check the parent key
     match parent_def_key.disambiguated_data.data {
         rustc_hir::definitions::DefPathData::Impl => {
@@ -258,6 +253,9 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
             return FunName::Impl(type_name, impl_id, fun_name);
         }
         rustc_hir::definitions::DefPathData::TypeNs(_ns) => {
+            // I think this is only useful in the `Impl` case
+            assert!(parent_def_key.disambiguated_data.disambiguator == 0);
+
             // Not an `impl` block.
             // The function can be a trait function, like: `std::ops::Deref::deref`
             // Translating the parent path is straightforward: it should be a type path.
@@ -271,6 +269,9 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
             FunName::Regular(name)
         }
         rustc_hir::definitions::DefPathData::CrateRoot => {
+            // I think this is only useful in the `Impl` case
+            assert!(parent_def_key.disambiguated_data.disambiguator == 0);
+
             // Top-level function
             let crate_name = tcx.crate_name(def_id.krate).to_ident_string();
             let name = Name::from(vec![
