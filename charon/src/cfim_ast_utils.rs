@@ -215,8 +215,9 @@ impl FunDecl {
 
         // We cheat a bit: if there is a body, we take its locals, otherwise
         // we use []:
+        let empty = VarId::Vector::new();
         let locals = match &self.body {
-            None => &VarId::Vector::new(),
+            None => &empty,
             Some(body) => &body.locals,
         };
 
