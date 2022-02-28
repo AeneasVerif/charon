@@ -428,7 +428,8 @@ fn compute_regions_constraints_for_type_decl_group(
         TypeDeclarationGroup::Rec(ids) => HashSet::from_iter(ids.iter().map(|id| *id)),
     };
 
-    // Initialize the constraints map
+    // Initialize the constraints map - TODO: this will be different once we
+    // support constraints over the generics in the definitions
     for id in type_ids.iter() {
         let type_def = types.get_type_def(*id).unwrap();
         let region_vars_constraints = RegionVarsConstraintsMap::from_iter(
