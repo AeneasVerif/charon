@@ -489,7 +489,7 @@ fn compute_regions_constraints_for_type_decl_group(
             let variants_fields_tys =
                 type_def.get_instantiated_variants(&region_params, &type_params);
 
-            match type_def.get_instantiated_variants(&region_params, &type_params) {
+            match variants_fields_tys {
                 Option::None => {
                     // Opaque type: nothing to do
                     ()

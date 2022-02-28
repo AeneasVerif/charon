@@ -2216,7 +2216,7 @@ fn translate_transparent_function(
     // Retrieve the MIR body
     let body = crate::get_mir::get_mir_for_def_id(tcx, rid.expect_local());
 
-    // Translate the function signaure and initialize the body translation context
+    // Translate the function signature and initialize the body translation context
     // at the same time (the signature gives us the region and type parameters,
     // that we put in the translation context).
     trace!("Translating function signature");
@@ -2269,6 +2269,21 @@ fn translate_opaque_function(
     def_id: ast::FunDefId::Id,
 ) -> Result<ast::FunDef> {
     trace!("{}", def_id);
+
+    let rid = *ordered.fun_id_to_rid.get(&def_id).unwrap();
+
+    // Translate the function name
+    let _name = function_def_id_to_name(tcx, rid);
+
+    // Initialize the function translation context
+    let ft_ctx = FunTransContext {
+        ordered: ordered,
+        type_defs: type_defs,
+        defs: &fun_defs,
+    };
+
+    // Translate the function signature
+    let (_, _signature) = translate_function_signature(tcx, types_constraints, &ft_ctx, rid);
 
     unimplemented!();
 }
