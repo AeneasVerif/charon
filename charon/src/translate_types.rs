@@ -464,34 +464,32 @@ fn translate_non_local_defid(tcx: TyCtxt, def_id: DefId) -> ty::TypeId {
     }
 }
 
-/// Translate one local type definition which has not been flagged as opaque.
-fn translate_transparent_type<'ctx>(
-    tcx: TyCtxt,
-    decls: &OrderedDecls,
-    type_defs: &mut ty::TypeDecls,
-    trans_id: ty::TypeDeclId::Id,
-) -> Result<()> {
-    trace!("{}", trans_id);
+/// Helper type
+struct TypeGenericsInfo<'tcx> {
+    substs: rustc_middle::ty::subst::SubstsRef<'tcx>,
+    region_params: Vec<ty::RegionVar>,
+    region_params_map: im::OrdMap<rustc_middle::ty::RegionKind, ty::RegionVarId::Id>,
+    type_params: Vec<ty::TypeVar>,
+    type_params_map: im::OrdMap<u32, ty::RTy>,
+}
 
-    // Initialize the type translation context
-    let trans_ctx = TypeTransContext {
-        types: &type_defs,
-        type_rid_to_id: &decls.type_rid_to_id,
-        type_id_to_rid: &decls.type_id_to_rid,
-    };
-
-    // Retrieve the definition
-    let def_id = *trans_ctx.type_id_to_rid.get(&trans_id).unwrap();
-    trace!("{:?}", def_id);
-    let adt = tcx.adt_def(def_id);
-
+/// Auxiliary helper.
+///
+/// Translate the generics of a type definition.
+/// Returns the translation, together with an instantiated MIR substitution,
+/// which represents the generics on the MIR side (and is useful to translate
+/// the body of the type...).
+///
+/// Rk.: this seems simpler in [translate_functions_to_im]. TODO: compare and
+/// simplify/factorize?
+fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGenericsInfo<'tcx> {
     // Check the generics
     generics::check_type_generics(tcx, def_id);
 
     // Use a dummy substitution to instantiate the type parameters
-    let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, adt.did);
+    let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, def_id);
 
-    // Handle the region and type parameters.
+    // Handle the region and type parameters:
     // - we need to know how many parameters there are
     // - we need to create a map linking the rust parameters to our pure
     //   parameters
@@ -536,7 +534,46 @@ fn translate_transparent_type<'ctx>(
         }
     }
 
-    trace!("type parameters:\n{:?}", type_params_map);
+    TypeGenericsInfo {
+        substs,
+        region_params,
+        region_params_map,
+        type_params,
+        type_params_map,
+    }
+}
+
+/// Translate one local type definition which has not been flagged as opaque.
+fn translate_transparent_type<'tcx>(
+    tcx: TyCtxt<'tcx>,
+    decls: &OrderedDecls,
+    type_defs: &mut ty::TypeDecls,
+    trans_id: ty::TypeDeclId::Id,
+    def_id: DefId,
+    generics: &TypeGenericsInfo<'tcx>,
+) -> Result<ty::TypeDeclKind> {
+    trace!("{}", trans_id);
+
+    // Initialize the type translation context
+    let trans_ctx = TypeTransContext {
+        types: &type_defs,
+        type_rid_to_id: &decls.type_rid_to_id,
+        type_id_to_rid: &decls.type_id_to_rid,
+    };
+
+    // Retrieve the definition
+    let def_id = *trans_ctx.type_id_to_rid.get(&trans_id).unwrap();
+    trace!("{:?}", def_id);
+    let adt = tcx.adt_def(def_id);
+
+    // Check and translate the generics (type and region parameters)
+    let TypeGenericsInfo {
+        substs,
+        region_params,
+        region_params_map,
+        type_params,
+        type_params_map,
+    } = translate_type_generics(tcx, def_id);
 
     // Explore the variants
     let mut var_id = ty::VariantId::Id::new(0); // Variant index
@@ -602,9 +639,6 @@ fn translate_transparent_type<'ctx>(
     }
 
     // Register the type
-    let name = type_def_id_to_name(tcx, def_id);
-    let region_params = ty::RegionVarId::Vector::from(region_params);
-    let type_params = ty::TypeVarId::Vector::from(type_params);
     let type_def_kind: ty::TypeDeclKind = match adt.adt_kind() {
         rustc_middle::ty::AdtKind::Struct => ty::TypeDeclKind::Struct(variants[0].fields.clone()),
         rustc_middle::ty::AdtKind::Enum => {
@@ -616,39 +650,7 @@ fn translate_transparent_type<'ctx>(
         }
     };
 
-    let type_def = ty::TypeDecl {
-        def_id: trans_id,
-        name,
-        region_params: region_params,
-        type_params: type_params,
-        kind: type_def_kind,
-        // For now, initialize the regions hierarchy with a dummy value:
-        // we compute it later (after returning to [translate_types]
-        regions_hierarchy: regions_hierarchy::RegionGroups::new(),
-    };
-
-    trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
-    // Small sanity check - we have to translate the definitions in the proper
-    // order, otherwise we mess up with the vector of ids
-    assert!(type_defs.types.len() == trans_id.to_usize());
-    type_defs.types.push_back(type_def);
-    Ok(())
-}
-
-/// Translate one opaque type.
-///
-/// Opaque types are:
-/// - external types
-/// - local types flagged as opaque
-fn translate_opaque_type<'ctx>(
-    tcx: TyCtxt,
-    decls: &OrderedDecls,
-    type_defs: &mut ty::TypeDecls,
-    trans_id: ty::TypeDeclId::Id,
-) -> Result<()> {
-    trace!("{}", trans_id);
-
-    unimplemented!();
+    Ok(type_def_kind)
 }
 
 /// Translate type definition.
@@ -662,13 +664,52 @@ fn translate_type<'ctx>(
     type_defs: &mut ty::TypeDecls,
     trans_id: ty::TypeDeclId::Id,
 ) -> Result<()> {
-    // Check if the type is opaque or transparent, and delegate to the proper
-    // function
-    if decls.opaque_types.contains(&trans_id) {
-        translate_opaque_type(tcx, decls, type_defs, trans_id)
+    // Check and translate the generics
+    let def_id = *decls.type_id_to_rid.get(&trans_id).unwrap();
+    let generics = translate_type_generics(tcx, def_id);
+
+    // Check if the type is opaque or transparent, and delegate the translation
+    // of the "body" to the proper function
+    let kind = if decls.opaque_types.contains(&trans_id) {
+        // Opaque types are:
+        // - external types
+        // - local types flagged as opaque
+        ty::TypeDeclKind::Opaque
     } else {
-        translate_transparent_type(tcx, decls, type_defs, trans_id)
-    }
+        translate_transparent_type(tcx, decls, type_defs, trans_id, def_id, &generics)?
+    };
+
+    // Register the type
+    let TypeGenericsInfo {
+        substs: _,
+        region_params,
+        region_params_map: _,
+        type_params,
+        type_params_map: _,
+    } = generics;
+
+    let name = type_def_id_to_name(tcx, def_id);
+    let region_params = ty::RegionVarId::Vector::from(region_params);
+    let type_params = ty::TypeVarId::Vector::from(type_params);
+
+    let type_def = ty::TypeDecl {
+        def_id: trans_id,
+        name,
+        region_params: region_params,
+        type_params: type_params,
+        kind,
+        // For now, initialize the regions hierarchy with a dummy value:
+        // we compute it later (after returning to [translate_types]
+        regions_hierarchy: regions_hierarchy::RegionGroups::new(),
+    };
+
+    trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
+    // Small sanity check - we have to translate the definitions in the proper
+    // order, otherwise we mess up with the vector of ids
+    assert!(type_defs.types.len() == trans_id.to_usize());
+
+    type_defs.types.push_back(type_def);
+    Ok(())
 }
 
 /// Translate the types.
@@ -687,9 +728,7 @@ pub fn translate_types(
     let mut types_cover_regions = TypesConstraintsMap::new();
     let mut type_defs = ty::TypeDecls::new();
 
-    // Translate the external and opaque types
-
-    // Translate the local, non-opaque types
+    // Translate the types one by one
     for decl in &decls.decls {
         match decl {
             DeclarationGroup::Type(decl) => match decl {
