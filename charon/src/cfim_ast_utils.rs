@@ -190,7 +190,7 @@ impl Statement {
     }
 }
 
-impl FunDecl {
+/*impl FunDecl {
     pub fn fmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
@@ -215,7 +215,7 @@ impl FunDecl {
         // Format the rest
         self.gfmt_with_ctx("", &body_st, sig_ctx, body_ctx)
     }
-}
+}*/
 
 type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls>;
 
@@ -223,6 +223,12 @@ impl<'ctx> Formatter<FunDeclId::Id> for AstFormatter<'ctx> {
     fn format_object(&self, id: FunDeclId::Id) -> String {
         let f = self.fun_context.get(id).unwrap();
         f.name.to_string()
+    }
+}
+
+impl<'ctx> Formatter<&Statement> for AstFormatter<'ctx> {
+    fn format_object(&self, st: &Statement) -> String {
+        st.fmt_with_ctx(TAB_INCR, self)
     }
 }
 
@@ -234,10 +240,16 @@ impl FunDecl {
             sig: &self.signature,
         };
 
-        let eval_ctx =
-            AstFormatter::new(ty_ctx, fun_ctx, &self.signature.type_params, &self.locals);
+        // We cheat a bit: if there is a body, we take its locals, otherwise
+        // we use []:
+        let locals = match &self.body {
+            None => &VarId::Vector::new(),
+            Some(body) => &body.locals,
+        };
+
+        let eval_ctx = AstFormatter::new(ty_ctx, fun_ctx, &self.signature.type_params, locals);
 
         // Use the contexts for printing
-        self.fmt_with_ctx(TAB_INCR, &fun_sig_ctx, &eval_ctx)
+        self.gfmt_with_ctx(TAB_INCR, &fun_sig_ctx, &eval_ctx)
     }
 }
