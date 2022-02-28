@@ -2213,33 +2213,48 @@ fn translate_transparent_function(
     let (mut bt_ctx, signature) =
         translate_function_signature(tcx, types_constraints, &ft_ctx, rid);
 
-    // Initialize the local variables
-    trace!("Translating the body locals");
-    translate_body_locals(tcx, &mut bt_ctx, body)?;
+    // Check if the type is opaque or transparent
+    let is_opaque = ordered.opaque_funs.contains(&def_id);
+    let body = if is_opaque {
+        Option::None
+    } else {
+        // Initialize the local variables
+        trace!("Translating the body locals");
+        translate_body_locals(tcx, &mut bt_ctx, body)?;
 
-    // Build the scope tree
-    let _scope_tree = build_scope_tree(body);
+        // Build the scope tree
+        let _scope_tree = build_scope_tree(body);
 
-    // Translate the function body
-    trace!("Translating the function body");
-    translate_transparent_function_body(tcx, &mut bt_ctx, body)?;
+        // Translate the function body
+        trace!("Translating the function body");
+        translate_transparent_function_body(tcx, &mut bt_ctx, body)?;
+
+        // We need to convert the blocks map to an index vector
+        let mut blocks = ast::BlockId::Vector::new();
+        for (id, block) in bt_ctx.blocks {
+            use crate::id_vector::ToUsize;
+            // Sanity check to make sure we don't mess with the indices
+            assert!(id.to_usize() == blocks.len());
+            blocks.push_back(block);
+        }
+
+        // Create the body
+        let body = ast::FunBody {
+            arg_count: body.arg_count,
+            locals: bt_ctx.vars,
+            body: blocks,
+        };
+
+        Option::Some(body)
+    };
 
     // Return the new function
-    // We need to convert the blocks map to an index vector
-    let mut blocks = ast::BlockId::Vector::new();
-    for (id, block) in bt_ctx.blocks {
-        use crate::id_vector::ToUsize;
-        // Sanity check to make sure we don't mess with the indices
-        assert!(id.to_usize() == blocks.len());
-        blocks.push_back(block);
-    }
+
     let fun_def = ast::FunDecl {
         def_id,
         name,
         signature,
-        arg_count: body.arg_count,
-        locals: bt_ctx.vars,
-        body: blocks,
+        body,
     };
 
     Ok(fun_def)
