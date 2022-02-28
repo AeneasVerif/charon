@@ -106,11 +106,14 @@ impl TypeDecl {
     }
 
     /// Instantiate the fields of every variant of a type definition.
+    ///
+    /// Return an option: `Some` if we have access to the type definition,
+    /// `None` if the type is opaque.
     pub fn get_instantiated_variants(
         &self,
         inst_regions: &Vector<Region<RegionVarId::Id>>,
         inst_types: &Vector<RTy>,
-    ) -> VariantId::Vector<FieldId::Vector<RTy>> {
+    ) -> Option<VariantId::Vector<FieldId::Vector<RTy>>> {
         // Introduce the substitutions
         let r_subst = make_region_subst(
             self.region_params.iter().map(|x| x.index),
@@ -120,24 +123,22 @@ impl TypeDecl {
 
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
-                VariantId::Vector::from(vec![FieldId::Vector::from_iter(
+                Option::Some(VariantId::Vector::from(vec![FieldId::Vector::from_iter(
                     fields
                         .iter()
                         .map(|f| f.ty.substitute_regions_types(&r_subst, &ty_subst)),
-                )])
+                )]))
             }
             TypeDeclKind::Enum(variants) => {
-                VariantId::Vector::from_iter(variants.iter().map(|v| {
+                Option::Some(VariantId::Vector::from_iter(variants.iter().map(|v| {
                     FieldId::Vector::from_iter(
                         v.fields
                             .iter()
                             .map(|f| f.ty.substitute_regions_types(&r_subst, &ty_subst)),
                     )
-                }))
+                })))
             }
-            TypeDeclKind::Opaque => {
-                unreachable!("Opaque type");
-            }
+            TypeDeclKind::Opaque => Option::None,
         }
     }
 

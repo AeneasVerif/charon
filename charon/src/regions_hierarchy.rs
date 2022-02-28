@@ -467,6 +467,11 @@ fn compute_regions_constraints_for_type_decl_group(
         for id in type_ids.iter() {
             let type_def = types.get_type_def(*id).unwrap();
 
+            // If the type is transparent, we explore the ADT variants.
+            // If the type is opaque, there is nothing to do.
+            // TODO: will be slightly different once we support constraints
+            // over the generics in the type declarations
+
             // Instantiate the type definition variants
             let region_params = im::Vector::from_iter(
                 type_def
@@ -483,47 +488,62 @@ fn compute_regions_constraints_for_type_decl_group(
             let variants_fields_tys =
                 type_def.get_instantiated_variants(&region_params, &type_params);
 
-            // Retrive the accumulated constraints for this type def
-            let mut acc_constraints = acc_constraints_map.get_mut(id).unwrap();
-
-            // Clone the type vars constraints map - we can't accumulate in the
-            // original map, so we have to clone
-            // TODO: this is not very efficient - though the sets should be super small
-            let mut updt_type_vars_constraints = Some(constraints_map.get(id).unwrap().clone());
-
-            // Explore the field types of all the variants
-            for field_tys in variants_fields_tys.iter() {
-                for ty in field_tys.iter() {
-                    compute_full_regions_constraints_for_ty(
-                        &mut updated,
-                        constraints_map,
-                        &mut acc_constraints,
-                        &mut updt_type_vars_constraints,
-                        im::HashSet::new(),
-                        ty,
-                    );
+            match type_def.get_instantiated_variants(&region_params, &type_params) {
+                Option::None => {
+                    // Opaque type: nothing to do
+                    ()
                 }
-            }
+                Option::Some(variants_fields_tys) => {
+                    // Transparent type
 
-            // Update the type vars constraints map
-            let updt_type_vars_constraints = updt_type_vars_constraints.unwrap();
-            let type_def_constraints = constraints_map.get_mut(id).unwrap();
-            let region_vars_constraints = &mut type_def_constraints.region_vars_constraints;
-            let type_vars_constraints = &mut type_def_constraints.type_vars_constraints;
+                    // Retreive the accumulated constraints for this type def
+                    let mut acc_constraints = acc_constraints_map.get_mut(id).unwrap();
 
-            // The constraints over region parameters
-            for (r_id, updt_set) in updt_type_vars_constraints.region_vars_constraints.iter() {
-                let set = region_vars_constraints.get_mut(r_id).unwrap();
-                for r in updt_set.iter() {
-                    set.insert(*r);
-                }
-            }
+                    // Clone the type vars constraints map - we can't accumulate in the
+                    // original map, so we have to clone
+                    // TODO: this is not efficient - but the sets should be super small
+                    let mut updt_type_vars_constraints =
+                        Some(constraints_map.get(id).unwrap().clone());
 
-            // The constraints over type parameters
-            for (var_id, updt_set) in updt_type_vars_constraints.type_vars_constraints.iter() {
-                let set = type_vars_constraints.get_mut(var_id).unwrap();
-                for r in updt_set.iter() {
-                    set.insert(*r);
+                    // Explore the field types of all the variants
+                    for field_tys in variants_fields_tys.iter() {
+                        for ty in field_tys.iter() {
+                            compute_full_regions_constraints_for_ty(
+                                &mut updated,
+                                constraints_map,
+                                &mut acc_constraints,
+                                &mut updt_type_vars_constraints,
+                                im::HashSet::new(),
+                                ty,
+                            );
+                        }
+                    }
+
+                    // Update the type vars constraints map
+                    let updt_type_vars_constraints = updt_type_vars_constraints.unwrap();
+                    let type_def_constraints = constraints_map.get_mut(id).unwrap();
+                    let region_vars_constraints = &mut type_def_constraints.region_vars_constraints;
+                    let type_vars_constraints = &mut type_def_constraints.type_vars_constraints;
+
+                    // The constraints over region parameters
+                    for (r_id, updt_set) in
+                        updt_type_vars_constraints.region_vars_constraints.iter()
+                    {
+                        let set = region_vars_constraints.get_mut(r_id).unwrap();
+                        for r in updt_set.iter() {
+                            set.insert(*r);
+                        }
+                    }
+
+                    // The constraints over type parameters
+                    for (var_id, updt_set) in
+                        updt_type_vars_constraints.type_vars_constraints.iter()
+                    {
+                        let set = type_vars_constraints.get_mut(var_id).unwrap();
+                        for r in updt_set.iter() {
+                            set.insert(*r);
+                        }
+                    }
                 }
             }
         }
