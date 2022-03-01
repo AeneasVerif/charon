@@ -301,25 +301,6 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
             // The parent is an `impl` block
             let impl_name = impl_def_id_to_name(tcx, parent_def_id);
 
-            /*            // This is a bit indirect, but in order to get a usable parent
-            // path, we need to retrieve the type of the impl block (it actually
-            // gives the type the impl block was defined for). This type should
-            // be an ADT, because it was user defined. We can then retrieve
-            // its def id, and convert it to a path (which is simpler, because
-            // types can't be defined in impl blocks).
-            let parent_type = tcx.type_of(parent_def_id);
-
-            // Retrieve the parent type name
-            let type_name = match parent_type.kind() {
-                rustc_middle::ty::TyKind::Adt(adt_def, _) => {
-                    // We can compute the type's name
-                    type_def_id_to_name(tcx, adt_def.did)
-                }
-                _ => {
-                    unreachable!();
-                }
-            };*/
-
             // Retrieve the function name
             let impl_id = ImplId::Id::new(def_key.disambiguated_data.disambiguator as usize);
             let fun_name = defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap();
