@@ -25,3 +25,8 @@ pub enum FunName {
     /// is called a "disambiguator").
     Impl(TypeName, ImplId::Id, String),
 }
+
+/// TODO: this is not very satisfying...
+/// We need to play a bit more with the identifiers to understand all the cases.
+/// Maybe rename FunName to ItemName?
+pub type HirItemName = FunName;

@@ -1,11 +1,16 @@
 use crate::assumed;
 use crate::common::*;
 use crate::generics;
-use crate::names::{function_def_id_to_name, type_def_id_to_name, FunName, TypeName};
+use crate::names::{
+    function_def_id_to_name, hir_item_to_name, module_def_id_to_name, type_def_id_to_name, FunName,
+    TypeName,
+};
 use crate::translate_functions_to_im;
 use hashlink::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
-use rustc_hir::{def_id::DefId, def_id::LocalDefId, Defaultness, ImplItem, ImplItemKind, Item};
+use rustc_hir::{
+    def_id::DefId, def_id::LocalDefId, Defaultness, ImplItem, ImplItemKind, Item, ItemKind,
+};
 use rustc_middle::ty::{AdtDef, Ty, TyCtxt, TyKind};
 use rustc_session::Session;
 use rustc_span::Span;
@@ -13,7 +18,7 @@ use std::collections::HashSet;
 
 fn is_fn_decl(item: &Item) -> bool {
     match item.kind {
-        rustc_hir::ItemKind::Fn(_, _, _) => true,
+        ItemKind::Fn(_, _, _) => true,
         _ => false,
     }
 }
@@ -126,14 +131,14 @@ fn register_hir_type(
     trace!();
 
     match &item.kind {
-        rustc_hir::ItemKind::TyAlias(_, _) => {
+        ItemKind::TyAlias(_, _) => {
             // It seems type alias are not converted to MIR, and are inlined,
             // so we don't need to do anything. Note that we actually filter
             // type aliases before calling this function.
             trace!("enum");
             unreachable!();
         }
-        rustc_hir::ItemKind::Struct(_, _) | rustc_hir::ItemKind::Enum(_, _) => {
+        ItemKind::Struct(_, _) | ItemKind::Enum(_, _) => {
             trace!("adt");
 
             // Retrieve the MIR adt from the def id and register it, retrieve
@@ -199,8 +204,8 @@ fn register_local_adt(
         // precise spans: for instance, to indicate which variant is problematic
         // in case of an enum.
         let hir_variants: &[rustc_hir::Variant] = match &item.kind {
-            rustc_hir::ItemKind::Enum(enum_def, _) => enum_def.variants,
-            rustc_hir::ItemKind::Struct(_, _) => {
+            ItemKind::Enum(enum_def, _) => enum_def.variants,
+            ItemKind::Struct(_, _) => {
                 // Nothing to return
                 &[]
             }
@@ -833,7 +838,7 @@ fn register_local_function_body(
                             rustc_hir::Node::Item(f_item) => {
                                 trace!("Item");
                                 assert!(is_fn_decl(f_item));
-                                register_hir_item(crate_info, rdecls, sess, tcx, f_item)?;
+                                register_hir_item(crate_info, rdecls, sess, tcx, false, f_item)?;
                             }
                             rustc_hir::Node::ImplItem(impl_item) => {
                                 trace!("Impl item");
@@ -955,6 +960,7 @@ fn register_hir_item(
     rdecls: &mut RegisteredDeclarations,
     sess: &Session,
     tcx: TyCtxt,
+    top_item: bool,
     item: &Item,
 ) -> Result<()> {
     trace!("{:?}", item);
@@ -968,24 +974,45 @@ fn register_hir_item(
         return Ok(());
     }
 
+    // The annoying thing is that when iterating over the items in a crate, we
+    // iterate over *all* the items, which is annoying with regards to the
+    // *opaque* modules: we see all the definitions which are in there, and
+    // not only those which are transitively reachable from the root.
+    // Because of this, we need the following check: if the item is a "top"
+    // item (not an item transitively reachable from an item which is not
+    // opaque) and inside an opaque module (or sub-module), we ignore it.
+    if top_item {
+        match hir_item_to_name(tcx, item) {
+            Option::None => {
+                // This kind of item is to be ignored
+                return Ok(());
+            }
+            Option::Some(item_name) => {
+                if item_name.is_in_modules(&crate_info.crate_name, &crate_info.opaque) {
+                    return Ok(());
+                }
+            }
+        }
+    }
+
     // Case disjunction on the kind. Note that here we retrieve the HIR items,
     // but then work on the MIR.
     match &item.kind {
-        rustc_hir::ItemKind::TyAlias(_, _) => {
+        ItemKind::TyAlias(_, _) => {
             // We ignore the type aliases - it seems they are inlined
             return Ok(());
         }
-        rustc_hir::ItemKind::Enum(_, _) | rustc_hir::ItemKind::Struct(_, _) => {
+        ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
             rdecls.decls.insert(def_id);
             return register_hir_type(crate_info, rdecls, sess, tcx, item, def_id);
         }
-        rustc_hir::ItemKind::OpaqueTy(_) => unimplemented!(),
-        rustc_hir::ItemKind::Union(_, _) => unimplemented!(),
-        rustc_hir::ItemKind::Fn(_, _, _) => {
+        ItemKind::OpaqueTy(_) => unimplemented!(),
+        ItemKind::Union(_, _) => unimplemented!(),
+        ItemKind::Fn(_, _, _) => {
             rdecls.decls.insert(def_id);
             return register_local_function(crate_info, rdecls, sess, tcx, item.def_id);
         }
-        rustc_hir::ItemKind::Impl(impl_block) => {
+        ItemKind::Impl(impl_block) => {
             trace!("impl");
             // Sanity checks
             translate_functions_to_im::check_impl_item(impl_block);
@@ -1001,27 +1028,40 @@ fn register_hir_item(
             }
             return Ok(());
         }
-        rustc_hir::ItemKind::Use(_, _) => {
+        ItemKind::Use(_, _) => {
             // Ignore
             trace!("use");
             return Ok(());
         }
-        rustc_hir::ItemKind::ExternCrate(_) => {
+        ItemKind::ExternCrate(_) => {
             // Ignore
             trace!("extern crate");
             return Ok(());
         }
-        rustc_hir::ItemKind::Mod(module) => {
+        ItemKind::Mod(module) => {
             println!("module");
 
-            // Explore the module
-            let hir_map = tcx.hir();
-            for item_id in module.item_ids {
-                // Lookup and register the item
-                let item = hir_map.item(*item_id);
-                register_hir_item(crate_info, rdecls, sess, tcx, item)?;
+            // Explore the module, only if it was not marked as "opaque"
+            // TODO: we may want to accumulate the set of modules we found,
+            // to check that all the opaque modules given as arguments actually
+            // exist
+            trace!("{:?}", def_id);
+            let module_name = module_def_id_to_name(tcx, def_id);
+            let opaque = module_name.is_in_modules(&crate_info.crate_name, &crate_info.opaque);
+            if opaque {
+                // Ignore
+                trace!("Ignoring module [{}] because marked as opaque", module_name);
+                return Ok(());
+            } else {
+                trace!("Diving into module [{}]", module_name);
+                let hir_map = tcx.hir();
+                for item_id in module.item_ids {
+                    // Lookup and register the item
+                    let item = hir_map.item(*item_id);
+                    register_hir_item(crate_info, rdecls, sess, tcx, false, item)?;
+                }
+                return Ok(());
             }
-            return Ok(());
         }
         _ => {
             unimplemented!("{:?}", item.kind);
@@ -1082,7 +1122,7 @@ pub fn register_crate(
     //   of the form "mod MODULE_NAME")
     // - the other files in the crate are Module items in the HIR graph
     for item in tcx.hir().items() {
-        register_hir_item(crate_info, &mut registered_decls, sess, tcx, item)?;
+        register_hir_item(crate_info, &mut registered_decls, sess, tcx, true, item)?;
     }
 
     return Ok(registered_decls);

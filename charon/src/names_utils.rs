@@ -1,9 +1,13 @@
 //! Defines some utilities for the variables
+//!
+//! For now, we have one function per object kind (type, trait, function,
+//! module): many of them could be factorized (will do).
 #![allow(dead_code)]
 
 use crate::names::*;
 use rustc_hir::def_id::DefId;
 use rustc_hir::definitions::DefPathData;
+use rustc_hir::{Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use serde::{Serialize, Serializer};
 use std::collections::HashSet;
@@ -148,7 +152,7 @@ pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
         // equal to 0.
         assert!(path.disambiguator == 0);
         match &path.data {
-            rustc_hir::definitions::DefPathData::TypeNs(symbol) => {
+            DefPathData::TypeNs(symbol) => {
                 name.push(symbol.to_ident_string());
             }
             _ => {
@@ -163,10 +167,42 @@ pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
     TypeName::from(name)
 }
 
+/// Compute a name from a module [`DefId`](DefId).
+///
+/// This only works for def ids coming from modules.
+pub fn module_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ModuleName {
+    trace!("{:?}", def_id);
+
+    let def_path = tcx.def_path(def_id);
+    let crate_name = tcx.crate_name(def_id.krate).to_string();
+
+    trace!("def path: {:?}", def_path);
+    let mut name: Vec<String> = vec![crate_name];
+    for path in def_path.data.iter() {
+        // The path disambiguator may be <> 0, but I'm not sure in which cases
+        // nor how to handle that case. For sanity, we thus check that it is
+        // equal to 0.
+        assert!(path.disambiguator == 0);
+        match &path.data {
+            DefPathData::TypeNs(symbol) => {
+                name.push(symbol.to_ident_string());
+            }
+            _ => {
+                trace!("unexpected DefPathData: {:?}", &path.data);
+                unreachable!();
+            }
+        }
+    }
+
+    trace!("resulting name: {:?}", &name);
+
+    ModuleName::from(name)
+}
+
 fn defpathdata_to_value_ns(data: DefPathData) -> Option<String> {
     match data {
         // The def path data should be in the value namespace
-        rustc_hir::definitions::DefPathData::ValueNs(symbol) => Some(symbol.to_ident_string()),
+        DefPathData::ValueNs(symbol) => Some(symbol.to_ident_string()),
         _ => {
             trace!("Unexpected DefPathData: {:?}", data);
             None
@@ -177,7 +213,7 @@ fn defpathdata_to_value_ns(data: DefPathData) -> Option<String> {
 fn defpathdata_to_type_ns(data: DefPathData) -> Option<String> {
     match data {
         // The def path data should be in the type namespace
-        rustc_hir::definitions::DefPathData::TypeNs(symbol) => Some(symbol.to_ident_string()),
+        DefPathData::TypeNs(symbol) => Some(symbol.to_ident_string()),
         _ => {
             trace!("Unexpected DefPathData: {:?}", data);
             None
@@ -185,7 +221,43 @@ fn defpathdata_to_type_ns(data: DefPathData) -> Option<String> {
     }
 }
 
-/// Retrieve the function name from a `DefId`.
+/// Retrieve a function name from a `DefId`.
+pub fn impl_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
+    // See the comments in [function_def_id_to_name]
+    let def_key = tcx.def_key(def_id);
+
+    let data = def_key.disambiguated_data.data;
+    match data {
+        DefPathData::Impl => {
+            // The parent is an `impl` block: use the parent path.
+            // This is a bit indirect, but in order to get a usable parent
+            // path, we need to retrieve the type of the impl block (it actually
+            // gives the type the impl block was defined for). This type should
+            // be an ADT, because it was user defined. We can then retrieve
+            // its def id, and convert it to a path (which is simpler, because
+            // types can't be defined in impl blocks).
+            let ty = tcx.type_of(def_id);
+
+            // Retrieve the parent type name
+            let type_name = match ty.kind() {
+                rustc_middle::ty::TyKind::Adt(adt_def, _) => {
+                    // We can compute the type's name
+                    type_def_id_to_name(tcx, adt_def.did)
+                }
+                _ => {
+                    unreachable!();
+                }
+            };
+
+            type_name
+        }
+        _ => {
+            unreachable!("{:?}", data);
+        }
+    }
+}
+
+/// Retrieve a function name from a `DefId`.
 pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
     trace!("{:?}", def_id);
 
@@ -225,9 +297,11 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
 
     // Check the parent key
     match parent_def_key.disambiguated_data.data {
-        rustc_hir::definitions::DefPathData::Impl => {
-            // The parent is an `impl` block: use the parent path.
-            // This is a bit indirect, but in order to get a usable parent
+        DefPathData::Impl => {
+            // The parent is an `impl` block
+            let impl_name = impl_def_id_to_name(tcx, parent_def_id);
+
+            /*            // This is a bit indirect, but in order to get a usable parent
             // path, we need to retrieve the type of the impl block (it actually
             // gives the type the impl block was defined for). This type should
             // be an ADT, because it was user defined. We can then retrieve
@@ -244,15 +318,15 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
                 _ => {
                     unreachable!();
                 }
-            };
+            };*/
 
             // Retrieve the function name
             let impl_id = ImplId::Id::new(def_key.disambiguated_data.disambiguator as usize);
             let fun_name = defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap();
 
-            return FunName::Impl(type_name, impl_id, fun_name);
+            return FunName::Impl(impl_name, impl_id, fun_name);
         }
-        rustc_hir::definitions::DefPathData::TypeNs(_ns) => {
+        DefPathData::TypeNs(_ns) => {
             // I think this is only useful in the `Impl` case
             assert!(parent_def_key.disambiguated_data.disambiguator == 0);
 
@@ -268,7 +342,7 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
             let name = Name::from(name);
             FunName::Regular(name)
         }
-        rustc_hir::definitions::DefPathData::CrateRoot => {
+        DefPathData::CrateRoot => {
             // I think this is only useful in the `Impl` case
             assert!(parent_def_key.disambiguated_data.disambiguator == 0);
 
@@ -291,7 +365,7 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
     }
 }
 
-/// Retrieve the trait name from a `DefId`.
+/// Retrieve a trait name from a `DefId`.
 /// TODO: very similar to [function_def_id_to_name] (see the comments).
 /// We may want to factorize at some point.
 pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
@@ -316,7 +390,7 @@ pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
 
     // Check the parent key
     match parent_def_key.disambiguated_data.data {
-        rustc_hir::definitions::DefPathData::TypeNs(_ns) => {
+        DefPathData::TypeNs(_ns) => {
             // Not an `impl` block.
             // The function can be a trait function, like: `std::ops::Deref::deref`
             // Translating the parent path is straightforward: it should be a type path.
@@ -336,6 +410,49 @@ pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
                 parent_def_key.disambiguated_data.data
             );
             unreachable!();
+        }
+    }
+}
+
+/// Returns an optional name for an HIR item.
+///
+/// If the option is `None`, it means the item is to be ignored (example: it
+/// is a `use` item).
+///
+/// Rk.: this function is only used by [register], and written in this context.
+pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
+    let def_id = item.def_id.to_def_id();
+
+    // TODO: calling different functions to retrieve the name is not very
+    // satisfying below
+    match &item.kind {
+        ItemKind::OpaqueTy(_) => unimplemented!(),
+        ItemKind::Union(_, _) => unimplemented!(),
+        ItemKind::ExternCrate(_) => {
+            // TODO: we ignore this - investigate when extern crates appear,
+            // and why
+            Option::None
+        }
+        ItemKind::Use(_, _) => Option::None,
+        ItemKind::TyAlias(_, _) => {
+            // We ignore the type aliases - it seems they are inlined
+            Option::None
+        }
+        ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
+            let name = type_def_id_to_name(tcx, def_id);
+            Option::Some(FunName::Regular(name))
+        }
+        ItemKind::Fn(_, _, _) => Option::Some(function_def_id_to_name(tcx, def_id)),
+        ItemKind::Impl(_) => {
+            let name = impl_def_id_to_name(tcx, def_id);
+            Option::Some(FunName::Regular(name))
+        }
+        ItemKind::Mod(_) => {
+            let name = module_def_id_to_name(tcx, def_id);
+            Option::Some(FunName::Regular(name))
+        }
+        _ => {
+            unimplemented!("{:?}", item.kind);
         }
     }
 }
