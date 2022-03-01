@@ -75,7 +75,7 @@ impl Serialize for Name {
     }
 }
 
-fn module_ident_equals_ref_name(module: &Name, ident: &String, ref_name: &[&str]) -> bool {
+fn module_ident_equals_ref_name(module: &Name, ident: &Name, ref_name: &[&str]) -> bool {
     if module.len() + 1 != ref_name.len() {
         return false;
     }
@@ -86,15 +86,19 @@ fn module_ident_equals_ref_name(module: &Name, ident: &String, ref_name: &[&str]
         }
     }
     let i = module.len();
-    return ident == ref_name[i];
+    if ident.len() > 0 {
+        return ident.name[0] == ref_name[i];
+    } else {
+        return false;
+    }
 }
 
-impl FunName {
+impl ItemName {
     /// Compare the name to a constant array
     pub fn equals_ref_name(&self, ref_name: &[&str]) -> bool {
         match self {
-            FunName::Regular(name) => name.equals_ref_name(ref_name),
-            FunName::Impl(type_name, _impl_id, ident) => {
+            ItemName::Regular(name) => name.equals_ref_name(ref_name),
+            ItemName::Impl(type_name, _, ident) => {
                 // TODO: we ignore the impl id, which is not good
                 // At some point, we will have to make some of the primitive
                 // functions (the ones for the vectors, more specifically)
@@ -107,33 +111,34 @@ impl FunName {
     /// Return `true` if the name identifies an item inside the module: `krate::module`
     pub fn is_in_module(&self, krate: &String, module: &String) -> bool {
         match self {
-            FunName::Regular(name) => name.is_in_module(krate, module),
-            FunName::Impl(type_name, _impl_id, _ident) => type_name.is_in_module(krate, module),
+            ItemName::Regular(name) => name.is_in_module(krate, module),
+            ItemName::Impl(type_name, _, _) => type_name.is_in_module(krate, module),
         }
     }
 
     /// Similar to [is_in_module]
     pub fn is_in_modules(&self, krate: &String, modules: &HashSet<String>) -> bool {
         match self {
-            FunName::Regular(name) => name.is_in_modules(krate, modules),
-            FunName::Impl(type_name, _impl_id, _ident) => type_name.is_in_modules(krate, modules),
+            ItemName::Regular(name) => name.is_in_modules(krate, modules),
+            ItemName::Impl(type_name, _, _) => type_name.is_in_modules(krate, modules),
         }
     }
 }
 
-impl std::fmt::Display for FunName {
+impl std::fmt::Display for ItemName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
-            FunName::Regular(name) => {
+            ItemName::Regular(name) => {
                 write!(f, "{}", name)
             }
-            FunName::Impl(type_name, impl_id, ident) => {
+            ItemName::Impl(type_name, impl_id, ident) => {
                 write!(f, "{}{{{}}}::{}", type_name, impl_id, ident)
             }
         }
     }
 }
 
+/*
 /// Compute a name from a type [`DefId`](DefId).
 ///
 /// This only works for def ids coming from types! For values, it is a bit
@@ -165,8 +170,49 @@ pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
     trace!("resulting name: {:?}", &name);
 
     TypeName::from(name)
-}
+}*/
 
+/*
+/// Helper function.
+///
+/// Compute a name from a def id [`DefId`](DefId) only composed of identifiers
+/// coming from the type and value namespaces.
+///
+/// This only works for def ids coming from types! For values, it is a bit
+/// more complex.
+fn type_or_value_ns_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
+    trace!("{:?}", def_id);
+
+    let def_path = tcx.def_path(def_id);
+    let crate_name = tcx.crate_name(def_id.krate).to_string();
+
+    trace!("def path: {:?}", def_path);
+    let mut name: Vec<String> = vec![crate_name];
+    for path in def_path.data.iter() {
+        // The path disambiguator may be <> 0, but I'm not sure in which cases
+        // nor how to handle that case. For sanity, we thus check that it is
+        // equal to 0.
+        assert!(path.disambiguator == 0);
+        match &path.data {
+            DefPathData::TypeNs(symbol) => {
+                name.push(symbol.to_ident_string());
+            }
+            DefPathData::ValueNs(symbol) => {
+                name.push(symbol.to_ident_string());
+            }
+            _ => {
+                trace!("unexpected DefPathData: {:?}", &path.data);
+                unreachable!();
+            }
+        }
+    }
+
+    trace!("resulting name: {:?}", &name);
+
+    TypeName::from(name)
+}*/
+
+/*
 /// Compute a name from a module [`DefId`](DefId).
 ///
 /// This only works for def ids coming from modules.
@@ -197,8 +243,9 @@ pub fn module_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ModuleName {
     trace!("resulting name: {:?}", &name);
 
     ModuleName::from(name)
-}
+}*/
 
+/// TODO: remove
 fn defpathdata_to_value_ns(data: DefPathData) -> Option<String> {
     match data {
         // The def path data should be in the value namespace
@@ -210,6 +257,7 @@ fn defpathdata_to_value_ns(data: DefPathData) -> Option<String> {
     }
 }
 
+/// TODO: remove
 fn defpathdata_to_type_ns(data: DefPathData) -> Option<String> {
     match data {
         // The def path data should be in the type namespace
@@ -221,8 +269,10 @@ fn defpathdata_to_type_ns(data: DefPathData) -> Option<String> {
     }
 }
 
+/*
 /// Retrieve a function name from a `DefId`.
-pub fn impl_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
+/// TODO: remove
+fn impl_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
     // See the comments in [function_def_id_to_name]
     let def_key = tcx.def_key(def_id);
 
@@ -256,9 +306,164 @@ pub fn impl_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
         }
     }
 }
+*/
 
-/// Retrieve a function name from a `DefId`.
+/// Retrieve an item name from a `DefId`.
+pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
+    trace!("{:?}", def_id);
+
+    // We have to be a bit careful when retrieving names from def ids. For instance,
+    // due to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
+    // different names depending on the def id on which it is called, even though
+    // those def ids might actually identify the same definition.
+    // For instance: `std::boxed::Box` and `alloc::boxed::Box` are actually
+    // the same (the first one is a reexport).
+    // This is why we implement a custom function to retrieve the original name
+    // (though this makes us loose aliases - we may want to investigate this
+    // issue in the future).
+
+    // We lookup the path associated to an id, and convert it to a name.
+    // Paths very precisely identify where an item is. There are important
+    // subcases, like the items in an `Impl` block:
+    // ```
+    // impl<T> List<T> {
+    //   fn new() ...
+    // }
+    // ```
+    //
+    // The path for the `new` function above will look like something like
+    // this: `TypeNs("List") :: Impl :: ValueNs("new")`
+    // (where "Ns" stands for "namespace").
+    // As there may be several "impl" blocks for one type, each impl block is
+    // identified by a unique number (rustc calls this a "disambiguator").
+    // On our side, we consider "impl" and "impl trait" blocks only for the
+    // disambiguator.
+    //
+    // Finally, there can't be nested `impl` (or "impl trait") blocks, and we
+    // can't have modules inside of impls, etc.. We thus generate names of the
+    // following shape:
+    // - regular names (list of strings)
+    // - names for items coming from impl blocks:
+    //   (type name (list of strings), disambiguator (index), item name (list of strings))
+
+    //   For instance, for the `new` function above:
+    //   `(["List"], 0, ["new"])`
+
+    // We build the name as follows:
+    // - we push identifiers to the [name] vector below
+    // - if we find an `Impl` block, we move [name] to [type_name], and set
+    //   the [disambiguator] to `Some`, then continue pushing to [name]
+    // - of course, we check that we never set [disambiguator] twice
+    let crate_name = tcx.crate_name(def_id.krate).to_string();
+    let mut disambiguator: Option<usize> = None;
+    let mut type_name: Vec<String> = Vec::new();
+    let mut name: Vec<String> = vec![crate_name];
+
+    // Rk.: below we try to be as tight as possible with regards to sanity
+    // checks, to make sure we understand what happens with def paths, and
+    // fail whenever we get something which is even slightly outside what
+    // we expect.
+    let def_path = tcx.def_path(def_id);
+    let mut i = 0;
+    for path in def_path.data.iter() {
+        match &path.data {
+            DefPathData::TypeNs(symbol) => {
+                assert!(path.disambiguator == 0); // Sanity check
+                name.push(symbol.to_ident_string());
+            }
+            DefPathData::ValueNs(symbol) => {
+                if path.disambiguator != 0 {
+                    // I don't like that
+
+                    // I think this happens with names introduced by macros
+                    // (though not sure). For instance:
+                    // `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
+                    let s = symbol.to_ident_string();
+                    assert!(s == "_");
+                    name.push(format!("{}#{}", s, path.disambiguator).to_string());
+                } else {
+                    name.push(symbol.to_ident_string());
+                }
+            }
+            DefPathData::CrateRoot => {
+                assert!(path.disambiguator == 0); // Sanity check
+                assert!(i == 0); // Sanity check: check [i] is 0
+            }
+            DefPathData::Impl => {
+                // We need the disambiguator
+                if !disambiguator.is_none() {
+                    panic!("{:?} {:?} {:?}", def_id, type_name, name);
+                }
+                assert!(disambiguator.is_none());
+                disambiguator = Some(path.disambiguator as usize);
+                type_name = name;
+                name = Vec::new();
+            }
+            DefPathData::ImplTrait => {
+                unimplemented!();
+            }
+            DefPathData::MacroNs(symbol) => {
+                assert!(path.disambiguator == 0); // Sanity check
+
+                // There may be namespace collisions between, say, function
+                // names and macros (not sure). However, this isn't much
+                // of an issue here, because for now we don't expose macros
+                // in the AST, and only use macro names in [register], for
+                // instance to filter opaque modules.
+                name.push(symbol.to_ident_string());
+            }
+            _ => {
+                error!("Unexpected DefPathData: {:?}", &path.data);
+                unreachable!("Unexpected DefPathData: {:?}", &path.data);
+            }
+        }
+        i += 1;
+    }
+
+    // Check what we've got and return the proper name
+    match disambiguator {
+        None => {
+            // Not an item in an "impl" block
+            ItemName::Regular(Name::from(name))
+        }
+        Some(disambiguator) => {
+            let type_name = Name::from(type_name);
+            let disambiguator = ImplId::Id::new(disambiguator);
+            let name = Name::from(name);
+            ItemName::Impl(type_name, disambiguator, name)
+        }
+    }
+}
+
+fn def_id_to_regular_name(tcx: TyCtxt, def_id: DefId) -> Name {
+    match item_def_id_to_name(tcx, def_id) {
+        ItemName::Regular(name) => name,
+        ItemName::Impl(_, _, _) => {
+            unreachable!();
+        }
+    }
+}
+
+pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
+    def_id_to_regular_name(tcx, def_id)
+}
+
+pub fn module_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ModuleName {
+    def_id_to_regular_name(tcx, def_id)
+}
+
 pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
+    item_def_id_to_name(tcx, def_id)
+}
+
+pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
+    item_def_id_to_name(tcx, def_id)
+}
+
+/*
+/// Retrieve a function name from a `DefId`.
+/// TODO: deprecated. Remove.
+fn function_def_id_to_name_deprecated(tcx: TyCtxt, def_id: DefId) -> FunName {
     trace!("{:?}", def_id);
 
     // We have to be a bit careful when retrieving the name. For instance, due
@@ -296,7 +501,8 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
     let parent_def_key = tcx.def_key(parent_def_id);
 
     // Check the parent key
-    match parent_def_key.disambiguated_data.data {
+    let parent_data = parent_def_key.disambiguated_data.data;
+    match parent_data {
         DefPathData::Impl => {
             // The parent is an `impl` block
             let impl_name = impl_def_id_to_name(tcx, parent_def_id);
@@ -305,7 +511,14 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
             let impl_id = ImplId::Id::new(def_key.disambiguated_data.disambiguator as usize);
             let fun_name = defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap();
 
-            return FunName::Impl(impl_name, impl_id, fun_name);
+            // TODO: remove
+            let mut all = Vec::new();
+            for path in tcx.def_path(def_id).data.iter() {
+                all.push(format!("{:?}", path.data).to_string());
+            }
+            panic!("path: {:?}", all);
+
+            return ItemName::Impl(impl_name, impl_id, fun_name);
         }
         DefPathData::TypeNs(_ns) => {
             // I think this is only useful in the `Impl` case
@@ -321,7 +534,7 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
             assert!(def_key.disambiguated_data.disambiguator == 0);
             name.push(defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap());
             let name = Name::from(name);
-            FunName::Regular(name)
+            ItemName::Regular(name)
         }
         DefPathData::CrateRoot => {
             // I think this is only useful in the `Impl` case
@@ -333,19 +546,23 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
                 crate_name,
                 defpathdata_to_value_ns(def_key.disambiguated_data.data).unwrap(),
             ]);
-            return FunName::Regular(name);
+            return ItemName::Regular(name);
         }
         _ => {
-            trace!(
+            error!(
                 "DefId {:?}: Unexpected DefPathData: {:?}",
-                def_id,
-                parent_def_key.disambiguated_data.data
+                def_id, parent_data
             );
-            unreachable!();
+            unreachable!(
+                "DefId {:?}: Unexpected DefPathData: {:?}",
+                def_id, parent_data
+            );
         }
     }
 }
+*/
 
+/*
 /// Retrieve a trait name from a `DefId`.
 /// TODO: very similar to [function_def_id_to_name] (see the comments).
 /// We may want to factorize at some point.
@@ -393,7 +610,7 @@ pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
             unreachable!();
         }
     }
-}
+}*/
 
 /// Returns an optional name for an HIR item.
 ///
@@ -410,8 +627,8 @@ pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
         ItemKind::OpaqueTy(_) => unimplemented!(),
         ItemKind::Union(_, _) => unimplemented!(),
         ItemKind::ExternCrate(_) => {
-            // TODO: we ignore this - investigate when extern crates appear,
-            // and why
+            // We ignore this -
+            // TODO: investigate when extern crates appear, and why
             Option::None
         }
         ItemKind::Use(_, _) => Option::None,
@@ -419,19 +636,13 @@ pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
             // We ignore the type aliases - it seems they are inlined
             Option::None
         }
-        ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
-            let name = type_def_id_to_name(tcx, def_id);
-            Option::Some(FunName::Regular(name))
-        }
-        ItemKind::Fn(_, _, _) => Option::Some(function_def_id_to_name(tcx, def_id)),
-        ItemKind::Impl(_) => {
-            let name = impl_def_id_to_name(tcx, def_id);
-            Option::Some(FunName::Regular(name))
-        }
-        ItemKind::Mod(_) => {
-            let name = module_def_id_to_name(tcx, def_id);
-            Option::Some(FunName::Regular(name))
-        }
+        ItemKind::Enum(_, _)
+        | ItemKind::Struct(_, _)
+        | ItemKind::Fn(_, _, _)
+        | ItemKind::Impl(_)
+        | ItemKind::Mod(_)
+        | ItemKind::Const(_, _)
+        | ItemKind::Macro(_) => Option::Some(item_def_id_to_name(tcx, def_id)),
         _ => {
             unimplemented!("{:?}", item.kind);
         }

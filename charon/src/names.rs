@@ -7,26 +7,55 @@ use serde::Serialize;
 
 generate_index_type!(ImplId);
 
+generate_index_type!(PathElemId);
+
+/// See the comments for [Name]
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum PathElem {
+    Ident(String),
+    Disambiguator(PathElemId::Id),
+}
+
+/// An item name/path
+///
+/// A name really is a list of strings. However, we sometimes need to
+/// introduce unique indices to disambiguate. This mostly happens because
+/// of "impl" blocks:
+///   ```
+///   impl<T> List<T> {
+///     ...
+///   }
+///   ```
+///
+/// A type in Rust can have several "impl" blocks, and  those blocks can
+/// contain items with similar names. For this reason, we need to disambiguate
+/// them with unique indices. Rustc calls those "disambiguators". In rustc, this
+/// gives names like this:
+/// - `betree_main::betree::NodeIdCounter{impl#0}::new`
+/// - note that impl blocks can be nested, and macros sometimes generate
+///   weird names (which require disambiguation):
+///   `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
+///
+/// Finally, the paths used by rustc are a lot more precise and explicit than
+/// those we expose in LLBC: for instance, every identifier belongs to a specific
+/// namespace (value namespace, type namespace, etc.), and is coupled with a
+/// disambiguator.
+///
+/// On our side, we want to say high-level and simple: we use string identifiers
+/// as much as possible, insert disambiguators only when necessary (whenever
+/// we find an "impl" block) and check that the disambiguator is useless in the
+/// other situations (i.e., the disambiguator is always equal to 0).
+///
+/// Moreover, the items are uniquely disambiguated by their (integer) ids
+/// (`TypeDeclId::Id`, etc.), and when extracting the code we have to deal with
+/// name clashes anyway. Still, we might want to be more precise in the future.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Name {
-    pub name: Vec<String>,
+    pub name: Vec<PathElem>,
 }
 
 pub type ModuleName = Name;
 pub type TypeName = Name;
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub enum FunName {
-    /// "Regular" function name
-    Regular(Name),
-    /// The function comes from an "impl" block.
-    /// As we may have several "impl" blocks for one type, we need to use
-    /// a block id to disambiguate the functions (in rustc, this identifier
-    /// is called a "disambiguator").
-    Impl(TypeName, ImplId::Id, String),
-}
-
-/// TODO: this is not very satisfying...
-/// We need to play a bit more with the identifiers to understand all the cases.
-/// Maybe rename FunName to ItemName?
-pub type HirItemName = FunName;
+pub type ItemName = Name;
+pub type FunName = Name;
+pub type HirItemName = Name;
