@@ -12,46 +12,89 @@ use rustc_middle::ty::TyCtxt;
 use serde::{Serialize, Serializer};
 use std::collections::HashSet;
 
+impl PathElem {
+    // TODO: we could make that an eq trait?
+    // On the other hand I'm not fond of overloading...
+    fn equals_ident(&self, id: &str) -> bool {
+        match self {
+            PathElem::Ident(s) => {
+                return s == id;
+            }
+            PathElem::Disambiguator(_) => {
+                return false;
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for PathElem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            PathElem::Ident(s) => {
+                write!(f, "{}", s)
+            }
+            PathElem::Disambiguator(d) => {
+                write!(f, "{}", d)
+            }
+        }
+    }
+}
+
 impl Name {
     pub fn from(name: Vec<String>) -> Name {
-        Name { name: name }
-    }
-
-    pub fn to_vec(self) -> Vec<String> {
-        self.name
+        Name {
+            name: name.into_iter().map(|s| PathElem::Ident(s)).collect(),
+        }
     }
 
     pub fn len(&self) -> usize {
         self.name.len()
     }
 
-    /// Compare the name to a constant array
-    pub fn equals_ref_name(&self, ref_name: &[&str]) -> bool {
-        if self.name.len() != ref_name.len() {
+    /// Compare the name to a constant array.
+    /// This ignores disambiguators.
+    ///
+    /// [equal]: if `true`, check that the name is equal to the ref. If `false`:
+    /// only check if the ref is a prefix of the name.
+    pub fn compare_with_ref_name(&self, equal: bool, ref_name: &[&str]) -> bool {
+        let name: Vec<&PathElem> = self.name.iter().filter(|e| e.is_ident()).collect();
+
+        if name.len() < ref_name.len() || (equal && name.len() != ref_name.len()) {
             return false;
         }
 
-        for i in 0..self.name.len() {
-            if self.name[i] != ref_name[i] {
+        for i in 0..ref_name.len() {
+            if !name[i].equals_ident(&ref_name[i]) {
                 return false;
             }
         }
         return true;
     }
 
+    /// Compare the name to a constant array.
+    /// This ignores disambiguators.
+    pub fn equals_ref_name(&self, ref_name: &[&str]) -> bool {
+        self.compare_with_ref_name(true, ref_name)
+    }
+
+    /// Compare the name to a constant array.
+    /// This ignores disambiguators.
+    pub fn prefix_is_same(&self, ref_name: &[&str]) -> bool {
+        self.compare_with_ref_name(false, ref_name)
+    }
+
     /// Return `true` if the name identifies an item inside the module: `krate::module`
     pub fn is_in_module(&self, krate: &String, module: &String) -> bool {
-        if self.len() >= 2 {
-            &self.name[0] == krate && &self.name[1] == module
-        } else {
-            false
-        }
+        self.prefix_is_same(&[krate, module])
     }
 
     /// Similar to [is_in_module]
     pub fn is_in_modules(&self, krate: &String, modules: &HashSet<String>) -> bool {
         if self.len() >= 2 {
-            &self.name[0] == krate && modules.contains(&self.name[1])
+            match (&self.name[0], &self.name[1]) {
+                (PathElem::Ident(s0), PathElem::Ident(s1)) => s0 == krate && modules.contains(s1),
+                _ => false,
+            }
         } else {
             false
         }
@@ -60,7 +103,8 @@ impl Name {
 
 impl std::fmt::Display for Name {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.name.join("::"))
+        let v: Vec<String> = self.name.iter().map(|s| s.to_string()).collect();
+        write!(f, "{}", v.join("::"))
     }
 }
 
@@ -75,7 +119,7 @@ impl Serialize for Name {
     }
 }
 
-fn module_ident_equals_ref_name(module: &Name, ident: &Name, ref_name: &[&str]) -> bool {
+/*fn module_ident_equals_ref_name(module: &Name, ident: &Name, ref_name: &[&str]) -> bool {
     if module.len() + 1 != ref_name.len() {
         return false;
     }
@@ -91,52 +135,7 @@ fn module_ident_equals_ref_name(module: &Name, ident: &Name, ref_name: &[&str]) 
     } else {
         return false;
     }
-}
-
-impl ItemName {
-    /// Compare the name to a constant array
-    pub fn equals_ref_name(&self, ref_name: &[&str]) -> bool {
-        match self {
-            ItemName::Regular(name) => name.equals_ref_name(ref_name),
-            ItemName::Impl(type_name, _, ident) => {
-                // TODO: we ignore the impl id, which is not good
-                // At some point, we will have to make some of the primitive
-                // functions (the ones for the vectors, more specifically)
-                // non-primitive, and always return false in this branch.
-                module_ident_equals_ref_name(type_name, ident, ref_name)
-            }
-        }
-    }
-
-    /// Return `true` if the name identifies an item inside the module: `krate::module`
-    pub fn is_in_module(&self, krate: &String, module: &String) -> bool {
-        match self {
-            ItemName::Regular(name) => name.is_in_module(krate, module),
-            ItemName::Impl(type_name, _, _) => type_name.is_in_module(krate, module),
-        }
-    }
-
-    /// Similar to [is_in_module]
-    pub fn is_in_modules(&self, krate: &String, modules: &HashSet<String>) -> bool {
-        match self {
-            ItemName::Regular(name) => name.is_in_modules(krate, modules),
-            ItemName::Impl(type_name, _, _) => type_name.is_in_modules(krate, modules),
-        }
-    }
-}
-
-impl std::fmt::Display for ItemName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            ItemName::Regular(name) => {
-                write!(f, "{}", name)
-            }
-            ItemName::Impl(type_name, impl_id, ident) => {
-                write!(f, "{}{{{}}}::{}", type_name, impl_id, ident)
-            }
-        }
-    }
-}
+}*/
 
 /*
 /// Compute a name from a type [`DefId`](DefId).
@@ -245,6 +244,7 @@ pub fn module_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ModuleName {
     ModuleName::from(name)
 }*/
 
+/*
 /// TODO: remove
 fn defpathdata_to_value_ns(data: DefPathData) -> Option<String> {
     match data {
@@ -267,7 +267,7 @@ fn defpathdata_to_type_ns(data: DefPathData) -> Option<String> {
             None
         }
     }
-}
+}*/
 
 /*
 /// Retrieve a function name from a `DefId`.
@@ -355,9 +355,7 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     //   the [disambiguator] to `Some`, then continue pushing to [name]
     // - of course, we check that we never set [disambiguator] twice
     let crate_name = tcx.crate_name(def_id.krate).to_string();
-    let mut disambiguator: Option<usize> = None;
-    let mut type_name: Vec<String> = Vec::new();
-    let mut name: Vec<String> = vec![crate_name];
+    let mut name: Vec<PathElem> = vec![PathElem::Ident(crate_name)];
 
     // Rk.: below we try to be as tight as possible with regards to sanity
     // checks, to make sure we understand what happens with def paths, and
@@ -369,37 +367,38 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
         match &path.data {
             DefPathData::TypeNs(symbol) => {
                 assert!(path.disambiguator == 0); // Sanity check
-                name.push(symbol.to_ident_string());
+                name.push(PathElem::Ident(symbol.to_ident_string()));
             }
             DefPathData::ValueNs(symbol) => {
                 if path.disambiguator != 0 {
                     // I don't like that
 
-                    // I think this happens with names introduced by macros
+                    // I think this only happens with names introduced by macros
                     // (though not sure). For instance:
                     // `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
                     let s = symbol.to_ident_string();
                     assert!(s == "_");
-                    name.push(format!("{}#{}", s, path.disambiguator).to_string());
+                    name.push(PathElem::Ident(s));
+                    name.push(PathElem::Disambiguator(Disambiguator::Id::new(
+                        path.disambiguator as usize,
+                    )));
                 } else {
-                    name.push(symbol.to_ident_string());
+                    name.push(PathElem::Ident(symbol.to_ident_string()));
                 }
             }
             DefPathData::CrateRoot => {
                 assert!(path.disambiguator == 0); // Sanity check
-                assert!(i == 0); // Sanity check: check [i] is 0
+                assert!(i == 0); // Sanity check
+                                 // The name has been initialized with the crate name
             }
             DefPathData::Impl => {
                 // We need the disambiguator
-                if !disambiguator.is_none() {
-                    panic!("{:?} {:?} {:?}", def_id, type_name, name);
-                }
-                assert!(disambiguator.is_none());
-                disambiguator = Some(path.disambiguator as usize);
-                type_name = name;
-                name = Vec::new();
+                name.push(PathElem::Disambiguator(Disambiguator::Id::new(
+                    path.disambiguator as usize,
+                )));
             }
             DefPathData::ImplTrait => {
+                // TODO: this should work the same as for `Impl`
                 unimplemented!();
             }
             DefPathData::MacroNs(symbol) => {
@@ -410,7 +409,7 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                 // of an issue here, because for now we don't expose macros
                 // in the AST, and only use macro names in [register], for
                 // instance to filter opaque modules.
-                name.push(symbol.to_ident_string());
+                name.push(PathElem::Ident(symbol.to_ident_string()));
             }
             _ => {
                 error!("Unexpected DefPathData: {:?}", &path.data);
@@ -420,36 +419,16 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
         i += 1;
     }
 
-    // Check what we've got and return the proper name
-    match disambiguator {
-        None => {
-            // Not an item in an "impl" block
-            ItemName::Regular(Name::from(name))
-        }
-        Some(disambiguator) => {
-            let type_name = Name::from(type_name);
-            let disambiguator = ImplId::Id::new(disambiguator);
-            let name = Name::from(name);
-            ItemName::Impl(type_name, disambiguator, name)
-        }
-    }
-}
-
-fn def_id_to_regular_name(tcx: TyCtxt, def_id: DefId) -> Name {
-    match item_def_id_to_name(tcx, def_id) {
-        ItemName::Regular(name) => name,
-        ItemName::Impl(_, _, _) => {
-            unreachable!();
-        }
-    }
+    // Return
+    Name { name }
 }
 
 pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
-    def_id_to_regular_name(tcx, def_id)
+    item_def_id_to_name(tcx, def_id)
 }
 
 pub fn module_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ModuleName {
-    def_id_to_regular_name(tcx, def_id)
+    item_def_id_to_name(tcx, def_id)
 }
 
 pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {

@@ -1,5 +1,9 @@
 //! This file contains information about the assumed functions/types/traits definitions
 //! TODO: rename to "primitive"
+//!
+//! **IMPORTANT**:
+//! When checking whether names are equal to one of the reference names below,
+//! we ignore the disambiguators (see [names] and [names_utils]).
 #![allow(dead_code)]
 
 use crate::im_ast;

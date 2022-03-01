@@ -3,17 +3,16 @@
 
 pub use crate::names_utils::*;
 use macros::generate_index_type;
+use macros::EnumIsA;
 use serde::Serialize;
 
-generate_index_type!(ImplId);
-
-generate_index_type!(PathElemId);
+generate_index_type!(Disambiguator);
 
 /// See the comments for [Name]
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum PathElem {
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, EnumIsA)]
+pub enum PathElem {
     Ident(String),
-    Disambiguator(PathElemId::Id),
+    Disambiguator(Disambiguator::Id),
 }
 
 /// An item name/path
@@ -49,6 +48,8 @@ enum PathElem {
 /// Moreover, the items are uniquely disambiguated by their (integer) ids
 /// (`TypeDeclId::Id`, etc.), and when extracting the code we have to deal with
 /// name clashes anyway. Still, we might want to be more precise in the future.
+///
+/// Also note that the first path element in the name is always the crate name.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Name {
     pub name: Vec<PathElem>,

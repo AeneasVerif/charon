@@ -1039,7 +1039,7 @@ fn register_hir_item(
             return Ok(());
         }
         ItemKind::Mod(module) => {
-            println!("module");
+            trace!("module");
 
             // Explore the module, only if it was not marked as "opaque"
             // TODO: we may want to accumulate the set of modules we found,
