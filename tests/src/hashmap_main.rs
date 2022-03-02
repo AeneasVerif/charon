@@ -5,7 +5,7 @@ use crate::hashmap::*;
 use crate::hashmap_utils::*;
 
 #[allow(dead_code)]
-fn persistent_insert(key: Key, value: u64) {
+fn insert_on_disk(key: Key, value: u64) {
     // Deserialize
     let mut hm = deserialize_from_disk();
     // Update
