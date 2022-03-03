@@ -16,8 +16,8 @@ build-tests:
 build-tests-nll:
 	cd tests-nll && make
 
-.PHONY: tests
-tests: build build-tests build-tests-nll \
+.PHONY: test
+test: build build-tests build-tests-nll \
 	test-nested_borrows test-no_nested_borrows test-loops test-hashmap \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
