@@ -7,11 +7,11 @@ use crate::hashmap_utils::*;
 #[allow(dead_code)]
 fn insert_on_disk(key: Key, value: u64) {
     // Deserialize
-    let mut hm = deserialize_from_disk();
+    let mut hm = deserialize();
     // Update
     hm.insert(key, value);
     // Serialize
-    serialize_to_disk(hm);
+    serialize(hm);
 }
 
 #[allow(dead_code)]
