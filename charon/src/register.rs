@@ -739,6 +739,7 @@ fn register_local_function_body(
                 trace!("terminator:Call:fid {:?}", fid);
 
                 let name = function_def_id_to_name(tcx, fid);
+                trace!("called function: name: {:?}", name);
 
                 // We may need to filter the types and arguments, if the type
                 // is considered primitive
@@ -748,7 +749,7 @@ fn register_local_function_body(
                 } else {
                     match assumed::function_to_info(&name) {
                         Option::Some(used) => {
-                            // The type is primitive
+                            // The function is primitive
                             (
                                 Option::Some(used.used_type_params),
                                 Option::Some(used.used_args),
@@ -756,7 +757,7 @@ fn register_local_function_body(
                             )
                         }
                         Option::None => {
-                            // The type is non-primitive (i.e., external)
+                            // The function is non-primitive (i.e., external)
                             (Option::None, Option::None, false)
                         }
                     }
@@ -1124,6 +1125,5 @@ pub fn register_crate(
     for item in tcx.hir().items() {
         register_hir_item(crate_info, &mut registered_decls, sess, tcx, true, item)?;
     }
-
     return Ok(registered_decls);
 }

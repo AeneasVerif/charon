@@ -142,46 +142,50 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     // }
     // ```
     //
-    // The path for the `new` function above will look like something like
-    // this: `TypeNs("List") :: Impl :: ValueNs("new")`
-    // (where "Ns" stands for "namespace").
-    // As there may be several "impl" blocks for one type, each impl block is
-    // identified by a unique number (rustc calls this a "disambiguator").
-    // On our side, we consider "impl" and "impl trait" blocks only for the
-    // disambiguator.
+    // One issue here is that "List" *doesn't appear* in the path, which would
+    // look like the following:
     //
-    // Finally, there can't be nested `impl` (or "impl trait") blocks, and we
-    // can't have modules inside of impls, etc.. We thus generate names of the
-    // following shape:
-    // - regular names (list of strings)
-    // - names for items coming from impl blocks:
-    //   (type name (list of strings), disambiguator (index), item name (list of strings))
-
-    //   For instance, for the `new` function above:
-    //   `(["List"], 0, ["new"])`
-
-    // We build the name as follows:
-    // - we push identifiers to the [name] vector below
-    // - if we find an `Impl` block, we move [name] to [type_name], and set
-    //   the [disambiguator] to `Some`, then continue pushing to [name]
-    // - of course, we check that we never set [disambiguator] twice
-    let crate_name = tcx.crate_name(def_id.krate).to_string();
-    let mut name: Vec<PathElem> = vec![PathElem::Ident(crate_name)];
+    //   `TypeNS("Crate") :: Impl :: ValueNs("new")`
+    //                       ^^^
+    //           This is where "List" should be
+    //
+    // What we do is the following:
+    // - we convert the path to a name starting *with the end*
+    // - whenever we find an "impl" path element, we can actually lookup its
+    //   type (yes, it makes sense for rustc...), which allows us to retrieve
+    //   the type identifier, and continue from there.
+    //   Of course, it might cause a bit of trouble if an implementation for
+    //   a type is defined in a different module from the one where the type
+    //   is defined: we need to do more testing. A different possibility would
+    //   be to just grab the last path element of the type identifier (say
+    //   the identifier is "list::List", we only use "List" and insert it
+    //   in the name).
+    //
+    // Besides, as there may be several "impl" blocks for one type,
+    // As there may be several "impl" blocks for one type, each impl block is
+    // identified by a unique number (rustc calls this a "disambiguator"),
+    // which we grab.
+    let mut found_crate_name = false;
+    let mut id = def_id;
+    let mut name: Vec<PathElem> = Vec::new();
 
     // Rk.: below we try to be as tight as possible with regards to sanity
     // checks, to make sure we understand what happens with def paths, and
     // fail whenever we get something which is even slightly outside what
     // we expect.
-    let def_path = tcx.def_path(def_id);
-    let mut i = 0;
-    for path in def_path.data.iter() {
-        match &path.data {
+    loop {
+        // Retrieve the id key
+        let id_key = tcx.def_key(id);
+
+        // Match over the key data
+        let data = id_key.disambiguated_data;
+        match data.data {
             DefPathData::TypeNs(symbol) => {
-                assert!(path.disambiguator == 0); // Sanity check
+                assert!(data.disambiguator == 0); // Sanity check
                 name.push(PathElem::Ident(symbol.to_ident_string()));
             }
             DefPathData::ValueNs(symbol) => {
-                if path.disambiguator != 0 {
+                if data.disambiguator != 0 {
                     // I don't like that
 
                     // I think this only happens with names introduced by macros
@@ -191,29 +195,51 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                     assert!(s == "_");
                     name.push(PathElem::Ident(s));
                     name.push(PathElem::Disambiguator(Disambiguator::Id::new(
-                        path.disambiguator as usize,
+                        data.disambiguator as usize,
                     )));
                 } else {
                     name.push(PathElem::Ident(symbol.to_ident_string()));
                 }
             }
             DefPathData::CrateRoot => {
-                assert!(path.disambiguator == 0); // Sanity check
-                assert!(i == 0); // Sanity check
-                                 // The name has been initialized with the crate name
+                // Sanity check
+                assert!(data.disambiguator == 0);
+
+                // This should be the end of the path
+                assert!(id_key.parent.is_none());
+                found_crate_name = true;
+
+                let crate_name = tcx.crate_name(id.krate).to_string();
+                name.push(PathElem::Ident(crate_name));
             }
             DefPathData::Impl => {
-                // We need the disambiguator
+                // Push the disambiguator
                 name.push(PathElem::Disambiguator(Disambiguator::Id::new(
-                    path.disambiguator as usize,
+                    data.disambiguator as usize,
                 )));
+
+                // "impl" blocks are defined for types.
+                // We retrieve the type in which the impl block belongs,
+                // and continue from this type's id.
+                let ty = tcx.type_of(id);
+
+                // Match over the type - it should be an ADT
+                match ty.kind() {
+                    rustc_middle::ty::TyKind::Adt(adt_def, _) => id = adt_def.did,
+                    _ => {
+                        unreachable!();
+                    }
+                };
+
+                // Continue so as not to pop the type identifier
+                continue;
             }
             DefPathData::ImplTrait => {
                 // TODO: this should work the same as for `Impl`
                 unimplemented!();
             }
             DefPathData::MacroNs(symbol) => {
-                assert!(path.disambiguator == 0); // Sanity check
+                assert!(data.disambiguator == 0); // Sanity check
 
                 // There may be namespace collisions between, say, function
                 // names and macros (not sure). However, this isn't much
@@ -223,14 +249,30 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                 name.push(PathElem::Ident(symbol.to_ident_string()));
             }
             _ => {
-                error!("Unexpected DefPathData: {:?}", &path.data);
-                unreachable!("Unexpected DefPathData: {:?}", &path.data);
+                error!("Unexpected DefPathData: {:?}", data);
+                unreachable!("Unexpected DefPathData: {:?}", data);
             }
         }
-        i += 1;
+
+        // Update the id to be the parent id
+        match id_key.parent {
+            Some(parent_index) => id.index = parent_index,
+            None => {
+                // We completely explored the path
+                break;
+            }
+        }
     }
 
-    // Return
+    // We always add the crate name
+    if !found_crate_name {
+        let crate_name = tcx.crate_name(id.krate).to_string();
+        name.push(PathElem::Ident(crate_name));
+    }
+
+    // Reverse the name and return
+    name.reverse();
+    trace!("{:?}", name);
     Name { name }
 }
 
