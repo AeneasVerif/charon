@@ -60,9 +60,7 @@ pub struct FunSig {
     /// The lifetime's hierarchy between the different regions.
     pub regions_hierarchy: RegionGroups,
     pub type_params: TypeVarId::Vector<TypeVar>,
-    /// TODO: the inputs actually also contains the return variable type
-    /// (with id 0!). We should change the type to HashMap.
-    pub inputs: VarId::Vector<RTy>,
+    pub inputs: Vec<RTy>,
     pub output: RTy,
 }
 

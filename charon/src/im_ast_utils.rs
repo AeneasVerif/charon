@@ -616,9 +616,10 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDecl<T> {
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
-        for i in 1..self.signature.inputs.len() {
-            let id = VarId::Id::new(i);
-            let arg_ty = &self.signature.inputs.get(id).unwrap();
+        for i in 0..self.signature.inputs.len() {
+            // The input variables start at index 1
+            let id = VarId::Id::new(i + 1);
+            let arg_ty = &self.signature.inputs.get(i).unwrap();
             args.push(
                 format!(
                     "{}: {}",

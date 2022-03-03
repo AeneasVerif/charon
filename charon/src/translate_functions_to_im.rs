@@ -2026,7 +2026,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
 
     // Now that we instantiated all the binders and introduced identifiers for
     // all the variables, we can translate the function's signature.
-    let inputs: v::VarId::Vector<ty::RTy> = v::VarId::Vector::from_iter(
+    let inputs: Vec<ty::RTy> = Vec::from_iter(
         signature
             .inputs()
             .iter()
