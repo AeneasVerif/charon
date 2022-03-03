@@ -6,7 +6,7 @@ build:
 	cd charon && make
 
 SRC = $(TESTS)/src
-OPTIONS = --dest $(TESTS)/cfim
+OPTIONS = --dest $(TESTS)/llbc
 
 .PHONY: build-tests
 build-tests:

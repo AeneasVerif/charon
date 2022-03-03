@@ -53,7 +53,7 @@ pub fn export(
         None => {
             // No destination directory: we just need to update the file extension
             let mut tgt = sourcefile.clone();
-            assert!(tgt.set_extension("cfim"));
+            assert!(tgt.set_extension("llbc"));
             tgt
         }
         Some(dest_dir) => {
@@ -65,7 +65,7 @@ pub fn export(
 
             // Put together, and change the extension
             tgt.push(filename);
-            assert!(tgt.set_extension("cfim"));
+            assert!(tgt.set_extension("llbc"));
             tgt
         }
     };
