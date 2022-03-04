@@ -404,7 +404,6 @@ impl TypeId {
                 AssumedTy::Vec => "alloc::vec::Vec".to_string(),
                 AssumedTy::Option => "core::option::Option".to_string(),
             },
-            TypeId::External(name) => name.to_string(),
         }
     }
 }

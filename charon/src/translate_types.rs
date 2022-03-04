@@ -213,12 +213,7 @@ where
             )?;
 
             // Retrieve the ADT identifier
-            let def_id = if adt.did.is_local() {
-                let id = trans_ctx.type_rid_to_id.get(&adt.did).unwrap();
-                ty::TypeId::Adt(*id)
-            } else {
-                translate_non_local_defid(tcx, adt.did)
-            };
+            let def_id = translate_defid(tcx, trans_ctx, adt.did);
 
             // Return the instantiated ADT
             return Ok(ty::Ty::Adt(
@@ -441,25 +436,29 @@ where
     Result::Ok((regions, params))
 }
 
-/// The non-local def ids benefit from a special treatment.
-///
-/// We have to make the distinction between non-local definitions which
-/// are considered primitive (e.g., `Box`) and external dependencise.
-fn translate_non_local_defid(tcx: TyCtxt, def_id: DefId) -> ty::TypeId {
+/// Translate a type def id
+fn translate_defid(tcx: TyCtxt, trans_ctx: &TypeTransContext, def_id: DefId) -> ty::TypeId {
     trace!("{:?}", def_id);
 
-    // Retrieve the type name
-    let name = type_def_id_to_name(tcx, def_id);
+    if def_id.is_local() {
+        let id = trans_ctx.type_rid_to_id.get(&def_id).unwrap();
+        ty::TypeId::Adt(*id)
+    } else {
+        // Non-local: check if the type has primitive support
 
-    // Check if the type has primitive support
-    match assumed::get_type_id_from_name(&name) {
-        Option::Some(id) => {
-            // The type has primitive support
-            ty::TypeId::Assumed(id)
-        }
-        Option::None => {
-            // The type is external
-            ty::TypeId::External(name)
+        // Retrieve the type name
+        let name = type_def_id_to_name(tcx, def_id);
+
+        match assumed::get_type_id_from_name(&name) {
+            Option::Some(id) => {
+                // The type has primitive support
+                ty::TypeId::Assumed(id)
+            }
+            Option::None => {
+                // The type is external
+                let id = trans_ctx.type_rid_to_id.get(&def_id).unwrap();
+                ty::TypeId::Adt(*id)
+            }
         }
     }
 }
