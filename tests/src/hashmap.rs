@@ -165,7 +165,7 @@ impl<T> HashMap<T> {
             HashMap::move_elements(&mut ntable, &mut self.slots, 0);
 
             // Replace the current table with the new table
-            let _ = std::mem::replace(&mut self.slots, ntable.slots);
+            self.slots = ntable.slots;
             self.max_load = ntable.max_load;
         }
     }
