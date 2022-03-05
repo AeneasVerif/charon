@@ -72,3 +72,12 @@ fn test_nth() {
     *x = *x + 1;
     assert!(sum(&l) == 7);
 }
+
+// 4.3
+fn call_choose(mut p: (u32, u32)) -> u32 {
+    let px = &mut p.0;
+    let py = &mut p.1;
+    let pz = choose(true, px, py);
+    *pz = *pz + 1;
+    return p.0;
+}
