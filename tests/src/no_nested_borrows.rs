@@ -306,6 +306,46 @@ pub fn list_nth_mut<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
     }
 }
 
+/// Same as [list_nth_mut] but with a loop
+pub fn list_nth_mut_loop<'a, T>(mut ls: &'a mut List<T>, mut i: u32) -> &'a mut T {
+    loop {
+        match ls {
+            List::Nil => {
+                panic!()
+            }
+            List::Cons(x, tl) => {
+                if i == 0 {
+                    return x;
+                } else {
+                    ls = tl;
+                    i -= 1;
+                }
+            }
+        }
+    }
+}
+
+/// In-place list reversal - auxiliary function
+fn list_rev_aux<'a, T>(mut lo: List<T>, li: List<T>) -> List<T> {
+    match li {
+        List::Nil => {
+            return lo;
+        }
+        List::Cons(hd, mut tl) => {
+            let next = *tl;
+            *tl = lo;
+            lo = List::Cons(hd, tl);
+            return list_rev_aux(lo, next);
+        }
+    }
+}
+
+/// In-place list reversal
+pub fn list_rev<'a, T>(l: &'a mut List<T>) {
+    let li = std::mem::replace(l, List::Nil);
+    *l = list_rev_aux(List::Nil, li);
+}
+
 fn test_list_functions() {
     let mut ls = List::Cons(
         0,
