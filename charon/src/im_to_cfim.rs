@@ -423,7 +423,10 @@ fn list_reachable(cfg: &Cfg, start: src::BlockId::Id) -> HashMap<src::BlockId::I
 /// parent loops.
 fn register_children_as_loop_exit_candidates(
     cfg: &CfgInfo,
-    loop_exits: &mut HashMap<src::BlockId::Id, HashMap<src::BlockId::Id, LoopExitCandidateInfo>>,
+    loop_exits: &mut HashMap<
+        src::BlockId::Id,
+        LinkedHashMap<src::BlockId::Id, LoopExitCandidateInfo>,
+    >,
     removed_parent_loops: &Vector<(src::BlockId::Id, usize)>,
     block_id: src::BlockId::Id,
 ) {
@@ -460,11 +463,20 @@ fn register_children_as_loop_exit_candidates(
     }
 }
 
+/// Compute the loop exit candidates.
+///
+/// There may be several candidates with the same "optimality" (same number of
+/// occurrences, etc.), in which case we choose the first one which was registered
+/// (the order in which we explore the graph is deterministic): this is why we
+/// store the candidates in a linked hash map.
 fn compute_loop_exit_candidates(
     cfg: &CfgInfo,
     explored: &mut HashSet<src::BlockId::Id>,
     ordered_loops: &mut Vec<src::BlockId::Id>,
-    loop_exits: &mut HashMap<src::BlockId::Id, HashMap<src::BlockId::Id, LoopExitCandidateInfo>>,
+    loop_exits: &mut HashMap<
+        src::BlockId::Id,
+        LinkedHashMap<src::BlockId::Id, LoopExitCandidateInfo>,
+    >,
     // List of parent loops, with the distance to the entry of the loop (the distance
     // is the distance between the current node and the loop entry for the last parent,
     // and the distance between the parents for the others).
@@ -621,7 +633,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
 
     // Initialize the loop exits candidates
     for loop_id in &cfg.loop_entries {
-        loop_exits.insert(*loop_id, HashMap::new());
+        loop_exits.insert(*loop_id, LinkedHashMap::new());
     }
 
     // Compute the candidates
@@ -672,11 +684,12 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
             },
         ));
 
-        // Second: actually select the proper candidate
+        // Second: actually select the proper candidate.
+        // We select the first one with the highest number of occurrences (we
+        // take care of listing the exit candidates in a deterministic order).
         let mut best_exit: Option<src::BlockId::Id> = None;
         let mut best_occurrences = 0;
         let mut best_dist_sum = std::usize::MAX;
-
         for (candidate_id, occurrences, dist_sum) in loop_exits.iter() {
             if (*occurrences > best_occurrences)
                 || (*occurrences == best_occurrences && *dist_sum < best_dist_sum)
@@ -687,25 +700,54 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
             }
         }
 
-        // Sanity check: there are no two different candidates with exactly the
-        // same number of occurrences and dist sum (if it is the case, the exit
-        // node will not be deterministically chosen, which is a problem because
-        // the reconstruction algorithm is then non-deterministic).
         let num_possible_candidates = loop_exits
             .iter()
             .filter(|(_, occs, dsum)| *occs == best_occurrences && *dsum == best_dist_sum)
             .count();
-        assert!(num_possible_candidates <= 1);
 
-        // Register the exit
-        match best_exit {
-            None => {
-                // No exit was found
-                chosen_loop_exits.insert(loop_id, None);
-            }
-            Some(exit_id) => {
-                exits.insert(exit_id);
-                chosen_loop_exits.insert(loop_id, Some(exit_id));
+        // Sanity check: there are no two different candidates with exactly the
+        // same number of occurrences and dist sum if the number of occurrences
+        // is 1.
+        if best_occurrences > 1 {
+            assert!(best_occurrences <= 1 || num_possible_candidates <= 1);
+        }
+
+        // If the best number of occurrences is 1 and there are several candidates,
+        // it is actually better not to choose any.
+        //
+        // Example:
+        // ========
+        // ```
+        // loop {
+        //     match ls {
+        //         List::Nil => {
+        //             panic!() // One occurrence
+        //         }
+        //         List::Cons(x, tl) => {
+        //             if i == 0 {
+        //                 return x; // One occurrence
+        //             } else {
+        //                 ls = tl;
+        //                 i -= 1;
+        //             }
+        //         }
+        //     }
+        // }
+        // ```
+        if best_occurrences == 1 && num_possible_candidates > 1 {
+            // We choose not to select an exit
+            chosen_loop_exits.insert(loop_id, None);
+        } else {
+            // Register the exit, if there is one
+            match best_exit {
+                None => {
+                    // No exit was found
+                    chosen_loop_exits.insert(loop_id, None);
+                }
+                Some(exit_id) => {
+                    exits.insert(exit_id);
+                    chosen_loop_exits.insert(loop_id, Some(exit_id));
+                }
             }
         }
     }
