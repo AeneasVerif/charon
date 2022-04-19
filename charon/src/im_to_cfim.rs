@@ -838,10 +838,22 @@ fn compute_switch_exits_explore(
     // Otherwise, there is a branching: we need to find the "best" intersection
     // of successors, which allows to factorize the code as much as possible.
     // We do it in a very "brutal" manner:
-    // - we look for the pair of children blocks which have the maximum
-    //   intersection of successors.
-    // - in this intersection, we take the first block id (remember we use
+    // 1. we look for the biggest set of children such that the intersection
+    //   of their successors is non empty.
+    // 2. in this intersection, we take the first block id (remember we use
     //   topological sort), which will be our exit node.
+    //
+    // The reason behind 1 is that some branches of a match can join themselves,
+    // before joining other branches. For example:
+    // ```
+    // let y = match x {
+    //   | E1 | E2 => 0, // Those 2 branches lead to the same node
+    //   | E3 => 1,
+    // };
+    // // But the 3 branches join this point: this is the proper exit
+    // return y;
+    // ```
+    //
     // Note that we're definitely not looking for performance here (and that
     // there shouldn't be too many blocks in a function body), but rather
     // quality of the generated code. If the following works well but proves
@@ -850,21 +862,36 @@ fn compute_switch_exits_explore(
     // whose successors intersection is non empty: I think it works in the
     // general case.
     else {
+        let mut max_number_inter: u32 = 0;
         let mut max_inter_succs: im::OrdSet<OrdBlockId> = im::OrdSet::new();
 
+        // For every child
         for i in 0..children_succs.len() {
-            for j in (i + 1)..children_succs.len() {
-                // Note that we need to add the children themselves to the
-                // sets of successors
-                let mut i_succs = children_succs.get(i).unwrap().clone();
-                i_succs.insert(make_ord_block_id(children[i], tsort_map));
+            let mut current_number_inter = 1;
+            // Note that we need to add the children themselves to the
+            // sets of successors
+            let mut i_succs = children_succs.get(i).unwrap().clone();
+            i_succs.insert(make_ord_block_id(children[i], tsort_map));
+            let mut current_inter_succs: im::OrdSet<OrdBlockId> = i_succs;
+
+            // Compute the "best" intersection with all the other children
+            for j in 0..children_succs.len() {
                 let mut j_succs = children_succs.get(j).unwrap().clone();
                 j_succs.insert(make_ord_block_id(children[j], tsort_map));
-                let inter_succs = i_succs.intersection(j_succs);
 
-                if inter_succs.len() > max_inter_succs.len() {
-                    max_inter_succs = inter_succs;
+                // Annoying that we have to clone the current intersection set...
+                let inter = current_inter_succs.clone().intersection(j_succs);
+
+                if !inter.is_empty() {
+                    current_number_inter += 1;
+                    current_inter_succs = inter;
                 }
+            }
+
+            // Update the best intersection, if necessary
+            if current_number_inter > max_number_inter {
+                max_number_inter = current_number_inter;
+                max_inter_succs = current_inter_succs;
             }
         }
 
