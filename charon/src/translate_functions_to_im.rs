@@ -24,15 +24,12 @@ use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir;
 use rustc_middle::mir::{
-    BasicBlock, Body, Operand, Place, PlaceElem, SourceScope, Statement, StatementKind, Terminator,
+    BasicBlock, Body, Operand, Place, PlaceElem, Statement, StatementKind, Terminator,
     TerminatorKind, START_BLOCK,
 };
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{ConstKind, Ty, TyCtxt, TyKind};
-use rustc_span::BytePos;
 use rustc_span::Span;
-use std::cmp::Ordering;
-use std::collections::HashMap;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name, TypeTransContext};
 
@@ -2059,123 +2056,6 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     (bt_ctx, sig)
 }
 
-#[derive(Debug, Clone)]
-struct ScopeTree<T: Clone> {
-    scope: T,
-    children: Vec<ScopeTree<T>>,
-}
-
-/// Compare the spans of two scopes by inspecting which one starts first.
-fn compare_scope_spans(body: &Body, scope1: SourceScope, scope2: SourceScope) -> Ordering {
-    // Retrieve the scope data and the spans
-    let span1 = body.source_scopes.get(scope1).unwrap().span.data();
-    let span2 = body.source_scopes.get(scope2).unwrap().span.data();
-
-    // Compare the low positions - note that we should *never* have equal
-    // spans: spans are disjoint.
-    let BytePos(lo1) = span1.lo;
-    let BytePos(lo2) = span2.lo;
-
-    if lo1 < lo2 {
-        Ordering::Less
-    } else {
-        assert!(lo1 > lo2);
-        Ordering::Greater
-    }
-}
-
-fn build_scope_node(
-    body: &Body,
-    scopes_to_children: &HashMap<SourceScope, Vec<SourceScope>>,
-    scope: SourceScope,
-) -> ScopeTree<SourceScope> {
-    let children = &scopes_to_children[&scope];
-    let mut children = children.clone();
-
-    // Reorder the children, from the scope starting first to the scope starting last.
-    children.sort_by(&|s1: &SourceScope, s2: &SourceScope| compare_scope_spans(body, *s1, *s2));
-
-    // Check that the children scopes are disjoint and are included in the parent scope
-    let parent_span = body.source_scopes.get(scope).unwrap().span.data();
-    let BytePos(parent_lo) = parent_span.lo;
-    let BytePos(parent_hi) = parent_span.hi;
-
-    let mut prev_hi = parent_lo;
-    for child in &children {
-        let child_span = body.source_scopes.get(*child).unwrap().span.data();
-        let BytePos(child_lo) = child_span.lo;
-        let BytePos(child_hi) = child_span.hi;
-        assert!(child_lo >= parent_lo);
-        assert!(child_hi <= parent_hi);
-        assert!(child_lo >= prev_hi);
-        prev_hi = child_hi;
-    }
-
-    // Generate the children nodes
-    let children = Vec::from_iter(
-        children
-            .iter()
-            .map(|s| build_scope_node(body, scopes_to_children, *s)),
-    );
-
-    ScopeTree { scope, children }
-}
-
-/// Compute the scope tree of a function body.
-///
-/// Every node of a scope tree gives a scope identifier and its subscopes.
-///
-/// TODO: this function is currently not used, but we might use it might become
-/// useful at some point, so we better maintain it.
-fn build_scope_tree(body: &Body) -> ScopeTree<SourceScope> {
-    // Compute the scopes tree: the function body gives us the list of variable
-    // scopes, with the relation children -> parent. We use it to compute the
-    // tree starting at the top scope (the scope encompassing the whole function)
-    // to the children scope.
-    // We compute the edges
-    // parent -> children.
-    // By
-    let mut scopes_to_children: HashMap<SourceScope, Vec<SourceScope>> = HashMap::from_iter(
-        body.source_scopes
-            .indices()
-            .map(|scope| (scope, Vec::new())),
-    );
-    for (scope, scope_data) in body.source_scopes.iter_enumerated() {
-        match &scope_data.parent_scope {
-            None => (),
-            Some(parent_scope) => {
-                scopes_to_children
-                    .get_mut(parent_scope)
-                    .unwrap()
-                    .push(scope);
-            }
-        }
-    }
-
-    // Find the top scope, which encompasses the whole function - note that there
-    // should be exactly one scope without parents.
-    assert!(
-        body.source_scopes
-            .iter()
-            .filter(|s| s.parent_scope.is_none())
-            .count()
-            == 1
-    );
-
-    // The top scope is actually always the scope of id 0, but using that fact
-    // seems a bit hacky: the following code combined with the above assert
-    // is a lot more general and robust.
-    let top_scope = body
-        .source_scopes
-        .iter_enumerated()
-        .find(|(_scope, source_scope)| source_scope.parent_scope.is_none())
-        .unwrap();
-    let (top_scope, _) = top_scope;
-
-    // Construct the scope tree starting at the top scope
-    build_scope_node(body, &scopes_to_children, top_scope)
-}
-
 /// Translate one function.
 fn translate_function(
     tcx: TyCtxt,
@@ -2218,9 +2098,6 @@ fn translate_function(
         // Initialize the local variables
         trace!("Translating the body locals");
         translate_body_locals(tcx, &mut bt_ctx, body)?;
-
-        // Build the scope tree
-        let _scope_tree = build_scope_tree(body);
 
         // Translate the function body
         trace!("Translating the function body");
