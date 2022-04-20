@@ -415,3 +415,28 @@ fn test_mem_replace(px: &mut u32) {
     assert!(y == 0);
     *px = 2;
 }
+
+/// Check that matching on borrowed values works well
+fn test_shared_borrow_bool(b: bool) -> u32 {
+    // Create a shared borrow of b
+    let _pb = &b;
+    // Match on b
+    if b {
+        0
+    } else {
+        1
+    }
+}
+
+/// Check that matching on borrowed values works well.
+/// In case of enumerations, we need to strip the outer loans before evaluating
+/// the discriminant.
+fn test_shared_borrow_enum(l: List<u32>) -> u32 {
+    // Create a shared borrow of l
+    let _pl = &l;
+    // Match on l - must ignore the shared loan
+    match l {
+        List::Nil => 0,
+        List::Cons(_, _) => 1,
+    }
+}
