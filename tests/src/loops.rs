@@ -149,3 +149,29 @@ fn test_loops() {
     let x = test_loop6(2);
     assert!(x == 2);
 }
+
+pub enum List<T> {
+    Cons(T, Box<List<T>>),
+    Nil,
+}
+
+/// Same as [list_nth_mut] but with a loop
+///
+/// TODO: move to `no_nested_borrows` once we implement translation for loops.
+pub fn list_nth_mut_loop<'a, T>(mut ls: &'a mut List<T>, mut i: u32) -> &'a mut T {
+    loop {
+        match ls {
+            List::Nil => {
+                panic!()
+            }
+            List::Cons(x, tl) => {
+                if i == 0 {
+                    return x;
+                } else {
+                    ls = tl;
+                    i -= 1;
+                }
+            }
+        }
+    }
+}
