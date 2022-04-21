@@ -149,10 +149,10 @@ fn initialize_logger() {
 /// external dependencies in `/target/debug/deps/`
 // This structure is used to store the command-line instructions.
 // We automatically derive a command-line parser based on this structure.
+// Note that the doc comments are used to generate the help message when using
+// `--help`.
 //
 // TODO: give the possibility of changing the crate name.
-// Rk.: information about the formatting of the generated documentation:
-// https://commonmark.org/
 #[derive(StructOpt)]
 #[structopt(name = "Charon")]
 struct CliOpts {
