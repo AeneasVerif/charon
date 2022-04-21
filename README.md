@@ -20,13 +20,19 @@ present context, Charon allows us to go from the world of Rust programs to the w
 formal verification.
 
 We do so by converting MIR code to LLBC (Low-Level Borrow Calculus), which is very
-close to MIR but with some simplifications and where control-flow has been reconstructed
+close to MIR but with some simplifications, and where control-flow has been reconstructed
 (LLBC uses a structured control-flow with loops, if ... then .. else, etc. instead
 of gotos).
 
+We also reorder the definitions, so that if a function `f` calls a function `g`,
+`f` is defined after `g`, mutually recursive definitions are grouped, etc.
+
+The extracted AST is serialized in .llbc files (using the JSON format).
+We generate one file per extracted crate.
+
 # Structure
 
-- `charon`: the implementation of Charon.
+- `charon`: the implementation.
 - `macros`: various macros used in the implementation (Rust requires macros to
   be defined in separate libraries due to technical reasons).
 - `tests` and `tests-nll`: test files directories. `tests-nll` contains
@@ -38,7 +44,13 @@ You can build the project and run the tests by running `make` in the top directo
 
 # Usage
 
-To use Charon, the simplest is to do: `cd charon && cargo run -- [OPTIONS] FILE`,
-where `FILE` is the entry point of the crate to extract (`PROJECT_PATH/main.rs`, for instance).
+To use Charon, you should first build the project to extract in debug mode: `cargo build`.
+The reason is that Charon will look for already compiled external dependencies in
+`/target/debug/deps/`.
 
-It is possible to tweak Charon's behaviour: use `--help` to print a detailed documentation.
+Then, the simplest is to do: `cd charon && cargo run -- [OPTIONS] FILE`,
+where `FILE` is the entry point of the crate to extract (`PROJECT_PATH/src/main.rs`,
+for instance).
+
+Charon has various options to tweak its behaviour: you can print a detailed documentation
+with `--help`.

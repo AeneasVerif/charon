@@ -160,10 +160,11 @@ struct CliOpts {
     #[structopt(parse(from_os_str))]
     input_file: PathBuf,
     /// The destination directory, if we don't want to generate the output
-    /// in the same directory as the input file.
+    /// .llbc files in the same directory as the input .rs files.
     #[structopt(long = "dest", parse(from_os_str))]
     dest_dir: Option<PathBuf>,
-    /// If `true`, use Polonius' non-lexical lifetimes (NLL) analysis.
+    /// If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
+    /// Otherwise, use the standard borrow checker.
     #[structopt(long = "nll")]
     use_polonius: bool,
     #[structopt(
@@ -172,7 +173,7 @@ struct CliOpts {
 of the MIR code.
 
 This is only used to make sure the reconstructed code is of good quality.
-For instance, if we have the following CFG:
+For instance, if we have the following CFG in MIR:
   ```
   b0: switch x [true -> goto b1; false -> goto b2]
   b1: y := 0; goto b3
@@ -192,7 +193,7 @@ the code starting at b3:
   if x then { y := 0; return y; } else { y := 1; return y; }
   ```
 
-When activating this option, we check that no such things happen.
+When activating this flag, we check that no such things happen.
 
 Also note that it is sometimes not possible to prevent code duplication,
 if the original Rust looks like this for instance:
