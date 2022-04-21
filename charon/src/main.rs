@@ -422,7 +422,7 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     //
     // We list all the compiled files in the target directory and retrieve the
     // original library name (i.e., "serde_json" or "attributes" in the above
-    // examples), then comptue a map from library name to compiled files.
+    // examples), then compute a map from library name to compiled files.
     // We check that there is only one compiled file per external
     // dependency while doing so.
     let files = std::fs::read_dir(deps_dir.clone()).unwrap();
