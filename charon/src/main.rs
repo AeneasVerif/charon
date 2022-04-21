@@ -144,14 +144,19 @@ fn initialize_logger() {
     builder.init();
 }
 
-/// This structure is used to store the command-line instructions.
-/// We automatically derive a command-line parser based on this structure.
-///
-/// TODO: give the possibility of changing the crate name.
+/// Charon expects the project to have been built in debug mode before performing
+/// extraction: `cargo build`. In particular, it will look for already compiled
+/// external dependencies in `/target/debug/deps/`
+// This structure is used to store the command-line instructions.
+// We automatically derive a command-line parser based on this structure.
+//
+// TODO: give the possibility of changing the crate name.
+// Rk.: information about the formatting of the generated documentation:
+// https://commonmark.org/
 #[derive(StructOpt)]
 #[structopt(name = "Charon")]
 struct CliOpts {
-    /// The input file.
+    /// The input file (the entry point of the crate to extract)
     #[structopt(parse(from_os_str))]
     input_file: PathBuf,
     /// The destination directory, if we don't want to generate the output
@@ -161,13 +166,52 @@ struct CliOpts {
     /// If `true`, use Polonius' non-lexical lifetimes (NLL) analysis.
     #[structopt(long = "nll")]
     use_polonius: bool,
-    /// Check that no code duplication happens during control-flow reconstruction.
-    /// This is only used to make sure the reconstructed code is of good quality,
-    /// and preventing duplication is not always possible (if match branches are
-    /// "fused").
-    #[structopt(long = "no-code-duplication")]
+    #[structopt(
+        long = "no-code-duplication",
+        help = "Check that no code duplication happens during control-flow reconstruction
+of the MIR code.
+
+This is only used to make sure the reconstructed code is of good quality.
+For instance, if we have the following CFG:
+  ```
+  b0: switch x [true -> goto b1; false -> goto b2]
+  b1: y := 0; goto b3
+  b2: y := 1; goto b3
+  b3: return y      
+  ```
+
+We want to reconstruct the control-flow as:
+  ```
+  if x then { y := 0; } else { y := 1 };
+  return y;
+  ```
+
+But if we don't do this reconstruction correctly, we might duplicate
+the code starting at b3:
+  ```
+  if x then { y := 0; return y; } else { y := 1; return y; }
+  ```
+
+When activating this option, we check that no such things happen.
+
+Also note that it is sometimes not possible to prevent code duplication,
+if the original Rust looks like this for instance:
+  ```
+  match x with
+  | E1(y,_) | E2(_,y) => { ... } // Some branches are \"fused\"
+  | E3 => { ... }
+  ```
+
+The reason is that assignments are introduced when desugaring the pattern
+matching, and those assignments are specific to the variant on which we pattern
+match (the `E1` branch performs: `y := (x as E1).0`, while the `E2` branch
+performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
+"
+    )]
     no_code_duplication: bool,
-    /// A list of modules considered as opaque
+    /// A list of modules of the extracted crate that we consider as opaque: we
+    /// extract only the signature information, without the definition content
+    /// (of the functions, types, etc.).
     #[structopt(long = "opaque")]
     opaque: Vec<String>,
 }
