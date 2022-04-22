@@ -69,12 +69,12 @@ but with the following differences:
   data. Some constants (like borrows compiled as constants) are not supported yet,
   and will be desugared by introducing temporary variables.
 
-Rk.: most of the transformations above are applied through micro-passes. Depending on
+**Remark**: most of the transformations above are applied through micro-passes. Depending on
 the need, we could make them optional and control them with flags. If you want
 to know more about the details, see `translate` in `src/main.rs`, which applies
 the micro-passes one after the other.
 
-Rk.: if you want to know the full details of LLBC, have a look at: `types.rs`,
+**Remark**: if you want to know the full details of LLBC, have a look at: `types.rs`,
 `values.rs`, `expressions.rs` and `llbc_ast.rs`.
 
 We also reorder the function and type definitions, so that for instance if a function
