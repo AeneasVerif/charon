@@ -20,7 +20,7 @@ present context, Charon allows us to go from the world of Rust programs to the w
 formal verification.
 
 ## LLBC
-We do so by converting MIR code to LLBC (Low-Level Borrow Calculus), which is MIR
+Charon converts MIR code to LLBC (Low-Level Borrow Calculus), which is MIR
 but with the following differences:
 - control-flow has been reconstructed: LLBC uses a structured control-flow with loops,
   if ... then ... else ..., etc. instead of gotos.
@@ -81,7 +81,7 @@ etc.
 The extracted AST is serialized in .llbc files (using the JSON format).
 We generate one file per extracted crate.
 
-## Structure
+## Project Structure
 
 - `charon`: the implementation.
 - `macros`: various macros used in the implementation (Rust requires macros to
