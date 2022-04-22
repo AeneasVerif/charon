@@ -1,4 +1,4 @@
-//! IM to CFIM (Control-Flow Internal MIR)
+//! IM to LLBC (Control-Flow Internal MIR)
 //!
 //! The reconstruction algorithm is not written to be efficient (its complexity
 //! is probably very bad), but it was not written to be: this is still an early
@@ -18,7 +18,7 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
-use crate::cfim_ast as tgt;
+use crate::llbc_ast as tgt;
 use crate::im_ast as src;
 use crate::im_ast::FunDeclId;
 use crate::types::TypeDecls;

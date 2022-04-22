@@ -2,7 +2,7 @@
 //! hierarchy between regions.
 #![allow(dead_code)]
 
-use crate::cfim_ast::FunDecls;
+use crate::llbc_ast::FunDecls;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::graphs::*;

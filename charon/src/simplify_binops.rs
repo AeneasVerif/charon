@@ -7,7 +7,7 @@
 //! have a precondition in our theorem prover, or will be monadic...). We thus want
 //! to remove those unnecessary checks.
 
-use crate::cfim_ast::*;
+use crate::llbc_ast::*;
 use crate::expressions::*;
 use crate::types::*;
 use crate::values::*;

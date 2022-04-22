@@ -1,22 +1,22 @@
-use crate::cfim_ast as cfim;
+use crate::llbc_ast as llbc;
 use crate::im_ast as ast;
 use crate::rust_to_local_ids::*;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &cfim::Statement) -> bool {
+fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &llbc::Statement) -> bool {
     match st {
-        cfim::Statement::Assign(_, _)
-        | cfim::Statement::FakeRead(_)
-        | cfim::Statement::SetDiscriminant(_, _)
-        | cfim::Statement::Drop(_)
-        | cfim::Statement::Assert(_)
-        | cfim::Statement::Panic
-        | cfim::Statement::Return
-        | cfim::Statement::Break(_)
-        | cfim::Statement::Continue(_)
-        | cfim::Statement::Nop => false,
-        cfim::Statement::Call(call) => match &call.func {
+        llbc::Statement::Assign(_, _)
+        | llbc::Statement::FakeRead(_)
+        | llbc::Statement::SetDiscriminant(_, _)
+        | llbc::Statement::Drop(_)
+        | llbc::Statement::Assert(_)
+        | llbc::Statement::Panic
+        | llbc::Statement::Return
+        | llbc::Statement::Break(_)
+        | llbc::Statement::Continue(_)
+        | llbc::Statement::Nop => false,
+        llbc::Statement::Call(call) => match &call.func {
             ast::FunId::Regular(id) => *divergent.get(id).unwrap(),
             ast::FunId::Assumed(id) => match id {
                 ast::AssumedFunId::Replace
@@ -32,18 +32,18 @@ fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &cfim::
                 | ast::AssumedFunId::VecIndexMut => false,
             },
         },
-        cfim::Statement::Sequence(st1, st2) => {
+        llbc::Statement::Sequence(st1, st2) => {
             statement_diverges(divergent, &st1) || statement_diverges(divergent, &st2)
         }
-        cfim::Statement::Switch(_, tgts) => {
+        llbc::Statement::Switch(_, tgts) => {
             let tgts = tgts.get_targets();
             tgts.iter().any(|st| statement_diverges(divergent, st))
         }
-        cfim::Statement::Loop(_) => true,
+        llbc::Statement::Loop(_) => true,
     }
 }
 
-fn fun_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, def: &cfim::FunDecl) -> bool {
+fn fun_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, def: &llbc::FunDecl) -> bool {
     match &def.body {
         Option::Some(body) => statement_diverges(divergent, &body.body),
         Option::None => {
@@ -61,7 +61,7 @@ fn fun_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, def: &cfim::FunDe
 /// terminating.
 pub fn compute_divergent_functions(
     decls: &OrderedDecls,
-    defs: &cfim::FunDecls,
+    defs: &llbc::FunDecls,
 ) -> HashSet<ast::FunDeclId::Id> {
     // For sanity, we use a map rather than a set, so that we can check
     // that we have indeed computed the divergence for the previous

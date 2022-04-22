@@ -1,4 +1,4 @@
-//! CFIM: Control-Flow Internal MIR
+//! LLBC
 //!
 //! MIR code where we have rebuilt the control-flow (`if ... then ... else ...`,
 //! `while ...`, ...).
@@ -7,7 +7,7 @@
 //! from MIR to use Statement only.
 
 #![allow(dead_code)]
-pub use crate::cfim_ast_utils::*;
+pub use crate::llbc_ast_utils::*;
 use crate::expressions::*;
 use crate::im_ast::*;
 use crate::types::*;

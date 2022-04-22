@@ -1,7 +1,7 @@
-//! Implementations for cfim_ast.rs
+//! Implementations for llbc_ast.rs
 
 #![allow(dead_code)]
-use crate::cfim_ast::*;
+use crate::llbc_ast::*;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::im_ast::{fmt_call, FunDeclId, FunSigFormatter, GAstFormatter, TAB_INCR};

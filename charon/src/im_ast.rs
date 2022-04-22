@@ -1,4 +1,4 @@
-//! Our Internal MIR ast (IM), intended to be close to the rust compiler MIR ast.
+//! "Intermediate MIR" ast (IM), intended to be close to the rust compiler MIR ast.
 //! We don't even try to reconstruct the if then else blocks or the loop blocks
 //! at this point.
 #![allow(dead_code)]

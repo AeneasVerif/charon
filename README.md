@@ -71,7 +71,7 @@ to know more about the details, see `translate` in `src/main.rs`, which applies
 the micro-passes one after the other.
 
 Rk.: if you want to know the full details of LLBC, have a look at: `types.rs`,
-`values.rs`, `expressions.rs` and `cfim_ast.rs`.
+`values.rs`, `expressions.rs` and `llbc_ast.rs`.
 
 We also reorder the function and type definitions, so that for instance if a function
 `f` calls a function `g`, `f` is defined after `g`, mutually recursive definitions are grouped,

@@ -29,9 +29,9 @@ extern crate rustc_target;
 #[macro_use]
 mod common;
 mod assumed;
-mod cfim_ast;
-mod cfim_ast_utils;
-mod cfim_export;
+mod llbc_ast;
+mod llbc_ast_utils;
+mod llbc_export;
 mod divergent;
 mod expressions;
 mod expressions_utils;
@@ -42,7 +42,7 @@ mod graphs;
 mod id_vector;
 mod im_ast;
 mod im_ast_utils;
-mod im_to_cfim;
+mod im_to_llbc;
 mod insert_assign_return_unit;
 mod names;
 mod names_utils;
@@ -634,11 +634,11 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
         &type_defs,
     )?;
 
-    // # Step 6: go from IM to CFIM (Control-Flow Internal MIR) by reconstructing
+    // # Step 6: go from IM to LLBC (Control-Flow Internal MIR) by reconstructing
     // the control flow.
-    // TODO: rename CFIM to LLBC (low-level borrow calculus)
-    let cfim_defs =
-        im_to_cfim::translate_functions(internal.no_code_duplication, &type_defs, &im_defs);
+    // TODO: rename LLBC to LLBC (low-level borrow calculus)
+    let llbc_defs =
+        im_to_llbc::translate_functions(internal.no_code_duplication, &type_defs, &im_defs);
 
     //
     // =================
@@ -651,22 +651,22 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
 
     // # Step 7: simplify the calls to binops
     // Note that we assume that the sequences have been flattened.
-    let cfim_defs = simplify_binops::simplify(cfim_defs);
+    let llbc_defs = simplify_binops::simplify(llbc_defs);
 
-    for def in &cfim_defs {
+    for def in &llbc_defs {
         trace!(
             "# After binop simplification:\n{}\n",
-            def.fmt_with_defs(&type_defs, &cfim_defs)
+            def.fmt_with_defs(&type_defs, &llbc_defs)
         );
     }
 
     // # Step 8: reconstruct the asserts
-    let cfim_defs = reconstruct_asserts::simplify(cfim_defs);
+    let llbc_defs = reconstruct_asserts::simplify(llbc_defs);
 
-    for def in &cfim_defs {
+    for def in &llbc_defs {
         trace!(
             "# After asserts reconstruction:\n{}\n",
-            def.fmt_with_defs(&type_defs, &cfim_defs)
+            def.fmt_with_defs(&type_defs, &llbc_defs)
         );
     }
 
@@ -676,7 +676,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // of Aeneas, it means the return variable contains ⊥ upon returning.
     // For this reason, when the function has return type unit, we insert
     // an extra assignment just before returning.
-    let cfim_defs = insert_assign_return_unit::transform(cfim_defs);
+    let llbc_defs = insert_assign_return_unit::transform(llbc_defs);
 
     // # Step 10: compute which functions are potentially divergent. A function
     // is potentially divergent if it is recursive, contains a loop or transitively
@@ -684,14 +684,14 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // Note that in the future, we may complement this basic analysis with a
     // finer analysis to detect recursive functions which are actually total
     // by construction.
-    let _divergent = divergent::compute_divergent_functions(&ordered_decls, &cfim_defs);
+    let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_defs);
 
     // # Step 11: generate the files.
-    cfim_export::export(
+    llbc_export::export(
         crate_name,
         &ordered_decls,
         &type_defs,
-        &cfim_defs,
+        &llbc_defs,
         &internal.dest_dir,
         &internal.source_file,
     )?;

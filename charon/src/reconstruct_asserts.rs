@@ -3,7 +3,7 @@
 //! introduce `if ... then { panic!(...) } else { ...}`.
 //! This pass introduces `assert` instead in order to make the code shorter.
 
-use crate::cfim_ast::*;
+use crate::llbc_ast::*;
 use std::iter::FromIterator;
 
 fn simplify_st(st: Statement) -> Statement {
