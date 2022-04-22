@@ -23,11 +23,11 @@ We do so by converting MIR code to LLBC (Low-Level Borrow Calculus), which is MI
 but with the following differences:
 - control-flow has been reconstructed: LLBC uses a structured control-flow with loops,
   if ... then ... else ..., etc. instead of gotos.
+- MIR statements and terminators are merged into a single statement type.
+  Followingly, we do not manipulate basic blocks, but only statements.
 - calls to arithmetic operations are simplified: we remove the dynamic checks for
   divisions by zero and overflows. The rationale is that in theorem provers, those
   operations either have preconditions, or perform the checks themselves.
-- MIR statements and terminators are merged into a single statement type.
-  Followingly, we do not manipulate basic blocks, but only statements.
 - (in progress) we adopt a slightly higher-level view of matches over enumerations.
   Instead of having to read the discriminant then switch over it like here:
   ```
@@ -50,7 +50,7 @@ but with the following differences:
   of the `=>`, only constructor identifiers).
   Simply, we do not allow the independent manipulation of discriminants, as it is
   very low level.
-- (in progress) similarly, we don't allow progressive initialization of datatypes,
+- (in progress) we do not allow progressive initialization of datatypes,
   but use aggregated values. Instead of this:
   ```
   (x as Cons).0 = move hd;
@@ -102,5 +102,5 @@ Then, the simplest is to do: `cd charon && cargo run -- [OPTIONS] FILE`,
 where `FILE` is the entry point of the crate to extract (`PROJECT_PATH/src/main.rs`,
 for instance).
 
-Charon has various options to tweak its behaviour: you can print a detailed documentation
+Charon has various options to tweak its behaviour: you can display a detailed documentation
 with `--help`.
