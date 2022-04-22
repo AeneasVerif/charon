@@ -11,14 +11,15 @@ Museo del Prado, Madrid.
 
 # Charon
 Charon acts as an interface between the rustc compiler and program verification projects. Its
-purpose is to process Rust .rs files into files easy to handle by program verifiers.
-It is implemented as a custom driver for the rustc compiler.
+purpose is to process Rust .rs files and convert them into files easy to handle by program
+verifiers. It is implemented as a custom driver for the rustc compiler.
 
 Charon is, in Greek mythology, an old man carrying the souls of the deceased accross the
 Styx, a river separating the world of the living from the world of the dead. In the
 present context, Charon allows us to go from the world of Rust programs to the world of
 formal verification.
 
+## LLBC
 We do so by converting MIR code to LLBC (Low-Level Borrow Calculus), which is MIR
 but with the following differences:
 - control-flow has been reconstructed: LLBC uses a structured control-flow with loops,
@@ -80,7 +81,7 @@ etc.
 The extracted AST is serialized in .llbc files (using the JSON format).
 We generate one file per extracted crate.
 
-# Structure
+## Structure
 
 - `charon`: the implementation.
 - `macros`: various macros used in the implementation (Rust requires macros to
@@ -88,11 +89,11 @@ We generate one file per extracted crate.
 - `tests` and `tests-nll`: test files directories. `tests-nll` contains
   code which requires non-lexical lifetimes (i.e., the Polonius borrow checker).
 
-# Build
+## Build
 
 You can build the project and run the tests by running `make` in the top directory.
 
-# Usage
+## Usage
 
 To use Charon, you should first build the project to extract in debug mode: `cargo build`.
 The reason is that Charon will look for already compiled external dependencies in
