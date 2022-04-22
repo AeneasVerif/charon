@@ -102,5 +102,5 @@ Then, the simplest is to do: `cd charon && cargo run -- [OPTIONS] FILE`,
 where `FILE` is the entry point of the crate to extract (`PROJECT_PATH/src/main.rs`,
 for instance).
 
-Charon has various options to tweak its behaviour: you can display a detailed documentation
-with `--help`.
+Charon provides various options and flags to tweak its behaviour: you can display a detailed
+documentation with `--help`.
