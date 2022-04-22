@@ -19,6 +19,9 @@ Styx, a river separating the world of the living from the world of the dead. In 
 present context, Charon allows us to go from the world of Rust programs to the world of
 formal verification.
 
+We are **open to contributions**! Please contact us so that we can coordinate ourselves,
+if you are willing to contribute.
+
 ## LLBC
 Charon converts MIR code to LLBC (Low-Level Borrow Calculus), which is MIR
 but with the following differences:
@@ -89,9 +92,12 @@ We generate one file per extracted crate.
 - `tests` and `tests-nll`: test files directories. `tests-nll` contains
   code which requires non-lexical lifetimes (i.e., the Polonius borrow checker).
 
-## Build
+## Installation & Build
 
-You can build the project and run the tests by running `make` in the top directory.
+You first need to install [`rustup`](https://www.rust-lang.org/tools/install).
+
+As Charon is set up with cargo, rustup will automatically download and install the proper
+packages upon building the project: you just need to run `make` in the top directory.
 
 ## Usage
 
