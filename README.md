@@ -101,7 +101,7 @@ packages upon building the project: you just need to run `make` in the top direc
 
 ## Usage
 
-To use Charon, you should first build the project to extract in debug mode: `cargo build`.
+To use Charon, you should first build the project you wish to extract in debug mode: `cargo build`.
 The reason is that Charon will look for already compiled external dependencies in
 `/target/debug/deps/`.
 
