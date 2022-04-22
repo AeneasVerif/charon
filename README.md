@@ -26,6 +26,8 @@ but with the following differences:
 - calls to arithmetic operations are simplified: we remove the dynamic checks for
   divisions by zero and overflows. The rationale is that in theorem provers, those
   operations either have preconditions, or perform the checks themselves.
+- MIR statements and terminators are merged into a single statement type.
+  Followingly, we do not manipulate basic blocks, but only statements.
 - (in progress) we adopt a slightly higher-level view of matches over enumerations.
   Instead of having to read the discriminant then switch over it like here:
   ```
