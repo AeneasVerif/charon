@@ -307,7 +307,7 @@ pub fn list_nth_mut<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
 }
 
 /// In-place list reversal - auxiliary function
-fn list_rev_aux<'a, T>(mut lo: List<T>, li: List<T>) -> List<T> {
+fn list_rev_aux<'a, T>(li: List<T>, mut lo: List<T>) -> List<T> {
     match li {
         List::Nil => {
             return lo;
@@ -316,7 +316,7 @@ fn list_rev_aux<'a, T>(mut lo: List<T>, li: List<T>) -> List<T> {
             let next = *tl;
             *tl = lo;
             lo = List::Cons(hd, tl);
-            return list_rev_aux(lo, next);
+            return list_rev_aux(next, lo);
         }
     }
 }
@@ -324,7 +324,7 @@ fn list_rev_aux<'a, T>(mut lo: List<T>, li: List<T>) -> List<T> {
 /// In-place list reversal
 pub fn list_rev<'a, T>(l: &'a mut List<T>) {
     let li = std::mem::replace(l, List::Nil);
-    *l = list_rev_aux(List::Nil, li);
+    *l = list_rev_aux(li, List::Nil);
 }
 
 fn test_list_functions() {
