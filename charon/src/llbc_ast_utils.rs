@@ -1,10 +1,10 @@
 //! Implementations for llbc_ast.rs
 
 #![allow(dead_code)]
-use crate::llbc_ast::*;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::im_ast::{fmt_call, FunDeclId, FunSigFormatter, GAstFormatter, TAB_INCR};
+use crate::llbc_ast::{Call, FunDecl, FunDecls, Statement, SwitchTargets};
 use crate::types::*;
 use crate::values::*;
 use serde::ser::SerializeTupleVariant;

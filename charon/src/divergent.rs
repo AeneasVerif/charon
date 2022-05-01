@@ -1,5 +1,5 @@
-use crate::llbc_ast as llbc;
 use crate::im_ast as ast;
+use crate::llbc_ast as llbc;
 use crate::rust_to_local_ids::*;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;

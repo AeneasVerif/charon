@@ -3,8 +3,8 @@
 //! of AENEAS, it means the return variable contains ⊥ upon returning.
 //! For this reason, when the function has return type unit, we insert
 //! an extra assignment just before returning.
-use crate::llbc_ast::*;
 use crate::expressions::*;
+use crate::llbc_ast::{FunDecl, FunDecls, Statement, SwitchTargets};
 use crate::values::*;
 use std::iter::FromIterator;
 

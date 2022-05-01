@@ -7,8 +7,8 @@
 //! have a precondition in our theorem prover, or will be monadic...). We thus want
 //! to remove those unnecessary checks.
 
-use crate::llbc_ast::*;
 use crate::expressions::*;
+use crate::llbc_ast::{Assert, FunDecl, FunDecls, Statement, SwitchTargets};
 use crate::types::*;
 use crate::values::*;
 use std::iter::FromIterator;
