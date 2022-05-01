@@ -29,9 +29,6 @@ extern crate rustc_target;
 #[macro_use]
 mod common;
 mod assumed;
-mod llbc_ast;
-mod llbc_ast_utils;
-mod llbc_export;
 mod divergent;
 mod expressions;
 mod expressions_utils;
@@ -44,6 +41,9 @@ mod im_ast;
 mod im_ast_utils;
 mod im_to_llbc;
 mod insert_assign_return_unit;
+mod llbc_ast;
+mod llbc_ast_utils;
+mod llbc_export;
 mod names;
 mod names_utils;
 mod reconstruct_asserts;
@@ -396,7 +396,14 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
         trace!("Packages: {}", package.name);
 
         for dep in &package.dependencies {
-            deps.insert(dep.name.clone());
+            // A crate name may use the "-" symbol, however this symbol gets
+            // replaced with "_" at compilation: we thus need to convert it
+            // before registering it.
+            // Note that we need to do the conversion now, because when looking
+            // in the directory file containing all the compiled dependencies,
+            // we filter the useless dependencies.
+            let dep = str::replace(&dep.name, "-", "_");
+            deps.insert(dep);
         }
     }
     trace!("List of external dependencies: {:?}", deps);
