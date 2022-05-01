@@ -146,7 +146,7 @@ fn initialize_logger() {
 
 /// Charon expects the project to have been built in debug mode before performing
 /// extraction: `cargo build`. In particular, it will look for already compiled
-/// external dependencies in `/target/debug/deps/`
+/// external dependencies in the target directory (`/target/debug/deps/`, usually).
 // This structure is used to store the command-line instructions.
 // We automatically derive a command-line parser based on this structure.
 // Note that the doc comments are used to generate the help message when using
@@ -313,13 +313,14 @@ fn insert_if_not_present(map: &mut HashMap<String, String>, lib_name: String, fi
 /// where the project is built through `cargo`, and the user built the
 /// (debug version) of the project *before* calling Charon. In this situation,
 /// we can leverage the fact that the external dependencies have already been
-/// compiled, and can be found in `/target/debug/deps/`.
+/// compiled, and can be found in the target directory (`/target/debug/deps/`,
+/// usually).
 /// We thus don't have to build them (and don't want anyway! Charon is not a
 /// build system), and just need to:
 /// - use the manifest (the `Cargo.toml` file) to retrieve the list of external
 ///   dependencies
-/// - explore the `/target/debug/deps` folder to retrieve the names of the
-///   compiled libraries, to compute the arguments with which to invoke the
+/// - explore the target `/target/debug/deps` directory to retrieve the names of
+///   the compiled libraries, to compute the arguments with which to invoke the
 ///   Rust compiler
 ///
 /// Finally, the code used in this function to read the manifest and compute
@@ -409,7 +410,8 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     trace!("List of external dependencies: {:?}", deps);
 
     // Compute the path to the compiled dependencies
-    let deps_dir = PathBuf::from_str("target/debug/deps/").unwrap();
+    let target_dir = format!("{}/debug/deps/", &manifest.target_directory);
+    let deps_dir = PathBuf::from_str(&target_dir).unwrap();
     let deps_dir = crate_path.join(deps_dir);
     info!(
         "Looking for the compiled external dependencies in: {:?}",
