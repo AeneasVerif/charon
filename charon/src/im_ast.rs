@@ -181,8 +181,8 @@ pub enum Terminator {
         /// want to introduce some information (and the way we encode from MIR
         /// is as simple as possible - and in MIR we also have a vector of erased
         /// regions).
-        region_params: Vec<ErasedRegion>,
-        type_params: Vec<ETy>,
+        region_args: Vec<ErasedRegion>,
+        type_args: Vec<ETy>,
         args: Vec<Operand>,
         dest: Place,
         target: BlockId::Id,

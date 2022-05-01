@@ -18,9 +18,9 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
-use crate::llbc_ast as tgt;
 use crate::im_ast as src;
 use crate::im_ast::FunDeclId;
+use crate::llbc_ast as tgt;
 use crate::types::TypeDecls;
 use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
@@ -47,8 +47,8 @@ fn get_block_targets(body: &src::FunBody, block_id: src::BlockId::Id) -> Vec<src
         | src::Terminator::Drop { place: _, target }
         | src::Terminator::Call {
             func: _,
-            region_params: _,
-            type_params: _,
+            region_args: _,
+            type_args: _,
             args: _,
             dest: _,
             target,
@@ -1375,8 +1375,8 @@ fn translate_terminator(
         }
         src::Terminator::Call {
             func,
-            region_params,
-            type_params,
+            region_args,
+            type_args,
             args,
             dest,
             target,
@@ -1393,8 +1393,8 @@ fn translate_terminator(
             );
             let st = tgt::Statement::Call(tgt::Call {
                 func: func.clone(),
-                region_params: region_params.clone(),
-                type_params: type_params.clone(),
+                region_args: region_args.clone(),
+                type_args: type_args.clone(),
                 args: args.clone(),
                 dest: dest.clone(),
             });

@@ -1600,8 +1600,8 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
             // Return
             Ok(ast::Terminator::Call {
                 func: ast::FunId::Assumed(ast::AssumedFunId::BoxFree),
-                region_params: vec![],
-                type_params: vec![t_ty],
+                region_args: vec![],
+                type_args: vec![t_ty],
                 args: vec![t_arg],
                 dest: lval,
                 target: next_block,
@@ -1609,7 +1609,7 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
         } else {
             // Retrieve the lists of used parameters, in case of non-local
             // definitions
-            let (used_type_params, used_args) = if def_id.is_local() {
+            let (used_type_args, used_args) = if def_id.is_local() {
                 (Option::None, Option::None)
             } else {
                 match assumed::function_to_info(&name) {
@@ -1622,8 +1622,8 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
             };
 
             // Translate the type parameters
-            let (region_params, type_params) =
-                translate_subst_in_body(tcx, bt_ctx, used_type_params, substs)?;
+            let (region_args, type_args) =
+                translate_subst_in_body(tcx, bt_ctx, used_type_args, substs)?;
 
             // Translate the arguments
             let args = translate_arguments(tcx, bt_ctx, used_args, args);
@@ -1645,8 +1645,8 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
 
                 Ok(ast::Terminator::Call {
                     func,
-                    region_params,
-                    type_params,
+                    region_args,
+                    type_args,
                     args,
                     dest: lval,
                     target: next_block,
@@ -1664,8 +1664,8 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
                 translate_primitive_function_call(
                     tcx,
                     def_id,
-                    region_params,
-                    type_params,
+                    region_args,
+                    type_args,
                     args,
                     lval,
                     next_block,
@@ -1681,32 +1681,32 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
 fn translate_subst_in_body<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
-    used_params: Option<Vec<bool>>,
+    used_args: Option<Vec<bool>>,
     substs: &rustc_middle::ty::subst::InternalSubsts<'tcx>,
 ) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>)> {
-    let substs: Vec<rustc_middle::ty::subst::GenericArg<'tcx>> = match used_params {
+    let substs: Vec<rustc_middle::ty::subst::GenericArg<'tcx>> = match used_args {
         Option::None => substs.iter().collect(),
-        Option::Some(used_params) => {
-            assert!(substs.len() == used_params.len());
+        Option::Some(used_args) => {
+            assert!(substs.len() == used_args.len());
             substs
                 .iter()
-                .zip(used_params.into_iter())
+                .zip(used_args.into_iter())
                 .filter_map(|(param, used)| if used { Some(param) } else { None })
                 .collect()
         }
     };
 
-    let mut t_params_regions = Vec::new();
-    let mut t_params_tys = Vec::new();
+    let mut t_args_regions = Vec::new();
+    let mut t_args_tys = Vec::new();
     for param in substs.iter() {
         match param.unpack() {
             rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
                 // Simply translate the type
                 let t_param_ty = translate_ety(tcx, bt_ctx, &param_ty)?;
-                t_params_tys.push(t_param_ty);
+                t_args_tys.push(t_param_ty);
             }
             rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
-                t_params_regions.push(translate_erased_region(region));
+                t_args_regions.push(translate_erased_region(region));
             }
             rustc_middle::ty::subst::GenericArgKind::Const(_) => {
                 unimplemented!();
@@ -1714,7 +1714,7 @@ fn translate_subst_in_body<'tcx, 'ctx, 'ctx1>(
         }
     }
 
-    return Ok((t_params_regions, t_params_tys));
+    return Ok((t_args_regions, t_args_tys));
 }
 
 /// Evaluate function arguments in a context, and return the list of computed
@@ -1761,8 +1761,8 @@ fn translate_arguments<'tcx, 'ctx, 'ctx1>(
 fn translate_primitive_function_call<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: DefId,
-    region_params: Vec<ty::ErasedRegion>,
-    type_params: Vec<ty::ETy>,
+    region_args: Vec<ty::ErasedRegion>,
+    type_args: Vec<ty::ETy>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -1798,17 +1798,17 @@ fn translate_primitive_function_call<'tcx>(
         | ast::AssumedFunId::VecInsert
         | ast::AssumedFunId::VecLen => Ok(ast::Terminator::Call {
             func: ast::FunId::Assumed(aid),
-            region_params,
-            type_params,
+            region_args,
+            type_args,
             args,
             dest,
             target,
         }),
         ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => {
-            translate_box_deref(aid, region_params, type_params, args, dest, target)
+            translate_box_deref(aid, region_args, type_args, args, dest, target)
         }
         ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
-            translate_vec_index(aid, region_params, type_params, args, dest, target)
+            translate_vec_index(aid, region_args, type_args, args, dest, target)
         }
         ast::AssumedFunId::BoxFree => {
             unreachable!();
@@ -1820,34 +1820,34 @@ fn translate_primitive_function_call<'tcx>(
 /// on boxes. We need a custom function because it is a trait.
 fn translate_box_deref(
     aid: ast::AssumedFunId,
-    region_params: Vec<ty::ErasedRegion>,
-    type_params: Vec<ty::ETy>,
+    region_args: Vec<ty::ErasedRegion>,
+    type_args: Vec<ty::ETy>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
 ) -> Result<ast::Terminator> {
     // Check the arguments
-    assert!(region_params.len() == 0);
-    assert!(type_params.len() == 1);
+    assert!(region_args.len() == 0);
+    assert!(type_args.len() == 1);
     assert!(args.len() == 1);
 
     // For now we only support deref on boxes
     // Retrieve the boxed value
-    let param_ty = type_params.get(0).unwrap(); // should be `Box<...>`
-    let boxed_ty = param_ty.as_box();
+    let arg_ty = type_args.get(0).unwrap(); // should be `Box<...>`
+    let boxed_ty = arg_ty.as_box();
     if boxed_ty.is_none() {
         panic!(
             "Deref/DerefMut trait applied with parameter {:?} while it is only supported on Box<T> values",
-            param_ty
+            arg_ty
         );
     }
     let boxed_ty = boxed_ty.unwrap();
-    let type_params = vec![boxed_ty.clone()];
+    let type_args = vec![boxed_ty.clone()];
 
     Ok(ast::Terminator::Call {
         func: ast::FunId::Assumed(aid),
-        region_params,
-        type_params,
+        region_args,
+        type_args,
         args,
         dest,
         target,
@@ -1858,35 +1858,35 @@ fn translate_box_deref(
 /// applied on `Vec`. We need a custom function because it is a trait.
 fn translate_vec_index(
     aid: ast::AssumedFunId,
-    region_params: Vec<ty::ErasedRegion>,
-    type_params: Vec<ty::ETy>,
+    region_args: Vec<ty::ErasedRegion>,
+    type_args: Vec<ty::ETy>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
 ) -> Result<ast::Terminator> {
     // Check the arguments
-    assert!(region_params.len() == 0);
-    assert!(type_params.len() == 1);
+    assert!(region_args.len() == 0);
+    assert!(type_args.len() == 1);
     assert!(args.len() == 2);
 
     // For now we only support index on vectors
     // Retrieve the boxed value
-    let param_ty = type_params.get(0).unwrap(); // should be `Vec<...>`
-    let param_ty = match param_ty.as_vec() {
+    let arg_ty = type_args.get(0).unwrap(); // should be `Vec<...>`
+    let arg_ty = match arg_ty.as_vec() {
         Option::Some(ty) => (ty),
         Option::None => {
             panic!(
             "Index/IndexMut trait applied with parameter {:?} while it is only supported on Vec<T> values",
-            param_ty
+            arg_ty
         );
         }
     };
 
-    let type_params = vec![param_ty.clone()];
+    let type_args = vec![arg_ty.clone()];
     Ok(ast::Terminator::Call {
         func: ast::FunId::Assumed(aid),
-        region_params,
-        type_params,
+        region_args,
+        type_args,
         args,
         dest,
         target,

@@ -161,6 +161,7 @@ pub fn type_to_used_params(name: &TypeName) -> Option<Vec<bool>> {
 
 pub struct FunInfo {
     pub used_type_params: Vec<bool>,
+    // TODO: rename. "value_args"?
     pub used_args: Vec<bool>,
 }
 

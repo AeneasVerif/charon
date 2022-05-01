@@ -122,15 +122,15 @@ impl Terminator {
             },
             Terminator::Call {
                 func,
-                region_params,
-                type_params,
+                region_args,
+                type_args,
                 args,
                 dest,
                 target,
             } => Terminator::Call {
                 func: func.clone(),
-                region_params: region_params.clone(),
-                type_params: type_params
+                region_args: region_args.clone(),
+                type_args: type_args
                     .iter()
                     .map(|ty| ty.substitute_types(subst))
                     .collect(),
@@ -213,8 +213,8 @@ impl<'ctx> Formatter<&BlockId::Vector<BlockData>> for AstFormatter<'ctx> {
 pub fn fmt_call<'a, 'b, T>(
     ctx: &'b T,
     func: &'a FunId,
-    region_params: &'a Vec<ErasedRegion>,
-    type_params: &'a Vec<ETy>,
+    region_args: &'a Vec<ErasedRegion>,
+    type_args: &'a Vec<ETy>,
     args: &'a Vec<Operand>,
 ) -> String
 where
@@ -226,11 +226,11 @@ where
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
         + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
 {
-    let params = if region_params.len() + type_params.len() == 0 {
+    let rt_args = if region_args.len() + type_args.len() == 0 {
         "".to_owned()
     } else {
-        let regions_s: Vec<String> = region_params.iter().map(|x| x.to_string()).collect();
-        let mut types_s: Vec<String> = type_params.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
+        let regions_s: Vec<String> = region_args.iter().map(|x| x.to_string()).collect();
+        let mut types_s: Vec<String> = type_args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
         let mut s = regions_s;
         s.append(&mut types_s);
         format!("<{}>", s.join(", ")).to_owned()
@@ -239,31 +239,31 @@ where
     let args = args.join(", ");
 
     let f = match func {
-        FunId::Regular(def_id) => format!("{}{}", ctx.format_object(*def_id), params).to_string(),
+        FunId::Regular(def_id) => format!("{}{}", ctx.format_object(*def_id), rt_args).to_string(),
         FunId::Assumed(assumed) => match assumed {
-            AssumedFunId::Replace => format!("core::mem::replace{}", params).to_string(),
-            AssumedFunId::BoxNew => format!("alloc::boxed::Box{}::new", params).to_string(),
+            AssumedFunId::Replace => format!("core::mem::replace{}", rt_args).to_string(),
+            AssumedFunId::BoxNew => format!("alloc::boxed::Box{}::new", rt_args).to_string(),
             AssumedFunId::BoxDeref => format!(
                 "core::ops::deref::Deref<alloc::boxed::Box{}>::deref",
-                params
+                rt_args
             )
             .to_string(),
             AssumedFunId::BoxDerefMut => format!(
                 "core::ops::deref::DerefMut<alloc::boxed::Box{}>::deref_mut",
-                params
+                rt_args
             )
             .to_string(),
-            AssumedFunId::BoxFree => format!("alloc::alloc::box_free{}", params).to_string(),
-            AssumedFunId::VecNew => format!("alloc::vec::Vec{}::new", params).to_string(),
-            AssumedFunId::VecPush => format!("alloc::vec::Vec{}::push", params).to_string(),
-            AssumedFunId::VecInsert => format!("alloc::vec::Vec{}::insert", params).to_string(),
-            AssumedFunId::VecLen => format!("alloc::vec::Vec{}::len", params).to_string(),
+            AssumedFunId::BoxFree => format!("alloc::alloc::box_free{}", rt_args).to_string(),
+            AssumedFunId::VecNew => format!("alloc::vec::Vec{}::new", rt_args).to_string(),
+            AssumedFunId::VecPush => format!("alloc::vec::Vec{}::push", rt_args).to_string(),
+            AssumedFunId::VecInsert => format!("alloc::vec::Vec{}::insert", rt_args).to_string(),
+            AssumedFunId::VecLen => format!("alloc::vec::Vec{}::len", rt_args).to_string(),
             AssumedFunId::VecIndex => {
-                format!("core::ops::index::Index<alloc::vec::Vec{}>::index", params).to_string()
+                format!("core::ops::index::Index<alloc::vec::Vec{}>::index", rt_args).to_string()
             }
             AssumedFunId::VecIndexMut => format!(
                 "core::ops::index::IndexMut<alloc::vec::Vec{}>::index_mut",
-                params
+                rt_args
             )
             .to_string(),
         },
@@ -317,13 +317,13 @@ impl Terminator {
             .to_string(),
             Terminator::Call {
                 func,
-                region_params,
-                type_params,
+                region_args,
+                type_args,
                 args,
                 dest,
                 target,
             } => {
-                let call = fmt_call(ctx, func, region_params, type_params, args);
+                let call = fmt_call(ctx, func, region_args, type_args, args);
 
                 format!(
                     "{} := {} -> bb{}",

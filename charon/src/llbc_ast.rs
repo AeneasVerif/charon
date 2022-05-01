@@ -7,9 +7,9 @@
 //! from MIR to use Statement only.
 
 #![allow(dead_code)]
-pub use crate::llbc_ast_utils::*;
 use crate::expressions::*;
 use crate::im_ast::*;
+pub use crate::llbc_ast_utils::*;
 use crate::types::*;
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
@@ -28,8 +28,8 @@ pub struct Call {
     /// want to introduce some information (and the way we encode from MIR
     /// is as simple as possible - and in MIR we also have a vector of erased
     /// regions).
-    pub region_params: Vec<ErasedRegion>,
-    pub type_params: Vec<ETy>,
+    pub region_args: Vec<ErasedRegion>,
+    pub type_args: Vec<ETy>,
     pub args: Vec<Operand>,
     pub dest: Place,
 }

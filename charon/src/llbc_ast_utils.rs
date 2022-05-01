@@ -103,12 +103,12 @@ impl Statement {
             Statement::Call(call) => {
                 let Call {
                     func,
-                    region_params,
-                    type_params,
+                    region_args,
+                    type_args,
                     args,
                     dest,
                 } = call;
-                let call = fmt_call(ctx, func, region_params, type_params, args);
+                let call = fmt_call(ctx, func, region_args, type_args, args);
                 format!("{}{} := {}", tab, dest.fmt_with_ctx(ctx), call).to_owned()
             }
             Statement::Panic => format!("{}panic", tab).to_owned(),
