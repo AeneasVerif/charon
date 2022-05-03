@@ -109,5 +109,10 @@ Then, the simplest is to do: `cd charon && cargo run -- [OPTIONS] FILE`,
 where `FILE` is the entry point of the crate to extract (`PROJECT_PATH/src/main.rs`,
 for instance).
 
+**Remark**: the crate to be extracted must be built with the same version of rustc
+as Charon (see the file `charon/rust-toolchain`). If it is not the case, the extraction
+will likely fail with an error saying that there is a mismatch in the metadata of the compiled
+files.
+
 Charon provides various options and flags to tweak its behaviour: you can display a detailed
 documentation with `--help`.
