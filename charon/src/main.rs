@@ -67,6 +67,7 @@ use rustc_session::Session;
 use serde::Deserialize;
 use serde_json;
 use std::collections::{HashMap, HashSet};
+use std::fmt::{Display, Error, Formatter};
 use std::iter::FromIterator;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -218,20 +219,32 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
 }
 
 // The following helpers are used to read crate manifests (the `Cargo.toml` files),
-// and come from [hacspec](https://github.com/hacspec/): all credits to them.
+// and were adapated from [hacspec](https://github.com/hacspec/).
 
-#[derive(Default, Deserialize)]
+/// We ignore some fields:
+/// - source: String
+/// - req: String
+/// - rename: Option<String>
+/// - optional: bool
+/// - uses_default_features: bool
+/// - features: Vec<?>
+/// - target: Option<?>
+/// - registry: Opion<?>
+#[derive(Debug, Deserialize, Clone)]
 struct Dependency {
     name: String,
-    #[allow(dead_code)]
     kind: Option<String>,
 }
 
-#[derive(Default, Deserialize)]
+/// We ignore some fields:
+/// - edition: string
+/// - doctest: bool
+/// - test: bool
+/// TODO: remove?
+#[derive(Debug, Deserialize, Clone)]
 struct Target {
     #[allow(dead_code)]
     name: String,
-    #[allow(dead_code)]
     kind: Vec<String>,
     #[allow(dead_code)]
     crate_types: Vec<String>,
@@ -239,20 +252,114 @@ struct Target {
     src_path: String,
 }
 
-#[derive(Default, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
+/// We ignore some fields:
+/// - version: string
+/// - license: Option<String>
+/// - license_file: Option<String>
+/// - description: Option<String>
+/// - source: Option<String>
+/// - features: ?
+/// - metadata: Option<?>
+/// - publish: Option<?>
+/// - authors: Vec<String>
+/// - categories: Vec<?>
+/// - keywords: Vec<?>
+/// - readme: Option<?>
+/// - repository: Option<?>
+/// - homepage: Option<?>
+/// - documentation: Option<?>
+/// - links: String
 struct Package {
     #[allow(dead_code)]
     name: String,
     #[allow(dead_code)]
+    id: String,
+    #[allow(dead_code)]
+    // TODO: remove?
     targets: Vec<Target>,
     dependencies: Vec<Dependency>,
+    manifest_path: String,
+    edition: String,
 }
 
-#[derive(Default, Deserialize)]
+#[derive(Debug, Deserialize)]
+/// We ignore some fields:
+/// - resolve: Option<?>
+/// - version: int
+/// - workspace_root: String
 struct Manifest {
     packages: Vec<Package>,
     #[allow(dead_code)]
+    /// The workspace members are packages identified by their [id]
+    workspace_members: Vec<String>,
     target_directory: String,
+    metadata: Option<String>,
+}
+
+impl Display for Dependency {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
+        write!(f, "      {}: kind={:?}", self.name, self.kind)
+    }
+}
+
+impl Display for Target {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
+        write!(
+            f,
+            "      {}: kind={:?}, crate_types={:?}, src_path={}",
+            self.name, self.kind, self.crate_types, self.src_path
+        )
+    }
+}
+
+impl Display for Package {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
+        write!(f, "  {}: {{\n", self.name)?;
+
+        // id
+        write!(f, "    id={};\n", self.id)?;
+
+        // manifest_path
+        write!(f, "    manifest_path={};\n", self.manifest_path)?;
+
+        // targets
+        write!(f, "    targets=[\n")?;
+        for target in &self.targets {
+            write!(f, "{},\n", target)?
+        }
+        write!(f, "    ];\n")?;
+
+        // dependencies
+        write!(f, "    dependencies=[\n")?;
+        for dep in &self.dependencies {
+            write!(f, "{},\n", dep)?;
+        }
+        write!(f, "    ];\n")?;
+
+        write!(f, "  }}")
+    }
+}
+
+impl Display for Manifest {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
+        // workspace_members
+        write!(f, "workspace_members=[\n")?;
+        for wm in &self.workspace_members {
+            write!(f, "  {},\n", wm)?;
+        }
+        write!(f, "];\n")?;
+
+        write!(f, "target_directory={};\n", self.target_directory)?;
+        write!(f, "metadata={:?};\n", self.metadata)?;
+
+        write!(f, "packages=[\n")?;
+        for p in &self.packages {
+            write!(f, "{},\n", p)?;
+        }
+
+        write!(f, "]")
+    }
 }
 
 /// Small helper. See [compute_external_deps]
@@ -288,21 +395,27 @@ fn compiled_to_lib_name(remove_pre: bool, no_ext_filename: String) -> String {
 }
 
 /// Small utility. See [compute_external_deps].
-fn insert_if_not_present(map: &mut HashMap<String, String>, lib_name: String, filename: String) {
-    // Check that there isn't another compiled library for this dependency
-    if map.contains_key(&lib_name) {
-        let prev_filename = map.get(&lib_name).unwrap();
-        error!("Found two compiled library files for the same external dependency ({:?}): {:?}, {:?}. You may want to clean and rebuild the project: `cargo clean && cargo build`",
-                    lib_name, prev_filename, filename);
-        panic!();
+/// Insert [filename] in the string vector for [lib_name]. Create a new entry if
+/// [lib_name] is not an entry.
+///
+/// There may be several compiled files for the same library (if we used different
+/// versions of the compiler for instance). This is why we use a map from `String`
+/// to `Vec<String>`.
+fn insert_in_vec_map(map: &mut HashMap<String, Vec<String>>, lib_name: String, filename: String) {
+    // There may not be an entry, in which case we initialize it - there must
+    // be a better way of doing this?...
+    if !(map.contains_key(&lib_name)) {
+        map.insert(lib_name.clone(), Vec::new());
     }
 
-    // Insert in the map
-    trace!("lib to compiled: {:?} -> {:?}", lib_name, filename);
-    map.insert(lib_name, filename);
+    // Insert the new filename
+    trace!("lib to compiled: {:?} -> {:?}", &lib_name, filename);
+    let filenames = map.get_mut(&lib_name).unwrap();
+    filenames.push(filename);
 }
 
-/// Compute the external dependencies of a crate, by reading the manifest.
+/// Read the manifest of a crate, find the target package and compute the external
+/// dependencies.
 ///
 /// We face the issue that we directly call the rust compiler, rather than
 /// `cargo`, and thus have to give very precise arguments to our invocation
@@ -326,7 +439,7 @@ fn insert_if_not_present(map: &mut HashMap<String, String>, lib_name: String, fi
 /// Finally, the code used in this function to read the manifest and compute
 /// the list of external dependencies is greatly inspired by the code used in
 /// [hacspec](https://github.com/hacspec/), so all credits to them.
-fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
+fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Package, Vec<String>) {
     use std::str::FromStr;
 
     // Compute the path to the crate
@@ -336,6 +449,7 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     let crate_path = source_file.as_path().parent().unwrap().parent().unwrap();
     let mut manifest_path = crate_path.to_path_buf();
     manifest_path.push(PathBuf::from_str("Cargo.toml").unwrap());
+    let manifest_path = manifest_path.to_str().unwrap().to_string();
 
     // First, read the manifest (comes from hacspec)
     info!("Reading manifest: {:?}", manifest_path);
@@ -344,9 +458,9 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     let output_args = vec![
         // We want to read the metadata
         "metadata".to_string(),
-        // Don't list the dependencies of the dependencies (useful if we
-        // implement something like cargo and need to transitively build all
-        // the dependencies, but this is not the point here)
+        // We need the verbose version of the manifest
+        "-v".to_string(),
+        // Focus on the workspace members
         "--no-deps".to_string(),
         // For stability (and to prevent cargo from printing an annoying warning
         // message), select a format version
@@ -354,7 +468,7 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
         "1".to_string(),
         // We need to provide the path to the manifest
         "--manifest-path".to_string(),
-        manifest_path.to_str().unwrap().to_string(),
+        manifest_path.clone(),
     ];
 
     trace!("cargo metadata command args: {:?}", output_args);
@@ -374,6 +488,35 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     let manifest: Manifest = serde_json::from_str(&json_string)
         .expect(" ⚠️  Error reading the manifest (Cargo.toml file) processed by cargo");
 
+    trace!("manifest: {}", manifest);
+
+    // The manifest lists all the packages we need to build (including the
+    // dependencies' dependencies). We only want to retrieve the information
+    // about the package for the local crate (assuming there is only one).
+    // We thought of using the [workspace_members] field, but it actually
+    // contains a lot of unrelated packages. We thus do this in a slightly
+    // hacky way: we find the package whose [manifest_path] field matches
+    // the current manifest.
+    // Rmk: in theory, it would be cleaner if we didn't give a source file
+    // as input argument to Charon, but rather a directory (from where we
+    // would find the manifest, then lookup the proper target, which would
+    // contain the source path indicating the entry point of the crate).
+    // For now we don't do this because we want to be able to extract
+    // sub-parts of a crate (by using the proper entry points): we might
+    // change that in the future.
+
+    // Find all the packages whose [manifest_path] matches the current manifest
+    let mut tgt_packages: Vec<Package> = Vec::new();
+    for package in &manifest.packages {
+        if package.manifest_path == manifest_path {
+            tgt_packages.push(package.clone());
+        }
+    }
+    // Check that we found exactly one package
+    assert!(tgt_packages.len() == 1);
+
+    let tgt_package = tgt_packages.pop().unwrap();
+
     // Build systems can be annoying, especially if we use different versions
     // of the compiler (Charon relies on a nightly version, which may be
     // different from the one used by the user to compile his project! - this
@@ -389,23 +532,29 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     // calling charon; this should be easy to script).
 
     // List the dependencies.
-    // We do something simple: we list the dependencies for all the packages,
+    // We do something simple: we list the dependencies for the target package,
     // as having useless dependencies shouldn't be a problem.
     // We make sure we don't have duplicates while doing so.
     let mut deps: HashSet<String> = HashSet::new();
-    for package in &manifest.packages {
-        trace!("Packages: {}", package.name);
-
-        for dep in &package.dependencies {
-            // A crate name may use the "-" symbol, however this symbol gets
-            // replaced with "_" at compilation: we thus need to convert it
-            // before registering it.
-            // Note that we need to do the conversion now, because when looking
-            // in the directory file containing all the compiled dependencies,
-            // we filter the useless dependencies.
-            let dep = str::replace(&dep.name, "-", "_");
-            deps.insert(dep);
+    for dep in &tgt_package.dependencies {
+        // We keep only the "regular" dependencies (for instance, we filter
+        // the dependencies from "dev-dependencies") by keeping only the
+        // dependencies with kind=None.
+        if dep.kind.is_some() {
+            // Sanity check: the kind should be in a specific set
+            let kind = dep.kind.as_ref().unwrap();
+            assert!(kind == "dev");
+            continue;
         }
+
+        // A crate name may use the "-" symbol, however this symbol gets
+        // replaced with "_" at compilation: we thus need to convert it
+        // before registering it.
+        // Note that we need to do the conversion now, because when looking
+        // in the directory file containing all the compiled dependencies,
+        // we filter the useless dependencies.
+        let dep = str::replace(&dep.name, "-", "_");
+        deps.insert(dep);
     }
     trace!("List of external dependencies: {:?}", deps);
 
@@ -419,9 +568,9 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     );
 
     // List the files in the dependencies
-    // There are .rlib, .d and .so files.
+    // There are .rmeta, .rlib, .d and .so files.
     // All the files have a hash suffix.
-    // The .rlib and .so files have a "lib" prefix.
+    // The .rmeta, .rlib and .so files have a "lib" prefix.
     // Ex.:
     // - External "remote" crates:
     //   "libserde_json-25bfd2343c819291.rlib"
@@ -432,12 +581,14 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     // We list all the compiled files in the target directory and retrieve the
     // original library name (i.e., "serde_json" or "attributes" in the above
     // examples), then compute a map from library name to compiled files.
-    // We check that there is only one compiled file per external
-    // dependency while doing so.
+    //
+    // It happens that there are several compiled files for the same dependency:
+    // we store them all in a vector.
     let files = std::fs::read_dir(deps_dir.clone()).unwrap();
-    let mut lib_to_rlib: HashMap<String, String> = HashMap::new();
-    let mut lib_to_so: HashMap<String, String> = HashMap::new();
-    let mut lib_to_d: HashMap<String, String> = HashMap::new();
+    let mut lib_to_rmeta: HashMap<String, Vec<String>> = HashMap::new();
+    let mut lib_to_rlib: HashMap<String, Vec<String>> = HashMap::new();
+    let mut lib_to_so: HashMap<String, Vec<String>> = HashMap::new();
+    let mut lib_to_d: HashMap<String, Vec<String>> = HashMap::new();
     for file in files {
         trace!("File: {:?}", file);
         match file {
@@ -450,14 +601,19 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
                     continue;
                 }
                 let extension = extension.unwrap().to_str().unwrap();
-                if extension != "rlib" && extension != "so" && extension != "d" {
+                if extension != "rmeta"
+                    && extension != "rlib"
+                    && extension != "so"
+                    && extension != "d"
+                {
                     continue;
                 }
-                // The file has a "lib" prefix if and only if its extension is ".rlib"
-                // or ".so"
+                // The file has a "lib" prefix if and only if its extension is
+                // ".rmeta", ".rlib" or ".so"
+                let is_rmeta = extension == "rmeta";
                 let is_rlib = extension == "rlib";
                 let is_so = extension == "so";
-                let has_prefix = is_rlib || is_so;
+                let has_prefix = is_rmeta || is_rlib || is_so;
 
                 // Retrieve the file name
                 let filename = PathBuf::from(entry.file_name().unwrap());
@@ -476,12 +632,14 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
 
                 // Insert in the proper map - note that we need the full path
                 let full_path = deps_dir.join(entry).to_str().unwrap().to_string();
-                if is_rlib {
-                    insert_if_not_present(&mut lib_to_rlib, lib_name, full_path);
+                if is_rmeta {
+                    insert_in_vec_map(&mut lib_to_rmeta, lib_name, full_path);
+                } else if is_rlib {
+                    insert_in_vec_map(&mut lib_to_rlib, lib_name, full_path);
                 } else if is_so {
-                    insert_if_not_present(&mut lib_to_so, lib_name, full_path);
+                    insert_in_vec_map(&mut lib_to_so, lib_name, full_path);
                 } else {
-                    insert_if_not_present(&mut lib_to_d, lib_name, full_path);
+                    insert_in_vec_map(&mut lib_to_d, lib_name, full_path);
                 }
             }
             std::io::Result::Err(_) => {
@@ -500,13 +658,25 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
     // Add the "--extern" arguments
     for dep in deps {
         // Retrieve the path to the compiled library.
-        // We first look in the .rlib files, then in the .so files
-        let compiled_path = lib_to_rlib.get(&dep);
-        let compiled_path = if compiled_path.is_none() {
-            lib_to_so.get(&dep)
-        } else {
-            compiled_path
-        };
+        // We look in the following order:
+        // - .rmeta
+        // - .rlib files
+        // - .so files
+        let libs = [&lib_to_rmeta, &lib_to_rlib, &lib_to_so];
+        let mut compiled_path = None;
+        for lib in libs {
+            compiled_path = lib.get(&dep);
+            if compiled_path.is_some() {
+                break;
+            }
+        }
+        if compiled_path.is_none() {
+            error!(
+                "Could not find a compiled file for the external dependency {:?} in {:?}. You may need to build the crate: `cargo build`.",
+                dep, deps_dir
+            );
+            panic!();
+        }
 
         if compiled_path.is_none() {
             error!(
@@ -515,13 +685,23 @@ fn compute_external_deps(source_file: &PathBuf) -> Vec<String> {
             );
             panic!();
         }
+
+        // Check that there is exactly one compiled library
+        let compiled_path = compiled_path.unwrap();
+        assert!(compiled_path.len() > 0);
+        if compiled_path.len() > 1 {
+            error!("Found two compiled library files for the same external dependency ({:?}): {:?}, {:?}. You may want to clean the target directory (\"{}\") then rebuild the project with `cargo build`",
+                    dep, &compiled_path[0], &compiled_path[1], manifest_path);
+            panic!();
+        }
+
         args.push("--extern".to_string());
-        args.push(format!("{}={}", dep, compiled_path.unwrap()).to_string());
+        args.push(format!("{}={}", dep, &compiled_path[0]).to_string());
     }
 
     // Return
     trace!("Args vec: {:?}", args);
-    args
+    (manifest, tgt_package, args)
 }
 
 fn main() {
@@ -547,8 +727,10 @@ fn main() {
     let sysroot = std::str::from_utf8(&out.stdout).unwrap().trim();
     let sysroot_arg = format!("--sysroot={}", sysroot).to_owned();
 
-    // Retrieve the list of external dependencies by reading the manifest
-    let mut external_deps = compute_external_deps(&args.input_file);
+    // Read the manifest, find the target package and compute the list of external
+    // dependencies.
+    let (_manifest, package, mut external_deps) =
+        read_manifest_compute_external_deps(&args.input_file);
 
     // Call the Rust compiler with the proper options
     let mut compiler_args = vec![
@@ -556,14 +738,14 @@ fn main() {
         sysroot_arg,
         args.input_file.as_path().to_str().unwrap().to_string(),
         "--crate-type=lib".to_string(),
-        "--edition=2018".to_string(),
+        format!("--edition={}", package.edition).to_string(),
     ];
     if args.use_polonius {
         compiler_args.push("-Zpolonius".to_string());
     }
     compiler_args.append(&mut external_deps);
 
-    trace!("Compiler args: {:?}", compiler_args);
+    trace!("Compiler args: {:?}", compiler_args.join(" "));
 
     // When calling the compiler we provide a callback, which allows us
     // to retrieve the result of compiler queries
