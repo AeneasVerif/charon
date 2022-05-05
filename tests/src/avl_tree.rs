@@ -13,6 +13,27 @@ struct AvlNode<V> {
     right:  Option<Box<AvlNode<V>>>,
 }
 
+// Invariants
+// ''''''''''
+
+fn check_integrity<V>(node: &Option<Box<AvlNode<V>>>) {
+    if node.is_none() { return; };
+    let n = node.as_ref().unwrap();
+
+    check_integrity(&n.left);
+    check_integrity(&n.right);
+
+    if let Some(left) = n.left.as_ref() {
+        assert!(left.key < n.key);
+    }
+    if let Some(right) = n.right.as_ref() {
+        assert!(right.key > n.key);
+    }
+
+    assert_eq!(n.height, compute_height(n));
+    assert!(get_balance(node).is_balanced());
+}
+
 // Height
 // ''''''
 
@@ -67,27 +88,6 @@ fn get_balance<V>(node: &Option<Box<AvlNode<V>>>) -> AvlBalance {
             }
         }
     }
-}
-
-// Invariants
-// ''''''''''
-
-fn check_integrity<V>(node: &Option<Box<AvlNode<V>>>) {
-    if node.is_none() { return; };
-    let n = node.as_ref().unwrap();
-
-    check_integrity(&n.left);
-    check_integrity(&n.right);
-
-    if let Some(left) = n.left.as_ref() {
-        assert!(left.key < n.key);
-    }
-    if let Some(right) = n.right.as_ref() {
-        assert!(right.key > n.key);
-    }
-    
-    assert_eq!(n.height, compute_height(n));
-    assert!(get_balance(node).is_balanced());
 }
 
 // Accessors
