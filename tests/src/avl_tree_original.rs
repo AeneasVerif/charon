@@ -1,6 +1,6 @@
 
 #![allow(dead_code)]
-
+/*
 use std::cmp::{Ordering, max};
 
 struct AvlNode<K: Ord, V> {
@@ -439,3 +439,4 @@ fn test_compare_to_map() {
     let m_values = (&mut map).into_iter().collect::<std::vec::Vec<(&i32, &mut i32)>>();
     assert_eq!(t_values, m_values);
 }
+*/

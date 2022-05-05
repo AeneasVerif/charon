@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 
 mod avl_tree;
-use crate::avl_tree::AvlTree;
+/*use crate::avl_tree::AvlTree;
 
 fn test_small_tree() {
     let mut tree = AvlTree::<i32>::new();
@@ -79,10 +79,10 @@ fn test_compare_to_map() {
         tree.check_integrity();
     });
 
-    let mut it = tree.into_iter();
+    /*let mut it = tree.into_iter();
     for (k, v) in &mut map {
         assert_eq!((k, v), it.next().expect("Should yield value"));
     }
     assert_eq!(it.next(), None);
-    assert_eq!(it.next(), None);
-}
+    assert_eq!(it.next(), None);*/
+} */
