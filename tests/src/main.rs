@@ -1,3 +1,4 @@
+mod avl_tree;
 mod external;
 mod hashmap;
 mod loops;

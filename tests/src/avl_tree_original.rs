@@ -1,32 +1,30 @@
 
 #![allow(dead_code)]
 
-type Key = i32; // TODO: make this generic
-
 use std::cmp::{Ordering, max};
 
-struct AvlNode<V> {
-    key:    Key,
+struct AvlNode<K: Ord, V> {
+    key:    K,
     value:  V,
     height: u32,
-    left:   Option<Box<AvlNode<V>>>, 
-    right:  Option<Box<AvlNode<V>>>,
+    left:   Option<Box<AvlNode<K, V>>>, 
+    right:  Option<Box<AvlNode<K, V>>>,
 }
 
 // Height
 // ''''''
 
-fn get_height<V>(node: &Option<Box<AvlNode<V>>>) -> u32 {
+fn get_height<K: Ord, V>(node: &Option<Box<AvlNode<K, V>>>) -> u32 {
     match node {
         None => 0,
         Some(n) => n.height
     }
 }
 // Compute height based on child nodes height.
-fn compute_height<V>(node: &AvlNode<V>) -> u32 {
+fn compute_height<K: Ord, V>(node: &AvlNode<K, V>) -> u32 {
     1 + max(get_height(&node.left), get_height(&node.right))
 }
-fn recache_height<V>(node: &mut AvlNode<V>) {
+fn recache_height<K: Ord, V>(node: &mut AvlNode<K, V>) {
     node.height = compute_height(node);
 }
 
@@ -53,7 +51,7 @@ impl AvlBalance {
     }
 }
 
-fn get_balance<V>(node: &Option<Box<AvlNode<V>>>) -> AvlBalance {
+fn get_balance<K: Ord, V>(node: &Option<Box<AvlNode<K, V>>>) -> AvlBalance {
     match node {
         None => AvlBalance::IsBalanced,
         Some(n) => {
@@ -72,7 +70,7 @@ fn get_balance<V>(node: &Option<Box<AvlNode<V>>>) -> AvlBalance {
 // Invariants
 // ''''''''''
 
-fn check_integrity<V>(node: &Option<Box<AvlNode<V>>>) {
+fn check_integrity<K: Ord, V>(node: &Option<Box<AvlNode<K, V>>>) {
     if node.is_none() { return; };
     let n = node.as_ref().unwrap();
 
@@ -93,14 +91,14 @@ fn check_integrity<V>(node: &Option<Box<AvlNode<V>>>) {
 // Accessors
 // '''''''''
 
-fn get<'a, V>(node: &'a Option<Box<AvlNode<V>>>, k: &Key) -> Option<&'a V> {
+fn get<'a, K: Ord, V>(node: &'a Option<Box<AvlNode<K, V>>>, k: &K) -> Option<&'a V> {
     node.as_ref().and_then(|n| match k.cmp(&n.key) {
         Ordering::Equal   => Some(&n.value),
         Ordering::Less    => get(&n.left, k),
         Ordering::Greater => get(&n.right, k)
     })
 }
-fn get_mut<'a, V>(node: &'a mut Option<Box<AvlNode<V>>>, k: &Key) -> Option<&'a mut V> {
+fn get_mut<'a, K: Ord, V>(node: &'a mut Option<Box<AvlNode<K, V>>>, k: &K) -> Option<&'a mut V> {
     node.as_mut().and_then(|n| match k.cmp(&n.key) {
         Ordering::Equal   => Some    (&mut n.value),
         Ordering::Less    => get_mut(&mut n.left, k),
@@ -111,7 +109,7 @@ fn get_mut<'a, V>(node: &'a mut Option<Box<AvlNode<V>>>, k: &Key) -> Option<&'a 
 // Shape modifiers
 // '''''''''''''''
 
-fn push_to_left<V>(mut node: Box<AvlNode<V>>) -> Box<AvlNode<V>> {
+fn push_to_left<K: Ord, V>(mut node: Box<AvlNode<K, V>>) -> Box<AvlNode<K, V>> {
     let mut new_left = node.right.expect("Should have a right child");
     std::mem::swap(&mut node.key,   &mut new_left.key);
     std::mem::swap(&mut node.value, &mut new_left.value);
@@ -125,7 +123,7 @@ fn push_to_left<V>(mut node: Box<AvlNode<V>>) -> Box<AvlNode<V>> {
     recache_height(node.as_mut()); node
 }
 
-fn push_to_right<V>(mut node: Box<AvlNode<V>>) -> Box<AvlNode<V>> {
+fn push_to_right<K: Ord, V>(mut node: Box<AvlNode<K, V>>) -> Box<AvlNode<K, V>> {
     let mut new_right = node.left.expect("Should have a left child");
     std::mem::swap(&mut node.key,   &mut new_right.key);
     std::mem::swap(&mut node.value, &mut new_right.value);
@@ -140,7 +138,7 @@ fn push_to_right<V>(mut node: Box<AvlNode<V>>) -> Box<AvlNode<V>> {
 }
 
 // Only function callable when the node is unbalanced. Children must be balanced.
-fn rebalance<V>(node: &mut Option<Box<AvlNode<V>>>) {
+fn rebalance<K: Ord, V>(node: &mut Option<Box<AvlNode<K, V>>>) {
     let b = get_balance(node);
     if b.is_balanced() { return; };
 
@@ -177,7 +175,7 @@ fn rebalance<V>(node: &mut Option<Box<AvlNode<V>>>) {
 // ''''''''''
 
 // Returns the old value at the given key.
-fn insert<'a, V>(node: &'a mut Option<Box<AvlNode<V>>>, k: Key, v: V) -> Option<V> {
+fn insert<'a, K: Ord, V>(node: &'a mut Option<Box<AvlNode<K, V>>>, k: K, v: V) -> Option<V> {
     match node {
         None => {
             let n = AvlNode{ key: k, value: v, height: 1, left: None, right: None };
@@ -201,7 +199,7 @@ fn insert<'a, V>(node: &'a mut Option<Box<AvlNode<V>>>, k: Key, v: V) -> Option<
 
 // Writes the leftmost node found key & value at the given borrows,
 // then replace it with its right child.
-fn remove_leftmost<V>(key: &mut Key, value: &mut V, node: &mut Option<Box<AvlNode<V>>>) -> V {
+fn remove_leftmost<K: Ord, V>(key: &mut K, value: &mut V, node: &mut Option<Box<AvlNode<K, V>>>) -> V {
     let mut n = std::mem::replace(node, None).unwrap();
 
     let v;
@@ -224,7 +222,7 @@ fn remove_leftmost<V>(key: &mut Key, value: &mut V, node: &mut Option<Box<AvlNod
     v
 }
 
-fn remove_current<V>(node: &mut Option<Box<AvlNode<V>>>) -> V {
+fn remove_current<K: Ord, V>(node: &mut Option<Box<AvlNode<K, V>>>) -> V {
     let mut n = std::mem::replace(node, None).unwrap();
     match (&mut n.left, &mut n.right) {
         (None,    None)    => n.value,
@@ -239,7 +237,7 @@ fn remove_current<V>(node: &mut Option<Box<AvlNode<V>>>) -> V {
 }
 
 // Returns the removed value, if any.
-fn remove<V>(node: &mut Option<Box<AvlNode<V>>>, k: &Key) -> Option<V> {
+fn remove<K: Ord, V>(node: &mut Option<Box<AvlNode<K, V>>>, k: &K) -> Option<V> {
     if node.is_none() { return None }
     let n = node.as_mut().unwrap();
     let v = match k.cmp(&n.key) {
@@ -257,15 +255,15 @@ fn remove<V>(node: &mut Option<Box<AvlNode<V>>>, k: &Key) -> Option<V> {
 // Iteration
 // '''''''''
 
-struct AvlIteratorNode<'a, V> {
-    key: &'a Key,
+struct AvlIteratorNode<'a, K: Ord, V> {
+    key: &'a K,
     value: &'a mut V,
-    right: Option<&'a mut Box<AvlNode<V>>>,
+    right: Option<&'a mut Box<AvlNode<K, V>>>,
 }
 
-fn go_to_leftmost<'a, V>(
-    path: &mut std::vec::Vec<AvlIteratorNode<'a, V>>,
-    node: Option<&'a mut Box<AvlNode<V>>>)
+fn go_to_leftmost<'a, K: Ord, V>(
+    path: &mut std::vec::Vec<AvlIteratorNode<'a, K, V>>,
+    node: Option<&'a mut Box<AvlNode<K, V>>>)
 {
     node.map(|n| {
         path.push(AvlIteratorNode{
@@ -277,7 +275,7 @@ fn go_to_leftmost<'a, V>(
     });
 }
 
-fn next<'a, V>(path: &mut std::vec::Vec<AvlIteratorNode<'a, V>>) -> Option<(&'a Key, &'a mut V)> {
+fn next<'a, K: Ord, V>(path: &mut std::vec::Vec<AvlIteratorNode<'a, K, V>>) -> Option<(&'a K, &'a mut V)> {
     let mut cur = path.pop()?;
     if let Some(n) = std::mem::replace(&mut cur.right, None) {
         go_to_leftmost(path, Some(n));
@@ -288,39 +286,33 @@ fn next<'a, V>(path: &mut std::vec::Vec<AvlIteratorNode<'a, V>>) -> Option<(&'a 
 // Tree API
 // ''''''''
 
-pub struct AvlTree<V> {
-    root: Option<Box<AvlNode<V>>>
+struct AvlTree<K: Ord, V> {
+    root: Option<Box<AvlNode<K, V>>>
 }
 
-impl<V> AvlTree<V> {
+impl<K: Ord, V> AvlTree<K, V> {
 
-    pub fn new() -> AvlTree<V> {
-        AvlTree::<V>{ root: None }
+    fn new() -> AvlTree<K, V> {
+        AvlTree::<K, V>{ root: None }
     }
 
-    pub fn get(&self, key: &Key) -> Option<&V> {
+    fn get(&self, key: &K) -> Option<&V> {
         get(&self.root, key)
     }
 
-    pub fn get_mut(&mut self, key: &Key) -> Option<&mut V> {
+    fn get_mut(&mut self, key: &K) -> Option<&mut V> {
         get_mut(&mut self.root, key)
     }
 
-    pub fn insert(&mut self, key: Key, value: V) -> Option<V> {
+    fn insert(&mut self, key: K, value: V) -> Option<V> {
         insert(&mut self.root, key, value)
     }
     
-    pub fn remove(&mut self, key: &Key) -> Option<V> {
+    fn remove(&mut self, key: &K) -> Option<V> {
         remove(&mut self.root, key)
     }
-    
-    pub fn into_iter<'a>(&'a mut self) -> AvlIterator<'a, V> {
-        let mut path = std::vec::Vec::new();
-        go_to_leftmost(&mut path, self.root.as_mut());
-        AvlIterator{ path }
-    }
 
-    pub fn check_integrity(&self) {
+    fn check_integrity(&self) {
         check_integrity(&self.root)
     }
 }
@@ -328,13 +320,122 @@ impl<V> AvlTree<V> {
 // Iterator API
 // ''''''''''''
 
-pub struct AvlIterator<'a, V> {
-    path: std::vec::Vec<AvlIteratorNode<'a, V>>
+struct AvlIterator<'a, K: Ord, V> {
+    path: std::vec::Vec<AvlIteratorNode<'a, K, V>>
 }
 
-impl<'a, V> AvlIterator<'a, V> {
+impl<'a, K: Ord, V> IntoIterator for &'a mut AvlTree<K, V> {
+
+    type IntoIter = AvlIterator<'a, K, V>;
+
+    type Item = <Self::IntoIter as Iterator>::Item;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let mut path = std::vec::Vec::new();
+        go_to_leftmost(&mut path, self.root.as_mut());
+        AvlIterator{ path }
+    }
+}
+
+impl<'a, K: Ord, V> Iterator for AvlIterator<'a, K, V> {
     
-    pub fn next(&mut self) -> Option<(&'a Key, &'a mut V)> {
+    type Item = (&'a K, &'a mut V);
+
+    fn next(&mut self) -> Option<Self::Item> {
         next(&mut self.path)
     }
+}
+
+// Tests
+// '''''
+
+fn main() {
+    let mut tree = AvlTree::<i32, i32>::new();
+    tree.insert(10, 1);
+    tree.get(&10);
+    tree.get_mut(&10);
+    tree.remove(&10);
+    tree.check_integrity();
+
+    println!("Hello AVL tree !");
+}
+
+fn test_small_tree() {
+    let mut tree = AvlTree::<i32, i32>::new();
+    tree.check_integrity();
+
+    assert_eq!(tree.insert(10, 1), None);
+    assert_eq!(tree.insert(20, 2), None);
+    assert_eq!(tree.insert(30, 3), None);
+    assert_eq!(tree.insert(0,  0), None);
+    tree.check_integrity();
+
+    assert_eq!(tree.insert(0,   99), Some(0));
+    assert_eq!(tree.insert(10, 199), Some(1));
+    assert_eq!(tree.insert(20, 299), Some(2));
+    assert_eq!(tree.insert(30, 399), Some(3));
+    tree.check_integrity();
+
+    assert_eq!(tree.get(&0),  Some(&99));
+    assert_eq!(tree.get(&10), Some(&199));
+    assert_eq!(tree.get(&20), Some(&299));
+    assert_eq!(tree.get(&30), Some(&399));
+    
+    assert_eq!(tree.get(&-5), None);
+    assert_eq!(tree.get(&5),  None);
+    assert_eq!(tree.get(&15), None);
+    assert_eq!(tree.get(&25), None);
+    assert_eq!(tree.get(&35), None);
+    
+    let zero = tree.get_mut(&0).unwrap();
+    *zero = 42;
+    assert_eq!(tree.get(&0), Some(&42));
+    tree.check_integrity();
+    
+    assert_eq!(tree.remove(&0),  Some(42));
+    assert_eq!(tree.remove(&10), Some(199));
+    tree.check_integrity();
+
+    assert_eq!(tree.remove(&-5), None);
+    assert_eq!(tree.remove(&0),  None);
+    assert_eq!(tree.remove(&5),  None);
+    assert_eq!(tree.remove(&10), None);
+    assert_eq!(tree.remove(&15), None);
+}
+
+fn test_compare_to_map() {
+    let mut tree = AvlTree::<i32, i32>::new();
+    let mut map = std::collections::BTreeMap::<i32, i32>::new();
+
+    [6, 1, 0, 4, 4, 3, 9, 12, 13, 4, 2, 1, 30, 40, 2, 7].map(|n| {
+        assert_eq!(tree.insert(n, n * 10), map.insert(n, n * 10), "While inserting {}", n);
+        tree.check_integrity();
+    });
+
+    [6, 1, 0, 7, 3, 9, 12, 13, 14, 1, 30, 40, 2, 7].map(|n| {
+        assert_eq!(tree.get(&n), map.get(&n), "While searching {}", n);
+        tree.check_integrity();
+        if !map.contains_key(&n) { return; };
+
+        let t = tree.get_mut(&n).unwrap();
+        let m = map.get_mut(&n).unwrap();
+        *t += 1;
+        *m += 1;
+        assert_eq!(tree.get(&n), map.get(&n), "While searching {}", n);
+        tree.check_integrity();
+    });
+     
+    [7, 30, 20, 13, 12, 9, 5, 0, 1, 2].map(|n| {
+        assert_eq!(tree.remove(&n), map.remove(&n), "While removing {}", n);
+        tree.check_integrity();
+    });
+    
+    [30, 40, 50, 60, 45, 35, 25].map(|n| {
+        assert_eq!(tree.insert(n, n * 10), map.insert(n, n * 10), "While inserting {}", n);
+        tree.check_integrity();
+    });
+
+    let t_values =       tree.into_iter().collect::<std::vec::Vec<(&i32, &mut i32)>>();
+    let m_values = (&mut map).into_iter().collect::<std::vec::Vec<(&i32, &mut i32)>>();
+    assert_eq!(t_values, m_values);
 }
