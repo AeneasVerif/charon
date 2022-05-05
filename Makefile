@@ -21,7 +21,8 @@ test: build build-tests build-tests-nll \
 	test-nested_borrows test-no_nested_borrows test-loops test-hashmap \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
-	test-nll-betree_nll test-nll-betree_main
+	test-nll-betree_nll test-nll-betree_main \
+        test-sidney_tests
 
 test-nested_borrows: OPTIONS += --no-code-duplication
 test-no_nested_borrows: OPTIONS += --no-code-duplication
@@ -37,6 +38,9 @@ test-nll-betree_nll: OPTIONS += --no-code-duplication
 test-nll-betree_main: OPTIONS += --no-code-duplication
 test-nll-betree_main: OPTIONS += --opaque=betree_utils
 
+# TODO: provisional
+test-sidney_tests:
+
 .PHONY: test-%
 test-%: TESTS=../tests
 test-%:
@@ -50,3 +54,6 @@ test-nll-%: TESTS=../tests-nll
 test-nll-%: OPTIONS += --nll
 test-nll-%:
 	cd charon && cargo run $(SRC)/$*.rs $(OPTIONS)
+
+make-hacspec:
+	cd charon && cargo run /home/soho/Projects/prosecco/hacspec/examples/aes/src/aes.rs
