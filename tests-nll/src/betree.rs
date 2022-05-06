@@ -440,6 +440,20 @@ impl Internal {
 }
 
 impl Node {
+    /// Apply a list of message to ourselves: leaf node case
+    fn apply_messages_to_leaf<'a>(
+        bindings: &'a mut Map<Key, Value>,
+        new_msgs: List<(Key, Message)>,
+    ) {
+        match new_msgs {
+            List::Nil => (),
+            List::Cons(new_msg, new_msgs_tl) => {
+                Node::apply_to_leaf(bindings, new_msg.0, new_msg.1);
+                Node::apply_messages_to_leaf(bindings, *new_msgs_tl);
+            }
+        }
+    }
+
     /// Apply a message to ourselves: leaf node case
     ///
     /// This simply updates the bindings.
@@ -480,6 +494,20 @@ impl Node {
                     let v = upsert_update(Option::None, s);
                     bindings.push_front((key, v));
                 }
+            }
+        }
+    }
+
+    /// Apply a list of message to ourselves: internal node case
+    fn apply_messages_to_internal<'a>(
+        msgs: &'a mut Map<Key, Message>,
+        new_msgs: List<(Key, Message)>,
+    ) {
+        match new_msgs {
+            List::Nil => (),
+            List::Cons(new_msg, new_msgs_tl) => {
+                Node::apply_to_internal(msgs, new_msg.0, new_msg.1);
+                Node::apply_messages_to_internal(msgs, *new_msgs_tl);
             }
         }
     }
@@ -552,12 +580,23 @@ impl Node {
         key: Key,
         new_msg: Message,
     ) {
+        let msgs = List::Cons((key, new_msg), Box::new(List::Nil));
+        self.apply_messages(params, node_id_cnt, msgs);
+    }
+
+    /// Apply a list of messages to ourselves
+    fn apply_messages<'a>(
+        &'a mut self,
+        params: &Params,
+        node_id_cnt: &'a mut NodeIdCounter,
+        msgs: List<(Key, Message)>,
+    ) {
         match self {
             Node::Leaf(node) => {
                 // Load the content from disk
                 let mut content = load_leaf_node(node.id);
                 // Insert
-                Node::apply_to_leaf(&mut content, key, new_msg);
+                Node::apply_messages_to_leaf(&mut content, msgs);
                 // Check if we need to split - in the future, we might want to
                 // do something smarter to compute the number of messages
                 let len = content.len();
@@ -579,7 +618,7 @@ impl Node {
                 // Load the content from disk
                 let mut content = load_internal_node(node.id);
                 // Insert
-                Node::apply_to_internal(&mut content, key, new_msg);
+                Node::apply_messages_to_internal(&mut content, msgs);
                 // Check if we need to flush - in the future, we might want to
                 // do something smarter to compute the number of messages
                 let num_msgs = content.len();
@@ -588,22 +627,6 @@ impl Node {
                 }
                 // Store the content to disk
                 store_internal_node(node.id, content)
-            }
-        }
-    }
-
-    /// Apply a list of messages to ourselves
-    fn apply_messages<'a>(
-        &'a mut self,
-        params: &Params,
-        node_id_cnt: &'a mut NodeIdCounter,
-        msgs: List<(Key, Message)>,
-    ) {
-        match msgs {
-            List::Nil => (),
-            List::Cons((key, msg), msgs) => {
-                self.apply(params, node_id_cnt, key, msg);
-                self.apply_messages(params, node_id_cnt, *msgs);
             }
         }
     }
@@ -1014,7 +1037,7 @@ mod tests {
             betree: BeTree::new(5, 5),
             refmap: HashMap::new(),
         };
-        let num_keys = 10;
+        let num_keys = 100;
 
         // Insert bindings
         for k in 0..num_keys {

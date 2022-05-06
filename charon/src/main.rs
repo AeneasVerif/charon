@@ -690,8 +690,8 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
         let compiled_path = compiled_path.unwrap();
         assert!(compiled_path.len() > 0);
         if compiled_path.len() > 1 {
-            error!("Found two compiled library files for the same external dependency ({:?}): {:?}, {:?}. You may want to clean the target directory (\"{}\") then rebuild the project with `cargo build`",
-                    dep, &compiled_path[0], &compiled_path[1], manifest_path);
+            error!("Found two compiled library files for the same external dependency ({:?}): {:?}, {:?}. You may want to clean the target directory (`rm \"{:?}/*\"`) then rebuild the project with `cargo build`",
+                    dep, &compiled_path[0], &compiled_path[1], deps_dir);
             panic!();
         }
 
