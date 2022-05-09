@@ -825,9 +825,8 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
         &type_defs,
     )?;
 
-    // # Step 6: go from IM to LLBC (Control-Flow Internal MIR) by reconstructing
+    // # Step 6: go from IM to LLBC (Low-Level Borrow Calculus) by reconstructing
     // the control flow.
-    // TODO: rename LLBC to LLBC (low-level borrow calculus)
     let llbc_defs =
         im_to_llbc::translate_functions(internal.no_code_duplication, &type_defs, &im_defs);
 
