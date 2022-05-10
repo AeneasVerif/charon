@@ -175,6 +175,63 @@ impl ScalarValue {
         }
     }
 
+    pub fn from_le_bytes(ty: IntegerTy, b: [u8; 16]) -> ScalarValue {
+        use std::convert::TryInto;
+        match ty {
+            IntegerTy::Isize => {
+                let b: [u8; 8] = b[0..8].try_into().unwrap();
+                ScalarValue::Isize(isize::from_le_bytes(b))
+            }
+            IntegerTy::I8 => {
+                let b: [u8; 1] = b[0..1].try_into().unwrap();
+                ScalarValue::I8(i8::from_le_bytes(b))
+            }
+            IntegerTy::I16 => {
+                let b: [u8; 2] = b[0..2].try_into().unwrap();
+                ScalarValue::I16(i16::from_le_bytes(b))
+            }
+            IntegerTy::I32 => {
+                let b: [u8; 4] = b[0..4].try_into().unwrap();
+                ScalarValue::I32(i32::from_le_bytes(b))
+            }
+            IntegerTy::I64 => {
+                let b: [u8; 8] = b[0..8].try_into().unwrap();
+                ScalarValue::I64(i64::from_le_bytes(b))
+            }
+            IntegerTy::I128 => {
+                let b: [u8; 16] = b[0..16].try_into().unwrap();
+                ScalarValue::I128(i128::from_le_bytes(b))
+            }
+            IntegerTy::Usize => {
+                let b: [u8; 8] = b[0..8].try_into().unwrap();
+                ScalarValue::Usize(usize::from_le_bytes(b))
+            }
+            IntegerTy::U8 => {
+                let b: [u8; 1] = b[0..1].try_into().unwrap();
+                ScalarValue::U8(u8::from_le_bytes(b))
+            }
+            IntegerTy::U16 => {
+                let b: [u8; 2] = b[0..2].try_into().unwrap();
+                ScalarValue::U16(u16::from_le_bytes(b))
+            }
+            IntegerTy::U32 => {
+                let b: [u8; 4] = b[0..4].try_into().unwrap();
+                ScalarValue::U32(u32::from_le_bytes(b))
+            }
+            IntegerTy::U64 => {
+                let b: [u8; 8] = b[0..8].try_into().unwrap();
+                ScalarValue::U64(u64::from_le_bytes(b))
+            }
+            IntegerTy::U128 => {
+                let b: [u8; 16] = b[0..16].try_into().unwrap();
+                ScalarValue::U128(u128::from_le_bytes(b))
+            }
+        }
+    }
+
+    /// **Warning**: most constants are stored as u128 by rustc. When converting
+    /// to i128, it is not correct to do `v as i128`, we must reinterpret the
+    /// bits (see [from_le_bytes]).
     pub fn from_int(ty: IntegerTy, v: i128) -> Result<ScalarValue> {
         if !ScalarValue::int_is_in_bounds(ty, v) {
             Err(())
