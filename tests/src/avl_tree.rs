@@ -2,7 +2,7 @@
 
 type Key = i32; // TODO: make this generic
 
-use std::cmp::{Ordering, max};
+use std::cmp::max;
 
 struct AvlNode<V> {
     key:    Key,

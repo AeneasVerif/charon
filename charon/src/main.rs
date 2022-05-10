@@ -229,7 +229,7 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
 /// - uses_default_features: bool
 /// - features: Vec<?>
 /// - target: Option<?>
-/// - registry: Opion<?>
+/// - registry: Option<?>
 #[derive(Debug, Deserialize, Clone)]
 struct Dependency {
     name: String,

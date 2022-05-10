@@ -1,10 +1,54 @@
 
 #![allow(dead_code)]
 
-mod avl_tree;
+use crate::btree::BTree;
+
+pub fn test_small_binary_tree() {
+    let mut tree = BTree::<i32>::new();
+    tree.check_integrity();
+
+    tree.insert(10, 1);
+    tree.insert(20, 2);
+    tree.insert(30, 3);
+    tree.insert(0,  0);
+    tree.check_integrity();
+
+    tree.insert(0,   99);
+    tree.insert(10, 199);
+    tree.insert(20, 299);
+    tree.insert(30, 399);
+    tree.check_integrity();
+
+    assert_eq!(*tree.get_mut(&0 ).unwrap(),  99);
+    assert_eq!(*tree.get_mut(&10).unwrap(), 199);
+    assert_eq!(*tree.get_mut(&20).unwrap(), 299);
+    assert_eq!(*tree.get_mut(&30).unwrap(), 399);
+
+    assert_eq!(tree.get_mut(&-5), None);
+    assert_eq!(tree.get_mut(&5),  None);
+    assert_eq!(tree.get_mut(&15), None);
+    assert_eq!(tree.get_mut(&25), None);
+    assert_eq!(tree.get_mut(&35), None);
+
+    let zero = tree.get_mut(&0).unwrap();
+    *zero = 42;
+    assert_eq!(*tree.get_mut(&0).unwrap(), 42);
+    tree.check_integrity();
+
+    tree.remove(&0);
+    tree.remove(&10);
+    tree.check_integrity();
+
+    tree.remove(&-5);
+    tree.remove(&0);
+    tree.remove(&5);
+    tree.remove(&10);
+    tree.remove(&15);
+}
+
 /*use crate::avl_tree::AvlTree;
 
-fn test_small_tree() {
+fn test_small_avl_tree() {
     let mut tree = AvlTree::<i32>::new();
     tree.check_integrity();
 
@@ -47,7 +91,7 @@ fn test_small_tree() {
     assert_eq!(tree.remove(&15), None);
 }
 
-fn test_compare_to_map() {
+fn test_compare_avl_tree_to_map() {
     let mut tree = AvlTree::<i32>::new();
     let mut map = std::collections::BTreeMap::<i32, i32>::new();
 
