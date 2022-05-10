@@ -1,9 +1,17 @@
 
 #![allow(dead_code)]
 
-use std::cmp::Ordering;
-
 pub type Key = i32;
+
+// Workaround for std::cmp::Ordering
+enum Ordering {
+    Equal, Less, Greater
+}
+fn cmp(l: &Key, r: &Key) -> Ordering {
+    if      l < r { Ordering::Less }
+    else if l > r { Ordering::Greater }
+    else          { Ordering::Equal }
+}
 
 pub struct BNode<V> {
     key:   Key,
@@ -41,9 +49,18 @@ impl<V> BTree<V> {
     }
 
     pub fn contains(&self, k: &Key) -> bool {
+        /* TODO Export body of std::cmp::Ordering
         match self {
             BTree::Leaf => false,
             BTree::Node(n) => match k.cmp(&n.key) {
+                Ordering::Equal   => true,
+                Ordering::Less    => n.left .contains(k),
+                Ordering::Greater => n.right.contains(k),
+            }
+        } */
+        match self {
+            BTree::Leaf => false,
+            BTree::Node(n) => match cmp(k, &n.key) {
                 Ordering::Equal   => true,
                 Ordering::Less    => n.left .contains(k),
                 Ordering::Greater => n.right.contains(k),
@@ -54,7 +71,7 @@ impl<V> BTree<V> {
     pub fn get_mut(&mut self, k: &Key) -> &mut V {
         match self {
             BTree::Leaf => panic!("not here !"),
-            BTree::Node(n) => match k.cmp(&n.key) {
+            BTree::Node(n) => match cmp(k, &n.key) {
                 Ordering::Equal   => &mut n.value,
                 Ordering::Less    => n.left .get_mut(k),
                 Ordering::Greater => n.right.get_mut(k),
@@ -67,7 +84,7 @@ impl<V> BTree<V> {
             BTree::Leaf => *self = BTree::Node(Box::new(BNode
                 { key: k, value: v, left: BTree::Leaf, right: BTree::Leaf })),
 
-            BTree::Node(n) => match k.cmp(&n.key) {
+            BTree::Node(n) => match cmp(&k, &n.key) {
                 Ordering::Equal   => n.value = v,
                 Ordering::Less    => n.left .insert(k, v),
                 Ordering::Greater => n.right.insert(k, v),
@@ -78,7 +95,7 @@ impl<V> BTree<V> {
     pub fn remove(&mut self, k: &Key) {
         match self {
             BTree::Leaf => (),
-            BTree::Node(n) => match k.cmp(&n.key) {
+            BTree::Node(n) => match cmp(k, &n.key) {
                 Ordering::Less    => n.left .remove(k),
                 Ordering::Greater => n.right.remove(k),
                 Ordering::Equal => {

@@ -3,9 +3,9 @@
 
 mod btree;
 
+/*
 use crate::btree::BTree;
-
-/*use crate::avl_tree::AvlTree;
+use crate::avl_tree::AvlTree;
 
 fn test_small_avl_tree() {
     let mut tree = AvlTree::<i32>::new();
