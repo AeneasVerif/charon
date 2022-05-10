@@ -229,6 +229,9 @@ impl ScalarValue {
         }
     }
 
+    /// **Warning**: most constants are stored as u128 by rustc. When converting
+    /// to i128, it is not correct to do `v as i128`, we must reinterpret the
+    /// bits (see [from_le_bytes]).
     pub fn from_int(ty: IntegerTy, v: i128) -> Result<ScalarValue> {
         if !ScalarValue::int_is_in_bounds(ty, v) {
             Err(())
