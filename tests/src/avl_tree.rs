@@ -2,14 +2,12 @@
 
 type Key = i32; // TODO: make this generic
 
-use std::cmp::max;
-
 struct AvlNode<V> {
-    key:    Key,
-    value:  V,
+    key: Key,
+    value: V,
     height: u32,
-    left:   Option<Box<AvlNode<V>>>, 
-    right:  Option<Box<AvlNode<V>>>,
+    left: Option<Box<AvlNode<V>>>,
+    right: Option<Box<AvlNode<V>>>,
 }
 
 // Height
@@ -21,10 +19,21 @@ fn get_height<V>(node: &Option<Box<AvlNode<V>>>) -> u32 {
         Some(n) => n.height,
     }
 }
+
+// Redefining max so that we don't need the Ord trait
+fn max(x: u32, y: u32) -> u32 {
+    if x > y {
+        x
+    } else {
+        y
+    }
+}
+
 // Compute height based on child nodes height.
 fn compute_height<V>(node: &AvlNode<V>) -> u32 {
     1 + max(get_height(&node.left), get_height(&node.right))
 }
+
 /*
 fn recache_height<V>(node: &mut AvlNode<V>) {
     node.height = compute_height(node);
@@ -37,7 +46,7 @@ fn recache_height<V>(node: &mut AvlNode<V>) {
 enum AvlBalance {
     TooMuchLeft,
     LeftHeavy,
-    IsBalanced,
+    PerfectlyBalanced,
     RightHeavy,
     TooMuchRight,
 }
@@ -55,11 +64,11 @@ impl AvlBalance {
 
 fn get_balance<V>(node: &Option<Box<AvlNode<V>>>) -> AvlBalance {
     match node {
-        None => AvlBalance::IsBalanced,
+        None => AvlBalance::PerfectlyBalanced,
         Some(n) => match get_height(&n.right) as i64 - get_height(&n.left) as i64 {
             -2 => AvlBalance::TooMuchLeft,
             -1 => AvlBalance::LeftHeavy,
-            0 => AvlBalance::IsBalanced,
+            0 => AvlBalance::PerfectlyBalanced,
             1 => AvlBalance::RightHeavy,
             2 => AvlBalance::TooMuchRight,
             _ => panic!("Broken AVL node balance"),
@@ -336,11 +345,11 @@ impl<V> AvlTree<V> {
     pub fn insert(&mut self, key: Key, value: V) -> Option<V> {
         insert(&mut self.root, key, value)
     }
-    
+
     pub fn remove(&mut self, key: &Key) -> Option<V> {
         remove(&mut self.root, key)
     }
-    
+
     /*pub fn into_iter<'a>(&'a mut self) -> AvlIterator<'a, V> {
         let mut path = std::vec::Vec::new();
         go_to_leftmost(&mut path, self.root.as_mut());
@@ -360,7 +369,7 @@ pub struct AvlIterator<'a, V> {
 }
 
 impl<'a, V> AvlIterator<'a, V> {
-    
+
     pub fn next(&mut self) -> Option<(&'a Key, &'a mut V)> {
         next(&mut self.path)
     }
