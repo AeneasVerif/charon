@@ -130,3 +130,47 @@ impl<V> BTree<V> {
         }
     }
 }
+
+#[test]
+pub fn test_small_binary_tree() {
+    let mut tree = BTree::<i32>::new();
+    tree.check_integrity();
+
+    tree.insert(10, 1);
+    tree.insert(20, 2);
+    tree.insert(30, 3);
+    tree.insert(0,  0);
+    tree.check_integrity();
+
+    tree.insert(0,   99);
+    tree.insert(10, 199);
+    tree.insert(20, 299);
+    tree.insert(30, 399);
+    tree.check_integrity();
+
+    assert!(*tree.get_mut(&0 ) ==  99);
+    assert!(*tree.get_mut(&10) == 199);
+    assert!(*tree.get_mut(&20) == 299);
+    assert!(*tree.get_mut(&30) == 399);
+
+    assert!(!tree.contains(&-5));
+    assert!(!tree.contains(&5));
+    assert!(!tree.contains(&15));
+    assert!(!tree.contains(&25));
+    assert!(!tree.contains(&35));
+
+    let zero = tree.get_mut(&0);
+    *zero = 42;
+    assert!(*tree.get_mut(&0) == 42);
+    tree.check_integrity();
+
+    tree.remove(&0);
+    tree.remove(&10);
+    tree.check_integrity();
+
+    tree.remove(&-5);
+    tree.remove(&0);
+    tree.remove(&5);
+    tree.remove(&10);
+    tree.remove(&15);
+}
