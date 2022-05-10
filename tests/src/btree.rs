@@ -40,11 +40,22 @@ impl<V> BTree<V> {
         }
     }
 
-    pub fn get_mut(&mut self, k: &Key) -> Option<&mut V> {
+    pub fn contains(&self, k: &Key) -> bool {
         match self {
-            BTree::Leaf => None,
+            BTree::Leaf => false,
             BTree::Node(n) => match k.cmp(&n.key) {
-                Ordering::Equal   => Some(&mut n.value),
+                Ordering::Equal   => true,
+                Ordering::Less    => n.left .contains(k),
+                Ordering::Greater => n.right.contains(k),
+            }
+        }
+    }
+
+    pub fn get_mut(&mut self, k: &Key) -> &mut V {
+        match self {
+            BTree::Leaf => panic!("not here !"),
+            BTree::Node(n) => match k.cmp(&n.key) {
+                Ordering::Equal   => &mut n.value,
                 Ordering::Less    => n.left .get_mut(k),
                 Ordering::Greater => n.right.get_mut(k),
             }

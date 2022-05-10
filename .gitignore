@@ -34,3 +34,4 @@ nohup.out
 *#
 *.smt2
 .#*
+.vscode

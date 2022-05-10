@@ -1,6 +1,8 @@
 
 #![allow(dead_code)]
 
+mod btree;
+
 use crate::btree::BTree;
 
 pub fn test_small_binary_tree() {
@@ -19,20 +21,20 @@ pub fn test_small_binary_tree() {
     tree.insert(30, 399);
     tree.check_integrity();
 
-    assert_eq!(*tree.get_mut(&0 ).unwrap(),  99);
-    assert_eq!(*tree.get_mut(&10).unwrap(), 199);
-    assert_eq!(*tree.get_mut(&20).unwrap(), 299);
-    assert_eq!(*tree.get_mut(&30).unwrap(), 399);
+    assert_eq!(*tree.get_mut(&0 ),  99);
+    assert_eq!(*tree.get_mut(&10), 199);
+    assert_eq!(*tree.get_mut(&20), 299);
+    assert_eq!(*tree.get_mut(&30), 399);
 
-    assert_eq!(tree.get_mut(&-5), None);
-    assert_eq!(tree.get_mut(&5),  None);
-    assert_eq!(tree.get_mut(&15), None);
-    assert_eq!(tree.get_mut(&25), None);
-    assert_eq!(tree.get_mut(&35), None);
+    assert!(!tree.contains(&-5));
+    assert!(!tree.contains(&5));
+    assert!(!tree.contains(&15));
+    assert!(!tree.contains(&25));
+    assert!(!tree.contains(&35));
 
-    let zero = tree.get_mut(&0).unwrap();
+    let zero = tree.get_mut(&0);
     *zero = 42;
-    assert_eq!(*tree.get_mut(&0).unwrap(), 42);
+    assert_eq!(*tree.get_mut(&0), 42);
     tree.check_integrity();
 
     tree.remove(&0);
