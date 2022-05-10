@@ -8,8 +8,8 @@ enum Ordering {
     Equal, Less, Greater
 }
 fn cmp(l: &Key, r: &Key) -> Ordering {
-    if      l < r { Ordering::Less }
-    else if l > r { Ordering::Greater }
+    if      *l < *r { Ordering::Less }
+    else if *l > *r { Ordering::Greater }
     else          { Ordering::Equal }
 }
 
@@ -108,9 +108,11 @@ impl<V> BTree<V> {
     fn remove_current(mut self: BTree<V>) -> BTree<V> {
         match &mut self {
             BTree::Leaf    => panic!("Always called on node"),
-            BTree::Node(n) => match n.right.get_leftmost() {
-                None       => std::mem::replace(&mut n.left, BTree::Leaf),
-                Some(succ) => match succ {
+            BTree::Node(n) => if n.right.is_leaf() {
+                    std::mem::replace(&mut n.left, BTree::Leaf)
+                } else {
+                    let succ = n.right.get_leftmost();
+                    match succ {
                     BTree::Leaf    => panic!("Option::Some always contains a node"),
                     BTree::Node(s) => {
                         std::mem::swap(&mut n.key,   &mut s.key);
@@ -130,17 +132,17 @@ impl<V> BTree<V> {
         }
     }
 
-    fn get_leftmost(&mut self) -> Option<&mut BTree<V>> {
+    fn get_leftmost(&mut self) -> &mut BTree<V> {
         /* Nested Polonius case
         match self {
             BTree::Leaf    => None,
             BTree::Node(n) => if n.left.is_leaf() 
                 { Some(self) } else { n.left.get_leftmost() }
         } */
-        if self.is_leaf() { return None }
+        if self.is_leaf() { panic!("No leaf allowed here") }
 
         if self.as_node_mut().left.is_leaf() {
-            Some(self)
+            self
         }
         else {
             self.as_node_mut().left.get_leftmost()
