@@ -2,14 +2,14 @@
 
 type Key = i32; // TODO: make this generic
 
-use std::cmp::{Ordering, max};
+use std::cmp::Ordering;
 
 struct AvlNode<V> {
-    key:    Key,
-    value:  V,
+    key: Key,
+    value: V,
     height: u32,
-    left:   Option<Box<AvlNode<V>>>, 
-    right:  Option<Box<AvlNode<V>>>,
+    left: Option<Box<AvlNode<V>>>,
+    right: Option<Box<AvlNode<V>>>,
 }
 
 // Height
@@ -21,10 +21,21 @@ fn get_height<V>(node: &Option<Box<AvlNode<V>>>) -> u32 {
         Some(n) => n.height,
     }
 }
+
+// Redefining max so that we don't need the Ord trait
+fn max(x: u32, y: u32) -> u32 {
+    if x > y {
+        x
+    } else {
+        y
+    }
+}
+
 // Compute height based on child nodes height.
 fn compute_height<V>(node: &AvlNode<V>) -> u32 {
     1 + max(get_height(&node.left), get_height(&node.right))
 }
+
 /*
 fn recache_height<V>(node: &mut AvlNode<V>) {
     node.height = compute_height(node);
@@ -336,11 +347,11 @@ impl<V> AvlTree<V> {
     pub fn insert(&mut self, key: Key, value: V) -> Option<V> {
         insert(&mut self.root, key, value)
     }
-    
+
     pub fn remove(&mut self, key: &Key) -> Option<V> {
         remove(&mut self.root, key)
     }
-    
+
     /*pub fn into_iter<'a>(&'a mut self) -> AvlIterator<'a, V> {
         let mut path = std::vec::Vec::new();
         go_to_leftmost(&mut path, self.root.as_mut());
@@ -360,7 +371,7 @@ pub struct AvlIterator<'a, V> {
 }
 
 impl<'a, V> AvlIterator<'a, V> {
-    
+
     pub fn next(&mut self) -> Option<(&'a Key, &'a mut V)> {
         next(&mut self.path)
     }
