@@ -690,8 +690,8 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
         let compiled_path = compiled_path.unwrap();
         assert!(compiled_path.len() > 0);
         if compiled_path.len() > 1 {
-            error!("Found two compiled library files for the same external dependency ({:?}): {:?}, {:?}. You may want to clean the target directory (\"{}\") then rebuild the project with `cargo build`",
-                    dep, &compiled_path[0], &compiled_path[1], manifest_path);
+            error!("Found two compiled library files for the same external dependency ({:?}): {:?}, {:?}. You may want to clean the target directory (`rm \"{:?}/*\"`) then rebuild the project with `cargo build`",
+                    dep, &compiled_path[0], &compiled_path[1], deps_dir);
             panic!();
         }
 
@@ -825,9 +825,8 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
         &type_defs,
     )?;
 
-    // # Step 6: go from IM to LLBC (Control-Flow Internal MIR) by reconstructing
+    // # Step 6: go from IM to LLBC (Low-Level Borrow Calculus) by reconstructing
     // the control flow.
-    // TODO: rename LLBC to LLBC (low-level borrow calculus)
     let llbc_defs =
         im_to_llbc::translate_functions(internal.no_code_duplication, &type_defs, &im_defs);
 

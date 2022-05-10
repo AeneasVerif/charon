@@ -30,3 +30,15 @@ fn test_custom_swap<'a>(x: &'a mut u32, y: &'a mut u32) {
     let z = custom_swap(x, y);
     *z = 1;
 }
+
+/// We just want a stateful example with a panic
+fn test_swap_non_zero(mut x: u32) -> u32 {
+    let mut y = 0;
+    swap(&mut x, &mut y);
+
+    if x == 0 {
+        panic!();
+    } else {
+        x
+    }
+}
