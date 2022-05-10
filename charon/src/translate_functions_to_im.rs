@@ -1379,6 +1379,7 @@ fn translate_switch_targets<'tcx, 'ctx, 'ctx1>(
     switch_ty: &ty::ETy,
     targets: &mir::SwitchTargets,
 ) -> Result<ast::SwitchTargets> {
+    trace!("targets: {:?}", targets);
     let targets_vec: Vec<(u128, BasicBlock)> = targets.iter().map(|(v, b)| (v, b)).collect();
 
     match switch_ty {
@@ -1402,11 +1403,9 @@ fn translate_switch_targets<'tcx, 'ctx, 'ctx1>(
             let mut targets_map: LinkedHashMap<v::ScalarValue, ast::BlockId::Id> =
                 LinkedHashMap::new();
             for (v, tgt) in targets_vec {
-                let v = if int_ty.is_signed() {
-                    v::ScalarValue::from_int(*int_ty, v as i128).unwrap()
-                } else {
-                    v::ScalarValue::from_uint(*int_ty, v).unwrap()
-                };
+                // We need to reinterpret the bytes (`v as i128` is not correct)
+                let raw: [u8; 16] = v.to_le_bytes();
+                let v = v::ScalarValue::from_le_bytes(*int_ty, raw);
                 let tgt = translate_basic_block(tcx, bt_ctx, body, tgt)?;
                 assert!(!targets_map.contains_key(&v));
                 targets_map.insert(v, tgt);
