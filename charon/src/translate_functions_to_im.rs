@@ -89,7 +89,9 @@ struct BodyTransContext<'ctx, 'ctx1> {
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
     blocks: im::OrdMap<ast::BlockId::Id, ast::BlockData>,
-    /// The map from rust blocks to translated blocks
+    /// The map from rust blocks to translated blocks.
+    /// Note that when translating terminators like DropAndReplace, we might have
+    /// to introduce new blocks which don't appear in the original MIR.
     rblocks_to_ids: im::OrdMap<BasicBlock, ast::BlockId::Id>,
 }
 
@@ -1050,8 +1052,16 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
         mir::Rvalue::Len(_place) => {
             unimplemented!();
         }
-        mir::Rvalue::Cast(_, _, _) => {
-            unimplemented!();
+        mir::Rvalue::Cast(cast_kind, operand, _ty) => {
+            trace!("Rvalue::Cast: {:?}", rvalue);
+            // TODO: translate the type, and check that consistant
+            let operand = translate_operand(tcx, bt_ctx, operand);
+            // Sanity check
+            assert!(match cast_kind {
+                rustc_middle::mir::CastKind::Misc => true,
+                rustc_middle::mir::CastKind::Pointer(_) => false,
+            });
+            e::Rvalue::Use(operand)
         }
         mir::Rvalue::BinaryOp(binop, operands) | mir::Rvalue::CheckedBinaryOp(binop, operands) => {
             // We merge checked and unchecked binary operations
@@ -1288,12 +1298,34 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             target: translate_basic_block(tcx, bt_ctx, body, *target)?,
         }),
         TerminatorKind::DropAndReplace {
-            place: _,
-            value: _,
-            target: _,
+            place,
+            value,
+            target,
             unwind: _,
         } => {
-            unimplemented!();
+            // We desugar this to `drop(place); place := value;
+
+            // Translate the next block
+            let target = translate_basic_block(tcx, bt_ctx, body, *target)?;
+
+            // Translate the assignment
+            let place = translate_place(bt_ctx, place);
+            let rv = e::Rvalue::Use(translate_operand(tcx, bt_ctx, value));
+            let assign = ast::Statement::Assign(place.clone(), rv);
+            // This introduces a new block, which doesn't appear in the original MIR
+            let assign_id = bt_ctx.blocks_counter.fresh_id();
+            let assign_block = ast::BlockData {
+                statements: vec![assign],
+                terminator: ast::Terminator::Goto { target },
+            };
+            bt_ctx.push_block(assign_id, assign_block);
+
+            // Translate the drop
+            let drop = ast::Terminator::Drop {
+                place,
+                target: assign_id,
+            };
+            Ok(drop)
         }
         TerminatorKind::Call {
             func,
@@ -1352,10 +1384,12 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             Ok(ast::Terminator::Goto { target })
         }
         TerminatorKind::FalseUnwind {
-            real_target: _,
+            real_target,
             unwind: _,
         } => {
-            unimplemented!();
+            // We consider this to be a goto
+            let target = translate_basic_block(tcx, bt_ctx, body, *real_target)?;
+            Ok(ast::Terminator::Goto { target })
         }
         TerminatorKind::InlineAsm {
             template: _,

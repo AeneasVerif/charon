@@ -125,6 +125,7 @@ pub enum Operand {
 /// special cases in assignments. They are converted to "normal" values
 /// when evaluating the assignment (which is why we don't put them in the
 /// [`ConstantValue`](crate::ConstantValue) enumeration.
+/// TODO: implement a micro-pass to get rid of those.
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
     ConstantValue(ConstantValue),

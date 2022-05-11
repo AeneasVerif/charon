@@ -44,5 +44,5 @@ fn get_mir_for_def_id_and_level<'tcx>(
 }
 
 pub fn get_mir_for_def_id<'tcx>(tcx: TyCtxt<'tcx>, def_id: LocalDefId) -> &'tcx Body<'tcx> {
-    get_mir_for_def_id_and_level(tcx, def_id, MirLevel::Optimized)
+    get_mir_for_def_id_and_level(tcx, def_id, MirLevel::Promoted)
 }

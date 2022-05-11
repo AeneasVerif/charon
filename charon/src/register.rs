@@ -713,16 +713,14 @@ fn register_local_function_body(
             | rustc_middle::mir::terminator::TerminatorKind::FalseUnwind {
                 real_target: _,
                 unwind: _,
-            } => {
-                // Nothing to do
             }
-            rustc_middle::mir::terminator::TerminatorKind::DropAndReplace {
+            | rustc_middle::mir::terminator::TerminatorKind::DropAndReplace {
                 place: _,
                 value: _,
                 target: _,
                 unwind: _,
             } => {
-                unreachable!();
+                // Nothing to do
             }
             rustc_middle::mir::terminator::TerminatorKind::Call {
                 func,
