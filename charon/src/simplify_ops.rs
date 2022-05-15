@@ -52,6 +52,22 @@ fn binop_requires_assert_after(binop: BinOp) -> bool {
     }
 }
 
+/// Return true if the unary operation has a precondition (negating the number
+/// won't lead to an overflow, for instance).
+fn unop_requires_assert_before(unop: UnOp) -> bool {
+    match unop {
+        UnOp::Not => false,
+        UnOp::Neg => true,
+    }
+}
+
+fn unop_can_fail(unop: UnOp) -> bool {
+    match unop {
+        UnOp::Not => false,
+        UnOp::Neg => true,
+    }
+}
+
 /// Return true if the binary operation has a precondition (divisor is non zero
 /// for instance) and must thus be preceded by an assertion.
 fn binop_requires_assert_before(binop: BinOp) -> bool {
@@ -76,6 +92,125 @@ fn binop_requires_assert_before(binop: BinOp) -> bool {
 
 fn binop_can_fail(binop: BinOp) -> bool {
     binop_requires_assert_after(binop) || binop_requires_assert_before(binop)
+}
+
+/// Check if this is a group of statements of the form: "check that we can do
+/// a unary operation, then do this operation (ex.: check that negating a number
+/// won't lead to an overflow)"
+fn check_if_assert_then_unop(st1: &Statement, st2: &Statement, st3: &Statement) -> bool {
+    match st3 {
+        Statement::Assign(_, Rvalue::UnaryOp(unop, _)) => {
+            if unop_requires_assert_before(*unop) {
+                // We found a unary op with a precondition
+                //
+                // This group of statements should exactly match the following pattern:
+                //   ```
+                //   tmp := copy x == const (MIN ...); // `copy x` can be a constant
+                //   assert(tmp == false);
+                //   dest := -(move x); // `move x` can be a constant
+                //   ...
+                //   ```
+                // If it is note the case, we can't collapse...
+                check_if_simplifiable_assert_then_unop(st1, st2, st3)
+            } else {
+                false
+            }
+        }
+        _ => false,
+    }
+}
+
+/// Make sure the statements match the following pattern:
+///   ```
+///   tmp := copy x == const (MIN ...); // `copy x` can be a constant
+///   assert(tmp == false);
+///   dest := -(move x); // `move x` can be a constant
+///   ...
+///   ```
+/// Or that there is no assert but the value is a constant which will not
+/// lead to saturation.
+fn check_if_simplifiable_assert_then_unop(
+    st1: &Statement,
+    st2: &Statement,
+    st3: &Statement,
+) -> bool {
+    match (st1, st2, st3) {
+        (
+            Statement::Assign(
+                eq_dest,
+                Rvalue::BinaryOp(
+                    BinOp::Eq,
+                    op,
+                    Operand::Constant(
+                        _,
+                        OperandConstantValue::ConstantValue(ConstantValue::Scalar(saturated)),
+                    ),
+                ),
+            ),
+            Statement::Assert(Assert {
+                cond: Operand::Move(cond_op),
+                expected,
+            }),
+            Statement::Assign(_mp, Rvalue::UnaryOp(unop, op1)),
+        ) => {
+            // Case 1: pattern with assertion
+            assert!(*unop == UnOp::Neg);
+            assert!(!(*expected));
+
+            assert!(eq_dest == cond_op);
+
+            // Check the two operands:
+            // - either they are (copy, move)
+            // - or they are the same constant
+            match (op, op1) {
+                (Operand::Copy(p), Operand::Move(p1)) => assert!(p == p1),
+                (Operand::Constant(_, cv), Operand::Constant(_, cv1)) => assert!(cv == cv1),
+                _ => unreachable!(),
+            }
+
+            assert!(saturated.is_int() && saturated.is_min());
+            true
+        }
+        (
+            _,
+            _,
+            Statement::Assign(
+                _mp,
+                Rvalue::UnaryOp(
+                    unop,
+                    Operand::Constant(
+                        _,
+                        OperandConstantValue::ConstantValue(ConstantValue::Scalar(value)),
+                    ),
+                ),
+            ),
+        ) => {
+            assert!(*unop == UnOp::Neg);
+            // Case 2: no assertion to check that there will not be an overflow:
+            // the value must be a constant which will not lead to an overflow.
+            assert!(value.is_int() && !value.is_min());
+            false
+        }
+        _ => {
+            unreachable!();
+        }
+    }
+}
+
+/// Simplify patterns of the form:
+///   ```
+///   tmp := copy x == const (MIN ...); // `copy x` can be a constant
+///   assert(tmp == false);
+///   dest := -(move x); // `move x` can be a constant
+///   ...
+///   ```
+/// to:
+///   ```
+///   dest := -(move x); // `move x` can be a constant
+///   ...
+///   ```
+fn simplify_assert_then_unop(_st1: Statement, _st2: Statement, st3: Statement) -> Statement {
+    st3
 }
 
 /// Check if this is a group of statements of the form:
@@ -342,35 +477,38 @@ fn simplify_st_seq(
     st3: Statement,
     st4: Option<Statement>,
 ) -> Statement {
-    // Simplify checked binops
-    if check_if_binop_then_assert(&st1, &st2, &st3) {
-        let st = simplify_binop_then_assert(st1, st2, st3);
-        match st4 {
-            Option::Some(st4) => {
-                let st4 = simplify_st(st4);
-                return Statement::Sequence(Box::new(st), Box::new(st4));
-            }
-            Option::None => return st,
+    // Try to simplify
+    let simpl_st = {
+        // Simplify checked unops (negation)
+        if check_if_assert_then_unop(&st1, &st2, &st3) {
+            simplify_assert_then_unop(st1, st2, st3)
         }
-    }
-    // Simplify unchecked binops (division, modulo)
-    if check_if_assert_then_binop(&st1, &st2, &st3) {
-        let st = simplify_assert_then_binop(st1, st2, st3);
-        match st4 {
-            Option::Some(st4) => {
-                let st4 = simplify_st(st4);
-                return Statement::Sequence(Box::new(st), Box::new(st4));
-            }
-            Option::None => return st,
+        // Simplify checked binops
+        else if check_if_binop_then_assert(&st1, &st2, &st3) {
+            simplify_binop_then_assert(st1, st2, st3)
         }
-    }
-    // Not simplifyable
-    let next_st = match st4 {
-        Option::Some(st4) => Statement::Sequence(Box::new(st3), Box::new(st4)),
-        Option::None => st3,
+        // Simplify unchecked binops (division, modulo)
+        else if check_if_assert_then_binop(&st1, &st2, &st3) {
+            simplify_assert_then_binop(st1, st2, st3)
+        } else {
+            // Not simplifyable
+            let next_st = match st4 {
+                Option::Some(st4) => Statement::Sequence(Box::new(st3), Box::new(st4)),
+                Option::None => st3,
+            };
+            let next_st = Statement::Sequence(Box::new(st2), Box::new(next_st));
+            return Statement::Sequence(Box::new(simplify_st(st1)), Box::new(simplify_st(next_st)));
+        }
     };
-    let next_st = Statement::Sequence(Box::new(st2), Box::new(next_st));
-    Statement::Sequence(Box::new(simplify_st(st1)), Box::new(simplify_st(next_st)))
+
+    // Combine the simplified statements with the statement after, if there is
+    match st4 {
+        Option::Some(st4) => {
+            let st4 = simplify_st(st4);
+            return Statement::Sequence(Box::new(simpl_st), Box::new(st4));
+        }
+        Option::None => return simpl_st,
+    }
 }
 
 fn simplify_st(st: Statement) -> Statement {
@@ -392,6 +530,25 @@ fn simplify_st(st: Statement) -> Statement {
                                 } else {
                                     assert!(cv.as_int().unwrap() != 0)
                                 };
+                            }
+                            _ => {
+                                unreachable!();
+                            }
+                        }
+                    }
+                }
+                Rvalue::UnaryOp(unop, v) => {
+                    // If it is an unsimplified unop which can fail, it must be
+                    // the negation, and the value must be a constant which won't
+                    // lead to overflow.
+                    if unop_can_fail(*unop) {
+                        match unop {
+                            UnOp::Neg => {
+                                let (_, cv) = v.as_constant();
+                                let cv = cv.as_constant_value();
+                                let cv = cv.as_scalar();
+                                assert!(cv.is_int());
+                                assert!(!cv.is_min());
                             }
                             _ => {
                                 unreachable!();
