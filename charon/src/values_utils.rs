@@ -64,6 +64,23 @@ impl ScalarValue {
         }
     }
 
+    pub fn is_min(&self) -> bool {
+        match self {
+            ScalarValue::Isize(v) => *v == isize::MIN,
+            ScalarValue::I8(v) => *v == i8::MIN,
+            ScalarValue::I16(v) => *v == i16::MIN,
+            ScalarValue::I32(v) => *v == i32::MIN,
+            ScalarValue::I64(v) => *v == i64::MIN,
+            ScalarValue::I128(v) => *v == i128::MIN,
+            ScalarValue::Usize(v) => *v == usize::MIN,
+            ScalarValue::U8(v) => *v == u8::MIN,
+            ScalarValue::U16(v) => *v == u16::MIN,
+            ScalarValue::U32(v) => *v == u32::MIN,
+            ScalarValue::U64(v) => *v == u64::MIN,
+            ScalarValue::U128(v) => *v == u128::MIN,
+        }
+    }
+
     pub fn is_int(&self) -> bool {
         match self {
             ScalarValue::Isize(_)

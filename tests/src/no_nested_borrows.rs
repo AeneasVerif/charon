@@ -44,24 +44,44 @@ pub enum Sum<T1, T2> {
     Right(T2),
 }
 
+/// Testing unop simplification
+/// In debug mode, rust introduces an assertion before the negation.
+fn neg_test(x: i32) -> i32 {
+    -x
+}
+
 /// Testing binop simplification
+/// In debug mode, rust inserts an assertion after the addition
 fn add_test(x: u32, y: u32) -> u32 {
     x + y
 }
 
 /// Testing binop simplification
+/// In debug mode, rust inserts an assertion after the substraction
 fn subs_test(x: u32, y: u32) -> u32 {
     x - y
 }
 
 /// Testing binop simplification
+/// In debug mode, rust inserts an assertion before the division
 fn div_test(x: u32, y: u32) -> u32 {
     x / y
 }
 
 /// Testing binop simplification
+/// When using constants, rustc removes the unnecessary assertions (but
+/// only at a specific pass)
+fn div_test1(x: u32) -> u32 {
+    x / 2
+}
+
+/// Testing binop simplification
 fn rem_test(x: u32, y: u32) -> u32 {
     x % y
+}
+
+fn cast_test(x: u32) -> i32 {
+    x as i32
 }
 
 #[allow(unused_variables)]
@@ -90,12 +110,6 @@ fn test3() {
     let y = get_max(10, 11);
     let z = x + y;
     assert!(z == 15);
-}
-
-/// Testing what happens with negation - in particular for overflows.
-/// In debug mode, rust introduces an assertion before the negation.
-fn test_neg(x: i32) -> i32 {
-    -x
 }
 
 fn test_neg1() {

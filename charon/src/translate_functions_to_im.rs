@@ -10,7 +10,7 @@ use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::generics;
 use crate::im_ast as ast;
-use crate::names::function_def_id_to_name;
+use crate::names::{function_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy as rh;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
@@ -89,7 +89,9 @@ struct BodyTransContext<'ctx, 'ctx1> {
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
     blocks: im::OrdMap<ast::BlockId::Id, ast::BlockData>,
-    /// The map from rust blocks to translated blocks
+    /// The map from rust blocks to translated blocks.
+    /// Note that when translating terminators like DropAndReplace, we might have
+    /// to introduce new blocks which don't appear in the original MIR.
     rblocks_to_ids: im::OrdMap<BasicBlock, ast::BlockId::Id>,
 }
 
@@ -394,17 +396,25 @@ fn translate_basic_block<'tcx, 'ctx, 'ctx1>(
     Ok(nid)
 }
 
+/// Translate a place and return its type
+fn translate_place_with_type<'tcx, 'ctx, 'ctx1>(
+    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
+    place: &Place<'tcx>,
+) -> (e::Place, ty::ETy) {
+    let var_id = bt_ctx.get_local(&place.local).unwrap();
+    let var = bt_ctx.get_var_from_id(var_id).unwrap();
+    let (projection, ty) =
+        translate_projection(&bt_ctx.ft_ctx.type_defs, var.ty.clone(), place.projection);
+
+    (e::Place { var_id, projection }, ty)
+}
+
 /// Translate a place
 fn translate_place<'tcx, 'ctx, 'ctx1>(
     bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
     place: &Place<'tcx>,
 ) -> e::Place {
-    let var_id = bt_ctx.get_local(&place.local).unwrap();
-    let var = bt_ctx.get_var_from_id(var_id).unwrap();
-    let projection =
-        translate_projection(&bt_ctx.ft_ctx.type_defs, var.ty.clone(), place.projection);
-
-    e::Place { var_id, projection }
+    translate_place_with_type(bt_ctx, place).0
 }
 
 /// Translate a projection
@@ -413,11 +423,13 @@ fn translate_place<'tcx, 'ctx, 'ctx1>(
 /// projections. For instance, rust uses `Deref` both to dereference mutable/shared
 /// references and to move values from inside a box. On our side, we distinguish
 /// the two kinds of dereferences.
+///
+/// We return the translated projection, and its type.
 fn translate_projection<'tcx>(
     type_defs: &ty::TypeDecls,
     var_ty: ty::ETy,
     rprojection: &rustc_middle::ty::List<PlaceElem<'tcx>>,
-) -> e::Projection {
+) -> (e::Projection, ty::ETy) {
     trace!("- projection: {:?}\n- var_ty: {:?}", rprojection, var_ty);
 
     // We need to track the type of the value we look at, while exploring the path.
@@ -530,7 +542,7 @@ fn translate_projection<'tcx>(
         }
     }
 
-    return projection;
+    return (projection, path_type);
 }
 
 /// Translate some cases of a constant operand.
@@ -897,6 +909,29 @@ fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
     }
 }
 
+/// Translate an operand with its type
+fn translate_operand_with_type<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    operand: &mir::Operand<'tcx>,
+) -> (e::Operand, ty::ETy) {
+    trace!();
+    match operand {
+        Operand::Copy(place) => {
+            let (p, ty) = translate_place_with_type(bt_ctx, place);
+            (e::Operand::Copy(p), ty)
+        }
+        Operand::Move(place) => {
+            let (p, ty) = translate_place_with_type(bt_ctx, place);
+            (e::Operand::Move(p), ty)
+        }
+        Operand::Constant(constant) => {
+            let (ty, constant) = translate_operand_constant(tcx, bt_ctx, constant);
+            (e::Operand::Constant(ty.clone(), constant), ty)
+        }
+    }
+}
+
 /// Translate an operand
 fn translate_operand<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
@@ -904,14 +939,7 @@ fn translate_operand<'tcx, 'ctx, 'ctx1>(
     operand: &mir::Operand<'tcx>,
 ) -> e::Operand {
     trace!();
-    match operand {
-        Operand::Copy(place) => e::Operand::Copy(translate_place(bt_ctx, place)),
-        Operand::Move(place) => e::Operand::Move(translate_place(bt_ctx, place)),
-        Operand::Constant(constant) => {
-            let (ty, constant) = translate_operand_constant(tcx, bt_ctx, constant);
-            e::Operand::Constant(ty, constant)
-        }
-    }
+    translate_operand_with_type(tcx, bt_ctx, operand).0
 }
 
 /// Translate an operand which should be `move b.0` where `b` is a box (such
@@ -1050,8 +1078,28 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
         mir::Rvalue::Len(_place) => {
             unimplemented!();
         }
-        mir::Rvalue::Cast(_, _, _) => {
-            unimplemented!();
+        mir::Rvalue::Cast(cast_kind, operand, tgt_ty) => {
+            trace!("Rvalue::Cast: {:?}", rvalue);
+            // Put aside the pointer casts (which we don't support), I think
+            // casts should only be from integers/booleans to integer/booleans.
+
+            // Sanity check
+            assert!(match cast_kind {
+                rustc_middle::mir::CastKind::Misc => true,
+                rustc_middle::mir::CastKind::Pointer(_) => false,
+            });
+
+            // Translate the target type
+            let tgt_ty = translate_ety(tcx, bt_ctx, tgt_ty).unwrap();
+
+            // Translate the operand
+            let (op, src_ty) = translate_operand_with_type(tcx, bt_ctx, operand);
+
+            // We only support source and target types for integers
+            let tgt_ty = *tgt_ty.as_integer();
+            let src_ty = *src_ty.as_integer();
+
+            e::Rvalue::UnaryOp(e::UnOp::Cast(src_ty, tgt_ty), op)
         }
         mir::Rvalue::BinaryOp(binop, operands) | mir::Rvalue::CheckedBinaryOp(binop, operands) => {
             // We merge checked and unchecked binary operations
@@ -1111,7 +1159,6 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
                     field_index,
                 ) => {
                     trace!("{:?}", rvalue);
-                    assert!(adt_id.is_local());
 
                     // Not sure what those two parameters are used for, so
                     // panicking if they are not none (to catch a use case).
@@ -1123,36 +1170,68 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
                     assert!(field_index.is_none());
 
                     // Translate the substitution
-                    let (region_params, type_params) =
+                    let (region_params, mut type_params) =
                         translate_subst_in_body(tcx, bt_ctx, None, substs).unwrap();
 
-                    // Retrieve the definition
-                    let id_t = *bt_ctx.ft_ctx.ordered.type_rid_to_id.get(adt_id).unwrap();
-                    let def = bt_ctx.get_type_defs().get_type_def(id_t).unwrap();
+                    if adt_id.is_local() {
+                        // Local ADT: retrieve the definition
+                        let id_t = *bt_ctx.ft_ctx.ordered.type_rid_to_id.get(adt_id).unwrap();
+                        let def = bt_ctx.get_type_defs().get_type_def(id_t).unwrap();
 
-                    assert!(region_params.len() == def.region_params.len());
-                    assert!(type_params.len() == def.type_params.len());
+                        assert!(region_params.len() == def.region_params.len());
+                        assert!(type_params.len() == def.type_params.len());
 
-                    let variant_id = match &def.kind {
-                        ty::TypeDeclKind::Enum(variants) => {
-                            let variant_id = translate_variant_id(*variant_idx);
-                            assert!(
-                                operands_t.len() == variants.get(variant_id).unwrap().fields.len()
-                            );
+                        let variant_id = match &def.kind {
+                            ty::TypeDeclKind::Enum(variants) => {
+                                let variant_id = translate_variant_id(*variant_idx);
+                                assert!(
+                                    operands_t.len()
+                                        == variants.get(variant_id).unwrap().fields.len()
+                                );
 
-                            Some(variant_id)
+                                Some(variant_id)
+                            }
+                            ty::TypeDeclKind::Struct(_) => {
+                                assert!(variant_idx.as_usize() == 0);
+                                None
+                            }
+                            ty::TypeDeclKind::Opaque => {
+                                unreachable!("Can't build an aggregate from an opaque type")
+                            }
+                        };
+
+                        let akind =
+                            e::AggregateKind::Adt(id_t, variant_id, region_params, type_params);
+
+                        e::Rvalue::Aggregate(akind, operands_t)
+                    } else {
+                        // External ADT.
+                        // Can be `Option`
+                        // TODO: treat all external ADTs in a consistant manner.
+                        // For instance, we can access the variants of any external
+                        // enumeration marked as `public`.
+                        let name = type_def_id_to_name(tcx, *adt_id);
+                        assert!(name.equals_ref_name(&assumed::OPTION_NAME));
+
+                        // Sanity checks
+                        assert!(region_params.len() == 0);
+                        assert!(type_params.len() == 1);
+
+                        // Find the variant
+                        let variant_id = translate_variant_id(*variant_idx);
+                        if variant_id == assumed::OPTION_NONE_VARIANT_ID {
+                            assert!(operands_t.len() == 0);
+                        } else if variant_id == assumed::OPTION_SOME_VARIANT_ID {
+                            assert!(operands_t.len() == 1);
+                        } else {
+                            unreachable!();
                         }
-                        ty::TypeDeclKind::Struct(_) => {
-                            assert!(variant_idx.as_usize() == 0);
-                            None
-                        }
-                        ty::TypeDeclKind::Opaque => {
-                            unreachable!("Can't build an aggregate from an opaque type")
-                        }
-                    };
-                    let akind = e::AggregateKind::Adt(id_t, variant_id, region_params, type_params);
 
-                    e::Rvalue::Aggregate(akind, operands_t)
+                        let akind =
+                            e::AggregateKind::Option(variant_id, type_params.pop().unwrap());
+
+                        e::Rvalue::Aggregate(akind, operands_t)
+                    }
                 }
                 mir::AggregateKind::Closure(_def_id, _subst) => {
                     unimplemented!();
@@ -1288,12 +1367,34 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             target: translate_basic_block(tcx, bt_ctx, body, *target)?,
         }),
         TerminatorKind::DropAndReplace {
-            place: _,
-            value: _,
-            target: _,
+            place,
+            value,
+            target,
             unwind: _,
         } => {
-            unimplemented!();
+            // We desugar this to `drop(place); place := value;
+
+            // Translate the next block
+            let target = translate_basic_block(tcx, bt_ctx, body, *target)?;
+
+            // Translate the assignment
+            let place = translate_place(bt_ctx, place);
+            let rv = e::Rvalue::Use(translate_operand(tcx, bt_ctx, value));
+            let assign = ast::Statement::Assign(place.clone(), rv);
+            // This introduces a new block, which doesn't appear in the original MIR
+            let assign_id = bt_ctx.blocks_counter.fresh_id();
+            let assign_block = ast::BlockData {
+                statements: vec![assign],
+                terminator: ast::Terminator::Goto { target },
+            };
+            bt_ctx.push_block(assign_id, assign_block);
+
+            // Translate the drop
+            let drop = ast::Terminator::Drop {
+                place,
+                target: assign_id,
+            };
+            Ok(drop)
         }
         TerminatorKind::Call {
             func,
@@ -1352,10 +1453,12 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             Ok(ast::Terminator::Goto { target })
         }
         TerminatorKind::FalseUnwind {
-            real_target: _,
+            real_target,
             unwind: _,
         } => {
-            unimplemented!();
+            // We consider this to be a goto
+            let target = translate_basic_block(tcx, bt_ctx, body, *real_target)?;
+            Ok(ast::Terminator::Goto { target })
         }
         TerminatorKind::InlineAsm {
             template: _,

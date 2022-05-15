@@ -316,6 +316,9 @@ fn test1() {
     hm.insert(1056, 256);
     // Rk.: `&128` introduces a ref constant value
     // TODO: add support for this
+    // Rk.: this only happens if we query the MIR too late (for instance,
+    // the optimized MIR). It is not a problem if we query, say, the
+    // "built" MIR.
     let k = 128;
     assert!(*hm.get(&k) == 18);
     let k = 1024;

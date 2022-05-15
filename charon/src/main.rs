@@ -49,9 +49,10 @@ mod names_utils;
 mod reconstruct_asserts;
 mod regions_hierarchy;
 mod register;
+mod remove_unused_locals;
 mod reorder_decls;
 mod rust_to_local_ids;
-mod simplify_binops;
+mod simplify_ops;
 mod translate_functions_to_im;
 mod translate_types;
 mod types;
@@ -80,8 +81,17 @@ struct ToInternal {
 }
 
 impl Callbacks for ToInternal {
-    fn after_analysis<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
-        // TODO: extern crates
+    /// We have to be careful here: we can plug ourselves at several places
+    /// (after parsing, after expansion, after analysis). However, the MIR is
+    /// modified in place: this means that if we at some point we compute, say,
+    /// the promoted MIR, it is possible to query the optimized MIR (because
+    /// optimized MIR is further down in the compilation process). However,
+    /// it is not possible to query, say, the built MIR (which results from
+    /// the conversion to HIR to MIR) because it has been lost.
+    /// For this reason, and as we may want to plug ourselves at different
+    /// phases of the compilation process, we query the context as early as
+    /// possible (i.e., after parsing). See [get_mir].
+    fn after_parsing<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
         queries
             .global_ctxt()
             .unwrap()
@@ -839,9 +849,9 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // serializing the result.
     //
 
-    // # Step 7: simplify the calls to binops
+    // # Step 7: simplify the calls to unops and binops
     // Note that we assume that the sequences have been flattened.
-    let llbc_defs = simplify_binops::simplify(llbc_defs);
+    let llbc_defs = simplify_ops::simplify(llbc_defs);
 
     for def in &llbc_defs {
         trace!(
@@ -868,7 +878,11 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // an extra assignment just before returning.
     let llbc_defs = insert_assign_return_unit::transform(llbc_defs);
 
-    // # Step 10: compute which functions are potentially divergent. A function
+    // # Step 10: remove the locals which are never used. After doing so, we
+    // check that there are no remaining locals with type `Never`.
+    let llbc_defs = remove_unused_locals::transform(llbc_defs);
+
+    // # Step 11: compute which functions are potentially divergent. A function
     // is potentially divergent if it is recursive, contains a loop or transitively
     // calls a potentially divergent function.
     // Note that in the future, we may complement this basic analysis with a
