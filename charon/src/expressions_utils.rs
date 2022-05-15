@@ -40,6 +40,7 @@ impl std::string::ToString for UnOp {
         match self {
             UnOp::Not => "~".to_string(),
             UnOp::Neg => "-".to_string(),
+            UnOp::Cast(src, tgt) => format!("cast<{},{}>", src, tgt).to_string(),
         }
     }
 }

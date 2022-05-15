@@ -388,6 +388,12 @@ pub fn integer_ty_to_string(ty: IntegerTy) -> String {
     }
 }
 
+impl std::fmt::Display for IntegerTy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", integer_ty_to_string(*self))
+    }
+}
+
 pub fn intty_to_string(ty: IntTy) -> String {
     match ty {
         IntTy::Isize => "isize".to_string(),

@@ -396,17 +396,25 @@ fn translate_basic_block<'tcx, 'ctx, 'ctx1>(
     Ok(nid)
 }
 
+/// Translate a place and return its type
+fn translate_place_with_type<'tcx, 'ctx, 'ctx1>(
+    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
+    place: &Place<'tcx>,
+) -> (e::Place, ty::ETy) {
+    let var_id = bt_ctx.get_local(&place.local).unwrap();
+    let var = bt_ctx.get_var_from_id(var_id).unwrap();
+    let (projection, ty) =
+        translate_projection(&bt_ctx.ft_ctx.type_defs, var.ty.clone(), place.projection);
+
+    (e::Place { var_id, projection }, ty)
+}
+
 /// Translate a place
 fn translate_place<'tcx, 'ctx, 'ctx1>(
     bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
     place: &Place<'tcx>,
 ) -> e::Place {
-    let var_id = bt_ctx.get_local(&place.local).unwrap();
-    let var = bt_ctx.get_var_from_id(var_id).unwrap();
-    let projection =
-        translate_projection(&bt_ctx.ft_ctx.type_defs, var.ty.clone(), place.projection);
-
-    e::Place { var_id, projection }
+    translate_place_with_type(bt_ctx, place).0
 }
 
 /// Translate a projection
@@ -415,11 +423,13 @@ fn translate_place<'tcx, 'ctx, 'ctx1>(
 /// projections. For instance, rust uses `Deref` both to dereference mutable/shared
 /// references and to move values from inside a box. On our side, we distinguish
 /// the two kinds of dereferences.
+///
+/// We return the translated projection, and its type.
 fn translate_projection<'tcx>(
     type_defs: &ty::TypeDecls,
     var_ty: ty::ETy,
     rprojection: &rustc_middle::ty::List<PlaceElem<'tcx>>,
-) -> e::Projection {
+) -> (e::Projection, ty::ETy) {
     trace!("- projection: {:?}\n- var_ty: {:?}", rprojection, var_ty);
 
     // We need to track the type of the value we look at, while exploring the path.
@@ -532,7 +542,7 @@ fn translate_projection<'tcx>(
         }
     }
 
-    return projection;
+    return (projection, path_type);
 }
 
 /// Translate some cases of a constant operand.
@@ -899,6 +909,29 @@ fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
     }
 }
 
+/// Translate an operand with its type
+fn translate_operand_with_type<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    operand: &mir::Operand<'tcx>,
+) -> (e::Operand, ty::ETy) {
+    trace!();
+    match operand {
+        Operand::Copy(place) => {
+            let (p, ty) = translate_place_with_type(bt_ctx, place);
+            (e::Operand::Copy(p), ty)
+        }
+        Operand::Move(place) => {
+            let (p, ty) = translate_place_with_type(bt_ctx, place);
+            (e::Operand::Move(p), ty)
+        }
+        Operand::Constant(constant) => {
+            let (ty, constant) = translate_operand_constant(tcx, bt_ctx, constant);
+            (e::Operand::Constant(ty.clone(), constant), ty)
+        }
+    }
+}
+
 /// Translate an operand
 fn translate_operand<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
@@ -906,14 +939,7 @@ fn translate_operand<'tcx, 'ctx, 'ctx1>(
     operand: &mir::Operand<'tcx>,
 ) -> e::Operand {
     trace!();
-    match operand {
-        Operand::Copy(place) => e::Operand::Copy(translate_place(bt_ctx, place)),
-        Operand::Move(place) => e::Operand::Move(translate_place(bt_ctx, place)),
-        Operand::Constant(constant) => {
-            let (ty, constant) = translate_operand_constant(tcx, bt_ctx, constant);
-            e::Operand::Constant(ty, constant)
-        }
-    }
+    translate_operand_with_type(tcx, bt_ctx, operand).0
 }
 
 /// Translate an operand which should be `move b.0` where `b` is a box (such
@@ -1054,47 +1080,26 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
         }
         mir::Rvalue::Cast(cast_kind, operand, tgt_ty) => {
             trace!("Rvalue::Cast: {:?}", rvalue);
-            // TODO: I think casts should only be from integers to integers.
-            // In that case, it doesn't cost much to add a corresponding rvalue variant.
+            // Put aside the pointer casts (which we don't support), I think
+            // casts should only be from integers/booleans to integer/booleans.
 
-            // Translate the target type
-            let tgt_ty = translate_ety(tcx, bt_ctx, tgt_ty).unwrap();
-            // For now, we only accepts casts over constant values
-            let operand = translate_operand(tcx, bt_ctx, operand);
             // Sanity check
             assert!(match cast_kind {
                 rustc_middle::mir::CastKind::Misc => true,
                 rustc_middle::mir::CastKind::Pointer(_) => false,
             });
-            match &operand {
-                e::Operand::Copy(_) | e::Operand::Move(_) => unimplemented!(),
-                e::Operand::Constant(_, cv) => {
-                    // We only support integer conversion
-                    match cv {
-                        e::OperandConstantValue::ConstantValue(v::ConstantValue::Scalar(sv)) => {
-                            let tgt_ty = *tgt_ty.as_integer();
 
-                            // Convert
-                            let nsv = if sv.is_int() {
-                                let v = sv.as_int().unwrap();
-                                v::ScalarValue::from_int(tgt_ty, v).unwrap()
-                            } else {
-                                let v = sv.as_uint().unwrap();
-                                v::ScalarValue::from_uint(tgt_ty, v).unwrap()
-                            };
+            // Translate the target type
+            let tgt_ty = translate_ety(tcx, bt_ctx, tgt_ty).unwrap();
 
-                            let tgt_ty = ty::Ty::Integer(tgt_ty);
-                            let op = e::OperandConstantValue::ConstantValue(
-                                v::ConstantValue::Scalar(nsv),
-                            );
-                            let op = e::Operand::Constant(tgt_ty, op);
-                            e::Rvalue::Use(op)
-                        }
-                        e::OperandConstantValue::ConstantValue(_)
-                        | e::OperandConstantValue::Adt(_, _) => unimplemented!(),
-                    }
-                }
-            }
+            // Translate the operand
+            let (op, src_ty) = translate_operand_with_type(tcx, bt_ctx, operand);
+
+            // We only support source and target types for integers
+            let tgt_ty = *tgt_ty.as_integer();
+            let src_ty = *src_ty.as_integer();
+
+            e::Rvalue::UnaryOp(e::UnOp::Cast(src_ty, tgt_ty), op)
         }
         mir::Rvalue::BinaryOp(binop, operands) | mir::Rvalue::CheckedBinaryOp(binop, operands) => {
             // We merge checked and unchecked binary operations

@@ -80,6 +80,10 @@ fn rem_test(x: u32, y: u32) -> u32 {
     x % y
 }
 
+fn cast_test(x: u32) -> i32 {
+    x as i32
+}
+
 #[allow(unused_variables)]
 fn test2() {
     let x: u32 = 23;

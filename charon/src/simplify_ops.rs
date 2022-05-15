@@ -58,6 +58,11 @@ fn unop_requires_assert_before(unop: UnOp) -> bool {
     match unop {
         UnOp::Not => false,
         UnOp::Neg => true,
+        UnOp::Cast(_, _) => {
+            // This case is peculiar, because rustc doesn't insert assertions
+            // while it can actually fail
+            false
+        }
     }
 }
 
@@ -65,6 +70,10 @@ fn unop_can_fail(unop: UnOp) -> bool {
     match unop {
         UnOp::Not => false,
         UnOp::Neg => true,
+        UnOp::Cast(_, _) => {
+            // See [unop_requires_assert_before]
+            false
+        }
     }
 }
 

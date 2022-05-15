@@ -70,9 +70,15 @@ pub enum UnOp {
     Not,
     /// This can overflow. In practice, rust introduces an assert before
     /// (in debug mode) to check that it is not equal to the minimum integer
-    /// value (for the proper type). In our semantics, we leave the value as
-    /// it is in case of overflow.
+    /// value (for the proper type).
     Neg,
+    /// Casts are rvalues in MIR, but we treat them as unops. For now, we
+    /// only support for integer to integer, but we can also do from integers/booleans
+    /// to integers/booleans. For now, we don't handle pointer casts.
+    ///
+    /// The first integer type gives the source type, the second one gives
+    /// the destination type.
+    Cast(IntegerTy, IntegerTy),
 }
 
 /// Binary operations.
