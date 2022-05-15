@@ -1,9 +1,17 @@
 
 #![allow(dead_code)]
 
-use std::cmp::Ordering;
-
 pub type Key = i32;
+
+// Workaround for std::cmp::Ordering
+enum Ordering {
+    Equal, Less, Greater
+}
+fn cmp(l: &Key, r: &Key) -> Ordering {
+    if      *l < *r { Ordering::Less }
+    else if *l > *r { Ordering::Greater }
+    else          { Ordering::Equal }
+}
 
 pub struct BNode<V> {
     key:   Key,
@@ -41,9 +49,18 @@ impl<V> BTree<V> {
     }
 
     pub fn contains(&self, k: &Key) -> bool {
+        /* TODO Export body of std::cmp::Ordering
         match self {
             BTree::Leaf => false,
             BTree::Node(n) => match k.cmp(&n.key) {
+                Ordering::Equal   => true,
+                Ordering::Less    => n.left .contains(k),
+                Ordering::Greater => n.right.contains(k),
+            }
+        } */
+        match self {
+            BTree::Leaf => false,
+            BTree::Node(n) => match cmp(k, &n.key) {
                 Ordering::Equal   => true,
                 Ordering::Less    => n.left .contains(k),
                 Ordering::Greater => n.right.contains(k),
@@ -54,7 +71,7 @@ impl<V> BTree<V> {
     pub fn get_mut(&mut self, k: &Key) -> &mut V {
         match self {
             BTree::Leaf => panic!("not here !"),
-            BTree::Node(n) => match k.cmp(&n.key) {
+            BTree::Node(n) => match cmp(k, &n.key) {
                 Ordering::Equal   => &mut n.value,
                 Ordering::Less    => n.left .get_mut(k),
                 Ordering::Greater => n.right.get_mut(k),
@@ -67,7 +84,7 @@ impl<V> BTree<V> {
             BTree::Leaf => *self = BTree::Node(Box::new(BNode
                 { key: k, value: v, left: BTree::Leaf, right: BTree::Leaf })),
 
-            BTree::Node(n) => match k.cmp(&n.key) {
+            BTree::Node(n) => match cmp(&k, &n.key) {
                 Ordering::Equal   => n.value = v,
                 Ordering::Less    => n.left .insert(k, v),
                 Ordering::Greater => n.right.insert(k, v),
@@ -78,7 +95,7 @@ impl<V> BTree<V> {
     pub fn remove(&mut self, k: &Key) {
         match self {
             BTree::Leaf => (),
-            BTree::Node(n) => match k.cmp(&n.key) {
+            BTree::Node(n) => match cmp(k, &n.key) {
                 Ordering::Less    => n.left .remove(k),
                 Ordering::Greater => n.right.remove(k),
                 Ordering::Equal => {
@@ -91,9 +108,11 @@ impl<V> BTree<V> {
     fn remove_current(mut self: BTree<V>) -> BTree<V> {
         match &mut self {
             BTree::Leaf    => panic!("Always called on node"),
-            BTree::Node(n) => match n.right.get_leftmost() {
-                None       => std::mem::replace(&mut n.left, BTree::Leaf),
-                Some(succ) => match succ {
+            BTree::Node(n) => if n.right.is_leaf() {
+                    std::mem::replace(&mut n.left, BTree::Leaf)
+                } else {
+                    let succ = n.right.get_leftmost();
+                    match succ {
                     BTree::Leaf    => panic!("Option::Some always contains a node"),
                     BTree::Node(s) => {
                         std::mem::swap(&mut n.key,   &mut s.key);
@@ -113,17 +132,17 @@ impl<V> BTree<V> {
         }
     }
 
-    fn get_leftmost(&mut self) -> Option<&mut BTree<V>> {
+    fn get_leftmost(&mut self) -> &mut BTree<V> {
         /* Nested Polonius case
         match self {
             BTree::Leaf    => None,
             BTree::Node(n) => if n.left.is_leaf() 
                 { Some(self) } else { n.left.get_leftmost() }
         } */
-        if self.is_leaf() { return None }
+        if self.is_leaf() { panic!("No leaf allowed here") }
 
         if self.as_node_mut().left.is_leaf() {
-            Some(self)
+            self
         }
         else {
             self.as_node_mut().left.get_leftmost()
