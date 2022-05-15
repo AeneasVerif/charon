@@ -49,6 +49,7 @@ mod names_utils;
 mod reconstruct_asserts;
 mod regions_hierarchy;
 mod register;
+mod remove_unused_locals;
 mod reorder_decls;
 mod rust_to_local_ids;
 mod simplify_binops;
@@ -868,7 +869,11 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // an extra assignment just before returning.
     let llbc_defs = insert_assign_return_unit::transform(llbc_defs);
 
-    // # Step 10: compute which functions are potentially divergent. A function
+    // # Step 10: remove the locals which are never used. After doing so, we
+    // check that there are no remaining locals with type `Never`.
+    let llbc_defs = remove_unused_locals::transform(llbc_defs);
+
+    // # Step 11: compute which functions are potentially divergent. A function
     // is potentially divergent if it is recursive, contains a loop or transitively
     // calls a potentially divergent function.
     // Note that in the future, we may complement this basic analysis with a

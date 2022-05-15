@@ -1052,16 +1052,49 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
         mir::Rvalue::Len(_place) => {
             unimplemented!();
         }
-        mir::Rvalue::Cast(cast_kind, operand, _ty) => {
+        mir::Rvalue::Cast(cast_kind, operand, tgt_ty) => {
             trace!("Rvalue::Cast: {:?}", rvalue);
-            // TODO: translate the type, and check that consistant
+            // TODO: I think casts should only be from integers to integers.
+            // In that case, it doesn't cost much to add a corresponding rvalue variant.
+
+            // Translate the target type
+            let tgt_ty = translate_ety(tcx, bt_ctx, tgt_ty).unwrap();
+            // For now, we only accepts casts over constant values
             let operand = translate_operand(tcx, bt_ctx, operand);
             // Sanity check
             assert!(match cast_kind {
                 rustc_middle::mir::CastKind::Misc => true,
                 rustc_middle::mir::CastKind::Pointer(_) => false,
             });
-            e::Rvalue::Use(operand)
+            match &operand {
+                e::Operand::Copy(_) | e::Operand::Move(_) => unimplemented!(),
+                e::Operand::Constant(_, cv) => {
+                    // We only support integer conversion
+                    match cv {
+                        e::OperandConstantValue::ConstantValue(v::ConstantValue::Scalar(sv)) => {
+                            let tgt_ty = *tgt_ty.as_integer();
+
+                            // Convert
+                            let nsv = if sv.is_int() {
+                                let v = sv.as_int().unwrap();
+                                v::ScalarValue::from_int(tgt_ty, v).unwrap()
+                            } else {
+                                let v = sv.as_uint().unwrap();
+                                v::ScalarValue::from_uint(tgt_ty, v).unwrap()
+                            };
+
+                            let tgt_ty = ty::Ty::Integer(tgt_ty);
+                            let op = e::OperandConstantValue::ConstantValue(
+                                v::ConstantValue::Scalar(nsv),
+                            );
+                            let op = e::Operand::Constant(tgt_ty, op);
+                            e::Rvalue::Use(op)
+                        }
+                        e::OperandConstantValue::ConstantValue(_)
+                        | e::OperandConstantValue::Adt(_, _) => unimplemented!(),
+                    }
+                }
+            }
         }
         mir::Rvalue::BinaryOp(binop, operands) | mir::Rvalue::CheckedBinaryOp(binop, operands) => {
             // We merge checked and unchecked binary operations

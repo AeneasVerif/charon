@@ -957,3 +957,14 @@ impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
         }
     }
 }
+
+impl<R: Clone + std::cmp::Eq> Ty<R> {
+    pub fn contains_never(&self) -> bool {
+        match self {
+            Ty::Never => true,
+            Ty::Adt(_, _, tys) => tys.iter().any(|ty| ty.contains_never()),
+            Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Str | Ty::Integer(_) => false,
+            Ty::Array(ty) | Ty::Slice(ty) | Ty::Ref(_, ty, _) => ty.contains_never(),
+        }
+    }
+}
