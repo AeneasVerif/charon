@@ -177,7 +177,7 @@ fn build_cfg_partial_info_edges(
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct OrdBlockId {
     id: src::BlockId::Id,
     /// The rank in the topological order
@@ -762,7 +762,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
 /// Note that we make sure to use immutable sets because we rely a lot
 /// on cloning.
 #[derive(Debug, Clone)]
-struct BlockSuccsInfo {
+struct BlocksInfo {
     /// All the successors of the block
     succs: im::OrdSet<OrdBlockId>,
     /// The "best" intersection between the successors of the different
@@ -795,14 +795,14 @@ fn make_ord_block_id(
     OrdBlockId { id: block_id, rank }
 }
 
-/// Compute [BlockSuccsInfo] for every block in the graph.
+/// Compute [BlocksInfo] for every block in the graph.
 /// This information is then used to compute the switch exits.
 fn compute_switch_exits_explore(
     cfg: &CfgInfo,
     tsort_map: &HashMap<src::BlockId::Id, usize>,
-    memoized: &mut HashMap<src::BlockId::Id, BlockSuccsInfo>,
+    memoized: &mut HashMap<src::BlockId::Id, BlocksInfo>,
     block_id: src::BlockId::Id,
-) -> BlockSuccsInfo {
+) -> BlocksInfo {
     // Shortcut
     match memoized.get(&block_id) {
         Some(res) => {
@@ -906,7 +906,7 @@ fn compute_switch_exits_explore(
     );
 
     // Memoize
-    let info = BlockSuccsInfo {
+    let info = BlocksInfo {
         succs: all_succs,
         best_inter_succs,
     };
@@ -974,14 +974,15 @@ fn compute_switch_exits(
     // Also, we need to explore the nodes in topological order, to give
     // precedence to the outer switches.
     let mut exits_set = HashSet::new();
+    let mut ord_exits_set = im::OrdSet::new();
     let mut exits = HashMap::new();
     for bid in sorted_switch_blocks {
         let bid = bid.id;
         let info = succs_info_map.get(&bid).unwrap();
         let succs = &info.best_inter_succs;
-        // Check if there are successors
+        // Check if there are successors: if there are no successors shared
+        // by the branches, there are no exits.
         if succs.is_empty() {
-            // No successors shared by the branches: no exit
             exits.insert(bid, None);
         } else {
             // We have an exit candidate: check that it was not already
@@ -990,8 +991,42 @@ fn compute_switch_exits(
             if exits_set.contains(&exit.id) {
                 exits.insert(bid, None);
             } else {
-                exits_set.insert(exit.id);
-                exits.insert(bid, Some(exit.id));
+                // It was not taken by an external switch.
+                //
+                // We must check that we can't reach the exit of an external
+                // switch from one of the branches. We do this by simply
+                // checking that we can't reach any exits (and use the fact
+                // that we explore the switch by using a topological order
+                // to not discard valid exit candidates).
+                //
+                // The reason is that it can lead to code like the following:
+                // ```
+                // if ... { // if #1
+                //   if ... { // if #2
+                //     ...
+                //     // here, we see we can go to the exit of if #2
+                //   }
+                //   else {
+                //     ...
+                //     // here, we see we can go to the exit of if #1
+                //   }
+                //   // We insert code for the exit of if #2, which should
+                //   // actually only be executed by the "then" branch
+                //   ...
+                // }
+                // else {
+                //   ...
+                // }
+                // ```
+                let inter = info.succs.clone().intersection(ord_exits_set.clone());
+                if inter.is_empty() {
+                    // No intersectiàn: ok
+                    exits_set.insert(exit.id);
+                    ord_exits_set.insert(*exit);
+                    exits.insert(bid, Some(exit.id));
+                } else {
+                    exits.insert(bid, None);
+                }
             }
         }
     }
