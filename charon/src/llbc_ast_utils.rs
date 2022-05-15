@@ -224,6 +224,6 @@ impl FunDecl {
         let eval_ctx = AstFormatter::new(ty_ctx, fun_ctx, &self.signature.type_params, locals);
 
         // Use the contexts for printing
-        self.gfmt_with_ctx(TAB_INCR, &fun_sig_ctx, &eval_ctx)
+        self.gfmt_with_ctx("", &fun_sig_ctx, &eval_ctx)
     }
 }

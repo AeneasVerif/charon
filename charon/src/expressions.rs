@@ -70,9 +70,15 @@ pub enum UnOp {
     Not,
     /// This can overflow. In practice, rust introduces an assert before
     /// (in debug mode) to check that it is not equal to the minimum integer
-    /// value (for the proper type). In our semantics, we leave the value as
-    /// it is in case of overflow.
+    /// value (for the proper type).
     Neg,
+    /// Casts are rvalues in MIR, but we treat them as unops. For now, we
+    /// only support for integer to integer, but we can also do from integers/booleans
+    /// to integers/booleans. For now, we don't handle pointer casts.
+    ///
+    /// The first integer type gives the source type, the second one gives
+    /// the destination type.
+    Cast(IntegerTy, IntegerTy),
 }
 
 /// Binary operations.
@@ -125,6 +131,7 @@ pub enum Operand {
 /// special cases in assignments. They are converted to "normal" values
 /// when evaluating the assignment (which is why we don't put them in the
 /// [`ConstantValue`](crate::ConstantValue) enumeration.
+/// TODO: implement a micro-pass to get rid of those.
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
     ConstantValue(ConstantValue),
@@ -168,6 +175,10 @@ pub enum Rvalue {
 #[derive(Debug, Clone)]
 pub enum AggregateKind {
     Tuple,
+    // TODO: treat Option in a general manner (we should extract the definitions
+    // of the external enumerations - because as they are public, their variants are
+    // public)
+    Option(VariantId::Id, ETy),
     Adt(
         TypeDeclId::Id,
         Option<VariantId::Id>,

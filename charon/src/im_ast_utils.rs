@@ -463,7 +463,8 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunBody<T> {
         let mut locals = locals.join("");
         locals.push_str("\n");
 
-        // Format the body blocks
+        // Format the body blocks - TODO: we don't take the indentation
+        // into account, here
         let body = ctx.format_object(&self.body);
 
         // Put everything together

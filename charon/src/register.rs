@@ -181,7 +181,7 @@ fn register_local_adt(
     let type_id = adt.did;
 
     // Initialize the type declaration that we will register (in particular,
-    // initilize the list of local dependancies to empty).
+    // initialize the list of local dependencies to empty).
     let mut rtype_decl = RegisteredTypeDeclaration::new(type_id);
 
     // We explore the type definition only if it is not in a module flagged
@@ -713,16 +713,14 @@ fn register_local_function_body(
             | rustc_middle::mir::terminator::TerminatorKind::FalseUnwind {
                 real_target: _,
                 unwind: _,
-            } => {
-                // Nothing to do
             }
-            rustc_middle::mir::terminator::TerminatorKind::DropAndReplace {
+            | rustc_middle::mir::terminator::TerminatorKind::DropAndReplace {
                 place: _,
                 value: _,
                 target: _,
                 unwind: _,
             } => {
-                unreachable!();
+                // Nothing to do
             }
             rustc_middle::mir::terminator::TerminatorKind::Call {
                 func,

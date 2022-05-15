@@ -1,6 +1,7 @@
 //! This file groups everything which is linked to implementations about expression.rs
 #![allow(dead_code)]
 
+use crate::assumed;
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
@@ -37,8 +38,9 @@ impl std::fmt::Display for BorrowKind {
 impl std::string::ToString for UnOp {
     fn to_string(&self) -> String {
         match self {
-            UnOp::Not => "~".to_owned(),
-            UnOp::Neg => "-".to_owned(),
+            UnOp::Not => "~".to_string(),
+            UnOp::Neg => "-".to_string(),
+            UnOp::Cast(src, tgt) => format!("cast<{},{}>", src, tgt).to_string(),
         }
     }
 }
@@ -46,22 +48,22 @@ impl std::string::ToString for UnOp {
 impl std::string::ToString for BinOp {
     fn to_string(&self) -> String {
         match self {
-            BinOp::BitXor => "^".to_owned(),
-            BinOp::BitAnd => "&".to_owned(),
-            BinOp::BitOr => "|".to_owned(),
-            BinOp::Eq => "==".to_owned(),
-            BinOp::Lt => "<".to_owned(),
-            BinOp::Le => "<=".to_owned(),
-            BinOp::Ne => "!=".to_owned(),
-            BinOp::Ge => ">=".to_owned(),
-            BinOp::Gt => ">".to_owned(),
-            BinOp::Div => "/".to_owned(),
-            BinOp::Rem => "%".to_owned(),
-            BinOp::Add => "+".to_owned(),
-            BinOp::Sub => "-".to_owned(),
-            BinOp::Mul => "*".to_owned(),
-            BinOp::Shl => "<<".to_owned(),
-            BinOp::Shr => ">>".to_owned(),
+            BinOp::BitXor => "^".to_string(),
+            BinOp::BitAnd => "&".to_string(),
+            BinOp::BitOr => "|".to_string(),
+            BinOp::Eq => "==".to_string(),
+            BinOp::Lt => "<".to_string(),
+            BinOp::Le => "<=".to_string(),
+            BinOp::Ne => "!=".to_string(),
+            BinOp::Ge => ">=".to_string(),
+            BinOp::Gt => ">".to_string(),
+            BinOp::Div => "/".to_string(),
+            BinOp::Rem => "%".to_string(),
+            BinOp::Add => "+".to_string(),
+            BinOp::Sub => "-".to_string(),
+            BinOp::Mul => "*".to_string(),
+            BinOp::Shl => "<<".to_string(),
+            BinOp::Shr => ">>".to_string(),
         }
     }
 }
@@ -131,7 +133,7 @@ impl OperandConstantValue {
                     Option::None => "None".to_string(),
                 };
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
-                format!("ConstAdt {} [{}]", variant_id, values.join(", ")).to_owned()
+                format!("ConstAdt {} [{}]", variant_id, values.join(", ")).to_string()
             }
         }
     }
@@ -151,9 +153,9 @@ impl Operand {
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
-            Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)).to_owned(),
-            Operand::Move(p) => format!("move ({})", p.fmt_with_ctx(ctx)).to_owned(),
-            Operand::Constant(_, c) => format!("const ({})", c.fmt_with_ctx(ctx)).to_owned(),
+            Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)).to_string(),
+            Operand::Move(p) => format!("move ({})", p.fmt_with_ctx(ctx)).to_string(),
+            Operand::Constant(_, c) => format!("const ({})", c.fmt_with_ctx(ctx)).to_string(),
         }
     }
 
@@ -180,14 +182,14 @@ impl Rvalue {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),
             Rvalue::Ref(place, borrow_kind) => match borrow_kind {
-                BorrowKind::Shared => format!("&{}", place.fmt_with_ctx(ctx)).to_owned(),
-                BorrowKind::Mut => format!("&mut {}", place.fmt_with_ctx(ctx)).to_owned(),
+                BorrowKind::Shared => format!("&{}", place.fmt_with_ctx(ctx)).to_string(),
+                BorrowKind::Mut => format!("&mut {}", place.fmt_with_ctx(ctx)).to_string(),
                 BorrowKind::TwoPhaseMut => {
-                    format!("&two-phase-mut {}", place.fmt_with_ctx(ctx)).to_owned()
+                    format!("&two-phase-mut {}", place.fmt_with_ctx(ctx)).to_string()
                 }
             },
             Rvalue::UnaryOp(unop, x) => {
-                format!("{}({})", unop.to_string(), x.fmt_with_ctx(ctx)).to_owned()
+                format!("{}({})", unop.to_string(), x.fmt_with_ctx(ctx)).to_string()
             }
             Rvalue::BinaryOp(binop, x, y) => format!(
                 "{} {} {}",
@@ -195,14 +197,25 @@ impl Rvalue {
                 binop.to_string(),
                 y.fmt_with_ctx(ctx)
             )
-            .to_owned(),
+            .to_string(),
             Rvalue::Discriminant(p) => {
-                format!("@discriminant({})", p.fmt_with_ctx(ctx),).to_owned()
+                format!("@discriminant({})", p.fmt_with_ctx(ctx),).to_string()
             }
             Rvalue::Aggregate(kind, ops) => {
                 let ops_s: Vec<String> = ops.iter().map(|op| op.fmt_with_ctx(ctx)).collect();
                 match kind {
-                    AggregateKind::Tuple => format!("({})", ops_s.join(", ")).to_owned(),
+                    AggregateKind::Tuple => format!("({})", ops_s.join(", ")).to_string(),
+                    AggregateKind::Option(variant_id, _) => {
+                        if *variant_id == assumed::OPTION_NONE_VARIANT_ID {
+                            assert!(ops.len() == 0);
+                            "@Option::None".to_string()
+                        } else if *variant_id == assumed::OPTION_SOME_VARIANT_ID {
+                            assert!(ops.len() == 1);
+                            format!("@Option::Some({})", ops[0].fmt_with_ctx(ctx)).to_string()
+                        } else {
+                            unreachable!();
+                        }
+                    }
                     AggregateKind::Adt(def_id, variant_id, _, _) => {
                         // Format every field
                         let mut fields = vec![];
@@ -211,7 +224,7 @@ impl Rvalue {
                             let field_name = ctx.format_object((*def_id, *variant_id, field_id));
                             let op = &ops[i];
                             fields.push(
-                                format!("{}: {}", field_name, op.fmt_with_ctx(ctx)).to_owned(),
+                                format!("{}: {}", field_name, op.fmt_with_ctx(ctx)).to_string(),
                             );
                         }
 
@@ -250,6 +263,19 @@ impl Serialize for AggregateKind {
         // - otherwise simply serialize a string with the variant name
         match self {
             AggregateKind::Tuple => "AggregatedTuple".serialize(serializer),
+            AggregateKind::Option(variant_id, ty) => {
+                let mut vs = serializer.serialize_tuple_variant(
+                    "AggregateKind",
+                    1,
+                    "AggregatedOption",
+                    2,
+                )?;
+
+                vs.serialize_field(variant_id)?;
+                vs.serialize_field(ty)?;
+
+                vs.end()
+            }
             AggregateKind::Adt(def_id, opt_variant_id, regions, tys) => {
                 let mut vs =
                     serializer.serialize_tuple_variant("AggregateKind", 1, "AggregatedAdt", 4)?;

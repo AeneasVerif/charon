@@ -1463,6 +1463,11 @@ fn translate_terminator(
                     // ```
                     // We detect this by checking if a block has already been
                     // translated as one of the branches of the switch.
+                    //
+                    // Rk.: note there may be intermediate gotos depending
+                    // on the MIR we use. Typically, we manage to detect the
+                    // grouped branches with Optimized MIR, but not with Promoted
+                    // MIR. See the comment in "tests/src/matches.rs".
 
                     // We link block ids to:
                     // - vector of matched integer values
@@ -1729,14 +1734,20 @@ fn translate_block(
     }
 }
 
+/// [type_defs]: this parameter is used for pretty-printing purposes
 fn translate_function(
     no_code_duplication: bool,
+    type_defs: &TypeDecls,
     src_defs: &src::FunDecls,
     src_def_id: FunDeclId::Id,
 ) -> tgt::FunDecl {
     // Retrieve the function definition
     let src_def = src_defs.get(src_def_id).unwrap();
-    trace!("# Reconstructing: {}\n", src_def.name);
+    trace!(
+        "# Reconstructing: {}\n\n{}",
+        src_def.name,
+        src_def.fmt_with_defs(&type_defs, &src_defs)
+    );
 
     // Translate the body if the function is transparent, ignore otherwise
     // (if the function is opaque)
@@ -1822,6 +1833,7 @@ pub fn translate_functions(
     for src_def_id in src_defs.iter_indices() {
         out_defs.push_back(translate_function(
             no_code_duplication,
+            type_defs,
             src_defs,
             src_def_id,
         ));

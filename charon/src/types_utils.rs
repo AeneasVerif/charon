@@ -342,6 +342,25 @@ impl IntegerTy {
     pub fn is_unsigned(&self) -> bool {
         !(self.is_signed())
     }
+
+    /// Return the size (in bytes) of an integer of the proper type
+    pub fn size(&self) -> usize {
+        use std::mem::size_of;
+        match self {
+            IntegerTy::Isize => size_of::<isize>(),
+            IntegerTy::I8 => size_of::<i8>(),
+            IntegerTy::I16 => size_of::<i16>(),
+            IntegerTy::I32 => size_of::<i32>(),
+            IntegerTy::I64 => size_of::<i64>(),
+            IntegerTy::I128 => size_of::<i128>(),
+            IntegerTy::Usize => size_of::<isize>(),
+            IntegerTy::U8 => size_of::<u8>(),
+            IntegerTy::U16 => size_of::<u16>(),
+            IntegerTy::U32 => size_of::<u32>(),
+            IntegerTy::U64 => size_of::<u64>(),
+            IntegerTy::U128 => size_of::<u128>(),
+        }
+    }
 }
 
 pub fn type_def_id_to_pretty_string(id: TypeDeclId::Id) -> String {
@@ -366,6 +385,12 @@ pub fn integer_ty_to_string(ty: IntegerTy) -> String {
         IntegerTy::U32 => "u32".to_string(),
         IntegerTy::U64 => "u64".to_string(),
         IntegerTy::U128 => "u128".to_string(),
+    }
+}
+
+impl std::fmt::Display for IntegerTy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", integer_ty_to_string(*self))
     }
 }
 
@@ -935,6 +960,17 @@ impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
             vs.end()
         } else {
             variant_name.serialize(serializer)
+        }
+    }
+}
+
+impl<R: Clone + std::cmp::Eq> Ty<R> {
+    pub fn contains_never(&self) -> bool {
+        match self {
+            Ty::Never => true,
+            Ty::Adt(_, _, tys) => tys.iter().any(|ty| ty.contains_never()),
+            Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Str | Ty::Integer(_) => false,
+            Ty::Array(ty) | Ty::Slice(ty) | Ty::Ref(_, ty, _) => ty.contains_never(),
         }
     }
 }
