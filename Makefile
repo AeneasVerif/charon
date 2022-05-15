@@ -27,15 +27,15 @@ test: build build-tests build-tests-nll \
 test-nested_borrows: OPTIONS += --no-code-duplication
 test-no_nested_borrows: OPTIONS += --no-code-duplication
 test-loops: OPTIONS += --no-code-duplication
-test-hashmap: OPTIONS += --no-code-duplication
-test-hashmap_main: OPTIONS += --no-code-duplication
+#test-hashmap: OPTIONS += --no-code-duplication
+#test-hashmap_main: OPTIONS += --no-code-duplication
 test-hashmap_main: OPTIONS += --opaque=hashmap_utils
 test-paper: OPTIONS += --no-code-duplication
 # Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
 test-matches:
 test-external: OPTIONS += --no-code-duplication
 test-matches_duplicate:
-test-nll-betree_nll: OPTIONS += --no-code-duplication
+#test-nll-betree_nll: OPTIONS += --no-code-duplication
 # Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
 test-nll-betree_main:
 test-nll-betree_main: OPTIONS += --opaque=betree_utils
