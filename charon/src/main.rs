@@ -81,8 +81,17 @@ struct ToInternal {
 }
 
 impl Callbacks for ToInternal {
-    fn after_analysis<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
-        // TODO: extern crates
+    /// We have to be careful here: we can plug ourselves at several places
+    /// (after parsing, after expansion, after analysis). However, the MIR is
+    /// modified in place: this means that if we at some point we compute, say,
+    /// the promoted MIR, it is possible to query the optimized MIR (because
+    /// optimized MIR is further down in the compilation process). However,
+    /// it is not possible to query, say, the built MIR (which results from
+    /// the conversion to HIR to MIR) because it has been lost.
+    /// For this reason, and as we may want to plug ourselves at different
+    /// phases of the compilation process, we query the context as early as
+    /// possible (i.e., after parsing). See [get_mir].
+    fn after_parsing<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
         queries
             .global_ctxt()
             .unwrap()

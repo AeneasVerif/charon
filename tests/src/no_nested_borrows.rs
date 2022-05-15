@@ -108,12 +108,6 @@ fn test3() {
     assert!(z == 15);
 }
 
-/// Testing what happens with negation - in particular for overflows.
-/// In debug mode, rust introduces an assertion before the negation.
-fn test_neg(x: i32) -> i32 {
-    -x
-}
-
 fn test_neg1() {
     let x: i32 = 3;
     let y = -x;
