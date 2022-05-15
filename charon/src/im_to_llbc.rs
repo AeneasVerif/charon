@@ -1004,14 +1004,18 @@ fn compute_switch_exits(
                 // if ... { // if #1
                 //   if ... { // if #2
                 //     ...
-                //     // here, we see we can go to the exit of if #2
+                //     // here, we have a `goto b1`, where b1 is the exit
+                //     // of if #2: we thus stop translating the blocks.
                 //   }
                 //   else {
                 //     ...
-                //     // here, we see we can go to the exit of if #1
+                //     // here, we have a `goto b2`, where b2 is the exit
+                //     // of if #1: we thus stop translating the blocks.
                 //   }
-                //   // We insert code for the exit of if #2, which should
-                //   // actually only be executed by the "then" branch
+                //   // We insert code for the block b1 here (which is the exit of
+                //   // the exit of if #2). However, this block should only
+                //   // be executed in the branch "then" of the if #2, not in
+                //   // the branch "else".
                 //   ...
                 // }
                 // else {
