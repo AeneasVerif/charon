@@ -201,6 +201,14 @@ fn check_if_assert_then_binop(st1: &Statement, st2: &Statement, st3: &Statement)
                 //   dest := move dividend / move divisor; // Can also be a `%`
                 //   ...
                 //   ```
+                //
+                //   Or this pattern:
+                //   ```
+                //   tmp := (constant_divisor) == 0;
+                //   assert((move tmp) == false);
+                //   dest := move dividend / constant_divisor; // Can also be a `%`
+                //   ...
+                //   ```
                 check_if_simplifiable_assert_then_binop(st1, st2, st3)
             } else {
                 false
@@ -232,7 +240,7 @@ fn check_if_simplifiable_assert_then_binop(
                     Operand::Copy(eq_op1),
                     Operand::Constant(
                         _,
-                        OperandConstantValue::ConstantValue(ConstantValue::Scalar(scalar_value)),
+                        OperandConstantValue::ConstantValue(ConstantValue::Scalar(zero)),
                     ),
                 ),
             ),
@@ -242,20 +250,60 @@ fn check_if_simplifiable_assert_then_binop(
             }),
             Statement::Assign(_mp, Rvalue::BinaryOp(binop, _dividend, Operand::Move(divisor))),
         ) => {
-            // Case 1: pattern with assertion
+            // Case 1: pattern with copy/move and assertion
             assert!(binop_requires_assert_before(*binop));
             assert!(!(*expected));
             assert!(eq_op1 == divisor);
             assert!(eq_dest == cond_op);
-            if scalar_value.is_int() {
-                assert!(scalar_value.as_int().unwrap() == 0);
+            if zero.is_int() {
+                assert!(zero.as_int().unwrap() == 0);
             } else {
-                assert!(scalar_value.as_uint().unwrap() == 0);
+                assert!(zero.as_uint().unwrap() == 0);
+            }
+            true
+        }
+        (
+            Statement::Assign(
+                eq_dest,
+                Rvalue::BinaryOp(
+                    BinOp::Eq,
+                    divisor,
+                    Operand::Constant(
+                        _,
+                        OperandConstantValue::ConstantValue(ConstantValue::Scalar(zero)),
+                    ),
+                ),
+            ),
+            Statement::Assert(Assert {
+                cond: Operand::Move(cond_op),
+                expected,
+            }),
+            Statement::Assign(_mp, Rvalue::BinaryOp(binop, _dividend, divisor1)),
+        ) => {
+            // Case 2: pattern with constant divisor and assertion
+            assert!(binop_requires_assert_before(*binop));
+            assert!(!(*expected));
+            assert!(divisor.is_constant());
+            match divisor {
+                Operand::Constant(
+                    _,
+                    OperandConstantValue::ConstantValue(ConstantValue::Scalar(_)),
+                ) => (),
+                _ => unreachable!(),
+            }
+            assert!(divisor1 == divisor);
+            assert!(eq_dest == cond_op);
+            // Check that the zero is zero
+            if zero.is_int() {
+                assert!(zero.as_int().unwrap() == 0);
+            } else {
+                assert!(zero.as_uint().unwrap() == 0);
             }
             true
         }
         (_, _, Statement::Assign(_mp, Rvalue::BinaryOp(_, _, Operand::Constant(_, divisor)))) => {
-            // Case 2: no assertion, the dividend must be a non-zero constant
+            // Case 3: no assertion to check the divisor != 0, the divisor must be a
+            // non-zero constant
             let cv = divisor.as_constant_value();
             let cv = cv.as_scalar();
             if cv.is_uint() {

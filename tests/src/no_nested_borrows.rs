@@ -44,6 +44,11 @@ pub enum Sum<T1, T2> {
     Right(T2),
 }
 
+/// Testing unop simplification
+fn neg_test(x: i32) -> i32 {
+    -x
+}
+
 /// Testing binop simplification
 fn add_test(x: u32, y: u32) -> u32 {
     x + y
@@ -57,6 +62,11 @@ fn subs_test(x: u32, y: u32) -> u32 {
 /// Testing binop simplification
 fn div_test(x: u32, y: u32) -> u32 {
     x / y
+}
+
+/// Testing binop simplification
+fn div_test1(x: u32) -> u32 {
+    x / 2
 }
 
 /// Testing binop simplification

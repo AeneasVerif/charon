@@ -52,7 +52,7 @@ mod register;
 mod remove_unused_locals;
 mod reorder_decls;
 mod rust_to_local_ids;
-mod simplify_binops;
+mod simplify_ops;
 mod translate_functions_to_im;
 mod translate_types;
 mod types;
@@ -840,9 +840,9 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // serializing the result.
     //
 
-    // # Step 7: simplify the calls to binops
+    // # Step 7: simplify the calls to unops and binops
     // Note that we assume that the sequences have been flattened.
-    let llbc_defs = simplify_binops::simplify(llbc_defs);
+    let llbc_defs = simplify_ops::simplify(llbc_defs);
 
     for def in &llbc_defs {
         trace!(
