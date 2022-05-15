@@ -10,7 +10,7 @@ use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::generics;
 use crate::im_ast as ast;
-use crate::names::function_def_id_to_name;
+use crate::names::{function_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy as rh;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
@@ -1121,7 +1121,6 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
                     field_index,
                 ) => {
                     trace!("{:?}", rvalue);
-                    assert!(adt_id.is_local());
 
                     // Not sure what those two parameters are used for, so
                     // panicking if they are not none (to catch a use case).
@@ -1133,36 +1132,68 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
                     assert!(field_index.is_none());
 
                     // Translate the substitution
-                    let (region_params, type_params) =
+                    let (region_params, mut type_params) =
                         translate_subst_in_body(tcx, bt_ctx, None, substs).unwrap();
 
-                    // Retrieve the definition
-                    let id_t = *bt_ctx.ft_ctx.ordered.type_rid_to_id.get(adt_id).unwrap();
-                    let def = bt_ctx.get_type_defs().get_type_def(id_t).unwrap();
+                    if adt_id.is_local() {
+                        // Local ADT: retrieve the definition
+                        let id_t = *bt_ctx.ft_ctx.ordered.type_rid_to_id.get(adt_id).unwrap();
+                        let def = bt_ctx.get_type_defs().get_type_def(id_t).unwrap();
 
-                    assert!(region_params.len() == def.region_params.len());
-                    assert!(type_params.len() == def.type_params.len());
+                        assert!(region_params.len() == def.region_params.len());
+                        assert!(type_params.len() == def.type_params.len());
 
-                    let variant_id = match &def.kind {
-                        ty::TypeDeclKind::Enum(variants) => {
-                            let variant_id = translate_variant_id(*variant_idx);
-                            assert!(
-                                operands_t.len() == variants.get(variant_id).unwrap().fields.len()
-                            );
+                        let variant_id = match &def.kind {
+                            ty::TypeDeclKind::Enum(variants) => {
+                                let variant_id = translate_variant_id(*variant_idx);
+                                assert!(
+                                    operands_t.len()
+                                        == variants.get(variant_id).unwrap().fields.len()
+                                );
 
-                            Some(variant_id)
+                                Some(variant_id)
+                            }
+                            ty::TypeDeclKind::Struct(_) => {
+                                assert!(variant_idx.as_usize() == 0);
+                                None
+                            }
+                            ty::TypeDeclKind::Opaque => {
+                                unreachable!("Can't build an aggregate from an opaque type")
+                            }
+                        };
+
+                        let akind =
+                            e::AggregateKind::Adt(id_t, variant_id, region_params, type_params);
+
+                        e::Rvalue::Aggregate(akind, operands_t)
+                    } else {
+                        // External ADT.
+                        // Can be `Option`
+                        // TODO: treat all external ADTs in a consistant manner.
+                        // For instance, we can access the variants of any external
+                        // enumeration marked as `public`.
+                        let name = type_def_id_to_name(tcx, *adt_id);
+                        assert!(name.equals_ref_name(&assumed::OPTION_NAME));
+
+                        // Sanity checks
+                        assert!(region_params.len() == 0);
+                        assert!(type_params.len() == 1);
+
+                        // Find the variant
+                        let variant_id = translate_variant_id(*variant_idx);
+                        if variant_id == assumed::OPTION_NONE_VARIANT_ID {
+                            assert!(operands_t.len() == 0);
+                        } else if variant_id == assumed::OPTION_SOME_VARIANT_ID {
+                            assert!(operands_t.len() == 1);
+                        } else {
+                            unreachable!();
                         }
-                        ty::TypeDeclKind::Struct(_) => {
-                            assert!(variant_idx.as_usize() == 0);
-                            None
-                        }
-                        ty::TypeDeclKind::Opaque => {
-                            unreachable!("Can't build an aggregate from an opaque type")
-                        }
-                    };
-                    let akind = e::AggregateKind::Adt(id_t, variant_id, region_params, type_params);
 
-                    e::Rvalue::Aggregate(akind, operands_t)
+                        let akind =
+                            e::AggregateKind::Option(variant_id, type_params.pop().unwrap());
+
+                        e::Rvalue::Aggregate(akind, operands_t)
+                    }
                 }
                 mir::AggregateKind::Closure(_def_id, _subst) => {
                     unimplemented!();

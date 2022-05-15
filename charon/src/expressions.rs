@@ -169,6 +169,10 @@ pub enum Rvalue {
 #[derive(Debug, Clone)]
 pub enum AggregateKind {
     Tuple,
+    // TODO: treat Option in a general manner (we should extract the definitions
+    // of the external enumerations - because as they are public, their variants are
+    // public)
+    Option(VariantId::Id, ETy),
     Adt(
         TypeDeclId::Id,
         Option<VariantId::Id>,
