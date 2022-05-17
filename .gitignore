@@ -28,6 +28,7 @@ nohup.out
 #======
 # Other
 #======
+.vscode
 *.llbc
 *.mir
 *.txt
