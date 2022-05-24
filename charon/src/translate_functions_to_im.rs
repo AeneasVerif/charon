@@ -1,5 +1,5 @@
 //! Translate functions from the rust compiler MIR to our internal representation.
-//! Ou&r internal representation is very close to MIR, but is more convenient for
+//! Our internal representation is very close to MIR, but is more convenient for
 //! us to handle, and easier to maintain - rustc's representation can evolve
 //! independently.
 
