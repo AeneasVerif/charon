@@ -1,24 +1,6 @@
 //! Tests with constants
 #![allow(dead_code)]
 
-const fn get_Z1() -> i32 {
-    const Z1: i32 = 3;
-    Z1
-}
-
-const fn add(a: i32, b: i32) -> i32 {
-    a + b
-}
-
-const fn get_Z2() -> i32 {
-    add(Q1, add(get_Z1(), Q3))
-}
-
-const Q1: i32 = 5;
-const Q2: i32 = Q1;
-const Q3: i32 = add(Q2, 3);
-
-/*
 // Integers
 
 const X0: u32 = 0;
@@ -73,4 +55,22 @@ impl<T> Wrap<T> {
         Wrap { val }
     }
 }
- */
+
+// Additions
+
+const fn get_Z1() -> i32 {
+    const Z1: i32 = 3;
+    Z1
+}
+
+const fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+const fn get_Z2() -> i32 {
+    add(Q1, add(get_Z1(), Q3))
+}
+
+const Q1: i32 = 5;
+const Q2: i32 = Q1;
+const Q3: i32 = add(Q2, 3);

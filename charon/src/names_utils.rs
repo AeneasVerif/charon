@@ -161,7 +161,7 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     //   the identifier is "list::List", we only use "List" and insert it
     //   in the name).
     //
-    // Besides, as there may be several "impl" blocks for one type,
+    // Besides,
     // As there may be several "impl" blocks for one type, each impl block is
     // identified by a unique number (rustc calls this a "disambiguator"),
     // which we grab.
@@ -227,6 +227,8 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                 match ty.kind() {
                     rustc_middle::ty::TyKind::Adt(adt_def, _) => id = adt_def.did,
                     _ => {
+                        println!("@ty.kind() = {:?}", ty.kind());
+                        println!("@name = {:?}", name);
                         unreachable!();
                     }
                 };
