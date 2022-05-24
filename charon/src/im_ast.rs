@@ -5,6 +5,7 @@
 
 use crate::expressions::*;
 pub use crate::im_ast_utils::*;
+use crate::names::ConstName;
 use crate::names::FunName;
 use crate::regions_hierarchy::RegionGroups;
 use crate::types::*;
@@ -18,6 +19,7 @@ use serde::Serialize;
 pub static TAB_INCR: &'static str = "    ";
 
 generate_index_type!(FunDeclId);
+generate_index_type!(ConstDeclId);
 
 // Block identifier. Similar to rust's `BasicBlock`.
 generate_index_type!(BlockId);
@@ -89,6 +91,30 @@ pub struct GFunDecl<T: std::fmt::Debug + Clone + Serialize> {
 pub type FunBody = GFunBody<BlockId::Vector<BlockData>>;
 pub type FunDecl = GFunDecl<BlockId::Vector<BlockData>>;
 pub type FunDecls = FunDeclId::Vector<FunDecl>;
+
+#[derive(Debug, Clone, Serialize)]
+pub struct GConstBody<T: std::fmt::Debug + Clone + Serialize> {
+    pub locals: VarId::Vector<Var>,
+    pub body: T,
+}
+
+/// A constant definition, either opaque or transparent.
+#[derive(Debug, Clone, Serialize)]
+pub struct GConstDecl<T: std::fmt::Debug + Clone + Serialize> {
+    pub def_id: ConstDeclId::Id,
+    pub name: ConstName,
+    pub type_: ETy,
+    pub body: Option<GConstBody<T>>,
+}
+impl<T: std::fmt::Debug + Clone + Serialize> GConstDecl<T> {
+    fn is_opaque(&self) -> bool {
+        self.body.is_none()
+    }
+}
+
+pub type ConstBody = GConstBody<BlockId::Vector<BlockData>>;
+pub type ConstDecl = GConstDecl<BlockId::Vector<BlockData>>;
+pub type ConstDecls = ConstDeclId::Vector<ConstDecl>;
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum Statement {

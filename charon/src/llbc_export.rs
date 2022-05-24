@@ -1,6 +1,7 @@
-use crate::llbc_ast::*;
 use crate::common::*;
+use crate::im_ast::ConstDeclId;
 use crate::im_ast::FunDeclId;
+use crate::llbc_ast::*;
 use crate::rust_to_local_ids::*;
 use crate::types::*;
 use serde::{Serialize, Serializer};
@@ -37,6 +38,7 @@ struct ModSerializer<'a> {
     declarations: DeclarationsSerializer<'a>,
     types: &'a TypeDeclId::Vector<TypeDecl>,
     functions: &'a FunDeclId::Vector<FunDecl>,
+    constants: &'a ConstDeclId::Vector<ConstDecl>,
 }
 
 /// Export the translated definitions to a JSON file.
@@ -45,6 +47,7 @@ pub fn export(
     ordered_decls: &OrderedDecls,
     type_defs: &TypeDecls,
     fun_defs: &FunDecls,
+    const_defs: &ConstDecls,
     dest_dir: &Option<PathBuf>,
     sourcefile: &PathBuf,
 ) -> Result<()> {
@@ -78,6 +81,7 @@ pub fn export(
         declarations: VecSW::new(&ordered_decls.decls),
         types: &type_defs.types,
         functions: &fun_defs,
+        constants: &const_defs,
     };
 
     // Create the directory, if necessary (note that if the target directory

@@ -2,8 +2,8 @@ use crate::assumed;
 use crate::common::*;
 use crate::generics;
 use crate::names::{
-    function_def_id_to_name, hir_item_to_name, module_def_id_to_name, type_def_id_to_name, FunName,
-    TypeName,
+    constant_def_id_to_name, function_def_id_to_name, hir_item_to_name, module_def_id_to_name,
+    type_def_id_to_name, FunName, TypeName,
 };
 use crate::translate_functions_to_im;
 use hashlink::LinkedHashMap;
@@ -11,6 +11,7 @@ use linked_hash_set::LinkedHashSet;
 use rustc_hir::{
     def_id::DefId, def_id::LocalDefId, Defaultness, ImplItem, ImplItemKind, Item, ItemKind,
 };
+use rustc_middle::mir;
 use rustc_middle::ty::{AdtDef, Ty, TyCtxt, TyKind};
 use rustc_session::Session;
 use rustc_span::Span;
@@ -31,6 +32,7 @@ pub struct CrateInfo {
 
 pub type TypeDependencies = LinkedHashSet<DefId>;
 pub type FunDependencies = LinkedHashSet<DefId>;
+pub type ConstDependencies = LinkedHashSet<DefId>;
 
 /// A registered type declaration.
 /// Simply contains the item id and its dependencies.
@@ -59,9 +61,12 @@ pub struct RegisteredFunDeclaration {
     /// The set of type dependencies. It can contain local def ids as well as
     /// external def ids.
     pub deps_tys: TypeDependencies,
-    /// The tset of function dependencies. It can contain local def ids as well as
+    /// The set of function dependencies. It can contain local def ids as well as
     /// external def ids.
     pub deps_funs: FunDependencies,
+    /// The set of constant dependencies. It can contain local def ids as well as
+    /// external def ids.
+    pub deps_consts: ConstDependencies,
 }
 
 impl RegisteredFunDeclaration {
@@ -70,6 +75,34 @@ impl RegisteredFunDeclaration {
             fun_id: id,
             deps_tys: LinkedHashSet::new(),
             deps_funs: LinkedHashSet::new(),
+            deps_consts: LinkedHashSet::new(),
+        };
+    }
+}
+
+/// A registered constant declaration.
+/// Simply contains the item id and its dependencies.
+#[derive(Debug)]
+pub struct RegisteredConstDeclaration {
+    pub const_id: DefId,
+    /// The set of type dependencies. It can contain local def ids as well as
+    /// external def ids.
+    pub deps_tys: TypeDependencies,
+    /// The set of function dependencies. It can contain local def ids as well as
+    /// external def ids.
+    pub deps_funs: FunDependencies,
+    /// The set of constant dependencies. It can contain local def ids as well as
+    /// external def ids.
+    pub deps_consts: ConstDependencies,
+}
+
+impl RegisteredConstDeclaration {
+    pub fn new(id: DefId) -> RegisteredConstDeclaration {
+        return RegisteredConstDeclaration {
+            const_id: id,
+            deps_tys: LinkedHashSet::new(),
+            deps_funs: LinkedHashSet::new(),
+            deps_consts: LinkedHashSet::new(),
         };
     }
 }
@@ -93,12 +126,20 @@ pub struct RegisteredDeclarations {
     pub opaque_types: HashSet<DefId>,
 
     /// All the function declarations to be translated, and their local
-    /// depedencies.
+    /// dependencies.
     pub funs: LinkedHashMap<DefId, RegisteredFunDeclaration>,
 
     /// All the opaque function declarations (local function, but found in modules
     /// that were marked as opaque). Does not include the non-local functions.
     pub opaque_funs: HashSet<DefId>,
+
+    /// All the constant declarations to be translated, and their local
+    /// dependencies.
+    pub consts: LinkedHashMap<DefId, RegisteredConstDeclaration>,
+
+    /// All the opaque constant declarations (local constant, but found in modules
+    /// that were marked as opaque). Does not include the non-local constants.
+    pub opaque_consts: HashSet<DefId>,
 }
 
 impl RegisteredDeclarations {
@@ -109,6 +150,8 @@ impl RegisteredDeclarations {
             opaque_types: HashSet::new(),
             funs: LinkedHashMap::new(),
             opaque_funs: HashSet::new(),
+            consts: LinkedHashMap::new(),
+            opaque_consts: HashSet::new(),
         };
     }
 }
@@ -189,7 +232,7 @@ fn register_local_adt(
     let name = type_def_id_to_name(tcx, adt.did);
     if name.is_in_modules(&crate_info.crate_name, &crate_info.opaque) {
         // The type is opaque
-        // Register it as having no dependencies (dependencise are introduced
+        // Register it as having no dependencies (dependencies are introduced
         // by exploring the type definition, to check the types used in the fields).
         rdecls.types.insert(type_id, rtype_decl);
         rdecls.opaque_types.insert(type_id);
@@ -288,6 +331,7 @@ fn register_non_local_adt(
 
     // Register the type as having no dependencies
     let rtype_decl = RegisteredTypeDeclaration::new(type_id);
+
     rdecls.types.insert(type_id, rtype_decl);
     rdecls.opaque_types.insert(type_id);
 
@@ -567,7 +611,7 @@ fn register_mir_ty(
 
 // Extract function information from an operand
 fn get_fun_from_operand<'tcx>(
-    op: &rustc_middle::mir::Operand<'tcx>,
+    op: &mir::Operand<'tcx>,
 ) -> Option<(DefId, rustc_middle::ty::subst::SubstsRef<'tcx>)> {
     let fun_ty = op.constant().unwrap().literal.ty();
     match fun_ty.kind() {
@@ -576,6 +620,57 @@ fn get_fun_from_operand<'tcx>(
             return None;
         }
     }
+}
+
+// Visits all statements and terminators of the body blocks.
+// TODO: Check what can be visited in the body besides the blocks.
+fn visit_block<'tcx, V: mir::visit::Visitor<'tcx>>(
+    block: &'tcx mir::BasicBlockData<'tcx>,
+    mut visitor: V,
+) {
+    use mir::visit::MirVisitable;
+
+    // The location is not used below, so we pass an arbitrary one there.
+    for statement in block.statements.iter() {
+        statement.apply(mir::Location::START, &mut visitor);
+    }
+    block.terminator().apply(mir::Location::START, &mut visitor);
+}
+
+fn visit_constants<'tcx>(
+    block: &'tcx mir::BasicBlockData<'tcx>,
+    f: &mut dyn FnMut(&'tcx rustc_middle::ty::Const<'tcx>),
+) {
+    // Implement the visitor trait for the given lambda.
+    // It may be possible to avoid erasing f type with more rust-fu.
+    struct ConstVisitor<'tcx, 'f> {
+        f: &'f mut dyn FnMut(&'tcx rustc_middle::ty::Const<'tcx>),
+    }
+    impl<'tcx, 'f> mir::visit::Visitor<'tcx> for ConstVisitor<'tcx, 'f> {
+        fn visit_const(&mut self, c: &&'tcx rustc_middle::ty::Const<'tcx>, _: mir::Location) {
+            (self.f)(c);
+        }
+    }
+    visit_block(block, ConstVisitor { f });
+}
+
+fn visit_constant_dependencies<'tcx, F: FnMut(DefId)>(
+    block: &'tcx mir::BasicBlockData<'tcx>,
+    mut f: F,
+) {
+    visit_constants(block, &mut |c| match c.val {
+        rustc_middle::ty::ConstKind::Value(_) => (),
+        rustc_middle::ty::ConstKind::Unevaluated(uv) => {
+            f(uv.def.did);
+        }
+        rustc_middle::ty::ConstKind::Param(_)
+        | rustc_middle::ty::ConstKind::Infer(_)
+        | rustc_middle::ty::ConstKind::Bound(_, _)
+        | rustc_middle::ty::ConstKind::Placeholder(_)
+        | rustc_middle::ty::ConstKind::Error(_) => {
+            unimplemented!();
+        }
+    });
 }
 
 /// Rk.: contrary to the "local" case, [register_non_local_function] inserts
@@ -607,6 +702,7 @@ fn register_non_local_function(
 
     // Register the function as having no dependencies
     let decl = RegisteredFunDeclaration::new(def_id);
+
     rdecls.funs.insert(def_id, decl);
     rdecls.opaque_funs.insert(def_id);
 
@@ -624,6 +720,18 @@ fn register_local_function_body(
 ) -> Result<()> {
     // Retrieve the MIR code
     let body = crate::get_mir::get_mir_for_def_id(tcx, def_id);
+
+    for b in body.basic_blocks().iter() {
+        visit_constant_dependencies(b, |c_id| {
+            if fn_decl.deps_consts.insert_if_absent(c_id) {
+                println!(
+                    "@F {:?}: ADDED {}",
+                    def_id,
+                    constant_def_id_to_name(tcx, c_id)
+                );
+            }
+        });
+    }
 
     // Start by registering the types found in the local variable declarations.
     // Note that those local variables include the parameters as well as the
@@ -652,21 +760,21 @@ fn register_local_function_body(
         // Statements
         for statement in block.statements.iter() {
             match &statement.kind {
-                rustc_middle::mir::StatementKind::Assign(_)
-                | rustc_middle::mir::StatementKind::FakeRead(_)
-                | rustc_middle::mir::StatementKind::SetDiscriminant {
+                mir::StatementKind::Assign(_)
+                | mir::StatementKind::FakeRead(_)
+                | mir::StatementKind::SetDiscriminant {
                     place: _,
                     variant_index: _,
                 }
-                | rustc_middle::mir::StatementKind::StorageLive(_)
-                | rustc_middle::mir::StatementKind::StorageDead(_)
-                | rustc_middle::mir::StatementKind::AscribeUserType(_, _)
-                | rustc_middle::mir::StatementKind::Coverage(_)
-                | rustc_middle::mir::StatementKind::Nop => {
+                | mir::StatementKind::StorageLive(_)
+                | mir::StatementKind::StorageDead(_)
+                | mir::StatementKind::AscribeUserType(_, _)
+                | mir::StatementKind::Coverage(_)
+                | mir::StatementKind::Nop => {
                     // Nothing to do
                 }
 
-                rustc_middle::mir::StatementKind::CopyNonOverlapping(_) => {
+                mir::StatementKind::CopyNonOverlapping(_) => {
                     trace!("Copy non overlapping");
                     span_err(
                         sess,
@@ -674,7 +782,7 @@ fn register_local_function_body(
                         "Copy non overlapping not supported",
                     );
                 }
-                rustc_middle::mir::StatementKind::Retag(_, _) => {
+                mir::StatementKind::Retag(_, _) => {
                     // retag statements are only used by MIRI, so we have nothing
                     // to do
                 }
@@ -684,37 +792,37 @@ fn register_local_function_body(
         // Terminator
         let terminator = block.terminator();
         match &terminator.kind {
-            rustc_middle::mir::terminator::TerminatorKind::Goto { target: _ }
-            | rustc_middle::mir::terminator::TerminatorKind::SwitchInt {
+            mir::terminator::TerminatorKind::Goto { target: _ }
+            | mir::terminator::TerminatorKind::SwitchInt {
                 discr: _,
                 switch_ty: _,
                 targets: _,
             }
-            | rustc_middle::mir::terminator::TerminatorKind::Resume
-            | rustc_middle::mir::terminator::TerminatorKind::Abort
-            | rustc_middle::mir::terminator::TerminatorKind::Return
-            | rustc_middle::mir::terminator::TerminatorKind::Unreachable
-            | rustc_middle::mir::terminator::TerminatorKind::Drop {
+            | mir::terminator::TerminatorKind::Resume
+            | mir::terminator::TerminatorKind::Abort
+            | mir::terminator::TerminatorKind::Return
+            | mir::terminator::TerminatorKind::Unreachable
+            | mir::terminator::TerminatorKind::Drop {
                 place: _,
                 target: _,
                 unwind: _,
             }
-            | rustc_middle::mir::terminator::TerminatorKind::Assert {
+            | mir::terminator::TerminatorKind::Assert {
                 cond: _,
                 expected: _,
                 msg: _,
                 target: _,
                 cleanup: _,
             }
-            | rustc_middle::mir::terminator::TerminatorKind::FalseEdge {
+            | mir::terminator::TerminatorKind::FalseEdge {
                 real_target: _,
                 imaginary_target: _,
             }
-            | rustc_middle::mir::terminator::TerminatorKind::FalseUnwind {
+            | mir::terminator::TerminatorKind::FalseUnwind {
                 real_target: _,
                 unwind: _,
             }
-            | rustc_middle::mir::terminator::TerminatorKind::DropAndReplace {
+            | mir::terminator::TerminatorKind::DropAndReplace {
                 place: _,
                 value: _,
                 target: _,
@@ -722,7 +830,7 @@ fn register_local_function_body(
             } => {
                 // Nothing to do
             }
-            rustc_middle::mir::terminator::TerminatorKind::Call {
+            mir::terminator::TerminatorKind::Call {
                 func,
                 args,
                 destination: _,
@@ -794,7 +902,7 @@ fn register_local_function_body(
                 // special treatment when translating function bodies).
                 // Note that the type parameters have already been registered.
                 if !name.equals_ref_name(&assumed::BOX_FREE_NAME) {
-                    let args: Vec<&rustc_middle::mir::Operand<'_>> = match used_args {
+                    let args: Vec<&mir::Operand<'_>> = match used_args {
                         Option::None => args.iter().collect(),
                         Option::Some(used_args) => {
                             // Filter
@@ -862,7 +970,7 @@ fn register_local_function_body(
                     }
                 }
             }
-            rustc_middle::mir::terminator::TerminatorKind::Yield {
+            mir::terminator::TerminatorKind::Yield {
                 value: _,
                 resume: _,
                 resume_arg: _,
@@ -875,7 +983,7 @@ fn register_local_function_body(
                     "Yield is not supported",
                 );
             }
-            rustc_middle::mir::terminator::TerminatorKind::GeneratorDrop => {
+            mir::terminator::TerminatorKind::GeneratorDrop => {
                 trace!("terminator: GeneratorDrop");
                 span_err(
                     sess,
@@ -883,7 +991,7 @@ fn register_local_function_body(
                     "Generators are not supported",
                 );
             }
-            rustc_middle::mir::terminator::TerminatorKind::InlineAsm {
+            mir::terminator::TerminatorKind::InlineAsm {
                 template: _,
                 operands: _,
                 options: _,
@@ -949,6 +1057,356 @@ fn register_local_function(
     return Ok(());
 }
 
+/// Register the identifiers found in a constant body
+/// TODO: Should be refactored with [register_local_function_body].
+fn register_local_constant_body(
+    crate_info: &CrateInfo,
+    rdecls: &mut RegisteredDeclarations,
+    sess: &Session,
+    tcx: TyCtxt,
+    def_id: LocalDefId,
+    const_decl: &mut RegisteredConstDeclaration,
+) -> Result<()> {
+    // Retrieve the MIR code
+    let body = crate::get_mir::get_mir_for_def_id(tcx, def_id);
+
+    for b in body.basic_blocks().iter() {
+        visit_constant_dependencies(b, |c_id| {
+            if const_decl.deps_consts.insert_if_absent(c_id) {
+                println!(
+                    "@C {:?}: ADDED {}",
+                    def_id,
+                    constant_def_id_to_name(tcx, c_id)
+                );
+            }
+        });
+    }
+
+    // Start by registering the types found in the local variable declarations.
+    // Note that those local variables include the parameters as well as the
+    // return variable, and is thus enough to register the constant signature.
+    for v in body.local_decls.iter() {
+        register_mir_ty(
+            crate_info,
+            rdecls,
+            sess,
+            tcx,
+            &v.source_info.span,
+            &mut const_decl.deps_tys,
+            &v.ty,
+        )?;
+    }
+
+    // Explore the body itself.
+    // We need it to compute the dependencies between the functions and global
+    // declarations, and also because some functions might be parameterized
+    // with types which don't appear in the local variables (unlikely, but
+    // can happen if some type parameters are not used).
+    // We initially considered using visitors, but the MIR visitors return unit,
+    // while we need to use a result type...
+    // A basic block is a list of statements, followed by a terminator.
+    for block in body.basic_blocks().iter() {
+        // Statements
+        for statement in block.statements.iter() {
+            match &statement.kind {
+                mir::StatementKind::Assign(_)
+                | mir::StatementKind::FakeRead(_)
+                | mir::StatementKind::SetDiscriminant {
+                    place: _,
+                    variant_index: _,
+                }
+                | mir::StatementKind::StorageLive(_)
+                | mir::StatementKind::StorageDead(_)
+                | mir::StatementKind::AscribeUserType(_, _)
+                | mir::StatementKind::Coverage(_)
+                | mir::StatementKind::Nop => {
+                    // Nothing to do
+                }
+
+                mir::StatementKind::CopyNonOverlapping(_) => {
+                    trace!("Copy non overlapping");
+                    span_err(
+                        sess,
+                        statement.source_info.span.clone(),
+                        "Copy non overlapping not supported",
+                    );
+                }
+                mir::StatementKind::Retag(_, _) => {
+                    // retag statements are only used by MIRI, so we have nothing
+                    // to do
+                }
+            }
+        }
+
+        // Terminator
+        let terminator = block.terminator();
+        match &terminator.kind {
+            mir::terminator::TerminatorKind::Goto { target: _ }
+            | mir::terminator::TerminatorKind::SwitchInt {
+                discr: _,
+                switch_ty: _,
+                targets: _,
+            }
+            | mir::terminator::TerminatorKind::Resume
+            | mir::terminator::TerminatorKind::Abort
+            | mir::terminator::TerminatorKind::Return
+            | mir::terminator::TerminatorKind::Unreachable
+            | mir::terminator::TerminatorKind::Drop {
+                place: _,
+                target: _,
+                unwind: _,
+            }
+            | mir::terminator::TerminatorKind::Assert {
+                cond: _,
+                expected: _,
+                msg: _,
+                target: _,
+                cleanup: _,
+            }
+            | mir::terminator::TerminatorKind::FalseEdge {
+                real_target: _,
+                imaginary_target: _,
+            }
+            | mir::terminator::TerminatorKind::FalseUnwind {
+                real_target: _,
+                unwind: _,
+            }
+            | mir::terminator::TerminatorKind::DropAndReplace {
+                place: _,
+                value: _,
+                target: _,
+                unwind: _,
+            } => {
+                // Nothing to do
+            }
+            mir::terminator::TerminatorKind::Call {
+                func,
+                args,
+                destination: _,
+                cleanup: _,
+                from_hir_call: _,
+                fn_span,
+            } => {
+                trace!("terminator: Call\n{:?}", &terminator);
+                trace!("terminator:Call:func: {:?}", func);
+
+                let (fid, substs) = get_fun_from_operand(func).expect("Expected a function call");
+                trace!("terminator:Call:fid {:?}", fid);
+
+                let name = function_def_id_to_name(tcx, fid);
+                trace!("called function: name: {:?}", name);
+
+                // We may need to filter the types and arguments, if the type
+                // is considered primitive
+                let (used_types, used_args, is_prim) = if fid.is_local() {
+                    // We probably do not need to check if the function is local...
+                    (Option::None, Option::None, false)
+                } else {
+                    match assumed::function_to_info(&name) {
+                        Option::Some(used) => {
+                            // The function is primitive
+                            (
+                                Option::Some(used.used_type_params),
+                                Option::Some(used.used_args),
+                                true,
+                            )
+                        }
+                        Option::None => {
+                            // The function is non-primitive (i.e., external)
+                            (Option::None, Option::None, false)
+                        }
+                    }
+                };
+
+                // Add this function to the list of dependencies, only if
+                // it is non-primitive
+                if !is_prim {
+                    const_decl.deps_funs.insert(fid);
+                }
+
+                // Register the types given as parameters.
+                register_mir_substs(
+                    crate_info,
+                    rdecls,
+                    sess,
+                    tcx,
+                    &fn_span,
+                    &mut const_decl.deps_tys,
+                    used_types,
+                    &substs,
+                )?;
+
+                // Filter and register the argument types.
+                // There is something very annoying, which is that MIR is quite
+                // low level.
+                // Very specifically, when introducing `box_free`, rustc introduces
+                // something of the following form:
+                // ```
+                // _9 = alloc::alloc::box_free::<T, std::alloc::Global>(
+                //   move (_4.0: std::ptr::Unique<T>),
+                //   move (_4.1: std::alloc::Global)) -> bb3;
+                // ```
+                // We don't support unique pointers, so we have to ignore the
+                // arguments in this case (and the `box_free` case has a
+                // special treatment when translating function bodies).
+                // Note that the type parameters have already been registered.
+                if !name.equals_ref_name(&assumed::BOX_FREE_NAME) {
+                    let args: Vec<&mir::Operand<'_>> = match used_args {
+                        Option::None => args.iter().collect(),
+                        Option::Some(used_args) => {
+                            // Filter
+                            trace!("args: {:?}, used_args: {:?}", args, used_args);
+                            assert!(args.len() == used_args.len());
+                            args.iter()
+                                .zip(used_args.into_iter())
+                                .filter_map(|(param, used)| if used { Some(param) } else { None })
+                                .collect()
+                        }
+                    };
+                    for a in args.into_iter() {
+                        trace!("terminator: Call: arg: {:?}", a);
+
+                        let ty = a.ty(&body.local_decls, tcx);
+                        register_mir_ty(
+                            crate_info,
+                            rdecls,
+                            sess,
+                            tcx,
+                            &fn_span,
+                            &mut const_decl.deps_tys,
+                            &ty,
+                        )?;
+                    }
+                }
+
+                // Note that we don't need to register the "bare" function
+                // signature: all the types it contains are already covered
+                // by the type arguments and the parameters.
+
+                // Lookup the function definition, if it is local (i.e.: is
+                // defined in the current crate).
+                let hir_map = tcx.hir();
+                let f_node = hir_map.get_if_local(fid);
+                match f_node {
+                    Some(f_node) => {
+                        trace!("Function is local");
+                        match f_node {
+                            rustc_hir::Node::Item(f_item) => {
+                                trace!("Item");
+                                assert!(is_fn_decl(f_item));
+                                register_hir_item(crate_info, rdecls, sess, tcx, false, f_item)?;
+                            }
+                            rustc_hir::Node::ImplItem(impl_item) => {
+                                trace!("Impl item");
+                                // [register_hir_impl_item doesn't check if the item
+                                // has already been registered, so we need to
+                                // check it before calling it.
+                                register_hir_impl_item(crate_info, rdecls, sess, tcx, impl_item)?;
+                            }
+                            _ => {
+                                unreachable!();
+                            }
+                        }
+                    }
+                    None => {
+                        trace!("Function external");
+                        // Register
+                        // Rk.: [register_non_local_function] checks if the def
+                        // id has already been registered, and inserts it in the
+                        // decls set if necessary (not the same behaviour as
+                        // the "local" case).
+                        register_non_local_function(crate_info, rdecls, sess, tcx, fid, name)?;
+                    }
+                }
+            }
+            mir::terminator::TerminatorKind::Yield {
+                value: _,
+                resume: _,
+                resume_arg: _,
+                drop: _,
+            } => {
+                trace!("terminator: Yield");
+                span_err(
+                    sess,
+                    terminator.source_info.span.clone(),
+                    "Yield is not supported",
+                );
+            }
+            mir::terminator::TerminatorKind::GeneratorDrop => {
+                trace!("terminator: GeneratorDrop");
+                span_err(
+                    sess,
+                    terminator.source_info.span.clone(),
+                    "Generators are not supported",
+                );
+            }
+            mir::terminator::TerminatorKind::InlineAsm {
+                template: _,
+                operands: _,
+                options: _,
+                line_spans: _,
+                destination: _,
+                cleanup: _,
+            } => {
+                trace!("terminator: InlineASM");
+                span_err(
+                    sess,
+                    terminator.source_info.span.clone(),
+                    "Inline ASM is not supported",
+                );
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Register a constant, in the same way we register functions.
+/// The caller must have checked if the def_id has been registered before, and
+/// must call this function only if it was not the case, and after having added
+/// the def_id to the list of registered ids.
+fn register_hir_const(
+    crate_info: &CrateInfo,
+    rdecls: &mut RegisteredDeclarations,
+    sess: &Session,
+    tcx: TyCtxt,
+    def_id: LocalDefId,
+) -> Result<()> {
+    trace!("{:?}", def_id);
+
+    let ldef_id = def_id;
+    let def_id = def_id.to_def_id();
+
+    // Check the generics
+    // TODO: Refuse anything depending on a generic parameter.
+    generics::check_constant_generics(tcx, def_id);
+
+    // Initialize the constant declaration that we will register in the
+    // declarations map, and in particular its list of dependencies that
+    // we will progressively fill during exploration.
+    let mut const_decl = RegisteredConstDeclaration::new(def_id);
+
+    // We explore the constant definition only if it is not in a module flagged
+    // as opaque
+    let name = constant_def_id_to_name(tcx, def_id);
+    if name.is_in_modules(&crate_info.crate_name, &crate_info.opaque) {
+        // The constant is opaque
+        // Store the constant declaration in the declaration map
+        rdecls.consts.insert(def_id, const_decl);
+        rdecls.opaque_consts.insert(def_id);
+        return Ok(());
+    }
+
+    // The constant is not opaque
+    // Explore the body
+    register_local_constant_body(crate_info, rdecls, sess, tcx, ldef_id, &mut const_decl)?;
+
+    // Store the constant declaration in the declarations map
+    rdecls.consts.insert(def_id, const_decl);
+
+    return Ok(());
+}
+
 /// General function to register a MIR item. It is called on all the top-level
 /// items. This includes: crate inclusions and `use` instructions (which are
 /// ignored), but also type and functions declarations.
@@ -1003,13 +1461,17 @@ fn register_hir_item(
         }
         ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
             rdecls.decls.insert(def_id);
-            return register_hir_type(crate_info, rdecls, sess, tcx, item, def_id);
+            register_hir_type(crate_info, rdecls, sess, tcx, item, def_id)
         }
         ItemKind::OpaqueTy(_) => unimplemented!(),
         ItemKind::Union(_, _) => unimplemented!(),
         ItemKind::Fn(_, _, _) => {
             rdecls.decls.insert(def_id);
             return register_local_function(crate_info, rdecls, sess, tcx, item.def_id);
+        }
+        ItemKind::Const(_, _) => {
+            rdecls.decls.insert(def_id);
+            return register_hir_const(crate_info, rdecls, sess, tcx, item.def_id);
         }
         ItemKind::Impl(impl_block) => {
             trace!("impl");

@@ -1,6 +1,7 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
 pub use crate::expressions_utils::*;
+use crate::im_ast::ConstDeclId;
 use crate::types::*;
 use crate::values::*;
 use im::Vector;
@@ -141,6 +142,11 @@ pub enum OperandConstantValue {
     ///
     /// Less frequently: arbitrary ADT values.
     Adt(Option<VariantId::Id>, Vector<OperandConstantValue>),
+    ///
+    /// The case when the constant is elsewhere.
+    /// The MIR seems to forbid more complex expressions like paths :
+    /// Reading the constant a.b is translated to { _1 = const a; _2 = (_1.0) }.
+    Identifier(ConstDeclId::Id),
 }
 
 #[derive(Debug, Clone, Serialize)]

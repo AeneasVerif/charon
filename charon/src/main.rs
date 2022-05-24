@@ -828,7 +828,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // # Step 5: translate the functions to IM (our Internal representation of MIR).
     // Note that from now onwards, both type and function definitions have been
     // translated to our internal ASTs: we don't interact with rustc anymore.
-    let im_defs = translate_functions_to_im::translate_functions(
+    let (fun_defs, const_defs) = translate_functions_to_im::translate_functions(
         tcx,
         &ordered_decls,
         &types_constraints,
@@ -837,8 +837,12 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
 
     // # Step 6: go from IM to LLBC (Low-Level Borrow Calculus) by reconstructing
     // the control flow.
-    let llbc_defs =
-        im_to_llbc::translate_functions(internal.no_code_duplication, &type_defs, &im_defs);
+    let (llbc_funs, llbc_consts) = im_to_llbc::translate_functions(
+        internal.no_code_duplication,
+        &type_defs,
+        &fun_defs,
+        &const_defs,
+    );
 
     //
     // =================
@@ -851,22 +855,22 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
 
     // # Step 7: simplify the calls to unops and binops
     // Note that we assume that the sequences have been flattened.
-    let llbc_defs = simplify_ops::simplify(llbc_defs);
+    let llbc_funs = simplify_ops::simplify(llbc_funs);
 
-    for def in &llbc_defs {
+    for def in &llbc_funs {
         trace!(
             "# After binop simplification:\n{}\n",
-            def.fmt_with_defs(&type_defs, &llbc_defs)
+            def.fmt_with_defs(&type_defs, &llbc_funs, &llbc_consts)
         );
     }
 
     // # Step 8: reconstruct the asserts
-    let llbc_defs = reconstruct_asserts::simplify(llbc_defs);
+    let llbc_funs = reconstruct_asserts::simplify(llbc_funs);
 
-    for def in &llbc_defs {
+    for def in &llbc_funs {
         trace!(
             "# After asserts reconstruction:\n{}\n",
-            def.fmt_with_defs(&type_defs, &llbc_defs)
+            def.fmt_with_defs(&type_defs, &llbc_funs, &llbc_consts)
         );
     }
 
@@ -876,11 +880,11 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // of Aeneas, it means the return variable contains ⊥ upon returning.
     // For this reason, when the function has return type unit, we insert
     // an extra assignment just before returning.
-    let llbc_defs = insert_assign_return_unit::transform(llbc_defs);
+    let llbc_funs = insert_assign_return_unit::transform(llbc_funs);
 
     // # Step 10: remove the locals which are never used. After doing so, we
     // check that there are no remaining locals with type `Never`.
-    let llbc_defs = remove_unused_locals::transform(llbc_defs);
+    let llbc_funs = remove_unused_locals::transform(llbc_funs);
 
     // # Step 11: compute which functions are potentially divergent. A function
     // is potentially divergent if it is recursive, contains a loop or transitively
@@ -888,14 +892,15 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // Note that in the future, we may complement this basic analysis with a
     // finer analysis to detect recursive functions which are actually total
     // by construction.
-    let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_defs);
+    let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
 
     // # Step 11: generate the files.
     llbc_export::export(
         crate_name,
         &ordered_decls,
         &type_defs,
-        &llbc_defs,
+        &llbc_funs,
+        &llbc_consts,
         &internal.dest_dir,
         &internal.source_file,
     )?;

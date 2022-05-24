@@ -89,10 +89,12 @@ pub enum SwitchTargets {
     ),
 }
 
+/// A function body & declaration
+pub type FunBody = GFunBody<Statement>;
+pub type FunDecl = GFunDecl<Statement>;
 pub type FunDecls = FunDeclId::Vector<FunDecl>;
 
-/// A function body
-pub type FunBody = GFunBody<Statement>;
-
-/// A function definition
-pub type FunDecl = GFunDecl<Statement>;
+/// A constant body & declaration
+pub type ConstBody = GConstBody<Statement>;
+pub type ConstDecl = GConstDecl<Statement>;
+pub type ConstDecls = ConstDeclId::Vector<ConstDecl>;

@@ -6,6 +6,7 @@ use crate::id_vector::ToUsize;
 use crate::names::type_def_id_to_name;
 use crate::regions_hierarchy;
 use crate::regions_hierarchy::TypesConstraintsMap;
+use crate::reorder_decls::DeclarationGroup;
 use crate::rust_to_local_ids::*;
 use crate::types as ty;
 use im;
@@ -749,8 +750,8 @@ pub fn translate_types(
                     );
                 }
             },
-            DeclarationGroup::Fun(_) => {
-                // Ignore the functions
+            DeclarationGroup::Fun(_) | DeclarationGroup::Const(_) => {
+                // Ignore the functions & constants
             }
         }
     }

@@ -84,8 +84,8 @@ pub fn compute_divergent_functions(
                     divergent_map.insert(*id, true);
                 }
             }
-            DeclarationGroup::Type(_) => {
-                // Ignore the type declarations
+            DeclarationGroup::Type(_) | DeclarationGroup::Const(_) => {
+                // Ignore the type & constant declarations
                 continue;
             }
         }

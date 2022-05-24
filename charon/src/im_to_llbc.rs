@@ -18,8 +18,8 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
-use crate::im_ast as src;
 use crate::im_ast::FunDeclId;
+use crate::im_ast::{self as src, ConstDeclId};
 use crate::llbc_ast as tgt;
 use crate::types::TypeDecls;
 use crate::values as v;
@@ -34,7 +34,7 @@ use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
 
-pub type Defs = tgt::FunDecls;
+pub type Defs = (tgt::FunDecls, tgt::ConstDecls);
 
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId::Id, ()>;
@@ -1779,13 +1779,14 @@ fn translate_function(
     type_defs: &TypeDecls,
     src_defs: &src::FunDecls,
     src_def_id: FunDeclId::Id,
+    const_defs: &src::ConstDecls,
 ) -> tgt::FunDecl {
     // Retrieve the function definition
     let src_def = src_defs.get(src_def_id).unwrap();
     trace!(
         "# Reconstructing: {}\n\n{}",
         src_def.name,
-        src_def.fmt_with_defs(&type_defs, &src_defs)
+        src_def.fmt_with_defs(&type_defs, &src_defs, &const_defs)
     );
 
     // Translate the body if the function is transparent, ignore otherwise
@@ -1855,6 +1856,66 @@ fn translate_function(
     }
 }
 
+/// TODO: As always, refactor with [translate_function].
+fn translate_constant(
+    no_code_duplication: bool,
+    type_defs: &TypeDecls,
+    const_defs: &src::ConstDecls,
+    const_id: ConstDeclId::Id,
+    fun_defs: &src::FunDecls,
+) -> tgt::ConstDecl {
+    // Retrieve the constant definition
+    let const_def = const_defs.get(const_id).unwrap();
+    trace!(
+        "# Reconstructing: {}\n\n{}",
+        const_def.name,
+        const_def.fmt_with_defs(&type_defs, &fun_defs, &const_defs)
+    );
+
+    tgt::ConstDecl {
+        def_id: const_def.def_id,
+        name: const_def.name.clone(),
+        type_: const_def.type_.clone(),
+        body: const_def.body.as_ref().map(|src| {
+            // TODO: Refactor the CFG arguments to avoid cloning.
+            let cfg_arg = src::FunBody {
+                arg_count: 0,
+                locals: src.locals.clone(),
+                body: src.body.clone(),
+            };
+
+            // The remaining code is the same as for functions translation.
+
+            let cfg_info = build_cfg_partial_info(&cfg_arg);
+            let cfg_info = compute_cfg_info_from_partial(cfg_info);
+            let exits_info = compute_loop_switch_exits(&cfg_info);
+
+            trace!("exits map:\n{:?}", exits_info);
+            let mut explored = HashSet::new();
+            let body_exp = translate_block(
+                no_code_duplication,
+                &cfg_info,
+                &cfg_arg,
+                &exits_info,
+                Vector::new(),
+                &im::HashSet::new(),
+                &mut explored,
+                src::BlockId::ZERO,
+            )
+            .unwrap();
+
+            for (bid, _) in src.body.iter_indexed_values() {
+                assert!(explored.contains(&bid));
+            }
+
+            tgt::ConstBody {
+                locals: src.locals.clone(),
+                body: body_exp,
+            }
+        }),
+    }
+}
+
 /// Translate the functions by reconstructing the control-flow.
 ///
 /// [no_code_duplication]: if true, check that no block is translated twice (this
@@ -1864,28 +1925,48 @@ fn translate_function(
 pub fn translate_functions(
     no_code_duplication: bool,
     type_defs: &TypeDecls,
-    src_defs: &src::FunDecls,
+    in_funs: &src::FunDecls,
+    in_consts: &src::ConstDecls,
 ) -> Defs {
-    let mut out_defs = FunDeclId::Vector::new();
+    let mut out_funs = FunDeclId::Vector::new();
+    let mut out_consts = ConstDeclId::Vector::new();
 
-    // Tranlsate the bodies one at a time
-    for src_def_id in src_defs.iter_indices() {
-        out_defs.push_back(translate_function(
+    // Translate the bodies one at a time
+    for fun_id in in_funs.iter_indices() {
+        out_funs.push_back(translate_function(
             no_code_duplication,
             type_defs,
-            src_defs,
-            src_def_id,
+            in_funs,
+            fun_id,
+            in_consts,
+        ));
+    }
+    for const_id in in_consts.iter_indices() {
+        out_consts.push_back(translate_constant(
+            no_code_duplication,
+            type_defs,
+            in_consts,
+            const_id,
+            in_funs,
         ));
     }
 
     // Print the functions
-    for def in &out_defs {
+    for fun in &out_funs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            def.signature.fmt_with_defs(&type_defs),
-            def.fmt_with_defs(&type_defs, &out_defs)
+            fun.signature.fmt_with_defs(&type_defs),
+            fun.fmt_with_defs(&type_defs, &out_funs, &out_consts)
+        );
+    }
+    // Print the constants
+    for fun in &out_funs {
+        trace!(
+            "# Signature:\n{}\n\n# Function definition:\n{}\n",
+            fun.signature.fmt_with_defs(&type_defs),
+            fun.fmt_with_defs(&type_defs, &out_funs, &out_consts)
         );
     }
 
-    out_defs
+    (out_funs, out_consts)
 }

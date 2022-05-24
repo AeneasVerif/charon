@@ -1,12 +1,13 @@
 //! Implementations for llbc_ast.rs
 
 #![allow(dead_code)]
-use crate::common::*;
+use crate::expressions::{Operand, Place, Rvalue};
 use crate::formatter::Formatter;
-use crate::im_ast::{fmt_call, FunDeclId, FunSigFormatter, GAstFormatter, TAB_INCR};
-use crate::llbc_ast::{Call, FunDecl, FunDecls, Statement, SwitchTargets};
+use crate::im_ast::{fmt_call, ConstDeclId, FunDeclId, FunSigFormatter, GAstFormatter, TAB_INCR};
+use crate::llbc_ast::{Call, ConstDecl, ConstDecls, FunDecl, FunDecls, Statement, SwitchTargets};
 use crate::types::*;
 use crate::values::*;
+use crate::{common::*, id_vector};
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 
@@ -69,6 +70,7 @@ impl Statement {
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<FunDeclId::Id>
+            + Formatter<ConstDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -190,12 +192,19 @@ impl Statement {
     }
 }
 
-type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls>;
+type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls, ConstDecls>;
 
 impl<'ctx> Formatter<FunDeclId::Id> for AstFormatter<'ctx> {
     fn format_object(&self, id: FunDeclId::Id) -> String {
         let f = self.fun_context.get(id).unwrap();
         f.name.to_string()
+    }
+}
+
+impl<'ctx> Formatter<ConstDeclId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: ConstDeclId::Id) -> String {
+        let c = self.const_context.get(id).unwrap();
+        c.name.to_string()
     }
 }
 
@@ -205,8 +214,31 @@ impl<'ctx> Formatter<&Statement> for AstFormatter<'ctx> {
     }
 }
 
+impl<'ctx> Formatter<&Rvalue> for AstFormatter<'ctx> {
+    fn format_object(&self, v: &Rvalue) -> String {
+        v.fmt_with_ctx(self)
+    }
+}
+
+impl<'ctx> Formatter<&Place> for AstFormatter<'ctx> {
+    fn format_object(&self, p: &Place) -> String {
+        p.fmt_with_ctx(self)
+    }
+}
+
+impl<'ctx> Formatter<&Operand> for AstFormatter<'ctx> {
+    fn format_object(&self, op: &Operand) -> String {
+        op.fmt_with_ctx(self)
+    }
+}
+
 impl FunDecl {
-    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDecls, fun_ctx: &'ctx FunDecls) -> String {
+    pub fn fmt_with_defs<'ctx>(
+        &self,
+        ty_ctx: &'ctx TypeDecls,
+        fun_ctx: &'ctx FunDecls,
+        const_ctx: &'ctx ConstDecls,
+    ) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,
@@ -221,9 +253,38 @@ impl FunDecl {
             Some(body) => &body.locals,
         };
 
-        let eval_ctx = AstFormatter::new(ty_ctx, fun_ctx, &self.signature.type_params, locals);
+        let eval_ctx = AstFormatter::new(
+            ty_ctx,
+            fun_ctx,
+            const_ctx,
+            &self.signature.type_params,
+            locals,
+        );
 
         // Use the contexts for printing
         self.gfmt_with_ctx("", &fun_sig_ctx, &eval_ctx)
+    }
+}
+
+impl ConstDecl {
+    pub fn fmt_with_defs<'ctx>(
+        &self,
+        ty_ctx: &'ctx TypeDecls,
+        fun_ctx: &'ctx FunDecls,
+        const_ctx: &'ctx ConstDecls,
+    ) -> String {
+        // We cheat a bit: if there is a body, we take its locals, otherwise
+        // we use []:
+        let empty = VarId::Vector::new();
+        let locals = match &self.body {
+            None => &empty,
+            Some(body) => &body.locals,
+        };
+
+        let empty = id_vector::Vector::new();
+        let eval_ctx = AstFormatter::new(ty_ctx, fun_ctx, const_ctx, &empty, locals);
+
+        // Use the contexts for printing
+        self.gfmt_with_ctx("", &eval_ctx)
     }
 }

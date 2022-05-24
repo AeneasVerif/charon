@@ -5,6 +5,7 @@ use crate::assumed;
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
+use crate::im_ast::ConstDeclId;
 use crate::types::*;
 use crate::values;
 use crate::values::*;
@@ -120,7 +121,7 @@ impl std::string::ToString for Place {
 impl OperandConstantValue {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<TypeDeclId::Id>,
+        T: Formatter<TypeDeclId::Id> + Formatter<ConstDeclId::Id>,
     {
         match self {
             OperandConstantValue::ConstantValue(c) => c.to_string(),
@@ -135,6 +136,7 @@ impl OperandConstantValue {
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", ")).to_string()
             }
+            OperandConstantValue::Identifier(id) => ctx.format_object(*id),
         }
     }
 }
@@ -150,6 +152,7 @@ impl Operand {
     where
         T: Formatter<VarId::Id>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstDeclId::Id>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
@@ -176,6 +179,7 @@ impl Rvalue {
     where
         T: Formatter<VarId::Id>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -303,6 +307,7 @@ impl Serialize for OperandConstantValue {
         let variant_name = match self {
             OperandConstantValue::ConstantValue(_) => "ConstantValue",
             OperandConstantValue::Adt(_, _) => "ConstantAdt",
+            OperandConstantValue::Identifier(_) => "ConstantIdentifier",
         };
         let (variant_index, variant_arity) = self.variant_index_arity();
         // It seems the "standard" way of doing is the following (this is
@@ -324,6 +329,9 @@ impl Serialize for OperandConstantValue {
                     vs.serialize_field(variant_id)?;
                     let values = VectorSerializer::new(values);
                     vs.serialize_field(&values)?;
+                }
+                OperandConstantValue::Identifier(const_id) => {
+                    vs.serialize_field(const_id)?;
                 }
             }
             vs.end()

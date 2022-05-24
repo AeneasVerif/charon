@@ -1,5 +1,5 @@
 //! Translate functions from the rust compiler MIR to our internal representation.
-//! Our internal representation is very close to MIR, but is more convenient for
+//! Ou&r internal representation is very close to MIR, but is more convenient for
 //! us to handle, and easier to maintain - rustc's representation can evolve
 //! independently.
 
@@ -9,7 +9,9 @@ use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::generics;
+use crate::get_mir::EXTRACT_CONSTANTS_AT_TOP_LEVEL;
 use crate::im_ast as ast;
+use crate::names::constant_def_id_to_name;
 use crate::names::{function_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy as rh;
 use crate::regions_hierarchy::TypesConstraintsMap;
@@ -33,18 +35,19 @@ use rustc_span::Span;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name, TypeTransContext};
 
-/// Translation context for function definitions (contains a type context)
-pub struct FunTransContext<'ctx> {
+/// Translation context for function & constant definitions
+pub struct DeclTransContext<'ctx> {
     /// The ordered declarations
     pub ordered: &'ctx OrderedDecls,
     /// Type definitions
     pub type_defs: &'ctx ty::TypeDecls,
     /// The function definitions
-    /// TODO: rename to fun_defs
-    pub defs: &'ctx ast::FunDecls,
+    pub fun_defs: &'ctx ast::FunDecls,
+    /// The constant definitions
+    pub const_defs: &'ctx ast::ConstDecls,
 }
 
-/// A translation context for function bodies.
+/// A translation context for function & constant bodies.
 ///
 /// We use `im::OrdMap` a lot in places where we could use a
 /// `std::collections::BTreeMap` (because we actually don't do context
@@ -55,9 +58,9 @@ pub struct FunTransContext<'ctx> {
 struct BodyTransContext<'ctx, 'ctx1> {
     /// This is used in very specific situations.
     def_id: DefId,
-    /// The function translation context, containing the function definitions.
+    /// The declarations translation context, containing the function & constant definitions.
     /// Also contains the type translation context.
-    ft_ctx: &'ctx FunTransContext<'ctx1>,
+    ft_ctx: &'ctx DeclTransContext<'ctx1>,
     /// Region counter
     regions_counter: ty::RegionVarId::Generator,
     /// The regions
@@ -95,7 +98,7 @@ struct BodyTransContext<'ctx, 'ctx1> {
     rblocks_to_ids: im::OrdMap<BasicBlock, ast::BlockId::Id>,
 }
 
-impl<'ctx> FunTransContext<'ctx> {
+impl<'ctx> DeclTransContext<'ctx> {
     fn get_def_id_from_rid(&self, def_id: DefId) -> Option<ast::FunDeclId::Id> {
         self.ordered.fun_rid_to_id.get(&def_id).map(|x| *x)
     }
@@ -107,7 +110,7 @@ impl<'ctx> FunTransContext<'ctx> {
 
 impl<'ctx, 'ctx1> BodyTransContext<'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
-    fn new(def_id: DefId, ft_ctx: &'ctx FunTransContext<'ctx1>) -> BodyTransContext<'ctx, 'ctx1> {
+    fn new(def_id: DefId, ft_ctx: &'ctx DeclTransContext<'ctx1>) -> BodyTransContext<'ctx, 'ctx1> {
         BodyTransContext {
             def_id,
             ft_ctx,
@@ -206,7 +209,7 @@ impl<'ctx, 'ctx1> BodyTransContext<'ctx, 'ctx1> {
     }
 }
 
-impl<'ctx> Formatter<ty::TypeDeclId::Id> for FunTransContext<'ctx> {
+impl<'ctx> Formatter<ty::TypeDeclId::Id> for DeclTransContext<'ctx> {
     fn format_object(&self, id: ty::TypeDeclId::Id) -> String {
         self.type_defs.format_object(id)
     }
@@ -880,17 +883,36 @@ fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
                 translate_operand_constant_value(tcx, bt_ctx, &c.ty, &cvalue)
             }
             rustc_middle::ty::ConstKind::Unevaluated(unev) => {
-                // Evaluate the constant
-                // We need a param_env: we use the function def id as a dummy id...
-                let param_env = tcx.param_env(bt_ctx.def_id);
-                let evaluated = tcx.const_eval_resolve(param_env, unev, Option::None);
-                match evaluated {
-                    std::result::Result::Ok(c) => {
-                        let ty = constant.ty();
-                        translate_operand_constant_value(tcx, bt_ctx, &ty, &c)
-                    }
-                    std::result::Result::Err(_) => {
-                        unreachable!("Could not evaluate an unevaluated constant");
+                if EXTRACT_CONSTANTS_AT_TOP_LEVEL {
+                    // Constants are extracted to the top level.
+                    // Here, we only need to reference it.
+                    //
+                    // Otherwise, we would need to fully evaluate it :
+                    // but tcx.const_eval_resolve is not available in this pass.
+                    let id = *bt_ctx
+                        .ft_ctx
+                        .ordered
+                        .const_rid_to_id
+                        .get(&unev.def.did)
+                        .unwrap();
+
+                    let decl = bt_ctx.ft_ctx.const_defs.get(id).unwrap();
+
+                    (decl.type_.clone(), e::OperandConstantValue::Identifier(id))
+                } else {
+                    println!("EVAL {:?}", bt_ctx.def_id);
+                    // Evaluate the constant
+                    // We need a param_env: we use the function def id as a dummy id...
+                    let param_env = tcx.param_env(bt_ctx.def_id);
+                    let evaluated = tcx.const_eval_resolve(param_env, unev, Option::None);
+                    match evaluated {
+                        std::result::Result::Ok(c) => {
+                            let ty = constant.ty();
+                            translate_operand_constant_value(tcx, bt_ctx, &ty, &c)
+                        }
+                        std::result::Result::Err(_) => {
+                            unreachable!("Could not evaluate an unevaluated constant");
+                        }
                     }
                 }
             }
@@ -2019,7 +2041,7 @@ pub(crate) fn check_impl_item<'hir>(impl_item: &rustc_hir::Impl<'hir>) {
 fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
     types_constraints: &TypesConstraintsMap,
-    ft_ctx: &'ctx FunTransContext<'ctx1>,
+    decl_ctx: &'ctx DeclTransContext<'ctx1>,
     def_id: DefId,
 ) -> (BodyTransContext<'ctx, 'ctx1>, ast::FunSig) {
     // Retrieve the function signature, which includes the lifetimes
@@ -2057,7 +2079,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     //   reimplementing our own function, which is quite simple.
 
     // We need a body translation context to keep track of all the variables
-    let mut bt_ctx = BodyTransContext::new(def_id, ft_ctx);
+    let mut bt_ctx = BodyTransContext::new(def_id, decl_ctx);
 
     // **Sanity checks on the HIR**
     generics::check_function_generics(tcx, def_id);
@@ -2164,7 +2186,8 @@ fn translate_function(
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDecls,
-    fun_defs: &mut ast::FunDecls,
+    fun_defs: &ast::FunDecls,
+    const_defs: &ast::ConstDecls,
     def_id: ast::FunDeclId::Id,
 ) -> Result<ast::FunDecl> {
     trace!("{:?}", def_id);
@@ -2173,10 +2196,11 @@ fn translate_function(
     trace!("About to translate function:\n{:?}", rid);
 
     // Initialize the function translation context
-    let ft_ctx = FunTransContext {
+    let ft_ctx = DeclTransContext {
         ordered: ordered,
         type_defs: type_defs,
-        defs: &fun_defs,
+        fun_defs: &fun_defs,
+        const_defs: &const_defs,
     };
 
     // Translate the function name
@@ -2235,14 +2259,97 @@ fn translate_function(
     Ok(fun_def)
 }
 
+/// Translate one constant.
+/// TODO: Factorize with functions.
+fn translate_constant(
+    tcx: TyCtxt,
+    ordered: &OrderedDecls,
+    _types_constraints: &TypesConstraintsMap,
+    type_defs: &ty::TypeDecls,
+    fun_defs: &ast::FunDecls,
+    const_defs: &ast::ConstDecls,
+    def_id: ast::ConstDeclId::Id,
+) -> Result<ast::ConstDecl> {
+    trace!("{:?}", def_id);
+
+    let rid = *ordered.const_id_to_rid.get(&def_id).unwrap();
+    trace!("About to translate constant:\n{:?}", rid);
+
+    // Initialize the constant translation context
+    let ft_ctx = DeclTransContext {
+        ordered: ordered,
+        type_defs: type_defs,
+        fun_defs: &fun_defs,
+        const_defs: &const_defs,
+    };
+
+    // Translate the constant name
+    let name = constant_def_id_to_name(tcx, rid);
+
+    trace!("Translating constant type");
+    let mir_ty = tcx.type_of(rid);
+    let ty_ctx = TypeTransContext {
+        types: &ft_ctx.type_defs,
+        type_rid_to_id: &ft_ctx.ordered.type_rid_to_id,
+        type_id_to_rid: &ft_ctx.ordered.type_id_to_rid,
+    };
+    let empty = im::OrdMap::new();
+    let type_ = translate_types::translate_ety(tcx, &ty_ctx, &empty, &mir_ty)?;
+
+    let mut bt_ctx = BodyTransContext::new(rid, &ft_ctx);
+
+    // Check if the constant is opaque or transparent
+    let is_opaque = ordered.opaque_consts.contains(&def_id);
+    let body = if is_opaque {
+        Option::None
+    } else {
+        // Retrieve the MIR body
+        let body = crate::get_mir::get_mir_for_def_id(tcx, rid.expect_local());
+
+        // Initialize the local variables
+        trace!("Translating the body locals");
+        translate_body_locals(tcx, &mut bt_ctx, body)?;
+
+        // Translate the function body
+        trace!("Translating the function body");
+        translate_transparent_function_body(tcx, &mut bt_ctx, body)?;
+
+        // We need to convert the blocks map to an index vector
+        let mut blocks = ast::BlockId::Vector::new();
+        for (id, block) in bt_ctx.blocks {
+            use crate::id_vector::ToUsize;
+            // Sanity check to make sure we don't mess with the indices
+            assert!(id.to_usize() == blocks.len());
+            blocks.push_back(block);
+        }
+
+        // Create the body
+        let body = ast::ConstBody {
+            locals: bt_ctx.vars,
+            body: blocks,
+        };
+
+        Option::Some(body)
+    };
+
+    // Return the new constant
+    Ok(ast::ConstDecl {
+        def_id,
+        name,
+        type_,
+        body,
+    })
+}
+
 /// Translate the functions
 pub fn translate_functions(
     tcx: TyCtxt,
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDecls,
-) -> Result<ast::FunDecls> {
+) -> Result<(ast::FunDecls, ast::ConstDecls)> {
     let mut fun_defs = ast::FunDecls::new();
+    let mut const_defs = ast::ConstDecls::new();
 
     // Translate the bodies one at a time
     for decl in &ordered.decls {
@@ -2254,7 +2361,8 @@ pub fn translate_functions(
                     ordered,
                     &types_constraints,
                     type_defs,
-                    &mut fun_defs,
+                    &fun_defs,
+                    &const_defs,
                     *def_id,
                 )?;
                 // We have to make sure we translate the definitions in the
@@ -2269,13 +2377,46 @@ pub fn translate_functions(
                         ordered,
                         &types_constraints,
                         type_defs,
-                        &mut fun_defs,
+                        &fun_defs,
+                        &const_defs,
                         *def_id,
                     )?;
                     // We have to make sure we translate the definitions in the
                     // proper order, otherwise we mess with the vector of ids
                     assert!(def_id.to_usize() == fun_defs.len());
                     fun_defs.push_back(fun_def);
+                }
+            }
+            DeclarationGroup::Const(GDeclarationGroup::NonRec(def_id)) => {
+                let const_def = translate_constant(
+                    tcx,
+                    ordered,
+                    &types_constraints,
+                    type_defs,
+                    &fun_defs,
+                    &const_defs,
+                    *def_id,
+                )?;
+                // We have to make sure we translate the definitions in the
+                // proper order, otherwise we mess with the vector of ids
+                assert!(def_id.to_usize() == const_defs.len());
+                const_defs.push_back(const_def);
+            }
+            DeclarationGroup::Const(GDeclarationGroup::Rec(ids)) => {
+                for def_id in ids {
+                    let const_def = translate_constant(
+                        tcx,
+                        ordered,
+                        &types_constraints,
+                        type_defs,
+                        &fun_defs,
+                        &const_defs,
+                        *def_id,
+                    )?;
+                    // We have to make sure we translate the definitions in the
+                    // proper order, otherwise we mess with the vector of ids
+                    assert!(def_id.to_usize() == const_defs.len());
+                    const_defs.push_back(const_def);
                 }
             }
             DeclarationGroup::Type(_) => {
@@ -2285,14 +2426,20 @@ pub fn translate_functions(
         }
     }
 
-    // Print the functions
+    // Print the functions & constants
     for def in &fun_defs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
             def.signature.fmt_with_defs(type_defs),
-            def.fmt_with_defs(type_defs, &fun_defs)
+            def.fmt_with_defs(type_defs, &fun_defs, &const_defs)
+        );
+    }
+    for def in &const_defs {
+        trace!(
+            "# Constant definition:\n{}\n",
+            def.fmt_with_defs(type_defs, &fun_defs, &const_defs)
         );
     }
 
-    Ok(fun_defs)
+    Ok((fun_defs, const_defs))
 }
