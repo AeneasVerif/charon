@@ -900,7 +900,6 @@ fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
 
                     (decl.type_.clone(), e::OperandConstantValue::Identifier(id))
                 } else {
-                    println!("EVAL {:?}", bt_ctx.def_id);
                     // Evaluate the constant
                     // We need a param_env: we use the function def id as a dummy id...
                     let param_env = tcx.param_env(bt_ctx.def_id);

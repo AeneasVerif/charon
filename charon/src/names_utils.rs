@@ -223,14 +223,11 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                 // and continue from this type's id.
                 let ty = tcx.type_of(id);
 
+                // TODO: Handle external constant names such as u32::MAX.
                 // Match over the type - it should be an ADT
                 match ty.kind() {
                     rustc_middle::ty::TyKind::Adt(adt_def, _) => id = adt_def.did,
-                    _ => {
-                        println!("@ty.kind() = {:?}", ty.kind());
-                        println!("@name = {:?}", name);
-                        unreachable!();
-                    }
+                    _ => unreachable!(),
                 };
 
                 // Continue so as not to pop the type identifier

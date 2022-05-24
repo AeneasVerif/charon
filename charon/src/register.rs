@@ -724,11 +724,8 @@ fn register_local_function_body(
     for b in body.basic_blocks().iter() {
         visit_constant_dependencies(b, |c_id| {
             if fn_decl.deps_consts.insert_if_absent(c_id) {
-                println!(
-                    "@F {:?}: ADDED {}",
-                    def_id,
-                    constant_def_id_to_name(tcx, c_id)
-                );
+                let name = constant_def_id_to_name(tcx, c_id);
+                trace!("added fn {:?} dependency: {}", def_id, name);
             }
         });
     }
@@ -1073,11 +1070,8 @@ fn register_local_constant_body(
     for b in body.basic_blocks().iter() {
         visit_constant_dependencies(b, |c_id| {
             if const_decl.deps_consts.insert_if_absent(c_id) {
-                println!(
-                    "@C {:?}: ADDED {}",
-                    def_id,
-                    constant_def_id_to_name(tcx, c_id)
-                );
+                let name = constant_def_id_to_name(tcx, c_id);
+                trace!("added const {:?} dependency: {}", def_id, name);
             }
         });
     }
