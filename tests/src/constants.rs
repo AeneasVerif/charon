@@ -44,7 +44,7 @@ const fn unwrap_y() -> i32 {
     Y.val
 }
 
-const Yval: i32 = unwrap_y();
+const YVAL: i32 = unwrap_y();
 
 struct Wrap<T> {
     val: T,
@@ -58,7 +58,7 @@ impl<T> Wrap<T> {
 
 // Additions
 
-const fn get_Z1() -> i32 {
+const fn get_z1() -> i32 {
     const Z1: i32 = 3;
     Z1
 }
@@ -67,8 +67,8 @@ const fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-const fn get_Z2() -> i32 {
-    add(Q1, add(get_Z1(), Q3))
+const fn get_z2() -> i32 {
+    add(Q1, add(get_z1(), Q3))
 }
 
 const Q1: i32 = 5;

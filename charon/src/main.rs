@@ -1,5 +1,6 @@
 #![feature(rustc_private, register_tool)]
 #![feature(box_syntax, box_patterns)]
+#![feature(is_some_with)]
 #![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
@@ -807,7 +808,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // so we just ignore them).
     let crate_info = register::CrateInfo {
         crate_name: crate_name.clone(),
-        opaque: HashSet::from_iter(internal.opaque_modules.clone().into_iter()),
+        opaque_mods: HashSet::from_iter(internal.opaque_modules.clone().into_iter()),
     };
     let registered_decls = register::register_crate(&crate_info, sess, tcx)?;
 
