@@ -37,6 +37,7 @@ impl CrateInfo {
 }
 
 /// All kind of supported Rust top-level declarations.
+/// const & static variables are merged together in the global kind.
 #[derive(Debug, PartialEq, Eq)]
 pub enum DeclKind {
     Type,
@@ -47,6 +48,12 @@ pub enum DeclKind {
 pub type DeclDependencies = LinkedHashSet<DefId>;
 
 /// A registered declaration, listing its dependencies.
+///
+/// TODO: Add a flag to indicate that the expression can be evaluated
+///       at compile time (const VS static, const fn VS fn).
+///       They should be accepted even if they don't have body :
+///       it's only when they used in compile time context that it will fail.
+///       It can happen for e.g. a private const value or function.
 #[derive(Debug)]
 pub struct Declaration {
     // The declaration may be local or extern (id.is_local()).
