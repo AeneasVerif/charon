@@ -251,12 +251,12 @@ pub fn upsert_update(prev: Option<Value>, st: UpsertFunState) -> Value {
             match st {
                 UpsertFunState::Add(v) => {
                     // Note that Aeneas is a bit conservative about the max_usize
-                    let margin = u64::MAX - prev;
+                    let margin = 18446744073709551615u64 - prev;
                     // Check if we saturate
                     if margin >= v {
                         prev + v
                     } else {
-                        u64::MAX
+                        18446744073709551615u64
                     }
                 }
                 UpsertFunState::Sub(v) => {
