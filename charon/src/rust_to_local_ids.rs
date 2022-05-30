@@ -10,7 +10,7 @@ pub type GDeclarationGroup<Id> = rd::GDeclarationGroup<Id>;
 pub type TypeDeclarationGroup = rd::GDeclarationGroup<ty::TypeDeclId::Id>;
 pub type FunDeclarationGroup = rd::GDeclarationGroup<ast::FunDeclId::Id>;
 pub type DeclarationGroup =
-    rd::DeclarationGroup<ty::TypeDeclId::Id, ast::FunDeclId::Id, ast::ConstDeclId::Id>;
+    rd::DeclarationGroup<ty::TypeDeclId::Id, ast::FunDeclId::Id, ast::GlobalDeclId::Id>;
 
 pub struct OrderedDecls {
     /// The properly grouped and ordered declarations
@@ -20,7 +20,7 @@ pub struct OrderedDecls {
     /// The opaque fun ids
     pub opaque_funs: HashSet<ast::FunDeclId::Id>,
     /// The opaque const ids
-    pub opaque_consts: HashSet<ast::ConstDeclId::Id>,
+    pub opaque_consts: HashSet<ast::GlobalDeclId::Id>,
     /// Rust type identifiers to translation identifiers
     pub type_rid_to_id: HashMap<DefId, ty::TypeDeclId::Id>,
     /// Translation type identifiers to rust identifiers
@@ -30,9 +30,9 @@ pub struct OrderedDecls {
     /// Translation function identifiers to rust identifiers
     pub fun_id_to_rid: HashMap<ast::FunDeclId::Id, DefId>,
     /// Rust constant identifiers to translation identifiers
-    pub const_rid_to_id: HashMap<DefId, ast::ConstDeclId::Id>,
+    pub const_rid_to_id: HashMap<DefId, ast::GlobalDeclId::Id>,
     /// Translation constant identifiers to rust identifiers
-    pub const_id_to_rid: HashMap<ast::ConstDeclId::Id, DefId>,
+    pub const_id_to_rid: HashMap<ast::GlobalDeclId::Id, DefId>,
 }
 
 /// Convert the definition ids used by the rust compiler to our own definition
@@ -44,15 +44,15 @@ pub fn rust_to_local_ids(reordered: &rd::DeclarationsGroups<DefId, DefId, DefId>
 
     let mut type_rid_to_id: HashMap<DefId, ty::TypeDeclId::Id> = HashMap::new();
     let mut fun_rid_to_id: HashMap<DefId, ast::FunDeclId::Id> = HashMap::new();
-    let mut const_rid_to_id: HashMap<DefId, ast::ConstDeclId::Id> = HashMap::new();
+    let mut const_rid_to_id: HashMap<DefId, ast::GlobalDeclId::Id> = HashMap::new();
 
     let mut type_id_to_rid: HashMap<ty::TypeDeclId::Id, DefId> = HashMap::new();
     let mut fun_id_to_rid: HashMap<ast::FunDeclId::Id, DefId> = HashMap::new();
-    let mut const_id_to_rid: HashMap<ast::ConstDeclId::Id, DefId> = HashMap::new();
+    let mut const_id_to_rid: HashMap<ast::GlobalDeclId::Id, DefId> = HashMap::new();
 
     let mut type_counter = ty::TypeDeclId::Generator::new();
     let mut fun_counter = ast::FunDeclId::Generator::new();
-    let mut const_counter = ast::ConstDeclId::Generator::new();
+    let mut const_counter = ast::GlobalDeclId::Generator::new();
 
     let mut decls: Vec<DeclarationGroup> = Vec::new();
 
@@ -106,28 +106,28 @@ pub fn rust_to_local_ids(reordered: &rd::DeclarationsGroups<DefId, DefId, DefId>
 
                 decls.push(DeclarationGroup::Fun(GDeclarationGroup::Rec(ids)));
             }
-            rd::DeclarationGroup::Const(rd::GDeclarationGroup::NonRec(rid)) => {
+            rd::DeclarationGroup::Global(rd::GDeclarationGroup::NonRec(rid)) => {
                 let id = const_counter.fresh_id();
                 const_rid_to_id.insert(*rid, id);
                 const_id_to_rid.insert(id, *rid);
-                if reordered.external_const_ids.contains(rid) {
+                if reordered.external_global_ids.contains(rid) {
                     opaque_consts.insert(id);
                 }
-                decls.push(DeclarationGroup::Const(GDeclarationGroup::NonRec(id)));
+                decls.push(DeclarationGroup::Global(GDeclarationGroup::NonRec(id)));
             }
-            rd::DeclarationGroup::Const(rd::GDeclarationGroup::Rec(rids)) => {
-                let mut ids: Vec<ast::ConstDeclId::Id> = Vec::new();
+            rd::DeclarationGroup::Global(rd::GDeclarationGroup::Rec(rids)) => {
+                let mut ids: Vec<ast::GlobalDeclId::Id> = Vec::new();
                 for rid in rids {
                     let id = const_counter.fresh_id();
                     const_rid_to_id.insert(*rid, id);
                     const_id_to_rid.insert(id, *rid);
-                    if reordered.external_const_ids.contains(rid) {
+                    if reordered.external_global_ids.contains(rid) {
                         opaque_consts.insert(id);
                     }
                     ids.push(id);
                 }
 
-                decls.push(DeclarationGroup::Const(GDeclarationGroup::Rec(ids)));
+                decls.push(DeclarationGroup::Global(GDeclarationGroup::Rec(ids)));
             }
         }
     }

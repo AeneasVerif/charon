@@ -3,7 +3,7 @@
 #![allow(dead_code)]
 use crate::expressions::{Operand, Place, Rvalue};
 use crate::formatter::Formatter;
-use crate::im_ast::{fmt_call, ConstDeclId, FunDeclId, FunSigFormatter, GAstFormatter, TAB_INCR};
+use crate::im_ast::{fmt_call, FunDeclId, FunSigFormatter, GAstFormatter, GlobalDeclId, TAB_INCR};
 use crate::llbc_ast::{Call, ConstDecl, ConstDecls, FunDecl, FunDecls, Statement, SwitchTargets};
 use crate::types::*;
 use crate::values::*;
@@ -70,7 +70,7 @@ impl Statement {
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<FunDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -201,9 +201,9 @@ impl<'ctx> Formatter<FunDeclId::Id> for AstFormatter<'ctx> {
     }
 }
 
-impl<'ctx> Formatter<ConstDeclId::Id> for AstFormatter<'ctx> {
-    fn format_object(&self, id: ConstDeclId::Id) -> String {
-        let c = self.const_context.get(id).unwrap();
+impl<'ctx> Formatter<GlobalDeclId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        let c = self.global_context.get(id).unwrap();
         c.name.to_string()
     }
 }

@@ -287,7 +287,7 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
     item_def_id_to_name(tcx, def_id)
 }
 
-pub fn constant_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ConstName {
+pub fn constant_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> GlobalName {
     item_def_id_to_name(tcx, def_id)
 }
 
@@ -325,6 +325,7 @@ pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
         | ItemKind::Impl(_)
         | ItemKind::Mod(_)
         | ItemKind::Const(_, _)
+        | ItemKind::Static(_, _, _)
         | ItemKind::Macro(_) => Option::Some(item_def_id_to_name(tcx, def_id)),
         _ => {
             unimplemented!("{:?}", item.kind);

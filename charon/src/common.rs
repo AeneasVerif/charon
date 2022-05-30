@@ -26,11 +26,11 @@ pub trait ErrorEmitter {
 
 impl ErrorEmitter for Session {
     fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &str) {
-        self.span_err_with_code(s, msg, DiagnosticId::Error(String::from("Aenea")));
+        self.span_err_with_code(s, msg, DiagnosticId::Error(String::from("Aeneas")));
     }
 
     fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &str) {
-        self.span_warn_with_code(s, msg, DiagnosticId::Error(String::from("Aenea")));
+        self.span_warn_with_code(s, msg, DiagnosticId::Error(String::from("Aeneas")));
     }
 }
 

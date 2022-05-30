@@ -16,7 +16,7 @@ fn compute_used_locals_in_place(locals: &mut HashSet<VarId::Id>, p: &Place) {
 fn compute_used_locals_in_operand(locals: &mut HashSet<VarId::Id>, op: &Operand) {
     match op {
         Operand::Copy(p) | Operand::Move(p) => compute_used_locals_in_place(locals, p),
-        Operand::Constant(_, _) => (),
+        Operand::Const(_, _) => (),
     }
 }
 
@@ -95,7 +95,7 @@ fn transform_operand(vids_map: &HashMap<VarId::Id, VarId::Id>, op: Operand) -> O
     match op {
         Operand::Copy(p) => Operand::Copy(transform_place(vids_map, p)),
         Operand::Move(p) => Operand::Move(transform_place(vids_map, p)),
-        Operand::Constant(ty, cv) => Operand::Constant(ty, cv),
+        Operand::Const(ty, cv) => Operand::Const(ty, cv),
     }
 }
 

@@ -19,7 +19,7 @@
 //! many nodes and edges).
 
 use crate::im_ast::FunDeclId;
-use crate::im_ast::{self as src, ConstDeclId};
+use crate::im_ast::{self as src, GlobalDeclId};
 use crate::llbc_ast as tgt;
 use crate::types::TypeDecls;
 use crate::values as v;
@@ -1779,7 +1779,7 @@ fn translate_function(
     type_defs: &TypeDecls,
     src_defs: &src::FunDecls,
     src_def_id: FunDeclId::Id,
-    const_defs: &src::ConstDecls,
+    const_defs: &src::GlobalDecls,
 ) -> tgt::FunDecl {
     // Retrieve the function definition
     let src_def = src_defs.get(src_def_id).unwrap();
@@ -1860,8 +1860,8 @@ fn translate_function(
 fn translate_constant(
     no_code_duplication: bool,
     type_defs: &TypeDecls,
-    const_defs: &src::ConstDecls,
-    const_id: ConstDeclId::Id,
+    const_defs: &src::GlobalDecls,
+    const_id: GlobalDeclId::Id,
     fun_defs: &src::FunDecls,
 ) -> tgt::ConstDecl {
     // Retrieve the constant definition
@@ -1926,10 +1926,10 @@ pub fn translate_functions(
     no_code_duplication: bool,
     type_defs: &TypeDecls,
     in_funs: &src::FunDecls,
-    in_consts: &src::ConstDecls,
+    in_consts: &src::GlobalDecls,
 ) -> Defs {
     let mut out_funs = FunDeclId::Vector::new();
-    let mut out_consts = ConstDeclId::Vector::new();
+    let mut out_consts = GlobalDeclId::Vector::new();
 
     // Translate the bodies one at a time
     for fun_id in in_funs.iter_indices() {

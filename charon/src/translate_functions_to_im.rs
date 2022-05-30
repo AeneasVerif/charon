@@ -44,7 +44,7 @@ pub struct DeclTransContext<'ctx> {
     /// The function definitions
     pub fun_defs: &'ctx ast::FunDecls,
     /// The constant definitions
-    pub const_defs: &'ctx ast::ConstDecls,
+    pub const_defs: &'ctx ast::GlobalDecls,
 }
 
 /// A translation context for function & constant bodies.
@@ -948,7 +948,7 @@ fn translate_operand_with_type<'tcx, 'ctx, 'ctx1>(
         }
         Operand::Constant(constant) => {
             let (ty, constant) = translate_operand_constant(tcx, bt_ctx, constant);
-            (e::Operand::Constant(ty.clone(), constant), ty)
+            (e::Operand::Const(ty.clone(), constant), ty)
         }
     }
 }
@@ -2186,7 +2186,7 @@ fn translate_function(
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDecls,
     fun_defs: &ast::FunDecls,
-    const_defs: &ast::ConstDecls,
+    const_defs: &ast::GlobalDecls,
     def_id: ast::FunDeclId::Id,
 ) -> Result<ast::FunDecl> {
     trace!("{:?}", def_id);
@@ -2266,9 +2266,9 @@ fn translate_constant(
     _types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDecls,
     fun_defs: &ast::FunDecls,
-    const_defs: &ast::ConstDecls,
-    def_id: ast::ConstDeclId::Id,
-) -> Result<ast::ConstDecl> {
+    const_defs: &ast::GlobalDecls,
+    def_id: ast::GlobalDeclId::Id,
+) -> Result<ast::GlobalDecl> {
     trace!("{:?}", def_id);
 
     let rid = *ordered.const_id_to_rid.get(&def_id).unwrap();
@@ -2323,7 +2323,7 @@ fn translate_constant(
         }
 
         // Create the body
-        let body = ast::ConstBody {
+        let body = ast::GlobalBody {
             locals: bt_ctx.vars,
             body: blocks,
         };
@@ -2332,7 +2332,7 @@ fn translate_constant(
     };
 
     // Return the new constant
-    Ok(ast::ConstDecl {
+    Ok(ast::GlobalDecl {
         def_id,
         name,
         type_,
@@ -2346,9 +2346,9 @@ pub fn translate_functions(
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDecls,
-) -> Result<(ast::FunDecls, ast::ConstDecls)> {
+) -> Result<(ast::FunDecls, ast::GlobalDecls)> {
     let mut fun_defs = ast::FunDecls::new();
-    let mut const_defs = ast::ConstDecls::new();
+    let mut const_defs = ast::GlobalDecls::new();
 
     // Translate the bodies one at a time
     for decl in &ordered.decls {
@@ -2386,7 +2386,7 @@ pub fn translate_functions(
                     fun_defs.push_back(fun_def);
                 }
             }
-            DeclarationGroup::Const(GDeclarationGroup::NonRec(def_id)) => {
+            DeclarationGroup::Global(GDeclarationGroup::NonRec(def_id)) => {
                 let const_def = translate_constant(
                     tcx,
                     ordered,
@@ -2401,7 +2401,7 @@ pub fn translate_functions(
                 assert!(def_id.to_usize() == const_defs.len());
                 const_defs.push_back(const_def);
             }
-            DeclarationGroup::Const(GDeclarationGroup::Rec(ids)) => {
+            DeclarationGroup::Global(GDeclarationGroup::Rec(ids)) => {
                 for def_id in ids {
                     let const_def = translate_constant(
                         tcx,

@@ -95,6 +95,6 @@ pub type FunDecl = GFunDecl<Statement>;
 pub type FunDecls = FunDeclId::Vector<FunDecl>;
 
 /// A constant body & declaration
-pub type ConstBody = GConstBody<Statement>;
-pub type ConstDecl = GConstDecl<Statement>;
-pub type ConstDecls = ConstDeclId::Vector<ConstDecl>;
+pub type ConstBody = GGlobalBody<Statement>;
+pub type ConstDecl = GGlobalDecl<Statement>;
+pub type ConstDecls = GlobalDeclId::Vector<ConstDecl>;

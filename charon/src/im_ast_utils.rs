@@ -173,7 +173,7 @@ impl Statement {
     where
         T: Formatter<VarId::Id>
             + Formatter<TypeDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -225,7 +225,7 @@ where
         + Formatter<&'a ErasedRegion>
         + Formatter<TypeDeclId::Id>
         + Formatter<FunDeclId::Id>
-        + Formatter<ConstDeclId::Id>
+        + Formatter<GlobalDeclId::Id>
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
         + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
 {
@@ -283,7 +283,7 @@ impl Terminator {
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
             + Formatter<FunDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -360,7 +360,7 @@ impl BlockData {
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
             + Formatter<FunDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -390,7 +390,7 @@ where
         + Formatter<&'a ErasedRegion>
         + Formatter<TypeDeclId::Id>
         + Formatter<FunDeclId::Id>
-        + Formatter<ConstDeclId::Id>
+        + Formatter<GlobalDeclId::Id>
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
         + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
 {
@@ -427,7 +427,7 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunBody<T> {
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
             + Formatter<FunDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<&'a T>,
@@ -482,7 +482,7 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunBody<T> {
 }
 
 // TODO: As usual, we need to refactor functions & constants together.
-impl<T: std::fmt::Debug + Clone + Serialize> GConstBody<T> {
+impl<T: std::fmt::Debug + Clone + Serialize> GGlobalBody<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the constant definition already has the information to print
@@ -497,7 +497,7 @@ impl<T: std::fmt::Debug + Clone + Serialize> GConstBody<T> {
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
             + Formatter<FunDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<&'a T>,
@@ -660,7 +660,7 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDecl<T> {
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<FunDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<&'a T>,
@@ -737,7 +737,7 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDecl<T> {
 }
 
 // TODO: Refactor with functions.
-impl<CD: std::fmt::Debug + Clone + Serialize> GConstDecl<CD> {
+impl<CD: std::fmt::Debug + Clone + Serialize> GGlobalDecl<CD> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the constant definition already has the information to print
@@ -752,7 +752,7 @@ impl<CD: std::fmt::Debug + Clone + Serialize> GConstDecl<CD> {
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<FunDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<&'a CD>,
@@ -764,7 +764,7 @@ impl<CD: std::fmt::Debug + Clone + Serialize> GConstDecl<CD> {
         match &self.body {
             Option::None => {
                 // Put everything together
-                format!("{}const {}", tab, name).to_owned()
+                format!("{}global {}", tab, name).to_owned()
             }
             Option::Some(body) => {
                 // Body
@@ -772,7 +772,7 @@ impl<CD: std::fmt::Debug + Clone + Serialize> GConstDecl<CD> {
                 let body = body.fmt_with_ctx(&body_tab, body_ctx);
 
                 // Put everything together
-                format!("{}const {} {{\n{}\n{}}}", tab, name, body, tab).to_owned()
+                format!("{}global {} {{\n{}\n{}}}", tab, name, body, tab).to_owned()
             }
         }
     }
@@ -781,12 +781,12 @@ impl<CD: std::fmt::Debug + Clone + Serialize> GConstDecl<CD> {
 pub struct GAstFormatter<'ctx, FD, CD> {
     pub type_context: &'ctx TypeDecls,
     pub fun_context: &'ctx FD,
-    pub const_context: &'ctx CD,
+    pub global_context: &'ctx CD,
     pub type_vars: &'ctx TypeVarId::Vector<TypeVar>,
     pub vars: &'ctx VarId::Vector<Var>,
 }
 
-type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls, ConstDecls>;
+type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls, GlobalDecls>;
 
 impl<'ctx> Formatter<FunDeclId::Id> for AstFormatter<'ctx> {
     fn format_object(&self, id: FunDeclId::Id) -> String {
@@ -801,9 +801,9 @@ impl<'ctx> Formatter<&Terminator> for AstFormatter<'ctx> {
     }
 }
 
-impl<'ctx> Formatter<ConstDeclId::Id> for AstFormatter<'ctx> {
-    fn format_object(&self, id: ConstDeclId::Id) -> String {
-        let c = self.const_context.get(id).unwrap();
+impl<'ctx> Formatter<GlobalDeclId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        let c = self.global_context.get(id).unwrap();
         c.name.to_string()
     }
 }
@@ -837,7 +837,7 @@ impl<'ctx, FD, CD> GAstFormatter<'ctx, FD, CD> {
         GAstFormatter {
             type_context,
             fun_context,
-            const_context,
+            global_context: const_context,
             type_vars,
             vars,
         }
@@ -929,7 +929,7 @@ impl FunDecl {
         &self,
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDecls,
-        const_ctx: &'ctx ConstDecls,
+        const_ctx: &'ctx GlobalDecls,
     ) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
@@ -958,12 +958,12 @@ impl FunDecl {
     }
 }
 
-impl ConstDecl {
+impl GlobalDecl {
     pub fn fmt_with_defs<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDecls,
-        const_ctx: &'ctx ConstDecls,
+        const_ctx: &'ctx GlobalDecls,
     ) -> String {
         // We cheat a bit: if there is a body, we take its locals, otherwise
         // we use []:

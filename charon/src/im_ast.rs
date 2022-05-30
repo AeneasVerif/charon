@@ -5,8 +5,8 @@
 
 use crate::expressions::*;
 pub use crate::im_ast_utils::*;
-use crate::names::ConstName;
 use crate::names::FunName;
+use crate::names::GlobalName;
 use crate::regions_hierarchy::RegionGroups;
 use crate::types::*;
 use crate::values::*;
@@ -19,7 +19,7 @@ use serde::Serialize;
 pub static TAB_INCR: &'static str = "    ";
 
 generate_index_type!(FunDeclId);
-generate_index_type!(ConstDeclId);
+generate_index_type!(GlobalDeclId);
 
 // Block identifier. Similar to rust's `BasicBlock`.
 generate_index_type!(BlockId);
@@ -93,28 +93,28 @@ pub type FunDecl = GFunDecl<BlockId::Vector<BlockData>>;
 pub type FunDecls = FunDeclId::Vector<FunDecl>;
 
 #[derive(Debug, Clone, Serialize)]
-pub struct GConstBody<T: std::fmt::Debug + Clone + Serialize> {
+pub struct GGlobalBody<T: std::fmt::Debug + Clone + Serialize> {
     pub locals: VarId::Vector<Var>,
     pub body: T,
 }
 
 /// A constant definition, either opaque or transparent.
 #[derive(Debug, Clone, Serialize)]
-pub struct GConstDecl<T: std::fmt::Debug + Clone + Serialize> {
-    pub def_id: ConstDeclId::Id,
-    pub name: ConstName,
+pub struct GGlobalDecl<T: std::fmt::Debug + Clone + Serialize> {
+    pub def_id: GlobalDeclId::Id,
+    pub name: GlobalName,
     pub type_: ETy,
-    pub body: Option<GConstBody<T>>,
+    pub body: Option<GGlobalBody<T>>,
 }
-impl<T: std::fmt::Debug + Clone + Serialize> GConstDecl<T> {
+impl<T: std::fmt::Debug + Clone + Serialize> GGlobalDecl<T> {
     fn is_opaque(&self) -> bool {
         self.body.is_none()
     }
 }
 
-pub type ConstBody = GConstBody<BlockId::Vector<BlockData>>;
-pub type ConstDecl = GConstDecl<BlockId::Vector<BlockData>>;
-pub type ConstDecls = ConstDeclId::Vector<ConstDecl>;
+pub type GlobalBody = GGlobalBody<BlockId::Vector<BlockData>>;
+pub type GlobalDecl = GGlobalDecl<BlockId::Vector<BlockData>>;
+pub type GlobalDecls = GlobalDeclId::Vector<GlobalDecl>;
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum Statement {

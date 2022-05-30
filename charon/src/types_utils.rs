@@ -4,7 +4,7 @@
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector;
-use crate::im_ast::ConstDeclId;
+use crate::im_ast::GlobalDeclId;
 use crate::types::*;
 use im::{HashMap, OrdSet, Vector};
 use rustc_middle::ty::{IntTy, UintTy};
@@ -367,7 +367,7 @@ impl IntegerTy {
 pub fn type_def_id_to_pretty_string(id: TypeDeclId::Id) -> String {
     format!("@Adt{}", id).to_string()
 }
-pub fn const_def_id_to_pretty_string(id: ConstDeclId::Id) -> String {
+pub fn const_def_id_to_pretty_string(id: GlobalDeclId::Id) -> String {
     format!("@Const{}", id).to_string()
 }
 

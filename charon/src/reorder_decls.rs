@@ -24,31 +24,31 @@ pub enum GDeclarationGroup<Id: Copy> {
 
 /// A (group of) top-level declaration(s), properly reordered.
 #[derive(Debug, VariantIndexArity, VariantName)]
-pub enum DeclarationGroup<TypeId: Copy, FunId: Copy, ConstId: Copy> {
+pub enum DeclarationGroup<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     /// A type declaration group
     Type(GDeclarationGroup<TypeId>),
     /// A function declaration group
     Fun(GDeclarationGroup<FunId>),
-    /// A constant declaration group
-    Const(GDeclarationGroup<ConstId>),
+    /// A global declaration group
+    Global(GDeclarationGroup<GlobalId>),
 }
 
 /// The top-level declarations in a module
-pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, ConstId: Copy> {
+pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     /// The properly grouped and ordered declarations
-    pub decls: Vec<DeclarationGroup<TypeId, FunId, ConstId>>,
+    pub decls: Vec<DeclarationGroup<TypeId, FunId, GlobalId>>,
     /// All the type ids
     pub type_ids: Vec<TypeId>,
     /// All the function ids
     pub fun_ids: Vec<FunId>,
-    /// All the constant ids
-    pub const_ids: Vec<ConstId>,
+    /// All the global ids
+    pub global_ids: Vec<GlobalId>,
     /// All the opaque/external type ids
     pub external_type_ids: HashSet<TypeId>,
     /// All the opaque/external fun ids
     pub external_fun_ids: HashSet<FunId>,
-    /// All the opaque/external const ids
-    pub external_const_ids: HashSet<ConstId>,
+    /// All the opaque/external global ids
+    pub external_global_ids: HashSet<GlobalId>,
 }
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
@@ -98,22 +98,22 @@ impl<Id: Copy + Serialize> Serialize for GDeclarationGroup<Id> {
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
-impl<TypeId: Copy + Debug, FunId: Copy + Debug, ConstId: Copy + Debug> Display
-    for DeclarationGroup<TypeId, FunId, ConstId>
+impl<TypeId: Copy + Debug, FunId: Copy + Debug, GlobalId: Copy + Debug> Display
+    for DeclarationGroup<TypeId, FunId, GlobalId>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
             DeclarationGroup::Type(decl) => write!(f, "{{ Type(s): {} }}", decl),
             DeclarationGroup::Fun(decl) => write!(f, "{{ Fun(s): {} }}", decl),
-            DeclarationGroup::Const(decl) => write!(f, "{{ Const(s): {} }}", decl),
+            DeclarationGroup::Global(decl) => write!(f, "{{ Global(s): {} }}", decl),
         }
     }
 }
 
 /// This is a bit annoying: because [DefId] and [Vec] doe't implement the
 /// [Serialize] trait, we can't automatically derive the serializing trait...
-impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, ConstId: Copy + Serialize> Serialize
-    for DeclarationGroup<TypeId, FunId, ConstId>
+impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, GlobalId: Copy + Serialize> Serialize
+    for DeclarationGroup<TypeId, FunId, GlobalId>
 {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -136,7 +136,7 @@ impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, ConstId: Copy + Serializ
             DeclarationGroup::Fun(decl) => {
                 vs.serialize_field(decl)?;
             }
-            DeclarationGroup::Const(decl) => {
+            DeclarationGroup::Global(decl) => {
                 vs.serialize_field(decl)?;
             }
         }
@@ -144,20 +144,20 @@ impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, ConstId: Copy + Serializ
     }
 }
 
-impl<TypeId: Copy, FunId: Copy, ConstId: Copy> DeclarationsGroups<TypeId, FunId, ConstId> {
-    pub fn new() -> DeclarationsGroups<TypeId, FunId, ConstId> {
+impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationsGroups<TypeId, FunId, GlobalId> {
+    pub fn new() -> DeclarationsGroups<TypeId, FunId, GlobalId> {
         DeclarationsGroups {
             decls: vec![],
             type_ids: vec![],
             fun_ids: vec![],
-            const_ids: vec![],
+            global_ids: vec![],
             external_type_ids: HashSet::new(),
             external_fun_ids: HashSet::new(),
-            external_const_ids: HashSet::new(),
+            external_global_ids: HashSet::new(),
         }
     }
 
-    fn push(&mut self, decl: DeclarationGroup<TypeId, FunId, ConstId>) {
+    fn push(&mut self, decl: DeclarationGroup<TypeId, FunId, GlobalId>) {
         match &decl {
             DeclarationGroup::Type(GDeclarationGroup::NonRec(id)) => {
                 self.type_ids.push(*id);
@@ -175,12 +175,12 @@ impl<TypeId: Copy, FunId: Copy, ConstId: Copy> DeclarationsGroups<TypeId, FunId,
                     self.fun_ids.push(*id);
                 }
             }
-            DeclarationGroup::Const(GDeclarationGroup::NonRec(id)) => {
-                self.const_ids.push(*id);
+            DeclarationGroup::Global(GDeclarationGroup::NonRec(id)) => {
+                self.global_ids.push(*id);
             }
-            DeclarationGroup::Const(GDeclarationGroup::Rec(ids)) => {
+            DeclarationGroup::Global(GDeclarationGroup::Rec(ids)) => {
                 for id in ids {
-                    self.const_ids.push(*id);
+                    self.global_ids.push(*id);
                 }
             }
         }
@@ -190,26 +190,26 @@ impl<TypeId: Copy, FunId: Copy, ConstId: Copy> DeclarationsGroups<TypeId, FunId,
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
-impl<TypeId: Copy + Debug, FunId: Copy + Debug, ConstId: Copy + Debug> Display
-    for DeclarationsGroups<TypeId, FunId, ConstId>
+impl<TypeId: Copy + Debug, FunId: Copy + Debug, GlobalId: Copy + Debug> Display
+    for DeclarationsGroups<TypeId, FunId, GlobalId>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         write!(
             f,
             "{}",
             vec_to_string(
-                &|d: &DeclarationGroup<TypeId, FunId, ConstId>| d.to_string(),
+                &|d: &DeclarationGroup<TypeId, FunId, GlobalId>| d.to_string(),
                 &self.decls,
             )
         )
     }
 }
 
-impl<'a, TypeId: Copy, FunId: Copy, ConstId: Copy> std::iter::IntoIterator
-    for &'a DeclarationsGroups<TypeId, FunId, ConstId>
+impl<'a, TypeId: Copy, FunId: Copy, GlobalId: Copy> std::iter::IntoIterator
+    for &'a DeclarationsGroups<TypeId, FunId, GlobalId>
 {
-    type Item = &'a DeclarationGroup<TypeId, FunId, ConstId>;
-    type IntoIter = std::slice::Iter<'a, DeclarationGroup<TypeId, FunId, ConstId>>;
+    type Item = &'a DeclarationGroup<TypeId, FunId, GlobalId>;
+    type IntoIter = std::slice::Iter<'a, DeclarationGroup<TypeId, FunId, GlobalId>>;
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
@@ -291,7 +291,7 @@ pub fn reorder_declarations(
         reordered_decls.push(match decl.kind {
             DeclKind::Type => DeclarationGroup::Type(group),
             DeclKind::Function => DeclarationGroup::Fun(group),
-            DeclKind::Const | DeclKind::Static => DeclarationGroup::Const(group),
+            DeclKind::Global => DeclarationGroup::Global(group),
         });
     }
 
@@ -310,9 +310,9 @@ pub fn reorder_declarations(
                     reordered_decls.external_fun_ids.insert(decl.id);
                 }
             }
-            DeclKind::Const | DeclKind::Static => {
+            DeclKind::Global => {
                 if !decl.is_local() || !decl.is_visible() {
-                    reordered_decls.external_const_ids.insert(decl.id);
+                    reordered_decls.external_global_ids.insert(decl.id);
                 }
             }
         }
