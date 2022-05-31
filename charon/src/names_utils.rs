@@ -287,7 +287,7 @@ pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
     item_def_id_to_name(tcx, def_id)
 }
 
-pub fn constant_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> GlobalName {
+pub fn global_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> GlobalName {
     item_def_id_to_name(tcx, def_id)
 }
 

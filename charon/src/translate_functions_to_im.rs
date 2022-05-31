@@ -11,7 +11,7 @@ use crate::formatter::Formatter;
 use crate::generics;
 use crate::get_mir::EXTRACT_CONSTANTS_AT_TOP_LEVEL;
 use crate::im_ast as ast;
-use crate::names::constant_def_id_to_name;
+use crate::names::global_def_id_to_name;
 use crate::names::{function_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy as rh;
 use crate::regions_hierarchy::TypesConstraintsMap;
@@ -2283,7 +2283,7 @@ fn translate_constant(
     };
 
     // Translate the constant name
-    let name = constant_def_id_to_name(tcx, rid);
+    let name = global_def_id_to_name(tcx, rid);
 
     trace!("Translating constant type");
     let mir_ty = tcx.type_of(rid);
