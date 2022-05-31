@@ -66,7 +66,7 @@ impl Declaration {
         }
     }
 
-    fn new_visible(id: DefId, kind: DeclKind, deps: LinkedHashSet<DefId>) -> Declaration {
+    fn new_visible(id: DefId, kind: DeclKind, deps: DeclDependencies) -> Declaration {
         Declaration {
             id,
             kind,
@@ -350,7 +350,7 @@ fn register_mir_substs<'tcx>(
     ctx: &RegisterContext,
     decls: &mut DeclarationsRegister,
     span: &Span,
-    ty_deps: &mut LinkedHashSet<DefId>,
+    ty_deps: &mut DeclDependencies,
     used_params: Option<Vec<bool>>,
     substs: &rustc_middle::ty::subst::SubstsRef<'tcx>,
 ) -> Result<()> {
@@ -396,7 +396,7 @@ fn register_mir_ty(
     ctx: &RegisterContext,
     decls: &mut DeclarationsRegister,
     span: &Span,
-    ty_deps: &mut LinkedHashSet<DefId>,
+    ty_deps: &mut DeclDependencies,
     ty: &Ty,
 ) -> Result<()> {
     trace!("> ty: {:?}", ty);
@@ -694,7 +694,7 @@ fn register_body(
     ctx: &RegisterContext,
     decls: &mut DeclarationsRegister,
     def_id: LocalDefId,
-    deps: &mut LinkedHashSet<DefId>,
+    deps: &mut DeclDependencies,
 ) -> Result<()> {
     // Retrieve the MIR code
     let body = crate::get_mir::get_mir_for_def_id(ctx.rustc, def_id);
