@@ -135,10 +135,9 @@ struct RegisterContext<'a, 'b, 'c> {
 
 pub type RegisteredDeclarations = LinkedHashMap<DefId, Declaration>;
 
-/// The declarations are registered in two steps :
-/// When their exploration begin, we must first add their id.
-/// This is done to prevent cycles while registering declarations.
-/// This logic is handled internally.
+/// Structure used to register declarations : see
+/// [DeclarationsRegister::register_opaque_declaration] and
+/// [DeclarationsRegister::register_visible_declaration].
 struct DeclarationsRegister {
     decl_ids: LinkedHashSet<DefId>,
     decls: RegisteredDeclarations,
@@ -152,15 +151,28 @@ impl DeclarationsRegister {
         }
     }
 
+    /// Indicates if the declaration is being (or has been) added.
     fn knows(&self, id: &DefId) -> bool {
         self.decl_ids.contains(id)
     }
 
-    fn add_id(&mut self, id: DefId) {
+    /// The declarations are registered in two steps :
+    /// When their exploration begin, we must first add their id.
+    /// This is done to prevent cycles while registering declarations.
+    ///
+    /// Should not be called outside [DeclarationsRegister]'s methods :
+    /// Use either [DeclarationsRegister::register_opaque_declaration]
+    /// or [DeclarationsRegister::register_visible_declaration] instead.
+    fn add_begin(&mut self, id: DefId) {
         assert!(self.decl_ids.insert(id), "Already knows {:?}", id);
     }
 
-    fn add(&mut self, decl: Declaration) {
+    /// Finalize the registering of a declaration.
+    ///
+    /// Should not be called outside [DeclarationsRegister]'s methods :
+    /// Use either [DeclarationsRegister::register_opaque_declaration]
+    /// or [DeclarationsRegister::register_visible_declaration] instead.
+    fn add_end(&mut self, decl: Declaration) {
         let id = decl.id;
         assert!(self.knows(&id));
 
@@ -179,14 +191,14 @@ impl DeclarationsRegister {
         }
 
         get_opaque_declaration(tcx, id, kind, name).map(|decl| {
-            self.add_id(id);
-            self.add(decl);
+            self.add_begin(id);
+            self.add_end(decl);
         });
     }
 
     /// Registers a declaration and its dependencies recursively.
     /// Only works on local declarations for now.
-    /// The visitor takes `self` to avoid a double borrow.
+    /// The visitor takes `&mut self` to avoid a double borrow.
     fn register_visible_declaration<
         F: FnOnce(&mut DeclarationsRegister) -> Result<DeclDependencies>,
     >(
@@ -199,7 +211,7 @@ impl DeclarationsRegister {
         trace!("{:?}", local_id);
 
         let id = local_id.to_def_id();
-        self.add_id(id);
+        self.add_begin(id);
 
         let name = get_decl_name(ctx.rustc, kind, id);
 
@@ -213,12 +225,12 @@ impl DeclarationsRegister {
 
         // We don't explore declarations in opaque modules.
         if ctx.crate_info.has_opaque_decl(&name) {
-            self.add(Declaration::new_opaque(id, kind));
+            self.add_end(Declaration::new_opaque(id, kind));
             return Ok(());
         }
 
         let deps = list_dependencies(self)?;
-        self.add(Declaration::new_visible(id, kind, deps));
+        self.add_end(Declaration::new_visible(id, kind, deps));
         return Ok(());
     }
 

@@ -148,7 +148,7 @@ impl<T> HashMap<T> {
         // here, which gets compiled by the MIR interpreter (so we don't see
         // the conversion, actually).
         // Rk.: this is a hit heavy...
-        let max_usize = 4294967295u32 as usize;
+        let max_usize = u32::MAX as usize;
         let capacity = self.slots.len();
         // Checking that there won't be overflows by using the fact that, if m > 0:
         // n * m <= p <==> n <= p / m

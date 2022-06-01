@@ -20,7 +20,7 @@ pub struct OrderedDecls {
     /// The opaque fun ids
     pub opaque_funs: HashSet<ast::FunDeclId::Id>,
     /// The opaque const ids
-    pub opaque_consts: HashSet<ast::GlobalDeclId::Id>,
+    pub opaque_globals: HashSet<ast::GlobalDeclId::Id>,
     /// Rust type identifiers to translation identifiers
     pub type_rid_to_id: HashMap<DefId, ty::TypeDeclId::Id>,
     /// Translation type identifiers to rust identifiers
@@ -137,7 +137,7 @@ pub fn rust_to_local_ids(reordered: &rd::DeclarationsGroups<DefId, DefId, DefId>
         decls,
         opaque_types,
         opaque_funs,
-        opaque_consts,
+        opaque_globals: opaque_consts,
         type_rid_to_id,
         fun_rid_to_id,
         const_rid_to_id,

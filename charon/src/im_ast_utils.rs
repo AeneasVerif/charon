@@ -412,7 +412,7 @@ where
     blocks.join("\n")
 }
 
-impl<T: std::fmt::Debug + Clone + Serialize> GFunBody<T> {
+impl<T: std::fmt::Debug + Clone + Serialize> GExprBody<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function definition already has the information to print
@@ -447,72 +447,6 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunBody<T> {
                         Some(_) => "// local".to_owned(),
                         None => "// anonymous local".to_owned(),
                     }
-                }
-            };
-
-            let var_name = match &v.name {
-                Some(name) => name.clone(),
-                None => var_id_to_pretty_string(v.index),
-            };
-
-            locals.push(
-                format!(
-                    "{}let {}: {}; {}\n",
-                    tab,
-                    var_name,
-                    v.ty.fmt_with_ctx(ctx),
-                    comment
-                )
-                .to_owned(),
-            );
-        }
-
-        let mut locals = locals.join("");
-        locals.push_str("\n");
-
-        // Format the body blocks - TODO: we don't take the indentation
-        // into account, here
-        let body = ctx.format_object(&self.body);
-
-        // Put everything together
-        let mut out = locals;
-        out.push_str(&body);
-        out
-    }
-}
-
-// TODO: As usual, we need to refactor functions & constants together.
-impl<T: std::fmt::Debug + Clone + Serialize> GGlobalBody<T> {
-    /// This is an auxiliary function for printing definitions. One may wonder
-    /// why we require a formatter to format, for instance, (type) var ids,
-    /// because the constant definition already has the information to print
-    /// variables. The reason is that it is easier for us to write this very
-    /// generic auxiliary function, then apply it on an evaluation context
-    /// properly initialized (with the information contained in the constant
-    /// definition). See [`fmt_with_defs`](FunDecl::fmt_with_defs).
-    pub fn fmt_with_ctx<'a, 'b, 'c, C>(&'a self, tab: &'b str, ctx: &'c C) -> String
-    where
-        C: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<&'a T>,
-    {
-        // Format the local variables
-        let mut locals: Vec<String> = Vec::new();
-        for v in &self.locals {
-            use crate::id_vector::ToUsize;
-            let index = v.index.to_usize();
-            let comment = if index == 0 {
-                "// return".to_owned()
-            } else {
-                match &v.name {
-                    Some(_) => "// local".to_owned(),
-                    None => "// anonymous local".to_owned(),
                 }
             };
 
@@ -736,14 +670,13 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDecl<T> {
     }
 }
 
-// TODO: Refactor with functions.
 impl<CD: std::fmt::Debug + Clone + Serialize> GGlobalDecl<CD> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
-    /// because the constant definition already has the information to print
+    /// because the global definition already has the information to print
     /// variables. The reason is that it is easier for us to write this very
     /// generic auxiliary function, then apply it on an evaluation context
-    /// properly initialized (with the information contained in the constant
+    /// properly initialized (with the information contained in the global
     /// definition). See [`fmt_with_defs`](FunDecl::fmt_with_defs).
     pub fn gfmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, body_ctx: &'c T) -> String
     where
@@ -830,14 +763,14 @@ impl<'ctx, FD, CD> GAstFormatter<'ctx, FD, CD> {
     pub fn new(
         type_context: &'ctx TypeDecls,
         fun_context: &'ctx FD,
-        const_context: &'ctx CD,
+        global_context: &'ctx CD,
         type_vars: &'ctx TypeVarId::Vector<TypeVar>,
         vars: &'ctx VarId::Vector<Var>,
     ) -> Self {
         GAstFormatter {
             type_context,
             fun_context,
-            global_context: const_context,
+            global_context,
             type_vars,
             vars,
         }
@@ -929,7 +862,7 @@ impl FunDecl {
         &self,
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDecls,
-        const_ctx: &'ctx GlobalDecls,
+        global_ctx: &'ctx GlobalDecls,
     ) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
@@ -948,7 +881,7 @@ impl FunDecl {
         let eval_ctx = AstFormatter::new(
             ty_ctx,
             fun_ctx,
-            const_ctx,
+            global_ctx,
             &self.signature.type_params,
             locals,
         );
@@ -963,7 +896,7 @@ impl GlobalDecl {
         &self,
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDecls,
-        const_ctx: &'ctx GlobalDecls,
+        global_ctx: &'ctx GlobalDecls,
     ) -> String {
         // We cheat a bit: if there is a body, we take its locals, otherwise
         // we use []:
@@ -974,7 +907,7 @@ impl GlobalDecl {
         };
 
         let empty = id_vector::Vector::new();
-        let eval_ctx = AstFormatter::new(ty_ctx, fun_ctx, const_ctx, &empty, locals);
+        let eval_ctx = AstFormatter::new(ty_ctx, fun_ctx, global_ctx, &empty, locals);
 
         // Use the contexts for printing
         self.gfmt_with_ctx("", &eval_ctx)
