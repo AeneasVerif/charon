@@ -5,7 +5,7 @@ use crate::assumed;
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
-use crate::im_ast::ConstDeclId;
+use crate::im_ast::GlobalDeclId;
 use crate::types::*;
 use crate::values;
 use crate::values::*;
@@ -121,7 +121,7 @@ impl std::string::ToString for Place {
 impl OperandConstantValue {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<TypeDeclId::Id> + Formatter<ConstDeclId::Id>,
+        T: Formatter<TypeDeclId::Id> + Formatter<GlobalDeclId::Id>,
     {
         match self {
             OperandConstantValue::ConstantValue(c) => c.to_string(),
@@ -152,13 +152,13 @@ impl Operand {
     where
         T: Formatter<VarId::Id>
             + Formatter<TypeDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
             Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)).to_string(),
             Operand::Move(p) => format!("move ({})", p.fmt_with_ctx(ctx)).to_string(),
-            Operand::Constant(_, c) => format!("const ({})", c.fmt_with_ctx(ctx)).to_string(),
+            Operand::Const(_, c) => format!("const ({})", c.fmt_with_ctx(ctx)).to_string(),
         }
     }
 
@@ -179,7 +179,7 @@ impl Rvalue {
     where
         T: Formatter<VarId::Id>
             + Formatter<TypeDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {

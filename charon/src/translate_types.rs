@@ -750,7 +750,7 @@ pub fn translate_types(
                     );
                 }
             },
-            DeclarationGroup::Fun(_) | DeclarationGroup::Const(_) => {
+            DeclarationGroup::Fun(_) | DeclarationGroup::Global(_) => {
                 // Ignore the functions & constants
             }
         }

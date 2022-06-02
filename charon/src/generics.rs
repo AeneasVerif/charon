@@ -130,8 +130,8 @@ pub(crate) fn check_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
     check_generics(tcx, def_id)
 }
 
-/// Check a constant's generics (to refuse them except Sized trait)
-pub(crate) fn check_constant_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+/// Check a global's generics (to refuse them except Sized trait)
+pub(crate) fn check_global_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
     assert!(tcx.generics_of(def_id).params.is_empty());
     check_generics(tcx, def_id)
 }

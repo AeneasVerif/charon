@@ -1,5 +1,6 @@
 use crate::common::*;
 use crate::graphs::*;
+use crate::register::DeclKind;
 use crate::register::RegisteredDeclarations;
 use macros::{VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
@@ -23,31 +24,31 @@ pub enum GDeclarationGroup<Id: Copy> {
 
 /// A (group of) top-level declaration(s), properly reordered.
 #[derive(Debug, VariantIndexArity, VariantName)]
-pub enum DeclarationGroup<TypeId: Copy, FunId: Copy, ConstId: Copy> {
+pub enum DeclarationGroup<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     /// A type declaration group
     Type(GDeclarationGroup<TypeId>),
     /// A function declaration group
     Fun(GDeclarationGroup<FunId>),
-    /// A constant declaration group
-    Const(GDeclarationGroup<ConstId>),
+    /// A global declaration group
+    Global(GDeclarationGroup<GlobalId>),
 }
 
 /// The top-level declarations in a module
-pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, ConstId: Copy> {
+pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     /// The properly grouped and ordered declarations
-    pub decls: Vec<DeclarationGroup<TypeId, FunId, ConstId>>,
+    pub decls: Vec<DeclarationGroup<TypeId, FunId, GlobalId>>,
     /// All the type ids
     pub type_ids: Vec<TypeId>,
     /// All the function ids
     pub fun_ids: Vec<FunId>,
-    /// All the constant ids
-    pub const_ids: Vec<ConstId>,
+    /// All the global ids
+    pub global_ids: Vec<GlobalId>,
     /// All the opaque/external type ids
     pub external_type_ids: HashSet<TypeId>,
     /// All the opaque/external fun ids
     pub external_fun_ids: HashSet<FunId>,
-    /// All the opaque/external const ids
-    pub external_const_ids: HashSet<ConstId>,
+    /// All the opaque/external global ids
+    pub external_global_ids: HashSet<GlobalId>,
 }
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
@@ -97,22 +98,22 @@ impl<Id: Copy + Serialize> Serialize for GDeclarationGroup<Id> {
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
-impl<TypeId: Copy + Debug, FunId: Copy + Debug, ConstId: Copy + Debug> Display
-    for DeclarationGroup<TypeId, FunId, ConstId>
+impl<TypeId: Copy + Debug, FunId: Copy + Debug, GlobalId: Copy + Debug> Display
+    for DeclarationGroup<TypeId, FunId, GlobalId>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
             DeclarationGroup::Type(decl) => write!(f, "{{ Type(s): {} }}", decl),
             DeclarationGroup::Fun(decl) => write!(f, "{{ Fun(s): {} }}", decl),
-            DeclarationGroup::Const(decl) => write!(f, "{{ Const(s): {} }}", decl),
+            DeclarationGroup::Global(decl) => write!(f, "{{ Global(s): {} }}", decl),
         }
     }
 }
 
 /// This is a bit annoying: because [DefId] and [Vec] doe't implement the
 /// [Serialize] trait, we can't automatically derive the serializing trait...
-impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, ConstId: Copy + Serialize> Serialize
-    for DeclarationGroup<TypeId, FunId, ConstId>
+impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, GlobalId: Copy + Serialize> Serialize
+    for DeclarationGroup<TypeId, FunId, GlobalId>
 {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -135,7 +136,7 @@ impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, ConstId: Copy + Serializ
             DeclarationGroup::Fun(decl) => {
                 vs.serialize_field(decl)?;
             }
-            DeclarationGroup::Const(decl) => {
+            DeclarationGroup::Global(decl) => {
                 vs.serialize_field(decl)?;
             }
         }
@@ -143,20 +144,20 @@ impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, ConstId: Copy + Serializ
     }
 }
 
-impl<TypeId: Copy, FunId: Copy, ConstId: Copy> DeclarationsGroups<TypeId, FunId, ConstId> {
-    pub fn new() -> DeclarationsGroups<TypeId, FunId, ConstId> {
+impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationsGroups<TypeId, FunId, GlobalId> {
+    pub fn new() -> DeclarationsGroups<TypeId, FunId, GlobalId> {
         DeclarationsGroups {
             decls: vec![],
             type_ids: vec![],
             fun_ids: vec![],
-            const_ids: vec![],
+            global_ids: vec![],
             external_type_ids: HashSet::new(),
             external_fun_ids: HashSet::new(),
-            external_const_ids: HashSet::new(),
+            external_global_ids: HashSet::new(),
         }
     }
 
-    fn push(&mut self, decl: DeclarationGroup<TypeId, FunId, ConstId>) {
+    fn push(&mut self, decl: DeclarationGroup<TypeId, FunId, GlobalId>) {
         match &decl {
             DeclarationGroup::Type(GDeclarationGroup::NonRec(id)) => {
                 self.type_ids.push(*id);
@@ -174,12 +175,12 @@ impl<TypeId: Copy, FunId: Copy, ConstId: Copy> DeclarationsGroups<TypeId, FunId,
                     self.fun_ids.push(*id);
                 }
             }
-            DeclarationGroup::Const(GDeclarationGroup::NonRec(id)) => {
-                self.const_ids.push(*id);
+            DeclarationGroup::Global(GDeclarationGroup::NonRec(id)) => {
+                self.global_ids.push(*id);
             }
-            DeclarationGroup::Const(GDeclarationGroup::Rec(ids)) => {
+            DeclarationGroup::Global(GDeclarationGroup::Rec(ids)) => {
                 for id in ids {
-                    self.const_ids.push(*id);
+                    self.global_ids.push(*id);
                 }
             }
         }
@@ -189,50 +190,30 @@ impl<TypeId: Copy, FunId: Copy, ConstId: Copy> DeclarationsGroups<TypeId, FunId,
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
-impl<TypeId: Copy + Debug, FunId: Copy + Debug, ConstId: Copy + Debug> Display
-    for DeclarationsGroups<TypeId, FunId, ConstId>
+impl<TypeId: Copy + Debug, FunId: Copy + Debug, GlobalId: Copy + Debug> Display
+    for DeclarationsGroups<TypeId, FunId, GlobalId>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         write!(
             f,
             "{}",
             vec_to_string(
-                &|d: &DeclarationGroup<TypeId, FunId, ConstId>| d.to_string(),
+                &|d: &DeclarationGroup<TypeId, FunId, GlobalId>| d.to_string(),
                 &self.decls,
             )
         )
     }
 }
 
-impl<'a, TypeId: Copy, FunId: Copy, ConstId: Copy> std::iter::IntoIterator
-    for &'a DeclarationsGroups<TypeId, FunId, ConstId>
+impl<'a, TypeId: Copy, FunId: Copy, GlobalId: Copy> std::iter::IntoIterator
+    for &'a DeclarationsGroups<TypeId, FunId, GlobalId>
 {
-    type Item = &'a DeclarationGroup<TypeId, FunId, ConstId>;
-    type IntoIter = std::slice::Iter<'a, DeclarationGroup<TypeId, FunId, ConstId>>;
+    type Item = &'a DeclarationGroup<TypeId, FunId, GlobalId>;
+    type IntoIter = std::slice::Iter<'a, DeclarationGroup<TypeId, FunId, GlobalId>>;
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.decls.iter()
-    }
-}
-
-#[derive(PartialEq, Eq)]
-enum DefIdKind {
-    Type,
-    Fun,
-    Const,
-}
-
-// Less efficient than a lookup on the needed type, but performs a sanity check.
-fn get_def_id_kind(decls: &RegisteredDeclarations, def_id: &DefId) -> DefIdKind {
-    if decls.types.contains_key(def_id) {
-        DefIdKind::Type
-    } else if decls.funs.contains_key(def_id) {
-        DefIdKind::Fun
-    } else if decls.consts.contains_key(def_id) {
-        DefIdKind::Const
-    } else {
-        panic!("unknown id {:?}", def_id);
     }
 }
 
@@ -245,49 +226,16 @@ pub fn reorder_declarations(
     let mut graph = DiGraphMap::<DefId, ()>::new();
 
     // Add the nodes - note that we are using both local and external def ids.
-    for d in decls.decls.iter() {
-        graph.add_node(*d);
+    for (id, _) in decls.iter() {
+        graph.add_node(*id);
     }
 
-    // Add the edges.
-    // Note that some of the dependencies might be foreign dependencies (i.e.:
-    // not defined in the local crate).
-    // Types -> types
-    decls.types.iter().for_each(|(id, d)| {
-        d.deps.iter().for_each(|dep_id| {
-            let _ = graph.add_edge(*id, *dep_id, ());
-        })
-    });
-    // Functions
-    decls.funs.iter().for_each(|(id, d)| {
-        // Functions -> types
-        d.deps_tys.iter().for_each(|dep_id| {
-            let _ = graph.add_edge(*id, *dep_id, ());
-        });
-        // Functions -> functions
-        d.deps_funs.iter().for_each(|dep_id| {
-            let _ = graph.add_edge(*id, *dep_id, ());
-        });
-        // Functions -> constants
-        d.deps_consts.iter().for_each(|dep_id| {
-            let _ = graph.add_edge(*id, *dep_id, ());
-        });
-    });
-    // Constants
-    decls.funs.iter().for_each(|(id, d)| {
-        // Constants -> types
-        d.deps_tys.iter().for_each(|dep_id| {
-            let _ = graph.add_edge(*id, *dep_id, ());
-        });
-        // Constants -> functions
-        d.deps_funs.iter().for_each(|dep_id| {
-            let _ = graph.add_edge(*id, *dep_id, ());
-        });
-        // Constants -> constants
-        d.deps_consts.iter().for_each(|dep_id| {
-            let _ = graph.add_edge(*id, *dep_id, ());
-        });
-    });
+    // Add the edges, which go from a declaration to its dependency.
+    for (src, d) in decls.iter() {
+        for tgt in d.deps.iter().flatten() {
+            graph.add_edge(*src, *tgt, ());
+        }
+    }
 
     trace!("Graph: {:?}", graph);
 
@@ -298,49 +246,17 @@ pub fn reorder_declarations(
     // given by the user. To be more precise, if we don't need to move
     // definitions, the order in which we generate the declarations should
     // be the same as the one in which the user wrote them.
-    let get_id_dependencies: &dyn Fn(DefId) -> Vec<DefId> = &|id| {
-        match get_def_id_kind(decls, &id) {
-            DefIdKind::Type => {
-                // Retrieve the type dependencies, and filter the foreign ids
-                decls
-                    .types
-                    .get(&id)
-                    .unwrap()
-                    .deps
-                    .iter()
-                    .map(|id| *id)
-                    .collect()
-            }
-            DefIdKind::Fun => {
-                let decl = &decls.funs.get(&id).unwrap();
-                // We need to chain the type and the function dependencies, and
-                // filter the foreign ids
-                decl.deps_tys
-                    .iter()
-                    .chain(decl.deps_funs.iter())
-                    .chain(decl.deps_consts.iter())
-                    .map(|id| *id)
-                    .collect()
-            }
-            DefIdKind::Const => {
-                let decl = &decls.consts.get(&id).unwrap();
-                // We need to chain the type and the constant dependencies, and
-                // filter the foreign ids
-                decl.deps_tys
-                    .iter()
-                    .chain(decl.deps_funs.iter())
-                    .chain(decl.deps_consts.iter())
-                    .map(|id| *id)
-                    .collect()
-            }
-        }
+    let get_id_dependencies = &|id| {
+        // TODO: There was a comment about "filter the foreign ids" (ignored by the code).
+        //       Find that it's about.
+        decls[&id].deps.iter().flatten().map(|d| *d).collect()
     };
     let SCCs {
         sccs: reordered_sccs,
         scc_deps: _,
     } = reorder_sccs::<DefId>(
         get_id_dependencies,
-        &decls.decls.iter().map(|id| *id).collect(),
+        &decls.iter().map(|(id, _)| *id).collect(),
         &sccs,
     );
 
@@ -352,69 +268,51 @@ pub fn reorder_declarations(
         // Retrieve the SCC
         assert!(scc.len() > 0);
 
-        // Sanity check: make sure an SCC is made of type declarations only,
-        // or of function declarations only.
         // Note that the length of an SCC should be at least 1.
         let mut it = scc.iter();
-        let id0 = it.next().unwrap();
-        let def_kind = get_def_id_kind(decls, &id0);
-
-        for id in it {
-            match def_kind {
-                DefIdKind::Type => assert!(decls.types.contains_key(id)),
-                DefIdKind::Fun => assert!(decls.funs.contains_key(id)),
-                DefIdKind::Const => assert!(decls.consts.contains_key(id)),
-            }
-        }
+        let id0 = *it.next().unwrap();
+        let decl = &decls[&id0];
 
         // If an SCC has length one, the declaration may be simply recursive:
         // we determine whether it is the case by checking if the def id is in
         // its own set of dependencies.
-        let is_simply_recursive;
-        if scc.len() == 1 {
-            let deps = match def_kind {
-                DefIdKind::Type => &decls.types.get(&id0).unwrap().deps,
-                DefIdKind::Fun => &decls.funs.get(&id0).unwrap().deps_funs,
-                DefIdKind::Const => &decls.consts.get(&id0).unwrap().deps_consts,
-            };
-            is_simply_recursive = deps.contains(&id0);
-        } else {
-            is_simply_recursive = false;
-        }
+        let is_mutually_recursive = scc.len() > 1;
+        let is_simply_recursive =
+            !is_mutually_recursive && decl.deps.as_ref().is_some_with(|deps| deps.contains(&id0));
 
         // Add the declaration.
         // Note that we clone the vectors: it is not optimal, but they should
         // be pretty small.
-        let wrap_group = |x| match def_kind {
-            DefIdKind::Type => DeclarationGroup::Type(x),
-            DefIdKind::Fun => DeclarationGroup::Fun(x),
-            DefIdKind::Const => DeclarationGroup::Const(x),
-        };
-        if scc.len() == 1 && !is_simply_recursive {
-            reordered_decls.push(wrap_group(GDeclarationGroup::NonRec(*id0)));
+        let group = if is_mutually_recursive || is_simply_recursive {
+            GDeclarationGroup::Rec(scc.clone())
         } else {
-            reordered_decls.push(wrap_group(GDeclarationGroup::Rec(scc.clone())));
-        }
+            GDeclarationGroup::NonRec(id0)
+        };
+        reordered_decls.push(match decl.kind {
+            DeclKind::Type => DeclarationGroup::Type(group),
+            DeclKind::Function => DeclarationGroup::Fun(group),
+            DeclKind::Global => DeclarationGroup::Global(group),
+        });
     }
 
     trace!("{}", reordered_decls.to_string());
 
     // We list the external definitions (opaque local, and non-local)
-    for id in decls.decls.iter() {
-        match get_def_id_kind(decls, id) {
-            DefIdKind::Type => {
-                if !id.is_local() || decls.opaque_types.contains(id) {
-                    reordered_decls.external_type_ids.insert(*id);
+    for (_, decl) in decls.iter() {
+        match decl.kind {
+            DeclKind::Type => {
+                if !decl.is_local() || !decl.is_visible() {
+                    reordered_decls.external_type_ids.insert(decl.id);
                 }
             }
-            DefIdKind::Fun => {
-                if !id.is_local() || decls.opaque_funs.contains(id) {
-                    reordered_decls.external_fun_ids.insert(*id);
+            DeclKind::Function => {
+                if !decl.is_local() || !decl.is_visible() {
+                    reordered_decls.external_fun_ids.insert(decl.id);
                 }
             }
-            DefIdKind::Const => {
-                if !id.is_local() || decls.opaque_consts.contains(id) {
-                    reordered_decls.external_const_ids.insert(*id);
+            DeclKind::Global => {
+                if !decl.is_local() || !decl.is_visible() {
+                    reordered_decls.external_global_ids.insert(decl.id);
                 }
             }
         }

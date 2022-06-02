@@ -150,7 +150,7 @@ fn check_if_simplifiable_assert_then_unop(
                 Rvalue::BinaryOp(
                     BinOp::Eq,
                     op,
-                    Operand::Constant(
+                    Operand::Const(
                         _,
                         OperandConstantValue::ConstantValue(ConstantValue::Scalar(saturated)),
                     ),
@@ -173,7 +173,7 @@ fn check_if_simplifiable_assert_then_unop(
             // - or they are the same constant
             match (op, op1) {
                 (Operand::Copy(p), Operand::Move(p1)) => assert!(p == p1),
-                (Operand::Constant(_, cv), Operand::Constant(_, cv1)) => assert!(cv == cv1),
+                (Operand::Const(_, cv), Operand::Const(_, cv1)) => assert!(cv == cv1),
                 _ => unreachable!(),
             }
 
@@ -187,7 +187,7 @@ fn check_if_simplifiable_assert_then_unop(
                 _mp,
                 Rvalue::UnaryOp(
                     unop,
-                    Operand::Constant(
+                    Operand::Const(
                         _,
                         OperandConstantValue::ConstantValue(ConstantValue::Scalar(value)),
                     ),
@@ -382,7 +382,7 @@ fn check_if_simplifiable_assert_then_binop(
                 Rvalue::BinaryOp(
                     BinOp::Eq,
                     Operand::Copy(eq_op1),
-                    Operand::Constant(
+                    Operand::Const(
                         _,
                         OperandConstantValue::ConstantValue(ConstantValue::Scalar(zero)),
                     ),
@@ -412,7 +412,7 @@ fn check_if_simplifiable_assert_then_binop(
                 Rvalue::BinaryOp(
                     BinOp::Eq,
                     divisor,
-                    Operand::Constant(
+                    Operand::Const(
                         _,
                         OperandConstantValue::ConstantValue(ConstantValue::Scalar(zero)),
                     ),
@@ -427,9 +427,9 @@ fn check_if_simplifiable_assert_then_binop(
             // Case 2: pattern with constant divisor and assertion
             assert!(binop_requires_assert_before(*binop));
             assert!(!(*expected));
-            assert!(divisor.is_constant());
+            assert!(divisor.is_const());
             match divisor {
-                Operand::Constant(
+                Operand::Const(
                     _,
                     OperandConstantValue::ConstantValue(ConstantValue::Scalar(_)),
                 ) => (),
@@ -445,7 +445,7 @@ fn check_if_simplifiable_assert_then_binop(
             }
             true
         }
-        (_, _, Statement::Assign(_mp, Rvalue::BinaryOp(_, _, Operand::Constant(_, divisor)))) => {
+        (_, _, Statement::Assign(_mp, Rvalue::BinaryOp(_, _, Operand::Const(_, divisor)))) => {
             // Case 3: no assertion to check the divisor != 0, the divisor must be a
             // non-zero constant
             let cv = divisor.as_constant_value();
@@ -531,7 +531,7 @@ fn simplify_st(st: Statement) -> Statement {
                     if binop_can_fail(*binop) {
                         match binop {
                             BinOp::Div | BinOp::Rem => {
-                                let (_, cv) = divisor.as_constant();
+                                let (_, cv) = divisor.as_const();
                                 let cv = cv.as_constant_value();
                                 let cv = cv.as_scalar();
                                 if cv.is_uint() {
@@ -553,7 +553,7 @@ fn simplify_st(st: Statement) -> Statement {
                     if unop_can_fail(*unop) {
                         match unop {
                             UnOp::Neg => {
-                                let (_, cv) = v.as_constant();
+                                let (_, cv) = v.as_const();
                                 let cv = cv.as_constant_value();
                                 let cv = cv.as_scalar();
                                 assert!(cv.is_int());

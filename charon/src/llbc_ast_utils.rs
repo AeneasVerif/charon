@@ -3,8 +3,8 @@
 #![allow(dead_code)]
 use crate::expressions::{Operand, Place, Rvalue};
 use crate::formatter::Formatter;
-use crate::im_ast::{fmt_call, ConstDeclId, FunDeclId, FunSigFormatter, GAstFormatter, TAB_INCR};
-use crate::llbc_ast::{Call, ConstDecl, ConstDecls, FunDecl, FunDecls, Statement, SwitchTargets};
+use crate::im_ast::{fmt_call, FunDeclId, FunSigFormatter, GAstFormatter, GlobalDeclId, TAB_INCR};
+use crate::llbc_ast::{Call, FunDecl, FunDecls, GlobalDecl, GlobalDecls, Statement, SwitchTargets};
 use crate::types::*;
 use crate::values::*;
 use crate::{common::*, id_vector};
@@ -70,7 +70,7 @@ impl Statement {
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<FunDeclId::Id>
-            + Formatter<ConstDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
@@ -192,7 +192,7 @@ impl Statement {
     }
 }
 
-type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls, ConstDecls>;
+type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls, GlobalDecls>;
 
 impl<'ctx> Formatter<FunDeclId::Id> for AstFormatter<'ctx> {
     fn format_object(&self, id: FunDeclId::Id) -> String {
@@ -201,9 +201,9 @@ impl<'ctx> Formatter<FunDeclId::Id> for AstFormatter<'ctx> {
     }
 }
 
-impl<'ctx> Formatter<ConstDeclId::Id> for AstFormatter<'ctx> {
-    fn format_object(&self, id: ConstDeclId::Id) -> String {
-        let c = self.const_context.get(id).unwrap();
+impl<'ctx> Formatter<GlobalDeclId::Id> for AstFormatter<'ctx> {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        let c = self.global_context.get(id).unwrap();
         c.name.to_string()
     }
 }
@@ -237,7 +237,7 @@ impl FunDecl {
         &self,
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDecls,
-        const_ctx: &'ctx ConstDecls,
+        const_ctx: &'ctx GlobalDecls,
     ) -> String {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
@@ -266,12 +266,12 @@ impl FunDecl {
     }
 }
 
-impl ConstDecl {
+impl GlobalDecl {
     pub fn fmt_with_defs<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDecls,
-        const_ctx: &'ctx ConstDecls,
+        const_ctx: &'ctx GlobalDecls,
     ) -> String {
         // We cheat a bit: if there is a body, we take its locals, otherwise
         // we use []:

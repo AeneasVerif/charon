@@ -1,9 +1,10 @@
 use crate::assumed;
 use crate::common::*;
 use crate::generics;
+use crate::names::Name;
 use crate::names::{
-    constant_def_id_to_name, function_def_id_to_name, hir_item_to_name, module_def_id_to_name,
-    type_def_id_to_name, FunName, TypeName,
+    function_def_id_to_name, global_def_id_to_name, hir_item_to_name, module_def_id_to_name,
+    type_def_id_to_name,
 };
 use crate::translate_functions_to_im;
 use hashlink::LinkedHashMap;
@@ -17,142 +18,243 @@ use rustc_session::Session;
 use rustc_span::Span;
 use std::collections::HashSet;
 
-fn is_fn_decl(item: &Item) -> bool {
-    match item.kind {
-        ItemKind::Fn(_, _, _) => true,
-        _ => false,
-    }
-}
-
 pub struct CrateInfo {
     pub crate_name: String,
-    /// The set of opaque modules
-    pub opaque: HashSet<String>,
+    pub opaque_mods: HashSet<String>,
 }
 
-pub type TypeDependencies = LinkedHashSet<DefId>;
-pub type FunDependencies = LinkedHashSet<DefId>;
-pub type ConstDependencies = LinkedHashSet<DefId>;
-
-/// A registered type declaration.
-/// Simply contains the item id and its dependencies.
-#[derive(Debug)]
-pub struct RegisteredTypeDeclaration {
-    pub type_id: DefId,
-    /// The set of type dependencies. It can contain local def ids as well as
-    /// external def ids.
-    pub deps: TypeDependencies,
-}
-
-impl RegisteredTypeDeclaration {
-    pub fn new(id: DefId) -> RegisteredTypeDeclaration {
-        return RegisteredTypeDeclaration {
-            type_id: id,
-            deps: LinkedHashSet::new(),
-        };
+impl CrateInfo {
+    fn has_opaque_decl(&self, name: &Name) -> bool {
+        name.is_in_modules(&self.crate_name, &self.opaque_mods)
     }
 }
 
-/// A registered function declaration.
-/// Simply contains the item id and its dependencies.
-#[derive(Debug)]
-pub struct RegisteredFunDeclaration {
-    pub fun_id: DefId,
-    /// The set of type dependencies. It can contain local def ids as well as
-    /// external def ids.
-    pub deps_tys: TypeDependencies,
-    /// The set of function dependencies. It can contain local def ids as well as
-    /// external def ids.
-    pub deps_funs: FunDependencies,
-    /// The set of constant dependencies. It can contain local def ids as well as
-    /// external def ids.
-    pub deps_consts: ConstDependencies,
+/// All kind of supported Rust top-level declarations.
+/// const & static variables are merged together in the global kind.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum DeclKind {
+    Type,
+    Function,
+    Global,
 }
 
-impl RegisteredFunDeclaration {
-    pub fn new(id: DefId) -> RegisteredFunDeclaration {
-        return RegisteredFunDeclaration {
-            fun_id: id,
-            deps_tys: LinkedHashSet::new(),
-            deps_funs: LinkedHashSet::new(),
-            deps_consts: LinkedHashSet::new(),
-        };
+pub type DeclDependencies = LinkedHashSet<DefId>;
+
+/// A registered declaration, listing its dependencies.
+///
+/// TODO: Add a flag to indicate that the expression can be evaluated
+///       at compile time (const VS static, const fn VS fn).
+///       They should be accepted even if they don't have body :
+///       it's only when they used in compile time context that it will fail.
+///       It can happen for e.g. a private const value or function.
+#[derive(Debug)]
+pub struct Declaration {
+    // The declaration may be local or extern (id.is_local()).
+    pub id: DefId,
+    pub kind: DeclKind,
+    // The IDs of the declarations its body depends on.
+    // None if opaque (it means that the body is unavailable).
+    pub deps: Option<DeclDependencies>,
+}
+
+impl Declaration {
+    fn new_opaque(id: DefId, kind: DeclKind) -> Declaration {
+        Declaration {
+            id,
+            kind,
+            deps: None,
+        }
+    }
+
+    fn new_visible(id: DefId, kind: DeclKind, deps: DeclDependencies) -> Declaration {
+        Declaration {
+            id,
+            kind,
+            deps: Some(deps),
+        }
+    }
+
+    pub fn is_local(&self) -> bool {
+        self.id.is_local()
+    }
+
+    pub fn is_visible(&self) -> bool {
+        self.deps.is_some()
     }
 }
 
-/// A registered constant declaration.
-/// Simply contains the item id and its dependencies.
-#[derive(Debug)]
-pub struct RegisteredConstDeclaration {
-    pub const_id: DefId,
-    /// The set of type dependencies. It can contain local def ids as well as
-    /// external def ids.
-    pub deps_tys: TypeDependencies,
-    /// The set of function dependencies. It can contain local def ids as well as
-    /// external def ids.
-    pub deps_funs: FunDependencies,
-    /// The set of constant dependencies. It can contain local def ids as well as
-    /// external def ids.
-    pub deps_consts: ConstDependencies,
-}
-
-impl RegisteredConstDeclaration {
-    pub fn new(id: DefId) -> RegisteredConstDeclaration {
-        return RegisteredConstDeclaration {
-            const_id: id,
-            deps_tys: LinkedHashSet::new(),
-            deps_funs: LinkedHashSet::new(),
-            deps_consts: LinkedHashSet::new(),
-        };
+fn get_decl_name(tcx: TyCtxt, kind: DeclKind, id: DefId) -> Name {
+    match kind {
+        DeclKind::Type => type_def_id_to_name(tcx, id),
+        DeclKind::Function => function_def_id_to_name(tcx, id),
+        DeclKind::Global => global_def_id_to_name(tcx, id),
     }
 }
 
-/// Contains the declarations registered in the first pass of the translation.
-/// This pass is used to build the local dependency graph between the declarations,
-/// in order to know in which order to translate them, and detect the cycles
-/// (i.e.: the mutually recursive definitions).
-#[derive(Debug)]
-pub struct RegisteredDeclarations {
-    /// All the def ids of the declarations to be translated, in the order in
-    /// which we registered them. This set can only contain local def ids.
-    pub decls: LinkedHashSet<DefId>,
-
-    /// All the type declarations to be translated, and their local
-    /// dependencies.
-    pub types: LinkedHashMap<DefId, RegisteredTypeDeclaration>,
-
-    /// All the opaque type declarations (local types, but found in modules
-    /// that were marked as opaque). Does not include the non-local types.
-    pub opaque_types: HashSet<DefId>,
-
-    /// All the function declarations to be translated, and their local
-    /// dependencies.
-    pub funs: LinkedHashMap<DefId, RegisteredFunDeclaration>,
-
-    /// All the opaque function declarations (local function, but found in modules
-    /// that were marked as opaque). Does not include the non-local functions.
-    pub opaque_funs: HashSet<DefId>,
-
-    /// All the constant declarations to be translated, and their local
-    /// dependencies.
-    pub consts: LinkedHashMap<DefId, RegisteredConstDeclaration>,
-
-    /// All the opaque constant declarations (local constant, but found in modules
-    /// that were marked as opaque). Does not include the non-local constants.
-    pub opaque_consts: HashSet<DefId>,
+fn is_primitive_decl(kind: DeclKind, id: DefId, name: &Name) -> bool {
+    if id.is_local() {
+        return false;
+    }
+    match kind {
+        DeclKind::Type => assumed::type_to_used_params(&name).is_some(),
+        DeclKind::Function => assumed::function_to_info(&name).is_some(),
+        DeclKind::Global => false,
+    }
 }
 
-impl RegisteredDeclarations {
-    pub fn new() -> RegisteredDeclarations {
-        return RegisteredDeclarations {
-            decls: LinkedHashSet::new(),
-            types: LinkedHashMap::new(),
-            opaque_types: HashSet::new(),
-            funs: LinkedHashMap::new(),
-            opaque_funs: HashSet::new(),
-            consts: LinkedHashMap::new(),
-            opaque_consts: HashSet::new(),
-        };
+fn check_decl_generics(kind: DeclKind, tcx: TyCtxt, id: DefId) {
+    match kind {
+        DeclKind::Type => generics::check_type_generics(tcx, id),
+        DeclKind::Function => generics::check_function_generics(tcx, id),
+        DeclKind::Global => generics::check_global_generics(tcx, id),
+    }
+}
+
+fn get_opaque_declaration(
+    tcx: TyCtxt,
+    id: DefId,
+    kind: DeclKind,
+    name: &Name,
+) -> Option<Declaration> {
+    trace!("opaque declaration {}", name);
+
+    if is_primitive_decl(kind, id, name) {
+        return None;
+    }
+
+    // TODO: we check this here and in translate_types
+    check_decl_generics(kind, tcx, id);
+    Some(Declaration::new_opaque(id, kind))
+}
+
+struct RegisterContext<'a, 'b, 'c> {
+    rustc: TyCtxt<'a>,
+    sess: &'b Session,
+    crate_info: &'c CrateInfo,
+}
+
+pub type RegisteredDeclarations = LinkedHashMap<DefId, Declaration>;
+
+/// Structure used to register declarations : see
+/// [DeclarationsRegister::register_opaque_declaration] and
+/// [DeclarationsRegister::register_visible_declaration].
+struct DeclarationsRegister {
+    decl_ids: LinkedHashSet<DefId>,
+    decls: RegisteredDeclarations,
+}
+
+impl DeclarationsRegister {
+    fn new() -> DeclarationsRegister {
+        DeclarationsRegister {
+            decl_ids: LinkedHashSet::new(),
+            decls: RegisteredDeclarations::new(),
+        }
+    }
+
+    /// Indicates if the declaration is being (or has been) added.
+    fn knows(&self, id: &DefId) -> bool {
+        self.decl_ids.contains(id)
+    }
+
+    /// The declarations are registered in two steps :
+    /// When their exploration begin, we must first add their id.
+    /// This is done to prevent cycles while registering declarations.
+    ///
+    /// Should not be called outside [DeclarationsRegister]'s methods :
+    /// Use either [DeclarationsRegister::register_opaque_declaration]
+    /// or [DeclarationsRegister::register_visible_declaration] instead.
+    fn add_begin(&mut self, id: DefId) {
+        assert!(self.decl_ids.insert(id), "Already knows {:?}", id);
+    }
+
+    /// Finalize the registering of a declaration.
+    ///
+    /// Should not be called outside [DeclarationsRegister]'s methods :
+    /// Use either [DeclarationsRegister::register_opaque_declaration]
+    /// or [DeclarationsRegister::register_visible_declaration] instead.
+    fn add_end(&mut self, decl: Declaration) {
+        let id = decl.id;
+        assert!(self.knows(&id));
+
+        assert!(
+            self.decls.insert(id, decl).is_none(),
+            "Registered the same declaration {:?} twice",
+            id
+        );
+    }
+
+    /// Does not explore further the declaration content :
+    /// If the declaration was unknown, registers it without dependencies.
+    fn register_opaque_declaration(&mut self, tcx: TyCtxt, id: DefId, kind: DeclKind, name: &Name) {
+        if self.knows(&id) {
+            return;
+        }
+
+        get_opaque_declaration(tcx, id, kind, name).map(|decl| {
+            self.add_begin(id);
+            self.add_end(decl);
+        });
+    }
+
+    /// Registers a declaration and its dependencies recursively.
+    /// Only works on local declarations for now.
+    /// The visitor takes `&mut self` to avoid a double borrow.
+    fn register_visible_declaration<
+        F: FnOnce(&mut DeclarationsRegister) -> Result<DeclDependencies>,
+    >(
+        &mut self,
+        ctx: &RegisterContext,
+        local_id: LocalDefId,
+        kind: DeclKind,
+        list_dependencies: F,
+    ) -> Result<()> {
+        trace!("{:?}", local_id);
+
+        let id = local_id.to_def_id();
+        self.add_begin(id);
+
+        let name = get_decl_name(ctx.rustc, kind, id);
+
+        // Only local declarations are supported for now, it better not be primitive.
+        if is_primitive_decl(kind, id, &name) {
+            unreachable!();
+        }
+
+        // TODO: we check this here and in translate_functions_to_im
+        check_decl_generics(kind, ctx.rustc, id);
+
+        // We don't explore declarations in opaque modules.
+        if ctx.crate_info.has_opaque_decl(&name) {
+            self.add_end(Declaration::new_opaque(id, kind));
+            return Ok(());
+        }
+
+        let deps = list_dependencies(self)?;
+        self.add_end(Declaration::new_visible(id, kind, deps));
+        return Ok(());
+    }
+
+    /// Returns all registered declarations.
+    /// Verifies that no known id or dependency is missing.
+    fn get_declarations(self) -> RegisteredDeclarations {
+        for id in self.decl_ids.iter() {
+            assert!(
+                self.decls.contains_key(id),
+                "Did not register known id {:?}",
+                id
+            );
+        }
+        for (_, decl) in &self.decls {
+            for id in decl.deps.iter().flatten() {
+                assert!(
+                    self.decls.contains_key(id),
+                    "Did not register dependency id {:?} from {:?}",
+                    id,
+                    decl.id
+                )
+            }
+        }
+        self.decls
     }
 }
 
@@ -160,14 +262,9 @@ impl RegisteredDeclarations {
 /// This function is called when processing top-level declarations. It mostly
 /// delegates the work to functions operating on the MIR (and once in MIR we
 /// stay in MIR).
-/// The caller must have checked if the def_id has been registered before, and
-/// must call this function only if it was not the case, and after having added
-/// the def_id to the list of registered ids.
 fn register_hir_type(
-    crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
-    tcx: TyCtxt,
+    ctx: &RegisterContext,
+    decls: &mut DeclarationsRegister,
     item: &Item,
     def_id: DefId,
 ) -> Result<()> {
@@ -186,8 +283,8 @@ fn register_hir_type(
 
             // Retrieve the MIR adt from the def id and register it, retrieve
             // the list of dependencies at the same time.
-            let adt = tcx.adt_def(def_id);
-            return register_local_adt(crate_info, rdecls, sess, tcx, adt);
+            let adt = ctx.rustc.adt_def(def_id);
+            return register_local_adt(ctx, decls, adt);
         }
         _ => {
             unreachable!();
@@ -199,10 +296,8 @@ fn register_hir_type(
 /// Note that the def id of the ADT should already have been stored in the set of
 /// explored def ids.
 fn register_local_adt(
-    crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
-    tcx: TyCtxt,
+    ctx: &RegisterContext,
+    decls: &mut DeclarationsRegister,
     adt: &AdtDef,
 ) -> Result<()> {
     trace!("> adt: {:?}", adt);
@@ -211,37 +306,17 @@ fn register_local_adt(
     // called from MIR code, which is why we don't take an item or a HIR
     // definition as parameter. We use it only for the span, to report
     // precise error messages to the user.
-    let hir_map = tcx.hir();
+    let hir_map = ctx.rustc.hir();
     let item = if let rustc_hir::Node::Item(item) = hir_map.get_if_local(adt.did).unwrap() {
         item
     } else {
         unreachable!();
     };
 
-    // Check the generics - TODO: we check this here and in translate_types
-    generics::check_type_generics(tcx, adt.did);
-
-    let type_id = adt.did;
-
-    // Initialize the type declaration that we will register (in particular,
-    // initialize the list of local dependencies to empty).
-    let mut rtype_decl = RegisteredTypeDeclaration::new(type_id);
-
-    // We explore the type definition only if it is not in a module flagged
-    // as opaque
-    let name = type_def_id_to_name(tcx, adt.did);
-    if name.is_in_modules(&crate_info.crate_name, &crate_info.opaque) {
-        // The type is opaque
-        // Register it as having no dependencies (dependencies are introduced
-        // by exploring the type definition, to check the types used in the fields).
-        rdecls.types.insert(type_id, rtype_decl);
-        rdecls.opaque_types.insert(type_id);
-        return Ok(());
-    } else {
-        // The type is not opaque
-
+    let local_id = adt.did.as_local().unwrap();
+    decls.register_visible_declaration(ctx, local_id, DeclKind::Type, |decls| {
         // Use a dummy substitution to instantiate the type parameters
-        let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, adt.did);
+        let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(ctx.rustc, adt.did);
 
         // Explore all the variants. Note that we also explore the HIR to retrieve
         // precise spans: for instance, to indicate which variant is problematic
@@ -257,6 +332,7 @@ fn register_local_adt(
             }
         };
 
+        let mut ty_deps = DeclDependencies::new();
         let mut i = 0; // The index of the variant
         for var_def in adt.variants.iter() {
             trace!("var_def");
@@ -270,82 +346,23 @@ fn register_local_adt(
 
             for field_def in var_def.fields.iter() {
                 trace!("field_def");
-                let ty = field_def.ty(tcx, substs);
+                let ty = field_def.ty(ctx.rustc, substs);
                 trace!("ty");
-                register_mir_ty(
-                    crate_info,
-                    rdecls,
-                    sess,
-                    tcx,
-                    var_span,
-                    &mut rtype_decl.deps,
-                    &ty,
-                )?;
+                register_mir_ty(ctx, decls, var_span, &mut ty_deps, &ty)?;
             }
 
             i += 1;
         }
-
-        // Add the type declaration to the registered declarations
-        rdecls.types.insert(rtype_decl.type_id, rtype_decl);
-        return Ok(());
-    }
-}
-
-/// Register a a non-local MIR ADT.
-/// Note that the def id of the ADT should already have been stored in the set of
-/// explored def ids.
-///
-/// For now, we don't do much.
-/// In the future, we will explore the ADT, to reveal its public information
-/// (public fields in case of a structure, variants in case of a public
-/// enumeration).
-fn register_non_local_adt(
-    _crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    _sess: &Session,
-    tcx: TyCtxt,
-    adt: &AdtDef,
-    name: TypeName,
-) -> Result<()> {
-    trace!("> non-local adt: {:?}", adt);
-
-    // First, check if the ADT has primitive support: if it is the case, there
-    // is nothing to do
-    if assumed::type_to_used_params(&name).is_some() {
-        // Primitive
-        return Ok(());
-    }
-
-    // Non-primitive (i.e.: external)
-    let type_id = adt.did;
-
-    // Check if registered
-    if rdecls.decls.contains(&type_id) {
-        return Ok(());
-    }
-    rdecls.decls.insert(type_id);
-
-    // Check the generics - TODO: we check this here and in translate_types
-    generics::check_type_generics(tcx, type_id);
-
-    // Register the type as having no dependencies
-    let rtype_decl = RegisteredTypeDeclaration::new(type_id);
-
-    rdecls.types.insert(type_id, rtype_decl);
-    rdecls.opaque_types.insert(type_id);
-
-    return Ok(());
+        Ok(ty_deps)
+    })
 }
 
 /// Auxiliary function to register a list of type parameters.
 fn register_mir_substs<'tcx>(
-    crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
-    tcx: TyCtxt,
+    ctx: &RegisterContext,
+    decls: &mut DeclarationsRegister,
     span: &Span,
-    deps: &mut TypeDependencies,
+    ty_deps: &mut DeclDependencies,
     used_params: Option<Vec<bool>>,
     substs: &rustc_middle::ty::subst::SubstsRef<'tcx>,
 ) -> Result<()> {
@@ -373,7 +390,7 @@ fn register_mir_substs<'tcx>(
     for param in params.into_iter() {
         match param.unpack() {
             rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
-                register_mir_ty(crate_info, rdecls, sess, tcx, span, deps, &param_ty)?;
+                register_mir_ty(ctx, decls, span, ty_deps, &param_ty)?;
             }
             rustc_middle::ty::subst::GenericArgKind::Lifetime(_)
             | rustc_middle::ty::subst::GenericArgKind::Const(_) => {
@@ -388,12 +405,10 @@ fn register_mir_substs<'tcx>(
 /// There is no need to perform any check on the type (to prevent cyclic calls)
 /// before calling this function.
 fn register_mir_ty(
-    crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
-    tcx: TyCtxt,
+    ctx: &RegisterContext,
+    decls: &mut DeclarationsRegister,
     span: &Span,
-    deps: &mut TypeDependencies,
+    ty_deps: &mut DeclDependencies,
     ty: &Ty,
 ) -> Result<()> {
     trace!("> ty: {:?}", ty);
@@ -415,7 +430,7 @@ fn register_mir_ty(
             trace!("Adt");
 
             // Identify the type by retrieving its name
-            let name = type_def_id_to_name(tcx, adt.did);
+            let name = type_def_id_to_name(ctx.rustc, adt.did);
 
             // Check if the type is primitive
 
@@ -441,7 +456,7 @@ fn register_mir_ty(
             // Add this ADT to the list of dependencies, only if it is not
             // primitive
             if !is_prim {
-                deps.insert(adt.did);
+                ty_deps.insert(adt.did);
             }
 
             // From now onwards, we do something different depending on
@@ -456,72 +471,52 @@ fn register_mir_ty(
                 // - or the type is external, in which case we register it as such
 
                 // Explore the type parameters instantiation
-                register_mir_substs(
-                    crate_info,
-                    rdecls,
-                    sess,
-                    tcx,
-                    span,
-                    deps,
-                    used_params,
-                    substs,
-                )?;
+                register_mir_substs(ctx, decls, span, ty_deps, used_params, substs)?;
 
-                // Register the ADT.
-                // Note that [register_non_local_adt] checks if the def id
-                // has already been registered, and inserts it in the list
-                // of def ids if necessary (not the same behaviour as the
-                // "local" case, where we do that *before*).
-                // TODO: we may want to do this more consistent.
-                return register_non_local_adt(crate_info, rdecls, sess, tcx, adt, name);
+                // Register the external ADT as an opaque declaration.
+                // In the future, we will explore the ADT, to reveal its public
+                // information (public fields in case of a structure, variants in
+                // case of a public enumeration).
+                decls.register_opaque_declaration(ctx.rustc, adt.did, DeclKind::Type, &name);
+                return Ok(());
             } else {
                 // Explore the type parameters instantiation
-                register_mir_substs(
-                    crate_info,
-                    rdecls,
-                    sess,
-                    tcx,
-                    span,
-                    deps,
-                    Option::None,
-                    substs,
-                )?;
+                register_mir_substs(ctx, decls, span, ty_deps, Option::None, substs)?;
 
                 // Explore the ADT, if we haven't already registered it
                 // Check if registered
-                if rdecls.decls.contains(&adt.did) {
+                if decls.knows(&adt.did) {
                     trace!("Adt already registered");
                     return Ok(());
                 }
                 trace!("Adt not registered");
-                rdecls.decls.insert(adt.did);
 
                 // Register and explore
-                return register_local_adt(crate_info, rdecls, sess, tcx, adt);
+                return register_local_adt(ctx, decls, adt);
             }
         }
         TyKind::Array(ty, const_param) => {
             trace!("Array");
 
-            register_mir_ty(crate_info, rdecls, sess, tcx, span, deps, ty)?;
-            return register_mir_ty(crate_info, rdecls, sess, tcx, span, deps, &const_param.ty);
+            register_mir_ty(ctx, decls, span, ty_deps, ty)?;
+            return register_mir_ty(ctx, decls, span, ty_deps, &const_param.ty);
         }
         TyKind::Slice(ty) => {
             trace!("Slice");
 
-            return register_mir_ty(crate_info, rdecls, sess, tcx, span, deps, ty);
+            return register_mir_ty(ctx, decls, span, ty_deps, ty);
         }
         TyKind::Ref(_, ty, _) => {
             trace!("Ref");
 
-            return register_mir_ty(crate_info, rdecls, sess, tcx, span, deps, ty);
+            return register_mir_ty(ctx, decls, span, ty_deps, ty);
         }
         TyKind::Tuple(substs) => {
             trace!("Tuple");
 
             for param in substs.iter() {
                 let param_ty = param.expect_ty();
-                register_mir_ty(crate_info, rdecls, sess, tcx, span, deps, &param_ty)?;
+                register_mir_ty(ctx, decls, span, ty_deps, &param_ty)?;
             }
 
             return Ok(());
@@ -530,19 +525,19 @@ fn register_mir_ty(
         TyKind::RawPtr(_) => {
             // A raw pointer
             trace!("RawPtr");
-            span_err(sess, span.clone(), "raw pointers are not supported");
+            span_err(ctx.sess, span.clone(), "raw pointers are not supported");
             return Err(());
         }
         TyKind::Foreign(_) => {
             // A raw pointer
             trace!("Foreign");
-            span_err(sess, span.clone(), "FFI types are not supported");
+            span_err(ctx.sess, span.clone(), "FFI types are not supported");
             return Err(());
         }
         TyKind::Infer(_) => {
             trace!("Infer");
             span_err(
-                sess,
+                ctx.sess,
                 span.clone(),
                 "Inconsistant state: found an `Infer` type",
             );
@@ -558,7 +553,7 @@ fn register_mir_ty(
         TyKind::FnPtr(sig) => {
             trace!("FnPtr");
             for param_ty in sig.inputs_and_output().no_bound_vars().unwrap().iter() {
-                register_mir_ty(crate_info, rdecls, sess, tcx, span, deps, &param_ty)?;
+                register_mir_ty(ctx, decls, span, ty_deps, &param_ty)?;
             }
             return Ok(());
         }
@@ -575,14 +570,14 @@ fn register_mir_ty(
 
         TyKind::Generator(_, _, _) | TyKind::GeneratorWitness(_) => {
             trace!("Generator");
-            span_err(sess, span.clone(), "Generators are not supported");
+            span_err(ctx.sess, span.clone(), "Generators are not supported");
             return Err(());
         }
 
         TyKind::Error(_) => {
             trace!("Error");
             span_err(
-                sess,
+                ctx.sess,
                 span.clone(),
                 "Error type found: the code doesn't typecheck",
             );
@@ -623,14 +618,13 @@ fn get_fun_from_operand<'tcx>(
 }
 
 // Visits all statements and terminators of the body blocks.
-// TODO: Check what can be visited in the body besides the blocks.
 fn visit_block<'tcx, V: mir::visit::Visitor<'tcx>>(
     block: &'tcx mir::BasicBlockData<'tcx>,
     mut visitor: V,
 ) {
     use mir::visit::MirVisitable;
 
-    // The location is not used below, so we pass an arbitrary one there.
+    // The location is not used in the visitor, so we pass an arbitrary one there.
     for statement in block.statements.iter() {
         statement.apply(mir::Location::START, &mut visitor);
     }
@@ -673,76 +667,75 @@ fn visit_constant_dependencies<'tcx, F: FnMut(DefId)>(
     });
 }
 
-/// Rk.: contrary to the "local" case, [register_non_local_function] inserts
-/// itself the def id in the declarations list. The reason is that we need
-/// to check if the function has primitive support first.
-fn register_non_local_function(
-    _crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    _sess: &Session,
-    tcx: TyCtxt,
-    def_id: DefId,
-    name: FunName,
+fn register_dependency_expression(
+    ctx: &RegisterContext,
+    decls: &mut DeclarationsRegister,
+    id: DefId,
+    kind: DeclKind,
+    name: &Name,
 ) -> Result<()> {
-    // First, check if the function has primitive support: if it is the case,
-    // there is nothing to do
-    if assumed::function_to_info(&name).is_some() {
-        // Primitive
-        return Ok(());
+    match ctx.rustc.hir().get_if_local(id) {
+        None => {
+            trace!("external expression");
+
+            // Register the external expression as an opaque one.
+            decls.register_opaque_declaration(ctx.rustc, id, kind, &name);
+            Ok(())
+        }
+        Some(node) => {
+            trace!("local expression");
+            match node {
+                rustc_hir::Node::Item(item) => {
+                    trace!("Item");
+                    register_hir_item(ctx, decls, false, item)
+                }
+                rustc_hir::Node::ImplItem(impl_item) => {
+                    trace!("Impl item");
+                    register_hir_impl_item(ctx, decls, impl_item)
+                }
+                _ => {
+                    unreachable!();
+                }
+            }
+        }
     }
-
-    // Check if registered
-    if rdecls.decls.contains(&def_id) {
-        return Ok(());
-    }
-    rdecls.decls.insert(def_id);
-
-    // Check the generics - TODO: we check this here and in translate_functions_to_im
-    generics::check_function_generics(tcx, def_id);
-
-    // Register the function as having no dependencies
-    let decl = RegisteredFunDeclaration::new(def_id);
-
-    rdecls.funs.insert(def_id, decl);
-    rdecls.opaque_funs.insert(def_id);
-
-    return Ok(());
 }
 
-/// Register the identifiers found in a function body
-fn register_local_function_body(
-    crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
-    tcx: TyCtxt,
+/// Register the identifiers found in a function or global body.
+fn register_body(
+    ctx: &RegisterContext,
+    decls: &mut DeclarationsRegister,
     def_id: LocalDefId,
-    fn_decl: &mut RegisteredFunDeclaration,
+    deps: &mut DeclDependencies,
 ) -> Result<()> {
     // Retrieve the MIR code
-    let body = crate::get_mir::get_mir_for_def_id(tcx, def_id);
+    let body = crate::get_mir::get_mir_for_def_id(ctx.rustc, def_id);
 
+    // Visit the constants first (without particular reason).
     for b in body.basic_blocks().iter() {
-        visit_constant_dependencies(b, |c_id| {
-            if fn_decl.deps_consts.insert_if_absent(c_id) {
-                let name = constant_def_id_to_name(tcx, c_id);
-                trace!("added fn {:?} dependency: {}", def_id, name);
-            }
-        });
+        propagate_error(
+            |f| visit_constant_dependencies(b, f),
+            |id| {
+                let name = global_def_id_to_name(ctx.rustc, id);
+
+                if is_primitive_decl(DeclKind::Global, id, &name) {
+                    return Ok(());
+                }
+                if !deps.insert_if_absent(id) {
+                    return Ok(());
+                }
+
+                trace!("added constant dependency {:?} ~> {}", def_id, name);
+                register_dependency_expression(ctx, decls, id, DeclKind::Global, &name)
+            },
+        )?;
     }
 
     // Start by registering the types found in the local variable declarations.
     // Note that those local variables include the parameters as well as the
     // return variable, and is thus enough to register the function signature.
     for v in body.local_decls.iter() {
-        register_mir_ty(
-            crate_info,
-            rdecls,
-            sess,
-            tcx,
-            &v.source_info.span,
-            &mut fn_decl.deps_tys,
-            &v.ty,
-        )?;
+        register_mir_ty(ctx, decls, &v.source_info.span, deps, &v.ty)?;
     }
 
     // Explore the body itself.
@@ -774,7 +767,7 @@ fn register_local_function_body(
                 mir::StatementKind::CopyNonOverlapping(_) => {
                     trace!("Copy non overlapping");
                     span_err(
-                        sess,
+                        ctx.sess,
                         statement.source_info.span.clone(),
                         "Copy non overlapping not supported",
                     );
@@ -841,7 +834,7 @@ fn register_local_function_body(
                 let (fid, substs) = get_fun_from_operand(func).expect("Expected a function call");
                 trace!("terminator:Call:fid {:?}", fid);
 
-                let name = function_def_id_to_name(tcx, fid);
+                let name = function_def_id_to_name(ctx.rustc, fid);
                 trace!("called function: name: {:?}", name);
 
                 // We may need to filter the types and arguments, if the type
@@ -869,20 +862,11 @@ fn register_local_function_body(
                 // Add this function to the list of dependencies, only if
                 // it is non-primitive
                 if !is_prim {
-                    fn_decl.deps_funs.insert(fid);
+                    deps.insert(fid);
                 }
 
                 // Register the types given as parameters.
-                register_mir_substs(
-                    crate_info,
-                    rdecls,
-                    sess,
-                    tcx,
-                    &fn_span,
-                    &mut fn_decl.deps_tys,
-                    used_types,
-                    &substs,
-                )?;
+                register_mir_substs(ctx, decls, &fn_span, deps, used_types, &substs)?;
 
                 // Filter and register the argument types.
                 // There is something very annoying, which is that MIR is quite
@@ -914,16 +898,8 @@ fn register_local_function_body(
                     for a in args.into_iter() {
                         trace!("terminator: Call: arg: {:?}", a);
 
-                        let ty = a.ty(&body.local_decls, tcx);
-                        register_mir_ty(
-                            crate_info,
-                            rdecls,
-                            sess,
-                            tcx,
-                            &fn_span,
-                            &mut fn_decl.deps_tys,
-                            &ty,
-                        )?;
+                        let ty = a.ty(&body.local_decls, ctx.rustc);
+                        register_mir_ty(ctx, decls, &fn_span, deps, &ty)?;
                     }
                 }
 
@@ -931,41 +907,7 @@ fn register_local_function_body(
                 // signature: all the types it contains are already covered
                 // by the type arguments and the parameters.
 
-                // Lookup the function definition, if it is local (i.e.: is
-                // defined in the current crate).
-                let hir_map = tcx.hir();
-                let f_node = hir_map.get_if_local(fid);
-                match f_node {
-                    Some(f_node) => {
-                        trace!("Function is local");
-                        match f_node {
-                            rustc_hir::Node::Item(f_item) => {
-                                trace!("Item");
-                                assert!(is_fn_decl(f_item));
-                                register_hir_item(crate_info, rdecls, sess, tcx, false, f_item)?;
-                            }
-                            rustc_hir::Node::ImplItem(impl_item) => {
-                                trace!("Impl item");
-                                // [register_hir_impl_item doesn't check if the item
-                                // has already been registered, so we need to
-                                // check it before calling it.
-                                register_hir_impl_item(crate_info, rdecls, sess, tcx, impl_item)?;
-                            }
-                            _ => {
-                                unreachable!();
-                            }
-                        }
-                    }
-                    None => {
-                        trace!("Function external");
-                        // Register
-                        // Rk.: [register_non_local_function] checks if the def
-                        // id has already been registered, and inserts it in the
-                        // decls set if necessary (not the same behaviour as
-                        // the "local" case).
-                        register_non_local_function(crate_info, rdecls, sess, tcx, fid, name)?;
-                    }
-                }
+                register_dependency_expression(ctx, decls, fid, DeclKind::Function, &name)?;
             }
             mir::terminator::TerminatorKind::Yield {
                 value: _,
@@ -975,7 +917,7 @@ fn register_local_function_body(
             } => {
                 trace!("terminator: Yield");
                 span_err(
-                    sess,
+                    ctx.sess,
                     terminator.source_info.span.clone(),
                     "Yield is not supported",
                 );
@@ -983,7 +925,7 @@ fn register_local_function_body(
             mir::terminator::TerminatorKind::GeneratorDrop => {
                 trace!("terminator: GeneratorDrop");
                 span_err(
-                    sess,
+                    ctx.sess,
                     terminator.source_info.span.clone(),
                     "Generators are not supported",
                 );
@@ -998,7 +940,7 @@ fn register_local_function_body(
             } => {
                 trace!("terminator: InlineASM");
                 span_err(
-                    sess,
+                    ctx.sess,
                     terminator.source_info.span.clone(),
                     "Inline ASM is not supported",
                 );
@@ -1009,396 +951,18 @@ fn register_local_function_body(
     Ok(())
 }
 
-/// Register a function.
-/// The caller must have checked if the def_id has been registered before, and
-/// must call this function only if it was not the case, and after having added
-/// the def_id to the list of registered ids.
-fn register_local_function(
-    crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
-    tcx: TyCtxt,
-    def_id: LocalDefId,
+/// Register an new expression (either a fonction or a global).
+fn register_local_expression(
+    ctx: &RegisterContext,
+    decls: &mut DeclarationsRegister,
+    local_id: LocalDefId,
+    kind: DeclKind,
 ) -> Result<()> {
-    trace!("{:?}", def_id);
-
-    let ldef_id = def_id;
-    let def_id = def_id.to_def_id();
-
-    // Check the generics - TODO: we check this here and in translate_functions_to_im
-    generics::check_function_generics(tcx, def_id);
-
-    // Initialize the function declaration that we will register in the
-    // declarations map, and in particular its list of dependencies that
-    // we will progressively fill during exploration.
-    let mut fn_decl = RegisteredFunDeclaration::new(def_id);
-
-    // We explore the function definition only if it is not in a module flagged
-    // as opaque
-    let name = function_def_id_to_name(tcx, def_id);
-    if name.is_in_modules(&crate_info.crate_name, &crate_info.opaque) {
-        // The function is opaque
-        // Store the function declaration in the declaration map
-        rdecls.funs.insert(def_id, fn_decl);
-        rdecls.opaque_funs.insert(def_id);
-        return Ok(());
-    }
-
-    // The function is not opaque
-    // Explore the body
-    register_local_function_body(crate_info, rdecls, sess, tcx, ldef_id, &mut fn_decl)?;
-
-    // Store the function declaration in the declarations map
-    rdecls.funs.insert(def_id, fn_decl);
-
-    return Ok(());
-}
-
-/// Register the identifiers found in a constant body
-/// TODO: Should be refactored with [register_local_function_body].
-fn register_local_constant_body(
-    crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
-    tcx: TyCtxt,
-    def_id: LocalDefId,
-    const_decl: &mut RegisteredConstDeclaration,
-) -> Result<()> {
-    // Retrieve the MIR code
-    let body = crate::get_mir::get_mir_for_def_id(tcx, def_id);
-
-    for b in body.basic_blocks().iter() {
-        visit_constant_dependencies(b, |c_id| {
-            if const_decl.deps_consts.insert_if_absent(c_id) {
-                let name = constant_def_id_to_name(tcx, c_id);
-                trace!("added const {:?} dependency: {}", def_id, name);
-            }
-        });
-    }
-
-    // Start by registering the types found in the local variable declarations.
-    // Note that those local variables include the parameters as well as the
-    // return variable, and is thus enough to register the constant signature.
-    for v in body.local_decls.iter() {
-        register_mir_ty(
-            crate_info,
-            rdecls,
-            sess,
-            tcx,
-            &v.source_info.span,
-            &mut const_decl.deps_tys,
-            &v.ty,
-        )?;
-    }
-
-    // Explore the body itself.
-    // We need it to compute the dependencies between the functions and global
-    // declarations, and also because some functions might be parameterized
-    // with types which don't appear in the local variables (unlikely, but
-    // can happen if some type parameters are not used).
-    // We initially considered using visitors, but the MIR visitors return unit,
-    // while we need to use a result type...
-    // A basic block is a list of statements, followed by a terminator.
-    for block in body.basic_blocks().iter() {
-        // Statements
-        for statement in block.statements.iter() {
-            match &statement.kind {
-                mir::StatementKind::Assign(_)
-                | mir::StatementKind::FakeRead(_)
-                | mir::StatementKind::SetDiscriminant {
-                    place: _,
-                    variant_index: _,
-                }
-                | mir::StatementKind::StorageLive(_)
-                | mir::StatementKind::StorageDead(_)
-                | mir::StatementKind::AscribeUserType(_, _)
-                | mir::StatementKind::Coverage(_)
-                | mir::StatementKind::Nop => {
-                    // Nothing to do
-                }
-
-                mir::StatementKind::CopyNonOverlapping(_) => {
-                    trace!("Copy non overlapping");
-                    span_err(
-                        sess,
-                        statement.source_info.span.clone(),
-                        "Copy non overlapping not supported",
-                    );
-                }
-                mir::StatementKind::Retag(_, _) => {
-                    // retag statements are only used by MIRI, so we have nothing
-                    // to do
-                }
-            }
-        }
-
-        // Terminator
-        let terminator = block.terminator();
-        match &terminator.kind {
-            mir::terminator::TerminatorKind::Goto { target: _ }
-            | mir::terminator::TerminatorKind::SwitchInt {
-                discr: _,
-                switch_ty: _,
-                targets: _,
-            }
-            | mir::terminator::TerminatorKind::Resume
-            | mir::terminator::TerminatorKind::Abort
-            | mir::terminator::TerminatorKind::Return
-            | mir::terminator::TerminatorKind::Unreachable
-            | mir::terminator::TerminatorKind::Drop {
-                place: _,
-                target: _,
-                unwind: _,
-            }
-            | mir::terminator::TerminatorKind::Assert {
-                cond: _,
-                expected: _,
-                msg: _,
-                target: _,
-                cleanup: _,
-            }
-            | mir::terminator::TerminatorKind::FalseEdge {
-                real_target: _,
-                imaginary_target: _,
-            }
-            | mir::terminator::TerminatorKind::FalseUnwind {
-                real_target: _,
-                unwind: _,
-            }
-            | mir::terminator::TerminatorKind::DropAndReplace {
-                place: _,
-                value: _,
-                target: _,
-                unwind: _,
-            } => {
-                // Nothing to do
-            }
-            mir::terminator::TerminatorKind::Call {
-                func,
-                args,
-                destination: _,
-                cleanup: _,
-                from_hir_call: _,
-                fn_span,
-            } => {
-                trace!("terminator: Call\n{:?}", &terminator);
-                trace!("terminator:Call:func: {:?}", func);
-
-                let (fid, substs) = get_fun_from_operand(func).expect("Expected a function call");
-                trace!("terminator:Call:fid {:?}", fid);
-
-                let name = function_def_id_to_name(tcx, fid);
-                trace!("called function: name: {:?}", name);
-
-                // We may need to filter the types and arguments, if the type
-                // is considered primitive
-                let (used_types, used_args, is_prim) = if fid.is_local() {
-                    // We probably do not need to check if the function is local...
-                    (Option::None, Option::None, false)
-                } else {
-                    match assumed::function_to_info(&name) {
-                        Option::Some(used) => {
-                            // The function is primitive
-                            (
-                                Option::Some(used.used_type_params),
-                                Option::Some(used.used_args),
-                                true,
-                            )
-                        }
-                        Option::None => {
-                            // The function is non-primitive (i.e., external)
-                            (Option::None, Option::None, false)
-                        }
-                    }
-                };
-
-                // Add this function to the list of dependencies, only if
-                // it is non-primitive
-                if !is_prim {
-                    const_decl.deps_funs.insert(fid);
-                }
-
-                // Register the types given as parameters.
-                register_mir_substs(
-                    crate_info,
-                    rdecls,
-                    sess,
-                    tcx,
-                    &fn_span,
-                    &mut const_decl.deps_tys,
-                    used_types,
-                    &substs,
-                )?;
-
-                // Filter and register the argument types.
-                // There is something very annoying, which is that MIR is quite
-                // low level.
-                // Very specifically, when introducing `box_free`, rustc introduces
-                // something of the following form:
-                // ```
-                // _9 = alloc::alloc::box_free::<T, std::alloc::Global>(
-                //   move (_4.0: std::ptr::Unique<T>),
-                //   move (_4.1: std::alloc::Global)) -> bb3;
-                // ```
-                // We don't support unique pointers, so we have to ignore the
-                // arguments in this case (and the `box_free` case has a
-                // special treatment when translating function bodies).
-                // Note that the type parameters have already been registered.
-                if !name.equals_ref_name(&assumed::BOX_FREE_NAME) {
-                    let args: Vec<&mir::Operand<'_>> = match used_args {
-                        Option::None => args.iter().collect(),
-                        Option::Some(used_args) => {
-                            // Filter
-                            trace!("args: {:?}, used_args: {:?}", args, used_args);
-                            assert!(args.len() == used_args.len());
-                            args.iter()
-                                .zip(used_args.into_iter())
-                                .filter_map(|(param, used)| if used { Some(param) } else { None })
-                                .collect()
-                        }
-                    };
-                    for a in args.into_iter() {
-                        trace!("terminator: Call: arg: {:?}", a);
-
-                        let ty = a.ty(&body.local_decls, tcx);
-                        register_mir_ty(
-                            crate_info,
-                            rdecls,
-                            sess,
-                            tcx,
-                            &fn_span,
-                            &mut const_decl.deps_tys,
-                            &ty,
-                        )?;
-                    }
-                }
-
-                // Note that we don't need to register the "bare" function
-                // signature: all the types it contains are already covered
-                // by the type arguments and the parameters.
-
-                // Lookup the function definition, if it is local (i.e.: is
-                // defined in the current crate).
-                let hir_map = tcx.hir();
-                let f_node = hir_map.get_if_local(fid);
-                match f_node {
-                    Some(f_node) => {
-                        trace!("Function is local");
-                        match f_node {
-                            rustc_hir::Node::Item(f_item) => {
-                                trace!("Item");
-                                assert!(is_fn_decl(f_item));
-                                register_hir_item(crate_info, rdecls, sess, tcx, false, f_item)?;
-                            }
-                            rustc_hir::Node::ImplItem(impl_item) => {
-                                trace!("Impl item");
-                                // [register_hir_impl_item doesn't check if the item
-                                // has already been registered, so we need to
-                                // check it before calling it.
-                                register_hir_impl_item(crate_info, rdecls, sess, tcx, impl_item)?;
-                            }
-                            _ => {
-                                unreachable!();
-                            }
-                        }
-                    }
-                    None => {
-                        trace!("Function external");
-                        // Register
-                        // Rk.: [register_non_local_function] checks if the def
-                        // id has already been registered, and inserts it in the
-                        // decls set if necessary (not the same behaviour as
-                        // the "local" case).
-                        register_non_local_function(crate_info, rdecls, sess, tcx, fid, name)?;
-                    }
-                }
-            }
-            mir::terminator::TerminatorKind::Yield {
-                value: _,
-                resume: _,
-                resume_arg: _,
-                drop: _,
-            } => {
-                trace!("terminator: Yield");
-                span_err(
-                    sess,
-                    terminator.source_info.span.clone(),
-                    "Yield is not supported",
-                );
-            }
-            mir::terminator::TerminatorKind::GeneratorDrop => {
-                trace!("terminator: GeneratorDrop");
-                span_err(
-                    sess,
-                    terminator.source_info.span.clone(),
-                    "Generators are not supported",
-                );
-            }
-            mir::terminator::TerminatorKind::InlineAsm {
-                template: _,
-                operands: _,
-                options: _,
-                line_spans: _,
-                destination: _,
-                cleanup: _,
-            } => {
-                trace!("terminator: InlineASM");
-                span_err(
-                    sess,
-                    terminator.source_info.span.clone(),
-                    "Inline ASM is not supported",
-                );
-            }
-        }
-    }
-
-    Ok(())
-}
-
-/// Register a constant, in the same way we register functions.
-/// The caller must have checked if the def_id has been registered before, and
-/// must call this function only if it was not the case, and after having added
-/// the def_id to the list of registered ids.
-fn register_hir_const(
-    crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
-    tcx: TyCtxt,
-    def_id: LocalDefId,
-) -> Result<()> {
-    trace!("{:?}", def_id);
-
-    let ldef_id = def_id;
-    let def_id = def_id.to_def_id();
-
-    // Check the generics
-    // TODO: Refuse anything depending on a generic parameter.
-    generics::check_constant_generics(tcx, def_id);
-
-    // Initialize the constant declaration that we will register in the
-    // declarations map, and in particular its list of dependencies that
-    // we will progressively fill during exploration.
-    let mut const_decl = RegisteredConstDeclaration::new(def_id);
-
-    // We explore the constant definition only if it is not in a module flagged
-    // as opaque
-    let name = constant_def_id_to_name(tcx, def_id);
-    if name.is_in_modules(&crate_info.crate_name, &crate_info.opaque) {
-        // The constant is opaque
-        // Store the constant declaration in the declaration map
-        rdecls.consts.insert(def_id, const_decl);
-        rdecls.opaque_consts.insert(def_id);
-        return Ok(());
-    }
-
-    // The constant is not opaque
-    // Explore the body
-    register_local_constant_body(crate_info, rdecls, sess, tcx, ldef_id, &mut const_decl)?;
-
-    // Store the constant declaration in the declarations map
-    rdecls.consts.insert(def_id, const_decl);
-
-    return Ok(());
+    decls.register_visible_declaration(ctx, local_id, kind, |decls| {
+        let mut deps = DeclDependencies::new();
+        register_body(ctx, decls, local_id, &mut deps)?;
+        Ok(deps)
+    })
 }
 
 /// General function to register a MIR item. It is called on all the top-level
@@ -1407,10 +971,8 @@ fn register_hir_const(
 /// Note that this function checks if the item has been registered, and adds
 /// its def_id to the list of registered items otherwise.
 fn register_hir_item(
-    crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
-    tcx: TyCtxt,
+    ctx: &RegisterContext,
+    decls: &mut DeclarationsRegister,
     top_item: bool,
     item: &Item,
 ) -> Result<()> {
@@ -1421,7 +983,7 @@ fn register_hir_item(
     // prevent cycles. If not registered yet, do not immediately add it:
     // it may be an item we won't translate (`use module`, `extern crate`...).
     let def_id = item.def_id.to_def_id();
-    if rdecls.decls.contains(&def_id) {
+    if decls.knows(&def_id) {
         return Ok(());
     }
 
@@ -1433,13 +995,13 @@ fn register_hir_item(
     // item (not an item transitively reachable from an item which is not
     // opaque) and inside an opaque module (or sub-module), we ignore it.
     if top_item {
-        match hir_item_to_name(tcx, item) {
+        match hir_item_to_name(ctx.rustc, item) {
             Option::None => {
                 // This kind of item is to be ignored
                 return Ok(());
             }
             Option::Some(item_name) => {
-                if item_name.is_in_modules(&crate_info.crate_name, &crate_info.opaque) {
+                if ctx.crate_info.has_opaque_decl(&item_name) {
                     return Ok(());
                 }
             }
@@ -1451,21 +1013,18 @@ fn register_hir_item(
     match &item.kind {
         ItemKind::TyAlias(_, _) => {
             // We ignore the type aliases - it seems they are inlined
-            return Ok(());
-        }
-        ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
-            rdecls.decls.insert(def_id);
-            register_hir_type(crate_info, rdecls, sess, tcx, item, def_id)
+            Ok(())
         }
         ItemKind::OpaqueTy(_) => unimplemented!(),
         ItemKind::Union(_, _) => unimplemented!(),
-        ItemKind::Fn(_, _, _) => {
-            rdecls.decls.insert(def_id);
-            return register_local_function(crate_info, rdecls, sess, tcx, item.def_id);
+        ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
+            register_hir_type(ctx, decls, item, def_id)
         }
-        ItemKind::Const(_, _) => {
-            rdecls.decls.insert(def_id);
-            return register_hir_const(crate_info, rdecls, sess, tcx, item.def_id);
+        ItemKind::Fn(_, _, _) => {
+            register_local_expression(ctx, decls, item.def_id, DeclKind::Function)
+        }
+        ItemKind::Const(_, _) | ItemKind::Static(_, _, _) => {
+            register_local_expression(ctx, decls, item.def_id, DeclKind::Global)
         }
         ItemKind::Impl(impl_block) => {
             trace!("impl");
@@ -1473,25 +1032,25 @@ fn register_hir_item(
             translate_functions_to_im::check_impl_item(impl_block);
 
             // Explore the items
-            let hir_map = tcx.hir();
+            let hir_map = ctx.rustc.hir();
             for impl_item_ref in impl_block.items {
                 // impl_item_ref only gives the reference of the impl item:
                 // we need to look it up
                 let impl_item = hir_map.impl_item(impl_item_ref.id);
 
-                register_hir_impl_item(crate_info, rdecls, sess, tcx, impl_item)?;
+                register_hir_impl_item(ctx, decls, impl_item)?;
             }
-            return Ok(());
+            Ok(())
         }
         ItemKind::Use(_, _) => {
             // Ignore
             trace!("use");
-            return Ok(());
+            Ok(())
         }
         ItemKind::ExternCrate(_) => {
             // Ignore
             trace!("extern crate");
-            return Ok(());
+            Ok(())
         }
         ItemKind::Mod(module) => {
             trace!("module");
@@ -1501,21 +1060,21 @@ fn register_hir_item(
             // to check that all the opaque modules given as arguments actually
             // exist
             trace!("{:?}", def_id);
-            let module_name = module_def_id_to_name(tcx, def_id);
-            let opaque = module_name.is_in_modules(&crate_info.crate_name, &crate_info.opaque);
+            let module_name = module_def_id_to_name(ctx.rustc, def_id);
+            let opaque = ctx.crate_info.has_opaque_decl(&module_name);
             if opaque {
                 // Ignore
                 trace!("Ignoring module [{}] because marked as opaque", module_name);
-                return Ok(());
+                Ok(())
             } else {
                 trace!("Diving into module [{}]", module_name);
-                let hir_map = tcx.hir();
+                let hir_map = ctx.rustc.hir();
                 for item_id in module.item_ids {
                     // Lookup and register the item
                     let item = hir_map.item(*item_id);
-                    register_hir_item(crate_info, rdecls, sess, tcx, false, item)?;
+                    register_hir_item(ctx, decls, false, item)?;
                 }
-                return Ok(());
+                Ok(())
             }
         }
         _ => {
@@ -1524,20 +1083,15 @@ fn register_hir_item(
     }
 }
 
-/// Register an impl item (an item defined in an `impl` block)
-///
-/// Note that this function checks if the item has been registered, and adds
-/// its def_id to the list of registered items otherwise.
+/// Register an impl item (an item defined in an `impl` block).
 fn register_hir_impl_item(
-    crate_info: &CrateInfo,
-    rdecls: &mut RegisteredDeclarations,
-    sess: &Session,
-    tcx: TyCtxt,
+    ctx: &RegisterContext,
+    decls: &mut DeclarationsRegister,
     impl_item: &ImplItem,
 ) -> Result<()> {
     // Check if the item has already been registered
     let def_id = impl_item.def_id.to_def_id();
-    if rdecls.decls.contains(&def_id) {
+    if decls.knows(&def_id) {
         return Ok(());
     }
 
@@ -1549,10 +1103,8 @@ fn register_hir_impl_item(
         ImplItemKind::Const(_, _) => unimplemented!(),
         ImplItemKind::TyAlias(_) => unimplemented!(),
         ImplItemKind::Fn(_, _) => {
-            let local_def_id = impl_item.def_id;
-            let def_id = local_def_id.to_def_id();
-            rdecls.decls.insert(def_id);
-            register_local_function(crate_info, rdecls, sess, tcx, local_def_id)
+            let local_id = impl_item.def_id;
+            register_local_expression(ctx, decls, local_id, DeclKind::Function)
         }
     }
 }
@@ -1563,7 +1115,12 @@ pub fn register_crate(
     sess: &Session,
     tcx: TyCtxt,
 ) -> Result<RegisteredDeclarations> {
-    let mut registered_decls = RegisteredDeclarations::new();
+    let ctx = RegisterContext {
+        rustc: tcx,
+        crate_info,
+        sess,
+    };
+    let mut decls = DeclarationsRegister::new();
 
     // TODO: in order to have a good ordering when extracting the information
     // from a crate with several modules, it would be better to not register
@@ -1577,7 +1134,7 @@ pub fn register_crate(
     //   of the form "mod MODULE_NAME")
     // - the other files in the crate are Module items in the HIR graph
     for item in tcx.hir().items() {
-        register_hir_item(crate_info, &mut registered_decls, sess, tcx, true, item)?;
+        register_hir_item(&ctx, &mut decls, true, item)?;
     }
-    return Ok(registered_decls);
+    Ok(decls.get_declarations())
 }

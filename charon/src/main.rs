@@ -1,5 +1,6 @@
 #![feature(rustc_private, register_tool)]
 #![feature(box_syntax, box_patterns)]
+#![feature(is_some_with)]
 #![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
@@ -807,7 +808,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // so we just ignore them).
     let crate_info = register::CrateInfo {
         crate_name: crate_name.clone(),
-        opaque: HashSet::from_iter(internal.opaque_modules.clone().into_iter()),
+        opaque_mods: HashSet::from_iter(internal.opaque_modules.clone().into_iter()),
     };
     let registered_decls = register::register_crate(&crate_info, sess, tcx)?;
 
@@ -828,7 +829,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // # Step 5: translate the functions to IM (our Internal representation of MIR).
     // Note that from now onwards, both type and function definitions have been
     // translated to our internal ASTs: we don't interact with rustc anymore.
-    let (fun_defs, const_defs) = translate_functions_to_im::translate_functions(
+    let (fun_defs, global_defs) = translate_functions_to_im::translate_functions(
         tcx,
         &ordered_decls,
         &types_constraints,
@@ -837,11 +838,11 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
 
     // # Step 6: go from IM to LLBC (Low-Level Borrow Calculus) by reconstructing
     // the control flow.
-    let (llbc_funs, llbc_consts) = im_to_llbc::translate_functions(
+    let (llbc_funs, llbc_globals) = im_to_llbc::translate_functions(
         internal.no_code_duplication,
         &type_defs,
         &fun_defs,
-        &const_defs,
+        &global_defs,
     );
 
     //
@@ -860,7 +861,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     for def in &llbc_funs {
         trace!(
             "# After binop simplification:\n{}\n",
-            def.fmt_with_defs(&type_defs, &llbc_funs, &llbc_consts)
+            def.fmt_with_defs(&type_defs, &llbc_funs, &llbc_globals)
         );
     }
 
@@ -870,7 +871,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     for def in &llbc_funs {
         trace!(
             "# After asserts reconstruction:\n{}\n",
-            def.fmt_with_defs(&type_defs, &llbc_funs, &llbc_consts)
+            def.fmt_with_defs(&type_defs, &llbc_funs, &llbc_globals)
         );
     }
 
@@ -900,7 +901,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
         &ordered_decls,
         &type_defs,
         &llbc_funs,
-        &llbc_consts,
+        &llbc_globals,
         &internal.dest_dir,
         &internal.source_file,
     )?;
