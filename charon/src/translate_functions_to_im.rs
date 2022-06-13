@@ -2177,6 +2177,7 @@ fn translate_body(
     tcx: TyCtxt,
     mut bt_ctx: BodyTransContext,
     local_id: LocalDefId,
+    arg_count: usize,
 ) -> Result<ast::ExprBody> {
     let body = crate::get_mir::get_mir_for_def_id(tcx, local_id);
 
@@ -2199,7 +2200,7 @@ fn translate_body(
 
     // Create the body
     Ok(ast::ExprBody {
-        arg_count: 0,
+        arg_count,
         locals: bt_ctx.vars,
         body: blocks,
     })
@@ -2242,7 +2243,12 @@ fn translate_function(
     let body = if is_opaque {
         Option::None
     } else {
-        Option::Some(translate_body(tcx, bt_ctx, rid.expect_local())?)
+        Option::Some(translate_body(
+            tcx,
+            bt_ctx,
+            rid.expect_local(),
+            signature.inputs.len(),
+        )?)
     };
 
     // Return the new function
@@ -2298,7 +2304,7 @@ fn translate_global(
         Option::None
     } else {
         let bt_ctx = BodyTransContext::new(rid, &ft_ctx);
-        Option::Some(translate_body(tcx, bt_ctx, rid.expect_local())?)
+        Option::Some(translate_body(tcx, bt_ctx, rid.expect_local(), 0)?)
     };
 
     // Return the new global
