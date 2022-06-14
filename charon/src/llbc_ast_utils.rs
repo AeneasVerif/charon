@@ -11,6 +11,12 @@ use crate::{common::*, id_vector};
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 
+impl Default for Statement {
+    fn default() -> Statement {
+        Statement::Nop
+    }
+}
+
 impl SwitchTargets {
     pub fn get_targets(&self) -> Vec<&Statement> {
         match self {

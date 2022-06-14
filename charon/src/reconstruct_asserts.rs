@@ -3,7 +3,11 @@
 //! introduce `if ... then { panic!(...) } else { ...}`.
 //! This pass introduces `assert` instead in order to make the code shorter.
 
-use crate::llbc_ast::{Assert, FunDecl, FunDecls, Statement, SwitchTargets};
+use crate::{
+    common::update_mut,
+    im_ast::{iter_function_bodies, iter_global_bodies},
+    llbc_ast::{Assert, FunDecls, GlobalDecls, Statement, SwitchTargets},
+};
 use std::iter::FromIterator;
 
 fn simplify_st(st: Statement) -> Statement {
@@ -54,18 +58,10 @@ fn simplify_st(st: Statement) -> Statement {
         }
     }
 }
-fn simplify_def(mut def: FunDecl) -> FunDecl {
-    trace!("About to update: {}", def.name);
-    def.body = match def.body {
-        Option::Some(mut body) => {
-            body.body = simplify_st(body.body);
-            Option::Some(body)
-        }
-        Option::None => Option::None,
-    };
-    def
-}
 
-pub fn simplify(defs: FunDecls) -> FunDecls {
-    FunDecls::from_iter(defs.into_iter().map(|def| simplify_def(def)))
+pub fn simplify(funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+        trace!("# About to update: {name}");
+        update_mut(&mut b.body, simplify_st);
+    }
 }

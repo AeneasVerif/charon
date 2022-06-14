@@ -838,7 +838,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
 
     // # Step 6: go from IM to LLBC (Low-Level Borrow Calculus) by reconstructing
     // the control flow.
-    let (llbc_funs, llbc_globals) = im_to_llbc::translate_functions(
+    let (mut llbc_funs, mut llbc_globals) = im_to_llbc::translate_functions(
         internal.no_code_duplication,
         &type_defs,
         &fun_defs,
@@ -856,7 +856,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
 
     // # Step 7: simplify the calls to unops and binops
     // Note that we assume that the sequences have been flattened.
-    let llbc_funs = simplify_ops::simplify(llbc_funs);
+    simplify_ops::simplify(&mut llbc_funs, &mut llbc_globals);
 
     for def in &llbc_funs {
         trace!(
@@ -866,7 +866,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     }
 
     // # Step 8: reconstruct the asserts
-    let llbc_funs = reconstruct_asserts::simplify(llbc_funs);
+    reconstruct_asserts::simplify(&mut llbc_funs, &mut llbc_globals);
 
     for def in &llbc_funs {
         trace!(
@@ -881,11 +881,13 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // of Aeneas, it means the return variable contains ⊥ upon returning.
     // For this reason, when the function has return type unit, we insert
     // an extra assignment just before returning.
-    let llbc_funs = insert_assign_return_unit::transform(llbc_funs);
+    // This also applies to globals (for checking or executing code before
+    // the main or at compile-time).
+    insert_assign_return_unit::transform(&mut llbc_funs, &mut llbc_globals);
 
     // # Step 10: remove the locals which are never used. After doing so, we
     // check that there are no remaining locals with type `Never`.
-    let llbc_funs = remove_unused_locals::transform(llbc_funs);
+    remove_unused_locals::transform(&mut llbc_funs, &mut llbc_globals);
 
     // # Step 11: compute which functions are potentially divergent. A function
     // is potentially divergent if it is recursive, contains a loop or transitively
@@ -893,6 +895,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // Note that in the future, we may complement this basic analysis with a
     // finer analysis to detect recursive functions which are actually total
     // by construction.
+    // Because we don't have loops, constants are not yet updated.
     let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
 
     // # Step 11: generate the files.

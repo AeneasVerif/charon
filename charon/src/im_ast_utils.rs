@@ -6,11 +6,34 @@ use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::id_vector;
 use crate::im_ast::*;
+use crate::names::Name;
 use crate::types::*;
 use crate::values::*;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
+use std::fmt::Debug;
 use std::iter::FromIterator;
+
+/// Iterate on the declarations non-empty bodies with their corresponding name & type.
+pub fn iter_function_bodies<T: Debug + Default + Clone + Serialize>(
+    funs: &mut FunDeclId::Vector<GFunDecl<T>>,
+) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
+    funs.iter_mut().flat_map(|f| match f.body.as_mut() {
+        None => None, // Option::map was complaining about borrowing f
+        Some(b) => Some((&f.name, b)),
+    })
+}
+
+/// Iterate on the declarations non-empty bodies with their corresponding name & type.
+/// Same as [iter_function_bodies] (but the flat_map lambda cannot be generic).
+pub fn iter_global_bodies<T: Debug + Default + Clone + Serialize>(
+    globals: &mut GlobalDeclId::Vector<GGlobalDecl<T>>,
+) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
+    globals.iter_mut().flat_map(|g| match g.body.as_mut() {
+        None => None, // Option::map was complaining about borrowing g
+        Some(b) => Some((&g.name, b)),
+    })
+}
 
 impl std::string::ToString for Var {
     fn to_string(&self) -> String {
@@ -412,7 +435,7 @@ where
     blocks.join("\n")
 }
 
-impl<T: std::fmt::Debug + Clone + Serialize> GExprBody<T> {
+impl<T: Debug + Default + Clone + Serialize> GExprBody<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function definition already has the information to print
@@ -571,7 +594,7 @@ impl FunSig {
     }
 }
 
-impl<T: std::fmt::Debug + Clone + Serialize> GFunDecl<T> {
+impl<T: Debug + Default + Clone + Serialize> GFunDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function definition already has the information to print
@@ -670,7 +693,7 @@ impl<T: std::fmt::Debug + Clone + Serialize> GFunDecl<T> {
     }
 }
 
-impl<CD: std::fmt::Debug + Clone + Serialize> GGlobalDecl<CD> {
+impl<CD: Debug + Default + Clone + Serialize> GGlobalDecl<CD> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the global definition already has the information to print

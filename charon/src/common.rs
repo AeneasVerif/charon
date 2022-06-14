@@ -30,6 +30,15 @@ where
     res
 }
 
+/// Update a mutable borrow from its old value.
+/// Does not work "out of the box" since we cannot move out of a mutable borrow :
+/// We ask for a temporary default value to be able to perform the update.
+pub fn update_mut<T: Default, F: FnOnce(T) -> T>(val: &mut T, f: F) {
+    let mut tmp = T::default();
+    std::mem::swap(val, &mut tmp);
+    *val = f(tmp);
+}
+
 /// We use both `ErrorEmitter` and the logger to report errors and warnings.
 /// Those two ways of reporting information don't target the same usage and
 /// the same users.

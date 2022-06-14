@@ -7,8 +7,10 @@
 //! have a precondition in our theorem prover, or will be monadic...). We thus want
 //! to remove those unnecessary checks.
 
+use crate::common::update_mut;
 use crate::expressions::*;
-use crate::llbc_ast::{Assert, FunDecl, FunDecls, Statement, SwitchTargets};
+use crate::im_ast::{iter_function_bodies, iter_global_bodies};
+use crate::llbc_ast::{Assert, FunDecls, GlobalDecls, Statement, SwitchTargets};
 use crate::types::*;
 use crate::values::*;
 use std::iter::FromIterator;
@@ -606,18 +608,9 @@ fn simplify_st(st: Statement) -> Statement {
     }
 }
 
-fn simplify_def(mut def: FunDecl) -> FunDecl {
-    trace!("# About to simplify: {}", def.name);
-    def.body = match def.body {
-        Option::Some(mut body) => {
-            body.body = simplify_st(body.body);
-            Option::Some(body)
-        }
-        Option::None => Option::None,
-    };
-    def
-}
-
-pub fn simplify(defs: FunDecls) -> FunDecls {
-    FunDecls::from_iter(defs.into_iter().map(|def| simplify_def(def)))
+pub fn simplify(funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+        trace!("# About to simplify: {name}");
+        update_mut(&mut b.body, simplify_st);
+    }
 }

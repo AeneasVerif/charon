@@ -1,10 +1,11 @@
+use crate::common::update_mut;
 /// Remove the locals which are never used in the function bodies.
 /// This is useful to remove the locals with type `Never`. We actually
 /// check that there are no such local variables remaining afterwards.
 use crate::expressions::*;
 use crate::id_vector::ToUsize;
-use crate::im_ast::Var;
-use crate::llbc_ast::{FunDecl, FunDecls, Statement, SwitchTargets};
+use crate::im_ast::{iter_function_bodies, iter_global_bodies, Var};
+use crate::llbc_ast::{FunDecls, GlobalDecls, Statement, SwitchTargets};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
@@ -175,48 +176,48 @@ fn transform_st(vids_map: &HashMap<VarId::Id, VarId::Id>, st: Statement) -> Stat
     }
 }
 
-fn transform_def(mut def: FunDecl) -> FunDecl {
-    trace!("About to update: {}", def.name);
-    def.body = match def.body {
-        Option::Some(mut body) => {
-            // Compute the set of used locals
-            let mut used_locals: HashSet<VarId::Id> = HashSet::new();
-            // We always register the return variable
-            used_locals.insert(VarId::Id::new(0));
-            // Explore the body
-            compute_used_locals_in_statement(&mut used_locals, &body.body);
+fn update_locals(
+    old_locals: VarId::Vector<Var>,
+    st: &Statement,
+) -> (VarId::Vector<Var>, HashMap<VarId::Id, VarId::Id>) {
+    // Compute the set of used locals
+    let mut used_locals: HashSet<VarId::Id> = HashSet::new();
+    // We always register the return variable
+    used_locals.insert(VarId::Id::new(0));
+    // Explore the body
+    compute_used_locals_in_statement(&mut used_locals, st);
 
-            // Filter: only keep the variables which are used, and update
-            // their indices so as not to have "holes"
-            let mut vids_map: HashMap<VarId::Id, VarId::Id> = HashMap::new();
-            let mut locals: VarId::Vector<Var> = VarId::Vector::new();
-            let mut var_id_counter = VarId::Generator::new();
-            for mut var in body.locals {
-                if used_locals.contains(&var.index) {
-                    let old_id = var.index;
-                    let new_id = var_id_counter.fresh_id();
-                    var.index = new_id;
-                    vids_map.insert(old_id, new_id);
-                    assert!(new_id.to_usize() == locals.len());
-                    locals.push_back(var);
-                }
-            }
-
-            // Check there are no remaining variables with type `Never`
-            for v in &locals {
-                assert!(!v.ty.contains_never());
-            }
-
-            // Update
-            body.locals = locals;
-            body.body = transform_st(&vids_map, body.body);
-            Option::Some(body)
+    // Filter: only keep the variables which are used, and update
+    // their indices so as not to have "holes"
+    let mut vids_map: HashMap<VarId::Id, VarId::Id> = HashMap::new();
+    let mut locals: VarId::Vector<Var> = VarId::Vector::new();
+    let mut var_id_counter = VarId::Generator::new();
+    for mut var in old_locals {
+        if used_locals.contains(&var.index) {
+            let old_id = var.index;
+            let new_id = var_id_counter.fresh_id();
+            var.index = new_id;
+            vids_map.insert(old_id, new_id);
+            assert!(new_id.to_usize() == locals.len());
+            locals.push_back(var);
         }
-        Option::None => Option::None,
-    };
-    def
+    }
+
+    // Check there are no remaining variables with type `Never`
+    for v in &locals {
+        assert!(!v.ty.contains_never());
+    }
+    (locals, vids_map)
 }
 
-pub fn transform(defs: FunDecls) -> FunDecls {
-    FunDecls::from_iter(defs.into_iter().map(|def| transform_def(def)))
+pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+        trace!("# About to update: {name}");
+        update_mut(b, |mut b| {
+            let (locals, vids_map) = update_locals(b.locals, &b.body);
+            b.locals = locals;
+            b.body = transform_st(&vids_map, b.body);
+            b
+        });
+    }
 }
