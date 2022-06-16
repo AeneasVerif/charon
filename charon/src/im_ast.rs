@@ -68,7 +68,7 @@ pub struct FunSig {
 
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
-///       the print is obfuscated and Aeneas needs to be adjusted.
+///       the print is obfuscated and Aeneas may need some refactoring.
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GExprBody<T: std::fmt::Debug + Default + Clone + Serialize> {
     pub arg_count: usize,

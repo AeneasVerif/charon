@@ -50,6 +50,7 @@ mod names_utils;
 mod reconstruct_asserts;
 mod regions_hierarchy;
 mod register;
+mod regularize_constant_ADTs;
 mod remove_unused_locals;
 mod reorder_decls;
 mod rust_to_local_ids;
@@ -854,7 +855,10 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // serializing the result.
     //
 
-    // # Step 7: simplify the calls to unops and binops
+    // # Step 7: replace constant ADTs with regular ADTs.
+    regularize_constant_ADTs::transform(&type_defs, &mut llbc_funs, &mut llbc_globals);
+
+    // # Step 8: simplify the calls to unops and binops
     // Note that we assume that the sequences have been flattened.
     simplify_ops::simplify(&mut llbc_funs, &mut llbc_globals);
 
@@ -865,7 +869,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
         );
     }
 
-    // # Step 8: reconstruct the asserts
+    // # Step 9: reconstruct the asserts
     reconstruct_asserts::simplify(&mut llbc_funs, &mut llbc_globals);
 
     for def in &llbc_funs {
@@ -875,7 +879,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
         );
     }
 
-    // # Step 9: add the missing assignments to the return value.
+    // # Step 10: add the missing assignments to the return value.
     // When the function return type is unit, the generated MIR doesn't
     // set the return value to `()`. This can be a concern: in the case
     // of Aeneas, it means the return variable contains ⊥ upon returning.
@@ -885,11 +889,11 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // the main or at compile-time).
     insert_assign_return_unit::transform(&mut llbc_funs, &mut llbc_globals);
 
-    // # Step 10: remove the locals which are never used. After doing so, we
+    // # Step 11: remove the locals which are never used. After doing so, we
     // check that there are no remaining locals with type `Never`.
     remove_unused_locals::transform(&mut llbc_funs, &mut llbc_globals);
 
-    // # Step 11: compute which functions are potentially divergent. A function
+    // # Step 12: compute which functions are potentially divergent. A function
     // is potentially divergent if it is recursive, contains a loop or transitively
     // calls a potentially divergent function.
     // Note that in the future, we may complement this basic analysis with a
@@ -898,7 +902,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // Because we don't have loops, constants are not yet updated.
     let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
 
-    // # Step 11: generate the files.
+    // # Step 13: generate the files.
     llbc_export::export(
         crate_name,
         &ordered_decls,
