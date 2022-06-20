@@ -17,6 +17,13 @@ impl Default for Statement {
     }
 }
 
+/// Goes from e.g. [A, B, C] ; D to (A, (B, (C, D))).
+pub fn chain_statements(binds: Vec<Statement>, last: Statement) -> Statement {
+    binds.into_iter().rev().fold(last, |cont, bind| {
+        Statement::Sequence(Box::new(bind), Box::new(cont))
+    })
+}
+
 impl SwitchTargets {
     pub fn get_targets(&self) -> Vec<&Statement> {
         match self {
@@ -88,8 +95,15 @@ impl Statement {
                 rvalue.fmt_with_ctx(ctx),
             )
             .to_owned(),
+            Statement::AssignGlobal(id, gid) => format!(
+                "{}{} := {}",
+                tab,
+                ctx.format_object(*id),
+                ctx.format_object(*gid),
+            )
+            .to_owned(),
             Statement::FakeRead(place) => {
-                format!("{}@fake_read({})", tab, place.fmt_with_ctx(ctx),).to_owned()
+                format!("{}@fake_read({})", tab, place.fmt_with_ctx(ctx)).to_owned()
             }
             Statement::SetDiscriminant(place, variant_id) => format!(
                 "{}@discriminant({}) := {}",
@@ -98,9 +112,7 @@ impl Statement {
                 variant_id.to_string()
             )
             .to_owned(),
-            Statement::Drop(place) => {
-                format!("{}drop {}", tab, place.fmt_with_ctx(ctx),).to_owned()
-            }
+            Statement::Drop(place) => format!("{}drop {}", tab, place.fmt_with_ctx(ctx)).to_owned(),
             Statement::Assert(assert) => format!(
                 "{}assert({} == {})",
                 tab,

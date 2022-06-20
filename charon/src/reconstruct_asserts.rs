@@ -13,6 +13,7 @@ use std::iter::FromIterator;
 fn simplify_st(st: Statement) -> Statement {
     match st {
         Statement::Assign(p, rv) => Statement::Assign(p, rv),
+        Statement::AssignGlobal(p, g) => Statement::AssignGlobal(p, g),
         Statement::FakeRead(p) => Statement::FakeRead(p),
         Statement::SetDiscriminant(p, vid) => Statement::SetDiscriminant(p, vid),
         Statement::Drop(p) => Statement::Drop(p),
@@ -61,7 +62,7 @@ fn simplify_st(st: Statement) -> Statement {
 
 pub fn simplify(funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
-        trace!("# About to update: {name}");
+        trace!("# About to reconstruct asserts: {name}");
         update_mut(&mut b.body, simplify_st);
     }
 }

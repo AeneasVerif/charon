@@ -26,6 +26,7 @@ fn transform_st(st: Statement) -> Statement {
             Statement::Sequence(Box::new(assign_st), Box::new(ret_st))
         }
         Statement::Assign(p, rv) => Statement::Assign(p, rv),
+        Statement::AssignGlobal(id, g) => Statement::AssignGlobal(id, g),
         Statement::FakeRead(p) => Statement::FakeRead(p),
         Statement::SetDiscriminant(p, vid) => Statement::SetDiscriminant(p, vid),
         Statement::Drop(p) => Statement::Drop(p),
@@ -58,7 +59,7 @@ fn transform_st(st: Statement) -> Statement {
 
 fn transform_body(name: &Name, body: &mut Option<ExprBody>) {
     if let Some(b) = body.as_mut() {
-        trace!("About to update: {name}");
+        trace!("About to insert assign & return unit: {name}");
         update_mut(&mut b.body, transform_st);
     }
 }

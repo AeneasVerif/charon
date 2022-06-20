@@ -699,7 +699,7 @@ fn translate_operand_constant_value_non_scalar<'tcx, 'ctx, 'ctx1>(
             alloc: _,
             offset: _,
         } => {
-            // If we are here, the constant is likely a tuple or an enumration
+            // If we are here, the constant is likely a tuple or an enumeration
             // variant.
             // We use [destructure_const] to destructure the constant
             // We need a param_env: we use the function def id as a dummy id...

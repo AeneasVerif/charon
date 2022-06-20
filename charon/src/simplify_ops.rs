@@ -571,6 +571,7 @@ fn simplify_st(st: Statement) -> Statement {
             }
             Statement::Assign(p, rv)
         }
+        Statement::AssignGlobal(id, gid) => Statement::AssignGlobal(id, gid),
         Statement::FakeRead(p) => Statement::FakeRead(p),
         Statement::SetDiscriminant(p, vid) => Statement::SetDiscriminant(p, vid),
         Statement::Drop(p) => Statement::Drop(p),
@@ -610,7 +611,7 @@ fn simplify_st(st: Statement) -> Statement {
 
 pub fn simplify(funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
-        trace!("# About to simplify: {name}");
+        trace!("# About to simplify operands: {name}");
         update_mut(&mut b.body, simplify_st);
     }
 }

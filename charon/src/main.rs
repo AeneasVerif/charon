@@ -33,6 +33,7 @@ mod assumed;
 mod divergent;
 mod expressions;
 mod expressions_utils;
+mod extract_global_assignments;
 mod formatter;
 mod generics;
 mod get_mir;
@@ -855,10 +856,15 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // serializing the result.
     //
 
-    // # Step 7: replace constant ADTs with regular ADTs.
-    regularize_constant_ADTs::transform(&type_defs, &mut llbc_funs, &mut llbc_globals);
+    // # Step 7: replace constant (OperandConstantValue) ADTs by regular (Aggregated) ADTs.
+    regularize_constant_ADTs::transform(&mut llbc_funs, &mut llbc_globals);
 
-    // # Step 8: simplify the calls to unops and binops
+    // # Step 8: extract statics from operands (put them in a let binding).
+    // Relies on the absence of constant ADTs from the previous step :
+    // It does not inspect them (so it would miss statics in constant ADTs).
+    extract_global_assignments::transform(&mut llbc_funs, &mut llbc_globals);
+
+    // # Step 9: simplify the calls to unops and binops
     // Note that we assume that the sequences have been flattened.
     simplify_ops::simplify(&mut llbc_funs, &mut llbc_globals);
 
@@ -869,7 +875,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
         );
     }
 
-    // # Step 9: reconstruct the asserts
+    // # Step 10: reconstruct the asserts
     reconstruct_asserts::simplify(&mut llbc_funs, &mut llbc_globals);
 
     for def in &llbc_funs {
@@ -879,7 +885,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
         );
     }
 
-    // # Step 10: add the missing assignments to the return value.
+    // # Step 11: add the missing assignments to the return value.
     // When the function return type is unit, the generated MIR doesn't
     // set the return value to `()`. This can be a concern: in the case
     // of Aeneas, it means the return variable contains ⊥ upon returning.
@@ -889,20 +895,20 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // the main or at compile-time).
     insert_assign_return_unit::transform(&mut llbc_funs, &mut llbc_globals);
 
-    // # Step 11: remove the locals which are never used. After doing so, we
+    // # Step 12: remove the locals which are never used. After doing so, we
     // check that there are no remaining locals with type `Never`.
     remove_unused_locals::transform(&mut llbc_funs, &mut llbc_globals);
 
-    // # Step 12: compute which functions are potentially divergent. A function
+    // # Step 13: compute which functions are potentially divergent. A function
     // is potentially divergent if it is recursive, contains a loop or transitively
     // calls a potentially divergent function.
     // Note that in the future, we may complement this basic analysis with a
     // finer analysis to detect recursive functions which are actually total
     // by construction.
-    // Because we don't have loops, constants are not yet updated.
+    // Because we don't have loops, constants are not yet touched.
     let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
 
-    // # Step 13: generate the files.
+    // # Step 14: generate the files.
     llbc_export::export(
         crate_name,
         &ordered_decls,

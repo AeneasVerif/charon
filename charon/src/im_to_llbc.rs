@@ -1592,6 +1592,7 @@ fn is_terminal(exp: &tgt::Statement) -> bool {
 fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
     match st {
         tgt::Statement::Assign(_, _)
+        | tgt::Statement::AssignGlobal(_, _)
         | tgt::Statement::FakeRead(_)
         | tgt::Statement::SetDiscriminant(_, _)
         | tgt::Statement::Drop(_)

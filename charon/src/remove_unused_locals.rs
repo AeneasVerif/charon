@@ -51,6 +51,9 @@ fn compute_used_locals_in_statement(locals: &mut HashSet<VarId::Id>, st: &Statem
             compute_used_locals_in_rvalue(locals, rv);
             compute_used_locals_in_place(locals, p);
         }
+        Statement::AssignGlobal(id, _) => {
+            locals.insert(*id);
+        }
         Statement::FakeRead(p) => compute_used_locals_in_place(locals, p),
         Statement::SetDiscriminant(p, _) => compute_used_locals_in_place(locals, p),
         Statement::Drop(p) => compute_used_locals_in_place(locals, p),
@@ -129,6 +132,9 @@ fn transform_st(vids_map: &HashMap<VarId::Id, VarId::Id>, st: Statement) -> Stat
         Statement::Return => Statement::Return,
         Statement::Assign(p, rv) => {
             Statement::Assign(transform_place(vids_map, p), transform_rvalue(vids_map, rv))
+        }
+        Statement::AssignGlobal(id, gid) => {
+            Statement::AssignGlobal(*vids_map.get(&id).unwrap(), gid)
         }
         Statement::FakeRead(p) => Statement::FakeRead(transform_place(vids_map, p)),
         Statement::SetDiscriminant(p, variant_id) => {
@@ -212,7 +218,7 @@ fn update_locals(
 
 pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
-        trace!("# About to update: {name}");
+        trace!("# About to remove unused locals: {name}");
         update_mut(b, |mut b| {
             let (locals, vids_map) = update_locals(b.locals, &b.body);
             b.locals = locals;
