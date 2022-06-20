@@ -18,8 +18,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
 ) -> Option<Statement> {
     if let Operand::Const(ty, c) = op {
         if let OperandConstantValue::Identifier(global_id) = *c {
-            println!("EXTRACT GLOBAL: {:?}", global_id);
-
+            // Make the new variable for the operand & assignment.
             let var_id = make_new_var(ty.clone());
             *op = Operand::Move(Place {
                 var_id,
@@ -103,7 +102,7 @@ fn transform_st<F: FnMut(&mut Operand) -> Option<Statement>>(
 
 pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
-        println!("# About to extract global assignments: {name}");
+        trace!("# About to extract global assignments: {name}");
 
         let mut f = make_locals_generator(&mut b.locals);
         update_mut(&mut b.body, |st| {

@@ -51,7 +51,7 @@ mod names_utils;
 mod reconstruct_asserts;
 mod regions_hierarchy;
 mod register;
-mod regularize_constant_ADTs;
+mod regularize_constant_adts;
 mod remove_unused_locals;
 mod reorder_decls;
 mod rust_to_local_ids;
@@ -857,7 +857,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     //
 
     // # Step 7: replace constant (OperandConstantValue) ADTs by regular (Aggregated) ADTs.
-    regularize_constant_ADTs::transform(&mut llbc_funs, &mut llbc_globals);
+    regularize_constant_adts::transform(&mut llbc_funs, &mut llbc_globals);
 
     // # Step 8: extract statics from operands (put them in a let binding).
     // Relies on the absence of constant ADTs from the previous step :

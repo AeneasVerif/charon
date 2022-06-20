@@ -54,8 +54,6 @@ fn translate_constant_adt<F: FnMut(ETy) -> VarId::Id>(
         _ => return None,
     };
 
-    println!("GOT CONST ADT: {:?}", fields);
-
     // Translate fields recursively into statements and operands.
     let mut statements = vec![];
     let ops = zip(ty.as_adt().2, fields)
