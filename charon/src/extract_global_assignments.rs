@@ -7,6 +7,8 @@
 //! To do that, we add a new variable to reference the static :
 //! they are accessed by reference in MIR, whereas globals are accessed by value.
 
+use lazy_static::__Deref;
+
 use crate::common::update_mut;
 use crate::expressions::*;
 use crate::im_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
@@ -14,6 +16,16 @@ use crate::llbc_ast::{FunDecls, GlobalDecls, Statement};
 use crate::llbc_ast_utils::transform_operands;
 use crate::types::*;
 use crate::values::VarId;
+
+fn deref_static_type(ref_ty: &ETy) -> &ETy {
+    match ref_ty {
+        Ty::Ref(ErasedRegion::Erased, ty, RefKind::Shared) => ty.deref(),
+        _ => unreachable!(
+            "excepted shared reference for static id type, got {:?}",
+            ref_ty
+        ),
+    }
+}
 
 /// If the operand is a constant global identifier, returns an `AssignGlobal` statement
 /// that binds a new variable to the global and move it in the operand.
@@ -36,7 +48,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
             (var, vec![Statement::AssignGlobal(var, global_id)])
         }
         OperandConstantValue::Static(global_id) => {
-            let var = make_new_var(ty.clone());
+            let var = make_new_var(deref_static_type(ty).clone());
             let var_ref = make_new_var(ty.clone());
             let rvalue = Rvalue::Ref(Place::new(var), BorrowKind::Shared);
             (
