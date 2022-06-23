@@ -120,22 +120,27 @@ pub enum Operand {
 }
 
 /// Constant value for an operand.
+/// Only the `ConstantValue` case is remaining in LLBC final form.
 ///
+/// The other cases come from a straight translation from the MIR:
+///
+/// `Adt` case:
 /// It is a bit annoying, but rustc treats some ADT and tuple instances as
 /// constants when generating MIR:
 /// - an enumeration with one variant and no fields is a constant.
 /// - a structure with no field is a constant.
 /// - sometimes, Rust stores the initialization of an ADT as a constant
 ///   (if all the fields are constant) rather than as an aggregated value
+/// It's translated to regular ADTs, see [regularize_constant_adts.rs].
 ///
-/// For our translation, we use the following enumeration to encode those
-/// special cases in assignments. They are converted to "normal" values
-/// when evaluating the assignment (which is why we don't put them in the
-/// [`ConstantValue`](crate::ConstantValue) enumeration.
-/// TODO: implement a micro-pass to get rid of those.
+/// `Identifier` case:
+/// Constant declarations can appear ....
+/// TODO: See static (constant address ?...)
+/// It's translated to separate statements, see [extract_global_assignments.rs].
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
     ConstantValue(ConstantValue),
+    ///
     /// In most situations:
     /// Enumeration with one variant with no fields, structure with
     /// no fields, unit (encoded as a 0-tuple).
@@ -147,6 +152,9 @@ pub enum OperandConstantValue {
     /// The MIR seems to forbid more complex expressions like paths :
     /// Reading the constant a.b is translated to { _1 = const a; _2 = (_1.0) }.
     Identifier(GlobalDeclId::Id),
+    ///
+    ///
+    Static(GlobalDeclId::Id),
 }
 
 #[derive(Debug, Clone, Serialize)]

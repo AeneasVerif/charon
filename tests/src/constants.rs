@@ -12,7 +12,7 @@ const X2: u32 = {
     x
 };
 
-static X3: u32 = incr(32);
+const X3: u32 = incr(32);
 
 const fn incr(n: u32) -> u32 {
     n + 1
@@ -74,3 +74,10 @@ const fn get_z2() -> i32 {
 const Q1: i32 = 5;
 const Q2: i32 = Q1;
 const Q3: i32 = add(Q2, 3);
+
+// Statiques
+
+static S1: u32 = 6;
+static S2: u32 = incr(S1);
+static S3: Pair<u32, u32> = P3;
+static S4: Pair<u32, u32> = mk_pair1(7, 8);

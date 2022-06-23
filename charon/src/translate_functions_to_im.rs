@@ -32,6 +32,7 @@ use rustc_middle::mir::{
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{ConstKind, Ty, TyCtxt, TyKind};
 use rustc_span::Span;
+use std::iter::zip;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name, TypeTransContext};
 
@@ -548,326 +549,299 @@ fn translate_projection<'tcx>(
     return (projection, path_type);
 }
 
-/// Translate some cases of a constant operand.
-///
-/// A constant operand is usually an instance of a primitive type (bool, char,
-/// integer...). However, it may also be an instance of a degenerate ADT or
-/// tuple (if an ADT has only one variant and no fields, it is a constant,
-/// and unit is encoded by MIR as a 0-tuple). This function handles the
-/// primitive type cases: the other cases should have been filtered and
-/// handled elsewhere.
-fn translate_operand_constant_value_constant_value<'tcx>(
-    ty: &Ty<'tcx>,
-    value: &mir::interpret::ConstValue<'tcx>,
-) -> (ty::ETy, v::ConstantValue) {
-    trace!();
-    match value {
-        mir::interpret::ConstValue::Scalar(scalar) => {
-            // The documentation explicitly says not to match on a
-            // scalar. We match on the type and convert the value
-            // following this, by calling the appropriate `to_*`
-            // method
-            match ty.kind() {
-                TyKind::Bool => (
-                    ty::Ty::Bool,
-                    v::ConstantValue::Bool(scalar.to_bool().unwrap()),
-                ),
-                TyKind::Char => (
-                    ty::Ty::Char,
-                    v::ConstantValue::Char(scalar.to_char().unwrap()),
-                ),
-                TyKind::Int(int_ty) => {
-                    match int_ty {
-                        rustc_middle::ty::IntTy::Isize => {
-                            // This is a bit annoying: there is no
-                            // `to_isize`. For now, we make the hypothesis
-                            // that isize is an int64
-                            assert!(std::mem::size_of::<isize>() == 8);
-                            return (
-                                ty::Ty::Integer(ty::IntegerTy::Isize),
-                                v::ConstantValue::Scalar(v::ScalarValue::Isize(
-                                    scalar.to_i64().unwrap() as isize,
-                                )),
-                            );
-                        }
-                        rustc_middle::ty::IntTy::I8 => (
-                            ty::Ty::Integer(ty::IntegerTy::I8),
-                            v::ConstantValue::Scalar(v::ScalarValue::I8(scalar.to_i8().unwrap())),
-                        ),
-                        rustc_middle::ty::IntTy::I16 => (
-                            ty::Ty::Integer(ty::IntegerTy::I16),
-                            v::ConstantValue::Scalar(v::ScalarValue::I16(scalar.to_i16().unwrap())),
-                        ),
-                        rustc_middle::ty::IntTy::I32 => (
-                            ty::Ty::Integer(ty::IntegerTy::I32),
-                            v::ConstantValue::Scalar(v::ScalarValue::I32(scalar.to_i32().unwrap())),
-                        ),
-                        rustc_middle::ty::IntTy::I64 => (
-                            ty::Ty::Integer(ty::IntegerTy::I64),
-                            v::ConstantValue::Scalar(v::ScalarValue::I64(scalar.to_i64().unwrap())),
-                        ),
-                        rustc_middle::ty::IntTy::I128 => (
-                            ty::Ty::Integer(ty::IntegerTy::I128),
-                            v::ConstantValue::Scalar(v::ScalarValue::I128(
-                                scalar.to_i128().unwrap(),
-                            )),
-                        ),
-                    }
-                }
-                TyKind::Uint(uint_ty) => {
-                    match uint_ty {
-                        rustc_middle::ty::UintTy::Usize => {
-                            // This is a bit annoying: there is no
-                            // `to_usize`. For now, we make the hypothesis
-                            // that usize is a uint64
-                            assert!(std::mem::size_of::<usize>() == 8);
-                            return (
-                                ty::Ty::Integer(ty::IntegerTy::Usize),
-                                v::ConstantValue::Scalar(v::ScalarValue::Usize(
-                                    scalar.to_u64().unwrap() as usize,
-                                )),
-                            );
-                        }
-                        rustc_middle::ty::UintTy::U8 => (
-                            ty::Ty::Integer(ty::IntegerTy::U8),
-                            v::ConstantValue::Scalar(v::ScalarValue::U8(scalar.to_u8().unwrap())),
-                        ),
-                        rustc_middle::ty::UintTy::U16 => (
-                            ty::Ty::Integer(ty::IntegerTy::U16),
-                            v::ConstantValue::Scalar(v::ScalarValue::U16(scalar.to_u16().unwrap())),
-                        ),
-                        rustc_middle::ty::UintTy::U32 => (
-                            ty::Ty::Integer(ty::IntegerTy::U32),
-                            v::ConstantValue::Scalar(v::ScalarValue::U32(scalar.to_u32().unwrap())),
-                        ),
-                        rustc_middle::ty::UintTy::U64 => (
-                            ty::Ty::Integer(ty::IntegerTy::U64),
-                            v::ConstantValue::Scalar(v::ScalarValue::U64(scalar.to_u64().unwrap())),
-                        ),
-                        rustc_middle::ty::UintTy::U128 => (
-                            ty::Ty::Integer(ty::IntegerTy::U128),
-                            v::ConstantValue::Scalar(v::ScalarValue::U128(
-                                scalar.to_u128().unwrap(),
-                            )),
-                        ),
-                    }
-                }
-                TyKind::Float(_) => {
-                    // We don't support floating point numbers:
-                    // this should have been detected and eliminated
-                    // before.
-                    unreachable!();
-                }
-                _ => {
-                    // The remaining types should not be used for constants, or
-                    // should have been filtered by the caller.
-                    error!("unexpected type: {:?}", ty.kind());
-                    unreachable!();
-                }
-            }
+/// Translate the type of a [mir::interpret::ConstValue::Scalar] value :
+/// Either a bool, a char, an integer, an enumeration ADT, an empty tuple or a static reference.
+fn translate_constant_scalar_type<'ctx>(ty: &TyKind, decls: &DeclTransContext<'ctx>) -> ty::ETy {
+    match ty {
+        TyKind::Bool => ty::Ty::Bool,
+        TyKind::Char => ty::Ty::Char,
+        TyKind::Int(int_ty) => match int_ty {
+            mir_ty::IntTy::Isize => ty::Ty::Integer(ty::IntegerTy::Isize),
+            mir_ty::IntTy::I8 => ty::Ty::Integer(ty::IntegerTy::I8),
+            mir_ty::IntTy::I16 => ty::Ty::Integer(ty::IntegerTy::I16),
+            mir_ty::IntTy::I32 => ty::Ty::Integer(ty::IntegerTy::I32),
+            mir_ty::IntTy::I64 => ty::Ty::Integer(ty::IntegerTy::I64),
+            mir_ty::IntTy::I128 => ty::Ty::Integer(ty::IntegerTy::I128),
+        },
+        TyKind::Uint(uint_ty) => match uint_ty {
+            mir_ty::UintTy::Usize => ty::Ty::Integer(ty::IntegerTy::Usize),
+            mir_ty::UintTy::U8 => ty::Ty::Integer(ty::IntegerTy::U8),
+            mir_ty::UintTy::U16 => ty::Ty::Integer(ty::IntegerTy::U16),
+            mir_ty::UintTy::U32 => ty::Ty::Integer(ty::IntegerTy::U32),
+            mir_ty::UintTy::U64 => ty::Ty::Integer(ty::IntegerTy::U64),
+            mir_ty::UintTy::U128 => ty::Ty::Integer(ty::IntegerTy::U128),
+        },
+        TyKind::Adt(adt_def, substs) => {
+            assert!(substs.is_empty());
+            // It seems we can have ADTs when there is only one
+            // variant, and this variant doesn't take parameters.
+            // Retrieve the definition.
+            let id = decls.ordered.type_rid_to_id.get(&adt_def.did).unwrap();
+            ty::Ty::Adt(ty::TypeId::Adt(*id), Vector::new(), Vector::new())
         }
-        mir::interpret::ConstValue::Slice {
-            data: _,
-            start: _,
-            end: _,
-        } => {
-            unimplemented!();
+        TyKind::Tuple(substs) => {
+            // There can be tuple([]) for unit
+            assert!(substs.is_empty());
+            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), Vector::new())
         }
-        mir::interpret::ConstValue::ByRef {
-            alloc: _,
-            offset: _,
-        } => {
-            unimplemented!();
-        }
-    }
-}
-
-/// Translate a constant value in the case it is not a scalar constant
-/// ([ConstValue::Slice] and [ConstValue::ByRef]).
-fn translate_operand_constant_value_non_scalar<'tcx, 'ctx, 'ctx1>(
-    tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
-    ty: &Ty<'tcx>,
-    value: &mir::interpret::ConstValue<'tcx>,
-) -> (ty::ETy, e::OperandConstantValue) {
-    match value {
-        mir::interpret::ConstValue::Scalar(_) => {
-            // Should have been treated elsewhere
+        // Only accept scalars that are shared references with erased regions : it's a static.
+        TyKind::Ref(mir_ty::RegionKind::ReErased, ref_ty, mir::Mutability::Not) => ty::Ty::Ref(
+            ty::ErasedRegion::Erased,
+            Box::new(translate_constant_scalar_type(ref_ty.kind(), decls)),
+            ty::RefKind::Shared,
+        ),
+        TyKind::Float(_) => {
+            // We don't support floating point numbers:
+            // this should have been detected and eliminated before.
             unreachable!();
         }
-        mir::interpret::ConstValue::ByRef {
-            alloc: _,
-            offset: _,
-        } => {
-            // If we are here, the constant is likely a tuple or an enumeration
-            // variant.
-            // We use [destructure_const] to destructure the constant
-            // We need a param_env: we use the function def id as a dummy id...
-            let param_env = tcx.param_env(bt_ctx.def_id);
-            // I have to clone some values: it is a bit annoying, but I manage
-            // to get the lifetimes working otherwise...
-            let cvalue = rustc_middle::ty::Const::from_value(tcx, value.clone(), ty.clone());
-            let param_env_and_const = rustc_middle::ty::ParamEnvAnd {
-                param_env,
-                value: cvalue,
-            };
-            let dc = tcx.destructure_const(param_env_and_const);
-            trace!("{:?}", dc);
-
-            // Match on the type to destructure
-            match ty.kind() {
-                TyKind::Tuple(substs) => {
-                    let (region_params, type_params) =
-                        translate_subst_in_body(tcx, bt_ctx, None, substs).unwrap();
-                    assert!(region_params.is_empty());
-                    trace!("{:?}", type_params);
-
-                    // Check that there are as many fields as there are constant
-                    // values in the destructured constant
-                    assert!(type_params.len() == dc.fields.len());
-
-                    let mut field_tys: Vector<ty::ETy> = Vector::new();
-                    let mut field_values: Vector<e::OperandConstantValue> = Vector::new();
-
-                    // Iterate over the fields
-                    for (field, field_trans_ty) in dc.fields.iter().zip(type_params.iter()) {
-                        let (field_ty, field_v) = match &field.val {
-                            ConstKind::Value(v) => (&field.ty, v),
-                            _ => {
-                                unreachable!()
-                            }
-                        };
-                        let (field_trans_ty1, field_cv) =
-                            translate_operand_constant_value(tcx, bt_ctx, field_ty, field_v);
-                        assert!(field_trans_ty1 == *field_trans_ty);
-
-                        field_tys.push_back(field_trans_ty1);
-                        field_values.push_back(field_cv);
-                    }
-
-                    // Return
-                    let ty = ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), field_tys);
-                    let value = e::OperandConstantValue::Adt(Option::None, field_values);
-                    (ty, value)
-                }
-                TyKind::Adt(_, _) => {
-                    // Following tests, it seems rustc doesn't introduce constants
-                    // when initializing ADTs, only when initializing tuples.
-                    // Anyway, our `OperandConstantValue` handles all cases
-                    // so updating the code to handle ADTs in a general manner
-                    // wouldn't be a problem.
-                    error!("unexpected type: Adt");
-                    unreachable!();
-                }
-                _ => {
-                    // The remaining types should not be used for constants, or
-                    // should have been filtered by the caller.
-                    error!("unexpected type: {:?}", ty.kind());
-                    unreachable!();
-                }
-            }
-        }
-        mir::interpret::ConstValue::Slice {
-            data: _,
-            start: _,
-            end: _,
-        } => {
-            unimplemented!();
+        _ => {
+            // The remaining types should not be used for constants, or
+            // should have been filtered by the caller.
+            error!("unexpected type: {:?}", ty);
+            unreachable!();
         }
     }
 }
 
-/// Translate a constant operand
-fn translate_operand_constant_value<'tcx, 'ctx, 'ctx1>(
+/// Translate the type of a [mir::interpret::ConstValue::ByRef] value :
+/// Currently, it should be a tuple.
+fn translate_constant_reference_type<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
-    ty: &Ty<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    ty: &TyKind<'tcx>,
+) -> ty::ETy {
+    // Match on the type to destructure
+    match ty {
+        TyKind::Tuple(substs) => {
+            let (region_params, type_params) =
+                translate_subst_in_body(tcx, bt_ctx, None, substs).unwrap();
+            assert!(region_params.is_empty());
+            trace!("{:?}", type_params);
+
+            let field_tys = type_params.into_iter().collect();
+            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), field_tys)
+        }
+        TyKind::Adt(_, _) => {
+            // Following tests, it seems rustc doesn't introduce constants
+            // when initializing ADTs, only when initializing tuples.
+            // Anyway, our `OperandConstantValue` handles all cases
+            // so updating the code to handle ADTs in a general manner
+            // wouldn't be a problem.
+            unreachable!("unexpected ADT type: {:?}", ty);
+        }
+        _ => {
+            // The remaining types should not be used for constants, or
+            // should have been filtered by the caller.
+            unreachable!("unexpected type: {:?}", ty);
+        }
+    }
+}
+
+/// Translate the type of a [mir::interpret::ConstValue] value.
+fn translate_constant_type<'tcx, 'ctx1, 'ctx2>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    ty: &TyKind<'tcx>,
     value: &mir::interpret::ConstValue<'tcx>,
-) -> (ty::ETy, e::OperandConstantValue) {
+) -> ty::ETy {
     trace!("{:?}", value);
     match value {
         mir::interpret::ConstValue::Scalar(_scalar) => {
-            // The documentation explicitly says not to match on a
-            // salar. We match on the type and convert the value
-            // following this, by calling the appropriate `to_*`
-            // method
-            match ty.kind() {
-                TyKind::Bool | TyKind::Char | TyKind::Int(_) | TyKind::Uint(_) => {
-                    let (ty, cv) = translate_operand_constant_value_constant_value(ty, value);
-                    (ty, e::OperandConstantValue::ConstantValue(cv))
-                }
-                TyKind::Float(_) => {
-                    // We don't support floating point numbers:
-                    // this should have been detected and eliminated
-                    // before.
-                    unreachable!();
-                }
-                TyKind::Adt(adt_def, substs) => {
-                    // It seems we can have ADTs when there is only one
-                    // variant, and this variant doesn't take parameters
-                    let ft_ctx = &bt_ctx.ft_ctx;
+            translate_constant_scalar_type(ty, &bt_ctx.ft_ctx)
+        }
+        mir::interpret::ConstValue::ByRef { .. } => {
+            translate_constant_reference_type(tcx, bt_ctx, ty)
+        }
+        mir::interpret::ConstValue::Slice { .. } => unimplemented!(),
+    }
+}
 
-                    // Retrieve the definition
-                    let id = ft_ctx.ordered.type_rid_to_id.get(&adt_def.did).unwrap();
-                    let def = ft_ctx.type_defs.get_type_def(*id).unwrap();
-
-                    // Check that there is only one variant, with no fields
-                    // and no parameters. Construct the value at the same time.
-                    assert!(substs.len() == 0);
-                    assert!(def.type_params.len() == 0);
-                    let variant_id = match &def.kind {
-                        ty::TypeDeclKind::Enum(variants) => {
-                            assert!(variants.len() == 1);
-                            Option::Some(ty::VariantId::ZERO)
-                        }
-                        ty::TypeDeclKind::Struct(_) => Option::None,
-                        ty::TypeDeclKind::Opaque => {
-                            unreachable!("Can't analyze a constant value built from an opaque type")
-                        }
-                    };
-
-                    let ty = ty::Ty::Adt(ty::TypeId::Adt(*id), Vector::new(), Vector::new());
-                    let v = e::OperandConstantValue::Adt(variant_id, Vector::new());
-                    (ty, v)
-                }
-                TyKind::Tuple(substs) => {
-                    // There can be tuple([]) for unit
-                    assert!(substs.len() == 0);
-                    let ty = ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), Vector::new());
-                    let cv = e::OperandConstantValue::Adt(Option::None, Vector::new());
-                    (ty, cv)
-                }
-                TyKind::Never => {
-                    // Not sure what to do here
-                    unimplemented!();
-                }
-                _ => {
-                    // The remaining types should not be used for constants
-                    error!(
-                        "unexpected type: {:?}, for constant value: {:?}",
-                        ty.kind(),
-                        value
-                    );
-                    unreachable!();
-                }
+/// Translate a typed constant value (either a bool, a char or an integer).
+fn translate_constant_integer_like_value(
+    ty: &ty::ETy,
+    scalar: &mir::interpret::Scalar,
+) -> v::ConstantValue {
+    trace!();
+    match ty {
+        ty::Ty::Bool => v::ConstantValue::Bool(scalar.to_bool().unwrap()),
+        ty::Ty::Char => v::ConstantValue::Char(scalar.to_char().unwrap()),
+        ty::Ty::Integer(i) => v::ConstantValue::Scalar(match i {
+            ty::IntegerTy::Isize => {
+                // This is a bit annoying: there is no
+                // `to_isize`. For now, we make the hypothesis
+                // that isize is an int64
+                assert!(std::mem::size_of::<isize>() == 8);
+                v::ScalarValue::Isize(scalar.to_i64().unwrap() as isize)
             }
-        }
-        mir::interpret::ConstValue::Slice {
-            data: _,
-            start: _,
-            end: _,
-        }
-        | mir::interpret::ConstValue::ByRef {
-            alloc: _,
-            offset: _,
-        } => {
-            // Note that we should get here only for types like string, tuple, etc.
-            translate_operand_constant_value_non_scalar(tcx, bt_ctx, ty, value)
+            ty::IntegerTy::Usize => {
+                // Same as above for usize.
+                assert!(std::mem::size_of::<usize>() == 8);
+                v::ScalarValue::Usize(scalar.to_u64().unwrap() as usize)
+            }
+            ty::IntegerTy::I8 => v::ScalarValue::I8(scalar.to_i8().unwrap()),
+            ty::IntegerTy::U8 => v::ScalarValue::U8(scalar.to_u8().unwrap()),
+            ty::IntegerTy::I16 => v::ScalarValue::I16(scalar.to_i16().unwrap()),
+            ty::IntegerTy::U16 => v::ScalarValue::U16(scalar.to_u16().unwrap()),
+            ty::IntegerTy::I32 => v::ScalarValue::I32(scalar.to_i32().unwrap()),
+            ty::IntegerTy::U32 => v::ScalarValue::U32(scalar.to_u32().unwrap()),
+            ty::IntegerTy::I64 => v::ScalarValue::I64(scalar.to_i64().unwrap()),
+            ty::IntegerTy::U64 => v::ScalarValue::U64(scalar.to_u64().unwrap()),
+            ty::IntegerTy::I128 => v::ScalarValue::I128(scalar.to_i128().unwrap()),
+            ty::IntegerTy::U128 => v::ScalarValue::U128(scalar.to_u128().unwrap()),
+        }),
+        _ => {
+            // The remaining types should not be used for constants,
+            // or should have been filtered by the caller.
+            error!("unexpected type: {:?}", ty);
+            unreachable!();
         }
     }
 }
 
-/// Translate a constant
+/// Translate a constant typed by [translate_constant_scalar_type].
+fn translate_constant_scalar_value<'tcx, 'ctx>(
+    tcx: TyCtxt<'tcx>,
+    decls: &DeclTransContext<'ctx>,
+    ty: &ty::ETy,
+    scalar: &mir::interpret::Scalar,
+) -> e::OperandConstantValue {
+    trace!("{:?}", scalar);
+    match ty {
+        ty::Ty::Bool | ty::Ty::Char | ty::Ty::Integer(_) => {
+            let v = translate_constant_integer_like_value(ty, scalar);
+            e::OperandConstantValue::ConstantValue(v)
+        }
+        ty::Ty::Adt(ty::TypeId::Adt(id), region_tys, field_tys) => {
+            assert!(region_tys.is_empty());
+            assert!(field_tys.is_empty());
+
+            let def = decls.type_defs.get_type_def(*id).unwrap();
+
+            // Check that there is only one variant, with no fields
+            // and no parameters. Construct the value at the same time.
+            assert!(def.type_params.len() == 0);
+            let variant_id = match &def.kind {
+                ty::TypeDeclKind::Enum(variants) => {
+                    assert!(variants.len() == 1);
+                    Option::Some(ty::VariantId::ZERO)
+                }
+                ty::TypeDeclKind::Struct(_) => Option::None,
+                ty::TypeDeclKind::Opaque => {
+                    unreachable!("Can't analyze a constant value built from an opaque type")
+                }
+            };
+            e::OperandConstantValue::Adt(variant_id, Vector::new())
+        }
+        ty::Ty::Adt(ty::TypeId::Tuple, region_tys, field_tys) => {
+            assert!(region_tys.is_empty());
+            assert!(field_tys.is_empty());
+            e::OperandConstantValue::Adt(Option::None, Vector::new())
+        }
+        ty::Ty::Ref(ty::ErasedRegion::Erased, _, ty::RefKind::Shared) => match scalar {
+            mir::interpret::Scalar::Ptr(p, _) => match tcx.global_alloc(p.provenance) {
+                mir::interpret::GlobalAlloc::Static(s) => {
+                    let id = decls.ordered.const_rid_to_id.get(&s).unwrap();
+                    e::OperandConstantValue::Static(*id)
+                }
+                _ => unreachable!(
+                    "Expected static pointer, got {:?}",
+                    tcx.global_alloc(p.provenance)
+                ),
+            },
+            _ => unreachable!("Expected static pointer, got {:?}", scalar),
+        },
+        _ => {
+            // The remaining types should not be used for constants
+            unreachable!("unexpected type: {:?}, for scalar: {:?}", ty, scalar);
+        }
+    }
+}
+
+/// Translate a constant typed by [translate_constant_reference_type].
+fn translate_constant_reference_value<'tcx, 'ctx1, 'ctx2>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    im_ty: &ty::ETy,
+    rustc_ty: &Ty<'tcx>,
+    value: &mir::interpret::ConstValue<'tcx>,
+) -> e::OperandConstantValue {
+    trace!();
+
+    // Get the tuple field IM types.
+    let im_field_tys = match im_ty {
+        ty::Ty::Adt(ty::TypeId::Tuple, regions, fields) => {
+            assert!(regions.is_empty());
+            fields
+        }
+        _ => unreachable!("Expected a tuple, got {:?}", rustc_ty),
+    };
+
+    // We use [destructure_const] to destructure the constant
+    // We need a param_env: we use the function def id as a dummy id...
+    let param_env = tcx.param_env(bt_ctx.def_id);
+    // I have to clone some values: it is a bit annoying, but I manage
+    // to get the lifetimes working otherwise...
+    let cvalue = rustc_middle::ty::Const::from_value(tcx, value.clone(), rustc_ty.clone());
+    let param_env_and_const = rustc_middle::ty::ParamEnvAnd {
+        param_env,
+        value: cvalue,
+    };
+    let dc = tcx.destructure_const(param_env_and_const);
+    trace!("{:?}", dc);
+
+    // Iterate over the fields
+    let fields = zip(dc.fields, im_field_tys)
+        .map(|(field, im_ty)| {
+            translate_constant_value(
+                tcx,
+                bt_ctx,
+                im_ty,
+                &field.ty,
+                match &field.val {
+                    ConstKind::Value(v) => v,
+                    _ => unreachable!(),
+                },
+            )
+        })
+        .collect();
+
+    e::OperandConstantValue::Adt(Option::None, fields)
+}
+
+/// Translate a constant value typed by [translate_constant_type].
+fn translate_constant_value<'tcx, 'ctx1, 'ctx2>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    im_ty: &ty::ETy,
+    rustc_ty: &Ty<'tcx>,
+    val: &mir::interpret::ConstValue<'tcx>,
+) -> e::OperandConstantValue {
+    trace!("{:?}", val);
+    match val {
+        mir::interpret::ConstValue::Scalar(scalar) => {
+            translate_constant_scalar_value(tcx, &bt_ctx.ft_ctx, im_ty, scalar)
+        }
+        mir::interpret::ConstValue::ByRef { .. } => {
+            translate_constant_reference_value(tcx, bt_ctx, im_ty, rustc_ty, val)
+        }
+        mir::interpret::ConstValue::Slice { .. } => unimplemented!(),
+    }
+}
+
+/// Translate a constant value and its type.
+fn translate_evaluated_operand_constant<'tcx, 'ctx1, 'ctx2>(
+    tcx: TyCtxt<'tcx>,
+    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    ty: &Ty<'tcx>,
+    val: &mir::interpret::ConstValue<'tcx>,
+) -> (ty::ETy, e::OperandConstantValue) {
+    let im_ty = translate_constant_type(tcx, bt_ctx, ty.kind(), val);
+    let im_val = translate_constant_value(tcx, bt_ctx, &im_ty, ty, val);
+    (im_ty, im_val)
+}
+
+/// Translate a constant which may not be yet evaluated.
 fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
@@ -876,50 +850,52 @@ fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
     trace!("{:?}", constant);
     use std::ops::Deref;
     let constant = &constant.deref();
-    match constant.literal {
-        // This is the "normal" constant case
-        mir::ConstantKind::Ty(c) => match c.val {
-            rustc_middle::ty::ConstKind::Value(cvalue) => {
-                translate_operand_constant_value(tcx, bt_ctx, &c.ty, &cvalue)
-            }
-            rustc_middle::ty::ConstKind::Unevaluated(unev) => {
-                let rid = unev.def.did;
-                let id = *bt_ctx.ft_ctx.ordered.const_rid_to_id.get(&rid).unwrap();
-                let decl = bt_ctx.ft_ctx.global_defs.get(id).unwrap();
 
-                if EXTRACT_CONSTANTS_AT_TOP_LEVEL && decl.body.is_some() && rid.is_local() {
-                    // Visible & local constants are extracted to the top level.
-                    // Here, we only need to reference it.
-                    (decl.type_.clone(), e::OperandConstantValue::Identifier(id))
-                } else {
-                    // Evaluate the constant
-                    // We need a param_env: we use the expression def id as a dummy id...
-                    let param_env = tcx.param_env(bt_ctx.def_id);
-                    let evaluated = tcx.const_eval_resolve(param_env, unev, Option::None);
-                    match evaluated {
-                        std::result::Result::Ok(c) => {
-                            let (ty, val) =
-                                translate_operand_constant_value(tcx, bt_ctx, &constant.ty(), &c);
-                            assert!(ty == decl.type_);
-                            (ty, val)
-                        }
-                        std::result::Result::Err(_) => {
-                            unreachable!("Could not evaluate an unevaluated constant");
-                        }
-                    }
-                }
-            }
-            rustc_middle::ty::ConstKind::Param(_)
-            | rustc_middle::ty::ConstKind::Infer(_)
-            | rustc_middle::ty::ConstKind::Bound(_, _)
-            | rustc_middle::ty::ConstKind::Placeholder(_)
-            | rustc_middle::ty::ConstKind::Error(_) => {
-                unreachable!("Unexpected: {:?}", constant.literal);
-            }
-        },
+    let c = match constant.literal {
+        // This is the "normal" constant case
+        mir::ConstantKind::Ty(c) => c,
         // I'm not sure what this is about: the documentation is weird.
         mir::ConstantKind::Val(_value, _ty) => {
             unimplemented!();
+        }
+    };
+    match c.val {
+        rustc_middle::ty::ConstKind::Value(cvalue) => {
+            translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty, &cvalue)
+        }
+        rustc_middle::ty::ConstKind::Unevaluated(unev) => {
+            let rid = unev.def.did;
+            let id = *bt_ctx.ft_ctx.ordered.const_rid_to_id.get(&rid).unwrap();
+            let decl = bt_ctx.ft_ctx.global_defs.get(id).unwrap();
+
+            if EXTRACT_CONSTANTS_AT_TOP_LEVEL && decl.body.is_some() && rid.is_local() {
+                // Visible & local constants are extracted to the top level.
+                // Here, we only need to reference it.
+                (decl.type_.clone(), e::OperandConstantValue::Identifier(id))
+            } else {
+                // Evaluate the constant
+                // We need a param_env: we use the expression def id as a dummy id...
+                let param_env = tcx.param_env(bt_ctx.def_id);
+                let evaluated = tcx.const_eval_resolve(param_env, unev, Option::None);
+                match evaluated {
+                    std::result::Result::Ok(c) => {
+                        let (ty, val) =
+                            translate_evaluated_operand_constant(tcx, bt_ctx, &constant.ty(), &c);
+                        assert!(ty == decl.type_);
+                        (ty, val)
+                    }
+                    std::result::Result::Err(_) => {
+                        unreachable!("Could not evaluate an unevaluated constant");
+                    }
+                }
+            }
+        }
+        rustc_middle::ty::ConstKind::Param(_)
+        | rustc_middle::ty::ConstKind::Infer(_)
+        | rustc_middle::ty::ConstKind::Bound(_, _)
+        | rustc_middle::ty::ConstKind::Placeholder(_)
+        | rustc_middle::ty::ConstKind::Error(_) => {
+            unreachable!("Unexpected: {:?}", constant.literal);
         }
     }
 }

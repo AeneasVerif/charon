@@ -8,6 +8,7 @@ use crate::llbc_ast::{Call, FunDecl, FunDecls, GlobalDecl, GlobalDecls, Statemen
 use crate::types::*;
 use crate::values::*;
 use crate::{common::*, id_vector};
+use itertools::chain;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 
@@ -22,6 +23,60 @@ pub fn chain_statements(binds: Vec<Statement>, last: Statement) -> Statement {
     binds.into_iter().rev().fold(last, |cont, bind| {
         Statement::Sequence(Box::new(bind), Box::new(cont))
     })
+}
+
+/// Visit an rvalue and generate statements. Used below in [transform_operands].
+fn transform_rvalue_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
+    rval: &mut Rvalue,
+    f: &mut F,
+) -> Vec<Statement> {
+    match rval {
+        Rvalue::Use(op) | Rvalue::UnaryOp(_, op) => f(op),
+        Rvalue::BinaryOp(_, o1, o2) => chain(f(o1), f(o2)).collect(),
+        Rvalue::Aggregate(_, ops) => ops.iter_mut().flat_map(f).collect(),
+        Rvalue::Discriminant(_) | Rvalue::Ref(_, _) => vec![],
+    }
+}
+
+/// Map a statement to the given visitor of operands while inserting the generated statements.
+/// Useful to implement passes on operands.
+pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
+    st: Statement,
+    f: &mut F,
+) -> Statement {
+    // Does two matchs, depending if we want to move or to borrow the statement.
+    let mut st = match st {
+        // Recursive calls
+        Statement::Loop(s) => Statement::Loop(Box::new(transform_operands(*s, f))),
+        Statement::Sequence(s1, s2) => Statement::Sequence(
+            Box::new(transform_operands(*s1, f)),
+            Box::new(transform_operands(*s2, f)),
+        ),
+        _ => st,
+    };
+    match &mut st {
+        // Actual transformations
+        Statement::Switch(op, _) => chain_statements(f(op), st),
+        Statement::Assign(_, r) => chain_statements(transform_rvalue_operands(r, f), st),
+        Statement::Call(c) => chain_statements(c.args.iter_mut().flat_map(f).collect(), st),
+        Statement::Assert(a) => chain_statements(f(&mut a.cond), st),
+
+        Statement::AssignGlobal(_, _) => {
+            unreachable!("global assignments should append after this pass")
+        }
+
+        // Identity (complete match for compile-time errors when new statements are created)
+        Statement::FakeRead(_)
+        | Statement::SetDiscriminant(_, _)
+        | Statement::Drop(_)
+        | Statement::Panic
+        | Statement::Return
+        | Statement::Break(_)
+        | Statement::Continue(_)
+        | Statement::Nop
+        | Statement::Sequence(_, _)
+        | Statement::Loop(_) => st,
+    }
 }
 
 impl SwitchTargets {

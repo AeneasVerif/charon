@@ -14,13 +14,11 @@
 
 use std::iter::zip;
 
-use itertools::chain;
-
 use crate::common::update_mut;
 use crate::expressions::*;
 use crate::im_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
 use crate::llbc_ast::{FunDecls, GlobalDecls, Statement};
-use crate::llbc_ast_utils::chain_statements;
+use crate::llbc_ast_utils::transform_operands;
 use crate::types::*;
 use crate::values::VarId;
 
@@ -60,10 +58,7 @@ fn translate_constant_adt<F: FnMut(ETy) -> VarId::Id>(
         .map(|(f_ty, f_val)| {
             if let Some((mut st, var_id)) = translate_constant_adt(f_ty, f_val, make_new_var) {
                 statements.append(&mut st);
-                Operand::Move(Place {
-                    var_id,
-                    projection: im::Vector::new(),
-                })
+                Operand::Move(Place::new(var_id))
             } else {
                 Operand::Const(f_ty.clone(), f_val.clone())
             }
@@ -73,11 +68,7 @@ fn translate_constant_adt<F: FnMut(ETy) -> VarId::Id>(
     // Make the new variable holding the aggregate.
     let rval = Rvalue::Aggregate(make_aggregate_kind(ty, *variant), ops);
     let var_id = make_new_var(ty.clone());
-    let place = Place {
-        var_id,
-        projection: im::Vector::new(),
-    };
-    statements.push(Statement::Assign(place, rval));
+    statements.push(Statement::Assign(Place::new(var_id), rval));
     Some((statements, var_id))
 }
 
@@ -88,63 +79,11 @@ fn translate_operand_adt<F: FnMut(ETy) -> VarId::Id>(
     if let Operand::Const(ty, val) = op {
         if let Some((st, var_id)) = translate_constant_adt(ty, val, f) {
             // Change the ADT constant operand to a move (of the extracted AST).
-            *op = Operand::Move(Place {
-                var_id,
-                projection: im::Vector::new(),
-            });
+            *op = Operand::Move(Place::new(var_id));
             return st;
         }
     }
     vec![]
-}
-
-fn extract_rvalue_op_adts<F: FnMut(&mut Operand) -> Vec<Statement>>(
-    rval: &mut Rvalue,
-    f: &mut F,
-) -> Vec<Statement> {
-    match rval {
-        Rvalue::Use(op) | Rvalue::UnaryOp(_, op) => f(op),
-        Rvalue::BinaryOp(_, o1, o2) => chain(f(o1), f(o2)).collect(),
-        Rvalue::Aggregate(_, ops) => ops.iter_mut().flat_map(f).collect(),
-        Rvalue::Discriminant(_) | Rvalue::Ref(_, _) => vec![],
-    }
-}
-
-/// Visit operands and generate statements to extract the ADTs from it.
-fn transform_st<F: FnMut(&mut Operand) -> Vec<Statement>>(st: Statement, f: &mut F) -> Statement {
-    // Does two matchs, depending if we want to move or to borrow the statement.
-    let mut st = match st {
-        // Recursive calls
-        Statement::Loop(s) => Statement::Loop(Box::new(transform_st(*s, f))),
-        Statement::Sequence(s1, s2) => Statement::Sequence(
-            Box::new(transform_st(*s1, f)),
-            Box::new(transform_st(*s2, f)),
-        ),
-        _ => st,
-    };
-    match &mut st {
-        // Actual transformations
-        Statement::Switch(op, _) => chain_statements(f(op), st),
-        Statement::Assign(_, r) => chain_statements(extract_rvalue_op_adts(r, f), st),
-        Statement::Call(c) => chain_statements(c.args.iter_mut().flat_map(f).collect(), st),
-        Statement::Assert(a) => chain_statements(f(&mut a.cond), st),
-
-        Statement::AssignGlobal(_, _) => {
-            unreachable!("global assignments should append after this pass")
-        }
-
-        // Identity (complete match for compile-time errors when new statements are created)
-        Statement::FakeRead(_)
-        | Statement::SetDiscriminant(_, _)
-        | Statement::Drop(_)
-        | Statement::Panic
-        | Statement::Return
-        | Statement::Break(_)
-        | Statement::Continue(_)
-        | Statement::Nop
-        | Statement::Sequence(_, _)
-        | Statement::Loop(_) => st,
-    }
 }
 
 pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
@@ -153,7 +92,7 @@ pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
 
         let mut f = make_locals_generator(&mut b.locals);
         update_mut(&mut b.body, |st| {
-            transform_st(st, &mut |op| translate_operand_adt(op, &mut f))
+            transform_operands(st, &mut |op| translate_operand_adt(op, &mut f))
         });
     }
 }

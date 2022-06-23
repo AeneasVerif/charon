@@ -13,6 +13,15 @@ use serde::ser::SerializeStruct;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 
+impl Place {
+    pub fn new(var_id: VarId::Id) -> Place {
+        Place {
+            var_id,
+            projection: im::Vector::new(),
+        }
+    }
+}
+
 impl Serialize for Place {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -137,6 +146,7 @@ impl OperandConstantValue {
                 format!("ConstAdt {} [{}]", variant_id, values.join(", ")).to_string()
             }
             OperandConstantValue::Identifier(id) => ctx.format_object(*id),
+            OperandConstantValue::Static(id) => format!("alloc: &{}", ctx.format_object(*id)),
         }
     }
 }
@@ -302,41 +312,9 @@ impl Serialize for OperandConstantValue {
     where
         S: Serializer,
     {
-        let enum_name = "OperandConstantValue";
-        // We change the variant names for serialization
-        let variant_name = match self {
-            OperandConstantValue::ConstantValue(_) => "ConstantValue",
-            OperandConstantValue::Adt(_, _) => "ConstantAdt",
-            OperandConstantValue::Identifier(_) => "ConstantIdentifier",
-        };
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        // It seems the "standard" way of doing is the following (this is
-        // consistent with what the automatically generated serializer does):
-        // - if the arity is > 0, use `serialize_tuple_variant`
-        // - otherwise simply serialize a string with the variant name
-        if variant_arity > 0 {
-            let mut vs = serializer.serialize_tuple_variant(
-                enum_name,
-                variant_index,
-                variant_name,
-                variant_arity,
-            )?;
-            match self {
-                OperandConstantValue::ConstantValue(cv) => {
-                    vs.serialize_field(cv)?;
-                }
-                OperandConstantValue::Adt(variant_id, values) => {
-                    vs.serialize_field(variant_id)?;
-                    let values = VectorSerializer::new(values);
-                    vs.serialize_field(&values)?;
-                }
-                OperandConstantValue::Identifier(const_id) => {
-                    vs.serialize_field(const_id)?;
-                }
-            }
-            vs.end()
-        } else {
-            variant_name.serialize(serializer)
+        match self {
+            OperandConstantValue::ConstantValue(cv) => cv.serialize(serializer),
+            _ => unreachable!("unexpected `{:?}`: other `OperandConstantValue` fields than `ConstantValue` are temporary and should not occur in serialized LLBC", self),
         }
     }
 }
