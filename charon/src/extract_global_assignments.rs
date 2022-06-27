@@ -7,8 +7,6 @@
 //! To do that, we add a new variable to reference the static :
 //! they are accessed by reference in MIR, whereas globals are accessed by value.
 
-use lazy_static::__Deref;
-
 use crate::common::update_mut;
 use crate::expressions::*;
 use crate::im_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
@@ -19,7 +17,7 @@ use crate::values::VarId;
 
 fn deref_static_type(ref_ty: &ETy) -> &ETy {
     match ref_ty {
-        Ty::Ref(ErasedRegion::Erased, ty, RefKind::Shared) => ty.deref(),
+        Ty::Ref(ErasedRegion::Erased, ty, RefKind::Shared) => &*ty,
         _ => unreachable!(
             "excepted shared reference for static id type, got {:?}",
             ref_ty

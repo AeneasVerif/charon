@@ -9,20 +9,11 @@ use std::cell::Ref;
 
 pub const MIR_LEVEL: MirLevel = MirLevel::Built;
 
-/// Indicates if the constants should be extracted in their own identifier,
-/// or if they are evaluated to a constant value.
-/// The evaluation is forbidden in the pass of MirLevel::Built (did not test for Promoted).
-pub const EXTRACT_CONSTANTS_AT_TOP_LEVEL: bool = match MIR_LEVEL {
-    MirLevel::Built => true,
-    MirLevel::Promoted => false,
-    MirLevel::Optimized => false,
-};
-
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum MirLevel {
-    /// Original MIR, directly translated from HIR
+    /// Original MIR, directly translated from HIR.
     Built,
-    /// Not sure what this is
+    /// Not sure what this is.
     Promoted,
     /// MIR after optimization passes. The last one before codegen.
     Optimized,

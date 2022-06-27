@@ -9,7 +9,7 @@ use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::generics;
-use crate::get_mir::EXTRACT_CONSTANTS_AT_TOP_LEVEL;
+use crate::id_vector;
 use crate::im_ast as ast;
 use crate::names::global_def_id_to_name;
 use crate::names::{function_def_id_to_name, type_def_id_to_name};
@@ -23,6 +23,7 @@ use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
 use im::Vector;
+use log::warn;
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir;
 use rustc_middle::mir::{
@@ -105,7 +106,10 @@ impl<'ctx> DeclTransContext<'ctx> {
     }
 
     fn get_def_rid_from_id(&self, def_id: ast::FunDeclId::Id) -> Option<DefId> {
-        self.ordered.fun_id_to_rid.get(&def_id).map(|x| *x)
+        self.ordered
+            .decls_info
+            .get(&AnyDeclId::Fun(def_id))
+            .map(|i| i.rid)
     }
 }
 
@@ -274,11 +278,7 @@ fn translate_ety<'tcx, 'ctx, 'ctx1>(
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     ty: &mir_ty::Ty,
 ) -> Result<ty::ETy> {
-    let ty_ctx = TypeTransContext {
-        types: &bt_ctx.ft_ctx.type_defs,
-        type_rid_to_id: &bt_ctx.ft_ctx.ordered.type_rid_to_id,
-        type_id_to_rid: &bt_ctx.ft_ctx.ordered.type_id_to_rid,
-    };
+    let ty_ctx = TypeTransContext::new(&bt_ctx.ft_ctx.type_defs, &bt_ctx.ft_ctx.ordered);
     translate_types::translate_ety(tcx, &ty_ctx, &bt_ctx.rtype_vars_to_etypes, &ty)
 }
 
@@ -287,11 +287,7 @@ fn translate_sig_ty<'tcx, 'ctx, 'ctx1>(
     bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
     ty: &mir_ty::Ty<'tcx>,
 ) -> Result<ty::RTy> {
-    let ty_ctx = TypeTransContext {
-        types: &bt_ctx.ft_ctx.type_defs,
-        type_rid_to_id: &bt_ctx.ft_ctx.ordered.type_rid_to_id,
-        type_id_to_rid: &bt_ctx.ft_ctx.ordered.type_id_to_rid,
-    };
+    let ty_ctx = TypeTransContext::new(&bt_ctx.ft_ctx.type_defs, &bt_ctx.ft_ctx.ordered);
     translate_types::translate_sig_ty(
         tcx,
         &ty_ctx,
@@ -741,7 +737,7 @@ fn translate_constant_scalar_value<'tcx, 'ctx>(
         ty::Ty::Ref(ty::ErasedRegion::Erased, _, ty::RefKind::Shared) => match scalar {
             mir::interpret::Scalar::Ptr(p, _) => match tcx.global_alloc(p.provenance) {
                 mir::interpret::GlobalAlloc::Static(s) => {
-                    let id = decls.ordered.const_rid_to_id.get(&s).unwrap();
+                    let id = decls.ordered.global_rid_to_id.get(&s).unwrap();
                     e::OperandConstantValue::Static(*id)
                 }
                 _ => unreachable!(
@@ -829,7 +825,7 @@ fn translate_constant_value<'tcx, 'ctx1, 'ctx2>(
     }
 }
 
-/// Translate a constant value and its type.
+/// Translate an evaluated constant.
 fn translate_evaluated_operand_constant<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
@@ -842,9 +838,9 @@ fn translate_evaluated_operand_constant<'tcx, 'ctx1, 'ctx2>(
 }
 
 /// Translate a constant which may not be yet evaluated.
-fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
+fn translate_operand_constant<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
     constant: &mir::Constant<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
     trace!("{:?}", constant);
@@ -864,31 +860,11 @@ fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
             translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty, &cvalue)
         }
         rustc_middle::ty::ConstKind::Unevaluated(unev) => {
+            // Lookup the constant identifier and refer to it.
             let rid = unev.def.did;
-            let id = *bt_ctx.ft_ctx.ordered.const_rid_to_id.get(&rid).unwrap();
+            let id = *bt_ctx.ft_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
             let decl = bt_ctx.ft_ctx.global_defs.get(id).unwrap();
-
-            if EXTRACT_CONSTANTS_AT_TOP_LEVEL && decl.body.is_some() && rid.is_local() {
-                // Visible & local constants are extracted to the top level.
-                // Here, we only need to reference it.
-                (decl.type_.clone(), e::OperandConstantValue::Identifier(id))
-            } else {
-                // Evaluate the constant
-                // We need a param_env: we use the expression def id as a dummy id...
-                let param_env = tcx.param_env(bt_ctx.def_id);
-                let evaluated = tcx.const_eval_resolve(param_env, unev, Option::None);
-                match evaluated {
-                    std::result::Result::Ok(c) => {
-                        let (ty, val) =
-                            translate_evaluated_operand_constant(tcx, bt_ctx, &constant.ty(), &c);
-                        assert!(ty == decl.type_);
-                        (ty, val)
-                    }
-                    std::result::Result::Err(_) => {
-                        unreachable!("Could not evaluate an unevaluated constant");
-                    }
-                }
-            }
+            (decl.type_.clone(), e::OperandConstantValue::Identifier(id))
         }
         rustc_middle::ty::ConstKind::Param(_)
         | rustc_middle::ty::ConstKind::Infer(_)
@@ -901,9 +877,9 @@ fn translate_operand_constant<'tcx, 'ctx, 'ctx1>(
 }
 
 /// Translate an operand with its type
-fn translate_operand_with_type<'tcx, 'ctx, 'ctx1>(
+fn translate_operand_with_type<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
     operand: &mir::Operand<'tcx>,
 ) -> (e::Operand, ty::ETy) {
     trace!();
@@ -2194,8 +2170,8 @@ fn translate_function(
 ) -> Result<ast::FunDecl> {
     trace!("{:?}", def_id);
 
-    let rid = *ordered.fun_id_to_rid.get(&def_id).unwrap();
-    trace!("About to translate function:\n{:?}", rid);
+    let info = ordered.decls_info.get(&AnyDeclId::Fun(def_id)).unwrap();
+    trace!("About to translate function:\n{:?}", info.rid);
 
     // Initialize the function translation context
     let ft_ctx = DeclTransContext {
@@ -2206,23 +2182,23 @@ fn translate_function(
     };
 
     // Translate the function name
-    let name = function_def_id_to_name(tcx, rid);
+    let name = function_def_id_to_name(tcx, info.rid);
 
     // Translate the function signature and initialize the body translation context
     // at the same time (the signature gives us the region and type parameters,
     // that we put in the translation context).
     trace!("Translating function signature");
-    let (bt_ctx, signature) = translate_function_signature(tcx, types_constraints, &ft_ctx, rid);
+    let (bt_ctx, signature) =
+        translate_function_signature(tcx, types_constraints, &ft_ctx, info.rid);
 
     // Check if the type is opaque or transparent
-    let is_opaque = ordered.opaque_funs.contains(&def_id);
-    let body = if is_opaque {
+    let body = if !info.is_visible || !info.is_local() {
         Option::None
     } else {
         Option::Some(translate_body(
             tcx,
             bt_ctx,
-            rid.expect_local(),
+            info.rid.expect_local(),
             signature.inputs.len(),
         )?)
     };
@@ -2234,6 +2210,39 @@ fn translate_function(
         signature,
         body,
     })
+}
+
+/// Build an uninterpreted constant from a MIR constant identifier.
+fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> mir_ty::Unevaluated<'tcx> {
+    let p = mir_ty::List::empty();
+    let did = mir_ty::WithOptConstParam::unknown(id);
+    mir_ty::Unevaluated::new(did, p)
+}
+
+/// Generate an expression body from a typed constant value.
+fn generate_assignment_body(ty: ty::ETy, val: e::OperandConstantValue) -> ast::ExprBody {
+    // # Variables
+    // ret : ty
+    let var = ast::Var {
+        index: v::VarId::ZERO,
+        name: None,
+        ty: ty.clone(),
+    };
+    // # Instructions
+    // ret := const (ty, val)
+    // return
+    let block = ast::BlockData {
+        statements: vec![ast::Statement::Assign(
+            e::Place::new(var.index),
+            e::Rvalue::Use(e::Operand::Const(ty, val)),
+        )],
+        terminator: ast::Terminator::Return,
+    };
+    ast::ExprBody {
+        arg_count: 0,
+        locals: id_vector::Vector::from(vec![var]),
+        body: id_vector::Vector::from(vec![block]),
+    }
 }
 
 /// Translate one global.
@@ -2248,8 +2257,8 @@ fn translate_global(
 ) -> Result<ast::GlobalDecl> {
     trace!("{:?}", def_id);
 
-    let rid = *ordered.const_id_to_rid.get(&def_id).unwrap();
-    trace!("About to translate global:\n{:?}", rid);
+    let info = ordered.decls_info.get(&AnyDeclId::Global(def_id)).unwrap();
+    trace!("About to translate global:\n{:?}", info.rid);
 
     // Initialize the global translation context
     let ft_ctx = DeclTransContext {
@@ -2260,27 +2269,49 @@ fn translate_global(
     };
 
     // Translate the global name
-    let name = global_def_id_to_name(tcx, rid);
+    let name = global_def_id_to_name(tcx, info.rid);
 
     trace!("Translating global type");
+    let mir_ty = tcx.type_of(info.rid);
+
     let type_ = {
-        let mir_ty = tcx.type_of(rid);
-        let ty_ctx = TypeTransContext {
-            types: &ft_ctx.type_defs,
-            type_rid_to_id: &ft_ctx.ordered.type_rid_to_id,
-            type_id_to_rid: &ft_ctx.ordered.type_id_to_rid,
-        };
+        let ty_ctx = TypeTransContext::new(&ft_ctx.type_defs, &ft_ctx.ordered);
         let empty = im::OrdMap::new();
         translate_types::translate_ety(tcx, &ty_ctx, &empty, &mir_ty)?
     };
 
-    // Check if the global is opaque or transparent
-    let is_opaque = ordered.opaque_globals.contains(&def_id);
-    let body = if is_opaque {
-        Option::None
-    } else {
-        let bt_ctx = BodyTransContext::new(rid, &ft_ctx);
-        Option::Some(translate_body(tcx, bt_ctx, rid.expect_local(), 0)?)
+    let bt_ctx = BodyTransContext::new(info.rid, &ft_ctx);
+    let body = match (info.is_local(), info.is_visible) {
+        // It's a local & opaque global : we do not give it a body.
+        (true, false) => Option::None,
+
+        // It's a local & visible global : we extract its body as for functions.
+        (true, true) => Option::Some(translate_body(tcx, bt_ctx, info.rid.expect_local(), 0)?),
+
+        // It's an external global :
+        // The fact that its listed among declarations to extract mean that some
+        // local declarations depend on it.
+        // So, we try to evaluate its value it then generate a body to assign it to the global.
+        // If the evaluation fails, I'm not sure what is the best action ...
+        // For now, we warn about the failure and return an empty body.
+        // Perhaps the policy should depend on `static` (accept) VS `const` (reject) global ?
+        // Or force a successful translation, but translate only if it's visible ?
+        (false, _) => {
+            let unev = rid_as_unevaluated_constant(info.rid);
+            match tcx.const_eval_resolve(mir_ty::ParamEnv::empty(), unev, Option::None) {
+                std::result::Result::Ok(c) => {
+                    // Evaluate the constant
+                    // We need a param_env: we use the expression def id as a dummy id...
+
+                    let (ty, val) = translate_evaluated_operand_constant(tcx, &bt_ctx, &mir_ty, &c);
+                    Option::Some(generate_assignment_body(ty, val))
+                }
+                std::result::Result::Err(e) => {
+                    warn!("Did not evaluate {:?}: {:?}", info.rid, e);
+                    Option::None
+                }
+            }
+        }
     };
 
     // Return the new global

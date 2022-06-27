@@ -34,19 +34,13 @@ impl CrateInfo {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum DeclKind {
     Type,
-    Function,
+    Fun,
     Global,
 }
 
 pub type DeclDependencies = LinkedHashSet<DefId>;
 
 /// A registered declaration, listing its dependencies.
-///
-/// TODO: Add a flag to indicate that the expression can be evaluated
-///       at compile time (const VS static, const fn VS fn).
-///       They should be accepted even if they don't have body :
-///       it's only when they used in compile time context that it will fail.
-///       It can happen for e.g. a private const value or function.
 #[derive(Debug)]
 pub struct Declaration {
     // The declaration may be local or extern (id.is_local()).
@@ -74,10 +68,6 @@ impl Declaration {
         }
     }
 
-    pub fn is_local(&self) -> bool {
-        self.id.is_local()
-    }
-
     pub fn is_visible(&self) -> bool {
         self.deps.is_some()
     }
@@ -86,7 +76,7 @@ impl Declaration {
 fn get_decl_name(tcx: TyCtxt, kind: DeclKind, id: DefId) -> Name {
     match kind {
         DeclKind::Type => type_def_id_to_name(tcx, id),
-        DeclKind::Function => function_def_id_to_name(tcx, id),
+        DeclKind::Fun => function_def_id_to_name(tcx, id),
         DeclKind::Global => global_def_id_to_name(tcx, id),
     }
 }
@@ -97,7 +87,7 @@ fn is_primitive_decl(kind: DeclKind, id: DefId, name: &Name) -> bool {
     }
     match kind {
         DeclKind::Type => assumed::type_to_used_params(&name).is_some(),
-        DeclKind::Function => assumed::function_to_info(&name).is_some(),
+        DeclKind::Fun => assumed::function_to_info(&name).is_some(),
         DeclKind::Global => false,
     }
 }
@@ -105,7 +95,7 @@ fn is_primitive_decl(kind: DeclKind, id: DefId, name: &Name) -> bool {
 fn check_decl_generics(kind: DeclKind, tcx: TyCtxt, id: DefId) {
     match kind {
         DeclKind::Type => generics::check_type_generics(tcx, id),
-        DeclKind::Function => generics::check_function_generics(tcx, id),
+        DeclKind::Fun => generics::check_function_generics(tcx, id),
         DeclKind::Global => generics::check_global_generics(tcx, id),
     }
 }
@@ -907,7 +897,7 @@ fn register_body(
                 // signature: all the types it contains are already covered
                 // by the type arguments and the parameters.
 
-                register_dependency_expression(ctx, decls, fid, DeclKind::Function, &name)?;
+                register_dependency_expression(ctx, decls, fid, DeclKind::Fun, &name)?;
             }
             mir::terminator::TerminatorKind::Yield {
                 value: _,
@@ -1020,9 +1010,7 @@ fn register_hir_item(
         ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
             register_hir_type(ctx, decls, item, def_id)
         }
-        ItemKind::Fn(_, _, _) => {
-            register_local_expression(ctx, decls, item.def_id, DeclKind::Function)
-        }
+        ItemKind::Fn(_, _, _) => register_local_expression(ctx, decls, item.def_id, DeclKind::Fun),
         ItemKind::Const(_, _) | ItemKind::Static(_, _, _) => {
             register_local_expression(ctx, decls, item.def_id, DeclKind::Global)
         }
@@ -1104,7 +1092,7 @@ fn register_hir_impl_item(
         ImplItemKind::TyAlias(_) => unimplemented!(),
         ImplItemKind::Fn(_, _) => {
             let local_id = impl_item.def_id;
-            register_local_expression(ctx, decls, local_id, DeclKind::Function)
+            register_local_expression(ctx, decls, local_id, DeclKind::Fun)
         }
     }
 }

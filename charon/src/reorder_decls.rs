@@ -2,13 +2,15 @@ use crate::common::*;
 use crate::graphs::*;
 use crate::register::DeclKind;
 use crate::register::RegisteredDeclarations;
+use macros::EnumAsGetters;
+use macros::EnumIsA;
 use macros::{VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
 use rustc_hir::def_id::DefId;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::fmt::{Debug, Display, Error, Formatter};
 use std::vec::Vec;
 
@@ -33,6 +35,18 @@ pub enum DeclarationGroup<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     Global(GDeclarationGroup<GlobalId>),
 }
 
+#[derive(PartialEq, Eq, Hash, EnumIsA, EnumAsGetters, VariantName)]
+pub enum AnyDeclId<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
+    Type(TypeId),
+    Fun(FunId),
+    Global(GlobalId),
+}
+
+#[derive(Clone, Copy)]
+pub struct DeclInfo {
+    pub is_visible: bool,
+}
+
 /// The top-level declarations in a module
 pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     /// The properly grouped and ordered declarations
@@ -43,12 +57,8 @@ pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     pub fun_ids: Vec<FunId>,
     /// All the global ids
     pub global_ids: Vec<GlobalId>,
-    /// All the opaque/external type ids
-    pub external_type_ids: HashSet<TypeId>,
-    /// All the opaque/external fun ids
-    pub external_fun_ids: HashSet<FunId>,
-    /// All the opaque/external global ids
-    pub external_global_ids: HashSet<GlobalId>,
+    /// Additional information on declarations
+    pub decls_info: HashMap<AnyDeclId<TypeId, FunId, GlobalId>, DeclInfo>,
 }
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
@@ -151,9 +161,7 @@ impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationsGroups<TypeId, FunId
             type_ids: vec![],
             fun_ids: vec![],
             global_ids: vec![],
-            external_type_ids: HashSet::new(),
-            external_fun_ids: HashSet::new(),
-            external_global_ids: HashSet::new(),
+            decls_info: HashMap::new(),
         }
     }
 
@@ -290,33 +298,29 @@ pub fn reorder_declarations(
         };
         reordered_decls.push(match decl.kind {
             DeclKind::Type => DeclarationGroup::Type(group),
-            DeclKind::Function => DeclarationGroup::Fun(group),
+            DeclKind::Fun => DeclarationGroup::Fun(group),
             DeclKind::Global => DeclarationGroup::Global(group),
         });
     }
 
     trace!("{}", reordered_decls.to_string());
 
-    // We list the external definitions (opaque local, and non-local)
-    for (_, decl) in decls.iter() {
-        match decl.kind {
-            DeclKind::Type => {
-                if !decl.is_local() || !decl.is_visible() {
-                    reordered_decls.external_type_ids.insert(decl.id);
-                }
-            }
-            DeclKind::Function => {
-                if !decl.is_local() || !decl.is_visible() {
-                    reordered_decls.external_fun_ids.insert(decl.id);
-                }
-            }
-            DeclKind::Global => {
-                if !decl.is_local() || !decl.is_visible() {
-                    reordered_decls.external_global_ids.insert(decl.id);
-                }
-            }
-        }
-    }
+    // Adds declarations information.
+    reordered_decls.decls_info = decls
+        .iter()
+        .map(|(id, decl)| {
+            (
+                match decl.kind {
+                    DeclKind::Type => AnyDeclId::Type(*id),
+                    DeclKind::Fun => AnyDeclId::Fun(*id),
+                    DeclKind::Global => AnyDeclId::Global(*id),
+                },
+                DeclInfo {
+                    is_visible: decl.is_visible(),
+                },
+            )
+        })
+        .collect();
 
     // TODO: check that the mutually recursive groups don't mix opaque and
     // transparent definitions (this is for sanity: this really *shouldn't*
