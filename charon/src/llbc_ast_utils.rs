@@ -52,6 +52,22 @@ pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
             Box::new(transform_operands(*s1, f)),
             Box::new(transform_operands(*s2, f)),
         ),
+        Statement::Switch(op, tgt) => Statement::Switch(
+            op,
+            match tgt {
+                SwitchTargets::If(s1, s2) => SwitchTargets::If(
+                    Box::new(transform_operands(*s1, f)),
+                    Box::new(transform_operands(*s2, f)),
+                ),
+                SwitchTargets::SwitchInt(ty, vec, s) => SwitchTargets::SwitchInt(
+                    ty,
+                    vec.into_iter()
+                        .map(|(v, s)| (v, transform_operands(s, f)))
+                        .collect(),
+                    Box::new(transform_operands(*s, f)),
+                ),
+            },
+        ),
         _ => st,
     };
     match &mut st {
