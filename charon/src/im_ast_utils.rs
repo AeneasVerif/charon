@@ -15,7 +15,7 @@ use std::cmp::max;
 use std::fmt::Debug;
 use std::iter::FromIterator;
 
-/// Iterate on the declarations non-empty bodies with their corresponding name & type.
+/// Iterate on the declarations' non-empty bodies with their corresponding name and type.
 pub fn iter_function_bodies<T: Debug + Default + Clone + Serialize>(
     funs: &mut FunDeclId::Vector<GFunDecl<T>>,
 ) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
@@ -25,8 +25,8 @@ pub fn iter_function_bodies<T: Debug + Default + Clone + Serialize>(
     })
 }
 
-/// Iterate on the declarations non-empty bodies with their corresponding name & type.
-/// Same as [iter_function_bodies] (but the flat_map lambda cannot be generic).
+/// Iterate on the declarations' non-empty bodies with their corresponding name and type.
+/// Same as [iter_function_bodies] (but the `flat_map` lambda cannot be generic).
 pub fn iter_global_bodies<T: Debug + Default + Clone + Serialize>(
     globals: &mut GlobalDeclId::Vector<GGlobalDecl<T>>,
 ) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
@@ -36,7 +36,7 @@ pub fn iter_global_bodies<T: Debug + Default + Clone + Serialize>(
     })
 }
 
-/// Makes a lambda that generate a new variable id, push a new variable in
+/// Makes a lambda that generates a new variable id, pushes a new variable in
 /// the body locals with the given type and returns its id.
 pub fn make_locals_generator<'a>(
     locals: &'a mut VarId::Vector<Var>,
@@ -732,7 +732,7 @@ impl<CD: Debug + Default + Clone + Serialize> GGlobalDecl<CD> {
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<&'a CD>,
     {
-        // Function name
+        // Decl name
         let name = self.name.to_string();
 
         // Case disjunction on the presence of a body (transparent/opaque definition)

@@ -115,7 +115,7 @@ pub enum BinOp {
 pub enum Operand {
     Copy(Place),
     Move(Place),
-    /// Constant global value.
+    /// Constant value (including global statics)
     Const(ETy, OperandConstantValue),
 }
 
@@ -131,12 +131,12 @@ pub enum Operand {
 /// - a structure with no field is a constant.
 /// - sometimes, Rust stores the initialization of an ADT as a constant
 ///   (if all the fields are constant) rather than as an aggregated value
-/// It's translated to regular ADTs, see [regularize_constant_adts.rs].
+/// It is translated to regular ADTs, see [regularize_constant_adts.rs].
 ///
 /// `Identifier` case:
 /// Constant declarations can appear ....
 /// TODO: See static (constant address ?...)
-/// It's translated to separate statements, see [extract_global_assignments.rs].
+/// It is translated to separate statements, see [extract_global_assignments.rs].
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
     ConstantValue(ConstantValue),

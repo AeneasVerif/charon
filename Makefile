@@ -1,5 +1,5 @@
 .PHONY: all
-all: build build-tests build-tests-nll
+all: test
 
 .PHONY: build
 build:

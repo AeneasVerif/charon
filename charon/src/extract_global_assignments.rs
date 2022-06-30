@@ -1,10 +1,11 @@
-//! Extracts globals from operands to put them in a separate let binding.
-//! This is done to increase sequentiality of LLBC and reduces the cases to handle for operands.
-//! It will ease the functional translation.
+//! This module extracts globals from operands to put them in a separate let binding.
+//! This is done to increase sequentiality of LLBC and reduce the cases to handle
+//! in the operands, making the formalisation less complex and easing the functional
+//! translation.
 //!
-//! Also extracts statics fom operands for the same reason and because we want to
-//! treat them as globals in LLBC.
-//! To do that, we add a new variable to reference the static :
+//! It also extracts statics fom operands for the same reason, and because we want
+//! to treat them as globals in LLBC.
+//! To do this, we add a new variable to reference the static:
 //! they are accessed by reference in MIR, whereas globals are accessed by value.
 
 use crate::common::update_mut;
@@ -19,7 +20,7 @@ fn deref_static_type(ref_ty: &ETy) -> &ETy {
     match ref_ty {
         Ty::Ref(ErasedRegion::Erased, ty, RefKind::Shared) => &*ty,
         _ => unreachable!(
-            "excepted shared reference for static id type, got {:?}",
+            "expected shared reference for static id type, got {:?}",
             ref_ty
         ),
     }
@@ -39,7 +40,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
     let (var, new_st) = match *c {
         OperandConstantValue::ConstantValue(_) => return vec![],
         OperandConstantValue::Adt(_, _) => {
-            unreachable!("Constant ADTs should've been replaced by now'")
+            unreachable!("Constant ADTs should have been replaced by now")
         }
         OperandConstantValue::Identifier(global_id) => {
             let var = make_new_var(ty.clone());

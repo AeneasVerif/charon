@@ -353,10 +353,10 @@ fn test_propagate_error() {
     let res = propagate_error(
         |f| ints.iter().for_each(f),
         |x| {
-            if x == &4 {
+            if *x == 4 {
                 return Err(());
             }
-            sum += x;
+            sum += *x;
             Ok(())
         },
     );
