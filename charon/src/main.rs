@@ -26,6 +26,7 @@ extern crate rustc_resolve;
 extern crate rustc_session;
 extern crate rustc_span;
 extern crate rustc_target;
+extern crate take_mut;
 
 #[macro_use]
 mod common;

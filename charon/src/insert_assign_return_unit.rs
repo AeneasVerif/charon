@@ -3,7 +3,8 @@
 //! of AENEAS, it means the return variable contains ⊥ upon returning.
 //! For this reason, when the function has return type unit, we insert
 //! an extra assignment just before returning.
-use crate::common::update_mut;
+use take_mut::take;
+
 use crate::expressions::*;
 use crate::llbc_ast::{
     ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, Statement, SwitchTargets,
@@ -60,7 +61,7 @@ fn transform_st(st: Statement) -> Statement {
 fn transform_body(name: &Name, body: &mut Option<ExprBody>) {
     if let Some(b) = body.as_mut() {
         trace!("About to insert assign and return unit: {name}");
-        update_mut(&mut b.body, transform_st);
+        take(&mut b.body, transform_st);
     }
 }
 

@@ -69,8 +69,8 @@ pub struct FunSig {
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
-#[derive(Debug, Clone, Serialize, Default)]
-pub struct GExprBody<T: std::fmt::Debug + Default + Clone + Serialize> {
+#[derive(Debug, Clone, Serialize)]
+pub struct GExprBody<T: std::fmt::Debug + Clone + Serialize> {
     pub arg_count: usize,
     pub locals: VarId::Vector<Var>,
     pub body: T,
@@ -80,7 +80,7 @@ pub type ExprBody = GExprBody<BlockId::Vector<BlockData>>;
 
 /// A function definition
 #[derive(Debug, Clone, Serialize)]
-pub struct GFunDecl<T: std::fmt::Debug + Default + Clone + Serialize> {
+pub struct GFunDecl<T: std::fmt::Debug + Clone + Serialize> {
     pub def_id: FunDeclId::Id,
     pub name: FunName,
     /// The signature contains the inputs/output types *with* non-erased regions.
@@ -97,13 +97,13 @@ pub type FunDecls = FunDeclId::Vector<FunDecl>;
 
 /// A global variable definition, either opaque or transparent.
 #[derive(Debug, Clone, Serialize)]
-pub struct GGlobalDecl<T: std::fmt::Debug + Default + Clone + Serialize> {
+pub struct GGlobalDecl<T: std::fmt::Debug + Clone + Serialize> {
     pub def_id: GlobalDeclId::Id,
     pub name: GlobalName,
     pub ty: ETy,
     pub body: Option<GExprBody<T>>,
 }
-impl<T: std::fmt::Debug + Default + Clone + Serialize> GGlobalDecl<T> {
+impl<T: std::fmt::Debug + Clone + Serialize> GGlobalDecl<T> {
     fn is_opaque(&self) -> bool {
         self.body.is_none()
     }

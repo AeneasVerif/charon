@@ -12,12 +12,6 @@ use itertools::chain;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 
-impl Default for Statement {
-    fn default() -> Statement {
-        Statement::Nop
-    }
-}
-
 /// Goes from e.g. [A, B, C] ; D to (A, (B, (C, D))).
 pub fn chain_statements(firsts: Vec<Statement>, last: Statement) -> Statement {
     firsts.into_iter().rev().fold(last, |cont, bind| {

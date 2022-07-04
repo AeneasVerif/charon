@@ -9,13 +9,13 @@
 
 use std::iter::zip;
 
-use crate::common::update_mut;
 use crate::expressions::*;
 use crate::im_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
 use crate::llbc_ast::{FunDecls, GlobalDecls, Statement};
 use crate::llbc_ast_utils::transform_operands;
 use crate::types::*;
 use crate::values::VarId;
+use take_mut::take;
 
 fn make_aggregate_kind(ty: &ETy, var_index: Option<VariantId::Id>) -> AggregateKind {
     let (id, _, fields) = ty.as_adt();
@@ -86,7 +86,7 @@ pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
         trace!("# About to regularize constant ADTs: {name}");
 
         let mut f = make_locals_generator(&mut b.locals);
-        update_mut(&mut b.body, |st| {
+        take(&mut b.body, |st| {
             transform_operands(st, &mut |op| translate_operand_adt(op, &mut f))
         });
     }

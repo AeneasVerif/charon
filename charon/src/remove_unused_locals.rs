@@ -1,4 +1,5 @@
-use crate::common::update_mut;
+use take_mut::take;
+
 /// Remove the locals which are never used in the function bodies.
 /// This is useful to remove the locals with type `Never`. We actually
 /// check that there are no such local variables remaining afterwards.
@@ -219,7 +220,7 @@ fn update_locals(
 pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!("# About to remove unused locals: {name}");
-        update_mut(b, |mut b| {
+        take(b, |mut b| {
             let (locals, vids_map) = update_locals(b.locals, &b.body);
             b.locals = locals;
             b.body = transform_st(&vids_map, b.body);

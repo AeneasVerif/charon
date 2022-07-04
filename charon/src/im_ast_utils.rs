@@ -16,7 +16,7 @@ use std::fmt::Debug;
 use std::iter::FromIterator;
 
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
-pub fn iter_function_bodies<T: Debug + Default + Clone + Serialize>(
+pub fn iter_function_bodies<T: Debug + Clone + Serialize>(
     funs: &mut FunDeclId::Vector<GFunDecl<T>>,
 ) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
     funs.iter_mut().flat_map(|f| match f.body.as_mut() {
@@ -27,7 +27,7 @@ pub fn iter_function_bodies<T: Debug + Default + Clone + Serialize>(
 
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
 /// Same as [iter_function_bodies] (but the `flat_map` lambda cannot be generic).
-pub fn iter_global_bodies<T: Debug + Default + Clone + Serialize>(
+pub fn iter_global_bodies<T: Debug + Clone + Serialize>(
     globals: &mut GlobalDeclId::Vector<GGlobalDecl<T>>,
 ) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
     globals.iter_mut().flat_map(|g| match g.body.as_mut() {
@@ -454,7 +454,7 @@ where
     blocks.join("\n")
 }
 
-impl<T: Debug + Default + Clone + Serialize> GExprBody<T> {
+impl<T: Debug + Clone + Serialize> GExprBody<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function definition already has the information to print
@@ -613,7 +613,7 @@ impl FunSig {
     }
 }
 
-impl<T: Debug + Default + Clone + Serialize> GFunDecl<T> {
+impl<T: Debug + Clone + Serialize> GFunDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the function definition already has the information to print
@@ -712,7 +712,7 @@ impl<T: Debug + Default + Clone + Serialize> GFunDecl<T> {
     }
 }
 
-impl<CD: Debug + Default + Clone + Serialize> GGlobalDecl<CD> {
+impl<CD: Debug + Clone + Serialize> GGlobalDecl<CD> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
     /// because the global definition already has the information to print

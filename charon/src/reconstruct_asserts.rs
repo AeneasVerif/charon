@@ -3,8 +3,9 @@
 //! introduce `if ... then { panic!(...) } else { ...}`.
 //! This pass introduces `assert` instead in order to make the code shorter.
 
+use take_mut::take;
+
 use crate::{
-    common::update_mut,
     im_ast::{iter_function_bodies, iter_global_bodies},
     llbc_ast::{Assert, FunDecls, GlobalDecls, Statement, SwitchTargets},
 };
@@ -63,6 +64,6 @@ fn simplify_st(st: Statement) -> Statement {
 pub fn simplify(funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!("# About to reconstruct asserts: {name}");
-        update_mut(&mut b.body, simplify_st);
+        take(&mut b.body, simplify_st);
     }
 }

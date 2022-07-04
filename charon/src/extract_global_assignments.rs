@@ -8,13 +8,13 @@
 //! To do this, we add a new variable to reference the static:
 //! they are accessed by reference in MIR, whereas globals are accessed by value.
 
-use crate::common::update_mut;
 use crate::expressions::*;
 use crate::im_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
 use crate::llbc_ast::{FunDecls, GlobalDecls, Statement};
 use crate::llbc_ast_utils::transform_operands;
 use crate::types::*;
 use crate::values::VarId;
+use take_mut::take;
 
 fn deref_static_type(ref_ty: &ETy) -> &ETy {
     match ref_ty {
@@ -78,7 +78,7 @@ pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
         trace!("# About to extract global assignments: {name}");
 
         let mut f = make_locals_generator(&mut b.locals);
-        update_mut(&mut b.body, |st| {
+        take(&mut b.body, |st| {
             transform_operands(st, &mut |op| extract_operand_global_var(op, &mut f))
         });
     }
