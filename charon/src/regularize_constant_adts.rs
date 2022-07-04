@@ -4,7 +4,7 @@
 //! This pass removes all occurrences of OperandConstantValue::ConstantAdt,
 //! and builds regular ADTs instead (as for static values).
 //!
-//! To do so, it recursively translate an operand of the form
+//! To do so, it recursively translates an operand of the form
 //! `... const ADT ...;`
 //! to something like
 //! `SetDiscriminant(_new_var, N);` (in the case of enums)

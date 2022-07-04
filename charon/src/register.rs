@@ -125,7 +125,7 @@ struct RegisterContext<'a, 'b, 'c> {
 
 pub type RegisteredDeclarations = LinkedHashMap<DefId, Declaration>;
 
-/// Structure used to register declarations : see
+/// Structure used to register declarations: see
 /// [DeclarationsRegister::register_opaque_declaration] and
 /// [DeclarationsRegister::register_visible_declaration].
 struct DeclarationsRegister {

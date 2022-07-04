@@ -157,10 +157,9 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     //   identifier (say the identifier is "list::List", we only use "List"
     //   and insert it in the name).
     //
-    // Besides,
-    // As there may be several "impl" blocks for one type, each impl block is
-    // identified by a unique number (rustc calls this a "disambiguator"),
-    // which we grab.
+    // Besides, as there may be several "impl" blocks for one type, each impl
+    // block is identified by a unique number (rustc calls this a
+    // "disambiguator"), which we grab.
     let mut found_crate_name = false;
     let mut id = def_id;
     let mut name: Vec<PathElem> = Vec::new();

@@ -859,9 +859,10 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // # Step 7: replace constant (OperandConstantValue) ADTs by regular (Aggregated) ADTs.
     regularize_constant_adts::transform(&mut llbc_funs, &mut llbc_globals);
 
-    // # Step 8: extract statics and constant globals from operands (put them in a let binding).
-    // Relies on the absence of constant ADTs from the previous step :
-    // It does not inspect them (so it would miss globals in constant ADTs).
+    // # Step 8: extract statics and constant globals from operands (put them in
+    // a let binding). This pass relies on the absence of constant ADTs from
+    // the previous step: it does not inspect them (so it would miss globals in
+    // constant ADTs).
     extract_global_assignments::transform(&mut llbc_funs, &mut llbc_globals);
 
     // # Step 9: simplify the calls to unops and binops
