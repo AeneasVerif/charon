@@ -4,13 +4,8 @@
 //! This pass removes all occurrences of OperandConstantValue::ConstantAdt,
 //! and builds regular ADTs instead (as for static values).
 //!
-//! To do so, it recursively translates an operand of the form
-//! `... const ADT ...;`
-//! to something like
-//! `SetDiscriminant(_new_var, N);` (in the case of enums)
-//! `Assign(_new_var.N, operand);`
-//! `... const ADT ...;`
-//! The recursion happens on the assignment operands.
+//! To do so, it recursively translates an operand of the form `const <ADT>`
+//! to `AggregatedAdt`. The recursion happens on the assignment operands.
 
 use std::iter::zip;
 

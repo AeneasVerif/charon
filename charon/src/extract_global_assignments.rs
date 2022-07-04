@@ -27,8 +27,18 @@ fn deref_static_type(ref_ty: &ETy) -> &ETy {
 }
 
 /// If the operand is a constant global identifier, returns an `AssignGlobal` statement
-/// that binds a new variable to the global and move it in the operand.
-/// If its a static global identifier, adds an indirection to take a reference on it.
+/// that binds a new variable to the global and move it in the operand:
+/// `... const X ...`
+/// becomes
+/// `let x0 = X;`
+/// `... move x0 ...`
+///
+/// If it's a static global identifier, also adds an indirection to take a reference on it:
+/// /// `... const X ...`
+/// becomes
+/// `let x0 = X;`
+/// `let x1 = &X;`
+/// `... move x1 ...`
 fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
     op: &mut Operand,
     make_new_var: &mut F,

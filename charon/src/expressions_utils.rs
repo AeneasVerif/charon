@@ -313,6 +313,8 @@ impl Serialize for OperandConstantValue {
         S: Serializer,
     {
         match self {
+            // OperandConstantValue exists only to handle temporary cases inherited from the MIR :
+            // for the final LLBC format, we simply export the underlying constant value.
             OperandConstantValue::ConstantValue(cv) => cv.serialize(serializer),
             _ => unreachable!("unexpected `{:?}`: other `OperandConstantValue` fields than `ConstantValue` are temporary and should not occur in serialized LLBC", self),
         }

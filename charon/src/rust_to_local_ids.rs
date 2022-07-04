@@ -24,13 +24,13 @@ pub struct DeclInfo {
     /// Its Rust identifier. Indicates if the declaration is local ("external" otherwise).
     pub rid: DefId,
     /// True if the declaration's body is accessible ("opaque" otherwise).
-    pub is_visible: bool,
+    pub is_transparent: bool,
 }
 impl DeclInfo {
     fn new(rid: DefId, info: rd::DeclInfo) -> Self {
         DeclInfo {
             rid,
-            is_visible: info.is_visible,
+            is_transparent: info.is_transparent,
         }
     }
     pub fn is_local(&self) -> bool {

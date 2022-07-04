@@ -22,7 +22,7 @@ use rustc_middle::ty::{Ty, TyKind};
 pub struct TypeTransContext<'ctx> {
     /// The type definitions - TODO: rename to type_defs
     pub types: &'ctx ty::TypeDecls,
-    /// Ordered declarations allowing to convert id to & from rid.
+    /// Ordered declarations allowing to convert id to and from rid.
     decls: &'ctx OrderedDecls,
 }
 
@@ -672,7 +672,7 @@ fn translate_type<'ctx>(
 
     // Check if the type is opaque or external, and delegate the translation
     // of the "body" to the proper function
-    let kind = if !info.is_local() || !info.is_visible {
+    let kind = if !info.is_local() || !info.is_transparent {
         // Opaque types are:
         // - external types
         // - local types flagged as opaque
@@ -754,7 +754,7 @@ pub fn translate_types(
                 }
             },
             DeclarationGroup::Fun(_) | DeclarationGroup::Global(_) => {
-                // Ignore the functions & constants
+                // Ignore the functions and constants
             }
         }
     }

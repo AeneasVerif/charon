@@ -1862,7 +1862,7 @@ fn translate_global(
     tgt::GlobalDecl {
         def_id: src_def.def_id,
         name: src_def.name.clone(),
-        type_: src_def.type_.clone(),
+        ty: src_def.ty.clone(),
         body: src_def
             .body
             .as_ref()
@@ -1879,48 +1879,48 @@ fn translate_global(
 pub fn translate_functions(
     no_code_duplication: bool,
     type_defs: &TypeDecls,
-    in_funs: &src::FunDecls,
-    in_globals: &src::GlobalDecls,
+    src_funs: &src::FunDecls,
+    src_globals: &src::GlobalDecls,
 ) -> Defs {
-    let mut out_funs = FunDeclId::Vector::new();
-    let mut out_globals = GlobalDeclId::Vector::new();
+    let mut tgt_funs = FunDeclId::Vector::new();
+    let mut tgt_globals = GlobalDeclId::Vector::new();
 
     // Translate the bodies one at a time
-    for fun_id in in_funs.iter_indices() {
-        out_funs.push_back(translate_function(
+    for fun_id in src_funs.iter_indices() {
+        tgt_funs.push_back(translate_function(
             no_code_duplication,
             type_defs,
-            in_funs,
+            src_funs,
             fun_id,
-            in_globals,
+            src_globals,
         ));
     }
-    for global_id in in_globals.iter_indices() {
-        out_globals.push_back(translate_global(
+    for global_id in src_globals.iter_indices() {
+        tgt_globals.push_back(translate_global(
             no_code_duplication,
             type_defs,
-            in_globals,
+            src_globals,
             global_id,
-            in_funs,
+            src_funs,
         ));
     }
 
     // Print the functions
-    for fun in &out_funs {
+    for fun in &tgt_funs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
             fun.signature.fmt_with_defs(&type_defs),
-            fun.fmt_with_defs(&type_defs, &out_funs, &out_globals)
+            fun.fmt_with_defs(&type_defs, &tgt_funs, &tgt_globals)
         );
     }
     // Print the global variables
-    for global in &out_globals {
+    for global in &tgt_globals {
         trace!(
             "# Type:\n{:?}\n\n# Global definition:\n{}\n",
-            global.type_,
-            global.fmt_with_defs(&type_defs, &out_funs, &out_globals)
+            global.ty,
+            global.fmt_with_defs(&type_defs, &tgt_funs, &tgt_globals)
         );
     }
 
-    (out_funs, out_globals)
+    (tgt_funs, tgt_globals)
 }

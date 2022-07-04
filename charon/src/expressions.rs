@@ -133,10 +133,9 @@ pub enum Operand {
 ///   (if all the fields are constant) rather than as an aggregated value
 /// It is translated to regular ADTs, see [regularize_constant_adts.rs].
 ///
-/// `Identifier` case:
-/// Constant declarations can appear ....
-/// TODO: See static (constant address ?...)
-/// It is translated to separate statements, see [extract_global_assignments.rs].
+/// `Identifier` and `Static` case:
+/// Match constant variables. Their access will be done elsewhere in a
+/// separate statement, see [extract_global_assignments.rs].
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
     ConstantValue(ConstantValue),
@@ -153,7 +152,7 @@ pub enum OperandConstantValue {
     /// Reading the constant a.b is translated to { _1 = const a; _2 = (_1.0) }.
     Identifier(GlobalDeclId::Id),
     ///
-    ///
+    /// Same as for constants, except that statics are accessed through references.
     Static(GlobalDeclId::Id),
 }
 

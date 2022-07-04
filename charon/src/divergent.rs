@@ -86,7 +86,7 @@ pub fn compute_divergent_functions(
                 }
             }
             DeclarationGroup::Type(_) | DeclarationGroup::Global(_) => {
-                // Ignore the type & global declarations
+                // Ignore the type and global declarations
                 continue;
             }
         }

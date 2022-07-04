@@ -44,7 +44,7 @@ pub enum AnyDeclId<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
 
 #[derive(Clone, Copy)]
 pub struct DeclInfo {
-    pub is_visible: bool,
+    pub is_transparent: bool,
 }
 
 /// The top-level declarations in a module
@@ -281,6 +281,14 @@ pub fn reorder_declarations(
         let id0 = *it.next().unwrap();
         let decl = &decls[&id0];
 
+        // The group should consist of only functions, only types or only one global.
+        for id in scc {
+            assert!(decls[id].kind == decl.kind);
+        }
+        if let DeclKind::Global = decl.kind {
+            assert!(scc.len() == 1);
+        }
+
         // If an SCC has length one, the declaration may be simply recursive:
         // we determine whether it is the case by checking if the def id is in
         // its own set of dependencies.
@@ -316,7 +324,7 @@ pub fn reorder_declarations(
                     DeclKind::Global => AnyDeclId::Global(*id),
                 },
                 DeclInfo {
-                    is_visible: decl.is_visible(),
+                    is_transparent: decl.is_transparent(),
                 },
             )
         })

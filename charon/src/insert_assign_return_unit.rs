@@ -59,7 +59,7 @@ fn transform_st(st: Statement) -> Statement {
 
 fn transform_body(name: &Name, body: &mut Option<ExprBody>) {
     if let Some(b) = body.as_mut() {
-        trace!("About to insert assign & return unit: {name}");
+        trace!("About to insert assign and return unit: {name}");
         update_mut(&mut b.body, transform_st);
     }
 }
@@ -70,7 +70,7 @@ fn transform_function(def: &mut FunDecl) {
     }
 }
 fn transform_global(def: &mut GlobalDecl) {
-    if def.type_.is_unit() {
+    if def.ty.is_unit() {
         transform_body(&def.name, &mut def.body);
     }
 }

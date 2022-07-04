@@ -37,7 +37,7 @@ use std::iter::zip;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name, TypeTransContext};
 
-/// Translation context for function & constant definitions
+/// Translation context for function and global definitions
 pub struct DeclTransContext<'ctx> {
     /// The ordered declarations
     pub ordered: &'ctx OrderedDecls,
@@ -45,11 +45,11 @@ pub struct DeclTransContext<'ctx> {
     pub type_defs: &'ctx ty::TypeDecls,
     /// The function definitions
     pub fun_defs: &'ctx ast::FunDecls,
-    /// The constant definitions
+    /// The global definitions
     pub global_defs: &'ctx ast::GlobalDecls,
 }
 
-/// A translation context for function & constant bodies.
+/// A translation context for function and global bodies.
 ///
 /// We use `im::OrdMap` a lot in places where we could use a
 /// `std::collections::BTreeMap` (because we actually don't do context
@@ -60,7 +60,7 @@ pub struct DeclTransContext<'ctx> {
 struct BodyTransContext<'ctx, 'ctx1> {
     /// This is used in very specific situations.
     def_id: DefId,
-    /// The declarations translation context, containing the function & constant definitions.
+    /// The declarations translation context, containing the function and global definitions.
     /// Also contains the type translation context.
     ft_ctx: &'ctx DeclTransContext<'ctx1>,
     /// Region counter
@@ -659,6 +659,10 @@ fn translate_constant_integer_like_value(
     scalar: &mir::interpret::Scalar,
 ) -> v::ConstantValue {
     trace!();
+    // The documentation explicitly says not to match on a
+    // scalar. We match on the type and convert the value
+    // following this, by calling the appropriate `to_*`
+    // method
     match ty {
         ty::Ty::Bool => v::ConstantValue::Bool(scalar.to_bool().unwrap()),
         ty::Ty::Char => v::ConstantValue::Char(scalar.to_char().unwrap()),
@@ -703,6 +707,10 @@ fn translate_constant_scalar_value<'tcx, 'ctx>(
     scalar: &mir::interpret::Scalar,
 ) -> e::OperandConstantValue {
     trace!("{:?}", scalar);
+    // A constant operand scalar is usually an instance of a primitive type
+    // (bool, char, integer...). However, it may also be an instance of a
+    // degenerate ADT or tuple (if an ADT has only one variant and no fields,
+    // it is a constant, and unit is encoded by MIR as a 0-tuple).
     match ty {
         ty::Ty::Bool | ty::Ty::Char | ty::Ty::Integer(_) => {
             let v = translate_constant_integer_like_value(ty, scalar);
@@ -776,8 +784,8 @@ fn translate_constant_reference_value<'tcx, 'ctx1, 'ctx2>(
     // We use [destructure_const] to destructure the constant
     // We need a param_env: we use the function def id as a dummy id...
     let param_env = tcx.param_env(bt_ctx.def_id);
-    // I have to clone some values: it is a bit annoying, but I manage
-    // to get the lifetimes working otherwise...
+    // I have to clone some values: it is a bit annoying, but I don't
+    // manage to get the lifetimes working otherwise...
     let cvalue = rustc_middle::ty::Const::from_value(tcx, value.clone(), rustc_ty.clone());
     let param_env_and_const = rustc_middle::ty::ParamEnvAnd {
         param_env,
@@ -825,7 +833,6 @@ fn translate_constant_value<'tcx, 'ctx1, 'ctx2>(
     }
 }
 
-/// Translate an evaluated constant.
 fn translate_evaluated_operand_constant<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
@@ -864,7 +871,7 @@ fn translate_operand_constant<'tcx, 'ctx1, 'ctx2>(
             let rid = unev.def.did;
             let id = *bt_ctx.ft_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
             let decl = bt_ctx.ft_ctx.global_defs.get(id).unwrap();
-            (decl.type_.clone(), e::OperandConstantValue::Identifier(id))
+            (decl.ty.clone(), e::OperandConstantValue::Identifier(id))
         }
         rustc_middle::ty::ConstKind::Param(_)
         | rustc_middle::ty::ConstKind::Infer(_)
@@ -2192,7 +2199,7 @@ fn translate_function(
         translate_function_signature(tcx, types_constraints, &ft_ctx, info.rid);
 
     // Check if the type is opaque or transparent
-    let body = if !info.is_visible || !info.is_local() {
+    let body = if !info.is_transparent || !info.is_local() {
         Option::None
     } else {
         Option::Some(translate_body(
@@ -2281,11 +2288,11 @@ fn translate_global(
     };
 
     let bt_ctx = BodyTransContext::new(info.rid, &ft_ctx);
-    let body = match (info.is_local(), info.is_visible) {
-        // It's a local & opaque global : we do not give it a body.
+    let body = match (info.is_local(), info.is_transparent) {
+        // It's a local and opaque global : we do not give it a body.
         (true, false) => Option::None,
 
-        // It's a local & visible global : we extract its body as for functions.
+        // It's a local and transparent global : we extract its body as for functions.
         (true, true) => Option::Some(translate_body(tcx, bt_ctx, info.rid.expect_local(), 0)?),
 
         // It's an external global :
@@ -2294,8 +2301,8 @@ fn translate_global(
         // So, we try to evaluate its value it then generate a body to assign it to the global.
         // If the evaluation fails, I'm not sure what is the best action ...
         // For now, we warn about the failure and return an empty body.
-        // Perhaps the policy should depend on `static` (accept) VS `const` (reject) global ?
-        // Or force a successful translation, but translate only if it's visible ?
+        // TODO: Perhaps the policy should depend on `static` (accept) VS `const` (reject) global ?
+        // Or force a successful translation, but translate only if it's transparent ?
         (false, _) => {
             let unev = rid_as_unevaluated_constant(info.rid);
             match tcx.const_eval_resolve(mir_ty::ParamEnv::empty(), unev, Option::None) {
@@ -2318,7 +2325,7 @@ fn translate_global(
     Ok(ast::GlobalDecl {
         def_id,
         name,
-        type_,
+        ty: type_,
         body,
     })
 }
@@ -2408,7 +2415,7 @@ pub fn translate_functions(
         }
     }
 
-    // Print the functions & constants
+    // Print the functions and constants
     for def in &fun_defs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",

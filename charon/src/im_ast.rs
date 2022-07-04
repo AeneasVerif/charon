@@ -100,7 +100,7 @@ pub type FunDecls = FunDeclId::Vector<FunDecl>;
 pub struct GGlobalDecl<T: std::fmt::Debug + Default + Clone + Serialize> {
     pub def_id: GlobalDeclId::Id,
     pub name: GlobalName,
-    pub type_: ETy,
+    pub ty: ETy,
     pub body: Option<GExprBody<T>>,
 }
 impl<T: std::fmt::Debug + Default + Clone + Serialize> GGlobalDecl<T> {

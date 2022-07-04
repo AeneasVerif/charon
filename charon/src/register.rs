@@ -30,7 +30,7 @@ impl CrateInfo {
 }
 
 /// All kind of supported Rust top-level declarations.
-/// const & static variables are merged together in the global kind.
+/// const and static variables are merged together in the global kind.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum DeclKind {
     Type,
@@ -68,7 +68,7 @@ impl Declaration {
         }
     }
 
-    pub fn is_visible(&self) -> bool {
+    pub fn is_transparent(&self) -> bool {
         self.deps.is_some()
     }
 }
@@ -100,7 +100,7 @@ fn check_decl_generics(kind: DeclKind, tcx: TyCtxt, id: DefId) {
     }
 }
 
-fn get_opaque_declaration(
+fn new_opaque_declaration(
     tcx: TyCtxt,
     id: DefId,
     kind: DeclKind,
@@ -146,11 +146,11 @@ impl DeclarationsRegister {
         self.decl_ids.contains(id)
     }
 
-    /// The declarations are registered in two steps :
-    /// When their exploration begin, we must first add their id.
+    /// The declarations are registered in two steps:
+    /// When their exploration begins, we must first add their id.
     /// This is done to prevent cycles while registering declarations.
     ///
-    /// Should not be called outside [DeclarationsRegister]'s methods :
+    /// Should not be called outside [DeclarationsRegister]'s methods:
     /// Use either [DeclarationsRegister::register_opaque_declaration]
     /// or [DeclarationsRegister::register_visible_declaration] instead.
     fn add_begin(&mut self, id: DefId) {
@@ -159,7 +159,7 @@ impl DeclarationsRegister {
 
     /// Finalize the registering of a declaration.
     ///
-    /// Should not be called outside [DeclarationsRegister]'s methods :
+    /// Should not be called outside [DeclarationsRegister]'s methods:
     /// Use either [DeclarationsRegister::register_opaque_declaration]
     /// or [DeclarationsRegister::register_visible_declaration] instead.
     fn add_end(&mut self, decl: Declaration) {
@@ -173,14 +173,14 @@ impl DeclarationsRegister {
         );
     }
 
-    /// Does not explore further the declaration content :
+    /// Does not explore further the declaration content:
     /// If the declaration was unknown, registers it without dependencies.
     fn register_opaque_declaration(&mut self, tcx: TyCtxt, id: DefId, kind: DeclKind, name: &Name) {
         if self.knows(&id) {
             return;
         }
 
-        get_opaque_declaration(tcx, id, kind, name).map(|decl| {
+        new_opaque_declaration(tcx, id, kind, name).map(|decl| {
             self.add_begin(id);
             self.add_end(decl);
         });
@@ -205,7 +205,7 @@ impl DeclarationsRegister {
 
         let name = get_decl_name(ctx.rustc, kind, id);
 
-        // Only local declarations are supported for now, it better not be primitive.
+        // Only local declarations are supported for now, it should not be primitive.
         if is_primitive_decl(kind, id, &name) {
             unreachable!();
         }
@@ -580,7 +580,7 @@ fn register_mir_ty(
             unimplemented!();
         }
         TyKind::Param(_) => {
-            // A type parameter, for example `T` in `fn f<T>(x : T) {}`
+            // A type parameter, for example `T` in `fn f<T>(x: T) {}`
             // We have nothing to do
             trace!("Param");
             return Ok(());
@@ -621,7 +621,7 @@ fn visit_block<'tcx, V: mir::visit::Visitor<'tcx>>(
     block.terminator().apply(mir::Location::START, &mut visitor);
 }
 
-fn visit_constants<'tcx>(
+fn visit_globals<'tcx>(
     block: &'tcx mir::BasicBlockData<'tcx>,
     f: &mut dyn FnMut(&'tcx rustc_middle::ty::Const<'tcx>),
 ) {
@@ -638,11 +638,11 @@ fn visit_constants<'tcx>(
     visit_block(block, ConstVisitor { f });
 }
 
-fn visit_constant_dependencies<'tcx, F: FnMut(DefId)>(
+fn visit_global_dependencies<'tcx, F: FnMut(DefId)>(
     block: &'tcx mir::BasicBlockData<'tcx>,
     mut f: F,
 ) {
-    visit_constants(block, &mut |c| match c.val {
+    visit_globals(block, &mut |c| match c.val {
         rustc_middle::ty::ConstKind::Value(_) => (),
         rustc_middle::ty::ConstKind::Unevaluated(uv) => {
             f(uv.def.did);
@@ -701,10 +701,10 @@ fn register_body(
     // Retrieve the MIR code
     let body = crate::get_mir::get_mir_for_def_id(ctx.rustc, def_id);
 
-    // Visit the constants first (without particular reason).
+    // Visit the global dependencies.
     for b in body.basic_blocks().iter() {
         propagate_error(
-            |f| visit_constant_dependencies(b, f),
+            |f| visit_global_dependencies(b, f),
             |id| {
                 let name = global_def_id_to_name(ctx.rustc, id);
 
@@ -715,7 +715,7 @@ fn register_body(
                     return Ok(());
                 }
 
-                trace!("added constant dependency {:?} ~> {}", def_id, name);
+                trace!("added constant dependency {:?} -> {}", def_id, name);
                 register_dependency_expression(ctx, decls, id, DeclKind::Global, &name)
             },
         )?;

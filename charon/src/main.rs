@@ -831,7 +831,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // # Step 5: translate the functions to IM (our Internal representation of MIR).
     // Note that from now onwards, both type and function definitions have been
     // translated to our internal ASTs: we don't interact with rustc anymore.
-    let (fun_defs, global_defs) = translate_functions_to_im::translate_functions(
+    let (im_fun_defs, im_global_defs) = translate_functions_to_im::translate_functions(
         tcx,
         &ordered_decls,
         &types_constraints,
@@ -843,8 +843,8 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     let (mut llbc_funs, mut llbc_globals) = im_to_llbc::translate_functions(
         internal.no_code_duplication,
         &type_defs,
-        &fun_defs,
-        &global_defs,
+        &im_fun_defs,
+        &im_global_defs,
     );
 
     //

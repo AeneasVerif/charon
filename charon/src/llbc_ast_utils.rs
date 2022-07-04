@@ -19,8 +19,8 @@ impl Default for Statement {
 }
 
 /// Goes from e.g. [A, B, C] ; D to (A, (B, (C, D))).
-pub fn chain_statements(binds: Vec<Statement>, last: Statement) -> Statement {
-    binds.into_iter().rev().fold(last, |cont, bind| {
+pub fn chain_statements(firsts: Vec<Statement>, last: Statement) -> Statement {
+    firsts.into_iter().rev().fold(last, |cont, bind| {
         Statement::Sequence(Box::new(bind), Box::new(cont))
     })
 }
@@ -38,8 +38,9 @@ fn transform_rvalue_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
     }
 }
 
-/// Map a statement to the given visitor of operands while inserting the generated statements.
-/// Useful to implement passes on operands.
+/// Transform a statement by visiting its operands and inserting the generated
+/// statements before each visited operand.
+/// Useful to implement a pass on operands: see e.g. [extract_global_assignments.rs].
 pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
     st: Statement,
     f: &mut F,
@@ -77,12 +78,9 @@ pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
         Statement::Call(c) => chain_statements(c.args.iter_mut().flat_map(f).collect(), st),
         Statement::Assert(a) => chain_statements(f(&mut a.cond), st),
 
-        Statement::AssignGlobal(_, _) => {
-            unreachable!("global assignments should append after this pass")
-        }
-
         // Identity (complete match for compile-time errors when new statements are created)
-        Statement::FakeRead(_)
+        Statement::AssignGlobal(_, _)
+        | Statement::FakeRead(_)
         | Statement::SetDiscriminant(_, _)
         | Statement::Drop(_)
         | Statement::Panic

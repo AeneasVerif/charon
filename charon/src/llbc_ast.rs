@@ -37,6 +37,7 @@ pub struct Call {
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum Statement {
     Assign(Place, Rvalue),
+    /// Not present in MIR: used to replace constant variables in operands.
     AssignGlobal(VarId::Id, GlobalDeclId::Id),
     FakeRead(Place),
     SetDiscriminant(Place, VariantId::Id),
