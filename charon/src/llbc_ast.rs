@@ -61,6 +61,10 @@ pub enum Statement {
     Continue(usize),
     /// No-op.
     Nop,
+    /// The left statement must NOT be a sequence:
+    /// For example, let (x, y) be a sequence and a, b, c statements:
+    /// Then ((a, b), c) is forbidden and should be changed to (a, (b, c)).
+    /// To ensure that, use [llbc_ast_utils::new_sequence] to build sequences.
     Sequence(Box<Statement>, Box<Statement>),
     Switch(Operand, SwitchTargets),
     Loop(Box<Statement>),

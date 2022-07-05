@@ -47,7 +47,9 @@ pub struct DeclInfo {
     pub is_transparent: bool,
 }
 
-/// The top-level declarations in a module
+/// The top-level declarations in a module and their external dependencies.
+/// External declarations are recognizable with `DefId::is_local()`:
+/// See [rust_to_local_ids.rs].
 pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     /// The properly grouped and ordered declarations
     pub decls: Vec<DeclarationGroup<TypeId, FunId, GlobalId>>,
@@ -254,11 +256,7 @@ pub fn reorder_declarations(
     // given by the user. To be more precise, if we don't need to move
     // definitions, the order in which we generate the declarations should
     // be the same as the one in which the user wrote them.
-    let get_id_dependencies = &|id| {
-        // TODO: There was a comment about "filter the foreign ids" (ignored by the code).
-        //       Find that it's about.
-        decls[&id].deps.iter().flatten().map(|d| *d).collect()
-    };
+    let get_id_dependencies = &|id| decls[&id].deps.iter().flatten().map(|d| *d).collect();
     let SCCs {
         sccs: reordered_sccs,
         scc_deps: _,

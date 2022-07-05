@@ -145,8 +145,8 @@ impl OperandConstantValue {
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", ")).to_string()
             }
-            OperandConstantValue::Identifier(id) => ctx.format_object(*id),
-            OperandConstantValue::Static(id) => format!("alloc: &{}", ctx.format_object(*id)),
+            OperandConstantValue::ConstantId(id) => ctx.format_object(*id),
+            OperandConstantValue::StaticId(id) => format!("alloc: &{}", ctx.format_object(*id)),
         }
     }
 }

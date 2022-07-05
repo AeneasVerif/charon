@@ -698,10 +698,13 @@ fn register_body(
     def_id: LocalDefId,
     deps: &mut DeclDependencies,
 ) -> Result<()> {
-    // Retrieve the MIR code
+    // Retrieve the MIR code.
     let body = crate::get_mir::get_mir_for_def_id(ctx.rustc, def_id);
 
     // Visit the global dependencies.
+    // TODO: For now the order of dependencies export depend on the order
+    // in which they are discovered. By storing their metadata, we would be
+    // able to order them properly, without depending on the visit ordering.
     for b in body.basic_blocks().iter() {
         propagate_error(
             |f| visit_global_dependencies(b, f),

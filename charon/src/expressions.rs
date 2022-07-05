@@ -111,11 +111,12 @@ pub enum BinOp {
     // No Offset binary operation: this is an operation on raw pointers
 }
 
+/// The constructors match printed MIR operand prefixes (e.g. `const 2`).
 #[derive(Debug, PartialEq, Eq, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum Operand {
     Copy(Place),
     Move(Place),
-    /// Constant value (including global statics)
+    /// Constant value (including constant and static variables)
     Const(ETy, OperandConstantValue),
 }
 
@@ -150,10 +151,10 @@ pub enum OperandConstantValue {
     /// The case when the constant is elsewhere.
     /// The MIR seems to forbid more complex expressions like paths :
     /// Reading the constant a.b is translated to { _1 = const a; _2 = (_1.0) }.
-    Identifier(GlobalDeclId::Id),
+    ConstantId(GlobalDeclId::Id),
     ///
     /// Same as for constants, except that statics are accessed through references.
-    Static(GlobalDeclId::Id),
+    StaticId(GlobalDeclId::Id),
 }
 
 #[derive(Debug, Clone, Serialize)]

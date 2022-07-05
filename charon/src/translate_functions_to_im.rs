@@ -659,10 +659,9 @@ fn translate_constant_integer_like_value(
     scalar: &mir::interpret::Scalar,
 ) -> v::ConstantValue {
     trace!();
-    // The documentation explicitly says not to match on a
-    // scalar. We match on the type and convert the value
-    // following this, by calling the appropriate `to_*`
-    // method
+    // The documentation explicitly says not to match on a scalar.
+    // We match on the type and convert the value following this,
+    // by calling the appropriate `to_*` method.
     match ty {
         ty::Ty::Bool => v::ConstantValue::Bool(scalar.to_bool().unwrap()),
         ty::Ty::Char => v::ConstantValue::Char(scalar.to_char().unwrap()),
@@ -707,6 +706,7 @@ fn translate_constant_scalar_value<'tcx, 'ctx>(
     scalar: &mir::interpret::Scalar,
 ) -> e::OperandConstantValue {
     trace!("{:?}", scalar);
+    // The documentation explicitly says not to match on a scalar.
     // A constant operand scalar is usually an instance of a primitive type
     // (bool, char, integer...). However, it may also be an instance of a
     // degenerate ADT or tuple (if an ADT has only one variant and no fields,
@@ -746,7 +746,7 @@ fn translate_constant_scalar_value<'tcx, 'ctx>(
             mir::interpret::Scalar::Ptr(p, _) => match tcx.global_alloc(p.provenance) {
                 mir::interpret::GlobalAlloc::Static(s) => {
                     let id = decls.ordered.global_rid_to_id.get(&s).unwrap();
-                    e::OperandConstantValue::Static(*id)
+                    e::OperandConstantValue::StaticId(*id)
                 }
                 _ => unreachable!(
                     "Expected static pointer, got {:?}",
@@ -871,7 +871,7 @@ fn translate_operand_constant<'tcx, 'ctx1, 'ctx2>(
             let rid = unev.def.did;
             let id = *bt_ctx.ft_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
             let decl = bt_ctx.ft_ctx.global_defs.get(id).unwrap();
-            (decl.ty.clone(), e::OperandConstantValue::Identifier(id))
+            (decl.ty.clone(), e::OperandConstantValue::ConstantId(id))
         }
         rustc_middle::ty::ConstKind::Param(_)
         | rustc_middle::ty::ConstKind::Infer(_)

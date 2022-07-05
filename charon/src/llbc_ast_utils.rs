@@ -1,6 +1,8 @@
 //! Implementations for llbc_ast.rs
 
 #![allow(dead_code)]
+use std::ops::DerefMut;
+
 use crate::expressions::{Operand, Place, Rvalue};
 use crate::formatter::Formatter;
 use crate::im_ast::{fmt_call, FunDeclId, FunSigFormatter, GAstFormatter, GlobalDeclId, TAB_INCR};
@@ -11,12 +13,45 @@ use crate::{common::*, id_vector};
 use itertools::chain;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
+use take_mut::take;
 
 /// Goes from e.g. [A, B, C] ; D to (A, (B, (C, D))).
 pub fn chain_statements(firsts: Vec<Statement>, last: Statement) -> Statement {
     firsts.into_iter().rev().fold(last, |cont, bind| {
+        assert!(!bind.is_sequence());
         Statement::Sequence(Box::new(bind), Box::new(cont))
     })
+}
+
+/// Utility function for [new_sequence].
+/// Efficiently appends a new statement at the rightmost place of a well-formed sequence.
+fn append_rightmost(seq: &mut Statement, r: Box<Statement>) {
+    let (_l1, l2) = match seq {
+        Statement::Sequence(l1, l2) => (l1, l2),
+        _ => unreachable!(),
+    };
+    if l2.is_sequence() {
+        append_rightmost(l2, r);
+    } else {
+        take(l2.deref_mut(), move |l2| {
+            Statement::Sequence(Box::new(l2), r)
+        });
+    }
+}
+
+/// Builds a sequence from well-formed statements.
+/// Ensures that the left statement will not be a sequence in the new sequence:
+/// Must be used instead of the raw [Statement::Sequence] constructor,
+/// unless you're sure that the left statement is not a sequence.
+pub fn new_sequence(mut l: Statement, r: Statement) -> Statement {
+    let r = Box::new(r);
+    match l {
+        Statement::Sequence(_, _) => {
+            append_rightmost(&mut l, r);
+            l
+        }
+        l => Statement::Sequence(Box::new(l), r),
+    }
 }
 
 /// Visit an rvalue and generate statements. Used below in [transform_operands].
@@ -43,10 +78,9 @@ pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
     let mut st = match st {
         // Recursive calls
         Statement::Loop(s) => Statement::Loop(Box::new(transform_operands(*s, f))),
-        Statement::Sequence(s1, s2) => Statement::Sequence(
-            Box::new(transform_operands(*s1, f)),
-            Box::new(transform_operands(*s2, f)),
-        ),
+        Statement::Sequence(s1, s2) => {
+            new_sequence(transform_operands(*s1, f), transform_operands(*s2, f))
+        }
         Statement::Switch(op, tgt) => Statement::Switch(
             op,
             match tgt {
@@ -65,12 +99,12 @@ pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
         ),
         _ => st,
     };
-    match &mut st {
+    let new_st = match &mut st {
         // Actual transformations
-        Statement::Switch(op, _) => chain_statements(f(op), st),
-        Statement::Assign(_, r) => chain_statements(transform_rvalue_operands(r, f), st),
-        Statement::Call(c) => chain_statements(c.args.iter_mut().flat_map(f).collect(), st),
-        Statement::Assert(a) => chain_statements(f(&mut a.cond), st),
+        Statement::Switch(op, _) => f(op),
+        Statement::Assign(_, r) => transform_rvalue_operands(r, f),
+        Statement::Call(c) => c.args.iter_mut().flat_map(f).collect(),
+        Statement::Assert(a) => f(&mut a.cond),
 
         // Identity (complete match for compile-time errors when new statements are created)
         Statement::AssignGlobal(_, _)
@@ -83,8 +117,9 @@ pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
         | Statement::Continue(_)
         | Statement::Nop
         | Statement::Sequence(_, _)
-        | Statement::Loop(_) => st,
-    }
+        | Statement::Loop(_) => vec![],
+    };
+    chain_statements(new_st, st)
 }
 
 impl SwitchTargets {

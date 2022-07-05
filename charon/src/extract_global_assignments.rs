@@ -52,11 +52,11 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
         OperandConstantValue::Adt(_, _) => {
             unreachable!("Constant ADTs should have been replaced by now")
         }
-        OperandConstantValue::Identifier(global_id) => {
+        OperandConstantValue::ConstantId(global_id) => {
             let var = make_new_var(ty.clone());
             (var, vec![Statement::AssignGlobal(var, global_id)])
         }
-        OperandConstantValue::Static(global_id) => {
+        OperandConstantValue::StaticId(global_id) => {
             let var = make_new_var(deref_static_type(ty).clone());
             let var_ref = make_new_var(ty.clone());
             let rvalue = Rvalue::Ref(Place::new(var), BorrowKind::Shared);
