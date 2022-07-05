@@ -18,7 +18,7 @@ pub enum MirLevel {
 }
 
 /// The level at which is queried the MIR.
-pub const MIR_LEVEL: MirLevel = MirLevel::Optimized;
+pub const MIR_LEVEL: MirLevel = MirLevel::Built;
 
 /// Indicates if the constants should be extracted in their own identifier,
 /// or if they must be evaluated to a constant value.

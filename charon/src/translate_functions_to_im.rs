@@ -9,6 +9,7 @@ use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::generics;
+use crate::get_mir::EXTRACT_CONSTANTS_AT_TOP_LEVEL;
 use crate::id_vector;
 use crate::im_ast as ast;
 use crate::names::global_def_id_to_name;
@@ -867,11 +868,19 @@ fn translate_operand_constant<'tcx, 'ctx1, 'ctx2>(
             translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty, &cvalue)
         }
         rustc_middle::ty::ConstKind::Unevaluated(unev) => {
-            // Lookup the constant identifier and refer to it.
-            let rid = unev.def.did;
-            let id = *bt_ctx.ft_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
-            let decl = bt_ctx.ft_ctx.global_defs.get(id).unwrap();
-            (decl.ty.clone(), e::OperandConstantValue::ConstantId(id))
+            if EXTRACT_CONSTANTS_AT_TOP_LEVEL {
+                // Lookup the constant identifier and refer to it.
+                let rid = unev.def.did;
+                let id = *bt_ctx.ft_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
+                let decl = bt_ctx.ft_ctx.global_defs.get(id).unwrap();
+                (decl.ty.clone(), e::OperandConstantValue::ConstantId(id))
+            } else {
+                // Evaluate the constant.
+                let cvalue = tcx
+                    .const_eval_resolve(mir_ty::ParamEnv::empty(), unev, Option::None)
+                    .unwrap();
+                translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty, &cvalue)
+            }
         }
         rustc_middle::ty::ConstKind::Param(_)
         | rustc_middle::ty::ConstKind::Infer(_)

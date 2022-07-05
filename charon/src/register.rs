@@ -1,6 +1,7 @@
 use crate::assumed;
 use crate::common::*;
 use crate::generics;
+use crate::get_mir::EXTRACT_CONSTANTS_AT_TOP_LEVEL;
 use crate::names::Name;
 use crate::names::{
     function_def_id_to_name, global_def_id_to_name, hir_item_to_name, module_def_id_to_name,
@@ -701,27 +702,30 @@ fn register_body(
     // Retrieve the MIR code.
     let body = crate::get_mir::get_mir_for_def_id(ctx.rustc, def_id);
 
-    // Visit the global dependencies.
-    // TODO: For now the order of dependencies export depend on the order
-    // in which they are discovered. By storing their metadata, we would be
-    // able to order them properly, without depending on the visit ordering.
-    for b in body.basic_blocks().iter() {
-        propagate_error(
-            |f| visit_global_dependencies(b, f),
-            |id| {
-                let name = global_def_id_to_name(ctx.rustc, id);
+    // Visit the global dependencies if the MIR is not optimized.
+    if EXTRACT_CONSTANTS_AT_TOP_LEVEL {
+        // TODO: For now the order of dependencies export depend on the order
+        // in which they are discovered. By storing their metadata, we would be
+        // able to order them properly, without depending on the visit ordering.
+        // Avoid registering globals in optimized MIR (they will be inlined).
+        for b in body.basic_blocks().iter() {
+            propagate_error(
+                |f| visit_global_dependencies(b, f),
+                |id| {
+                    let name = global_def_id_to_name(ctx.rustc, id);
 
-                if is_primitive_decl(DeclKind::Global, id, &name) {
-                    return Ok(());
-                }
-                if !deps.insert_if_absent(id) {
-                    return Ok(());
-                }
+                    if is_primitive_decl(DeclKind::Global, id, &name) {
+                        return Ok(());
+                    }
+                    if !deps.insert_if_absent(id) {
+                        return Ok(());
+                    }
 
-                trace!("added constant dependency {:?} -> {}", def_id, name);
-                register_dependency_expression(ctx, decls, id, DeclKind::Global, &name)
-            },
-        )?;
+                    trace!("added constant dependency {:?} -> {}", def_id, name);
+                    register_dependency_expression(ctx, decls, id, DeclKind::Global, &name)
+                },
+            )?;
+        }
     }
 
     // Start by registering the types found in the local variable declarations.
@@ -1015,8 +1019,14 @@ fn register_hir_item(
         }
         ItemKind::Fn(_, _, _) => register_local_expression(ctx, decls, item.def_id, DeclKind::Fun),
         ItemKind::Const(_, _) | ItemKind::Static(_, _, _) => {
-            register_local_expression(ctx, decls, item.def_id, DeclKind::Global)
+            if EXTRACT_CONSTANTS_AT_TOP_LEVEL {
+                register_local_expression(ctx, decls, item.def_id, DeclKind::Global)
+            } else {
+                // Avoid registering globals in optimized MIR (they will be inlined).
+                Ok(())
+            }
         }
+
         ItemKind::Impl(impl_block) => {
             trace!("impl");
             // Sanity checks

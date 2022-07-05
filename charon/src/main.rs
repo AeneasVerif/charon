@@ -857,18 +857,18 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &ToInternal) -> Result<(), (
     // serializing the result.
     //
 
-    // # Step 7: replace constant (OperandConstantValue) ADTs by regular (Aggregated) ADTs.
+    // # Step 7: simplify the calls to unops and binops
+    // Note that we assume that the sequences have been flattened.
+    simplify_ops::simplify(&mut llbc_funs, &mut llbc_globals);
+
+    // # Step 8: replace constant (OperandConstantValue) ADTs by regular (Aggregated) ADTs.
     regularize_constant_adts::transform(&mut llbc_funs, &mut llbc_globals);
 
-    // # Step 8: extract statics and constant globals from operands (put them in
+    // # Step 9: extract statics and constant globals from operands (put them in
     // a let binding). This pass relies on the absence of constant ADTs from
     // the previous step: it does not inspect them (so it would miss globals in
     // constant ADTs).
     extract_global_assignments::transform(&mut llbc_funs, &mut llbc_globals);
-
-    // # Step 9: simplify the calls to unops and binops
-    // Note that we assume that the sequences have been flattened.
-    simplify_ops::simplify(&mut llbc_funs, &mut llbc_globals);
 
     for def in &llbc_funs {
         trace!(
