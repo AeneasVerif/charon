@@ -5,7 +5,9 @@ all: build build-tests build-tests-nll
 build:
 	cd charon && make
 	
-ml: ocaml-build ocaml-tests
+ml: ocaml-build
+
+ml-test: ocaml-build ocaml-tests
 	
 ocaml-build:
 	cd ml && dune build
@@ -22,7 +24,7 @@ build-tests-nll:
 	cd tests-nll && make
 
 .PHONY: test
-test: build ocaml-build build-tests build-tests-nll \
+test: build build-tests build-tests-nll \
 	test-nested_borrows test-no_nested_borrows test-loops test-hashmap \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
@@ -59,7 +61,7 @@ test-nll-%: OPTIONS += --nll
 test-nll-%:
 	cd charon && cargo run $(SRC)/$*.rs $(OPTIONS)
 
-ocaml-tests: tests
+ocaml-tests:
 	cp tests/llbc/*.llbc ml/tests/e2e.t/cases/
 	cd ml && dune test
 	
