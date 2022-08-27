@@ -1,0 +1,4 @@
+(library
+ (name llbc)
+ (libraries ppx_deriving.runtime yojson zarith)
+ (preprocess (pps ppx_deriving.std visitors.ppx)))
