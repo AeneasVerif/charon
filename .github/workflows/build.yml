@@ -27,3 +27,11 @@ jobs:
       run: make
     - name: "test rs"
       run: make test
+    - name: "Setup ocaml 4.12.1"
+      uses: ocaml/setup-ocaml@v2
+      with:
+        ocaml-compiler: 4.12.x
+    - name: "build ocaml"
+      run: make ml
+    - name: "test ocaml"
+      run: make ml-test
