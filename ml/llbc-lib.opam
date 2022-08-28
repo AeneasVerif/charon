@@ -4,17 +4,18 @@ synopsis: """Manipulation of Low-level Borrow Calculus, a MIR-like representatio
 maintainer: ["Son Ho <son.ho@inria.fr>"]
 authors: ["The Charon programmers"]
 homepage: "https://github.com/AeneasVerif/charon"
-doc: ""
 dev-repo: "git+https://github.com/AeneasVerif/charon.git"
 bug-reports: "https://github.com/dbuenzli/fmt/issues"
-license: ["NOLICENSE"]
+# license: ["NOLICENSE"]
 tags: ["rust" "mir" "verification" "analysis"]
-depends: ["ocaml" {>= "4.12.0"}
-          "dune" {>= "3.0.0"} {build}
-          "visitors" {build}
-          "ppx_deriving" {>= "5.2"}
-          "zarith"
-          "yojson"]
+depends: [
+  "ocaml" {>= "4.12.0"}
+  "dune" {>= "3.0.0"}
+  "visitors" {build}
+  "ppx_deriving" {>= "5.2"}
+  "zarith"
+  "yojson"
+]
 build: ["dune" "build" "-p" name "-j" jobs]
 description: """
 This library allows for manipulation of LLBC, the language output by

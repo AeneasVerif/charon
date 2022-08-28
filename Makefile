@@ -63,5 +63,6 @@ test-nll-%:
 
 ocaml-tests:
 	cp tests/llbc/*.llbc ml/tests/e2e.t/cases/
+	cp tests-nll/llbc/*.llbc ml/tests/e2e.t/cases/
 	cd ml && dune test
 	

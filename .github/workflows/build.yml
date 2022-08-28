@@ -31,6 +31,8 @@ jobs:
       uses: ocaml/setup-ocaml@v2
       with:
         ocaml-compiler: 4.12.x
+    - name: "Install ocaml deps"
+      run: opam install ml/ --deps-only -y
     - name: "build ocaml"
       run: make ml
     - name: "test ocaml"
