@@ -34,6 +34,6 @@ jobs:
     - name: "Install ocaml deps"
       run: opam install ml/ --deps-only -y
     - name: "build ocaml"
-      run: make ml
+      run: opam exec -- make ml
     - name: "test ocaml"
-      run: make ml-test
+      run: opam exec -- make ml-test
