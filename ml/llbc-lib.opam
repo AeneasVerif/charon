@@ -15,7 +15,7 @@ depends: [
   "ppx_deriving" {>= "5.2"}
   "zarith"
   "yojson"
-  "ocamlformat" {"4.12.1" & with-test}
+  "ocamlformat" {="0.24.1" & with-test}
 ]
 build: ["dune" "build" "-p" name "-j" jobs]
 description: """
