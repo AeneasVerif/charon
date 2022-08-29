@@ -32,7 +32,7 @@ jobs:
       with:
         ocaml-compiler: 4.12.x
     - name: "Install ocaml deps"
-      run: opam install ml/ --deps-only -y
+      run: opam install ml/ --deps-only --with-test -y
     - name: "build ocaml"
       run: opam exec -- make ml
     - name: "test ocaml"

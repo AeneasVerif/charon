@@ -7,7 +7,7 @@ build:
 	
 ml: ocaml-build
 
-ml-test: ocaml-build ocaml-tests
+ml-test: ocaml-build ocaml-fmt-check ocaml-tests
 	
 ocaml-build:
 	cd ml && dune build
@@ -62,7 +62,10 @@ test-nll-%:
 	cd charon && cargo run $(SRC)/$*.rs $(OPTIONS)
 
 ocaml-tests:
+	mkdir -p ml/tests/e2e.t/cases
 	cp tests/llbc/*.llbc ml/tests/e2e.t/cases/
 	cp tests-nll/llbc/*.llbc ml/tests/e2e.t/cases/
 	cd ml && dune test
 	
+ocaml-fmt-check:
+	cd ml && dune build @fmt
