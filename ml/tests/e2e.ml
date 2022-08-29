@@ -3,9 +3,12 @@ let folder_name = Sys.argv.(1)
 let files =
   Sys.readdir folder_name |> Array.to_seq
   |> Seq.filter (fun file -> Filename.check_suffix file ".llbc")
+  |> Array.of_seq
+
+let () = Array.fast_sort String.compare files
 
 let () =
-  Seq.iter
+  Array.iter
     (fun file ->
       let file = Filename.concat folder_name file in
       let ast =
