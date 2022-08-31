@@ -9,6 +9,7 @@ ml: ocaml-build
 
 ml-test: ocaml-build ocaml-fmt-check ocaml-tests
 	
+.PHONY: ocaml-build
 ocaml-build:
 	cd ml && dune build
 
@@ -61,10 +62,12 @@ test-nll-%: OPTIONS += --nll
 test-nll-%:
 	cd charon && cargo run $(SRC)/$*.rs $(OPTIONS)
 
+.PHONY: ocaml-tests
 ocaml-tests:
 	mkdir -p ml/tests/e2e.t/cases
 	cp tests/llbc/*.llbc ml/tests/e2e.t/cases/
 	cd ml && dune test
-	
+
+.PHONY: ocaml-fmt-check
 ocaml-fmt-check:
 	cd ml && dune build @fmt
