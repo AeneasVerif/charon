@@ -622,6 +622,7 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
                 {
                     continue;
                 }
+
                 // The file has a "lib" prefix if and only if its extension is
                 // ".rmeta", ".rlib" or ".so"
                 let is_rmeta = extension == "rmeta";
@@ -634,6 +635,12 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
 
                 // Remove the extension
                 let no_ext_filename = filename.file_stem().unwrap().to_str().unwrap().to_string();
+
+                if no_ext_filename.find("-") == None {
+                    // On OSX, in addition to test-XYZ where XYZ is the hash, there is also an
+                    // alias called just "test". We ignore this.
+                    continue;
+                }
 
                 // Compute the library name (remove the "lib" prefix for .rlib files,
                 // remove the hash suffix)
