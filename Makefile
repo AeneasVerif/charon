@@ -1,20 +1,25 @@
+ifeq (3.81,$(MAKE_VERSION))
+  $(error You seem to be using the OSX antiquated Make version. Hint: brew \
+    install make, then invoke gmake instead of make)
+endif
+
 .PHONY: all
 all: test
 
 .PHONY: build
 build:
-	cd charon && make
+	cd charon && $(MAKE)
 
 SRC = $(TESTS)/src
 OPTIONS = --dest $(TESTS)/llbc
 
 .PHONY: build-tests
 build-tests:
-	cd tests && make
+	cd tests && $(MAKE)
 
 .PHONY: build-tests-nll
 build-tests-nll:
-	cd tests-nll && make
+	cd tests-nll && $(MAKE)
 
 .PHONY: test
 test: build build-tests build-tests-nll \
