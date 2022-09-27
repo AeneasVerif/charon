@@ -618,6 +618,7 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
                 if extension != "rmeta"
                     && extension != "rlib"
                     && extension != "so"
+                    && extension != "dylib"
                     && extension != "d"
                 {
                     continue;
@@ -627,7 +628,7 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
                 // ".rmeta", ".rlib" or ".so"
                 let is_rmeta = extension == "rmeta";
                 let is_rlib = extension == "rlib";
-                let is_so = extension == "so";
+                let is_so = extension == "so" || extension == "dylib";
                 let has_prefix = is_rmeta || is_rlib || is_so;
 
                 // Retrieve the file name
