@@ -602,6 +602,7 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
     let mut lib_to_rmeta: HashMap<String, Vec<String>> = HashMap::new();
     let mut lib_to_rlib: HashMap<String, Vec<String>> = HashMap::new();
     let mut lib_to_so: HashMap<String, Vec<String>> = HashMap::new();
+    let mut lib_to_dylib: HashMap<String, Vec<String>> = HashMap::new(); // For OSX
     let mut lib_to_d: HashMap<String, Vec<String>> = HashMap::new();
     for file in files {
         trace!("File: {:?}", file);
@@ -618,22 +619,30 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
                 if extension != "rmeta"
                     && extension != "rlib"
                     && extension != "so"
+                    && extension != "dylib"
                     && extension != "d"
                 {
                     continue;
                 }
-                // The file has a "lib" prefix if and only if its extension is
-                // ".rmeta", ".rlib" or ".so"
+
+                // The file has a "lib" prefix only for some extensions
                 let is_rmeta = extension == "rmeta";
                 let is_rlib = extension == "rlib";
                 let is_so = extension == "so";
-                let has_prefix = is_rmeta || is_rlib || is_so;
+                let is_dylib = extension == "dylib";
+                let has_prefix = is_rmeta || is_rlib || is_so || is_dylib;
 
                 // Retrieve the file name
                 let filename = PathBuf::from(entry.file_name().unwrap());
 
                 // Remove the extension
                 let no_ext_filename = filename.file_stem().unwrap().to_str().unwrap().to_string();
+
+                if no_ext_filename.find("-") == None {
+                    // On OSX, in addition to test-XYZ where XYZ is the hash, there is also an
+                    // alias called just "test". We ignore this.
+                    continue;
+                }
 
                 // Compute the library name (remove the "lib" prefix for .rlib files,
                 // remove the hash suffix)
@@ -652,6 +661,8 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
                     insert_in_vec_map(&mut lib_to_rlib, lib_name, full_path);
                 } else if is_so {
                     insert_in_vec_map(&mut lib_to_so, lib_name, full_path);
+                } else if is_dylib {
+                    insert_in_vec_map(&mut lib_to_dylib, lib_name, full_path);
                 } else {
                     insert_in_vec_map(&mut lib_to_d, lib_name, full_path);
                 }
@@ -676,7 +687,8 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
         // - .rmeta
         // - .rlib files
         // - .so files
-        let libs = [&lib_to_rmeta, &lib_to_rlib, &lib_to_so];
+        // - .dylib files
+        let libs = [&lib_to_rmeta, &lib_to_rlib, &lib_to_so, &lib_to_dylib];
         let mut compiled_path = None;
         for lib in libs {
             compiled_path = lib.get(&dep);
@@ -684,14 +696,6 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
                 break;
             }
         }
-        if compiled_path.is_none() {
-            error!(
-                "Could not find a compiled file for the external dependency {:?} in {:?}. You may need to build the crate: `cargo build`.",
-                dep, deps_dir
-            );
-            panic!();
-        }
-
         if compiled_path.is_none() {
             error!(
                 "Could not find a compiled file for the external dependency {:?} in {:?}. You may need to build the crate: `cargo build`.",
