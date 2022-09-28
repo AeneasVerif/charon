@@ -602,6 +602,7 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
     let mut lib_to_rmeta: HashMap<String, Vec<String>> = HashMap::new();
     let mut lib_to_rlib: HashMap<String, Vec<String>> = HashMap::new();
     let mut lib_to_so: HashMap<String, Vec<String>> = HashMap::new();
+    let mut lib_to_dylib: HashMap<String, Vec<String>> = HashMap::new(); // For OSX
     let mut lib_to_d: HashMap<String, Vec<String>> = HashMap::new();
     for file in files {
         trace!("File: {:?}", file);
@@ -628,7 +629,8 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
                 // ".rmeta", ".rlib" or ".so"
                 let is_rmeta = extension == "rmeta";
                 let is_rlib = extension == "rlib";
-                let is_so = extension == "so" || extension == "dylib";
+                let is_so = extension == "so";
+                let is_dylib = extension == "dylib";
                 let has_prefix = is_rmeta || is_rlib || is_so;
 
                 // Retrieve the file name
@@ -660,6 +662,8 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
                     insert_in_vec_map(&mut lib_to_rlib, lib_name, full_path);
                 } else if is_so {
                     insert_in_vec_map(&mut lib_to_so, lib_name, full_path);
+                } else if is_dylib {
+                    insert_in_vec_map(&mut lib_to_dylib, lib_name, full_path);
                 } else {
                     insert_in_vec_map(&mut lib_to_d, lib_name, full_path);
                 }
@@ -684,7 +688,8 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
         // - .rmeta
         // - .rlib files
         // - .so files
-        let libs = [&lib_to_rmeta, &lib_to_rlib, &lib_to_so];
+        // - .dylib files
+        let libs = [&lib_to_rmeta, &lib_to_rlib, &lib_to_so, &lib_to_dylib];
         let mut compiled_path = None;
         for lib in libs {
             compiled_path = lib.get(&dep);
