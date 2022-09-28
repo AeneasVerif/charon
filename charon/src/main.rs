@@ -625,13 +625,12 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
                     continue;
                 }
 
-                // The file has a "lib" prefix if and only if its extension is
-                // ".rmeta", ".rlib" or ".so"
+                // The file has a "lib" prefix only for some extensions
                 let is_rmeta = extension == "rmeta";
                 let is_rlib = extension == "rlib";
                 let is_so = extension == "so";
                 let is_dylib = extension == "dylib";
-                let has_prefix = is_rmeta || is_rlib || is_so;
+                let has_prefix = is_rmeta || is_rlib || is_so || is_dylib;
 
                 // Retrieve the file name
                 let filename = PathBuf::from(entry.file_name().unwrap());
@@ -697,14 +696,6 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
                 break;
             }
         }
-        if compiled_path.is_none() {
-            error!(
-                "Could not find a compiled file for the external dependency {:?} in {:?}. You may need to build the crate: `cargo build`.",
-                dep, deps_dir
-            );
-            panic!();
-        }
-
         if compiled_path.is_none() {
             error!(
                 "Could not find a compiled file for the external dependency {:?} in {:?}. You may need to build the crate: `cargo build`.",
