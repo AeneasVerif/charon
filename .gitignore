@@ -6,7 +6,7 @@ charon/_build
 charon/src/_build
 charon/target
 attributes/target
-macros/target
+charon/macros/target
 tests/target
 tests/llbc
 tests-nll/llbc
