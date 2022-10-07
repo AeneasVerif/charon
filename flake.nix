@@ -41,9 +41,19 @@
             mkdir -p $out/llbc
           '';
           buildPhase = ''
-            ${charon}/bin/charon --dest $out/llbc --no-code-duplication src/nested_borrows.rs
-            ${charon}/bin/charon --dest $out/llbc --no-code-duplication src/loops.rs
-            ${charon}/bin/charon --dest $out/llbc --opaque=hashmap_utils src/hashmap_main.rs
+            CHARON="${charon}/bin/charon --dest $out/llbc"
+
+            for test in hashmap matches matches_duplicate
+            do
+              $CHARON src/$test.rs
+            done
+
+            for test in nested_borrows no_nested_borrows loops paper constants external
+            do
+              $CHARON --no-code-duplication src/$test.rs
+            done
+
+            $CHARON --opaque=hashmap_utils src/hashmap_main.rs
           '';
           dontInstall = true;
         };
