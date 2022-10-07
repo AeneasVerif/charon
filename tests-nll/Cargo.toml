@@ -5,7 +5,6 @@ authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-attributes = { path = "../attributes" }
 serde_json = "1.0.59"
 serde = { version = "1.0.117", features = ["derive"] }
 log = "0.4.14"
