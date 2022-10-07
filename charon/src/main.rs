@@ -573,7 +573,7 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
     trace!("List of external dependencies: {:?}", deps);
 
     // Compute the path to the compiled dependencies
-    let target_dir = format!("{}/debug/deps/", &manifest.target_directory);
+    let target_dir = format!("{}/release/deps/", &manifest.target_directory);
     let deps_dir = PathBuf::from_str(&target_dir).unwrap();
     let deps_dir = crate_path.join(deps_dir);
     info!(
