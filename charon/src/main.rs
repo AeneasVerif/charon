@@ -171,6 +171,9 @@ fn initialize_logger() {
 #[derive(StructOpt)]
 #[structopt(name = "Charon")]
 struct CliOpts {
+    /// Compile for release target instead of debug
+    #[structopt(long = "release")]
+    release: bool,
     /// The input file (the entry point of the crate to extract)
     #[structopt(parse(from_os_str))]
     input_file: PathBuf,
@@ -453,7 +456,10 @@ fn insert_in_vec_map(map: &mut HashMap<String, Vec<String>>, lib_name: String, f
 /// Finally, the code used in this function to read the manifest and compute
 /// the list of external dependencies is greatly inspired by the code used in
 /// [hacspec](https://github.com/hacspec/), so all credits to them.
-fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Package, Vec<String>) {
+fn read_manifest_compute_external_deps(
+    args: &CliOpts,
+    source_file: &PathBuf,
+) -> (Manifest, Package, Vec<String>) {
     use std::str::FromStr;
 
     // Compute the path to the crate
@@ -573,7 +579,11 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
     trace!("List of external dependencies: {:?}", deps);
 
     // Compute the path to the compiled dependencies
-    let target_dir = format!("{}/release/deps/", &manifest.target_directory);
+    let target_dir = if args.release {
+        format!("{}/release/deps/", &manifest.target_directory)
+    } else {
+        format!("{}/debug/deps/", &manifest.target_directory)
+    };
     let deps_dir = PathBuf::from_str(&target_dir).unwrap();
     let deps_dir = crate_path.join(deps_dir);
     info!(
@@ -598,7 +608,11 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
     //
     // It happens that there are several compiled files for the same dependency:
     // we store them all in a vector.
-    let files = std::fs::read_dir(deps_dir.clone()).unwrap();
+    let files_res = std::fs::read_dir(deps_dir.clone());
+    if files_res.is_err() {
+        panic!("Folder can't be found: {:?}", deps_dir);
+    }
+    let files = files_res.unwrap();
     let mut lib_to_rmeta: HashMap<String, Vec<String>> = HashMap::new();
     let mut lib_to_rlib: HashMap<String, Vec<String>> = HashMap::new();
     let mut lib_to_so: HashMap<String, Vec<String>> = HashMap::new();
@@ -708,7 +722,8 @@ fn read_manifest_compute_external_deps(source_file: &PathBuf) -> (Manifest, Pack
         let compiled_path = compiled_path.unwrap();
         assert!(compiled_path.len() > 0);
         if compiled_path.len() > 1 {
-            error!("Found two compiled library files for the same external dependency ({:?}): {:?}, {:?}. You may want to clean the target directory (`rm \"{:?}/*\"`) then rebuild the project with `cargo build`",
+            let deps_dir = deps_dir.to_str().unwrap();
+            error!("Found two compiled library files for the same external dependency ({:?}): {:?}, {:?}. You may want to clean the target directory (`rm {:}*`) then rebuild the project with `cargo build`",
                     dep, &compiled_path[0], &compiled_path[1], deps_dir);
             panic!();
         }
@@ -748,7 +763,7 @@ fn main() {
     // Read the manifest, find the target package and compute the list of external
     // dependencies.
     let (_manifest, package, mut external_deps) =
-        read_manifest_compute_external_deps(&args.input_file);
+        read_manifest_compute_external_deps(&args, &args.input_file);
 
     // Call the Rust compiler with the proper options
     let mut compiler_args = vec![

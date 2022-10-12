@@ -53,7 +53,7 @@
               $CHARON --no-code-duplication src/$test.rs
             done
 
-            $CHARON --opaque=hashmap_utils src/hashmap_main.rs
+            $CHARON --release --opaque=hashmap_utils src/hashmap_main.rs
           '';
           dontInstall = true;
         };
@@ -69,9 +69,11 @@
             tar -xf ${deps}/target.tar.zst
             mkdir -p $out/llbc
           '';
-          buildPhase = ''
-            ${charon}/bin/charon --dest $out/llbc --opaque=betree_utils src/betree_main.rs
-          '';
+          # The betree doesn't work for now. TODO: update the way we compute
+          # the arguments for the external dependencies.
+          #buildPhase = ''
+          #  ${charon}/bin/charon --release --dest $out/llbc --opaque=betree_utils src/betree_main.rs
+          #'';
           dontInstall = true;
         };
       in {
