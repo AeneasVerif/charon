@@ -8,8 +8,6 @@ use structopt::StructOpt;
 // Note that the doc comments are used to generate the help message when using
 // `--help`.
 //
-// TODO: give the possibility of changing the crate name.
-//
 // Note that because we need to transmit the options to the charon driver,
 // we store them in a file before calling this driver (hence the `Serialize`,
 // `Deserialize` options).
@@ -19,9 +17,15 @@ pub struct CliOpts {
     /// Compile for release target instead of debug
     #[structopt(long = "release")]
     pub release: bool,
-    /// The input file (the entry point of the crate to extract)
-    #[structopt(parse(from_os_str))]
-    pub input_file: PathBuf,
+    /// Provide a custom name for the compiled crate (ignore the name computed
+    /// by Cargo)
+    #[structopt(long = "crate")]
+    pub crate_name: Option<String>,
+    /// The input file (the entry point of the crate to extract).
+    /// This is needed if you want to define a custom entry point (to only
+    /// extract part of a crate for instance).
+    #[structopt(long = "input", parse(from_os_str))]
+    pub input_file: Option<PathBuf>,
     /// The destination directory, if we don't want to generate the output
     /// .llbc files in the same directory as the input .rs files.
     #[structopt(long = "dest", parse(from_os_str))]
@@ -77,7 +81,7 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     /// extract only the signature information, without the definition content
     /// (of the functions, types, etc.).
     #[structopt(long = "opaque")]
-    pub opaque: Vec<String>,
+    pub opaque_modules: Vec<String>,
 }
 
 /// The name of the environment variable we use to save the serialized Cli options

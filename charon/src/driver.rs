@@ -66,6 +66,7 @@ mod types_utils;
 mod values;
 mod values_utils;
 
+use regex::Regex;
 use rustc_driver::{Callbacks, Compilation, RunCompiler};
 use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
@@ -74,14 +75,10 @@ use serde_json;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 use std::ops::Deref;
-use std::path::PathBuf;
 
 /// The callbacks for Charon
 struct CharonCallbacks {
-    dest_dir: Option<PathBuf>,
-    source_file: PathBuf,
-    no_code_duplication: bool,
-    opaque_modules: Vec<String>,
+    options: cli_options::CliOpts,
 }
 
 impl Callbacks for CharonCallbacks {
@@ -130,6 +127,39 @@ fn arg_value<'a, T: Deref<Target = str>>(
         }
     }
     None
+}
+
+/// Given a list of arguments, return the index of the source rust file.
+/// This works by looking for the first argument matching *.rs, while
+/// checking there is at most one such argument.
+///
+/// Note that the driver is sometimes called without a source, for Cargo to
+/// retrieve information about the crate for instance.
+fn get_args_source_index<'a, T: Deref<Target = str>>(args: &'a [T]) -> Option<usize> {
+    let re = Regex::new(r".*\.rs").unwrap();
+    let indices: Vec<usize> = args
+        .iter()
+        .enumerate()
+        .filter_map(|(i, s)| if re.is_match(s) { Some(i) } else { None })
+        .collect();
+    assert!(indices.len() <= 1);
+    if indices.len() == 1 {
+        Some(indices[0])
+    } else {
+        None
+    }
+}
+
+/// Given a list of arguments, return the index of the crate name
+fn get_args_crate_index<'a, T: Deref<Target = str>>(args: &'a [T]) -> Option<usize> {
+    args.iter()
+        .enumerate()
+        .find(|(_i, s)| Deref::deref(*s) == "--crate-name")
+        .map(|(i, _)| {
+            assert!(i + 1 < args.len()); // Sanity check
+                                         // The argument giving the crate name is the next one
+            i + 1
+        })
 }
 
 fn main() {
@@ -189,23 +219,75 @@ fn main() {
         compiler_args.push("-Zpolonius".to_string());
     }
 
+    // In order to have some flexibility in our tests, we give the possibility
+    // of specifying the source (the input file which gives the entry to the
+    // crate), and of changing the crate name. This allows us to group multiple
+    // tests in one crate and call Charon on subsets of this crate (which makes
+    // things a lot easier from a maintenance point of view). For instance,
+    // we don't extract the whole Charon `tests` (`charon/tests`) crate at once,
+    // but rather: `no_nested_borrows`, `hasmap`, `hashmap_main`... Note that
+    // this is very specific to the test suite for Charon, so we might remove
+    // this in the future. Also, we wouldn't need to do this if we could define
+    // several libraries in a single `Cargo.toml` file.
+    //
+    // If such options are present, we need to update the arguments giving
+    // the crate name and the source file.
+
+    // First replace the source name
+    let source_index = get_args_source_index(&compiler_args);
+    if source_index.is_some() {
+        let source_index = source_index.unwrap();
+        trace!("source ({}): {}", source_index, compiler_args[source_index]);
+
+        if options.input_file.is_some() {
+            compiler_args[source_index] = options
+                .input_file
+                .as_ref()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string();
+        }
+
+        // We replace the crate name only if there is a source name: we do so
+        // because sometimes the driver is called with a crate name but no
+        // source. This happens when Cargo needs to retrieve information about
+        // the crate.
+        if options.crate_name.is_some() {
+            let crate_name_index = get_args_crate_index(&compiler_args);
+            if crate_name_index.is_some() {
+                let crate_name_index = crate_name_index.unwrap();
+                trace!(
+                    "crate name ({}): {}",
+                    crate_name_index,
+                    compiler_args[crate_name_index]
+                );
+
+                compiler_args[crate_name_index] = options.crate_name.as_ref().unwrap().clone();
+            }
+            // If there was no crate name given as parameter, introduce one
+            else {
+                compiler_args.push("--crate-name".to_string());
+                compiler_args.push(options.crate_name.as_ref().unwrap().clone());
+            }
+        }
+    }
+
     trace!("compiler arguments: {:?}", compiler_args);
 
     // Call the Rust compiler with our custom callback.
     // When we use RUSTC_WRAPPER_WORKSPACE to call charon-driver while piggy-backing
     // on Cargo, the charon-driver is only called on the target (and not its
     // dependencies).
-    RunCompiler::new(
-        &compiler_args,
-        &mut CharonCallbacks {
-            dest_dir: options.dest_dir,
-            source_file: options.input_file,
-            no_code_duplication: options.no_code_duplication,
-            opaque_modules: options.opaque,
-        },
-    )
-    .run()
-    .unwrap();
+    //
+    // Note that the first call to the driver is with "--crate-name ___" and no
+    // source file, for Cargo to retrieve some information about the crate.
+    // We don't need to check this case in order to use the default Rustc callbacks
+    // instead of the Charon callback: because there is nothing to build, Rustc will
+    // take care of everything and actually not call us back.
+    RunCompiler::new(&compiler_args, &mut CharonCallbacks { options })
+        .run()
+        .unwrap();
 }
 
 /// Translate a crate to LLBC (Low-Level Borrow Calculus).
@@ -213,10 +295,17 @@ fn main() {
 /// This function is a callback function for the Rust compiler.
 fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Result<(), ()> {
     trace!();
-    // Retrieve the crate name.
-    let crate_name = tcx
-        .crate_name(rustc_span::def_id::LOCAL_CRATE)
-        .to_ident_string();
+    let options = &internal.options;
+
+    // Retrieve the crate name: if the user specified a custom name, use
+    // it, otherwise retrieve it from Rustc.
+    let crate_name: String = options.crate_name.as_deref().map_or_else(
+        || {
+            tcx.crate_name(rustc_span::def_id::LOCAL_CRATE)
+                .to_ident_string()
+        },
+        |x: &str| x.to_string(),
+    );
     trace!("# Crate: {}", crate_name);
 
     // Some important notes about crates and how to interact with rustc:
@@ -243,7 +332,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Result<
     // so we just ignore them).
     let crate_info = register::CrateInfo {
         crate_name: crate_name.clone(),
-        opaque_mods: HashSet::from_iter(internal.opaque_modules.clone().into_iter()),
+        opaque_mods: HashSet::from_iter(options.opaque_modules.clone().into_iter()),
     };
     let registered_decls = register::register_crate(&crate_info, sess, tcx)?;
 
@@ -274,7 +363,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Result<
     // # Step 6: go from IM to LLBC (Low-Level Borrow Calculus) by reconstructing
     // the control flow.
     let (mut llbc_funs, mut llbc_globals) = im_to_llbc::translate_functions(
-        internal.no_code_duplication,
+        options.no_code_duplication,
         &type_defs,
         &im_fun_defs,
         &im_global_defs,
@@ -344,13 +433,12 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Result<
 
     // # Step 14: generate the files.
     llbc_export::export(
-        crate_name,
+        crate_name.clone(),
         &ordered_decls,
         &type_defs,
         &llbc_funs,
         &llbc_globals,
-        &internal.dest_dir,
-        &internal.source_file,
+        &options.dest_dir,
     )?;
 
     trace!("Done");

@@ -238,6 +238,19 @@ macro_rules! error {
     }};
 }
 
+/// A custom log info macro. Uses the log crate.
+macro_rules! info {
+    ($($arg:tt)+) => {{
+        let msg = format!($($arg)+);
+        // As for info we generally output simple messages, we don't insert
+        // a breakline
+        log::info!("[{}]: {}", function_name!(), msg)
+    }};
+    () => {{
+        log::info!("[{}]", function_name!())
+    }};
+}
+
 /// Serialize a vector
 pub fn serialize_vec<T: Serialize, S: Serializer>(
     v: &Vec<T>,
