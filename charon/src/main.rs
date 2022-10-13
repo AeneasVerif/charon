@@ -1,7 +1,4 @@
 #![cfg_attr(feature = "deny-warnings", deny(warnings))]
-// warn on lints, that are included in `rust-lang/rust`s bootstrap
-//#![warn(rust_2018_idioms, unused_lifetimes)]
-//#![feature(proc_macro_span)]
 
 extern crate rustc_tools_util;
 
@@ -52,15 +49,6 @@ fn process(options: &CliOpts) -> Result<(), i32> {
     cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
     cmd.arg(rust_version);
     cmd.arg(cargo_subcommand);
-
-    //    cmd.arg(options.input_file.to_str().unwrap());
-
-    /*    info!("RUSTC: {:?}", path());
-    info!(
-        "CHARON_ARGS: {:?}",
-        serde_json::to_string(&options).unwrap()
-    );
-    info!("cmd: {:?}", cmd);*/
 
     let exit_status = cmd
         .spawn()
