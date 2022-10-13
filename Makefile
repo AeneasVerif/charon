@@ -4,10 +4,22 @@ ifeq (3.81,$(MAKE_VERSION))
 endif
 
 .PHONY: all
-all: test
+all: tests
+
+# We use Rust nightly in order to:
+# - be able to write a Rustc plugin
+# - use Polonius in some tests
+# We keep the nightly version in sync in all the crates by copy-pasting
+# a template file for the toolchain.
+# Rem.: this is not really necessary for the `tests` crate.
+.PHONY: generate-rust-toolchain
+generate-rust-toolchain:
+	cp rust-toolchain.template charon/rust-toolchain
+	cp rust-toolchain.template tests/rust-toolchain
+	cp rust-toolchain.template tests-nll/rust-toolchain
 
 .PHONY: build
-build:
+build: generate-rust-toolchain
 	cd charon && $(MAKE)
 
 CURRENT_DIR = $(shell pwd)
@@ -22,8 +34,8 @@ build-tests:
 build-tests-nll:
 	cd tests-nll && $(MAKE)
 
-.PHONY: test
-test: build build-tests build-tests-nll \
+.PHONY: tests
+tests: build build-tests build-tests-nll \
 	test-nested_borrows test-no_nested_borrows test-loops test-hashmap \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
@@ -47,11 +59,21 @@ test-matches_duplicate:
 test-nll-betree_main:
 test-nll-betree_main: OPTIONS += --opaque=betree_utils
 
-.PHONY: test-%
-test-%: build
-	cd tests && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
-
 .PHONY: test-nll-%
 test-nll-%: OPTIONS += --nll
 test-nll-%: build
 	cd tests-nll && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
+
+.PHONY: test-%
+test-%: build
+	cd tests && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
+
+.PHONY: clean
+clean:
+	cd attributes && cargo clean
+	cd charon && cargo clean
+	cd charon/macros && cargo clean
+	cd tests && cargo clean
+	cd tests-nll && cargo clean
+	rm -rf tests/llbc
+	rm -rf tests-nll/llbc
