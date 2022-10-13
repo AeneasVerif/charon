@@ -31,10 +31,9 @@ impl<'a, T: Serialize> Serialize for VecSW<'a, T> {
 /// An auxiliary type used for serialization of declaration groups
 type DeclarationsSerializer<'a> = VecSW<'a, DeclarationGroup>;
 
-// TODO: rename to "Crate"
 #[derive(Serialize)]
-#[serde(rename = "Module")]
-struct ModSerializer<'a> {
+#[serde(rename = "Crate")]
+struct CrateSerializer<'a> {
     name: String,
     declarations: DeclarationsSerializer<'a>,
     types: &'a TypeDeclId::Vector<TypeDecl>,
@@ -60,7 +59,7 @@ pub fn export(
     trace!("Target file: {:?}", target_filename);
 
     // Serialize
-    let mod_serializer = ModSerializer {
+    let crate_serializer = CrateSerializer {
         name: crate_name,
         declarations: VecSW::new(&ordered_decls.decls),
         types: &type_defs.types,
@@ -84,7 +83,7 @@ pub fn export(
 
     // Write to the file
     match File::create(target_filename.clone()) {
-        std::io::Result::Ok(outfile) => match serde_json::to_writer(&outfile, &mod_serializer) {
+        std::io::Result::Ok(outfile) => match serde_json::to_writer(&outfile, &crate_serializer) {
             std::result::Result::Ok(()) => {
                 // We canonicalize (i.e., make absolute) the path before printing it:
                 // this makes it clearer to the user where to find the file.
