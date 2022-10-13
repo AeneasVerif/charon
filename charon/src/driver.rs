@@ -218,6 +218,13 @@ fn main() {
     if options.use_polonius {
         compiler_args.push("-Zpolonius".to_string());
     }
+    if options.lib {
+        compiler_args.push("--lib".to_string());
+    }
+    if options.bin.is_some() {
+        compiler_args.push("--bin".to_string());
+        compiler_args.push(options.bin.as_ref().unwrap().clone());
+    }
 
     // In order to have some flexibility in our tests, we give the possibility
     // of specifying the source (the input file which gives the entry to the
@@ -249,8 +256,8 @@ fn main() {
                 .to_string();
         }
 
-        // We replace the crate name only if there is a source name: we do so
-        // because sometimes the driver is called with a crate name but no
+        // We replace the crate name only if there is a source name *in the arguments*:
+        // we do so because sometimes the driver is called with a crate name but no
         // source. This happens when Cargo needs to retrieve information about
         // the crate.
         if options.crate_name.is_some() {

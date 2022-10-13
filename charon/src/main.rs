@@ -20,6 +20,12 @@ pub fn main() {
     // Parse the command-line
     let options = CliOpts::from_args();
 
+    // Check that the options are meaningful
+    assert!(
+        !options.lib || options.bin.is_none(),
+        "Can't use --lib and --bin at the same time"
+    );
+
     if let Err(code) = process(&options) {
         std::process::exit(code);
     }

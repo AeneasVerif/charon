@@ -17,6 +17,12 @@ pub struct CliOpts {
     /// Compile for release target instead of debug
     #[structopt(long = "release")]
     pub release: bool,
+    /// Compile the package's library
+    #[structopt(long = "lib")]
+    pub lib: bool,
+    /// Compile the specified binary
+    #[structopt(long = "bin")]
+    pub bin: Option<String>,
     /// Provide a custom name for the compiled crate (ignore the name computed
     /// by Cargo)
     #[structopt(long = "crate")]
