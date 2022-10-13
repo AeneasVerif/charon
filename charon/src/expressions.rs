@@ -1,7 +1,7 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
 pub use crate::expressions_utils::*;
-use crate::im_ast::GlobalDeclId;
+use crate::ullbc_ast::GlobalDeclId;
 use crate::types::*;
 use crate::values::*;
 use im::Vector;

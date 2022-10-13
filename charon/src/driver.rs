@@ -41,9 +41,9 @@ mod generics;
 mod get_mir;
 mod graphs;
 mod id_vector;
-mod im_ast;
-mod im_ast_utils;
-mod im_to_llbc;
+mod ullbc_ast;
+mod ullbc_ast_utils;
+mod ullbc_to_llbc;
 mod insert_assign_return_unit;
 mod llbc_ast;
 mod llbc_ast_utils;
@@ -369,7 +369,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Result<
 
     // # Step 6: go from IM to LLBC (Low-Level Borrow Calculus) by reconstructing
     // the control flow.
-    let (mut llbc_funs, mut llbc_globals) = im_to_llbc::translate_functions(
+    let (mut llbc_funs, mut llbc_globals) = ullbc_to_llbc::translate_functions(
         options.no_code_duplication,
         &type_defs,
         &im_fun_defs,

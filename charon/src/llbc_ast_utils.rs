@@ -5,7 +5,7 @@ use std::ops::DerefMut;
 
 use crate::expressions::{Operand, Place, Rvalue};
 use crate::formatter::Formatter;
-use crate::im_ast::{fmt_call, FunDeclId, FunSigFormatter, GAstFormatter, GlobalDeclId, TAB_INCR};
+use crate::ullbc_ast::{fmt_call, FunDeclId, FunSigFormatter, GAstFormatter, GlobalDeclId, TAB_INCR};
 use crate::llbc_ast::{Call, FunDecl, FunDecls, GlobalDecl, GlobalDecls, Statement, SwitchTargets};
 use crate::types::*;
 use crate::values::*;

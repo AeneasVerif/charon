@@ -8,7 +8,7 @@
 
 #![allow(dead_code)]
 use crate::expressions::*;
-use crate::im_ast::*;
+use crate::ullbc_ast::*;
 pub use crate::llbc_ast_utils::*;
 use crate::types::*;
 use crate::values::*;

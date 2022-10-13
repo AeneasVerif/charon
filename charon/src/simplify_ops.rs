@@ -10,7 +10,7 @@
 use take_mut::take;
 
 use crate::expressions::*;
-use crate::im_ast::{iter_function_bodies, iter_global_bodies};
+use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::llbc_ast::{Assert, FunDecls, GlobalDecls, Statement, SwitchTargets};
 use crate::types::*;
 use crate::values::*;

@@ -11,7 +11,7 @@ use crate::formatter::Formatter;
 use crate::generics;
 use crate::get_mir::EXTRACT_CONSTANTS_AT_TOP_LEVEL;
 use crate::id_vector;
-use crate::im_ast as ast;
+use crate::ullbc_ast as ast;
 use crate::names::global_def_id_to_name;
 use crate::names::{function_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy as rh;

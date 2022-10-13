@@ -6,7 +6,7 @@ use crate::llbc_ast::FunDecls;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::graphs::*;
-use crate::im_ast::{FunDeclId, FunSig};
+use crate::ullbc_ast::{FunDeclId, FunSig};
 use crate::rust_to_local_ids::TypeDeclarationGroup;
 use crate::types as ty;
 use crate::types::*;

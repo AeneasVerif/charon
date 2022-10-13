@@ -10,7 +10,7 @@
 use std::iter::zip;
 
 use crate::expressions::*;
-use crate::im_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
+use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
 use crate::llbc_ast::{FunDecls, GlobalDecls, Statement};
 use crate::llbc_ast_utils::transform_operands;
 use crate::types::*;

@@ -6,7 +6,7 @@
 //! we ignore the disambiguators (see [names] and [names_utils]).
 #![allow(dead_code)]
 
-use crate::im_ast;
+use crate::ullbc_ast;
 use crate::names::*;
 use crate::types;
 
@@ -47,7 +47,7 @@ pub static INDEX_MUT_NAME: [&str; 5] = ["core", "ops", "index", "IndexMut", "ind
 pub static MARKER_SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
 
 /// We redefine identifiers for assumed functions here, instead of reusing the
-/// identifiers from [im_ast], because some of the functions (the panic functions)
+/// identifiers from [ullbc_ast], because some of the functions (the panic functions)
 /// will actually not be translated to functions: there are thus missing identifiers.
 enum FunId {
     /// `core::panicking::panic`
@@ -111,22 +111,22 @@ fn get_fun_id_from_name_full(name: &FunName) -> Option<FunId> {
     }
 }
 
-pub fn get_fun_id_from_name(name: &FunName) -> Option<im_ast::AssumedFunId> {
+pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
     match get_fun_id_from_name_full(name) {
         Option::Some(id) => {
             let id = match id {
                 FunId::Panic | FunId::BeginPanic => unreachable!(),
-                FunId::Replace => im_ast::AssumedFunId::Replace,
-                FunId::BoxNew => im_ast::AssumedFunId::BoxNew,
-                FunId::BoxDeref => im_ast::AssumedFunId::BoxDeref,
-                FunId::BoxDerefMut => im_ast::AssumedFunId::BoxDerefMut,
-                FunId::BoxFree => im_ast::AssumedFunId::BoxFree,
-                FunId::VecNew => im_ast::AssumedFunId::VecNew,
-                FunId::VecPush => im_ast::AssumedFunId::VecPush,
-                FunId::VecInsert => im_ast::AssumedFunId::VecInsert,
-                FunId::VecLen => im_ast::AssumedFunId::VecLen,
-                FunId::VecIndex => im_ast::AssumedFunId::VecIndex,
-                FunId::VecIndexMut => im_ast::AssumedFunId::VecIndexMut,
+                FunId::Replace => ullbc_ast::AssumedFunId::Replace,
+                FunId::BoxNew => ullbc_ast::AssumedFunId::BoxNew,
+                FunId::BoxDeref => ullbc_ast::AssumedFunId::BoxDeref,
+                FunId::BoxDerefMut => ullbc_ast::AssumedFunId::BoxDerefMut,
+                FunId::BoxFree => ullbc_ast::AssumedFunId::BoxFree,
+                FunId::VecNew => ullbc_ast::AssumedFunId::VecNew,
+                FunId::VecPush => ullbc_ast::AssumedFunId::VecPush,
+                FunId::VecInsert => ullbc_ast::AssumedFunId::VecInsert,
+                FunId::VecLen => ullbc_ast::AssumedFunId::VecLen,
+                FunId::VecIndex => ullbc_ast::AssumedFunId::VecIndex,
+                FunId::VecIndexMut => ullbc_ast::AssumedFunId::VecIndexMut,
             };
             Option::Some(id)
         }

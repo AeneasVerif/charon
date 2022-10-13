@@ -6,7 +6,7 @@
 use take_mut::take;
 
 use crate::{
-    im_ast::{iter_function_bodies, iter_global_bodies},
+    ullbc_ast::{iter_function_bodies, iter_global_bodies},
     llbc_ast::{Assert, FunDecls, GlobalDecls, Statement, SwitchTargets},
 };
 use std::iter::FromIterator;

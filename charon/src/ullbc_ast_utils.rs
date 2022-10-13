@@ -1,11 +1,11 @@
-//! Implementations for im_ast.rs
+//! Implementations for ullbc_ast.rs
 #![allow(dead_code)]
 
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::id_vector;
-use crate::im_ast::*;
+use crate::ullbc_ast::*;
 use crate::names::Name;
 use crate::types::*;
 use crate::values::*;

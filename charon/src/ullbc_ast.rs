@@ -1,10 +1,9 @@
-//! "Intermediate MIR" ast (IM), intended to be close to the rust compiler MIR ast.
-//! We don't even try to reconstruct the if then else blocks or the loop blocks
-//! at this point.
+//! "Unstructured LLBC" ast (ULLBC). This is LLBC before the control-flow
+//! reconstruction. In effect, this is a cleaned up version of MIR.
 #![allow(dead_code)]
 
 use crate::expressions::*;
-pub use crate::im_ast_utils::*;
+pub use crate::ullbc_ast_utils::*;
 use crate::names::FunName;
 use crate::names::GlobalName;
 use crate::regions_hierarchy::RegionGroups;

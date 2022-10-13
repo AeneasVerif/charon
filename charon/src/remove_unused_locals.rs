@@ -5,7 +5,7 @@ use take_mut::take;
 /// check that there are no such local variables remaining afterwards.
 use crate::expressions::*;
 use crate::id_vector::ToUsize;
-use crate::im_ast::{iter_function_bodies, iter_global_bodies, Var};
+use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::llbc_ast::{FunDecls, GlobalDecls, Statement, SwitchTargets};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};

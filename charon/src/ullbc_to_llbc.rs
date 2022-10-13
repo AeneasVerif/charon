@@ -1,4 +1,6 @@
-//! IM to LLBC (Control-Flow Internal MIR)
+//! ULLBC to LLBC
+//!
+//! We reconstruct the control-flow in the Unstructured LLBC.
 //!
 //! The reconstruction algorithm is not written to be efficient (its complexity
 //! is probably very bad), but it was not written to be: this is still an early
@@ -18,10 +20,10 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
-use crate::im_ast::FunDeclId;
-use crate::im_ast::{self as src, GlobalDeclId};
 use crate::llbc_ast as tgt;
 use crate::types::TypeDecls;
+use crate::ullbc_ast::FunDeclId;
+use crate::ullbc_ast::{self as src, GlobalDeclId};
 use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
