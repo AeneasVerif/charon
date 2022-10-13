@@ -32,7 +32,7 @@ pub struct CliOpts {
     pub dest_dir: Option<PathBuf>,
     /// If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
     /// Otherwise, use the standard borrow checker.
-    #[structopt(long = "nll")]
+    #[structopt(long = "polonius")]
     pub use_polonius: bool,
     #[structopt(
         long = "no-code-duplication",

@@ -16,7 +16,7 @@ all: tests
 generate-rust-toolchain:
 	cp rust-toolchain.template charon/rust-toolchain
 	cp rust-toolchain.template tests/rust-toolchain
-	cp rust-toolchain.template tests-nll/rust-toolchain
+	cp rust-toolchain.template tests-polonius/rust-toolchain
 
 .PHONY: build
 build: generate-rust-toolchain
@@ -30,17 +30,17 @@ CHARON = $(CURRENT_DIR)/charon/target/debug/cargo-charon
 build-tests:
 	cd tests && $(MAKE)
 
-.PHONY: build-tests-nll
-build-tests-nll:
-	cd tests-nll && $(MAKE)
+.PHONY: build-tests-polonius
+build-tests-polonius:
+	cd tests-polonius && $(MAKE)
 
 .PHONY: tests
-tests: build build-tests build-tests-nll \
+tests: build build-tests build-tests-polonius \
 	test-nested_borrows test-no_nested_borrows test-loops test-hashmap \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
         test-constants \
-	test-nll-betree_nll test-nll-betree_main
+	test-polonius-betree_polonius test-polonius-betree_main
 
 test-nested_borrows: OPTIONS += --no-code-duplication
 test-no_nested_borrows: OPTIONS += --no-code-duplication
@@ -54,15 +54,16 @@ test-constants: OPTIONS += --no-code-duplication
 test-matches:
 test-external: OPTIONS += --no-code-duplication
 test-matches_duplicate:
-#test-nll-betree_nll: OPTIONS += --no-code-duplication
+#test-polonius-betree_polonius: OPTIONS += --no-code-duplication
+test-polonius-betree_polonius:
 # Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-test-nll-betree_main:
-test-nll-betree_main: OPTIONS += --opaque=betree_utils
+test-polonius-betree_main:
+test-polonius-betree_main: OPTIONS += --opaque=betree_utils
 
-.PHONY: test-nll-%
-test-nll-%: OPTIONS += --nll
-test-nll-%: build
-	cd tests-nll && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
+.PHONY: test-polonius-%
+test-polonius-%: OPTIONS += --polonius
+test-polonius-%: build
+	cd tests-polonius && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
 
 .PHONY: test-%
 test-%: build
@@ -74,6 +75,6 @@ clean:
 	cd charon && cargo clean
 	cd charon/macros && cargo clean
 	cd tests && cargo clean
-	cd tests-nll && cargo clean
+	cd tests-polonius && cargo clean
 	rm -rf tests/llbc
-	rm -rf tests-nll/llbc
+	rm -rf tests-polonius/llbc
