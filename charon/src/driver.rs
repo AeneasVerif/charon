@@ -66,19 +66,15 @@ mod types_utils;
 mod values;
 mod values_utils;
 
-use log::info;
 use rustc_driver::{Callbacks, Compilation, RunCompiler};
 use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
-use serde::Deserialize;
 use serde_json;
-use std::collections::{HashMap, HashSet};
-use std::fmt::{Display, Error, Formatter};
+use std::collections::HashSet;
 use std::iter::FromIterator;
 use std::ops::Deref;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 /// The callbacks for Charon
 struct CharonCallbacks {
@@ -111,82 +107,6 @@ impl Callbacks for CharonCallbacks {
             .unwrap();
         Compilation::Stop
     }
-}
-
-/// Charon expects the project to have been built in debug mode before performing
-/// extraction: `cargo build`. In particular, it will look for already compiled
-/// external dependencies in the target directory (`/target/debug/deps/`, usually).
-// This structure is used to store the command-line instructions.
-// We automatically derive a command-line parser based on this structure.
-// Note that the doc comments are used to generate the help message when using
-// `--help`.
-//
-// TODO: give the possibility of changing the crate name.
-#[derive(StructOpt)]
-#[structopt(name = "Charon")]
-struct CliOpts {
-    /// Compile for release target instead of debug
-    #[structopt(long = "release")]
-    release: bool,
-    /// The input file (the entry point of the crate to extract)
-    #[structopt(parse(from_os_str))]
-    input_file: PathBuf,
-    /// The destination directory, if we don't want to generate the output
-    /// .llbc files in the same directory as the input .rs files.
-    #[structopt(long = "dest", parse(from_os_str))]
-    dest_dir: Option<PathBuf>,
-    /// If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
-    /// Otherwise, use the standard borrow checker.
-    #[structopt(long = "nll")]
-    use_polonius: bool,
-    #[structopt(
-        long = "no-code-duplication",
-        help = "Check that no code duplication happens during control-flow reconstruction
-of the MIR code.
-
-This is only used to make sure the reconstructed code is of good quality.
-For instance, if we have the following CFG in MIR:
-  ```
-  b0: switch x [true -> goto b1; false -> goto b2]
-  b1: y := 0; goto b3
-  b2: y := 1; goto b3
-  b3: return y      
-  ```
-
-We want to reconstruct the control-flow as:
-  ```
-  if x then { y := 0; } else { y := 1 };
-  return y;
-  ```
-
-But if we don't do this reconstruction correctly, we might duplicate
-the code starting at b3:
-  ```
-  if x then { y := 0; return y; } else { y := 1; return y; }
-  ```
-
-When activating this flag, we check that no such things happen.
-
-Also note that it is sometimes not possible to prevent code duplication,
-if the original Rust looks like this for instance:
-  ```
-  match x with
-  | E1(y,_) | E2(_,y) => { ... } // Some branches are \"fused\"
-  | E3 => { ... }
-  ```
-
-The reason is that assignments are introduced when desugaring the pattern
-matching, and those assignments are specific to the variant on which we pattern
-match (the `E1` branch performs: `y := (x as E1).0`, while the `E2` branch
-performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
-"
-    )]
-    no_code_duplication: bool,
-    /// A list of modules of the extracted crate that we consider as opaque: we
-    /// extract only the signature information, without the definition content
-    /// (of the functions, types, etc.).
-    #[structopt(long = "opaque")]
-    opaque: Vec<String>,
 }
 
 /// If a command-line option matches `find_arg`, then apply the predicate `pred` on its value. If
@@ -223,7 +143,7 @@ fn main() {
         origin_args.len() > 0,
         "Impossible: zero arguments on the command-line!"
     );
-    info!("original arguments (computed by cargo): {:?}", origin_args);
+    trace!("original arguments (computed by cargo): {:?}", origin_args);
 
     // The execution path (the path to the current binary) is the first argument
     let exec_path = origin_args[0].clone();
@@ -269,7 +189,7 @@ fn main() {
         compiler_args.push("-Zpolonius".to_string());
     }
 
-    info!("compiler arguments: {:?}", compiler_args);
+    trace!("compiler arguments: {:?}", compiler_args);
 
     // Call the Rust compiler with our custom callback.
     // When we use RUSTC_WRAPPER_WORKSPACE to call charon-driver while piggy-backing

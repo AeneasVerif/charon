@@ -6,7 +6,6 @@ mod cli_options;
 mod logger;
 
 use cli_options::{CliOpts, CHARON_ARGS};
-use log::info;
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
