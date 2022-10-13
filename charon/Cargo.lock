@@ -134,6 +134,7 @@ dependencies = [
  "petgraph",
  "pretty",
  "regex",
+ "rustc_tools_util",
  "serde",
  "serde_json",
  "serial_test",
@@ -396,7 +397,9 @@ name = "macros"
 version = "0.1.0"
 dependencies = [
  "quote",
+ "serde",
  "syn",
+ "toml",
 ]
 
 [[package]]
@@ -599,6 +602,12 @@ name = "regex-syntax"
 version = "0.6.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
+
+[[package]]
+name = "rustc_tools_util"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "598f48ce2a421542b3e64828aa742b687cc1b91d2f96591cfdb7ac5988cd6366"
 
 [[package]]
 name = "ryu"

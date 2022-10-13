@@ -4,6 +4,14 @@ version = "0.1.0"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2018"
 
+[[bin]]
+name = "cargo-charon"
+path = "src/main.rs"
+
+[[bin]]
+name = "charon-driver"
+path = "src/driver.rs"
+
 [dependencies]
 pretty = "0.10.0"
 im = "15.0.0"
@@ -26,6 +34,7 @@ chrono = "0.4"
 structopt = "0.3.13"
 macros = { path = "./macros" }
 take_mut = "0.2.2"
+rustc_tools_util = "0.2.1"
 
 [dev-dependencies]
 assert_cmd = "1.0.1"

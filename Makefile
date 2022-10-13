@@ -49,7 +49,7 @@ test-nll-betree_main: OPTIONS += --opaque=betree_utils
 .PHONY: test-%
 test-%: TESTS=../tests
 test-%:
-	cd charon && cargo run $(SRC)/$*.rs $(OPTIONS)
+	cd charon && cargo run --bin cargo-charon $(SRC)/$*.rs $(OPTIONS)
 # I would like to do this, however there is a problem when loading libstd.so.
 # I guess we need to indicate the path to the installed Rust library, sth?
 #	charon/target/debug/charon $(SRC)/$*.rs $(OPTIONS)
@@ -58,4 +58,25 @@ test-%:
 test-nll-%: TESTS=../tests-nll
 test-nll-%: OPTIONS += --nll
 test-nll-%:
-	cd charon && cargo run $(SRC)/$*.rs $(OPTIONS)
+	cd charon && cargo run --bin cargo-charon $(SRC)/$*.rs $(OPTIONS)
+
+# TODO:
+.PHONY: run-driver
+run-driver: build
+	cd tests && RUSTC_WORKSPACE_WRAPPER="../charon/target/debug/cargo-charon" cargo +nightly-2022-01-29 build
+
+# TODO:
+#.PHONY: run-cargo-charon
+#run-cargo-charon: build
+#	cd charon && cargo run --bin cargo-charon ../tests/src/nested_borrows.rs
+
+# TODO: cleanup
+.PHONY: run-cargo-charon
+run-cargo-charon: build
+	cd tests && ../charon/target/debug/cargo-charon ../tests/src/nested_borrows.rs
+#	cd charon && cargo run --bin cargo-charon ../tests/src/nested_borrows.rs
+
+# TODO: cleanup
+.PHONY: run-cargo-charon-nll
+run-cargo-charon-nll: build
+	cd tests-nll && ../charon/target/debug/cargo-charon ../tests/src/nested_borrows.rs --nll

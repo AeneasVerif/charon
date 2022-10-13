@@ -194,7 +194,7 @@ pub fn assert(x: bool) -> Result<()> {
 /// This macro computes the name of the function in which it is called.
 /// We adapted it from:
 /// https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust
-/// Note that we can't define it in aenea_macros due to technical reasons
+/// Note that we can't define it in macros due to technical reasons
 macro_rules! function_name {
     () => {{
         fn f() {}
