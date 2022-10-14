@@ -41,9 +41,6 @@ mod generics;
 mod get_mir;
 mod graphs;
 mod id_vector;
-mod ullbc_ast;
-mod ullbc_ast_utils;
-mod ullbc_to_llbc;
 mod insert_assign_return_unit;
 mod llbc_ast;
 mod llbc_ast_utils;
@@ -63,6 +60,9 @@ mod translate_functions_to_im;
 mod translate_types;
 mod types;
 mod types_utils;
+mod ullbc_ast;
+mod ullbc_ast_utils;
+mod ullbc_to_llbc;
 mod values;
 mod values_utils;
 
@@ -217,13 +217,6 @@ fn main() {
     };
     if options.use_polonius {
         compiler_args.push("-Zpolonius".to_string());
-    }
-    if options.lib {
-        compiler_args.push("--lib".to_string());
-    }
-    if options.bin.is_some() {
-        compiler_args.push("--bin".to_string());
-        compiler_args.push(options.bin.as_ref().unwrap().clone());
     }
 
     // In order to have some flexibility in our tests, we give the possibility

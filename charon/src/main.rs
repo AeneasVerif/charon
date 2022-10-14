@@ -6,6 +6,7 @@ mod cli_options;
 mod logger;
 
 use cli_options::{CliOpts, CHARON_ARGS};
+use log::trace;
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
@@ -19,6 +20,7 @@ pub fn main() {
 
     // Parse the command-line
     let options = CliOpts::from_args();
+    trace!("Arguments: {:?}", std::env::args());
 
     // Check that the options are meaningful
     assert!(
@@ -45,7 +47,8 @@ fn path() -> PathBuf {
 
 fn process(options: &CliOpts) -> Result<(), i32> {
     // Compute the arguments of the command to call cargo
-    let cargo_subcommand = "build";
+    //let cargo_subcommand = "build";
+    let cargo_subcommand = "rustc";
 
     let rust_version = RUST_VERSION;
 
@@ -58,6 +61,24 @@ fn process(options: &CliOpts) -> Result<(), i32> {
     }
 
     cmd.arg(cargo_subcommand);
+
+    if options.lib {
+        cmd.arg("--lib");
+    }
+
+    if options.bin.is_some() {
+        cmd.arg("--bin");
+        cmd.arg(options.bin.as_ref().unwrap().clone());
+    }
+
+    if options.release {
+        cmd.arg("--release");
+    }
+
+    if options.use_polonius {
+        cmd.arg("--");
+        cmd.arg("-Zpolonius");
+    }
 
     let exit_status = cmd
         .spawn()

@@ -78,3 +78,15 @@ clean:
 	cd tests-polonius && cargo clean
 	rm -rf tests/llbc
 	rm -rf tests-polonius/llbc
+
+.PHONY: nix-build
+nix-build:
+	nix build
+
+.PHONY: nix-tests
+nix-tests:
+	nix build .#hydraJobs.tests.x86_64-linux --show-trace
+
+.PHONY: nix-tests-polonius
+nix-tests-polonius:
+	nix build .#hydraJobs.tests-polonius.x86_64-linux --show-trace
