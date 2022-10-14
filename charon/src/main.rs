@@ -52,7 +52,11 @@ fn process(options: &CliOpts) -> Result<(), i32> {
     let mut cmd = Command::new("cargo");
     cmd.env("RUSTC_WORKSPACE_WRAPPER", path());
     cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
-    cmd.arg(rust_version);
+
+    if !options.cargo_no_rust_version {
+        cmd.arg(rust_version);
+    }
+
     cmd.arg(cargo_subcommand);
 
     let exit_status = cmd

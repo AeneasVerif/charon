@@ -28,10 +28,10 @@
         };
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
         charon =
-          craneLib.buildPackage { src = craneLib.cleanCargoSource ./charon; };
+          craneLib.buildPackage { src = ./charon; };
         tests = let
           deps =
-            craneLib.buildDepsOnly { src = craneLib.cleanCargoSource ./tests; };
+            craneLib.buildDepsOnly { src = ./tests; };
         in pkgs.stdenv.mkDerivation {
           name = "tests";
           src = ./tests;
@@ -41,39 +41,39 @@
             mkdir -p $out/llbc
           '';
           buildPhase = ''
-            CHARON="${charon}/bin/charon --dest $out/llbc"
+            CHARON="${charon}/bin/cargo-charon --release --cargo-no-rust-version --dest $out/llbc"
 
             for test in hashmap matches matches_duplicate
             do
-              $CHARON src/$test.rs
+              $CHARON --crate $test --input src/$test.rs
             done
 
             for test in nested_borrows no_nested_borrows loops paper constants external
             do
-              $CHARON --no-code-duplication src/$test.rs
+              $CHARON --no-code-duplication --crate $test --input src/$test.rs
             done
 
-            $CHARON --release --opaque=hashmap_utils src/hashmap_main.rs
+            $CHARON --opaque=hashmap_utils --crate hashmap_main --input src/hashmap_main.rs
           '';
           dontInstall = true;
         };
-        tests-nll = let
+        tests-polonius = let
           deps = craneLib.buildDepsOnly {
-            src = craneLib.cleanCargoSource ./tests-nll;
+            src = ./tests-polonius;
           };
         in pkgs.stdenv.mkDerivation {
-          name = "tests-nll";
-          src = ./tests-nll;
+          name = "tests-polonius";
+          src = ./tests-polonius;
           nativeBuildInputs = [ pkgs.gnutar pkgs.zstd rustToolchain ];
           configurePhase = ''
             tar -xf ${deps}/target.tar.zst
             mkdir -p $out/llbc
           '';
-          # The betree doesn't work for now. TODO: update the way we compute
-          # the arguments for the external dependencies.
-          #buildPhase = ''
-          #  ${charon}/bin/charon --release --dest $out/llbc --opaque=betree_utils src/betree_main.rs
-          #'';
+          buildPhase = ''
+            CHARON="${charon}/bin/cargo-charon --release --cargo-no-rust-version --dest $out/llbc"
+
+            $CHARON --opaque=betree_utils --crate betree_main --input src/betree_main.rs
+          '';
           dontInstall = true;
         };
       in {
@@ -81,6 +81,6 @@
           inherit charon;
           default = charon;
         };
-        hydraJobs = { inherit charon tests tests-nll; };
+        hydraJobs = { inherit charon tests tests-polonius; };
       });
 }
