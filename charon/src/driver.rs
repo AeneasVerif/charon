@@ -214,7 +214,7 @@ fn main() {
 
     if !has_sysroot_arg {
         compiler_args.extend(vec!["--sysroot".to_string(), sysroot]);
-    };
+    }
     if options.use_polonius {
         compiler_args.push("-Zpolonius".to_string());
     }
@@ -273,7 +273,7 @@ fn main() {
         }
     }
 
-    trace!("compiler arguments: {:?}", compiler_args);
+    trace!("Compiler arguments: {:?}", compiler_args);
 
     // Call the Rust compiler with our custom callback.
     // When we use RUSTC_WRAPPER_WORKSPACE to call charon-driver while piggy-backing

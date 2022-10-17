@@ -75,11 +75,6 @@ fn process(options: &CliOpts) -> Result<(), i32> {
         cmd.arg("--release");
     }
 
-    if options.use_polonius {
-        cmd.arg("--");
-        cmd.arg("-Zpolonius");
-    }
-
     let exit_status = cmd
         .spawn()
         .expect("could not run cargo")
