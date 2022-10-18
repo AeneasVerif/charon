@@ -26,53 +26,37 @@ CURRENT_DIR = $(shell pwd)
 OPTIONS = --dest llbc
 CHARON = $(CURRENT_DIR)/charon/target/debug/cargo-charon
 
+# Build the tests crate, and run the cargo tests
 .PHONY: build-tests
 build-tests:
-	cd tests && $(MAKE)
+	cd tests && $(MAKE) build && $(MAKE) cargo-tests
 
+# Build the tests-polonius crate, and run the cargo tests
 .PHONY: build-tests-polonius
 build-tests-polonius:
-	cd tests-polonius && $(MAKE)
+	cd tests-polonius && $(MAKE) build && $(MAKE) cargo-tests
 
+# Build and run the tests
 .PHONY: tests
 tests: build-tests build-tests-polonius charon-tests
 
+# Run Charon on various test files
 .PHONY: charon-tests
-charon-tests: build \
-	test-nested_borrows test-no_nested_borrows test-loops test-hashmap \
-	test-paper test-hashmap_main \
-	test-matches test-matches_duplicate test-external \
-	test-constants \
-	test-polonius-betree_polonius test-polonius-betree_main
+charon-tests: charon-tests-regular charon-tests-polonius
 
-test-nested_borrows: OPTIONS += --no-code-duplication
-test-no_nested_borrows: OPTIONS += --no-code-duplication
-test-loops: OPTIONS += --no-code-duplication
-# test-hashmap: OPTIONS += --no-code-duplication
-# test-hashmap_main: OPTIONS += --no-code-duplication
-test-hashmap_main: OPTIONS += --opaque=hashmap_utils
-test-paper: OPTIONS += --no-code-duplication
-test-constants: OPTIONS += --no-code-duplication
-# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-test-matches:
-test-external: OPTIONS += --no-code-duplication
-test-matches_duplicate:
-#test-polonius-betree_polonius: OPTIONS += --no-code-duplication
-test-polonius-betree_polonius:
-# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-test-polonius-betree_main:
-test-polonius-betree_main: OPTIONS += --opaque=betree_utils
+# Run Charon on the files in the tests crate
+.PHONY: charon-tests-regular
+charon-tests-regular: build-tests
+	echo "# Starting the regular tests"
+	cd tests && make charon-tests
+	echo "# Finished the regular tests"
 
-.PHONY: test-polonius-%
-test-polonius-%: OPTIONS += --polonius
-test-polonius-%: build
-	cd tests-polonius && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
-	cd tests-polonius && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --mir_optimized
-
-.PHONY: test-%
-test-%: build
-	cd tests && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
-	cd tests && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --mir_optimized
+# Run Charon on the files in the tests-polonius crate
+.PHONY: charon-tests-polonius
+charon-tests-polonius: build-tests-polonius
+	echo "# Starting the Polonius tests"
+	cd tests-polonius && make charon-tests
+	echo "# Finished the Polonius tests"
 
 .PHONY: clean
 clean:
@@ -84,6 +68,7 @@ clean:
 	rm -rf tests/llbc
 	rm -rf tests-polonius/llbc
 
+# Build the Nix packages
 .PHONY: nix
 nix: nix-tests nix-tests-polonius
 

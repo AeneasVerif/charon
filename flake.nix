@@ -36,19 +36,9 @@
           buildPhase = ''
             mkdir -p $out/llbc
 
-            CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version --dest $out/llbc"
-
-            for test in hashmap matches matches_duplicate
-            do
-              $CHARON --crate $test --input src/$test.rs
-            done
-
-            for test in nested_borrows no_nested_borrows loops paper constants external
-            do
-              $CHARON --no-code-duplication --crate $test --input src/$test.rs
-            done
-
-            $CHARON --opaque=hashmap_utils --crate hashmap_main --input src/hashmap_main.rs
+            # Run the tests for Charon
+            DEST=$out/llbc CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version" \
+            make charon-tests
           '';
           doCheck = false;
           dontInstall = true;
@@ -66,12 +56,12 @@
           buildPhase = ''
             mkdir -p $out/llbc
 
-            CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version --polonius --dest $out/llbc"
+            # Run the tests for Charon
+            DEST=$out/llbc CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version" \
+            make charon-tests
 
-            $CHARON --opaque=betree_utils --crate betree_main --input src/betree_main.rs
-            
-            # Nix doesn't run the tests, so run them by hand
-            make tests
+            # Nix doesn't run the cargo tests, so run them by hand
+            make cargo-tests
           '';
           dontInstall = true;
         };
