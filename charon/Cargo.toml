@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2018"
 
+[lib]
+name = "charon"
+path = "src/lib.rs"
+
 [[bin]]
 name = "cargo-charon"
 path = "src/main.rs"
@@ -11,10 +15,6 @@ path = "src/main.rs"
 [[bin]]
 name = "charon-driver"
 path = "src/charon-driver.rs"
-
-#[lib]
-#name = "charon"
-#path = "src/lib.rs"
 
 [dependencies]
 pretty = "0.10.0"

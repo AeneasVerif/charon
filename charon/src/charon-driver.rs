@@ -1,3 +1,6 @@
+//! The Charon driver, which calls Rustc with callbacks to compile some Rust
+//! crate to LLBC.
+
 #![feature(rustc_private, register_tool)]
 #![feature(box_syntax, box_patterns)]
 #![feature(is_some_with)]

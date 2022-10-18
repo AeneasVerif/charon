@@ -1,14 +1,14 @@
 //! This file contains information about the assumed functions/types/traits definitions
-//! TODO: rename to "primitive"
 //!
 //! **IMPORTANT**:
 //! When checking whether names are equal to one of the reference names below,
 //! we ignore the disambiguators (see [names] and [names_utils]).
+// TODO: rename to "primitive"
 #![allow(dead_code)]
 
-use crate::ullbc_ast;
 use crate::names::*;
 use crate::types;
+use crate::ullbc_ast;
 
 // Assumed types
 pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
