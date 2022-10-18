@@ -15,7 +15,7 @@ pub type Result<T> = std::result::Result<T, ()>;
 /// Used to avoid saving, checking and returning the result by hand.
 /// The callback will not be called again if it returned an error.
 /// The dynamic signature is used to pass a generic function as argument.
-/// A simple use case is shown in [test_propagate_error].
+/// A simple use case is shown in `test_propagate_error`.
 pub fn propagate_error<T, C, F>(consumer: C, mut callback: F) -> Result<()>
 where
     F: FnMut(T) -> Result<()>,
@@ -193,7 +193,7 @@ pub fn assert(x: bool) -> Result<()> {
 
 /// This macro computes the name of the function in which it is called.
 /// We adapted it from:
-/// https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust
+/// <https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust>
 /// Note that we can't define it in macros due to technical reasons
 macro_rules! function_name {
     () => {{

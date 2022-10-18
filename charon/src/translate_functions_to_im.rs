@@ -79,10 +79,10 @@ struct BodyTransContext<'ctx, 'ctx1> {
     /// The map from rust type variable indices to translated type variable
     /// indices.
     rtype_vars_to_ids: im::OrdMap<u32, ty::TypeVarId::Id>,
-    /// Redundant with `rtype_vars_to_ids`. We need this for [`translate_ty`](translate_ty).
+    /// Redundant with `rtype_vars_to_ids`. We need this for [translate_types::translate_ety].
     /// This maps type variables to types with regions used in signatures.
     rtype_vars_to_rtypes: im::OrdMap<u32, ty::RTy>,
-    /// Redundant with `rtype_vars_to_ids`. We need this for [`translate_ty`](translate_ty).
+    /// Redundant with `rtype_vars_to_ids`. We need this for [translate_types::translate_ety].
     /// This maps type variables to types with erased regions.
     rtype_vars_to_etypes: im::OrdMap<u32, ty::ETy>,
     /// Id counter for the variables
@@ -1513,7 +1513,6 @@ fn translate_switch_targets<'tcx, 'ctx, 'ctx1>(
     }
 }
 
-/// Small utility used by [`execute_function_call`](execute_function_call).
 /// Return the `DefId` of the function referenced by an operand, with the
 /// parameters substitution.
 /// The `Operand` comes from a `TerminatorKind::Call`.

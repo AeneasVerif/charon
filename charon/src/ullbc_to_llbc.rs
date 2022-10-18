@@ -1776,7 +1776,7 @@ fn translate_block(
     }
 }
 
-/// [type_defs]: this parameter is used for pretty-printing purposes
+/// `type_defs`: this parameter is used for pretty-printing purposes
 fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
@@ -1818,7 +1818,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     }
 }
 
-/// [type_defs] [global_defs]: this parameter is used for pretty-printing purposes
+/// `type_defs`, `global_defs`: those parameters are used for pretty-printing purposes
 fn translate_function(
     no_code_duplication: bool,
     type_defs: &TypeDecls,
@@ -1874,7 +1874,7 @@ fn translate_global(
 
 /// Translate the functions by reconstructing the control-flow.
 ///
-/// [no_code_duplication]: if true, check that no block is translated twice (this
+/// `no_code_duplication`: if true, check that no block is translated twice (this
 /// can be a sign that the reconstruction is of poor quality, but sometimes
 /// code duplication is necessary, in the presence of "fused" match branches for
 /// instance).

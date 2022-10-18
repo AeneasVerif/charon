@@ -40,7 +40,7 @@ impl Callbacks for CharonCallbacks {
     /// the conversion to HIR to MIR) because it has been lost.
     /// For this reason, and as we may want to plug ourselves at different
     /// phases of the compilation process, we query the context as early as
-    /// possible (i.e., after parsing). See [get_mir].
+    /// possible (i.e., after parsing). See [crate::get_mir].
     fn after_parsing<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
         queries
             .global_ctxt()
@@ -57,7 +57,7 @@ impl Callbacks for CharonCallbacks {
 
 /// If a command-line option matches `find_arg`, then apply the predicate `pred` on its value. If
 /// true, then return it. The parameter is assumed to be either `--arg=value` or `--arg value`.
-/// Rem.: this function comes from Clippy (https://github.com/rust-lang/rust-clippy/blob/42bdfa23d33041642a32950cb39ad92be501a18d/src/driver.rs#L30).
+/// Rem.: this function comes from Clippy <https://github.com/rust-lang/rust-clippy/blob/42bdfa23d33041642a32950cb39ad92be501a18d/src/driver.rs#L30>.
 pub fn arg_value<'a, T: Deref<Target = str>>(
     args: &'a [T],
     find_arg: &str,

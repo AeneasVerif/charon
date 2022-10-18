@@ -54,7 +54,7 @@ impl Name {
     /// Compare the name to a constant array.
     /// This ignores disambiguators.
     ///
-    /// [equal]: if `true`, check that the name is equal to the ref. If `false`:
+    /// `equal`: if `true`, check that the name is equal to the ref. If `false`:
     /// only check if the ref is a prefix of the name.
     pub fn compare_with_ref_name(&self, equal: bool, ref_name: &[&str]) -> bool {
         let name: Vec<&PathElem> = self.name.iter().filter(|e| e.is_ident()).collect();
@@ -88,7 +88,7 @@ impl Name {
         self.prefix_is_same(&[krate, module])
     }
 
-    /// Similar to [is_in_module]
+    /// Similar to [Name::is_in_module]
     pub fn is_in_modules(&self, krate: &String, modules: &HashSet<String>) -> bool {
         if self.len() >= 2 {
             match (&self.name[0], &self.name[1]) {
@@ -297,7 +297,8 @@ pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
 /// If the option is `None`, it means the item is to be ignored (example: it
 /// is a `use` item).
 ///
-/// Rk.: this function is only used by [register], and written in this context.
+/// Rk.: this function is only used by [crate::register], and implemented with this
+/// context in mind.
 pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
     let def_id = item.def_id.to_def_id();
 

@@ -69,7 +69,7 @@ pub enum ErasedRegion {
 /// types (coming from external dependencies).
 ///
 /// In case the type is transparent, the declaration also contains the
-/// type definition (see [TypeKind]).
+/// type definition (see [TypeDeclKind]).
 ///
 /// A type can only be an ADT (structure or enumeration), as type aliases are
 /// inlined in MIR.

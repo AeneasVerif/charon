@@ -570,7 +570,7 @@ fn compute_regions_constraints_for_type_decl_group(
 /// function signatures, we first translate the signature without this hierarchy,
 /// then compute this hierarchy and add it to the type definition: this is
 /// why this function performs in-place modifications instead of returning
-/// a [RegionsGroup].
+/// a [RegionGroups].
 pub fn compute_regions_hierarchy_for_type_decl_group(
     constraints_map: &mut TypesConstraintsMap,
     types: &mut TypeDecls,

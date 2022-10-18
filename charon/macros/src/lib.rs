@@ -115,12 +115,16 @@ pub mod {} {{
     };
 }
 
-/// Generate an index module which contains an index type and a generator
-/// for fresh indices. We use it because for the semantics we need to manipulate
-/// a lot of different indices (for values, variables, definitions, holes, etc.).
-/// For sanity purposes, we prevent any confusing between the different kinds
+/// Generate an `Index` module which contains an index type and a generator
+/// for fresh indices. We use it because we need manipulate
+/// a lot of different indices (for various kinds of declarations, variables, blocks,
+/// etc.).
+/// For sanity purposes, we prevent any confusion between the different kinds
 /// of indices by using different types. The following macro allows us to
-/// easily derive those types, and the needed utilities.
+/// easily derive those types, and the needed utilities (casts, vectors indexed
+/// by those opaque indices, etc.).
+///
+/// The `ident` parameter should contain the name of the module to declare.
 #[proc_macro]
 pub fn generate_index_type(item: TokenStream) -> TokenStream {
     // Check that the token strem is made of exactly one identifier
