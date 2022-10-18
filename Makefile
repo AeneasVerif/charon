@@ -84,9 +84,8 @@ clean:
 	rm -rf tests/llbc
 	rm -rf tests-polonius/llbc
 
-.PHONY: nix-build
-nix-build:
-	nix build
+.PHONY: nix
+nix: nix-tests nix-tests-polonius
 
 .PHONY: nix-tests
 nix-tests:
