@@ -4,7 +4,7 @@ ifeq (3.81,$(MAKE_VERSION))
 endif
 
 .PHONY: all
-all: tests
+all: build tests
 
 # We use Rust nightly in order to:
 # - be able to write a Rustc plugin
@@ -35,18 +35,21 @@ build-tests-polonius:
 	cd tests-polonius && $(MAKE)
 
 .PHONY: tests
-tests: build build-tests build-tests-polonius \
+tests: build-tests build-tests-polonius charon-tests
+
+.PHONY: charon-tests
+charon-tests: build \
 	test-nested_borrows test-no_nested_borrows test-loops test-hashmap \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
-        test-constants \
+	test-constants \
 	test-polonius-betree_polonius test-polonius-betree_main
 
 test-nested_borrows: OPTIONS += --no-code-duplication
 test-no_nested_borrows: OPTIONS += --no-code-duplication
 test-loops: OPTIONS += --no-code-duplication
-#test-hashmap: OPTIONS += --no-code-duplication
-#test-hashmap_main: OPTIONS += --no-code-duplication
+# test-hashmap: OPTIONS += --no-code-duplication
+# test-hashmap_main: OPTIONS += --no-code-duplication
 test-hashmap_main: OPTIONS += --opaque=hashmap_utils
 test-paper: OPTIONS += --no-code-duplication
 test-constants: OPTIONS += --no-code-duplication
@@ -64,10 +67,12 @@ test-polonius-betree_main: OPTIONS += --opaque=betree_utils
 test-polonius-%: OPTIONS += --polonius
 test-polonius-%: build
 	cd tests-polonius && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
+	cd tests-polonius && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --mir_optimized
 
 .PHONY: test-%
 test-%: build
 	cd tests && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
+	cd tests && $(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --mir_optimized
 
 .PHONY: clean
 clean:

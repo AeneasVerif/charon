@@ -17,18 +17,19 @@ pub enum MirLevel {
     Optimized,
 }
 
-/// The level at which is queried the MIR.
-pub const MIR_LEVEL: MirLevel = MirLevel::Built;
-
 /// Indicates if the constants should be extracted in their own identifier,
-/// or if they must be evaluated to a constant value.
-pub const EXTRACT_CONSTANTS_AT_TOP_LEVEL: bool = match MIR_LEVEL {
-    MirLevel::Built => true,
-    MirLevel::Promoted => false,
-    MirLevel::Optimized => false,
-};
+/// or if they must be evaluated to a constant value, depending on the
+/// MIR level which we extract.
+pub fn extract_constants_at_top_level(level: MirLevel) -> bool {
+    match level {
+        MirLevel::Built => true,
+        MirLevel::Promoted => false,
+        MirLevel::Optimized => false,
+    }
+}
 
-fn get_mir_for_def_id_and_level<'tcx>(
+/// Query the MIR for a function at a specific level
+pub fn get_mir_for_def_id_and_level<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: LocalDefId,
     level: MirLevel,
@@ -52,8 +53,4 @@ fn get_mir_for_def_id_and_level<'tcx>(
             tcx.optimized_mir(def_id)
         }
     }
-}
-
-pub fn get_mir_for_def_id<'tcx>(tcx: TyCtxt<'tcx>, def_id: LocalDefId) -> &'tcx Body<'tcx> {
-    get_mir_for_def_id_and_level(tcx, def_id, MIR_LEVEL)
 }

@@ -23,6 +23,9 @@ pub struct CliOpts {
     /// Compile the specified binary
     #[structopt(long = "bin")]
     pub bin: Option<String>,
+    /// Extract the MIR-optimized instead of the MIR-built
+    #[structopt(long = "mir_optimized")]
+    pub mir_optimized: bool,
     /// Provide a custom name for the compiled crate (ignore the name computed
     /// by Cargo)
     #[structopt(long = "crate")]

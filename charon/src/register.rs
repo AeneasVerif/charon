@@ -1,7 +1,7 @@
 use crate::assumed;
 use crate::common::*;
 use crate::generics;
-use crate::get_mir::EXTRACT_CONSTANTS_AT_TOP_LEVEL;
+use crate::get_mir::{extract_constants_at_top_level, get_mir_for_def_id_and_level, MirLevel};
 use crate::names::Name;
 use crate::names::{
     function_def_id_to_name, global_def_id_to_name, hir_item_to_name, module_def_id_to_name,
@@ -122,6 +122,7 @@ struct RegisterContext<'a, 'b, 'c> {
     rustc: TyCtxt<'a>,
     sess: &'b Session,
     crate_info: &'c CrateInfo,
+    mir_level: MirLevel,
 }
 
 pub type RegisteredDeclarations = LinkedHashMap<DefId, Declaration>;
@@ -700,10 +701,10 @@ fn register_body(
     deps: &mut DeclDependencies,
 ) -> Result<()> {
     // Retrieve the MIR code.
-    let body = crate::get_mir::get_mir_for_def_id(ctx.rustc, def_id);
+    let body = get_mir_for_def_id_and_level(ctx.rustc, def_id, ctx.mir_level);
 
     // Visit the global dependencies if the MIR is not optimized.
-    if EXTRACT_CONSTANTS_AT_TOP_LEVEL {
+    if extract_constants_at_top_level(ctx.mir_level) {
         // TODO: For now the order of dependencies export depend on the order
         // in which they are discovered. By storing their metadata, we would be
         // able to order them properly, without depending on the visit ordering.
@@ -1019,7 +1020,7 @@ fn register_hir_item(
         }
         ItemKind::Fn(_, _, _) => register_local_expression(ctx, decls, item.def_id, DeclKind::Fun),
         ItemKind::Const(_, _) | ItemKind::Static(_, _, _) => {
-            if EXTRACT_CONSTANTS_AT_TOP_LEVEL {
+            if extract_constants_at_top_level(ctx.mir_level) {
                 register_local_expression(ctx, decls, item.def_id, DeclKind::Global)
             } else {
                 // Avoid registering globals in optimized MIR (they will be inlined).
@@ -1115,11 +1116,13 @@ pub fn register_crate(
     crate_info: &CrateInfo,
     sess: &Session,
     tcx: TyCtxt,
+    mir_level: MirLevel,
 ) -> Result<RegisteredDeclarations> {
     let ctx = RegisterContext {
         rustc: tcx,
         crate_info,
         sess,
+        mir_level,
     };
     let mut decls = DeclarationsRegister::new();
 

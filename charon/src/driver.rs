@@ -5,7 +5,6 @@
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
 
-//extern crate env_logger;
 extern crate hashlink;
 extern crate im;
 extern crate linked_hash_set;
@@ -66,6 +65,7 @@ mod ullbc_to_llbc;
 mod values;
 mod values_utils;
 
+use crate::get_mir::MirLevel;
 use regex::Regex;
 use rustc_driver::{Callbacks, Compilation, RunCompiler};
 use rustc_interface::{interface::Compiler, Queries};
@@ -308,6 +308,13 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Result<
     );
     trace!("# Crate: {}", crate_name);
 
+    // Adjust the level of MIR we extract, depending on the options
+    let mir_level = if options.mir_optimized {
+        MirLevel::Optimized
+    } else {
+        MirLevel::Built
+    };
+
     // Some important notes about crates and how to interact with rustc:
     // - when calling rustc, we should give it the root of the crate, for
     //   instance the "main.rs" file. From there, rustc will load all the
@@ -334,7 +341,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Result<
         crate_name: crate_name.clone(),
         opaque_mods: HashSet::from_iter(options.opaque_modules.clone().into_iter()),
     };
-    let registered_decls = register::register_crate(&crate_info, sess, tcx)?;
+    let registered_decls = register::register_crate(&crate_info, sess, tcx, mir_level)?;
 
     // # Step 2: reorder the graph of dependencies and compute the strictly
     // connex components to:
@@ -358,6 +365,7 @@ fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Result<
         &ordered_decls,
         &types_constraints,
         &type_defs,
+        mir_level,
     )?;
 
     // # Step 6: go from IM to LLBC (Low-Level Borrow Calculus) by reconstructing
