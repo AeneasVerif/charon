@@ -1,7 +1,7 @@
 CURRENT_DIR = $(shell pwd)
 CHARON ?= $(CURRENT_DIR)/../charon/target/debug/cargo-charon
-DEST ?= llbc
-OPTIONS = --polonius --dest $(DEST)
+DEST ?= .
+OPTIONS = --polonius
 
 .PHONY: all
 all: build tests
@@ -33,5 +33,5 @@ test-betree_main: OPTIONS += --opaque=betree_utils
 
 .PHONY: test-%
 test-%: build
-	$(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
-	$(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --mir_optimized
+	$(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --dest $(DEST)/llbc
+	$(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --dest $(DEST)/llbc_opt --mir_optimized

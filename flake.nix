@@ -34,10 +34,8 @@
           src = ./tests;
           inherit cargoArtifacts;
           buildPhase = ''
-            mkdir -p $out/llbc
-
             # Run the tests for Charon
-            DEST=$out/llbc CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version" \
+            DEST=$out CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version" \
             make charon-tests
           '';
           doCheck = false;
@@ -54,10 +52,8 @@
           # they will fail because we need Polonius
           doCheck = false;
           buildPhase = ''
-            mkdir -p $out/llbc
-
             # Run the tests for Charon
-            DEST=$out/llbc CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version" \
+            DEST=$out CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version" \
             make charon-tests
 
             # Nix doesn't run the cargo tests, so run them by hand
