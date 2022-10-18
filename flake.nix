@@ -30,6 +30,7 @@
         charon = craneLib.buildPackage { src = ./charon; };
         tests = let cargoArtifacts = craneLib.buildDepsOnly { src = ./tests; };
         in craneLib.buildPackage {
+          name = "tests";
           src = ./tests;
           inherit cargoArtifacts;
           buildPhase = ''
@@ -49,10 +50,10 @@
 
             $CHARON --opaque=hashmap_utils --crate hashmap_main --input src/hashmap_main.rs
           '';
+          doCheck = false;
           dontInstall = true;
         };
 
-        # TODO: for some reason, -Zpolonius doesn't work (the borrow checking fails)
         tests-polonius = let
           cargoArtifacts = craneLib.buildDepsOnly { src = ./tests-polonius; };
         in craneLib.buildPackage {
@@ -66,6 +67,7 @@
 
             $CHARON --opaque=betree_utils --crate betree_main --input src/betree_main.rs
           '';
+          doCheck = false;
           dontInstall = true;
         };
       in {
