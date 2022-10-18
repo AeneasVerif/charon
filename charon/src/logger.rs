@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 extern crate env_logger;
 
 /// Initialize the logger. We use a custom initialization to add some

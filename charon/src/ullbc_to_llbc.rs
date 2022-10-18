@@ -265,7 +265,7 @@ struct LoopExitCandidateInfo {
     /// backward edge leading to an outer loop entry), we register this node
     /// as well as all its children as exit candidates.
     /// Consider the following example:
-    /// ```
+    /// ```text
     /// while i < max {
     ///     if cond {
     ///         break;
@@ -576,7 +576,7 @@ fn compute_loop_exit_candidates(
 ///   to an outer loop
 ///
 /// It is better explained on the following example:
-/// ```
+/// ```text
 /// 'outer while i < max {
 ///     'inner while j < max {
 ///        j += 1;
@@ -594,7 +594,7 @@ fn compute_loop_exit_candidates(
 /// Whenever we exit a loop, we save the block we went to as an exit candidate
 /// for this loop. Note that there may by many exit candidates. For instance,
 /// in the below example:
-/// ```
+/// ```text
 /// while ... {
 ///    ...
 ///    if ... {
@@ -775,7 +775,7 @@ struct BlocksInfo {
     /// Note that we can ignore children when computing the intersection,
     /// which is why we call it the "best" intersection. For instance, in
     /// the following:
-    /// ```
+    /// ```text
     /// switch i {
     ///   0 => x = 1,
     ///   1 => x = 2,
@@ -932,7 +932,7 @@ fn compute_switch_exits_explore(
 ///   maximize the intersection of filtered successors) because some branches
 ///   might never join the control-flow of the other branches, if they contain
 ///   a `break`, `return`, `panic`, etc., like here:
-///   ```
+///   ```text
 ///   if b { x = 3; } { return; }
 ///   y += x;
 ///   ...
@@ -1050,7 +1050,7 @@ struct ExitInfo {
     /// insert a break. However, we need to make sure we don't add the
     /// corresponding block in a sequence, after having translated the
     /// loop, like so:
-    /// ```
+    /// ```text
     /// loop {
     ///   loop_body
     /// };
@@ -1058,7 +1058,7 @@ struct ExitInfo {
     /// ```
     ///
     /// In case the exit doesn't belong to the loop:
-    /// ```
+    /// ```text
     /// if b {
     ///   loop {
     ///     loop_body
@@ -1080,7 +1080,7 @@ struct ExitInfo {
 /// is destructured: we have gotos everywhere.
 ///
 /// Let's consider the following piece of code:
-/// ```
+/// ```text
 /// if cond1 { ... } else { ... };
 /// if cond2 { ... } else { ... };
 /// ```
@@ -1092,7 +1092,7 @@ struct ExitInfo {
 /// whatever the branch we take, there is a moment when we go to the exact
 /// same place, just before the second if), we might generate code like
 /// this, with some duplicata:
-/// ```
+/// ```text
 /// if cond1 { ...; if cond2 { ... } else { ...} }
 /// else { ...; if cond2 { ... } else { ...} }
 /// ```
@@ -1109,7 +1109,7 @@ struct ExitInfo {
 ///
 /// Finally, some similar issues arise for loops. For instance, let's consider
 /// the following piece of code:
-/// ```
+/// ```text
 /// while cond1 {
 ///   e1;
 ///   if cond2 {
@@ -1123,7 +1123,7 @@ struct ExitInfo {
 ///
 /// Note that in MIR, the loop gets desugared to an if ... then ... else ....
 /// From the MIR, We want to generate something like this:
-/// ```
+/// ```text
 /// loop {
 ///   if cond1 {
 ///     e1;
@@ -1143,7 +1143,7 @@ struct ExitInfo {
 ///
 /// But if we don't pay attention, we might end up with that, once again with
 /// duplications:
-/// ```
+/// ```text
 /// loop {
 ///   if cond1 {
 ///     e1;

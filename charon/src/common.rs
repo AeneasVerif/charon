@@ -127,7 +127,7 @@ pub fn span_to_string(sess: &Session, span: rustc_span::Span) -> String {
 
 /// Custom function to pretty-print elements from an iterator
 /// The output format is:
-/// ```
+/// ```text
 /// [
 ///   elem_0,
 ///   ...

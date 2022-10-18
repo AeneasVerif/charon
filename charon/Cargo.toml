@@ -10,7 +10,11 @@ path = "src/main.rs"
 
 [[bin]]
 name = "charon-driver"
-path = "src/driver.rs"
+path = "src/charon-driver.rs"
+
+#[lib]
+#name = "charon"
+#path = "src/lib.rs"
 
 [dependencies]
 pretty = "0.10.0"

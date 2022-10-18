@@ -1562,7 +1562,7 @@ fn get_function_from_operand<'tcx>(
 /// returns `None` otherwise.
 ///
 /// For instance, when translating `bar` below:
-/// ```
+/// ```text
 /// impl Foo {
 ///     fn bar(...) -> ... { ... }
 /// }

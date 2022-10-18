@@ -3,11 +3,11 @@
 #![allow(dead_code)]
 
 use crate::expressions::*;
-pub use crate::ullbc_ast_utils::*;
 use crate::names::FunName;
 use crate::names::GlobalName;
 use crate::regions_hierarchy::RegionGroups;
 use crate::types::*;
+pub use crate::ullbc_ast_utils::*;
 use crate::values::*;
 use hashlink::linked_hash_map::LinkedHashMap;
 use macros::generate_index_type;
@@ -51,7 +51,7 @@ pub struct FunSig {
     /// this definition  is defined in an `impl` block), the late bound regions
     /// are those introduced by the function itself.
     ///  For example, in:
-    ///  ```
+    ///  ```text
     ///  impl<'a> Foo<'a> {
     ///      fn bar<'b>(...) -> ... { ... }
     ///  }

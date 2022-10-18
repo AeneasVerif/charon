@@ -2,14 +2,14 @@
 //! hierarchy between regions.
 #![allow(dead_code)]
 
-use crate::llbc_ast::FunDecls;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::graphs::*;
-use crate::ullbc_ast::{FunDeclId, FunSig};
+use crate::llbc_ast::FunDecls;
 use crate::rust_to_local_ids::TypeDeclarationGroup;
 use crate::types as ty;
 use crate::types::*;
+use crate::ullbc_ast::{FunDeclId, FunSig};
 use hashlink::linked_hash_map::LinkedHashMap;
 use macros::generate_index_type;
 use petgraph::algo::tarjan_scc;
@@ -172,7 +172,7 @@ impl TypeDeclConstraintsMap {
 ///   instantiation must outlive the regions in this set.
 ///
 /// For instance, for the following type definition:
-/// ```
+/// ```text
 /// struct S<'a, 'b, T1, T2> {
 ///   x : T1,
 ///   y : &'a mut &'b mut T2,
@@ -180,7 +180,7 @@ impl TypeDeclConstraintsMap {
 /// ```
 ///
 /// We would have:
-/// ```
+/// ```text
 /// 'a -> {}
 /// 'b -> {'a}
 ///
@@ -400,7 +400,7 @@ fn compute_full_regions_constraints_for_ty(
 ///
 /// Note that recursive types in rust are very general. For instance, they allow
 /// non-uniform polymorphism:
-/// ```
+/// ```text
 /// enum E<T1, T2> {
 ///   V1,
 ///   V2(Box<E<T2, T1>>)

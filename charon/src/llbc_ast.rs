@@ -8,9 +8,9 @@
 
 #![allow(dead_code)]
 use crate::expressions::*;
-use crate::ullbc_ast::*;
 pub use crate::llbc_ast_utils::*;
 use crate::types::*;
+use crate::ullbc_ast::*;
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
@@ -83,7 +83,7 @@ pub enum SwitchTargets {
     ///
     /// Rk.: we use a vector of values, because some of the branches may
     /// be grouped together, like for the following code:
-    /// ```
+    /// ```text
     /// match e {
     ///   E::V1 | E::V2 => ..., // Grouped
     ///   E::V3 => ...

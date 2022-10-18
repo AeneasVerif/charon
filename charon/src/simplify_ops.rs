@@ -10,9 +10,9 @@
 use take_mut::take;
 
 use crate::expressions::*;
-use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::llbc_ast::{Assert, FunDecls, GlobalDecls, Statement, SwitchTargets};
 use crate::types::*;
+use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::values::*;
 use std::iter::FromIterator;
 
@@ -133,7 +133,7 @@ fn check_if_assert_then_unop(st1: &Statement, st2: &Statement, st3: &Statement) 
 }
 
 /// Make sure the statements match the following pattern:
-///   ```
+///   ```text
 ///   tmp := copy x == const (MIN ...); // `copy x` can be a constant
 ///   assert(tmp == false);
 ///   dest := -(move x); // `move x` can be a constant
@@ -210,14 +210,14 @@ fn check_if_simplifiable_assert_then_unop(
 }
 
 /// Simplify patterns of the form:
-///   ```
+///   ```text
 ///   tmp := copy x == const (MIN ...); // `copy x` can be a constant
 ///   assert(tmp == false);
 ///   dest := -(move x); // `move x` can be a constant
 ///   ...
 ///   ```
 /// to:
-///   ```
+///   ```text
 ///   dest := -(move x); // `move x` can be a constant
 ///   ...
 ///   ```
@@ -229,8 +229,7 @@ fn simplify_assert_then_unop(_st1: Statement, _st2: Statement, st3: Statement) -
 /// - do an operation,
 /// - check it succeeded (didn't overflow, etc.)
 /// - retrieve the value
-///   ```
-///   ```
+///
 /// Check if this is a group of statements which should be collapsed to a
 /// single checked binop.
 /// Simply check if the first statements is a checked binop.
@@ -259,7 +258,7 @@ fn check_if_binop_then_assert(st1: &Statement, st2: &Statement, st3: &Statement)
 }
 
 /// Make sure the statements match the following pattern:
-///   ```
+///   ```text
 ///   tmp := op1 + op2; // Possibly a different binop
 ///   assert(move (tmp.1) == false);
 ///   dest := move (tmp.0);
@@ -302,14 +301,14 @@ fn check_if_simplifiable_binop_then_assert(st1: &Statement, st2: &Statement, st3
 }
 
 /// Simplify patterns of the form:
-///   ```
+///   ```text
 ///   tmp := op1 + op2; // Possibly a different binop
 ///   assert(move (tmp.1) == false);
 ///   dest := move (tmp.0);
 ///   ...
 ///   ```
 /// to:
-///   ```
+///   ```text
 ///   tmp := copy x + copy y; // Possibly a different binop
 ///   ...
 ///   ```
@@ -366,7 +365,7 @@ fn check_if_assert_then_binop(st1: &Statement, st2: &Statement, st3: &Statement)
 }
 
 /// Make sure the statements match the following pattern:
-///   ```
+///   ```text
 ///   tmp := (copy divisor) == 0;
 ///   assert((move tmp) == false);
 ///   dest := move dividend / move divisor; // Can also be a `%`
@@ -467,14 +466,14 @@ fn check_if_simplifiable_assert_then_binop(
 }
 
 /// Simplify patterns of the form:
-///   ```
+///   ```text
 ///   tmp := (copy divisor) == 0;
 ///   assert((move tmp) == false);
 ///   dest := move dividend / move divisor; // Can also be a `%`
 ///   ...
 ///   ```
 /// to:
-///   ```
+///   ```text
 ///   dest := move dividend / move divisor; // Can also be a `%`
 ///   ...
 ///   ```

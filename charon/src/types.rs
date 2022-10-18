@@ -179,7 +179,7 @@ where
     /// The never type, for computations which don't return. It is sometimes
     /// necessary for intermediate variables. For instance, if we do (coming
     /// from the rust documentation):
-    /// ```
+    /// ```text
     /// let num: u32 = match get_a_number() {
     ///     Some(num) => num,
     ///     None => break,

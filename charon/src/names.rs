@@ -20,7 +20,7 @@ pub enum PathElem {
 /// A name really is a list of strings. However, we sometimes need to
 /// introduce unique indices to disambiguate. This mostly happens because
 /// of "impl" blocks:
-///   ```
+///   ```text
 ///   impl<T> List<T> {
 ///     ...
 ///   }

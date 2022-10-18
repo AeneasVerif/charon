@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 /// The options received as input by cargo-charon
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;

@@ -1,8 +1,8 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
 pub use crate::expressions_utils::*;
-use crate::ullbc_ast::GlobalDeclId;
 use crate::types::*;
+use crate::ullbc_ast::GlobalDeclId;
 use crate::values::*;
 use im::Vector;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
@@ -169,12 +169,12 @@ pub enum Rvalue {
     /// Note that discriminant values have type isize
     Discriminant(Place),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
-    /// ```
+    /// ```text
     /// l = List::Cons { value:x, tail:tl };
     /// ```
     /// Note that in some MIR passes (like optimized MIR), aggregate values are
     /// decomposed, like below:
-    /// ```
+    /// ```text
     /// (l as List::Cons).value = x;
     /// (l as List::Cons).tail = tl;
     /// ```
