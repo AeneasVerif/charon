@@ -60,14 +60,19 @@
           name = "tests-polonius";
           src = ./tests-polonius;
           inherit cargoArtifacts;
+          # We deactivate the tests performed with Cargo (`cargo test`) as
+          # they will fail because we need Polonius
+          doCheck = false;
           buildPhase = ''
             mkdir -p $out/llbc
 
             CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version --polonius --dest $out/llbc"
 
             $CHARON --opaque=betree_utils --crate betree_main --input src/betree_main.rs
+            
+            # Nix doesn't run the tests, so run them by hand
+            make tests
           '';
-          doCheck = false;
           dontInstall = true;
         };
       in {
