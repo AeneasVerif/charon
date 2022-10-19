@@ -2,6 +2,7 @@ CURRENT_DIR = $(shell pwd)
 CHARON ?= $(CURRENT_DIR)/../charon/target/debug/cargo-charon
 DEST ?= .
 OPTIONS =
+CHARON_CMD :=
 
 .PHONY: all
 all: build tests
@@ -38,6 +39,9 @@ test-external: OPTIONS += --no-code-duplication
 test-matches_duplicate:
 
 .PHONY: test-%
+test-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
 test-%: build
-	$(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --dest $(DEST)/llbc
-	$(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --dest $(DEST)/llbc_opt --mir_optimized
+	$(CHARON_CMD) --dest $(DEST)/llbc
+	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
+	$(CHARON_CMD) --dest $(DEST)/llbc_release --release
+	$(CHARON_CMD) --dest $(DEST)/llbc_release_opt --release --mir_optimized 

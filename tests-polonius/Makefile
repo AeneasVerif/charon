@@ -32,6 +32,9 @@ test-betree_polonius:
 test-betree_main: OPTIONS += --opaque=betree_utils
 
 .PHONY: test-%
+test-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
 test-%: build
-	$(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --dest $(DEST)/llbc
-	$(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --dest $(DEST)/llbc_opt --mir_optimized
+	$(CHARON_CMD) --dest $(DEST)/llbc
+	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
+	$(CHARON_CMD) --dest $(DEST)/llbc_release --release
+	$(CHARON_CMD) --dest $(DEST)/llbc_release_opt --release --mir_optimized 

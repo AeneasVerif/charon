@@ -222,7 +222,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
 
     // # Step 7: simplify the calls to unops and binops
     // Note that we assume that the sequences have been flattened.
-    simplify_ops::simplify(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+    simplify_ops::simplify(options.release, &fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
     // # Step 8: replace constant ([OperandConstantValue]) ADTs by regular
     // (Aggregated) ADTs.

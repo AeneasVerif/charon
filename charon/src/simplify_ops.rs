@@ -6,6 +6,10 @@
 //! This is a bit too low-level for us: we only want to have the binop (which will
 //! have a precondition in our theorem prover, or will be monadic...). We thus want
 //! to remove those unnecessary checks.
+//!
+//! Rem.: when compiling a Rust program in debug mode, Rustc introduces dynamic
+//! checks everywhere. When compiling in release mode, it seems it only introduces
+//! checks for division by zero.
 
 use take_mut::take;
 
@@ -15,6 +19,21 @@ use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::values::*;
 use std::iter::FromIterator;
+
+/// Small utility: assert that a boolean is true, or return false
+macro_rules! assert_or_return {
+    ($cond:expr $(,)?) => {{
+        if !$cond {
+            return false;
+        }
+    }};
+    ($cond:expr, $($arg:tt)+) => {{
+        if !$cond {
+            trace!("assert_or_return failed: {}", $arg);
+            return false;
+        }
+    }};
+}
 
 /// Return true iff: `place ++ [pelem] == full_place`
 fn check_places_similar_but_last_proj_elem(
@@ -108,8 +127,13 @@ fn binop_can_fail(binop: BinOp) -> bool {
 
 /// Check if this is a group of statements of the form: "check that we can do
 /// a unary operation, then do this operation (ex.: check that negating a number
-/// won't lead to an overflow)"
-fn check_if_assert_then_unop(st1: &Statement, st2: &Statement, st3: &Statement) -> bool {
+/// won't lead to an overflow)", unless we compile for release mode.
+fn check_if_assert_then_unop(
+    release: bool,
+    st1: &Statement,
+    st2: &Statement,
+    st3: &Statement,
+) -> bool {
     match st3 {
         Statement::Assign(_, Rvalue::UnaryOp(unop, _)) => {
             if unop_requires_assert_before(*unop) {
@@ -123,7 +147,7 @@ fn check_if_assert_then_unop(st1: &Statement, st2: &Statement, st3: &Statement) 
                 //   ...
                 //   ```
                 // If it is note the case, we can't collapse...
-                check_if_simplifiable_assert_then_unop(st1, st2, st3)
+                check_if_simplifiable_assert_then_unop(release, st1, st2, st3)
             } else {
                 false
             }
@@ -132,7 +156,8 @@ fn check_if_assert_then_unop(st1: &Statement, st2: &Statement, st3: &Statement) 
     }
 }
 
-/// Make sure the statements match the following pattern:
+/// Make sure the statements match the following pattern, unless we compile
+/// for release:
 ///   ```text
 ///   tmp := copy x == const (MIN ...); // `copy x` can be a constant
 ///   assert(tmp == false);
@@ -142,6 +167,7 @@ fn check_if_assert_then_unop(st1: &Statement, st2: &Statement, st3: &Statement) 
 /// Or that there is no assert but the value is a constant which will not
 /// lead to saturation.
 fn check_if_simplifiable_assert_then_unop(
+    release: bool,
     st1: &Statement,
     st2: &Statement,
     st3: &Statement,
@@ -166,10 +192,10 @@ fn check_if_simplifiable_assert_then_unop(
             Statement::Assign(_mp, Rvalue::UnaryOp(unop, op1)),
         ) => {
             // Case 1: pattern with assertion
-            assert!(*unop == UnOp::Neg);
-            assert!(!(*expected));
+            assert_or_return!(*unop == UnOp::Neg);
+            assert_or_return!(!(*expected));
 
-            assert!(eq_dest == cond_op);
+            assert_or_return!(eq_dest == cond_op);
 
             // Check the two operands:
             // - either they are (copy, move)
@@ -177,10 +203,13 @@ fn check_if_simplifiable_assert_then_unop(
             match (op, op1) {
                 (Operand::Copy(p), Operand::Move(p1)) => assert!(p == p1),
                 (Operand::Const(_, cv), Operand::Const(_, cv1)) => assert!(cv == cv1),
-                _ => unreachable!(),
+                _ => {
+                    assert!(release);
+                    return false;
+                }
             }
 
-            assert!(saturated.is_int() && saturated.is_min());
+            assert_or_return!(saturated.is_int() && saturated.is_min());
             true
         }
         (
@@ -199,12 +228,14 @@ fn check_if_simplifiable_assert_then_unop(
         ) => {
             assert!(*unop == UnOp::Neg);
             // Case 2: no assertion to check that there will not be an overflow:
-            // the value must be a constant which will not lead to an overflow.
-            assert!(value.is_int() && !value.is_min());
+            // - either we are in release mode
+            // - or the value must be a constant which will not lead to an overflow.
+            assert!(!release || (value.is_int() && !value.is_min()));
             false
         }
         _ => {
-            unreachable!();
+            assert!(release);
+            false
         }
     }
 }
@@ -225,7 +256,8 @@ fn simplify_assert_then_unop(_st1: Statement, _st2: Statement, st3: Statement) -
     st3
 }
 
-/// Check if this is a group of statements of the form:
+/// Check if this is a group of statements of the following form, unless we
+/// compile for release:
 /// - do an operation,
 /// - check it succeeded (didn't overflow, etc.)
 /// - retrieve the value
@@ -233,7 +265,12 @@ fn simplify_assert_then_unop(_st1: Statement, _st2: Statement, st3: Statement) -
 /// Check if this is a group of statements which should be collapsed to a
 /// single checked binop.
 /// Simply check if the first statements is a checked binop.
-fn check_if_binop_then_assert(st1: &Statement, st2: &Statement, st3: &Statement) -> bool {
+fn check_if_binop_then_assert(
+    release: bool,
+    st1: &Statement,
+    st2: &Statement,
+    st3: &Statement,
+) -> bool {
     match st1 {
         Statement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => {
             if binop_requires_assert_after(*binop) {
@@ -247,8 +284,7 @@ fn check_if_binop_then_assert(st1: &Statement, st2: &Statement, st3: &Statement)
                 //   ...
                 //   ```
                 // If it is note the case, we can't collapse...
-                check_if_simplifiable_binop_then_assert(st1, st2, st3);
-                true
+                check_if_simplifiable_binop_then_assert(release, st1, st2, st3)
             } else {
                 false
             }
@@ -257,14 +293,20 @@ fn check_if_binop_then_assert(st1: &Statement, st2: &Statement, st3: &Statement)
     }
 }
 
-/// Make sure the statements match the following pattern:
+/// Make sure the statements match the following pattern, unless we compile
+/// for release:
 ///   ```text
 ///   tmp := op1 + op2; // Possibly a different binop
 ///   assert(move (tmp.1) == false);
 ///   dest := move (tmp.0);
 ///   ...
 ///   ```
-fn check_if_simplifiable_binop_then_assert(st1: &Statement, st2: &Statement, st3: &Statement) {
+fn check_if_simplifiable_binop_then_assert(
+    release: bool,
+    st1: &Statement,
+    st2: &Statement,
+    st3: &Statement,
+) -> bool {
     match (st1, st2, st3) {
         (
             Statement::Assign(bp, Rvalue::BinaryOp(binop, _op1, _op2)),
@@ -274,8 +316,8 @@ fn check_if_simplifiable_binop_then_assert(st1: &Statement, st2: &Statement, st3
             }),
             Statement::Assign(_mp, Rvalue::Use(Operand::Move(mr))),
         ) => {
-            assert!(binop_requires_assert_after(*binop));
-            assert!(!(*expected));
+            assert_or_return!(binop_requires_assert_after(*binop));
+            assert_or_return!(!(*expected));
 
             // We must have:
             // cond_op == bp.1
@@ -285,22 +327,24 @@ fn check_if_simplifiable_binop_then_assert(st1: &Statement, st2: &Statement, st3
                 &ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(1)),
                 cond_op,
             );
-            assert!(check1);
+            assert_or_return!(check1);
 
             let check2 = check_places_similar_but_last_proj_elem(
                 bp,
                 &ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(0)),
                 mr,
             );
-            assert!(check2);
+            assert_or_return!(check2);
+            true
         }
         _ => {
-            unreachable!();
+            assert!(release);
+            false
         }
     }
 }
 
-/// Simplify patterns of the form:
+/// Simplify patterns of the following form, if we are in release mode:
 ///   ```text
 ///   tmp := op1 + op2; // Possibly a different binop
 ///   assert(move (tmp.1) == false);
@@ -329,7 +373,12 @@ fn simplify_binop_then_assert(st1: Statement, st2: Statement, st3: Statement) ->
 /// Check if this is a group of statements of the form: "check that we can do
 /// an binary operation, then do this operation (ex.: check that a divisor is
 /// non zero before doing a division, panic otherwise)"
-fn check_if_assert_then_binop(st1: &Statement, st2: &Statement, st3: &Statement) -> bool {
+fn check_if_assert_then_binop(
+    release: bool,
+    st1: &Statement,
+    st2: &Statement,
+    st3: &Statement,
+) -> bool {
     match st3 {
         Statement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => {
             if binop_requires_assert_before(*binop) {
@@ -355,7 +404,7 @@ fn check_if_assert_then_binop(st1: &Statement, st2: &Statement, st3: &Statement)
                 //   dest := move dividend / constant_divisor; // Can also be a `%`
                 //   ...
                 //   ```
-                check_if_simplifiable_assert_then_binop(st1, st2, st3)
+                check_if_simplifiable_assert_then_binop(release, st1, st2, st3)
             } else {
                 false
             }
@@ -373,6 +422,7 @@ fn check_if_assert_then_binop(st1: &Statement, st2: &Statement, st3: &Statement)
 ///   ```
 /// Or that there is no assert but the divisor is a non-zero constant.
 fn check_if_simplifiable_assert_then_binop(
+    release: bool,
     st1: &Statement,
     st2: &Statement,
     st3: &Statement,
@@ -397,14 +447,14 @@ fn check_if_simplifiable_assert_then_binop(
             Statement::Assign(_mp, Rvalue::BinaryOp(binop, _dividend, Operand::Move(divisor))),
         ) => {
             // Case 1: pattern with copy/move and assertion
-            assert!(binop_requires_assert_before(*binop));
-            assert!(!(*expected));
-            assert!(eq_op1 == divisor);
-            assert!(eq_dest == cond_op);
+            assert_or_return!(binop_requires_assert_before(*binop));
+            assert_or_return!(!(*expected));
+            assert_or_return!(eq_op1 == divisor);
+            assert_or_return!(eq_dest == cond_op);
             if zero.is_int() {
-                assert!(zero.as_int().unwrap() == 0);
+                assert_or_return!(zero.as_int().unwrap() == 0);
             } else {
-                assert!(zero.as_uint().unwrap() == 0);
+                assert_or_return!(zero.as_uint().unwrap() == 0);
             }
             true
         }
@@ -427,23 +477,26 @@ fn check_if_simplifiable_assert_then_binop(
             Statement::Assign(_mp, Rvalue::BinaryOp(binop, _dividend, divisor1)),
         ) => {
             // Case 2: pattern with constant divisor and assertion
-            assert!(binop_requires_assert_before(*binop));
-            assert!(!(*expected));
-            assert!(divisor.is_const());
+            assert_or_return!(binop_requires_assert_before(*binop));
+            assert_or_return!(!(*expected));
+            assert_or_return!(divisor.is_const());
             match divisor {
                 Operand::Const(
                     _,
                     OperandConstantValue::ConstantValue(ConstantValue::Scalar(_)),
                 ) => (),
-                _ => unreachable!(),
+                _ => {
+                    assert!(release);
+                    return false;
+                }
             }
-            assert!(divisor1 == divisor);
-            assert!(eq_dest == cond_op);
+            assert_or_return!(divisor1 == divisor);
+            assert_or_return!(eq_dest == cond_op);
             // Check that the zero is zero
             if zero.is_int() {
-                assert!(zero.as_int().unwrap() == 0);
+                assert_or_return!(zero.as_int().unwrap() == 0);
             } else {
-                assert!(zero.as_uint().unwrap() == 0);
+                assert_or_return!(zero.as_uint().unwrap() == 0);
             }
             true
         }
@@ -453,14 +506,15 @@ fn check_if_simplifiable_assert_then_binop(
             let cv = divisor.as_constant_value();
             let cv = cv.as_scalar();
             if cv.is_uint() {
-                assert!(cv.as_uint().unwrap() != 0)
+                assert_or_return!(cv.as_uint().unwrap() != 0)
             } else {
-                assert!(cv.as_int().unwrap() != 0)
+                assert_or_return!(cv.as_int().unwrap() != 0)
             };
             false
         }
         _ => {
-            unreachable!();
+            assert!(release);
+            return false;
         }
     }
 }
@@ -483,6 +537,7 @@ fn simplify_assert_then_binop(_st1: Statement, _st2: Statement, st3: Statement) 
 
 /// Attempt to simplify a sequence of statemnets
 fn simplify_st_seq(
+    release: bool,
     st1: Statement,
     st2: Statement,
     st3: Statement,
@@ -491,15 +546,15 @@ fn simplify_st_seq(
     // Try to simplify
     let simpl_st = {
         // Simplify checked unops (negation)
-        if check_if_assert_then_unop(&st1, &st2, &st3) {
+        if check_if_assert_then_unop(release, &st1, &st2, &st3) {
             simplify_assert_then_unop(st1, st2, st3)
         }
         // Simplify checked binops
-        else if check_if_binop_then_assert(&st1, &st2, &st3) {
+        else if check_if_binop_then_assert(release, &st1, &st2, &st3) {
             simplify_binop_then_assert(st1, st2, st3)
         }
         // Simplify unchecked binops (division, modulo)
-        else if check_if_assert_then_binop(&st1, &st2, &st3) {
+        else if check_if_assert_then_binop(release, &st1, &st2, &st3) {
             simplify_assert_then_binop(st1, st2, st3)
         } else {
             // Not simplifyable
@@ -508,28 +563,32 @@ fn simplify_st_seq(
                 Option::None => st3,
             };
             let next_st = Statement::Sequence(Box::new(st2), Box::new(next_st));
-            return Statement::Sequence(Box::new(simplify_st(st1)), Box::new(simplify_st(next_st)));
+            return Statement::Sequence(
+                Box::new(simplify_st(release, st1)),
+                Box::new(simplify_st(release, next_st)),
+            );
         }
     };
 
     // Combine the simplified statements with the statement after, if there is
     match st4 {
         Option::Some(st4) => {
-            let st4 = simplify_st(st4);
+            let st4 = simplify_st(release, st4);
             return Statement::Sequence(Box::new(simpl_st), Box::new(st4));
         }
         Option::None => return simpl_st,
     }
 }
 
-fn simplify_st(st: Statement) -> Statement {
+fn simplify_st(release: bool, st: Statement) -> Statement {
     match st {
         Statement::Assign(p, rv) => {
             // Check that we never failed to simplify a binop
             match &rv {
                 Rvalue::BinaryOp(binop, _, divisor) => {
                     // If it is an unsimplified binop, it must be / or %
-                    // and the divisor must be a non-zero constant
+                    // and the divisor must be a non-zero constant, unless
+                    // we compile for release
                     if binop_can_fail(*binop) {
                         match binop {
                             BinOp::Div | BinOp::Rem => {
@@ -543,23 +602,29 @@ fn simplify_st(st: Statement) -> Statement {
                                 };
                             }
                             _ => {
-                                unreachable!();
+                                assert!(release);
                             }
                         }
                     }
                 }
                 Rvalue::UnaryOp(unop, v) => {
-                    // If it is an unsimplified unop which can fail, it must be
-                    // the negation, and the value must be a constant which won't
-                    // lead to overflow.
+                    // If it is an unsimplified unop which can fail, then:
+                    // - it must be the negation, and
+                    //   - either we compile for release
+                    //   - or the value must be a constant which won't lead
+                    //     to overflow.
                     if unop_can_fail(*unop) {
                         match unop {
                             UnOp::Neg => {
-                                let (_, cv) = v.as_const();
-                                let cv = cv.as_constant_value();
-                                let cv = cv.as_scalar();
-                                assert!(cv.is_int());
-                                assert!(!cv.is_min());
+                                if release {
+                                    // nothing to do
+                                } else {
+                                    let (_, cv) = v.as_const();
+                                    let cv = cv.as_constant_value();
+                                    let cv = cv.as_scalar();
+                                    assert!(cv.is_int());
+                                    assert!(!cv.is_min());
+                                }
                             }
                             _ => {
                                 unreachable!();
@@ -584,38 +649,50 @@ fn simplify_st(st: Statement) -> Statement {
         Statement::Nop => Statement::Nop,
         Statement::Switch(op, targets) => {
             let targets = match targets {
-                SwitchTargets::If(st1, st2) => {
-                    SwitchTargets::If(Box::new(simplify_st(*st1)), Box::new(simplify_st(*st2)))
-                }
+                SwitchTargets::If(st1, st2) => SwitchTargets::If(
+                    Box::new(simplify_st(release, *st1)),
+                    Box::new(simplify_st(release, *st2)),
+                ),
                 SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
-                    let targets =
-                        Vec::from_iter(targets.into_iter().map(|(v, e)| (v, simplify_st(e))));
-                    let otherwise = simplify_st(*otherwise);
+                    let targets = Vec::from_iter(
+                        targets
+                            .into_iter()
+                            .map(|(v, e)| (v, simplify_st(release, e))),
+                    );
+                    let otherwise = simplify_st(release, *otherwise);
                     SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise))
                 }
             };
             Statement::Switch(op, targets)
         }
-        Statement::Loop(loop_body) => Statement::Loop(Box::new(simplify_st(*loop_body))),
+        Statement::Loop(loop_body) => Statement::Loop(Box::new(simplify_st(release, *loop_body))),
         Statement::Sequence(st1, st2) => match *st2 {
             Statement::Sequence(st2, st3) => match *st3 {
                 Statement::Sequence(st3, st4) => {
-                    simplify_st_seq(*st1, *st2, *st3, Option::Some(*st4))
+                    simplify_st_seq(release, *st1, *st2, *st3, Option::Some(*st4))
                 }
-                st3 => simplify_st_seq(*st1, *st2, st3, Option::None),
+                st3 => simplify_st_seq(release, *st1, *st2, st3, Option::None),
             },
-            st2 => Statement::Sequence(Box::new(simplify_st(*st1)), Box::new(simplify_st(st2))),
+            st2 => Statement::Sequence(
+                Box::new(simplify_st(release, *st1)),
+                Box::new(simplify_st(release, st2)),
+            ),
         },
     }
 }
 
 /// `types` is used for pretty-printing purposes.
-pub fn simplify<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn simplify<'ctx>(
+    release: bool,
+    fmt_ctx: &CtxNames<'ctx>,
+    funs: &mut FunDecls,
+    globals: &mut GlobalDecls,
+) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to simplify operands in decl: {name}:\n{}",
             b.fmt_with_ctx_names(fmt_ctx)
         );
-        take(&mut b.body, simplify_st);
+        take(&mut b.body, |b| simplify_st(release, b));
     }
 }
