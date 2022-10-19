@@ -220,7 +220,7 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                 // Match over the type.
                 name.push(PathElem::Ident(match ty.kind() {
                     rustc_middle::ty::TyKind::Adt(adt_def, _) => {
-                        let mut type_name = type_def_id_to_name(tcx, adt_def.did);
+                        let mut type_name = type_def_id_to_name(tcx, adt_def.did());
                         type_name.name.pop().unwrap().to_string()
                     }
                     // Builtin cases.
@@ -324,7 +324,7 @@ pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
         | ItemKind::Mod(_)
         | ItemKind::Const(_, _)
         | ItemKind::Static(_, _, _)
-        | ItemKind::Macro(_) => Option::Some(item_def_id_to_name(tcx, def_id)),
+        | ItemKind::Macro(_, _) => Option::Some(item_def_id_to_name(tcx, def_id)),
         _ => {
             unimplemented!("{:?}", item.kind);
         }

@@ -11,9 +11,9 @@
 //! we reconstructed the control-flow to have `if ... then ... else ...`,
 //! loops, etc. instead of `GOTO`s).
 
+#![feature(is_some_with)]
 #![feature(rustc_private, register_tool)]
 #![feature(box_syntax, box_patterns)]
-#![feature(is_some_with)]
 #![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
@@ -26,6 +26,7 @@ extern crate rustc_ast;
 extern crate rustc_borrowck;
 extern crate rustc_const_eval;
 extern crate rustc_driver;
+extern crate rustc_error_messages;
 extern crate rustc_errors;
 extern crate rustc_hir;
 extern crate rustc_index;

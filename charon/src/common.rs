@@ -2,9 +2,9 @@
 
 use hashlink::linked_hash_map::LinkedHashMap;
 use im::Vector;
+use rustc_error_messages::MultiSpan;
 use rustc_errors::DiagnosticId;
 use rustc_session::Session;
-use rustc_span::MultiSpan;
 use serde::{Serialize, Serializer};
 use std::iter::FromIterator;
 

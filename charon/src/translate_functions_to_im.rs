@@ -60,7 +60,7 @@ pub struct DeclTransContext<'ctx> {
 /// not to mix too many very similar data structures, but we might consider
 /// using `std::collections::BTreeMap` instead.
 #[derive(Clone)]
-struct BodyTransContext<'ctx, 'ctx1> {
+struct BodyTransContext<'tcx, 'ctx, 'ctx1> {
     /// This is used in very specific situations.
     def_id: DefId,
     /// The declarations translation context, containing the function and global definitions.
@@ -71,7 +71,7 @@ struct BodyTransContext<'ctx, 'ctx1> {
     /// The regions
     regions: ty::RegionVarId::Vector<ty::RegionVar>,
     /// The map from rust region to translated region indices
-    rregions_to_ids: im::OrdMap<rustc_middle::ty::RegionKind, ty::RegionVarId::Id>,
+    rregions_to_ids: im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id>,
     /// Id counter for the type variables
     type_vars_counter: ty::TypeVarId::Generator,
     /// The type variables
@@ -116,9 +116,9 @@ impl<'ctx> DeclTransContext<'ctx> {
     }
 }
 
-impl<'ctx, 'ctx1> BodyTransContext<'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
-    fn new(def_id: DefId, ft_ctx: &'ctx DeclTransContext<'ctx1>) -> BodyTransContext<'ctx, 'ctx1> {
+    fn new(def_id: DefId, ft_ctx: &'ctx DeclTransContext<'ctx1>) -> Self {
         BodyTransContext {
             def_id,
             ft_ctx,
@@ -151,13 +151,16 @@ impl<'ctx, 'ctx1> BodyTransContext<'ctx, 'ctx1> {
         self.vars.get(var_id)
     }
 
-    fn get_region_from_rust(&self, r: rustc_middle::ty::RegionKind) -> Option<ty::RegionVarId::Id> {
+    fn get_region_from_rust(
+        &self,
+        r: rustc_middle::ty::RegionKind<'tcx>,
+    ) -> Option<ty::RegionVarId::Id> {
         self.rregions_to_ids.get(&r).map(|x| *x)
     }
 
     fn push_region(
         &mut self,
-        r: rustc_middle::ty::RegionKind,
+        r: rustc_middle::ty::RegionKind<'tcx>,
         name: Option<String>,
     ) -> ty::RegionVarId::Id {
         use crate::id_vector::ToUsize;
@@ -223,54 +226,58 @@ impl<'ctx> Formatter<ty::TypeDeclId::Id> for DeclTransContext<'ctx> {
     }
 }
 
-impl<'ctx, 'ctx1> Formatter<ty::TypeVarId::Id> for BodyTransContext<'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> Formatter<ty::TypeVarId::Id> for BodyTransContext<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: ty::TypeVarId::Id) -> String {
         let v = self.type_vars.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'ctx, 'ctx1> Formatter<v::VarId::Id> for BodyTransContext<'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> Formatter<v::VarId::Id> for BodyTransContext<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: v::VarId::Id) -> String {
         let v = self.vars.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'ctx, 'ctx1> Formatter<ty::RegionVarId::Id> for BodyTransContext<'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> Formatter<ty::RegionVarId::Id> for BodyTransContext<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: ty::RegionVarId::Id) -> String {
         let v = self.regions.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'ctx, 'ctx1> Formatter<&ty::Region<ty::RegionVarId::Id>> for BodyTransContext<'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Region<ty::RegionVarId::Id>>
+    for BodyTransContext<'tcx, 'ctx, 'ctx1>
+{
     fn format_object(&self, r: &ty::Region<ty::RegionVarId::Id>) -> String {
         r.fmt_with_ctx(self)
     }
 }
 
-impl<'ctx, 'ctx1> Formatter<&ty::ErasedRegion> for BodyTransContext<'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::ErasedRegion> for BodyTransContext<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, _: &ty::ErasedRegion) -> String {
         "'_".to_owned()
     }
 }
 
-impl<'ctx, 'ctx1> Formatter<ty::TypeDeclId::Id> for BodyTransContext<'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> Formatter<ty::TypeDeclId::Id> for BodyTransContext<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: ty::TypeDeclId::Id) -> String {
         self.ft_ctx.type_defs.format_object(id)
     }
 }
 
-impl<'ctx, 'ctx1> Formatter<&ty::Ty<ty::Region<ty::RegionVarId::Id>>>
-    for BodyTransContext<'ctx, 'ctx1>
+impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::Region<ty::RegionVarId::Id>>>
+    for BodyTransContext<'tcx, 'ctx, 'ctx1>
 {
     fn format_object(&self, ty: &ty::Ty<ty::Region<ty::RegionVarId::Id>>) -> String {
         ty.fmt_with_ctx(self)
     }
 }
 
-impl<'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>> for BodyTransContext<'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>>
+    for BodyTransContext<'tcx, 'ctx, 'ctx1>
+{
     fn format_object(&self, ty: &ty::Ty<ty::ErasedRegion>) -> String {
         ty.fmt_with_ctx(self)
     }
@@ -278,7 +285,7 @@ impl<'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>> for BodyTransContext<'ctx
 
 fn translate_ety<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
     ty: &mir_ty::Ty,
 ) -> Result<ty::ETy> {
     let ty_ctx = TypeTransContext::new(&bt_ctx.ft_ctx.type_defs, &bt_ctx.ft_ctx.ordered);
@@ -287,7 +294,7 @@ fn translate_ety<'tcx, 'ctx, 'ctx1>(
 
 fn translate_sig_ty<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
     ty: &mir_ty::Ty<'tcx>,
 ) -> Result<ty::RTy> {
     let ty_ctx = TypeTransContext::new(&bt_ctx.ft_ctx.type_defs, &bt_ctx.ft_ctx.ordered);
@@ -303,7 +310,7 @@ fn translate_sig_ty<'tcx, 'ctx, 'ctx1>(
 /// Translate a function's local variables by adding them in the environment.
 fn translate_body_locals<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &Body<'tcx>,
 ) -> Result<()> {
     // First, retrieve the debug info - we want to retrieve the names
@@ -344,7 +351,7 @@ fn translate_body_locals<'tcx, 'ctx, 'ctx1>(
 /// the context.
 fn translate_transparent_expression_body<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &Body<'tcx>,
 ) -> Result<()> {
     trace!();
@@ -357,7 +364,7 @@ fn translate_transparent_expression_body<'tcx, 'ctx, 'ctx1>(
 
 fn translate_basic_block<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &Body<'tcx>,
     block_id: BasicBlock,
 ) -> Result<ast::BlockId::Id> {
@@ -369,7 +376,7 @@ fn translate_basic_block<'tcx, 'ctx, 'ctx1>(
     let nid = bt_ctx.fresh_block_id(block_id);
 
     // Retrieve the block data
-    let block = body.basic_blocks().get(block_id).unwrap();
+    let block = body.basic_blocks.get(block_id).unwrap();
 
     // Translate the statements
     let mut statements = Vec::new();
@@ -401,7 +408,7 @@ fn translate_basic_block<'tcx, 'ctx, 'ctx1>(
 
 /// Translate a place and return its type
 fn translate_place_with_type<'tcx, 'ctx, 'ctx1>(
-    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &'ctx BodyTransContext<'tcx, 'ctx, 'ctx1>,
     place: &Place<'tcx>,
 ) -> (e::Place, ty::ETy) {
     let var_id = bt_ctx.get_local(&place.local).unwrap();
@@ -414,7 +421,7 @@ fn translate_place_with_type<'tcx, 'ctx, 'ctx1>(
 
 /// Translate a place
 fn translate_place<'tcx, 'ctx, 'ctx1>(
-    bt_ctx: &'ctx BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &'ctx BodyTransContext<'tcx, 'ctx, 'ctx1>,
     place: &Place<'tcx>,
 ) -> e::Place {
     translate_place_with_type(bt_ctx, place).0
@@ -575,7 +582,7 @@ fn translate_constant_scalar_type<'ctx>(ty: &TyKind, decls: &DeclTransContext<'c
             // It seems we can have ADTs when there is only one
             // variant, and this variant doesn't take parameters.
             // Retrieve the definition.
-            let id = decls.ordered.type_rid_to_id.get(&adt_def.did).unwrap();
+            let id = decls.ordered.type_rid_to_id.get(&adt_def.did()).unwrap();
             ty::Ty::Adt(ty::TypeId::Adt(*id), Vector::new(), Vector::new())
         }
         TyKind::Tuple(substs) => {
@@ -584,11 +591,14 @@ fn translate_constant_scalar_type<'ctx>(ty: &TyKind, decls: &DeclTransContext<'c
             ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), Vector::new())
         }
         // Only accept scalars that are shared references with erased regions : it's a static.
-        TyKind::Ref(mir_ty::RegionKind::ReErased, ref_ty, mir::Mutability::Not) => ty::Ty::Ref(
-            ty::ErasedRegion::Erased,
-            Box::new(translate_constant_scalar_type(ref_ty.kind(), decls)),
-            ty::RefKind::Shared,
-        ),
+        TyKind::Ref(region, ref_ty, mir::Mutability::Not) => match region.kind() {
+            mir_ty::RegionKind::ReErased => ty::Ty::Ref(
+                ty::ErasedRegion::Erased,
+                Box::new(translate_constant_scalar_type(ref_ty.kind(), decls)),
+                ty::RefKind::Shared,
+            ),
+            _ => unreachable!(),
+        },
         TyKind::Float(_) => {
             // We don't support floating point numbers:
             // this should have been detected and eliminated before.
@@ -607,19 +617,21 @@ fn translate_constant_scalar_type<'ctx>(ty: &TyKind, decls: &DeclTransContext<'c
 /// Currently, it should be a tuple.
 fn translate_constant_reference_type<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx1, 'ctx2>,
     ty: &TyKind<'tcx>,
 ) -> ty::ETy {
     // Match on the type to destructure
     match ty {
         TyKind::Tuple(substs) => {
+            todo!()
+            /*
             let (region_params, type_params) =
                 translate_subst_in_body(tcx, bt_ctx, None, substs).unwrap();
             assert!(region_params.is_empty());
             trace!("{:?}", type_params);
 
             let field_tys = type_params.into_iter().collect();
-            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), field_tys)
+            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), field_tys)*/
         }
         TyKind::Adt(_, _) => {
             // Following tests, it seems rustc doesn't introduce constants
@@ -640,7 +652,7 @@ fn translate_constant_reference_type<'tcx, 'ctx1, 'ctx2>(
 /// Translate the type of a [mir::interpret::ConstValue] value.
 fn translate_constant_type<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx1, 'ctx2>,
     ty: &TyKind<'tcx>,
     value: &mir::interpret::ConstValue<'tcx>,
 ) -> ty::ETy {
@@ -653,6 +665,7 @@ fn translate_constant_type<'tcx, 'ctx1, 'ctx2>(
             translate_constant_reference_type(tcx, bt_ctx, ty)
         }
         mir::interpret::ConstValue::Slice { .. } => unimplemented!(),
+        mir::interpret::ConstValue::ZeroSized { .. } => unimplemented!(),
     }
 }
 
@@ -768,7 +781,7 @@ fn translate_constant_scalar_value<'tcx, 'ctx>(
 /// Translate a constant typed by [translate_constant_reference_type].
 fn translate_constant_reference_value<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx1, 'ctx2>,
     im_ty: &ty::ETy,
     rustc_ty: &Ty<'tcx>,
     value: &mir::interpret::ConstValue<'tcx>,
@@ -784,17 +797,21 @@ fn translate_constant_reference_value<'tcx, 'ctx1, 'ctx2>(
         _ => unreachable!("Expected a tuple, got {:?}", rustc_ty),
     };
 
+    todo!()
+
+    /*
     // We use [destructure_const] to destructure the constant
     // We need a param_env: we use the function def id as a dummy id...
-    let param_env = tcx.param_env(bt_ctx.def_id);
+    //    let param_env = tcx.param_env(bt_ctx.def_id);
     // I have to clone some values: it is a bit annoying, but I don't
     // manage to get the lifetimes working otherwise...
     let cvalue = rustc_middle::ty::Const::from_value(tcx, value.clone(), rustc_ty.clone());
-    let param_env_and_const = rustc_middle::ty::ParamEnvAnd {
+    /*    let param_env_and_const = rustc_middle::ty::ParamEnvAnd {
         param_env,
         value: cvalue,
     };
-    let dc = tcx.destructure_const(param_env_and_const);
+    let dc = tcx.destructure_const(param_env_and_const);*/
+    let dc = tcx.destructure_const(cvalue);
     trace!("{:?}", dc);
 
     // Iterate over the fields
@@ -804,8 +821,8 @@ fn translate_constant_reference_value<'tcx, 'ctx1, 'ctx2>(
                 tcx,
                 bt_ctx,
                 im_ty,
-                &field.ty,
-                match &field.val {
+                &field.ty(),
+                match &field.kind() {
                     ConstKind::Value(v) => v,
                     _ => unreachable!(),
                 },
@@ -813,13 +830,13 @@ fn translate_constant_reference_value<'tcx, 'ctx1, 'ctx2>(
         })
         .collect();
 
-    e::OperandConstantValue::Adt(Option::None, fields)
+    e::OperandConstantValue::Adt(Option::None, fields)*/
 }
 
 /// Translate a constant value typed by [translate_constant_type].
 fn translate_constant_value<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx1, 'ctx2>,
     im_ty: &ty::ETy,
     rustc_ty: &Ty<'tcx>,
     val: &mir::interpret::ConstValue<'tcx>,
@@ -833,12 +850,13 @@ fn translate_constant_value<'tcx, 'ctx1, 'ctx2>(
             translate_constant_reference_value(tcx, bt_ctx, im_ty, rustc_ty, val)
         }
         mir::interpret::ConstValue::Slice { .. } => unimplemented!(),
+        mir::interpret::ConstValue::ZeroSized { .. } => unimplemented!(),
     }
 }
 
 fn translate_evaluated_operand_constant<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx1, 'ctx2>,
     ty: &Ty<'tcx>,
     val: &mir::interpret::ConstValue<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
@@ -850,7 +868,7 @@ fn translate_evaluated_operand_constant<'tcx, 'ctx1, 'ctx2>(
 /// Translate a constant which may not be yet evaluated.
 fn translate_operand_constant<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx1, 'ctx2>,
     constant: &mir::Constant<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
     trace!("{:?}", constant);
@@ -864,10 +882,13 @@ fn translate_operand_constant<'tcx, 'ctx1, 'ctx2>(
         mir::ConstantKind::Val(_value, _ty) => {
             unimplemented!();
         }
+        rustc_middle::mir::ConstantKind::Unevaluated(_, _) => todo!(),
     };
-    match c.val {
+    todo!()
+    /*    match c.val {
         rustc_middle::ty::ConstKind::Value(cvalue) => {
-            translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty, &cvalue)
+        todo!()
+            //translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty(), &cvalue)
         }
         rustc_middle::ty::ConstKind::Unevaluated(unev) => {
             if extract_constants_at_top_level(bt_ctx.ft_ctx.mir_level) {
@@ -878,10 +899,12 @@ fn translate_operand_constant<'tcx, 'ctx1, 'ctx2>(
                 (decl.ty.clone(), e::OperandConstantValue::ConstantId(id))
             } else {
                 // Evaluate the constant.
+        todo!()
+                /*
                 let cvalue = tcx
                     .const_eval_resolve(mir_ty::ParamEnv::empty(), unev, Option::None)
                     .unwrap();
-                translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty, &cvalue)
+                translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty(), &cvalue)*/
             }
         }
         rustc_middle::ty::ConstKind::Param(_)
@@ -891,13 +914,13 @@ fn translate_operand_constant<'tcx, 'ctx1, 'ctx2>(
         | rustc_middle::ty::ConstKind::Error(_) => {
             unreachable!("Unexpected: {:?}", constant.literal);
         }
-    }
+    }*/
 }
 
 /// Translate an operand with its type
 fn translate_operand_with_type<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx1, 'ctx2>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx1, 'ctx2>,
     operand: &mir::Operand<'tcx>,
 ) -> (e::Operand, ty::ETy) {
     trace!();
@@ -920,7 +943,7 @@ fn translate_operand_with_type<'tcx, 'ctx1, 'ctx2>(
 /// Translate an operand
 fn translate_operand<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
     operand: &mir::Operand<'tcx>,
 ) -> e::Operand {
     trace!();
@@ -938,7 +961,7 @@ fn translate_operand<'tcx, 'ctx, 'ctx1>(
 /// the rust compiler is too precise when manipulating those boxes, which
 /// reveals implementation details).
 fn translate_move_box_first_projector_operand<'tcx, 'ctx, 'ctx1>(
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
     operand: &mir::Operand<'tcx>,
 ) -> e::Operand {
     trace!();
@@ -1039,12 +1062,15 @@ fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
 /// Translate an rvalue
 fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
     rvalue: &mir::Rvalue<'tcx>,
 ) -> e::Rvalue {
     use std::ops::Deref;
     match rvalue {
         mir::Rvalue::Use(operand) => e::Rvalue::Use(translate_operand(tcx, bt_ctx, operand)),
+        mir::Rvalue::CopyForDeref(_) => {
+            unimplemented!();
+        }
         mir::Rvalue::Repeat(_operand, _const) => {
             // [x; 32]
             unimplemented!();
@@ -1071,7 +1097,10 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
             // Sanity check
             assert!(match cast_kind {
                 rustc_middle::mir::CastKind::Misc => true,
-                rustc_middle::mir::CastKind::Pointer(_) => false,
+                rustc_middle::mir::CastKind::Pointer(_)
+                | rustc_middle::mir::CastKind::PointerExposeAddress
+                | rustc_middle::mir::CastKind::PointerFromExposedAddress
+                | rustc_middle::mir::CastKind::DynStar => false,
             });
 
             // Translate the target type
@@ -1237,7 +1266,7 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
 /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
 fn translate_statement<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
     statement: &Statement<'tcx>,
 ) -> Result<Option<ast::Statement>> {
     trace!("About to translate statement (MIR) {:?}", statement);
@@ -1274,11 +1303,6 @@ fn translate_statement<'tcx, 'ctx, 'ctx1>(
             let var_id = bt_ctx.get_local(local).unwrap();
             Ok(Some(ast::Statement::StorageDead(var_id)))
         }
-        StatementKind::CopyNonOverlapping(_) => {
-            // The program should have been rejected before
-            error!("Copy non overlapping");
-            unreachable!();
-        }
         StatementKind::Retag(_, _) => {
             // This is for the stacked borrows
             trace!("retag");
@@ -1298,13 +1322,19 @@ fn translate_statement<'tcx, 'ctx, 'ctx1>(
             // We ignore this statement
             Ok(None)
         }
+        StatementKind::Deinit(_) => {
+            unimplemented!();
+        }
+        StatementKind::Intrinsic(_) => {
+            unimplemented!();
+        }
     }
 }
 
 /// Translate a terminator
 fn translate_terminator<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &Body<'tcx>,
     terminator: &Terminator<'tcx>,
 ) -> Result<ast::Terminator> {
@@ -1385,12 +1415,13 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             func,
             args,
             destination,
+            target,
             cleanup: _, // Note that the state gets stuck if we need to unwind
             from_hir_call: _,
             fn_span: _,
         } => {
             trace!("Call: func: {:?}", func);
-            translate_function_call(tcx, bt_ctx, body, func, args, destination)
+            translate_function_call(tcx, bt_ctx, body, func, args, destination, target)
         }
         TerminatorKind::Assert {
             cond,
@@ -1425,9 +1456,9 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             trace!(
                 "False edge:\n- real target ({:?}):\n{:?}\n- imaginary target ({:?}):\n{:?}",
                 real_target,
-                body.basic_blocks().get(*real_target).unwrap(),
+                body.basic_blocks.get(*real_target).unwrap(),
                 imaginary_target,
-                body.basic_blocks().get(*imaginary_target).unwrap(),
+                body.basic_blocks.get(*imaginary_target).unwrap(),
             );
 
             // False edges are used to make the borrow checker a bit conservative.
@@ -1462,7 +1493,7 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
 /// Translate switch targets
 fn translate_switch_targets<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &Body<'tcx>,
     switch_ty: &ty::ETy,
     targets: &mir::SwitchTargets,
@@ -1535,8 +1566,9 @@ fn get_function_from_operand<'tcx>(
                 mir::ConstantKind::Ty(c) => {
                     // The type of the constant should be a FnDef, allowing
                     // us to retrieve the function's identifier and instantiation.
-                    assert!(c.ty.is_fn());
-                    match c.ty.kind() {
+                    let c_ty = c.ty();
+                    assert!(c_ty.is_fn());
+                    match c_ty.kind() {
                         mir_ty::TyKind::FnDef(def_id, subst) => (*def_id, subst),
                         _ => {
                             unreachable!();
@@ -1545,6 +1577,9 @@ fn get_function_from_operand<'tcx>(
                 }
                 mir::ConstantKind::Val(_val, _ty) => {
                     unreachable!();
+                }
+                mir::ConstantKind::Unevaluated(_, _) => {
+                    todo!()
                 }
             }
         }
@@ -1593,7 +1628,7 @@ fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
 
             // The parent type should be ADT
             match parent_type.kind() {
-                rustc_middle::ty::TyKind::Adt(adt_def, _) => Some(adt_def.did),
+                rustc_middle::ty::TyKind::Adt(adt_def, _) => Some(adt_def.did()),
                 _ => {
                     unreachable!();
                 }
@@ -1617,11 +1652,12 @@ fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
 /// the blocks we go to after the function call returns.
 fn translate_function_call<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &mut BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &mir::Body<'tcx>,
     func: &Operand<'tcx>,
     args: &Vec<Operand<'tcx>>,
-    destination: &Option<(Place<'tcx>, BasicBlock)>,
+    destination: &Place<'tcx>,
+    target: &Option<BasicBlock>,
 ) -> Result<ast::Terminator> {
     trace!();
 
@@ -1635,23 +1671,22 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
     // Translate the name to check if is is `core::panicking::panic`
     let name = function_def_id_to_name(tcx, def_id);
 
-    // If the call is `panic!`, then the destination is `None`.
+    // If the call is `panic!`, then the target is `None`.
     // I don't know in which other cases it can be `None`.
     if name.equals_ref_name(&assumed::PANIC_NAME)
         || name.equals_ref_name(&assumed::BEGIN_PANIC_NAME)
     {
         assert!(!def_id.is_local());
-        assert!(destination.is_none());
+        assert!(target.is_none());
 
         // We ignore the arguments
         Ok(ast::Terminator::Panic)
     } else {
-        assert!(destination.is_some());
-        let destination = destination.unwrap();
+        assert!(target.is_some());
+        let next_block = target.unwrap();
 
-        // Translate the destination
-        let (lval, next_block) = destination;
-        let lval = translate_place(&bt_ctx, &lval);
+        // Translate the target
+        let lval = translate_place(&bt_ctx, destination);
         let next_block = translate_basic_block(tcx, bt_ctx, body, next_block)?;
 
         // There is something annoying: when going to MIR, the rust compiler
@@ -1766,7 +1801,7 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
 /// Note that the regions parameters are expected to have been erased.
 fn translate_subst_in_body<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
     used_args: Option<Vec<bool>>,
     substs: &rustc_middle::ty::subst::InternalSubsts<'tcx>,
 ) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>)> {
@@ -1792,7 +1827,7 @@ fn translate_subst_in_body<'tcx, 'ctx, 'ctx1>(
                 t_args_tys.push(t_param_ty);
             }
             rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
-                t_args_regions.push(translate_erased_region(region));
+                t_args_regions.push(translate_erased_region(region.kind()));
             }
             rustc_middle::ty::subst::GenericArgKind::Const(_) => {
                 unimplemented!();
@@ -1807,7 +1842,7 @@ fn translate_subst_in_body<'tcx, 'ctx, 'ctx1>(
 /// values.
 fn translate_arguments<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
-    bt_ctx: &BodyTransContext<'ctx, 'ctx1>,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
     used_args: Option<Vec<bool>>,
     args: &Vec<Operand<'tcx>>,
 ) -> Vec<e::Operand> {
@@ -2005,7 +2040,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     types_constraints: &TypesConstraintsMap,
     decl_ctx: &'ctx DeclTransContext<'ctx1>,
     def_id: DefId,
-) -> (BodyTransContext<'ctx, 'ctx1>, ast::FunSig) {
+) -> (BodyTransContext<'tcx, 'ctx, 'ctx1>, ast::FunSig) {
     // Retrieve the function signature, which includes the lifetimes
     let signature = tcx.fn_sig(def_id);
 
@@ -2072,7 +2107,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
                 }
             }
             rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
-                let name = translate_region_name(region);
+                let name = translate_region_name(&region);
                 bt_ctx.push_region(*region, name);
             }
             rustc_middle::ty::subst::GenericArgKind::Const(_) => {
@@ -2142,9 +2177,9 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     (bt_ctx, sig)
 }
 
-fn translate_body(
-    tcx: TyCtxt,
-    mut bt_ctx: BodyTransContext,
+fn translate_body<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt<'tcx>,
+    mut bt_ctx: BodyTransContext<'tcx, 'ctx, 'ctx1>,
     local_id: LocalDefId,
     arg_count: usize,
 ) -> Result<ast::ExprBody> {

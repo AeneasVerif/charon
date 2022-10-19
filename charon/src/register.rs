@@ -276,7 +276,7 @@ fn register_hir_type(
             // Retrieve the MIR adt from the def id and register it, retrieve
             // the list of dependencies at the same time.
             let adt = ctx.rustc.adt_def(def_id);
-            return register_local_adt(ctx, decls, adt);
+            return register_local_adt(ctx, decls, &adt);
         }
         _ => {
             unreachable!();
@@ -298,17 +298,18 @@ fn register_local_adt(
     // called from MIR code, which is why we don't take an item or a HIR
     // definition as parameter. We use it only for the span, to report
     // precise error messages to the user.
+    let adt_did = adt.did();
     let hir_map = ctx.rustc.hir();
-    let item = if let rustc_hir::Node::Item(item) = hir_map.get_if_local(adt.did).unwrap() {
+    let item = if let rustc_hir::Node::Item(item) = hir_map.get_if_local(adt_did).unwrap() {
         item
     } else {
         unreachable!();
     };
 
-    let local_id = adt.did.as_local().unwrap();
+    let local_id = adt_did.as_local().unwrap();
     decls.register_visible_declaration(ctx, local_id, DeclKind::Type, |decls| {
         // Use a dummy substitution to instantiate the type parameters
-        let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(ctx.rustc, adt.did);
+        let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(ctx.rustc, adt_did);
 
         // Explore all the variants. Note that we also explore the HIR to retrieve
         // precise spans: for instance, to indicate which variant is problematic
@@ -326,7 +327,7 @@ fn register_local_adt(
 
         let mut ty_deps = DeclDependencies::new();
         let mut i = 0; // The index of the variant
-        for var_def in adt.variants.iter() {
+        for var_def in adt.variants().iter() {
             trace!("var_def");
             // Retrieve the most precise span (the span of the variant if this is an
             // enum, the span of the whole ADT otherwise).
@@ -421,8 +422,10 @@ fn register_mir_ty(
         TyKind::Adt(adt, substs) => {
             trace!("Adt");
 
+            let adt_did = adt.did();
+
             // Identify the type by retrieving its name
-            let name = type_def_id_to_name(ctx.rustc, adt.did);
+            let name = type_def_id_to_name(ctx.rustc, adt_did);
 
             // Check if the type is primitive
 
@@ -436,7 +439,7 @@ fn register_mir_ty(
             // - `Some` if the type is primitive and we need to filter some
             //   of its parameters
             // - `None` if it is not primitive (no filter information)
-            let used_params = if adt.did.is_local() {
+            let used_params = if adt_did.is_local() {
                 // We probably do not need to check if the type is local...
                 Option::None
             } else {
@@ -444,17 +447,17 @@ fn register_mir_ty(
             };
 
             // We probably don't need to check if the type is local...
-            let is_prim = !adt.did.is_local() && used_params.is_some();
+            let is_prim = !adt_did.is_local() && used_params.is_some();
             // Add this ADT to the list of dependencies, only if it is not
             // primitive
             if !is_prim {
-                ty_deps.insert(adt.did);
+                ty_deps.insert(adt_did);
             }
 
             // From now onwards, we do something different depending on
             // whether the type is a local type (i.e., defined in the current
             // crate) or an assumed (external) type like box or vec
-            if !adt.did.is_local() {
+            if !adt_did.is_local() {
                 // Explore the type parameters instantiation
                 // There are two possibilities:
                 // - either the type is considered primitive (i.e., it belongs
@@ -469,7 +472,7 @@ fn register_mir_ty(
                 // In the future, we will explore the ADT, to reveal its public
                 // information (public fields in case of a structure, variants in
                 // case of a public enumeration).
-                decls.register_opaque_declaration(ctx.rustc, adt.did, DeclKind::Type, &name);
+                decls.register_opaque_declaration(ctx.rustc, adt_did, DeclKind::Type, &name);
                 return Ok(());
             } else {
                 // Explore the type parameters instantiation
@@ -477,7 +480,7 @@ fn register_mir_ty(
 
                 // Explore the ADT, if we haven't already registered it
                 // Check if registered
-                if decls.knows(&adt.did) {
+                if decls.knows(&adt_did) {
                     trace!("Adt already registered");
                     return Ok(());
                 }
@@ -491,7 +494,7 @@ fn register_mir_ty(
             trace!("Array");
 
             register_mir_ty(ctx, decls, span, ty_deps, ty)?;
-            return register_mir_ty(ctx, decls, span, ty_deps, &const_param.ty);
+            return register_mir_ty(ctx, decls, span, ty_deps, &const_param.ty());
         }
         TyKind::Slice(ty) => {
             trace!("Slice");
@@ -507,8 +510,7 @@ fn register_mir_ty(
             trace!("Tuple");
 
             for param in substs.iter() {
-                let param_ty = param.expect_ty();
-                register_mir_ty(ctx, decls, span, ty_deps, &param_ty)?;
+                register_mir_ty(ctx, decls, span, ty_deps, &param)?;
             }
 
             return Ok(());
@@ -550,7 +552,7 @@ fn register_mir_ty(
             return Ok(());
         }
 
-        TyKind::Dynamic(_, _) => {
+        TyKind::Dynamic(_, _, _) => {
             // A trait object
             trace!("Dynamic");
             unimplemented!();
@@ -625,38 +627,41 @@ fn visit_block<'tcx, V: mir::visit::Visitor<'tcx>>(
 
 fn visit_globals<'tcx>(
     block: &'tcx mir::BasicBlockData<'tcx>,
-    f: &mut dyn FnMut(&'tcx rustc_middle::ty::Const<'tcx>),
+    f: &mut dyn FnMut(&rustc_middle::mir::Constant<'tcx>),
 ) {
     // Implement the visitor trait for the given lambda.
     // It may be possible to avoid erasing f type with more rust-fu.
-    struct ConstVisitor<'tcx, 'f> {
-        f: &'f mut dyn FnMut(&'tcx rustc_middle::ty::Const<'tcx>),
+    struct ConstantVisitor<'tcx, 'f> {
+        f: &'f mut dyn FnMut(&rustc_middle::mir::Constant<'tcx>),
     }
-    impl<'tcx, 'f> mir::visit::Visitor<'tcx> for ConstVisitor<'tcx, 'f> {
-        fn visit_const(&mut self, c: &&'tcx rustc_middle::ty::Const<'tcx>, _: mir::Location) {
+    impl<'tcx, 'f> mir::visit::Visitor<'tcx> for ConstantVisitor<'tcx, 'f> {
+        fn visit_constant(&mut self, c: &rustc_middle::mir::Constant<'tcx>, _: mir::Location) {
             (self.f)(c);
         }
     }
-    visit_block(block, ConstVisitor { f });
+    visit_block(block, ConstantVisitor { f });
 }
 
 fn visit_global_dependencies<'tcx, F: FnMut(DefId)>(
     block: &'tcx mir::BasicBlockData<'tcx>,
     mut f: F,
 ) {
-    visit_globals(block, &mut |c| match c.val {
-        rustc_middle::ty::ConstKind::Value(_) => (),
-        rustc_middle::ty::ConstKind::Unevaluated(uv) => {
-            f(uv.def.did);
-        }
-        rustc_middle::ty::ConstKind::Param(_)
-        | rustc_middle::ty::ConstKind::Infer(_)
-        | rustc_middle::ty::ConstKind::Bound(_, _)
-        | rustc_middle::ty::ConstKind::Placeholder(_)
-        | rustc_middle::ty::ConstKind::Error(_) => {
-            unimplemented!();
-        }
-    });
+    visit_globals(
+        block,
+        todo!(), /*    &mut |c| match c.kind() {
+                     rustc_middle::ty::ConstKind::Value(_) => (),
+                     rustc_middle::ty::ConstKind::Unevaluated(uv) => {
+                         f(uv.def.did);
+                     }
+                     rustc_middle::ty::ConstKind::Param(_)
+                     | rustc_middle::ty::ConstKind::Infer(_)
+                     | rustc_middle::ty::ConstKind::Bound(_, _)
+                     | rustc_middle::ty::ConstKind::Placeholder(_)
+                     | rustc_middle::ty::ConstKind::Error(_) => {
+                         unimplemented!();
+                     }
+                 }*/
+    );
 }
 
 fn register_dependency_expression(
@@ -709,7 +714,7 @@ fn register_body(
         // in which they are discovered. By storing their metadata, we would be
         // able to order them properly, without depending on the visit ordering.
         // Avoid registering globals in optimized MIR (they will be inlined).
-        for b in body.basic_blocks().iter() {
+        for b in body.basic_blocks.iter() {
             propagate_error(
                 |f| visit_global_dependencies(b, f),
                 |id| {
@@ -744,7 +749,7 @@ fn register_body(
     // We initially considered using visitors, but the MIR visitors return unit,
     // while we need to use a result type...
     // A basic block is a list of statements, followed by a terminator.
-    for block in body.basic_blocks().iter() {
+    for block in body.basic_blocks.iter() {
         // Statements
         for statement in block.statements.iter() {
             match &statement.kind {
@@ -758,17 +763,10 @@ fn register_body(
                 | mir::StatementKind::StorageDead(_)
                 | mir::StatementKind::AscribeUserType(_, _)
                 | mir::StatementKind::Coverage(_)
+                | mir::StatementKind::Deinit(_)
+                | mir::StatementKind::Intrinsic(_)
                 | mir::StatementKind::Nop => {
                     // Nothing to do
-                }
-
-                mir::StatementKind::CopyNonOverlapping(_) => {
-                    trace!("Copy non overlapping");
-                    span_err(
-                        ctx.sess,
-                        statement.source_info.span.clone(),
-                        "Copy non overlapping not supported",
-                    );
                 }
                 mir::StatementKind::Retag(_, _) => {
                     // retag statements are only used by MIRI, so we have nothing
@@ -780,37 +778,37 @@ fn register_body(
         // Terminator
         let terminator = block.terminator();
         match &terminator.kind {
-            mir::terminator::TerminatorKind::Goto { target: _ }
-            | mir::terminator::TerminatorKind::SwitchInt {
+            mir::TerminatorKind::Goto { target: _ }
+            | mir::TerminatorKind::SwitchInt {
                 discr: _,
                 switch_ty: _,
                 targets: _,
             }
-            | mir::terminator::TerminatorKind::Resume
-            | mir::terminator::TerminatorKind::Abort
-            | mir::terminator::TerminatorKind::Return
-            | mir::terminator::TerminatorKind::Unreachable
-            | mir::terminator::TerminatorKind::Drop {
+            | mir::TerminatorKind::Resume
+            | mir::TerminatorKind::Abort
+            | mir::TerminatorKind::Return
+            | mir::TerminatorKind::Unreachable
+            | mir::TerminatorKind::Drop {
                 place: _,
                 target: _,
                 unwind: _,
             }
-            | mir::terminator::TerminatorKind::Assert {
+            | mir::TerminatorKind::Assert {
                 cond: _,
                 expected: _,
                 msg: _,
                 target: _,
                 cleanup: _,
             }
-            | mir::terminator::TerminatorKind::FalseEdge {
+            | mir::TerminatorKind::FalseEdge {
                 real_target: _,
                 imaginary_target: _,
             }
-            | mir::terminator::TerminatorKind::FalseUnwind {
+            | mir::TerminatorKind::FalseUnwind {
                 real_target: _,
                 unwind: _,
             }
-            | mir::terminator::TerminatorKind::DropAndReplace {
+            | mir::TerminatorKind::DropAndReplace {
                 place: _,
                 value: _,
                 target: _,
@@ -818,10 +816,11 @@ fn register_body(
             } => {
                 // Nothing to do
             }
-            mir::terminator::TerminatorKind::Call {
+            mir::TerminatorKind::Call {
                 func,
                 args,
                 destination: _,
+                target: _,
                 cleanup: _,
                 from_hir_call: _,
                 fn_span,
@@ -907,7 +906,7 @@ fn register_body(
 
                 register_dependency_expression(ctx, decls, fid, DeclKind::Fun, &name)?;
             }
-            mir::terminator::TerminatorKind::Yield {
+            mir::TerminatorKind::Yield {
                 value: _,
                 resume: _,
                 resume_arg: _,
@@ -920,7 +919,7 @@ fn register_body(
                     "Yield is not supported",
                 );
             }
-            mir::terminator::TerminatorKind::GeneratorDrop => {
+            mir::TerminatorKind::GeneratorDrop => {
                 trace!("terminator: GeneratorDrop");
                 span_err(
                     ctx.sess,
@@ -928,7 +927,7 @@ fn register_body(
                     "Generators are not supported",
                 );
             }
-            mir::terminator::TerminatorKind::InlineAsm {
+            mir::TerminatorKind::InlineAsm {
                 template: _,
                 operands: _,
                 options: _,
@@ -1137,7 +1136,14 @@ pub fn register_crate(
     //   explores all the files from there (typically listed through statements
     //   of the form "mod MODULE_NAME")
     // - the other files in the crate are Module items in the HIR graph
-    for item in tcx.hir().items() {
+    let hir = tcx.hir();
+    for item_id in hir.items() {
+        let item_id = item_id.hir_id();
+        let node = hir.find(item_id).unwrap();
+        let item = match node {
+            rustc_hir::Node::Item(item) => item,
+            _ => unreachable!(),
+        };
         register_hir_item(&ctx, &mut decls, true, item)?;
     }
     Ok(decls.get_declarations())
