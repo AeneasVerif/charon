@@ -4,10 +4,9 @@
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
-use crate::id_vector;
-use crate::ullbc_ast::*;
 use crate::names::Name;
 use crate::types::*;
+use crate::ullbc_ast::*;
 use crate::values::*;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
@@ -242,18 +241,6 @@ impl Statement {
     }
 }
 
-impl<'ctx> Formatter<&Statement> for AstFormatter<'ctx> {
-    fn format_object(&self, statement: &Statement) -> String {
-        statement.fmt_with_ctx(self)
-    }
-}
-
-impl<'ctx> Formatter<&BlockId::Vector<BlockData>> for AstFormatter<'ctx> {
-    fn format_object(&self, body: &BlockId::Vector<BlockData>) -> String {
-        fmt_body_blocks_with_ctx(body, TAB_INCR, self)
-    }
-}
-
 pub fn fmt_call<'a, 'b, T>(
     ctx: &'b T,
     func: &'a FunId,
@@ -461,7 +448,7 @@ impl<T: Debug + Clone + Serialize> GExprBody<T> {
     /// variables. The reason is that it is easier for us to write this very
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
-    /// definition). See [`fmt_with_defs`](FunDecl::fmt_with_defs).
+    /// definition). See [`fmt_with_decls`](FunDecl::fmt_with_decls).
     pub fn fmt_with_ctx<'a, 'b, 'c, C>(&'a self, tab: &'b str, ctx: &'c C) -> String
     where
         C: Formatter<VarId::Id>
@@ -604,7 +591,7 @@ impl<'a> Formatter<TypeDeclId::Id> for FunSigFormatter<'a> {
 }
 
 impl FunSig {
-    pub fn fmt_with_defs<'ctx>(&self, ty_ctx: &'ctx TypeDecls) -> String {
+    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDecls) -> String {
         // Initialize the formatting context
         let ctx = FunSigFormatter { ty_ctx, sig: self };
 
@@ -620,7 +607,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
     /// variables. The reason is that it is easier for us to write this very
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
-    /// definition). See [`fmt_with_defs`](FunDecl::fmt_with_defs).
+    /// definition). See [`fmt_with_decls`](FunDecl::fmt_with_decls).
     pub fn gfmt_with_ctx<'a, 'b, 'c, T1, T2>(
         &'a self,
         tab: &'b str,
@@ -719,7 +706,7 @@ impl<CD: Debug + Clone + Serialize> GGlobalDecl<CD> {
     /// variables. The reason is that it is easier for us to write this very
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the global
-    /// definition). See [`fmt_with_defs`](FunDecl::fmt_with_defs).
+    /// definition). See [`fmt_with_decls`](FunDecl::fmt_with_decls).
     pub fn gfmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, body_ctx: &'c T) -> String
     where
         T: Formatter<VarId::Id>
@@ -753,61 +740,67 @@ impl<CD: Debug + Clone + Serialize> GGlobalDecl<CD> {
     }
 }
 
-pub struct GAstFormatter<'ctx, FD, CD> {
+impl<T: std::fmt::Debug + Clone + Serialize> GGlobalDecl<T> {
+    fn is_opaque(&self) -> bool {
+        self.body.is_none()
+    }
+}
+
+pub struct GAstFormatter<'ctx, FD, GD> {
     pub type_context: &'ctx TypeDecls,
     pub fun_context: &'ctx FD,
-    pub global_context: &'ctx CD,
-    pub type_vars: &'ctx TypeVarId::Vector<TypeVar>,
-    pub vars: &'ctx VarId::Vector<Var>,
+    pub global_context: &'ctx GD,
+    /// We may not have the list of type variables at hand (if we directly
+    /// pretty print a body, for instance). If this is the case, the
+    /// formatter will print the variable indices.
+    pub type_vars: Option<&'ctx TypeVarId::Vector<TypeVar>>,
+    /// Same as for `type_vars`.
+    pub vars: Option<&'ctx VarId::Vector<Var>>,
 }
 
-type AstFormatter<'ctx> = GAstFormatter<'ctx, FunDecls, GlobalDecls>;
+pub(crate) struct FunDeclsFormatter<'ctx> {
+    decls: &'ctx FunDecls,
+}
 
-impl<'ctx> Formatter<FunDeclId::Id> for AstFormatter<'ctx> {
-    fn format_object(&self, id: FunDeclId::Id) -> String {
-        let f = self.fun_context.get(id).unwrap();
-        f.name.to_string()
+pub(crate) struct FunNamesFormatter<'ctx> {
+    decls: &'ctx FunDeclId::Vector<String>,
+}
+
+pub(crate) struct GlobalDeclsFormatter<'ctx> {
+    decls: &'ctx GlobalDecls,
+}
+
+pub(crate) struct GlobalNamesFormatter<'ctx> {
+    decls: &'ctx GlobalDeclId::Vector<String>,
+}
+
+pub struct CtxNames<'ctx> {
+    pub type_context: &'ctx TypeDecls,
+    pub fun_context: &'ctx FunDeclId::Vector<String>,
+    pub global_context: &'ctx GlobalDeclId::Vector<String>,
+}
+
+impl<'ctx> CtxNames<'ctx> {
+    pub fn new(
+        type_context: &'ctx TypeDecls,
+        fun_context: &'ctx FunDeclId::Vector<String>,
+        global_context: &'ctx GlobalDeclId::Vector<String>,
+    ) -> Self {
+        CtxNames {
+            type_context,
+            fun_context,
+            global_context,
+        }
     }
 }
 
-impl<'ctx> Formatter<&Terminator> for AstFormatter<'ctx> {
-    fn format_object(&self, terminator: &Terminator) -> String {
-        terminator.fmt_with_ctx(self)
-    }
-}
-
-impl<'ctx> Formatter<GlobalDeclId::Id> for AstFormatter<'ctx> {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        let c = self.global_context.get(id).unwrap();
-        c.name.to_string()
-    }
-}
-
-impl<'ctx> Formatter<&Rvalue> for AstFormatter<'ctx> {
-    fn format_object(&self, v: &Rvalue) -> String {
-        v.fmt_with_ctx(self)
-    }
-}
-
-impl<'ctx> Formatter<&Place> for AstFormatter<'ctx> {
-    fn format_object(&self, p: &Place) -> String {
-        p.fmt_with_ctx(self)
-    }
-}
-
-impl<'ctx> Formatter<&Operand> for AstFormatter<'ctx> {
-    fn format_object(&self, op: &Operand) -> String {
-        op.fmt_with_ctx(self)
-    }
-}
-
-impl<'ctx, FD, CD> GAstFormatter<'ctx, FD, CD> {
+impl<'ctx, FD, GD> GAstFormatter<'ctx, FD, GD> {
     pub fn new(
         type_context: &'ctx TypeDecls,
         fun_context: &'ctx FD,
-        global_context: &'ctx CD,
-        type_vars: &'ctx TypeVarId::Vector<TypeVar>,
-        vars: &'ctx VarId::Vector<Var>,
+        global_context: &'ctx GD,
+        type_vars: Option<&'ctx TypeVarId::Vector<TypeVar>>,
+        vars: Option<&'ctx VarId::Vector<Var>>,
     ) -> Self {
         GAstFormatter {
             type_context,
@@ -819,28 +812,36 @@ impl<'ctx, FD, CD> GAstFormatter<'ctx, FD, CD> {
     }
 }
 
-impl<'ctx, FD, CD> Formatter<VarId::Id> for GAstFormatter<'ctx, FD, CD> {
+impl<'ctx, FD, GD> Formatter<VarId::Id> for GAstFormatter<'ctx, FD, GD> {
     fn format_object(&self, id: VarId::Id) -> String {
-        let v = self.vars.get(id).unwrap();
-        v.to_string()
+        if self.vars.is_some() {
+            let v = self.vars.unwrap().get(id).unwrap();
+            v.to_string()
+        } else {
+            var_id_to_pretty_string(id)
+        }
     }
 }
 
-impl<'ctx, FD, CD> Formatter<TypeVarId::Id> for GAstFormatter<'ctx, FD, CD> {
+impl<'ctx, FD, GD> Formatter<TypeVarId::Id> for GAstFormatter<'ctx, FD, GD> {
     fn format_object(&self, id: TypeVarId::Id) -> String {
-        self.type_vars.get(id).unwrap().to_string()
+        if self.type_vars.is_some() {
+            self.type_vars.unwrap().get(id).unwrap().to_string()
+        } else {
+            type_var_id_to_pretty_string(id)
+        }
     }
 }
 
 /// For adt types
-impl<'ctx, FD, CD> Formatter<TypeDeclId::Id> for GAstFormatter<'ctx, FD, CD> {
+impl<'ctx, FD, GD> Formatter<TypeDeclId::Id> for GAstFormatter<'ctx, FD, GD> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
         self.type_context.format_object(id)
     }
 }
 
 /// For enum values: `List::Cons`
-impl<'ctx, FD, CD> Formatter<(TypeDeclId::Id, VariantId::Id)> for GAstFormatter<'ctx, FD, CD> {
+impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, VariantId::Id)> for GAstFormatter<'ctx, FD, GD> {
     fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
         let (def_id, variant_id) = id;
         let ctx = self.type_context;
@@ -855,8 +856,8 @@ impl<'ctx, FD, CD> Formatter<(TypeDeclId::Id, VariantId::Id)> for GAstFormatter<
 }
 
 /// For struct/enum values: retrieve a field name
-impl<'ctx, FD, CD> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-    for GAstFormatter<'ctx, FD, CD>
+impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
+    for GAstFormatter<'ctx, FD, GD>
 {
     fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (def_id, opt_variant_id, field_id) = id;
@@ -887,71 +888,245 @@ impl<'ctx, FD, CD> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id
     }
 }
 
-impl<'ctx, FD, CD> Formatter<&ErasedRegion> for GAstFormatter<'ctx, FD, CD> {
+impl<'ctx, FD, GD> Formatter<&ErasedRegion> for GAstFormatter<'ctx, FD, GD> {
     fn format_object(&self, _: &ErasedRegion) -> String {
         "'_".to_owned()
     }
 }
 
-impl<'ctx, FD, CD> Formatter<&ETy> for GAstFormatter<'ctx, FD, CD> {
+impl<'ctx, FD, GD> Formatter<&ETy> for GAstFormatter<'ctx, FD, GD> {
     fn format_object(&self, ty: &ETy) -> String {
         ty.fmt_with_ctx(self)
     }
 }
 
+impl<'ctx, FD, GD> Formatter<&Place> for GAstFormatter<'ctx, FD, GD> {
+    fn format_object(&self, p: &Place) -> String {
+        p.fmt_with_ctx(self)
+    }
+}
+
+impl<'ctx, FD, GD> Formatter<&Operand> for GAstFormatter<'ctx, FD, GD>
+where
+    Self: Formatter<GlobalDeclId::Id>,
+{
+    fn format_object(&self, op: &Operand) -> String {
+        op.fmt_with_ctx(self)
+    }
+}
+
+impl<'ctx, FD, GD> Formatter<&Rvalue> for GAstFormatter<'ctx, FD, GD>
+where
+    Self: Formatter<GlobalDeclId::Id>,
+{
+    fn format_object(&self, v: &Rvalue) -> String {
+        v.fmt_with_ctx(self)
+    }
+}
+
+impl<'ctx, FD, GD> Formatter<&Statement> for GAstFormatter<'ctx, FD, GD>
+where
+    Self: Formatter<GlobalDeclId::Id>,
+{
+    fn format_object(&self, statement: &Statement) -> String {
+        statement.fmt_with_ctx(self)
+    }
+}
+
+impl<'ctx, FD, GD> Formatter<&BlockId::Vector<BlockData>> for GAstFormatter<'ctx, FD, GD>
+where
+    Self: Formatter<FunDeclId::Id>,
+    Self: Formatter<GlobalDeclId::Id>,
+{
+    fn format_object(&self, body: &BlockId::Vector<BlockData>) -> String {
+        fmt_body_blocks_with_ctx(body, TAB_INCR, self)
+    }
+}
+
+impl<'ctx, FD, GD> Formatter<&Terminator> for GAstFormatter<'ctx, FD, GD>
+where
+    Self: Formatter<FunDeclId::Id>,
+    Self: Formatter<GlobalDeclId::Id>,
+{
+    fn format_object(&self, terminator: &Terminator) -> String {
+        terminator.fmt_with_ctx(self)
+    }
+}
+
+impl<'ctx, FD, GD> Formatter<FunDeclId::Id> for GAstFormatter<'ctx, FD, GD>
+where
+    FD: Formatter<FunDeclId::Id>,
+{
+    fn format_object(&self, id: FunDeclId::Id) -> String {
+        self.fun_context.format_object(id)
+    }
+}
+
+impl<'ctx, FD, GD> Formatter<GlobalDeclId::Id> for GAstFormatter<'ctx, FD, GD>
+where
+    GD: Formatter<GlobalDeclId::Id>,
+{
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        self.global_context.format_object(id)
+    }
+}
+
+impl<'ctx> FunDeclsFormatter<'ctx> {
+    pub fn new(decls: &'ctx FunDecls) -> Self {
+        FunDeclsFormatter { decls }
+    }
+}
+
+impl<'ctx> Formatter<FunDeclId::Id> for FunDeclsFormatter<'ctx> {
+    fn format_object(&self, id: FunDeclId::Id) -> String {
+        let d = self.decls.get(id).unwrap();
+        d.name.to_string()
+    }
+}
+
+impl<'ctx> FunNamesFormatter<'ctx> {
+    pub fn new(decls: &'ctx FunDeclId::Vector<String>) -> Self {
+        FunNamesFormatter { decls }
+    }
+}
+
+impl<'ctx> Formatter<FunDeclId::Id> for FunNamesFormatter<'ctx> {
+    fn format_object(&self, id: FunDeclId::Id) -> String {
+        self.decls.get(id).unwrap().clone()
+    }
+}
+
+impl<'ctx> GlobalDeclsFormatter<'ctx> {
+    pub fn new(decls: &'ctx GlobalDecls) -> Self {
+        GlobalDeclsFormatter { decls }
+    }
+}
+
+impl<'ctx> Formatter<GlobalDeclId::Id> for GlobalDeclsFormatter<'ctx> {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        let d = self.decls.get(id).unwrap();
+        d.name.to_string()
+    }
+}
+
+impl<'ctx> GlobalNamesFormatter<'ctx> {
+    pub fn new(decls: &'ctx GlobalDeclId::Vector<String>) -> Self {
+        GlobalNamesFormatter { decls }
+    }
+}
+
+impl<'ctx> Formatter<GlobalDeclId::Id> for GlobalNamesFormatter<'ctx> {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        self.decls.get(id).unwrap().clone()
+    }
+}
+
 impl FunDecl {
-    pub fn fmt_with_defs<'ctx>(
+    pub fn fmt_with_ctx<'ctx, FD, GD>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDecls,
-        global_ctx: &'ctx GlobalDecls,
-    ) -> String {
+        fun_ctx: &'ctx FD,
+        global_ctx: &'ctx GD,
+    ) -> String
+    where
+        FD: Formatter<FunDeclId::Id>,
+        GD: Formatter<GlobalDeclId::Id>,
+    {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,
             sig: &self.signature,
         };
 
-        // We cheat a bit: if there is a body, we take its locals, otherwise
-        // we use []:
-        let empty = VarId::Vector::new();
         let locals = match &self.body {
-            None => &empty,
-            Some(body) => &body.locals,
+            None => None,
+            Some(body) => Some(&body.locals),
         };
 
-        let eval_ctx = AstFormatter::new(
+        let ctx = GAstFormatter::new(
             ty_ctx,
             fun_ctx,
             global_ctx,
-            &self.signature.type_params,
+            Some(&self.signature.type_params),
             locals,
         );
 
         // Use the contexts for printing
-        self.gfmt_with_ctx("", &fun_sig_ctx, &eval_ctx)
+        self.gfmt_with_ctx("", &fun_sig_ctx, &ctx)
     }
-}
 
-impl GlobalDecl {
-    pub fn fmt_with_defs<'ctx>(
+    pub fn fmt_with_decls<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDecls,
         global_ctx: &'ctx GlobalDecls,
     ) -> String {
-        // We cheat a bit: if there is a body, we take its locals, otherwise
-        // we use []:
-        let empty = VarId::Vector::new();
+        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
+        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
+        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
+    }
+
+    pub fn fmt_with_names<'ctx>(
+        &self,
+        ty_ctx: &'ctx TypeDecls,
+        fun_ctx: &'ctx FunDeclId::Vector<String>,
+        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+    ) -> String {
+        let fun_ctx = FunNamesFormatter::new(fun_ctx);
+        let global_ctx = GlobalNamesFormatter::new(global_ctx);
+        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
+    }
+
+    pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {
+        self.fmt_with_names(&ctx.type_context, &ctx.fun_context, &ctx.global_context)
+    }
+}
+
+impl GlobalDecl {
+    pub fn fmt_with_ctx<'ctx, FD, GD>(
+        &self,
+        ty_ctx: &'ctx TypeDecls,
+        fun_ctx: &'ctx FD,
+        global_ctx: &'ctx GD,
+    ) -> String
+    where
+        FD: Formatter<FunDeclId::Id>,
+        GD: Formatter<GlobalDeclId::Id>,
+    {
         let locals = match &self.body {
-            None => &empty,
-            Some(body) => &body.locals,
+            None => None,
+            Some(body) => Some(&body.locals),
         };
 
-        let empty = id_vector::Vector::new();
-        let eval_ctx = AstFormatter::new(ty_ctx, fun_ctx, global_ctx, &empty, locals);
+        let ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals);
 
         // Use the contexts for printing
-        self.gfmt_with_ctx("", &eval_ctx)
+        self.gfmt_with_ctx("", &ctx)
+    }
+
+    pub fn fmt_with_decls<'ctx>(
+        &self,
+        ty_ctx: &'ctx TypeDecls,
+        fun_ctx: &'ctx FunDecls,
+        global_ctx: &'ctx GlobalDecls,
+    ) -> String {
+        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
+        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
+        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
+    }
+
+    pub fn fmt_with_names<'ctx>(
+        &self,
+        ty_ctx: &'ctx TypeDecls,
+        fun_ctx: &'ctx FunDeclId::Vector<String>,
+        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+    ) -> String {
+        let fun_ctx = FunNamesFormatter::new(fun_ctx);
+        let global_ctx = GlobalNamesFormatter::new(global_ctx);
+        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
+    }
+
+    pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {
+        self.fmt_with_names(&ctx.type_context, &ctx.fun_context, &ctx.global_context)
     }
 }

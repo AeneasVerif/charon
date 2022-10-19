@@ -9,10 +9,10 @@
 //! they are accessed by reference in MIR, whereas globals are accessed by value.
 
 use crate::expressions::*;
-use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
-use crate::llbc_ast::{FunDecls, GlobalDecls, Statement};
+use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, Statement};
 use crate::llbc_ast_utils::transform_operands;
 use crate::types::*;
+use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
 use crate::values::VarId;
 use take_mut::take;
 
@@ -73,9 +73,12 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
     return new_st;
 }
 
-pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
-        trace!("# About to extract global assignments: {name}");
+        trace!(
+            "# About to extract global assignments: {name}:\n{}",
+            b.fmt_with_ctx_names(fmt_ctx)
+        );
 
         let mut f = make_locals_generator(&mut b.locals);
         take(&mut b.body, |st| {

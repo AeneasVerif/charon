@@ -6,12 +6,12 @@
 use take_mut::take;
 
 use crate::{
+    llbc_ast::{Assert, CtxNames, FunDecls, GlobalDecls, Statement, SwitchTargets},
     ullbc_ast::{iter_function_bodies, iter_global_bodies},
-    llbc_ast::{Assert, FunDecls, GlobalDecls, Statement, SwitchTargets},
 };
 use std::iter::FromIterator;
 
-fn simplify_st(st: Statement) -> Statement {
+fn transform_st(st: Statement) -> Statement {
     match st {
         Statement::Assign(p, rv) => Statement::Assign(p, rv),
         Statement::AssignGlobal(p, g) => Statement::AssignGlobal(p, g),
@@ -28,7 +28,7 @@ fn simplify_st(st: Statement) -> Statement {
         Statement::Switch(op, targets) => {
             match targets {
                 SwitchTargets::If(st1, st2) => {
-                    let st2 = Box::new(simplify_st(*st2));
+                    let st2 = Box::new(transform_st(*st2));
 
                     // Check if the first statement is a panic: if yes, replace
                     // the if .. then ... else ... by an assertion.
@@ -41,29 +41,32 @@ fn simplify_st(st: Statement) -> Statement {
 
                         Statement::Sequence(st1, st2)
                     } else {
-                        let targets = SwitchTargets::If(Box::new(simplify_st(*st1)), st2);
+                        let targets = SwitchTargets::If(Box::new(transform_st(*st1)), st2);
                         Statement::Switch(op, targets)
                     }
                 }
                 SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
                     let targets =
-                        Vec::from_iter(targets.into_iter().map(|(v, e)| (v, simplify_st(e))));
-                    let otherwise = simplify_st(*otherwise);
+                        Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
+                    let otherwise = transform_st(*otherwise);
                     let targets = SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise));
                     Statement::Switch(op, targets)
                 }
             }
         }
-        Statement::Loop(loop_body) => Statement::Loop(Box::new(simplify_st(*loop_body))),
+        Statement::Loop(loop_body) => Statement::Loop(Box::new(transform_st(*loop_body))),
         Statement::Sequence(st1, st2) => {
-            Statement::Sequence(Box::new(simplify_st(*st1)), Box::new(simplify_st(*st2)))
+            Statement::Sequence(Box::new(transform_st(*st1)), Box::new(transform_st(*st2)))
         }
     }
 }
 
-pub fn simplify(funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
-        trace!("# About to reconstruct asserts: {name}");
-        take(&mut b.body, simplify_st);
+        trace!(
+            "# About to reconstruct asserts in decl: {name}\n{}",
+            b.fmt_with_ctx_names(fmt_ctx)
+        );
+        take(&mut b.body, transform_st);
     }
 }

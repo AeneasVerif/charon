@@ -5,6 +5,7 @@ use crate::divergent;
 use crate::extract_global_assignments;
 use crate::get_mir::MirLevel;
 use crate::insert_assign_return_unit;
+use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId};
 use crate::llbc_export;
 use crate::reconstruct_asserts;
 use crate::register;
@@ -207,33 +208,46 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // serializing the result.
     //
 
+    // Compute the list of function and global names in the context.
+    // We need this for pretty-printing (i.e., debugging) purposes.
+    // We could use the [FunDecls] and [GlobalDecls] contexts, but we often
+    // mutably borrow them to modify them in place, which prevents us from
+    // using them for pretty-printing purposes (we would need to create shared
+    // borrows over already mutably borrowed values).
+    let fun_names: FunDeclId::Vector<String> =
+        FunDeclId::Vector::from_iter(llbc_funs.iter().map(|d| d.name.to_string()));
+    let global_names: GlobalDeclId::Vector<String> =
+        GlobalDeclId::Vector::from_iter(llbc_globals.iter().map(|d| d.name.to_string()));
+    let fmt_ctx = CtxNames::new(&type_defs, &fun_names, &global_names);
+
     // # Step 7: simplify the calls to unops and binops
     // Note that we assume that the sequences have been flattened.
-    simplify_ops::simplify(&mut llbc_funs, &mut llbc_globals);
+    simplify_ops::simplify(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-    // # Step 8: replace constant (OperandConstantValue) ADTs by regular (Aggregated) ADTs.
-    regularize_constant_adts::transform(&mut llbc_funs, &mut llbc_globals);
+    // # Step 8: replace constant ([OperandConstantValue]) ADTs by regular
+    // (Aggregated) ADTs.
+    regularize_constant_adts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
     // # Step 9: extract statics and constant globals from operands (put them in
     // a let binding). This pass relies on the absence of constant ADTs from
-    // the previous step: it does not inspect them (so it would miss globals in
-    // constant ADTs).
-    extract_global_assignments::transform(&mut llbc_funs, &mut llbc_globals);
+    // the previous step: it does not inspect them (and would thus miss globals
+    // in constant ADTs).
+    extract_global_assignments::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
     for def in &llbc_funs {
         trace!(
             "# After binop simplification:\n{}\n",
-            def.fmt_with_defs(&type_defs, &llbc_funs, &llbc_globals)
+            def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
         );
     }
 
     // # Step 10: reconstruct the asserts
-    reconstruct_asserts::simplify(&mut llbc_funs, &mut llbc_globals);
+    reconstruct_asserts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
     for def in &llbc_funs {
         trace!(
             "# After asserts reconstruction:\n{}\n",
-            def.fmt_with_defs(&type_defs, &llbc_funs, &llbc_globals)
+            def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
         );
     }
 
@@ -245,11 +259,11 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // an extra assignment just before returning.
     // This also applies to globals (for checking or executing code before
     // the main or at compile-time).
-    insert_assign_return_unit::transform(&mut llbc_funs, &mut llbc_globals);
+    insert_assign_return_unit::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
     // # Step 12: remove the locals which are never used. After doing so, we
     // check that there are no remaining locals with type `Never`.
-    remove_unused_locals::transform(&mut llbc_funs, &mut llbc_globals);
+    remove_unused_locals::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
     // # Step 13: compute which functions are potentially divergent. A function
     // is potentially divergent if it is recursive, contains a loop or transitively

@@ -1831,7 +1831,7 @@ fn translate_function(
     trace!(
         "# Reconstructing: {}\n\n{}",
         src_def.name,
-        src_def.fmt_with_defs(&type_defs, &src_defs, &global_defs)
+        src_def.fmt_with_decls(&type_defs, &src_defs, &global_defs)
     );
 
     // Return the translated definition
@@ -1858,7 +1858,7 @@ fn translate_global(
     trace!(
         "# Reconstructing: {}\n\n{}",
         src_def.name,
-        src_def.fmt_with_defs(&type_defs, &fun_defs, &global_defs)
+        src_def.fmt_with_decls(&type_defs, &fun_defs, &global_defs)
     );
 
     tgt::GlobalDecl {
@@ -1911,8 +1911,8 @@ pub fn translate_functions(
     for fun in &tgt_funs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            fun.signature.fmt_with_defs(&type_defs),
-            fun.fmt_with_defs(&type_defs, &tgt_funs, &tgt_globals)
+            fun.signature.fmt_with_decls(&type_defs),
+            fun.fmt_with_decls(&type_defs, &tgt_funs, &tgt_globals)
         );
     }
     // Print the global variables
@@ -1920,7 +1920,7 @@ pub fn translate_functions(
         trace!(
             "# Type:\n{:?}\n\n# Global definition:\n{}\n",
             global.ty,
-            global.fmt_with_defs(&type_defs, &tgt_funs, &tgt_globals)
+            global.fmt_with_decls(&type_defs, &tgt_funs, &tgt_globals)
         );
     }
 

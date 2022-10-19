@@ -22,10 +22,6 @@ generate-rust-toolchain:
 build: generate-rust-toolchain
 	cd charon && $(MAKE)
 
-CURRENT_DIR = $(shell pwd)
-OPTIONS = --dest llbc
-CHARON = $(CURRENT_DIR)/charon/target/debug/cargo-charon
-
 # Build the tests crate, and run the cargo tests
 .PHONY: build-tests
 build-tests:

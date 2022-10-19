@@ -2438,14 +2438,14 @@ pub fn translate_functions(
     for def in &fun_defs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            def.signature.fmt_with_defs(type_defs),
-            def.fmt_with_defs(type_defs, &fun_defs, &const_defs)
+            def.signature.fmt_with_decls(type_defs),
+            def.fmt_with_decls(type_defs, &fun_defs, &const_defs)
         );
     }
     for def in &const_defs {
         trace!(
             "# Constant definition:\n{}\n",
-            def.fmt_with_defs(type_defs, &fun_defs, &const_defs)
+            def.fmt_with_decls(type_defs, &fun_defs, &const_defs)
         );
     }
 

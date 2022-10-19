@@ -10,7 +10,7 @@
 use take_mut::take;
 
 use crate::expressions::*;
-use crate::llbc_ast::{Assert, FunDecls, GlobalDecls, Statement, SwitchTargets};
+use crate::llbc_ast::{Assert, CtxNames, FunDecls, GlobalDecls, Statement, SwitchTargets};
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::values::*;
@@ -609,9 +609,13 @@ fn simplify_st(st: Statement) -> Statement {
     }
 }
 
-pub fn simplify(funs: &mut FunDecls, globals: &mut GlobalDecls) {
+/// `types` is used for pretty-printing purposes.
+pub fn simplify<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
-        trace!("# About to simplify operands: {name}");
+        trace!(
+            "# About to simplify operands in decl: {name}:\n{}",
+            b.fmt_with_ctx_names(fmt_ctx)
+        );
         take(&mut b.body, simplify_st);
     }
 }

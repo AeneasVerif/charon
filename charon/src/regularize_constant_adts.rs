@@ -1,8 +1,8 @@
 //! In MIR, compile-time constant ADTs are treated separately.
-//! We don't want to have this distinction / redundancy in LLBC :
+//! We don't want to have this distinction / redundancy in LLBC.
 //!
-//! This pass removes all occurrences of OperandConstantValue::ConstantAdt,
-//! and builds regular ADTs instead (as for static values).
+//! This pass removes all occurrences of [OperandConstantValue::Adt],
+//! and builds regular ADTs ([Rvalue::Aggregate]) instead (as for static values).
 //!
 //! To do so, it recursively translates an operand of the form `const <ADT>`
 //! to `AggregatedAdt`. The recursion happens on the assignment operands.
@@ -10,10 +10,10 @@
 use std::iter::zip;
 
 use crate::expressions::*;
-use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
-use crate::llbc_ast::{FunDecls, GlobalDecls, Statement};
+use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, Statement};
 use crate::llbc_ast_utils::transform_operands;
 use crate::types::*;
+use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
 use crate::values::VarId;
 use take_mut::take;
 
@@ -81,9 +81,12 @@ fn translate_operand_adt<F: FnMut(ETy) -> VarId::Id>(
     vec![]
 }
 
-pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
-        trace!("# About to regularize constant ADTs: {name}");
+        trace!(
+            "# About to regularize constant ADTs in function: {name}:\n{}",
+            b.fmt_with_ctx_names(fmt_ctx)
+        );
 
         let mut f = make_locals_generator(&mut b.locals);
         take(&mut b.body, |st| {

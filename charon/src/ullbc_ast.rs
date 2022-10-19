@@ -102,11 +102,6 @@ pub struct GGlobalDecl<T: std::fmt::Debug + Clone + Serialize> {
     pub ty: ETy,
     pub body: Option<GExprBody<T>>,
 }
-impl<T: std::fmt::Debug + Clone + Serialize> GGlobalDecl<T> {
-    fn is_opaque(&self) -> bool {
-        self.body.is_none()
-    }
-}
 
 pub type GlobalDecl = GGlobalDecl<BlockId::Vector<BlockData>>;
 pub type GlobalDecls = GlobalDeclId::Vector<GlobalDecl>;

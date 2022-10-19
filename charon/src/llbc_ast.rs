@@ -11,6 +11,7 @@ use crate::expressions::*;
 pub use crate::llbc_ast_utils::*;
 use crate::types::*;
 use crate::ullbc_ast::*;
+pub use crate::ullbc_ast::{CtxNames, FunDeclId, GlobalDeclId};
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
