@@ -61,7 +61,7 @@ impl Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)> for DummyFo
 
 impl Formatter<&ErasedRegion> for DummyFormatter {
     fn format_object(&self, _: &ErasedRegion) -> String {
-        "_".to_string()
+        "'_".to_string()
     }
 }
 

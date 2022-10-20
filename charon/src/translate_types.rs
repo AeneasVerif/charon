@@ -108,7 +108,8 @@ impl<'ctx> Formatter<&ty::TypeDecl> for TypeTransContext<'ctx> {
 }
 
 pub fn translate_region_name<'tcx>(region: &rustc_middle::ty::RegionKind<'tcx>) -> Option<String> {
-    match region {
+    // Compute the region name
+    let s = match region {
         rustc_middle::ty::RegionKind::ReEarlyBound(r) => Some(r.name.to_ident_string()),
         rustc_middle::ty::RegionKind::ReLateBound(_, br) => match br.kind {
             rustc_middle::ty::BoundRegionKind::BrAnon(_) => None,
@@ -123,6 +124,13 @@ pub fn translate_region_name<'tcx>(region: &rustc_middle::ty::RegionKind<'tcx>) 
         _ => {
             unreachable!();
         }
+    };
+
+    // We ignore the name when it is equal to "'_"
+    if s.is_some() && s.as_ref().unwrap() == "'_" {
+        None
+    } else {
+        s
     }
 }
 
@@ -581,6 +589,23 @@ fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGeneri
             }
             rustc_middle::ty::subst::GenericArgKind::Const(_) => {
                 unimplemented!();
+            }
+        }
+    }
+
+    // Sanity check: region names are pairwise distinct (this caused trouble
+    // when generating names for the backward functinos in Aeneas): at some
+    // point, Rustc introduced names equal to `Some("'_")` for the anonymous
+    // regions, instead of using `None` (we now check in [translate_region_name]
+    // and ignore names equal to "'_").
+    {
+        let mut s = std::collections::HashSet::new();
+        for r in &region_params {
+            let name = &r.name;
+            if name.is_some() {
+                let name = name.as_ref().unwrap();
+                assert!(s.contains(name));
+                s.insert(name.clone());
             }
         }
     }
