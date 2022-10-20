@@ -208,9 +208,13 @@ where
     /// tmp = (((b.0: std::ptr::Unique<T>).0: std::ptr::NonNull<T>).0: *const T);
     /// x = move (*tmp);
     /// ```
-    /// Also, deallocation leads to the following code:
+    ///
+    /// Also, deallocation leads to the following code (this is independent of the
+    /// level of MIR):
     /// ```text
-    /// alloc::alloc::box_free::<List<T>, std::alloc::Global>(move (b.0: std::ptr::Unique<List<T>>), move (b.1: std::alloc::Global))
+    /// alloc::alloc::box_free::<T, std::alloc::Global>(
+    ///     move (b.0: std::ptr::Unique<T>),
+    ///     move (b.1: std::alloc::Global))
     /// ```
     /// For now, we detect this case (this is hardcoded in [register] and
     /// [translate_functions_to_ullbc]) to rewrite it to `free(move b)`.
@@ -235,6 +239,10 @@ pub type ETy = Ty<ErasedRegion>;
 /// parameters (if there are). Adding types which don't satisfy this
 /// will require to update the code abstracting the signatures (to properly
 /// take into account the lifetime constraints).
+///
+/// TODO: update to not hardcode the types (except `Box` maybe) and be more
+/// modular.
+/// TODO: move to assumed.rs?
 #[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum AssumedTy {
     /// Boxes have a special treatment: we translate them as identity.
@@ -243,4 +251,9 @@ pub enum AssumedTy {
     Vec,
     /// Comes from the standard library
     Option,
+    /// Comes from the standard library. See the comments for [Ty::RawPtr]
+    /// as to why we have this here.
+    PtrUnique,
+    /// Same comments as for [AssumedTy::PtrUnique]
+    PtrNonNull,
 }

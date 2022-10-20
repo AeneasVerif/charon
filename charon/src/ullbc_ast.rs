@@ -159,8 +159,21 @@ pub enum AssumedFunId {
     BoxDerefMut,
     /// `alloc::alloc::box_free`
     /// This is actually an unsafe function, but the rust compiler sometimes
-    /// introduces it when going to MIR. We add it only to track it: in practice,
-    /// its semantic is given by a "drop".
+    /// introduces it when going to MIR.
+    ///
+    /// Also, in practice, deallocation is performed as follows in MIR:
+    /// ```text
+    /// alloc::alloc::box_free::<T, std::alloc::Global>(
+    ///     move (b.0: std::ptr::Unique<T>),
+    ///     move (b.1: std::alloc::Global))
+    /// ```
+    /// When translating from MIR to ULLBC, we do as if the MIR was actually the
+    /// following (this is hardcoded - see [register] and [translate_functions_to_ullbc]):
+    /// ```text
+    /// alloc::alloc::box_free::<T>(move b)
+    /// ```
+    ///
+    /// Also see the comments in [assumed::type_to_used_params].
     BoxFree,
     /// `alloc::vec::Vec::new`
     VecNew,

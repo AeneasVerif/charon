@@ -35,6 +35,12 @@ pub enum ProjectionElem {
     /// during the translation.
     /// In rust, this comes from the `*` operator applied on boxes.
     DerefBox,
+    /// Dereference a raw pointer. See the comments for [types::Ty::RawPointer].
+    DerefRawPtr,
+    /// Dereference a unique pointer. See the comments for [types::Ty::RawPointer].
+    DerefPtrUnique,
+    /// Dereference a non-null pointer. See the comments for [types::Ty::RawPointer].
+    DerefPtrNonNull,
     /// Projection from ADTs (variants, structures).
     /// We allow projections to be used as left-values and right-values.
     /// We should never have projections to fields of symbolic variants (they

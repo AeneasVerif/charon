@@ -93,6 +93,15 @@ impl Place {
                 ProjectionElem::DerefBox => {
                     out = format!("deref_box ({})", out);
                 }
+                ProjectionElem::DerefRawPtr => {
+                    out = format!("deref_raw_ptr ({})", out);
+                }
+                ProjectionElem::DerefPtrUnique => {
+                    out = format!("deref_ptr_unique ({})", out);
+                }
+                ProjectionElem::DerefPtrNonNull => {
+                    out = format!("deref_ptr_non_null ({})", out);
+                }
                 ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                     FieldProjKind::Adt(adt_id, opt_variant_id) => {
                         let field_name = ctx.format_object((*adt_id, *opt_variant_id, *field_id));

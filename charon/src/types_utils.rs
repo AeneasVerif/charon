@@ -1,6 +1,7 @@
 //! This file groups everything which is linked to implementations about [types]
 #![allow(dead_code)]
 
+use crate::assumed::get_name_from_type_id;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector;
@@ -428,11 +429,7 @@ impl TypeId {
         match self {
             TypeId::Tuple => "".to_string(),
             TypeId::Adt(def_id) => ctx.format_object(*def_id),
-            TypeId::Assumed(aty) => match aty {
-                AssumedTy::Box => "alloc::boxed::Box".to_string(),
-                AssumedTy::Vec => "alloc::vec::Vec".to_string(),
-                AssumedTy::Option => "core::option::Option".to_string(),
-            },
+            TypeId::Assumed(aty) => get_name_from_type_id(*aty).join("::"),
         }
     }
 }
