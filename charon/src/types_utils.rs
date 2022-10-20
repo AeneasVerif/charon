@@ -1,4 +1,4 @@
-//! This file groups everything which is linked to implementations about [types]
+//! This file groups everything which is linked to implementations about [crate::types]
 #![allow(dead_code)]
 
 use crate::assumed::get_name_from_type_id;

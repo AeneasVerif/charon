@@ -1,4 +1,4 @@
-//! Implementations for [values]
+//! Implementations for [crate::values]
 
 #![allow(dead_code)]
 

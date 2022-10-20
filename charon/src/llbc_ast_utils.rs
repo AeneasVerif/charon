@@ -1,4 +1,4 @@
-//! Implementations for [llbc_ast]
+//! Implementations for [crate::llbc_ast]
 
 #![allow(dead_code)]
 use std::ops::DerefMut;
@@ -74,7 +74,7 @@ fn transform_rvalue_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
 
 /// Transform a statement by visiting its operands and inserting the generated
 /// statements before each visited operand.
-/// Useful to implement a pass on operands: see e.g. [extract_global_assignments].
+/// Useful to implement a pass on operands (see e.g., [crate::extract_global_assignments]).
 pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
     st: Statement,
     f: &mut F,

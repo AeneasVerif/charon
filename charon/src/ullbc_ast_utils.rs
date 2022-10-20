@@ -1,4 +1,4 @@
-//! Implementations for [ullbc_ast]
+//! Implementations for [crate::ullbc_ast]
 #![allow(dead_code)]
 
 use crate::common::*;

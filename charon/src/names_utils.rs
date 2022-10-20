@@ -1,4 +1,4 @@
-//! Defines some utilities for [names]
+//! Defines some utilities for [crate::names]
 //!
 //! For now, we have one function per object kind (type, trait, function,
 //! module): many of them could be factorized (will do).

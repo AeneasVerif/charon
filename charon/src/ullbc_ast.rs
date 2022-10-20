@@ -111,9 +111,9 @@ pub enum Statement {
     Assign(Place, Rvalue),
     FakeRead(Place),
     SetDiscriminant(Place, VariantId::Id),
-    /// We translate this to [llbc_ast::Statement::Drop] in LLBC
+    /// We translate this to [crate::llbc_ast::Statement::Drop] in LLBC
     StorageDead(VarId::Id),
-    /// We translate this to [llbc_ast::Statement::Drop] in LLBC
+    /// We translate this to [crate::llbc_ast::Statement::Drop] in LLBC
     Deinit(Place),
 }
 
@@ -168,12 +168,12 @@ pub enum AssumedFunId {
     ///     move (b.1: std::alloc::Global))
     /// ```
     /// When translating from MIR to ULLBC, we do as if the MIR was actually the
-    /// following (this is hardcoded - see [register] and [translate_functions_to_ullbc]):
+    /// following (this is hardcoded - see [crate::register] and [crate::translate_functions_to_ullbc]):
     /// ```text
     /// alloc::alloc::box_free::<T>(move b)
     /// ```
     ///
-    /// Also see the comments in [assumed::type_to_used_params].
+    /// Also see the comments in [crate::assumed::type_to_used_params].
     BoxFree,
     /// `alloc::vec::Vec::new`
     VecNew,

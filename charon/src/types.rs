@@ -216,8 +216,8 @@ where
     ///     move (b.0: std::ptr::Unique<T>),
     ///     move (b.1: std::alloc::Global))
     /// ```
-    /// For now, we detect this case (this is hardcoded in [register] and
-    /// [translate_functions_to_ullbc]) to rewrite it to `free(move b)`.
+    /// For now, we detect this case (this is hardcoded in [crate::register] and
+    /// [crate::translate_functions_to_ullbc]) to rewrite it to `free(move b)`.
     RawPtr(Box<Ty<R>>, RefKind),
 }
 

@@ -1,4 +1,4 @@
-//! This file groups everything which is linked to implementations about [expressions]
+//! This file groups everything which is linked to implementations about [crate::expressions]
 #![allow(dead_code)]
 
 use crate::assumed;

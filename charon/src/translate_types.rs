@@ -14,7 +14,6 @@ use im;
 use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Mutability;
-use rustc_middle::ty::TypeAndMut;
 use rustc_middle::ty::{Ty, TyCtxt, TyKind};
 
 /// Translation context for type definitions
@@ -274,10 +273,16 @@ where
             };
             return Ok(ty::Ty::Ref(region, Box::new(ty), kind));
         }
-        TyKind::RawPtr(tyAndMut) => {
-            trace!("RawPtr: {:?}", tyAndMut);
-            let ty = translate_ty(tcx, trans_ctx, region_translator, type_params, &tyAndMut.ty)?;
-            let kind = match tyAndMut.mutbl {
+        TyKind::RawPtr(ty_and_mut) => {
+            trace!("RawPtr: {:?}", ty_and_mut);
+            let ty = translate_ty(
+                tcx,
+                trans_ctx,
+                region_translator,
+                type_params,
+                &ty_and_mut.ty,
+            )?;
+            let kind = match ty_and_mut.mutbl {
                 Mutability::Not => ty::RefKind::Shared,
                 Mutability::Mut => ty::RefKind::Mut,
             };

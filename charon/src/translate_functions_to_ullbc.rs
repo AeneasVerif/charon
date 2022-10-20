@@ -976,11 +976,11 @@ fn translate_constant_kind<'tcx, 'ctx1, 'ctx2>(
         // is not super clear).
         mir::ConstantKind::Ty(c) => {
             match c.kind() {
-                rustc_middle::ty::ConstKind::Value(_) => {
+                ConstKind::Value(_) => {
                     // TODO: the value is now a [ValTree]
                     unimplemented!();
                 }
-                rustc_middle::ty::ConstKind::Unevaluated(ucv) => {
+                ConstKind::Unevaluated(ucv) => {
                     // Two cases:
                     // - if we extract the constants at top level, we lookup the constant
                     //   identifier and refer to it
@@ -995,11 +995,11 @@ fn translate_constant_kind<'tcx, 'ctx1, 'ctx2>(
                         unimplemented!();
                     }
                 }
-                rustc_middle::ty::ConstKind::Param(_)
-                | rustc_middle::ty::ConstKind::Infer(_)
-                | rustc_middle::ty::ConstKind::Bound(_, _)
-                | rustc_middle::ty::ConstKind::Placeholder(_)
-                | rustc_middle::ty::ConstKind::Error(_) => {
+                ConstKind::Param(_)
+                | ConstKind::Infer(_)
+                | ConstKind::Bound(_, _)
+                | ConstKind::Placeholder(_)
+                | ConstKind::Error(_) => {
                     unreachable!("Unexpected: {:?}", constant);
                 }
             }
