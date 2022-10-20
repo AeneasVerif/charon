@@ -111,7 +111,10 @@ pub enum Statement {
     Assign(Place, Rvalue),
     FakeRead(Place),
     SetDiscriminant(Place, VariantId::Id),
+    /// We translate this to [llbc_ast::Statement::Drop] in LLBC
     StorageDead(VarId::Id),
+    /// We translate this to [llbc_ast::Statement::Drop] in LLBC
+    Deinit(Place),
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]

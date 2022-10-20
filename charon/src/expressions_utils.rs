@@ -1,12 +1,12 @@
-//! This file groups everything which is linked to implementations about expression.rs
+//! This file groups everything which is linked to implementations about [expressions]
 #![allow(dead_code)]
 
 use crate::assumed;
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
-use crate::ullbc_ast::GlobalDeclId;
 use crate::types::*;
+use crate::ullbc_ast::GlobalDeclId;
 use crate::values;
 use crate::values::*;
 use serde::ser::SerializeStruct;

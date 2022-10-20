@@ -14,8 +14,8 @@ use im;
 use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Mutability;
-use rustc_middle::ty::TyCtxt;
-use rustc_middle::ty::{Ty, TyKind};
+use rustc_middle::ty::TypeAndMut;
+use rustc_middle::ty::{Ty, TyCtxt, TyKind};
 
 /// Translation context for type definitions
 #[derive(Clone)]
@@ -162,7 +162,7 @@ pub fn translate_erased_region<'tcx>(
 /// enumeration definition, or later to translate the type of a variable.
 ///
 /// This function is also used in other modules, like
-/// [crate::translate_functions_to_im].
+/// [crate::translate_functions_to_ullbc].
 /// This is the reason why the `type_params` parameter is quite general,
 /// and links rust identifiers to types, rather than type variables (in
 /// this module, this map should always link to the translation of the
@@ -182,8 +182,25 @@ pub fn translate_ty<'tcx, R>(
 where
     R: Clone + Eq,
 {
-    trace!("{:?}", ty);
-    match ty.kind() {
+    translate_ty_kind(tcx, trans_ctx, region_translator, type_params, ty.kind())
+}
+
+/// Translate a [TyKind].
+///
+/// See the comments for [translate_ty] (the two functions do the same thing,
+/// they simply don't take the same input parameters).
+pub fn translate_ty_kind<'tcx, R>(
+    tcx: TyCtxt,
+    trans_ctx: &TypeTransContext,
+    region_translator: &dyn Fn(&rustc_middle::ty::RegionKind<'tcx>) -> R,
+    type_params: &im::OrdMap<u32, ty::Ty<R>>,
+    ty_kind: &TyKind<'tcx>,
+) -> Result<ty::Ty<R>>
+where
+    R: Clone + Eq,
+{
+    trace!("{:?}", ty_kind);
+    match ty_kind {
         TyKind::Bool => Ok(ty::Ty::Bool),
         TyKind::Char => Ok(ty::Ty::Char),
         TyKind::Int(int_ty) => Ok(ty::Ty::Integer(ty::IntegerTy::rust_int_ty_to_integer_ty(
@@ -257,6 +274,15 @@ where
             };
             return Ok(ty::Ty::Ref(region, Box::new(ty), kind));
         }
+        TyKind::RawPtr(tyAndMut) => {
+            trace!("RawPtr: {:?}", tyAndMut);
+            let ty = translate_ty(tcx, trans_ctx, region_translator, type_params, &tyAndMut.ty)?;
+            let kind = match tyAndMut.mutbl {
+                Mutability::Not => ty::RefKind::Shared,
+                Mutability::Mut => ty::RefKind::Mut,
+            };
+            return Ok(ty::Ty::RawPtr(Box::new(ty), kind));
+        }
         TyKind::Tuple(substs) => {
             trace!("Tuple");
 
@@ -297,10 +323,6 @@ where
         // Below: those types should be unreachable: if such types are used in
         // the MIR, we should have found them and failed during the registration
         // phase.
-        TyKind::RawPtr(_) => {
-            trace!("RawPtr");
-            unreachable!();
-        }
         TyKind::Foreign(_) => {
             trace!("Foreign");
             unreachable!();
@@ -372,7 +394,7 @@ pub fn translate_sig_ty<'tcx>(
 }
 
 /// Translate a type where the regions are erased
-/// Simply calls [`translate_ty`](translate_ty)
+/// Simply calls [translate_ty]
 pub fn translate_ety(
     tcx: TyCtxt,
     trans_ctx: &TypeTransContext,
@@ -385,6 +407,22 @@ pub fn translate_ety(
         &|r| translate_erased_region(*r),
         type_params,
         ty,
+    )
+}
+
+/// Simply calls [translate_ty_kind]
+pub fn translate_ety_kind(
+    tcx: TyCtxt,
+    trans_ctx: &TypeTransContext,
+    type_params: &im::OrdMap<u32, ty::ETy>,
+    ty: &TyKind,
+) -> Result<ty::ETy> {
+    translate_ty_kind(
+        tcx,
+        trans_ctx,
+        &|r| translate_erased_region(*r),
+        type_params,
+        &ty,
     )
 }
 
@@ -488,7 +526,7 @@ struct TypeGenericsInfo<'tcx> {
 /// which represents the generics on the MIR side (and is useful to translate
 /// the body of the type...).
 ///
-/// Rem.: this seems simpler in [crate::translate_functions_to_im].
+/// Rem.: this seems simpler in [crate::translate_functions_to_ullbc].
 /// TODO: compare and simplify/factorize?
 fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGenericsInfo<'tcx> {
     // Check the generics

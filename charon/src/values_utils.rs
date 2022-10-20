@@ -1,4 +1,4 @@
-//! Implementations for values.rs
+//! Implementations for [values]
 
 #![allow(dead_code)]
 

@@ -197,6 +197,24 @@ where
     Slice(Box<Ty<R>>),
     /// A borrow
     Ref(R, Box<Ty<R>>, RefKind),
+    /// A raw pointer.
+    ///
+    /// We need this not only for unsafe code, but also to extract optimized
+    /// MIR: in optimized MIR, boxe dereferences and moves out of boxes is
+    /// desugared to very low-level code, which manipulates raw pointers
+    /// but also `std::ptr::Unique` and `std::ptr::NonNull`. In particular,
+    /// if `b` is a `Box<T>`, `x := move *b` is compiled to something like this:
+    /// ```text
+    /// tmp = (((b.0: std::ptr::Unique<T>).0: std::ptr::NonNull<T>).0: *const T);
+    /// x = move (*tmp);
+    /// ```
+    /// Also, deallocation leads to the following code:
+    /// ```text
+    /// alloc::alloc::box_free::<List<T>, std::alloc::Global>(move (b.0: std::ptr::Unique<List<T>>), move (b.1: std::alloc::Global))
+    /// ```
+    /// For now, we detect this case (this is hardcoded in [register] and
+    /// [translate_functions_to_ullbc]) to rewrite it to `free(move b)`.
+    RawPtr(Box<Ty<R>>, RefKind),
 }
 
 /// Type with *R*egions.

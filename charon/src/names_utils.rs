@@ -1,4 +1,4 @@
-//! Defines some utilities for the variables
+//! Defines some utilities for [names]
 //!
 //! For now, we have one function per object kind (type, trait, function,
 //! module): many of them could be factorized (will do).

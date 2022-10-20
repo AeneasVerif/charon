@@ -1,4 +1,4 @@
-//! Implementations for ullbc_ast.rs
+//! Implementations for [ullbc_ast]
 #![allow(dead_code)]
 
 use crate::common::*;
@@ -142,6 +142,7 @@ impl Statement {
                 Statement::SetDiscriminant(place.substitute(subst), *variant_id)
             }
             Statement::StorageDead(var_id) => Statement::StorageDead(*var_id),
+            Statement::Deinit(place) => Statement::Deinit(place.substitute(subst)),
         }
     }
 }
@@ -224,19 +225,20 @@ impl Statement {
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             )
-            .to_owned(),
+            .to_string(),
             Statement::FakeRead(place) => {
-                format!("@fake_read({})", place.fmt_with_ctx(ctx),).to_owned()
+                format!("@fake_read({})", place.fmt_with_ctx(ctx),).to_string()
             }
             Statement::SetDiscriminant(place, variant_id) => format!(
                 "@discriminant({}) := {}",
                 place.fmt_with_ctx(ctx),
                 variant_id.to_string()
             )
-            .to_owned(),
+            .to_string(),
             Statement::StorageDead(vid) => {
-                format!("@storage_dead({})", var_id_to_pretty_string(*vid)).to_owned()
+                format!("@storage_dead({})", var_id_to_pretty_string(*vid)).to_string()
             }
+            Statement::Deinit(place) => format!("@deinit({})", place.fmt_with_ctx(ctx)).to_string(),
         }
     }
 }
@@ -259,13 +261,13 @@ where
         + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
 {
     let rt_args = if region_args.len() + type_args.len() == 0 {
-        "".to_owned()
+        "".to_string()
     } else {
         let regions_s: Vec<String> = region_args.iter().map(|x| x.to_string()).collect();
         let mut types_s: Vec<String> = type_args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
         let mut s = regions_s;
         s.append(&mut types_s);
-        format!("<{}>", s.join(", ")).to_owned()
+        format!("<{}>", s.join(", ")).to_string()
     };
     let args: Vec<String> = args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
     let args = args.join(", ");
@@ -397,11 +399,11 @@ impl BlockData {
 
         // Format the statements
         for statement in &self.statements {
-            out.push(format!("{}{};\n", tab, statement.fmt_with_ctx(ctx)).to_owned());
+            out.push(format!("{}{};\n", tab, statement.fmt_with_ctx(ctx)).to_string());
         }
 
         // Format the terminator
-        out.push(format!("{}{};", tab, self.terminator.fmt_with_ctx(ctx)).to_owned());
+        out.push(format!("{}{};", tab, self.terminator.fmt_with_ctx(ctx)).to_string());
 
         // Join the strings
         out.join("")
@@ -435,7 +437,7 @@ where
                 block.fmt_with_ctx(&block_tab, ctx),
                 tab
             )
-            .to_owned(),
+            .to_string(),
         );
     }
     blocks.join("\n")
@@ -467,14 +469,14 @@ impl<T: Debug + Clone + Serialize> GExprBody<T> {
             use crate::id_vector::ToUsize;
             let index = v.index.to_usize();
             let comment = if index == 0 {
-                "// return".to_owned()
+                "// return".to_string()
             } else {
                 if index <= self.arg_count {
-                    format!("// arg #{}", index).to_owned()
+                    format!("// arg #{}", index).to_string()
                 } else {
                     match &v.name {
-                        Some(_) => "// local".to_owned(),
-                        None => "// anonymous local".to_owned(),
+                        Some(_) => "// local".to_string(),
+                        None => "// anonymous local".to_string(),
                     }
                 }
             };
@@ -492,7 +494,7 @@ impl<T: Debug + Clone + Serialize> GExprBody<T> {
                     v.ty.fmt_with_ctx(ctx),
                     comment
                 )
-                .to_owned(),
+                .to_string(),
             );
         }
 
@@ -520,28 +522,28 @@ impl FunSig {
     {
         // Type parameters
         let params = if self.region_params.len() + self.type_params.len() == 0 {
-            "".to_owned()
+            "".to_string()
         } else {
             let regions: Vec<String> = self.region_params.iter().map(|x| x.to_string()).collect();
             let mut types: Vec<String> = self.type_params.iter().map(|x| x.to_string()).collect();
             let mut params = regions;
             params.append(&mut types);
-            format!("<{}>", params.join(", ")).to_owned()
+            format!("<{}>", params.join(", ")).to_string()
         };
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
         for ty in &self.inputs {
-            args.push(format!("{}", ty.fmt_with_ctx(ctx)).to_owned());
+            args.push(format!("{}", ty.fmt_with_ctx(ctx)).to_string());
         }
         let args = args.join(", ");
 
         // Return type
         let ret_ty = &self.output;
         let ret_ty = if ret_ty.is_unit() {
-            "".to_owned()
+            "".to_string()
         } else {
-            format!(" -> {}", ret_ty.fmt_with_ctx(ctx)).to_owned()
+            format!(" -> {}", ret_ty.fmt_with_ctx(ctx)).to_string()
         };
 
         // Regions hierarchy
@@ -557,7 +559,7 @@ impl FunSig {
             "fn{}({}){}\n\nRegions hierarchy:\n{}",
             params, args, ret_ty, regions_hierarchy
         )
-        .to_owned()
+        .to_string()
     }
 }
 
@@ -633,7 +635,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
 
         // Type parameters
         let params = if self.signature.region_params.len() + self.signature.type_params.len() == 0 {
-            "".to_owned()
+            "".to_string()
         } else {
             let regions: Vec<String> = self
                 .signature
@@ -649,7 +651,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
                 .collect();
             let mut params = regions;
             params.append(&mut types);
-            format!("<{}>", params.join(", ")).to_owned()
+            format!("<{}>", params.join(", ")).to_string()
         };
 
         // Arguments
@@ -664,7 +666,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
                     var_id_to_pretty_string(id),
                     arg_ty.fmt_with_ctx(sig_ctx)
                 )
-                .to_owned(),
+                .to_string(),
             );
         }
         let args = args.join(", ");
@@ -672,16 +674,16 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
         // Return type
         let ret_ty = &self.signature.output;
         let ret_ty = if ret_ty.is_unit() {
-            "".to_owned()
+            "".to_string()
         } else {
-            format!(" -> {}", ret_ty.fmt_with_ctx(sig_ctx)).to_owned()
+            format!(" -> {}", ret_ty.fmt_with_ctx(sig_ctx)).to_string()
         };
 
         // Case disjunction on the presence of a body (transparent/opaque definition)
         match &self.body {
             Option::None => {
                 // Put everything together
-                format!("{}fn {}{}({}){}", tab, name, params, args, ret_ty).to_owned()
+                format!("{}fn {}{}({}){}", tab, name, params, args, ret_ty).to_string()
             }
             Option::Some(body) => {
                 // Body
@@ -693,7 +695,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
                     "{}fn {}{}({}){} {{\n{}\n{}}}",
                     tab, name, params, args, ret_ty, body, tab
                 )
-                .to_owned()
+                .to_string()
             }
         }
     }
@@ -726,7 +728,7 @@ impl<CD: Debug + Clone + Serialize> GGlobalDecl<CD> {
         match &self.body {
             Option::None => {
                 // Put everything together
-                format!("{}global {}", tab, name).to_owned()
+                format!("{}global {}", tab, name).to_string()
             }
             Option::Some(body) => {
                 // Body
@@ -734,7 +736,7 @@ impl<CD: Debug + Clone + Serialize> GGlobalDecl<CD> {
                 let body = body.fmt_with_ctx(&body_tab, body_ctx);
 
                 // Put everything together
-                format!("{}global {} {{\n{}\n{}}}", tab, name, body, tab).to_owned()
+                format!("{}global {} {{\n{}\n{}}}", tab, name, body, tab).to_string()
             }
         }
     }
@@ -890,7 +892,7 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id
 
 impl<'ctx, FD, GD> Formatter<&ErasedRegion> for GAstFormatter<'ctx, FD, GD> {
     fn format_object(&self, _: &ErasedRegion) -> String {
-        "'_".to_owned()
+        "'_".to_string()
     }
 }
 

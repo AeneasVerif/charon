@@ -292,6 +292,15 @@ fn translate_ety<'tcx, 'ctx, 'ctx1>(
     translate_types::translate_ety(tcx, &ty_ctx, &bt_ctx.rtype_vars_to_etypes, &ty)
 }
 
+fn translate_ety_kind<'tcx, 'ctx, 'ctx1>(
+    tcx: TyCtxt,
+    bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
+    ty: &mir_ty::TyKind,
+) -> Result<ty::ETy> {
+    let ty_ctx = TypeTransContext::new(&bt_ctx.ft_ctx.type_defs, &bt_ctx.ft_ctx.ordered);
+    translate_types::translate_ety_kind(tcx, &ty_ctx, &bt_ctx.rtype_vars_to_etypes, &ty)
+}
+
 fn translate_sig_ty<'tcx, 'ctx, 'ctx1>(
     tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
@@ -452,6 +461,7 @@ fn translate_projection<'tcx>(
 
     let mut projection = e::Projection::new();
     for pelem in rprojection {
+        trace!("- pelem: {:?}\n- path_type: {:?}", pelem, path_type);
         match pelem {
             mir::ProjectionElem::Deref => {
                 downcast_id = None;
@@ -463,6 +473,7 @@ fn translate_projection<'tcx>(
                         projection.push_back(e::ProjectionElem::Deref);
                     }
                     ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Box), regions, tys) => {
+                        // This case happens in MIR built, but not in MIR optimized
                         assert!(regions.is_empty());
                         assert!(tys.len() == 1);
                         path_type = tys[0].clone();
@@ -477,7 +488,7 @@ fn translate_projection<'tcx>(
                 let field_id = translate_field(field);
                 // Update the path type and generate the proj kind at the
                 // same time.
-                let proj_kind = match path_type {
+                let proj_elem = match path_type {
                     ty::Ty::Adt(ty::TypeId::Adt(type_id), _regions, tys) => {
                         let type_def = type_defs.get_type_def(type_id).unwrap();
 
@@ -492,16 +503,18 @@ fn translate_projection<'tcx>(
                             field_id,
                         );
 
-                        e::FieldProjKind::Adt(type_id, downcast_id)
+                        let proj_kind = e::FieldProjKind::Adt(type_id, downcast_id);
+                        e::ProjectionElem::Field(proj_kind, field_id)
                     }
                     ty::Ty::Adt(ty::TypeId::Tuple, regions, tys) => {
-                        assert!(regions.len() == 0);
+                        assert!(regions.is_empty());
                         assert!(downcast_id.is_none());
                         path_type = tys.get(field.as_usize()).unwrap().clone();
-                        e::FieldProjKind::Tuple(tys.len())
+                        let proj_kind = e::FieldProjKind::Tuple(tys.len());
+                        e::ProjectionElem::Field(proj_kind, field_id)
                     }
                     ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Option), regions, tys) => {
-                        assert!(regions.len() == 0);
+                        assert!(regions.is_empty());
                         assert!(tys.len() == 1);
                         assert!(downcast_id.is_some());
                         assert!(field_id == ty::FieldId::ZERO);
@@ -509,14 +522,26 @@ fn translate_projection<'tcx>(
                         path_type = tys.get(0).unwrap().clone();
                         let variant_id = downcast_id.unwrap();
                         assert!(variant_id == assumed::OPTION_SOME_VARIANT_ID);
-                        e::FieldProjKind::Option(variant_id)
+                        let proj_kind = e::FieldProjKind::Option(variant_id);
+                        e::ProjectionElem::Field(proj_kind, field_id)
+                    }
+                    ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Box), regions, tys) => {
+                        // This happens when we dereference boxes
+                        todo!();
+                        assert!(regions.is_empty());
+                        assert!(tys.len() == 1);
+                        assert!(downcast_id.is_none());
+                        assert!(field_id == ty::FieldId::ZERO);
+
+                        path_type = tys.get(0).unwrap().clone();
+                        e::ProjectionElem::DerefBox
                     }
                     _ => {
-                        trace!("{:?}", path_type);
+                        trace!("Path type: {:?}", path_type);
                         unreachable!();
                     }
                 };
-                projection.push_back(e::ProjectionElem::Field(proj_kind, field_id));
+                projection.push_back(proj_elem);
                 downcast_id = None;
             }
             mir::ProjectionElem::Index(_local) => {
@@ -665,7 +690,12 @@ fn translate_constant_type<'tcx, 'ctx1, 'ctx2>(
             translate_constant_reference_type(tcx, bt_ctx, ty)
         }
         mir::interpret::ConstValue::Slice { .. } => unimplemented!(),
-        mir::interpret::ConstValue::ZeroSized { .. } => unimplemented!(),
+        mir::interpret::ConstValue::ZeroSized { .. } => {
+            // This should be `()`
+            let tty = translate_ety_kind(tcx, bt_ctx, ty).unwrap();
+            assert!(tty.is_unit());
+            tty
+        }
     }
 }
 
@@ -850,7 +880,11 @@ fn translate_constant_value<'tcx, 'ctx1, 'ctx2>(
             translate_constant_reference_value(tcx, bt_ctx, im_ty, rustc_ty, val)
         }
         mir::interpret::ConstValue::Slice { .. } => unimplemented!(),
-        mir::interpret::ConstValue::ZeroSized { .. } => unimplemented!(),
+        mir::interpret::ConstValue::ZeroSized { .. } => {
+            // Should be unit
+            assert!(im_ty.is_unit());
+            e::OperandConstantValue::Adt(None, Vector::new())
+        }
     }
 }
 
@@ -875,16 +909,70 @@ fn translate_operand_constant<'tcx, 'ctx1, 'ctx2>(
     use std::ops::Deref;
     let constant = &constant.deref();
 
-    let c = match constant.literal {
+    match constant.literal {
         // This is the "normal" constant case
-        mir::ConstantKind::Ty(c) => c,
-        // I'm not sure what this is about: the documentation is weird.
-        mir::ConstantKind::Val(_value, _ty) => {
-            unimplemented!();
+        // TODO: this changed when we updated from Nightly 2022-01-29 to
+        // Nightly 2022-09-19
+        mir::ConstantKind::Ty(c) => {
+            match c.kind() {
+                rustc_middle::ty::ConstKind::Value(_) => {
+                    todo!()
+                    // TODO: the value is now a ValTree...
+                    //translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty(), &cvalue)
+                }
+                rustc_middle::ty::ConstKind::Unevaluated(unev) => {
+                    // Two cases:
+                    // - if we extract the constants at top level, we lookup the constant
+                    //   identifier and refer to it
+                    // - otherwise, we evaluate the constant and insert it in place
+                    if extract_constants_at_top_level(bt_ctx.ft_ctx.mir_level) {
+                        // Lookup the constant identifier and refer to it.
+                        let rid = unev.def.did;
+                        let id = *bt_ctx.ft_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
+                        let decl = bt_ctx.ft_ctx.global_defs.get(id).unwrap();
+                        (decl.ty.clone(), e::OperandConstantValue::ConstantId(id))
+                    } else {
+                        // Evaluate the constant.
+                        todo!()
+                        /*
+                           let cvalue = tcx
+                           .const_eval_resolve(mir_ty::ParamEnv::empty(), unev, Option::None)
+                           .unwrap();
+                           translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty(), &cvalue)
+                        */
+                    }
+                }
+                rustc_middle::ty::ConstKind::Param(_)
+                | rustc_middle::ty::ConstKind::Infer(_)
+                | rustc_middle::ty::ConstKind::Bound(_, _)
+                | rustc_middle::ty::ConstKind::Placeholder(_)
+                | rustc_middle::ty::ConstKind::Error(_) => {
+                    unreachable!("Unexpected: {:?}", constant.literal);
+                }
+            }
         }
-        rustc_middle::mir::ConstantKind::Unevaluated(_, _) => todo!(),
-    };
-    todo!()
+        // I'm not sure what this is about: the documentation is weird.
+        mir::ConstantKind::Val(cv, ty) => {
+            trace!("cv: {:?}, ty: {:?}", cv, ty);
+            translate_evaluated_operand_constant(tcx, bt_ctx, &ty, &cv)
+        }
+        rustc_middle::mir::ConstantKind::Unevaluated(cv, _) => {
+            // Two cases:
+            // - if we extract the constants at top level, we lookup the constant
+            //   identifier and refer to it
+            // - otherwise, we evaluate the constant and insert it in place
+            if extract_constants_at_top_level(bt_ctx.ft_ctx.mir_level) {
+                // Lookup the constant identifier and refer to it.
+                let rid = cv.def.did;
+                let id = *bt_ctx.ft_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
+                let decl = bt_ctx.ft_ctx.global_defs.get(id).unwrap();
+                (decl.ty.clone(), e::OperandConstantValue::ConstantId(id))
+            } else {
+                // Evaluate the constant.
+                todo!()
+            }
+        }
+    }
     /*    match c.val {
         rustc_middle::ty::ConstKind::Value(cvalue) => {
         todo!()
@@ -1068,8 +1156,11 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
     use std::ops::Deref;
     match rvalue {
         mir::Rvalue::Use(operand) => e::Rvalue::Use(translate_operand(tcx, bt_ctx, operand)),
-        mir::Rvalue::CopyForDeref(_) => {
-            unimplemented!();
+        mir::Rvalue::CopyForDeref(place) => {
+            // According to the documentation, it seems to be an optimisation
+            // for drop elaboration. We treat it as a regular copy.
+            let place = translate_place(bt_ctx, place);
+            e::Rvalue::Use(e::Operand::Copy(place))
         }
         mir::Rvalue::Repeat(_operand, _const) => {
             // [x; 32]
@@ -1322,8 +1413,9 @@ fn translate_statement<'tcx, 'ctx, 'ctx1>(
             // We ignore this statement
             Ok(None)
         }
-        StatementKind::Deinit(_) => {
-            unimplemented!();
+        StatementKind::Deinit(place) => {
+            let t_place = translate_place(bt_ctx, place);
+            Ok(Some(ast::Statement::Deinit(t_place)))
         }
         StatementKind::Intrinsic(_) => {
             unimplemented!();
@@ -1559,9 +1651,8 @@ fn get_function_from_operand<'tcx>(
     // closures for now.
     match func {
         mir::Operand::Constant(c) => {
+            trace!("Operand::Constant: {:?}", c);
             let c = c.deref();
-            // I'm not sure why the literal should be a `ConstantKind::Ty`,
-            // but it is the case in practice.
             match &c.literal {
                 mir::ConstantKind::Ty(c) => {
                     // The type of the constant should be a FnDef, allowing
@@ -1575,8 +1666,16 @@ fn get_function_from_operand<'tcx>(
                         }
                     }
                 }
-                mir::ConstantKind::Val(_val, _ty) => {
-                    unreachable!();
+                mir::ConstantKind::Val(cv, c_ty) => {
+                    trace!("cv: {:?}, ty: {:?}", cv, c_ty);
+                    // Same as for the `Ty` case above
+                    assert!(c_ty.is_fn());
+                    match c_ty.kind() {
+                        mir_ty::TyKind::FnDef(def_id, subst) => (*def_id, subst),
+                        _ => {
+                            unreachable!();
+                        }
+                    }
                 }
                 mir::ConstantKind::Unevaluated(_, _) => {
                     todo!()

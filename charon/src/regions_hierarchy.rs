@@ -373,6 +373,17 @@ fn compute_full_regions_constraints_for_ty(
                 ref_ty,
             );
         }
+        Ty::RawPtr(ptr_ty, _mutability) => {
+            // Dive in
+            compute_full_regions_constraints_for_ty(
+                updated,
+                constraints_map,
+                acc_constraints,
+                type_def_constraints,
+                parent_regions,
+                ptr_ty,
+            );
+        }
         Ty::TypeVar(var_id) => {
             // Add the parent regions in the set of parent regions for the type variable
             match type_def_constraints {

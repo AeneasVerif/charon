@@ -10,6 +10,8 @@
 //! Rem.: when compiling a Rust program in debug mode, Rustc introduces dynamic
 //! checks everywhere. When compiling in release mode, it seems it only introduces
 //! checks for division by zero.
+//!
+//! TODO: use [llbc_ast_utils::transform_statements]
 
 use take_mut::take;
 
@@ -681,7 +683,7 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
     }
 }
 
-/// `types` is used for pretty-printing purposes.
+/// `fmt_ctx` is used for pretty-printing purposes.
 pub fn simplify<'ctx>(
     release: bool,
     fmt_ctx: &CtxNames<'ctx>,
