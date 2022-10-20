@@ -13,10 +13,15 @@ all: build tests
 # a template file for the toolchain.
 # Rem.: this is not really necessary for the `tests` crate.
 .PHONY: generate-rust-toolchain
-generate-rust-toolchain:
-	cp rust-toolchain.template charon/rust-toolchain
-	cp rust-toolchain.template tests/rust-toolchain
-	cp rust-toolchain.template tests-polonius/rust-toolchain
+generate-rust-toolchain: \
+	generate-rust-toolchain-charon \
+	generate-rust-toolchain-tests \
+	generate-rust-toolchain-tests-polonius
+
+.PHONY: generate-rust-toolchain-%
+generate-rust-toolchain-%:
+	echo "# This file was automatically generated: update rust-toolchain.template\n# in the top directory if you need to perform modifications." > $*/rust-toolchain
+	cat rust-toolchain.template >> $*/rust-toolchain
 
 .PHONY: build
 build: generate-rust-toolchain
