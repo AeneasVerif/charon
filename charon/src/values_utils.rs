@@ -34,6 +34,12 @@ impl Formatter<GlobalDeclId::Id> for DummyFormatter {
     }
 }
 
+impl Formatter<TypeVarId::Id> for DummyFormatter {
+    fn format_object(&self, id: TypeVarId::Id) -> String {
+        type_var_id_to_pretty_string(id)
+    }
+}
+
 impl Formatter<(TypeDeclId::Id, VariantId::Id)> for DummyFormatter {
     fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
         let (def_id, variant_id) = id;
@@ -50,6 +56,18 @@ impl Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)> for DummyFo
     fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (_def_id, _opt_variant_id, field_id) = id;
         format!("@field{}", field_id.to_string()).to_owned()
+    }
+}
+
+impl Formatter<&ErasedRegion> for DummyFormatter {
+    fn format_object(&self, _: &ErasedRegion) -> String {
+        "_".to_string()
+    }
+}
+
+impl Formatter<&Region<RegionVarId::Id>> for DummyFormatter {
+    fn format_object(&self, r: &Region<RegionVarId::Id>) -> String {
+        r.to_string()
     }
 }
 

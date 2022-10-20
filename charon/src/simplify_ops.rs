@@ -11,7 +11,7 @@
 //! checks everywhere. When compiling in release mode, it seems it only introduces
 //! checks for division by zero.
 //!
-//! TODO: use [llbc_ast_utils::transform_statements]
+//! TODO: use [crate::llbc_ast_utils::transform_statements]
 
 use take_mut::take;
 

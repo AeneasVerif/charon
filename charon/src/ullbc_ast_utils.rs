@@ -211,13 +211,15 @@ impl BlockData {
 }
 
 impl Statement {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
         T: Formatter<VarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
+            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
+            + Formatter<TypeVarId::Id>
+            + Formatter<&'a ErasedRegion>,
     {
         match self {
             Statement::Assign(place, rvalue) => format!(

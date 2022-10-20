@@ -78,6 +78,10 @@ pub fn get_type_id_from_name(name: &TypeName) -> Option<types::AssumedTy> {
         Option::Some(types::AssumedTy::Vec)
     } else if name.equals_ref_name(&OPTION_NAME) {
         Option::Some(types::AssumedTy::Option)
+    } else if name.equals_ref_name(&PTR_UNIQUE_NAME) {
+        Option::Some(types::AssumedTy::PtrUnique)
+    } else if name.equals_ref_name(&PTR_NON_NULL_NAME) {
+        Option::Some(types::AssumedTy::PtrNonNull)
     } else {
         Option::None
     }

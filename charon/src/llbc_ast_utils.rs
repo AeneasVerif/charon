@@ -59,7 +59,8 @@ pub fn new_sequence(mut l: Statement, r: Statement) -> Statement {
     }
 }
 
-/// Visit an rvalue and generate statements. Used below in [transform_operands].
+/// Visit the operands in an rvalue and generate statements.
+/// Used below in [transform_operands].
 fn transform_rvalue_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
     rval: &mut Rvalue,
     f: &mut F,
@@ -128,7 +129,7 @@ pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
 }
 
 /// Apply a map transformer on statements, in a bottom-up manner.
-/// Useful to implement a pass on operands: see e.g. [remove_drop_never].
+/// Useful to implement a pass on operands (e.g., [crate::remove_drop_never]).
 pub fn transform_statements<F: FnMut(Statement) -> Statement>(
     f: &mut F,
     st: Statement,

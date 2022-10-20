@@ -886,7 +886,7 @@ fn translate_constant_reference_value<'tcx, 'ctx1, 'ctx2>(
     e::OperandConstantValue::Adt(Option::None, fields)
 }
 
-/// Translate a constant value typed by [translate_constant_type].
+/// Translate a [mir::interpret::ConstValue]
 fn translate_const_value<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'tcx, 'ctx1, 'ctx2>,

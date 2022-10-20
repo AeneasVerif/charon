@@ -102,7 +102,11 @@ fn check_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
                 assert!(trait_pred.constness == BoundConstness::NotConst);
                 let trait_name = trait_def_id_to_name(tcx, trait_pred.trait_ref.def_id);
                 trace!("{}", trait_name);
-                assert!(trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME));
+                assert!(
+                    trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME),
+                    "Unsupported trait: {:?}",
+                    trait_name
+                );
             }
             PredicateKind::RegionOutlives(_) => unimplemented!(),
             PredicateKind::TypeOutlives(_) => unimplemented!(),
