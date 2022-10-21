@@ -164,7 +164,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         crate_name: crate_name.clone(),
         opaque_mods: HashSet::from_iter(options.opaque_modules.clone().into_iter()),
     };
-    let registered_decls = register::explore_crate(&crate_info, sess, tcx, mir_level)?;
+    let (files, registered_decls) = register::explore_crate(&crate_info, sess, tcx, mir_level)?;
 
     // # Step 2: reorder the graph of dependencies and compute the strictly
     // connex components to:
@@ -174,8 +174,9 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     let ordered_decls = reorder_decls::reorder_declarations(&registered_decls)?;
 
     // # Step 3: generate identifiers for the types and functions, and compute
-    // the mappings from rustc identifiers to our own identifiers
-    let ordered_decls = rust_to_local_ids::rust_to_local_ids(&ordered_decls);
+    // the mappings from rustc identifiers to our own identifiers.
+    // Also compute identifiers for the files (we use them for the spans).
+    let ordered_decls = rust_to_local_ids::rust_to_local_ids(&files, &ordered_decls);
 
     // # Step 4: translate the types
     let (types_constraints, type_defs) = translate_types::translate_types(tcx, &ordered_decls)?;

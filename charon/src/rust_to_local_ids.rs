@@ -1,10 +1,11 @@
 #![allow(dead_code)]
-use crate::ullbc_ast as ast;
-use crate::ullbc_ast::FunDeclId;
-use crate::ullbc_ast::GlobalDeclId;
+use crate::meta::{FileId, FileInfo, RealFileName};
 use crate::reorder_decls as rd;
 use crate::types as ty;
 use crate::types::TypeDeclId;
+use crate::ullbc_ast as ast;
+use crate::ullbc_ast::FunDeclId;
+use crate::ullbc_ast::GlobalDeclId;
 use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
 use std::vec::Vec;
@@ -68,10 +69,15 @@ fn add_global_info(
 }
 
 pub struct OrderedDecls {
+    /// The ordered files
+    pub files: Vec<RealFileName>,
     /// The properly grouped and ordered declarations
     pub decls: Vec<DeclarationGroup>,
     /// Additional information on declarations
     pub decls_info: HashMap<AnyDeclId, DeclInfo>,
+    /// File names to ids and vice-versa
+    pub file_to_id: HashMap<RealFileName, FileId::Id>,
+    pub id_to_file: HashMap<FileId::Id, RealFileName>,
     /// Rust identifiers to translation identifiers
     pub type_rid_to_id: HashMap<DefId, ty::TypeDeclId::Id>,
     pub fun_rid_to_id: HashMap<DefId, ast::FunDeclId::Id>,
@@ -79,7 +85,10 @@ pub struct OrderedDecls {
 }
 
 /// Convert the definition ids used by the rust compiler to our own definition ids.
-pub fn rust_to_local_ids(reordered: &rd::DeclarationsGroups<DefId, DefId, DefId>) -> OrderedDecls {
+pub fn rust_to_local_ids(
+    files_info: &HashMap<RealFileName, FileInfo>,
+    reordered: &rd::DeclarationsGroups<DefId, DefId, DefId>,
+) -> OrderedDecls {
     let mut decls_info = HashMap::new();
 
     let mut type_rid_to_id: HashMap<DefId, ty::TypeDeclId::Id> = HashMap::new();
@@ -147,9 +156,26 @@ pub fn rust_to_local_ids(reordered: &rd::DeclarationsGroups<DefId, DefId, DefId>
         }
     }
 
+    // Reorder the files and compute the maps from files to ids and reverse
+    let mut files: Vec<RealFileName> = files_info.keys().map(|f| f.clone()).collect();
+    files.sort();
+
+    let mut file_to_id: HashMap<RealFileName, FileId::Id> = HashMap::new();
+    let mut id_to_file: HashMap<FileId::Id, RealFileName> = HashMap::new();
+    let mut file_counter = FileId::Generator::new();
+
+    for file in &files {
+        let id = file_counter.fresh_id();
+        file_to_id.insert(file.clone(), id);
+        id_to_file.insert(id, file.clone());
+    }
+
     OrderedDecls {
+        files,
         decls,
         decls_info,
+        file_to_id,
+        id_to_file,
         type_rid_to_id,
         fun_rid_to_id,
         global_rid_to_id,

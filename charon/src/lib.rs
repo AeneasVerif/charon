@@ -61,6 +61,7 @@ pub mod llbc_ast_utils;
 pub mod llbc_export;
 pub mod logger;
 pub mod meta;
+pub mod meta_utils;
 pub mod names;
 pub mod names_utils;
 pub mod reconstruct_asserts;
