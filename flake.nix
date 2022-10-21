@@ -27,7 +27,12 @@
           extensions = [ "rust-src" "rustc-dev" "llvm-tools-preview" ];
         };
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
-        charon = craneLib.buildPackage { src = ./charon; };
+        charon =
+          let cargoArtifacts = craneLib.buildDepsOnly { src = ./charon; };
+          in craneLib.buildPackage {
+            src = ./charon;
+            inherit cargoArtifacts;
+          };
         tests = let cargoArtifacts = craneLib.buildDepsOnly { src = ./tests; };
         in craneLib.buildPackage {
           name = "tests";
