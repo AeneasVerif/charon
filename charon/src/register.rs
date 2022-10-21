@@ -20,7 +20,7 @@ use rustc_session::Session;
 use rustc_span::Span;
 use std::collections::HashSet;
 
-/// `stack`: see the explanations for [register_hir_item].
+/// `stack`: see the explanations for [explore_hir_item].
 pub(crate) fn stack_to_string(stack: &Vector<DefId>) -> String {
     let v: Vec<String> = stack
         .iter()
@@ -139,7 +139,7 @@ pub type RegisteredDeclarations = LinkedHashMap<DefId, Declaration>;
 
 /// Structure used to register declarations: see
 /// [DeclarationsRegister::register_opaque_declaration] and
-/// [DeclarationsRegister::register_transparent_declaration].
+/// [DeclarationsRegister::register_local_declaration].
 struct DeclarationsRegister {
     decl_ids: LinkedHashSet<DefId>,
     decls: RegisteredDeclarations,
@@ -164,7 +164,7 @@ impl DeclarationsRegister {
     ///
     /// Should not be called outside [DeclarationsRegister]'s methods:
     /// Use either [DeclarationsRegister::register_opaque_declaration]
-    /// or [DeclarationsRegister::register_transparent_declaration] instead.
+    /// or [DeclarationsRegister::register_local_declaration] instead.
     fn add_begin(&mut self, id: DefId) {
         assert!(self.decl_ids.insert(id), "Already knows {:?}", id);
     }
@@ -173,7 +173,7 @@ impl DeclarationsRegister {
     ///
     /// Should not be called outside [DeclarationsRegister]'s methods:
     /// Use either [DeclarationsRegister::register_opaque_declaration]
-    /// or [DeclarationsRegister::register_transparent_declaration] instead.
+    /// or [DeclarationsRegister::register_local_declaration] instead.
     fn add_end(&mut self, decl: Declaration) {
         let id = decl.id;
         assert!(self.knows(&id));
@@ -185,10 +185,13 @@ impl DeclarationsRegister {
         );
     }
 
-    /// Does not explore further the declaration content:
-    /// If the declaration was unknown, registers it without dependencies.
+    /// Register an opaque declaration (can be an external declaration,
+    /// or a local declaration).
     ///
-    /// `stack`: see the explanations for [register_hir_item].
+    /// Does not explore further the declaration content: if the declaration was
+    /// unknown, registers it without dependencies.
+    ///
+    /// `stack`: see the explanations for [explore_hir_item].
     fn register_opaque_declaration(
         &mut self,
         tcx: TyCtxt,
@@ -213,10 +216,15 @@ impl DeclarationsRegister {
         });
     }
 
-    /// Registers a declaration and its dependencies recursively.
-    /// Only works on local declarations for now.
+    /// Registers a local declaration and its dependencies recursively.
+    ///
+    /// This function takes a closure as input. We do this so that we
+    /// can make sure the closure, which should explore the content
+    /// of the declaration and its dependencies, is called between
+    /// [DeclarationsRegister::add_begin] and [DeclarationsRegister::add_end].
+    ///
     /// The visitor takes `&mut self` to avoid a double borrow.
-    fn register_transparent_declaration<
+    fn register_local_declaration<
         F: FnOnce(&mut DeclarationsRegister) -> Result<DeclDependencies>,
     >(
         &mut self,
@@ -249,11 +257,11 @@ impl DeclarationsRegister {
         if ctx.crate_info.has_opaque_decl(&name) {
             self.add_end(Declaration::new_opaque(id, kind));
             return Ok(());
+        } else {
+            let deps = list_dependencies(self)?;
+            self.add_end(Declaration::new_transparent(id, kind, deps));
+            return Ok(());
         }
-
-        let deps = list_dependencies(self)?;
-        self.add_end(Declaration::new_transparent(id, kind, deps));
-        return Ok(());
     }
 
     /// Returns all registered declarations.
@@ -285,8 +293,8 @@ impl DeclarationsRegister {
 /// delegates the work to functions operating on the MIR (and once in MIR we
 /// stay in MIR).
 ///
-/// `stack`: see the explanations for [register_hir_item].
-fn register_hir_type_item(
+/// `stack`: see the explanations for [explore_hir_item].
+fn explore_hir_type_item(
     ctx: &RegisterContext,
     stack: Vector<DefId>,
     decls: &mut DeclarationsRegister,
@@ -309,7 +317,7 @@ fn register_hir_type_item(
             // Retrieve the MIR adt from the def id and register it, retrieve
             // the list of dependencies at the same time.
             let adt = ctx.rustc.adt_def(def_id);
-            return register_local_adt(ctx, stack, decls, &adt);
+            return explore_local_adt(ctx, stack, decls, &adt);
         }
         _ => {
             unreachable!();
@@ -321,8 +329,8 @@ fn register_hir_type_item(
 /// Note that the def id of the ADT should already have been stored in the set of
 /// explored def ids.
 ///
-/// `stack`: see the explanations for [register_hir_item].
-fn register_local_adt(
+/// `stack`: see the explanations for [explore_hir_item].
+fn explore_local_adt(
     ctx: &RegisterContext,
     stack: Vector<DefId>,
     decls: &mut DeclarationsRegister,
@@ -348,7 +356,7 @@ fn register_local_adt(
     let mut nstack = stack.clone();
     nstack.push_back(local_id.to_def_id());
 
-    decls.register_transparent_declaration(ctx, &stack, local_id, DeclKind::Type, |decls| {
+    decls.register_local_declaration(ctx, &stack, local_id, DeclKind::Type, |decls| {
         // Use a dummy substitution to instantiate the type parameters
         let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(ctx.rustc, adt_did);
 
@@ -383,7 +391,7 @@ fn register_local_adt(
                 let ty = field_def.ty(ctx.rustc, substs);
                 trace!("ty");
 
-                register_mir_ty(ctx, nstack.clone(), decls, var_span, &mut ty_deps, &ty)?;
+                explore_mir_ty(ctx, nstack.clone(), decls, var_span, &mut ty_deps, &ty)?;
             }
 
             i += 1;
@@ -394,8 +402,8 @@ fn register_local_adt(
 
 /// Auxiliary function to register a list of type parameters.
 ///
-/// `stack`: see the explanations for [register_hir_item].
-fn register_mir_substs<'tcx>(
+/// `stack`: see the explanations for [explore_hir_item].
+fn explore_mir_substs<'tcx>(
     ctx: &RegisterContext,
     stack: Vector<DefId>,
     decls: &mut DeclarationsRegister,
@@ -433,7 +441,7 @@ fn register_mir_substs<'tcx>(
     for param in params.into_iter() {
         match param.unpack() {
             rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
-                register_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &param_ty)?;
+                explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &param_ty)?;
             }
             rustc_middle::ty::subst::GenericArgKind::Lifetime(_)
             | rustc_middle::ty::subst::GenericArgKind::Const(_) => {
@@ -448,8 +456,8 @@ fn register_mir_substs<'tcx>(
 /// There is no need to perform any check on the type (to prevent cyclic calls)
 /// before calling this function.
 ///
-/// `stack`: see the explanations for [register_hir_item].
-fn register_mir_ty(
+/// `stack`: see the explanations for [explore_hir_item].
+fn explore_mir_ty(
     ctx: &RegisterContext,
     stack: Vector<DefId>,
     decls: &mut DeclarationsRegister,
@@ -519,7 +527,7 @@ fn register_mir_ty(
                 // - or the type is external, in which case we register it as such
 
                 // Explore the type parameters instantiation
-                register_mir_substs(
+                explore_mir_substs(
                     ctx,
                     stack.clone(),
                     decls,
@@ -543,7 +551,7 @@ fn register_mir_ty(
                 return Ok(());
             } else {
                 // Explore the type parameters instantiation
-                register_mir_substs(
+                explore_mir_substs(
                     ctx,
                     stack.clone(),
                     decls,
@@ -562,30 +570,30 @@ fn register_mir_ty(
                 trace!("Adt not registered");
 
                 // Register and explore
-                return register_local_adt(ctx, stack, decls, adt);
+                return explore_local_adt(ctx, stack, decls, adt);
             }
         }
         TyKind::Array(ty, const_param) => {
             trace!("Array");
 
-            register_mir_ty(ctx, stack.clone(), decls, span, ty_deps, ty)?;
-            return register_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &const_param.ty());
+            explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, ty)?;
+            return explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &const_param.ty());
         }
         TyKind::Slice(ty) => {
             trace!("Slice");
 
-            return register_mir_ty(ctx, stack.clone(), decls, span, ty_deps, ty);
+            return explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, ty);
         }
         TyKind::Ref(_, ty, _) => {
             trace!("Ref");
 
-            return register_mir_ty(ctx, stack.clone(), decls, span, ty_deps, ty);
+            return explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, ty);
         }
         TyKind::Tuple(substs) => {
             trace!("Tuple");
 
             for param in substs.iter() {
-                register_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &param)?;
+                explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &param)?;
             }
 
             return Ok(());
@@ -621,7 +629,7 @@ fn register_mir_ty(
         TyKind::FnPtr(sig) => {
             trace!("FnPtr");
             for param_ty in sig.inputs_and_output().no_bound_vars().unwrap().iter() {
-                register_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &param_ty)?;
+                explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &param_ty)?;
             }
             return Ok(());
         }
@@ -792,7 +800,7 @@ fn visit_global_dependencies<'tcx, F: FnMut(DefId)>(
     });
 }
 
-/// `stack`: see the explanations for [register_hir_item].
+/// `stack`: see the explanations for [explore_hir_item].
 fn register_dependency_expression(
     ctx: &RegisterContext,
     stack: Vector<DefId>,
@@ -814,11 +822,11 @@ fn register_dependency_expression(
             match node {
                 rustc_hir::Node::Item(item) => {
                     trace!("Item");
-                    register_hir_item(ctx, stack, decls, false, item)
+                    explore_hir_item(ctx, stack, decls, false, item)
                 }
                 rustc_hir::Node::ImplItem(impl_item) => {
                     trace!("Impl item");
-                    register_hir_impl_item(ctx, stack, decls, impl_item)
+                    explore_hir_impl_item(ctx, stack, decls, impl_item)
                 }
                 _ => {
                     unreachable!();
@@ -829,8 +837,9 @@ fn register_dependency_expression(
 }
 
 /// Register the identifiers found in a function or global body.
-/// `stack`: see the explanations for [register_hir_item].
-fn register_body(
+///
+/// `stack`: see the explanations for [explore_hir_item].
+fn explore_body(
     ctx: &RegisterContext,
     stack: Vector<DefId>,
     decls: &mut DeclarationsRegister,
@@ -883,7 +892,7 @@ fn register_body(
     trace!("Locals: {:?}", body.local_decls);
     for v in body.local_decls.iter() {
         trace!("Local: {:?}", v);
-        register_mir_ty(ctx, stack.clone(), decls, &v.source_info.span, deps, &v.ty)?;
+        explore_mir_ty(ctx, stack.clone(), decls, &v.source_info.span, deps, &v.ty)?;
     }
 
     // Explore the body itself.
@@ -1008,7 +1017,7 @@ fn register_body(
                 }
 
                 // Register the types given as parameters.
-                register_mir_substs(
+                explore_mir_substs(
                     ctx,
                     stack.clone(),
                     decls,
@@ -1049,7 +1058,7 @@ fn register_body(
                         trace!("terminator: Call: arg: {:?}", a);
 
                         let ty = a.ty(&body.local_decls, ctx.rustc);
-                        register_mir_ty(ctx, stack.clone(), decls, &fn_span, deps, &ty)?;
+                        explore_mir_ty(ctx, stack.clone(), decls, &fn_span, deps, &ty)?;
                     }
                 }
 
@@ -1110,9 +1119,10 @@ fn register_body(
     Ok(())
 }
 
-/// Register an new expression (either a fonction or a global).
-/// `stack`: see the explanations for [register_hir_item].
-fn register_local_expression(
+/// Explore a transparent item with a body (either a fonction or a constant).
+///
+/// `stack`: see the explanations for [explore_hir_item].
+fn explore_local_item_with_body(
     ctx: &RegisterContext,
     stack: Vector<DefId>,
     decls: &mut DeclarationsRegister,
@@ -1123,9 +1133,9 @@ fn register_local_expression(
     let mut stack = stack;
     stack.push_back(local_id.to_def_id());
 
-    decls.register_transparent_declaration(ctx, &stack, local_id, kind, |decls| {
+    decls.register_local_declaration(ctx, &stack, local_id, kind, |decls| {
         let mut deps = DeclDependencies::new();
-        register_body(ctx, stack.clone(), decls, local_id, &mut deps)?;
+        explore_body(ctx, stack.clone(), decls, local_id, &mut deps)?;
         Ok(deps)
     })
 }
@@ -1140,7 +1150,7 @@ fn register_local_expression(
 /// This is useful for debugging purposes, to check how we reached a point
 /// (in particular if we want to figure out where we failed to consider a
 /// definition as opaque).
-fn register_hir_item(
+fn explore_hir_item(
     ctx: &RegisterContext,
     stack: Vector<DefId>,
     decls: &mut DeclarationsRegister,
@@ -1159,7 +1169,7 @@ fn register_hir_item(
     }
 
     // The annoying thing is that when iterating over the items in a crate, we
-    // iterate over *all* the items, which is annoying with regards to the
+    // iterate over *all* the items, which is a problem with regards to the
     // *opaque* modules: we see all the definitions which are in there, and
     // not only those which are transitively reachable from the root.
     // Because of this, we need the following check: if the item is a "top"
@@ -1189,14 +1199,20 @@ fn register_hir_item(
         ItemKind::OpaqueTy(_) => unimplemented!(),
         ItemKind::Union(_, _) => unimplemented!(),
         ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
-            register_hir_type_item(ctx, stack, decls, item, def_id)
+            explore_hir_type_item(ctx, stack, decls, item, def_id)
         }
         ItemKind::Fn(_, _, _) => {
-            register_local_expression(ctx, stack, decls, item.def_id.def_id, DeclKind::Fun)
+            explore_local_item_with_body(ctx, stack, decls, item.def_id.def_id, DeclKind::Fun)
         }
         ItemKind::Const(_, _) | ItemKind::Static(_, _, _) => {
             if extract_constants_at_top_level(ctx.mir_level) {
-                register_local_expression(ctx, stack, decls, item.def_id.def_id, DeclKind::Global)
+                explore_local_item_with_body(
+                    ctx,
+                    stack,
+                    decls,
+                    item.def_id.def_id,
+                    DeclKind::Global,
+                )
             } else {
                 // Avoid registering globals in optimized MIR (they will be inlined).
                 Ok(())
@@ -1219,7 +1235,7 @@ fn register_hir_item(
                 // we need to look it up
                 let impl_item = hir_map.impl_item(impl_item_ref.id);
 
-                register_hir_impl_item(ctx, stack.clone(), decls, impl_item)?;
+                explore_hir_impl_item(ctx, stack.clone(), decls, impl_item)?;
             }
             Ok(())
         }
@@ -1257,7 +1273,7 @@ fn register_hir_item(
                 for item_id in module.item_ids {
                     // Lookup and register the item
                     let item = hir_map.item(*item_id);
-                    register_hir_item(ctx, stack.clone(), decls, false, item)?;
+                    explore_hir_item(ctx, stack.clone(), decls, false, item)?;
                 }
                 Ok(())
             }
@@ -1269,8 +1285,9 @@ fn register_hir_item(
 }
 
 /// Register an impl item (an item defined in an `impl` block).
-/// `stack`: see the explanations for [register_hir_item].
-fn register_hir_impl_item(
+///
+/// `stack`: see the explanations for [explore_hir_item].
+fn explore_hir_impl_item(
     ctx: &RegisterContext,
     stack: Vector<DefId>,
     decls: &mut DeclarationsRegister,
@@ -1294,13 +1311,13 @@ fn register_hir_impl_item(
         }
         ImplItemKind::Fn(_, _) => {
             let local_id = impl_item.def_id.def_id;
-            register_local_expression(ctx, stack, decls, local_id, DeclKind::Fun)
+            explore_local_item_with_body(ctx, stack, decls, local_id, DeclKind::Fun)
         }
     }
 }
 
 /// General function to register the declarations in a crate.
-pub fn register_crate(
+pub fn explore_crate(
     crate_info: &CrateInfo,
     sess: &Session,
     tcx: TyCtxt,
@@ -1334,7 +1351,7 @@ pub fn register_crate(
             _ => unreachable!(),
         };
         let stack = Vector::new();
-        register_hir_item(&ctx, stack, &mut decls, true, item)?;
+        explore_hir_item(&ctx, stack, &mut decls, true, item)?;
     }
     Ok(decls.get_declarations())
 }

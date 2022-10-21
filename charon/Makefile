@@ -13,5 +13,5 @@ test:
 # For some reason, I don't manage to build all the packages in one command.
 .PHONY: doc
 doc:
-	cargo doc --no-deps -p macros
-	cargo doc --no-deps
+	cargo doc --no-deps -p macros --document-private-items
+	cargo doc --no-deps --document-private-items

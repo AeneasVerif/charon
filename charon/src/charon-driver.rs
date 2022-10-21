@@ -50,6 +50,7 @@ mod llbc_ast;
 mod llbc_ast_utils;
 mod llbc_export;
 mod logger;
+mod meta;
 mod names;
 mod names_utils;
 mod reconstruct_asserts;
