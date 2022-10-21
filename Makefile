@@ -4,58 +4,74 @@ ifeq (3.81,$(MAKE_VERSION))
 endif
 
 .PHONY: all
-all: test
+all: build tests
+
+# We use Rust nightly in order to:
+# - be able to write a Rustc plugin
+# - use Polonius in some tests
+# We keep the nightly version in sync in all the crates by copy-pasting
+# a template file for the toolchain.
+# Rem.: this is not really necessary for the `tests` crate.
+.PHONY: generate-rust-toolchain
+generate-rust-toolchain:
+	cp rust-toolchain.template charon/rust-toolchain
+	cp rust-toolchain.template tests/rust-toolchain
+	cp rust-toolchain.template tests-polonius/rust-toolchain
 
 .PHONY: build
-build:
+build: generate-rust-toolchain
 	cd charon && $(MAKE)
 
-SRC = $(TESTS)/src
-OPTIONS = --dest $(TESTS)/llbc
-
+# Build the tests crate, and run the cargo tests
 .PHONY: build-tests
 build-tests:
-	cd tests && $(MAKE)
+	cd tests && $(MAKE) build && $(MAKE) cargo-tests
 
-.PHONY: build-tests-nll
-build-tests-nll:
-	cd tests-nll && $(MAKE)
+# Build the tests-polonius crate, and run the cargo tests
+.PHONY: build-tests-polonius
+build-tests-polonius:
+	cd tests-polonius && $(MAKE) build && $(MAKE) cargo-tests
 
-.PHONY: test
-test: build build-tests build-tests-nll \
-	test-nested_borrows test-no_nested_borrows test-loops test-hashmap \
-	test-paper test-hashmap_main \
-	test-matches test-matches_duplicate test-external \
-        test-constants \
-	test-nll-betree_nll test-nll-betree_main
+# Build and run the tests
+.PHONY: tests
+tests: build-tests build-tests-polonius charon-tests
 
-test-nested_borrows: OPTIONS += --no-code-duplication
-test-no_nested_borrows: OPTIONS += --no-code-duplication
-test-loops: OPTIONS += --no-code-duplication
-#test-hashmap: OPTIONS += --no-code-duplication
-#test-hashmap_main: OPTIONS += --no-code-duplication
-test-hashmap_main: OPTIONS += --opaque=hashmap_utils
-test-paper: OPTIONS += --no-code-duplication
-test-constants: OPTIONS += --no-code-duplication
-# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-test-matches:
-test-external: OPTIONS += --no-code-duplication
-test-matches_duplicate:
-#test-nll-betree_nll: OPTIONS += --no-code-duplication
-# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-test-nll-betree_main:
-test-nll-betree_main: OPTIONS += --opaque=betree_utils
+# Run Charon on various test files
+.PHONY: charon-tests
+charon-tests: charon-tests-regular charon-tests-polonius
 
-.PHONY: test-%
-test-%: TESTS=../tests
-test-%:
-	cd charon && cargo run $(SRC)/$*.rs $(OPTIONS)
-# I would like to do this, however there is a problem when loading libstd.so.
-# I guess we need to indicate the path to the installed Rust library, sth?
-#	charon/target/debug/charon $(SRC)/$*.rs $(OPTIONS)
+# Run Charon on the files in the tests crate
+.PHONY: charon-tests-regular
+charon-tests-regular: build-tests
+	echo "# Starting the regular tests"
+	cd tests && make charon-tests
+	echo "# Finished the regular tests"
 
-.PHONY: test-nll-%
-test-nll-%: TESTS=../tests-nll
-test-nll-%: OPTIONS += --nll
-test-nll-%:
-	cd charon && cargo run $(SRC)/$*.rs $(OPTIONS)
+# Run Charon on the files in the tests-polonius crate
+.PHONY: charon-tests-polonius
+charon-tests-polonius: build-tests-polonius
+	echo "# Starting the Polonius tests"
+	cd tests-polonius && make charon-tests
+	echo "# Finished the Polonius tests"
+
+.PHONY: clean
+clean:
+	cd attributes && cargo clean
+	cd charon && cargo clean
+	cd charon/macros && cargo clean
+	cd tests && cargo clean
+	cd tests-polonius && cargo clean
+	rm -rf tests/llbc
+	rm -rf tests-polonius/llbc
+
+# Build the Nix packages
+.PHONY: nix
+nix: nix-tests nix-tests-polonius
+
+.PHONY: nix-tests
+nix-tests:
+	nix build .#checks.x86_64-linux.tests --show-trace -L
+
+.PHONY: nix-tests-polonius
+nix-tests-polonius:
+	nix build .#checks.x86_64-linux.tests-polonius --show-trace -L

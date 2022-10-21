@@ -14,7 +14,7 @@ enum E1 {
 /// in the control flow or not.
 /// If we use the "Optimized MIR" pass, it is ok. If we use the "Promoted MIR",
 /// then we have the following for the `E1::V1 | E1::V2 => ...` branch:
-/// ```
+/// ```text
 /// bb0: {
 ///     @fake_read(x(var@1));
 ///     var@2 := @discriminant(x(var@1));

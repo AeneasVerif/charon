@@ -69,7 +69,7 @@ pub enum ErasedRegion {
 /// types (coming from external dependencies).
 ///
 /// In case the type is transparent, the declaration also contains the
-/// type definition (see [TypeKind]).
+/// type definition (see [TypeDeclKind]).
 ///
 /// A type can only be an ADT (structure or enumeration), as type aliases are
 /// inlined in MIR.
@@ -179,7 +179,7 @@ where
     /// The never type, for computations which don't return. It is sometimes
     /// necessary for intermediate variables. For instance, if we do (coming
     /// from the rust documentation):
-    /// ```
+    /// ```text
     /// let num: u32 = match get_a_number() {
     ///     Some(num) => num,
     ///     None => break,

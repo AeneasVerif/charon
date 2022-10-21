@@ -66,32 +66,32 @@ fn insert_scc_with_deps<Id: Copy + std::hash::Hash + Eq>(
     reordered_sccs.insert(scc_id);
 }
 
-/// Provided we computed the SCCs of a set of identifier, and those identifiers
-/// are ordered, compute the set of SCCs where the order of the SCCs and the order
-/// of the identifiers inside the SCCs try to respect as much as possible the
-/// original order between the identifiers.
+/// Provided we computed the SCCs (Strongly Connected Components) of a set of
+/// identifier, and those identifiers are ordered, compute the set of SCCs where
+/// the order of the SCCs and the order of the identifiers inside the SCCs try
+/// to respect as much as possible the original order between the identifiers.
 /// The `ids` vector gives the ordered set of identifiers.
 ///
 ///
 /// This is used in several places, for instance to generate the translated
 /// definitions in a consistent and stable manner. For instance, let's
-/// say we extract 4 definitions f, g1, g2 and h, where:
-/// - g1 and g2 are mutually recursive
-/// - h calls g1
+/// say we extract 4 definitions  `f`, `g1`, `g2` and `h`, where:
+/// - `g1` and `g2` are mutually recursive
+/// - `h` calls `g1`
 ///
 /// When translating those functions, we group together the mutually recursive
 /// functions, because they have to be extracted in one single group, and thus
 /// apply Tarjan's algorithm on the call graph to find out which functions are
 /// mutually recursive.
 /// The implementation of Tarjan's algorithm we use gives us the Strongly Connected
-/// Components of the call graph in an arbitrary order, so we can have:
-/// [[f], [g1, g2], [h]], but also [[h], [f], [g2, g1]], etc.
+/// SCCs of the call graph in an arbitrary order, so we can have:
+/// `[[f], [g1, g2], [h]]`, but also `[[h], [f], [g2, g1]]`, etc.
 ///
-/// If the user defined those functions in the order: f, g1, h, g2, we want
-/// to reorder them into: f, g1, g2, h, so that we can translate the mutually
+/// If the user defined those functions in the order: `f, g1, h, g2`, we want
+/// to reorder them into: `f, g1, g2, h`, so that we can translate the mutually
 /// recursive functions together, while performing a minimal amount of reordering.
 /// And if reordering is not needed, because the user defined those functions
-/// in the order f, g1, g2, h, or g1, g2, f, h or ... then we want to translate
+/// in the order `f, g1, g2, h`, or `g1, g2, f, h` or ... then we want to translate
 /// them in this exact order.
 ///
 /// This function performs just that: provided the order in which the definitions

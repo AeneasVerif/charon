@@ -1,6 +1,6 @@
 use crate::common::*;
-use crate::im_ast::FunDeclId;
-use crate::im_ast::GlobalDeclId;
+use crate::ullbc_ast::FunDeclId;
+use crate::ullbc_ast::GlobalDeclId;
 use crate::llbc_ast::*;
 use crate::rust_to_local_ids::*;
 use crate::types::*;
@@ -32,8 +32,8 @@ impl<'a, T: Serialize> Serialize for VecSW<'a, T> {
 type DeclarationsSerializer<'a> = VecSW<'a, DeclarationGroup>;
 
 #[derive(Serialize)]
-#[serde(rename = "Module")]
-struct ModSerializer<'a> {
+#[serde(rename = "Crate")]
+struct CrateSerializer<'a> {
     name: String,
     declarations: DeclarationsSerializer<'a>,
     types: &'a TypeDeclId::Vector<TypeDecl>,
@@ -43,41 +43,24 @@ struct ModSerializer<'a> {
 
 /// Export the translated definitions to a JSON file.
 pub fn export(
-    name: String,
+    crate_name: String,
     ordered_decls: &OrderedDecls,
     type_defs: &TypeDecls,
     fun_defs: &FunDecls,
     global_defs: &GlobalDecls,
     dest_dir: &Option<PathBuf>,
-    sourcefile: &PathBuf,
 ) -> Result<()> {
-    // Generate the destination file
-    let target_filename = match dest_dir {
-        None => {
-            // No destination directory: we just need to update the file extension
-            let mut tgt = sourcefile.clone();
-            assert!(tgt.set_extension("llbc"));
-            tgt
-        }
-        Some(dest_dir) => {
-            // There is a destination directory
-            let mut tgt = dest_dir.clone();
-
-            // Retrieve the file name (without the source directory)
-            let filename = sourcefile.file_name().unwrap();
-
-            // Put together, and change the extension
-            tgt.push(filename);
-            assert!(tgt.set_extension("llbc"));
-            tgt
-        }
-    };
+    // Generate the destination file - we use the crate name for the file name
+    let mut target_filename = dest_dir
+        .as_deref()
+        .map_or_else(|| PathBuf::new(), |d| d.to_path_buf().clone());
+    target_filename.push(format!("{}.llbc", crate_name));
 
     trace!("Target file: {:?}", target_filename);
 
     // Serialize
-    let mod_serializer = ModSerializer {
-        name,
+    let crate_serializer = CrateSerializer {
+        name: crate_name,
         declarations: VecSW::new(&ordered_decls.decls),
         types: &type_defs.types,
         functions: &fun_defs,
@@ -100,8 +83,14 @@ pub fn export(
 
     // Write to the file
     match File::create(target_filename.clone()) {
-        std::io::Result::Ok(outfile) => match serde_json::to_writer(&outfile, &mod_serializer) {
-            std::result::Result::Ok(()) => Ok(()),
+        std::io::Result::Ok(outfile) => match serde_json::to_writer(&outfile, &crate_serializer) {
+            std::result::Result::Ok(()) => {
+                // We canonicalize (i.e., make absolute) the path before printing it:
+                // this makes it clearer to the user where to find the file.
+                let path = std::fs::canonicalize(target_filename).unwrap();
+                info!("Generated the file: {}", path.to_str().unwrap());
+                Ok(())
+            }
             std::result::Result::Err(_) => {
                 error!("Could not write to: {:?}", target_filename);
                 Err(())

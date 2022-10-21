@@ -1,7 +1,7 @@
 #![allow(dead_code)]
-use crate::im_ast as ast;
-use crate::im_ast::FunDeclId;
-use crate::im_ast::GlobalDeclId;
+use crate::ullbc_ast as ast;
+use crate::ullbc_ast::FunDeclId;
+use crate::ullbc_ast::GlobalDeclId;
 use crate::reorder_decls as rd;
 use crate::types as ty;
 use crate::types::TypeDeclId;

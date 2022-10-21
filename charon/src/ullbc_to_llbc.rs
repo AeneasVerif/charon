@@ -1,4 +1,6 @@
-//! IM to LLBC (Control-Flow Internal MIR)
+//! ULLBC to LLBC
+//!
+//! We reconstruct the control-flow in the Unstructured LLBC.
 //!
 //! The reconstruction algorithm is not written to be efficient (its complexity
 //! is probably very bad), but it was not written to be: this is still an early
@@ -18,10 +20,10 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
-use crate::im_ast::FunDeclId;
-use crate::im_ast::{self as src, GlobalDeclId};
 use crate::llbc_ast as tgt;
 use crate::types::TypeDecls;
+use crate::ullbc_ast::FunDeclId;
+use crate::ullbc_ast::{self as src, GlobalDeclId};
 use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
@@ -263,7 +265,7 @@ struct LoopExitCandidateInfo {
     /// backward edge leading to an outer loop entry), we register this node
     /// as well as all its children as exit candidates.
     /// Consider the following example:
-    /// ```
+    /// ```text
     /// while i < max {
     ///     if cond {
     ///         break;
@@ -574,7 +576,7 @@ fn compute_loop_exit_candidates(
 ///   to an outer loop
 ///
 /// It is better explained on the following example:
-/// ```
+/// ```text
 /// 'outer while i < max {
 ///     'inner while j < max {
 ///        j += 1;
@@ -592,7 +594,7 @@ fn compute_loop_exit_candidates(
 /// Whenever we exit a loop, we save the block we went to as an exit candidate
 /// for this loop. Note that there may by many exit candidates. For instance,
 /// in the below example:
-/// ```
+/// ```text
 /// while ... {
 ///    ...
 ///    if ... {
@@ -773,7 +775,7 @@ struct BlocksInfo {
     /// Note that we can ignore children when computing the intersection,
     /// which is why we call it the "best" intersection. For instance, in
     /// the following:
-    /// ```
+    /// ```text
     /// switch i {
     ///   0 => x = 1,
     ///   1 => x = 2,
@@ -930,7 +932,7 @@ fn compute_switch_exits_explore(
 ///   maximize the intersection of filtered successors) because some branches
 ///   might never join the control-flow of the other branches, if they contain
 ///   a `break`, `return`, `panic`, etc., like here:
-///   ```
+///   ```text
 ///   if b { x = 3; } { return; }
 ///   y += x;
 ///   ...
@@ -1048,7 +1050,7 @@ struct ExitInfo {
     /// insert a break. However, we need to make sure we don't add the
     /// corresponding block in a sequence, after having translated the
     /// loop, like so:
-    /// ```
+    /// ```text
     /// loop {
     ///   loop_body
     /// };
@@ -1056,7 +1058,7 @@ struct ExitInfo {
     /// ```
     ///
     /// In case the exit doesn't belong to the loop:
-    /// ```
+    /// ```text
     /// if b {
     ///   loop {
     ///     loop_body
@@ -1078,7 +1080,7 @@ struct ExitInfo {
 /// is destructured: we have gotos everywhere.
 ///
 /// Let's consider the following piece of code:
-/// ```
+/// ```text
 /// if cond1 { ... } else { ... };
 /// if cond2 { ... } else { ... };
 /// ```
@@ -1090,7 +1092,7 @@ struct ExitInfo {
 /// whatever the branch we take, there is a moment when we go to the exact
 /// same place, just before the second if), we might generate code like
 /// this, with some duplicata:
-/// ```
+/// ```text
 /// if cond1 { ...; if cond2 { ... } else { ...} }
 /// else { ...; if cond2 { ... } else { ...} }
 /// ```
@@ -1107,7 +1109,7 @@ struct ExitInfo {
 ///
 /// Finally, some similar issues arise for loops. For instance, let's consider
 /// the following piece of code:
-/// ```
+/// ```text
 /// while cond1 {
 ///   e1;
 ///   if cond2 {
@@ -1121,7 +1123,7 @@ struct ExitInfo {
 ///
 /// Note that in MIR, the loop gets desugared to an if ... then ... else ....
 /// From the MIR, We want to generate something like this:
-/// ```
+/// ```text
 /// loop {
 ///   if cond1 {
 ///     e1;
@@ -1141,7 +1143,7 @@ struct ExitInfo {
 ///
 /// But if we don't pay attention, we might end up with that, once again with
 /// duplications:
-/// ```
+/// ```text
 /// loop {
 ///   if cond1 {
 ///     e1;
@@ -1774,7 +1776,7 @@ fn translate_block(
     }
 }
 
-/// [type_defs]: this parameter is used for pretty-printing purposes
+/// `type_defs`: this parameter is used for pretty-printing purposes
 fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
@@ -1816,7 +1818,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     }
 }
 
-/// [type_defs] [global_defs]: this parameter is used for pretty-printing purposes
+/// `type_defs`, `global_defs`: those parameters are used for pretty-printing purposes
 fn translate_function(
     no_code_duplication: bool,
     type_defs: &TypeDecls,
@@ -1829,7 +1831,7 @@ fn translate_function(
     trace!(
         "# Reconstructing: {}\n\n{}",
         src_def.name,
-        src_def.fmt_with_defs(&type_defs, &src_defs, &global_defs)
+        src_def.fmt_with_decls(&type_defs, &src_defs, &global_defs)
     );
 
     // Return the translated definition
@@ -1856,7 +1858,7 @@ fn translate_global(
     trace!(
         "# Reconstructing: {}\n\n{}",
         src_def.name,
-        src_def.fmt_with_defs(&type_defs, &fun_defs, &global_defs)
+        src_def.fmt_with_decls(&type_defs, &fun_defs, &global_defs)
     );
 
     tgt::GlobalDecl {
@@ -1872,7 +1874,7 @@ fn translate_global(
 
 /// Translate the functions by reconstructing the control-flow.
 ///
-/// [no_code_duplication]: if true, check that no block is translated twice (this
+/// `no_code_duplication`: if true, check that no block is translated twice (this
 /// can be a sign that the reconstruction is of poor quality, but sometimes
 /// code duplication is necessary, in the presence of "fused" match branches for
 /// instance).
@@ -1909,8 +1911,8 @@ pub fn translate_functions(
     for fun in &tgt_funs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            fun.signature.fmt_with_defs(&type_defs),
-            fun.fmt_with_defs(&type_defs, &tgt_funs, &tgt_globals)
+            fun.signature.fmt_with_decls(&type_defs),
+            fun.fmt_with_decls(&type_defs, &tgt_funs, &tgt_globals)
         );
     }
     // Print the global variables
@@ -1918,7 +1920,7 @@ pub fn translate_functions(
         trace!(
             "# Type:\n{:?}\n\n# Global definition:\n{}\n",
             global.ty,
-            global.fmt_with_defs(&type_defs, &tgt_funs, &tgt_globals)
+            global.fmt_with_decls(&type_defs, &tgt_funs, &tgt_globals)
         );
     }
 

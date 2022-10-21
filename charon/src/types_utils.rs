@@ -4,7 +4,7 @@
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector;
-use crate::im_ast::GlobalDeclId;
+use crate::ullbc_ast::GlobalDeclId;
 use crate::types::*;
 use im::{HashMap, OrdSet, Vector};
 use rustc_middle::ty::{IntTy, UintTy};

@@ -5,8 +5,8 @@ use take_mut::take;
 /// check that there are no such local variables remaining afterwards.
 use crate::expressions::*;
 use crate::id_vector::ToUsize;
-use crate::im_ast::{iter_function_bodies, iter_global_bodies, Var};
-use crate::llbc_ast::{FunDecls, GlobalDecls, Statement, SwitchTargets};
+use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, Statement, SwitchTargets};
+use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
@@ -217,9 +217,12 @@ fn update_locals(
     (locals, vids_map)
 }
 
-pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
-        trace!("# About to remove unused locals: {name}");
+        trace!(
+            "# About to remove unused locals in decl: {name}:\n{}",
+            b.fmt_with_ctx_names(fmt_ctx)
+        );
         take(b, |mut b| {
             let (locals, vids_map) = update_locals(b.locals, &b.body);
             b.locals = locals;

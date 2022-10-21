@@ -7,7 +7,7 @@ use take_mut::take;
 
 use crate::expressions::*;
 use crate::llbc_ast::{
-    ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, Statement, SwitchTargets,
+    CtxNames, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, Statement, SwitchTargets,
 };
 use crate::names::Name;
 use crate::values::*;
@@ -58,25 +58,30 @@ fn transform_st(st: Statement) -> Statement {
     }
 }
 
-fn transform_body(name: &Name, body: &mut Option<ExprBody>) {
+fn transform_body<'ctx>(fmt_ctx: &CtxNames<'ctx>, name: &Name, body: &mut Option<ExprBody>) {
     if let Some(b) = body.as_mut() {
-        trace!("About to insert assign and return unit: {name}");
+        trace!(
+            "About to insert assign and return unit in decl: {name}:\n{}",
+            b.fmt_with_ctx_names(fmt_ctx)
+        );
         take(&mut b.body, transform_st);
     }
 }
 
-fn transform_function(def: &mut FunDecl) {
+fn transform_function<'ctx>(fmt_ctx: &CtxNames<'ctx>, def: &mut FunDecl) {
     if def.signature.output.is_unit() {
-        transform_body(&def.name, &mut def.body);
+        transform_body(fmt_ctx, &def.name, &mut def.body);
     }
 }
-fn transform_global(def: &mut GlobalDecl) {
+fn transform_global<'ctx>(fmt_ctx: &CtxNames<'ctx>, def: &mut GlobalDecl) {
     if def.ty.is_unit() {
-        transform_body(&def.name, &mut def.body);
+        transform_body(fmt_ctx, &def.name, &mut def.body);
     }
 }
 
-pub fn transform(funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    funs.iter_mut().for_each(transform_function);
-    globals.iter_mut().for_each(transform_global);
+pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    funs.iter_mut().for_each(|d| transform_function(fmt_ctx, d));
+    globals
+        .iter_mut()
+        .for_each(|d| transform_global(fmt_ctx, d));
 }

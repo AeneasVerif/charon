@@ -4,8 +4,8 @@
 
 use crate::common::*;
 use crate::formatter::Formatter;
-use crate::im_ast::GlobalDeclId;
 use crate::types::*;
+use crate::ullbc_ast::GlobalDeclId;
 use crate::values::*;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
@@ -255,7 +255,7 @@ impl ScalarValue {
 
     /// **Warning**: most constants are stored as u128 by rustc. When converting
     /// to i128, it is not correct to do `v as i128`, we must reinterpret the
-    /// bits (see [from_le_bytes]).
+    /// bits (see [ScalarValue::from_le_bytes]).
     pub fn from_int(ty: IntegerTy, v: i128) -> Result<ScalarValue> {
         if !ScalarValue::int_is_in_bounds(ty, v) {
             Err(())

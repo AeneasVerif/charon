@@ -19,8 +19,7 @@ use rustc_middle::ty::{BoundRegion, FreeRegion, PredicateKind, Region, RegionKin
 /// need to remove through a proper instantiation (we simply instantiate bound
 /// variables with free variables).
 ///
-/// This code is inspired by
-/// [`liberate_late_bound_regions`](TyCtx::liberate_late_bound_regions).
+/// This code is inspired by [TyCtxt::liberate_late_bound_regions].
 ///
 /// The rationale is as follows:
 /// - it seems liberate_late_bound_regions is a proper way of retrieving
@@ -33,7 +32,7 @@ use rustc_middle::ty::{BoundRegion, FreeRegion, PredicateKind, Region, RegionKin
 ///   is defined in an `impl` block - otherwise there are no early bound variables)
 ///   while the late bound regions are introduced by the function itself.
 ///   For example, in:
-///   ```
+///   ```text
 ///   impl<'a> Foo<'a> {
 ///       fn bar<'b>(...) -> ... { ... }
 ///   }

@@ -5,7 +5,7 @@ use crate::assumed;
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
-use crate::im_ast::GlobalDeclId;
+use crate::ullbc_ast::GlobalDeclId;
 use crate::types::*;
 use crate::values;
 use crate::values::*;

@@ -9,9 +9,8 @@ use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::generics;
-use crate::get_mir::EXTRACT_CONSTANTS_AT_TOP_LEVEL;
+use crate::get_mir::{extract_constants_at_top_level, get_mir_for_def_id_and_level, MirLevel};
 use crate::id_vector;
-use crate::im_ast as ast;
 use crate::names::global_def_id_to_name;
 use crate::names::{function_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy as rh;
@@ -20,6 +19,7 @@ use crate::rust_to_local_ids::*;
 use crate::translate_types;
 use crate::types as ty;
 use crate::types::{FieldId, VariantId};
+use crate::ullbc_ast as ast;
 use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im;
@@ -48,6 +48,8 @@ pub struct DeclTransContext<'ctx> {
     pub fun_defs: &'ctx ast::FunDecls,
     /// The global definitions
     pub global_defs: &'ctx ast::GlobalDecls,
+    /// The level at which to extract the MIR
+    pub mir_level: MirLevel,
 }
 
 /// A translation context for function and global bodies.
@@ -77,10 +79,10 @@ struct BodyTransContext<'ctx, 'ctx1> {
     /// The map from rust type variable indices to translated type variable
     /// indices.
     rtype_vars_to_ids: im::OrdMap<u32, ty::TypeVarId::Id>,
-    /// Redundant with `rtype_vars_to_ids`. We need this for [`translate_ty`](translate_ty).
+    /// Redundant with `rtype_vars_to_ids`. We need this for [translate_types::translate_ety].
     /// This maps type variables to types with regions used in signatures.
     rtype_vars_to_rtypes: im::OrdMap<u32, ty::RTy>,
-    /// Redundant with `rtype_vars_to_ids`. We need this for [`translate_ty`](translate_ty).
+    /// Redundant with `rtype_vars_to_ids`. We need this for [translate_types::translate_ety].
     /// This maps type variables to types with erased regions.
     rtype_vars_to_etypes: im::OrdMap<u32, ty::ETy>,
     /// Id counter for the variables
@@ -868,7 +870,7 @@ fn translate_operand_constant<'tcx, 'ctx1, 'ctx2>(
             translate_evaluated_operand_constant(tcx, bt_ctx, &c.ty, &cvalue)
         }
         rustc_middle::ty::ConstKind::Unevaluated(unev) => {
-            if EXTRACT_CONSTANTS_AT_TOP_LEVEL {
+            if extract_constants_at_top_level(bt_ctx.ft_ctx.mir_level) {
                 // Lookup the constant identifier and refer to it.
                 let rid = unev.def.did;
                 let id = *bt_ctx.ft_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
@@ -1511,7 +1513,6 @@ fn translate_switch_targets<'tcx, 'ctx, 'ctx1>(
     }
 }
 
-/// Small utility used by [`execute_function_call`](execute_function_call).
 /// Return the `DefId` of the function referenced by an operand, with the
 /// parameters substitution.
 /// The `Operand` comes from a `TerminatorKind::Call`.
@@ -1560,7 +1561,7 @@ fn get_function_from_operand<'tcx>(
 /// returns `None` otherwise.
 ///
 /// For instance, when translating `bar` below:
-/// ```
+/// ```text
 /// impl Foo {
 ///     fn bar(...) -> ... { ... }
 /// }
@@ -2147,7 +2148,7 @@ fn translate_body(
     local_id: LocalDefId,
     arg_count: usize,
 ) -> Result<ast::ExprBody> {
-    let body = crate::get_mir::get_mir_for_def_id(tcx, local_id);
+    let body = get_mir_for_def_id_and_level(tcx, local_id, bt_ctx.ft_ctx.mir_level);
 
     // Initialize the local variables
     trace!("Translating the body locals");
@@ -2182,6 +2183,7 @@ fn translate_function(
     type_defs: &ty::TypeDecls,
     fun_defs: &ast::FunDecls,
     global_defs: &ast::GlobalDecls,
+    mir_level: MirLevel,
     def_id: ast::FunDeclId::Id,
 ) -> Result<ast::FunDecl> {
     trace!("{:?}", def_id);
@@ -2195,6 +2197,7 @@ fn translate_function(
         type_defs: type_defs,
         fun_defs: &fun_defs,
         global_defs: &global_defs,
+        mir_level,
     };
 
     // Translate the function name
@@ -2269,6 +2272,7 @@ fn translate_global(
     type_defs: &ty::TypeDecls,
     fun_defs: &ast::FunDecls,
     global_defs: &ast::GlobalDecls,
+    mir_level: MirLevel,
     def_id: ast::GlobalDeclId::Id,
 ) -> Result<ast::GlobalDecl> {
     trace!("{:?}", def_id);
@@ -2282,6 +2286,7 @@ fn translate_global(
         type_defs: type_defs,
         fun_defs: &fun_defs,
         global_defs: &global_defs,
+        mir_level,
     };
 
     // Translate the global name
@@ -2345,6 +2350,7 @@ pub fn translate_functions(
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
     type_defs: &ty::TypeDecls,
+    mir_level: MirLevel,
 ) -> Result<(ast::FunDecls, ast::GlobalDecls)> {
     let mut fun_defs = ast::FunDecls::new();
     let mut const_defs = ast::GlobalDecls::new();
@@ -2361,6 +2367,7 @@ pub fn translate_functions(
                     type_defs,
                     &fun_defs,
                     &const_defs,
+                    mir_level,
                     *def_id,
                 )?;
                 // We have to make sure we translate the definitions in the
@@ -2377,6 +2384,7 @@ pub fn translate_functions(
                         type_defs,
                         &fun_defs,
                         &const_defs,
+                        mir_level,
                         *def_id,
                     )?;
                     // We have to make sure we translate the definitions in the
@@ -2393,6 +2401,7 @@ pub fn translate_functions(
                     type_defs,
                     &fun_defs,
                     &const_defs,
+                    mir_level,
                     *def_id,
                 )?;
                 // We have to make sure we translate the definitions in the
@@ -2409,6 +2418,7 @@ pub fn translate_functions(
                         type_defs,
                         &fun_defs,
                         &const_defs,
+                        mir_level,
                         *def_id,
                     )?;
                     // We have to make sure we translate the definitions in the
@@ -2428,14 +2438,14 @@ pub fn translate_functions(
     for def in &fun_defs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            def.signature.fmt_with_defs(type_defs),
-            def.fmt_with_defs(type_defs, &fun_defs, &const_defs)
+            def.signature.fmt_with_decls(type_defs),
+            def.fmt_with_decls(type_defs, &fun_defs, &const_defs)
         );
     }
     for def in &const_defs {
         trace!(
             "# Constant definition:\n{}\n",
-            def.fmt_with_defs(type_defs, &fun_defs, &const_defs)
+            def.fmt_with_decls(type_defs, &fun_defs, &const_defs)
         );
     }
 

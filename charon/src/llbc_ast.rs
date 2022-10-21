@@ -8,9 +8,10 @@
 
 #![allow(dead_code)]
 use crate::expressions::*;
-use crate::im_ast::*;
 pub use crate::llbc_ast_utils::*;
 use crate::types::*;
+use crate::ullbc_ast::*;
+pub use crate::ullbc_ast::{CtxNames, FunDeclId, GlobalDeclId};
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
@@ -62,10 +63,10 @@ pub enum Statement {
     Continue(usize),
     /// No-op.
     Nop,
-    /// The left statement must NOT be a sequence:
-    /// For example, let (x, y) be a sequence and a, b, c statements:
-    /// Then ((a, b), c) is forbidden and should be changed to (a, (b, c)).
-    /// To ensure that, use [llbc_ast_utils::new_sequence] to build sequences.
+    /// The left statement must NOT be a sequence.
+    /// For instance, `(s0; s1); s2` is forbidden and should be rewritten
+    /// to the semantically equivalent statement `s0; (s1; s2)`
+    /// To ensure that, use [crate::llbc_ast_utils::new_sequence] to build sequences.
     Sequence(Box<Statement>, Box<Statement>),
     Switch(Operand, SwitchTargets),
     Loop(Box<Statement>),
@@ -83,7 +84,7 @@ pub enum SwitchTargets {
     ///
     /// Rk.: we use a vector of values, because some of the branches may
     /// be grouped together, like for the following code:
-    /// ```
+    /// ```text
     /// match e {
     ///   E::V1 | E::V2 => ..., // Grouped
     ///   E::V3 => ...

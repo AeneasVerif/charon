@@ -160,7 +160,7 @@ pub fn translate_erased_region<'tcx>(region: rustc_middle::ty::Region<'tcx>) -> 
 /// enumeration definition, or later to translate the type of a variable.
 ///
 /// This function is also used in other modules, like
-/// [`translate_functions`](crate::translate_functions).
+/// [crate::translate_functions_to_im].
 /// This is the reason why the `type_params` parameter is quite general,
 /// and links rust identifiers to types, rather than type variables (in
 /// this module, this map should always link to the translation of the
@@ -486,8 +486,8 @@ struct TypeGenericsInfo<'tcx> {
 /// which represents the generics on the MIR side (and is useful to translate
 /// the body of the type...).
 ///
-/// Rk.: this seems simpler in [translate_functions_to_im]. TODO: compare and
-/// simplify/factorize?
+/// Rem.: this seems simpler in [crate::translate_functions_to_im].
+/// TODO: compare and simplify/factorize?
 fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGenericsInfo<'tcx> {
     // Check the generics
     generics::check_type_generics(tcx, def_id);
