@@ -32,42 +32,10 @@ but with the following differences:
 - calls to arithmetic operations are simplified: we remove the dynamic checks for
   divisions by zero and overflows. The rationale is that in theorem provers, those
   operations either have preconditions, or perform the checks themselves.
-- (in progress) we adopt a slightly higher-level view of matches over enumerations.
-  Instead of having to read the discriminant then switch over it like here:
-  ```
-  d = read_discriminant(ls : List<T>);
-  switch d {
-    0 => { ... }
-    1 => { ... }
-    _ => panic!(),
-  }
-  ```
-  we do:
-  ```
-  match (read_discriminant(ls)) {
-    Cons => { ... }
-    Nil => { ... }
-  }
-  ```
-  Note that we still switch over discriminants: the match is not a high-level
-  match like in a functional language (i.e., there are no patterns on the left
-  of the `=>`, only constructor identifiers).
-  Simply, we do not allow the independent manipulation of discriminants, as it is
-  very low level.
-- (in progress) we do not allow progressive initialization of datatypes,
-  but use aggregated values. Instead of this:
-  ```
-  (x as Cons).0 = move hd;
-  (x as Cons).1 = move tl;
-  set_discriminant(x, 0);
-  ```
-  we do:
-  ```
-  x = Cons { .0 = (move hd), .1 = (move tl) };
-  ```
-- (in progress) The constants compiled by rustc are "decompiled" into higher-level
-  data. Some constants (like borrows compiled as constants) are not supported yet,
-  and will be desugared by introducing temporary variables.
+- we desugar a bit accesses to constants and globals. In MIR, constants and globals
+  can be accessed in operands, while in LLBC we introduce intermediate assignments
+  so that they are accessed only by means of an `AssignGlobal` statement (which
+  reads a global and stores it in a local variable).
 
 **Remark**: most of the transformations above are applied through micro-passes. Depending on
 the need, we could make them optional and control them with flags. If you want
@@ -77,9 +45,9 @@ the micro-passes one after the other.
 **Remark**: if you want to know the full details of LLBC, have a look at: `types.rs`,
 `values.rs`, `expressions.rs` and `llbc_ast.rs`.
 
-We also reorder the function and type definitions, so that for instance if a function
-`f` calls a function `g`, `f` is defined after `g`, mutually recursive definitions are grouped,
-etc.
+We also reorder the function and type definitions, so that for instance if a
+function `f` calls a function `g`, `f` is defined after `g`, mutually recursive
+definitions are grouped, etc.
 
 The extracted AST is serialized in .llbc files (using the JSON format).
 We generate one file per extracted crate.
@@ -89,7 +57,7 @@ We generate one file per extracted crate.
 - `charon`: the implementation.
 - `macros`: various macros used in the implementation (Rust requires macros to
   be defined in separate libraries due to technical reasons).
-- `tests` and `tests-nll`: test files directories. `tests-nll` contains
+- `tests` and `tests-polonius`: test files directories. `tests-polonius` contains
   code which requires non-lexical lifetimes (i.e., the Polonius borrow checker).
 
 ## Installation & Build

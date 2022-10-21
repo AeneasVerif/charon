@@ -286,7 +286,7 @@ impl DeclarationsRegister {
 /// stay in MIR).
 ///
 /// `stack`: see the explanations for [register_hir_item].
-fn register_hir_type(
+fn register_hir_type_item(
     ctx: &RegisterContext,
     stack: Vector<DefId>,
     decls: &mut DeclarationsRegister,
@@ -1189,14 +1189,14 @@ fn register_hir_item(
         ItemKind::OpaqueTy(_) => unimplemented!(),
         ItemKind::Union(_, _) => unimplemented!(),
         ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
-            register_hir_type(ctx, stack, decls, item, def_id)
+            register_hir_type_item(ctx, stack, decls, item, def_id)
         }
         ItemKind::Fn(_, _, _) => {
-            register_local_expression(ctx, stack, decls, item.def_id, DeclKind::Fun)
+            register_local_expression(ctx, stack, decls, item.def_id.def_id, DeclKind::Fun)
         }
         ItemKind::Const(_, _) | ItemKind::Static(_, _, _) => {
             if extract_constants_at_top_level(ctx.mir_level) {
-                register_local_expression(ctx, stack, decls, item.def_id, DeclKind::Global)
+                register_local_expression(ctx, stack, decls, item.def_id.def_id, DeclKind::Global)
             } else {
                 // Avoid registering globals in optimized MIR (they will be inlined).
                 Ok(())
@@ -1282,15 +1282,18 @@ fn register_hir_impl_item(
         return Ok(());
     }
 
-    // TODO: make proper error message
+    // TODO: make a proper error message
     assert!(impl_item.defaultness == Defaultness::Final);
 
     // Match on the impl item kind
     match &impl_item.kind {
         ImplItemKind::Const(_, _) => unimplemented!(),
-        ImplItemKind::TyAlias(_) => unimplemented!(),
+        ImplItemKind::Type(_) => {
+            // Note sure what to do with associated types yet
+            unimplemented!();
+        }
         ImplItemKind::Fn(_, _) => {
-            let local_id = impl_item.def_id;
+            let local_id = impl_item.def_id.def_id;
             register_local_expression(ctx, stack, decls, local_id, DeclKind::Fun)
         }
     }

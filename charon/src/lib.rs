@@ -11,7 +11,7 @@
 //! we reconstructed the control-flow to have `if ... then ... else ...`,
 //! loops, etc. instead of `GOTO`s).
 
-#![feature(is_some_with)]
+#![feature(is_some_and)]
 #![feature(rustc_private, register_tool)]
 #![feature(box_syntax, box_patterns)]
 #![feature(cell_leak)] // For Ref::leak

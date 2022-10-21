@@ -3,7 +3,7 @@
 
 #![feature(rustc_private, register_tool)]
 #![feature(box_syntax, box_patterns)]
-#![feature(is_some_with)]
+#![feature(is_some_and)]
 #![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
