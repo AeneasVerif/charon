@@ -70,8 +70,8 @@ nix: nix-tests nix-tests-polonius
 
 .PHONY: nix-tests
 nix-tests:
-	nix build .#hydraJobs.tests.x86_64-linux --show-trace -L
+	nix build .#checks.x86_64-linux.tests --show-trace -L
 
 .PHONY: nix-tests-polonius
 nix-tests-polonius:
-	nix build .#hydraJobs.tests-polonius.x86_64-linux --show-trace -L
+	nix build .#checks.x86_64-linux.tests-polonius --show-trace -L

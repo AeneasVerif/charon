@@ -71,6 +71,7 @@
           inherit charon;
           default = charon;
         };
+        checks = { inherit tests tests-polonius; };
         hydraJobs = { inherit charon tests tests-polonius; };
       });
 }
