@@ -616,6 +616,9 @@ fn translate_projection<'tcx>(
             } => {
                 unimplemented!();
             }
+            mir::ProjectionElem::OpaqueCast(_) => {
+                unimplemented!();
+            }
             mir::ProjectionElem::Downcast(_, variant_id) => {
                 // Downcast an enum to a specific variant.
                 // For example, the left value of:
@@ -941,7 +944,7 @@ fn translate_const_kind_unevaluated<'tcx, 'ctx1, 'ctx2>(
     tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'tcx, 'ctx1, 'ctx2>,
     mir_ty: &mir_ty::Ty<'tcx>,
-    ucv: &rustc_middle::ty::Unevaluated<'tcx>,
+    ucv: &rustc_middle::mir::UnevaluatedConst<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
     // Two cases:
     // - if we extract the constants at top level, we lookup the constant
@@ -1210,8 +1213,13 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
 
             // Sanity check
             assert!(match cast_kind {
-                rustc_middle::mir::CastKind::Misc => true,
-                rustc_middle::mir::CastKind::Pointer(_)
+                rustc_middle::mir::CastKind::IntToInt => true,
+                rustc_middle::mir::CastKind::FloatToInt
+                | rustc_middle::mir::CastKind::FloatToFloat
+                | rustc_middle::mir::CastKind::IntToFloat
+                | rustc_middle::mir::CastKind::PtrToPtr
+                | rustc_middle::mir::CastKind::FnPtrToPtr
+                | rustc_middle::mir::CastKind::Pointer(_)
                 | rustc_middle::mir::CastKind::PointerExposeAddress
                 | rustc_middle::mir::CastKind::PointerFromExposedAddress
                 | rustc_middle::mir::CastKind::DynStar => false,
@@ -2405,10 +2413,10 @@ fn translate_function(
 }
 
 /// Build an uninterpreted constant from a MIR constant identifier.
-fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> mir_ty::Unevaluated<'tcx> {
+fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> rustc_middle::mir::UnevaluatedConst<'tcx> {
     let p = mir_ty::List::empty();
     let did = mir_ty::WithOptConstParam::unknown(id);
-    mir_ty::Unevaluated::new(did, p)
+    rustc_middle::mir::UnevaluatedConst::new(did, p)
 }
 
 /// Generate an expression body from a typed constant value.
