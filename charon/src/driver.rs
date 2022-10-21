@@ -164,7 +164,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         crate_name: crate_name.clone(),
         opaque_mods: HashSet::from_iter(options.opaque_modules.clone().into_iter()),
     };
-    let registered_decls = register::register_crate(&crate_info, sess, tcx, mir_level)?;
+    let registered_decls = register::explore_crate(&crate_info, sess, tcx, mir_level)?;
 
     // # Step 2: reorder the graph of dependencies and compute the strictly
     // connex components to:
