@@ -6,20 +6,8 @@ endif
 .PHONY: all
 all: build tests
 
-# We use Rust nightly in order to:
-# - be able to write a Rustc plugin
-# - use Polonius in some tests
-# We keep the nightly version in sync in all the crates by copy-pasting
-# a template file for the toolchain.
-# Rem.: this is not really necessary for the `tests` crate.
-.PHONY: generate-rust-toolchain
-generate-rust-toolchain:
-	cp rust-toolchain.template charon/rust-toolchain
-	cp rust-toolchain.template tests/rust-toolchain
-	cp rust-toolchain.template tests-polonius/rust-toolchain
-
 .PHONY: build
-build: generate-rust-toolchain
+build:
 	cd charon && $(MAKE)
 
 # Build the tests crate, and run the cargo tests

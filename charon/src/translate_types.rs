@@ -14,8 +14,7 @@ use im;
 use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Mutability;
-use rustc_middle::ty::TyCtxt;
-use rustc_middle::ty::{Ty, TyKind};
+use rustc_middle::ty::{Ty, TyCtxt, TyKind};
 
 /// Translation context for type definitions
 #[derive(Clone)]
@@ -108,8 +107,9 @@ impl<'ctx> Formatter<&ty::TypeDecl> for TypeTransContext<'ctx> {
     }
 }
 
-pub fn translate_region_name(region: &rustc_middle::ty::RegionKind) -> Option<String> {
-    match region {
+pub fn translate_region_name<'tcx>(region: &rustc_middle::ty::RegionKind<'tcx>) -> Option<String> {
+    // Compute the region name
+    let s = match region {
         rustc_middle::ty::RegionKind::ReEarlyBound(r) => Some(r.name.to_ident_string()),
         rustc_middle::ty::RegionKind::ReLateBound(_, br) => match br.kind {
             rustc_middle::ty::BoundRegionKind::BrAnon(_) => None,
@@ -124,18 +124,25 @@ pub fn translate_region_name(region: &rustc_middle::ty::RegionKind) -> Option<St
         _ => {
             unreachable!();
         }
+    };
+
+    // We ignore the name when it is equal to "'_"
+    if s.is_some() && s.as_ref().unwrap() == "'_" {
+        None
+    } else {
+        s
     }
 }
 
 pub fn translate_non_erased_region<'tcx>(
-    region_params: &im::OrdMap<rustc_middle::ty::RegionKind, ty::RegionVarId::Id>,
-    region: rustc_middle::ty::Region<'tcx>,
+    region_params: &im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id>,
+    region: rustc_middle::ty::RegionKind<'tcx>,
 ) -> ty::Region<ty::RegionVarId::Id> {
     match region {
         rustc_middle::ty::RegionKind::ReErased => unreachable!(),
         rustc_middle::ty::RegionKind::ReStatic => ty::Region::Static,
         _ => {
-            let rid = region_params.get(region).unwrap();
+            let rid = region_params.get(&region).unwrap();
             ty::Region::Var(*rid)
         }
     }
@@ -145,7 +152,9 @@ pub fn translate_non_erased_region<'tcx>(
 ///
 /// The regions are expected to be erased inside the function bodies (i.e.:
 /// we believe MIR uses regions only in the function signatures).
-pub fn translate_erased_region<'tcx>(region: rustc_middle::ty::Region<'tcx>) -> ty::ErasedRegion {
+pub fn translate_erased_region<'tcx>(
+    region: rustc_middle::ty::RegionKind<'tcx>,
+) -> ty::ErasedRegion {
     match region {
         rustc_middle::ty::RegionKind::ReErased => ty::ErasedRegion::Erased,
         _ => {
@@ -160,7 +169,7 @@ pub fn translate_erased_region<'tcx>(region: rustc_middle::ty::Region<'tcx>) -> 
 /// enumeration definition, or later to translate the type of a variable.
 ///
 /// This function is also used in other modules, like
-/// [crate::translate_functions_to_im].
+/// [crate::translate_functions_to_ullbc].
 /// This is the reason why the `type_params` parameter is quite general,
 /// and links rust identifiers to types, rather than type variables (in
 /// this module, this map should always link to the translation of the
@@ -170,18 +179,35 @@ pub fn translate_erased_region<'tcx>(region: rustc_middle::ty::Region<'tcx>) -> 
 /// Note that we take as parameter a function to translate regions, because
 /// regions can be translated in several manners (non-erased region or erased
 /// regions), in which case the return type is different.
-pub fn translate_ty<R>(
+pub fn translate_ty<'tcx, R>(
     tcx: TyCtxt,
     trans_ctx: &TypeTransContext,
-    region_translator: &dyn Fn(&rustc_middle::ty::RegionKind) -> R,
+    region_translator: &dyn Fn(&rustc_middle::ty::RegionKind<'tcx>) -> R,
     type_params: &im::OrdMap<u32, ty::Ty<R>>,
-    ty: &Ty,
+    ty: &Ty<'tcx>,
 ) -> Result<ty::Ty<R>>
 where
     R: Clone + Eq,
 {
-    trace!("{:?}", ty);
-    match ty.kind() {
+    translate_ty_kind(tcx, trans_ctx, region_translator, type_params, ty.kind())
+}
+
+/// Translate a [TyKind].
+///
+/// See the comments for [translate_ty] (the two functions do the same thing,
+/// they simply don't take the same input parameters).
+pub fn translate_ty_kind<'tcx, R>(
+    tcx: TyCtxt,
+    trans_ctx: &TypeTransContext,
+    region_translator: &dyn Fn(&rustc_middle::ty::RegionKind<'tcx>) -> R,
+    type_params: &im::OrdMap<u32, ty::Ty<R>>,
+    ty_kind: &TyKind<'tcx>,
+) -> Result<ty::Ty<R>>
+where
+    R: Clone + Eq,
+{
+    trace!("{:?}", ty_kind);
+    match ty_kind {
         TyKind::Bool => Ok(ty::Ty::Bool),
         TyKind::Char => Ok(ty::Ty::Char),
         TyKind::Int(int_ty) => Ok(ty::Ty::Integer(ty::IntegerTy::rust_int_ty_to_integer_ty(
@@ -201,13 +227,14 @@ where
         }
 
         TyKind::Adt(adt, substs) => {
-            trace!("Adt: {:?}", adt.did);
+            let adt_did = adt.did();
+            trace!("Adt: {:?}", adt_did);
 
             // Retrieve the list of used arguments
-            let used_params = if adt.did.is_local() {
+            let used_params = if adt_did.is_local() {
                 Option::None
             } else {
-                let name = type_def_id_to_name(tcx, adt.did);
+                let name = type_def_id_to_name(tcx, adt_did);
                 assumed::type_to_used_params(&name)
             };
 
@@ -222,7 +249,7 @@ where
             )?;
 
             // Retrieve the ADT identifier
-            let def_id = translate_defid(tcx, trans_ctx, adt.did);
+            let def_id = translate_defid(tcx, trans_ctx, adt_did);
 
             // Return the instantiated ADT
             return Ok(ty::Ty::Adt(
@@ -254,14 +281,28 @@ where
             };
             return Ok(ty::Ty::Ref(region, Box::new(ty), kind));
         }
+        TyKind::RawPtr(ty_and_mut) => {
+            trace!("RawPtr: {:?}", ty_and_mut);
+            let ty = translate_ty(
+                tcx,
+                trans_ctx,
+                region_translator,
+                type_params,
+                &ty_and_mut.ty,
+            )?;
+            let kind = match ty_and_mut.mutbl {
+                Mutability::Not => ty::RefKind::Shared,
+                Mutability::Mut => ty::RefKind::Mut,
+            };
+            return Ok(ty::Ty::RawPtr(Box::new(ty), kind));
+        }
         TyKind::Tuple(substs) => {
             trace!("Tuple");
 
             let mut params = vec![];
             for param in substs.iter() {
-                let param_ty = param.expect_ty();
                 let param_ty =
-                    translate_ty(tcx, trans_ctx, region_translator, type_params, &param_ty)?;
+                    translate_ty(tcx, trans_ctx, region_translator, type_params, &param)?;
                 params.push(param_ty);
             }
 
@@ -295,10 +336,6 @@ where
         // Below: those types should be unreachable: if such types are used in
         // the MIR, we should have found them and failed during the registration
         // phase.
-        TyKind::RawPtr(_) => {
-            trace!("RawPtr");
-            unreachable!();
-        }
         TyKind::Foreign(_) => {
             trace!("Foreign");
             unreachable!();
@@ -313,7 +350,7 @@ where
             unreachable!();
         }
 
-        TyKind::Dynamic(_, _) => {
+        TyKind::Dynamic(_, _, _) => {
             trace!("Dynamic");
             unreachable!();
         }
@@ -353,24 +390,24 @@ where
 /// Translate a signature type, where the regions are not erased and use region
 /// variable ids.
 /// Simply calls [`translate_ty`](translate_ty)
-pub fn translate_sig_ty(
+pub fn translate_sig_ty<'tcx>(
     tcx: TyCtxt,
     trans_ctx: &TypeTransContext,
-    region_params: &im::OrdMap<rustc_middle::ty::RegionKind, ty::RegionVarId::Id>,
+    region_params: &im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id>,
     type_params: &im::OrdMap<u32, ty::RTy>,
-    ty: &Ty,
+    ty: &Ty<'tcx>,
 ) -> Result<ty::RTy> {
     translate_ty(
         tcx,
         trans_ctx,
-        &|r| translate_non_erased_region(region_params, &r),
+        &|r| translate_non_erased_region(region_params, *r),
         type_params,
         ty,
     )
 }
 
 /// Translate a type where the regions are erased
-/// Simply calls [`translate_ty`](translate_ty)
+/// Simply calls [translate_ty]
 pub fn translate_ety(
     tcx: TyCtxt,
     trans_ctx: &TypeTransContext,
@@ -380,16 +417,32 @@ pub fn translate_ety(
     translate_ty(
         tcx,
         trans_ctx,
-        &|r| translate_erased_region(&r),
+        &|r| translate_erased_region(*r),
         type_params,
         ty,
+    )
+}
+
+/// Simply calls [translate_ty_kind]
+pub fn translate_ety_kind(
+    tcx: TyCtxt,
+    trans_ctx: &TypeTransContext,
+    type_params: &im::OrdMap<u32, ty::ETy>,
+    ty: &TyKind,
+) -> Result<ty::ETy> {
+    translate_ty_kind(
+        tcx,
+        trans_ctx,
+        &|r| translate_erased_region(*r),
+        type_params,
+        &ty,
     )
 }
 
 fn translate_substs<'tcx, R>(
     tcx: TyCtxt,
     trans_ctx: &TypeTransContext,
-    region_translator: &dyn Fn(&rustc_middle::ty::RegionKind) -> R,
+    region_translator: &dyn Fn(&rustc_middle::ty::RegionKind<'tcx>) -> R,
     type_params: &im::OrdMap<u32, ty::Ty<R>>,
     used_params: Option<Vec<bool>>,
     substs: &rustc_middle::ty::subst::SubstsRef<'tcx>,
@@ -434,7 +487,7 @@ where
                 params.push(param_ty);
             }
             rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
-                regions.push(region_translator(region));
+                regions.push(region_translator(&region));
             }
             rustc_middle::ty::subst::GenericArgKind::Const(_) => {
                 unimplemented!();
@@ -474,7 +527,7 @@ fn translate_defid(tcx: TyCtxt, trans_ctx: &TypeTransContext, def_id: DefId) -> 
 struct TypeGenericsInfo<'tcx> {
     substs: rustc_middle::ty::subst::SubstsRef<'tcx>,
     region_params: Vec<ty::RegionVar>,
-    region_params_map: im::OrdMap<rustc_middle::ty::RegionKind, ty::RegionVarId::Id>,
+    region_params_map: im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id>,
     type_params: Vec<ty::TypeVar>,
     type_params_map: im::OrdMap<u32, ty::RTy>,
 }
@@ -486,7 +539,7 @@ struct TypeGenericsInfo<'tcx> {
 /// which represents the generics on the MIR side (and is useful to translate
 /// the body of the type...).
 ///
-/// Rem.: this seems simpler in [crate::translate_functions_to_im].
+/// Rem.: this seems simpler in [crate::translate_functions_to_ullbc].
 /// TODO: compare and simplify/factorize?
 fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGenericsInfo<'tcx> {
     // Check the generics
@@ -500,7 +553,7 @@ fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGeneri
     // - we need to create a map linking the rust parameters to our pure
     //   parameters
     let mut region_params: Vec<ty::RegionVar> = vec![];
-    let mut region_params_map: im::OrdMap<rustc_middle::ty::RegionKind, ty::RegionVarId::Id> =
+    let mut region_params_map: im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id> =
         im::OrdMap::new();
     let mut region_params_counter = ty::RegionVarId::Generator::new();
     let mut type_params: Vec<ty::TypeVar> = vec![];
@@ -526,7 +579,7 @@ fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGeneri
                 }
             }
             rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
-                let name = translate_region_name(region);
+                let name = translate_region_name(&region);
                 let t_region = ty::RegionVar {
                     index: region_params_counter.fresh_id(),
                     name: name,
@@ -536,6 +589,23 @@ fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGeneri
             }
             rustc_middle::ty::subst::GenericArgKind::Const(_) => {
                 unimplemented!();
+            }
+        }
+    }
+
+    // Sanity check: region names are pairwise distinct (this caused trouble
+    // when generating names for the backward functinos in Aeneas): at some
+    // point, Rustc introduced names equal to `Some("'_")` for the anonymous
+    // regions, instead of using `None` (we now check in [translate_region_name]
+    // and ignore names equal to "'_").
+    {
+        let mut s = std::collections::HashSet::new();
+        for r in &region_params {
+            let name = &r.name;
+            if name.is_some() {
+                let name = name.as_ref().unwrap();
+                assert!(s.contains(name));
+                s.insert(name.clone());
             }
         }
     }
@@ -579,7 +649,7 @@ fn translate_transparent_type<'tcx>(
     // Explore the variants
     let mut var_id = ty::VariantId::Id::new(0); // Variant index
     let mut variants: Vec<ty::Variant> = vec![];
-    for var_def in adt.variants.iter() {
+    for var_def in adt.variants().iter() {
         trace!("variant {}: {:?}", var_id, var_def);
 
         let mut fields: Vec<ty::Field> = vec![];

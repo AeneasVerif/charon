@@ -1,4 +1,4 @@
-//! Implementations for llbc_ast.rs
+//! Implementations for [crate::llbc_ast]
 
 #![allow(dead_code)]
 use std::ops::DerefMut;
@@ -59,7 +59,8 @@ pub fn new_sequence(mut l: Statement, r: Statement) -> Statement {
     }
 }
 
-/// Visit an rvalue and generate statements. Used below in [transform_operands].
+/// Visit the operands in an rvalue and generate statements.
+/// Used below in [transform_operands].
 fn transform_rvalue_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
     rval: &mut Rvalue,
     f: &mut F,
@@ -74,7 +75,7 @@ fn transform_rvalue_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
 
 /// Transform a statement by visiting its operands and inserting the generated
 /// statements before each visited operand.
-/// Useful to implement a pass on operands: see e.g. [extract_global_assignments.rs].
+/// Useful to implement a pass on operands (see e.g., [crate::extract_global_assignments]).
 pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
     st: Statement,
     f: &mut F,
@@ -125,6 +126,59 @@ pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
         | Statement::Loop(_) => vec![],
     };
     chain_statements(new_st, st)
+}
+
+/// Apply a map transformer on statements, in a bottom-up manner.
+/// Useful to implement a pass on operands (e.g., [crate::remove_drop_never]).
+pub fn transform_statements<F: FnMut(Statement) -> Statement>(
+    f: &mut F,
+    st: Statement,
+) -> Statement {
+    // Apply the transformer bottom-up
+    let st = match st {
+        Statement::Switch(op, tgt) => {
+            let tgt = match tgt {
+                SwitchTargets::If(mut st1, mut st2) => {
+                    *st1 = transform_statements(f, *st1);
+                    *st2 = transform_statements(f, *st2);
+                    SwitchTargets::If(st1, st2)
+                }
+                SwitchTargets::SwitchInt(int_ty, branches, mut otherwise) => {
+                    let branches: Vec<(Vec<ScalarValue>, Statement)> = branches
+                        .into_iter()
+                        .map(|x| (x.0, transform_statements(f, x.1)))
+                        .collect();
+                    *otherwise = transform_statements(f, *otherwise);
+                    SwitchTargets::SwitchInt(int_ty, branches, otherwise)
+                }
+            };
+            Statement::Switch(op, tgt)
+        }
+        Statement::Assign(p, r) => Statement::Assign(p, r),
+        Statement::Call(c) => Statement::Call(c),
+        Statement::Assert(a) => Statement::Assert(a),
+        Statement::AssignGlobal(vid, g) => Statement::AssignGlobal(vid, g),
+        Statement::FakeRead(p) => Statement::FakeRead(p),
+        Statement::SetDiscriminant(p, vid) => Statement::SetDiscriminant(p, vid),
+        Statement::Drop(p) => Statement::Drop(p),
+        Statement::Panic => Statement::Panic,
+        Statement::Return => Statement::Return,
+        Statement::Break(i) => Statement::Break(i),
+        Statement::Continue(i) => Statement::Continue(i),
+        Statement::Nop => Statement::Nop,
+        Statement::Sequence(st1, st2) => {
+            let st1 = transform_statements(f, *st1);
+            let st2 = transform_statements(f, *st2);
+            new_sequence(st1, st2)
+        }
+        Statement::Loop(mut st) => {
+            *st = transform_statements(f, *st);
+            Statement::Loop(st)
+        }
+    };
+
+    // Apply on the current statement
+    f(st)
 }
 
 impl SwitchTargets {
@@ -368,7 +422,7 @@ impl ExprBody {
         let fun_ctx = FunDeclsFormatter::new(fun_ctx);
         let global_ctx = GlobalDeclsFormatter::new(global_ctx);
         let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
-        self.fmt_with_ctx("", &ctx)
+        self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
     pub fn fmt_with_names<'ctx>(
@@ -381,7 +435,7 @@ impl ExprBody {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
         let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
-        self.fmt_with_ctx("", &ctx)
+        self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
     pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {

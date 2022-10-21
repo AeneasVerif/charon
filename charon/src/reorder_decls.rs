@@ -292,7 +292,7 @@ pub fn reorder_declarations(
         // its own set of dependencies.
         let is_mutually_recursive = scc.len() > 1;
         let is_simply_recursive =
-            !is_mutually_recursive && decl.deps.as_ref().is_some_with(|deps| deps.contains(&id0));
+            !is_mutually_recursive && decl.deps.as_ref().is_some_and(|deps| deps.contains(&id0));
 
         // Add the declaration.
         // Note that we clone the vectors: it is not optimal, but they should

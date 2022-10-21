@@ -38,7 +38,6 @@ fn compute_used_locals_in_rvalue(locals: &mut HashSet<VarId::Id>, rv: &Rvalue) {
             compute_used_locals_in_operand(locals, op2);
         }
         Rvalue::Discriminant(p) => compute_used_locals_in_place(locals, p),
-
         Rvalue::Aggregate(_, ops) => {
             compute_used_locals_in_operands(locals, ops);
         }

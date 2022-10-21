@@ -28,6 +28,16 @@ pub fn extract_constants_at_top_level(level: MirLevel) -> bool {
     }
 }
 
+/// Are boxe manipulations desugared to very low-level code using raw pointers,
+/// unique and non-null pointers? See [crate::types::Ty::RawPtr] for detailed explanations.
+pub fn boxes_are_desugared(level: MirLevel) -> bool {
+    match level {
+        MirLevel::Built => false,
+        MirLevel::Promoted => unimplemented!(), // Don't know
+        MirLevel::Optimized => true,
+    }
+}
+
 /// Query the MIR for a function at a specific level
 pub fn get_mir_for_def_id_and_level<'tcx>(
     tcx: TyCtxt<'tcx>,

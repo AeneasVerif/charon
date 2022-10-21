@@ -43,6 +43,10 @@ pub static INDEX_NAME: [&str; 5] = ["core", "ops", "index", "Index", "index"];
 // This is a trait: for now we assume it is only used on vectors
 pub static INDEX_MUT_NAME: [&str; 5] = ["core", "ops", "index", "IndexMut", "index_mut"];
 
+// Pointers
+pub static PTR_UNIQUE_NAME: [&str; 3] = ["core", "ptr", "Unique"];
+pub static PTR_NON_NULL_NAME: [&str; 3] = ["core", "ptr", "NonNull"];
+
 // We ignore this trait, which is implicitly given to all the type parameters
 pub static MARKER_SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
 
@@ -74,8 +78,23 @@ pub fn get_type_id_from_name(name: &TypeName) -> Option<types::AssumedTy> {
         Option::Some(types::AssumedTy::Vec)
     } else if name.equals_ref_name(&OPTION_NAME) {
         Option::Some(types::AssumedTy::Option)
+    } else if name.equals_ref_name(&PTR_UNIQUE_NAME) {
+        Option::Some(types::AssumedTy::PtrUnique)
+    } else if name.equals_ref_name(&PTR_NON_NULL_NAME) {
+        Option::Some(types::AssumedTy::PtrNonNull)
     } else {
         Option::None
+    }
+}
+
+pub fn get_name_from_type_id(id: types::AssumedTy) -> Vec<String> {
+    use types::AssumedTy;
+    match id {
+        AssumedTy::Box => BOX_NAME.iter().map(|s| s.to_string()).collect(),
+        AssumedTy::Vec => VEC_NAME.iter().map(|s| s.to_string()).collect(),
+        AssumedTy::Option => OPTION_NAME.iter().map(|s| s.to_string()).collect(),
+        AssumedTy::PtrUnique => PTR_UNIQUE_NAME.iter().map(|s| s.to_string()).collect(),
+        AssumedTy::PtrNonNull => PTR_NON_NULL_NAME.iter().map(|s| s.to_string()).collect(),
     }
 }
 
@@ -134,23 +153,27 @@ pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
     }
 }
 
-/// We ignore some type parameters, for some assumed types.
-/// For instance, many types like box or vec are parameterized by an allocator
-/// (`std::alloc::Allocator`): we ignore it, because it is not useful to reason
-/// about the functional behaviour.
+/// When translating from MIR to ULLBC, we ignore some type parameters for some
+/// assumed types.
+/// For instance, many types like box or vec are parameterized (in MIR) by an allocator
+/// (`std::alloc::Allocator`): we ignore it.
 pub fn type_to_used_params(name: &TypeName) -> Option<Vec<bool>> {
     trace!("{}", name);
     match get_type_id_from_name(name) {
         Option::None => Option::None,
         Option::Some(id) => {
+            use types::AssumedTy;
             let id = match id {
-                types::AssumedTy::Box => {
+                AssumedTy::Box => {
                     vec![true, false]
                 }
-                types::AssumedTy::Vec => {
+                AssumedTy::Vec => {
                     vec![true, false]
                 }
-                types::AssumedTy::Option => {
+                AssumedTy::Option => {
+                    vec![true]
+                }
+                AssumedTy::PtrUnique | AssumedTy::PtrNonNull => {
                     vec![true]
                 }
             };

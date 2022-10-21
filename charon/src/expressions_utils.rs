@@ -1,12 +1,12 @@
-//! This file groups everything which is linked to implementations about expression.rs
+//! This file groups everything which is linked to implementations about [crate::expressions]
 #![allow(dead_code)]
 
 use crate::assumed;
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
-use crate::ullbc_ast::GlobalDeclId;
 use crate::types::*;
+use crate::ullbc_ast::GlobalDeclId;
 use crate::values;
 use crate::values::*;
 use serde::ser::SerializeStruct;
@@ -92,6 +92,15 @@ impl Place {
                 }
                 ProjectionElem::DerefBox => {
                     out = format!("deref_box ({})", out);
+                }
+                ProjectionElem::DerefRawPtr => {
+                    out = format!("deref_raw_ptr ({})", out);
+                }
+                ProjectionElem::DerefPtrUnique => {
+                    out = format!("deref_ptr_unique ({})", out);
+                }
+                ProjectionElem::DerefPtrNonNull => {
+                    out = format!("deref_ptr_non_null ({})", out);
                 }
                 ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                     FieldProjKind::Adt(adt_id, opt_variant_id) => {
@@ -185,13 +194,15 @@ impl std::string::ToString for Operand {
 }
 
 impl Rvalue {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
         T: Formatter<VarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
+            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
+            + Formatter<TypeVarId::Id>
+            + Formatter<&'a ErasedRegion>,
     {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),

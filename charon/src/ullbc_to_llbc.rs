@@ -20,6 +20,7 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
+use crate::expressions::Place;
 use crate::llbc_ast as tgt;
 use crate::types::TypeDecls;
 use crate::ullbc_ast::FunDeclId;
@@ -1373,7 +1374,15 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
         src::Statement::SetDiscriminant(place, variant_id) => {
             Some(tgt::Statement::SetDiscriminant(place.clone(), *variant_id))
         }
-        src::Statement::StorageDead(_var_id) => None,
+        src::Statement::StorageDead(var_id) => {
+            // We translate a StorageDead as a drop
+            let place = Place::new(*var_id);
+            Some(tgt::Statement::Drop(place))
+        }
+        src::Statement::Deinit(place) => {
+            // We translate a deinit as a drop
+            Some(tgt::Statement::Drop(place.clone()))
+        }
     }
 }
 

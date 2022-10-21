@@ -1,11 +1,12 @@
-//! This file groups everything which is linked to implementations about types.rs
+//! This file groups everything which is linked to implementations about [crate::types]
 #![allow(dead_code)]
 
+use crate::assumed::get_name_from_type_id;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::id_vector;
-use crate::ullbc_ast::GlobalDeclId;
 use crate::types::*;
+use crate::ullbc_ast::GlobalDeclId;
 use im::{HashMap, OrdSet, Vector};
 use rustc_middle::ty::{IntTy, UintTy};
 use serde::ser::SerializeTupleVariant;
@@ -428,11 +429,7 @@ impl TypeId {
         match self {
             TypeId::Tuple => "".to_string(),
             TypeId::Adt(def_id) => ctx.format_object(*def_id),
-            TypeId::Assumed(aty) => match aty {
-                AssumedTy::Box => "alloc::boxed::Box".to_string(),
-                AssumedTy::Vec => "alloc::vec::Vec".to_string(),
-                AssumedTy::Option => "core::option::Option".to_string(),
-            },
+            TypeId::Assumed(aty) => get_name_from_type_id(*aty).join("::"),
         }
     }
 }
@@ -481,7 +478,11 @@ where
     /// - false if adt, array...
     pub fn is_leaf(&self) -> bool {
         match self {
-            Ty::Adt(_, _, _) | Ty::Array(_) | Ty::Slice(_) | Ty::Ref(_, _, _) => false,
+            Ty::Adt(_, _, _)
+            | Ty::Array(_)
+            | Ty::Slice(_)
+            | Ty::Ref(_, _, _)
+            | Ty::RawPtr(_, _) => false,
             Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => true,
         }
     }
@@ -534,6 +535,10 @@ where
                 RefKind::Shared => {
                     format!("&{} ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx)).to_string()
                 }
+            },
+            Ty::RawPtr(ty, kind) => match kind {
+                RefKind::Mut => format!("*const {}", ty.fmt_with_ctx(ctx)).to_string(),
+                RefKind::Shared => format!("*mut {}", ty.fmt_with_ctx(ctx)).to_string(),
             },
         }
     }
@@ -593,7 +598,8 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
             Ty::TypeVar(_) => false,
             Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
             Ty::Array(ty) | Ty::Slice(ty) => ty.contains_region_var(rset),
-            Ty::Ref(r, _, _) => r.contains_var(rset),
+            Ty::Ref(r, ty, _) => r.contains_var(rset) || ty.contains_region_var(rset),
+            Ty::RawPtr(ty, _) => ty.contains_region_var(rset),
             Ty::Adt(_, regions, tys) => regions
                 .iter()
                 .any(|r| r.contains_var(rset) || tys.iter().any(|x| x.contains_region_var(rset))),
@@ -739,6 +745,9 @@ where
             Ty::Ref(rid, ty, kind) => {
                 return Ty::Ref(rsubst(rid), Box::new(ty.substitute(rsubst, tsubst)), *kind);
             }
+            Ty::RawPtr(ty, kind) => {
+                return Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst)), *kind);
+            }
         }
     }
 
@@ -773,6 +782,7 @@ where
             Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
             Ty::Array(ty) | Ty::Slice(ty) => ty.contains_variables(),
             Ty::Ref(_, _, _) => true, // Always contains a region identifier
+            Ty::RawPtr(ty, _) => ty.contains_variables(),
             Ty::Adt(_, regions, tys) => {
                 !regions.is_empty() || tys.iter().any(|x| x.contains_variables())
             }
@@ -786,6 +796,7 @@ where
             Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
             Ty::Array(ty) | Ty::Slice(ty) => ty.contains_regions(),
             Ty::Ref(_, _, _) => true,
+            Ty::RawPtr(ty, _) => ty.contains_regions(),
             Ty::Adt(_, regions, tys) => {
                 !regions.is_empty() || tys.iter().any(|x| x.contains_regions())
             }
@@ -960,6 +971,10 @@ impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
                     vs.serialize_field(ty)?;
                     vs.serialize_field(ref_kind)?;
                 }
+                Ty::RawPtr(ty, ref_kind) => {
+                    vs.serialize_field(ty)?;
+                    vs.serialize_field(ref_kind)?;
+                }
             }
             vs.end()
         } else {
@@ -974,7 +989,9 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
             Ty::Never => true,
             Ty::Adt(_, _, tys) => tys.iter().any(|ty| ty.contains_never()),
             Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Str | Ty::Integer(_) => false,
-            Ty::Array(ty) | Ty::Slice(ty) | Ty::Ref(_, ty, _) => ty.contains_never(),
+            Ty::Array(ty) | Ty::Slice(ty) | Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => {
+                ty.contains_never()
+            }
         }
     }
 }

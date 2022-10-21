@@ -327,7 +327,13 @@ fn compute_full_regions_constraints_for_ty(
                     }
                 }
                 TypeId::Tuple
-                | TypeId::Assumed(AssumedTy::Box | AssumedTy::Vec | AssumedTy::Option) => {
+                | TypeId::Assumed(
+                    AssumedTy::Box
+                    | AssumedTy::Vec
+                    | AssumedTy::Option
+                    | AssumedTy::PtrUnique
+                    | AssumedTy::PtrNonNull,
+                ) => {
                     // Explore the types given as parameters
                     for fty in types {
                         compute_full_regions_constraints_for_ty(
@@ -371,6 +377,17 @@ fn compute_full_regions_constraints_for_ty(
                 type_def_constraints,
                 parent_regions,
                 ref_ty,
+            );
+        }
+        Ty::RawPtr(ptr_ty, _mutability) => {
+            // Dive in
+            compute_full_regions_constraints_for_ty(
+                updated,
+                constraints_map,
+                acc_constraints,
+                type_def_constraints,
+                parent_regions,
+                ptr_ty,
             );
         }
         Ty::TypeVar(var_id) => {
