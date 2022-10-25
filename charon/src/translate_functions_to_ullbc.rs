@@ -14,7 +14,7 @@ use crate::get_mir::{
 };
 use crate::id_vector;
 use crate::meta;
-use crate::meta::{FileId, RealFileName};
+use crate::meta::{FileId, FileName};
 use crate::names::global_def_id_to_name;
 use crate::names::{function_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy as rh;
@@ -408,7 +408,7 @@ fn translate_basic_block<'tcx, 'ctx, 'ctx1>(
         trace!("statement: {:?}", statement);
 
         // Some statements might be ignored, hence the optional returned value
-        let opt_statement = translate_statement(bt_ctx, &statement)?;
+        let opt_statement = translate_statement(bt_ctx, body, &statement)?;
         match opt_statement {
             Some(statement) => statements.push(statement),
             None => (),
@@ -1400,6 +1400,7 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
 /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
 fn translate_statement<'tcx, 'ctx, 'ctx1>(
     bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
+    body: &Body<'tcx>,
     statement: &Statement<'tcx>,
 ) -> Result<Option<ast::Statement>> {
     trace!("About to translate statement (MIR) {:?}", statement);
@@ -1471,10 +1472,11 @@ fn translate_statement<'tcx, 'ctx, 'ctx1>(
     match t_statement {
         None => Ok(None),
         Some(t_statement) => {
-            let meta = meta::get_meta_from_rspan(
+            let meta = meta::get_meta_from_source_info(
                 sess,
                 &bt_ctx.ft_ctx.ordered.file_to_id,
-                statement.source_info.span,
+                &body.source_scopes,
+                statement.source_info,
             );
 
             Ok(Some(ast::Statement::new(meta, t_statement)))
@@ -1494,10 +1496,11 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
 
     // Compute the meta information beforehand (we might need it to introduce
     // intermediate statements - we desugar some terminators)
-    let meta = meta::get_meta_from_rspan(
+    let meta = meta::get_meta_from_source_info(
         sess,
         &bt_ctx.ft_ctx.ordered.file_to_id,
-        terminator.source_info.span,
+        &body.source_scopes,
+        terminator.source_info,
     );
 
     // Translate the terminator
@@ -2477,7 +2480,7 @@ fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> rustc_middle::mir::Unevaluate
 fn global_generate_assignment_body(
     sess: &Session,
     tcx: TyCtxt,
-    filename_to_id: &HashMap<RealFileName, FileId::Id>,
+    filename_to_id: &HashMap<FileName, FileId::Id>,
     ty: ty::ETy,
     def_rid: DefId,
     val: e::OperandConstantValue,

@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::meta::{FileId, FileInfo, LocalFileId, RealFileName, VirtualFileId};
+use crate::meta::{FileId, FileInfo, FileName, LocalFileId, VirtualFileId};
 use crate::reorder_decls as rd;
 use crate::types as ty;
 use crate::types::TypeDeclId;
@@ -70,14 +70,14 @@ fn add_global_info(
 
 pub struct OrderedDecls {
     /// The ordered files
-    pub files: Vec<RealFileName>,
+    pub files: Vec<FileName>,
     /// The properly grouped and ordered declarations
     pub decls: Vec<DeclarationGroup>,
     /// Additional information on declarations
     pub decls_info: HashMap<AnyDeclId, DeclInfo>,
     /// File names to ids and vice-versa
-    pub file_to_id: HashMap<RealFileName, FileId::Id>,
-    pub id_to_file: HashMap<FileId::Id, RealFileName>,
+    pub file_to_id: HashMap<FileName, FileId::Id>,
+    pub id_to_file: HashMap<FileId::Id, FileName>,
     /// Rust identifiers to translation identifiers
     pub type_rid_to_id: HashMap<DefId, ty::TypeDeclId::Id>,
     pub fun_rid_to_id: HashMap<DefId, ast::FunDeclId::Id>,
@@ -86,7 +86,7 @@ pub struct OrderedDecls {
 
 /// Convert the definition ids used by the rust compiler to our own definition ids.
 pub fn rust_to_local_ids(
-    files_info: &HashMap<RealFileName, FileInfo>,
+    files_info: &HashMap<FileName, FileInfo>,
     reordered: &rd::DeclarationsGroups<DefId, DefId, DefId>,
 ) -> OrderedDecls {
     let mut decls_info = HashMap::new();
@@ -157,18 +157,19 @@ pub fn rust_to_local_ids(
     }
 
     // Reorder the files and compute the maps from files to ids and reverse
-    let mut files: Vec<RealFileName> = files_info.keys().map(|f| f.clone()).collect();
+    let mut files: Vec<FileName> = files_info.keys().map(|f| f.clone()).collect();
     files.sort();
 
-    let mut file_to_id: HashMap<RealFileName, FileId::Id> = HashMap::new();
-    let mut id_to_file: HashMap<FileId::Id, RealFileName> = HashMap::new();
+    let mut file_to_id: HashMap<FileName, FileId::Id> = HashMap::new();
+    let mut id_to_file: HashMap<FileId::Id, FileName> = HashMap::new();
     let mut real_file_counter = LocalFileId::Generator::new();
     let mut virtual_file_counter = VirtualFileId::Generator::new();
 
     for file in &files {
         let id = match file {
-            RealFileName::Local(_) => FileId::Id::LocalId(real_file_counter.fresh_id()),
-            RealFileName::Virtual(_) => FileId::Id::VirtualId(virtual_file_counter.fresh_id()),
+            FileName::Local(_) => FileId::Id::LocalId(real_file_counter.fresh_id()),
+            FileName::Virtual(_) => FileId::Id::VirtualId(virtual_file_counter.fresh_id()),
+            FileName::NotReal(_) => unimplemented!(),
         };
         file_to_id.insert(file.clone(), id);
         id_to_file.insert(id, file.clone());

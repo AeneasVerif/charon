@@ -14,7 +14,7 @@ use crate::common::*;
 use crate::generics;
 use crate::get_mir::{extract_constants_at_top_level, get_mir_for_def_id_and_level, MirLevel};
 use crate::meta;
-use crate::meta::{FileInfo, FileName, RealFileName};
+use crate::meta::{FileInfo, FileName};
 use crate::names::Name;
 use crate::names::{
     function_def_id_to_name, global_def_id_to_name, hir_item_to_name, module_def_id_to_name,
@@ -159,7 +159,7 @@ pub type RegisteredDeclarations = LinkedHashMap<DefId, Declaration>;
 struct DeclarationsRegister {
     decl_ids: LinkedHashSet<DefId>,
     decls: RegisteredDeclarations,
-    files: HashMap<RealFileName, FileInfo>,
+    files: HashMap<FileName, FileInfo>,
 }
 
 impl DeclarationsRegister {
@@ -186,12 +186,7 @@ impl DeclarationsRegister {
 
     /// Register a file if it is a "real" file if it was not already registered
     fn register_file(&mut self, filename: FileName) {
-        match filename {
-            FileName::Real(filename) => {
-                let _ = self.files.insert(filename, FileInfo {});
-            }
-            _ => (),
-        }
+        let _ = self.files.insert(filename, FileInfo {});
     }
 
     /// Indicates if the declaration is being (or has been) added.
@@ -313,9 +308,7 @@ impl DeclarationsRegister {
 
     /// Returns all registered files and declarations.
     /// Verifies that no known id or dependency is missing.
-    fn get_files_and_declarations(
-        self,
-    ) -> (HashMap<RealFileName, FileInfo>, RegisteredDeclarations) {
+    fn get_files_and_declarations(self) -> (HashMap<FileName, FileInfo>, RegisteredDeclarations) {
         for id in self.decl_ids.iter() {
             assert!(
                 self.decls.contains_key(id),
@@ -1360,7 +1353,7 @@ pub fn explore_crate(
     sess: &Session,
     tcx: TyCtxt,
     mir_level: MirLevel,
-) -> Result<(HashMap<RealFileName, FileInfo>, RegisteredDeclarations)> {
+) -> Result<(HashMap<FileName, FileInfo>, RegisteredDeclarations)> {
     let ctx = RegisterContext {
         rustc: tcx,
         crate_info,

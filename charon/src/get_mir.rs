@@ -43,7 +43,7 @@ pub fn get_mir_for_def_id_and_level<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: LocalDefId,
     level: MirLevel,
-) -> &'tcx Body<'tcx> {
+) -> &Body<'tcx> {
     match level {
         MirLevel::Built => {
             let body = tcx.mir_built(WithOptConstParam::unknown(def_id));
