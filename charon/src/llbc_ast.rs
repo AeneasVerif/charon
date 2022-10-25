@@ -9,6 +9,7 @@
 #![allow(dead_code)]
 use crate::expressions::*;
 pub use crate::llbc_ast_utils::*;
+use crate::meta::Meta;
 use crate::types::*;
 use crate::ullbc_ast::*;
 pub use crate::ullbc_ast::{CtxNames, FunDeclId, GlobalDeclId, Var};
@@ -35,8 +36,9 @@ pub struct Call {
     pub dest: Place,
 }
 
+/// A raw statement: a statement without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
-pub enum Statement {
+pub enum RawStatement {
     Assign(Place, Rvalue),
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
@@ -70,6 +72,12 @@ pub enum Statement {
     Sequence(Box<Statement>, Box<Statement>),
     Switch(Operand, SwitchTargets),
     Loop(Box<Statement>),
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Statement {
+    pub meta: Meta,
+    pub content: RawStatement,
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]

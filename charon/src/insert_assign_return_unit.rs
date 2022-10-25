@@ -7,55 +7,57 @@ use take_mut::take;
 
 use crate::expressions::*;
 use crate::llbc_ast::{
-    CtxNames, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, Statement, SwitchTargets,
+    CtxNames, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
+    SwitchTargets,
 };
 use crate::names::Name;
 use crate::values::*;
 use std::iter::FromIterator;
 
-fn transform_st(st: Statement) -> Statement {
-    match st {
-        Statement::Return => {
+fn transform_st(mut st: Statement) -> Statement {
+    st.content = match st.content {
+        RawStatement::Return => {
             // The interesting case
             let ret_place = Place {
                 var_id: VarId::Id::new(0),
                 projection: Projection::new(),
             };
             let unit_value = Rvalue::Aggregate(AggregateKind::Tuple, Vec::new());
-            let assign_st = Statement::Assign(ret_place, unit_value);
-            let ret_st = Statement::Return;
-            Statement::Sequence(Box::new(assign_st), Box::new(ret_st))
+            let assign_st = Statement::new(st.meta, RawStatement::Assign(ret_place, unit_value));
+            let ret_st = Statement::new(st.meta, RawStatement::Return);
+            RawStatement::Sequence(Box::new(assign_st), Box::new(ret_st))
         }
-        Statement::Assign(p, rv) => Statement::Assign(p, rv),
-        Statement::AssignGlobal(id, g) => Statement::AssignGlobal(id, g),
-        Statement::FakeRead(p) => Statement::FakeRead(p),
-        Statement::SetDiscriminant(p, vid) => Statement::SetDiscriminant(p, vid),
-        Statement::Drop(p) => Statement::Drop(p),
-        Statement::Assert(assert) => Statement::Assert(assert),
-        Statement::Call(call) => Statement::Call(call),
-        Statement::Panic => Statement::Panic,
-        Statement::Break(i) => Statement::Break(i),
-        Statement::Continue(i) => Statement::Continue(i),
-        Statement::Nop => Statement::Nop,
-        Statement::Switch(op, targets) => match targets {
+        RawStatement::Assign(p, rv) => RawStatement::Assign(p, rv),
+        RawStatement::AssignGlobal(id, g) => RawStatement::AssignGlobal(id, g),
+        RawStatement::FakeRead(p) => RawStatement::FakeRead(p),
+        RawStatement::SetDiscriminant(p, vid) => RawStatement::SetDiscriminant(p, vid),
+        RawStatement::Drop(p) => RawStatement::Drop(p),
+        RawStatement::Assert(assert) => RawStatement::Assert(assert),
+        RawStatement::Call(call) => RawStatement::Call(call),
+        RawStatement::Panic => RawStatement::Panic,
+        RawStatement::Break(i) => RawStatement::Break(i),
+        RawStatement::Continue(i) => RawStatement::Continue(i),
+        RawStatement::Nop => RawStatement::Nop,
+        RawStatement::Switch(op, targets) => match targets {
             SwitchTargets::If(st1, st2) => {
                 let st1 = Box::new(transform_st(*st1));
                 let st2 = Box::new(transform_st(*st2));
-                Statement::Switch(op, SwitchTargets::If(st1, st2))
+                RawStatement::Switch(op, SwitchTargets::If(st1, st2))
             }
             SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
                 let targets =
                     Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
                 let otherwise = transform_st(*otherwise);
                 let targets = SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise));
-                Statement::Switch(op, targets)
+                RawStatement::Switch(op, targets)
             }
         },
-        Statement::Loop(loop_body) => Statement::Loop(Box::new(transform_st(*loop_body))),
-        Statement::Sequence(st1, st2) => {
-            Statement::Sequence(Box::new(transform_st(*st1)), Box::new(transform_st(*st2)))
+        RawStatement::Loop(loop_body) => RawStatement::Loop(Box::new(transform_st(*loop_body))),
+        RawStatement::Sequence(st1, st2) => {
+            RawStatement::Sequence(Box::new(transform_st(*st1)), Box::new(transform_st(*st2)))
         }
-    }
+    };
+    st
 }
 
 fn transform_body<'ctx>(fmt_ctx: &CtxNames<'ctx>, name: &Name, body: &mut Option<ExprBody>) {

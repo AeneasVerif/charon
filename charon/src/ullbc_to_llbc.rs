@@ -22,6 +22,7 @@
 
 use crate::expressions::Place;
 use crate::llbc_ast as tgt;
+use crate::meta::{combine_meta, Meta};
 use crate::types::TypeDecls;
 use crate::ullbc_ast::FunDeclId;
 use crate::ullbc_ast::{self as src, GlobalDeclId};
@@ -45,10 +46,10 @@ type Cfg = DiGraphMap<src::BlockId::Id, ()>;
 fn get_block_targets(body: &src::ExprBody, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
     let block = body.body.get(block_id).unwrap();
 
-    match &block.terminator {
-        src::Terminator::Goto { target }
-        | src::Terminator::Drop { place: _, target }
-        | src::Terminator::Call {
+    match &block.terminator.content {
+        src::RawTerminator::Goto { target }
+        | src::RawTerminator::Drop { place: _, target }
+        | src::RawTerminator::Call {
             func: _,
             region_args: _,
             type_args: _,
@@ -56,15 +57,17 @@ fn get_block_targets(body: &src::ExprBody, block_id: src::BlockId::Id) -> Vec<sr
             dest: _,
             target,
         }
-        | src::Terminator::Assert {
+        | src::RawTerminator::Assert {
             cond: _,
             expected: _,
             target,
         } => {
             vec![*target]
         }
-        src::Terminator::Switch { discr: _, targets } => targets.get_targets(),
-        src::Terminator::Panic | src::Terminator::Unreachable | src::Terminator::Return => {
+        src::RawTerminator::Switch { discr: _, targets } => targets.get_targets(),
+        src::RawTerminator::Panic
+        | src::RawTerminator::Unreachable
+        | src::RawTerminator::Return => {
             vec![]
         }
     }
@@ -133,7 +136,7 @@ fn build_cfg_partial_info(body: &src::ExprBody) -> CfgPartialInfo {
 
 fn block_is_switch(body: &src::ExprBody, block_id: src::BlockId::Id) -> bool {
     let block = body.body.get(block_id).unwrap();
-    block.terminator.is_switch()
+    block.terminator.content.is_switch()
 }
 
 fn build_cfg_partial_info_edges(
@@ -1269,7 +1272,11 @@ fn combine_statement_and_statement(
     next_st: Option<tgt::Statement>,
 ) -> tgt::Statement {
     match next_st {
-        Some(next_st) => tgt::Statement::Sequence(Box::new(statement), Box::new(next_st)),
+        Some(next_st) => {
+            let meta = combine_meta(&statement.meta, &next_st.meta);
+            let st = tgt::RawStatement::Sequence(Box::new(statement), Box::new(next_st));
+            tgt::Statement::new(meta, st)
+        }
         None => statement,
     }
 }
@@ -1326,6 +1333,8 @@ enum GotoKind {
     Goto,
 }
 
+/// `parent_meta`: we need some meta data for the new statement.
+/// We use the one for the parent terminator.
 fn translate_child_block(
     no_code_duplication: bool,
     cfg: &CfgInfo,
@@ -1334,12 +1343,19 @@ fn translate_child_block(
     parent_loops: Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     explored: &mut HashSet<src::BlockId::Id>,
+    parent_meta: Meta,
     child_id: src::BlockId::Id,
 ) -> Option<tgt::Statement> {
     // Check if this is a backward call
     match get_goto_kind(exits_info, &parent_loops, switch_exit_blocks, child_id) {
-        GotoKind::Break(index) => Some(tgt::Statement::Break(index)),
-        GotoKind::Continue(index) => Some(tgt::Statement::Continue(index)),
+        GotoKind::Break(index) => {
+            let st = tgt::RawStatement::Break(index);
+            Some(tgt::Statement::new(parent_meta, st))
+        }
+        GotoKind::Continue(index) => {
+            let st = tgt::RawStatement::Continue(index);
+            Some(tgt::Statement::new(parent_meta, st))
+        }
         // If we are going to an exit block we simply ignore the goto
         GotoKind::ExitBlock => None,
         GotoKind::Goto => {
@@ -1358,32 +1374,34 @@ fn translate_child_block(
     }
 }
 
-fn opt_statement_to_nop_if_none(opt_st: Option<tgt::Statement>) -> tgt::Statement {
+fn opt_statement_to_nop_if_none(meta: Meta, opt_st: Option<tgt::Statement>) -> tgt::Statement {
     match opt_st {
         Some(st) => st,
-        None => tgt::Statement::Nop,
+        None => tgt::Statement::new(meta, tgt::RawStatement::Nop),
     }
 }
 
 fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
-    match st {
-        src::Statement::Assign(place, rvalue) => {
-            Some(tgt::Statement::Assign(place.clone(), rvalue.clone()))
+    let src_meta = st.meta;
+    let st = match &st.content {
+        src::RawStatement::Assign(place, rvalue) => {
+            tgt::RawStatement::Assign(place.clone(), rvalue.clone())
         }
-        src::Statement::FakeRead(place) => Some(tgt::Statement::FakeRead(place.clone())),
-        src::Statement::SetDiscriminant(place, variant_id) => {
-            Some(tgt::Statement::SetDiscriminant(place.clone(), *variant_id))
+        src::RawStatement::FakeRead(place) => tgt::RawStatement::FakeRead(place.clone()),
+        src::RawStatement::SetDiscriminant(place, variant_id) => {
+            tgt::RawStatement::SetDiscriminant(place.clone(), *variant_id)
         }
-        src::Statement::StorageDead(var_id) => {
+        src::RawStatement::StorageDead(var_id) => {
             // We translate a StorageDead as a drop
             let place = Place::new(*var_id);
-            Some(tgt::Statement::Drop(place))
+            tgt::RawStatement::Drop(place)
         }
-        src::Statement::Deinit(place) => {
+        src::RawStatement::Deinit(place) => {
             // We translate a deinit as a drop
-            Some(tgt::Statement::Drop(place.clone()))
+            tgt::RawStatement::Drop(place.clone())
         }
-    }
+    };
+    Some(tgt::Statement::new(src_meta, st))
 }
 
 fn translate_terminator(
@@ -1396,10 +1414,16 @@ fn translate_terminator(
     explored: &mut HashSet<src::BlockId::Id>,
     terminator: &src::Terminator,
 ) -> Option<tgt::Statement> {
-    match terminator {
-        src::Terminator::Panic | src::Terminator::Unreachable => Some(tgt::Statement::Panic),
-        src::Terminator::Return => Some(tgt::Statement::Return),
-        src::Terminator::Goto { target } => translate_child_block(
+    let src_meta = terminator.meta;
+
+    match &terminator.content {
+        src::RawTerminator::Panic | src::RawTerminator::Unreachable => {
+            Some(tgt::Statement::new(src_meta, tgt::RawStatement::Panic))
+        }
+        src::RawTerminator::Return => {
+            Some(tgt::Statement::new(src_meta, tgt::RawStatement::Return))
+        }
+        src::RawTerminator::Goto { target } => translate_child_block(
             no_code_duplication,
             cfg,
             body,
@@ -1407,9 +1431,10 @@ fn translate_terminator(
             parent_loops,
             switch_exit_blocks,
             explored,
+            terminator.meta,
             *target,
         ),
-        src::Terminator::Drop { place, target } => {
+        src::RawTerminator::Drop { place, target } => {
             let opt_child = translate_child_block(
                 no_code_duplication,
                 cfg,
@@ -1418,12 +1443,13 @@ fn translate_terminator(
                 parent_loops,
                 switch_exit_blocks,
                 explored,
+                terminator.meta,
                 *target,
             );
-            let st = tgt::Statement::Drop(place.clone());
+            let st = tgt::Statement::new(src_meta, tgt::RawStatement::Drop(place.clone()));
             Some(combine_statement_and_statement(st, opt_child))
         }
-        src::Terminator::Call {
+        src::RawTerminator::Call {
             func,
             region_args,
             type_args,
@@ -1439,18 +1465,20 @@ fn translate_terminator(
                 parent_loops,
                 switch_exit_blocks,
                 explored,
+                terminator.meta,
                 *target,
             );
-            let st = tgt::Statement::Call(tgt::Call {
+            let st = tgt::RawStatement::Call(tgt::Call {
                 func: func.clone(),
                 region_args: region_args.clone(),
                 type_args: type_args.clone(),
                 args: args.clone(),
                 dest: dest.clone(),
             });
+            let st = tgt::Statement::new(src_meta, st);
             Some(combine_statement_and_statement(st, opt_child))
         }
-        src::Terminator::Assert {
+        src::RawTerminator::Assert {
             cond,
             expected,
             target,
@@ -1463,15 +1491,17 @@ fn translate_terminator(
                 parent_loops,
                 switch_exit_blocks,
                 explored,
+                terminator.meta,
                 *target,
             );
-            let st = tgt::Statement::Assert(tgt::Assert {
+            let st = tgt::RawStatement::Assert(tgt::Assert {
                 cond: cond.clone(),
                 expected: *expected,
             });
+            let st = tgt::Statement::new(src_meta, st);
             Some(combine_statement_and_statement(st, opt_child))
         }
-        src::Terminator::Switch { discr, targets } => {
+        src::RawTerminator::Switch { discr, targets } => {
             // Translate the target expressions
             let targets = match &targets {
                 src::SwitchTargets::If(then_tgt, else_tgt) => {
@@ -1484,9 +1514,12 @@ fn translate_terminator(
                         parent_loops.clone(),
                         switch_exit_blocks,
                         explored,
+                        terminator.meta,
                         *then_tgt,
                     );
-                    let then_exp = opt_statement_to_nop_if_none(then_exp);
+                    // We use the terminator meta information in case then
+                    // then statement is `None`
+                    let then_exp = opt_statement_to_nop_if_none(terminator.meta, then_exp);
                     let else_exp = translate_child_block(
                         no_code_duplication,
                         cfg,
@@ -1495,9 +1528,10 @@ fn translate_terminator(
                         parent_loops.clone(),
                         switch_exit_blocks,
                         explored,
+                        terminator.meta,
                         *else_tgt,
                     );
-                    let else_exp = opt_statement_to_nop_if_none(else_exp);
+                    let else_exp = opt_statement_to_nop_if_none(terminator.meta, else_exp);
 
                     // Translate
                     tgt::SwitchTargets::If(Box::new(then_exp), Box::new(else_exp))
@@ -1546,9 +1580,12 @@ fn translate_terminator(
                                 parent_loops.clone(),
                                 switch_exit_blocks,
                                 explored,
+                                terminator.meta,
                                 *bid,
                             );
-                            let exp = opt_statement_to_nop_if_none(exp);
+                            // We use the terminator meta information in case then
+                            // then statement is `None`
+                            let exp = opt_statement_to_nop_if_none(terminator.meta, exp);
                             branches.insert(*bid, (vec![*v], exp));
                         }
                     }
@@ -1563,9 +1600,13 @@ fn translate_terminator(
                         parent_loops.clone(),
                         switch_exit_blocks,
                         explored,
+                        terminator.meta,
                         *otherwise,
                     );
-                    let otherwise_exp = opt_statement_to_nop_if_none(otherwise_exp);
+                    // We use the terminator meta information in case then
+                    // then statement is `None`
+                    let otherwise_exp =
+                        opt_statement_to_nop_if_none(terminator.meta, otherwise_exp);
 
                     // Translate
                     tgt::SwitchTargets::SwitchInt(*int_ty, targets_exps, Box::new(otherwise_exp))
@@ -1573,7 +1614,11 @@ fn translate_terminator(
             };
 
             // Return
-            Some(tgt::Statement::Switch(discr.clone(), targets))
+            let meta = tgt::combine_switch_targets_meta(&targets);
+            let meta = combine_meta(&src_meta, &meta);
+            let st = tgt::RawStatement::Switch(discr.clone(), targets);
+            let st = tgt::Statement::new(meta, st);
+            Some(st)
         }
     }
 }
@@ -1586,7 +1631,11 @@ fn combine_expressions(
         None => exp2,
         Some(exp1) => match exp2 {
             None => Some(exp1),
-            Some(exp2) => Some(tgt::Statement::Sequence(Box::new(exp1), Box::new(exp2))),
+            Some(exp2) => {
+                let meta = combine_meta(&exp1.meta, &exp2.meta);
+                let st = tgt::RawStatement::Sequence(Box::new(exp1), Box::new(exp2));
+                Some(tgt::Statement::new(meta, st))
+            }
         },
     }
 }
@@ -1601,30 +1650,30 @@ fn is_terminal(exp: &tgt::Statement) -> bool {
 /// - a break which goes to a loop outside the expression
 /// - a continue statement
 fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
-    match st {
-        tgt::Statement::Assign(_, _)
-        | tgt::Statement::AssignGlobal(_, _)
-        | tgt::Statement::FakeRead(_)
-        | tgt::Statement::SetDiscriminant(_, _)
-        | tgt::Statement::Drop(_)
-        | tgt::Statement::Assert(_)
-        | tgt::Statement::Call(_)
-        | tgt::Statement::Nop => false,
-        tgt::Statement::Panic | tgt::Statement::Return => true,
-        tgt::Statement::Break(index) => *index >= num_loops,
-        tgt::Statement::Continue(_index) => true,
-        tgt::Statement::Sequence(st1, st2) => {
+    match &st.content {
+        tgt::RawStatement::Assign(_, _)
+        | tgt::RawStatement::AssignGlobal(_, _)
+        | tgt::RawStatement::FakeRead(_)
+        | tgt::RawStatement::SetDiscriminant(_, _)
+        | tgt::RawStatement::Drop(_)
+        | tgt::RawStatement::Assert(_)
+        | tgt::RawStatement::Call(_)
+        | tgt::RawStatement::Nop => false,
+        tgt::RawStatement::Panic | tgt::RawStatement::Return => true,
+        tgt::RawStatement::Break(index) => *index >= num_loops,
+        tgt::RawStatement::Continue(_index) => true,
+        tgt::RawStatement::Sequence(st1, st2) => {
             if is_terminal_explore(num_loops, st1) {
                 return true;
             } else {
                 return is_terminal_explore(num_loops, st2);
             }
         }
-        tgt::Statement::Switch(_, targets) => targets
+        tgt::RawStatement::Switch(_, targets) => targets
             .get_targets()
             .iter()
             .all(|tgt_st| is_terminal_explore(num_loops, tgt_st)),
-        tgt::Statement::Loop(loop_st) => {
+        tgt::RawStatement::Loop(loop_st) => {
             return is_terminal_explore(num_loops + 1, loop_st);
         }
     }
@@ -1668,7 +1717,7 @@ fn translate_block(
     // If we enter a switch or a loop, we need to check if we own the exit
     // block, in which case we need to append it to the loop/switch body
     // in a sequence
-    let is_switch = block.terminator.is_switch();
+    let is_switch = block.terminator.content.is_switch();
     let next_block = if is_loop {
         *exits_info.owned_loop_exits.get(&block_id).unwrap()
     } else if is_switch {
@@ -1729,7 +1778,8 @@ fn translate_block(
         let exp = combine_statements_and_statement(statements, terminator);
 
         // Put the whole loop body inside a `Loop` wrapper
-        let exp = tgt::Statement::Loop(Box::new(exp.unwrap()));
+        let exp = exp.unwrap();
+        let exp = tgt::Statement::new(exp.meta, tgt::RawStatement::Loop(Box::new(exp)));
 
         // Add the exit block
         let exp = if next_block.is_some() {
@@ -1821,6 +1871,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     }
 
     tgt::ExprBody {
+        meta: src_body.meta,
         arg_count: src_body.arg_count,
         locals: src_body.locals.clone(),
         body: stmt,
@@ -1846,6 +1897,7 @@ fn translate_function(
     // Return the translated definition
     tgt::FunDecl {
         def_id: src_def.def_id,
+        meta: src_def.meta,
         name: src_def.name.clone(),
         signature: src_def.signature.clone(),
         body: src_def
@@ -1872,6 +1924,7 @@ fn translate_global(
 
     tgt::GlobalDecl {
         def_id: src_def.def_id,
+        meta: src_def.meta,
         name: src_def.name.clone(),
         ty: src_def.ty.clone(),
         body: src_def

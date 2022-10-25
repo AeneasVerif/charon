@@ -5,7 +5,7 @@ use take_mut::take;
 /// check that there are no such local variables remaining afterwards.
 use crate::expressions::*;
 use crate::id_vector::ToUsize;
-use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, Statement, SwitchTargets};
+use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, SwitchTargets};
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
@@ -45,28 +45,28 @@ fn compute_used_locals_in_rvalue(locals: &mut HashSet<VarId::Id>, rv: &Rvalue) {
 }
 
 fn compute_used_locals_in_statement(locals: &mut HashSet<VarId::Id>, st: &Statement) {
-    match st {
-        Statement::Return => (),
-        Statement::Assign(p, rv) => {
+    match &st.content {
+        RawStatement::Return => (),
+        RawStatement::Assign(p, rv) => {
             compute_used_locals_in_rvalue(locals, rv);
             compute_used_locals_in_place(locals, p);
         }
-        Statement::AssignGlobal(id, _) => {
+        RawStatement::AssignGlobal(id, _) => {
             locals.insert(*id);
         }
-        Statement::FakeRead(p) => compute_used_locals_in_place(locals, p),
-        Statement::SetDiscriminant(p, _) => compute_used_locals_in_place(locals, p),
-        Statement::Drop(p) => compute_used_locals_in_place(locals, p),
-        Statement::Assert(assert) => compute_used_locals_in_operand(locals, &assert.cond),
-        Statement::Call(call) => {
+        RawStatement::FakeRead(p) => compute_used_locals_in_place(locals, p),
+        RawStatement::SetDiscriminant(p, _) => compute_used_locals_in_place(locals, p),
+        RawStatement::Drop(p) => compute_used_locals_in_place(locals, p),
+        RawStatement::Assert(assert) => compute_used_locals_in_operand(locals, &assert.cond),
+        RawStatement::Call(call) => {
             compute_used_locals_in_operands(locals, &call.args);
             compute_used_locals_in_place(locals, &call.dest);
         }
-        Statement::Panic => (),
-        Statement::Break(_) => (),
-        Statement::Continue(_) => (),
-        Statement::Nop => (),
-        Statement::Switch(op, targets) => {
+        RawStatement::Panic => (),
+        RawStatement::Break(_) => (),
+        RawStatement::Continue(_) => (),
+        RawStatement::Nop => (),
+        RawStatement::Switch(op, targets) => {
             compute_used_locals_in_operand(locals, op);
             match targets {
                 SwitchTargets::If(st1, st2) => {
@@ -81,8 +81,8 @@ fn compute_used_locals_in_statement(locals: &mut HashSet<VarId::Id>, st: &Statem
                 }
             }
         }
-        Statement::Loop(loop_body) => compute_used_locals_in_statement(locals, loop_body),
-        Statement::Sequence(st1, st2) => {
+        RawStatement::Loop(loop_body) => compute_used_locals_in_statement(locals, loop_body),
+        RawStatement::Sequence(st1, st2) => {
             compute_used_locals_in_statement(locals, st1);
             compute_used_locals_in_statement(locals, st2);
         }
@@ -128,39 +128,39 @@ fn transform_rvalue(vids_map: &HashMap<VarId::Id, VarId::Id>, rv: Rvalue) -> Rva
 }
 
 fn transform_st(vids_map: &HashMap<VarId::Id, VarId::Id>, st: Statement) -> Statement {
-    match st {
-        Statement::Return => Statement::Return,
-        Statement::Assign(p, rv) => {
-            Statement::Assign(transform_place(vids_map, p), transform_rvalue(vids_map, rv))
+    let st_raw = match st.content {
+        RawStatement::Return => RawStatement::Return,
+        RawStatement::Assign(p, rv) => {
+            RawStatement::Assign(transform_place(vids_map, p), transform_rvalue(vids_map, rv))
         }
-        Statement::AssignGlobal(id, gid) => {
-            Statement::AssignGlobal(*vids_map.get(&id).unwrap(), gid)
+        RawStatement::AssignGlobal(id, gid) => {
+            RawStatement::AssignGlobal(*vids_map.get(&id).unwrap(), gid)
         }
-        Statement::FakeRead(p) => Statement::FakeRead(transform_place(vids_map, p)),
-        Statement::SetDiscriminant(p, variant_id) => {
-            Statement::SetDiscriminant(transform_place(vids_map, p), variant_id)
+        RawStatement::FakeRead(p) => RawStatement::FakeRead(transform_place(vids_map, p)),
+        RawStatement::SetDiscriminant(p, variant_id) => {
+            RawStatement::SetDiscriminant(transform_place(vids_map, p), variant_id)
         }
-        Statement::Drop(p) => Statement::Drop(transform_place(vids_map, p)),
-        Statement::Assert(mut assert) => {
+        RawStatement::Drop(p) => RawStatement::Drop(transform_place(vids_map, p)),
+        RawStatement::Assert(mut assert) => {
             assert.cond = transform_operand(vids_map, assert.cond);
-            Statement::Assert(assert)
+            RawStatement::Assert(assert)
         }
-        Statement::Call(mut call) => {
+        RawStatement::Call(mut call) => {
             call.args = transform_operands(vids_map, call.args);
             call.dest = transform_place(vids_map, call.dest);
-            Statement::Call(call)
+            RawStatement::Call(call)
         }
-        Statement::Panic => Statement::Panic,
-        Statement::Break(i) => Statement::Break(i),
-        Statement::Continue(i) => Statement::Continue(i),
-        Statement::Nop => Statement::Nop,
-        Statement::Switch(op, targets) => {
+        RawStatement::Panic => RawStatement::Panic,
+        RawStatement::Break(i) => RawStatement::Break(i),
+        RawStatement::Continue(i) => RawStatement::Continue(i),
+        RawStatement::Nop => RawStatement::Nop,
+        RawStatement::Switch(op, targets) => {
             let op = transform_operand(vids_map, op);
             match targets {
                 SwitchTargets::If(st1, st2) => {
                     let st1 = Box::new(transform_st(vids_map, *st1));
                     let st2 = Box::new(transform_st(vids_map, *st2));
-                    Statement::Switch(op, SwitchTargets::If(st1, st2))
+                    RawStatement::Switch(op, SwitchTargets::If(st1, st2))
                 }
                 SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
                     let targets = Vec::from_iter(
@@ -170,16 +170,20 @@ fn transform_st(vids_map: &HashMap<VarId::Id, VarId::Id>, st: Statement) -> Stat
                     );
                     let otherwise = transform_st(vids_map, *otherwise);
                     let targets = SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise));
-                    Statement::Switch(op, targets)
+                    RawStatement::Switch(op, targets)
                 }
             }
         }
-        Statement::Loop(loop_body) => Statement::Loop(Box::new(transform_st(vids_map, *loop_body))),
-        Statement::Sequence(st1, st2) => Statement::Sequence(
+        RawStatement::Loop(loop_body) => {
+            RawStatement::Loop(Box::new(transform_st(vids_map, *loop_body)))
+        }
+        RawStatement::Sequence(st1, st2) => RawStatement::Sequence(
             Box::new(transform_st(vids_map, *st1)),
             Box::new(transform_st(vids_map, *st2)),
         ),
-    }
+    };
+
+    Statement::new(st.meta, st_raw)
 }
 
 fn update_locals(

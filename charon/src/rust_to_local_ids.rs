@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::meta::{FileId, FileInfo, RealFileName};
+use crate::meta::{FileId, FileInfo, LocalFileId, RealFileName, VirtualFileId};
 use crate::reorder_decls as rd;
 use crate::types as ty;
 use crate::types::TypeDeclId;
@@ -162,10 +162,14 @@ pub fn rust_to_local_ids(
 
     let mut file_to_id: HashMap<RealFileName, FileId::Id> = HashMap::new();
     let mut id_to_file: HashMap<FileId::Id, RealFileName> = HashMap::new();
-    let mut file_counter = FileId::Generator::new();
+    let mut real_file_counter = LocalFileId::Generator::new();
+    let mut virtual_file_counter = VirtualFileId::Generator::new();
 
     for file in &files {
-        let id = file_counter.fresh_id();
+        let id = match file {
+            RealFileName::Local(_) => FileId::Id::LocalId(real_file_counter.fresh_id()),
+            RealFileName::Virtual(_) => FileId::Id::VirtualId(virtual_file_counter.fresh_id()),
+        };
         file_to_id.insert(file.clone(), id);
         id_to_file.insert(id, file.clone());
     }

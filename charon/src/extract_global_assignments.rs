@@ -9,8 +9,9 @@
 //! they are accessed by reference in MIR, whereas globals are accessed by value.
 
 use crate::expressions::*;
-use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, Statement};
+use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, RawStatement, Statement};
 use crate::llbc_ast_utils::transform_operands;
+use crate::meta::Meta;
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
 use crate::values::VarId;
@@ -40,6 +41,7 @@ fn deref_static_type(ref_ty: &ETy) -> &ETy {
 /// `let x1 = &X;`
 /// `... move x1 ...`
 fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
+    meta: &Meta,
     op: &mut Operand,
     make_new_var: &mut F,
 ) -> Vec<Statement> {
@@ -54,7 +56,8 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
         }
         OperandConstantValue::ConstantId(global_id) => {
             let var = make_new_var(ty.clone());
-            (var, vec![Statement::AssignGlobal(var, global_id)])
+            let g_st = Statement::new(*meta, RawStatement::AssignGlobal(var, global_id));
+            (var, vec![g_st])
         }
         OperandConstantValue::StaticId(global_id) => {
             let var = make_new_var(deref_static_type(ty).clone());
@@ -63,8 +66,8 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
             (
                 var_ref,
                 vec![
-                    Statement::AssignGlobal(var, global_id),
-                    Statement::Assign(Place::new(var_ref), rvalue),
+                    Statement::new(*meta, RawStatement::AssignGlobal(var, global_id)),
+                    Statement::new(*meta, RawStatement::Assign(Place::new(var_ref), rvalue)),
                 ],
             )
         }
@@ -82,7 +85,9 @@ pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &
 
         let mut f = make_locals_generator(&mut b.locals);
         take(&mut b.body, |st| {
-            transform_operands(st, &mut |op| extract_operand_global_var(op, &mut f))
+            transform_operands(st, &mut |meta, op| {
+                extract_operand_global_var(meta, op, &mut f)
+            })
         });
     }
 }

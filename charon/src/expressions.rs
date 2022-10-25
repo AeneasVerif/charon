@@ -117,7 +117,6 @@ pub enum BinOp {
     // No Offset binary operation: this is an operation on raw pointers
 }
 
-/// The constructors match printed MIR operand prefixes (e.g. `const 2`).
 #[derive(Debug, PartialEq, Eq, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum Operand {
     Copy(Place),

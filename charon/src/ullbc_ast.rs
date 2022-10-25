@@ -3,6 +3,7 @@
 #![allow(dead_code)]
 
 use crate::expressions::*;
+use crate::meta::Meta;
 use crate::names::FunName;
 use crate::names::GlobalName;
 use crate::regions_hierarchy::RegionGroups;
@@ -71,6 +72,7 @@ pub struct FunSig {
 ///       the print is obfuscated and Aeneas may need some refactoring.
 #[derive(Debug, Clone, Serialize)]
 pub struct GExprBody<T: std::fmt::Debug + Clone + Serialize> {
+    pub meta: Meta,
     pub arg_count: usize,
     pub locals: VarId::Vector<Var>,
     pub body: T,
@@ -82,6 +84,8 @@ pub type ExprBody = GExprBody<BlockId::Vector<BlockData>>;
 #[derive(Debug, Clone, Serialize)]
 pub struct GFunDecl<T: std::fmt::Debug + Clone + Serialize> {
     pub def_id: FunDeclId::Id,
+    /// The meta data associated with the declaration.
+    pub meta: Meta,
     pub name: FunName,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
@@ -99,6 +103,8 @@ pub type FunDecls = FunDeclId::Vector<FunDecl>;
 #[derive(Debug, Clone, Serialize)]
 pub struct GGlobalDecl<T: std::fmt::Debug + Clone + Serialize> {
     pub def_id: GlobalDeclId::Id,
+    /// The meta data associated with the declaration.
+    pub meta: Meta,
     pub name: GlobalName,
     pub ty: ETy,
     pub body: Option<GExprBody<T>>,
@@ -107,15 +113,22 @@ pub struct GGlobalDecl<T: std::fmt::Debug + Clone + Serialize> {
 pub type GlobalDecl = GGlobalDecl<BlockId::Vector<BlockData>>;
 pub type GlobalDecls = GlobalDeclId::Vector<GlobalDecl>;
 
+/// A raw statement: a statement without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
-pub enum Statement {
+pub enum RawStatement {
     Assign(Place, Rvalue),
     FakeRead(Place),
     SetDiscriminant(Place, VariantId::Id),
-    /// We translate this to [crate::llbc_ast::Statement::Drop] in LLBC
+    /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     StorageDead(VarId::Id),
-    /// We translate this to [crate::llbc_ast::Statement::Drop] in LLBC
+    /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     Deinit(Place),
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Statement {
+    pub meta: Meta,
+    pub content: RawStatement,
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
@@ -134,7 +147,7 @@ pub enum SwitchTargets {
     ),
 }
 
-/// A function identifier. See [`Terminator`](Terminator)
+/// A function identifier. See [Terminator]
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum FunId {
     /// A "regular" function (function local to the crate, external function
@@ -190,8 +203,9 @@ pub enum AssumedFunId {
     VecIndexMut,
 }
 
+/// A raw terminator: a terminator without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
-pub enum Terminator {
+pub enum RawTerminator {
     Goto {
         target: BlockId::Id,
     },
@@ -225,6 +239,12 @@ pub enum Terminator {
         expected: bool,
         target: BlockId::Id,
     },
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Terminator {
+    pub meta: Meta,
+    pub content: RawTerminator,
 }
 
 #[derive(Debug, Clone, Serialize)]

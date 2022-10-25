@@ -1,9 +1,10 @@
 use crate::common::*;
-use crate::ullbc_ast::FunDeclId;
-use crate::ullbc_ast::GlobalDeclId;
 use crate::llbc_ast::*;
+use crate::meta::{FileId, RealFileName};
 use crate::rust_to_local_ids::*;
 use crate::types::*;
+use crate::ullbc_ast::FunDeclId;
+use crate::ullbc_ast::GlobalDeclId;
 use serde::{Serialize, Serializer};
 use std::fs::File;
 use std::path::PathBuf;
@@ -35,6 +36,10 @@ type DeclarationsSerializer<'a> = VecSW<'a, DeclarationGroup>;
 #[serde(rename = "Crate")]
 struct CrateSerializer<'a> {
     name: String,
+    /// The `id_to_file` map is serialized as a vector.
+    /// We use this map for the spans: the spans only store the file ids, not
+    /// the file names, in order to save space.
+    id_to_file: VecSW<'a, (FileId::Id, RealFileName)>,
     declarations: DeclarationsSerializer<'a>,
     types: &'a TypeDeclId::Vector<TypeDecl>,
     functions: &'a FunDeclId::Vector<FunDecl>,
@@ -58,9 +63,20 @@ pub fn export(
 
     trace!("Target file: {:?}", target_filename);
 
+    // Transform the map file id -> file into a vector.
+    // Sort the vector to make the serialized file as stable as possible.
+    let mut file_ids: Vec<FileId::Id> = ordered_decls.id_to_file.keys().map(|k| *k).collect();
+    file_ids.sort();
+    let id_to_file: Vec<(FileId::Id, RealFileName)> = file_ids
+        .into_iter()
+        .map(|id| (id, ordered_decls.id_to_file.get(&id).unwrap().clone()))
+        .collect();
+    let id_to_file = VecSW::new(&id_to_file);
+
     // Serialize
     let crate_serializer = CrateSerializer {
         name: crate_name,
+        id_to_file,
         declarations: VecSW::new(&ordered_decls.decls),
         types: &type_defs.types,
         functions: &fun_defs,

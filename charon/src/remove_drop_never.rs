@@ -5,14 +5,18 @@
 
 use take_mut::take;
 
-use crate::llbc_ast::{transform_statements, CtxNames, FunDecls, GlobalDecls, Statement, Var};
+use crate::llbc_ast::{
+    transform_statements, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Var,
+};
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::values::*;
 
+/// Filter the statement by replacing it with `Nop` if it is a `Drop(x)` where
+/// `x` has type `Never`. Otherwise leave it unchanged.
 fn transform_st(locals: &VarId::Vector<Var>, st: Statement) -> Statement {
     // Shall we filter the statement?
-    let filter = match &st {
-        Statement::Drop(p) => {
+    let filter = match &st.content {
+        RawStatement::Drop(p) => {
             if p.projection.is_empty() {
                 let var = locals.get(p.var_id).unwrap();
                 var.ty.is_never()
@@ -25,7 +29,7 @@ fn transform_st(locals: &VarId::Vector<Var>, st: Statement) -> Statement {
 
     // If we filter the statement, we simply replace it with `nop`
     if filter {
-        Statement::Nop
+        Statement::new(st.meta, RawStatement::Nop)
     } else {
         st
     }
