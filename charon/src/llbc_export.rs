@@ -1,6 +1,6 @@
 use crate::common::*;
 use crate::llbc_ast::*;
-use crate::meta::{FileId, RealFileName};
+use crate::meta::{FileId, FileName};
 use crate::rust_to_local_ids::*;
 use crate::types::*;
 use crate::ullbc_ast::FunDeclId;
@@ -39,7 +39,7 @@ struct CrateSerializer<'a> {
     /// The `id_to_file` map is serialized as a vector.
     /// We use this map for the spans: the spans only store the file ids, not
     /// the file names, in order to save space.
-    id_to_file: VecSW<'a, (FileId::Id, RealFileName)>,
+    id_to_file: VecSW<'a, (FileId::Id, FileName)>,
     declarations: DeclarationsSerializer<'a>,
     types: &'a TypeDeclId::Vector<TypeDecl>,
     functions: &'a FunDeclId::Vector<FunDecl>,
@@ -67,7 +67,7 @@ pub fn export(
     // Sort the vector to make the serialized file as stable as possible.
     let mut file_ids: Vec<FileId::Id> = ordered_decls.id_to_file.keys().map(|k| *k).collect();
     file_ids.sort();
-    let id_to_file: Vec<(FileId::Id, RealFileName)> = file_ids
+    let id_to_file: Vec<(FileId::Id, FileName)> = file_ids
         .into_iter()
         .map(|id| (id, ordered_decls.id_to_file.get(&id).unwrap().clone()))
         .collect();
