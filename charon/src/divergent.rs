@@ -1,23 +1,24 @@
-use crate::ullbc_ast as ast;
 use crate::llbc_ast as llbc;
+use crate::llbc_ast::RawStatement;
 use crate::rust_to_local_ids::*;
+use crate::ullbc_ast as ast;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &llbc::Statement) -> bool {
-    match st {
-        llbc::Statement::Assign(_, _)
-        | llbc::Statement::AssignGlobal(_, _)
-        | llbc::Statement::FakeRead(_)
-        | llbc::Statement::SetDiscriminant(_, _)
-        | llbc::Statement::Drop(_)
-        | llbc::Statement::Assert(_)
-        | llbc::Statement::Panic
-        | llbc::Statement::Return
-        | llbc::Statement::Break(_)
-        | llbc::Statement::Continue(_)
-        | llbc::Statement::Nop => false,
-        llbc::Statement::Call(call) => match &call.func {
+    match &st.content {
+        RawStatement::Assign(_, _)
+        | RawStatement::AssignGlobal(_, _)
+        | RawStatement::FakeRead(_)
+        | RawStatement::SetDiscriminant(_, _)
+        | RawStatement::Drop(_)
+        | RawStatement::Assert(_)
+        | RawStatement::Panic
+        | RawStatement::Return
+        | RawStatement::Break(_)
+        | RawStatement::Continue(_)
+        | RawStatement::Nop => false,
+        RawStatement::Call(call) => match &call.func {
             ast::FunId::Regular(id) => *divergent.get(id).unwrap(),
             ast::FunId::Assumed(id) => match id {
                 ast::AssumedFunId::Replace
@@ -33,14 +34,14 @@ fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &llbc::
                 | ast::AssumedFunId::VecIndexMut => false,
             },
         },
-        llbc::Statement::Sequence(st1, st2) => {
+        RawStatement::Sequence(st1, st2) => {
             statement_diverges(divergent, &st1) || statement_diverges(divergent, &st2)
         }
-        llbc::Statement::Switch(_, tgts) => {
+        RawStatement::Switch(_, tgts) => {
             let tgts = tgts.get_targets();
             tgts.iter().any(|st| statement_diverges(divergent, st))
         }
-        llbc::Statement::Loop(_) => true,
+        RawStatement::Loop(_) => true,
     }
 }
 

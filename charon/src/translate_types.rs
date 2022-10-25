@@ -3,6 +3,7 @@ use crate::common::*;
 use crate::formatter::Formatter;
 use crate::generics;
 use crate::id_vector::ToUsize;
+use crate::meta;
 use crate::names::type_def_id_to_name;
 use crate::regions_hierarchy;
 use crate::regions_hierarchy::TypesConstraintsMap;
@@ -15,6 +16,7 @@ use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Mutability;
 use rustc_middle::ty::{Ty, TyCtxt, TyKind};
+use rustc_session::Session;
 
 /// Translation context for type definitions
 #[derive(Clone)]
@@ -621,6 +623,7 @@ fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGeneri
 
 /// Translate one local type definition which has not been flagged as opaque.
 fn translate_transparent_type<'tcx>(
+    sess: &Session,
     tcx: TyCtxt<'tcx>,
     decls: &OrderedDecls,
     type_defs: &mut ty::TypeDecls,
@@ -690,8 +693,12 @@ fn translate_transparent_type<'tcx>(
                 }
             };
 
+            // Translate the span information
+            let meta = meta::get_meta_from_rid(sess, tcx, &decls.file_to_id, field_def.did);
+
             // Store the field
             let field = ty::Field {
+                meta,
                 name: field_name.clone(),
                 ty: ty,
             };
@@ -700,8 +707,10 @@ fn translate_transparent_type<'tcx>(
             field_id.incr();
         }
 
+        let meta = meta::get_meta_from_rid(sess, tcx, &decls.file_to_id, var_def.def_id);
         let variant_name = var_def.ident(tcx).name.to_ident_string();
         variants.push(ty::Variant {
+            meta,
             name: variant_name,
             fields: ty::FieldId::Vector::from(fields),
         });
@@ -724,12 +733,13 @@ fn translate_transparent_type<'tcx>(
     Ok(type_def_kind)
 }
 
-/// Translate type definition.
+/// Translate a type definition.
 ///
 /// Note that we translate the types one by one: we don't need to take into
 /// account the fact that some types are mutually recursive at this point
 /// (we will need to take that into account when generating the code in a file).
 fn translate_type<'ctx>(
+    sess: &Session,
     tcx: TyCtxt,
     decls: &OrderedDecls,
     type_defs: &mut ty::TypeDecls,
@@ -748,7 +758,7 @@ fn translate_type<'ctx>(
         // - local types flagged as opaque
         ty::TypeDeclKind::Opaque
     } else {
-        translate_transparent_type(tcx, decls, type_defs, trans_id, info.rid, &generics)?
+        translate_transparent_type(sess, tcx, decls, type_defs, trans_id, info.rid, &generics)?
     };
 
     // Register the type
@@ -764,8 +774,12 @@ fn translate_type<'ctx>(
     let region_params = ty::RegionVarId::Vector::from(region_params);
     let type_params = ty::TypeVarId::Vector::from(type_params);
 
+    // Translate the span information
+    let meta = meta::get_meta_from_rid(sess, tcx, &decls.file_to_id, info.rid);
+
     let type_def = ty::TypeDecl {
         def_id: trans_id,
+        meta,
         name,
         region_params: region_params,
         type_params: type_params,
@@ -792,6 +806,7 @@ fn translate_type<'ctx>(
 /// Still, now that the order is computed, it's better to use it (leads to a
 /// better indexing, for instance).
 pub fn translate_types(
+    sess: &Session,
     tcx: TyCtxt,
     decls: &OrderedDecls,
 ) -> Result<(TypesConstraintsMap, ty::TypeDecls)> {
@@ -805,7 +820,7 @@ pub fn translate_types(
         match decl {
             DeclarationGroup::Type(decl) => match decl {
                 TypeDeclarationGroup::NonRec(id) => {
-                    translate_type(tcx, decls, &mut type_defs, *id)?;
+                    translate_type(sess, tcx, decls, &mut type_defs, *id)?;
                     regions_hierarchy::compute_regions_hierarchy_for_type_decl_group(
                         &mut types_cover_regions,
                         &mut type_defs,
@@ -814,7 +829,7 @@ pub fn translate_types(
                 }
                 TypeDeclarationGroup::Rec(ids) => {
                     for id in ids {
-                        translate_type(tcx, decls, &mut type_defs, *id)?;
+                        translate_type(sess, tcx, decls, &mut type_defs, *id)?;
                     }
                     regions_hierarchy::compute_regions_hierarchy_for_type_decl_group(
                         &mut types_cover_regions,

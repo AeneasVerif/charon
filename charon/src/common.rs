@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use crate::meta;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im::Vector;
 use rustc_error_messages::MultiSpan;
@@ -54,75 +55,13 @@ impl ErrorEmitter for Session {
 }
 
 pub fn span_err(sess: &Session, span: rustc_span::Span, msg: &str) {
-    log::error!("{}:\n{}", span_to_string(sess, span), msg);
+    log::error!("{}:\n{}", meta::span_to_string(sess, span), msg);
     sess.span_err(span, msg);
 }
 
 pub fn span_warn(sess: &Session, span: rustc_span::Span, msg: &str) {
-    log::warn!("{}:\n{}", span_to_string(sess, span), msg);
+    log::warn!("{}:\n{}", meta::span_to_string(sess, span), msg);
     sess.span_warn(span, msg);
-}
-
-pub fn span_to_string(sess: &Session, span: rustc_span::Span) -> String {
-    // Retrieve the source map, which contains information about the source file:
-    // we need it to be able to interpret the span.
-    let source_map = sess.source_map();
-
-    // Convert the span to lines (i.e.: a filename and a list of lines in
-    // this file).
-    let lines = source_map.span_to_lines(span).unwrap();
-
-    // Retrieve the sources snippet:
-    let snippet = source_map.span_to_snippet(span);
-
-    // First convert the filename to a string.
-    // The file is not necessarily a "real" file, because the span might come
-    // from various locations: expanded macro, command line, custom sources, etc.
-    // For our purposes, we should only have to deal with real filenames (so
-    // we ignore the others).
-    match &lines.file.name {
-        rustc_span::FileName::Real(filename) => {
-            let mut out;
-
-            // Even if the file is real, it may be a remapped path (for
-            // example if it is a path into libstd), in which case we use the
-            // local path, which points to the proper file on the user's file
-            // system.
-            match &filename {
-                rustc_span::RealFileName::LocalPath(path) => {
-                    out = path.as_path().to_str().unwrap().to_string();
-                }
-                rustc_span::RealFileName::Remapped {
-                    local_path,
-                    virtual_name: _,
-                } => {
-                    out = local_path.as_deref().unwrap().to_str().unwrap().to_string();
-                }
-            }
-
-            // Add the lines to the string.
-            // Note that the vector of lines lists all the lines over which
-            // the span expands. We make the hypothesis that it is a continuous
-            // set of lines, and thus only indicate the
-            let len = lines.lines.len();
-            if len > 0 {
-                let beg = &lines.lines[0];
-                let end = &lines.lines[len - 1];
-                out.push_str(&format!(
-                    ", start: line {} column {}, end: line {} column {}",
-                    beg.line_index, beg.start_col.0, end.line_index, end.end_col.0
-                ));
-            }
-
-            // Add the code snippet
-            let _ = snippet.map(|snippet| out.push_str(&format!("\nCode snippet:\n{}", snippet)));
-            return out;
-        }
-        // Other cases: just return a dummy string
-        _ => {
-            return "<unknown span>".to_string();
-        }
-    }
 }
 
 /// Custom function to pretty-print elements from an iterator

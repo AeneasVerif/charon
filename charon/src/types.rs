@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use crate::meta::Meta;
 use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
@@ -76,6 +77,8 @@ pub enum ErasedRegion {
 #[derive(Debug, Clone, Serialize)]
 pub struct TypeDecl {
     pub def_id: TypeDeclId::Id,
+    /// Meta information associated with the type.
+    pub meta: Meta,
     pub name: TypeName,
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
@@ -97,12 +100,14 @@ pub enum TypeDeclKind {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Variant {
+    pub meta: Meta,
     pub name: String,
     pub fields: FieldId::Vector<Field>,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Field {
+    pub meta: Meta,
     pub name: Option<String>,
     pub ty: RTy,
 }

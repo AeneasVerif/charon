@@ -16,7 +16,10 @@
 use take_mut::take;
 
 use crate::expressions::*;
-use crate::llbc_ast::{Assert, CtxNames, FunDecls, GlobalDecls, Statement, SwitchTargets};
+use crate::llbc_ast::{
+    new_sequence, Assert, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, SwitchTargets,
+};
+use crate::meta::combine_meta;
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::values::*;
@@ -136,8 +139,8 @@ fn check_if_assert_then_unop(
     st2: &Statement,
     st3: &Statement,
 ) -> bool {
-    match st3 {
-        Statement::Assign(_, Rvalue::UnaryOp(unop, _)) => {
+    match &st3.content {
+        RawStatement::Assign(_, Rvalue::UnaryOp(unop, _)) => {
             if unop_requires_assert_before(*unop) {
                 // We found a unary op with a precondition
                 //
@@ -174,9 +177,9 @@ fn check_if_simplifiable_assert_then_unop(
     st2: &Statement,
     st3: &Statement,
 ) -> bool {
-    match (st1, st2, st3) {
+    match (&st1.content, &st2.content, &st3.content) {
         (
-            Statement::Assign(
+            RawStatement::Assign(
                 eq_dest,
                 Rvalue::BinaryOp(
                     BinOp::Eq,
@@ -187,11 +190,11 @@ fn check_if_simplifiable_assert_then_unop(
                     ),
                 ),
             ),
-            Statement::Assert(Assert {
+            RawStatement::Assert(Assert {
                 cond: Operand::Move(cond_op),
                 expected,
             }),
-            Statement::Assign(_mp, Rvalue::UnaryOp(unop, op1)),
+            RawStatement::Assign(_mp, Rvalue::UnaryOp(unop, op1)),
         ) => {
             // Case 1: pattern with assertion
             assert_or_return!(*unop == UnOp::Neg);
@@ -217,7 +220,7 @@ fn check_if_simplifiable_assert_then_unop(
         (
             _,
             _,
-            Statement::Assign(
+            RawStatement::Assign(
                 _mp,
                 Rvalue::UnaryOp(
                     unop,
@@ -273,8 +276,8 @@ fn check_if_binop_then_assert(
     st2: &Statement,
     st3: &Statement,
 ) -> bool {
-    match st1 {
-        Statement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => {
+    match &st1.content {
+        RawStatement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => {
             if binop_requires_assert_after(*binop) {
                 // We found a checked binary op.
                 //
@@ -309,14 +312,14 @@ fn check_if_simplifiable_binop_then_assert(
     st2: &Statement,
     st3: &Statement,
 ) -> bool {
-    match (st1, st2, st3) {
+    match (&st1.content, &st2.content, &st3.content) {
         (
-            Statement::Assign(bp, Rvalue::BinaryOp(binop, _op1, _op2)),
-            Statement::Assert(Assert {
+            RawStatement::Assign(bp, Rvalue::BinaryOp(binop, _op1, _op2)),
+            RawStatement::Assert(Assert {
                 cond: Operand::Move(cond_op),
                 expected,
             }),
-            Statement::Assign(_mp, Rvalue::Use(Operand::Move(mr))),
+            RawStatement::Assign(_mp, Rvalue::Use(Operand::Move(mr))),
         ) => {
             assert_or_return!(binop_requires_assert_after(*binop));
             assert_or_return!(!(*expected));
@@ -362,9 +365,10 @@ fn check_if_simplifiable_binop_then_assert(
 /// translation, before the transformation `+` returns a pair (bool, int),
 /// after it has a monadic type).
 fn simplify_binop_then_assert(st1: Statement, st2: Statement, st3: Statement) -> Statement {
-    match (st1, st2, st3) {
-        (Statement::Assign(_, binop), Statement::Assert(_), Statement::Assign(mp, _)) => {
-            return Statement::Assign(mp, binop);
+    match (st1.content, st2.content, st3.content) {
+        (RawStatement::Assign(_, binop), RawStatement::Assert(_), RawStatement::Assign(mp, _)) => {
+            let meta = combine_meta(&st1.meta, &combine_meta(&st2.meta, &st3.meta));
+            return Statement::new(meta, RawStatement::Assign(mp, binop));
         }
         _ => {
             unreachable!();
@@ -381,8 +385,8 @@ fn check_if_assert_then_binop(
     st2: &Statement,
     st3: &Statement,
 ) -> bool {
-    match st3 {
-        Statement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => {
+    match &st3.content {
+        RawStatement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => {
             if binop_requires_assert_before(*binop) {
                 // We found an unchecked binop which should be simplified (division
                 // or remainder computation).
@@ -429,9 +433,9 @@ fn check_if_simplifiable_assert_then_binop(
     st2: &Statement,
     st3: &Statement,
 ) -> bool {
-    match (st1, st2, st3) {
+    match (&st1.content, &st2.content, &st3.content) {
         (
-            Statement::Assign(
+            RawStatement::Assign(
                 eq_dest,
                 Rvalue::BinaryOp(
                     BinOp::Eq,
@@ -442,11 +446,11 @@ fn check_if_simplifiable_assert_then_binop(
                     ),
                 ),
             ),
-            Statement::Assert(Assert {
+            RawStatement::Assert(Assert {
                 cond: Operand::Move(cond_op),
                 expected,
             }),
-            Statement::Assign(_mp, Rvalue::BinaryOp(binop, _dividend, Operand::Move(divisor))),
+            RawStatement::Assign(_mp, Rvalue::BinaryOp(binop, _dividend, Operand::Move(divisor))),
         ) => {
             // Case 1: pattern with copy/move and assertion
             assert_or_return!(binop_requires_assert_before(*binop));
@@ -461,7 +465,7 @@ fn check_if_simplifiable_assert_then_binop(
             true
         }
         (
-            Statement::Assign(
+            RawStatement::Assign(
                 eq_dest,
                 Rvalue::BinaryOp(
                     BinOp::Eq,
@@ -472,11 +476,11 @@ fn check_if_simplifiable_assert_then_binop(
                     ),
                 ),
             ),
-            Statement::Assert(Assert {
+            RawStatement::Assert(Assert {
                 cond: Operand::Move(cond_op),
                 expected,
             }),
-            Statement::Assign(_mp, Rvalue::BinaryOp(binop, _dividend, divisor1)),
+            RawStatement::Assign(_mp, Rvalue::BinaryOp(binop, _dividend, divisor1)),
         ) => {
             // Case 2: pattern with constant divisor and assertion
             assert_or_return!(binop_requires_assert_before(*binop));
@@ -502,7 +506,7 @@ fn check_if_simplifiable_assert_then_binop(
             }
             true
         }
-        (_, _, Statement::Assign(_mp, Rvalue::BinaryOp(_, _, Operand::Const(_, divisor)))) => {
+        (_, _, RawStatement::Assign(_mp, Rvalue::BinaryOp(_, _, Operand::Const(_, divisor)))) => {
             // Case 3: no assertion to check the divisor != 0, the divisor must be a
             // non-zero constant
             let cv = divisor.as_constant_value();
@@ -561,14 +565,11 @@ fn simplify_st_seq(
         } else {
             // Not simplifyable
             let next_st = match st4 {
-                Option::Some(st4) => Statement::Sequence(Box::new(st3), Box::new(st4)),
+                Option::Some(st4) => new_sequence(st3, st4),
                 Option::None => st3,
             };
-            let next_st = Statement::Sequence(Box::new(st2), Box::new(next_st));
-            return Statement::Sequence(
-                Box::new(simplify_st(release, st1)),
-                Box::new(simplify_st(release, next_st)),
-            );
+            let next_st = new_sequence(st2, next_st);
+            return new_sequence(simplify_st(release, st1), simplify_st(release, next_st));
         }
     };
 
@@ -576,15 +577,15 @@ fn simplify_st_seq(
     match st4 {
         Option::Some(st4) => {
             let st4 = simplify_st(release, st4);
-            return Statement::Sequence(Box::new(simpl_st), Box::new(st4));
+            return new_sequence(simpl_st, st4);
         }
         Option::None => return simpl_st,
     }
 }
 
 fn simplify_st(release: bool, st: Statement) -> Statement {
-    match st {
-        Statement::Assign(p, rv) => {
+    let content = match st.content {
+        RawStatement::Assign(p, rv) => {
             // Check that we never failed to simplify a binop
             match &rv {
                 Rvalue::BinaryOp(binop, _, divisor) => {
@@ -636,20 +637,20 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
                 }
                 _ => (),
             }
-            Statement::Assign(p, rv)
+            RawStatement::Assign(p, rv)
         }
-        Statement::AssignGlobal(id, gid) => Statement::AssignGlobal(id, gid),
-        Statement::FakeRead(p) => Statement::FakeRead(p),
-        Statement::SetDiscriminant(p, vid) => Statement::SetDiscriminant(p, vid),
-        Statement::Drop(p) => Statement::Drop(p),
-        Statement::Assert(assert) => Statement::Assert(assert),
-        Statement::Call(call) => Statement::Call(call),
-        Statement::Panic => Statement::Panic,
-        Statement::Return => Statement::Return,
-        Statement::Break(i) => Statement::Break(i),
-        Statement::Continue(i) => Statement::Continue(i),
-        Statement::Nop => Statement::Nop,
-        Statement::Switch(op, targets) => {
+        RawStatement::AssignGlobal(id, gid) => RawStatement::AssignGlobal(id, gid),
+        RawStatement::FakeRead(p) => RawStatement::FakeRead(p),
+        RawStatement::SetDiscriminant(p, vid) => RawStatement::SetDiscriminant(p, vid),
+        RawStatement::Drop(p) => RawStatement::Drop(p),
+        RawStatement::Assert(assert) => RawStatement::Assert(assert),
+        RawStatement::Call(call) => RawStatement::Call(call),
+        RawStatement::Panic => RawStatement::Panic,
+        RawStatement::Return => RawStatement::Return,
+        RawStatement::Break(i) => RawStatement::Break(i),
+        RawStatement::Continue(i) => RawStatement::Continue(i),
+        RawStatement::Nop => RawStatement::Nop,
+        RawStatement::Switch(op, targets) => {
             let targets = match targets {
                 SwitchTargets::If(st1, st2) => SwitchTargets::If(
                     Box::new(simplify_st(release, *st1)),
@@ -665,22 +666,37 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
                     SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise))
                 }
             };
-            Statement::Switch(op, targets)
+            RawStatement::Switch(op, targets)
         }
-        Statement::Loop(loop_body) => Statement::Loop(Box::new(simplify_st(release, *loop_body))),
-        Statement::Sequence(st1, st2) => match *st2 {
-            Statement::Sequence(st2, st3) => match *st3 {
-                Statement::Sequence(st3, st4) => {
-                    simplify_st_seq(release, *st1, *st2, *st3, Option::Some(*st4))
+        RawStatement::Loop(loop_body) => {
+            RawStatement::Loop(Box::new(simplify_st(release, *loop_body)))
+        }
+        RawStatement::Sequence(st1, st2) => match st2.content {
+            RawStatement::Sequence(st2, st3) => match st3.content {
+                RawStatement::Sequence(st3, st4) => {
+                    simplify_st_seq(release, *st1, *st2, *st3, Option::Some(*st4)).content
                 }
-                st3 => simplify_st_seq(release, *st1, *st2, st3, Option::None),
+                st3_raw => {
+                    // Below: the fact that we moved the value is very annoying
+                    simplify_st_seq(
+                        release,
+                        *st1,
+                        *st2,
+                        Statement::new(st3.meta, st3_raw),
+                        Option::None,
+                    )
+                    .content
+                }
             },
-            st2 => Statement::Sequence(
+            st2_raw => RawStatement::Sequence(
                 Box::new(simplify_st(release, *st1)),
-                Box::new(simplify_st(release, st2)),
+                // Below: the fact that we moved the value is very annoying
+                Box::new(simplify_st(release, Statement::new(st2.meta, st2_raw))),
             ),
         },
-    }
+    };
+
+    Statement::new(st.meta, content)
 }
 
 /// `fmt_ctx` is used for pretty-printing purposes.

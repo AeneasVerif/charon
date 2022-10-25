@@ -174,31 +174,21 @@ impl DeclarationsRegister {
     /// Register the file containing a definition (rem.: we register the
     /// file containing the definition itself, not its def ident).
     fn register_file_from_def_id(&mut self, ctx: &RegisterContext, def_id: DefId) {
-        let span = meta::get_def_id_span(ctx.rustc, def_id);
-        let local = def_id.is_local();
-        self.register_file_from_span(ctx, span, local);
+        let span = meta::get_rspan_from_def_id(ctx.rustc, def_id);
+        self.register_file_from_span(ctx, span);
     }
 
     /// Register the file referenced by a span
-    fn register_file_from_span(
-        &mut self,
-        ctx: &RegisterContext,
-        span: rustc_span::Span,
-        local: bool,
-    ) {
-        let filename = meta::get_filename_from_span(&ctx.sess, span);
-        self.register_file(filename, local);
+    fn register_file_from_span(&mut self, ctx: &RegisterContext, span: rustc_span::Span) {
+        let filename = meta::get_filename_from_rspan(&ctx.sess, span);
+        self.register_file(filename);
     }
 
     /// Register a file if it is a "real" file if it was not already registered
-    fn register_file(&mut self, filename: FileName, local: bool) {
+    fn register_file(&mut self, filename: FileName) {
         match filename {
             FileName::Real(filename) => {
-                let old = self.files.insert(filename, FileInfo { local });
-
-                // Sanity check: the old file information (if there is) is consistent
-                // with the new file information.
-                let _ = old.iter().map(|x| assert!(x.local == local));
+                let _ = self.files.insert(filename, FileInfo {});
             }
             _ => (),
         }
@@ -347,7 +337,7 @@ impl DeclarationsRegister {
     }
 }
 
-/// Register a HIR type.
+/// Explore an HIR type.
 /// This function is called when processing top-level declarations. It mostly
 /// delegates the work to functions operating on the MIR (and once in MIR we
 /// stay in MIR).
@@ -902,6 +892,9 @@ fn explore_body(
     // Retrieve the MIR code.
     let body = get_mir_for_def_id_and_level(ctx.rustc, def_id, ctx.mir_level);
 
+    // Register the file from the span
+    decls.register_file_from_span(ctx, body.span);
+
     trace!("Body: {:?}", body);
 
     // Visit the global dependencies if the MIR is not optimized.
@@ -952,6 +945,10 @@ fn explore_body(
     for block in body.basic_blocks.iter() {
         // Statements
         for statement in block.statements.iter() {
+            // We have to register the statements' spans (when we expand macro
+            // for instance, those spans refer to the file where the macro is
+            // defined).
+            decls.register_file_from_span(ctx, statement.source_info.span);
             match &statement.kind {
                 mir::StatementKind::Assign(_)
                 | mir::StatementKind::FakeRead(_)
@@ -977,6 +974,8 @@ fn explore_body(
 
         // Terminator
         let terminator = block.terminator();
+        // We have to register the terminator's span
+        decls.register_file_from_span(ctx, terminator.source_info.span);
         match &terminator.kind {
             mir::TerminatorKind::Goto { target: _ }
             | mir::TerminatorKind::SwitchInt {
@@ -1323,7 +1322,7 @@ fn explore_local_hir_item(
     }
 }
 
-/// Register an impl item (an item defined in an `impl` block).
+/// Explore an impl item (an item defined in an `impl` block).
 ///
 /// `stack`: see the explanations for [explore_local_hir_item].
 fn explore_local_hir_impl_item(

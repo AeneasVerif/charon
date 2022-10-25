@@ -179,12 +179,14 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     let ordered_decls = rust_to_local_ids::rust_to_local_ids(&files, &ordered_decls);
 
     // # Step 4: translate the types
-    let (types_constraints, type_defs) = translate_types::translate_types(tcx, &ordered_decls)?;
+    let (types_constraints, type_defs) =
+        translate_types::translate_types(sess, tcx, &ordered_decls)?;
 
     // # Step 5: translate the functions to IM (our Internal representation of MIR).
     // Note that from now onwards, both type and function definitions have been
     // translated to our internal ASTs: we don't interact with rustc anymore.
     let (im_fun_defs, im_global_defs) = translate_functions_to_ullbc::translate_functions(
+        sess,
         tcx,
         &ordered_decls,
         &types_constraints,

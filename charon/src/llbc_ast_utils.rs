@@ -7,8 +7,11 @@ use crate::common::*;
 use crate::expressions::{Operand, Rvalue};
 use crate::formatter::Formatter;
 use crate::llbc_ast::{
-    Call, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, Statement, SwitchTargets,
+    Call, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
+    SwitchTargets,
 };
+use crate::meta;
+use crate::meta::Meta;
 use crate::types::*;
 use crate::ullbc_ast::{
     fmt_call, CtxNames, FunDeclId, FunNamesFormatter, FunSigFormatter, GAstFormatter, GlobalDeclId,
@@ -20,55 +23,74 @@ use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 use take_mut::take;
 
-/// Goes from e.g. [A, B, C] ; D to (A, (B, (C, D))).
+/// Goes from e.g. `(A; B; C) ; D` to `(A; (B; (C; D)))`.
 pub fn chain_statements(firsts: Vec<Statement>, last: Statement) -> Statement {
     firsts.into_iter().rev().fold(last, |cont, bind| {
-        assert!(!bind.is_sequence());
-        Statement::Sequence(Box::new(bind), Box::new(cont))
+        assert!(!bind.content.is_sequence());
+        let meta = meta::combine_meta(&bind.meta, &cont.meta);
+        Statement::new(meta, RawStatement::Sequence(Box::new(bind), Box::new(cont)))
     })
 }
 
 /// Utility function for [new_sequence].
 /// Efficiently appends a new statement at the rightmost place of a well-formed sequence.
 fn append_rightmost(seq: &mut Statement, r: Box<Statement>) {
-    let (_l1, l2) = match seq {
-        Statement::Sequence(l1, l2) => (l1, l2),
+    let (_l1, l2) = match &mut seq.content {
+        RawStatement::Sequence(l1, l2) => (l1, l2),
         _ => unreachable!(),
     };
-    if l2.is_sequence() {
+    if l2.content.is_sequence() {
         append_rightmost(l2, r);
     } else {
         take(l2.deref_mut(), move |l2| {
-            Statement::Sequence(Box::new(l2), r)
+            let meta = meta::combine_meta(&l2.meta, &r.meta);
+            Statement::new(meta, RawStatement::Sequence(Box::new(l2), r))
         });
     }
 }
 
 /// Builds a sequence from well-formed statements.
 /// Ensures that the left statement will not be a sequence in the new sequence:
-/// Must be used instead of the raw [Statement::Sequence] constructor,
+/// Must be used instead of the raw [RawStatement::Sequence] constructor,
 /// unless you're sure that the left statement is not a sequence.
 pub fn new_sequence(mut l: Statement, r: Statement) -> Statement {
+    let meta = meta::combine_meta(&l.meta, &r.meta);
+
     let r = Box::new(r);
-    match l {
-        Statement::Sequence(_, _) => {
+    let nst = match l.content {
+        RawStatement::Sequence(_, _) => {
             append_rightmost(&mut l, r);
-            l
+            l.content
         }
-        l => Statement::Sequence(Box::new(l), r),
+        lc => RawStatement::Sequence(Box::new(Statement::new(l.meta, lc)), r),
+    };
+
+    Statement::new(meta, nst)
+}
+
+/// Combine the meta information from a [SwitchTargets]
+pub fn combine_switch_targets_meta(targets: &SwitchTargets) -> Meta {
+    match targets {
+        SwitchTargets::If(st1, st2) => meta::combine_meta(&st1.meta, &st2.meta),
+        SwitchTargets::SwitchInt(_, branches, otherwise) => {
+            let branches = branches.iter().map(|b| &b.1.meta);
+            let mbranches = meta::combine_meta_iter(branches);
+            meta::combine_meta(&mbranches, &otherwise.meta)
+        }
     }
 }
 
 /// Visit the operands in an rvalue and generate statements.
 /// Used below in [transform_operands].
-fn transform_rvalue_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
+fn transform_rvalue_operands<F: FnMut(&Meta, &mut Operand) -> Vec<Statement>>(
+    meta: &Meta,
     rval: &mut Rvalue,
     f: &mut F,
 ) -> Vec<Statement> {
     match rval {
-        Rvalue::Use(op) | Rvalue::UnaryOp(_, op) => f(op),
-        Rvalue::BinaryOp(_, o1, o2) => chain(f(o1), f(o2)).collect(),
-        Rvalue::Aggregate(_, ops) => ops.iter_mut().flat_map(f).collect(),
+        Rvalue::Use(op) | Rvalue::UnaryOp(_, op) => f(meta, op),
+        Rvalue::BinaryOp(_, o1, o2) => chain(f(meta, o1), f(meta, o2)).collect(),
+        Rvalue::Aggregate(_, ops) => ops.iter_mut().flat_map(|op| f(meta, op)).collect(),
         Rvalue::Discriminant(_) | Rvalue::Ref(_, _) => vec![],
     }
 }
@@ -76,18 +98,23 @@ fn transform_rvalue_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
 /// Transform a statement by visiting its operands and inserting the generated
 /// statements before each visited operand.
 /// Useful to implement a pass on operands (see e.g., [crate::extract_global_assignments]).
-pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
-    st: Statement,
+///
+/// The meta argument given to `f` is the meta argument of the [Statement]
+/// containing the operand.
+pub fn transform_operands<F: FnMut(&Meta, &mut Operand) -> Vec<Statement>>(
+    mut st: Statement,
     f: &mut F,
 ) -> Statement {
+    let meta = &st.meta;
+
     // Does two matchs, depending if we want to move or to borrow the statement.
-    let mut st = match st {
+    st.content = match st.content {
         // Recursive calls
-        Statement::Loop(s) => Statement::Loop(Box::new(transform_operands(*s, f))),
-        Statement::Sequence(s1, s2) => {
-            new_sequence(transform_operands(*s1, f), transform_operands(*s2, f))
+        RawStatement::Loop(s) => RawStatement::Loop(Box::new(transform_operands(*s, f))),
+        RawStatement::Sequence(s1, s2) => {
+            new_sequence(transform_operands(*s1, f), transform_operands(*s2, f)).content
         }
-        Statement::Switch(op, tgt) => Statement::Switch(
+        RawStatement::Switch(op, tgt) => RawStatement::Switch(
             op,
             match tgt {
                 SwitchTargets::If(s1, s2) => SwitchTargets::If(
@@ -103,27 +130,28 @@ pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
                 ),
             },
         ),
-        _ => st,
+        content => content,
     };
-    let new_st = match &mut st {
+
+    let new_st = match &mut st.content {
         // Actual transformations
-        Statement::Switch(op, _) => f(op),
-        Statement::Assign(_, r) => transform_rvalue_operands(r, f),
-        Statement::Call(c) => c.args.iter_mut().flat_map(f).collect(),
-        Statement::Assert(a) => f(&mut a.cond),
+        RawStatement::Switch(op, _) => f(meta, op),
+        RawStatement::Assign(_, r) => transform_rvalue_operands(meta, r, f),
+        RawStatement::Call(c) => c.args.iter_mut().flat_map(|op| f(meta, op)).collect(),
+        RawStatement::Assert(a) => f(meta, &mut a.cond),
 
         // Identity (complete match for compile-time errors when new statements are created)
-        Statement::AssignGlobal(_, _)
-        | Statement::FakeRead(_)
-        | Statement::SetDiscriminant(_, _)
-        | Statement::Drop(_)
-        | Statement::Panic
-        | Statement::Return
-        | Statement::Break(_)
-        | Statement::Continue(_)
-        | Statement::Nop
-        | Statement::Sequence(_, _)
-        | Statement::Loop(_) => vec![],
+        RawStatement::AssignGlobal(_, _)
+        | RawStatement::FakeRead(_)
+        | RawStatement::SetDiscriminant(_, _)
+        | RawStatement::Drop(_)
+        | RawStatement::Panic
+        | RawStatement::Return
+        | RawStatement::Break(_)
+        | RawStatement::Continue(_)
+        | RawStatement::Nop
+        | RawStatement::Sequence(_, _)
+        | RawStatement::Loop(_) => vec![],
     };
     chain_statements(new_st, st)
 }
@@ -132,11 +160,11 @@ pub fn transform_operands<F: FnMut(&mut Operand) -> Vec<Statement>>(
 /// Useful to implement a pass on operands (e.g., [crate::remove_drop_never]).
 pub fn transform_statements<F: FnMut(Statement) -> Statement>(
     f: &mut F,
-    st: Statement,
+    mut st: Statement,
 ) -> Statement {
     // Apply the transformer bottom-up
-    let st = match st {
-        Statement::Switch(op, tgt) => {
+    st.content = match st.content {
+        RawStatement::Switch(op, tgt) => {
             let tgt = match tgt {
                 SwitchTargets::If(mut st1, mut st2) => {
                     *st1 = transform_statements(f, *st1);
@@ -152,28 +180,28 @@ pub fn transform_statements<F: FnMut(Statement) -> Statement>(
                     SwitchTargets::SwitchInt(int_ty, branches, otherwise)
                 }
             };
-            Statement::Switch(op, tgt)
+            RawStatement::Switch(op, tgt)
         }
-        Statement::Assign(p, r) => Statement::Assign(p, r),
-        Statement::Call(c) => Statement::Call(c),
-        Statement::Assert(a) => Statement::Assert(a),
-        Statement::AssignGlobal(vid, g) => Statement::AssignGlobal(vid, g),
-        Statement::FakeRead(p) => Statement::FakeRead(p),
-        Statement::SetDiscriminant(p, vid) => Statement::SetDiscriminant(p, vid),
-        Statement::Drop(p) => Statement::Drop(p),
-        Statement::Panic => Statement::Panic,
-        Statement::Return => Statement::Return,
-        Statement::Break(i) => Statement::Break(i),
-        Statement::Continue(i) => Statement::Continue(i),
-        Statement::Nop => Statement::Nop,
-        Statement::Sequence(st1, st2) => {
+        RawStatement::Assign(p, r) => RawStatement::Assign(p, r),
+        RawStatement::Call(c) => RawStatement::Call(c),
+        RawStatement::Assert(a) => RawStatement::Assert(a),
+        RawStatement::AssignGlobal(vid, g) => RawStatement::AssignGlobal(vid, g),
+        RawStatement::FakeRead(p) => RawStatement::FakeRead(p),
+        RawStatement::SetDiscriminant(p, vid) => RawStatement::SetDiscriminant(p, vid),
+        RawStatement::Drop(p) => RawStatement::Drop(p),
+        RawStatement::Panic => RawStatement::Panic,
+        RawStatement::Return => RawStatement::Return,
+        RawStatement::Break(i) => RawStatement::Break(i),
+        RawStatement::Continue(i) => RawStatement::Continue(i),
+        RawStatement::Nop => RawStatement::Nop,
+        RawStatement::Sequence(st1, st2) => {
             let st1 = transform_statements(f, *st1);
             let st2 = transform_statements(f, *st2);
-            new_sequence(st1, st2)
+            new_sequence(st1, st2).content
         }
-        Statement::Loop(mut st) => {
+        RawStatement::Loop(mut st) => {
             *st = transform_statements(f, *st);
-            Statement::Loop(st)
+            RawStatement::Loop(st)
         }
     };
 
@@ -233,6 +261,10 @@ impl Serialize for SwitchTargets {
 }
 
 impl Statement {
+    pub fn new(meta: Meta, content: RawStatement) -> Self {
+        Statement { meta, content }
+    }
+
     pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
     where
         T: Formatter<VarId::Id>
@@ -244,40 +276,42 @@ impl Statement {
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
-        match self {
-            Statement::Assign(place, rvalue) => format!(
+        match &self.content {
+            RawStatement::Assign(place, rvalue) => format!(
                 "{}{} := {}",
                 tab,
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             )
             .to_owned(),
-            Statement::AssignGlobal(id, gid) => format!(
+            RawStatement::AssignGlobal(id, gid) => format!(
                 "{}{} := {}",
                 tab,
                 ctx.format_object(*id),
                 ctx.format_object(*gid),
             )
             .to_owned(),
-            Statement::FakeRead(place) => {
+            RawStatement::FakeRead(place) => {
                 format!("{}@fake_read({})", tab, place.fmt_with_ctx(ctx)).to_owned()
             }
-            Statement::SetDiscriminant(place, variant_id) => format!(
+            RawStatement::SetDiscriminant(place, variant_id) => format!(
                 "{}@discriminant({}) := {}",
                 tab,
                 place.fmt_with_ctx(ctx),
                 variant_id.to_string()
             )
             .to_owned(),
-            Statement::Drop(place) => format!("{}drop {}", tab, place.fmt_with_ctx(ctx)).to_owned(),
-            Statement::Assert(assert) => format!(
+            RawStatement::Drop(place) => {
+                format!("{}drop {}", tab, place.fmt_with_ctx(ctx)).to_owned()
+            }
+            RawStatement::Assert(assert) => format!(
                 "{}assert({} == {})",
                 tab,
                 assert.cond.fmt_with_ctx(ctx),
                 assert.expected,
             )
             .to_owned(),
-            Statement::Call(call) => {
+            RawStatement::Call(call) => {
                 let Call {
                     func,
                     region_args,
@@ -288,18 +322,18 @@ impl Statement {
                 let call = fmt_call(ctx, func, region_args, type_args, args);
                 format!("{}{} := {}", tab, dest.fmt_with_ctx(ctx), call).to_owned()
             }
-            Statement::Panic => format!("{}panic", tab).to_owned(),
-            Statement::Return => format!("{}return", tab).to_owned(),
-            Statement::Break(index) => format!("{}break {}", tab, index).to_owned(),
-            Statement::Continue(index) => format!("{}continue {}", tab, index).to_owned(),
-            Statement::Nop => format!("{}nop", tab).to_owned(),
-            Statement::Sequence(st1, st2) => format!(
+            RawStatement::Panic => format!("{}panic", tab).to_owned(),
+            RawStatement::Return => format!("{}return", tab).to_owned(),
+            RawStatement::Break(index) => format!("{}break {}", tab, index).to_owned(),
+            RawStatement::Continue(index) => format!("{}continue {}", tab, index).to_owned(),
+            RawStatement::Nop => format!("{}nop", tab).to_owned(),
+            RawStatement::Sequence(st1, st2) => format!(
                 "{}\n{}",
                 st1.fmt_with_ctx(tab, ctx),
                 st2.fmt_with_ctx(tab, ctx)
             )
             .to_owned(),
-            Statement::Switch(discr, targets) => match targets {
+            RawStatement::Switch(discr, targets) => match targets {
                 SwitchTargets::If(true_st, false_st) => {
                     let inner_tab = format!("{}{}", tab, TAB_INCR);
                     format!(
@@ -353,7 +387,7 @@ impl Statement {
                     .to_owned()
                 }
             },
-            Statement::Loop(body) => {
+            RawStatement::Loop(body) => {
                 let inner_tab = format!("{}{}", tab, TAB_INCR);
                 format!(
                     "{}loop {{\n{}\n{}}}",

@@ -4,6 +4,7 @@
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
+use crate::meta::Meta;
 use crate::names::Name;
 use crate::types::*;
 use crate::ullbc_ast::*;
@@ -131,46 +132,56 @@ impl Serialize for SwitchTargets {
 }
 
 impl Statement {
+    pub fn new(meta: Meta, content: RawStatement) -> Self {
+        Statement { meta, content }
+    }
+
     /// Substitute the type variables and return the resulting statement.
     pub fn substitute(&self, subst: &ETypeSubst) -> Statement {
-        match self {
-            Statement::Assign(place, rvalue) => {
-                Statement::Assign(place.substitute(subst), rvalue.substitute(subst))
+        let st = match &self.content {
+            RawStatement::Assign(place, rvalue) => {
+                RawStatement::Assign(place.substitute(subst), rvalue.substitute(subst))
             }
-            Statement::FakeRead(place) => Statement::FakeRead(place.substitute(subst)),
-            Statement::SetDiscriminant(place, variant_id) => {
-                Statement::SetDiscriminant(place.substitute(subst), *variant_id)
+            RawStatement::FakeRead(place) => RawStatement::FakeRead(place.substitute(subst)),
+            RawStatement::SetDiscriminant(place, variant_id) => {
+                RawStatement::SetDiscriminant(place.substitute(subst), *variant_id)
             }
-            Statement::StorageDead(var_id) => Statement::StorageDead(*var_id),
-            Statement::Deinit(place) => Statement::Deinit(place.substitute(subst)),
-        }
+            RawStatement::StorageDead(var_id) => RawStatement::StorageDead(*var_id),
+            RawStatement::Deinit(place) => RawStatement::Deinit(place.substitute(subst)),
+        };
+
+        Statement::new(self.meta, st)
     }
 }
 
 impl Terminator {
+    pub fn new(meta: Meta, content: RawTerminator) -> Self {
+        Terminator { meta, content }
+    }
+
     /// Substitute the type variables and return the resulting terminator
     pub fn substitute(&self, subst: &ETypeSubst) -> Terminator {
-        match self {
-            Terminator::Goto { target } => Terminator::Goto { target: *target },
-            Terminator::Switch { discr, targets } => Terminator::Switch {
+        let terminator = match &self.content {
+            RawTerminator::Goto { target } => RawTerminator::Goto { target: *target },
+            RawTerminator::Switch { discr, targets } => RawTerminator::Switch {
                 discr: discr.substitute(subst),
                 targets: targets.substitute(subst),
             },
-            Terminator::Panic => Terminator::Panic,
-            Terminator::Return => Terminator::Return,
-            Terminator::Unreachable => Terminator::Unreachable,
-            Terminator::Drop { place, target } => Terminator::Drop {
+            RawTerminator::Panic => RawTerminator::Panic,
+            RawTerminator::Return => RawTerminator::Return,
+            RawTerminator::Unreachable => RawTerminator::Unreachable,
+            RawTerminator::Drop { place, target } => RawTerminator::Drop {
                 place: place.substitute(subst),
                 target: *target,
             },
-            Terminator::Call {
+            RawTerminator::Call {
                 func,
                 region_args,
                 type_args,
                 args,
                 dest,
                 target,
-            } => Terminator::Call {
+            } => RawTerminator::Call {
                 func: func.clone(),
                 region_args: region_args.clone(),
                 type_args: type_args
@@ -181,16 +192,18 @@ impl Terminator {
                 dest: dest.substitute(subst),
                 target: *target,
             },
-            Terminator::Assert {
+            RawTerminator::Assert {
                 cond,
                 expected,
                 target,
-            } => Terminator::Assert {
+            } => RawTerminator::Assert {
                 cond: cond.substitute(subst),
                 expected: *expected,
                 target: *target,
             },
-        }
+        };
+
+        Terminator::new(self.meta, terminator)
     }
 }
 
@@ -221,26 +234,28 @@ impl Statement {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>,
     {
-        match self {
-            Statement::Assign(place, rvalue) => format!(
+        match &self.content {
+            RawStatement::Assign(place, rvalue) => format!(
                 "{} := {}",
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             )
             .to_string(),
-            Statement::FakeRead(place) => {
+            RawStatement::FakeRead(place) => {
                 format!("@fake_read({})", place.fmt_with_ctx(ctx),).to_string()
             }
-            Statement::SetDiscriminant(place, variant_id) => format!(
+            RawStatement::SetDiscriminant(place, variant_id) => format!(
                 "@discriminant({}) := {}",
                 place.fmt_with_ctx(ctx),
                 variant_id.to_string()
             )
             .to_string(),
-            Statement::StorageDead(vid) => {
+            RawStatement::StorageDead(vid) => {
                 format!("@storage_dead({})", var_id_to_pretty_string(*vid)).to_string()
             }
-            Statement::Deinit(place) => format!("@deinit({})", place.fmt_with_ctx(ctx)).to_string(),
+            RawStatement::Deinit(place) => {
+                format!("@deinit({})", place.fmt_with_ctx(ctx)).to_string()
+            }
         }
     }
 }
@@ -320,9 +335,9 @@ impl Terminator {
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
-        match self {
-            Terminator::Goto { target } => format!("goto bb{}", target.to_string()).to_string(),
-            Terminator::Switch { discr, targets } => match targets {
+        match &self.content {
+            RawTerminator::Goto { target } => format!("goto bb{}", target.to_string()).to_string(),
+            RawTerminator::Switch { discr, targets } => match targets {
                 SwitchTargets::If(true_block, false_block) => format!(
                     "if {} -> bb{} else -> bb{}",
                     discr.fmt_with_ctx(ctx),
@@ -343,16 +358,16 @@ impl Terminator {
                     format!("switch {} -> {}", discr.fmt_with_ctx(ctx), maps).to_string()
                 }
             },
-            Terminator::Panic => "panic".to_string(),
-            Terminator::Return => "return".to_string(),
-            Terminator::Unreachable => "unreachable".to_string(),
-            Terminator::Drop { place, target } => format!(
+            RawTerminator::Panic => "panic".to_string(),
+            RawTerminator::Return => "return".to_string(),
+            RawTerminator::Unreachable => "unreachable".to_string(),
+            RawTerminator::Drop { place, target } => format!(
                 "drop {} -> bb{}",
                 place.fmt_with_ctx(ctx),
                 target.to_string()
             )
             .to_string(),
-            Terminator::Call {
+            RawTerminator::Call {
                 func,
                 region_args,
                 type_args,
@@ -370,7 +385,7 @@ impl Terminator {
                 )
                 .to_string()
             }
-            Terminator::Assert {
+            RawTerminator::Assert {
                 cond,
                 expected,
                 target,

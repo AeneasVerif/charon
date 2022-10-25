@@ -10,8 +10,9 @@
 use std::iter::zip;
 
 use crate::expressions::*;
-use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, Statement};
+use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, RawStatement, Statement};
 use crate::llbc_ast_utils::transform_operands;
+use crate::meta::Meta;
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
 use crate::values::VarId;
@@ -37,7 +38,8 @@ fn make_aggregate_kind(ty: &ETy, var_index: Option<VariantId::Id>) -> AggregateK
 ///
 /// Goes fom e.g. `f(T::A(x, y))` to `let a = T::A(x, y); f(a)`.
 /// The function is recursively called on the aggregate fields (e.g. here x and y).
-fn translate_constant_adt<F: FnMut(ETy) -> VarId::Id>(
+fn transform_constant_adt<F: FnMut(ETy) -> VarId::Id>(
+    meta: &Meta,
     ty: &ETy,
     val: &OperandConstantValue,
     make_new_var: &mut F,
@@ -51,7 +53,8 @@ fn translate_constant_adt<F: FnMut(ETy) -> VarId::Id>(
     let mut statements = vec![];
     let ops = zip(ty.as_adt().2, fields)
         .map(|(f_ty, f_val)| {
-            if let Some((mut st, var_id)) = translate_constant_adt(f_ty, f_val, make_new_var) {
+            if let Some((mut st, var_id)) = transform_constant_adt(meta, f_ty, f_val, make_new_var)
+            {
                 statements.append(&mut st);
                 Operand::Move(Place::new(var_id))
             } else {
@@ -63,16 +66,20 @@ fn translate_constant_adt<F: FnMut(ETy) -> VarId::Id>(
     // Make the new variable holding the aggregate.
     let rval = Rvalue::Aggregate(make_aggregate_kind(ty, *variant), ops);
     let var_id = make_new_var(ty.clone());
-    statements.push(Statement::Assign(Place::new(var_id), rval));
+    statements.push(Statement::new(
+        meta.clone(),
+        RawStatement::Assign(Place::new(var_id), rval),
+    ));
     Some((statements, var_id))
 }
 
-fn translate_operand_adt<F: FnMut(ETy) -> VarId::Id>(
+fn transform_operand_adt<F: FnMut(ETy) -> VarId::Id>(
+    meta: &Meta,
     op: &mut Operand,
     f: &mut F,
 ) -> Vec<Statement> {
     if let Operand::Const(ty, val) = op {
-        if let Some((st, var_id)) = translate_constant_adt(ty, val, f) {
+        if let Some((st, var_id)) = transform_constant_adt(meta, ty, val, f) {
             // Change the ADT constant operand to a move (of the extracted AST).
             *op = Operand::Move(Place::new(var_id));
             return st;
@@ -90,7 +97,7 @@ pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &
 
         let mut f = make_locals_generator(&mut b.locals);
         take(&mut b.body, |st| {
-            transform_operands(st, &mut |op| translate_operand_adt(op, &mut f))
+            transform_operands(st, &mut |meta, op| transform_operand_adt(meta, op, &mut f))
         });
     }
 }

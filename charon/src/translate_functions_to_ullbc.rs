@@ -13,6 +13,8 @@ use crate::get_mir::{
     boxes_are_desugared, extract_constants_at_top_level, get_mir_for_def_id_and_level, MirLevel,
 };
 use crate::id_vector;
+use crate::meta;
+use crate::meta::{FileId, RealFileName};
 use crate::names::global_def_id_to_name;
 use crate::names::{function_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy as rh;
@@ -35,12 +37,15 @@ use rustc_middle::mir::{
 };
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{ConstKind, Ty, TyCtxt, TyKind};
+use rustc_session::Session;
 use rustc_span::Span;
+use std::collections::HashMap;
 use std::iter::zip;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name, TypeTransContext};
 
 /// Translation context for function and global definitions
+/// TODO: we should put the `TyCtx` and the `Session` in there
 pub struct DeclTransContext<'ctx> {
     /// The ordered declarations
     pub ordered: &'ctx OrderedDecls,
@@ -361,19 +366,21 @@ fn translate_body_locals<'tcx, 'ctx, 'ctx1>(
 /// The local variables should already have been translated and inserted in
 /// the context.
 fn translate_transparent_expression_body<'tcx, 'ctx, 'ctx1>(
+    sess: &Session,
     tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &Body<'tcx>,
 ) -> Result<()> {
     trace!();
 
-    let id = translate_basic_block(tcx, bt_ctx, body, START_BLOCK)?;
+    let id = translate_basic_block(sess, tcx, bt_ctx, body, START_BLOCK)?;
     assert!(id == ast::START_BLOCK_ID);
 
     Ok(())
 }
 
 fn translate_basic_block<'tcx, 'ctx, 'ctx1>(
+    sess: &Session,
     tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &Body<'tcx>,
@@ -395,7 +402,7 @@ fn translate_basic_block<'tcx, 'ctx, 'ctx1>(
         trace!("statement: {:?}", statement);
 
         // Some statements might be ignored, hence the optional returned value
-        let opt_statement = translate_statement(tcx, bt_ctx, &statement)?;
+        let opt_statement = translate_statement(sess, tcx, bt_ctx, &statement)?;
         match opt_statement {
             Some(statement) => statements.push(statement),
             None => (),
@@ -404,7 +411,7 @@ fn translate_basic_block<'tcx, 'ctx, 'ctx1>(
 
     // Translate the terminator
     let terminator = block.terminator();
-    let terminator = translate_terminator(tcx, bt_ctx, body, terminator)?;
+    let terminator = translate_terminator(sess, tcx, bt_ctx, body, terminator)?;
 
     // Insert the block in the translated blocks
     let block = ast::BlockData {
@@ -1387,6 +1394,7 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
 ///
 /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
 fn translate_statement<'tcx, 'ctx, 'ctx1>(
+    sess: &Session,
     tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
     statement: &Statement<'tcx>,
@@ -1395,19 +1403,19 @@ fn translate_statement<'tcx, 'ctx, 'ctx1>(
 
     use ::std::ops::Deref;
 
-    match &statement.kind {
+    let t_statement: Option<ast::RawStatement> = match &statement.kind {
         StatementKind::Assign(assign) => {
             let (place, rvalue) = assign.deref();
             let t_place = translate_place(bt_ctx, place);
             let t_rvalue = translate_rvalue(tcx, bt_ctx, rvalue);
 
-            Ok(Some(ast::Statement::Assign(t_place, t_rvalue)))
+            Some(ast::RawStatement::Assign(t_place, t_rvalue))
         }
         StatementKind::FakeRead(info) => {
             let (_read_cause, place) = info.deref();
             let t_place = translate_place(bt_ctx, place);
 
-            Ok(Some(ast::Statement::FakeRead(t_place)))
+            Some(ast::RawStatement::FakeRead(t_place))
         }
         StatementKind::SetDiscriminant {
             place,
@@ -1415,47 +1423,62 @@ fn translate_statement<'tcx, 'ctx, 'ctx1>(
         } => {
             let t_place = translate_place(bt_ctx, place);
             let variant_id = translate_variant_id(*variant_index);
-            Ok(Some(ast::Statement::SetDiscriminant(t_place, variant_id)))
+            Some(ast::RawStatement::SetDiscriminant(t_place, variant_id))
         }
         StatementKind::StorageLive(_) => {
-            // For now we ignore StorageLive
-            Ok(None)
+            // We ignore StorageLive
+            None
         }
         StatementKind::StorageDead(local) => {
             let var_id = bt_ctx.get_local(local).unwrap();
-            Ok(Some(ast::Statement::StorageDead(var_id)))
+            Some(ast::RawStatement::StorageDead(var_id))
         }
         StatementKind::Retag(_, _) => {
             // This is for the stacked borrows
             trace!("retag");
-            Ok(None)
+            None
         }
         StatementKind::AscribeUserType(_, _) => {
             trace!("AscribedUserType");
             // We ignore those: they are just used by the type checker.
             // Note that this instruction is used only in certain passes
             // (it is not present in optimized MIR for instance).
-            Ok(None)
+            None
         }
         StatementKind::Coverage(_) => {
             unimplemented!();
         }
         StatementKind::Nop => {
             // We ignore this statement
-            Ok(None)
+            None
         }
         StatementKind::Deinit(place) => {
             let t_place = translate_place(bt_ctx, place);
-            Ok(Some(ast::Statement::Deinit(t_place)))
+            Some(ast::RawStatement::Deinit(t_place))
         }
         StatementKind::Intrinsic(_) => {
             unimplemented!();
+        }
+    };
+
+    // Add the meta information
+    match t_statement {
+        None => Ok(None),
+        Some(t_statement) => {
+            let meta = meta::get_meta_from_rspan(
+                sess,
+                &bt_ctx.ft_ctx.ordered.file_to_id,
+                statement.source_info.span,
+            );
+
+            Ok(Some(ast::Statement::new(meta, t_statement)))
         }
     }
 }
 
 /// Translate a terminator
 fn translate_terminator<'tcx, 'ctx, 'ctx1>(
+    sess: &Session,
     tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &Body<'tcx>,
@@ -1463,10 +1486,19 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
 ) -> Result<ast::Terminator> {
     trace!("About to translate terminator (MIR) {:?}", terminator);
 
-    match &terminator.kind {
+    // Compute the meta information beforehand (we might need it to introduce
+    // intermediate statements - we desugar some terminators)
+    let meta = meta::get_meta_from_rspan(
+        sess,
+        &bt_ctx.ft_ctx.ordered.file_to_id,
+        terminator.source_info.span,
+    );
+
+    // Translate the terminator
+    let t_terminator: ast::RawTerminator = match &terminator.kind {
         TerminatorKind::Goto { target } => {
-            let target = translate_basic_block(tcx, bt_ctx, body, *target)?;
-            Ok(ast::Terminator::Goto { target })
+            let target = translate_basic_block(sess, tcx, bt_ctx, body, *target)?;
+            ast::RawTerminator::Goto { target }
         }
         TerminatorKind::SwitchInt {
             discr,
@@ -1480,9 +1512,9 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             let discr = translate_operand(tcx, bt_ctx, discr);
 
             // Translate the switch targets
-            let targets = translate_switch_targets(tcx, bt_ctx, body, &switch_ty, targets)?;
+            let targets = translate_switch_targets(sess, tcx, bt_ctx, body, &switch_ty, targets)?;
 
-            Ok(ast::Terminator::Switch { discr, targets })
+            ast::RawTerminator::Switch { discr, targets }
         }
         TerminatorKind::Resume => {
             // This is used to correctly unwind. We shouldn't get there: if
@@ -1490,20 +1522,20 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             unreachable!();
         }
         TerminatorKind::Abort => {
-            // TODO: we will translate this to `ast::Terminator::Abort`,
+            // TODO: we will translate this to `ast::RawTerminator::Abort`,
             // but I want to see in which situations Abort appears.
             unimplemented!();
         }
-        TerminatorKind::Return => Ok(ast::Terminator::Return),
-        TerminatorKind::Unreachable => Ok(ast::Terminator::Unreachable),
+        TerminatorKind::Return => ast::RawTerminator::Return,
+        TerminatorKind::Unreachable => ast::RawTerminator::Unreachable,
         TerminatorKind::Drop {
             place,
             target,
             unwind: _,
-        } => Ok(ast::Terminator::Drop {
+        } => ast::RawTerminator::Drop {
             place: translate_place(bt_ctx, place),
-            target: translate_basic_block(tcx, bt_ctx, body, *target)?,
-        }),
+            target: translate_basic_block(sess, tcx, bt_ctx, body, *target)?,
+        },
         TerminatorKind::DropAndReplace {
             place,
             value,
@@ -1513,26 +1545,30 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             // We desugar this to `drop(place); place := value;
 
             // Translate the next block
-            let target = translate_basic_block(tcx, bt_ctx, body, *target)?;
+            let target = translate_basic_block(sess, tcx, bt_ctx, body, *target)?;
 
             // Translate the assignment
             let place = translate_place(bt_ctx, place);
             let rv = e::Rvalue::Use(translate_operand(tcx, bt_ctx, value));
-            let assign = ast::Statement::Assign(place.clone(), rv);
+            let assign = ast::Statement::new(meta, ast::RawStatement::Assign(place.clone(), rv));
+
+            // Generate a goto
+            let goto = ast::Terminator::new(meta, ast::RawTerminator::Goto { target });
+
             // This introduces a new block, which doesn't appear in the original MIR
             let assign_id = bt_ctx.blocks_counter.fresh_id();
             let assign_block = ast::BlockData {
                 statements: vec![assign],
-                terminator: ast::Terminator::Goto { target },
+                terminator: goto,
             };
             bt_ctx.push_block(assign_id, assign_block);
 
             // Translate the drop
-            let drop = ast::Terminator::Drop {
+            let drop = ast::RawTerminator::Drop {
                 place,
                 target: assign_id,
             };
-            Ok(drop)
+            drop
         }
         TerminatorKind::Call {
             func,
@@ -1544,7 +1580,7 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             fn_span: _,
         } => {
             trace!("Call: func: {:?}", func);
-            translate_function_call(tcx, bt_ctx, body, func, args, destination, target)
+            translate_function_call(sess, tcx, bt_ctx, body, func, args, destination, target)?
         }
         TerminatorKind::Assert {
             cond,
@@ -1554,12 +1590,12 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             cleanup: _, // If we panic, the state gets stuck: we don't need to model cleanup
         } => {
             let cond = translate_operand(tcx, bt_ctx, cond);
-            let target = translate_basic_block(tcx, bt_ctx, body, *target)?;
-            Ok(ast::Terminator::Assert {
+            let target = translate_basic_block(sess, tcx, bt_ctx, body, *target)?;
+            ast::RawTerminator::Assert {
                 cond,
                 expected: *expected,
                 target,
-            })
+            }
         }
         TerminatorKind::Yield {
             value: _,
@@ -1588,16 +1624,16 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             // We translate them as Gotos.
             // Also note that they are used in some passes, and not in some others
             // (they are present in mir_promoted, but not mir_optimized).
-            let target = translate_basic_block(tcx, bt_ctx, body, *real_target)?;
-            Ok(ast::Terminator::Goto { target })
+            let target = translate_basic_block(sess, tcx, bt_ctx, body, *real_target)?;
+            ast::RawTerminator::Goto { target }
         }
         TerminatorKind::FalseUnwind {
             real_target,
             unwind: _,
         } => {
             // We consider this to be a goto
-            let target = translate_basic_block(tcx, bt_ctx, body, *real_target)?;
-            Ok(ast::Terminator::Goto { target })
+            let target = translate_basic_block(sess, tcx, bt_ctx, body, *real_target)?;
+            ast::RawTerminator::Goto { target }
         }
         TerminatorKind::InlineAsm {
             template: _,
@@ -1610,11 +1646,15 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             // This case should have been eliminated during the registration phase
             unreachable!();
         }
-    }
+    };
+
+    // Add the meta information
+    Ok(ast::Terminator::new(meta, t_terminator))
 }
 
 /// Translate switch targets
 fn translate_switch_targets<'tcx, 'ctx, 'ctx1>(
+    sess: &Session,
     tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &Body<'tcx>,
@@ -1634,8 +1674,8 @@ fn translate_switch_targets<'tcx, 'ctx, 'ctx1>(
             assert!(test_val == 0);
 
             // It seems the block targets are inverted
-            let if_block = translate_basic_block(tcx, bt_ctx, body, targets.otherwise())?;
-            let otherwise_block = translate_basic_block(tcx, bt_ctx, body, otherwise_block)?;
+            let if_block = translate_basic_block(sess, tcx, bt_ctx, body, targets.otherwise())?;
+            let otherwise_block = translate_basic_block(sess, tcx, bt_ctx, body, otherwise_block)?;
 
             return Ok(ast::SwitchTargets::If(if_block, otherwise_block));
         }
@@ -1648,11 +1688,12 @@ fn translate_switch_targets<'tcx, 'ctx, 'ctx1>(
                 // We need to reinterpret the bytes (`v as i128` is not correct)
                 let raw: [u8; 16] = v.to_le_bytes();
                 let v = v::ScalarValue::from_le_bytes(*int_ty, raw);
-                let tgt = translate_basic_block(tcx, bt_ctx, body, tgt)?;
+                let tgt = translate_basic_block(sess, tcx, bt_ctx, body, tgt)?;
                 assert!(!targets_map.contains_key(&v));
                 targets_map.insert(v, tgt);
             }
-            let otherwise_block = translate_basic_block(tcx, bt_ctx, body, targets.otherwise())?;
+            let otherwise_block =
+                translate_basic_block(sess, tcx, bt_ctx, body, targets.otherwise())?;
 
             return Ok(ast::SwitchTargets::SwitchInt(
                 *int_ty,
@@ -1781,6 +1822,7 @@ fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
 /// function referenced in the function call: we need it in order to translate
 /// the blocks we go to after the function call returns.
 fn translate_function_call<'tcx, 'ctx, 'ctx1>(
+    sess: &Session,
     tcx: TyCtxt<'tcx>,
     bt_ctx: &mut BodyTransContext<'tcx, 'ctx, 'ctx1>,
     body: &mir::Body<'tcx>,
@@ -1788,7 +1830,7 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
     args: &Vec<Operand<'tcx>>,
     destination: &Place<'tcx>,
     target: &Option<BasicBlock>,
-) -> Result<ast::Terminator> {
+) -> Result<ast::RawTerminator> {
     trace!();
 
     // Translate the function operand - should be a constant: we don't
@@ -1810,14 +1852,14 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
         assert!(target.is_none());
 
         // We ignore the arguments
-        Ok(ast::Terminator::Panic)
+        Ok(ast::RawTerminator::Panic)
     } else {
         assert!(target.is_some());
         let next_block = target.unwrap();
 
         // Translate the target
         let lval = translate_place(&bt_ctx, destination);
-        let next_block = translate_basic_block(tcx, bt_ctx, body, next_block)?;
+        let next_block = translate_basic_block(sess, tcx, bt_ctx, body, next_block)?;
 
         // There is something annoying: when going to MIR, the rust compiler
         // sometimes introduces very low-level functions, which we need to
@@ -1849,7 +1891,7 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
             let t_arg = translate_move_box_first_projector_operand(bt_ctx, arg);
 
             // Return
-            Ok(ast::Terminator::Call {
+            Ok(ast::RawTerminator::Call {
                 func: ast::FunId::Assumed(ast::AssumedFunId::BoxFree),
                 region_args: vec![],
                 type_args: vec![t_ty],
@@ -1894,7 +1936,7 @@ fn translate_function_call<'tcx, 'ctx, 'ctx1>(
 
                 let func = ast::FunId::Regular(def_id);
 
-                Ok(ast::Terminator::Call {
+                Ok(ast::RawTerminator::Call {
                     func,
                     region_args,
                     type_args,
@@ -2033,7 +2075,7 @@ fn translate_primitive_function_call<'tcx>(
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
-) -> Result<ast::Terminator> {
+) -> Result<ast::RawTerminator> {
     trace!("- def_id: {:?}", def_id,);
 
     // Translate the function name
@@ -2063,7 +2105,7 @@ fn translate_primitive_function_call<'tcx>(
         | ast::AssumedFunId::VecNew
         | ast::AssumedFunId::VecPush
         | ast::AssumedFunId::VecInsert
-        | ast::AssumedFunId::VecLen => Ok(ast::Terminator::Call {
+        | ast::AssumedFunId::VecLen => Ok(ast::RawTerminator::Call {
             func: ast::FunId::Assumed(aid),
             region_args,
             type_args,
@@ -2092,7 +2134,7 @@ fn translate_box_deref(
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
-) -> Result<ast::Terminator> {
+) -> Result<ast::RawTerminator> {
     // Check the arguments
     assert!(region_args.len() == 0);
     assert!(type_args.len() == 1);
@@ -2111,7 +2153,7 @@ fn translate_box_deref(
     let boxed_ty = boxed_ty.unwrap();
     let type_args = vec![boxed_ty.clone()];
 
-    Ok(ast::Terminator::Call {
+    Ok(ast::RawTerminator::Call {
         func: ast::FunId::Assumed(aid),
         region_args,
         type_args,
@@ -2130,7 +2172,7 @@ fn translate_vec_index(
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
-) -> Result<ast::Terminator> {
+) -> Result<ast::RawTerminator> {
     // Check the arguments
     assert!(region_args.len() == 0);
     assert!(type_args.len() == 1);
@@ -2150,7 +2192,7 @@ fn translate_vec_index(
     };
 
     let type_args = vec![arg_ty.clone()];
-    Ok(ast::Terminator::Call {
+    Ok(ast::RawTerminator::Call {
         func: ast::FunId::Assumed(aid),
         region_args,
         type_args,
@@ -2324,6 +2366,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
 }
 
 fn translate_body<'tcx, 'ctx, 'ctx1>(
+    sess: &Session,
     tcx: TyCtxt<'tcx>,
     mut bt_ctx: BodyTransContext<'tcx, 'ctx, 'ctx1>,
     local_id: LocalDefId,
@@ -2331,13 +2374,16 @@ fn translate_body<'tcx, 'ctx, 'ctx1>(
 ) -> Result<ast::ExprBody> {
     let body = get_mir_for_def_id_and_level(tcx, local_id, bt_ctx.ft_ctx.mir_level);
 
+    // Compute the meta information
+    let meta = meta::get_meta_from_rspan(sess, &bt_ctx.ft_ctx.ordered.file_to_id, body.span);
+
     // Initialize the local variables
     trace!("Translating the body locals");
     translate_body_locals(tcx, &mut bt_ctx, body)?;
 
     // Translate the expression body
     trace!("Translating the expression body");
-    translate_transparent_expression_body(tcx, &mut bt_ctx, body)?;
+    translate_transparent_expression_body(sess, tcx, &mut bt_ctx, body)?;
 
     // We need to convert the blocks map to an index vector
     let mut blocks = ast::BlockId::Vector::new();
@@ -2350,6 +2396,7 @@ fn translate_body<'tcx, 'ctx, 'ctx1>(
 
     // Create the body
     Ok(ast::ExprBody {
+        meta,
         arg_count,
         locals: bt_ctx.vars,
         body: blocks,
@@ -2358,6 +2405,7 @@ fn translate_body<'tcx, 'ctx, 'ctx1>(
 
 /// Translate one function.
 fn translate_function(
+    sess: &Session,
     tcx: TyCtxt,
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
@@ -2371,6 +2419,9 @@ fn translate_function(
 
     let info = ordered.decls_info.get(&AnyDeclId::Fun(def_id)).unwrap();
     trace!("About to translate function:\n{:?}", info.rid);
+
+    // Compute the meta information
+    let meta = meta::get_meta_from_rid(sess, tcx, &ordered.file_to_id, info.rid);
 
     // Initialize the function translation context
     let ft_ctx = DeclTransContext {
@@ -2396,6 +2447,7 @@ fn translate_function(
         Option::None
     } else {
         Option::Some(translate_body(
+            sess,
             tcx,
             bt_ctx,
             info.rid.expect_local(),
@@ -2405,6 +2457,7 @@ fn translate_function(
 
     // Return the new function
     Ok(ast::FunDecl {
+        meta,
         def_id,
         name,
         signature,
@@ -2420,7 +2473,17 @@ fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> rustc_middle::mir::Unevaluate
 }
 
 /// Generate an expression body from a typed constant value.
-fn generate_assignment_body(ty: ty::ETy, val: e::OperandConstantValue) -> ast::ExprBody {
+fn global_generate_assignment_body(
+    sess: &Session,
+    tcx: TyCtxt,
+    filename_to_id: &HashMap<RealFileName, FileId::Id>,
+    ty: ty::ETy,
+    def_rid: DefId,
+    val: e::OperandConstantValue,
+) -> ast::ExprBody {
+    // Compute the meta information (we use the same everywhere)
+    let meta = meta::get_meta_from_rid(sess, tcx, filename_to_id, def_rid);
+
     // # Variables
     // ret : ty
     let var = ast::Var {
@@ -2432,13 +2495,17 @@ fn generate_assignment_body(ty: ty::ETy, val: e::OperandConstantValue) -> ast::E
     // ret := const (ty, val)
     // return
     let block = ast::BlockData {
-        statements: vec![ast::Statement::Assign(
-            e::Place::new(var.index),
-            e::Rvalue::Use(e::Operand::Const(ty, val)),
+        statements: vec![ast::Statement::new(
+            meta,
+            ast::RawStatement::Assign(
+                e::Place::new(var.index),
+                e::Rvalue::Use(e::Operand::Const(ty, val)),
+            ),
         )],
-        terminator: ast::Terminator::Return,
+        terminator: ast::Terminator::new(meta, ast::RawTerminator::Return),
     };
     ast::ExprBody {
+        meta,
         arg_count: 0,
         locals: id_vector::Vector::from(vec![var]),
         body: id_vector::Vector::from(vec![block]),
@@ -2447,6 +2514,7 @@ fn generate_assignment_body(ty: ty::ETy, val: e::OperandConstantValue) -> ast::E
 
 /// Translate one global.
 fn translate_global(
+    sess: &Session,
     tcx: TyCtxt,
     ordered: &OrderedDecls,
     _types_constraints: &TypesConstraintsMap,
@@ -2460,6 +2528,9 @@ fn translate_global(
 
     let info = ordered.decls_info.get(&AnyDeclId::Global(def_id)).unwrap();
     trace!("About to translate global:\n{:?}", info.rid);
+
+    // Compute the meta information
+    let meta = meta::get_meta_from_rid(sess, tcx, &ordered.file_to_id, info.rid);
 
     // Initialize the global translation context
     let ft_ctx = DeclTransContext {
@@ -2488,7 +2559,13 @@ fn translate_global(
         (true, false) => Option::None,
 
         // It's a local and transparent global: we extract its body as for functions.
-        (true, true) => Option::Some(translate_body(tcx, bt_ctx, info.rid.expect_local(), 0)?),
+        (true, true) => Option::Some(translate_body(
+            sess,
+            tcx,
+            bt_ctx,
+            info.rid.expect_local(),
+            0,
+        )?),
 
         // It's an external global.
         // The fact that it is listed among the declarations to extract means that
@@ -2508,7 +2585,14 @@ fn translate_global(
                     // We need a param_env: we use the expression def id as a dummy id...
 
                     let (ty, val) = translate_evaluated_operand_constant(tcx, &bt_ctx, &mir_ty, &c);
-                    Option::Some(generate_assignment_body(ty, val))
+                    Option::Some(global_generate_assignment_body(
+                        sess,
+                        tcx,
+                        &ordered.file_to_id,
+                        ty,
+                        info.rid,
+                        val,
+                    ))
                 }
                 std::result::Result::Err(e) => {
                     warn!("Did not evaluate {:?}: {:?}", info.rid, e);
@@ -2521,6 +2605,7 @@ fn translate_global(
     // Return the new global
     Ok(ast::GlobalDecl {
         def_id,
+        meta,
         name,
         ty: type_,
         body,
@@ -2529,6 +2614,7 @@ fn translate_global(
 
 /// Translate the functions
 pub fn translate_functions(
+    sess: &Session,
     tcx: TyCtxt,
     ordered: &OrderedDecls,
     types_constraints: &TypesConstraintsMap,
@@ -2544,6 +2630,7 @@ pub fn translate_functions(
         match decl {
             DeclarationGroup::Fun(GDeclarationGroup::NonRec(def_id)) => {
                 let fun_def = translate_function(
+                    sess,
                     tcx,
                     ordered,
                     &types_constraints,
@@ -2561,6 +2648,7 @@ pub fn translate_functions(
             DeclarationGroup::Fun(GDeclarationGroup::Rec(ids)) => {
                 for def_id in ids {
                     let fun_def = translate_function(
+                        sess,
                         tcx,
                         ordered,
                         &types_constraints,
@@ -2578,6 +2666,7 @@ pub fn translate_functions(
             }
             DeclarationGroup::Global(GDeclarationGroup::NonRec(def_id)) => {
                 let const_def = translate_global(
+                    sess,
                     tcx,
                     ordered,
                     &types_constraints,
@@ -2595,6 +2684,7 @@ pub fn translate_functions(
             DeclarationGroup::Global(GDeclarationGroup::Rec(ids)) => {
                 for def_id in ids {
                     let const_def = translate_global(
+                        sess,
                         tcx,
                         ordered,
                         &types_constraints,
