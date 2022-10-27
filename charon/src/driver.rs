@@ -2,11 +2,11 @@
 
 use crate::cli_options;
 use crate::divergent;
+use crate::export;
 use crate::extract_global_assignments;
 use crate::get_mir::MirLevel;
 use crate::insert_assign_return_unit;
 use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId};
-use crate::llbc_export;
 use crate::reconstruct_asserts;
 use crate::register;
 use crate::regularize_constant_adts;
@@ -182,10 +182,10 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     let (types_constraints, type_defs) =
         translate_types::translate_types(sess, tcx, &ordered_decls)?;
 
-    // # Step 5: translate the functions to IM (our Internal representation of MIR).
+    // # Step 5: translate the functions to ULLBC (Unstructured LLBC).
     // Note that from now onwards, both type and function definitions have been
     // translated to our internal ASTs: we don't interact with rustc anymore.
-    let (im_fun_defs, im_global_defs) = translate_functions_to_ullbc::translate_functions(
+    let (ullbc_funs, ullbc_globals) = translate_functions_to_ullbc::translate_functions(
         sess,
         tcx,
         &ordered_decls,
@@ -194,104 +194,122 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         mir_level,
     )?;
 
-    // # Step 6: go from IM to LLBC (Low-Level Borrow Calculus) by reconstructing
-    // the control flow.
-    let (mut llbc_funs, mut llbc_globals) = ullbc_to_llbc::translate_functions(
-        options.no_code_duplication,
-        &type_defs,
-        &im_fun_defs,
-        &im_global_defs,
-    );
+    // # Step 6:
+    // There are two options:
+    // - either the user wants the unstructured LLBC, in which case we stop there
+    // - or they want the structured LLBC, in which case we reconstruct the
+    //   control-flow and apply micro-passes
 
-    //
-    // =================
-    // **Micro-passes**:
-    // =================
-    // At this point, the bulk of the translation is done. From now onwards,
-    // we simply apply some micro-passes to make the code cleaner, before
-    // serializing the result.
-    //
-
-    // Compute the list of function and global names in the context.
-    // We need this for pretty-printing (i.e., debugging) purposes.
-    // We could use the [FunDecls] and [GlobalDecls] contexts, but we often
-    // mutably borrow them to modify them in place, which prevents us from
-    // using them for pretty-printing purposes (we would need to create shared
-    // borrows over already mutably borrowed values).
-    let fun_names: FunDeclId::Vector<String> =
-        FunDeclId::Vector::from_iter(llbc_funs.iter().map(|d| d.name.to_string()));
-    let global_names: GlobalDeclId::Vector<String> =
-        GlobalDeclId::Vector::from_iter(llbc_globals.iter().map(|d| d.name.to_string()));
-    let fmt_ctx = CtxNames::new(&type_defs, &fun_names, &global_names);
-
-    // # Step 7: simplify the calls to unops and binops
-    // Note that we assume that the sequences have been flattened.
-    simplify_ops::simplify(options.release, &fmt_ctx, &mut llbc_funs, &mut llbc_globals);
-
-    // # Step 8: replace constant ([OperandConstantValue]) ADTs by regular
-    // (Aggregated) ADTs.
-    regularize_constant_adts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
-
-    // # Step 9: extract statics and constant globals from operands (put them in
-    // a let binding). This pass relies on the absence of constant ADTs from
-    // the previous step: it does not inspect them (and would thus miss globals
-    // in constant ADTs).
-    extract_global_assignments::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
-
-    for def in &llbc_funs {
-        trace!(
-            "# After binop simplification:\n{}\n",
-            def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
+    if options.ullbc {
+        // # Extract the files
+        // # Step 15: generate the files.
+        export::export_ullbc(
+            crate_name.clone(),
+            &ordered_decls,
+            &type_defs,
+            &ullbc_funs,
+            &ullbc_globals,
+            &options.dest_dir,
+        )?;
+    } else {
+        // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing
+        // the control flow.
+        let (mut llbc_funs, mut llbc_globals) = ullbc_to_llbc::translate_functions(
+            options.no_code_duplication,
+            &type_defs,
+            &ullbc_funs,
+            &ullbc_globals,
         );
+
+        //
+        // =================
+        // **Micro-passes**:
+        // =================
+        // At this point, the bulk of the translation is done. From now onwards,
+        // we simply apply some micro-passes to make the code cleaner, before
+        // serializing the result.
+        //
+
+        // Compute the list of function and global names in the context.
+        // We need this for pretty-printing (i.e., debugging) purposes.
+        // We could use the [FunDecls] and [GlobalDecls] contexts, but we often
+        // mutably borrow them to modify them in place, which prevents us from
+        // using them for pretty-printing purposes (we would need to create shared
+        // borrows over already mutably borrowed values).
+        let fun_names: FunDeclId::Vector<String> =
+            FunDeclId::Vector::from_iter(llbc_funs.iter().map(|d| d.name.to_string()));
+        let global_names: GlobalDeclId::Vector<String> =
+            GlobalDeclId::Vector::from_iter(llbc_globals.iter().map(|d| d.name.to_string()));
+        let fmt_ctx = CtxNames::new(&type_defs, &fun_names, &global_names);
+
+        // # Step 7: simplify the calls to unops and binops
+        // Note that we assume that the sequences have been flattened.
+        simplify_ops::simplify(options.release, &fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Step 8: replace constant ([OperandConstantValue]) ADTs by regular
+        // (Aggregated) ADTs.
+        regularize_constant_adts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Step 9: extract statics and constant globals from operands (put them in
+        // a let binding). This pass relies on the absence of constant ADTs from
+        // the previous step: it does not inspect them (and would thus miss globals
+        // in constant ADTs).
+        extract_global_assignments::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        for def in &llbc_funs {
+            trace!(
+                "# After binop simplification:\n{}\n",
+                def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
+            );
+        }
+
+        // # Step 10: reconstruct the asserts
+        reconstruct_asserts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        for def in &llbc_funs {
+            trace!(
+                "# After asserts reconstruction:\n{}\n",
+                def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
+            );
+        }
+
+        // # Step 11: add the missing assignments to the return value.
+        // When the function return type is unit, the generated MIR doesn't
+        // set the return value to `()`. This can be a concern: in the case
+        // of Aeneas, it means the return variable contains ⊥ upon returning.
+        // For this reason, when the function has return type unit, we insert
+        // an extra assignment just before returning.
+        // This also applies to globals (for checking or executing code before
+        // the main or at compile-time).
+        insert_assign_return_unit::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Step 12: remove the drops of locals whose type is `Never` (`!`). This
+        // is in preparation of the next transformation.
+        remove_drop_never::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Step 13: remove the locals which are never used. After doing so, we
+        // check that there are no remaining locals with type `Never`.
+        remove_unused_locals::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Step 14: compute which functions are potentially divergent. A function
+        // is potentially divergent if it is recursive, contains a loop or transitively
+        // calls a potentially divergent function.
+        // Note that in the future, we may complement this basic analysis with a
+        // finer analysis to detect recursive functions which are actually total
+        // by construction.
+        // Because we don't have loops, constants are not yet touched.
+        let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
+
+        // # Step 15: generate the files.
+        export::export_llbc(
+            crate_name.clone(),
+            &ordered_decls,
+            &type_defs,
+            &llbc_funs,
+            &llbc_globals,
+            &options.dest_dir,
+        )?;
     }
-
-    // # Step 10: reconstruct the asserts
-    reconstruct_asserts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
-
-    for def in &llbc_funs {
-        trace!(
-            "# After asserts reconstruction:\n{}\n",
-            def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
-        );
-    }
-
-    // # Step 11: add the missing assignments to the return value.
-    // When the function return type is unit, the generated MIR doesn't
-    // set the return value to `()`. This can be a concern: in the case
-    // of Aeneas, it means the return variable contains ⊥ upon returning.
-    // For this reason, when the function has return type unit, we insert
-    // an extra assignment just before returning.
-    // This also applies to globals (for checking or executing code before
-    // the main or at compile-time).
-    insert_assign_return_unit::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
-
-    // # Step 12: remove the drops of locals whose type is `Never` (`!`). This
-    // is in preparation of the next transformation.
-    remove_drop_never::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
-
-    // # Step 13: remove the locals which are never used. After doing so, we
-    // check that there are no remaining locals with type `Never`.
-    remove_unused_locals::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
-
-    // # Step 14: compute which functions are potentially divergent. A function
-    // is potentially divergent if it is recursive, contains a loop or transitively
-    // calls a potentially divergent function.
-    // Note that in the future, we may complement this basic analysis with a
-    // finer analysis to detect recursive functions which are actually total
-    // by construction.
-    // Because we don't have loops, constants are not yet touched.
-    let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
-
-    // # Step 15: generate the files.
-    llbc_export::export(
-        crate_name.clone(),
-        &ordered_decls,
-        &type_defs,
-        &llbc_funs,
-        &llbc_globals,
-        &options.dest_dir,
-    )?;
-
     trace!("Done");
 
     Ok(())

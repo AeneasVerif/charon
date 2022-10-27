@@ -509,7 +509,7 @@ let operand_of_json (js : json) : (E.operand, string) result =
     | `Assoc [ ("Move", place) ] ->
         let* place = place_of_json place in
         Ok (E.Move place)
-    | `Assoc [ ("Const", `List [ ty; cv ]) ] ->
+    | `Assoc [ ("Const", `List [ ty; `Assoc [ ("PrimitiveValue", cv) ] ]) ] ->
         let* ty = ety_of_json ty in
         let* cv = primitive_value_of_json cv in
         Ok (E.Constant (ty, cv))

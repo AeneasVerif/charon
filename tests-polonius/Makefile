@@ -35,6 +35,7 @@ test-betree_main: OPTIONS += --opaque=betree_utils
 test-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
 test-%: build
 	$(CHARON_CMD) --dest $(DEST)/llbc
+	$(CHARON_CMD) --dest $(DEST)/ullbc --ullbc
 	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
 	$(CHARON_CMD) --dest $(DEST)/llbc_release --release
 # TODO: this fails for now (there is some very low-level desugaring happening)

@@ -827,12 +827,12 @@ fn translate_constant_scalar_value<'tcx, 'ctx>(
                     unreachable!("Can't analyze a constant value built from an opaque type")
                 }
             };
-            e::OperandConstantValue::Adt(variant_id, Vector::new())
+            e::OperandConstantValue::Adt(variant_id, Vec::new())
         }
         ty::Ty::Adt(ty::TypeId::Tuple, region_tys, field_tys) => {
             assert!(region_tys.is_empty());
             assert!(field_tys.is_empty());
-            e::OperandConstantValue::Adt(Option::None, Vector::new())
+            e::OperandConstantValue::Adt(Option::None, Vec::new())
         }
         ty::Ty::Ref(ty::ErasedRegion::Erased, _, ty::RefKind::Shared) => match scalar {
             mir::interpret::Scalar::Ptr(p, _) => match tcx.global_alloc(p.provenance) {
@@ -903,7 +903,7 @@ fn translate_constant_reference_value<'tcx, 'ctx1, 'ctx2>(
         _ => unreachable!("Expected a tuple, got {:?}", mir_ty),
     };
 
-    let fields: Vector<e::OperandConstantValue> = fields.into_iter().map(|f| f.1).collect();
+    let fields: Vec<e::OperandConstantValue> = fields.into_iter().map(|f| f.1).collect();
     e::OperandConstantValue::Adt(Option::None, fields)
 }
 
@@ -926,7 +926,7 @@ fn translate_const_value<'tcx, 'ctx1, 'ctx2>(
         mir::interpret::ConstValue::ZeroSized { .. } => {
             // Should be unit
             assert!(llbc_ty.is_unit());
-            e::OperandConstantValue::Adt(None, Vector::new())
+            e::OperandConstantValue::Adt(None, Vec::new())
         }
     }
 }
