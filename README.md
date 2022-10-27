@@ -65,7 +65,31 @@ We generate one file per extracted crate.
 You first need to install [`rustup`](https://www.rust-lang.org/tools/install).
 
 As Charon is set up with cargo, rustup will automatically download and install the proper
-packages upon building the project: you just need to run `make` in the top directory.
+packages upon building the project. If you only want to build the Rust project (in
+`./charon`), simply run `make build-charon-rust` in the top directory.
+
+If you also want to build the ML library (in `./charon-ml`), you will need to
+install OCaml and the proper dependencies.
+
+We suggest you to follow those [instructions](https://ocaml.org/docs/install.html),
+and install OPAM on the way (same instructions).
+
+We use **OCaml 4.13.1**: `opam switch create 4.13.1+options`
+
+The dependencies can then be installed with the following command:
+
+```
+opam install ppx_deriving visitors easy_logging zarith yojson core_unix odoc
+```
+
+You can then run `make build-charon-ml` to build the ML library, or even simply
+`make` to build the whole project and run the tests.
+
+## Documentation
+
+If you run `make`, you will generate a documentation accessible from
+[`doc-rust.html`](./doc-rust.html) (for the Rust project) and
+[`doc-ml.html`](./doc-ml.html) (for the ML library).
 
 ## Usage
 
