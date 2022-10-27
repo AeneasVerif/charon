@@ -156,7 +156,7 @@ type 'r ty =
         concrete = true;
         polymorphic = false;
       }]
-(* TODO: group Bool, Char, etc. in Constant *)
+(* TODO: group Bool, Char, etc. in Primitive *)
 
 (** Generic type with regions *)
 type 'r gr_ty = 'r region ty [@@deriving show, ord]

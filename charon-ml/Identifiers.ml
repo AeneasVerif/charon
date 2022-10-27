@@ -37,8 +37,6 @@ module type Id = sig
   val to_int : id -> int
   val of_int : int -> id
   val nth : 'a list -> id -> 'a
-  (* TODO: change the signature (invert the index and the list *)
-
   val nth_opt : 'a list -> id -> 'a option
 
   (** Update the nth element of the list.
@@ -78,7 +76,7 @@ module IdGen () : Id = struct
     (* Identifiers should never overflow (because max_int is a really big
      * value - but we really want to make sure we detect overflows if
      * they happen *)
-    if x = max_int then raise (Errors.IntegerOverflow ()) else x + 1
+    if x = max_int then raise (Utils.IntegerOverflow ()) else x + 1
 
   let generator_from_incr_id id = incr id
 
