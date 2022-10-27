@@ -318,18 +318,16 @@ impl Serialize for AggregateKind {
     }
 }
 
-/*
 impl Serialize for OperandConstantValue {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         match self {
-            // OperandConstantValue exists only to handle temporary cases inherited from the MIR:
-            // for the final LLBC format, we simply export the underlying constant value.
+            // [OperandConstantValue] exists only to handle temporary cases inherited from the MIR:
+            // for the final (U)LLBC format, we simply export the underlying constant value.
             OperandConstantValue::PrimitiveValue(cv) => cv.serialize(serializer),
             _ => unreachable!("unexpected `{:?}`: `OperandConstantValue` fields other than `ConstantValue` are temporary and should not occur in serialized LLBC", self),
         }
     }
 }
-*/

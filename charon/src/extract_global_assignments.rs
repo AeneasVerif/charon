@@ -1,21 +1,22 @@
-//! This module extracts globals from operands to put them in a separate let binding.
-//! This is done to increase sequentiality of LLBC and reduce the cases to handle
+//! This module extracts globals from operands to put them in separate let bindings.
+//! We do so to increase the sequentiality of LLBC and reduce the cases to handle
 //! in the operands, making the formalisation less complex and easing the functional
-//! translation.
+//! translation in Aeneas.
 //!
 //! It also extracts statics fom operands for the same reason, because we want
-//! to treat them as globals in LLBC.
-//! To do this, we add a new variable to reference the static:
-//! they are accessed by reference in MIR, whereas globals are accessed by value.
+//! to treat them as globals in (U)LLBC.
+//! To do this, we add a new variable to reference the static: they are accessed
+//! by reference in MIR, whereas globals are accessed by value.
 
 use crate::expressions::*;
-use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, RawStatement, Statement};
-use crate::llbc_ast_utils::transform_operands;
 use crate::meta::Meta;
 use crate::types::*;
-use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, make_locals_generator};
+use crate::ullbc_ast::{
+    iter_function_bodies, iter_global_bodies, make_locals_generator, CtxNames, FunDecls,
+    GlobalDecls, RawStatement, Statement,
+};
+use crate::ullbc_ast_utils::body_transform_operands;
 use crate::values::VarId;
-use take_mut::take;
 
 fn deref_static_type(ref_ty: &ETy) -> &ETy {
     match ref_ty {
@@ -27,53 +28,61 @@ fn deref_static_type(ref_ty: &ETy) -> &ETy {
     }
 }
 
-/// If the operand is a constant global identifier, returns an `AssignGlobal` statement
+/// If the operand is a constant global identifier, push an `AssignGlobal` statement
 /// that binds a new variable to the global and move it in the operand:
 /// `... const X ...`
 /// becomes
 /// `let x0 = X;`
 /// `... move x0 ...`
 ///
-/// If it's a static global identifier, also adds an indirection to take a reference on it:
-/// /// `... const X ...`
+/// If the operand is a static global identifier, also add an indirection to take
+/// a reference on it:
+/// `... const X ...`
 /// becomes
 /// `let x0 = X;`
 /// `let x1 = &X;`
 /// `... move x1 ...`
 fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
     meta: &Meta,
+    nst: &mut Vec<Statement>,
     op: &mut Operand,
     make_new_var: &mut F,
-) -> Vec<Statement> {
+) {
+    // Check for early return
     let (ty, c) = match op {
         Operand::Const(ty, c) => (ty, c),
-        _ => return vec![],
+        _ => return (),
     };
-    let (var, new_st) = match *c {
-        OperandConstantValue::PrimitiveValue(_) => return vec![],
+
+    let var = match *c {
+        OperandConstantValue::PrimitiveValue(_) => return (),
         OperandConstantValue::Adt(_, _) => {
             unreachable!("Constant ADTs should have been replaced by now")
         }
         OperandConstantValue::ConstantId(global_id) => {
             let var = make_new_var(ty.clone());
-            let g_st = Statement::new(*meta, RawStatement::AssignGlobal(var, global_id));
-            (var, vec![g_st])
+            nst.push(Statement::new(
+                *meta,
+                RawStatement::AssignGlobal(var, global_id),
+            ));
+            var
         }
         OperandConstantValue::StaticId(global_id) => {
             let var = make_new_var(deref_static_type(ty).clone());
             let var_ref = make_new_var(ty.clone());
             let rvalue = Rvalue::Ref(Place::new(var), BorrowKind::Shared);
-            (
-                var_ref,
-                vec![
-                    Statement::new(*meta, RawStatement::AssignGlobal(var, global_id)),
-                    Statement::new(*meta, RawStatement::Assign(Place::new(var_ref), rvalue)),
-                ],
-            )
+            nst.push(Statement::new(
+                *meta,
+                RawStatement::AssignGlobal(var, global_id),
+            ));
+            nst.push(Statement::new(
+                *meta,
+                RawStatement::Assign(Place::new(var_ref), rvalue),
+            ));
+            var_ref
         }
     };
     *op = Operand::Move(Place::new(var));
-    return new_st;
 }
 
 pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
@@ -84,10 +93,13 @@ pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &
         );
 
         let mut f = make_locals_generator(&mut b.locals);
-        take(&mut b.body, |st| {
+        body_transform_operands(&mut b.body, &mut |meta, nst, op| {
+            extract_operand_global_var(meta, nst, op, &mut f)
+        });
+        /*        take(&mut b.body, |st| {
             transform_operands(st, &mut |meta, op| {
                 extract_operand_global_var(meta, op, &mut f)
             })
-        });
+        });*/
     }
 }

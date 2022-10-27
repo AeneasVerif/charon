@@ -123,6 +123,9 @@ pub enum RawStatement {
     StorageDead(VarId::Id),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     Deinit(Place),
+    /// Not present in MIR: we introduce it when replacing constant variables
+    /// in operands in [extract_global_assignments.rs]
+    AssignGlobal(VarId::Id, GlobalDeclId::Id),
 }
 
 #[derive(Debug, Clone, Serialize)]

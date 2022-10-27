@@ -8,8 +8,10 @@ charon/target
 charon/attributes/target
 charon/macros/target
 tests/target
+tests/ullbc
 tests/llbc
 tests/tests
+tests-polonius/ullbc
 tests-polonius/llbc
 tests-polonius/target
 charon-ml/_build

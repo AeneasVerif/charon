@@ -41,7 +41,7 @@ pub struct Call {
 pub enum RawStatement {
     Assign(Place, Rvalue),
     /// Not present in MIR: we introduce it when replacing constant variables
-    /// in operands in [extract_global_assignments.rs]
+    /// in operands in [crate::extract_global_assignments]
     AssignGlobal(VarId::Id, GlobalDeclId::Id),
     FakeRead(Place),
     SetDiscriminant(Place, VariantId::Id),

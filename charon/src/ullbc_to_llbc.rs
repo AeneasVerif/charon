@@ -1400,6 +1400,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
             // We translate a deinit as a drop
             tgt::RawStatement::Drop(place.clone())
         }
+        src::RawStatement::AssignGlobal(vid, gid) => tgt::RawStatement::AssignGlobal(*vid, *gid),
     };
     Some(tgt::Statement::new(src_meta, st))
 }

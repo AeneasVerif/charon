@@ -95,12 +95,16 @@ fn transform_rvalue_operands<F: FnMut(&Meta, &mut Operand) -> Vec<Statement>>(
     }
 }
 
-/// Transform a statement by visiting its operands and inserting the generated
-/// statements before each visited operand.
-/// Useful to implement a pass on operands (see e.g., [crate::extract_global_assignments]).
+/// Transform a statement by applying a function to its operands and inserting the
+/// generated statements before each visited operand.
+/// Useful to implement a pass on operands ([crate::extract_global_assignments]
+/// used it in the past, until we moved this pass from LLBC to ULLBC).
 ///
 /// The meta argument given to `f` is the meta argument of the [Statement]
 /// containing the operand.
+///
+/// TODO: this is not used anymore. Also, it would be good to make it match
+/// the signature of [crate::ullbc_ast::BlockData::transform_operands].
 pub fn transform_operands<F: FnMut(&Meta, &mut Operand) -> Vec<Statement>>(
     mut st: Statement,
     f: &mut F,
