@@ -14,6 +14,7 @@ use serde::{Serialize, Serializer};
 use std::cmp::max;
 use std::fmt::Debug;
 use std::iter::FromIterator;
+use take_mut::take;
 
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
 pub fn iter_function_bodies<T: Debug + Clone + Serialize>(
@@ -148,6 +149,7 @@ impl Statement {
             }
             RawStatement::StorageDead(var_id) => RawStatement::StorageDead(*var_id),
             RawStatement::Deinit(place) => RawStatement::Deinit(place.substitute(subst)),
+            RawStatement::AssignGlobal(vid, gid) => RawStatement::AssignGlobal(*vid, *gid),
         };
 
         Statement::new(self.meta, st)
@@ -255,6 +257,9 @@ impl Statement {
             }
             RawStatement::Deinit(place) => {
                 format!("@deinit({})", place.fmt_with_ctx(ctx)).to_string()
+            }
+            RawStatement::AssignGlobal(vid, gid) => {
+                format!("{} := {}", ctx.format_object(*vid), ctx.format_object(*gid)).to_string()
             }
         }
     }
@@ -526,6 +531,38 @@ impl<T: Debug + Clone + Serialize> GExprBody<T> {
         let mut out = locals;
         out.push_str(&body);
         out
+    }
+}
+
+impl ExprBody {
+    pub fn fmt_with_decls<'ctx>(
+        &self,
+        ty_ctx: &'ctx TypeDecls,
+        fun_ctx: &'ctx FunDecls,
+        global_ctx: &'ctx GlobalDecls,
+    ) -> String {
+        let locals = Some(&self.locals);
+        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
+        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
+        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
+        self.fmt_with_ctx(TAB_INCR, &ctx)
+    }
+
+    pub fn fmt_with_names<'ctx>(
+        &self,
+        ty_ctx: &'ctx TypeDecls,
+        fun_ctx: &'ctx FunDeclId::Vector<String>,
+        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+    ) -> String {
+        let locals = Some(&self.locals);
+        let fun_ctx = FunNamesFormatter::new(fun_ctx);
+        let global_ctx = GlobalNamesFormatter::new(global_ctx);
+        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
+        self.fmt_with_ctx(TAB_INCR, &ctx)
+    }
+
+    pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {
+        self.fmt_with_names(&ctx.type_context, &ctx.fun_context, &ctx.global_context)
     }
 }
 
@@ -1147,5 +1184,122 @@ impl GlobalDecl {
 
     pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {
         self.fmt_with_names(&ctx.type_context, &ctx.fun_context, &ctx.global_context)
+    }
+}
+
+impl BlockData {
+    /// Visit the operands in an rvalue and generate statements.
+    /// Used below in [BlockData::transform_operands].
+    fn transform_rvalue_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand)>(
+        meta: &Meta,
+        nst: &mut Vec<Statement>,
+        rval: &mut Rvalue,
+        f: &mut F,
+    ) {
+        match rval {
+            Rvalue::Use(op) | Rvalue::UnaryOp(_, op) => f(meta, nst, op),
+            Rvalue::BinaryOp(_, o1, o2) => {
+                f(meta, nst, o1);
+                f(meta, nst, o2);
+            }
+            Rvalue::Aggregate(_, ops) => {
+                for op in ops {
+                    f(meta, nst, op);
+                }
+            }
+            Rvalue::Discriminant(_) | Rvalue::Ref(_, _) => {
+                // No operands: nothing to do
+                ()
+            }
+        }
+    }
+
+    /// See [body_transform_operands]
+    pub fn transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand)>(
+        mut self,
+        f: &mut F,
+    ) -> Self {
+        // The new vector of statements
+        let mut nst = vec![];
+
+        // Explore the operands in the statements
+        for mut st in self.statements {
+            let meta = &st.meta;
+            match &mut st.content {
+                RawStatement::Assign(_, rvalue) => {
+                    BlockData::transform_rvalue_operands(meta, &mut nst, rvalue, f);
+                }
+                RawStatement::FakeRead(_)
+                | RawStatement::SetDiscriminant(_, _)
+                | RawStatement::StorageDead(_)
+                | RawStatement::Deinit(_)
+                | RawStatement::AssignGlobal(_, _) => {
+                    // No operands: nothing to do
+                }
+            }
+            // Add the statement to the vector of statements
+            nst.push(st)
+        }
+
+        // Explore the terminator
+        let meta = &self.terminator.meta;
+        match &mut self.terminator.content {
+            RawTerminator::Switch { discr, targets: _ } => {
+                f(meta, &mut nst, discr);
+            }
+            RawTerminator::Call {
+                func: _,
+                region_args: _,
+                type_args: _,
+                args,
+                dest: _,
+                target: _,
+            } => {
+                for arg in args {
+                    f(meta, &mut nst, arg);
+                }
+            }
+            RawTerminator::Assert {
+                cond,
+                expected: _,
+                target: _,
+            } => {
+                f(meta, &mut nst, cond);
+            }
+            RawTerminator::Panic
+            | RawTerminator::Return
+            | RawTerminator::Unreachable
+            | RawTerminator::Goto { target: _ }
+            | RawTerminator::Drop {
+                place: _,
+                target: _,
+            } => {
+                // Nothing to do
+                ()
+            }
+        };
+
+        // Update the vector of statements
+        self.statements = nst;
+
+        // Return
+        self
+    }
+}
+
+/// Transform a body by applying a function to its operands, and
+/// inserting the statements generated by the operands at the end of the
+/// block.
+/// Useful to implement a pass on operands (see e.g., [crate::extract_global_assignments]).
+///
+/// The meta argument given to `f` is the meta argument of the [Terminator]
+/// containing the operand. `f` should explore the operand it receives, and
+/// push statements to the vector it receives as input.
+pub fn body_transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand)>(
+    blocks: &mut BlockId::Vector<BlockData>,
+    f: &mut F,
+) {
+    for block in blocks.iter_mut() {
+        take(block, |b| b.transform_operands(f));
     }
 }

@@ -143,9 +143,7 @@ pub enum Operand {
 /// `Identifier` and `Static` case:
 /// Match constant variables. We later desugar those to separate statements,
 /// see [extract_global_assignments.rs].
-#[derive(
-    Debug, PartialEq, Eq, Clone, Serialize, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity,
-)]
+#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
     PrimitiveValue(PrimitiveValue),
     ///

@@ -185,7 +185,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // # Step 5: translate the functions to ULLBC (Unstructured LLBC).
     // Note that from now onwards, both type and function definitions have been
     // translated to our internal ASTs: we don't interact with rustc anymore.
-    let (ullbc_funs, ullbc_globals) = translate_functions_to_ullbc::translate_functions(
+    let (mut ullbc_funs, mut ullbc_globals) = translate_functions_to_ullbc::translate_functions(
         sess,
         tcx,
         &ordered_decls,
@@ -194,7 +194,38 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         mir_level,
     )?;
 
-    // # Step 6:
+    //
+    // =================
+    // **Micro-passes**:
+    // =================
+    // At this point, the bulk of the translation is done. From now onwards,
+    // we simply apply some micro-passes to make the code cleaner, before
+    // serializing the result.
+    //
+
+    // Compute the list of function and global names in the context.
+    // We need this for pretty-printing (i.e., debugging) purposes.
+    // We could use the [FunDecls] and [GlobalDecls] contexts, but we often
+    // mutably borrow them to modify them in place, which prevents us from
+    // using them for pretty-printing purposes (we would need to create shared
+    // borrows over already mutably borrowed values).
+    let fun_names: FunDeclId::Vector<String> =
+        FunDeclId::Vector::from_iter(ullbc_funs.iter().map(|d| d.name.to_string()));
+    let global_names: GlobalDeclId::Vector<String> =
+        GlobalDeclId::Vector::from_iter(ullbc_globals.iter().map(|d| d.name.to_string()));
+    let fmt_ctx = CtxNames::new(&type_defs, &fun_names, &global_names);
+
+    // # Step 6: replace constant ([OperandConstantValue]) ADTs by regular
+    // (Aggregated) ADTs.
+    regularize_constant_adts::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
+
+    // # Step 7: extract statics and constant globals from operands (put them in
+    // a let binding). This pass relies on the absence of constant ADTs from
+    // the previous step: it does not inspect them (and would thus miss globals
+    // in constant ADTs).
+    extract_global_assignments::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
+
+    // # Step 8:
     // There are two options:
     // - either the user wants the unstructured LLBC, in which case we stop there
     // - or they want the structured LLBC, in which case we reconstruct the
@@ -202,7 +233,6 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
 
     if options.ullbc {
         // # Extract the files
-        // # Step 15: generate the files.
         export::export_ullbc(
             crate_name.clone(),
             &ordered_decls,
@@ -221,40 +251,9 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             &ullbc_globals,
         );
 
-        //
-        // =================
-        // **Micro-passes**:
-        // =================
-        // At this point, the bulk of the translation is done. From now onwards,
-        // we simply apply some micro-passes to make the code cleaner, before
-        // serializing the result.
-        //
-
-        // Compute the list of function and global names in the context.
-        // We need this for pretty-printing (i.e., debugging) purposes.
-        // We could use the [FunDecls] and [GlobalDecls] contexts, but we often
-        // mutably borrow them to modify them in place, which prevents us from
-        // using them for pretty-printing purposes (we would need to create shared
-        // borrows over already mutably borrowed values).
-        let fun_names: FunDeclId::Vector<String> =
-            FunDeclId::Vector::from_iter(llbc_funs.iter().map(|d| d.name.to_string()));
-        let global_names: GlobalDeclId::Vector<String> =
-            GlobalDeclId::Vector::from_iter(llbc_globals.iter().map(|d| d.name.to_string()));
-        let fmt_ctx = CtxNames::new(&type_defs, &fun_names, &global_names);
-
-        // # Step 7: simplify the calls to unops and binops
+        // # Step 9: simplify the calls to unops and binops
         // Note that we assume that the sequences have been flattened.
         simplify_ops::simplify(options.release, &fmt_ctx, &mut llbc_funs, &mut llbc_globals);
-
-        // # Step 8: replace constant ([OperandConstantValue]) ADTs by regular
-        // (Aggregated) ADTs.
-        regularize_constant_adts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
-
-        // # Step 9: extract statics and constant globals from operands (put them in
-        // a let binding). This pass relies on the absence of constant ADTs from
-        // the previous step: it does not inspect them (and would thus miss globals
-        // in constant ADTs).
-        extract_global_assignments::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
         for def in &llbc_funs {
             trace!(
