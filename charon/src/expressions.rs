@@ -4,9 +4,10 @@ pub use crate::expressions_utils::*;
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use crate::values::*;
-use im::Vector;
+use im::Vector; // TODO: im::Vector is not necessary anymore
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
+use std::vec::Vec;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Place {
@@ -142,7 +143,9 @@ pub enum Operand {
 /// `Identifier` and `Static` case:
 /// Match constant variables. We later desugar those to separate statements,
 /// see [extract_global_assignments.rs].
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, Serialize, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity,
+)]
 pub enum OperandConstantValue {
     PrimitiveValue(PrimitiveValue),
     ///
@@ -151,7 +154,7 @@ pub enum OperandConstantValue {
     /// no fields, unit (encoded as a 0-tuple).
     ///
     /// Less frequently: arbitrary ADT values.
-    Adt(Option<VariantId::Id>, Vector<OperandConstantValue>),
+    Adt(Option<VariantId::Id>, Vec<OperandConstantValue>),
     ///
     /// The case when the constant is elsewhere.
     /// The MIR seems to forbid more complex expressions like paths :

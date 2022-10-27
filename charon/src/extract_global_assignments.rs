@@ -3,7 +3,7 @@
 //! in the operands, making the formalisation less complex and easing the functional
 //! translation.
 //!
-//! It also extracts statics fom operands for the same reason, and because we want
+//! It also extracts statics fom operands for the same reason, because we want
 //! to treat them as globals in LLBC.
 //! To do this, we add a new variable to reference the static:
 //! they are accessed by reference in MIR, whereas globals are accessed by value.
