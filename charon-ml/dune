@@ -7,7 +7,6 @@
  (modules
   Collections
   Crates
-  Errors
   Expressions
   ExpressionsUtils
   Identifiers

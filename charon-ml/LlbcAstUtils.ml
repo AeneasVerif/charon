@@ -23,19 +23,17 @@ let fun_decl_has_loops (fd : fun_decl) : bool =
 
 (** Small utility: list the transitive parents of a region var group.
     We don't do that in an efficient manner, but it doesn't matter.
-    
-    TODO: rename to "list_ancestors_..."
 
     This list *doesn't* include the current region.
  *)
-let rec list_parent_region_groups (sg : fun_sig) (gid : T.RegionGroupId.id) :
+let rec list_ancestor_region_groups (sg : fun_sig) (gid : T.RegionGroupId.id) :
     T.RegionGroupId.Set.t =
   let rg = T.RegionGroupId.nth sg.regions_hierarchy gid in
   let parents =
     List.fold_left
       (fun s gid ->
         (* Compute the parents *)
-        let parents = list_parent_region_groups sg gid in
+        let parents = list_ancestor_region_groups sg gid in
         (* Parents U current region *)
         let parents = T.RegionGroupId.Set.add gid parents in
         (* Make the union with the accumulator *)
@@ -44,10 +42,10 @@ let rec list_parent_region_groups (sg : fun_sig) (gid : T.RegionGroupId.id) :
   in
   parents
 
-(** Small utility: same as {!list_parent_region_groups}, but returns an ordered list.  *)
-let list_ordered_parent_region_groups (sg : fun_sig) (gid : T.RegionGroupId.id)
-    : T.RegionGroupId.id list =
-  let pset = list_parent_region_groups sg gid in
+(** Small utility: same as {!list_ancestors_region_groups}, but returns an ordered list.  *)
+let list_ordered_ancestor_region_groups (sg : fun_sig)
+    (gid : T.RegionGroupId.id) : T.RegionGroupId.id list =
+  let pset = list_ancestor_region_groups sg gid in
   let parents =
     List.filter
       (fun (rg : T.region_var_group) -> T.RegionGroupId.Set.mem rg.id pset)
