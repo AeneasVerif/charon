@@ -31,14 +31,14 @@ generate-rust-toolchain-%:
 	cat rust-toolchain.template >> $*/rust-toolchain
 
 .PHONY: build
-build: build-charon build-ml
+build: build-charon-rust build-charon-ml
 
-.PHONY: build-charon
-build-charon: generate-rust-toolchain
+.PHONY: build-charon-rust
+build-charon-rust: generate-rust-toolchain
 	cd charon && $(MAKE)
 
-.PHONY: build-ml
-build-ml: build-ml
+.PHONY: build-charon-ml
+build-charon-ml:
 	cd charon-ml && $(MAKE)
 
 # Build the tests crate, and run the cargo tests
