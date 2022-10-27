@@ -6,9 +6,11 @@
  (libraries yojson zarith easy_logging)
  (modules
   Collections
-  Crates
   Expressions
   ExpressionsUtils
+  GAst
+  GAstUtils
+  GAstOfJson
   Identifiers
   LlbcAst
   LlbcAstUtils
@@ -21,6 +23,8 @@
   Scalars
   Types
   TypesUtils
+  UllbcAst
+  UllbcOfJson
   Utils
   PrimitiveValues))
 

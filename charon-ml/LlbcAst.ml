@@ -1,109 +1,9 @@
-open Names
+include GAst
 open Types
 open PrimitiveValues
 open Expressions
-open Identifiers
-module FunDeclId = IdGen ()
-module GlobalDeclId = IdGen ()
 open Meta
-
-(** A variable, as used in a function definition *)
-type var = {
-  index : VarId.id;  (** Unique variable identifier *)
-  name : string option;
-  var_ty : ety;
-      (** The variable type - erased type, because variables are not used
-       ** in function signatures: they are only used to declare the list of
-       ** variables manipulated by a function body *)
-}
-[@@deriving show]
-
-type assumed_fun_id =
-  | Replace  (** [core::mem::replace] *)
-  | BoxNew
-  | BoxDeref  (** [core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref] *)
-  | BoxDerefMut
-      (** [core::ops::deref::DerefMut::<alloc::boxed::Box<T>>::deref_mut] *)
-  | BoxFree
-  | VecNew
-  | VecPush
-  | VecInsert
-  | VecLen
-  | VecIndex  (** [core::ops::index::Index::index<alloc::vec::Vec<T>, usize>] *)
-  | VecIndexMut
-      (** [core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>] *)
-[@@deriving show, ord]
-
-type fun_id = Regular of FunDeclId.id | Assumed of assumed_fun_id
-[@@deriving show, ord]
-
-type global_assignment = { dst : VarId.id; global : GlobalDeclId.id }
-[@@deriving show]
-
-type assertion = { cond : operand; expected : bool } [@@deriving show]
-
-(** A function signature, as used when declaring functions *)
-type fun_sig = {
-  region_params : region_var list;
-  num_early_bound_regions : int;
-  regions_hierarchy : region_var_groups;
-  type_params : type_var list;
-  inputs : sty list;
-  output : sty;
-}
-[@@deriving show]
-
-type call = {
-  func : fun_id;
-  region_args : erased_region list;
-  type_args : ety list;
-  args : operand list;
-  dest : place;
-}
-[@@deriving show]
-
-(** Ancestor for [typed_value] iter visitor *)
-class ['self] iter_statement_base =
-  object (_self : 'self)
-    inherit [_] VisitorsRuntime.iter
-
-    method visit_global_assignment : 'env -> global_assignment -> unit =
-      fun _ _ -> ()
-
-    method visit_meta : 'env -> meta -> unit = fun _ _ -> ()
-    method visit_place : 'env -> place -> unit = fun _ _ -> ()
-    method visit_rvalue : 'env -> rvalue -> unit = fun _ _ -> ()
-    method visit_id : 'env -> VariantId.id -> unit = fun _ _ -> ()
-    method visit_assertion : 'env -> assertion -> unit = fun _ _ -> ()
-    method visit_operand : 'env -> operand -> unit = fun _ _ -> ()
-    method visit_call : 'env -> call -> unit = fun _ _ -> ()
-    method visit_integer_type : 'env -> integer_type -> unit = fun _ _ -> ()
-    method visit_scalar_value : 'env -> scalar_value -> unit = fun _ _ -> ()
-  end
-
-(** Ancestor for [typed_value] map visitor *)
-class ['self] map_statement_base =
-  object (_self : 'self)
-    inherit [_] VisitorsRuntime.map
-
-    method visit_global_assignment
-        : 'env -> global_assignment -> global_assignment =
-      fun _ x -> x
-
-    method visit_meta : 'env -> meta -> meta = fun _ x -> x
-    method visit_place : 'env -> place -> place = fun _ x -> x
-    method visit_rvalue : 'env -> rvalue -> rvalue = fun _ x -> x
-    method visit_id : 'env -> VariantId.id -> VariantId.id = fun _ x -> x
-    method visit_assertion : 'env -> assertion -> assertion = fun _ x -> x
-    method visit_operand : 'env -> operand -> operand = fun _ x -> x
-    method visit_call : 'env -> call -> call = fun _ x -> x
-
-    method visit_integer_type : 'env -> integer_type -> integer_type =
-      fun _ x -> x
-
-    method visit_scalar_value : 'env -> scalar_value -> scalar_value =
-      fun _ x -> x
-  end
+open Names
 
 type statement = {
   meta : meta;  (** The statement meta-data *)
@@ -112,9 +12,9 @@ type statement = {
 
 and raw_statement =
   | Assign of place * rvalue
-  | AssignGlobal of global_assignment
+  | AssignGlobal of global_assignment (* TODO: merge with Assign *)
   | FakeRead of place
-  | SetDiscriminant of place * VariantId.id
+  | SetDiscriminant of place * variant_id
   | Drop of place
   | Assert of assertion
   | Call of call
@@ -163,29 +63,17 @@ and switch_targets =
         concrete = true;
       }]
 
-type fun_body = {
-  meta : meta;
-  arg_count : int;
-  locals : var list;
-  body : statement;
-}
-[@@deriving show]
-
-type fun_decl = {
-  def_id : FunDeclId.id;
-  meta : meta;
-  name : fun_name;
-  signature : fun_sig;
-  body : fun_body option;
-  is_global_decl_body : bool;
-}
-[@@deriving show]
+type fun_body = statement gexpr_body [@@deriving show]
+type fun_decl = statement gfun_decl [@@deriving show]
 
 type global_decl = {
-  def_id : GlobalDeclId.id;
   meta : meta;
-  body_id : FunDeclId.id;
+  def_id : GlobalDeclId.id;
   name : global_name;
   ty : ety;
+  body_id : FunDeclId.id;
 }
 [@@deriving show]
+
+(** LLBC crate *)
+type crate = (fun_decl, global_decl) gcrate

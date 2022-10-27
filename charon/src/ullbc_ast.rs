@@ -125,6 +125,8 @@ pub enum RawStatement {
     Deinit(Place),
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
+    ///
+    /// TODO: merge with [Assign] (i.e., add a case in [Rvalue])
     AssignGlobal(VarId::Id, GlobalDeclId::Id),
 }
 
