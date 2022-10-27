@@ -1,1 +1,4 @@
-../rust-toolchain.template
+# update rust-toolchain.template in the top directory.
+[toolchain]
+channel = "nightly-2022-10-20"
+components = [ "rustc-dev", "llvm-tools-preview" ]

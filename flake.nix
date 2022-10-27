@@ -23,7 +23,7 @@
           inherit system;
           overlays = [ (import rust-overlay) ];
         };
-        rustToolchain = pkgs.rust-bin.nightly."2022-01-29".default.override {
+        rustToolchain = pkgs.rust-bin.nightly."2022-10-20".default.override {
           extensions = [ "rust-src" "rustc-dev" "llvm-tools-preview" ];
         };
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
