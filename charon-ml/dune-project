@@ -1,0 +1,22 @@
+(lang dune 2.8)
+
+(name charon)
+
+(version 0.1)
+
+(generate_opam_files true)
+
+(source
+ (uri git+https://github.com/AeneasVerif/charon.git))
+
+(homepage "https://github.com/AeneasVerif/charon")
+
+(bug_reports "https://github.com/AeneasVerif/charon/issues")
+
+(authors
+  "Son Ho"
+  "Jonathan Protzenko"
+  "Aymeric Fromherz"
+  "Sidney Congard")
+
+(license Apache-2.0)

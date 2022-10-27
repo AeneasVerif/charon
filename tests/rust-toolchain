@@ -1,3 +1,4 @@
+# This file was automatically generated: if you need to perform modifications,
 # update rust-toolchain.template in the top directory.
 [toolchain]
 channel = "nightly-2022-10-20"
