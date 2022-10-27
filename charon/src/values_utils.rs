@@ -302,13 +302,13 @@ impl std::string::ToString for ScalarValue {
     }
 }
 
-impl std::string::ToString for ConstantValue {
+impl std::string::ToString for PrimitiveValue {
     fn to_string(&self) -> String {
         match self {
-            ConstantValue::Scalar(v) => v.to_string(),
-            ConstantValue::Bool(v) => v.to_string(),
-            ConstantValue::Char(v) => v.to_string(),
-            ConstantValue::String(v) => v.to_string(),
+            PrimitiveValue::Scalar(v) => v.to_string(),
+            PrimitiveValue::Bool(v) => v.to_string(),
+            PrimitiveValue::Char(v) => v.to_string(),
+            PrimitiveValue::String(v) => v.to_string(),
         }
     }
 }

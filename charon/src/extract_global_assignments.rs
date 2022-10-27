@@ -50,7 +50,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
         _ => return vec![],
     };
     let (var, new_st) = match *c {
-        OperandConstantValue::ConstantValue(_) => return vec![],
+        OperandConstantValue::PrimitiveValue(_) => return vec![],
         OperandConstantValue::Adt(_, _) => {
             unreachable!("Constant ADTs should have been replaced by now")
         }

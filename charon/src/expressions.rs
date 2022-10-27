@@ -137,14 +137,14 @@ pub enum Operand {
 /// - a structure with no field is a constant.
 /// - sometimes, Rust stores the initialization of an ADT as a constant
 ///   (if all the fields are constant) rather than as an aggregated value
-/// It is translated to regular ADTs, see [regularize_constant_adts.rs].
+/// We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 ///
 /// `Identifier` and `Static` case:
-/// Match constant variables. Their access will be done elsewhere in a
-/// separate statement, see [extract_global_assignments.rs].
+/// Match constant variables. We later desugar those to separate statements,
+/// see [extract_global_assignments.rs].
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
-    ConstantValue(ConstantValue),
+    PrimitiveValue(PrimitiveValue),
     ///
     /// In most situations:
     /// Enumeration with one variant with no fields, structure with

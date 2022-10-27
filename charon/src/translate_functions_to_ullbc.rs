@@ -747,15 +747,15 @@ fn translate_constant_reference_type<'tcx, 'ctx1, 'ctx2>(
 fn translate_constant_integer_like_value(
     ty: &ty::ETy,
     scalar: &mir::interpret::Scalar,
-) -> v::ConstantValue {
+) -> v::PrimitiveValue {
     trace!();
     // The documentation explicitly says not to match on a scalar.
     // We match on the type and convert the value following this,
     // by calling the appropriate `to_*` method.
     match ty {
-        ty::Ty::Bool => v::ConstantValue::Bool(scalar.to_bool().unwrap()),
-        ty::Ty::Char => v::ConstantValue::Char(scalar.to_char().unwrap()),
-        ty::Ty::Integer(i) => v::ConstantValue::Scalar(match i {
+        ty::Ty::Bool => v::PrimitiveValue::Bool(scalar.to_bool().unwrap()),
+        ty::Ty::Char => v::PrimitiveValue::Char(scalar.to_char().unwrap()),
+        ty::Ty::Integer(i) => v::PrimitiveValue::Scalar(match i {
             ty::IntegerTy::Isize => {
                 // This is a bit annoying: there is no
                 // `to_isize`. For now, we make the hypothesis
@@ -806,7 +806,7 @@ fn translate_constant_scalar_value<'tcx, 'ctx>(
     match llbc_ty {
         ty::Ty::Bool | ty::Ty::Char | ty::Ty::Integer(_) => {
             let v = translate_constant_integer_like_value(llbc_ty, scalar);
-            e::OperandConstantValue::ConstantValue(v)
+            e::OperandConstantValue::PrimitiveValue(v)
         }
         ty::Ty::Adt(ty::TypeId::Adt(id), region_tys, field_tys) => {
             assert!(region_tys.is_empty());

@@ -186,7 +186,7 @@ fn check_if_simplifiable_assert_then_unop(
                     op,
                     Operand::Const(
                         _,
-                        OperandConstantValue::ConstantValue(ConstantValue::Scalar(saturated)),
+                        OperandConstantValue::PrimitiveValue(PrimitiveValue::Scalar(saturated)),
                     ),
                 ),
             ),
@@ -226,7 +226,7 @@ fn check_if_simplifiable_assert_then_unop(
                     unop,
                     Operand::Const(
                         _,
-                        OperandConstantValue::ConstantValue(ConstantValue::Scalar(value)),
+                        OperandConstantValue::PrimitiveValue(PrimitiveValue::Scalar(value)),
                     ),
                 ),
             ),
@@ -442,7 +442,7 @@ fn check_if_simplifiable_assert_then_binop(
                     Operand::Copy(eq_op1),
                     Operand::Const(
                         _,
-                        OperandConstantValue::ConstantValue(ConstantValue::Scalar(zero)),
+                        OperandConstantValue::PrimitiveValue(PrimitiveValue::Scalar(zero)),
                     ),
                 ),
             ),
@@ -472,7 +472,7 @@ fn check_if_simplifiable_assert_then_binop(
                     divisor,
                     Operand::Const(
                         _,
-                        OperandConstantValue::ConstantValue(ConstantValue::Scalar(zero)),
+                        OperandConstantValue::PrimitiveValue(PrimitiveValue::Scalar(zero)),
                     ),
                 ),
             ),
@@ -489,7 +489,7 @@ fn check_if_simplifiable_assert_then_binop(
             match divisor {
                 Operand::Const(
                     _,
-                    OperandConstantValue::ConstantValue(ConstantValue::Scalar(_)),
+                    OperandConstantValue::PrimitiveValue(PrimitiveValue::Scalar(_)),
                 ) => (),
                 _ => {
                     assert!(release);
@@ -508,8 +508,8 @@ fn check_if_simplifiable_assert_then_binop(
         }
         (_, _, RawStatement::Assign(_mp, Rvalue::BinaryOp(_, _, Operand::Const(_, divisor)))) => {
             // Case 3: no assertion to check the divisor != 0, the divisor must be a
-            // non-zero constant
-            let cv = divisor.as_constant_value();
+            // non-zero constant integer
+            let cv = divisor.as_primitive_value();
             let cv = cv.as_scalar();
             if cv.is_uint() {
                 assert_or_return!(cv.as_uint().unwrap() != 0)
@@ -590,13 +590,13 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
             match &rv {
                 Rvalue::BinaryOp(binop, _, divisor) => {
                     // If it is an unsimplified binop, it must be / or %
-                    // and the divisor must be a non-zero constant, unless
-                    // we compile for release
+                    // and the divisor must be a non-zero constant integer,
+                    // unless we compile for release
                     if binop_can_fail(*binop) {
                         match binop {
                             BinOp::Div | BinOp::Rem => {
                                 let (_, cv) = divisor.as_const();
-                                let cv = cv.as_constant_value();
+                                let cv = cv.as_primitive_value();
                                 let cv = cv.as_scalar();
                                 if cv.is_uint() {
                                     assert!(cv.as_uint().unwrap() != 0)
@@ -614,8 +614,8 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
                     // If it is an unsimplified unop which can fail, then:
                     // - it must be the negation, and
                     //   - either we compile for release
-                    //   - or the value must be a constant which won't lead
-                    //     to overflow.
+                    //   - or the value must be a constant integer which won't
+                    //     lead to overflow.
                     if unop_can_fail(*unop) {
                         match unop {
                             UnOp::Neg => {
@@ -623,7 +623,7 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
                                     // nothing to do
                                 } else {
                                     let (_, cv) = v.as_const();
-                                    let cv = cv.as_constant_value();
+                                    let cv = cv.as_primitive_value();
                                     let cv = cv.as_scalar();
                                     assert!(cv.is_int());
                                     assert!(!cv.is_min());

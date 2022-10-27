@@ -16,9 +16,11 @@ use serde::Serialize;
 // TODO: move
 generate_index_type!(VarId);
 
-/// Constant value
+/// A primitive value.
+///
+/// Those are for instance used for the constant operands [crate::expressions::Operand::Const]
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, Serialize)]
-pub enum ConstantValue {
+pub enum PrimitiveValue {
     Scalar(ScalarValue),
     Bool(bool),
     Char(char),
