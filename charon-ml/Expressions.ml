@@ -3,11 +3,16 @@ open Types
 open PrimitiveValues
 module VarId = IdGen ()
 
+(** We define this type to control the name of the visitor functions
+    (see e.g., {!UllbcAst.iter_statement_base}).
+  *)
+type var_id = VarId.id [@@deriving show, ord]
+
 type field_proj_kind =
   | ProjAdt of TypeDeclId.id * VariantId.id option
   | ProjOption of VariantId.id
       (** Option is an assumed type, coming from the standard library *)
-  | ProjTuple of int (** The integer gives the arity of the tuple *)
+  | ProjTuple of int  (** The integer gives the arity of the tuple *)
 [@@deriving show]
 
 type projection_elem =

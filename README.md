@@ -54,9 +54,9 @@ We generate one file per extracted crate.
 
 ## Project Structure
 
-- `charon`: the implementation.
-- `macros`: various macros used in the implementation (Rust requires macros to
-  be defined in separate libraries due to technical reasons).
+- `charon`: the Rust implementation.
+- `charon-ml`: the ML library. Provides utilities to retrieve and manipulate
+  the AST in OCaml (deserialization, printing, etc.).
 - `tests` and `tests-polonius`: test files directories. `tests-polonius` contains
   code which requires non-lexical lifetimes (i.e., the Polonius borrow checker).
 

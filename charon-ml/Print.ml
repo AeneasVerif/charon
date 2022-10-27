@@ -451,7 +451,7 @@ module LlbcAst = struct
     | A.Assign (p, rv) ->
         indent ^ place_to_string fmt p ^ " := " ^ rvalue_to_string fmt rv
     | A.AssignGlobal { dst; global } ->
-        indent ^ fmt.var_id_to_string dst ^ " := global "
+        indent ^ place_to_string fmt dst ^ " := global "
         ^ fmt.global_decl_id_to_string global
     | A.FakeRead p -> indent ^ "fake_read " ^ place_to_string fmt p
     | A.SetDiscriminant (p, variant_id) ->
@@ -707,21 +707,19 @@ module Module = struct
     in
     PA.fun_decl_to_string fmt "" "  " def
 
-  let module_to_string (m : Crates.llbc_crate) : string =
+  let module_to_string (m : A.crate) : string =
     let types_defs_map, funs_defs_map, globals_defs_map =
-      Crates.compute_defs_maps m
+      LlbcAstUtils.compute_defs_maps m
     in
 
     (* The types *)
-    let type_decls =
-      List.map (type_decl_to_string types_defs_map) m.Crates.types
-    in
+    let type_decls = List.map (type_decl_to_string types_defs_map) m.A.types in
 
     (* The functions *)
     let fun_decls =
       List.map
         (fun_decl_to_string types_defs_map funs_defs_map globals_defs_map)
-        m.Crates.functions
+        m.A.functions
     in
 
     (* Put everything together *)

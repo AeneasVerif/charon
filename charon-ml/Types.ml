@@ -6,6 +6,16 @@ module TypeDeclId = IdGen ()
 module VariantId = IdGen ()
 module FieldId = IdGen ()
 
+(** We define this type to control the name of the visitor functions
+    (see e.g., {!Types.iter_ty_base} and {!Types.TypeVar}).
+  *)
+type type_var_id = TypeVarId.id [@@deriving show, ord]
+
+(** We define this type to control the name of the visitor functions
+    (see e.g., {!LlbcAst.iter_statement_base} and {!LlbcAst.SetDiscriminant}).
+  *)
+type variant_id = VariantId.id [@@deriving show, ord]
+
 (** Region variable ids. Used in function signatures. *)
 module RegionVarId = IdGen ()
 
@@ -98,23 +108,26 @@ let option_some_id = VariantId.of_int 1
 type type_id = AdtId of TypeDeclId.id | Tuple | Assumed of assumed_ty
 [@@deriving show, ord]
 
-(** Ancestor for iter visitor for [ty] *)
+(** Ancestor for iter visitor for {!ty} *)
 class ['self] iter_ty_base =
   object (_self : 'self)
     inherit [_] VisitorsRuntime.iter
     method visit_'r : 'env -> 'r -> unit = fun _ _ -> ()
-    method visit_id : 'env -> TypeVarId.id -> unit = fun _ _ -> ()
+    method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
     method visit_type_id : 'env -> type_id -> unit = fun _ _ -> ()
     method visit_integer_type : 'env -> integer_type -> unit = fun _ _ -> ()
     method visit_ref_kind : 'env -> ref_kind -> unit = fun _ _ -> ()
   end
 
-(** Ancestor for map visitor for [ty] *)
+(** Ancestor for map visitor for {!ty} *)
 class ['self] map_ty_base =
   object (_self : 'self)
     inherit [_] VisitorsRuntime.map
     method visit_'r : 'env -> 'r -> 'r = fun _ r -> r
-    method visit_id : 'env -> TypeVarId.id -> TypeVarId.id = fun _ id -> id
+
+    method visit_type_var_id : 'env -> type_var_id -> type_var_id =
+      fun _ id -> id
+
     method visit_type_id : 'env -> type_id -> type_id = fun _ id -> id
 
     method visit_integer_type : 'env -> integer_type -> integer_type =
@@ -126,7 +139,7 @@ class ['self] map_ty_base =
 type 'r ty =
   | Adt of type_id * 'r list * 'r ty list
       (** {!Adt} encodes ADTs, tuples and assumed types *)
-  | TypeVar of TypeVarId.id
+  | TypeVar of type_var_id
   | Bool
   | Char
   | Never
