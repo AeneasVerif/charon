@@ -25,13 +25,21 @@ generate-rust-toolchain: \
 
 .PHONY: generate-rust-toolchain-%
 generate-rust-toolchain-%:
-	echo "# This file was automatically generated: if you need to perform modifications," > $*/rust-toolchain
-	echo "# update rust-toolchain.template in the top directory." > $*/rust-toolchain
+	rm -f $*/rust-toolchain
+	echo "# This file was automatically generated: if you need to perform modifications," >> $*/rust-toolchain
+	echo "# update rust-toolchain.template in the top directory." >> $*/rust-toolchain
 	cat rust-toolchain.template >> $*/rust-toolchain
 
 .PHONY: build
-build: generate-rust-toolchain
+build: build-charon build-ml
+
+.PHONY: build-charon
+build-charon: generate-rust-toolchain
 	cd charon && $(MAKE)
+
+.PHONY: build-ml
+build-ml: build-ml
+	cd charon-ml && $(MAKE)
 
 # Build the tests crate, and run the cargo tests
 .PHONY: build-tests
