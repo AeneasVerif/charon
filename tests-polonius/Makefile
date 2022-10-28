@@ -2,6 +2,7 @@ CURRENT_DIR = $(shell pwd)
 CHARON ?= $(CURRENT_DIR)/../charon/target/debug/cargo-charon
 DEST ?= .
 OPTIONS = --polonius
+NOT_ALL_TESTS ?=
 
 .PHONY: all
 all: build tests
@@ -23,17 +24,28 @@ build-tests:
 
 .PHONY: charon-tests
 charon-tests: \
-	all-tests-betree_polonius all-tests-betree_main
+	test-betree_polonius test-betree_main
 
-# all-tests-betree_polonius: OPTIONS += --no-code-duplication
-all-tests-betree_polonius:
+# test-betree_polonius: OPTIONS += --no-code-duplication
+test-betree_polonius:
 # Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-# all-tests-betree_main: OPTIONS += --no-code-duplication
-all-tests-betree_main: OPTIONS += --opaque=betree_utils
+# test-betree_main: OPTIONS += --no-code-duplication
+test-betree_main: OPTIONS += --opaque=betree_utils
 
-.PHONY: all-tests-%
-all-tests-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
-all-tests-%: build test-%
+# =============================================================================
+# The tests.
+# We use the NOT_ALL_TESTS variable to switch between the full test suite and a
+# smaller one.
+# =============================================================================
+
+.PHONY: test-%
+test-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
+test-%: build
+
+ifeq (, $(NOT_ALL_TESTS))
+
+test-%:
+	$(CHARON_CMD) --dest $(DEST)/llbc
 	$(CHARON_CMD) --dest $(DEST)/ullbc --ullbc
 	$(CHARON_CMD) --dest $(DEST)/llbc_prom --mir_promoted
 	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
@@ -42,5 +54,10 @@ all-tests-%: build test-%
 # TODO: this fails for now (there is some very low-level desugaring happening)
 #	$(CHARON_CMD) --dest $(DEST)/llbc_release_opt --release --mir_optimized 
 
-test-%: build
+else
+
+.PHONY: test-%
+test-%:
 	$(CHARON_CMD) --dest $(DEST)/llbc
+
+endif

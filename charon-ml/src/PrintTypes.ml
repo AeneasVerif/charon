@@ -73,7 +73,7 @@ let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
   | T.TypeVar tv -> fmt.type_var_id_to_string tv
   | T.Bool -> "bool"
   | T.Char -> "char"
-  | T.Never -> "⊥"
+  | T.Never -> "!"
   | T.Integer int_ty -> integer_type_to_string int_ty
   | T.Str -> "str"
   | T.Array aty -> "[" ^ ty_to_string fmt aty ^ "; ?]"

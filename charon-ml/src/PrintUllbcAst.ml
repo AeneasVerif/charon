@@ -65,7 +65,7 @@ module Ast = struct
   and raw_terminator_to_string (fmt : ast_formatter) (indent : string)
       (st : A.raw_terminator) : string =
     match st with
-    | A.Goto bid -> indent ^ "goto" ^ block_id_to_string bid
+    | A.Goto bid -> indent ^ "goto " ^ block_id_to_string bid
     | Switch (op, tgts) ->
         indent ^ "switch "
         ^ PE.operand_to_string fmt op
@@ -74,12 +74,14 @@ module Ast = struct
     | A.Return -> indent ^ "return"
     | A.Unreachable -> indent ^ "unreachable"
     | A.Drop (p, bid) ->
-        indent ^ "drop " ^ PE.place_to_string fmt p ^ " -> "
+        indent ^ "drop " ^ PE.place_to_string fmt p ^ ";\n" ^ indent ^ "goto "
         ^ block_id_to_string bid
     | A.Call (call, bid) ->
-        call_to_string fmt indent call ^ " -> " ^ block_id_to_string bid
+        call_to_string fmt indent call
+        ^ ";\n" ^ indent ^ "goto " ^ block_id_to_string bid
     | A.Assert (a, bid) ->
-        assertion_to_string fmt indent a ^ " -> " ^ block_id_to_string bid
+        assertion_to_string fmt indent a
+        ^ ";\n" ^ indent ^ "goto " ^ block_id_to_string bid
 
   let block_to_string (fmt : ast_formatter) (indent : string)
       (indent_incr : string) (id : A.BlockId.id) (block : A.block) : string =
@@ -90,9 +92,9 @@ module Ast = struct
         block.A.statements
     in
     let terminator = terminator_to_string fmt indent1 block.A.terminator in
-    indent ^ block_id_to_string id ^ "{\n"
+    indent ^ block_id_to_string id ^ " {\n"
     ^ String.concat "" statements
-    ^ terminator ^ "\n" ^ indent ^ "}"
+    ^ terminator ^ ";\n" ^ indent ^ "}"
 
   let blocks_to_string (fmt : ast_formatter) (indent : string)
       (indent_incr : string) (blocks : A.block list) : string =

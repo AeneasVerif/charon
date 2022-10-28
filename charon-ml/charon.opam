@@ -3,6 +3,12 @@ opam-version: "2.0"
 version: "0.1"
 synopsis:
   "Manipulation of Low-level Borrow Calculus, a MIR-like representation for Rust Code"
+description: """
+
+   This library allows for manipulation of LLBC, the language output by
+   Charon. Charon acts as an interface between the rustc compiler and program
+   verification projects.  Its purpose is to process Rust .rs files and convert
+   them into files easy to handle by program verifiers."""
 authors: ["Son Ho" "Jonathan Protzenko" "Aymeric Fromherz" "Sidney Congard"]
 license: "Apache-2.0"
 homepage: "https://github.com/AeneasVerif/charon"
@@ -26,9 +32,3 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/AeneasVerif/charon.git"
-description: """
-This library allows for manipulation of LLBC, the language output by
-Charon. Charon acts as an interface between the Rustc compiler and program
-verification projects.  Its purpose is to process Rust .rs files and convert
-them into files easy to handle by program verifiers.
-"""

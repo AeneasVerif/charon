@@ -57,6 +57,28 @@ let switch_targets_of_json (js : json) : (A.switch_targets, string) result =
         Ok (A.SwitchInt (int_ty, tgts, otherwise))
     | _ -> Error "")
 
+let call_of_json (js : json) : (A.raw_terminator, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("func", func);
+          ("region_args", region_args);
+          ("type_args", type_args);
+          ("args", args);
+          ("dest", dest);
+          ("target", target);
+        ] ->
+        let* func = fun_id_of_json func in
+        let* region_args = list_of_json erased_region_of_json region_args in
+        let* type_args = list_of_json ety_of_json type_args in
+        let* args = list_of_json operand_of_json args in
+        let* dest = place_of_json dest in
+        let* target = A.BlockId.id_of_json target in
+        let call = { A.func; region_args; type_args; args; dest } in
+        Ok (A.Call (call, target))
+    | _ -> Error "")
+
 let rec terminator_of_json (id_to_file : id_to_file_map) (js : json) :
     (A.terminator, string) result =
   combine_error_msgs js __FUNCTION__
@@ -70,28 +92,32 @@ let rec terminator_of_json (id_to_file : id_to_file_map) (js : json) :
 and raw_terminator_of_json (js : json) : (A.raw_terminator, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Goto", `List [ id ]) ] ->
-        let* id = A.BlockId.id_of_json id in
-        Ok (A.Goto id)
-    | `Assoc [ ("Switch", `List [ op; tgt ]) ] ->
-        let* op = operand_of_json op in
-        let* tgt = switch_targets_of_json tgt in
-        Ok (A.Switch (op, tgt))
+    | `Assoc [ ("Goto", `Assoc [ ("target", target) ]) ] ->
+        let* target = A.BlockId.id_of_json target in
+        Ok (A.Goto target)
+    | `Assoc [ ("Switch", `Assoc [ ("discr", discr); ("targets", targets) ]) ]
+      ->
+        let* discr = operand_of_json discr in
+        let* targets = switch_targets_of_json targets in
+        Ok (A.Switch (discr, targets))
     | `String "Panic" -> Ok A.Panic
     | `String "Return" -> Ok A.Return
     | `String "Unreachable" -> Ok A.Unreachable
-    | `Assoc [ ("Drop", `List [ place; block_id ]) ] ->
+    | `Assoc [ ("Drop", `Assoc [ ("place", place); ("target", target) ]) ] ->
         let* place = place_of_json place in
-        let* block_id = A.BlockId.id_of_json block_id in
-        Ok (A.Drop (place, block_id))
-    | `Assoc [ ("Call", `List [ call; block_id ]) ] ->
-        let* call = call_of_json call in
-        let* block_id = A.BlockId.id_of_json block_id in
-        Ok (A.Call (call, block_id))
-    | `Assoc [ ("Assert", `List [ assertion; block_id ]) ] ->
-        let* assertion = assertion_of_json assertion in
-        let* block_id = A.BlockId.id_of_json block_id in
-        Ok (A.Assert (assertion, block_id))
+        let* target = A.BlockId.id_of_json target in
+        Ok (A.Drop (place, target))
+    | `Assoc [ ("Call", call) ] -> call_of_json call
+    | `Assoc
+        [
+          ( "Assert",
+            `Assoc
+              [ ("cond", cond); ("expected", expected); ("target", target) ] );
+        ] ->
+        let* cond = operand_of_json cond in
+        let* expected = bool_of_json expected in
+        let* target = A.BlockId.id_of_json target in
+        Ok (A.Assert ({ cond; expected }, target))
     | _ -> Error "")
 
 let block_of_json (id_to_file : id_to_file_map) (js : json) :
