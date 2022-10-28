@@ -187,7 +187,8 @@ module Crate = struct
     (* The functions *)
     let fun_decls =
       List.map
-        (fun_decl_to_string types_defs_map funs_defs_map globals_defs_map)
+        (fun decl ->
+          fun_decl_to_string types_defs_map funs_defs_map globals_defs_map decl)
         m.A.functions
     in
 

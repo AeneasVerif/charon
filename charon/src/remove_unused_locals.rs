@@ -1,8 +1,8 @@
-use take_mut::take;
+//! Remove the locals (which are not used for the input arguments) which are
+//! never used in the function bodies.  This is useful to remove the locals with
+//! type `Never`. We actually check that there are no such local variables
+//! remaining afterwards.
 
-/// Remove the locals which are never used in the function bodies.
-/// This is useful to remove the locals with type `Never`. We actually
-/// check that there are no such local variables remaining afterwards.
 use crate::expressions::*;
 use crate::id_vector::ToUsize;
 use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, SwitchTargets};
@@ -10,6 +10,7 @@ use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
+use take_mut::take;
 
 fn compute_used_locals_in_place(locals: &mut HashSet<VarId::Id>, p: &Place) {
     locals.insert(p.var_id);
@@ -183,13 +184,16 @@ fn transform_st(vids_map: &HashMap<VarId::Id, VarId::Id>, st: Statement) -> Stat
 }
 
 fn update_locals(
+    num_inputs: usize,
     old_locals: VarId::Vector<Var>,
     st: &Statement,
 ) -> (VarId::Vector<Var>, HashMap<VarId::Id, VarId::Id>) {
     // Compute the set of used locals
     let mut used_locals: HashSet<VarId::Id> = HashSet::new();
-    // We always register the return variable
-    used_locals.insert(VarId::Id::new(0));
+    // We always register the return variable and the input arguments
+    for i in 0..(num_inputs + 1) {
+        used_locals.insert(VarId::Id::new(i));
+    }
     // Explore the body
     compute_used_locals_in_statement(&mut used_locals, st);
 
@@ -223,7 +227,7 @@ pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &
             b.fmt_with_ctx_names(fmt_ctx)
         );
         take(b, |mut b| {
-            let (locals, vids_map) = update_locals(b.locals, &b.body);
+            let (locals, vids_map) = update_locals(b.arg_count, b.locals, &b.body);
             b.locals = locals;
             b.body = transform_st(&vids_map, b.body);
             b

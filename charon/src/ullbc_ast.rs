@@ -73,7 +73,13 @@ pub struct FunSig {
 #[derive(Debug, Clone, Serialize)]
 pub struct GExprBody<T: std::fmt::Debug + Clone + Serialize> {
     pub meta: Meta,
+    /// The number of local variables used for the input arguments.
     pub arg_count: usize,
+    /// The local variables.
+    /// We always have:
+    /// - the local used for the return value
+    /// - the input arguments
+    /// - the remaining locals, used for the intermediate computations
     pub locals: VarId::Vector<Var>,
     pub body: T,
 }

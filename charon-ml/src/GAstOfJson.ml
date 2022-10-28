@@ -226,7 +226,7 @@ let rec ty_of_json (r_of_json : json -> ('r, string) result) (js : json) :
         Ok (T.TypeVar id)
     | `String "Bool" -> Ok Bool
     | `String "Char" -> Ok Char
-    | `String "`Never" -> Ok Never
+    | `String "Never" -> Ok Never
     | `Assoc [ ("Integer", `List [ int_ty ]) ] ->
         let* int_ty = integer_type_of_json int_ty in
         Ok (T.Integer int_ty)
@@ -591,15 +591,6 @@ let fun_id_of_json (js : json) : (A.fun_id, string) result =
         Ok (A.Assumed fid)
     | _ -> Error "")
 
-let assertion_of_json (js : json) : (A.assertion, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("cond", cond); ("expected", expected) ] ->
-        let* cond = operand_of_json cond in
-        let* expected = bool_of_json expected in
-        Ok { A.cond; expected }
-    | _ -> Error "")
-
 let fun_sig_of_json (js : json) : (A.fun_sig, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -627,25 +618,6 @@ let fun_sig_of_json (js : json) : (A.fun_sig, string) result =
             inputs;
             output;
           }
-    | _ -> Error "")
-
-let call_of_json (js : json) : (A.call, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("func", func);
-          ("region_args", region_args);
-          ("type_args", type_args);
-          ("args", args);
-          ("dest", dest);
-        ] ->
-        let* func = fun_id_of_json func in
-        let* region_args = list_of_json erased_region_of_json region_args in
-        let* type_args = list_of_json ety_of_json type_args in
-        let* args = list_of_json operand_of_json args in
-        let* dest = place_of_json dest in
-        Ok { A.func; region_args; type_args; args; dest }
     | _ -> Error "")
 
 let gexpr_body_of_json (body_of_json : json -> ('body, string) result)
