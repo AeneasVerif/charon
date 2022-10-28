@@ -134,6 +134,8 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // Adjust the level of MIR we extract, depending on the options
     let mir_level = if options.mir_optimized {
         MirLevel::Optimized
+    } else if options.mir_promoted {
+        MirLevel::Promoted
     } else {
         MirLevel::Built
     };

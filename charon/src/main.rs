@@ -60,6 +60,11 @@ pub fn main() {
         "Can't use --lib and --bin at the same time"
     );
 
+    assert!(
+        !options.mir_promoted || !options.mir_optimized,
+        "Can't use --mir_promoted and --mir_optimized at the same time"
+    );
+
     if let Err(code) = process(&options) {
         std::process::exit(code);
     }

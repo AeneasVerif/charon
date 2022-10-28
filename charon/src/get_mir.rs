@@ -23,7 +23,7 @@ pub enum MirLevel {
 pub fn extract_constants_at_top_level(level: MirLevel) -> bool {
     match level {
         MirLevel::Built => true,
-        MirLevel::Promoted => false,
+        MirLevel::Promoted => true,
         MirLevel::Optimized => false,
     }
 }
@@ -33,7 +33,7 @@ pub fn extract_constants_at_top_level(level: MirLevel) -> bool {
 pub fn boxes_are_desugared(level: MirLevel) -> bool {
     match level {
         MirLevel::Built => false,
-        MirLevel::Promoted => unimplemented!(), // Don't know
+        MirLevel::Promoted => false,
         MirLevel::Optimized => true,
     }
 }

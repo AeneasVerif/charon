@@ -28,7 +28,10 @@ pub struct CliOpts {
     /// Compile the specified binary
     #[structopt(long = "bin")]
     pub bin: Option<String>,
-    /// Extract the MIR-optimized instead of the MIR-built
+    /// Extract the promoted MIR instead of the built MIR
+    #[structopt(long = "mir_promoted")]
+    pub mir_promoted: bool,
+    /// Extract the optimized MIR instead of the built MIR
     #[structopt(long = "mir_optimized")]
     pub mir_optimized: bool,
     /// Provide a custom name for the compiled crate (ignore the name computed
