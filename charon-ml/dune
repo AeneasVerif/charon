@@ -20,10 +20,18 @@
   Names
   OfJsonBasic
   Print
+  PrintExpressions
+  PrintGAst
+  PrintLlbcAst
+  PrintUllbcAst
+  PrintPrimitiveValues
+  PrintTypes
+  PrintUtils
   Scalars
   Types
   TypesUtils
   UllbcAst
+  UllbcAstUtils
   UllbcOfJson
   Utils
   PrimitiveValues))
