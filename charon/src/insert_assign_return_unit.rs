@@ -28,7 +28,6 @@ fn transform_st(mut st: Statement) -> Statement {
             RawStatement::Sequence(Box::new(assign_st), Box::new(ret_st))
         }
         RawStatement::Assign(p, rv) => RawStatement::Assign(p, rv),
-        RawStatement::AssignGlobal(id, g) => RawStatement::AssignGlobal(id, g),
         RawStatement::FakeRead(p) => RawStatement::FakeRead(p),
         RawStatement::SetDiscriminant(p, vid) => RawStatement::SetDiscriminant(p, vid),
         RawStatement::Drop(p) => RawStatement::Drop(p),

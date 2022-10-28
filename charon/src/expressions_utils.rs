@@ -261,6 +261,7 @@ impl Rvalue {
                     }
                 }
             }
+            Rvalue::Global(gid) => format!("{}", ctx.format_object(*gid)).to_string(),
         }
     }
 

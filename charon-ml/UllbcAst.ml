@@ -39,7 +39,6 @@ and raw_statement =
   | SetDiscriminant of place * variant_id
   | StorageDead of var_id
   | Deinit of place
-  | AssignGlobal of global_assignment
 [@@deriving
   show,
     visitors

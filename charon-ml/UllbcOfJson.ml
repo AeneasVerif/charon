@@ -37,11 +37,6 @@ and raw_statement_of_json (js : json) : (A.raw_statement, string) result =
     | `Assoc [ ("Deinit", place) ] ->
         let* place = place_of_json place in
         Ok (A.Deinit place)
-    | `Assoc [ ("AssignGlobal", `List [ dst; global ]) ] ->
-        let* dst = E.VarId.id_of_json dst in
-        let dst = { E.var_id = dst; projection = [] } in
-        let* global = A.GlobalDeclId.id_of_json global in
-        Ok (A.AssignGlobal { dst; global })
     | _ -> Error "")
 
 let switch_targets_of_json (js : json) : (A.switch_targets, string) result =

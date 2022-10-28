@@ -63,7 +63,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
             let var = make_new_var(ty.clone());
             nst.push(Statement::new(
                 *meta,
-                RawStatement::AssignGlobal(var, global_id),
+                RawStatement::Assign(Place::new(var), Rvalue::Global(global_id)),
             ));
             var
         }
@@ -73,7 +73,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
             let rvalue = Rvalue::Ref(Place::new(var), BorrowKind::Shared);
             nst.push(Statement::new(
                 *meta,
-                RawStatement::AssignGlobal(var, global_id),
+                RawStatement::Assign(Place::new(var), Rvalue::Global(global_id)),
             ));
             nst.push(Statement::new(
                 *meta,

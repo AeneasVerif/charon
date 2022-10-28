@@ -2,6 +2,7 @@
 //! reconstruction. In effect, this is a cleaned up version of MIR.
 #![allow(dead_code)]
 
+pub use crate::expressions::GlobalDeclId;
 use crate::expressions::*;
 use crate::meta::Meta;
 use crate::names::FunName;
@@ -19,7 +20,6 @@ use serde::Serialize;
 pub static TAB_INCR: &'static str = "    ";
 
 generate_index_type!(FunDeclId);
-generate_index_type!(GlobalDeclId);
 
 // Block identifier. Similar to rust's `BasicBlock`.
 generate_index_type!(BlockId);
@@ -123,11 +123,6 @@ pub enum RawStatement {
     StorageDead(VarId::Id),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     Deinit(Place),
-    /// Not present in MIR: we introduce it when replacing constant variables
-    /// in operands in [extract_global_assignments.rs]
-    ///
-    /// TODO: merge with [Assign] (i.e., add a case in [Rvalue])
-    AssignGlobal(VarId::Id, GlobalDeclId::Id),
 }
 
 #[derive(Debug, Clone, Serialize)]

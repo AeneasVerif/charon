@@ -38,6 +38,7 @@ fn compute_used_locals_in_rvalue(locals: &mut HashSet<VarId::Id>, rv: &Rvalue) {
             compute_used_locals_in_operand(locals, op2);
         }
         Rvalue::Discriminant(p) => compute_used_locals_in_place(locals, p),
+        Rvalue::Global(_) => (),
         Rvalue::Aggregate(_, ops) => {
             compute_used_locals_in_operands(locals, ops);
         }
@@ -50,9 +51,6 @@ fn compute_used_locals_in_statement(locals: &mut HashSet<VarId::Id>, st: &Statem
         RawStatement::Assign(p, rv) => {
             compute_used_locals_in_rvalue(locals, rv);
             compute_used_locals_in_place(locals, p);
-        }
-        RawStatement::AssignGlobal(id, _) => {
-            locals.insert(*id);
         }
         RawStatement::FakeRead(p) => compute_used_locals_in_place(locals, p),
         RawStatement::SetDiscriminant(p, _) => compute_used_locals_in_place(locals, p),
@@ -119,6 +117,7 @@ fn transform_rvalue(vids_map: &HashMap<VarId::Id, VarId::Id>, rv: Rvalue) -> Rva
             let op2 = transform_operand(vids_map, op2);
             Rvalue::BinaryOp(binop, op1, op2)
         }
+        Rvalue::Global(gid) => Rvalue::Global(gid),
         Rvalue::Discriminant(p) => Rvalue::Discriminant(transform_place(vids_map, p)),
         Rvalue::Aggregate(kind, ops) => {
             let ops = transform_operands(vids_map, ops);
@@ -132,9 +131,6 @@ fn transform_st(vids_map: &HashMap<VarId::Id, VarId::Id>, st: Statement) -> Stat
         RawStatement::Return => RawStatement::Return,
         RawStatement::Assign(p, rv) => {
             RawStatement::Assign(transform_place(vids_map, p), transform_rvalue(vids_map, rv))
-        }
-        RawStatement::AssignGlobal(id, gid) => {
-            RawStatement::AssignGlobal(*vids_map.get(&id).unwrap(), gid)
         }
         RawStatement::FakeRead(p) => RawStatement::FakeRead(transform_place(vids_map, p)),
         RawStatement::SetDiscriminant(p, variant_id) => {

@@ -12,7 +12,6 @@ type statement = {
 
 and raw_statement =
   | Assign of place * rvalue
-  | AssignGlobal of global_assignment (* TODO: merge with Assign *)
   | FakeRead of place
   | SetDiscriminant of place * variant_id
   | Drop of place

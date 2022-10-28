@@ -91,7 +91,7 @@ fn transform_rvalue_operands<F: FnMut(&Meta, &mut Operand) -> Vec<Statement>>(
         Rvalue::Use(op) | Rvalue::UnaryOp(_, op) => f(meta, op),
         Rvalue::BinaryOp(_, o1, o2) => chain(f(meta, o1), f(meta, o2)).collect(),
         Rvalue::Aggregate(_, ops) => ops.iter_mut().flat_map(|op| f(meta, op)).collect(),
-        Rvalue::Discriminant(_) | Rvalue::Ref(_, _) => vec![],
+        Rvalue::Global(_) | Rvalue::Discriminant(_) | Rvalue::Ref(_, _) => vec![],
     }
 }
 
@@ -145,8 +145,7 @@ pub fn transform_operands<F: FnMut(&Meta, &mut Operand) -> Vec<Statement>>(
         RawStatement::Assert(a) => f(meta, &mut a.cond),
 
         // Identity (complete match for compile-time errors when new statements are created)
-        RawStatement::AssignGlobal(_, _)
-        | RawStatement::FakeRead(_)
+        RawStatement::FakeRead(_)
         | RawStatement::SetDiscriminant(_, _)
         | RawStatement::Drop(_)
         | RawStatement::Panic
@@ -189,7 +188,6 @@ pub fn transform_statements<F: FnMut(Statement) -> Statement>(
         RawStatement::Assign(p, r) => RawStatement::Assign(p, r),
         RawStatement::Call(c) => RawStatement::Call(c),
         RawStatement::Assert(a) => RawStatement::Assert(a),
-        RawStatement::AssignGlobal(vid, g) => RawStatement::AssignGlobal(vid, g),
         RawStatement::FakeRead(p) => RawStatement::FakeRead(p),
         RawStatement::SetDiscriminant(p, vid) => RawStatement::SetDiscriminant(p, vid),
         RawStatement::Drop(p) => RawStatement::Drop(p),
@@ -286,13 +284,6 @@ impl Statement {
                 tab,
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
-            )
-            .to_owned(),
-            RawStatement::AssignGlobal(id, gid) => format!(
-                "{}{} := {}",
-                tab,
-                ctx.format_object(*id),
-                ctx.format_object(*gid),
             )
             .to_owned(),
             RawStatement::FakeRead(place) => {

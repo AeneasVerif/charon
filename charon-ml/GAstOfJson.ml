@@ -556,6 +556,9 @@ let rvalue_of_json (js : json) : (E.rvalue, string) result =
     | `Assoc [ ("Discriminant", place) ] ->
         let* place = place_of_json place in
         Ok (E.Discriminant place)
+    | `Assoc [ ("Global", gid) ] ->
+        let* gid = E.GlobalDeclId.id_of_json gid in
+        Ok (E.Global gid)
     | `Assoc [ ("Aggregate", `List [ aggregate_kind; ops ]) ] ->
         let* aggregate_kind = aggregate_kind_of_json aggregate_kind in
         let* ops = list_of_json operand_of_json ops in

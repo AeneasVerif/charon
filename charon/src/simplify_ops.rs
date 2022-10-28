@@ -639,7 +639,6 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
             }
             RawStatement::Assign(p, rv)
         }
-        RawStatement::AssignGlobal(id, gid) => RawStatement::AssignGlobal(id, gid),
         RawStatement::FakeRead(p) => RawStatement::FakeRead(p),
         RawStatement::SetDiscriminant(p, vid) => RawStatement::SetDiscriminant(p, vid),
         RawStatement::Drop(p) => RawStatement::Drop(p),
