@@ -4,7 +4,6 @@
  *)
 
 include GAstOfJson
-open Yojson.Basic
 open OfJsonBasic
 module A = LlbcAst
 
