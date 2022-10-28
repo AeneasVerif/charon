@@ -14,7 +14,6 @@ use std::iter::FromIterator;
 fn transform_st(mut st: Statement) -> Statement {
     st.content = match st.content {
         RawStatement::Assign(p, rv) => RawStatement::Assign(p, rv),
-        RawStatement::AssignGlobal(p, g) => RawStatement::AssignGlobal(p, g),
         RawStatement::FakeRead(p) => RawStatement::FakeRead(p),
         RawStatement::SetDiscriminant(p, vid) => RawStatement::SetDiscriminant(p, vid),
         RawStatement::Drop(p) => RawStatement::Drop(p),

@@ -2,12 +2,14 @@
 
 pub use crate::expressions_utils::*;
 use crate::types::*;
-use crate::ullbc_ast::GlobalDeclId;
 use crate::values::*;
 use im::Vector; // TODO: im::Vector is not necessary anymore
+use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
 use std::vec::Vec;
+
+generate_index_type!(GlobalDeclId);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Place {
@@ -190,6 +192,9 @@ pub enum Rvalue {
     /// to have a look at expansion of `Bottom` values for explanations about the
     /// other case.
     Aggregate(AggregateKind, Vec<Operand>),
+    /// Not present in MIR: we introduce it when replacing constant variables
+    /// in operands in [extract_global_assignments.rs]
+    Global(GlobalDeclId::Id),
 }
 
 #[derive(Debug, Clone)]

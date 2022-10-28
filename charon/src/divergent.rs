@@ -8,7 +8,6 @@ use std::iter::FromIterator;
 fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &llbc::Statement) -> bool {
     match &st.content {
         RawStatement::Assign(_, _)
-        | RawStatement::AssignGlobal(_, _)
         | RawStatement::FakeRead(_)
         | RawStatement::SetDiscriminant(_, _)
         | RawStatement::Drop(_)

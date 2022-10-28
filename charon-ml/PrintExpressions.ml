@@ -130,6 +130,7 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
       operand_to_string fmt op1 ^ " " ^ binop_to_string binop ^ " "
       ^ operand_to_string fmt op2
   | E.Discriminant p -> "discriminant(" ^ place_to_string fmt p ^ ")"
+  | E.Global gid -> "global " ^ fmt.global_decl_id_to_string gid
   | E.Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string fmt) ops in
       match akind with

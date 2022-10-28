@@ -19,7 +19,6 @@
   Meta
   Names
   OfJsonBasic
-  Print
   PrintExpressions
   PrintGAst
   PrintLlbcAst

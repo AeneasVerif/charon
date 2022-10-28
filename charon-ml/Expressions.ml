@@ -2,11 +2,17 @@ open Identifiers
 open Types
 open PrimitiveValues
 module VarId = IdGen ()
+module GlobalDeclId = IdGen ()
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!UllbcAst.iter_statement_base}).
   *)
 type var_id = VarId.id [@@deriving show, ord]
+
+(** We define this type to control the name of the visitor functions
+    (see e.g., {!GAst.iter_ast_base} and {!rvalue}).
+  *)
+type global_decl_id = GlobalDeclId.id [@@deriving show]
 
 type field_proj_kind =
   | ProjAdt of TypeDeclId.id * VariantId.id option
@@ -121,4 +127,5 @@ type rvalue =
   | BinaryOp of binop * operand * operand
   | Discriminant of place
   | Aggregate of aggregate_kind * operand list
+  | Global of global_decl_id
 [@@deriving show]

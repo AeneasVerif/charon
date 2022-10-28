@@ -7,12 +7,7 @@ open PrimitiveValues
 open Expressions
 open Meta
 module FunDeclId = IdGen ()
-module GlobalDeclId = IdGen ()
-
-(** We define this type to control the name of the visitor functions
-    (see e.g., {!iter_ast_base} and {!global_assignment}).
-  *)
-type global_decl_id = GlobalDeclId.id [@@deriving show]
+module GlobalDeclId = Expressions.GlobalDeclId
 
 (** A variable, as used in a function definition *)
 type var = {
@@ -88,35 +83,6 @@ class ['self] map_ast_base =
     method visit_ety : 'env -> ety -> ety = fun _ x -> x
   end
 
-type global_assignment = {
-  dst : place;
-      (** This place is actually always a single variable id (no projection).
-
-          One reason why we use a {!place} is that it removes a case in the
-          visitors (and remove room for mistakes - it is easy to forget a
-          case when overriding methods).
-       *)
-  global : global_decl_id;
-}
-[@@deriving
-  show,
-    visitors
-      {
-        name = "iter_global_assignment";
-        variety = "iter";
-        ancestors = [ "iter_ast_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      },
-    visitors
-      {
-        name = "map_global_assignment";
-        variety = "map";
-        ancestors = [ "map_ast_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      }]
-
 type assertion = { cond : operand; expected : bool }
 [@@deriving
   show,
@@ -124,7 +90,7 @@ type assertion = { cond : operand; expected : bool }
       {
         name = "iter_assertion";
         variety = "iter";
-        ancestors = [ "iter_global_assignment" ];
+        ancestors = [ "iter_ast_base" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
         concrete = true;
       },
@@ -132,7 +98,7 @@ type assertion = { cond : operand; expected : bool }
       {
         name = "map_assertion";
         variety = "map";
-        ancestors = [ "map_global_assignment" ];
+        ancestors = [ "map_ast_base" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
         concrete = true;
       }]

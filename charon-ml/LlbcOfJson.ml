@@ -25,11 +25,6 @@ and raw_statement_of_json (id_to_file : id_to_file_map) (js : json) :
         let* place = place_of_json place in
         let* rvalue = rvalue_of_json rvalue in
         Ok (A.Assign (place, rvalue))
-    | `Assoc [ ("AssignGlobal", `List [ dst; global ]) ] ->
-        let* dst = E.VarId.id_of_json dst in
-        let dst = { E.var_id = dst; projection = [] } in
-        let* global = A.GlobalDeclId.id_of_json global in
-        Ok (A.AssignGlobal { dst; global })
     | `Assoc [ ("FakeRead", place) ] ->
         let* place = place_of_json place in
         Ok (A.FakeRead place)

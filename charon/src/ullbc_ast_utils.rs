@@ -149,7 +149,6 @@ impl Statement {
             }
             RawStatement::StorageDead(var_id) => RawStatement::StorageDead(*var_id),
             RawStatement::Deinit(place) => RawStatement::Deinit(place.substitute(subst)),
-            RawStatement::AssignGlobal(vid, gid) => RawStatement::AssignGlobal(*vid, *gid),
         };
 
         Statement::new(self.meta, st)
@@ -257,9 +256,6 @@ impl Statement {
             }
             RawStatement::Deinit(place) => {
                 format!("@deinit({})", place.fmt_with_ctx(ctx)).to_string()
-            }
-            RawStatement::AssignGlobal(vid, gid) => {
-                format!("{} := {}", ctx.format_object(*vid), ctx.format_object(*gid)).to_string()
             }
         }
     }
@@ -1207,7 +1203,7 @@ impl BlockData {
                     f(meta, nst, op);
                 }
             }
-            Rvalue::Discriminant(_) | Rvalue::Ref(_, _) => {
+            Rvalue::Global(_) | Rvalue::Discriminant(_) | Rvalue::Ref(_, _) => {
                 // No operands: nothing to do
                 ()
             }
@@ -1232,8 +1228,7 @@ impl BlockData {
                 RawStatement::FakeRead(_)
                 | RawStatement::SetDiscriminant(_, _)
                 | RawStatement::StorageDead(_)
-                | RawStatement::Deinit(_)
-                | RawStatement::AssignGlobal(_, _) => {
+                | RawStatement::Deinit(_) => {
                     // No operands: nothing to do
                 }
             }

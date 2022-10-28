@@ -1400,7 +1400,6 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
             // We translate a deinit as a drop
             tgt::RawStatement::Drop(place.clone())
         }
-        src::RawStatement::AssignGlobal(vid, gid) => tgt::RawStatement::AssignGlobal(*vid, *gid),
     };
     Some(tgt::Statement::new(src_meta, st))
 }
@@ -1653,7 +1652,6 @@ fn is_terminal(exp: &tgt::Statement) -> bool {
 fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
     match &st.content {
         tgt::RawStatement::Assign(_, _)
-        | tgt::RawStatement::AssignGlobal(_, _)
         | tgt::RawStatement::FakeRead(_)
         | tgt::RawStatement::SetDiscriminant(_, _)
         | tgt::RawStatement::Drop(_)

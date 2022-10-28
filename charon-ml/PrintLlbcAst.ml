@@ -29,9 +29,6 @@ module Ast = struct
     match st with
     | A.Assign (p, rv) ->
         indent ^ PE.place_to_string fmt p ^ " := " ^ PE.rvalue_to_string fmt rv
-    | A.AssignGlobal { dst; global } ->
-        indent ^ PE.place_to_string fmt dst ^ " := global "
-        ^ fmt.global_decl_id_to_string global
     | A.FakeRead p -> indent ^ "fake_read " ^ PE.place_to_string fmt p
     | A.SetDiscriminant (p, variant_id) ->
         (* TODO: improve this to lookup the variant name by using the def id *)

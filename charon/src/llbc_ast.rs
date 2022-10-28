@@ -40,9 +40,6 @@ pub struct Call {
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum RawStatement {
     Assign(Place, Rvalue),
-    /// Not present in MIR: we introduce it when replacing constant variables
-    /// in operands in [crate::extract_global_assignments]
-    AssignGlobal(VarId::Id, GlobalDeclId::Id),
     FakeRead(Place),
     SetDiscriminant(Place, VariantId::Id),
     Drop(Place),
