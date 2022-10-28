@@ -26,3 +26,9 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/AeneasVerif/charon.git"
+description: """
+This library allows for manipulation of LLBC, the language output by
+Charon. Charon acts as an interface between the Rustc compiler and program
+verification projects.  Its purpose is to process Rust .rs files and convert
+them into files easy to handle by program verifiers.
+"""
