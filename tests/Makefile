@@ -20,30 +20,35 @@ cargo-tests: build
 
 .PHONY: charon-tests
 charon-tests: \
-	test-nested_borrows test-no_nested_borrows test-loops test-hashmap \
-	test-paper test-hashmap_main \
-	test-matches test-matches_duplicate test-external \
-	test-constants
+	all-tests-nested_borrows all-tests-no_nested_borrows \
+	all-tests-loops all-tests-hashmap \
+	all-tests-paper all-tests-hashmap_main \
+	all-tests-matches all-tests-matches_duplicate all-tests-external \
+	all-tests-constants
 
-test-nested_borrows: OPTIONS += --no-code-duplication
-test-no_nested_borrows: OPTIONS += --no-code-duplication
-test-loops: OPTIONS += --no-code-duplication
-# test-hashmap: OPTIONS += --no-code-duplication
-# test-hashmap_main: OPTIONS += --no-code-duplication
-test-hashmap_main: OPTIONS += --opaque=hashmap_utils
-test-paper: OPTIONS += --no-code-duplication
-test-constants: OPTIONS += --no-code-duplication
+all-tests-nested_borrows: OPTIONS += --no-code-duplication
+all-tests-no_nested_borrows: OPTIONS += --no-code-duplication
+all-tests-loops: OPTIONS += --no-code-duplication
+# all-tests-hashmap: OPTIONS += --no-code-duplication
+# all-tests-hashmap_main: OPTIONS += --no-code-duplication
+all-tests-hashmap_main: OPTIONS += --opaque=hashmap_utils
+all-tests-paper: OPTIONS += --no-code-duplication
+all-tests-constants: OPTIONS += --no-code-duplication
 # Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-test-matches:
-test-external: OPTIONS += --no-code-duplication
-test-matches_duplicate:
+all-tests-matches:
+all-tests-external: OPTIONS += --no-code-duplication
+all-tests-matches_duplicate:
 
-.PHONY: test-%
-test-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
-test-%: build
-	$(CHARON_CMD) --dest $(DEST)/llbc
+.PHONY: all-tests-%
+all-tests-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
+all-tests-%: build test-%
 	$(CHARON_CMD) --dest $(DEST)/ullbc --ullbc
+	$(CHARON_CMD) --dest $(DEST)/llbc_prom --mir_promoted
 	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
 	$(CHARON_CMD) --dest $(DEST)/llbc_release --release
+	$(CHARON_CMD) --dest $(DEST)/llbc_release_prom --release --mir_promoted
 # TODO: this fails for now (there is some very low-level desugaring happening)
 #	$(CHARON_CMD) --dest $(DEST)/llbc_release_opt --release --mir_optimized 
+
+test-%: build
+	$(CHARON_CMD) --dest $(DEST)/llbc

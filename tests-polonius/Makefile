@@ -23,20 +23,24 @@ build-tests:
 
 .PHONY: charon-tests
 charon-tests: \
-	test-betree_polonius test-betree_main
+	all-tests-betree_polonius all-tests-betree_main
 
-# test-betree_polonius: OPTIONS += --no-code-duplication
-test-betree_polonius:
+# all-tests-betree_polonius: OPTIONS += --no-code-duplication
+all-tests-betree_polonius:
 # Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-# test-betree_main: OPTIONS += --no-code-duplication
-test-betree_main: OPTIONS += --opaque=betree_utils
+# all-tests-betree_main: OPTIONS += --no-code-duplication
+all-tests-betree_main: OPTIONS += --opaque=betree_utils
 
-.PHONY: test-%
-test-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
-test-%: build
-	$(CHARON_CMD) --dest $(DEST)/llbc
+.PHONY: all-tests-%
+all-tests-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
+all-tests-%: build test-%
 	$(CHARON_CMD) --dest $(DEST)/ullbc --ullbc
+	$(CHARON_CMD) --dest $(DEST)/llbc_prom --mir_promoted
 	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
 	$(CHARON_CMD) --dest $(DEST)/llbc_release --release
+	$(CHARON_CMD) --dest $(DEST)/llbc_release_prom --release --mir_promoted
 # TODO: this fails for now (there is some very low-level desugaring happening)
 #	$(CHARON_CMD) --dest $(DEST)/llbc_release_opt --release --mir_optimized 
+
+test-%: build
+	$(CHARON_CMD) --dest $(DEST)/llbc
