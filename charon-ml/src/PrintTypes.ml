@@ -118,13 +118,13 @@ let type_decl_to_string (type_decl_id_to_string : T.TypeDeclId.id -> string)
   let rid_to_string rid =
     match List.find_opt (fun rv -> rv.T.index = rid) regions with
     | Some rv -> region_var_to_string rv
-    | None -> failwith "Unreachable"
+    | None -> raise (Failure "Unreachable")
   in
   let r_to_string = region_to_string rid_to_string in
   let type_var_id_to_string id =
     match List.find_opt (fun tv -> tv.T.index = id) types with
     | Some tv -> type_var_to_string tv
-    | None -> failwith "Unreachable"
+    | None -> raise (Failure "Unreachable")
   in
   let fmt = { r_to_string; type_var_id_to_string; type_decl_id_to_string } in
   let name = name_to_string def.name in
@@ -158,7 +158,7 @@ let type_ctx_to_adt_variant_to_string_fun (ctx : T.type_decl T.TypeDeclId.Map.t)
  fun def_id variant_id ->
   let def = T.TypeDeclId.Map.find def_id ctx in
   match def.kind with
-  | Struct _ | Opaque -> failwith "Unreachable"
+  | Struct _ | Opaque -> raise (Failure "Unreachable")
   | Enum variants ->
       let variant = T.VariantId.nth variants variant_id in
       name_to_string def.name ^ "::" ^ variant.variant_name
