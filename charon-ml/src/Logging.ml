@@ -137,4 +137,6 @@ let main_logger_handler =
   (* There should be exactly one handler *)
   let handlers = main_log#get_handlers in
   List.iter (fun h -> H.set_formatter h formatter) handlers;
-  match handlers with [ handler ] -> handler | _ -> failwith "Unexpected"
+  match handlers with
+  | [ handler ] -> handler
+  | _ -> raise (Failure "Unexpected")

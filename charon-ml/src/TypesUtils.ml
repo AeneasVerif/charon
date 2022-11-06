@@ -34,7 +34,7 @@ let ty_is_adt (ty : 'r ty) : bool =
 let ty_as_adt (ty : 'r ty) : type_id * 'r list * 'r ty list =
   match ty with
   | Adt (id, regions, tys) -> (id, regions, tys)
-  | _ -> failwith "Unreachable"
+  | _ -> raise (Failure "Unreachable")
 
 let ty_is_custom_adt (ty : 'r ty) : bool =
   match ty with Adt (AdtId _, _, _) -> true | _ -> false
@@ -42,7 +42,7 @@ let ty_is_custom_adt (ty : 'r ty) : bool =
 let ty_as_custom_adt (ty : 'r ty) : TypeDeclId.id * 'r list * 'r ty list =
   match ty with
   | Adt (AdtId id, regions, tys) -> (id, regions, tys)
-  | _ -> failwith "Unreachable"
+  | _ -> raise (Failure "Unreachable")
 
 (** The unit type *)
 let mk_unit_ty : 'r ty = Adt (Tuple, [], [])
@@ -54,7 +54,7 @@ let mk_usize_ty : 'r ty = Integer Usize
 let ty_get_box (box_ty : ety) : ety =
   match box_ty with
   | Adt (Assumed Box, [], [ boxed_ty ]) -> boxed_ty
-  | _ -> failwith "Not a boxed type"
+  | _ -> raise (Failure "Not a boxed type")
 
 (** Deconstruct a type of the form [&T] or [&mut T] to retrieve the [T] (and
     the borrow kind, etc.)
@@ -62,7 +62,7 @@ let ty_get_box (box_ty : ety) : ety =
 let ty_get_ref (ty : 'r ty) : 'r * 'r ty * ref_kind =
   match ty with
   | Ref (r, ty, ref_kind) -> (r, ty, ref_kind)
-  | _ -> failwith "Not a ref type"
+  | _ -> raise (Failure "Not a ref type")
 
 let mk_ref_ty (r : 'r) (ty : 'r ty) (ref_kind : ref_kind) : 'r ty =
   Ref (r, ty, ref_kind)
@@ -117,9 +117,10 @@ let rec ety_no_regions_to_gr_ty (ty : ety) : 'a gr_ty =
   | Array ty -> Array (ety_no_regions_to_gr_ty ty)
   | Slice ty -> Slice (ety_no_regions_to_gr_ty ty)
   | Ref (_, _, _) ->
-      failwith
-        "Can't convert a ref with erased regions to a ref with non-erased \
-         regions"
+      raise
+        (Failure
+           "Can't convert a ref with erased regions to a ref with non-erased \
+            regions")
 
 let ety_no_regions_to_rty (ty : ety) : rty = ety_no_regions_to_gr_ty ty
 let ety_no_regions_to_sty (ty : ety) : sty = ety_no_regions_to_gr_ty ty
