@@ -74,7 +74,7 @@ module Ast = struct
                       svl
                   in
                   let svl = String.concat " " svl in
-                  indent1 ^ svl ^ " => {\n" ^ inner_to_string2 be ^ "\n"
+                  indent ^ svl ^ " => {\n" ^ inner_to_string2 be ^ "\n"
                   ^ indent1 ^ "}")
                 branches
             in
@@ -168,6 +168,23 @@ module Crate = struct
         global_context def
     in
     PA.fun_decl_to_string fmt "" "  " def
+
+  let crate_type_decl_to_string (m : A.crate) (decl : T.type_decl) : string =
+    let types_defs_map, _, _ = LlbcAstUtils.compute_defs_maps m in
+    type_decl_to_string types_defs_map decl
+
+  let crate_global_decl_to_string (m : A.crate) (decl : A.global_decl) : string
+      =
+    let types_defs_map, funs_defs_map, globals_defs_map =
+      LlbcAstUtils.compute_defs_maps m
+    in
+    global_decl_to_string types_defs_map funs_defs_map globals_defs_map decl
+
+  let crate_fun_decl_to_string (m : A.crate) (decl : A.fun_decl) : string =
+    let types_defs_map, funs_defs_map, globals_defs_map =
+      LlbcAstUtils.compute_defs_maps m
+    in
+    fun_decl_to_string types_defs_map funs_defs_map globals_defs_map decl
 
   let crate_to_string (m : A.crate) : string =
     let types_defs_map, funs_defs_map, globals_defs_map =
