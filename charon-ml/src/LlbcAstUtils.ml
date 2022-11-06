@@ -27,3 +27,41 @@ let compute_defs_maps (c : crate) :
     * fun_decl FunDeclId.Map.t
     * global_decl GlobalDeclId.Map.t =
   GAstUtils.compute_defs_maps (fun g -> g.def_id) c
+
+(** Create a sequence *)
+let mk_sequence (st1 : statement) (st2 : statement) : statement =
+  let meta = MetaUtils.combine_meta st1.meta st2.meta in
+  let content = Sequence (st1, st2) in
+  { meta; content }
+
+(** Chain two statements into a sequence, by pushing the second statement
+    at the end of the first one (diving into sequences, switches, etc.).
+ *)
+let rec chain_statements (st1 : statement) (st2 : statement) : statement =
+  match st1.content with
+  | SetDiscriminant _ | Assert _ | Call _ | Assign _ | FakeRead _ | Drop _
+  | Loop _ ->
+      (* Simply create a sequence *)
+      mk_sequence st1 st2
+  | Nop -> (* Ignore the nop *) st2
+  | Break _ | Continue _ | Panic | Return ->
+      (* Ignore the second statement, which won't be evaluated *) st1
+  | Switch (op, tgts) ->
+      (* Insert inside the switch *)
+      let meta = MetaUtils.combine_meta st1.meta st2.meta in
+      let content = Switch (op, chain_statements_in_switch_targets tgts st2) in
+      { meta; content }
+  | Sequence (st3, st4) ->
+      (* Insert at the end of the statement *)
+      mk_sequence st3 (chain_statements st4 st2)
+
+and chain_statements_in_switch_targets (tgts : switch_targets) (st : statement)
+    : switch_targets =
+  match tgts with
+  | If (st0, st1) -> If (chain_statements st0 st, chain_statements st1 st)
+  | SwitchInt (int_ty, branches, otherwise) ->
+      let branches =
+        List.map (fun (svl, br) -> (svl, chain_statements br st)) branches
+      in
+      let otherwise = chain_statements otherwise st in
+      SwitchInt (int_ty, branches, otherwise)

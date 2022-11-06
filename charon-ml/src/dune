@@ -17,6 +17,7 @@
   LlbcOfJson
   Logging
   Meta
+  MetaUtils
   Names
   OfJsonBasic
   PrintExpressions
