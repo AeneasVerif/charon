@@ -46,22 +46,27 @@ let rec chain_statements (st1 : statement) (st2 : statement) : statement =
   | Nop -> (* Ignore the nop *) st2
   | Break _ | Continue _ | Panic | Return ->
       (* Ignore the second statement, which won't be evaluated *) st1
-  | Switch (op, tgts) ->
+  | Switch switch ->
       (* Insert inside the switch *)
       let meta = MetaUtils.combine_meta st1.meta st2.meta in
-      let content = Switch (op, chain_statements_in_switch_targets tgts st2) in
+      let content = Switch (chain_statements_in_switch switch st2) in
       { meta; content }
   | Sequence (st3, st4) ->
       (* Insert at the end of the statement *)
       mk_sequence st3 (chain_statements st4 st2)
 
-and chain_statements_in_switch_targets (tgts : switch_targets) (st : statement)
-    : switch_targets =
-  match tgts with
-  | If (st0, st1) -> If (chain_statements st0 st, chain_statements st1 st)
-  | SwitchInt (int_ty, branches, otherwise) ->
+and chain_statements_in_switch (switch : switch) (st : statement) : switch =
+  match switch with
+  | If (op, st0, st1) ->
+      If (op, chain_statements st0 st, chain_statements st1 st)
+  | SwitchInt (op, int_ty, branches, otherwise) ->
       let branches =
         List.map (fun (svl, br) -> (svl, chain_statements br st)) branches
       in
       let otherwise = chain_statements otherwise st in
-      SwitchInt (int_ty, branches, otherwise)
+      SwitchInt (op, int_ty, branches, otherwise)
+  | Match (op, branches) ->
+      let branches =
+        List.map (fun (svl, br) -> (svl, chain_statements br st)) branches
+      in
+      Match (op, branches)

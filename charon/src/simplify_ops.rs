@@ -17,7 +17,7 @@ use take_mut::take;
 
 use crate::expressions::*;
 use crate::llbc_ast::{
-    new_sequence, Assert, CtxNames, FunDecls, GlobalDecls, Match, RawStatement, Statement,
+    new_sequence, Assert, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Switch,
 };
 use crate::meta::combine_meta;
 use crate::types::*;
@@ -650,28 +650,28 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
         RawStatement::Break(i) => RawStatement::Break(i),
         RawStatement::Continue(i) => RawStatement::Continue(i),
         RawStatement::Nop => RawStatement::Nop,
-        RawStatement::Match(mtch) => {
-            let mtch = match mtch {
-                Match::If(op, st1, st2) => Match::If(
+        RawStatement::Switch(switch) => {
+            let switch = match switch {
+                Switch::If(op, st1, st2) => Switch::If(
                     op,
                     Box::new(simplify_st(release, *st1)),
                     Box::new(simplify_st(release, *st2)),
                 ),
-                Match::SwitchInt(op, int_ty, targets, otherwise) => {
+                Switch::SwitchInt(op, int_ty, targets, otherwise) => {
                     let targets = Vec::from_iter(
                         targets
                             .into_iter()
                             .map(|(v, e)| (v, simplify_st(release, e))),
                     );
                     let otherwise = simplify_st(release, *otherwise);
-                    Match::SwitchInt(op, int_ty, targets, Box::new(otherwise))
+                    Switch::SwitchInt(op, int_ty, targets, Box::new(otherwise))
                 }
-                Match::Match(_, _) => {
+                Switch::Match(_, _) => {
                     // We shouldn't get there: those are introduced later, in [remove_read_discriminant]
                     unreachable!();
                 }
             };
-            RawStatement::Match(mtch)
+            RawStatement::Switch(switch)
         }
         RawStatement::Loop(loop_body) => {
             RawStatement::Loop(Box::new(simplify_st(release, *loop_body)))

@@ -7,7 +7,7 @@ use take_mut::take;
 
 use crate::expressions::*;
 use crate::llbc_ast::{
-    new_sequence, CtxNames, FunDecls, GlobalDecls, Match, RawStatement, Statement,
+    new_sequence, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Switch,
 };
 use crate::meta::combine_meta;
 use crate::types::*;
@@ -35,26 +35,26 @@ fn transform_st(st: Statement) -> Statement {
         RawStatement::Break(i) => RawStatement::Break(i),
         RawStatement::Continue(i) => RawStatement::Continue(i),
         RawStatement::Nop => RawStatement::Nop,
-        RawStatement::Match(mtch) => {
-            let mtch = match mtch {
-                Match::If(op, st1, st2) => Match::If(
+        RawStatement::Switch(switch) => {
+            let switch = match switch {
+                Switch::If(op, st1, st2) => Switch::If(
                     op,
                     Box::new(transform_st(*st1)),
                     Box::new(transform_st(*st2)),
                 ),
-                Match::SwitchInt(op, int_ty, targets, otherwise) => {
+                Switch::SwitchInt(op, int_ty, targets, otherwise) => {
                     let targets =
                         Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
                     let otherwise = transform_st(*otherwise);
-                    Match::SwitchInt(op, int_ty, targets, Box::new(otherwise))
+                    Switch::SwitchInt(op, int_ty, targets, Box::new(otherwise))
                 }
-                Match::Match(_, _) => {
+                Switch::Match(_, _) => {
                     // We shouldn't get there: this variant is introduced *during*
                     // this traversal
                     unreachable!();
                 }
             };
-            RawStatement::Match(mtch)
+            RawStatement::Switch(switch)
         }
         RawStatement::Loop(loop_body) => RawStatement::Loop(Box::new(transform_st(*loop_body))),
         RawStatement::Sequence(st1, st2) => {
@@ -69,14 +69,14 @@ fn transform_st(st: Statement) -> Statement {
 
                     // A discriminant read must be immediately followed by a switch int.
                     // Note that it may be contained in a sequence, of course.
-                    let (meta, mtch, st3_opt) = match st2.content {
+                    let (meta, switch, st3_opt) = match st2.content {
                         RawStatement::Sequence(st2, st3) => {
-                            (st2.meta, st2.content.to_match(), Some(*st3))
+                            (st2.meta, st2.content.to_switch(), Some(*st3))
                         }
-                        RawStatement::Match(mtch) => (st2.meta, mtch, None),
+                        RawStatement::Switch(switch) => (st2.meta, switch, None),
                         _ => unreachable!(),
                     };
-                    let (op, int_ty, targets, _) = mtch.to_switch_int();
+                    let (op, int_ty, targets, _) = switch.to_switch_int();
                     assert!(int_ty.is_isize());
                     // The operand should be a [Move] applied to the variable `dest`
                     let op_p = op.to_move();
@@ -91,18 +91,18 @@ fn transform_st(st: Statement) -> Statement {
                             transform_st(e),
                         )
                     }));
-                    let mtch = RawStatement::Match(Match::Match(p, targets));
+                    let switch = RawStatement::Switch(Switch::Match(p, targets));
 
                     // Add the next statement if there is one
                     if let Some(st3) = st3_opt {
                         let meta = combine_meta(&st1.meta, &meta);
-                        let mtch = Statement {
+                        let switch = Statement {
                             meta,
-                            content: mtch,
+                            content: switch,
                         };
-                        new_sequence(mtch, st3).content
+                        new_sequence(switch, st3).content
                     } else {
-                        mtch
+                        switch
                     }
                 } else {
                     let st1 = Box::new(transform_st(*st1));

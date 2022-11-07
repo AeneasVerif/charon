@@ -39,7 +39,7 @@ and raw_statement_of_json (js : json) : (A.raw_statement, string) result =
         Ok (A.Deinit place)
     | _ -> Error "")
 
-let switch_targets_of_json (js : json) : (A.switch_targets, string) result =
+let switch_of_json (js : json) : (A.switch, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("If", `List [ id0; id1 ]) ] ->
@@ -98,7 +98,7 @@ and raw_terminator_of_json (js : json) : (A.raw_terminator, string) result =
     | `Assoc [ ("Switch", `Assoc [ ("discr", discr); ("targets", targets) ]) ]
       ->
         let* discr = operand_of_json discr in
-        let* targets = switch_targets_of_json targets in
+        let* targets = switch_of_json targets in
         Ok (A.Switch (discr, targets))
     | `String "Panic" -> Ok A.Panic
     | `String "Return" -> Ok A.Return

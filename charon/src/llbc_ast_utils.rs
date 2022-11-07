@@ -6,7 +6,7 @@ use std::ops::DerefMut;
 use crate::common::*;
 use crate::formatter::Formatter;
 use crate::llbc_ast::{
-    Call, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, Match, RawStatement, Statement,
+    Call, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement, Switch,
 };
 use crate::meta;
 use crate::meta::Meta;
@@ -65,16 +65,16 @@ pub fn new_sequence(mut l: Statement, r: Statement) -> Statement {
     Statement::new(meta, nst)
 }
 
-/// Combine the meta information from a [Match]
-pub fn combine_switch_targets_meta(targets: &Match) -> Meta {
+/// Combine the meta information from a [Switch]
+pub fn combine_switch_targets_meta(targets: &Switch) -> Meta {
     match targets {
-        Match::If(_, st1, st2) => meta::combine_meta(&st1.meta, &st2.meta),
-        Match::SwitchInt(_, _, branches, otherwise) => {
+        Switch::If(_, st1, st2) => meta::combine_meta(&st1.meta, &st2.meta),
+        Switch::SwitchInt(_, _, branches, otherwise) => {
             let branches = branches.iter().map(|b| &b.1.meta);
             let mbranches = meta::combine_meta_iter(branches);
             meta::combine_meta(&mbranches, &otherwise.meta)
         }
-        Match::Match(_, branches) => {
+        Switch::Match(_, branches) => {
             let branches = branches.iter().map(|b| &b.1.meta);
             meta::combine_meta_iter(branches)
         }
@@ -89,30 +89,30 @@ pub fn transform_statements<F: FnMut(Statement) -> Statement>(
 ) -> Statement {
     // Apply the transformer bottom-up
     st.content = match st.content {
-        RawStatement::Match(mtch) => {
-            let mtch = match mtch {
-                Match::If(op, mut st1, mut st2) => {
+        RawStatement::Switch(switch) => {
+            let switch = match switch {
+                Switch::If(op, mut st1, mut st2) => {
                     *st1 = transform_statements(f, *st1);
                     *st2 = transform_statements(f, *st2);
-                    Match::If(op, st1, st2)
+                    Switch::If(op, st1, st2)
                 }
-                Match::SwitchInt(op, int_ty, branches, mut otherwise) => {
+                Switch::SwitchInt(op, int_ty, branches, mut otherwise) => {
                     let branches: Vec<(Vec<ScalarValue>, Statement)> = branches
                         .into_iter()
                         .map(|x| (x.0, transform_statements(f, x.1)))
                         .collect();
                     *otherwise = transform_statements(f, *otherwise);
-                    Match::SwitchInt(op, int_ty, branches, otherwise)
+                    Switch::SwitchInt(op, int_ty, branches, otherwise)
                 }
-                Match::Match(op, branches) => {
+                Switch::Match(op, branches) => {
                     let branches: Vec<(Vec<VariantId::Id>, Statement)> = branches
                         .into_iter()
                         .map(|x| (x.0, transform_statements(f, x.1)))
                         .collect();
-                    Match::Match(op, branches)
+                    Switch::Match(op, branches)
                 }
             };
-            RawStatement::Match(mtch)
+            RawStatement::Switch(switch)
         }
         RawStatement::Assign(p, r) => RawStatement::Assign(p, r),
         RawStatement::Call(c) => RawStatement::Call(c),
@@ -140,13 +140,13 @@ pub fn transform_statements<F: FnMut(Statement) -> Statement>(
     f(st)
 }
 
-impl Match {
+impl Switch {
     pub fn get_targets(&self) -> Vec<&Statement> {
         match self {
-            Match::If(_, exp1, exp2) => {
+            Switch::If(_, exp1, exp2) => {
                 vec![exp1, exp2]
             }
-            Match::SwitchInt(_, _, targets, otherwise) => {
+            Switch::SwitchInt(_, _, targets, otherwise) => {
                 let mut out: Vec<&Statement> = vec![];
                 for (_, tgt) in targets {
                     out.push(tgt);
@@ -154,7 +154,7 @@ impl Match {
                 out.push(otherwise);
                 out
             }
-            Match::Match(_, targets) => {
+            Switch::Match(_, targets) => {
                 let mut out: Vec<&Statement> = vec![];
                 for (_, tgt) in targets {
                     out.push(tgt);
@@ -165,12 +165,12 @@ impl Match {
     }
 }
 
-impl Serialize for Match {
+impl Serialize for Switch {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        let enum_name = "Match";
+        let enum_name = "Switch";
         let variant_name = self.variant_name();
         let (variant_index, variant_arity) = self.variant_index_arity();
         let mut vs = serializer.serialize_tuple_variant(
@@ -180,12 +180,12 @@ impl Serialize for Match {
             variant_arity,
         )?;
         match self {
-            Match::If(op, e1, e2) => {
+            Switch::If(op, e1, e2) => {
                 vs.serialize_field(op)?;
                 vs.serialize_field(e1)?;
                 vs.serialize_field(e2)?;
             }
-            Match::SwitchInt(op, int_ty, targets, otherwise) => {
+            Switch::SwitchInt(op, int_ty, targets, otherwise) => {
                 vs.serialize_field(op)?;
                 vs.serialize_field(int_ty)?;
                 let targets: Vec<(VecSerializer<ScalarValue>, &Statement)> = targets
@@ -196,7 +196,7 @@ impl Serialize for Match {
                 vs.serialize_field(&targets)?;
                 vs.serialize_field(otherwise)?;
             }
-            Match::Match(p, targets) => {
+            Switch::Match(p, targets) => {
                 vs.serialize_field(p)?;
                 let targets: Vec<(VecSerializer<VariantId::Id>, &Statement)> = targets
                     .iter()
@@ -276,8 +276,8 @@ impl Statement {
                 st2.fmt_with_ctx(tab, ctx)
             )
             .to_owned(),
-            RawStatement::Match(mtch) => match mtch {
-                Match::If(discr, true_st, false_st) => {
+            RawStatement::Switch(switch) => match switch {
+                Switch::If(discr, true_st, false_st) => {
                     let inner_tab = format!("{}{}", tab, TAB_INCR);
                     format!(
                         "{}if {} {{\n{}\n{}}}\n{}else {{\n{}\n{}}}",
@@ -291,7 +291,7 @@ impl Statement {
                     )
                     .to_owned()
                 }
-                Match::SwitchInt(discr, _ty, maps, otherwise) => {
+                Switch::SwitchInt(discr, _ty, maps, otherwise) => {
                     let inner_tab1 = format!("{}{}", tab, TAB_INCR);
                     let inner_tab2 = format!("{}{}", inner_tab1, TAB_INCR);
                     let mut maps: Vec<String> = maps
@@ -329,7 +329,7 @@ impl Statement {
                     )
                     .to_owned()
                 }
-                Match::Match(discr, maps) => {
+                Switch::Match(discr, maps) => {
                     let inner_tab1 = format!("{}{}", tab, TAB_INCR);
                     let inner_tab2 = format!("{}{}", inner_tab1, TAB_INCR);
                     let maps: Vec<String> = maps

@@ -39,7 +39,7 @@ module Ast = struct
         indent ^ "storage_dead " ^ fmt.var_id_to_string var_id
     | A.Deinit p -> indent ^ "deinit " ^ PE.place_to_string fmt p
 
-  let switch_targets_to_string (indent : string) (tgt : A.switch_targets) :
+  let switch_to_string (indent : string) (tgt : A.switch) :
       string =
     match tgt with
     | A.If (b0, b1) ->
@@ -69,7 +69,7 @@ module Ast = struct
     | Switch (op, tgts) ->
         indent ^ "switch "
         ^ PE.operand_to_string fmt op
-        ^ switch_targets_to_string indent tgts
+        ^ switch_to_string indent tgts
     | A.Panic -> indent ^ "panic"
     | A.Return -> indent ^ "return"
     | A.Unreachable -> indent ^ "unreachable"
