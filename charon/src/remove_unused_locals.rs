@@ -5,7 +5,7 @@
 
 use crate::expressions::*;
 use crate::id_vector::ToUsize;
-use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, SwitchTargets};
+use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, Match, RawStatement, Statement};
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
@@ -65,21 +65,26 @@ fn compute_used_locals_in_statement(locals: &mut HashSet<VarId::Id>, st: &Statem
         RawStatement::Break(_) => (),
         RawStatement::Continue(_) => (),
         RawStatement::Nop => (),
-        RawStatement::Switch(op, targets) => {
-            compute_used_locals_in_operand(locals, op);
-            match targets {
-                SwitchTargets::If(st1, st2) => {
-                    compute_used_locals_in_statement(locals, st1);
-                    compute_used_locals_in_statement(locals, st2);
-                }
-                SwitchTargets::SwitchInt(_, targets, otherwise) => {
-                    compute_used_locals_in_statement(locals, otherwise);
-                    for (_, tgt) in targets {
-                        compute_used_locals_in_statement(locals, tgt);
-                    }
+        RawStatement::Match(m) => match m {
+            Match::If(op, st1, st2) => {
+                compute_used_locals_in_operand(locals, op);
+                compute_used_locals_in_statement(locals, st1);
+                compute_used_locals_in_statement(locals, st2);
+            }
+            Match::SwitchInt(op, _, targets, otherwise) => {
+                compute_used_locals_in_operand(locals, op);
+                compute_used_locals_in_statement(locals, otherwise);
+                for (_, tgt) in targets {
+                    compute_used_locals_in_statement(locals, tgt);
                 }
             }
-        }
+            Match::Match(p, targets) => {
+                compute_used_locals_in_place(locals, p);
+                for (_, tgt) in targets {
+                    compute_used_locals_in_statement(locals, tgt);
+                }
+            }
+        },
         RawStatement::Loop(loop_body) => compute_used_locals_in_statement(locals, loop_body),
         RawStatement::Sequence(st1, st2) => {
             compute_used_locals_in_statement(locals, st1);
@@ -151,25 +156,35 @@ fn transform_st(vids_map: &HashMap<VarId::Id, VarId::Id>, st: Statement) -> Stat
         RawStatement::Break(i) => RawStatement::Break(i),
         RawStatement::Continue(i) => RawStatement::Continue(i),
         RawStatement::Nop => RawStatement::Nop,
-        RawStatement::Switch(op, targets) => {
-            let op = transform_operand(vids_map, op);
-            match targets {
-                SwitchTargets::If(st1, st2) => {
+        RawStatement::Match(mtch) => {
+            let mtch = match mtch {
+                Match::If(op, st1, st2) => {
+                    let op = transform_operand(vids_map, op);
                     let st1 = Box::new(transform_st(vids_map, *st1));
                     let st2 = Box::new(transform_st(vids_map, *st2));
-                    RawStatement::Switch(op, SwitchTargets::If(st1, st2))
+                    Match::If(op, st1, st2)
                 }
-                SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
+                Match::SwitchInt(op, int_ty, targets, otherwise) => {
+                    let op = transform_operand(vids_map, op);
                     let targets = Vec::from_iter(
                         targets
                             .into_iter()
                             .map(|(v, e)| (v, transform_st(vids_map, e))),
                     );
                     let otherwise = transform_st(vids_map, *otherwise);
-                    let targets = SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise));
-                    RawStatement::Switch(op, targets)
+                    Match::SwitchInt(op, int_ty, targets, Box::new(otherwise))
                 }
-            }
+                Match::Match(p, targets) => {
+                    let p = transform_place(vids_map, p);
+                    let targets = Vec::from_iter(
+                        targets
+                            .into_iter()
+                            .map(|(v, e)| (v, transform_st(vids_map, e))),
+                    );
+                    Match::Match(p, targets)
+                }
+            };
+            RawStatement::Match(mtch)
         }
         RawStatement::Loop(loop_body) => {
             RawStatement::Loop(Box::new(transform_st(vids_map, *loop_body)))

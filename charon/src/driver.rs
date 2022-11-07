@@ -11,6 +11,7 @@ use crate::reconstruct_asserts;
 use crate::register;
 use crate::regularize_constant_adts;
 use crate::remove_drop_never;
+use crate::remove_read_discriminant;
 use crate::remove_unused_locals;
 use crate::reorder_decls;
 use crate::rust_to_local_ids;
@@ -274,7 +275,10 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             );
         }
 
-        // # Step 11: add the missing assignments to the return value.
+        // # Step 11: Remove the discriminant reads (merge them with the switches)
+        remove_read_discriminant::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Step 12: add the missing assignments to the return value.
         // When the function return type is unit, the generated MIR doesn't
         // set the return value to `()`. This can be a concern: in the case
         // of Aeneas, it means the return variable contains ⊥ upon returning.
@@ -284,15 +288,15 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // the main or at compile-time).
         insert_assign_return_unit::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 12: remove the drops of locals whose type is `Never` (`!`). This
+        // # Step 13: remove the drops of locals whose type is `Never` (`!`). This
         // is in preparation of the next transformation.
         remove_drop_never::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 13: remove the locals which are never used. After doing so, we
+        // # Step 14: remove the locals which are never used. After doing so, we
         // check that there are no remaining locals with type `Never`.
         remove_unused_locals::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 14: compute which functions are potentially divergent. A function
+        // # Step 15: compute which functions are potentially divergent. A function
         // is potentially divergent if it is recursive, contains a loop or transitively
         // calls a potentially divergent function.
         // Note that in the future, we may complement this basic analysis with a
@@ -301,7 +305,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // Because we don't have loops, constants are not yet touched.
         let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
 
-        // # Step 15: generate the files.
+        // # Step 16: generate the files.
         export::export_llbc(
             crate_name.clone(),
             &ordered_decls,
