@@ -47,10 +47,10 @@ module Ast = struct
         statement_to_string fmt indent indent_incr st1
         ^ ";\n"
         ^ statement_to_string fmt indent indent_incr st2
-    | A.Switch (op, tgts) -> (
-        let op = PE.operand_to_string fmt op in
-        match tgts with
-        | A.If (true_st, false_st) ->
+    | A.Switch switch -> (
+        match switch with
+        | A.If (op, true_st, false_st) ->
+            let op = PE.operand_to_string fmt op in
             let inner_indent = indent ^ indent_incr in
             let inner_to_string =
               statement_to_string fmt inner_indent indent_incr
@@ -59,7 +59,8 @@ module Ast = struct
             let false_st = inner_to_string false_st in
             indent ^ "if (" ^ op ^ ") {\n" ^ true_st ^ "\n" ^ indent ^ "}\n"
             ^ indent ^ "else {\n" ^ false_st ^ "\n" ^ indent ^ "}"
-        | A.SwitchInt (_ty, branches, otherwise) ->
+        | A.SwitchInt (op, _ty, branches, otherwise) ->
+            let op = PE.operand_to_string fmt op in
             let indent1 = indent ^ indent_incr in
             let indent2 = indent1 ^ indent_incr in
             let inner_to_string2 =
@@ -83,7 +84,27 @@ module Ast = struct
               branches ^ "\n" ^ indent1 ^ "_ => {\n"
               ^ inner_to_string2 otherwise ^ "\n" ^ indent1 ^ "}"
             in
-            indent ^ "switch (" ^ op ^ ") {\n" ^ branches ^ "\n" ^ indent ^ "}")
+            indent ^ "switch (" ^ op ^ ") {\n" ^ branches ^ "\n" ^ indent ^ "}"
+        | A.Match (p, branches) ->
+            let p = PE.place_to_string fmt p in
+            let indent1 = indent ^ indent_incr in
+            let indent2 = indent1 ^ indent_incr in
+            let inner_to_string2 =
+              statement_to_string fmt indent2 indent_incr
+            in
+            let branches =
+              List.map
+                (fun (svl, be) ->
+                  let svl =
+                    List.map (fun sv -> "| " ^ T.VariantId.to_string sv) svl
+                  in
+                  let svl = String.concat " " svl in
+                  indent ^ svl ^ " => {\n" ^ inner_to_string2 be ^ "\n"
+                  ^ indent1 ^ "}")
+                branches
+            in
+            let branches = String.concat "\n" branches in
+            indent ^ "match (" ^ p ^ ") {\n" ^ branches ^ "\n" ^ indent ^ "}")
     | A.Loop loop_st ->
         indent ^ "loop {\n"
         ^ statement_to_string fmt (indent ^ indent_incr) indent_incr loop_st

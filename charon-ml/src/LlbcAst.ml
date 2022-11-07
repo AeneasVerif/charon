@@ -30,12 +30,13 @@ and raw_statement =
           the same way as for {!Break} *)
   | Nop
   | Sequence of statement * statement
-  | Switch of operand * switch_targets
+  | Switch of switch
   | Loop of statement
 
-and switch_targets =
-  | If of statement * statement  (** Gives the "if" and "else" blocks *)
-  | SwitchInt of integer_type * (scalar_value list * statement) list * statement
+and switch =
+  | If of operand * statement * statement
+  | SwitchInt of
+      operand * integer_type * (scalar_value list * statement) list * statement
       (** The targets for a switch over an integer are:
           - the list [(matched values, statement to execute)]
             We need a list for the matched values in case we do something like this:
@@ -43,6 +44,11 @@ and switch_targets =
           - the "otherwise" statement
           Also note that we precise the type of the integer (uint32, int64, etc.)
           which we switch on. *)
+  | Match of place * (variant_id list * statement) list
+      (** A match over an ADT.
+
+          Similar comments as for {!SwitchInt}.
+       *)
 [@@deriving
   show,
     visitors

@@ -8,7 +8,7 @@ open Names
 module BlockId = IdGen ()
 
 (** We define this type to control the name of the visitor functions
-    (see e.g., {!UllbcAst.iter_statement_base} and {!switch_targets}).
+    (see e.g., {!UllbcAst.iter_statement_base} and {!switch}).
   *)
 type block_id = BlockId.id [@@deriving show, ord]
 
@@ -58,14 +58,14 @@ and raw_statement =
         concrete = true;
       }]
 
-type switch_targets =
+type switch =
   | If of block_id * block_id
   | SwitchInt of integer_type * (scalar_value * block_id) list * block_id
 [@@deriving
   show,
     visitors
       {
-        name = "iter_switch_targets";
+        name = "iter_switch";
         variety = "iter";
         ancestors = [ "iter_statement" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
@@ -73,7 +73,7 @@ type switch_targets =
       },
     visitors
       {
-        name = "map_switch_targets";
+        name = "map_switch";
         variety = "map";
         ancestors = [ "map_statement" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
@@ -87,7 +87,7 @@ type terminator = {
 
 and raw_terminator =
   | Goto of block_id
-  | Switch of operand * switch_targets
+  | Switch of operand * switch
   | Panic
   | Return
   | Unreachable
@@ -100,7 +100,7 @@ and raw_terminator =
       {
         name = "iter_terminator";
         variety = "iter";
-        ancestors = [ "iter_switch_targets" ];
+        ancestors = [ "iter_switch" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
         concrete = true;
       },
@@ -108,7 +108,7 @@ and raw_terminator =
       {
         name = "map_terminator";
         variety = "map";
-        ancestors = [ "map_switch_targets" ];
+        ancestors = [ "map_switch" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
         concrete = true;
       }]

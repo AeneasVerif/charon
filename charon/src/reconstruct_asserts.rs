@@ -6,7 +6,7 @@
 use take_mut::take;
 
 use crate::{
-    llbc_ast::{Assert, CtxNames, FunDecls, GlobalDecls, Match, RawStatement, Statement},
+    llbc_ast::{Assert, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Switch},
     ullbc_ast::{iter_function_bodies, iter_global_bodies},
 };
 use std::iter::FromIterator;
@@ -24,9 +24,9 @@ fn transform_st(mut st: Statement) -> Statement {
         RawStatement::Break(i) => RawStatement::Break(i),
         RawStatement::Continue(i) => RawStatement::Continue(i),
         RawStatement::Nop => RawStatement::Nop,
-        RawStatement::Match(mtch) => {
-            match mtch {
-                Match::If(op, st1, st2) => {
+        RawStatement::Switch(switch) => {
+            match switch {
+                Switch::If(op, st1, st2) => {
                     let st2 = Box::new(transform_st(*st2));
 
                     // Check if the first statement is a panic: if yes, replace
@@ -43,18 +43,18 @@ fn transform_st(mut st: Statement) -> Statement {
 
                         RawStatement::Sequence(st1, st2)
                     } else {
-                        let mtch = Match::If(op, Box::new(transform_st(*st1)), st2);
-                        RawStatement::Match(mtch)
+                        let switch = Switch::If(op, Box::new(transform_st(*st1)), st2);
+                        RawStatement::Switch(switch)
                     }
                 }
-                Match::SwitchInt(op, int_ty, targets, otherwise) => {
+                Switch::SwitchInt(op, int_ty, targets, otherwise) => {
                     let targets =
                         Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
                     let otherwise = transform_st(*otherwise);
-                    let mtch = Match::SwitchInt(op, int_ty, targets, Box::new(otherwise));
-                    RawStatement::Match(mtch)
+                    let switch = Switch::SwitchInt(op, int_ty, targets, Box::new(otherwise));
+                    RawStatement::Switch(switch)
                 }
-                Match::Match(_, _) => {
+                Switch::Match(_, _) => {
                     // This variant is introduced in a subsequent pass
                     unreachable!();
                 }

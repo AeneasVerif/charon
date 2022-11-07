@@ -67,7 +67,7 @@ pub enum RawStatement {
     /// to the semantically equivalent statement `s0; (s1; s2)`
     /// To ensure that, use [crate::llbc_ast_utils::new_sequence] to build sequences.
     Sequence(Box<Statement>, Box<Statement>),
-    Match(Match),
+    Switch(Switch),
     Loop(Box<Statement>),
 }
 
@@ -78,7 +78,7 @@ pub struct Statement {
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, VariantName, VariantIndexArity)]
-pub enum Match {
+pub enum Switch {
     /// Gives the `if` block and the `else` block
     If(Operand, Box<Statement>, Box<Statement>),
     /// Gives the integer type, a map linking values to switch branches, and the

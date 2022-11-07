@@ -82,24 +82,25 @@ and raw_statement_of_json (id_to_file : id_to_file_map) (js : json) :
         let* st1 = statement_of_json id_to_file st1 in
         let* st2 = statement_of_json id_to_file st2 in
         Ok (A.Sequence (st1, st2))
-    | `Assoc [ ("Switch", `List [ op; tgt ]) ] ->
-        let* op = operand_of_json op in
-        let* tgt = switch_targets_of_json id_to_file tgt in
-        Ok (A.Switch (op, tgt))
+    | `Assoc [ ("Switch", tgt) ] ->
+        let* switch = switch_of_json id_to_file tgt in
+        Ok (A.Switch switch)
     | `Assoc [ ("Loop", st) ] ->
         let* st = statement_of_json id_to_file st in
         Ok (A.Loop st)
     | _ -> Error "")
 
-and switch_targets_of_json (id_to_file : id_to_file_map) (js : json) :
-    (A.switch_targets, string) result =
+and switch_of_json (id_to_file : id_to_file_map) (js : json) :
+    (A.switch, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("If", `List [ st1; st2 ]) ] ->
+    | `Assoc [ ("If", `List [ op; st1; st2 ]) ] ->
+        let* op = operand_of_json op in
         let* st1 = statement_of_json id_to_file st1 in
         let* st2 = statement_of_json id_to_file st2 in
-        Ok (A.If (st1, st2))
-    | `Assoc [ ("SwitchInt", `List [ int_ty; tgts; otherwise ]) ] ->
+        Ok (A.If (op, st1, st2))
+    | `Assoc [ ("SwitchInt", `List [ op; int_ty; tgts; otherwise ]) ] ->
+        let* op = operand_of_json op in
         let* int_ty = integer_type_of_json int_ty in
         let* tgts =
           list_of_json
@@ -109,7 +110,17 @@ and switch_targets_of_json (id_to_file : id_to_file_map) (js : json) :
             tgts
         in
         let* otherwise = statement_of_json id_to_file otherwise in
-        Ok (A.SwitchInt (int_ty, tgts, otherwise))
+        Ok (A.SwitchInt (op, int_ty, tgts, otherwise))
+    | `Assoc [ ("Match", `List [ p; tgts ]) ] ->
+        let* p = place_of_json p in
+        let* tgts =
+          list_of_json
+            (pair_of_json
+               (list_of_json T.VariantId.id_of_json)
+               (statement_of_json id_to_file))
+            tgts
+        in
+        Ok (A.Match (p, tgts))
     | _ -> Error "")
 
 let fun_decl_of_json (id_to_file : id_to_file_map) (js : json) :
