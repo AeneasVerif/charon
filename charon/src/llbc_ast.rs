@@ -14,7 +14,7 @@ use crate::types::*;
 use crate::ullbc_ast::*;
 pub use crate::ullbc_ast::{CtxNames, FunDeclId, GlobalDeclId, Var};
 use crate::values::*;
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
@@ -37,7 +37,7 @@ pub struct Call {
 }
 
 /// A raw statement: a statement without meta data.
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
+#[derive(Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize)]
 pub enum RawStatement {
     Assign(Place, Rvalue),
     FakeRead(Place),
@@ -67,7 +67,7 @@ pub enum RawStatement {
     /// to the semantically equivalent statement `s0; (s1; s2)`
     /// To ensure that, use [crate::llbc_ast_utils::new_sequence] to build sequences.
     Sequence(Box<Statement>, Box<Statement>),
-    Switch(Operand, SwitchTargets),
+    Match(Match),
     Loop(Box<Statement>),
 }
 
@@ -77,10 +77,10 @@ pub struct Statement {
     pub content: RawStatement,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
-pub enum SwitchTargets {
+#[derive(Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, VariantName, VariantIndexArity)]
+pub enum Match {
     /// Gives the `if` block and the `else` block
-    If(Box<Statement>, Box<Statement>),
+    If(Operand, Box<Statement>, Box<Statement>),
     /// Gives the integer type, a map linking values to switch branches, and the
     /// otherwise block. Note that matches over enumerations are performed by
     /// switching over the discriminant, which is an integer.
@@ -96,10 +96,17 @@ pub enum SwitchTargets {
     /// }
     /// ```
     SwitchInt(
+        Operand,
         IntegerTy,
         Vec<(Vec<ScalarValue>, Statement)>,
         Box<Statement>,
     ),
+    /// A match over an ADT.
+    ///
+    /// The match statement is introduced in [crate::remove_read_discriminant]
+    /// (whenever we find a discriminant read, we merge it with the subsequent
+    /// switch into a match)
+    Match(Place, Vec<(Vec<VariantId::Id>, Statement)>),
 }
 
 pub type ExprBody = GExprBody<Statement>;

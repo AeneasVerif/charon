@@ -69,6 +69,7 @@ pub mod regions_hierarchy;
 pub mod register;
 pub mod regularize_constant_adts;
 pub mod remove_drop_never;
+pub mod remove_read_discriminant;
 pub mod remove_unused_locals;
 pub mod reorder_decls;
 pub mod rust_to_local_ids;

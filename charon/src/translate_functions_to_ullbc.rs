@@ -1405,7 +1405,7 @@ fn translate_statement<'tcx, 'ctx, 'ctx1>(
 ) -> Result<Option<ast::Statement>> {
     trace!("About to translate statement (MIR) {:?}", statement);
 
-    use ::std::ops::Deref;
+    use std::ops::Deref;
 
     let sess = bt_ctx.ft_ctx.sess;
     let tcx = bt_ctx.ft_ctx.tcx;

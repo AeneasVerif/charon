@@ -5,7 +5,7 @@ use crate::types::*;
 use crate::values::*;
 use im::Vector; // TODO: im::Vector is not necessary anymore
 use macros::generate_index_type;
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
 use std::vec::Vec;
 
@@ -120,7 +120,9 @@ pub enum BinOp {
     // No Offset binary operation: this is an operation on raw pointers
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, EnumIsA, EnumToGetters, EnumAsGetters, VariantName, Serialize,
+)]
 pub enum Operand {
     Copy(Place),
     Move(Place),
@@ -165,7 +167,7 @@ pub enum OperandConstantValue {
     StaticId(GlobalDeclId::Id),
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, EnumToGetters, EnumIsA)]
 pub enum Rvalue {
     Use(Operand),
     Ref(Place, BorrowKind),
@@ -174,7 +176,9 @@ pub enum Rvalue {
     /// Binary operations (note that we merge "checked" and "unchecked" binops)
     BinaryOp(BinOp, Operand, Operand),
     /// Discriminant (for enumerations).
-    /// Note that discriminant values have type isize
+    /// Note that discriminant values have type isize.
+    ///
+    /// This case is filtered in [crate::remove_read_discriminant]
     Discriminant(Place),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text

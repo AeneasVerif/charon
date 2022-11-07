@@ -185,7 +185,7 @@ macro_rules! derive_impl_block_code {
 
 macro_rules! derive_enum_variant_impl_code {
     () => {
-        "    pub fn {}{}(&self) -> {} {{
+        "    pub fn {}{}({}self) -> {} {{
         match self {{
 {}
         }}
@@ -775,6 +775,7 @@ pub fn derive_variant_index_arity(item: TokenStream) -> TokenStream {
 enum EnumMethodKind {
     EnumIsA,
     EnumAsGetters,
+    EnumToGetters,
 }
 
 impl EnumMethodKind {
@@ -784,6 +785,7 @@ impl EnumMethodKind {
         match self {
             EnumMethodKind::EnumIsA => "EnumIsA".to_string(),
             EnumMethodKind::EnumAsGetters => "EnumAsGetters".to_string(),
+            EnumMethodKind::EnumToGetters => "EnumToGetters".to_string(),
         }
     }
 }
@@ -830,7 +832,9 @@ fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind) ->
             let several_variants = data.variants.len() > 1;
             let varbasename = match method_kind {
                 EnumMethodKind::EnumIsA => None,
-                EnumMethodKind::EnumAsGetters => Some("x".to_string()),
+                EnumMethodKind::EnumAsGetters | EnumMethodKind::EnumToGetters => {
+                    Some("x".to_string())
+                }
             };
             let patterns = generate_variant_match_patterns(&adt_name, data, varbasename.as_ref());
 
@@ -854,6 +858,7 @@ fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind) ->
                                 derive_enum_variant_impl_code!(),
                                 "is_",
                                 to_snake_case(&mp.variant_id.to_string()),
+                                "&",
                                 "bool",
                                 complete_pat
                             )
@@ -861,7 +866,12 @@ fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind) ->
                         })
                         .collect()
                 }
-                EnumMethodKind::EnumAsGetters => {
+                EnumMethodKind::EnumAsGetters | EnumMethodKind::EnumToGetters => {
+                    let as_getters = match method_kind {
+                        EnumMethodKind::EnumAsGetters => true,
+                        _ => false,
+                    };
+
                     patterns
                         .iter()
                         .map(|mp| {
@@ -873,8 +883,10 @@ fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind) ->
                             // Add the otherwise branch, if necessary
                             let complete_pat = if several_variants {
                                 format!(
-                                    "{}\n{}_ => unreachable!(\"{}::as_{}: Not the proper variant\"),",
-                                    variant_pat, THREE_TABS, adt_name, to_snake_case(&mp.variant_id.to_string()),
+                                    "{}\n{}_ => unreachable!(\"{}::{}_{}: Not the proper variant\"),",
+                                    variant_pat, THREE_TABS, adt_name,
+                                    if as_getters { "as" } else { "to" },
+                                    to_snake_case(&mp.variant_id.to_string()),
                                 )
                                 .to_string()
                             } else {
@@ -885,17 +897,19 @@ fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind) ->
                             let ret_tys: Vec<String> = mp
                                 .arg_types
                                 .iter()
-                                .map(|ty| format!("&({})", ty.to_string()))
+                                .map(|ty| format!("{}({})", if as_getters {"&"} else {""},ty.to_string())
+                                )
                                 .collect();
                             let ret_ty = format!("({})", ret_tys.join(", "));
 
                             // Generate the impl
                             format!(
                                 derive_enum_variant_impl_code!(),
-                                "as_",
+                                if as_getters { "as_" } else { "to_" },
                                 // TODO: write our own to_snake_case function:
                                 // names like "i32" become "i_32" with this one.
                                 to_snake_case(&mp.variant_id.to_string()),
+                                if as_getters { "&" } else { "" },
                                 ret_ty,
                                 complete_pat
                             )
@@ -957,10 +971,20 @@ pub fn derive_enum_is_a(item: TokenStream) -> TokenStream {
 /// Derives functions of the form `fn as_{variant_name}(&self) -> ...` checking
 /// that an enumeration instance is of the proper variant and returning shared
 /// borrows to its fields.
-/// Also see the comments for [`derive_enum_is_a`](derive_enum_is_a)
+/// Also see the comments for [crate::derive_enum_is_a]
 #[proc_macro_derive(EnumAsGetters)]
 pub fn derive_enum_as_getters(item: TokenStream) -> TokenStream {
     derive_enum_variant_method(item, EnumMethodKind::EnumAsGetters)
+}
+
+/// Macro `EnumToGetters`
+/// Derives functions of the form `fn to_{variant_name}(self) -> ...` checking
+/// that an enumeration instance is of the proper variant and returning its
+/// fields (while consuming the instance).
+/// Also see the comments for [crate::derive_enum_is_a]
+#[proc_macro_derive(EnumToGetters)]
+pub fn derive_enum_to_getters(item: TokenStream) -> TokenStream {
+    derive_enum_variant_method(item, EnumMethodKind::EnumToGetters)
 }
 
 /// This struct is used to deserialize the "rust-toolchain" file.

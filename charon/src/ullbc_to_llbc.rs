@@ -1503,7 +1503,7 @@ fn translate_terminator(
         }
         src::RawTerminator::Switch { discr, targets } => {
             // Translate the target expressions
-            let targets = match &targets {
+            let mtch = match &targets {
                 src::SwitchTargets::If(then_tgt, else_tgt) => {
                     // Translate the children expressions
                     let then_exp = translate_child_block(
@@ -1534,7 +1534,7 @@ fn translate_terminator(
                     let else_exp = opt_statement_to_nop_if_none(terminator.meta, else_exp);
 
                     // Translate
-                    tgt::SwitchTargets::If(Box::new(then_exp), Box::new(else_exp))
+                    tgt::Match::If(discr.clone(), Box::new(then_exp), Box::new(else_exp))
                 }
                 src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
                     // Note that some branches can be grouped together, like
@@ -1609,14 +1609,19 @@ fn translate_terminator(
                         opt_statement_to_nop_if_none(terminator.meta, otherwise_exp);
 
                     // Translate
-                    tgt::SwitchTargets::SwitchInt(*int_ty, targets_exps, Box::new(otherwise_exp))
+                    tgt::Match::SwitchInt(
+                        discr.clone(),
+                        *int_ty,
+                        targets_exps,
+                        Box::new(otherwise_exp),
+                    )
                 }
             };
 
             // Return
-            let meta = tgt::combine_switch_targets_meta(&targets);
+            let meta = tgt::combine_switch_targets_meta(&mtch);
             let meta = combine_meta(&src_meta, &meta);
-            let st = tgt::RawStatement::Switch(discr.clone(), targets);
+            let st = tgt::RawStatement::Match(mtch);
             let st = tgt::Statement::new(meta, st);
             Some(st)
         }
@@ -1668,7 +1673,7 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
                 return is_terminal_explore(num_loops, st2);
             }
         }
-        tgt::RawStatement::Switch(_, targets) => targets
+        tgt::RawStatement::Match(mtch) => mtch
             .get_targets()
             .iter()
             .all(|tgt_st| is_terminal_explore(num_loops, tgt_st)),

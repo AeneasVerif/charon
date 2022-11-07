@@ -7,8 +7,7 @@ use take_mut::take;
 
 use crate::expressions::*;
 use crate::llbc_ast::{
-    CtxNames, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
-    SwitchTargets,
+    CtxNames, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, Match, RawStatement, Statement,
 };
 use crate::names::Name;
 use crate::values::*;
@@ -37,18 +36,24 @@ fn transform_st(mut st: Statement) -> Statement {
         RawStatement::Break(i) => RawStatement::Break(i),
         RawStatement::Continue(i) => RawStatement::Continue(i),
         RawStatement::Nop => RawStatement::Nop,
-        RawStatement::Switch(op, targets) => match targets {
-            SwitchTargets::If(st1, st2) => {
+        RawStatement::Match(mtch) => match mtch {
+            Match::If(op, st1, st2) => {
                 let st1 = Box::new(transform_st(*st1));
                 let st2 = Box::new(transform_st(*st2));
-                RawStatement::Switch(op, SwitchTargets::If(st1, st2))
+                RawStatement::Match(Match::If(op, st1, st2))
             }
-            SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
+            Match::SwitchInt(op, int_ty, targets, otherwise) => {
                 let targets =
                     Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
                 let otherwise = transform_st(*otherwise);
-                let targets = SwitchTargets::SwitchInt(int_ty, targets, Box::new(otherwise));
-                RawStatement::Switch(op, targets)
+                let mtch = Match::SwitchInt(op, int_ty, targets, Box::new(otherwise));
+                RawStatement::Match(mtch)
+            }
+            Match::Match(op, targets) => {
+                let targets =
+                    Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
+                let mtch = Match::Match(op, targets);
+                RawStatement::Match(mtch)
             }
         },
         RawStatement::Loop(loop_body) => RawStatement::Loop(Box::new(transform_st(*loop_body))),
