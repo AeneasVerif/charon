@@ -1,2 +1,1 @@
-This project contains tests which use non-linear lifetimes (NLL).
-We use the Polonius borrow checker.
+This project contains tests which require the Polonius borrow checker.
