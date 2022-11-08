@@ -65,8 +65,9 @@ and chain_statements_in_switch (switch : switch) (st : statement) : switch =
       in
       let otherwise = chain_statements otherwise st in
       SwitchInt (op, int_ty, branches, otherwise)
-  | Match (op, branches) ->
+  | Match (op, branches, otherwise) ->
       let branches =
         List.map (fun (svl, br) -> (svl, chain_statements br st)) branches
       in
-      Match (op, branches)
+      let otherwise = chain_statements otherwise st in
+      Match (op, branches, otherwise)

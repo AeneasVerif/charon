@@ -85,7 +85,7 @@ module Ast = struct
               ^ inner_to_string2 otherwise ^ "\n" ^ indent1 ^ "}"
             in
             indent ^ "switch (" ^ op ^ ") {\n" ^ branches ^ "\n" ^ indent ^ "}"
-        | A.Match (p, branches) ->
+        | A.Match (p, branches, otherwise) ->
             let p = PE.place_to_string fmt p in
             let indent1 = indent ^ indent_incr in
             let indent2 = indent1 ^ indent_incr in
@@ -104,6 +104,10 @@ module Ast = struct
                 branches
             in
             let branches = String.concat "\n" branches in
+            let branches =
+              branches ^ "\n" ^ indent1 ^ "_ => {\n"
+              ^ inner_to_string2 otherwise ^ "\n" ^ indent1 ^ "}"
+            in
             indent ^ "match (" ^ p ^ ") {\n" ^ branches ^ "\n" ^ indent ^ "}")
     | A.Loop loop_st ->
         indent ^ "loop {\n"

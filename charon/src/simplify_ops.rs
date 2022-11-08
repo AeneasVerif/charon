@@ -657,16 +657,16 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
                     Box::new(simplify_st(release, *st1)),
                     Box::new(simplify_st(release, *st2)),
                 ),
-                Switch::SwitchInt(op, int_ty, targets, otherwise) => {
+                Switch::SwitchInt(op, int_ty, targets, mut otherwise) => {
                     let targets = Vec::from_iter(
                         targets
                             .into_iter()
                             .map(|(v, e)| (v, simplify_st(release, e))),
                     );
-                    let otherwise = simplify_st(release, *otherwise);
-                    Switch::SwitchInt(op, int_ty, targets, Box::new(otherwise))
+                    *otherwise = simplify_st(release, *otherwise);
+                    Switch::SwitchInt(op, int_ty, targets, otherwise)
                 }
-                Switch::Match(_, _) => {
+                Switch::Match(_, _, _) => {
                     // We shouldn't get there: those are introduced later, in [remove_read_discriminant]
                     unreachable!();
                 }

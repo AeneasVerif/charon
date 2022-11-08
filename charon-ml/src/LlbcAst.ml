@@ -44,7 +44,7 @@ and switch =
           - the "otherwise" statement
           Also note that we precise the type of the integer (uint32, int64, etc.)
           which we switch on. *)
-  | Match of place * (variant_id list * statement) list
+  | Match of place * (variant_id list * statement) list * statement
       (** A match over an ADT.
 
           Similar comments as for {!SwitchInt}.

@@ -22,7 +22,7 @@ let rec list_ancestor_region_groups (sg : fun_sig) (gid : T.RegionGroupId.id) :
   in
   parents
 
-(** Small utility: same as {!list_ancestors_region_groups}, but returns an ordered list.  *)
+(** Small utility: same as {!list_ancestor_region_groups}, but returns an ordered list.  *)
 let list_ordered_ancestor_region_groups (sg : fun_sig)
     (gid : T.RegionGroupId.id) : T.RegionGroupId.id list =
   let pset = list_ancestor_region_groups sg gid in
