@@ -66,9 +66,36 @@
           '';
           dontInstall = true;
         };
+
+        ocamlPackages = pkgs.ocamlPackages;
+        easy_logging = ocamlPackages.buildDunePackage rec {
+          pname = "easy_logging";
+          version = "0.8.2";
+          src = pkgs.fetchFromGitHub {
+            owner = "sapristi";
+            repo = "easy_logging";
+            rev = "v${version}";
+            sha256 = "sha256-Xy6Rfef7r2K8DTok7AYa/9m3ZEV07LlUeMQSRayLBco=";
+          };
+          buildInputs = [ ocamlPackages.calendar ];
+        };
+        charon-ml = ocamlPackages.buildDunePackage {
+          pname = "charon";
+          version = "0.1.0";
+          buildInputs = with ocamlPackages; [
+            ppx_deriving
+            visitors
+            easy_logging
+            zarith
+            yojson
+            calendar
+          ];
+          src = ./charon-ml;
+          doCheck = true;
+        };
       in {
         packages = {
-          inherit charon;
+          inherit charon charon-ml;
           default = charon;
         };
         checks = { inherit tests tests-polonius; };
