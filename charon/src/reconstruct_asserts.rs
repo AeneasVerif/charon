@@ -47,14 +47,14 @@ fn transform_st(mut st: Statement) -> Statement {
                         RawStatement::Switch(switch)
                     }
                 }
-                Switch::SwitchInt(op, int_ty, targets, otherwise) => {
+                Switch::SwitchInt(op, int_ty, targets, mut otherwise) => {
                     let targets =
                         Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
-                    let otherwise = transform_st(*otherwise);
-                    let switch = Switch::SwitchInt(op, int_ty, targets, Box::new(otherwise));
+                    *otherwise = transform_st(*otherwise);
+                    let switch = Switch::SwitchInt(op, int_ty, targets, otherwise);
                     RawStatement::Switch(switch)
                 }
-                Switch::Match(_, _) => {
+                Switch::Match(_, _, _) => {
                     // This variant is introduced in a subsequent pass
                     unreachable!();
                 }

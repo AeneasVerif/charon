@@ -74,9 +74,10 @@ pub fn combine_switch_targets_meta(targets: &Switch) -> Meta {
             let mbranches = meta::combine_meta_iter(branches);
             meta::combine_meta(&mbranches, &otherwise.meta)
         }
-        Switch::Match(_, branches) => {
+        Switch::Match(_, branches, otherwise) => {
             let branches = branches.iter().map(|b| &b.1.meta);
-            meta::combine_meta_iter(branches)
+            let mbranches = meta::combine_meta_iter(branches);
+            meta::combine_meta(&mbranches, &otherwise.meta)
         }
     }
 }
@@ -104,12 +105,13 @@ pub fn transform_statements<F: FnMut(Statement) -> Statement>(
                     *otherwise = transform_statements(f, *otherwise);
                     Switch::SwitchInt(op, int_ty, branches, otherwise)
                 }
-                Switch::Match(op, branches) => {
+                Switch::Match(op, branches, mut otherwise) => {
                     let branches: Vec<(Vec<VariantId::Id>, Statement)> = branches
                         .into_iter()
                         .map(|x| (x.0, transform_statements(f, x.1)))
                         .collect();
-                    Switch::Match(op, branches)
+                    *otherwise = transform_statements(f, *otherwise);
+                    Switch::Match(op, branches, otherwise)
                 }
             };
             RawStatement::Switch(switch)
@@ -154,11 +156,12 @@ impl Switch {
                 out.push(otherwise);
                 out
             }
-            Switch::Match(_, targets) => {
+            Switch::Match(_, targets, otherwise) => {
                 let mut out: Vec<&Statement> = vec![];
                 for (_, tgt) in targets {
                     out.push(tgt);
                 }
+                out.push(otherwise);
                 out
             }
         }
@@ -196,7 +199,7 @@ impl Serialize for Switch {
                 vs.serialize_field(&targets)?;
                 vs.serialize_field(otherwise)?;
             }
-            Switch::Match(p, targets) => {
+            Switch::Match(p, targets, otherwise) => {
                 vs.serialize_field(p)?;
                 let targets: Vec<(VecSerializer<VariantId::Id>, &Statement)> = targets
                     .iter()
@@ -204,6 +207,7 @@ impl Serialize for Switch {
                     .collect();
                 let targets = VecSerializer::new(&targets);
                 vs.serialize_field(&targets)?;
+                vs.serialize_field(otherwise)?;
             }
         }
         vs.end()
@@ -329,10 +333,10 @@ impl Statement {
                     )
                     .to_owned()
                 }
-                Switch::Match(discr, maps) => {
+                Switch::Match(discr, maps, otherwise) => {
                     let inner_tab1 = format!("{}{}", tab, TAB_INCR);
                     let inner_tab2 = format!("{}{}", inner_tab1, TAB_INCR);
-                    let maps: Vec<String> = maps
+                    let mut maps: Vec<String> = maps
                         .iter()
                         .map(|(pvl, st)| {
                             // Note that there may be several pattern values
@@ -347,6 +351,15 @@ impl Statement {
                             .to_owned()
                         })
                         .collect();
+                    maps.push(
+                        format!(
+                            "{}_ => {{\n{}\n{}}}",
+                            inner_tab1,
+                            otherwise.fmt_with_ctx(&inner_tab2, ctx),
+                            inner_tab1
+                        )
+                        .to_owned(),
+                    );
                     let maps = maps.join(",\n");
 
                     format!(

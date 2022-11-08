@@ -78,8 +78,9 @@ fn compute_used_locals_in_statement(locals: &mut HashSet<VarId::Id>, st: &Statem
                     compute_used_locals_in_statement(locals, tgt);
                 }
             }
-            Switch::Match(p, targets) => {
+            Switch::Match(p, targets, otherwise) => {
                 compute_used_locals_in_place(locals, p);
+                compute_used_locals_in_statement(locals, otherwise);
                 for (_, tgt) in targets {
                     compute_used_locals_in_statement(locals, tgt);
                 }
@@ -164,24 +165,25 @@ fn transform_st(vids_map: &HashMap<VarId::Id, VarId::Id>, st: Statement) -> Stat
                     let st2 = Box::new(transform_st(vids_map, *st2));
                     Switch::If(op, st1, st2)
                 }
-                Switch::SwitchInt(op, int_ty, targets, otherwise) => {
+                Switch::SwitchInt(op, int_ty, targets, mut otherwise) => {
                     let op = transform_operand(vids_map, op);
                     let targets = Vec::from_iter(
                         targets
                             .into_iter()
                             .map(|(v, e)| (v, transform_st(vids_map, e))),
                     );
-                    let otherwise = transform_st(vids_map, *otherwise);
-                    Switch::SwitchInt(op, int_ty, targets, Box::new(otherwise))
+                    *otherwise = transform_st(vids_map, *otherwise);
+                    Switch::SwitchInt(op, int_ty, targets, otherwise)
                 }
-                Switch::Match(p, targets) => {
+                Switch::Match(p, targets, mut otherwise) => {
                     let p = transform_place(vids_map, p);
                     let targets = Vec::from_iter(
                         targets
                             .into_iter()
                             .map(|(v, e)| (v, transform_st(vids_map, e))),
                     );
-                    Switch::Match(p, targets)
+                    *otherwise = transform_st(vids_map, *otherwise);
+                    Switch::Match(p, targets, otherwise)
                 }
             };
             RawStatement::Switch(switch)

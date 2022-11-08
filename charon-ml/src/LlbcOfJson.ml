@@ -111,7 +111,7 @@ and switch_of_json (id_to_file : id_to_file_map) (js : json) :
         in
         let* otherwise = statement_of_json id_to_file otherwise in
         Ok (A.SwitchInt (op, int_ty, tgts, otherwise))
-    | `Assoc [ ("Match", `List [ p; tgts ]) ] ->
+    | `Assoc [ ("Match", `List [ p; tgts; otherwise ]) ] ->
         let* p = place_of_json p in
         let* tgts =
           list_of_json
@@ -120,7 +120,8 @@ and switch_of_json (id_to_file : id_to_file_map) (js : json) :
                (statement_of_json id_to_file))
             tgts
         in
-        Ok (A.Match (p, tgts))
+        let* otherwise = statement_of_json id_to_file otherwise in
+        Ok (A.Match (p, tgts, otherwise))
     | _ -> Error "")
 
 let fun_decl_of_json (id_to_file : id_to_file_map) (js : json) :

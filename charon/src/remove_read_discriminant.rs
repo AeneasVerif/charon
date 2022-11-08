@@ -42,13 +42,13 @@ fn transform_st(st: Statement) -> Statement {
                     Box::new(transform_st(*st1)),
                     Box::new(transform_st(*st2)),
                 ),
-                Switch::SwitchInt(op, int_ty, targets, otherwise) => {
+                Switch::SwitchInt(op, int_ty, targets, mut otherwise) => {
                     let targets =
                         Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
-                    let otherwise = transform_st(*otherwise);
-                    Switch::SwitchInt(op, int_ty, targets, Box::new(otherwise))
+                    *otherwise = transform_st(*otherwise);
+                    Switch::SwitchInt(op, int_ty, targets, otherwise)
                 }
-                Switch::Match(_, _) => {
+                Switch::Match(_, _, _) => {
                     // We shouldn't get there: this variant is introduced *during*
                     // this traversal
                     unreachable!();
@@ -76,7 +76,7 @@ fn transform_st(st: Statement) -> Statement {
                         RawStatement::Switch(switch) => (st2.meta, switch, None),
                         _ => unreachable!(),
                     };
-                    let (op, int_ty, targets, _) = switch.to_switch_int();
+                    let (op, int_ty, targets, otherwise) = switch.to_switch_int();
                     assert!(int_ty.is_isize());
                     // The operand should be a [Move] applied to the variable `dest`
                     let op_p = op.to_move();
@@ -91,7 +91,8 @@ fn transform_st(st: Statement) -> Statement {
                             transform_st(e),
                         )
                     }));
-                    let switch = RawStatement::Switch(Switch::Match(p, targets));
+                    let otherwise = Box::new(transform_st(*otherwise));
+                    let switch = RawStatement::Switch(Switch::Match(p, targets, otherwise));
 
                     // Add the next statement if there is one
                     if let Some(st3) = st3_opt {

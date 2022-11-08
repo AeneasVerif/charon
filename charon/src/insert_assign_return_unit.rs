@@ -42,17 +42,18 @@ fn transform_st(mut st: Statement) -> Statement {
                 let st2 = Box::new(transform_st(*st2));
                 RawStatement::Switch(Switch::If(op, st1, st2))
             }
-            Switch::SwitchInt(op, int_ty, targets, otherwise) => {
+            Switch::SwitchInt(op, int_ty, targets, mut otherwise) => {
                 let targets =
                     Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
-                let otherwise = transform_st(*otherwise);
-                let switch = Switch::SwitchInt(op, int_ty, targets, Box::new(otherwise));
+                *otherwise = transform_st(*otherwise);
+                let switch = Switch::SwitchInt(op, int_ty, targets, otherwise);
                 RawStatement::Switch(switch)
             }
-            Switch::Match(op, targets) => {
+            Switch::Match(op, targets, mut otherwise) => {
                 let targets =
                     Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
-                let switch = Switch::Match(op, targets);
+                *otherwise = transform_st(*otherwise);
+                let switch = Switch::Match(op, targets, otherwise);
                 RawStatement::Switch(switch)
             }
         },
