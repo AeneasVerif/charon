@@ -63,7 +63,7 @@ impl<T> HashMap<T> {
         max_load_dividend: usize,
         max_load_divisor: usize,
     ) -> Self {
-        // TODO: better to use `Vec::with_capacity(32)` instead
+        // TODO: better to use `Vec::with_capacity(capacity)` instead
         // of `Vec::new()`
         let slots = HashMap::allocate_slots(Vec::new(), capacity);
         HashMap {
@@ -83,8 +83,6 @@ impl<T> HashMap<T> {
         if i < slots.len() {
             slots[i] = List::Nil;
             HashMap::clear_slots(slots, i + 1)
-        } else {
-            ()
         }
     }
 

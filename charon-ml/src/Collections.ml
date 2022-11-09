@@ -24,6 +24,17 @@ module List = struct
           let ls1, ls2 = split_at ls' (i - 1) in
           (x :: ls1, ls2)
 
+  (** Take a slice of a list.
+
+      The slice includes [n] elements starting at [i].
+
+      Raise [Failure] if the list is too short..
+  *)
+  let subslice (ls : 'a list) (i : int) (n : int) =
+    let _, ls = split_at ls i in
+    let ls, _ = split_at ls n in
+    ls
+
   (** Pop the last element of a list
      
       Raise [Failure] if the list is empty.
