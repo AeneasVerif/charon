@@ -26,7 +26,12 @@ let u128_max = Z.of_string "340282366920938463463374607431768211455"
 
 (** Being a bit conservative about isize/usize: depending on the system,
     the values are encoded as 32-bit values or 64-bit values - we may
-    want to take that into account in the future *)
+    want to take that into account in the future
+
+    Note that we use those bounds only to check that the values are *in range*:
+    when evaluating operations like addition, negation, etc. It is thus ok to
+    not use the precise bounds.
+ *)
 
 let isize_min = i32_min
 let isize_max = i32_max
