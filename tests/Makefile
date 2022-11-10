@@ -1,5 +1,5 @@
 CURRENT_DIR = $(shell pwd)
-CHARON ?= $(CURRENT_DIR)/../charon/target/debug/cargo-charon
+CHARON ?= $(CURRENT_DIR)/../charon/target/debug/charon
 DEST ?= .
 OPTIONS =
 CHARON_CMD :=
