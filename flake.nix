@@ -79,33 +79,39 @@
           };
           buildInputs = [ ocamlPackages.calendar ];
         };
-        charon-ml = ocamlPackages.buildDunePackage {
-          pname = "charon";
-          version = "0.1.0";
-          preCheck = ''
-             mkdir -p tests/serialized
-             cp ${tests}/ullbc/* tests/serialized
-             cp ${tests}/llbc/* tests/serialized
-             cp ${tests-polonius}/ullbc/* tests/serialized
-             cp ${tests-polonius}/llbc/* tests/serialized
-          '';
-          buildInputs = with ocamlPackages; [
-            ppx_deriving
-            visitors
-            easy_logging
-            zarith
-            yojson
-            calendar
-          ];
-          src = ./charon-ml;
-          doCheck = true;
-        };
+        mk-charon-ml = doCheck:
+          ocamlPackages.buildDunePackage {
+            pname = "charon";
+            version = "0.1.0";
+            preCheck = if doCheck then ''
+              mkdir -p tests/serialized
+              cp ${tests}/ullbc/* tests/serialized
+              cp ${tests}/llbc/* tests/serialized
+              cp ${tests-polonius}/ullbc/* tests/serialized
+              cp ${tests-polonius}/llbc/* tests/serialized
+            '' else
+              "";
+            buildInputs = with ocamlPackages; [
+              ppx_deriving
+              visitors
+              easy_logging
+              zarith
+              yojson
+              calendar
+            ];
+            src = ./charon-ml;
+            inherit doCheck;
+          };
+        charon-ml = mk-charon-ml false;
+        charon-ml-tests = mk-charon-ml true;
       in {
         packages = {
           inherit charon charon-ml;
           default = charon;
         };
-        checks = { inherit tests tests-polonius charon-ml; };
-        hydraJobs = { inherit charon tests tests-polonius charon-ml; };
+        checks = { inherit tests tests-polonius charon-ml-tests; };
+        hydraJobs = {
+          inherit charon tests tests-polonius charon-ml charon-ml-tests;
+        };
       });
 }
