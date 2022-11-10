@@ -6,10 +6,10 @@ let log = main_log
 
 (* Run the tests *)
 let run_tests (folder : string) : unit =
-  let get_files_with_suffix (folder : string) (suffix : string) : string array =
-    Sys.readdir folder |> Array.to_seq
-    |> Seq.filter (fun file -> Filename.check_suffix file suffix)
-    |> Array.of_seq
+  (* Retrieve the files in a directory which end with a proper suffix *)
+  let get_files_with_suffix (folder : string) (suffix : string) : string list =
+    Sys.readdir folder |> Array.to_list
+    |> List.filter (fun file -> Filename.check_suffix file suffix)
   in
 
   (* List the ULLBC and LLBC files *)
@@ -18,7 +18,7 @@ let run_tests (folder : string) : unit =
 
   (* Deserialize ULLBC *)
   let () =
-    Array.iter
+    List.iter
       (fun file ->
         log#ldebug (lazy ("Deserializing ULLBC file: " ^ file));
         (* Load the module *)
@@ -36,7 +36,7 @@ let run_tests (folder : string) : unit =
 
   (* Deserialize LLBC *)
   let () =
-    Array.iter
+    List.iter
       (fun file ->
         log#ldebug (lazy ("Deserializing LLBC file: " ^ file));
         (* Load the module *)
