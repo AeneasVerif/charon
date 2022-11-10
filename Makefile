@@ -90,7 +90,7 @@ clean:
 
 # Build the Nix packages
 .PHONY: nix
-nix: nix-tests nix-tests-polonius
+nix: nix-tests nix-tests-polonius nix-charon-ml
 
 .PHONY: nix-tests
 nix-tests:
@@ -99,3 +99,7 @@ nix-tests:
 .PHONY: nix-tests-polonius
 nix-tests-polonius:
 	nix build .#checks.x86_64-linux.tests-polonius --show-trace -L
+
+.PHONY: nix-charon-ml
+nix-charon-ml:
+	nix build .#checks.x86_64-linux.charon-ml --show-trace -L

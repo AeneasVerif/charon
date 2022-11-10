@@ -4,7 +4,7 @@ build:
 
 .PHONY: tests
 tests: build copy-tests
-	dune runtest
+	dune runtest -p charon
 
 .PHONY: tests
 tests-cmd: build

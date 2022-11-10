@@ -82,10 +82,12 @@
         charon-ml = ocamlPackages.buildDunePackage {
           pname = "charon";
           version = "0.1.0";
-          preBuild = ''
-            mkdir tests/serialized
-            cp ${tests}/llbc/* tests/serialized
-            cp ${tests-polonius}/llbc/* tests/serialized
+          preCheck = ''
+             mkdir -p tests/serialized
+             cp ${tests}/ullbc/* tests/serialized
+             cp ${tests}/llbc/* tests/serialized
+             cp ${tests-polonius}/ullbc/* tests/serialized
+             cp ${tests-polonius}/llbc/* tests/serialized
           '';
           buildInputs = with ocamlPackages; [
             ppx_deriving
@@ -103,7 +105,7 @@
           inherit charon charon-ml;
           default = charon;
         };
-        checks = { inherit tests tests-polonius; };
-        hydraJobs = { inherit charon tests tests-polonius; };
+        checks = { inherit tests tests-polonius charon-ml; };
+        hydraJobs = { inherit charon tests tests-polonius charon-ml; };
       });
 }

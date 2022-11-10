@@ -23,8 +23,8 @@ let folder, debug =
       exit 1
 
 (* Set the log level *)
-let () = main_log#set_level (if debug then EL.Debug else EL.Info)
 let log = main_log
+let () = log#set_level (if debug then EL.Debug else EL.Info)
 
 (* Run the tests *)
 let () = All_tests.Test_Deserialize.run_tests folder
