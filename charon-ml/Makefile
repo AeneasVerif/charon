@@ -2,16 +2,17 @@
 build:
 	dune build && dune build @doc
 
+# The tests.
+# You can use the environment variable "CHARON_LOG" to activate the log.
+# For instance: `CHARON_LOG=1 make tests`.
 .PHONY: tests
 tests: build copy-tests
 	dune runtest -p charon
 
-.PHONY: tests
-tests-cmd: build
-	dune exec tests/test_cmd.exe -- $(OPTIONS) ../tests/ullbc/
-	dune exec tests/test_cmd.exe -- $(OPTIONS) ../tests/llbc/
-	dune exec tests/test_cmd.exe -- $(OPTIONS) ../tests-polonius/ullbc/
-	dune exec tests/test_cmd.exe -- $(OPTIONS) ../tests-polonius/llbc/
+# Reformat the code
+.PHONY: format
+format:
+	dune promote
 
 .PHONY: copy-tests
 copy-tests:
@@ -20,8 +21,3 @@ copy-tests:
 	cp ../tests/llbc/* tests/serialized
 	cp ../tests-polonius/ullbc/* tests/serialized
 	cp ../tests-polonius/llbc/* tests/serialized
-
-# Reformat the code
-.PHONY: format
-format:
-	dune promote
