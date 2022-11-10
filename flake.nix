@@ -40,7 +40,7 @@
           inherit cargoArtifacts;
           buildPhase = ''
             # Run the tests for Charon
-            DEST=$out CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version" \
+            DEST=$out CHARON="${charon}/bin/charon --cargo-no-rust-version" \
             make charon-tests
           '';
           doCheck = false;
@@ -58,7 +58,7 @@
           doCheck = false;
           buildPhase = ''
             # Run the tests for Charon
-            DEST=$out CHARON="${charon}/bin/cargo-charon --cargo-no-rust-version" \
+            DEST=$out CHARON="${charon}/bin/charon --cargo-no-rust-version" \
             make charon-tests
 
             # Nix doesn't run the cargo tests, so run them by hand
