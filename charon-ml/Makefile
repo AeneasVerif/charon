@@ -1,15 +1,25 @@
-OPTIONS ?=
-
 .PHONY: build
 build:
 	dune build && dune build @doc
 
 .PHONY: tests
-tests: build
-	dune exec tests/test_deserialize.exe -- $(OPTIONS) ../tests/ullbc/
-	dune exec tests/test_deserialize.exe -- $(OPTIONS) ../tests/llbc/
-	dune exec tests/test_deserialize.exe -- $(OPTIONS) ../tests-polonius/ullbc/
-	dune exec tests/test_deserialize.exe -- $(OPTIONS) ../tests-polonius/llbc/
+tests: build copy-tests
+	dune runtest
+
+.PHONY: tests
+tests-cmd: build
+	dune exec tests/test_cmd.exe -- $(OPTIONS) ../tests/ullbc/
+	dune exec tests/test_cmd.exe -- $(OPTIONS) ../tests/llbc/
+	dune exec tests/test_cmd.exe -- $(OPTIONS) ../tests-polonius/ullbc/
+	dune exec tests/test_cmd.exe -- $(OPTIONS) ../tests-polonius/llbc/
+
+.PHONY: copy-tests
+copy-tests:
+	mkdir -p tests/serialized
+	cp ../tests/ullbc/* tests/serialized
+	cp ../tests/llbc/* tests/serialized
+	cp ../tests-polonius/ullbc/* tests/serialized
+	cp ../tests-polonius/llbc/* tests/serialized
 
 # Reformat the code
 .PHONY: format

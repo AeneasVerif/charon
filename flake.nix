@@ -82,6 +82,11 @@
         charon-ml = ocamlPackages.buildDunePackage {
           pname = "charon";
           version = "0.1.0";
+          preBuild = ''
+            mkdir tests/serialized
+            cp ${tests}/llbc/* tests/serialized
+            cp ${tests-polonius}/llbc/* tests/serialized
+          '';
           buildInputs = with ocamlPackages; [
             ppx_deriving
             visitors

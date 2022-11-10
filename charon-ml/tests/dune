@@ -1,3 +1,14 @@
+(tests
+  (names Tests)
+  (modules Tests)
+  (libraries charon all_tests))
+
 (executable
-  (name test_deserialize)
+  (name Tests_Cmd)
+  (modules Tests_Cmd)
+  (libraries all_tests))
+
+(library
+  (name all_tests)
+  (modules Test_Deserialize)
   (libraries charon))
