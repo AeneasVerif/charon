@@ -5,11 +5,11 @@ authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2018"
 
 [lib]
-name = "charon"
+name = "charon_lib"
 path = "src/lib.rs"
 
 [[bin]]
-name = "cargo-charon"
+name = "charon"
 path = "src/main.rs"
 
 [[bin]]
