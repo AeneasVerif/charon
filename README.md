@@ -101,14 +101,15 @@ and install OPAM on the way (same instructions).
 
 We use **OCaml 4.13.1**: `opam switch create 4.13.1+options`
 
-The dependencies can then be installed with the following command:
+The dependencies can be installed with the following command:
 
 ```
 opam install ppx_deriving visitors easy_logging zarith yojson core_unix odoc
 ```
 
-You can finally run `make build-charon-ml` to build the ML library, or even simply
-`make` to build the whole project and run the tests.
+You can then run `make build-charon-ml` to build the ML library, or even simply
+`make` to build the whole project (Rust and OCaml). Finally, you can run the
+tests with `make tests`.
 
 ## Documentation
 

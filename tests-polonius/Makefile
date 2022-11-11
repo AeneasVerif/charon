@@ -1,5 +1,5 @@
 CURRENT_DIR = $(shell pwd)
-CHARON ?= $(CURRENT_DIR)/../charon/target/debug/charon
+CHARON ?= $(CURRENT_DIR)/../bin/charon
 DEST ?= .
 OPTIONS = --polonius
 NOT_ALL_TESTS ?=
