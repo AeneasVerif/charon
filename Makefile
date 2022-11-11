@@ -7,7 +7,7 @@ endif
 default: build
 
 .PHONY: all
-all: build tests
+all: build tests nix
 
 # We use Rust nightly in order to:
 # - be able to write a Rustc plugin
