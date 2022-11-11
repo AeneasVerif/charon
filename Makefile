@@ -3,8 +3,11 @@ ifeq (3.81,$(MAKE_VERSION))
     install make, then invoke gmake instead of make)
 endif
 
+.PHONY: default
+default: build
+
 .PHONY: all
-all: build
+all: build tests
 
 # We use Rust nightly in order to:
 # - be able to write a Rustc plugin

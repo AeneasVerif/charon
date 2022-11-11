@@ -217,7 +217,7 @@ fn test_split_list() {
     assert!(hd == 0);
 }
 
-fn get_elem<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T {
+fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T {
     if b {
         return x;
     } else {
@@ -225,10 +225,10 @@ fn get_elem<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T {
     }
 }
 
-fn get_elem_test() {
+fn choose_test() {
     let mut x = 0;
     let mut y = 0;
-    let z = get_elem(true, &mut x, &mut y);
+    let z = choose(true, &mut x, &mut y);
     *z = *z + 1;
     assert!(*z == 1);
     // drop(z)

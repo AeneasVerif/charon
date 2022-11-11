@@ -24,10 +24,10 @@ build-tests:
 
 .PHONY: charon-tests
 charon-tests: \
-	test-betree_polonius test-betree_main
+	test-polonius_list test-betree_main
 
-# test-betree_polonius: OPTIONS += --no-code-duplication
-test-betree_polonius:
+# test-polonius_list: OPTIONS += --no-code-duplication
+test-polonius_list:
 # Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
 # test-betree_main: OPTIONS += --no-code-duplication
 test-betree_main: OPTIONS += --opaque=betree_utils
