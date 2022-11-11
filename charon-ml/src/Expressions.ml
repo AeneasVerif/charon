@@ -5,12 +5,12 @@ module VarId = IdGen ()
 module GlobalDeclId = IdGen ()
 
 (** We define this type to control the name of the visitor functions
-    (see e.g., {!UllbcAst.iter_statement_base}).
+    (see e.g., {!Charon.UllbcAst.iter_statement_base}).
   *)
 type var_id = VarId.id [@@deriving show, ord]
 
 (** We define this type to control the name of the visitor functions
-    (see e.g., {!GAst.iter_ast_base} and {!rvalue}).
+    (see e.g., {!Charon.GAst.iter_ast_base} and {!rvalue}).
   *)
 type global_decl_id = GlobalDeclId.id [@@deriving show]
 

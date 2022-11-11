@@ -129,13 +129,13 @@ type call = {
         concrete = true;
       }]
 
-(** Ancestor the {!LlbcAst.statement} and {!UllbcAst.statement} iter visitors *)
+(** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} iter visitors *)
 class ['self] iter_statement_base =
   object (_self : 'self)
     inherit [_] iter_call
   end
 
-(** Ancestor the {!LlbcAst.statement} and {!UllbcAst.statement} map visitors *)
+(** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} map visitors *)
 class ['self] map_statement_base =
   object (_self : 'self)
     inherit [_] map_call

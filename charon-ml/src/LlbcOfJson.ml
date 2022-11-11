@@ -1,6 +1,6 @@
 (** Functions to load LLBC ASTs from json.
 
-    See the comments for {!GAstOfJson}
+    See the comments for {!Charon.GAstOfJson}
  *)
 
 include GAstOfJson

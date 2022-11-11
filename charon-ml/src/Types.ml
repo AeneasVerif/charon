@@ -108,7 +108,7 @@ let option_some_id = VariantId.of_int 1
 type type_id = AdtId of TypeDeclId.id | Tuple | Assumed of assumed_ty
 [@@deriving show, ord]
 
-(** Ancestor for iter visitor for {!ty} *)
+(** Ancestor for iter visitor for {!Types.ty} *)
 class ['self] iter_ty_base =
   object (_self : 'self)
     inherit [_] VisitorsRuntime.iter
@@ -119,7 +119,7 @@ class ['self] iter_ty_base =
     method visit_ref_kind : 'env -> ref_kind -> unit = fun _ _ -> ()
   end
 
-(** Ancestor for map visitor for {!ty} *)
+(** Ancestor for map visitor for {!Types.ty} *)
 class ['self] map_ty_base =
   object (_self : 'self)
     inherit [_] VisitorsRuntime.map
@@ -138,7 +138,7 @@ class ['self] map_ty_base =
 
 type 'r ty =
   | Adt of type_id * 'r list * 'r ty list
-      (** {!Adt} encodes ADTs, tuples and assumed types *)
+      (** {!Types.ty.Adt} encodes ADTs, tuples and assumed types *)
   | TypeVar of type_var_id
   | Bool
   | Char

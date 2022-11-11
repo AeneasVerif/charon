@@ -3,7 +3,7 @@ open Types
 open LlbcAst
 open Utils
 
-(** Check if a {!type:LlbcAst.statement} contains loops *)
+(** Check if a {!type:Charon.LlbcAst.statement} contains loops *)
 let statement_has_loops (st : statement) : bool =
   let obj =
     object
@@ -16,7 +16,7 @@ let statement_has_loops (st : statement) : bool =
     false
   with Found -> true
 
-(** Check if a {!type:LlbcAst.fun_decl} contains loops *)
+(** Check if a {!type:Charon.LlbcAst.fun_decl} contains loops *)
 let fun_decl_has_loops (fd : fun_decl) : bool =
   match fd.body with
   | Some body -> statement_has_loops body.body
