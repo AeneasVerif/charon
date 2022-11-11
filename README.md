@@ -121,9 +121,7 @@ If you run `make`, you will generate a documentation accessible from
 
 To run Charon, you should run the Charon binary from *within* the crate that you
 want to compile (as if you wanted to build the crate with `cargo build`). The
-Charon executable is located in `charon/target/{debug,release}/`; you can for
-instance run `PATH_TO_CHARON/target/debug/charon` (running `make` in the
-repository will by default build Charon in debug mode).
+Charon executable is located at `bin/charon`.
 
 Charon will build the crate and its dependencies, then extract the AST. Charon
 provides various options and flags to tweak its behaviour: you can display a
