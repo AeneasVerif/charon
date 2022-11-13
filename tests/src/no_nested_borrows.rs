@@ -252,6 +252,10 @@ enum NodeElem<T> {
     Nil,
 }
 
+/*
+// TODO: those definitions requires semantic termination (breaks the Coq backend
+// because we don't use fuel in this case).
+
 /// Mutually recursive functions
 fn even(x: u32) -> bool {
     if x == 0 {
@@ -275,6 +279,7 @@ fn test_even_odd() {
     assert!(odd(1));
     assert!(odd(5));
 }
+*/
 
 pub fn list_length<'a, T>(l: &'a List<T>) -> u32 {
     match l {
