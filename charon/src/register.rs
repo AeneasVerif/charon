@@ -18,7 +18,7 @@ use crate::meta::{FileInfo, FileName};
 use crate::names::Name;
 use crate::names::{
     function_def_id_to_name, global_def_id_to_name, hir_item_to_name, module_def_id_to_name,
-    type_def_id_to_name,
+    trait_def_id_to_name, type_def_id_to_name,
 };
 use crate::translate_functions_to_ullbc;
 use hashlink::LinkedHashMap;
@@ -103,6 +103,7 @@ fn get_decl_name(tcx: TyCtxt, kind: DeclKind, id: DefId) -> Name {
         DeclKind::Type => type_def_id_to_name(tcx, id),
         DeclKind::Fun => function_def_id_to_name(tcx, id),
         DeclKind::Global => global_def_id_to_name(tcx, id),
+        DeclKind::Trait => trait_def_id_to_name(tcx, id),
     }
 }
 
@@ -114,6 +115,7 @@ fn is_primitive_decl(kind: DeclKind, id: DefId, name: &Name) -> bool {
         DeclKind::Type => assumed::type_to_used_params(&name).is_some(),
         DeclKind::Fun => assumed::function_to_info(&name).is_some(),
         DeclKind::Global => false,
+        DeclKind::Trait => todo!(),
     }
 }
 
@@ -122,6 +124,7 @@ fn check_decl_generics(kind: DeclKind, tcx: TyCtxt, id: DefId) {
         DeclKind::Type => generics::check_type_generics(tcx, id),
         DeclKind::Fun => generics::check_function_generics(tcx, id),
         DeclKind::Global => generics::check_global_generics(tcx, id),
+        DeclKind::Trait => generics::check_trait_generics(tcx, id),
     }
 }
 

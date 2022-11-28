@@ -6,6 +6,7 @@ use crate::types::TypeDeclId;
 use crate::ullbc_ast as ast;
 use crate::ullbc_ast::FunDeclId;
 use crate::ullbc_ast::GlobalDeclId;
+use crate::ullbc_ast::TraitDeclId;
 use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
 use std::vec::Vec;
@@ -67,6 +68,15 @@ fn add_global_info(
     let info = *src.get(&AnyDeclRid::Global(rid)).unwrap();
     dst.insert(AnyDeclId::Global(id), DeclInfo::new(rid, info));
 }
+fn add_trait_info(
+    src: &HashMap<AnyDeclRid, rd::DeclInfo>,
+    dst: &mut HashMap<AnyDeclId, DeclInfo>,
+    rid: DefId,
+    id: TraitDeclId::Id,
+) {
+    let info = *src.get(&AnyDeclRid::Trait(rid)).unwrap();
+    dst.insert(AnyDeclId::Trait(id), DeclInfo::new(rid, info));
+}
 
 pub struct OrderedDecls {
     /// The ordered files
@@ -82,6 +92,7 @@ pub struct OrderedDecls {
     pub type_rid_to_id: HashMap<DefId, ty::TypeDeclId::Id>,
     pub fun_rid_to_id: HashMap<DefId, ast::FunDeclId::Id>,
     pub global_rid_to_id: HashMap<DefId, ast::GlobalDeclId::Id>,
+    pub trait_rid_to_id: HashMap<DefId, ast::TraitDeclId::Id>,
 }
 
 /// Convert the definition ids used by the rust compiler to our own definition ids.
@@ -94,10 +105,12 @@ pub fn rust_to_local_ids(
     let mut type_rid_to_id: HashMap<DefId, ty::TypeDeclId::Id> = HashMap::new();
     let mut fun_rid_to_id: HashMap<DefId, ast::FunDeclId::Id> = HashMap::new();
     let mut global_rid_to_id: HashMap<DefId, ast::GlobalDeclId::Id> = HashMap::new();
+    let mut trait_rid_to_id: HashMap<DefId, ast::TraitDeclId::Id> = HashMap::new();
 
     let mut type_counter = ty::TypeDeclId::Generator::new();
     let mut fun_counter = ast::FunDeclId::Generator::new();
     let mut global_counter = ast::GlobalDeclId::Generator::new();
+    let mut trait_counter = ast::TraitDeclId::Generator::new();
 
     let mut decls: Vec<DeclarationGroup> = Vec::new();
 
@@ -153,6 +166,22 @@ pub fn rust_to_local_ids(
                 }
                 decls.push(DeclarationGroup::Global(GDeclarationGroup::Rec(ids)));
             }
+            rd::DeclarationGroup::Trait(rd::GDeclarationGroup::NonRec(rid)) => {
+                let id = trait_counter.fresh_id();
+                trait_rid_to_id.insert(*rid, id);
+                add_trait_info(&reordered.decls_info, &mut decls_info, *rid, id);
+                decls.push(DeclarationGroup::Trait(GDeclarationGroup::NonRec(id)));
+            }
+            rd::DeclarationGroup::Trait(rd::GDeclarationGroup::Rec(rids)) => {
+                let mut ids: Vec<ast::TraitDeclId::Id> = Vec::new();
+                for rid in rids {
+                    let id = trait_counter.fresh_id();
+                    trait_rid_to_id.insert(*rid, id);
+                    add_trait_info(&reordered.decls_info, &mut decls_info, *rid, id);
+                    ids.push(id);
+                }
+                decls.push(DeclarationGroup::Trait(GDeclarationGroup::Rec(ids)));
+            }
         }
     }
 
@@ -184,5 +213,6 @@ pub fn rust_to_local_ids(
         type_rid_to_id,
         fun_rid_to_id,
         global_rid_to_id,
+        trait_rid_to_id,
     }
 }

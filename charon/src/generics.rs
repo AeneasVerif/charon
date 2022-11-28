@@ -138,3 +138,9 @@ pub(crate) fn check_global_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
     assert!(tcx.generics_of(def_id).params.is_empty());
     check_generics(tcx, def_id)
 }
+
+/// Check a trait's generics. We currently do not allow any
+pub(crate) fn check_trait_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+  assert!(tcx.generics_of(def_id).params.is_empty());
+  check_generics(tcx, def_id)
+}

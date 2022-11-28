@@ -61,3 +61,4 @@ pub type ItemName = Name;
 pub type FunName = Name;
 pub type GlobalName = Name;
 pub type HirItemName = Name;
+pub type TraitName = Name;

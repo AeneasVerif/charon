@@ -838,8 +838,8 @@ pub fn translate_types(
                     );
                 }
             },
-            DeclarationGroup::Fun(_) | DeclarationGroup::Global(_) => {
-                // Ignore the functions and constants
+            DeclarationGroup::Fun(_) | DeclarationGroup::Global(_) | DeclarationGroup::Trait(_) => {
+                // Ignore the functions, traits, and constants
             }
         }
     }

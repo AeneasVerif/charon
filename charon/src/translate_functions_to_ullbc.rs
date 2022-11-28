@@ -2700,6 +2700,10 @@ pub fn translate_functions(
                     const_defs.push_back(const_def);
                 }
             }
+            DeclarationGroup::Trait(_) => {
+                // Ignore the trait declarations
+                continue;
+            }
             DeclarationGroup::Type(_) => {
                 // Ignore the type declarations
                 continue;

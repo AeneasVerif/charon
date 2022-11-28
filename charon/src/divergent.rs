@@ -85,8 +85,8 @@ pub fn compute_divergent_functions(
                     divergent_map.insert(*id, true);
                 }
             }
-            DeclarationGroup::Type(_) | DeclarationGroup::Global(_) => {
-                // Ignore the type and global declarations
+            DeclarationGroup::Type(_) | DeclarationGroup::Global(_) | DeclarationGroup::Trait(_) => {
+                // Ignore the type, trait, and global declarations
                 continue;
             }
         }
