@@ -7,8 +7,8 @@ trait Animal {
     fn my_id(&self) -> u32;
 
     // Traits can provide default method definitions.
-    fn talk(&self) {
-        println!("I am {}", self.my_id());
+    fn talk(&self) -> u32 {
+      return 23; 
     }
 }
 
@@ -17,14 +17,14 @@ impl Sheep {
         self.naked
     }
 
-    fn shear(&mut self) {
+    fn shear(&mut self) -> u32 {
         if self.is_naked() {
             // Implementor methods can use the implementor's trait methods.
-            println!("{} is already naked...", self.my_id());
+            self.my_id()
         } else {
-            println!("{} gets a haircut!", self.my_id());
-
             self.naked = true;
+            self.my_id() + 1
+
         }
     }
 }
@@ -41,9 +41,9 @@ impl Animal for Sheep {
     }
 
     // Default trait methods can be overridden.
-    fn talk(&self) {
+    fn talk(&self) -> u32 {
         // For example, we can add some quiet contemplation.
-        println!("{} pauses briefly...", self.id);
+        12
     }
 }
 
