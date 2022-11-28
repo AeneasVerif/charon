@@ -14,10 +14,10 @@ pub type GDeclarationGroup<Id> = rd::GDeclarationGroup<Id>;
 pub type TypeDeclarationGroup = rd::GDeclarationGroup<ty::TypeDeclId::Id>;
 pub type FunDeclarationGroup = rd::GDeclarationGroup<ast::FunDeclId::Id>;
 pub type DeclarationGroup =
-    rd::DeclarationGroup<ty::TypeDeclId::Id, ast::FunDeclId::Id, ast::GlobalDeclId::Id>;
+    rd::DeclarationGroup<ty::TypeDeclId::Id, ast::FunDeclId::Id, ast::GlobalDeclId::Id, ast::TraitDeclId::Id>;
 
-pub type AnyDeclRid = rd::AnyDeclId<DefId, DefId, DefId>;
-pub type AnyDeclId = rd::AnyDeclId<ty::TypeDeclId::Id, ast::FunDeclId::Id, ast::GlobalDeclId::Id>;
+pub type AnyDeclRid = rd::AnyDeclId<DefId, DefId, DefId, DefId>;
+pub type AnyDeclId = rd::AnyDeclId<ty::TypeDeclId::Id, ast::FunDeclId::Id, ast::GlobalDeclId::Id, ast::TraitDeclId::Id>;
 
 #[derive(Clone, Copy)]
 /// Information common to any top-level declaration.
@@ -87,7 +87,7 @@ pub struct OrderedDecls {
 /// Convert the definition ids used by the rust compiler to our own definition ids.
 pub fn rust_to_local_ids(
     files_info: &HashMap<FileName, FileInfo>,
-    reordered: &rd::DeclarationsGroups<DefId, DefId, DefId>,
+    reordered: &rd::DeclarationsGroups<DefId, DefId, DefId, DefId>,
 ) -> OrderedDecls {
     let mut decls_info = HashMap::new();
 

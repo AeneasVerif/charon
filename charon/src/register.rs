@@ -60,6 +60,7 @@ pub enum DeclKind {
     Type,
     Fun,
     Global,
+    Trait,
 }
 
 pub type DeclDependencies = LinkedHashSet<DefId>;

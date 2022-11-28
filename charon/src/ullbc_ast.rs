@@ -19,6 +19,9 @@ use serde::Serialize;
 // TODO: move this definition
 pub static TAB_INCR: &'static str = "    ";
 
+// An identifier for trait declarations
+generate_index_type!(TraitDeclId);
+
 generate_index_type!(FunDeclId);
 
 // Block identifier. Similar to rust's `BasicBlock`.
