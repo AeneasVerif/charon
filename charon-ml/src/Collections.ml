@@ -257,6 +257,9 @@ module type InjMap = sig
   type elem
   type t
 
+  module Map : Map with type key = key
+  module Set : Set with type elt = elem
+
   val empty : t
   val is_empty : t -> bool
   val mem : key -> t -> bool
@@ -273,6 +276,7 @@ module type InjMap = sig
   val partition : (key -> elem -> bool) -> t -> t * t
   val cardinal : t -> int
   val bindings : t -> (key * elem) list
+  val elements : t -> Set.t
   val min_binding : t -> key * elem
   val min_binding_opt : t -> (key * elem) option
   val max_binding : t -> key * elem
@@ -281,6 +285,7 @@ module type InjMap = sig
   val choose_opt : t -> (key * elem) option
   val split : key -> t -> t * elem option * t
   val find : key -> t -> elem
+  val find_with_default : key -> elem -> t -> elem
   val find_opt : key -> t -> elem option
   val find_first : (key -> bool) -> t -> key * elem
   val find_first_opt : (key -> bool) -> t -> (key * elem) option
@@ -352,6 +357,7 @@ module MakeInjMap (Key : OrderedType) (Elem : OrderedType) :
 
   let cardinal m = Map.cardinal m.map
   let bindings m = Map.bindings m.map
+  let elements m = m.elems
   let min_binding m = Map.min_binding m.map
   let min_binding_opt m = Map.min_binding_opt m.map
   let max_binding m = Map.max_binding m.map
@@ -366,6 +372,10 @@ module MakeInjMap (Key : OrderedType) (Elem : OrderedType) :
     (l, data, r)
 
   let find k m = Map.find k m.map
+
+  let find_with_default k v m =
+    match Map.find_opt k m.map with None -> v | Some v -> v
+
   let find_opt k m = Map.find_opt k m.map
   let find_first k m = Map.find_first k m.map
   let find_first_opt k m = Map.find_first_opt k m.map

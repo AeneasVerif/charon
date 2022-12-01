@@ -19,6 +19,9 @@ module type Id = sig
   val mk_stateful_generator : generator -> generator ref * (unit -> id)
   val incr : id -> id
 
+  (** This function returns the current value of the counter, without incrementing it *)
+  val get_counter_value : generator -> id
+
   (* TODO: this should be stateful! - but we may want to be able to duplicate
      contexts...
      Maybe we could have a [fresh] and a [global_fresh]
@@ -58,6 +61,7 @@ module type Id = sig
   module Ord : C.OrderedType with type t = id
   module Set : C.Set with type elt = id
   module Map : C.Map with type key = id
+  module InjSubst : C.InjMap with type key = id and type elem = id
 end
 
 (** Generative functor for identifiers.
@@ -89,6 +93,7 @@ module IdGen () : Id = struct
     in
     (g, fresh)
 
+  let get_counter_value gen = gen
   let fresh_stateful_generator () = mk_stateful_generator 0
   let fresh gen = (gen, incr gen)
   let to_string = string_of_int
@@ -134,4 +139,5 @@ module IdGen () : Id = struct
 
   module Set = C.MakeSet (Ord)
   module Map = C.MakeMap (Ord)
+  module InjSubst = C.MakeInjMap (Ord) (Ord)
 end
