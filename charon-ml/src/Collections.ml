@@ -26,13 +26,13 @@ module List = struct
 
   (** Take a slice of a list.
 
-      The slice includes [n] elements starting at [i].
+      The slice includes the  elements from [i] to [j] ([j]th element excluded).
 
       Raise [Failure] if the list is too short..
   *)
-  let subslice (ls : 'a list) (i : int) (n : int) =
+  let subslice (ls : 'a list) (i : int) (j : int) =
     let _, ls = split_at ls i in
-    let ls, _ = split_at ls n in
+    let ls, _ = split_at ls (j - i) in
     ls
 
   (** Pop the last element of a list
@@ -112,8 +112,21 @@ module OrderedString : OrderedType with type t = string = struct
   let show_t s = s
 end
 
+(** Ordered Int *)
+module OrderedInt : OrderedType with type t = int = struct
+  type t = int
+
+  let compare x y = x - y
+  let to_string x = string_of_int x
+  let pp_t fmt x = Format.pp_print_string fmt (to_string x)
+  let show_t x = to_string x
+end
+
 module type Map = sig
   include Map.S
+
+  (** Add a binding in the map, failing if the binding already exists *)
+  val add_strict : key -> 'a -> 'a t -> 'a t
 
   val add_list : (key * 'a) list -> 'a t -> 'a t
   val of_list : (key * 'a) list -> 'a t
@@ -130,11 +143,32 @@ module type Map = sig
 
   val pp : (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a t -> unit
   val show : ('a -> string) -> 'a t -> string
+
+  (** Generate a stateful map.
+
+      Returns:
+      - a reference to an empty map
+      - a stateful "add" function
+      - a stateful "mem" function
+      - a stateful "find" function
+      - a stateful "find_opt" function
+   *)
+  val mk_stateful_map :
+    unit ->
+    'a t ref
+    * (key -> 'a -> unit)
+    * (key -> bool)
+    * (key -> 'a)
+    * (key -> 'a option)
 end
 
 module MakeMap (Ord : OrderedType) : Map with type key = Ord.t = struct
   module Map = Map.Make (Ord)
   include Map
+
+  let add_strict k v m =
+    assert (not (mem k m));
+    add k v m
 
   let add_list bl m = List.fold_left (fun s (key, e) -> add key e s) m bl
   let of_list bl = add_list bl empty
@@ -175,6 +209,14 @@ module MakeMap (Ord : OrderedType) : Map with type key = Ord.t = struct
     pp_string "}"
 
   let show show_a m = to_string None show_a m
+
+  let mk_stateful_map () =
+    let m = ref empty in
+    let add k e = m := add k e !m in
+    let mem k = mem k !m in
+    let find k = find k !m in
+    let find_opt k = find_opt k !m in
+    (m, add, mem, find, find_opt)
 end
 
 module type Set = sig
@@ -182,6 +224,12 @@ module type Set = sig
 
   val add_list : elt list -> t -> t
   val of_list : elt list -> t
+
+  (** Return [true] iff all the sets of the list are pairwise disjoint *)
+  val pairwise_disjoint : t list -> bool
+
+  (** Return the union of a list of sets *)
+  val unionl : t list -> t
 
   (** "Simple" pretty printing function.
   
@@ -195,7 +243,18 @@ module type Set = sig
 
   val pp : Format.formatter -> t -> unit
   val show : t -> string
+
+  (** Return [true] iff all the elements of a list are pairwise distinct *)
   val pairwise_distinct : elt list -> bool
+
+  (** Generate a stateful set.
+
+      Returns:
+      - a reference to an empty set
+      - a stateful "add" function
+      - a stateful "mem" function
+   *)
+  val mk_stateful_set : unit -> t ref * (elt -> unit) * (elt -> bool)
 end
 
 module MakeSet (Ord : OrderedType) : Set with type elt = Ord.t = struct
@@ -204,6 +263,17 @@ module MakeSet (Ord : OrderedType) : Set with type elt = Ord.t = struct
 
   let add_list bl s = List.fold_left (fun s e -> add e s) s bl
   let of_list bl = add_list bl empty
+
+  let pairwise_disjoint ls =
+    let acc = ref empty in
+    List.for_all
+      (fun s ->
+        let b = disjoint !acc s in
+        acc := union !acc s;
+        b)
+      ls
+
+  let unionl ls = List.fold_left (fun s0 s1 -> union s0 s1) empty ls
 
   let to_string indent_opt m =
     let indent, break =
@@ -243,6 +313,12 @@ module MakeSet (Ord : OrderedType) : Set with type elt = Ord.t = struct
             check ls')
     in
     check ls
+
+  let mk_stateful_set () =
+    let s = ref empty in
+    let add e = s := add e !s in
+    let mem e = mem e !s in
+    (s, add, mem)
 end
 
 (** A map where the bindings are injective (i.e., if two keys are distinct,
@@ -297,6 +373,27 @@ module type InjMap = sig
   val of_seq : (key * elem) Seq.t -> t
   val add_list : (key * elem) list -> t -> t
   val of_list : (key * elem) list -> t
+  val to_string : string option -> t -> string
+  val pp : Format.formatter -> t -> unit
+  val pp_t : Format.formatter -> t -> unit
+  val show_t : t -> string
+
+  (** Generate a stateful map.
+
+      Returns:
+      - a reference to an empty map
+      - a stateful "add" function
+      - a stateful "mem" function
+      - a stateful "find" function
+      - a stateful "find_opt" function
+   *)
+  val mk_stateful_map :
+    unit ->
+    t ref
+    * (key -> elem -> unit)
+    * (key -> bool)
+    * (key -> elem)
+    * (key -> elem option)
 end
 
 (** See {!InjMap} *)
@@ -396,4 +493,16 @@ module MakeInjMap (Key : OrderedType) (Elem : OrderedType) :
   let of_seq s = add_seq s empty
   let add_list ls m = List.fold_left (fun m (key, elem) -> add key elem m) m ls
   let of_list ls = add_list ls empty
+  let to_string indent_opt m = Map.to_string indent_opt Elem.to_string m.map
+  let pp_t (fmt : Format.formatter) (m : t) : unit = Map.pp Elem.pp_t fmt m.map
+  let pp = pp_t
+  let show_t m = Map.show Elem.show_t m.map
+
+  let mk_stateful_map () =
+    let m = ref empty in
+    let add k e = m := add k e !m in
+    let mem k = mem k !m in
+    let find k = find k !m in
+    let find_opt k = find_opt k !m in
+    (m, add, mem, find, find_opt)
 end
