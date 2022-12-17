@@ -8,6 +8,8 @@ open PrintUtils
 module PT = PrintTypes
 module PPV = PrintPrimitiveValues
 
+let var_id_to_string (id : E.VarId.id) : string = "v@" ^ E.VarId.to_string id
+
 type expr_formatter = {
   rvar_to_string : T.RegionVarId.id -> string;
   r_to_string : T.RegionId.id -> string;

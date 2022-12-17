@@ -22,7 +22,7 @@ cargo-tests: build
 .PHONY: charon-tests
 charon-tests: \
 	test-nested_borrows test-no_nested_borrows \
-	test-loops test-hashmap \
+	test-loops test-loops_cfg test-hashmap \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
 	test-constants
@@ -30,6 +30,7 @@ charon-tests: \
 test-nested_borrows: OPTIONS += --no-code-duplication
 test-no_nested_borrows: OPTIONS += --no-code-duplication
 test-loops: OPTIONS += --no-code-duplication
+test-loops_cfg: OPTIONS += --no-code-duplication
 # test-hashmap: OPTIONS += --no-code-duplication
 # test-hashmap_main: OPTIONS += --no-code-duplication
 test-hashmap_main: OPTIONS += --opaque=hashmap_utils

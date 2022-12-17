@@ -6,6 +6,9 @@ module E = Expressions
 module A = LlbcAst
 open PrintUtils
 
+let type_var_id_to_string (id : T.TypeVarId.id) : string =
+  "T@" ^ T.TypeVarId.to_string id
+
 let type_var_to_string (tv : T.type_var) : string = tv.name
 
 let region_var_to_string (rv : T.region_var) : string =
