@@ -690,6 +690,19 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
             },
         ));
 
+        trace!(
+            "Loop {}: possible exits:\n{}",
+            loop_id,
+            loop_exits
+                .iter()
+                .map(|(bid, occs, dsum)| format!(
+                    "{} -> {{ occurrences: {}, dist_sum: {} }}",
+                    bid, occs, dsum
+                ))
+                .collect::<Vec<String>>()
+                .join("\n")
+        );
+
         // Second: actually select the proper candidate.
         // We select the first one with the highest number of occurrences (we
         // take care of listing the exit candidates in a deterministic order).
@@ -711,14 +724,41 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
             .filter(|(_, occs, dsum)| *occs == best_occurrences && *dsum == best_dist_sum)
             .count();
 
-        // Sanity check: there are no two different candidates with exactly the
-        // same number of occurrences and dist sum if the number of occurrences
-        // is 1.
-        if best_occurrences > 1 {
-            assert!(best_occurrences <= 1 || num_possible_candidates <= 1);
-        }
+        // There used to be a sanity check to ensure there are no two different
+        // candidates with exactly the same number of occurrences and dist sum
+        // if the number of occurrences is > 1.
+        //
+        // We removed it because it does happen, for instance here (the match
+        // introduces an `unreachable` node, and it has the same number of
+        // occurrences and the same distance to the loop entry as the `panic`
+        // node):
+        //
+        // ```
+        // pub fn list_nth_mut_loop_pair<'a, 'b, T>(
+        //     mut ls0: &'a mut List<T>,
+        //     mut ls1: &'b mut List<T>,
+        //     mut i: u32,
+        // ) -> (&'a mut T, &'b mut T) {
+        //     loop {
+        //         match (ls0, ls1) {
+        //             (List::Nil, _) | (_, List::Nil) => {
+        //                 panic!()
+        //             }
+        //             (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
+        //                 if i == 0 {
+        //                     return (x0, x1);
+        //                 } else {
+        //                     ls0 = tl0;
+        //                     ls1 = tl1;
+        //                     i -= 1;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // ```
 
-        // If the best number of occurrences is 1 and there are several candidates,
+        // If there are several best candidates,
         // it is actually better not to choose any.
         //
         // Example:
@@ -727,20 +767,21 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         // loop {
         //     match ls {
         //         List::Nil => {
-        //             panic!() // One occurrence
+        //             panic!() // <-- best candidate
         //         }
         //         List::Cons(x, tl) => {
         //             if i == 0 {
-        //                 return x; // One occurrence
+        //                 return x;
         //             } else {
         //                 ls = tl;
         //                 i -= 1;
         //             }
         //         }
+        //         // <-- best candidate (Rustc introduces an `unrechable` case)
         //     }
         // }
         // ```
-        if best_occurrences == 1 && num_possible_candidates > 1 {
+        if num_possible_candidates > 1 {
             // We choose not to select an exit
             chosen_loop_exits.insert(loop_id, None);
         } else {
