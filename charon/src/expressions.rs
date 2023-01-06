@@ -175,6 +175,8 @@ pub enum OperandConstantValue {
     StaticId(GlobalDeclId::Id),
 }
 
+/// TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
+/// We can also factor out the unops, binops with the function calls.
 #[derive(Debug, Clone, Serialize, EnumToGetters, EnumIsA)]
 pub enum Rvalue {
     Use(Operand),
