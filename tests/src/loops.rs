@@ -47,47 +47,93 @@ fn sum_with_shared_borrows(max: u32) -> u32 {
     s
 }
 
+/// This case is interesting, because the fixed point for the loop doesn't
+/// introduce new abstractions.
+fn clear(v: &mut Vec<u32>) {
+    let mut i = 0;
+    while i < v.len() {
+        v[i] = 0;
+        i += 1;
+    }
+}
+
 pub enum List<T> {
     Cons(T, Box<List<T>>),
     Nil,
 }
 
-/// Same as [list_nth_mut] but with a loop
-pub fn list_nth_mut_loop<T>(mut ls: &mut List<T>, mut i: u32) -> &mut T {
-    loop {
-        match ls {
-            List::Nil => {
-                panic!()
-            }
-            List::Cons(x, tl) => {
-                if i == 0 {
-                    return x;
-                } else {
-                    ls = tl;
-                    i -= 1;
-                }
-            }
+/// The parameter `x` is a borrow on purpose
+pub fn list_mem(x: &u32, mut ls: &List<u32>) -> bool {
+    while let List::Cons(y, tl) = ls {
+        if *y == *x {
+            return true;
+        } else {
+            ls = tl;
         }
     }
+    false
+}
+
+/// Same as [list_nth_mut] but with a loop
+pub fn list_nth_mut_loop<T>(mut ls: &mut List<T>, mut i: u32) -> &mut T {
+    while let List::Cons(x, tl) = ls {
+        if i == 0 {
+            return x;
+        } else {
+            ls = tl;
+            i -= 1;
+        }
+    }
+    panic!()
 }
 
 /// Same as [list_nth_mut_loop] but with shared borrows
 pub fn list_nth_shared_loop<T>(mut ls: &List<T>, mut i: u32) -> &T {
-    loop {
-        match ls {
-            List::Nil => {
-                panic!()
-            }
-            List::Cons(x, tl) => {
-                if i == 0 {
-                    return x;
-                } else {
-                    ls = tl;
-                    i -= 1;
-                }
-            }
+    while let List::Cons(x, tl) = ls {
+        if i == 0 {
+            return x;
+        } else {
+            ls = tl;
+            i -= 1;
         }
     }
+    panic!()
+}
+
+pub fn id_mut<T>(ls: &mut List<T>) -> &mut List<T> {
+    ls
+}
+
+pub fn id_shared<T>(ls: &List<T>) -> &List<T> {
+    ls
+}
+
+/// Small variation of [list_nth_mut_loop]
+pub fn list_nth_mut_loop_with_id<T>(ls: &mut List<T>, mut i: u32) -> &mut T {
+    let mut ls = id_mut(ls);
+    while let List::Cons(x, tl) = ls {
+        if i == 0 {
+            return x;
+        } else {
+            ls = tl;
+            i -= 1;
+        }
+    }
+    panic!()
+}
+
+/// Small variation of [list_nth_shared_loop]
+pub fn list_nth_shared_loop_with_id<T>(ls: &List<T>, mut i: u32) -> &T {
+    let mut ls = id_shared(ls);
+    while let List::Cons(x, tl) = ls {
+        if i == 0 {
+            return x;
+        } else {
+            ls = tl;
+            i -= 1;
+        }
+    }
+    panic!()
 }
 
 /// Same as [list_nth_mut] but on a pair of lists.
@@ -147,22 +193,16 @@ pub fn list_nth_mut_loop_pair_merge<'a, T>(
     mut ls1: &'a mut List<T>,
     mut i: u32,
 ) -> (&'a mut T, &'a mut T) {
-    loop {
-        match (ls0, ls1) {
-            (List::Nil, _) | (_, List::Nil) => {
-                panic!()
-            }
-            (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
-                if i == 0 {
-                    return (x0, x1);
-                } else {
-                    ls0 = tl0;
-                    ls1 = tl1;
-                    i -= 1;
-                }
-            }
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
         }
     }
+    panic!()
 }
 
 /// Same as [list_nth_mut_loop_pair_merge] but with shared borrows.
@@ -171,22 +211,16 @@ pub fn list_nth_shared_loop_pair_merge<'a, T>(
     mut ls1: &'a List<T>,
     mut i: u32,
 ) -> (&'a T, &'a T) {
-    loop {
-        match (ls0, ls1) {
-            (List::Nil, _) | (_, List::Nil) => {
-                panic!()
-            }
-            (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
-                if i == 0 {
-                    return (x0, x1);
-                } else {
-                    ls0 = tl0;
-                    ls1 = tl1;
-                    i -= 1;
-                }
-            }
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
         }
     }
+    panic!()
 }
 
 /// Mixing mutable and shared borrows.
@@ -195,22 +229,16 @@ pub fn list_nth_mut_shared_loop_pair<'a, 'b, T>(
     mut ls1: &'b List<T>,
     mut i: u32,
 ) -> (&'a mut T, &'b T) {
-    loop {
-        match (ls0, ls1) {
-            (List::Nil, _) | (_, List::Nil) => {
-                panic!()
-            }
-            (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
-                if i == 0 {
-                    return (x0, x1);
-                } else {
-                    ls0 = tl0;
-                    ls1 = tl1;
-                    i -= 1;
-                }
-            }
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
         }
     }
+    panic!()
 }
 
 /// Same as [list_nth_mut_shared_loop_pair] but this time we force the two loop
@@ -220,22 +248,16 @@ pub fn list_nth_mut_shared_loop_pair_merge<'a, T>(
     mut ls1: &'a List<T>,
     mut i: u32,
 ) -> (&'a mut T, &'a T) {
-    loop {
-        match (ls0, ls1) {
-            (List::Nil, _) | (_, List::Nil) => {
-                panic!()
-            }
-            (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
-                if i == 0 {
-                    return (x0, x1);
-                } else {
-                    ls0 = tl0;
-                    ls1 = tl1;
-                    i -= 1;
-                }
-            }
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
         }
     }
+    panic!()
 }
 
 /// Same as [list_nth_mut_shared_loop_pair], but we switched the positions of
@@ -245,22 +267,16 @@ pub fn list_nth_shared_mut_loop_pair<'a, 'b, T>(
     mut ls1: &'b mut List<T>,
     mut i: u32,
 ) -> (&'a T, &'b mut T) {
-    loop {
-        match (ls0, ls1) {
-            (List::Nil, _) | (_, List::Nil) => {
-                panic!()
-            }
-            (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
-                if i == 0 {
-                    return (x0, x1);
-                } else {
-                    ls0 = tl0;
-                    ls1 = tl1;
-                    i -= 1;
-                }
-            }
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
         }
     }
+    panic!()
 }
 
 /// Same as [list_nth_mut_shared_loop_pair_merge], but we switch the positions of
@@ -270,20 +286,14 @@ pub fn list_nth_shared_mut_loop_pair_merge<'a, T>(
     mut ls1: &'a mut List<T>,
     mut i: u32,
 ) -> (&'a T, &'a mut T) {
-    loop {
-        match (ls0, ls1) {
-            (List::Nil, _) | (_, List::Nil) => {
-                panic!()
-            }
-            (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
-                if i == 0 {
-                    return (x0, x1);
-                } else {
-                    ls0 = tl0;
-                    ls1 = tl1;
-                    i -= 1;
-                }
-            }
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
         }
     }
+    panic!()
 }
