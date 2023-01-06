@@ -48,13 +48,12 @@ pub struct HashMap<T> {
 impl<T> HashMap<T> {
     /// Allocate a vector of slots of a given size.
     /// We would need a loop, but can't use loops for now...
-    fn allocate_slots(mut slots: Vec<List<T>>, n: usize) -> Vec<List<T>> {
-        if n == 0 {
-            slots
-        } else {
+    fn allocate_slots(mut slots: Vec<List<T>>, mut n: usize) -> Vec<List<T>> {
+        while n > 0 {
             slots.push(List::Nil);
-            HashMap::allocate_slots(slots, n - 1)
+            n -= 1;
         }
+        slots
     }
 
     /// Create a new table, with a given capacity
@@ -79,16 +78,17 @@ impl<T> HashMap<T> {
         HashMap::new_with_capacity(32, 4, 5)
     }
 
-    fn clear_slots(slots: &mut Vec<List<T>>, i: usize) {
-        if i < slots.len() {
+    fn clear_slots(slots: &mut Vec<List<T>>) {
+        let mut i = 0;
+        while i < slots.len() {
             slots[i] = List::Nil;
-            HashMap::clear_slots(slots, i + 1)
+            i += 1;
         }
     }
 
     pub fn clear(&mut self) {
         self.num_entries = 0;
-        HashMap::clear_slots(&mut self.slots, 0);
+        HashMap::clear_slots(&mut self.slots);
     }
 
     pub fn len(&self) -> usize {
@@ -98,25 +98,27 @@ impl<T> HashMap<T> {
     /// Insert in a list.
     /// Return `true` if we inserted an element, `false` if we simply updated
     /// a value.
-    fn insert_in_list<'a>(key: Key, value: T, ls: &'a mut List<T>) -> bool {
-        match ls {
-            List::Nil => {
-                *ls = List::Cons(key, value, Box::new(List::Nil));
-                true
-            }
-            List::Cons(ckey, cvalue, ls) => {
-                if *ckey == key {
-                    *cvalue = value;
-                    false
-                } else {
-                    HashMap::insert_in_list(key, value, ls)
+    fn insert_in_list(key: Key, value: T, mut ls: &mut List<T>) -> bool {
+        loop {
+            match ls {
+                List::Nil => {
+                    *ls = List::Cons(key, value, Box::new(List::Nil));
+                    return true;
+                }
+                List::Cons(ckey, cvalue, tl) => {
+                    if *ckey == key {
+                        *cvalue = value;
+                        return false;
+                    } else {
+                        ls = tl;
+                    }
                 }
             }
         }
     }
 
     /// Auxiliary function to insert in the hashmap without triggering a resize
-    fn insert_no_resize<'a>(&'a mut self, key: Key, value: T) {
+    fn insert_no_resize(&mut self, key: Key, value: T) {
         let hash = hash_key(&key);
         let hash_mod = hash % self.slots.len();
         // We may want to use slots[...] instead of get_mut...
@@ -128,7 +130,7 @@ impl<T> HashMap<T> {
 
     /// Insertion function.
     /// May trigger a resize of the hash table.
-    pub fn insert<'a>(&'a mut self, key: Key, value: T) {
+    pub fn insert(&mut self, key: Key, value: T) {
         // Insert
         self.insert_no_resize(key, value);
         // Resize if necessary
@@ -139,7 +141,7 @@ impl<T> HashMap<T> {
 
     /// The resize function, called if we need to resize the table after
     /// an insertion.
-    fn try_resize<'a>(&'a mut self) {
+    fn try_resize(&mut self) {
         // Check that we can resize: we need to check that there are no overflows.
         // Note that we are conservative about the usize::MAX.
         // Also note that `as usize` is a trait, but we apply it to a constant
@@ -170,27 +172,29 @@ impl<T> HashMap<T> {
 
     /// Auxiliary function called by [try_resize] to move all the elements
     /// from the table to a new table
-    fn move_elements<'a>(ntable: &'a mut HashMap<T>, slots: &'a mut Vec<List<T>>, i: usize) {
-        if i < slots.len() {
+    fn move_elements<'a>(ntable: &'a mut HashMap<T>, slots: &'a mut Vec<List<T>>, mut i: usize) {
+        while i < slots.len() {
             // Move the elements out of the slot i
             let ls = std::mem::replace(&mut slots[i], List::Nil);
             // Move all those elements to the new table
             HashMap::move_elements_from_list(ntable, ls);
             // Do the same for slot i+1
-            HashMap::move_elements(ntable, slots, i + 1);
+            i += 1;
         }
     }
 
     /// Auxiliary function.
-    fn move_elements_from_list<'a>(ntable: &'a mut HashMap<T>, ls: List<T>) {
+    fn move_elements_from_list(ntable: &mut HashMap<T>, mut ls: List<T>) {
         // As long as there are elements in the list, move them
-        match ls {
-            List::Nil => (), // We're done
-            List::Cons(k, v, tl) => {
-                // Insert the element in the new table
-                ntable.insert_no_resize(k, v);
-                // Move the elements out of the tail
-                HashMap::move_elements_from_list(ntable, *tl);
+        loop {
+            match ls {
+                List::Nil => return, // We're done
+                List::Cons(k, v, tl) => {
+                    // Insert the element in the new table
+                    ntable.insert_no_resize(k, v);
+                    // Move the elements out of the tail
+                    ls = *tl;
+                }
             }
         }
     }
@@ -203,14 +207,16 @@ impl<T> HashMap<T> {
     }
 
     /// Returns `true` if the list contains a value for the specified key.
-    pub fn contains_key_in_list(key: &Key, ls: &List<T>) -> bool {
-        match ls {
-            List::Nil => false,
-            List::Cons(ckey, _, ls) => {
-                if *ckey == *key {
-                    true
-                } else {
-                    HashMap::contains_key_in_list(key, ls)
+    pub fn contains_key_in_list(key: &Key, mut ls: &List<T>) -> bool {
+        loop {
+            match ls {
+                List::Nil => return false,
+                List::Cons(ckey, _, tl) => {
+                    if *ckey == *key {
+                        return true;
+                    } else {
+                        ls = tl;
+                    }
                 }
             }
         }
@@ -219,14 +225,16 @@ impl<T> HashMap<T> {
     /// We don't support borrows inside of enumerations for now, so we
     /// can't return an option...
     /// TODO: add support for that
-    fn get_in_list<'a, 'k>(key: &'k Key, ls: &'a List<T>) -> &'a T {
-        match ls {
-            List::Nil => panic!(),
-            List::Cons(ckey, cvalue, ls) => {
-                if *ckey == *key {
-                    cvalue
-                } else {
-                    HashMap::get_in_list(key, ls)
+    fn get_in_list<'a, 'k>(key: &'k Key, mut ls: &'a List<T>) -> &'a T {
+        loop {
+            match ls {
+                List::Nil => panic!(),
+                List::Cons(ckey, cvalue, tl) => {
+                    if *ckey == *key {
+                        return cvalue;
+                    } else {
+                        ls = tl;
+                    }
                 }
             }
         }
@@ -238,34 +246,33 @@ impl<T> HashMap<T> {
         HashMap::get_in_list(key, &self.slots[hash_mod])
     }
 
-    /// Same remark as for [get_in_list]
-    fn get_mut_in_list<'a, 'k>(key: &'k Key, ls: &'a mut List<T>) -> &'a mut T {
-        match ls {
-            List::Nil => panic!(),
-            List::Cons(ckey, cvalue, ls) => {
-                if *ckey == *key {
-                    cvalue
-                } else {
-                    HashMap::get_mut_in_list(key, ls)
-                }
+    pub fn get_mut_in_list<'a, 'k>(mut ls: &'a mut List<T>, key: &'k Key) -> &'a mut T {
+        while let List::Cons(ckey, cvalue, tl) = ls {
+            if *ckey == *key {
+                return cvalue;
+            } else {
+                ls = tl;
             }
         }
+        panic!()
     }
 
     /// Same remark as for [get].
     pub fn get_mut<'a, 'k>(&'a mut self, key: &'k Key) -> &'a mut T {
         let hash = hash_key(key);
         let hash_mod = hash % self.slots.len();
-        HashMap::get_mut_in_list(key, &mut self.slots[hash_mod])
+        HashMap::get_mut_in_list(&mut self.slots[hash_mod], key)
     }
 
     /// Remove an element from the list.
     /// Return the removed element.
-    fn remove_from_list<'a>(key: &Key, ls: &'a mut List<T>) -> Option<T> {
-        match ls {
-            List::Nil => None,
-            List::Cons(ckey, _, tl) => {
-                if *ckey == *key {
+    fn remove_from_list(key: &Key, mut ls: &mut List<T>) -> Option<T> {
+        loop {
+            match ls {
+                List::Nil => return None,
+                // We have to use a guard and split the Cons case into two
+                // branches, otherwise the borrow checker is not happy.
+                List::Cons(ckey, _, _) if *ckey == *key => {
                     // We have to move under borrows, so we need to use
                     // [std::mem::replace] in several steps.
                     // Retrieve the tail
@@ -275,21 +282,23 @@ impl<T> HashMap<T> {
                         List::Cons(_, cvalue, tl) => {
                             // Make the list equal to its tail
                             *ls = *tl;
-                            // Returned the dropped value
-                            Some(cvalue)
+                            // Return the dropped value
+                            return Some(cvalue);
                         }
                     }
-                } else {
-                    HashMap::remove_from_list(key, tl)
+                }
+                List::Cons(_, _, tl) => {
+                    ls = tl;
                 }
             }
         }
     }
 
     /// Same remark as for [get].
-    pub fn remove<'a>(&'a mut self, key: &Key) -> Option<T> {
+    pub fn remove(&mut self, key: &Key) -> Option<T> {
         let hash = hash_key(key);
         let hash_mod = hash % self.slots.len();
+
         let x = HashMap::remove_from_list(key, &mut self.slots[hash_mod]);
         match x {
             Option::None => Option::None,
