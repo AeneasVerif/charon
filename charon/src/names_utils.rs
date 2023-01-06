@@ -17,12 +17,8 @@ impl PathElem {
     // On the other hand I'm not fond of overloading...
     fn equals_ident(&self, id: &str) -> bool {
         match self {
-            PathElem::Ident(s) => {
-                return s == id;
-            }
-            PathElem::Disambiguator(_) => {
-                return false;
-            }
+            PathElem::Ident(s) => s == id,
+            PathElem::Disambiguator(_) => false,
         }
     }
 }
@@ -43,7 +39,7 @@ impl std::fmt::Display for PathElem {
 impl Name {
     pub fn from(name: Vec<String>) -> Name {
         Name {
-            name: name.into_iter().map(|s| PathElem::Ident(s)).collect(),
+            name: name.into_iter().map(PathElem::Ident).collect(),
         }
     }
 
@@ -64,11 +60,11 @@ impl Name {
         }
 
         for i in 0..ref_name.len() {
-            if !name[i].equals_ident(&ref_name[i]) {
+            if !name[i].equals_ident(ref_name[i]) {
                 return false;
             }
         }
-        return true;
+        true
     }
 
     /// Compare the name to a constant array.

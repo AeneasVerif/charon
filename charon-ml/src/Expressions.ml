@@ -29,7 +29,7 @@ type projection_elem =
 
 type projection = projection_elem list [@@deriving show]
 type place = { var_id : VarId.id; projection : projection } [@@deriving show]
-type borrow_kind = Shared | Mut | TwoPhaseMut [@@deriving show]
+type borrow_kind = Shared | Mut | TwoPhaseMut | Shallow [@@deriving show]
 
 type unop =
   | Not

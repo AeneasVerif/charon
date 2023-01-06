@@ -1139,7 +1139,7 @@ fn translate_borrow_kind(borrow_kind: mir::BorrowKind) -> e::BorrowKind {
             unimplemented!();
         }
         mir::BorrowKind::Shallow => {
-            unimplemented!();
+            return e::BorrowKind::Shallow;
         }
     }
 }
