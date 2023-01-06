@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::vec::Vec;
+
 /// No borrows
 fn sum(max: u32) -> u32 {
     let mut i = 0;
@@ -98,6 +100,38 @@ pub fn list_nth_shared_loop<T>(mut ls: &List<T>, mut i: u32) -> &T {
         }
     }
     panic!()
+}
+
+pub fn get_elem_mut(slots: &mut Vec<List<usize>>, x: usize) -> &mut usize {
+    let mut ls = &mut slots[0];
+    loop {
+        match ls {
+            List::Nil => panic!(),
+            List::Cons(y, tl) => {
+                if *y == x {
+                    return y;
+                } else {
+                    ls = tl;
+                }
+            }
+        }
+    }
+}
+
+pub fn get_elem_shared(slots: &Vec<List<usize>>, x: usize) -> &usize {
+    let mut ls = &slots[0];
+    loop {
+        match ls {
+            List::Nil => panic!(),
+            List::Cons(y, tl) => {
+                if *y == x {
+                    return y;
+                } else {
+                    ls = tl;
+                }
+            }
+        }
+    }
 }
 
 pub fn id_mut<T>(ls: &mut List<T>) -> &mut List<T> {
