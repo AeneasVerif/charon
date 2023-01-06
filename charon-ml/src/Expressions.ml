@@ -14,21 +14,125 @@ type var_id = VarId.id [@@deriving show, ord]
   *)
 type global_decl_id = GlobalDeclId.id [@@deriving show]
 
+(** Ancestor the field_proj_kind iter visitor *)
+class ['self] iter_field_proj_kind_base =
+  object (_self : 'self)
+    inherit [_] VisitorsRuntime.iter
+    method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
+    method visit_var_id : 'env -> var_id -> unit = fun _ _ -> ()
+    method visit_variant_id : 'env -> variant_id -> unit = fun _ _ -> ()
+    method visit_field_id : 'env -> field_id -> unit = fun _ _ -> ()
+  end
+
+(** Ancestor the field_proj_kind map visitor *)
+class ['self] map_field_proj_kind_base =
+  object (_self : 'self)
+    inherit [_] VisitorsRuntime.map
+
+    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id =
+      fun _ x -> x
+
+    method visit_var_id : 'env -> var_id -> var_id = fun _ x -> x
+    method visit_variant_id : 'env -> variant_id -> variant_id = fun _ x -> x
+    method visit_field_id : 'env -> field_id -> field_id = fun _ x -> x
+  end
+
 type field_proj_kind =
-  | ProjAdt of TypeDeclId.id * VariantId.id option
-  | ProjOption of VariantId.id
+  | ProjAdt of type_decl_id * variant_id option
+  | ProjOption of variant_id
       (** Option is an assumed type, coming from the standard library *)
   | ProjTuple of int  (** The integer gives the arity of the tuple *)
-[@@deriving show]
+[@@deriving
+  show,
+    visitors
+      {
+        name = "iter_field_proj_kind";
+        variety = "iter";
+        ancestors = [ "iter_field_proj_kind_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_field_proj_kind";
+        variety = "map";
+        ancestors = [ "map_field_proj_kind_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      }]
 
-type projection_elem =
-  | Deref
-  | DerefBox
-  | Field of field_proj_kind * FieldId.id
-[@@deriving show]
+type projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
+[@@deriving
+  show,
+    visitors
+      {
+        name = "iter_projection_elem";
+        variety = "iter";
+        ancestors = [ "iter_field_proj_kind" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_projection_elem";
+        variety = "map";
+        ancestors = [ "map_field_proj_kind" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      }]
 
-type projection = projection_elem list [@@deriving show]
-type place = { var_id : VarId.id; projection : projection } [@@deriving show]
+type projection = projection_elem list
+[@@deriving
+  show,
+    visitors
+      {
+        name = "iter_projection";
+        variety = "iter";
+        ancestors = [ "iter_projection_elem" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_projection";
+        variety = "map";
+        ancestors = [ "map_projection_elem" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      }]
+
+(** Ancestor the place iter visitor *)
+class ['self] iter_place_base =
+  object (_self : 'self)
+    inherit [_] iter_projection
+  end
+
+(** Ancestor the place map visitor *)
+class ['self] map_place_base =
+  object (_self : 'self)
+    inherit [_] map_projection
+  end
+
+type place = { var_id : var_id; projection : projection }
+[@@deriving
+  show,
+    visitors
+      {
+        name = "iter_place";
+        variety = "iter";
+        ancestors = [ "iter_place_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_place";
+        variety = "map";
+        ancestors = [ "map_place_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      }]
+
 type borrow_kind = Shared | Mut | TwoPhaseMut | Shallow [@@deriving show]
 
 type unop =
@@ -84,11 +188,64 @@ let all_binops =
     Shr;
   ]
 
+(** Ancestor the operand iter visitor *)
+class ['self] iter_operand_base =
+  object (_self : 'self)
+    inherit [_] iter_place
+    method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
+
+    method visit_primitive_value : 'env -> primitive_value -> unit =
+      fun _ _ -> ()
+  end
+
+(** Ancestor the operand map visitor *)
+class ['self] map_operand_base =
+  object (_self : 'self)
+    inherit [_] map_place
+    method visit_ety : 'env -> ety -> ety = fun _ x -> x
+
+    method visit_primitive_value : 'env -> primitive_value -> primitive_value =
+      fun _ x -> x
+  end
+
 type operand =
   | Copy of place
   | Move of place
   | Constant of ety * primitive_value
-[@@deriving show]
+[@@deriving
+  show,
+    visitors
+      {
+        name = "iter_operand";
+        variety = "iter";
+        ancestors = [ "iter_operand_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_operand";
+        variety = "map";
+        ancestors = [ "map_operand_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      }]
+
+(** Ancestor the operand iter visitor *)
+class ['self] iter_aggregate_kind_base =
+  object (_self : 'self)
+    inherit [_] iter_operand
+    method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
+  end
+
+(** Ancestor the operand map visitor *)
+class ['self] map_aggregate_kind_base =
+  object (_self : 'self)
+    inherit [_] map_operand
+
+    method visit_erased_region : 'env -> erased_region -> erased_region =
+      fun _ x -> x
+  end
 
 (** An aggregated ADT.
 
@@ -113,11 +270,50 @@ type operand =
  *)
 type aggregate_kind =
   | AggregatedTuple
-  | AggregatedOption of VariantId.id * ety
+  | AggregatedOption of variant_id * ety
   (* TODO: AggregatedOption should be merged with AggregatedAdt *)
   | AggregatedAdt of
-      TypeDeclId.id * VariantId.id option * erased_region list * ety list
-[@@deriving show]
+      type_decl_id * variant_id option * erased_region list * ety list
+[@@deriving
+  show,
+    visitors
+      {
+        name = "iter_aggregate_kind";
+        variety = "iter";
+        ancestors = [ "iter_aggregate_kind_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_aggregate_kind";
+        variety = "map";
+        ancestors = [ "map_aggregate_kind_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      }]
+
+(** Ancestor the rvalue iter visitor *)
+class ['self] iter_rvalue_base =
+  object (_self : 'self)
+    inherit [_] iter_aggregate_kind
+    method visit_unop : 'env -> unop -> unit = fun _ _ -> ()
+    method visit_binop : 'env -> binop -> unit = fun _ _ -> ()
+    method visit_borrow_kind : 'env -> borrow_kind -> unit = fun _ _ -> ()
+    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
+  end
+
+(** Ancestor the rvalue map visitor *)
+class ['self] map_rvalue_base =
+  object (_self : 'self)
+    inherit [_] map_aggregate_kind
+    method visit_unop : 'env -> unop -> unop = fun _ x -> x
+    method visit_binop : 'env -> binop -> binop = fun _ x -> x
+    method visit_borrow_kind : 'env -> borrow_kind -> borrow_kind = fun _ x -> x
+
+    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
+      fun _ x -> x
+  end
 
 (* TODO: move the aggregate kind to operands *)
 type rvalue =
@@ -128,4 +324,21 @@ type rvalue =
   | Discriminant of place
   | Aggregate of aggregate_kind * operand list
   | Global of global_decl_id
-[@@deriving show]
+[@@deriving
+  show,
+    visitors
+      {
+        name = "iter_rvalue";
+        variety = "iter";
+        ancestors = [ "iter_rvalue_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_rvalue";
+        variety = "map";
+        ancestors = [ "map_rvalue_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      }]
