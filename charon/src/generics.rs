@@ -7,7 +7,9 @@ use crate::assumed;
 use crate::names::trait_def_id_to_name;
 use hashlink::linked_hash_map::LinkedHashMap;
 use rustc_hir::def_id::DefId;
-use rustc_middle::ty::{BoundRegion, FreeRegion, PredicateKind, Region, RegionKind, TyCtxt};
+use rustc_middle::ty::{
+    BoundRegion, Clause, FreeRegion, PredicateKind, Region, RegionKind, TyCtxt,
+};
 
 /// Instantiate the bound region variables in a binder, by turning the bound
 /// regions variables into free region variables. Note that the indices used
@@ -89,7 +91,7 @@ fn check_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
         // instantiate the bound region variables with free variables).
         let (pred_kind, _late_bound_regions) = replace_late_bound_regions(tcx, pred.kind(), def_id);
         match pred_kind {
-            PredicateKind::Trait(trait_pred) => {
+            PredicateKind::Clause(Clause::Trait(trait_pred)) => {
                 // Slightly annoying: some traits are implicit.
                 //
                 // For instance, whenever we use a type parameter in a definition,
@@ -108,9 +110,9 @@ fn check_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
                     trait_name
                 );
             }
-            PredicateKind::RegionOutlives(_) => unimplemented!(),
-            PredicateKind::TypeOutlives(_) => unimplemented!(),
-            PredicateKind::Projection(_) => unimplemented!(),
+            PredicateKind::Clause(Clause::RegionOutlives(_)) => unimplemented!(),
+            PredicateKind::Clause(Clause::TypeOutlives(_)) => unimplemented!(),
+            PredicateKind::Clause(Clause::Projection(_)) => unimplemented!(),
             PredicateKind::WellFormed(_) => unimplemented!(),
             PredicateKind::ObjectSafe(_) => unimplemented!(),
             PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
@@ -119,6 +121,7 @@ fn check_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
             PredicateKind::ConstEvaluatable(_) => unimplemented!(),
             PredicateKind::ConstEquate(_, _) => unimplemented!(),
             PredicateKind::TypeWellFormedFromEnv(_) => unimplemented!(),
+            PredicateKind::Ambiguous => unimplemented!(),
         }
     }
 }
