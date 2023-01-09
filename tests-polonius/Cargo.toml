@@ -5,8 +5,8 @@ authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-serde_json = "1.0.87"
-serde = { version = "1.0.145", features = ["derive"] }
+serde_json = "1.0.91"
+serde = { version = "1.0.152", features = ["derive"] }
 log = "0.4.17"
 env_logger = "0.8.4"
 
