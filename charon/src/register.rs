@@ -686,6 +686,10 @@ fn explore_mir_ty(
             return Err(());
         }
 
+        TyKind::Alias(_, _) => {
+            unimplemented!();
+        }
+
         TyKind::Error(_) => {
             trace!("Error");
             span_err(
@@ -694,12 +698,6 @@ fn explore_mir_ty(
                 "Error type found: the code doesn't typecheck",
             );
             return Err(());
-        }
-        TyKind::Projection(_) => {
-            unimplemented!();
-        }
-        TyKind::Opaque(_, _) => {
-            unimplemented!();
         }
         TyKind::Param(_) => {
             // A type parameter, for example `T` in `fn f<T>(x: T) {}`
@@ -795,7 +793,8 @@ fn visit_global_dependencies<'tcx, F: FnMut(DefId)>(
                 assert!(extract_constants_at_top_level(mir_level));
                 f(cv.def.did);
             }
-            rustc_middle::ty::ConstKind::Param(_)
+            rustc_middle::ty::ConstKind::Expr(_)
+            | rustc_middle::ty::ConstKind::Param(_)
             | rustc_middle::ty::ConstKind::Infer(_)
             | rustc_middle::ty::ConstKind::Bound(_, _)
             | rustc_middle::ty::ConstKind::Placeholder(_)
@@ -973,7 +972,6 @@ fn explore_body(
             mir::TerminatorKind::Goto { target: _ }
             | mir::TerminatorKind::SwitchInt {
                 discr: _,
-                switch_ty: _,
                 targets: _,
             }
             | mir::TerminatorKind::Resume
@@ -1194,7 +1192,7 @@ fn explore_local_hir_item(
     // being registered). If it is the case, return to prevent cycles. If not
     // registered yet, **do not immediately add it**: it may be an item we won't
     // translate (`use module`, `extern crate`...).
-    let def_id = item.def_id.to_def_id();
+    let def_id = item.owner_id.to_def_id();
     if decls.knows(&def_id) {
         return Ok(());
     }
@@ -1232,16 +1230,20 @@ fn explore_local_hir_item(
         ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
             explore_local_hir_type_item(ctx, stack, decls, item, def_id)
         }
-        ItemKind::Fn(_, _, _) => {
-            explore_local_item_with_body(ctx, stack, decls, item.def_id.def_id, DeclKind::Fun)
-        }
+        ItemKind::Fn(_, _, _) => explore_local_item_with_body(
+            ctx,
+            stack,
+            decls,
+            item.owner_id.to_def_id().as_local().unwrap(),
+            DeclKind::Fun,
+        ),
         ItemKind::Const(_, _) | ItemKind::Static(_, _, _) => {
             if extract_constants_at_top_level(ctx.mir_level) {
                 explore_local_item_with_body(
                     ctx,
                     stack,
                     decls,
-                    item.def_id.def_id,
+                    item.owner_id.to_def_id().as_local().unwrap(),
                     DeclKind::Global,
                 )
             } else {
@@ -1325,7 +1327,7 @@ fn explore_local_hir_impl_item(
     impl_item: &ImplItem,
 ) -> Result<()> {
     // Check if the item has already been registered
-    let def_id = impl_item.def_id.to_def_id();
+    let def_id = impl_item.owner_id.to_def_id();
     if decls.knows(&def_id) {
         return Ok(());
     }
@@ -1341,7 +1343,7 @@ fn explore_local_hir_impl_item(
             unimplemented!();
         }
         ImplItemKind::Fn(_, _) => {
-            let local_id = impl_item.def_id.def_id;
+            let local_id = impl_item.owner_id.to_def_id().as_local().unwrap();
             explore_local_item_with_body(ctx, stack, decls, local_id, DeclKind::Fun)
         }
     }

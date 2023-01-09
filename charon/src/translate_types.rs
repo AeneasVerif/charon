@@ -114,12 +114,12 @@ pub fn translate_region_name<'tcx>(region: &rustc_middle::ty::RegionKind<'tcx>) 
     let s = match region {
         rustc_middle::ty::RegionKind::ReEarlyBound(r) => Some(r.name.to_ident_string()),
         rustc_middle::ty::RegionKind::ReLateBound(_, br) => match br.kind {
-            rustc_middle::ty::BoundRegionKind::BrAnon(_) => None,
+            rustc_middle::ty::BoundRegionKind::BrAnon(_, _) => None,
             rustc_middle::ty::BoundRegionKind::BrNamed(_, symbol) => Some(symbol.to_ident_string()),
             rustc_middle::ty::BoundRegionKind::BrEnv => Some("@env".to_owned()),
         },
         rustc_middle::ty::RegionKind::ReFree(r) => match r.bound_region {
-            rustc_middle::ty::BoundRegionKind::BrAnon(_) => None,
+            rustc_middle::ty::BoundRegionKind::BrAnon(_, _) => None,
             rustc_middle::ty::BoundRegionKind::BrNamed(_, symbol) => Some(symbol.to_ident_string()),
             rustc_middle::ty::BoundRegionKind::BrEnv => Some("@env".to_owned()),
         },
@@ -226,6 +226,10 @@ where
         }
         TyKind::Never => {
             return Ok(ty::Ty::Never);
+        }
+
+        TyKind::Alias(_, _) => {
+            unimplemented!();
         }
 
         TyKind::Adt(adt, substs) => {
@@ -368,14 +372,6 @@ where
 
         TyKind::Error(_) => {
             trace!("Error");
-            unreachable!();
-        }
-        TyKind::Projection(_) => {
-            trace!("Projection");
-            unreachable!();
-        }
-        TyKind::Opaque(_, _) => {
-            trace!("Opaque");
             unreachable!();
         }
         TyKind::Bound(_, _) => {

@@ -296,7 +296,7 @@ pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
 /// Rk.: this function is only used by [crate::register], and implemented with this
 /// context in mind.
 pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
-    let def_id = item.def_id.to_def_id();
+    let def_id = item.owner_id.to_def_id();
 
     // TODO: calling different functions to retrieve the name is not very
     // satisfying below
