@@ -23,18 +23,38 @@
           inherit system;
           overlays = [ (import rust-overlay) ];
         };
-        rustToolchain = pkgs.rust-bin.nightly."2023-01-01".default.override {
+
+        # Small issue here:
+        # =================
+        # We need extensions to build Charon.
+        # However, the dependencies don't build if we use extensions.
+        #
+        # More precisely, `petgraph` doesn't build because for some reason,
+        # when building the dependencies in the Nix derivation, Rustc builds
+        # it while considering there is no std library available.
+        # As a consequence, in `indexmap` (used by `petgraph`), Rustc uses this
+        # definition of `IndexMap` (notice the absence of default value for `S`):
+        # [https://github.com/bluss/indexmap/blob/eedabaca9f84e520eab01325b305c08f3773e66c/src/map.rs#L82]
+        # while it should use this one:
+        # [https://github.com/bluss/indexmap/blob/eedabaca9f84e520eab01325b305c08f3773e66c/src/map.rs#L77]
+        #
+        # We solve the issue by using extensions only to build Charon (and
+        # in particular, not its dependencies).
+        rustToolchainNoExt = pkgs.rust-bin.nightly."2023-01-01".default.override {
+        };
+        rustToolchainWithExt = pkgs.rust-bin.nightly."2023-01-01".default.override {
           extensions = [ "rust-src" "rustc-dev" "llvm-tools-preview" ];
         };
-        craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
+        craneLibNoExt = (crane.mkLib pkgs).overrideToolchain rustToolchainNoExt;
+        craneLibWithExt = (crane.mkLib pkgs).overrideToolchain rustToolchainWithExt;
         charon =
-          let cargoArtifacts = craneLib.buildDepsOnly { src = ./charon; };
-          in craneLib.buildPackage {
+          let cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./charon; };
+          in craneLibWithExt.buildPackage {
             src = ./charon;
             inherit cargoArtifacts;
           };
-        tests = let cargoArtifacts = craneLib.buildDepsOnly { src = ./tests; };
-        in craneLib.buildPackage {
+        tests = let cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./tests; };
+        in craneLibNoExt.buildPackage {
           name = "tests";
           src = ./tests;
           inherit cargoArtifacts;
@@ -48,8 +68,8 @@
         };
 
         tests-polonius = let
-          cargoArtifacts = craneLib.buildDepsOnly { src = ./tests-polonius; };
-        in craneLib.buildPackage {
+          cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./tests-polonius; };
+        in craneLibNoExt.buildPackage {
           name = "tests-polonius";
           src = ./tests-polonius;
           inherit cargoArtifacts;
