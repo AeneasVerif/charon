@@ -41,7 +41,7 @@
         # We solve the issue by using extensions only to build Charon (and
         # in particular, not its dependencies).
         rustToolchainWithExt =
-          pkgs.rust-bin.fromRustupToolchainFile ./charon/rust-toolchain;
+          pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.template;
         rustToolchainNoExt =
           rustToolchainWithExt.override { extensions = [ ]; };
         craneLibWithExt =
