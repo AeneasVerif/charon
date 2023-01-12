@@ -40,15 +40,13 @@
         #
         # We solve the issue by using extensions only to build Charon (and
         # in particular, not its dependencies).
-        rustToolchainNoExt =
-          pkgs.rust-bin.nightly."2023-01-01".default.override { };
         rustToolchainWithExt =
-          pkgs.rust-bin.nightly."2023-01-01".default.override {
-            extensions = [ "rust-src" "rustc-dev" "llvm-tools-preview" ];
-          };
-        craneLibNoExt = (crane.mkLib pkgs).overrideToolchain rustToolchainNoExt;
+          pkgs.rust-bin.fromRustupToolchainFile ./charon/rust-toolchain;
+        rustToolchainNoExt =
+          rustToolchainWithExt.override { extensions = [ ]; };
         craneLibWithExt =
           (crane.mkLib pkgs).overrideToolchain rustToolchainWithExt;
+        craneLibNoExt = (crane.mkLib pkgs).overrideToolchain rustToolchainNoExt;
         charon =
           let cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./charon; };
           in craneLibWithExt.buildPackage {
