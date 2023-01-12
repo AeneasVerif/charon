@@ -40,35 +40,39 @@
         #
         # We solve the issue by using extensions only to build Charon (and
         # in particular, not its dependencies).
-        rustToolchainNoExt = pkgs.rust-bin.nightly."2023-01-01".default.override {
-        };
-        rustToolchainWithExt = pkgs.rust-bin.nightly."2023-01-01".default.override {
-          extensions = [ "rust-src" "rustc-dev" "llvm-tools-preview" ];
-        };
+        rustToolchainNoExt =
+          pkgs.rust-bin.nightly."2023-01-01".default.override { };
+        rustToolchainWithExt =
+          pkgs.rust-bin.nightly."2023-01-01".default.override {
+            extensions = [ "rust-src" "rustc-dev" "llvm-tools-preview" ];
+          };
         craneLibNoExt = (crane.mkLib pkgs).overrideToolchain rustToolchainNoExt;
-        craneLibWithExt = (crane.mkLib pkgs).overrideToolchain rustToolchainWithExt;
+        craneLibWithExt =
+          (crane.mkLib pkgs).overrideToolchain rustToolchainWithExt;
         charon =
           let cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./charon; };
           in craneLibWithExt.buildPackage {
             src = ./charon;
             inherit cargoArtifacts;
           };
-        tests = let cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./tests; };
-        in craneLibNoExt.buildPackage {
-          name = "tests";
-          src = ./tests;
-          inherit cargoArtifacts;
-          buildPhase = ''
-            # Run the tests for Charon
-            DEST=$out CHARON="${charon}/bin/charon --cargo-no-rust-version" \
-            make charon-tests
-          '';
-          doCheck = false;
-          dontInstall = true;
-        };
+        tests =
+          let cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./tests; };
+          in craneLibNoExt.buildPackage {
+            name = "tests";
+            src = ./tests;
+            inherit cargoArtifacts;
+            buildPhase = ''
+              # Run the tests for Charon
+              DEST=$out CHARON="${charon}/bin/charon --cargo-no-rust-version" \
+              make charon-tests
+            '';
+            doCheck = false;
+            dontInstall = true;
+          };
 
         tests-polonius = let
-          cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./tests-polonius; };
+          cargoArtifacts =
+            craneLibNoExt.buildDepsOnly { src = ./tests-polonius; };
         in craneLibNoExt.buildPackage {
           name = "tests-polonius";
           src = ./tests-polonius;
