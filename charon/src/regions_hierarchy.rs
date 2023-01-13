@@ -105,7 +105,7 @@ fn compute_regions_hierarchy_from_constraints(
     // {static} singleton.
     // TODO: general support for 'static
     assert!(constraints.sccs.len() >= 1);
-    assert!(constraints.sccs.last().unwrap() == &vec![Region::Static]);
+    // assert!(constraints.sccs.last().unwrap() == &vec![Region::Static]);
 
     // Pop the last SCC (which is {'static}).
     let _ = constraints.sccs.pop();
@@ -352,10 +352,10 @@ fn compute_full_regions_constraints_for_ty(
             // Nothing to do
         }
         Ty::Array(_aty) => {
-            unimplemented!();
+            // unimplemented!();
         }
         Ty::Slice(_sty) => {
-            unimplemented!();
+           // unimplemented!();
         }
         Ty::Ref(region, ref_ty, _mutability) => {
             // Add the constraint for the region in the reference

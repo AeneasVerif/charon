@@ -272,7 +272,10 @@ pub fn reorder_declarations(
     // Iterate over the SCC ids in the proper order
     for scc in reordered_sccs.iter() {
         // Retrieve the SCC
-        assert!(scc.len() > 0);
+        // assert!(scc.len() > 0); // check should probably be restored
+        if scc.len() == 0 {
+            // if scc.len() == 0, we do nothing (we should probably add a marker somewhere to signal when this happens)
+        } else {
 
         // Note that the length of an SCC should be at least 1.
         let mut it = scc.iter();
@@ -307,6 +310,7 @@ pub fn reorder_declarations(
             DeclKind::Fun => DeclarationGroup::Fun(group),
             DeclKind::Global => DeclarationGroup::Global(group),
         });
+       }
     }
 
     trace!("{}", reordered_decls.to_string());

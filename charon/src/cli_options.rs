@@ -16,6 +16,10 @@ use structopt::StructOpt;
 #[derive(StructOpt, Serialize, Deserialize)]
 #[structopt(name = "Charon")]
 pub struct CliOpts {
+    /// Print the llbc (WIP)
+    #[structopt(long = "print_llbc")]
+    /// TODO: specify pretty printing for LLBC output
+    pub print_llbc: bool,
     /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)
     #[structopt(long = "ullbc")]
     pub ullbc: bool,

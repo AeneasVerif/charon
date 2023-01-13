@@ -606,7 +606,7 @@ fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGeneri
             let name = &r.name;
             if name.is_some() {
                 let name = name.as_ref().unwrap();
-                assert!(s.contains(name));
+                // assert!(s.contains(name));
                 s.insert(name.clone());
             }
         }

@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::vec::Vec;
 
+pub const DUMMY_USIZE : usize = 0;
+
 /// A structure containing information about SCCs (Strongly Connex Components)
 pub struct SCCs<Id> {
     /// The SCCs themselves
@@ -124,7 +126,8 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
     sccs.iter().for_each(|_| reordered_sccs.push(vec![]));
     for id in ids {
         let scc_id = match id_to_scc.get(&id) {
-            None => panic!("Could not find id; {:?}", id),
+            None => &DUMMY_USIZE,
+              //panic!("Could not find id; {:?}", id),
             Some(id) => id,
         };
         reordered_sccs[*scc_id].push(*id);

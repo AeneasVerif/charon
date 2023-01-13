@@ -214,4 +214,5 @@ pub enum AggregateKind {
         Vec<ErasedRegion>,
         Vec<ETy>,
     ),
+    Array, // should perhaps have a type parameter
 }

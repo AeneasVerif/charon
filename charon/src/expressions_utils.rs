@@ -229,7 +229,7 @@ impl Rvalue {
             Rvalue::Aggregate(kind, ops) => {
                 let ops_s: Vec<String> = ops.iter().map(|op| op.fmt_with_ctx(ctx)).collect();
                 match kind {
-                    AggregateKind::Tuple => format!("({})", ops_s.join(", ")).to_string(),
+                    AggregateKind::Tuple | AggregateKind::Array => format!("({})", ops_s.join(", ")).to_string(),
                     AggregateKind::Option(variant_id, _) => {
                         if *variant_id == assumed::OPTION_NONE_VARIANT_ID {
                             assert!(ops.len() == 0);
@@ -315,6 +315,7 @@ impl Serialize for AggregateKind {
 
                 vs.end()
             }
+            AggregateKind::Array => "AggregateKindArray".serialize(serializer)
         }
     }
 }

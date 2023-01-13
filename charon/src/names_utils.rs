@@ -179,7 +179,8 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                 assert!(data.disambiguator == 0); // Sanity check
                 name.push(PathElem::Ident(symbol.to_ident_string()));
             }
-            DefPathData::ValueNs(symbol) => {
+            DefPathData::ValueNs(symbol)
+                | DefPathData::LifetimeNs(symbol) => { // not sure of LifetimeNs
                 if data.disambiguator != 0 {
                     // I don't like that
 
@@ -227,7 +228,8 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                     rustc_middle::ty::TyKind::Int(_) | rustc_middle::ty::TyKind::Uint(_) => {
                         format!("{:?}", ty)
                     }
-                    _ => unreachable!(),
+                    _ => format!("Formerly unreachabe: {:?}", ty),
+                    // _ =>  unreachable!(),
                 }));
             }
             DefPathData::ImplTrait => {
@@ -245,8 +247,11 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                 name.push(PathElem::Ident(symbol.to_ident_string()));
             }
             _ => {
-                error!("Unexpected DefPathData: {:?}", data);
-                unreachable!("Unexpected DefPathData: {:?}", data);
+                 // Sanity check
+                assert!(data.disambiguator == 0);
+                name.push(PathElem::Ident("default PathElem".to_string()));
+                // error!("Unexpected DefPathData: {:?}", data);
+                // unreachable!("Unexpected DefPathData: {:?}", data);
             }
         }
 

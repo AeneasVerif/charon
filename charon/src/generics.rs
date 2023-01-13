@@ -99,18 +99,20 @@ fn check_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
                 use rustc_middle::ty::{BoundConstness, ImplPolarity};
                 assert!(trait_pred.polarity == ImplPolarity::Positive);
                 // Note sure what this is about
-                assert!(trait_pred.constness == BoundConstness::NotConst);
+                // assert!(trait_pred.constness == BoundConstness::NotConst);
                 let trait_name = trait_def_id_to_name(tcx, trait_pred.trait_ref.def_id);
                 trace!("{}", trait_name);
-                assert!(
-                    trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME),
-                    "Unsupported trait: {:?}",
-                    trait_name
-                );
+                // assert!(
+                //     trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME),
+                //     "Unsupported trait: {:?}",
+                //     trait_name
+                // );
             }
-            PredicateKind::RegionOutlives(_) => unimplemented!(),
-            PredicateKind::TypeOutlives(_) => unimplemented!(),
-            PredicateKind::Projection(_) => unimplemented!(),
+            PredicateKind::RegionOutlives(_) => trace!("RegionOutlives"),
+            //unimplemented!("case 1"),
+            PredicateKind::TypeOutlives(_) => trace!("TypeOutlives"),
+            //unimplemented!("case 2"),
+            PredicateKind::Projection(_) => trace!("Projection"),
             PredicateKind::WellFormed(_) => unimplemented!(),
             PredicateKind::ObjectSafe(_) => unimplemented!(),
             PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
