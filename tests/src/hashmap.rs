@@ -78,17 +78,14 @@ impl<T> HashMap<T> {
         HashMap::new_with_capacity(32, 4, 5)
     }
 
-    fn clear_slots(slots: &mut Vec<List<T>>) {
+    pub fn clear(&mut self) {
+        self.num_entries = 0;
+        let slots = &mut self.slots;
         let mut i = 0;
         while i < slots.len() {
             slots[i] = List::Nil;
             i += 1;
         }
-    }
-
-    pub fn clear(&mut self) {
-        self.num_entries = 0;
-        HashMap::clear_slots(&mut self.slots);
     }
 
     pub fn len(&self) -> usize {
