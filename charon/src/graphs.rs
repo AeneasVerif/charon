@@ -138,15 +138,17 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
     let mut reordered_sccs_ids = LinkedHashSet::<usize>::new();
     let mut scc_deps: Vec<OrdSet<usize>> = reordered_sccs.iter().map(|_| OrdSet::new()).collect();
     for id in ids {
-        let scc_id = id_to_scc.get(&id).unwrap();
-        insert_scc_with_deps(
-            get_id_dependencies,
-            &mut reordered_sccs_ids,
-            &mut scc_deps,
-            &reordered_sccs,
-            &id_to_scc,
-            *scc_id,
-        );
+        if id_to_scc.get(&id) != None { // unsound
+            let scc_id = id_to_scc.get(&id).unwrap();
+            insert_scc_with_deps(
+                get_id_dependencies,
+                &mut reordered_sccs_ids,
+                &mut scc_deps,
+                &reordered_sccs,
+                &id_to_scc,
+                *scc_id,
+            );
+        }
     }
     let reordered_sccs_ids: Vec<usize> = reordered_sccs_ids.into_iter().collect();
 

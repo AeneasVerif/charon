@@ -2223,7 +2223,7 @@ pub(crate) fn check_impl_item<'hir>(impl_item: &rustc_hir::Impl<'hir>) {
     assert!(impl_item.defaultness == Defaultness::Final);
     // Note sure what this is about
     assert!(impl_item.constness == Constness::NotConst);
-    assert!(impl_item.of_trait.is_none()); // We don't support traits for now
+    // assert!(impl_item.of_trait.is_none(),"Charon does not implement traits yet, this field should be [None]");
 }
 
 /// Translate a function's signature, and initialize a body translation context

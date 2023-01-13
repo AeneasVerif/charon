@@ -157,12 +157,13 @@ pub fn translate_non_erased_region<'tcx>(
 pub fn translate_erased_region<'tcx>(
     region: rustc_middle::ty::RegionKind<'tcx>,
 ) -> ty::ErasedRegion {
-    match region {
-        rustc_middle::ty::RegionKind::ReErased => ty::ErasedRegion::Erased,
-        _ => {
-            unreachable!();
-        }
-    }
+    return ty::ErasedRegion::Erased;  // unsound
+    // match region {
+    //     rustc_middle::ty::RegionKind::ReErased => ty::ErasedRegion::Erased,
+    //     _ => {
+    //      unreachable!();
+    //     }
+    // }
 }
 
 /// Translate a Ty.

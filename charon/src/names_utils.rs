@@ -329,7 +329,10 @@ pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
         | ItemKind::Mod(_)
         | ItemKind::Const(_, _)
         | ItemKind::Static(_, _, _)
-        | ItemKind::Macro(_, _) => Option::Some(item_def_id_to_name(tcx, def_id)),
+        | ItemKind::Macro(_, _)
+        | ItemKind::Trait(_, _, _, _, _)
+        | ItemKind::TraitAlias(_, _)
+        => Option::Some(item_def_id_to_name(tcx, def_id)),
         _ => {
             unimplemented!("{:?}", item.kind);
         }
