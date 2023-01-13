@@ -42,45 +42,25 @@ type fun_id = Regular of FunDeclId.id | Assumed of assumed_fun_id
 (** Ancestor the AST iter visitors *)
 class ['self] iter_ast_base =
   object (_self : 'self)
-    inherit [_] VisitorsRuntime.iter
+    inherit [_] iter_rvalue
     method visit_fun_id : 'env -> fun_id -> unit = fun _ _ -> ()
-    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
     method visit_meta : 'env -> meta -> unit = fun _ _ -> ()
-    method visit_place : 'env -> place -> unit = fun _ _ -> ()
-    method visit_rvalue : 'env -> rvalue -> unit = fun _ _ -> ()
-    method visit_variant_id : 'env -> variant_id -> unit = fun _ _ -> ()
-    method visit_operand : 'env -> operand -> unit = fun _ _ -> ()
     method visit_integer_type : 'env -> integer_type -> unit = fun _ _ -> ()
     method visit_scalar_value : 'env -> scalar_value -> unit = fun _ _ -> ()
-    method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
-    method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the AST map visitors *)
 class ['self] map_ast_base =
   object (_self : 'self)
-    inherit [_] VisitorsRuntime.map
+    inherit [_] map_rvalue
     method visit_fun_id : 'env -> fun_id -> fun_id = fun _ x -> x
-
-    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
-      fun _ x -> x
-
     method visit_meta : 'env -> meta -> meta = fun _ x -> x
-    method visit_place : 'env -> place -> place = fun _ x -> x
-    method visit_rvalue : 'env -> rvalue -> rvalue = fun _ x -> x
-    method visit_variant_id : 'env -> variant_id -> variant_id = fun _ x -> x
-    method visit_operand : 'env -> operand -> operand = fun _ x -> x
 
     method visit_integer_type : 'env -> integer_type -> integer_type =
       fun _ x -> x
 
     method visit_scalar_value : 'env -> scalar_value -> scalar_value =
       fun _ x -> x
-
-    method visit_erased_region : 'env -> erased_region -> erased_region =
-      fun _ x -> x
-
-    method visit_ety : 'env -> ety -> ety = fun _ x -> x
   end
 
 type assertion = { cond : operand; expected : bool }

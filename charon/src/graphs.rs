@@ -70,7 +70,7 @@ fn insert_scc_with_deps<Id: Copy + std::hash::Hash + Eq>(
 
 /// Provided we computed the SCCs (Strongly Connected Components) of a set of
 /// identifier, and those identifiers are ordered, compute the set of SCCs where
-/// the order of the SCCs and the order of the identifiers inside the SCCs try
+/// the order of the SCCs and the order of the identifiers inside the SCCs attempt
 /// to respect as much as possible the original order between the identifiers.
 /// The `ids` vector gives the ordered set of identifiers.
 ///

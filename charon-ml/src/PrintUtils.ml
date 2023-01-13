@@ -17,4 +17,6 @@ let block_id_to_string (id : UllbcAst.BlockId.id) : string =
 let var_id_to_string (id : E.VarId.id) : string = "var@" ^ E.VarId.to_string id
 
 let var_to_string (v : GA.var) : string =
-  match v.name with None -> var_id_to_string v.index | Some name -> name
+  match v.name with
+  | None -> var_id_to_string v.index
+  | Some name -> name ^ "^" ^ E.VarId.to_string v.index

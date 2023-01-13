@@ -36,6 +36,11 @@ let ty_as_adt (ty : 'r ty) : type_id * 'r list * 'r ty list =
   | Adt (id, regions, tys) -> (id, regions, tys)
   | _ -> raise (Failure "Unreachable")
 
+let ty_as_ref (ty : 'r ty) : 'r * 'r ty * ref_kind =
+  match ty with
+  | Ref (r, ref_ty, kind) -> (r, ref_ty, kind)
+  | _ -> raise (Failure "Unreachable")
+
 let ty_is_custom_adt (ty : 'r ty) : bool =
   match ty with Adt (AdtId _, _, _) -> true | _ -> false
 

@@ -24,19 +24,20 @@ let u64_max = Z.of_string "18446744073709551615"
 let u128_min = Z.of_string "0"
 let u128_max = Z.of_string "340282366920938463463374607431768211455"
 
-(** Being a bit conservative about isize/usize: depending on the system,
-    the values are encoded as 32-bit values or 64-bit values - we may
-    want to take that into account in the future
+(** The bounds for isize and usize vary with the architecture.
 
-    Note that we use those bounds only to check that the values are *in range*:
-    when evaluating operations like addition, negation, etc. It is thus ok to
-    not use the precise bounds.
+    Note that we use those bounds only to check that the values are *in range*
+    when:
+    - deserializing
+    - using the interpreter in *concrete* mode and evaluating operations like
+      addition, negation, etc.
+    It is thus ok to not use the precise bounds.
  *)
 
-let isize_min = i32_min
-let isize_max = i32_max
-let usize_min = u32_min
-let usize_max = u32_max
+let isize_min = i64_min
+let isize_max = i64_max
+let usize_min = u64_min
+let usize_max = u64_max
 
 (** Check that an integer value is in range *)
 let check_int_in_range (int_ty : integer_type) (i : big_int) : bool =

@@ -8,6 +8,8 @@ open PrintUtils
 module PT = PrintTypes
 module PPV = PrintPrimitiveValues
 
+let var_id_to_string (id : E.VarId.id) : string = "v@" ^ E.VarId.to_string id
+
 type expr_formatter = {
   rvar_to_string : T.RegionVarId.id -> string;
   r_to_string : T.RegionId.id -> string;
@@ -124,7 +126,8 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
       match bk with
       | E.Shared -> "&" ^ p
       | E.Mut -> "&mut " ^ p
-      | E.TwoPhaseMut -> "&two-phase " ^ p)
+      | E.TwoPhaseMut -> "&two-phase " ^ p
+      | E.Shallow -> "&shallow " ^ p)
   | E.UnaryOp (unop, op) -> unop_to_string unop ^ " " ^ operand_to_string fmt op
   | E.BinaryOp (binop, op1, op2) ->
       operand_to_string fmt op1 ^ " " ^ binop_to_string binop ^ " "
@@ -136,11 +139,11 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
       match akind with
       | E.AggregatedTuple -> "(" ^ String.concat ", " ops ^ ")"
       | E.AggregatedOption (variant_id, _ty) ->
-          if variant_id == T.option_none_id then (
-            assert (ops == []);
+          if variant_id = T.option_none_id then (
+            assert (ops = []);
             "@Option::None")
-          else if variant_id == T.option_some_id then (
-            assert (List.length ops == 1);
+          else if variant_id = T.option_some_id then (
+            assert (List.length ops = 1);
             let op = List.hd ops in
             "@Option::Some(" ^ op ^ ")")
           else raise (Failure "Unreachable")

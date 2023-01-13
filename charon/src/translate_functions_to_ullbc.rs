@@ -999,6 +999,9 @@ fn translate_constant_kind<'tcx, 'ctx1, 'ctx2>(
                     // TODO: the value is now a [ValTree]
                     unimplemented!();
                 }
+                ConstKind::Expr(_) => {
+                    unimplemented!();
+                }
                 ConstKind::Unevaluated(ucv) => {
                     // Two cases:
                     // - if we extract the constants at top level, we lookup the constant
@@ -1140,7 +1143,7 @@ fn translate_borrow_kind(borrow_kind: mir::BorrowKind) -> e::BorrowKind {
             unimplemented!();
         }
         mir::BorrowKind::Shallow => {
-            unimplemented!();
+            return e::BorrowKind::Shallow;
         }
     }
 }
@@ -1512,19 +1515,12 @@ fn translate_terminator<'tcx, 'ctx, 'ctx1>(
             let target = translate_basic_block(bt_ctx, body, *target)?;
             ast::RawTerminator::Goto { target }
         }
-        TerminatorKind::SwitchInt {
-            discr,
-            switch_ty,
-            targets,
-        } => {
-            // Translate the type
-            let switch_ty = translate_ety(bt_ctx, switch_ty)?;
-
+        TerminatorKind::SwitchInt { discr, targets } => {
             // Translate the operand which gives the discriminant
-            let discr = translate_operand(bt_ctx, discr);
+            let (discr, discr_ty) = translate_operand_with_type(bt_ctx, discr);
 
             // Translate the switch targets
-            let targets = translate_switch_targets(bt_ctx, body, &switch_ty, targets)?;
+            let targets = translate_switch_targets(bt_ctx, body, &discr_ty, targets)?;
 
             ast::RawTerminator::Switch { discr, targets }
         }

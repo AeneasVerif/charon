@@ -41,6 +41,7 @@ impl std::fmt::Display for BorrowKind {
             BorrowKind::Shared => write!(f, "Shared"),
             BorrowKind::Mut => write!(f, "Mut"),
             BorrowKind::TwoPhaseMut => write!(f, "TwoPhaseMut"),
+            BorrowKind::Shallow => write!(f, "Shallow"),
         }
     }
 }
@@ -50,7 +51,7 @@ impl std::string::ToString for UnOp {
         match self {
             UnOp::Not => "~".to_string(),
             UnOp::Neg => "-".to_string(),
-            UnOp::Cast(src, tgt) => format!("cast<{},{}>", src, tgt).to_string(),
+            UnOp::Cast(src, tgt) => format!("cast<{},{}>", src, tgt),
         }
     }
 }
@@ -148,11 +149,11 @@ impl OperandConstantValue {
                 // we need the type (which contains the type def id).
                 // Anyway, the printing utilities are mostly for debugging.
                 let variant_id = match variant_id {
-                    Option::Some(id) => format!("Some({})", id).to_string(),
+                    Option::Some(id) => format!("Some({})", id),
                     Option::None => "None".to_string(),
                 };
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
-                format!("ConstAdt {} [{}]", variant_id, values.join(", ")).to_string()
+                format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
             OperandConstantValue::ConstantId(id) => ctx.format_object(*id),
             OperandConstantValue::StaticId(id) => format!("alloc: &{}", ctx.format_object(*id)),
@@ -175,9 +176,9 @@ impl Operand {
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
-            Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)).to_string(),
-            Operand::Move(p) => format!("move ({})", p.fmt_with_ctx(ctx)).to_string(),
-            Operand::Const(_, c) => format!("const ({})", c.fmt_with_ctx(ctx)).to_string(),
+            Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)),
+            Operand::Move(p) => format!("move ({})", p.fmt_with_ctx(ctx)),
+            Operand::Const(_, c) => format!("const ({})", c.fmt_with_ctx(ctx)),
         }
     }
 
@@ -207,36 +208,36 @@ impl Rvalue {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),
             Rvalue::Ref(place, borrow_kind) => match borrow_kind {
-                BorrowKind::Shared => format!("&{}", place.fmt_with_ctx(ctx)).to_string(),
-                BorrowKind::Mut => format!("&mut {}", place.fmt_with_ctx(ctx)).to_string(),
+                BorrowKind::Shared => format!("&{}", place.fmt_with_ctx(ctx)),
+                BorrowKind::Mut => format!("&mut {}", place.fmt_with_ctx(ctx)),
                 BorrowKind::TwoPhaseMut => {
-                    format!("&two-phase-mut {}", place.fmt_with_ctx(ctx)).to_string()
+                    format!("&two-phase-mut {}", place.fmt_with_ctx(ctx))
                 }
+                BorrowKind::Shallow => format!("&shallow {}", place.fmt_with_ctx(ctx)),
             },
             Rvalue::UnaryOp(unop, x) => {
-                format!("{}({})", unop.to_string(), x.fmt_with_ctx(ctx)).to_string()
+                format!("{}({})", unop.to_string(), x.fmt_with_ctx(ctx))
             }
             Rvalue::BinaryOp(binop, x, y) => format!(
                 "{} {} {}",
                 x.fmt_with_ctx(ctx),
                 binop.to_string(),
                 y.fmt_with_ctx(ctx)
-            )
-            .to_string(),
+            ),
             Rvalue::Discriminant(p) => {
-                format!("@discriminant({})", p.fmt_with_ctx(ctx),).to_string()
+                format!("@discriminant({})", p.fmt_with_ctx(ctx),)
             }
             Rvalue::Aggregate(kind, ops) => {
                 let ops_s: Vec<String> = ops.iter().map(|op| op.fmt_with_ctx(ctx)).collect();
                 match kind {
-                    AggregateKind::Tuple | AggregateKind::Array => format!("({})", ops_s.join(", ")).to_string(),
+                    AggregateKind::Tuple | AggregateKind::Array => format!("({})", ops_s.join(", ")),
                     AggregateKind::Option(variant_id, _) => {
                         if *variant_id == assumed::OPTION_NONE_VARIANT_ID {
-                            assert!(ops.len() == 0);
+                            assert!(ops.is_empty());
                             "@Option::None".to_string()
                         } else if *variant_id == assumed::OPTION_SOME_VARIANT_ID {
                             assert!(ops.len() == 1);
-                            format!("@Option::Some({})", ops[0].fmt_with_ctx(ctx)).to_string()
+                            format!("@Option::Some({})", ops[0].fmt_with_ctx(ctx))
                         } else {
                             unreachable!();
                         }
@@ -244,13 +245,10 @@ impl Rvalue {
                     AggregateKind::Adt(def_id, variant_id, _, _) => {
                         // Format every field
                         let mut fields = vec![];
-                        for i in 0..ops.len() {
+                        for (i, op) in ops.iter().enumerate() {
                             let field_id = FieldId::Id::new(i);
                             let field_name = ctx.format_object((*def_id, *variant_id, field_id));
-                            let op = &ops[i];
-                            fields.push(
-                                format!("{}: {}", field_name, op.fmt_with_ctx(ctx)).to_string(),
-                            );
+                            fields.push(format!("{}: {}", field_name, op.fmt_with_ctx(ctx)));
                         }
 
                         let variant = match variant_id {
@@ -261,7 +259,7 @@ impl Rvalue {
                     }
                 }
             }
-            Rvalue::Global(gid) => format!("{}", ctx.format_object(*gid)).to_string(),
+            Rvalue::Global(gid) => ctx.format_object(*gid),
         }
     }
 

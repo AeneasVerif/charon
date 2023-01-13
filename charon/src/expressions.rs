@@ -71,7 +71,15 @@ pub enum FieldProjKind {
 pub enum BorrowKind {
     Shared,
     Mut,
+    /// See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.BorrowKind.html#variant.Mut>
+    /// and <https://rustc-dev-guide.rust-lang.org/borrow_check/two_phase_borrows.html>
     TwoPhaseMut,
+    /// See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.BorrowKind.html#variant.Shallow>.
+    ///
+    /// Those are typically introduced when using guards in matches, to make
+    /// sure guards don't change the variant of an enumeration value while me
+    /// match over it.
+    Shallow,
 }
 
 /// Unary operation
@@ -167,6 +175,8 @@ pub enum OperandConstantValue {
     StaticId(GlobalDeclId::Id),
 }
 
+/// TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
+/// We can also factor out the unops, binops with the function calls.
 #[derive(Debug, Clone, Serialize, EnumToGetters, EnumIsA)]
 pub enum Rvalue {
     Use(Operand),

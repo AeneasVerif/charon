@@ -17,7 +17,6 @@ class ['self] iter_statement_base =
   object (_self : 'self)
     inherit [_] GAst.iter_statement_base
     method visit_block_id : 'env -> block_id -> unit = fun _ _ -> ()
-    method visit_var_id : 'env -> var_id -> unit = fun _ _ -> ()
   end
 
 (** Ancestor for {!UllbcAst.statement} map visitor *)
@@ -25,7 +24,6 @@ class ['self] map_statement_base =
   object (_self : 'self)
     inherit [_] GAst.map_statement_base
     method visit_block_id : 'env -> block_id -> block_id = fun _ x -> x
-    method visit_var_id : 'env -> var_id -> var_id = fun _ x -> x
   end
 
 type statement = {

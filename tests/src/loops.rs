@@ -1,7 +1,9 @@
 #![allow(dead_code)]
 
-/// Simple test with a loop
-fn test_loop1(max: u32) -> u32 {
+use std::vec::Vec;
+
+/// No borrows
+fn sum(max: u32) -> u32 {
     let mut i = 0;
     let mut s = 0;
     while i < max {
@@ -10,144 +12,51 @@ fn test_loop1(max: u32) -> u32 {
     }
 
     s *= 2;
-    return s;
+    s
 }
 
-/// Test with a loop and a break
-fn test_loop2(max: u32) -> u32 {
+/// Same as [sum], but we use borrows in order tocreate loans inside a loop
+/// iteration, and those borrows will have to be ended by the end of the
+/// iteration.
+fn sum_with_mut_borrows(max: u32) -> u32 {
     let mut i = 0;
     let mut s = 0;
     while i < max {
-        if i == 17 {
-            break;
-        }
-        s += i;
-        i += 1;
+        let ms = &mut s;
+        *ms += i;
+        let mi = &mut i;
+        *mi += 1;
     }
 
-    return s;
+    s *= 2;
+    s
 }
 
-/// Test with nested loops and continue to outer loops
-fn test_loop3(max: u32) -> u32 {
-    let mut i = 0;
-    let mut j = 0;
-    let mut s = 0;
-    'outer: while i < max {
-        while j < max {
-            if i + j == 17 {
-                continue;
-            }
-            s += i;
-            j += 1;
-
-            continue 'outer;
-        }
-        j = 0;
-        s += i;
-        i += 1;
-    }
-
-    return s;
-}
-
-/// Test with nested loops and breaks to outer loops.
-/// This test is a bit of a mistake: the `break 'outer` doesn't really make
-/// sense, but it initially lead to strange results after control-flow reconstruction
-/// (with some code duplicata).
-#[allow(unused_assignments)]
-fn test_loop4(max: u32) -> u32 {
-    let mut i = 1;
-    let mut j = 0;
-    let mut s = 0;
-    'outer: while i < max {
-        while j < max {
-            if i + j == 17 {
-                continue;
-            }
-            s += i;
-            j += 1;
-
-            break 'outer;
-        }
-        j = 0;
-        s += i;
-        i += 1;
-    }
-
-    return s;
-}
-
-/// Just checking we don't generate interleaved loops (with the inner loop
-/// using a break or a continue to the outer loop).
-fn test_loop5(max: u32) -> u32 {
-    let mut i = 0;
-    let mut j = 0;
-    let mut s = 0;
-    while i < max {
-        while j < max {
-            s += j;
-            j += 1;
-        }
-        s += i;
-        i += 1;
-    }
-
-    return s;
-}
-
-/// In this function, the loop has several exit candidates with a number of
-/// occurrences > 1.
-fn test_loop6(max: u32) -> u32 {
+/// Similar to [sum_with_mut_borrows].
+fn sum_with_shared_borrows(max: u32) -> u32 {
     let mut i = 0;
     let mut s = 0;
     while i < max {
-        if i > 3 {
-            break;
-        }
-        s += i;
+        i += 1;
+        // We changed the order compared to [sum_with_mut_borrows]:
+        // we want to have a shared borrow surviving until the end
+        // of the iteration.
+        let mi = &i;
+        s += *mi;
+    }
+
+    s *= 2;
+    s
+}
+
+/// This case is interesting, because the fixed point for the loop doesn't
+/// introduce new abstractions.
+fn clear(v: &mut Vec<u32>) {
+    let mut i = 0;
+    while i < v.len() {
+        v[i] = 0;
         i += 1;
     }
-
-    // All the below nodes are exit candidates (each of them is referenced twice)
-    s += 1;
-    return s;
-}
-
-/// In this function, the loop is inside an `if ... then ... else ...`, so
-/// that the loop exit coincides with the `if ... then ... else ...` exit.
-fn test_loop7(max: u32) -> u32 {
-    let mut i = 0;
-    let mut s = 0;
-    if i < max {
-        while i < max {
-            if i > 3 {
-                break;
-            }
-            s += i;
-            i += 1;
-        }
-    } else {
-        s = 2;
-    }
-
-    s += 1;
-    return s;
-}
-
-fn test_loops() {
-    let x = test_loop1(2);
-    assert!(x == 2);
-    let x = test_loop2(2);
-    assert!(x == 1);
-    let x = test_loop3(2);
-    assert!(x == 3);
-    let x = test_loop4(20);
-    assert!(x == 1);
-    let x = test_loop5(2);
-    assert!(x == 2);
-    let x = test_loop6(2);
-    assert!(x == 2);
 }
 
 pub enum List<T> {
@@ -155,23 +64,270 @@ pub enum List<T> {
     Nil,
 }
 
+/// The parameter `x` is a borrow on purpose
+pub fn list_mem(x: &u32, mut ls: &List<u32>) -> bool {
+    while let List::Cons(y, tl) = ls {
+        if *y == *x {
+            return true;
+        } else {
+            ls = tl;
+        }
+    }
+    false
+}
+
 /// Same as [list_nth_mut] but with a loop
-///
-/// TODO: move to `no_nested_borrows` once we implement translation for loops.
-pub fn list_nth_mut_loop<'a, T>(mut ls: &'a mut List<T>, mut i: u32) -> &'a mut T {
+pub fn list_nth_mut_loop<T>(mut ls: &mut List<T>, mut i: u32) -> &mut T {
+    while let List::Cons(x, tl) = ls {
+        if i == 0 {
+            return x;
+        } else {
+            ls = tl;
+            i -= 1;
+        }
+    }
+    panic!()
+}
+
+/// Same as [list_nth_mut_loop] but with shared borrows
+pub fn list_nth_shared_loop<T>(mut ls: &List<T>, mut i: u32) -> &T {
+    while let List::Cons(x, tl) = ls {
+        if i == 0 {
+            return x;
+        } else {
+            ls = tl;
+            i -= 1;
+        }
+    }
+    panic!()
+}
+
+pub fn get_elem_mut(slots: &mut Vec<List<usize>>, x: usize) -> &mut usize {
+    let mut ls = &mut slots[0];
     loop {
         match ls {
-            List::Nil => {
-                panic!()
-            }
-            List::Cons(x, tl) => {
-                if i == 0 {
-                    return x;
+            List::Nil => panic!(),
+            List::Cons(y, tl) => {
+                if *y == x {
+                    return y;
                 } else {
                     ls = tl;
+                }
+            }
+        }
+    }
+}
+
+pub fn get_elem_shared(slots: &Vec<List<usize>>, x: usize) -> &usize {
+    let mut ls = &slots[0];
+    loop {
+        match ls {
+            List::Nil => panic!(),
+            List::Cons(y, tl) => {
+                if *y == x {
+                    return y;
+                } else {
+                    ls = tl;
+                }
+            }
+        }
+    }
+}
+
+pub fn id_mut<T>(ls: &mut List<T>) -> &mut List<T> {
+    ls
+}
+
+pub fn id_shared<T>(ls: &List<T>) -> &List<T> {
+    ls
+}
+
+/// Small variation of [list_nth_mut_loop]
+pub fn list_nth_mut_loop_with_id<T>(ls: &mut List<T>, mut i: u32) -> &mut T {
+    let mut ls = id_mut(ls);
+    while let List::Cons(x, tl) = ls {
+        if i == 0 {
+            return x;
+        } else {
+            ls = tl;
+            i -= 1;
+        }
+    }
+    panic!()
+}
+
+/// Small variation of [list_nth_shared_loop]
+pub fn list_nth_shared_loop_with_id<T>(ls: &List<T>, mut i: u32) -> &T {
+    let mut ls = id_shared(ls);
+    while let List::Cons(x, tl) = ls {
+        if i == 0 {
+            return x;
+        } else {
+            ls = tl;
+            i -= 1;
+        }
+    }
+    panic!()
+}
+
+/// Same as [list_nth_mut] but on a pair of lists.
+///
+/// This test checks that we manage to decompose a loop into disjoint regions.
+pub fn list_nth_mut_loop_pair<'a, 'b, T>(
+    mut ls0: &'a mut List<T>,
+    mut ls1: &'b mut List<T>,
+    mut i: u32,
+) -> (&'a mut T, &'b mut T) {
+    loop {
+        match (ls0, ls1) {
+            (List::Nil, _) | (_, List::Nil) => {
+                panic!()
+            }
+            (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
+                if i == 0 {
+                    return (x0, x1);
+                } else {
+                    ls0 = tl0;
+                    ls1 = tl1;
                     i -= 1;
                 }
             }
         }
     }
+}
+
+/// Same as [list_nth_mut_loop_pair] but with shared borrows.
+pub fn list_nth_shared_loop_pair<'a, 'b, T>(
+    mut ls0: &'a List<T>,
+    mut ls1: &'b List<T>,
+    mut i: u32,
+) -> (&'a T, &'b T) {
+    loop {
+        match (ls0, ls1) {
+            (List::Nil, _) | (_, List::Nil) => {
+                panic!()
+            }
+            (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
+                if i == 0 {
+                    return (x0, x1);
+                } else {
+                    ls0 = tl0;
+                    ls1 = tl1;
+                    i -= 1;
+                }
+            }
+        }
+    }
+}
+
+/// Same as [list_nth_mut_loop_pair] but this time we force the two loop
+/// regions to be merged.
+pub fn list_nth_mut_loop_pair_merge<'a, T>(
+    mut ls0: &'a mut List<T>,
+    mut ls1: &'a mut List<T>,
+    mut i: u32,
+) -> (&'a mut T, &'a mut T) {
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
+        }
+    }
+    panic!()
+}
+
+/// Same as [list_nth_mut_loop_pair_merge] but with shared borrows.
+pub fn list_nth_shared_loop_pair_merge<'a, T>(
+    mut ls0: &'a List<T>,
+    mut ls1: &'a List<T>,
+    mut i: u32,
+) -> (&'a T, &'a T) {
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
+        }
+    }
+    panic!()
+}
+
+/// Mixing mutable and shared borrows.
+pub fn list_nth_mut_shared_loop_pair<'a, 'b, T>(
+    mut ls0: &'a mut List<T>,
+    mut ls1: &'b List<T>,
+    mut i: u32,
+) -> (&'a mut T, &'b T) {
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
+        }
+    }
+    panic!()
+}
+
+/// Same as [list_nth_mut_shared_loop_pair] but this time we force the two loop
+/// regions to be merged.
+pub fn list_nth_mut_shared_loop_pair_merge<'a, T>(
+    mut ls0: &'a mut List<T>,
+    mut ls1: &'a List<T>,
+    mut i: u32,
+) -> (&'a mut T, &'a T) {
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
+        }
+    }
+    panic!()
+}
+
+/// Same as [list_nth_mut_shared_loop_pair], but we switched the positions of
+/// the mutable and shared borrows.
+pub fn list_nth_shared_mut_loop_pair<'a, 'b, T>(
+    mut ls0: &'a List<T>,
+    mut ls1: &'b mut List<T>,
+    mut i: u32,
+) -> (&'a T, &'b mut T) {
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
+        }
+    }
+    panic!()
+}
+
+/// Same as [list_nth_mut_shared_loop_pair_merge], but we switch the positions of
+/// the mutable and shared borrows.
+pub fn list_nth_shared_mut_loop_pair_merge<'a, T>(
+    mut ls0: &'a List<T>,
+    mut ls1: &'a mut List<T>,
+    mut i: u32,
+) -> (&'a T, &'a mut T) {
+    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {
+        if i == 0 {
+            return (x0, x1);
+        } else {
+            ls0 = tl0;
+            ls1 = tl1;
+            i -= 1;
+        }
+    }
+    panic!()
 }

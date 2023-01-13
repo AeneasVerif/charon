@@ -19,6 +19,7 @@ let big_int_to_yojson (i : big_int) = `Intlit (Z.to_string i)
 let pp_big_int (fmt : Format.formatter) (bi : big_int) : unit =
   Format.pp_print_string fmt (Z.to_string bi)
 
+let compare_big_int (bi0 : big_int) (bi1 : big_int) : int = Z.compare bi0 bi1
 let show_big_int (bi : big_int) : string = Z.to_string bi
 
 (** A scalar value
@@ -26,7 +27,8 @@ let show_big_int (bi : big_int) : string = Z.to_string bi
     Note that we use unbounded integers everywhere.
     We then harcode the boundaries for the different types.
  *)
-type scalar_value = { value : big_int; int_ty : integer_type } [@@deriving show]
+type scalar_value = { value : big_int; int_ty : integer_type }
+[@@deriving show, ord]
 
 (** A primitive value.
 
@@ -38,4 +40,4 @@ type primitive_value =
   | Bool of bool
   | Char of char
   | String of string
-[@@deriving show]
+[@@deriving show, ord]

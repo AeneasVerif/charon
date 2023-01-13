@@ -451,6 +451,7 @@ let borrow_kind_of_json (js : json) : (E.borrow_kind, string) result =
   | `String "Shared" -> Ok E.Shared
   | `String "Mut" -> Ok E.Mut
   | `String "TwoPhaseMut" -> Ok E.TwoPhaseMut
+  | `String "Shallow" -> Ok E.Shallow
   | _ -> Error ("borrow_kind_of_json failed on:" ^ show js)
 
 let unop_of_json (js : json) : (E.unop, string) result =

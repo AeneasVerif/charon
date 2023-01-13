@@ -16,6 +16,9 @@ type type_var_id = TypeVarId.id [@@deriving show, ord]
   *)
 type variant_id = VariantId.id [@@deriving show, ord]
 
+type field_id = FieldId.id [@@deriving show, ord]
+type type_decl_id = TypeDeclId.id [@@deriving show]
+
 (** Region variable ids. Used in function signatures. *)
 module RegionVarId = IdGen ()
 
@@ -120,10 +123,10 @@ class ['self] iter_ty_base =
   end
 
 (** Ancestor for map visitor for {!Types.ty} *)
-class ['self] map_ty_base =
+class virtual ['self] map_ty_base =
   object (_self : 'self)
     inherit [_] VisitorsRuntime.map
-    method visit_'r : 'env -> 'r -> 'r = fun _ r -> r
+    method virtual visit_'r : 'env -> 'r -> 's
 
     method visit_type_var_id : 'env -> type_var_id -> type_var_id =
       fun _ id -> id
@@ -166,7 +169,7 @@ type 'r ty =
         variety = "map";
         ancestors = [ "map_ty_base" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        concrete = false;
         polymorphic = false;
       }]
 (* TODO: group Bool, Char, etc. in Primitive *)
