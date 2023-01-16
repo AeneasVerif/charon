@@ -1470,7 +1470,8 @@ fn translate_statement<'tcx, 'ctx, 'ctx1>(
             Some(ast::RawStatement::Deinit(t_place))
         }
         StatementKind::Intrinsic(_) => {
-            unimplemented!();
+            trace!("Intrinsic");
+            None
         }
     };
 

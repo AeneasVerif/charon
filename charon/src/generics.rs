@@ -110,11 +110,9 @@ fn check_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
                 //     trait_name
                 // );
             }
-            PredicateKind::RegionOutlives(_) => trace!("RegionOutlives"),
-            //unimplemented!("case 1"),
-            PredicateKind::TypeOutlives(_) => trace!("TypeOutlives"),
-            //unimplemented!("case 2"),
-            PredicateKind::Projection(_) => trace!("Projection"),
+            PredicateKind::Clause(Clause::RegionOutlives(_)) => trace!("RegionOutlives"),
+            PredicateKind::Clause(Clause::TypeOutlives(_)) => trace!("TypeOutlives"),
+            PredicateKind::Clause(Clause::Projection(_)) => trace!("Projection"),
             PredicateKind::WellFormed(_) => unimplemented!(),
             PredicateKind::ObjectSafe(_) => unimplemented!(),
             PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
