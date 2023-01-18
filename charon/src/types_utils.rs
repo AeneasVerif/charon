@@ -853,6 +853,7 @@ where
 }
 
 impl TypeDecls {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> TypeDecls {
         TypeDecls {
             types: id_vector::Vector::new(),
