@@ -61,7 +61,7 @@ impl std::string::ToString for Var {
         match &self.name {
             // We display both the variable name and its id because some
             // variables may have the same name (in different scopes)
-            Some(name) => format!("{}({})", name, id),
+            Some(name) => format!("{name}({id})"),
             None => id,
         }
     }
@@ -240,22 +240,20 @@ impl Statement {
                 "{} := {}",
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
-            )
-            .to_string(),
+            ),
             RawStatement::FakeRead(place) => {
-                format!("@fake_read({})", place.fmt_with_ctx(ctx),).to_string()
+                format!("@fake_read({})", place.fmt_with_ctx(ctx))
             }
             RawStatement::SetDiscriminant(place, variant_id) => format!(
                 "@discriminant({}) := {}",
                 place.fmt_with_ctx(ctx),
-                variant_id.to_string()
-            )
-            .to_string(),
+                variant_id
+            ),
             RawStatement::StorageDead(vid) => {
-                format!("@storage_dead({})", var_id_to_pretty_string(*vid)).to_string()
+                format!("@storage_dead({})", var_id_to_pretty_string(*vid))
             }
             RawStatement::Deinit(place) => {
-                format!("@deinit({})", place.fmt_with_ctx(ctx)).to_string()
+                format!("@deinit({})", place.fmt_with_ctx(ctx))
             }
         }
     }
@@ -266,7 +264,7 @@ pub fn fmt_call<'a, 'b, T>(
     func: &'a FunId,
     region_args: &'a Vec<ErasedRegion>,
     type_args: &'a Vec<ETy>,
-    args: &'a Vec<Operand>,
+    args: &'a [Operand],
 ) -> String
 where
     T: Formatter<VarId::Id>
@@ -285,43 +283,37 @@ where
         let mut types_s: Vec<String> = type_args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
         let mut s = regions_s;
         s.append(&mut types_s);
-        format!("<{}>", s.join(", ")).to_string()
+        format!("<{}>", s.join(", "))
     };
     let args: Vec<String> = args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
     let args = args.join(", ");
 
     let f = match func {
-        FunId::Regular(def_id) => format!("{}{}", ctx.format_object(*def_id), rt_args).to_string(),
+        FunId::Regular(def_id) => format!("{}{}", ctx.format_object(*def_id), rt_args),
         FunId::Assumed(assumed) => match assumed {
-            AssumedFunId::Replace => format!("core::mem::replace{}", rt_args).to_string(),
-            AssumedFunId::BoxNew => format!("alloc::boxed::Box{}::new", rt_args).to_string(),
-            AssumedFunId::BoxDeref => format!(
-                "core::ops::deref::Deref<alloc::boxed::Box{}>::deref",
-                rt_args
-            )
-            .to_string(),
-            AssumedFunId::BoxDerefMut => format!(
-                "core::ops::deref::DerefMut<alloc::boxed::Box{}>::deref_mut",
-                rt_args
-            )
-            .to_string(),
-            AssumedFunId::BoxFree => format!("alloc::alloc::box_free{}", rt_args).to_string(),
-            AssumedFunId::VecNew => format!("alloc::vec::Vec{}::new", rt_args).to_string(),
-            AssumedFunId::VecPush => format!("alloc::vec::Vec{}::push", rt_args).to_string(),
-            AssumedFunId::VecInsert => format!("alloc::vec::Vec{}::insert", rt_args).to_string(),
-            AssumedFunId::VecLen => format!("alloc::vec::Vec{}::len", rt_args).to_string(),
-            AssumedFunId::VecIndex => {
-                format!("core::ops::index::Index<alloc::vec::Vec{}>::index", rt_args).to_string()
+            AssumedFunId::Replace => format!("core::mem::replace{rt_args}"),
+            AssumedFunId::BoxNew => format!("alloc::boxed::Box{rt_args}::new"),
+            AssumedFunId::BoxDeref => {
+                format!("core::ops::deref::Deref<alloc::boxed::Box{rt_args}>::deref",)
             }
-            AssumedFunId::VecIndexMut => format!(
-                "core::ops::index::IndexMut<alloc::vec::Vec{}>::index_mut",
-                rt_args
-            )
-            .to_string(),
+            AssumedFunId::BoxDerefMut => {
+                format!("core::ops::deref::DerefMut<alloc::boxed::Box{rt_args}>::deref_mut",)
+            }
+            AssumedFunId::BoxFree => format!("alloc::alloc::box_free{rt_args}"),
+            AssumedFunId::VecNew => format!("alloc::vec::Vec{rt_args}::new"),
+            AssumedFunId::VecPush => format!("alloc::vec::Vec{rt_args}::push"),
+            AssumedFunId::VecInsert => format!("alloc::vec::Vec{rt_args}::insert"),
+            AssumedFunId::VecLen => format!("alloc::vec::Vec{rt_args}::len"),
+            AssumedFunId::VecIndex => {
+                format!("core::ops::index::Index<alloc::vec::Vec{rt_args}>::index")
+            }
+            AssumedFunId::VecIndexMut => {
+                format!("core::ops::index::IndexMut<alloc::vec::Vec{rt_args}>::index_mut",)
+            }
         },
     };
 
-    format!("{}({})", f, args,).to_string()
+    format!("{f}({args})")
 }
 
 impl Terminator {
@@ -337,37 +329,31 @@ impl Terminator {
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match &self.content {
-            RawTerminator::Goto { target } => format!("goto bb{}", target.to_string()).to_string(),
+            RawTerminator::Goto { target } => format!("goto bb{target}"),
             RawTerminator::Switch { discr, targets } => match targets {
                 SwitchTargets::If(true_block, false_block) => format!(
                     "if {} -> bb{} else -> bb{}",
                     discr.fmt_with_ctx(ctx),
-                    true_block.to_string(),
-                    false_block.to_string()
-                )
-                .to_string(),
+                    true_block,
+                    false_block
+                ),
                 SwitchTargets::SwitchInt(_ty, maps, otherwise) => {
                     let mut maps: Vec<String> = maps
                         .iter()
-                        .map(|(v, bid)| {
-                            format!("{}: bb{}", v.to_string(), bid.to_string()).to_string()
-                        })
+                        .map(|(v, bid)| format!("{}: bb{}", v.to_string(), bid))
                         .collect();
-                    maps.push(format!("otherwise: bb{}", otherwise.to_string()).to_string());
+                    maps.push(format!("otherwise: bb{otherwise}"));
                     let maps = maps.join(", ");
 
-                    format!("switch {} -> {}", discr.fmt_with_ctx(ctx), maps).to_string()
+                    format!("switch {} -> {}", discr.fmt_with_ctx(ctx), maps)
                 }
             },
             RawTerminator::Panic => "panic".to_string(),
             RawTerminator::Return => "return".to_string(),
             RawTerminator::Unreachable => "unreachable".to_string(),
-            RawTerminator::Drop { place, target } => format!(
-                "drop {} -> bb{}",
-                place.fmt_with_ctx(ctx),
-                target.to_string()
-            )
-            .to_string(),
+            RawTerminator::Drop { place, target } => {
+                format!("drop {} -> bb{}", place.fmt_with_ctx(ctx), target)
+            }
             RawTerminator::Call {
                 func,
                 region_args,
@@ -378,13 +364,7 @@ impl Terminator {
             } => {
                 let call = fmt_call(ctx, func, region_args, type_args, args);
 
-                format!(
-                    "{} := {} -> bb{}",
-                    dest.fmt_with_ctx(ctx),
-                    call,
-                    target.to_string(),
-                )
-                .to_string()
+                format!("{} := {} -> bb{}", dest.fmt_with_ctx(ctx), call, target,)
             }
             RawTerminator::Assert {
                 cond,
@@ -394,9 +374,8 @@ impl Terminator {
                 "assert({} == {}) -> bb{}",
                 cond.fmt_with_ctx(ctx),
                 expected,
-                target.to_string()
-            )
-            .to_string(),
+                target
+            ),
         }
     }
 }
@@ -421,7 +400,7 @@ impl BlockData {
         }
 
         // Format the terminator
-        out.push(format!("{}{};", tab, self.terminator.fmt_with_ctx(ctx)).to_string());
+        out.push(format!("{}{};", tab, self.terminator.fmt_with_ctx(ctx)));
 
         // Join the strings
         out.join("")
@@ -443,17 +422,15 @@ where
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
         + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
 {
-    let block_tab = format!("{}{}", tab, TAB_INCR);
+    let block_tab = format!("{tab}{TAB_INCR}");
     let mut blocks: Vec<String> = Vec::new();
     for (bid, block) in body.iter_indexed_values() {
         use crate::id_vector::ToUsize;
         blocks.push(
             format!(
-                "{}bb{}: {{\n{}\n{}}}\n",
-                tab,
+                "{tab}bb{}: {{\n{}\n{tab}}}\n",
                 bid.to_usize(),
                 block.fmt_with_ctx(&block_tab, ctx),
-                tab
             )
             .to_string(),
         );
@@ -488,14 +465,12 @@ impl<T: Debug + Clone + Serialize> GExprBody<T> {
             let index = v.index.to_usize();
             let comment = if index == 0 {
                 "// return".to_string()
+            } else if index <= self.arg_count {
+                format!("// arg #{index}").to_string()
             } else {
-                if index <= self.arg_count {
-                    format!("// arg #{}", index).to_string()
-                } else {
-                    match &v.name {
-                        Some(_) => "// local".to_string(),
-                        None => "// anonymous local".to_string(),
-                    }
+                match &v.name {
+                    Some(_) => "// local".to_string(),
+                    None => "// anonymous local".to_string(),
                 }
             };
 
@@ -506,18 +481,15 @@ impl<T: Debug + Clone + Serialize> GExprBody<T> {
 
             locals.push(
                 format!(
-                    "{}let {}: {}; {}\n",
-                    tab,
-                    var_name,
+                    "{tab}let {var_name}: {}; {comment}\n",
                     v.ty.fmt_with_ctx(ctx),
-                    comment
                 )
                 .to_string(),
             );
         }
 
         let mut locals = locals.join("");
-        locals.push_str("\n");
+        locals.push('\n');
 
         // Format the body blocks - TODO: we don't take the indentation
         // into account, here
@@ -557,8 +529,8 @@ impl ExprBody {
         self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
-    pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {
-        self.fmt_with_names(&ctx.type_context, &ctx.fun_context, &ctx.global_context)
+    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
+        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
     }
 }
 
@@ -578,13 +550,13 @@ impl FunSig {
             let mut types: Vec<String> = self.type_params.iter().map(|x| x.to_string()).collect();
             let mut params = regions;
             params.append(&mut types);
-            format!("<{}>", params.join(", ")).to_string()
+            format!("<{}>", params.join(", "))
         };
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
         for ty in &self.inputs {
-            args.push(format!("{}", ty.fmt_with_ctx(ctx)).to_string());
+            args.push(ty.fmt_with_ctx(ctx).to_string());
         }
         let args = args.join(", ");
 
@@ -593,7 +565,7 @@ impl FunSig {
         let ret_ty = if ret_ty.is_unit() {
             "".to_string()
         } else {
-            format!(" -> {}", ret_ty.fmt_with_ctx(ctx)).to_string()
+            format!(" -> {}", ret_ty.fmt_with_ctx(ctx))
         };
 
         // Regions hierarchy
@@ -605,11 +577,7 @@ impl FunSig {
         let regions_hierarchy = regions_hierarchy.join("\n");
 
         // Put everything together
-        format!(
-            "fn{}({}){}\n\nRegions hierarchy:\n{}",
-            params, args, ret_ty, regions_hierarchy
-        )
-        .to_string()
+        format!("fn{params}({args}){ret_ty}\n\nRegions hierarchy:\n{regions_hierarchy}",)
     }
 }
 
@@ -643,7 +611,7 @@ impl<'a> Formatter<TypeDeclId::Id> for FunSigFormatter<'a> {
 }
 
 impl FunSig {
-    pub fn fmt_with_decls<'ctx>(&self, ty_ctx: &'ctx TypeDecls) -> String {
+    pub fn fmt_with_decls(&self, ty_ctx: &TypeDecls) -> String {
         // Initialize the formatting context
         let ctx = FunSigFormatter { ty_ctx, sig: self };
 
@@ -701,7 +669,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
                 .collect();
             let mut params = regions;
             params.append(&mut types);
-            format!("<{}>", params.join(", ")).to_string()
+            format!("<{}>", params.join(", "))
         };
 
         // Arguments
@@ -726,26 +694,22 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
         let ret_ty = if ret_ty.is_unit() {
             "".to_string()
         } else {
-            format!(" -> {}", ret_ty.fmt_with_ctx(sig_ctx)).to_string()
+            format!(" -> {}", ret_ty.fmt_with_ctx(sig_ctx))
         };
 
         // Case disjunction on the presence of a body (transparent/opaque definition)
         match &self.body {
             Option::None => {
                 // Put everything together
-                format!("{}fn {}{}({}){}", tab, name, params, args, ret_ty).to_string()
+                format!("{tab}fn {name}{params}({args}){ret_ty}")
             }
             Option::Some(body) => {
                 // Body
-                let body_tab = format!("{}{}", tab, TAB_INCR);
+                let body_tab = format!("{tab}{TAB_INCR}");
                 let body = body.fmt_with_ctx(&body_tab, body_ctx);
 
                 // Put everything together
-                format!(
-                    "{}fn {}{}({}){} {{\n{}\n{}}}",
-                    tab, name, params, args, ret_ty, body, tab
-                )
-                .to_string()
+                format!("{tab}fn {name}{params}({args}){ret_ty} {{\n{body}\n{tab}}}",)
             }
         }
     }
@@ -778,15 +742,15 @@ impl<CD: Debug + Clone + Serialize> GGlobalDecl<CD> {
         match &self.body {
             Option::None => {
                 // Put everything together
-                format!("{}global {}", tab, name).to_string()
+                format!("{tab}global {name}")
             }
             Option::Some(body) => {
                 // Body
-                let body_tab = format!("{}{}", tab, TAB_INCR);
+                let body_tab = format!("{tab}{TAB_INCR}");
                 let body = body.fmt_with_ctx(&body_tab, body_ctx);
 
                 // Put everything together
-                format!("{}global {} {{\n{}\n{}}}", tab, name, body, tab).to_string()
+                format!("{tab}global {name} {{\n{body}\n{tab}}}")
             }
         }
     }
@@ -1090,11 +1054,7 @@ impl FunDecl {
             sig: &self.signature,
         };
 
-        let locals = match &self.body {
-            None => None,
-            Some(body) => Some(&body.locals),
-        };
-
+        let locals = self.body.as_ref().map(|body| &body.locals);
         let ctx = GAstFormatter::new(
             ty_ctx,
             fun_ctx,
@@ -1129,8 +1089,8 @@ impl FunDecl {
         self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
     }
 
-    pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {
-        self.fmt_with_names(&ctx.type_context, &ctx.fun_context, &ctx.global_context)
+    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
+        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
     }
 }
 
@@ -1145,11 +1105,7 @@ impl GlobalDecl {
         FD: Formatter<FunDeclId::Id>,
         GD: Formatter<GlobalDeclId::Id>,
     {
-        let locals = match &self.body {
-            None => None,
-            Some(body) => Some(&body.locals),
-        };
-
+        let locals = self.body.as_ref().map(|body| &body.locals);
         let ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals);
 
         // Use the contexts for printing
@@ -1178,8 +1134,8 @@ impl GlobalDecl {
         self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
     }
 
-    pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {
-        self.fmt_with_names(&ctx.type_context, &ctx.fun_context, &ctx.global_context)
+    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
+        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
     }
 }
 
@@ -1205,7 +1161,6 @@ impl BlockData {
             }
             Rvalue::Global(_) | Rvalue::Discriminant(_) | Rvalue::Ref(_, _) => {
                 // No operands: nothing to do
-                ()
             }
         }
     }
@@ -1270,7 +1225,6 @@ impl BlockData {
                 target: _,
             } => {
                 // Nothing to do
-                ()
             }
         };
 

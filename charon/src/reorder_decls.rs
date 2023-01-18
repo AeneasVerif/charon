@@ -68,11 +68,11 @@ pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
 impl<Id: Copy + Debug> Display for GDeclarationGroup<Id> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
-            GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {:?}", id),
+            GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {id:?}"),
             GDeclarationGroup::Rec(ids) => write!(
                 f,
                 "rec: {}",
-                vec_to_string(&|id| format!("    {:?}", id).to_string(), ids)
+                vec_to_string(&|id| format!("    {id:?}"), ids)
             ),
         }
     }
@@ -115,9 +115,9 @@ impl<TypeId: Copy + Debug, FunId: Copy + Debug, GlobalId: Copy + Debug> Display
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
-            DeclarationGroup::Type(decl) => write!(f, "{{ Type(s): {} }}", decl),
-            DeclarationGroup::Fun(decl) => write!(f, "{{ Fun(s): {} }}", decl),
-            DeclarationGroup::Global(decl) => write!(f, "{{ Global(s): {} }}", decl),
+            DeclarationGroup::Type(decl) => write!(f, "{{ Type(s): {decl} }}"),
+            DeclarationGroup::Fun(decl) => write!(f, "{{ Fun(s): {decl} }}"),
+            DeclarationGroup::Global(decl) => write!(f, "{{ Global(s): {decl} }}"),
         }
     }
 }
@@ -256,7 +256,7 @@ pub fn reorder_declarations(
     // given by the user. To be more precise, if we don't need to move
     // definitions, the order in which we generate the declarations should
     // be the same as the one in which the user wrote them.
-    let get_id_dependencies = &|id| decls[&id].deps.iter().flatten().map(|d| *d).collect();
+    let get_id_dependencies = &|id| decls[&id].deps.iter().flatten().copied().collect();
     let SCCs {
         sccs: reordered_sccs,
         scc_deps: _,
@@ -272,7 +272,7 @@ pub fn reorder_declarations(
     // Iterate over the SCC ids in the proper order
     for scc in reordered_sccs.iter() {
         // Retrieve the SCC
-        assert!(scc.len() > 0);
+        assert!(!scc.is_empty());
 
         // Note that the length of an SCC should be at least 1.
         let mut it = scc.iter();
@@ -332,7 +332,7 @@ pub fn reorder_declarations(
     // transparent definitions (this is for sanity: this really *shouldn't*
     // happen).
 
-    return Ok(reordered_decls);
+    Ok(reordered_decls)
 }
 
 #[cfg(test)]

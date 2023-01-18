@@ -7,6 +7,7 @@ use rustc_index::vec::IndexVec;
 use rustc_middle::mir::{SourceInfo, SourceScope, SourceScopeData};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::iter::Iterator;
 
@@ -20,28 +21,24 @@ pub fn get_rspan_from_def_id(ctx: TyCtxt, def_id: DefId) -> rustc_span::Span {
 
 impl Loc {
     fn min(l0: &Loc, l1: &Loc) -> Loc {
-        if l0.line == l1.line {
-            Loc {
+        match l0.line.cmp(&l1.line) {
+            Ordering::Equal => Loc {
                 line: l0.line,
                 col: std::cmp::min(l0.col, l1.col),
-            }
-        } else if l0.line < l1.line {
-            *l0
-        } else {
-            *l1
+            },
+            Ordering::Less => *l0,
+            Ordering::Greater => *l1,
         }
     }
 
     fn max(l0: &Loc, l1: &Loc) -> Loc {
-        if l0.line == l1.line {
-            Loc {
+        match l0.line.cmp(&l1.line) {
+            Ordering::Equal => Loc {
                 line: l0.line,
                 col: std::cmp::max(l0.col, l1.col),
-            }
-        } else if l0.line > l1.line {
-            *l0
-        } else {
-            *l1
+            },
+            Ordering::Greater => *l0,
+            Ordering::Less => *l1,
         }
     }
 }
@@ -103,7 +100,7 @@ pub fn convert_filename(name: &rustc_span::FileName) -> FileName {
         | rustc_span::FileName::InlineAsm(_) => {
             // We use the debug formatter to generate a filename.
             // This is not ideal, but filenames are for debugging anyway.
-            FileName::NotReal(format!("{:?}", name).to_string())
+            FileName::NotReal(format!("{name:?}"))
         }
     }
 }
@@ -128,7 +125,7 @@ pub fn convert_loc(loc: rustc_span::Loc) -> Loc {
     }
 }
 
-pub fn translate_span<'tcx>(
+pub fn translate_span(
     sess: &Session,
     filename_to_id: &HashMap<FileName, FileId::Id>,
     rspan: rustc_span::Span,
@@ -166,7 +163,7 @@ pub fn translate_span<'tcx>(
 }
 
 /// Compute meta data from a Rust span
-pub fn get_meta_from_rspan<'tcx>(
+pub fn get_meta_from_rspan(
     sess: &Session,
     filename_to_id: &HashMap<FileName, FileId::Id>,
     rspan: rustc_span::Span,
@@ -181,10 +178,10 @@ pub fn get_meta_from_rspan<'tcx>(
 }
 
 /// Compute meta data from a Rust source scope
-pub fn get_meta_from_source_info<'tcx>(
+pub fn get_meta_from_source_info(
     sess: &Session,
     filename_to_id: &HashMap<FileName, FileId::Id>,
-    source_scopes: &IndexVec<SourceScope, SourceScopeData<'tcx>>,
+    source_scopes: &IndexVec<SourceScope, SourceScopeData<'_>>,
     source_info: SourceInfo,
 ) -> Meta {
     // Translate the span
@@ -269,12 +266,10 @@ pub fn span_to_string(sess: &Session, span: rustc_span::Span) -> String {
             ));
 
             // Add the code snippet
-            let _ = snippet.map(|snippet| out.push_str(&format!("\nCode snippet:\n{}", snippet)));
-            return out;
+            let _ = snippet.map(|snippet| out.push_str(&format!("\nCode snippet:\n{snippet}")));
+            out
         }
         // Other cases: just return a dummy string
-        _ => {
-            return "<unknown span>".to_string();
-        }
+        _ => "<unknown span>".to_string(),
     }
 }

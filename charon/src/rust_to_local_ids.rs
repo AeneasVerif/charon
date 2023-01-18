@@ -157,7 +157,7 @@ pub fn rust_to_local_ids(
     }
 
     // Reorder the files and compute the maps from files to ids and reverse
-    let mut files: Vec<FileName> = files_info.keys().map(|f| f.clone()).collect();
+    let mut files: Vec<FileName> = files_info.keys().cloned().collect();
     files.sort();
 
     let mut file_to_id: HashMap<FileName, FileId::Id> = HashMap::new();

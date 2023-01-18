@@ -2,7 +2,6 @@
 
 #![allow(dead_code)]
 
-use crate::common::*;
 use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
@@ -11,8 +10,18 @@ use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 
 pub fn var_id_to_pretty_string(id: VarId::Id) -> String {
-    format!("var@{}", id.to_string()).to_owned()
+    format!("var@{id}")
 }
+
+#[derive(Debug, Clone)]
+pub enum ScalarError {
+    /// Attempt to use a signed scalar as an unsigned scalar or vice-versa
+    IncorrectSign,
+    /// Out of bounds scalar
+    OutOfBounds,
+}
+/// Our redefinition of Result - we don't care much about the I/O part.
+pub type ScalarResult<T> = std::result::Result<T, ScalarError>;
 
 pub struct DummyFormatter {}
 
@@ -43,19 +52,14 @@ impl Formatter<TypeVarId::Id> for DummyFormatter {
 impl Formatter<(TypeDeclId::Id, VariantId::Id)> for DummyFormatter {
     fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
         let (def_id, variant_id) = id;
-        format!(
-            "{}::@Variant{}",
-            self.format_object(def_id),
-            variant_id.to_string()
-        )
-        .to_owned()
+        format!("{}::@Variant{variant_id}", self.format_object(def_id))
     }
 }
 
 impl Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)> for DummyFormatter {
     fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (_def_id, _opt_variant_id, field_id) = id;
-        format!("@field{}", field_id.to_string()).to_owned()
+        format!("@field{field_id}")
     }
 }
 
@@ -107,33 +111,33 @@ impl ScalarValue {
     }
 
     pub fn is_int(&self) -> bool {
-        match self {
+        matches!(
+            self,
             ScalarValue::Isize(_)
-            | ScalarValue::I8(_)
-            | ScalarValue::I16(_)
-            | ScalarValue::I32(_)
-            | ScalarValue::I64(_)
-            | ScalarValue::I128(_) => true,
-            _ => false,
-        }
+                | ScalarValue::I8(_)
+                | ScalarValue::I16(_)
+                | ScalarValue::I32(_)
+                | ScalarValue::I64(_)
+                | ScalarValue::I128(_)
+        )
     }
 
     pub fn is_uint(&self) -> bool {
-        match self {
+        matches!(
+            self,
             ScalarValue::Usize(_)
-            | ScalarValue::U8(_)
-            | ScalarValue::U16(_)
-            | ScalarValue::U32(_)
-            | ScalarValue::U64(_)
-            | ScalarValue::U128(_) => true,
-            _ => false,
-        }
+                | ScalarValue::U8(_)
+                | ScalarValue::U16(_)
+                | ScalarValue::U32(_)
+                | ScalarValue::U64(_)
+                | ScalarValue::U128(_)
+        )
     }
 
     /// When computing the result of binary operations, we convert the values
     /// to u128 then back to the target type (while performing dynamic checks
     /// of course).
-    pub fn as_uint(&self) -> Result<u128> {
+    pub fn as_uint(&self) -> ScalarResult<u128> {
         match self {
             ScalarValue::Usize(v) => Ok(*v as u128),
             ScalarValue::U8(v) => Ok(*v as u128),
@@ -141,7 +145,7 @@ impl ScalarValue {
             ScalarValue::U32(v) => Ok(*v as u128),
             ScalarValue::U64(v) => Ok(*v as u128),
             ScalarValue::U128(v) => Ok(*v),
-            _ => Err(()),
+            _ => Err(ScalarError::IncorrectSign),
         }
     }
 
@@ -169,10 +173,10 @@ impl ScalarValue {
         }
     }
 
-    pub fn from_uint(ty: IntegerTy, v: u128) -> Result<ScalarValue> {
+    pub fn from_uint(ty: IntegerTy, v: u128) -> ScalarResult<ScalarValue> {
         if !ScalarValue::uint_is_in_bounds(ty, v) {
             trace!("Not in bounds for {:?}: {}", ty, v);
-            Err(())
+            Err(ScalarError::OutOfBounds)
         } else {
             Ok(ScalarValue::from_unchecked_uint(ty, v))
         }
@@ -181,7 +185,7 @@ impl ScalarValue {
     /// When computing the result of binary operations, we convert the values
     /// to i128 then back to the target type (while performing dynamic checks
     /// of course).
-    pub fn as_int(&self) -> Result<i128> {
+    pub fn as_int(&self) -> ScalarResult<i128> {
         match self {
             ScalarValue::Isize(v) => Ok(*v as i128),
             ScalarValue::I8(v) => Ok(*v as i128),
@@ -189,7 +193,7 @@ impl ScalarValue {
             ScalarValue::I32(v) => Ok(*v as i128),
             ScalarValue::I64(v) => Ok(*v as i128),
             ScalarValue::I128(v) => Ok(*v),
-            _ => Err(()),
+            _ => Err(ScalarError::IncorrectSign),
         }
     }
 
@@ -274,9 +278,9 @@ impl ScalarValue {
     /// **Warning**: most constants are stored as u128 by rustc. When converting
     /// to i128, it is not correct to do `v as i128`, we must reinterpret the
     /// bits (see [ScalarValue::from_le_bytes]).
-    pub fn from_int(ty: IntegerTy, v: i128) -> Result<ScalarValue> {
+    pub fn from_int(ty: IntegerTy, v: i128) -> ScalarResult<ScalarValue> {
         if !ScalarValue::int_is_in_bounds(ty, v) {
-            Err(())
+            Err(ScalarError::OutOfBounds)
         } else {
             Ok(ScalarValue::from_unchecked_int(ty, v))
         }
@@ -286,18 +290,18 @@ impl ScalarValue {
 impl std::string::ToString for ScalarValue {
     fn to_string(&self) -> String {
         match self {
-            ScalarValue::Isize(v) => format!("{} : isize", v).to_owned(),
-            ScalarValue::I8(v) => format!("{} : i8", v).to_owned(),
-            ScalarValue::I16(v) => format!("{} : i16", v).to_owned(),
-            ScalarValue::I32(v) => format!("{} : i32", v).to_owned(),
-            ScalarValue::I64(v) => format!("{} : i64", v).to_owned(),
-            ScalarValue::I128(v) => format!("{} : i128", v).to_owned(),
-            ScalarValue::Usize(v) => format!("{} : usize", v).to_owned(),
-            ScalarValue::U8(v) => format!("{} : u8", v).to_owned(),
-            ScalarValue::U16(v) => format!("{} : u16", v).to_owned(),
-            ScalarValue::U32(v) => format!("{} : u32", v).to_owned(),
-            ScalarValue::U64(v) => format!("{} : u64", v).to_owned(),
-            ScalarValue::U128(v) => format!("{} : u128", v).to_owned(),
+            ScalarValue::Isize(v) => format!("{v} : isize"),
+            ScalarValue::I8(v) => format!("{v} : i8"),
+            ScalarValue::I16(v) => format!("{v} : i16"),
+            ScalarValue::I32(v) => format!("{v} : i32"),
+            ScalarValue::I64(v) => format!("{v} : i64"),
+            ScalarValue::I128(v) => format!("{v} : i128"),
+            ScalarValue::Usize(v) => format!("{v} : usize"),
+            ScalarValue::U8(v) => format!("{v} : u8"),
+            ScalarValue::U16(v) => format!("{v} : u16"),
+            ScalarValue::U32(v) => format!("{v} : u32"),
+            ScalarValue::U64(v) => format!("{v} : u64"),
+            ScalarValue::U128(v) => format!("{v} : u128"),
         }
     }
 }

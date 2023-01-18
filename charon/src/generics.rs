@@ -78,7 +78,7 @@ where
 /// Function used for sanity checks: check the constraints given by a definition's
 /// generics (lifetime constraints, traits, etc.).
 /// For now we simply check that there are no such constraints...
-fn check_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+fn check_generics(tcx: TyCtxt<'_>, def_id: DefId) {
     // Retrieve the generics and the predicates (where-clauses)
     let _generics = tcx.generics_of(def_id);
     let preds = tcx.predicates_of(def_id);
@@ -127,17 +127,17 @@ fn check_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
 }
 
 /// Check a function's generics
-pub(crate) fn check_function_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+pub(crate) fn check_function_generics(tcx: TyCtxt<'_>, def_id: DefId) {
     check_generics(tcx, def_id)
 }
 
 /// Check a type's generics
-pub(crate) fn check_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+pub(crate) fn check_type_generics(tcx: TyCtxt<'_>, def_id: DefId) {
     check_generics(tcx, def_id)
 }
 
 /// Check a global's generics (to refuse them except Sized trait)
-pub(crate) fn check_global_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) {
+pub(crate) fn check_global_generics(tcx: TyCtxt<'_>, def_id: DefId) {
     assert!(tcx.generics_of(def_id).params.is_empty());
     check_generics(tcx, def_id)
 }

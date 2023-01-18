@@ -17,7 +17,7 @@ use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
 
 // TODO: move this definition
-pub static TAB_INCR: &'static str = "    ";
+pub static TAB_INCR: &str = "    ";
 
 generate_index_type!(FunDeclId);
 
@@ -57,8 +57,8 @@ pub struct FunSig {
     ///  impl<'a> Foo<'a> {
     ///      fn bar<'b>(...) -> ... { ... }
     ///  }
-    /// `'a` is early-bound while `'b` is late-bound.
     ///  ```
+    ///  `'a` is early-bound while `'b` is late-bound.
     pub num_early_bound_regions: usize,
     /// The lifetime's hierarchy between the different regions.
     pub regions_hierarchy: RegionGroups,

@@ -106,12 +106,11 @@ fn insert_scc_with_deps<Id: Copy + std::hash::Hash + Eq>(
 pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
     get_id_dependencies: &dyn Fn(Id) -> Vec<Id>,
     ids: &Vec<Id>,
-    sccs: &Vec<Vec<Id>>,
+    sccs: &[Vec<Id>],
 ) -> SCCs<Id> {
     // Map the identifiers to the SCC indices
     let mut id_to_scc = HashMap::<Id, usize>::new();
-    for i in 0..sccs.len() {
-        let scc = &sccs[i];
+    for (i, scc) in sccs.iter().enumerate() {
         for id in scc {
             id_to_scc.insert(*id, i);
         }
@@ -123,7 +122,7 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
     let mut reordered_sccs: Vec<Vec<Id>> = vec![];
     sccs.iter().for_each(|_| reordered_sccs.push(vec![]));
     for id in ids {
-        let scc_id = match id_to_scc.get(&id) {
+        let scc_id = match id_to_scc.get(id) {
             None => panic!("Could not find id; {:?}", id),
             Some(id) => id,
         };
@@ -135,7 +134,7 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
     let mut reordered_sccs_ids = LinkedHashSet::<usize>::new();
     let mut scc_deps: Vec<OrdSet<usize>> = reordered_sccs.iter().map(|_| OrdSet::new()).collect();
     for id in ids {
-        let scc_id = id_to_scc.get(&id).unwrap();
+        let scc_id = id_to_scc.get(id).unwrap();
         insert_scc_with_deps(
             get_id_dependencies,
             &mut reordered_sccs_ids,

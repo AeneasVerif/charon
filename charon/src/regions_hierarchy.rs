@@ -22,7 +22,7 @@ use std::iter::FromIterator;
 generate_index_type!(RegionGroupId);
 
 pub fn region_group_id_to_pretty_string(rid: RegionGroupId::Id) -> String {
-    format!("rg@{}", rid).to_string()
+    format!("rg@{rid}")
 }
 
 #[derive(Copy, Clone)]
@@ -70,7 +70,7 @@ fn compute_sccs_from_lifetime_constraints(
 
     // Option::iter is a trick to easily append a single region to the var regions
     // Maybe there is a better way.
-    let all_var_regions = region_params.iter_indices().map(|id| Region::Var(id));
+    let all_var_regions = region_params.iter_indices().map(Region::Var);
     let all_rids: Vec<Region<RegionVarId::Id>> = all_var_regions
         .chain(Some(Region::Static).into_iter())
         .collect();
@@ -104,7 +104,7 @@ fn compute_regions_hierarchy_from_constraints(
     // can live as long as 'static, so we check that the last scc is the
     // {static} singleton.
     // TODO: general support for 'static
-    assert!(constraints.sccs.len() >= 1);
+    assert!(!constraints.sccs.is_empty());
     assert!(constraints.sccs.last().unwrap() == &vec![Region::Static]);
 
     // Pop the last SCC (which is {'static}).
@@ -264,7 +264,7 @@ fn compute_full_regions_constraints_for_ty(
             // Compute the map from region param id to region instantation, for
             // this ADT instantiation
             let region_inst: RegionVarId::Vector<Region<RegionVarId::Id>> =
-                RegionVarId::Vector::from_iter(regions.iter().map(|r| *r));
+                RegionVarId::Vector::from_iter(regions.iter().copied());
 
             // Lookup the constraints for this type definition
             match type_id {
@@ -441,7 +441,7 @@ fn compute_regions_constraints_for_type_decl_group(
             ids.insert(*id);
             ids
         }
-        TypeDeclarationGroup::Rec(ids) => HashSet::from_iter(ids.iter().map(|id| *id)),
+        TypeDeclarationGroup::Rec(ids) => HashSet::from_iter(ids.iter().copied()),
     };
 
     // Initialize the constraints map - TODO: this will be different once we
@@ -508,13 +508,12 @@ fn compute_regions_constraints_for_type_decl_group(
             match variants_fields_tys {
                 Option::None => {
                     // Opaque type: nothing to do
-                    ()
                 }
                 Option::Some(variants_fields_tys) => {
                     // Transparent type
 
                     // Retreive the accumulated constraints for this type def
-                    let mut acc_constraints = acc_constraints_map.get_mut(id).unwrap();
+                    let acc_constraints = acc_constraints_map.get_mut(id).unwrap();
 
                     // Clone the type vars constraints map - we can't accumulate in the
                     // original map, so we have to clone
@@ -528,7 +527,7 @@ fn compute_regions_constraints_for_type_decl_group(
                             compute_full_regions_constraints_for_ty(
                                 &mut updated,
                                 constraints_map,
-                                &mut acc_constraints,
+                                acc_constraints,
                                 &mut updt_type_vars_constraints,
                                 im::HashSet::new(),
                                 ty,
@@ -685,13 +684,13 @@ pub fn compute_regions_hierarchies_for_functions(
 }
 
 impl RegionGroup {
-    pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
         T: Formatter<RegionVarId::Id>,
     {
         // The parent region groups
         let parents: Vec<String> = self.parents.iter().map(|gid| gid.to_string()).collect();
-        let parents = format!("{{{}}}", parents.join(",")).to_string();
+        let parents = format!("{{{}}}", parents.join(","));
 
         // The regions included in the group
         let regions: Vec<String> = self
@@ -699,7 +698,7 @@ impl RegionGroup {
             .iter()
             .map(|rid| ctx.format_object(*rid))
             .collect();
-        let regions = format!("{{{}}}", regions.join(",")).to_string();
+        let regions = format!("{{{}}}", regions.join(","));
 
         // Put everything together
         format!(
@@ -708,7 +707,6 @@ impl RegionGroup {
             parents,
             regions
         )
-        .to_string()
     }
 }
 
@@ -733,7 +731,6 @@ where
                 .collect::<Vec<String>>()
                 .join(",")
         )
-        .to_string()
     });
     let type_constraints = cs.type_vars_constraints.iter().map(|(vid, regions)| {
         format!(
@@ -746,7 +743,6 @@ where
                 .collect::<Vec<String>>()
                 .join(",")
         )
-        .to_string()
     });
     let all_constraints: Vec<String> = region_constraints.chain(type_constraints).collect();
     all_constraints.join(",\n")
@@ -764,7 +760,7 @@ pub fn types_constraints_map_fmt_with_ctx(
         .map(|type_def| {
             let cmap = cs.get(&type_def.def_id).unwrap();
             if type_def.region_params.len() + type_def.type_params.len() == 0 {
-                format!("{} -> []", types.format_object(type_def.def_id)).to_string()
+                format!("{} -> []", types.format_object(type_def.def_id))
             } else {
                 let ctx = type_def;
                 format!(
@@ -772,7 +768,6 @@ pub fn types_constraints_map_fmt_with_ctx(
                     types.format_object(type_def.def_id),
                     types_def_constraints_map_fmt_with_ctx(cmap, ctx, "  ")
                 )
-                .to_string()
             }
         })
         .collect();
