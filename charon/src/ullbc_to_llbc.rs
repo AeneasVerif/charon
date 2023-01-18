@@ -926,8 +926,7 @@ fn compute_switch_exits_explore(
             let mut current_inter_succs: im::OrdSet<OrdBlockId> = i_succs;
 
             // Compute the "best" intersection with all the other children
-            for j in 0..children_succs.len() {
-                let mut j_succs = children_succs.get(j).unwrap().clone();
+            for (j, mut j_succs) in children_succs.iter().cloned().enumerate() {
                 j_succs.insert(make_ord_block_id(children[j], tsort_map));
 
                 // Annoying that we have to clone the current intersection set...
