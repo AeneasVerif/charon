@@ -39,11 +39,11 @@ pub fn boxes_are_desugared(level: MirLevel) -> bool {
 }
 
 /// Query the MIR for a function at a specific level
-pub fn get_mir_for_def_id_and_level<'tcx>(
-    tcx: TyCtxt<'tcx>,
+pub fn get_mir_for_def_id_and_level(
+    tcx: TyCtxt<'_>,
     def_id: LocalDefId,
     level: MirLevel,
-) -> &Body<'tcx> {
+) -> &Body<'_> {
     match level {
         MirLevel::Built => {
             let body = tcx.mir_built(WithOptConstParam::unknown(def_id));

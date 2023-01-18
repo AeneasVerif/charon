@@ -27,10 +27,10 @@ impl std::fmt::Display for PathElem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
             PathElem::Ident(s) => {
-                write!(f, "{}", s)
+                write!(f, "{s}")
             }
             PathElem::Disambiguator(d) => {
-                write!(f, "{}", d)
+                write!(f, "{d}")
             }
         }
     }
@@ -221,7 +221,7 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                     }
                     // Builtin cases.
                     rustc_middle::ty::TyKind::Int(_) | rustc_middle::ty::TyKind::Uint(_) => {
-                        format!("{:?}", ty)
+                        format!("{ty:?}")
                     }
                     _ => unreachable!(),
                 }));

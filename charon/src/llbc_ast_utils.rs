@@ -236,28 +236,25 @@ impl Statement {
                 tab,
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
-            )
-            .to_owned(),
+            ),
             RawStatement::FakeRead(place) => {
-                format!("{}@fake_read({})", tab, place.fmt_with_ctx(ctx)).to_owned()
+                format!("{}@fake_read({})", tab, place.fmt_with_ctx(ctx))
             }
             RawStatement::SetDiscriminant(place, variant_id) => format!(
                 "{}@discriminant({}) := {}",
                 tab,
                 place.fmt_with_ctx(ctx),
-                variant_id.to_string()
-            )
-            .to_owned(),
+                variant_id
+            ),
             RawStatement::Drop(place) => {
-                format!("{}drop {}", tab, place.fmt_with_ctx(ctx)).to_owned()
+                format!("{}drop {}", tab, place.fmt_with_ctx(ctx))
             }
             RawStatement::Assert(assert) => format!(
                 "{}assert({} == {})",
                 tab,
                 assert.cond.fmt_with_ctx(ctx),
                 assert.expected,
-            )
-            .to_owned(),
+            ),
             RawStatement::Call(call) => {
                 let Call {
                     func,
@@ -267,22 +264,21 @@ impl Statement {
                     dest,
                 } = call;
                 let call = fmt_call(ctx, func, region_args, type_args, args);
-                format!("{}{} := {}", tab, dest.fmt_with_ctx(ctx), call).to_owned()
+                format!("{}{} := {}", tab, dest.fmt_with_ctx(ctx), call)
             }
-            RawStatement::Panic => format!("{}panic", tab).to_owned(),
-            RawStatement::Return => format!("{}return", tab).to_owned(),
-            RawStatement::Break(index) => format!("{}break {}", tab, index).to_owned(),
-            RawStatement::Continue(index) => format!("{}continue {}", tab, index).to_owned(),
-            RawStatement::Nop => format!("{}nop", tab).to_owned(),
+            RawStatement::Panic => format!("{tab}panic"),
+            RawStatement::Return => format!("{tab}return"),
+            RawStatement::Break(index) => format!("{tab}break {index}"),
+            RawStatement::Continue(index) => format!("{tab}continue {index}"),
+            RawStatement::Nop => format!("{tab}nop"),
             RawStatement::Sequence(st1, st2) => format!(
                 "{}\n{}",
                 st1.fmt_with_ctx(tab, ctx),
                 st2.fmt_with_ctx(tab, ctx)
-            )
-            .to_owned(),
+            ),
             RawStatement::Switch(switch) => match switch {
                 Switch::If(discr, true_st, false_st) => {
-                    let inner_tab = format!("{}{}", tab, TAB_INCR);
+                    let inner_tab = format!("{tab}{TAB_INCR}");
                     format!(
                         "{}if {} {{\n{}\n{}}}\n{}else {{\n{}\n{}}}",
                         tab,
@@ -293,11 +289,10 @@ impl Statement {
                         false_st.fmt_with_ctx(&inner_tab, ctx),
                         tab,
                     )
-                    .to_owned()
                 }
                 Switch::SwitchInt(discr, _ty, maps, otherwise) => {
-                    let inner_tab1 = format!("{}{}", tab, TAB_INCR);
-                    let inner_tab2 = format!("{}{}", inner_tab1, TAB_INCR);
+                    let inner_tab1 = format!("{tab}{TAB_INCR}");
+                    let inner_tab2 = format!("{inner_tab1}{TAB_INCR}");
                     let mut maps: Vec<String> = maps
                         .iter()
                         .map(|(pvl, st)| {
@@ -310,18 +305,14 @@ impl Statement {
                                 st.fmt_with_ctx(&inner_tab2, ctx),
                                 inner_tab1
                             )
-                            .to_owned()
                         })
                         .collect();
-                    maps.push(
-                        format!(
-                            "{}_ => {{\n{}\n{}}}",
-                            inner_tab1,
-                            otherwise.fmt_with_ctx(&inner_tab2, ctx),
-                            inner_tab1
-                        )
-                        .to_owned(),
-                    );
+                    maps.push(format!(
+                        "{}_ => {{\n{}\n{}}}",
+                        inner_tab1,
+                        otherwise.fmt_with_ctx(&inner_tab2, ctx),
+                        inner_tab1
+                    ));
                     let maps = maps.join(",\n");
 
                     format!(
@@ -331,11 +322,10 @@ impl Statement {
                         maps,
                         tab
                     )
-                    .to_owned()
                 }
                 Switch::Match(discr, maps, otherwise) => {
-                    let inner_tab1 = format!("{}{}", tab, TAB_INCR);
-                    let inner_tab2 = format!("{}{}", inner_tab1, TAB_INCR);
+                    let inner_tab1 = format!("{tab}{TAB_INCR}");
+                    let inner_tab2 = format!("{inner_tab1}{TAB_INCR}");
                     let mut maps: Vec<String> = maps
                         .iter()
                         .map(|(pvl, st)| {
@@ -348,18 +338,14 @@ impl Statement {
                                 st.fmt_with_ctx(&inner_tab2, ctx),
                                 inner_tab1
                             )
-                            .to_owned()
                         })
                         .collect();
-                    maps.push(
-                        format!(
-                            "{}_ => {{\n{}\n{}}}",
-                            inner_tab1,
-                            otherwise.fmt_with_ctx(&inner_tab2, ctx),
-                            inner_tab1
-                        )
-                        .to_owned(),
-                    );
+                    maps.push(format!(
+                        "{}_ => {{\n{}\n{}}}",
+                        inner_tab1,
+                        otherwise.fmt_with_ctx(&inner_tab2, ctx),
+                        inner_tab1
+                    ));
                     let maps = maps.join(",\n");
 
                     format!(
@@ -369,18 +355,16 @@ impl Statement {
                         maps,
                         tab
                     )
-                    .to_owned()
                 }
             },
             RawStatement::Loop(body) => {
-                let inner_tab = format!("{}{}", tab, TAB_INCR);
+                let inner_tab = format!("{tab}{TAB_INCR}");
                 format!(
                     "{}loop {{\n{}\n{}}}",
                     tab,
                     body.fmt_with_ctx(&inner_tab, ctx),
                     tab
                 )
-                .to_owned()
             }
         }
     }
@@ -457,8 +441,8 @@ impl ExprBody {
         self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
-    pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {
-        self.fmt_with_names(&ctx.type_context, &ctx.fun_context, &ctx.global_context)
+    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
+        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
     }
 }
 
@@ -479,11 +463,7 @@ impl FunDecl {
             sig: &self.signature,
         };
 
-        let locals = match &self.body {
-            None => None,
-            Some(body) => Some(&body.locals),
-        };
-
+        let locals = self.body.as_ref().map(|body| &body.locals);
         let fmt_ctx = GAstFormatter::new(
             ty_ctx,
             fun_ctx,
@@ -518,8 +498,8 @@ impl FunDecl {
         self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
     }
 
-    pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {
-        self.fmt_with_names(&ctx.type_context, &ctx.fun_context, &ctx.global_context)
+    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
+        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
     }
 }
 
@@ -534,11 +514,7 @@ impl GlobalDecl {
         FD: Formatter<FunDeclId::Id>,
         GD: Formatter<GlobalDeclId::Id>,
     {
-        let locals = match &self.body {
-            None => None,
-            Some(body) => Some(&body.locals),
-        };
-
+        let locals = self.body.as_ref().map(|body| &body.locals);
         let fmt_ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals);
 
         // Use the contexts for printing
@@ -567,7 +543,7 @@ impl GlobalDecl {
         self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
     }
 
-    pub fn fmt_with_ctx_names<'ctx>(&self, ctx: &CtxNames<'ctx>) -> String {
-        self.fmt_with_names(&ctx.type_context, &ctx.fun_context, &ctx.global_context)
+    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
+        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
     }
 }

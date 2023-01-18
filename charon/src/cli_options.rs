@@ -109,4 +109,4 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
 
 /// The name of the environment variable we use to save the serialized Cli options
 /// when calling charon-driver from cargo-charon.
-pub const CHARON_ARGS: &'static str = "CHARON_ARGS";
+pub const CHARON_ARGS: &str = "CHARON_ARGS";

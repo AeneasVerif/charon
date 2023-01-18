@@ -44,7 +44,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use structopt::StructOpt;
 
-const RUST_VERSION: &'static str = macros::rust_version!();
+const RUST_VERSION: &str = macros::rust_version!();
 
 pub fn main() {
     // Initialize the logger

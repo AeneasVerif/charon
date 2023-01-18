@@ -20,7 +20,7 @@ use crate::values::VarId;
 
 fn deref_static_type(ref_ty: &ETy) -> &ETy {
     match ref_ty {
-        Ty::Ref(ErasedRegion::Erased, ty, RefKind::Shared) => &*ty,
+        Ty::Ref(ErasedRegion::Erased, ty, RefKind::Shared) => ty,
         _ => unreachable!(
             "expected shared reference for static id type, got {:?}",
             ref_ty
@@ -51,11 +51,11 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
     // Check for early return
     let (ty, c) = match op {
         Operand::Const(ty, c) => (ty, c),
-        _ => return (),
+        _ => return,
     };
 
     let var = match *c {
-        OperandConstantValue::PrimitiveValue(_) => return (),
+        OperandConstantValue::PrimitiveValue(_) => return,
         OperandConstantValue::Adt(_, _) => {
             unreachable!("Constant ADTs should have been replaced by now")
         }
@@ -85,7 +85,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
     *op = Operand::Move(Place::new(var));
 }
 
-pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to extract global assignments: {name}:\n{}",
@@ -96,10 +96,5 @@ pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &
         body_transform_operands(&mut b.body, &mut |meta, nst, op| {
             extract_operand_global_var(meta, nst, op, &mut f)
         });
-        /*        take(&mut b.body, |st| {
-            transform_operands(st, &mut |meta, op| {
-                extract_operand_global_var(meta, op, &mut f)
-            })
-        });*/
     }
 }

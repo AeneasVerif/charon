@@ -36,7 +36,7 @@ fn transform_st(locals: &VarId::Vector<Var>, st: Statement) -> Statement {
 }
 
 /// `fmt_ctx` is used for pretty-printing purposes.
-pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to remove drops of variables with type ! in decl: {name}:\n{}",

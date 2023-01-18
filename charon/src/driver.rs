@@ -51,7 +51,7 @@ impl Callbacks for CharonCallbacks {
             .peek_mut()
             .enter(|tcx| {
                 let session = c.session();
-                translate(session, tcx, &self)
+                translate(session, tcx, self)
             })
             .unwrap();
         Compilation::Stop
@@ -87,7 +87,7 @@ pub fn arg_value<'a, T: Deref<Target = str>>(
 ///
 /// Note that the driver is sometimes called without a source, for Cargo to
 /// retrieve information about the crate for instance.
-pub fn get_args_source_index<'a, T: Deref<Target = str>>(args: &'a [T]) -> Option<usize> {
+pub fn get_args_source_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize> {
     let re = Regex::new(r".*\.rs").unwrap();
     let indices: Vec<usize> = args
         .iter()
@@ -103,7 +103,7 @@ pub fn get_args_source_index<'a, T: Deref<Target = str>>(args: &'a [T]) -> Optio
 }
 
 /// Given a list of arguments, return the index of the crate name
-pub fn get_args_crate_index<'a, T: Deref<Target = str>>(args: &'a [T]) -> Option<usize> {
+pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize> {
     args.iter()
         .enumerate()
         .find(|(_i, s)| Deref::deref(*s) == "--crate-name")
@@ -237,7 +237,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     if options.ullbc {
         // # Extract the files
         export::export_ullbc(
-            crate_name.clone(),
+            crate_name,
             &ordered_decls,
             &type_defs,
             &ullbc_funs,
@@ -307,7 +307,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
 
         // # Step 16: generate the files.
         export::export_llbc(
-            crate_name.clone(),
+            crate_name,
             &ordered_decls,
             &type_defs,
             &llbc_funs,
