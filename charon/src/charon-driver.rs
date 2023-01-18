@@ -42,6 +42,8 @@ mod expressions;
 mod expressions_utils;
 mod extract_global_assignments;
 mod formatter;
+mod gast;
+mod gast_utils;
 mod generics;
 mod get_mir;
 mod graphs;
