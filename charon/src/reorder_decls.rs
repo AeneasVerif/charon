@@ -157,6 +157,7 @@ impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, GlobalId: Copy + Seriali
 }
 
 impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationsGroups<TypeId, FunId, GlobalId> {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> DeclarationsGroups<TypeId, FunId, GlobalId> {
         DeclarationsGroups {
             decls: vec![],

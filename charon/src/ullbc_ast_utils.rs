@@ -39,9 +39,7 @@ pub fn iter_global_bodies<T: Debug + Clone + Serialize>(
 
 /// Makes a lambda that generates a new variable id, pushes a new variable in
 /// the body locals with the given type and returns its id.
-pub fn make_locals_generator<'a>(
-    locals: &'a mut VarId::Vector<Var>,
-) -> impl FnMut(ETy) -> VarId::Id + 'a {
+pub fn make_locals_generator(locals: &mut VarId::Vector<Var>) -> impl FnMut(ETy) -> VarId::Id + '_ {
     let mut next_id = locals.iter().fold(VarId::ZERO, |id, v| max(id, v.index));
     move |ty| {
         next_id.incr();
