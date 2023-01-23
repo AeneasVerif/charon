@@ -81,7 +81,7 @@ fn binop_requires_assert_after(binop: BinOp) -> bool {
 
 /// Return true if the unary operation has a precondition (negating the number
 /// won't lead to an overflow, for instance).
-fn unop_requires_assert_before(unop: UnOp) -> bool {
+fn unop_requires_assert_before<R>(unop: UnOp<R>) -> bool {
     match unop {
         UnOp::Not => false,
         UnOp::Neg => true,
@@ -93,7 +93,7 @@ fn unop_requires_assert_before(unop: UnOp) -> bool {
     }
 }
 
-fn unop_can_fail(unop: UnOp) -> bool {
+fn unop_can_fail<R>(unop: UnOp<R>) -> bool {
     match unop {
         UnOp::Not => false,
         UnOp::Neg => true,

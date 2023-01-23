@@ -1181,9 +1181,12 @@ fn translate_binaryop_kind(binop: mir::BinOp) -> e::BinOp {
     }
 }
 
-fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
+fn translate_unaryop_kind<R>(unop: mir::UnOp) -> e::UnOp<R>
+where 
+    R: Clone + std::cmp::Eq, 
+{
     use mir::UnOp;
-    match binop {
+    match unop {
         UnOp::Not => e::UnOp::Not,
         UnOp::Neg => e::UnOp::Neg,
     }
@@ -1226,20 +1229,22 @@ fn translate_rvalue<'tcx, 'ctx, 'ctx1>(
             trace!("Rvalue::Cast: {:?}", rvalue);
             // Put aside the pointer casts (which we don't support), I think
             // casts should only be from integers/booleans to integer/booleans.
-
+            
+            trace!("Rvalue::CastKind::::{:?}",cast_kind);
             // Sanity check
-            // assert!(match cast_kind {
-            //     rustc_middle::mir::CastKind::IntToInt => true,
-            //     rustc_middle::mir::CastKind::FloatToInt
-            //     | rustc_middle::mir::CastKind::FloatToFloat
-            //     | rustc_middle::mir::CastKind::IntToFloat
-            //     | rustc_middle::mir::CastKind::PtrToPtr
-            //     | rustc_middle::mir::CastKind::FnPtrToPtr
-            //     | rustc_middle::mir::CastKind::Pointer(_)
-            //     | rustc_middle::mir::CastKind::PointerExposeAddress
-            //     | rustc_middle::mir::CastKind::PointerFromExposedAddress
-            //     | rustc_middle::mir::CastKind::DynStar => false,
-            // });
+            assert!(
+                match cast_kind {
+                rustc_middle::mir::CastKind::IntToInt => true,
+                rustc_middle::mir::CastKind::FloatToInt
+                | rustc_middle::mir::CastKind::FloatToFloat
+                | rustc_middle::mir::CastKind::IntToFloat
+                | rustc_middle::mir::CastKind::PtrToPtr
+                | rustc_middle::mir::CastKind::FnPtrToPtr
+                | rustc_middle::mir::CastKind::Pointer(_)
+                | rustc_middle::mir::CastKind::PointerExposeAddress
+                | rustc_middle::mir::CastKind::PointerFromExposedAddress
+                | rustc_middle::mir::CastKind::DynStar => false,
+            });
 
             // Translate the target type
             let tgt_ty = translate_ety(bt_ctx, tgt_ty).unwrap();

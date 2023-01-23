@@ -84,19 +84,24 @@ pub enum BorrowKind {
 
 /// Unary operation
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
-pub enum UnOp {
+pub enum UnOp<R> where
+R: Clone + std::cmp::Eq,
+{
     Not,
     /// This can overflow. In practice, rust introduces an assert before
     /// (in debug mode) to check that it is not equal to the minimum integer
     /// value (for the proper type).
     Neg,
-    /// Casts are rvalues in MIR, but we treat them as unops. For now, we
+    /// Casts are rvalues in MIR, but we treat them as UnOps. For now, we
     /// only support for integer to integer, but we can also do from integers/booleans
     /// to integers/booleans. For now, we don't handle pointer casts.
     ///
     /// The first integer type gives the source type, the second one gives
     /// the destination type.
     Cast(IntegerTy, IntegerTy),
+    // 
+    CastPtr(RawPtrTy<R>,RawPtrTy<R>),
+    //
 }
 
 /// Binary operations.
@@ -176,13 +181,13 @@ pub enum OperandConstantValue {
 }
 
 /// TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
-/// We can also factor out the unops, binops with the function calls.
+/// We can also factor out the UnOp<R>s, binops with the function calls.
 #[derive(Debug, Clone, Serialize, EnumToGetters, EnumIsA)]
 pub enum Rvalue {
     Use(Operand),
     Ref(Place, BorrowKind),
     /// Unary operation (not, neg)
-    UnaryOp(UnOp, Operand),
+    UnaryOp(UnOp<R>, Operand),
     /// Binary operations (note that we merge "checked" and "unchecked" binops)
     BinaryOp(BinOp, Operand, Operand),
     /// Discriminant (for enumerations).

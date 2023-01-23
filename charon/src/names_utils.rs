@@ -225,7 +225,7 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                         format!("{:?}", ty)
                     }
                     _ => format!("Formerly unreachabe: {:?}", ty),
-                    // _ =>  unreachable!(),
+                    // _ =>  unreachable!(),  // patch
                 }));
             }
             DefPathData::ImplTrait => {

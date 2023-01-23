@@ -128,6 +128,16 @@ pub enum IntegerTy {
     U128,
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
+pub struct RawPtrTy<R> 
+where
+    R: Clone + std::cmp::Eq,
+{
+   boxedtype : Box<Ty<R>>,
+} 
+
+
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumIsA, Serialize)]
 pub enum RefKind {
     Mut,

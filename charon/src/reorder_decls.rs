@@ -277,39 +277,39 @@ pub fn reorder_declarations(
             // if scc.len() == 0, we do nothing (we should probably add a marker somewhere to signal when this happens)
         } else {
 
-        // Note that the length of an SCC should be at least 1.
-        let mut it = scc.iter();
-        let id0 = *it.next().unwrap();
-        let decl = &decls[&id0];
+            // Note that the length of an SCC should be at least 1.
+            let mut it = scc.iter();
+            let id0 = *it.next().unwrap();
+            let decl = &decls[&id0];
 
-        // The group should consist of only functions, only types or only one global.
-        for id in scc {
-            assert!(decls[id].kind == decl.kind);
-        }
-        if let DeclKind::Global = decl.kind {
-            assert!(scc.len() == 1);
-        }
+            // The group should consist of only functions, only types or only one global.
+            for id in scc {
+                assert!(decls[id].kind == decl.kind);
+            }
+            if let DeclKind::Global = decl.kind {
+                assert!(scc.len() == 1);
+            }
 
-        // If an SCC has length one, the declaration may be simply recursive:
-        // we determine whether it is the case by checking if the def id is in
-        // its own set of dependencies.
-        let is_mutually_recursive = scc.len() > 1;
-        let is_simply_recursive =
-            !is_mutually_recursive && decl.deps.as_ref().is_some_and(|deps| deps.contains(&id0));
+            // If an SCC has length one, the declaration may be simply recursive:
+            // we determine whether it is the case by checking if the def id is in
+            // its own set of dependencies.
+            let is_mutually_recursive = scc.len() > 1;
+            let is_simply_recursive =
+                !is_mutually_recursive && decl.deps.as_ref().is_some_and(|deps| deps.contains(&id0));
 
-        // Add the declaration.
-        // Note that we clone the vectors: it is not optimal, but they should
-        // be pretty small.
-        let group = if is_mutually_recursive || is_simply_recursive {
-            GDeclarationGroup::Rec(scc.clone())
-        } else {
-            GDeclarationGroup::NonRec(id0)
-        };
-        reordered_decls.push(match decl.kind {
-            DeclKind::Type => DeclarationGroup::Type(group),
-            DeclKind::Fun => DeclarationGroup::Fun(group),
-            DeclKind::Global => DeclarationGroup::Global(group),
-        });
+            // Add the declaration.
+            // Note that we clone the vectors: it is not optimal, but they should
+            // be pretty small.
+            let group = if is_mutually_recursive || is_simply_recursive {
+                GDeclarationGroup::Rec(scc.clone())
+            } else {
+                GDeclarationGroup::NonRec(id0)
+            };
+            reordered_decls.push(match decl.kind {
+                DeclKind::Type => DeclarationGroup::Type(group),
+                DeclKind::Fun => DeclarationGroup::Fun(group),
+                DeclKind::Global => DeclarationGroup::Global(group),
+            });
        }
     }
 
