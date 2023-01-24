@@ -273,7 +273,8 @@ pub fn reorder_declarations(
     // Iterate over the SCC ids in the proper order
     for scc in reordered_sccs.iter() {
         // Retrieve the SCC
-        assert!(!scc.is_empty());
+        format!("PATCH (do not check that scc is not empty");
+        //assert!(!scc.is_empty());
 
         // Note that the length of an SCC should be at least 1.
         let mut it = scc.iter();

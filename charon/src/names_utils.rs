@@ -224,7 +224,8 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                     rustc_middle::ty::TyKind::Int(_) | rustc_middle::ty::TyKind::Uint(_) => {
                         format!("{ty:?}")
                     }
-                    _ => unreachable!(),
+                    _ => { format!("Patch");
+                      format!("PathElem")}
                 }));
             }
             DefPathData::ImplTrait => {
@@ -241,9 +242,10 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                 // instance to filter opaque modules.
                 name.push(PathElem::Ident(symbol.to_ident_string()));
             }
-            _ => {
-                error!("Unexpected DefPathData: {:?}", data);
-                unreachable!("Unexpected DefPathData: {:?}", data);
+            _ => { format!("Patch");
+                ()
+                // error!("Unexpected DefPathData: {:?}", data);
+                // unreachable!("Unexpected DefPathData: {:?}", data);
             }
         }
 

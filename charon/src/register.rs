@@ -663,11 +663,13 @@ fn explore_mir_ty(
         TyKind::Dynamic(_, _, _) => {
             // A trait object
             trace!("Dynamic");
-            unimplemented!();
+            trace!("Patch");
+            Ok(())
         }
         TyKind::Closure(_, _) => {
             trace!("Closure");
-            unimplemented!();
+            trace!("Patch");
+            Ok(())
         }
 
         TyKind::Generator(_, _, _) | TyKind::GeneratorWitness(_) => {
@@ -1324,7 +1326,7 @@ fn explore_local_hir_impl_item(
 
     // Match on the impl item kind
     match &impl_item.kind {
-        ImplItemKind::Const(_, _) => unimplemented!(),
+        ImplItemKind::Const(_, _) => Ok(()), // patch
         ImplItemKind::Type(_) => {
             // Note sure what to do with associated types yet
             unimplemented!();

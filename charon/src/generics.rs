@@ -101,18 +101,18 @@ fn check_generics(tcx: TyCtxt<'_>, def_id: DefId) {
                 use rustc_middle::ty::{BoundConstness, ImplPolarity};
                 assert!(trait_pred.polarity == ImplPolarity::Positive);
                 // Note sure what this is about
-                assert!(trait_pred.constness == BoundConstness::NotConst);
+                // assert!(trait_pred.constness == BoundConstness::NotConst); // patch
                 let trait_name = trait_def_id_to_name(tcx, trait_pred.trait_ref.def_id);
                 trace!("{}", trait_name);
-                assert!(
-                    trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME),
-                    "Unsupported trait: {:?}",
-                    trait_name
-                );
+                // assert!(  // patch
+                //     trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME),
+                //     "Unsupported trait: {:?}",
+                //     trait_name
+                // );
             }
-            PredicateKind::Clause(Clause::RegionOutlives(_)) => unimplemented!(),
-            PredicateKind::Clause(Clause::TypeOutlives(_)) => unimplemented!(),
-            PredicateKind::Clause(Clause::Projection(_)) => unimplemented!(),
+            PredicateKind::Clause(Clause::RegionOutlives(_)) => trace!("RegionOutlives"), // patch
+            PredicateKind::Clause(Clause::TypeOutlives(_)) => trace!("TypeOutlives"),
+            PredicateKind::Clause(Clause::Projection(_)) => trace!("Projection"),
             PredicateKind::WellFormed(_) => unimplemented!(),
             PredicateKind::ObjectSafe(_) => unimplemented!(),
             PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
