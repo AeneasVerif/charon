@@ -134,14 +134,14 @@ pub enum RefKind {
     Shared,
 }
 
-/// We represent (at least for the momement) raw pointers by ignoring their 
+/// We represent (at least for the momement) raw pointers by ignoring their
 /// lifetime information.
 #[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct RawPtrTy
 {
    boxedtype : Box<Ty<ErasedRegion>>,
    refkind : RefKind,
-} 
+}
 
 /// Type identifier.
 ///

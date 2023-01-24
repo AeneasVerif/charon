@@ -317,9 +317,11 @@ impl DeclarationsRegister {
             for id in decl.deps.iter().flatten() {
                 assert!(
                     self.decls.contains_key(id),
-                    "Did not register dependency id {:?} from {:?}",
+                    "Did not register dependency id {:?} from {:?}, whose deps are
+                    {:?}",
                     id,
-                    decl.id
+                    decl.id,
+                    decl.deps,
                 )
             }
         }
