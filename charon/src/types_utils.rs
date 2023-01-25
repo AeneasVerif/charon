@@ -47,7 +47,7 @@ impl<Rid1: Copy + Eq + Ord + std::hash::Hash> Region<Rid1> {
     ) -> Region<Rid2> {
         match self {
             Region::Static => Region::Static,
-            Region::Var(id) => rsubst.get(id).unwrap().clone(),
+            Region::Var(id) => *rsubst.get(id).unwrap(),
         }
     }
 
@@ -61,23 +61,20 @@ impl<Rid1: Copy + Eq + Ord + std::hash::Hash> Region<Rid1> {
 
 impl TypeVar {
     pub fn new(index: TypeVarId::Id, name: String) -> TypeVar {
-        TypeVar {
-            index: index,
-            name: name,
-        }
+        TypeVar { index, name }
     }
 
     pub fn fresh(name: String, gen: &mut TypeVarId::Generator) -> TypeVar {
         TypeVar {
             index: gen.fresh_id(),
-            name: name,
+            name,
         }
     }
 }
 
 impl std::string::ToString for TypeVar {
     fn to_string(&self) -> String {
-        format!("{}", self.name).to_string()
+        self.name.to_string()
     }
 }
 
@@ -85,8 +82,8 @@ impl std::string::ToString for RegionVar {
     fn to_string(&self) -> String {
         let id = region_var_id_to_pretty_string(self.index);
         match &self.name {
-            Some(name) => format!("{}", name).to_string(),
-            None => format!("{}", id).to_string(),
+            Some(name) => name.to_string(),
+            None => id,
         }
     }
 }
@@ -201,46 +198,35 @@ impl TypeDecl {
         let params = TypeDecl::fmt_params(&self.region_params, &self.type_params);
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
-                if fields.len() > 0 {
+                if !fields.is_empty() {
                     let fields: Vec<String> = fields
                         .iter()
-                        .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)).to_string())
+                        .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)))
                         .collect();
                     let fields = fields.join(",");
                     format!(
                         "struct {}{} = {{{}\n}}\n{}",
-                        self.name.to_string(),
-                        params,
-                        fields,
-                        regions_hierarchy
+                        self.name, params, fields, regions_hierarchy
                     )
-                    .to_string()
                 } else {
-                    format!("struct {}{} = {{}}", self.name.to_string(), params).to_string()
+                    format!("struct {}{} = {{}}", self.name, params)
                 }
             }
             TypeDeclKind::Enum(variants) => {
                 let variants: Vec<String> = variants
                     .iter()
-                    .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)).to_string())
+                    .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
                     .collect();
                 let variants = variants.join("\n");
                 format!(
                     "enum {}{} =\n{}\n\nRegions hierarchy:\n{}",
-                    self.name.to_string(),
-                    params,
-                    variants,
-                    regions_hierarchy
+                    self.name, params, variants, regions_hierarchy
                 )
-                .to_string()
             }
             TypeDeclKind::Opaque => format!(
                 "opaque type {}{}\nRegions hierarchy:\n{}",
-                self.name.to_string(),
-                params,
-                regions_hierarchy
-            )
-            .to_string(),
+                self.name, params, regions_hierarchy
+            ),
         }
     }
 
@@ -252,7 +238,7 @@ impl TypeDecl {
             let regions = region_params.iter().map(|r| r.to_string());
             let type_params = type_params.iter().map(|p| p.to_string());
             let params: Vec<String> = regions.chain(type_params).collect();
-            format!("<{}>", params.join(", ")).to_string()
+            format!("<{}>", params.join(", "))
         } else {
             "".to_string()
         }
@@ -275,7 +261,7 @@ impl Variant {
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
-        format!("{}({})", self.name, fields).to_string()
+        format!("{}({})", self.name, fields)
     }
 }
 
@@ -288,8 +274,8 @@ impl Field {
             + Formatter<TypeDeclId::Id>,
     {
         match &self.name {
-            Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)).to_string(),
-            Option::None => format!("{}", self.ty.fmt_with_ctx(ctx)).to_string(),
+            Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
+            Option::None => self.ty.fmt_with_ctx(ctx),
         }
     }
 }
@@ -330,15 +316,15 @@ impl IntegerTy {
     }
 
     pub fn is_signed(&self) -> bool {
-        match self {
+        matches!(
+            self,
             IntegerTy::Isize
-            | IntegerTy::I8
-            | IntegerTy::I16
-            | IntegerTy::I32
-            | IntegerTy::I64
-            | IntegerTy::I128 => true,
-            _ => false,
-        }
+                | IntegerTy::I8
+                | IntegerTy::I16
+                | IntegerTy::I32
+                | IntegerTy::I64
+                | IntegerTy::I128
+        )
     }
 
     pub fn is_unsigned(&self) -> bool {
@@ -366,14 +352,14 @@ impl IntegerTy {
 }
 
 pub fn type_def_id_to_pretty_string(id: TypeDeclId::Id) -> String {
-    format!("@Adt{}", id).to_string()
+    format!("@Adt{id}")
 }
 pub fn const_def_id_to_pretty_string(id: GlobalDeclId::Id) -> String {
-    format!("@Const{}", id).to_string()
+    format!("@Const{id}")
 }
 
 pub fn region_var_id_to_pretty_string(id: RegionVarId::Id) -> String {
-    format!("@R{}", id.to_string()).to_string()
+    format!("@R{id}")
 }
 
 pub fn integer_ty_to_string(ty: IntegerTy) -> String {
@@ -422,7 +408,7 @@ fn uintty_to_string(ty: UintTy) -> String {
 }
 
 impl TypeId {
-    pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
         T: Formatter<TypeDeclId::Id>,
     {
@@ -504,18 +490,16 @@ where
                 let num_params = regions.len() + inst_types.len();
 
                 let regions: Vec<String> = regions.iter().map(|r| ctx.format_object(r)).collect();
-                let mut types: Vec<String> = inst_types
-                    .iter()
-                    .map(|ty| format!("{}", ty.fmt_with_ctx(ctx)).to_string())
-                    .collect();
+                let mut types: Vec<String> =
+                    inst_types.iter().map(|ty| ty.fmt_with_ctx(ctx)).collect();
                 let mut all_params = regions;
                 all_params.append(&mut types);
                 let all_params = all_params.join(", ");
 
                 if id.is_tuple() {
-                    format!("({})", all_params).to_string()
+                    format!("({all_params})")
                 } else if num_params > 0 {
-                    format!("{}<{}>", adt_ident, all_params).to_string()
+                    format!("{adt_ident}<{all_params}>")
                 } else {
                     adt_ident
                 }
@@ -524,21 +508,21 @@ where
             Ty::Bool => "bool".to_string(),
             Ty::Char => "char".to_string(),
             Ty::Never => "!".to_string(),
-            Ty::Integer(int_ty) => format!("{}", integer_ty_to_string(*int_ty)).to_string(),
-            Ty::Str => format!("str").to_string(),
-            Ty::Array(ty) => format!("[{}; ?]", ty.fmt_with_ctx(ctx)).to_string(),
-            Ty::Slice(ty) => format!("[{}]", ty.fmt_with_ctx(ctx)).to_string(),
+            Ty::Integer(int_ty) => integer_ty_to_string(*int_ty),
+            Ty::Str => "str".to_string(),
+            Ty::Array(ty) => format!("[{}; ?]", ty.fmt_with_ctx(ctx)),
+            Ty::Slice(ty) => format!("[{}]", ty.fmt_with_ctx(ctx)),
             Ty::Ref(r, ty, kind) => match kind {
                 RefKind::Mut => {
-                    format!("&{} mut ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx)).to_string()
+                    format!("&{} mut ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx))
                 }
                 RefKind::Shared => {
-                    format!("&{} ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx)).to_string()
+                    format!("&{} ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx))
                 }
             },
             Ty::RawPtr(ty, kind) => match kind {
-                RefKind::Mut => format!("*const {}", ty.fmt_with_ctx(ctx)).to_string(),
-                RefKind::Shared => format!("*mut {}", ty.fmt_with_ctx(ctx)).to_string(),
+                RefKind::Mut => format!("*const {}", ty.fmt_with_ctx(ctx)),
+                RefKind::Shared => format!("*mut {}", ty.fmt_with_ctx(ctx)),
             },
         }
     }
@@ -608,7 +592,7 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
 }
 
 pub fn type_var_id_to_pretty_string(id: TypeVarId::Id) -> String {
-    format!("@T{}", id.to_string()).to_string()
+    format!("@T{id}")
 }
 
 impl<Rid: Copy + Eq> std::fmt::Display for Region<Rid>
@@ -618,7 +602,7 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
             Region::Static => write!(f, "'static"),
-            Region::Var(id) => write!(f, "'_{}", id.to_string()),
+            Region::Var(id) => write!(f, "'_{id}"),
         }
     }
 }
@@ -726,28 +710,20 @@ where
             Ty::Adt(id, regions, tys) => {
                 let nregions = Ty::substitute_regions(regions, rsubst);
                 let ntys = tys.iter().map(|ty| ty.substitute(rsubst, tsubst)).collect();
-                return Ty::Adt(id.clone(), nregions, ntys);
+                Ty::Adt(id.clone(), nregions, ntys)
             }
-            Ty::TypeVar(id) => {
-                return tsubst(id);
-            }
+            Ty::TypeVar(id) => tsubst(id),
             Ty::Bool => Ty::Bool,
             Ty::Char => Ty::Char,
             Ty::Never => Ty::Never,
             Ty::Integer(k) => Ty::Integer(*k),
             Ty::Str => Ty::Str,
-            Ty::Array(ty) => {
-                return Ty::Array(Box::new(ty.substitute(rsubst, tsubst)));
-            }
-            Ty::Slice(ty) => {
-                return Ty::Slice(Box::new(ty.substitute(rsubst, tsubst)));
-            }
+            Ty::Array(ty) => Ty::Array(Box::new(ty.substitute(rsubst, tsubst))),
+            Ty::Slice(ty) => Ty::Slice(Box::new(ty.substitute(rsubst, tsubst))),
             Ty::Ref(rid, ty, kind) => {
-                return Ty::Ref(rsubst(rid), Box::new(ty.substitute(rsubst, tsubst)), *kind);
+                Ty::Ref(rsubst(rid), Box::new(ty.substitute(rsubst, tsubst)), *kind)
             }
-            Ty::RawPtr(ty, kind) => {
-                return Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst)), *kind);
-            }
+            Ty::RawPtr(ty, kind) => Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst)), *kind),
         }
     }
 
@@ -760,7 +736,7 @@ where
 
     /// Substitute the type parameters
     pub fn substitute_types(&self, subst: &TypeSubst<R>) -> Self {
-        self.substitute(&|r| r.clone(), &|tid| subst.get(tid).unwrap().clone())
+        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone())
     }
 
     /// Erase the regions
@@ -815,7 +791,7 @@ impl RTy {
         self.substitute(
             &|rid| match rid {
                 Region::Static => Region::Static,
-                Region::Var(rid) => rsubst.get(rid).unwrap().clone(),
+                Region::Var(rid) => *rsubst.get(rid).unwrap(),
             },
             &|tid| tsubst.get(tid).unwrap().clone(),
         )
@@ -832,7 +808,7 @@ where
 {
     // We don't need to do this, but we want to check the lengths
     let keys: Vector<T1> = keys.collect();
-    let values: Vector<T2> = values.map(|ty| ty.clone()).collect();
+    let values: Vector<T2> = values.cloned().collect();
     assert!(
         keys.len() == values.len(),
         "keys and values don't have the same length"
@@ -843,7 +819,7 @@ where
         let _ = res.insert(*p, ty);
     });
 
-    return res;
+    res
 }
 
 pub fn make_type_subst<
@@ -877,6 +853,7 @@ where
 }
 
 impl TypeDecls {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> TypeDecls {
         TypeDecls {
             types: id_vector::Vector::new(),

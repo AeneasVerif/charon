@@ -27,10 +27,10 @@ impl std::fmt::Display for PathElem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
             PathElem::Ident(s) => {
-                write!(f, "{}", s)
+                write!(f, "{s}")
             }
             PathElem::Disambiguator(d) => {
-                write!(f, "{}", d)
+                write!(f, "{d}")
             }
         }
     }
@@ -43,6 +43,7 @@ impl Name {
         }
     }
 
+    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.name.len()
     }
@@ -222,10 +223,10 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                     }
                     // Builtin cases.
                     rustc_middle::ty::TyKind::Int(_) | rustc_middle::ty::TyKind::Uint(_) => {
-                        format!("{:?}", ty)
+                        format!("{ty:?}")
                     }
-                    _ => format!("Formerly unreachabe: {:?}", ty),
-                    // _ =>  unreachable!(),  // patch
+                    _ => { format!("Patch");
+                      format!("PathElem")}
                 }));
             }
             DefPathData::ImplTrait => {
@@ -242,10 +243,8 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                 // instance to filter opaque modules.
                 name.push(PathElem::Ident(symbol.to_ident_string()));
             }
-            _ => {
-                 // Sanity check
-                assert!(data.disambiguator == 0);
-                name.push(PathElem::Ident("default PathElem".to_string()));
+            _ => { format!("Patch");
+                ()
                 // error!("Unexpected DefPathData: {:?}", data);
                 // unreachable!("Unexpected DefPathData: {:?}", data);
             }

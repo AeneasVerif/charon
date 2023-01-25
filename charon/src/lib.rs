@@ -52,6 +52,8 @@ pub mod expressions;
 pub mod expressions_utils;
 pub mod extract_global_assignments;
 pub mod formatter;
+pub mod gast;
+pub mod gast_utils;
 pub mod generics;
 pub mod get_mir;
 pub mod graphs;

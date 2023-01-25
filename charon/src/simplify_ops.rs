@@ -57,7 +57,7 @@ fn check_places_similar_but_last_proj_elem(
 
         return *pelem == full_place.projection[place.projection.len()];
     }
-    return false;
+    false
 }
 
 /// Return true if the binary operation might fail and thus requires its result
@@ -368,7 +368,7 @@ fn simplify_binop_then_assert(st1: Statement, st2: Statement, st3: Statement) ->
     match (st1.content, st2.content, st3.content) {
         (RawStatement::Assign(_, binop), RawStatement::Assert(_), RawStatement::Assign(mp, _)) => {
             let meta = combine_meta(&st1.meta, &combine_meta(&st2.meta, &st3.meta));
-            return Statement::new(meta, RawStatement::Assign(mp, binop));
+            Statement::new(meta, RawStatement::Assign(mp, binop))
         }
         _ => {
             unreachable!();
@@ -520,7 +520,7 @@ fn check_if_simplifiable_assert_then_binop(
         }
         _ => {
             assert!(release);
-            return false;
+            false
         }
     }
 }
@@ -577,9 +577,9 @@ fn simplify_st_seq(
     match st4 {
         Option::Some(st4) => {
             let st4 = simplify_st(release, st4);
-            return new_sequence(simpl_st, st4);
+            new_sequence(simpl_st, st4)
         }
-        Option::None => return simpl_st,
+        Option::None => simpl_st,
     }
 }
 
@@ -705,9 +705,9 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
 }
 
 /// `fmt_ctx` is used for pretty-printing purposes.
-pub fn simplify<'ctx>(
+pub fn simplify(
     release: bool,
-    fmt_ctx: &CtxNames<'ctx>,
+    fmt_ctx: &CtxNames<'_>,
     funs: &mut FunDecls,
     globals: &mut GlobalDecls,
 ) {

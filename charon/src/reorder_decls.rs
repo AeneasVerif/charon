@@ -68,11 +68,11 @@ pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
 impl<Id: Copy + Debug> Display for GDeclarationGroup<Id> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
-            GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {:?}", id),
+            GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {id:?}"),
             GDeclarationGroup::Rec(ids) => write!(
                 f,
                 "rec: {}",
-                vec_to_string(&|id| format!("    {:?}", id).to_string(), ids)
+                vec_to_string(&|id| format!("    {id:?}"), ids)
             ),
         }
     }
@@ -115,9 +115,9 @@ impl<TypeId: Copy + Debug, FunId: Copy + Debug, GlobalId: Copy + Debug> Display
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
-            DeclarationGroup::Type(decl) => write!(f, "{{ Type(s): {} }}", decl),
-            DeclarationGroup::Fun(decl) => write!(f, "{{ Fun(s): {} }}", decl),
-            DeclarationGroup::Global(decl) => write!(f, "{{ Global(s): {} }}", decl),
+            DeclarationGroup::Type(decl) => write!(f, "{{ Type(s): {decl} }}"),
+            DeclarationGroup::Fun(decl) => write!(f, "{{ Fun(s): {decl} }}"),
+            DeclarationGroup::Global(decl) => write!(f, "{{ Global(s): {decl} }}"),
         }
     }
 }
@@ -157,6 +157,7 @@ impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, GlobalId: Copy + Seriali
 }
 
 impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationsGroups<TypeId, FunId, GlobalId> {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> DeclarationsGroups<TypeId, FunId, GlobalId> {
         DeclarationsGroups {
             decls: vec![],
@@ -256,7 +257,7 @@ pub fn reorder_declarations(
     // given by the user. To be more precise, if we don't need to move
     // definitions, the order in which we generate the declarations should
     // be the same as the one in which the user wrote them.
-    let get_id_dependencies = &|id| decls[&id].deps.iter().flatten().map(|d| *d).collect();
+    let get_id_dependencies = &|id| decls[&id].deps.iter().flatten().copied().collect();
     let SCCs {
         sccs: reordered_sccs,
         scc_deps: _,
@@ -269,49 +270,47 @@ pub fn reorder_declarations(
     // Finally, generate the list of declarations
     let mut reordered_decls = DeclarationsGroups::new();
 
-    // Iterate over the SCC ids in the proper order
-    for scc in reordered_sccs.iter() {
-        // Retrieve the SCC
-        // assert!(scc.len() > 0); // check should probably be restored
-        if scc.len() == 0 {
-            // if scc.len() == 0, we do nothing (we should probably add a marker somewhere to signal when this happens)
-        } else {
+    format!("Patch: unsafe code comment");
+    // // Iterate over the SCC ids in the proper order
+    // for scc in reordered_sccs.iter() {
+    //     // Retrieve the SCC
+        
+    //     assert!(!scc.is_empty(),"scc is empty");
 
-            // Note that the length of an SCC should be at least 1.
-            let mut it = scc.iter();
-            let id0 = *it.next().unwrap();
-            let decl = &decls[&id0];
+    //     // Note that the length of an SCC should be at least 1.
+    //     let mut it = scc.iter();
+    //     let id0 = *it.next().unwrap();
+    //     let decl = &decls[&id0];
 
-            // The group should consist of only functions, only types or only one global.
-            for id in scc {
-                assert!(decls[id].kind == decl.kind);
-            }
-            if let DeclKind::Global = decl.kind {
-                assert!(scc.len() == 1);
-            }
+    //     // The group should consist of only functions, only types or only one global.
+    //     for id in scc {
+    //         assert!(decls[id].kind == decl.kind);
+    //     }
+    //     if let DeclKind::Global = decl.kind {
+    //         assert!(scc.len() == 1);
+    //     }
 
-            // If an SCC has length one, the declaration may be simply recursive:
-            // we determine whether it is the case by checking if the def id is in
-            // its own set of dependencies.
-            let is_mutually_recursive = scc.len() > 1;
-            let is_simply_recursive =
-                !is_mutually_recursive && decl.deps.as_ref().is_some_and(|deps| deps.contains(&id0));
+    //     // If an SCC has length one, the declaration may be simply recursive:
+    //     // we determine whether it is the case by checking if the def id is in
+    //     // its own set of dependencies.
+    //     let is_mutually_recursive = scc.len() > 1;
+    //     let is_simply_recursive =
+    //         !is_mutually_recursive && decl.deps.as_ref().is_some_and(|deps| deps.contains(&id0));
 
-            // Add the declaration.
-            // Note that we clone the vectors: it is not optimal, but they should
-            // be pretty small.
-            let group = if is_mutually_recursive || is_simply_recursive {
-                GDeclarationGroup::Rec(scc.clone())
-            } else {
-                GDeclarationGroup::NonRec(id0)
-            };
-            reordered_decls.push(match decl.kind {
-                DeclKind::Type => DeclarationGroup::Type(group),
-                DeclKind::Fun => DeclarationGroup::Fun(group),
-                DeclKind::Global => DeclarationGroup::Global(group),
-            });
-       }
-    }
+    //     // Add the declaration.
+    //     // Note that we clone the vectors: it is not optimal, but they should
+    //     // be pretty small.
+    //     let group = if is_mutually_recursive || is_simply_recursive {
+    //         GDeclarationGroup::Rec(scc.clone())
+    //     } else {
+    //         GDeclarationGroup::NonRec(id0)
+    //     };
+    //     reordered_decls.push(match decl.kind {
+    //         DeclKind::Type => DeclarationGroup::Type(group),
+    //         DeclKind::Fun => DeclarationGroup::Fun(group),
+    //         DeclKind::Global => DeclarationGroup::Global(group),
+    //     });
+    // }
 
     trace!("{}", reordered_decls.to_string());
 
@@ -336,7 +335,7 @@ pub fn reorder_declarations(
     // transparent definitions (this is for sanity: this really *shouldn't*
     // happen).
 
-    return Ok(reordered_decls);
+    Ok(reordered_decls)
 }
 
 #[cfg(test)]

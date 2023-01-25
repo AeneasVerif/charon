@@ -11,7 +11,6 @@ use crate::reorder_decls::DeclarationGroup;
 use crate::rust_to_local_ids::*;
 use crate::types as ty;
 use crate::types::TypeDeclId;
-use im;
 use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Mutability;
@@ -109,7 +108,7 @@ impl<'ctx> Formatter<&ty::TypeDecl> for TypeTransContext<'ctx> {
     }
 }
 
-pub fn translate_region_name<'tcx>(region: &rustc_middle::ty::RegionKind<'tcx>) -> Option<String> {
+pub fn translate_region_name(region: &rustc_middle::ty::RegionKind<'_>) -> Option<String> {
     // Compute the region name
     let s = match region {
         rustc_middle::ty::RegionKind::ReEarlyBound(r) => Some(r.name.to_ident_string()),
@@ -154,16 +153,13 @@ pub fn translate_non_erased_region<'tcx>(
 ///
 /// The regions are expected to be erased inside the function bodies (i.e.:
 /// we believe MIR uses regions only in the function signatures).
-pub fn translate_erased_region<'tcx>(
-    region: rustc_middle::ty::RegionKind<'tcx>,
-) -> ty::ErasedRegion {
-    return ty::ErasedRegion::Erased;  // unsound
-    // match region {
-    //     rustc_middle::ty::RegionKind::ReErased => ty::ErasedRegion::Erased,
-    //     _ => {
-    //      unreachable!();
-    //     }
-    // }
+pub fn translate_erased_region(region: rustc_middle::ty::RegionKind<'_>) -> ty::ErasedRegion {
+    match region {
+        rustc_middle::ty::RegionKind::ReErased => ty::ErasedRegion::Erased,
+        _ => {
+            unreachable!();
+        }
+    }
 }
 
 /// Translate a Ty.
@@ -225,9 +221,7 @@ where
             // This case should have been filtered during the registration phase
             unreachable!();
         }
-        TyKind::Never => {
-            return Ok(ty::Ty::Never);
-        }
+        TyKind::Never => Ok(ty::Ty::Never),
 
         TyKind::Alias(_, _) => {
             unimplemented!();
@@ -259,23 +253,23 @@ where
             let def_id = translate_defid(tcx, trans_ctx, adt_did);
 
             // Return the instantiated ADT
-            return Ok(ty::Ty::Adt(
+            Ok(ty::Ty::Adt(
                 def_id,
                 Vector::from(regions),
                 Vector::from(params),
-            ));
+            ))
         }
         TyKind::Array(ty, _const_param) => {
             trace!("Array");
 
             let ty = translate_ty(tcx, trans_ctx, region_translator, type_params, ty)?;
-            return Ok(ty::Ty::Array(Box::new(ty)));
+            Ok(ty::Ty::Array(Box::new(ty)))
         }
         TyKind::Slice(ty) => {
             trace!("Slice");
 
             let ty = translate_ty(tcx, trans_ctx, region_translator, type_params, ty)?;
-            return Ok(ty::Ty::Slice(Box::new(ty)));
+            Ok(ty::Ty::Slice(Box::new(ty)))
         }
         TyKind::Ref(region, ty, mutability) => {
             trace!("Ref");
@@ -286,7 +280,7 @@ where
                 Mutability::Not => ty::RefKind::Shared,
                 Mutability::Mut => ty::RefKind::Mut,
             };
-            return Ok(ty::Ty::Ref(region, Box::new(ty), kind));
+            Ok(ty::Ty::Ref(region, Box::new(ty), kind))
         }
         TyKind::RawPtr(ty_and_mut) => {
             trace!("RawPtr: {:?}", ty_and_mut);
@@ -301,7 +295,7 @@ where
                 Mutability::Not => ty::RefKind::Shared,
                 Mutability::Mut => ty::RefKind::Mut,
             };
-            return Ok(ty::Ty::RawPtr(Box::new(ty), kind));
+            Ok(ty::Ty::RawPtr(Box::new(ty), kind))
         }
         TyKind::Tuple(substs) => {
             trace!("Tuple");
@@ -313,11 +307,11 @@ where
                 params.push(param_ty);
             }
 
-            return Ok(ty::Ty::Adt(
+            Ok(ty::Ty::Adt(
                 ty::TypeId::Tuple,
                 Vector::new(),
                 Vector::from(params),
-            ));
+            ))
         }
 
         TyKind::FnPtr(_) => {
@@ -337,7 +331,7 @@ where
             // Retrieve the translation of the substituted type:
             let ty = type_params.get(&param.index).unwrap();
 
-            return Ok(ty.clone());
+            Ok(ty.clone())
         }
 
         // Below: those types should be unreachable: if such types are used in
@@ -434,7 +428,7 @@ pub fn translate_ety_kind(
         trans_ctx,
         &|r| translate_erased_region(*r),
         type_params,
-        &ty,
+        ty,
     )
 }
 
@@ -581,7 +575,7 @@ fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGeneri
                 let name = translate_region_name(&region);
                 let t_region = ty::RegionVar {
                     index: region_params_counter.fresh_id(),
-                    name: name,
+                    name,
                 };
                 region_params_map.insert(*region, t_region.index);
                 region_params.push(t_region);
@@ -631,7 +625,7 @@ fn translate_transparent_type<'tcx>(
     trace!("{}", trans_id);
 
     // Initialize the type translation context
-    let trans_ctx = TypeTransContext::new(&type_defs, &decls);
+    let trans_ctx = TypeTransContext::new(type_defs, decls);
 
     // Retrieve the definition
     trace!("{:?}", def_id);
@@ -663,7 +657,7 @@ fn translate_transparent_type<'tcx>(
             let ty = field_def.ty(tcx, substs);
 
             // Translate the field type
-            let ty = translate_sig_ty(tcx, &trans_ctx, &region_params_map, &type_params_map, &ty)?;
+            let ty = translate_sig_ty(tcx, &trans_ctx, region_params_map, type_params_map, &ty)?;
 
             // Retrieve the field name.
             // Note that the only way to check if the user wrote the name or
@@ -697,7 +691,7 @@ fn translate_transparent_type<'tcx>(
             let field = ty::Field {
                 meta,
                 name: field_name.clone(),
-                ty: ty,
+                ty,
             };
             fields.push(field);
 
@@ -735,7 +729,7 @@ fn translate_transparent_type<'tcx>(
 /// Note that we translate the types one by one: we don't need to take into
 /// account the fact that some types are mutually recursive at this point
 /// (we will need to take that into account when generating the code in a file).
-fn translate_type<'ctx>(
+fn translate_type(
     sess: &Session,
     tcx: TyCtxt,
     decls: &OrderedDecls,
@@ -778,8 +772,8 @@ fn translate_type<'ctx>(
         def_id: trans_id,
         meta,
         name,
-        region_params: region_params,
-        type_params: type_params,
+        region_params,
+        type_params,
         kind,
         // For now, initialize the regions hierarchy with a dummy value:
         // we compute it later (after returning to [translate_types]
@@ -848,7 +842,7 @@ pub fn translate_types(
     );
 
     // Print the translated types
-    let trans_ctx = TypeTransContext::new(&type_defs, &decls);
+    let trans_ctx = TypeTransContext::new(&type_defs, decls);
     for d in type_defs.types.iter() {
         trace!("translated type:\n{}\n", trans_ctx.format_object(d));
     }

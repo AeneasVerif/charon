@@ -62,14 +62,14 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     // Generate the destination file - we use the crate name for the file name
     let mut target_filename = dest_dir
         .as_deref()
-        .map_or_else(|| PathBuf::new(), |d| d.to_path_buf().clone());
-    target_filename.push(format!("{}.{}", crate_name, extension));
+        .map_or_else(PathBuf::new, |d| d.to_path_buf());
+    target_filename.push(format!("{crate_name}.{extension}"));
 
     trace!("Target file: {:?}", target_filename);
 
     // Transform the map file id -> file into a vector.
     // Sort the vector to make the serialized file as stable as possible.
-    let mut file_ids: Vec<FileId::Id> = ordered_decls.id_to_file.keys().map(|k| *k).collect();
+    let mut file_ids: Vec<FileId::Id> = ordered_decls.id_to_file.keys().copied().collect();
     file_ids.sort();
     let id_to_file: Vec<(FileId::Id, FileName)> = file_ids
         .into_iter()
@@ -83,8 +83,8 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
         id_to_file,
         declarations: VecSW::new(&ordered_decls.decls),
         types: &type_defs.types,
-        functions: &fun_defs,
-        globals: &global_defs,
+        functions: fun_defs,
+        globals: global_defs,
     };
 
     // Create the directory, if necessary (note that if the target directory

@@ -23,10 +23,7 @@ pub fn initialize_logger() {
     // Modify the output format - we add the line number
     builder.format(|buf, record| {
         // Retreive the path (CRATE::MODULE) and the line number
-        let path = match record.module_path() {
-            Some(s) => s,
-            None => "",
-        };
+        let path = record.module_path().unwrap_or("");
         let line = match record.line() {
             Some(l) => l.to_string(),
             None => "".to_string(),

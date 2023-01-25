@@ -68,7 +68,7 @@ fn transform_constant_adt<F: FnMut(ETy) -> VarId::Id>(
     let rval = Rvalue::Aggregate(make_aggregate_kind(ty, *variant), ops);
     let var_id = make_new_var(ty.clone());
     nst.push(Statement::new(
-        meta.clone(),
+        *meta,
         RawStatement::Assign(Place::new(var_id), rval),
     ));
     Some(var_id)
@@ -88,7 +88,7 @@ fn transform_operand_adt<F: FnMut(ETy) -> VarId::Id>(
     }
 }
 
-pub fn transform<'ctx>(fmt_ctx: &CtxNames<'ctx>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to regularize constant ADTs in function: {name}:\n{}",

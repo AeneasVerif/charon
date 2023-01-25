@@ -34,7 +34,7 @@ fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &llbc::
             },
         },
         RawStatement::Sequence(st1, st2) => {
-            statement_diverges(divergent, &st1) || statement_diverges(divergent, &st2)
+            statement_diverges(divergent, st1) || statement_diverges(divergent, st2)
         }
         RawStatement::Switch(switch) => {
             let tgts = switch.get_targets();

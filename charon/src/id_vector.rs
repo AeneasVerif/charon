@@ -73,7 +73,7 @@ where
     I: ToUsize + Increment + Copy + Zero,
     T: Clone,
 {
-    pub fn iter_indexed_values<'a>(&'a self) -> IndexValueImmutIterator<'a, I, T> {
+    pub fn iter_indexed_values(&self) -> IndexValueImmutIterator<'_, I, T> {
         IndexValueImmutIterator {
             vector: self,
             index: I::zero(),
@@ -113,7 +113,7 @@ where
     I: ToUsize + Increment + Copy + Zero,
     T: Clone,
 {
-    pub fn iter_indices<'a>(&'a self) -> IndexIterator<I> {
+    pub fn iter_indices(&self) -> IndexIterator<I> {
         IndexIterator {
             len: self.vector.len(),
             index: I::zero(),
@@ -248,7 +248,7 @@ where
 {
     fn from(v: im::Vector<T>) -> Self {
         Vector {
-            vector: v.clone(),
+            vector: v,
             phantom: std::marker::PhantomData,
         }
     }

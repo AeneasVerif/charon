@@ -35,10 +35,7 @@ use std::collections::{HashMap, HashSet};
 
 /// `stack`: see the explanations for [explore_local_hir_item].
 pub(crate) fn stack_to_string(stack: &Vector<DefId>) -> String {
-    let v: Vec<String> = stack
-        .iter()
-        .map(|id| format!("  {:?}", id).to_string())
-        .collect();
+    let v: Vec<String> = stack.iter().map(|id| format!("  {id:?}")).collect();
     v.join("\n")
 }
 
@@ -110,8 +107,8 @@ fn is_primitive_decl(kind: DeclKind, id: DefId, name: &Name) -> bool {
         return false;
     }
     match kind {
-        DeclKind::Type => assumed::type_to_used_params(&name).is_some(),
-        DeclKind::Fun => assumed::function_to_info(&name).is_some(),
+        DeclKind::Type => assumed::type_to_used_params(name).is_some(),
+        DeclKind::Fun => assumed::function_to_info(name).is_some(),
         DeclKind::Global => false,
     }
 }
@@ -180,7 +177,7 @@ impl DeclarationsRegister {
 
     /// Register the file referenced by a span
     fn register_file_from_span(&mut self, ctx: &RegisterContext, span: rustc_span::Span) {
-        let filename = meta::get_filename_from_rspan(&ctx.sess, span);
+        let filename = meta::get_filename_from_rspan(ctx.sess, span);
         self.register_file(filename);
     }
 
@@ -249,10 +246,10 @@ impl DeclarationsRegister {
         // Register the file
         self.register_file_from_def_id(ctx, id);
 
-        new_opaque_declaration(ctx.rustc, id, kind, name).map(|decl| {
+        if let Some(decl) = new_opaque_declaration(ctx.rustc, id, kind, name) {
             self.add_begin(id);
             self.add_end(decl);
-        });
+        }
     }
 
     /// Registers a local declaration and its dependencies recursively.
@@ -298,11 +295,11 @@ impl DeclarationsRegister {
         // We don't explore declarations in opaque modules.
         if ctx.crate_info.has_opaque_decl(&name) {
             self.add_end(Declaration::new_opaque(id, kind));
-            return Ok(());
+            Ok(())
         } else {
             let deps = list_dependencies(self)?;
             self.add_end(Declaration::new_transparent(id, kind, deps));
-            return Ok(());
+            Ok(())
         }
     }
 
@@ -320,9 +317,11 @@ impl DeclarationsRegister {
             for id in decl.deps.iter().flatten() {
                 assert!(
                     self.decls.contains_key(id),
-                    "Did not register dependency id {:?} from {:?}",
+                    "Did not register dependency id {:?} from {:?}, whose deps are
+                    {:?}",
                     id,
-                    decl.id
+                    decl.id,
+                    decl.deps,
                 )
             }
         }
@@ -359,7 +358,7 @@ fn explore_local_hir_type_item(
             // Retrieve the MIR adt from the def id and register it, retrieve
             // the list of dependencies at the same time.
             let adt = ctx.rustc.adt_def(def_id);
-            return explore_local_adt(ctx, stack, decls, &adt);
+            explore_local_adt(ctx, stack, decls, &adt)
         }
         _ => {
             unreachable!();
@@ -417,8 +416,7 @@ fn explore_local_adt(
         };
 
         let mut ty_deps = DeclDependencies::new();
-        let mut i = 0; // The index of the variant
-        for var_def in adt.variants().iter() {
+        for (i, var_def) in adt.variants().iter().enumerate() {
             trace!("var_def");
             // Retrieve the most precise span (the span of the variant if this is an
             // enum, the span of the whole ADT otherwise).
@@ -435,8 +433,6 @@ fn explore_local_adt(
 
                 explore_mir_ty(ctx, nstack.clone(), decls, var_span, &mut ty_deps, &ty)?;
             }
-
-            i += 1;
         }
         Ok(ty_deps)
     })
@@ -491,7 +487,7 @@ fn explore_mir_substs<'tcx>(
             }
         }
     }
-    return Ok(());
+    Ok(())
 }
 
 /// Explore a base type and register all the types inside.
@@ -519,7 +515,7 @@ fn explore_mir_ty(
         | TyKind::Never => {
             // Nothing to do
             trace!("base type (Bool, Char, Int...)");
-            return Ok(());
+            Ok(())
         }
 
         TyKind::Adt(adt, substs) => {
@@ -584,7 +580,7 @@ fn explore_mir_ty(
                 // information (public fields in case of a structure, variants in
                 // case of a public enumeration).
                 decls.register_opaque_declaration(ctx, &stack, adt_did, DeclKind::Type, &name);
-                return Ok(());
+                Ok(())
             } else {
                 // Explore the type parameters instantiation
                 explore_mir_substs(
@@ -606,24 +602,24 @@ fn explore_mir_ty(
                 trace!("Adt not registered");
 
                 // Register and explore
-                return explore_local_adt(ctx, stack, decls, adt);
+                explore_local_adt(ctx, stack, decls, adt)
             }
         }
         TyKind::Array(ty, const_param) => {
             trace!("Array");
 
             explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, ty)?;
-            return explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &const_param.ty());
+            explore_mir_ty(ctx, stack, decls, span, ty_deps, &const_param.ty())
         }
         TyKind::Slice(ty) => {
             trace!("Slice");
 
-            return explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, ty);
+            explore_mir_ty(ctx, stack, decls, span, ty_deps, ty)
         }
         TyKind::Ref(_, ty, _) => {
             trace!("Ref");
 
-            return explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, ty);
+            explore_mir_ty(ctx, stack, decls, span, ty_deps, ty)
         }
         TyKind::Tuple(substs) => {
             trace!("Tuple");
@@ -632,28 +628,24 @@ fn explore_mir_ty(
                 explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &param)?;
             }
 
-            return Ok(());
+            Ok(())
         }
 
         TyKind::RawPtr(_) => {
             // A raw pointer
             trace!("RawPtr");
-            return Ok(());
+            Ok(())
         }
         TyKind::Foreign(_) => {
             // A raw pointer
             trace!("Foreign");
-            span_err(ctx.sess, span.clone(), "FFI types are not supported");
-            return Err(());
+            span_err(ctx.sess, *span, "FFI types are not supported");
+            Err(())
         }
         TyKind::Infer(_) => {
             trace!("Infer");
-            span_err(
-                ctx.sess,
-                span.clone(),
-                "Inconsistant state: found an `Infer` type",
-            );
-            return Err(());
+            span_err(ctx.sess, *span, "Inconsistant state: found an `Infer` type");
+            Err(())
         }
 
         TyKind::FnDef(_, _) => {
@@ -667,25 +659,25 @@ fn explore_mir_ty(
             for param_ty in sig.inputs_and_output().no_bound_vars().unwrap().iter() {
                 explore_mir_ty(ctx, stack.clone(), decls, span, ty_deps, &param_ty)?;
             }
-            return Ok(());
+            Ok(())
         }
 
         TyKind::Dynamic(_, _, _) => {
             // A trait object
             trace!("Dynamic");
-            return Ok(());
-            //unimplemented!();
+            trace!("Patch");
+            Ok(())
         }
         TyKind::Closure(_, _) => {
             trace!("Closure");
-            return Ok(());
-            // unimplemented!();
+            trace!("Patch");
+            Ok(())
         }
 
         TyKind::Generator(_, _, _) | TyKind::GeneratorWitness(_) => {
             trace!("Generator");
-            span_err(ctx.sess, span.clone(), "Generators are not supported");
-            return Err(());
+            span_err(ctx.sess, *span, "Generators are not supported");
+            Err(())
         }
 
         TyKind::Alias(_, _) => {
@@ -696,16 +688,16 @@ fn explore_mir_ty(
             trace!("Error");
             span_err(
                 ctx.sess,
-                span.clone(),
+                *span,
                 "Error type found: the code doesn't typecheck",
             );
-            return Err(());
+            Err(())
         }
         TyKind::Param(_) => {
             // A type parameter, for example `T` in `fn f<T>(x: T) {}`
             // We have nothing to do
             trace!("Param");
-            return Ok(());
+            Ok(())
         }
         TyKind::Bound(_, _) => {
             unimplemented!();
@@ -722,10 +714,8 @@ fn get_fun_from_operand<'tcx>(
 ) -> Option<(DefId, rustc_middle::ty::subst::SubstsRef<'tcx>)> {
     let fun_ty = op.constant().unwrap().literal.ty();
     match fun_ty.kind() {
-        TyKind::FnDef(def_id, substs) => return Some((*def_id, substs)),
-        _ => {
-            return None;
-        }
+        TyKind::FnDef(def_id, substs) => Some((*def_id, substs)),
+        _ => None,
     }
 }
 
@@ -765,10 +755,9 @@ fn visit_globals<'tcx>(
 /// Return true if the type is exactly `&str`
 fn ty_is_shared_borrow_str(ty: &Ty) -> bool {
     match ty.kind() {
-        TyKind::Ref(_, sty, rustc_middle::mir::Mutability::Not) => match sty.kind() {
-            TyKind::Str => true,
-            _ => false,
-        },
+        TyKind::Ref(_, sty, rustc_middle::mir::Mutability::Not) => {
+            matches!(sty.kind(), TyKind::Str)
+        }
         _ => false,
     }
 }
@@ -851,7 +840,7 @@ fn explore_dependency_item(
             trace!("external expression");
 
             // Register the external expression as an opaque one.
-            decls.register_opaque_declaration(ctx, &stack, id, kind, &name);
+            decls.register_opaque_declaration(ctx, &stack, id, kind, name);
             Ok(())
         }
         Some(node) => {
@@ -1059,7 +1048,7 @@ fn explore_body(
                     ctx,
                     stack.clone(),
                     decls,
-                    &fn_span,
+                    fn_span,
                     deps,
                     used_types,
                     &substs,
@@ -1096,7 +1085,7 @@ fn explore_body(
                         trace!("terminator: Call: arg: {:?}", a);
 
                         let ty = a.ty(&body.local_decls, ctx.rustc);
-                        explore_mir_ty(ctx, stack.clone(), decls, &fn_span, deps, &ty)?;
+                        explore_mir_ty(ctx, stack.clone(), decls, fn_span, deps, &ty)?;
                     }
                 }
 
@@ -1117,7 +1106,7 @@ fn explore_body(
                 trace!("terminator: Yield");
                 span_err(
                     ctx.sess,
-                    terminator.source_info.span.clone(),
+                    terminator.source_info.span,
                     "Yield is not supported",
                 );
             }
@@ -1125,7 +1114,7 @@ fn explore_body(
                 trace!("terminator: GeneratorDrop");
                 span_err(
                     ctx.sess,
-                    terminator.source_info.span.clone(),
+                    terminator.source_info.span,
                     "Generators are not supported",
                 );
             }
@@ -1140,7 +1129,7 @@ fn explore_body(
                 trace!("terminator: InlineASM");
                 span_err(
                     ctx.sess,
-                    terminator.source_info.span.clone(),
+                    terminator.source_info.span,
                     "Inline ASM is not supported",
                 );
             }
@@ -1339,8 +1328,12 @@ fn explore_local_hir_impl_item(
 
     // Match on the impl item kind
     match &impl_item.kind {
+<<<<<<< HEAD
         ImplItemKind::Const(_, _) => return Ok(()),
         //unimplemented!(),
+=======
+        ImplItemKind::Const(_, _) => Ok(()), // patch
+>>>>>>> debug-cm
         ImplItemKind::Type(_) => {
             // Note sure what to do with associated types yet
             unimplemented!();

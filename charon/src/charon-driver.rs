@@ -42,6 +42,8 @@ mod expressions;
 mod expressions_utils;
 mod extract_global_assignments;
 mod formatter;
+mod gast;
+mod gast_utils;
 mod generics;
 mod get_mir;
 mod graphs;
@@ -76,7 +78,6 @@ mod values_utils;
 
 use crate::driver::{arg_value, get_args_crate_index, get_args_source_index, CharonCallbacks};
 use rustc_driver::RunCompiler;
-use serde_json;
 
 fn main() {
     // Initialize the logger
@@ -86,7 +87,7 @@ fn main() {
     // and won't be parsed by CliOpts
     let origin_args: Vec<String> = std::env::args().collect();
     assert!(
-        origin_args.len() > 0,
+        !origin_args.is_empty(),
         "Impossible: zero arguments on the command-line!"
     );
     trace!("original arguments (computed by cargo): {:?}", origin_args);
@@ -122,7 +123,7 @@ fn main() {
     // one (the first one is the path to the charon-driver executable).
     // Rem.: the second argument is "rustc" (passed by Cargo because RUSTC_WRAPPER
     // is set). It seems not to work when we remove it...
-    let mut compiler_args: Vec<String> = origin_args[1..].iter().map(|x| x.clone()).collect();
+    let mut compiler_args: Vec<String> = origin_args[1..].to_vec();
 
     // The first argument should be "rustc": replace it with the current executable
     assert!(compiler_args[0] == "rustc");
@@ -151,8 +152,7 @@ fn main() {
 
     // First replace the source name
     let source_index = get_args_source_index(&compiler_args);
-    if source_index.is_some() {
-        let source_index = source_index.unwrap();
+    if let Some(source_index) = source_index {
         trace!("source ({}): {}", source_index, compiler_args[source_index]);
 
         if options.input_file.is_some() {
@@ -171,8 +171,7 @@ fn main() {
         // the crate.
         if options.crate_name.is_some() {
             let crate_name_index = get_args_crate_index(&compiler_args);
-            if crate_name_index.is_some() {
-                let crate_name_index = crate_name_index.unwrap();
+            if let Some(crate_name_index) = crate_name_index {
                 trace!(
                     "crate name ({}): {}",
                     crate_name_index,

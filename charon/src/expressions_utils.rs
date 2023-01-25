@@ -51,7 +51,7 @@ impl std::string::ToString for UnOp {
         match self {
             UnOp::Not => "~".to_string(),
             UnOp::Neg => "-".to_string(),
-            UnOp::Cast(src, tgt) => format!("cast<{},{}>", src, tgt),
+            UnOp::Cast(src, tgt) => format!("cast<{src},{tgt}>"),
         }
     }
 }
@@ -89,34 +89,34 @@ impl Place {
         for p in &self.projection {
             match p {
                 ProjectionElem::Deref => {
-                    out = format!("*({})", out);
+                    out = format!("*({out})");
                 }
                 ProjectionElem::DerefBox => {
-                    out = format!("deref_box ({})", out);
+                    out = format!("deref_box ({out})");
                 }
                 ProjectionElem::DerefRawPtr => {
-                    out = format!("deref_raw_ptr ({})", out);
+                    out = format!("deref_raw_ptr ({out})");
                 }
                 ProjectionElem::DerefPtrUnique => {
-                    out = format!("deref_ptr_unique ({})", out);
+                    out = format!("deref_ptr_unique ({out})");
                 }
                 ProjectionElem::DerefPtrNonNull => {
-                    out = format!("deref_ptr_non_null ({})", out);
+                    out = format!("deref_ptr_non_null ({out})");
                 }
                 ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                     FieldProjKind::Adt(adt_id, opt_variant_id) => {
                         let field_name = ctx.format_object((*adt_id, *opt_variant_id, *field_id));
                         let downcast = match opt_variant_id {
                             None => "".to_string(),
-                            Some(variant_id) => format!(" as variant @{}", variant_id),
+                            Some(variant_id) => format!(" as variant @{variant_id}"),
                         };
-                        out = format!("({}{}).{}", out, downcast, field_name);
+                        out = format!("({out}{downcast}).{field_name}");
                     }
                     FieldProjKind::Tuple(_) => {
-                        out = format!("({}).{}", out, field_id);
+                        out = format!("({out}).{field_id}");
                     }
                     FieldProjKind::Option(_) => {
-                        out = format!("({}).{}", out, field_id);
+                        out = format!("({out}).{field_id}");
                     }
                 },
             }
@@ -149,7 +149,7 @@ impl OperandConstantValue {
                 // we need the type (which contains the type def id).
                 // Anyway, the printing utilities are mostly for debugging.
                 let variant_id = match variant_id {
-                    Option::Some(id) => format!("Some({})", id),
+                    Option::Some(id) => format!("Some({id})"),
                     Option::None => "None".to_string(),
                 };
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();

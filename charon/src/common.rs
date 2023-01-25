@@ -20,7 +20,7 @@ pub type Result<T> = std::result::Result<T, ()>;
 pub fn propagate_error<T, C, F>(consumer: C, mut callback: F) -> Result<()>
 where
     F: FnMut(T) -> Result<()>,
-    C: FnOnce(&mut dyn FnMut(T) -> ()),
+    C: FnOnce(&mut dyn FnMut(T)),
 {
     let mut res = Ok(());
     consumer(&mut |arg: T| {
@@ -77,18 +77,16 @@ pub fn iterator_to_string<T>(
     t_to_string: &dyn Fn(T) -> String,
     it: impl Iterator<Item = T>,
 ) -> String {
-    let elems: Vec<String> = it
-        .map(|x| format!("  {}", t_to_string(x)).to_owned())
-        .collect();
-    if elems.len() == 0 {
+    let elems: Vec<String> = it.map(|x| format!("  {}", t_to_string(x))).collect();
+    if elems.is_empty() {
         "[]".to_owned()
     } else {
-        format!("[\n{}\n]", elems.join(",\n")).to_owned()
+        format!("[\n{}\n]", elems.join(",\n"))
     }
 }
 
 /// Custom function to pretty-print a vector.
-pub fn vec_to_string<T>(t_to_string: &dyn Fn(&T) -> String, v: &Vec<T>) -> String {
+pub fn vec_to_string<T>(t_to_string: &dyn Fn(&T) -> String, v: &[T]) -> String {
     iterator_to_string(t_to_string, v.iter())
 }
 
@@ -99,14 +97,14 @@ pub fn write_iterator<T: Copy>(
     it: impl Iterator<Item = T>,
 ) -> std::result::Result<(), std::fmt::Error> {
     let elems: Vec<T> = it.collect();
-    if elems.len() == 0 {
+    if elems.is_empty() {
         write!(f, "[]")
     } else {
-        write!(f, "[\n")?;
+        writeln!(f, "[")?;
         for i in 0..elems.len() {
             write_t(f, elems[i])?;
             if i + 1 < elems.len() {
-                write!(f, ",\n")?;
+                writeln!(f, ",")?;
             }
         }
         write!(f, "\n]")
@@ -116,7 +114,7 @@ pub fn write_iterator<T: Copy>(
 pub fn write_vec<T>(
     write_t: &dyn Fn(&mut std::fmt::Formatter<'_>, &T) -> std::result::Result<(), std::fmt::Error>,
     f: &mut std::fmt::Formatter<'_>,
-    v: &Vec<T>,
+    v: &[T],
 ) -> std::result::Result<(), std::fmt::Error> {
     write_iterator(write_t, f, v.iter())
 }
@@ -241,7 +239,7 @@ impl<'a, T: Serialize> Serialize for VecSerializer<'a, T> {
     where
         S: Serializer,
     {
-        serialize_vec(&self.vector, serializer)
+        serialize_vec(self.vector, serializer)
     }
 }
 
@@ -263,7 +261,7 @@ impl<'a, T: Clone + Serialize> Serialize for VectorSerializer<'a, T> {
     where
         S: Serializer,
     {
-        serialize_vector(&self.vector, serializer)
+        serialize_vector(self.vector, serializer)
     }
 }
 
