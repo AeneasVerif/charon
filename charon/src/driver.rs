@@ -168,6 +168,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         opaque_mods: HashSet::from_iter(options.opaque_modules.clone().into_iter()),
     };
     let (files, registered_decls) = register::explore_crate(&crate_info, sess, tcx, mir_level)?;
+    // panic!("PATCH registered_decls {:?}", registered_decls);
 
     // # Step 2: reorder the graph of dependencies and compute the strictly
     // connex components to:

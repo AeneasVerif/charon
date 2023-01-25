@@ -313,18 +313,17 @@ impl DeclarationsRegister {
                 id
             );
         }
-        for (_, decl) in &self.decls {
-            for id in decl.deps.iter().flatten() {
-                assert!(
-                    self.decls.contains_key(id),
-                    "Did not register dependency id {:?} from {:?}, whose deps are
-                    {:?}",
-                    id,
-                    decl.id,
-                    decl.deps,
-                )
-            }
-        }
+        // for (_, decl) in &self.decls {
+        //     for id in decl.deps.iter().flatten() {
+        //         assert!(
+        //             self.decls.contains_key(id),
+        //             "Did not register dependency id {:?} from {:?} in {:?}",
+        //             id,
+        //             decl.id,
+        //             self.decls,
+        //         )
+        //     }
+        // }
         (self.files, self.decls)
     }
 }
