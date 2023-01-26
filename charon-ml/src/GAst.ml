@@ -127,6 +127,10 @@ type fun_sig = {
   num_early_bound_regions : int;
   regions_hierarchy : region_var_groups;
   type_params : type_var list;
+      (** The type parameters can be indexed with {!TypeVarId.id}.
+
+          See {!Id.mapi} for instance.
+       *)
   inputs : sty list;
   output : sty;
 }
@@ -136,6 +140,10 @@ type 'body gexpr_body = {
   meta : meta;
   arg_count : int;
   locals : var list;
+      (** The locals can be indexed with {!VarId.id}.
+
+          See {!Id.mapi} for instance.
+       *)
   body : 'body;
 }
 [@@deriving show]

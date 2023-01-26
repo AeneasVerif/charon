@@ -5,6 +5,31 @@ module C = Collections
     We often need identifiers (for definitions, variables, etc.) and in
     order to make sure we don't mix them, we use a generative functor
     (see {!IdGen}).
+
+    Because {!Id.id} is an opaque type, even though it is [int] in practice
+    it is not possible to mix ids coming from two different instances of the
+    {!IdGen} functor.
+
+    For instance, if we do:
+    {[
+      module TypeDeclId = IdGen ()
+      module VariantId = IdGen ()
+      module FieldId = IdGen ()
+    ]}
+
+    the types [TypeDeclId.id], [VariantId.id] and [FieldId.id] will be
+    considered as different by the OCaml typechecker.
+
+    This is especially useful when one manipulates functions which take
+    several ids of different kinds as inputs: if identifiers were (transparently)
+    integers, we could mix them, while here the compiler prevents us from doing us,
+    avoiding mistakes which are easy to do and hard to debug.
+
+    It is sometimes necessary to generate ids from integers (and convert ids to
+    integers), and we provide functions for doing so: they should of course be
+    manipulated with care. In this regard, the point of {!Id} is not so much to have
+    opaque types but rather to provide a way of manipulating ids in a disciplined
+    manner, to prevent bugs by leveraging the typechecker.
 *)
 module type Id = sig
   type id
@@ -39,23 +64,41 @@ module type Id = sig
   val show_generator : generator -> string
   val to_int : id -> int
   val of_int : int -> id
+
+  (** This function should be used in the rare cases where we have a list whose
+      elements should be indexable through ids (for example, the fields of
+      a structure can be indexed by the field id).
+
+      Note that in Rust we have a special vector type for such lists, and it
+      works well because Rust has typeclasses. We hesitated to have a special
+      type in OCaml too but it proved too cumbersome to use so we finally
+      resorted to having lists.
+   *)
   val nth : 'a list -> id -> 'a
+
+  (** See the comments for {!nth} *)
   val nth_opt : 'a list -> id -> 'a option
 
   (** Update the nth element of the list.
+
+      See the comments for {!nth}.
 
       Raises [Invalid_argument] if the identifier is out of range.
    *)
   val update_nth : 'a list -> id -> 'a -> 'a list
 
+  (** See the comments for {!nth} *)
   val mapi : (id -> 'a -> 'b) -> 'a list -> 'b list
 
   (** Same as {!mapi}, but where the indices start with 1.
+
+      This function should be used with even more care than {!mapi}.
        
       TODO: generalize to [map_from_i]
    *)
   val mapi_from1 : (id -> 'a -> 'b) -> 'a list -> 'b list
 
+  (** See the comments for {!nth} *)
   val iteri : (id -> 'a -> unit) -> 'a list -> unit
 
   module Ord : C.OrderedType with type t = id

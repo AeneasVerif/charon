@@ -199,12 +199,28 @@ type ety = erased_region ty [@@deriving show, ord]
 type field = { meta : meta; field_name : string option; field_ty : sty }
 [@@deriving show]
 
-type variant = { meta : meta; variant_name : string; fields : field list }
+type variant = {
+  meta : meta;
+  variant_name : string;
+  fields : field list;
+      (** The fields can be indexed with {!FieldId.id}.
+
+          See {!Id.mapi} for instance.
+       *)
+}
 [@@deriving show]
 
 type type_decl_kind =
   | Struct of field list
+      (** The fields of the structure can be indexed with {!FieldId.id}.
+
+          See {!Id.mapi} for instance.
+       *)
   | Enum of variant list
+      (** The variants of the enumeration can be indexed with {!VariantId.id}.
+
+          See {!Id.mapi} for instance.
+       *)
   | Opaque
       (** An opaque type: either a local type marked as opaque, or an external type *)
 [@@deriving show]
