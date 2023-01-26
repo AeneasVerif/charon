@@ -34,11 +34,12 @@ env_logger = "0.8.4"
 petgraph = "0.6.2"
 multimap = "0.8.3"
 serial_test = "0.5.1"
-chrono = "0.4"
+chrono = "0.4.23"
 structopt = "0.3.26"
 macros = { path = "./macros" }
 take_mut = "0.2.2"
 rustc_tools_util = "0.2.1"
+bumpalo = "3.11.1" # We constrain the version of [bumpalo] because of a vulnerability
 
 [dev-dependencies]
 assert_cmd = "1.0.8"
