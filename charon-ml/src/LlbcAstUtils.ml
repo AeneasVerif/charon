@@ -71,3 +71,16 @@ and chain_statements_in_switch (switch : switch) (st : statement) : switch =
       in
       let otherwise = chain_statements otherwise st in
       Match (op, branches, otherwise)
+
+(** Compute a map from function declaration ids to declaration groups. *)
+let compute_fun_decl_groups_map (c : crate) : FunDeclId.Set.t FunDeclId.Map.t =
+  FunDeclId.Map.of_list
+    (List.flatten
+       (List.filter_map
+          (function
+            | Fun (NonRec id) -> Some [ (id, FunDeclId.Set.singleton id) ]
+            | Fun (Rec ids) ->
+                let idset = FunDeclId.Set.of_list ids in
+                Some (List.map (fun id -> (id, idset)) ids)
+            | Type _ | Global _ -> None)
+          c.declarations))
