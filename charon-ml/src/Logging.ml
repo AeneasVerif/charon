@@ -118,12 +118,23 @@ let format_tags (tags : string list) =
       let elems_str = String.concat " | " tags in
       "[" ^ elems_str ^ "] "
 
+(* Reimplementing this to make minor modifications *)
+let show_level (lvl : L.level) =
+  match lvl with
+  | Debug -> "Debug"
+  | Trace -> "Trace"
+  | Info -> "Info"
+  | Warning -> "Warn"
+  | Error -> "Error"
+  | Flash -> "Flash"
+  | NoLevel -> "NoLevel"
+
 (* Change the formatters *)
 let main_logger_handler =
   (* TODO: comes from easy_logging *)
   let formatter (item : L.log_item) : string =
     let item_level_fmt =
-      format [ Fg (level_to_color item.level) ] (L.show_level item.level)
+      format [ Fg (level_to_color item.level) ] (show_level item.level)
     and item_msg_fmt =
       match item.level with
       | Flash -> format [ Fg Black; Bg LMagenta ] item.msg
