@@ -1,0 +1,5 @@
+# This file was automatically generated: if you need to perform modifications,
+# update rust-toolchain.template in the top directory.
+[toolchain]
+channel = "nightly-2023-01-01"
+components = [ "rustc-dev", "llvm-tools-preview" ]

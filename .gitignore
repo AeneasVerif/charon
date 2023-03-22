@@ -14,6 +14,9 @@ tests/tests
 tests-polonius/ullbc
 tests-polonius/llbc
 tests-polonius/target
+demo/target
+demo/ullbc
+demo/llbc
 charon-ml/_build
 
 ##################
