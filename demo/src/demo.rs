@@ -6,7 +6,8 @@ pub fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T {
     }
 }
 
-/*pub enum List<T> {
+/*
+pub enum List<T> {
     Cons(T, Box<List<T>>),
     Nil,
 }
@@ -24,8 +25,9 @@ pub fn list_nth_rec<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
             }
         }
     }
-}
+}*/
 
+/*
 pub fn list_nth<T>(mut ls: &mut List<T>, mut i: u32) -> &mut T {
     while let List::Cons(x, tl) = ls {
         if i == 0 {
@@ -36,8 +38,24 @@ pub fn list_nth<T>(mut ls: &mut List<T>, mut i: u32) -> &mut T {
         }
     }
     panic!()
-}
+}*/
 
+/*
+pub fn test_list() {
+    let mut ls = List::Cons(0, Box::new(List::Nil));
+    let x = list_nth(&mut ls, 0);
+    assert!(*x == 0);
+    *x = 1;
+    match ls {
+        List::Cons(y, _) => {
+            assert!(y == 1);
+        }
+        List::Nil => unreachable!(),
+    }
+}
+*/
+
+/*
 pub fn test_swap() {
     let mut x = 0;
     let mut y = 1;

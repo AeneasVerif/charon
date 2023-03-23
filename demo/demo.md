@@ -6,5 +6,5 @@ Run from `charon/tests` directory:
 
 Run from `aeneas` directory:
 ```
-./bin/aeneas.exe ../charon/demo/llbc/demo.llbc -no-split-files -no-state -backend coq -no-check-inv -dest tests/coq/demo/
-``
+../../aeneas/bin/aeneas.exe ./llbc/demo.llbc -no-split-files -no-state -no-check-inv -dest coq/ -backend coq
+```
