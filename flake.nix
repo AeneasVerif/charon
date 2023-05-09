@@ -105,6 +105,7 @@
           ocamlPackages.buildDunePackage {
             pname = "charon";
             version = "0.1.0";
+            duneVersion = "3";
             preCheck = if doCheck then ''
               mkdir -p tests/serialized
               cp ${tests}/ullbc/* tests/serialized

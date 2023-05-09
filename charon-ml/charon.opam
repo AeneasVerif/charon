@@ -14,7 +14,7 @@ license: "Apache-2.0"
 homepage: "https://github.com/AeneasVerif/charon"
 bug-reports: "https://github.com/AeneasVerif/charon/issues"
 depends: [
-  "dune" {>= "2.8"}
+  "dune" {>= "3.7"}
   "odoc" {with-doc}
 ]
 build: [
