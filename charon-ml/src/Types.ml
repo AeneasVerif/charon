@@ -12,7 +12,7 @@ module FieldId = IdGen ()
 type type_var_id = TypeVarId.id [@@deriving show, ord]
 
 (** We define this type to control the name of the visitor functions
-    (see e.g., {!LlbcAst.iter_statement_base} and {!LlbcAst.SetDiscriminant}).
+    (see e.g., {!Charon.LlbcAst.iter_statement_base} and {!Charon.LlbcAst.SetDiscriminant}).
   *)
 type variant_id = VariantId.id [@@deriving show, ord]
 
@@ -20,7 +20,8 @@ type field_id = FieldId.id [@@deriving show, ord]
 type type_decl_id = TypeDeclId.id [@@deriving show]
 
 (** Region variable ids. Used in function signatures. *)
-module RegionVarId = IdGen ()
+module RegionVarId =
+IdGen ()
 
 (** Region ids. Used for symbolic executions. *)
 module RegionId = IdGen ()
@@ -205,7 +206,7 @@ type variant = {
   fields : field list;
       (** The fields can be indexed with {!FieldId.id}.
 
-          See {!Id.mapi} for instance.
+          See {!Identifiers.Id.mapi} for instance.
        *)
 }
 [@@deriving show]
@@ -214,12 +215,12 @@ type type_decl_kind =
   | Struct of field list
       (** The fields of the structure can be indexed with {!FieldId.id}.
 
-          See {!Id.mapi} for instance.
+          See {!Identifiers.Id.mapi} for instance.
        *)
   | Enum of variant list
       (** The variants of the enumeration can be indexed with {!VariantId.id}.
 
-          See {!Id.mapi} for instance.
+          See {!Identifiers.Id.mapi} for instance.
        *)
   | Opaque
       (** An opaque type: either a local type marked as opaque, or an external type *)
