@@ -32,7 +32,7 @@ fn compute_used_locals_in_operands(locals: &mut HashSet<VarId::Id>, ops: &Vec<Op
 fn compute_used_locals_in_rvalue(locals: &mut HashSet<VarId::Id>, rv: &Rvalue) {
     match rv {
         Rvalue::Use(op) => compute_used_locals_in_operand(locals, op),
-        Rvalue::Ref(p, _) => compute_used_locals_in_place(locals, p),
+        Rvalue::Ref(p, _) | Rvalue::Len(p) => compute_used_locals_in_place(locals, p),
         Rvalue::UnaryOp(_, op) => compute_used_locals_in_operand(locals, op),
         Rvalue::BinaryOp(_, op1, op2) => {
             compute_used_locals_in_operand(locals, op1);
@@ -130,6 +130,7 @@ fn transform_rvalue(vids_map: &HashMap<VarId::Id, VarId::Id>, rv: Rvalue) -> Rva
             let ops = transform_operands(vids_map, ops);
             Rvalue::Aggregate(kind, ops)
         }
+        Rvalue::Len(p) => Rvalue::Len(transform_place(vids_map, p)),
     }
 }
 

@@ -1198,8 +1198,9 @@ fn translate_rvalue<'tcx>(
         mir::Rvalue::AddressOf(_, _) => {
             unreachable!();
         }
-        mir::Rvalue::Len(_place) => {
-            unimplemented!();
+        mir::Rvalue::Len(place) => {
+            let place = translate_place(bt_ctx, place);
+            e::Rvalue::Len(place)
         }
         mir::Rvalue::Cast(cast_kind, operand, tgt_ty) => {
             trace!("Rvalue::Cast: {:?}", rvalue);

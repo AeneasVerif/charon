@@ -263,6 +263,7 @@ impl Rvalue {
                 }
             }
             Rvalue::Global(gid) => ctx.format_object(*gid),
+            Rvalue::Len(place) => format!("len({})", place.fmt_with_ctx(ctx)),
         }
     }
 
