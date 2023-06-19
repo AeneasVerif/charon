@@ -1276,8 +1276,9 @@ fn translate_rvalue<'tcx>(
                 .collect();
 
             match aggregate_kind.deref() {
-                mir::AggregateKind::Array(_ty) => {
-                    unimplemented!();
+                mir::AggregateKind::Array(ty) => {
+                    let t_ty = translate_ety(bt_ctx, &ty);
+                    e::Rvalue::Aggregate(e::AggregateKind::Array(t_ty.unwrap()), operands_t)
                 }
                 mir::AggregateKind::Tuple => {
                     e::Rvalue::Aggregate(e::AggregateKind::Tuple, operands_t)

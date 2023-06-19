@@ -248,6 +248,8 @@ impl Rvalue {
                         for (i, op) in ops.iter().enumerate() {
                             let field_id = FieldId::Id::new(i);
                             let field_name = ctx.format_object((*def_id, *variant_id, field_id));
+                            // TODO: this is reformatting the operand, which was already converted
+                            // to a string, above
                             fields.push(format!("{}: {}", field_name, op.fmt_with_ctx(ctx)));
                         }
 
@@ -256,6 +258,9 @@ impl Rvalue {
                             Some(variant_id) => ctx.format_object((*def_id, *variant_id)),
                         };
                         format!("{} {{ {} }}", variant, fields.join(", "))
+                    }
+                    AggregateKind::Array(_) => {
+                        format!("[{}]", ops_s.join(", "))
                     }
                 }
             }
@@ -302,7 +307,7 @@ impl Serialize for AggregateKind {
             }
             AggregateKind::Adt(def_id, opt_variant_id, regions, tys) => {
                 let mut vs =
-                    serializer.serialize_tuple_variant("AggregateKind", 1, "AggregatedAdt", 4)?;
+                    serializer.serialize_tuple_variant("AggregateKind", 2, "AggregatedAdt", 4)?;
 
                 vs.serialize_field(def_id)?;
                 vs.serialize_field(opt_variant_id)?;
@@ -311,6 +316,12 @@ impl Serialize for AggregateKind {
                 let tys = VecSerializer::new(tys);
                 vs.serialize_field(&tys)?;
 
+                vs.end()
+            }
+            AggregateKind::Array(ty) => {
+                let mut vs =
+                    serializer.serialize_tuple_variant("AggregateKind", 3, "AggregatedArray", 1)?;
+                vs.serialize_field(ty)?;
                 vs.end()
             }
         }
