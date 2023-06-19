@@ -2320,10 +2320,11 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     );
     let output = translate_sig_ty(&bt_ctx, &signature.output()).unwrap();
 
-    trace!(
-        "# Input variables types:\n{}",
-        iterator_to_string(&|x| bt_ctx.format_object(x), inputs.iter())
-    );
+    // TODO: remove this, rust-analyzer says "expected &dyn Fn(Region<Id>) -> String, got closure"
+    // trace!(
+    //     "# Input variables types:\n{}",
+    //     iterator_to_string(&|x| bt_ctx.format_object(x), inputs.iter())
+    // );
     trace!("# Output variable type:\n{}", bt_ctx.format_object(&output));
 
     let sig = ast::FunSig {

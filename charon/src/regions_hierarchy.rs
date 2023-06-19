@@ -351,12 +351,6 @@ fn compute_full_regions_constraints_for_ty(
         Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => {
             // Nothing to do
         }
-        Ty::Array(_aty) => {
-            unimplemented!();
-        }
-        Ty::Slice(_sty) => {
-            unimplemented!();
-        }
         Ty::Ref(region, ref_ty, _mutability) => {
             // Add the constraint for the region in the reference
             add_region_constraints(
@@ -379,7 +373,9 @@ fn compute_full_regions_constraints_for_ty(
                 ref_ty,
             );
         }
-        Ty::RawPtr(ptr_ty, _mutability) => {
+        Ty::Array(ptr_ty) |
+        Ty::Slice(ptr_ty) |
+        Ty::RawPtr(ptr_ty, _) => {
             // Dive in
             compute_full_regions_constraints_for_ty(
                 updated,
