@@ -119,6 +119,8 @@ impl Place {
                         out = format!("({out}).{field_id}");
                     }
                 },
+                ProjectionElem::Offset(i) =>
+                    out = format!("{out}[{}]", i),
             }
         }
 

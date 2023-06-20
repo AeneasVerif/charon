@@ -53,6 +53,7 @@ pub enum ProjectionElem {
     /// (for pretty printing for instance). We retrieve it through
     /// type-checking.
     Field(FieldProjKind, FieldId::Id),
+    Offset(usize),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]

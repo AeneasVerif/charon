@@ -599,8 +599,8 @@ fn translate_projection(
                 projection.push_back(proj_elem);
                 downcast_id = None;
             }
-            mir::ProjectionElem::Index(_local) => {
-                unimplemented!();
+            mir::ProjectionElem::Index(local) => {
+                projection.push_back(e::ProjectionElem::Offset(local.as_usize()))
             }
             mir::ProjectionElem::ConstantIndex {
                 offset: _,
