@@ -11,11 +11,13 @@ use crate::reorder_decls::DeclarationGroup;
 use crate::rust_to_local_ids::*;
 use crate::types as ty;
 use crate::types::TypeDeclId;
+use crate::values::ScalarValue;
 use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Mutability;
-use rustc_middle::ty::{Ty, TyCtxt, TyKind};
+use rustc_middle::ty::{Ty, TyCtxt, TyKind, ValTree, UintTy};
 use rustc_session::Session;
+use core::convert::*;
 
 /// Translation context for type definitions
 #[derive(Clone)]
@@ -259,11 +261,24 @@ where
                 Vector::from(params),
             ))
         }
-        TyKind::Array(ty, _const_param) => {
+        TyKind::Array(ty, const_param) => {
             trace!("Array");
 
+            // TODO: this only handles the case where the length of the array is a constant (i.e.,
+            // a literal, not a reference to a variable in scope)
+            let ValTree::Leaf(v) = const_param.to_valtree() else { todo!() };
+            let c = match const_param.ty().kind() {
+                TyKind::Uint(UintTy::U8) => ScalarValue::U8(v.try_to_u8().unwrap()),
+                TyKind::Uint(UintTy::U16) => ScalarValue::U16(v.try_to_u16().unwrap()),
+                TyKind::Uint(UintTy::U32) => ScalarValue::U32(v.try_to_u32().unwrap()),
+                TyKind::Uint(UintTy::U64) => ScalarValue::U64(v.try_to_u64().unwrap()),
+                TyKind::Uint(UintTy::U128) => ScalarValue::U128(v.try_to_u128().unwrap()),
+                TyKind::Uint(UintTy::Usize) =>
+                    ScalarValue::Usize(usize::try_from(v.try_to_machine_usize(tcx).unwrap()).unwrap()),
+                _ => panic!("Unknown size for array length"),
+            };
             let ty = translate_ty(tcx, trans_ctx, region_translator, type_params, ty)?;
-            Ok(ty::Ty::Array(Box::new(ty)))
+            Ok(ty::Ty::Array(Box::new(ty), c))
         }
         TyKind::Slice(ty) => {
             trace!("Slice");

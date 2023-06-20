@@ -373,7 +373,7 @@ fn compute_full_regions_constraints_for_ty(
                 ref_ty,
             );
         }
-        Ty::Array(ptr_ty) |
+        Ty::Array(ptr_ty, _) |
         Ty::Slice(ptr_ty) |
         Ty::RawPtr(ptr_ty, _) => {
             // Dive in

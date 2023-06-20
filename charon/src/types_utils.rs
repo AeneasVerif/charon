@@ -465,7 +465,7 @@ where
     pub fn is_leaf(&self) -> bool {
         match self {
             Ty::Adt(_, _, _)
-            | Ty::Array(_)
+            | Ty::Array(_, _)
             | Ty::Slice(_)
             | Ty::Ref(_, _, _)
             | Ty::RawPtr(_, _) => false,
@@ -510,7 +510,7 @@ where
             Ty::Never => "!".to_string(),
             Ty::Integer(int_ty) => integer_ty_to_string(*int_ty),
             Ty::Str => "str".to_string(),
-            Ty::Array(ty) => format!("[{}; ?]", ty.fmt_with_ctx(ctx)),
+            Ty::Array(ty, l) => format!("[{}; {l:?}]", ty.fmt_with_ctx(ctx)),
             Ty::Slice(ty) => format!("[{}]", ty.fmt_with_ctx(ctx)),
             Ty::Ref(r, ty, kind) => match kind {
                 RefKind::Mut => {
@@ -581,7 +581,7 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
         match self {
             Ty::TypeVar(_) => false,
             Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
-            Ty::Array(ty) | Ty::Slice(ty) => ty.contains_region_var(rset),
+            Ty::Array(ty, _) | Ty::Slice(ty) => ty.contains_region_var(rset),
             Ty::Ref(r, ty, _) => r.contains_var(rset) || ty.contains_region_var(rset),
             Ty::RawPtr(ty, _) => ty.contains_region_var(rset),
             Ty::Adt(_, regions, tys) => regions
@@ -718,7 +718,7 @@ where
             Ty::Never => Ty::Never,
             Ty::Integer(k) => Ty::Integer(*k),
             Ty::Str => Ty::Str,
-            Ty::Array(ty) => Ty::Array(Box::new(ty.substitute(rsubst, tsubst))),
+            Ty::Array(ty, l) => Ty::Array(Box::new(ty.substitute(rsubst, tsubst)), *l),
             Ty::Slice(ty) => Ty::Slice(Box::new(ty.substitute(rsubst, tsubst))),
             Ty::Ref(rid, ty, kind) => {
                 Ty::Ref(rsubst(rid), Box::new(ty.substitute(rsubst, tsubst)), *kind)
@@ -756,7 +756,7 @@ where
         match self {
             Ty::TypeVar(_) => true,
             Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
-            Ty::Array(ty) | Ty::Slice(ty) => ty.contains_variables(),
+            Ty::Array(ty, _) | Ty::Slice(ty) => ty.contains_variables(),
             Ty::Ref(_, _, _) => true, // Always contains a region identifier
             Ty::RawPtr(ty, _) => ty.contains_variables(),
             Ty::Adt(_, regions, tys) => {
@@ -770,7 +770,7 @@ where
         match self {
             Ty::TypeVar(_) => false,
             Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
-            Ty::Array(ty) | Ty::Slice(ty) => ty.contains_regions(),
+            Ty::Array(ty, _) | Ty::Slice(ty) => ty.contains_regions(),
             Ty::Ref(_, _, _) => true,
             Ty::RawPtr(ty, _) => ty.contains_regions(),
             Ty::Adt(_, regions, tys) => {
@@ -937,8 +937,9 @@ impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
                 Ty::Integer(int_ty) => {
                     vs.serialize_field(int_ty)?;
                 }
-                Ty::Array(ty) => {
+                Ty::Array(ty, l) => {
                     vs.serialize_field(ty)?;
+                    vs.serialize_field(l)?;
                 }
                 Ty::Slice(ty) => {
                     vs.serialize_field(ty)?;
@@ -966,7 +967,7 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
             Ty::Never => true,
             Ty::Adt(_, _, tys) => tys.iter().any(|ty| ty.contains_never()),
             Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Str | Ty::Integer(_) => false,
-            Ty::Array(ty) | Ty::Slice(ty) | Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => {
+            Ty::Array(ty, _) | Ty::Slice(ty) | Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => {
                 ty.contains_never()
             }
         }

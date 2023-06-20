@@ -7,6 +7,7 @@ pub use crate::types_utils::*;
 use im::Vector;
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
+use crate::values::ScalarValue;
 
 pub type FieldName = String;
 
@@ -198,7 +199,7 @@ where
     // We don't support floating point numbers on purpose
     Str,
     // TODO: there should be a constant with the array
-    Array(Box<Ty<R>>),
+    Array(Box<Ty<R>>, ScalarValue),
     Slice(Box<Ty<R>>),
     /// A borrow
     Ref(R, Box<Ty<R>>, RefKind),
