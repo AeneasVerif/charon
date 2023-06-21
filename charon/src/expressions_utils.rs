@@ -120,7 +120,7 @@ impl Place {
                     }
                 },
                 ProjectionElem::Offset(i) =>
-                    out = format!("{out}[{}]", i),
+                    out = format!("{out}[{:?}]", i),
             }
         }
 

@@ -544,7 +544,7 @@ fn simplify_assert_then_binop(_st1: Statement, _st2: Statement, st3: Statement) 
     st3
 }
 
-/// Attempt to simplify a sequence of statemnets
+/// Attempt to simplify a sequence of statements
 fn simplify_st_seq(
     release: bool,
     st1: Statement,

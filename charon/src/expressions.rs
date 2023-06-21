@@ -53,7 +53,12 @@ pub enum ProjectionElem {
     /// (for pretty printing for instance). We retrieve it through
     /// type-checking.
     Field(FieldProjKind, FieldId::Id),
-    Offset(usize),
+    /// NOTE: this is named, confusingly, as Index in MIR -- we rectify the naming
+    /// MIR imposes that the argument to an offset projection be a local variable, meaning that
+    /// even constant indices into arrays are let-bound as separate variables. We relax the
+    /// criterion here, so as to allow further optimizations of the code being handing it over to
+    /// clients.
+    Offset(Operand),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]

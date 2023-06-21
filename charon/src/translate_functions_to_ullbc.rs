@@ -425,6 +425,7 @@ fn translate_place_with_type<'tcx, 'ctx>(
     let var_id = bt_ctx.get_local(&place.local).unwrap();
     let var = bt_ctx.get_var_from_id(var_id).unwrap();
     let (projection, ty) = translate_projection(
+        bt_ctx,
         bt_ctx.ft_ctx.mir_level,
         bt_ctx.ft_ctx.type_defs,
         var.ty.clone(),
@@ -452,7 +453,8 @@ fn translate_place<'tcx, 'ctx>(
 /// We return the translated projection, and its type.
 ///
 /// - `mir_level`: used for sanity checks
-fn translate_projection(
+fn translate_projection<'tcx, 'ctx>(
+    bt_ctx: &'ctx BodyTransContext<'tcx, 'ctx, '_>,
     mir_level: MirLevel,
     type_defs: &ty::TypeDecls,
     var_ty: ty::ETy,
@@ -600,7 +602,12 @@ fn translate_projection(
                 downcast_id = None;
             }
             mir::ProjectionElem::Index(local) => {
-                projection.push_back(e::ProjectionElem::Offset(local.as_usize()))
+                let v = bt_ctx.get_local(&local).unwrap();
+                projection.push_back(e::ProjectionElem::Offset(
+                    e::Operand::Copy(e::Place {
+                        var_id: v,
+                        projection: Vector::new(),
+                    })));
             }
             mir::ProjectionElem::ConstantIndex {
                 offset: _,

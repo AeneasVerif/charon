@@ -12,8 +12,18 @@ use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 use take_mut::take;
 
+fn compute_used_locals_in_projection(locals: &mut HashSet<VarId::Id>, p: &Projection) {
+    for pe in p.iter() {
+        match pe {
+            ProjectionElem::Offset (o) => compute_used_locals_in_operand(locals, o),
+            _ => {}
+        }
+    }
+}
+
 fn compute_used_locals_in_place(locals: &mut HashSet<VarId::Id>, p: &Place) {
     locals.insert(p.var_id);
+    compute_used_locals_in_projection(locals, &p.projection);
 }
 
 fn compute_used_locals_in_operand(locals: &mut HashSet<VarId::Id>, op: &Operand) {
