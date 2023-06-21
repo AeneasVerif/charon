@@ -343,7 +343,10 @@ fn check_if_simplifiable_binop_then_assert(
             true
         }
         _ => {
-            assert!(release);
+            if !release {
+                trace!("# Statements do not have the expected shape\n{:?}\n{:?}\n{:?}", st1, st2, st3);
+                assert!(false);
+            }
             false
         }
     }
