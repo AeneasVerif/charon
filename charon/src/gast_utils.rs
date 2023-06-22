@@ -559,7 +559,10 @@ impl<'ctx, FD, GD> Formatter<&ETy> for GAstFormatter<'ctx, FD, GD> {
     }
 }
 
-impl<'ctx, FD, GD> Formatter<&Place> for GAstFormatter<'ctx, FD, GD> {
+impl<'ctx, FD, GD> Formatter<&Place> for GAstFormatter<'ctx, FD, GD>
+where
+    Self: Formatter<GlobalDeclId::Id>,
+{
     fn format_object(&self, p: &Place) -> String {
         p.fmt_with_ctx(self)
     }

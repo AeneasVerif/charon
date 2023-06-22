@@ -46,35 +46,35 @@ impl std::fmt::Display for BorrowKind {
     }
 }
 
-impl std::string::ToString for UnOp {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for UnOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
-            UnOp::Not => "~".to_string(),
-            UnOp::Neg => "-".to_string(),
-            UnOp::Cast(src, tgt) => format!("cast<{src},{tgt}>"),
+            UnOp::Not => write!(f, "~"),
+            UnOp::Neg => write!(f, "-"),
+            UnOp::Cast(src, tgt) => write!(f, "cast<{src},{tgt}>"),
         }
     }
 }
 
-impl std::string::ToString for BinOp {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for BinOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
-            BinOp::BitXor => "^".to_string(),
-            BinOp::BitAnd => "&".to_string(),
-            BinOp::BitOr => "|".to_string(),
-            BinOp::Eq => "==".to_string(),
-            BinOp::Lt => "<".to_string(),
-            BinOp::Le => "<=".to_string(),
-            BinOp::Ne => "!=".to_string(),
-            BinOp::Ge => ">=".to_string(),
-            BinOp::Gt => ">".to_string(),
-            BinOp::Div => "/".to_string(),
-            BinOp::Rem => "%".to_string(),
-            BinOp::Add => "+".to_string(),
-            BinOp::Sub => "-".to_string(),
-            BinOp::Mul => "*".to_string(),
-            BinOp::Shl => "<<".to_string(),
-            BinOp::Shr => ">>".to_string(),
+            BinOp::BitXor => write!(f, "^"),
+            BinOp::BitAnd => write!(f, "&"),
+            BinOp::BitOr => write!(f, "|"),
+            BinOp::Eq => write!(f, "=="),
+            BinOp::Lt => write!(f, "<"),
+            BinOp::Le => write!(f, "<="),
+            BinOp::Ne => write!(f, "!="),
+            BinOp::Ge => write!(f, ">="),
+            BinOp::Gt => write!(f, ">"),
+            BinOp::Div => write!(f, "/"),
+            BinOp::Rem => write!(f, "%"),
+            BinOp::Add => write!(f, "+"),
+            BinOp::Sub => write!(f, "-"),
+            BinOp::Mul => write!(f, "*"),
+            BinOp::Shl => write!(f, "<<"),
+            BinOp::Shr => write!(f, ">>"),
         }
     }
 }
@@ -82,7 +82,10 @@ impl std::string::ToString for BinOp {
 impl Place {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<VarId::Id> + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
+        T: Formatter<TypeDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<VarId::Id>
+            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         let mut out = ctx.format_object(self.var_id);
 
@@ -119,8 +122,7 @@ impl Place {
                         out = format!("({out}).{field_id}");
                     }
                 },
-                ProjectionElem::Offset(i) =>
-                    out = format!("{out}[{:?}]", i),
+                ProjectionElem::Offset(i) => out = format!("{out}[{}]", i.fmt_with_ctx(ctx)),
             }
         }
 
@@ -133,9 +135,9 @@ impl Place {
     }
 }
 
-impl std::string::ToString for Place {
-    fn to_string(&self) -> String {
-        self.fmt_with_ctx(&values::DummyFormatter {})
+impl std::fmt::Display for Place {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
     }
 }
 
@@ -163,9 +165,9 @@ impl OperandConstantValue {
     }
 }
 
-impl std::string::ToString for OperandConstantValue {
-    fn to_string(&self) -> String {
-        self.fmt_with_ctx(&values::DummyFormatter {})
+impl std::fmt::Display for OperandConstantValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
     }
 }
 
@@ -190,9 +192,9 @@ impl Operand {
     }
 }
 
-impl std::string::ToString for Operand {
-    fn to_string(&self) -> String {
-        self.fmt_with_ctx(&values::DummyFormatter {})
+impl std::fmt::Display for Operand {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
     }
 }
 
@@ -218,14 +220,11 @@ impl Rvalue {
                 BorrowKind::Shallow => format!("&shallow {}", place.fmt_with_ctx(ctx)),
             },
             Rvalue::UnaryOp(unop, x) => {
-                format!("{}({})", unop.to_string(), x.fmt_with_ctx(ctx))
+                format!("{}({})", unop, x.fmt_with_ctx(ctx))
             }
-            Rvalue::BinaryOp(binop, x, y) => format!(
-                "{} {} {}",
-                x.fmt_with_ctx(ctx),
-                binop.to_string(),
-                y.fmt_with_ctx(ctx)
-            ),
+            Rvalue::BinaryOp(binop, x, y) => {
+                format!("{} {} {}", x.fmt_with_ctx(ctx), binop, y.fmt_with_ctx(ctx))
+            }
             Rvalue::Discriminant(p) => {
                 format!("@discriminant({})", p.fmt_with_ctx(ctx),)
             }
@@ -275,9 +274,9 @@ impl Rvalue {
     }
 }
 
-impl std::string::ToString for Rvalue {
-    fn to_string(&self) -> String {
-        self.fmt_with_ctx(&values::DummyFormatter {})
+impl std::fmt::Display for Rvalue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
     }
 }
 
