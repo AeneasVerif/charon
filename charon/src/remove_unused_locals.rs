@@ -13,10 +13,9 @@ use std::iter::FromIterator;
 use take_mut::take;
 
 fn compute_used_locals_in_projection(locals: &mut HashSet<VarId::Id>, p: &Projection) {
-    for pe in p.iter() {
-        match pe {
-            ProjectionElem::Offset (o) => compute_used_locals_in_operand(locals, o),
-            _ => {}
+    for pe in p {
+        if let ProjectionElem::Offset(o) = pe {
+            compute_used_locals_in_operand(locals, o)
         }
     }
 }
@@ -104,9 +103,22 @@ fn compute_used_locals_in_statement(locals: &mut HashSet<VarId::Id>, st: &Statem
     }
 }
 
+fn transform_projection(vids_map: &HashMap<VarId::Id, VarId::Id>, p: Projection) -> Projection {
+    p.into_iter()
+        .map(|pe| {
+            if let ProjectionElem::Offset(o) = pe {
+                ProjectionElem::Offset(transform_operand(vids_map, o))
+            } else {
+                pe
+            }
+        })
+        .collect()
+}
+
 fn transform_place(vids_map: &HashMap<VarId::Id, VarId::Id>, mut p: Place) -> Place {
     let nvid = vids_map.get(&p.var_id).unwrap();
     p.var_id = *nvid;
+    p.projection = transform_projection(vids_map, p.projection);
     p
 }
 
