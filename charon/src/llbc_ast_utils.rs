@@ -732,7 +732,7 @@ pub trait AstMoveVisitor<T> {
             ProjectionElem::DerefPtrUnique => self.visit_deref_ptr_unique(),
             ProjectionElem::DerefPtrNonNull => self.visit_deref_ptr_non_null(),
             ProjectionElem::Field(proj_kind, fid) => self.visit_projection_field(proj_kind, fid),
-            ProjectionElem::Offset(o) => self.visit_offset(o),
+            ProjectionElem::Offset(o) => self.visit_var_id(o),
         }
     }
 
@@ -746,9 +746,6 @@ pub trait AstMoveVisitor<T> {
     fn visit_deref_ptr_unique(&mut self) {}
     fn visit_deref_ptr_non_null(&mut self) {}
     fn visit_projection_field(&mut self, _: &mut FieldProjKind, _: &mut FieldId::Id) {}
-    fn visit_offset(&mut self, o: &mut Operand) {
-        self.visit_operand(o)
-    }
 
     fn default_visit_operand(&mut self, o: &mut Operand) {
         match o {

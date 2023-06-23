@@ -603,10 +603,7 @@ fn translate_projection<'tcx, 'ctx>(
             }
             mir::ProjectionElem::Index(local) => {
                 let v = bt_ctx.get_local(&local).unwrap();
-                projection.push_back(e::ProjectionElem::Offset(e::Operand::Copy(e::Place {
-                    var_id: v,
-                    projection: Vector::new(),
-                })));
+                projection.push_back(e::ProjectionElem::Offset(v));
             }
             mir::ProjectionElem::ConstantIndex {
                 offset: _,

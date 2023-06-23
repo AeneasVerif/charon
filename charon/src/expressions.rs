@@ -58,7 +58,7 @@ pub enum ProjectionElem {
     /// even constant indices into arrays are let-bound as separate variables. We relax the
     /// criterion here, so as to allow further optimizations of the code being handing it over to
     /// clients.
-    Offset(Operand),
+    Offset(VarId::Id),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]

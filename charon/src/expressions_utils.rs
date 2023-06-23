@@ -122,7 +122,7 @@ impl Place {
                         out = format!("({out}).{field_id}");
                     }
                 },
-                ProjectionElem::Offset(i) => out = format!("{out}[{}]", i.fmt_with_ctx(ctx)),
+                ProjectionElem::Offset(i) => out = format!("{out}[{}]", i),
             }
         }
 

@@ -15,7 +15,7 @@ use take_mut::take;
 fn compute_used_locals_in_projection(locals: &mut HashSet<VarId::Id>, p: &Projection) {
     for pe in p {
         if let ProjectionElem::Offset(o) = pe {
-            compute_used_locals_in_operand(locals, o)
+            let _ = locals.insert(*o);
         }
     }
 }
@@ -103,11 +103,15 @@ fn compute_used_locals_in_statement(locals: &mut HashSet<VarId::Id>, st: &Statem
     }
 }
 
+fn transform_var_id(vids_map: &HashMap<VarId::Id, VarId::Id>, id: &VarId::Id) -> VarId::Id {
+    *vids_map.get(id).unwrap()
+}
+
 fn transform_projection(vids_map: &HashMap<VarId::Id, VarId::Id>, p: Projection) -> Projection {
     p.into_iter()
         .map(|pe| {
             if let ProjectionElem::Offset(o) = pe {
-                ProjectionElem::Offset(transform_operand(vids_map, o))
+                ProjectionElem::Offset(transform_var_id(vids_map, &o))
             } else {
                 pe
             }
@@ -116,8 +120,7 @@ fn transform_projection(vids_map: &HashMap<VarId::Id, VarId::Id>, p: Projection)
 }
 
 fn transform_place(vids_map: &HashMap<VarId::Id, VarId::Id>, mut p: Place) -> Place {
-    let nvid = vids_map.get(&p.var_id).unwrap();
-    p.var_id = *nvid;
+    p.var_id = transform_var_id(vids_map, &p.var_id);
     p.projection = transform_projection(vids_map, p.projection);
     p
 }
