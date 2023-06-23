@@ -272,5 +272,9 @@ pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut Glob
             b.body = transform_st(&vids_map, b.body);
             b
         });
+        trace!(
+            "# After removing locals of: {name}:\n{}",
+            b.fmt_with_ctx_names(fmt_ctx)
+        );
     }
 }

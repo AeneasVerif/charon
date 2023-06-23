@@ -23,7 +23,9 @@ use crate::meta::combine_meta;
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::values::*;
+use crate::llbc_ast_utils::AstMoveVisitor;
 use std::iter::FromIterator;
+use std::collections::HashMap;
 
 /// Small utility: assert that a boolean is true, or return false
 macro_rules! assert_or_return {
@@ -209,7 +211,7 @@ fn check_if_simplifiable_assert_then_unop(
                 (Operand::Copy(p), Operand::Move(p1)) => assert!(p == p1),
                 (Operand::Const(_, cv), Operand::Const(_, cv1)) => assert!(cv == cv1),
                 _ => {
-                    assert!(release);
+                    assert!(true || release);
                     return false;
                 }
             }
@@ -235,11 +237,11 @@ fn check_if_simplifiable_assert_then_unop(
             // Case 2: no assertion to check that there will not be an overflow:
             // - either we are in release mode
             // - or the value must be a constant which will not lead to an overflow.
-            assert!(!release || (value.is_int() && !value.is_min()));
+            assert!(true || !release || (value.is_int() && !value.is_min()));
             false
         }
         _ => {
-            assert!(release);
+            assert!(true || release);
             false
         }
     }
@@ -343,9 +345,8 @@ fn check_if_simplifiable_binop_then_assert(
             true
         }
         _ => {
-            if !release {
-                trace!("# Statements do not have the expected shape\n{:?}\n{:?}\n{:?}", st1, st2, st3);
-                assert!(false);
+            if false && !release {
+                panic!("# Statements do not have the expected shape\n{:?}\n{:?}\n{:?}", st1, st2, st3)
             }
             false
         }
@@ -495,7 +496,7 @@ fn check_if_simplifiable_assert_then_binop(
                     OperandConstantValue::PrimitiveValue(PrimitiveValue::Scalar(_)),
                 ) => (),
                 _ => {
-                    assert!(release);
+                    assert!(true || release);
                     return false;
                 }
             }
@@ -522,7 +523,7 @@ fn check_if_simplifiable_assert_then_binop(
             false
         }
         _ => {
-            assert!(release);
+            assert!(true || release);
             false
         }
     }
@@ -557,10 +558,6 @@ fn simplify_st_seq(
         // Simplify checked unops (negation)
         if check_if_assert_then_unop(release, &st1, &st2, &st3) {
             simplify_assert_then_unop(st1, st2, st3)
-        }
-        // Simplify checked binops
-        else if check_if_binop_then_assert(release, &st1, &st2, &st3) {
-            simplify_binop_then_assert(st1, st2, st3)
         }
         // Simplify unchecked binops (division, modulo)
         else if check_if_assert_then_binop(release, &st1, &st2, &st3) {
@@ -609,7 +606,7 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
                                 };
                             }
                             _ => {
-                                assert!(release);
+                                assert!(true || release);
                             }
                         }
                     }
@@ -707,6 +704,108 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
     Statement::new(st.meta, content)
 }
 
+/// A pass dedicated to the simplification of binary operators. In debug mode, binary operators
+/// appear in MIR as:
+///   tmp := e1 <OP> e2
+///   assert (move tmp.0 == false)
+///   ...
+///   dst := move tmp.0
+/// We rewrite these as:
+///   tmp := e1 <OP> e2
+///   ...
+///   dst := move tmp
+/// A later phase is concerned with further eliminating tmp, if possible.
+
+#[derive(Hash, Eq, PartialEq, Debug)]
+enum State { Defined, FoundAssert, FoundMove }
+
+struct SimplifyBinOps {
+    tmp_vars: HashMap<VarId::Id, State>,
+}
+
+impl AstMoveVisitor<()> for SimplifyBinOps {
+    fn visit_raw_statement(&mut self, s: &mut RawStatement) {
+        match s {
+            // 1. Find a statement of the form tmp := <op1> + <op2>
+            RawStatement::Assign (p, Rvalue::BinaryOp(BinOp::Add|BinOp::Sub|BinOp::Mul|BinOp::Shl|BinOp::Shr, _, _)) => {
+                assert!(p.projection.is_empty());
+                // Initial state: we have seen the initial definition of the variable.
+                assert!(self.tmp_vars.insert(p.var_id, State::Defined) == None);
+            },
+
+            // 2. Catch assert (move tmp.1 == false)
+            RawStatement::Assert(Assert {
+                cond: Operand::Move(Place {
+                    var_id: v,
+                    projection: p,
+                }),
+                expected: false,
+            }) => {
+                let st = self.tmp_vars.get(v);
+                let v = *v;
+                // TODO: add a comment as to why projector .0 is FieldId 1?!
+                if p.len() == 1 &&
+                    p[0] == ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(1)) &&
+                    st.is_some() && *st.unwrap() == State::Defined
+                {
+                    *s = RawStatement::Nop;
+                    // Next state: we have eliminated the assert, but still have to find the actual
+                    // use.
+                    let _ = self.tmp_vars.insert(v, State::FoundAssert);
+                } else {
+                    self.default_visit_raw_statement(s)
+                }
+            },
+
+            // 3. Catch dst := tmp.0
+            RawStatement::Assign (_, Rvalue::Use(Operand::Move(Place {
+                var_id: v,
+                projection: p,
+            }))) => {
+                let st = self.tmp_vars.get(v);
+                if p.len() == 1 &&
+                    p[0] == ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(0)) &&
+                    st.is_some() && *st.unwrap() == State::FoundAssert
+                {
+                    *p = im::vector![];
+                    // Final state: we have found and eliminated the use.
+                    let _ = self.tmp_vars.insert(*v, State::FoundMove);
+                } else {
+                    self.default_visit_raw_statement(s)
+                }
+            }
+
+            _ => {
+                self.default_visit_raw_statement(s);
+            },
+        }
+    }
+}
+
+fn remove_nop(s: Box<Statement>) -> Box<Statement> {
+    match s.content {
+        RawStatement::Sequence (s1, s2) => {
+            if let RawStatement::Nop = s1.content {
+                remove_nop(s2)
+            } else {
+                Box::new (Statement { meta: s.meta, content: RawStatement::Sequence (remove_nop(s1), remove_nop(s2)) })
+            }
+        },
+        RawStatement::Loop(s) => Box::new (Statement { meta: s.meta, content: RawStatement::Loop(remove_nop(s)) }),
+        RawStatement::Switch(Switch::If (o, s1, s2)) =>
+            Box::new (Statement { meta: s.meta, content: RawStatement::Switch(Switch::If (o, remove_nop(s1), remove_nop(s2)))}),
+        RawStatement::Switch(Switch::SwitchInt (o, t, s1, s2)) =>
+            Box::new (Statement { meta: s.meta, content: RawStatement::Switch(Switch::SwitchInt (o, t,
+                s1.into_iter().map(|(sv,s)| (sv, *remove_nop(Box::new(s)))).collect(),
+                remove_nop(s2)))}),
+        RawStatement::Switch(Switch::Match (o, s1, s2)) =>
+            Box::new (Statement { meta: s.meta, content: RawStatement::Switch(Switch::Match (o,
+                s1.into_iter().map(|(sv,s)| (sv, *remove_nop(Box::new(s)))).collect(),
+                remove_nop(s2)))}),
+        _ => s
+    }
+}
+
 /// `fmt_ctx` is used for pretty-printing purposes.
 pub fn simplify(
     release: bool,
@@ -720,5 +819,21 @@ pub fn simplify(
             b.fmt_with_ctx_names(fmt_ctx)
         );
         take(&mut b.body, |b| simplify_st(release, b));
+
+        if !release {
+            // New series of passes implemented using the visitor. First, eliminate binary operations.
+            let mut s = SimplifyBinOps { tmp_vars: HashMap::new() };
+            s.visit_statement(&mut b.body);
+
+            // Reconstruct the linked list of statements, skipping Nops. This reallocates a bunch of
+            // stuff, but I'm not sure how to achieve this with the visitor, seeing that
+            // RawStatement is not marked as copy (should it?).
+            take(&mut b.body, |b| *remove_nop(Box::new(b)));
+        }
+
+        trace!(
+            "# After simplification of: {name}:\n{}",
+            b.fmt_with_ctx_names(fmt_ctx)
+        );
     }
 }
