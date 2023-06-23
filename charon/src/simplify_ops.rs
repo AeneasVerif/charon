@@ -19,13 +19,13 @@ use crate::expressions::*;
 use crate::llbc_ast::{
     new_sequence, Assert, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Switch,
 };
+use crate::llbc_ast_utils::AstMoveVisitor;
 use crate::meta::combine_meta;
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::values::*;
-use crate::llbc_ast_utils::AstMoveVisitor;
-use std::iter::FromIterator;
 use std::collections::HashMap;
+use std::iter::FromIterator;
 
 /// Small utility: assert that a boolean is true, or return false
 macro_rules! assert_or_return {
@@ -346,7 +346,10 @@ fn check_if_simplifiable_binop_then_assert(
         }
         _ => {
             if false && !release {
-                panic!("# Statements do not have the expected shape\n{:?}\n{:?}\n{:?}", st1, st2, st3)
+                panic!(
+                    "# Statements do not have the expected shape\n{:?}\n{:?}\n{:?}",
+                    st1, st2, st3
+                )
             }
             false
         }
@@ -362,7 +365,7 @@ fn check_if_simplifiable_binop_then_assert(
 ///   ```
 /// to:
 ///   ```text
-///   tmp := copy x + copy y; // Possibly a different binop
+///   dest := copy x + copy y; // Possibly a different binop
 ///   ...
 ///   ```
 /// Note that the type of the binop changes in the two situations (in the
@@ -717,7 +720,11 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
 /// A later phase is concerned with further eliminating tmp, if possible.
 
 #[derive(Hash, Eq, PartialEq, Debug)]
-enum State { Defined, FoundAssert, FoundMove }
+enum State {
+    Defined,
+    FoundAssert,
+    FoundMove,
+}
 
 struct SimplifyBinOps {
     tmp_vars: HashMap<VarId::Id, State>,
@@ -725,28 +732,42 @@ struct SimplifyBinOps {
 
 impl AstMoveVisitor<()> for SimplifyBinOps {
     fn visit_raw_statement(&mut self, s: &mut RawStatement) {
+        // TODO: I think we should check that if we saw e1 <OP> e2 at some point,
+        // we *do* find the corresponding assert and move (we need to check for
+        // terminal nodes - and have to pay attention to branchings: we can
+        // discuss that).
         match s {
             // 1. Find a statement of the form tmp := <op1> + <op2>
-            RawStatement::Assign (p, Rvalue::BinaryOp(BinOp::Add|BinOp::Sub|BinOp::Mul|BinOp::Shl|BinOp::Shr, _, _)) => {
+            RawStatement::Assign(
+                p,
+                Rvalue::BinaryOp(
+                    BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Shl | BinOp::Shr,
+                    _,
+                    _,
+                ),
+            ) => {
                 assert!(p.projection.is_empty());
                 // Initial state: we have seen the initial definition of the variable.
-                assert!(self.tmp_vars.insert(p.var_id, State::Defined) == None);
-            },
+                // TODO: introduce a new temporary variable.
+                assert!(self.tmp_vars.insert(p.var_id, State::Defined).is_none());
+            }
 
             // 2. Catch assert (move tmp.1 == false)
             RawStatement::Assert(Assert {
-                cond: Operand::Move(Place {
-                    var_id: v,
-                    projection: p,
-                }),
+                cond:
+                    Operand::Move(Place {
+                        var_id: v,
+                        projection: p,
+                    }),
                 expected: false,
             }) => {
                 let st = self.tmp_vars.get(v);
                 let v = *v;
                 // TODO: add a comment as to why projector .0 is FieldId 1?!
-                if p.len() == 1 &&
-                    p[0] == ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(1)) &&
-                    st.is_some() && *st.unwrap() == State::Defined
+                if p.len() == 1
+                    && p[0] == ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(1))
+                    && st.is_some()
+                    && *st.unwrap() == State::Defined
                 {
                     *s = RawStatement::Nop;
                     // Next state: we have eliminated the assert, but still have to find the actual
@@ -755,17 +776,21 @@ impl AstMoveVisitor<()> for SimplifyBinOps {
                 } else {
                     self.default_visit_raw_statement(s)
                 }
-            },
+            }
 
             // 3. Catch dst := tmp.0
-            RawStatement::Assign (_, Rvalue::Use(Operand::Move(Place {
-                var_id: v,
-                projection: p,
-            }))) => {
+            RawStatement::Assign(
+                _,
+                Rvalue::Use(Operand::Move(Place {
+                    var_id: v,
+                    projection: p,
+                })),
+            ) => {
                 let st = self.tmp_vars.get(v);
-                if p.len() == 1 &&
-                    p[0] == ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(0)) &&
-                    st.is_some() && *st.unwrap() == State::FoundAssert
+                if p.len() == 1
+                    && p[0] == ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(0))
+                    && st.is_some()
+                    && *st.unwrap() == State::FoundAssert
                 {
                     *p = im::vector![];
                     // Final state: we have found and eliminated the use.
@@ -777,33 +802,37 @@ impl AstMoveVisitor<()> for SimplifyBinOps {
 
             _ => {
                 self.default_visit_raw_statement(s);
-            },
+            }
         }
     }
 }
 
-fn remove_nop(s: Box<Statement>) -> Box<Statement> {
-    match s.content {
-        RawStatement::Sequence (s1, s2) => {
-            if let RawStatement::Nop = s1.content {
-                remove_nop(s2)
-            } else {
-                Box::new (Statement { meta: s.meta, content: RawStatement::Sequence (remove_nop(s1), remove_nop(s2)) })
+struct RemoveNops {}
+
+impl AstMoveVisitor<()> for RemoveNops {
+    fn visit_statement(&mut self, s: &mut Statement) {
+        match &s.content {
+            RawStatement::Sequence(s1, _) => {
+                if s1.content.is_nop() {
+                    take(s, |s| {
+                        let (s1, s2) = s.content.to_sequence();
+                        Statement {
+                            content: s2.content,
+                            meta: combine_meta(&s1.meta, &s2.meta),
+                        }
+                    })
+                } else {
+                    self.default_visit_raw_statement(&mut s.content)
+                }
             }
-        },
-        RawStatement::Loop(s) => Box::new (Statement { meta: s.meta, content: RawStatement::Loop(remove_nop(s)) }),
-        RawStatement::Switch(Switch::If (o, s1, s2)) =>
-            Box::new (Statement { meta: s.meta, content: RawStatement::Switch(Switch::If (o, remove_nop(s1), remove_nop(s2)))}),
-        RawStatement::Switch(Switch::SwitchInt (o, t, s1, s2)) =>
-            Box::new (Statement { meta: s.meta, content: RawStatement::Switch(Switch::SwitchInt (o, t,
-                s1.into_iter().map(|(sv,s)| (sv, *remove_nop(Box::new(s)))).collect(),
-                remove_nop(s2)))}),
-        RawStatement::Switch(Switch::Match (o, s1, s2)) =>
-            Box::new (Statement { meta: s.meta, content: RawStatement::Switch(Switch::Match (o,
-                s1.into_iter().map(|(sv,s)| (sv, *remove_nop(Box::new(s)))).collect(),
-                remove_nop(s2)))}),
-        _ => s
+            _ => self.default_visit_raw_statement(&mut s.content),
+        }
     }
+}
+
+fn remove_nops(s: &mut Statement) {
+    let mut v = RemoveNops {};
+    v.visit_statement(s);
 }
 
 /// `fmt_ctx` is used for pretty-printing purposes.
@@ -822,13 +851,15 @@ pub fn simplify(
 
         if !release {
             // New series of passes implemented using the visitor. First, eliminate binary operations.
-            let mut s = SimplifyBinOps { tmp_vars: HashMap::new() };
+            let mut s = SimplifyBinOps {
+                tmp_vars: HashMap::new(),
+            };
             s.visit_statement(&mut b.body);
 
             // Reconstruct the linked list of statements, skipping Nops. This reallocates a bunch of
             // stuff, but I'm not sure how to achieve this with the visitor, seeing that
             // RawStatement is not marked as copy (should it?).
-            take(&mut b.body, |b| *remove_nop(Box::new(b)));
+            remove_nops(&mut b.body);
         }
 
         trace!(
