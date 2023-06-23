@@ -553,20 +553,22 @@ impl GlobalDecl {
     }
 }
 
-/* A mutable visitor for the LLBC AST
+/// A mutable visitor for the LLBC AST
+///
+/// Remark: we can't call the "super" method when reimplementing a method
+/// (unlike what can be done in, say, OCaml). This makes imlementing visitors
+/// slightly awkward, and is the reason why we split some visit functions in two:
+/// a "standard" version to be overriden, and a "default" version which should
+/// not be overriden and gives access to the "super" method.
+///
+/// TODO: split into several visitors, for Operand, etc., and make the AST
+/// visitor inherit from those traits.
+///
+/// TODO: implement macros to automatically derive visitors
+pub trait AstMutVisitor<T> {
+    /// Duplicate the visitor (used for the branchings)
+    fn duplicate(&mut self, visitor: &mut dyn FnMut(&mut Self));
 
-   Remark: we can't call the "super" method when reimplementing a method
-   (unlike what can be done in, say, OCaml). This makes imlementing visitors
-   slightly awkward, and is the reason why we split some visit functions in two:
-   a "standard" version to be overriden, and a "default" version which should
-   not be overriden and gives access to the "super" method.
-
-  TODO: split into several visitors, for Operand, etc., and make the AST
-  visitor inherit from those traits.
-
-  TODO: implement macros to automatically derive visitors
-*/
-pub trait AstMoveVisitor<T> {
     fn visit_statement(&mut self, st: &mut Statement) {
         self.visit_raw_statement(&mut st.content)
     }
@@ -676,8 +678,8 @@ pub trait AstMoveVisitor<T> {
         else_branch: &mut Statement,
     ) {
         self.visit_operand(scrut);
-        self.visit_statement(then_branch);
-        self.visit_statement(else_branch);
+        self.duplicate(&mut |v| v.visit_statement(then_branch));
+        self.duplicate(&mut |v| v.visit_statement(else_branch));
     }
 
     fn visit_switch_int(
@@ -689,9 +691,9 @@ pub trait AstMoveVisitor<T> {
     ) {
         self.visit_operand(scrut);
         for (_, st) in branches {
-            self.visit_statement(st);
+            self.duplicate(&mut |v| v.visit_statement(st));
         }
-        self.visit_statement(otherwise);
+        self.duplicate(&mut |v| v.visit_statement(otherwise));
     }
 
     fn visit_match(
@@ -702,9 +704,9 @@ pub trait AstMoveVisitor<T> {
     ) {
         self.visit_place(scrut);
         for (_, st) in branches {
-            self.visit_statement(st);
+            self.duplicate(&mut |v| v.visit_statement(st));
         }
-        self.visit_statement(otherwise);
+        self.duplicate(&mut |v| v.visit_statement(otherwise));
     }
 
     fn visit_loop(&mut self, lp: &mut Statement) {
@@ -816,6 +818,266 @@ pub trait AstMoveVisitor<T> {
     fn visit_global(&mut self, _: &mut GlobalDeclId::Id) {}
 
     fn visit_len(&mut self, p: &mut Place) {
+        self.visit_place(p)
+    }
+}
+
+/// A non-mutable visitor for the LLBC AST
+///
+/// See the remarks for [AstMutVisitor]
+///
+/// TODO: split into several visitors, for Operand, etc., and make the AST
+/// visitor inherit from those traits.
+///
+/// TODO: implement macros to automatically derive visitors
+pub trait AstSharedVisitor<T> {
+    /// Duplicate the visitor (used for the branchings)
+    fn duplicate(&mut self, visitor: &mut dyn FnMut(&mut Self));
+
+    fn visit_statement(&mut self, st: &Statement) {
+        self.visit_raw_statement(&st.content)
+    }
+
+    fn default_visit_raw_statement(&mut self, st: &RawStatement) {
+        match st {
+            RawStatement::Assign(p, rv) => {
+                self.visit_assign(p, rv);
+            }
+            RawStatement::FakeRead(p) => {
+                self.visit_fake_read(p);
+            }
+            RawStatement::SetDiscriminant(p, vid) => {
+                self.visit_set_discriminant(p, vid);
+            }
+            RawStatement::Drop(p) => {
+                self.visit_drop(p);
+            }
+            RawStatement::Assert(a) => {
+                self.visit_assert(a);
+            }
+            RawStatement::Call(c) => {
+                self.visit_call(c);
+            }
+            RawStatement::Panic => {
+                self.visit_panic();
+            }
+            RawStatement::Return => self.visit_return(),
+            RawStatement::Break(i) => {
+                self.visit_break(i);
+            }
+            RawStatement::Continue(i) => {
+                self.visit_continue(i);
+            }
+            RawStatement::Nop => self.visit_nop(),
+            RawStatement::Sequence(st1, st2) => self.visit_sequence(st1, st2),
+            RawStatement::Switch(s) => self.visit_switch(s),
+            RawStatement::Loop(lp) => self.visit_loop(lp),
+        }
+    }
+
+    fn visit_raw_statement(&mut self, st: &RawStatement) {
+        self.default_visit_raw_statement(st);
+    }
+
+    fn visit_assign(&mut self, p: &Place, rv: &Rvalue) {
+        self.visit_place(p);
+        self.visit_rvalue(rv)
+    }
+
+    fn visit_fake_read(&mut self, p: &Place) {
+        self.visit_place(p);
+    }
+
+    fn visit_set_discriminant(&mut self, p: &Place, _: &VariantId::Id) {
+        self.visit_place(p);
+    }
+
+    fn visit_drop(&mut self, p: &Place) {
+        self.visit_place(p);
+    }
+
+    fn visit_assert(&mut self, a: &Assert) {
+        self.visit_operand(&a.cond);
+    }
+
+    fn visit_call(&mut self, c: &Call) {
+        for o in &c.args {
+            self.visit_operand(o);
+        }
+        self.visit_place(&c.dest);
+    }
+
+    fn visit_panic(&mut self) {}
+    fn visit_return(&mut self) {}
+    fn visit_break(&mut self, _: &usize) {}
+    fn visit_continue(&mut self, _: &usize) {}
+    fn visit_nop(&mut self) {}
+
+    fn visit_sequence(&mut self, st1: &Statement, st2: &Statement) {
+        self.visit_statement(st1);
+        self.visit_statement(st2);
+    }
+
+    fn default_visit_switch(&mut self, s: &Switch) {
+        match s {
+            Switch::If(scrut, then_branch, else_branch) => {
+                self.visit_if(scrut, then_branch, else_branch)
+            }
+            Switch::SwitchInt(scrut, int_ty, branches, otherwise) => {
+                self.visit_switch_int(scrut, int_ty, branches, otherwise)
+            }
+            Switch::Match(scrut, branches, otherwise) => {
+                self.visit_match(scrut, branches, otherwise)
+            }
+        }
+    }
+
+    fn visit_switch(&mut self, s: &Switch) {
+        self.default_visit_switch(s)
+    }
+
+    fn visit_if(&mut self, scrut: &Operand, then_branch: &Statement, else_branch: &Statement) {
+        self.visit_operand(scrut);
+        self.duplicate(&mut |v| v.visit_statement(then_branch));
+        self.duplicate(&mut |v| v.visit_statement(else_branch));
+    }
+
+    fn visit_switch_int(
+        &mut self,
+        scrut: &Operand,
+        _: &IntegerTy,
+        branches: &Vec<(Vec<ScalarValue>, Statement)>,
+        otherwise: &Statement,
+    ) {
+        self.visit_operand(scrut);
+        for (_, st) in branches {
+            self.duplicate(&mut |v| v.visit_statement(st));
+        }
+        self.duplicate(&mut |v| v.visit_statement(otherwise));
+    }
+
+    fn visit_match(
+        &mut self,
+        scrut: &Place,
+        branches: &Vec<(Vec<VariantId::Id>, Statement)>,
+        otherwise: &Statement,
+    ) {
+        self.visit_place(scrut);
+        for (_, st) in branches {
+            self.duplicate(&mut |v| v.visit_statement(st));
+        }
+        self.duplicate(&mut |v| v.visit_statement(otherwise));
+    }
+
+    fn visit_loop(&mut self, lp: &Statement) {
+        self.visit_statement(lp)
+    }
+
+    fn visit_place(&mut self, p: &Place) {
+        self.visit_var_id(&p.var_id);
+        self.visit_projection(&p.projection);
+    }
+
+    fn visit_var_id(&mut self, _: &VarId::Id) {}
+
+    fn visit_projection(&mut self, p: &Projection) {
+        for pe in p.iter() {
+            self.visit_projection_elem(pe)
+        }
+    }
+
+    fn default_visit_projection_elem(&mut self, pe: &ProjectionElem) {
+        match pe {
+            ProjectionElem::Deref => self.visit_deref(),
+            ProjectionElem::DerefBox => self.visit_deref_box(),
+            ProjectionElem::DerefRawPtr => self.visit_deref_raw_ptr(),
+            ProjectionElem::DerefPtrUnique => self.visit_deref_ptr_unique(),
+            ProjectionElem::DerefPtrNonNull => self.visit_deref_ptr_non_null(),
+            ProjectionElem::Field(proj_kind, fid) => self.visit_projection_field(proj_kind, fid),
+            ProjectionElem::Offset(o) => self.visit_var_id(o),
+        }
+    }
+
+    fn visit_projection_elem(&mut self, pe: &ProjectionElem) {
+        self.default_visit_projection_elem(pe)
+    }
+
+    fn visit_deref(&mut self) {}
+    fn visit_deref_box(&mut self) {}
+    fn visit_deref_raw_ptr(&mut self) {}
+    fn visit_deref_ptr_unique(&mut self) {}
+    fn visit_deref_ptr_non_null(&mut self) {}
+    fn visit_projection_field(&mut self, _: &FieldProjKind, _: &FieldId::Id) {}
+
+    fn default_visit_operand(&mut self, o: &Operand) {
+        match o {
+            Operand::Copy(p) => self.visit_copy(p),
+            Operand::Move(p) => self.visit_move(p),
+            Operand::Const(ety, cv) => self.visit_operand_const(ety, cv),
+        }
+    }
+
+    fn visit_operand(&mut self, o: &Operand) {
+        self.default_visit_operand(o)
+    }
+
+    fn visit_copy(&mut self, p: &Place) {
+        self.visit_place(p)
+    }
+
+    fn visit_move(&mut self, p: &Place) {
+        self.visit_place(p)
+    }
+
+    fn visit_operand_const(&mut self, _: &ETy, _: &OperandConstantValue) {}
+
+    fn default_visit_rvalue(&mut self, rv: &Rvalue) {
+        match rv {
+            Rvalue::Use(o) => self.visit_use(o),
+            Rvalue::Ref(p, bkind) => self.visit_ref(p, bkind),
+            Rvalue::UnaryOp(op, o1) => self.visit_unary_op(op, o1),
+            Rvalue::BinaryOp(op, o1, o2) => self.visit_binary_op(op, o1, o2),
+            Rvalue::Discriminant(p) => self.visit_discriminant(p),
+            Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
+            Rvalue::Global(gid) => self.visit_global(gid),
+            Rvalue::Len(p) => self.visit_len(p),
+        }
+    }
+
+    fn visit_rvalue(&mut self, o: &Rvalue) {
+        self.default_visit_rvalue(o)
+    }
+
+    fn visit_use(&mut self, o: &Operand) {
+        self.visit_operand(o)
+    }
+
+    fn visit_ref(&mut self, p: &Place, _: &BorrowKind) {
+        self.visit_place(p)
+    }
+
+    fn visit_unary_op(&mut self, _: &UnOp, o1: &Operand) {
+        self.visit_operand(o1)
+    }
+
+    fn visit_binary_op(&mut self, _: &BinOp, o1: &Operand, o2: &Operand) {
+        self.visit_operand(o1);
+        self.visit_operand(o2);
+    }
+
+    fn visit_discriminant(&mut self, p: &Place) {
+        self.visit_place(p)
+    }
+
+    fn visit_aggregate(&mut self, _: &AggregateKind, ops: &Vec<Operand>) {
+        for o in ops {
+            self.visit_operand(o)
+        }
+    }
+
+    fn visit_global(&mut self, _: &GlobalDeclId::Id) {}
+
+    fn visit_len(&mut self, p: &Place) {
         self.visit_place(p)
     }
 }

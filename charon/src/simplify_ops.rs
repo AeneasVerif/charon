@@ -19,7 +19,7 @@ use crate::expressions::*;
 use crate::llbc_ast::{
     new_sequence, Assert, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Switch,
 };
-use crate::llbc_ast_utils::AstMoveVisitor;
+use crate::llbc_ast_utils::{AstMutVisitor, AstSharedVisitor};
 use crate::meta::combine_meta;
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
@@ -730,7 +730,12 @@ struct SimplifyBinOps {
     tmp_vars: HashMap<VarId::Id, State>,
 }
 
-impl AstMoveVisitor<()> for SimplifyBinOps {
+impl AstMutVisitor<()> for SimplifyBinOps {
+    fn duplicate(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        // TODO: duplicate self, call the visitor, then merge
+        todo!();
+    }
+
     fn visit_raw_statement(&mut self, s: &mut RawStatement) {
         // TODO: I think we should check that if we saw e1 <OP> e2 at some point,
         // we *do* find the corresponding assert and move (we need to check for
@@ -809,7 +814,11 @@ impl AstMoveVisitor<()> for SimplifyBinOps {
 
 struct RemoveNops {}
 
-impl AstMoveVisitor<()> for RemoveNops {
+impl AstMutVisitor<()> for RemoveNops {
+    fn duplicate(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
     fn visit_statement(&mut self, s: &mut Statement) {
         match &s.content {
             RawStatement::Sequence(s1, _) => {
@@ -833,6 +842,41 @@ impl AstMoveVisitor<()> for RemoveNops {
 fn remove_nops(s: &mut Statement) {
     let mut v = RemoveNops {};
     v.visit_statement(s);
+}
+
+#[derive(Debug, Clone)]
+struct ComputeUsedLocals {
+    vars: im::HashMap<VarId::Id, usize>,
+}
+
+impl ComputeUsedLocals {
+    // TODO: generalize to use an IntoIter
+    fn new() -> Self {
+        ComputeUsedLocals {
+            vars: im::HashMap::new(),
+        }
+    }
+}
+
+impl AstSharedVisitor<()> for ComputeUsedLocals {
+    fn duplicate(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
+    fn visit_var_id(&mut self, vid: &VarId::Id) {
+        match self.vars.get_mut(vid) {
+            Option::None => {
+                let _ = self.vars.insert(*vid, 0);
+            }
+            Option::Some(cnt) => *cnt += 1,
+        }
+    }
+}
+
+pub fn compute_used_locals_in_statement(st: &Statement) -> im::HashMap<VarId::Id, usize> {
+    let mut visitor = ComputeUsedLocals::new();
+    visitor.visit_statement(&st);
+    visitor.vars
 }
 
 /// `fmt_ctx` is used for pretty-printing purposes.
