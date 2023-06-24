@@ -24,7 +24,6 @@ use crate::meta::combine_meta;
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::values::*;
-use std::collections::HashMap;
 use std::iter::FromIterator;
 
 /// Small utility: assert that a boolean is true, or return false
@@ -719,21 +718,61 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
 ///   dst := move tmp
 /// A later phase is concerned with further eliminating tmp, if possible.
 
-#[derive(Hash, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
 enum State {
     Defined,
     FoundAssert,
     FoundMove,
 }
 
+#[derive(Debug)]
 struct SimplifyBinOps {
-    tmp_vars: HashMap<VarId::Id, State>,
+    tmp_vars: im::HashMap<VarId::Id, State>,
+    /// Whenever we spawn a visitor in a branching, we insert it here.
+    /// We merge them all upon calling [merge].
+    spawned: Vec<Self>,
 }
 
 impl AstMutVisitor<()> for SimplifyBinOps {
-    fn duplicate(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        // TODO: duplicate self, call the visitor, then merge
-        todo!();
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        // Create a new visitor from self and push it at the end of the spawned visitors
+        let mut nv = SimplifyBinOps {
+            tmp_vars: self.tmp_vars.clone(),
+            spawned: Vec::new(),
+        };
+        visitor(&mut nv);
+        self.spawned.push(nv);
+    }
+
+    fn merge(&mut self) {
+        // Replace the spawned iterators with an empty vector
+        let mut it = std::mem::replace(&mut self.spawned, Vec::new()).into_iter();
+
+        // There should be at least one spawned visitor
+        let nv = it.next().unwrap();
+
+        // When merging we just check that all the visitors reached the same
+        // state.
+        //
+        // Note that this is not complete. For instance, maybe one branch just
+        // reached a terminal statement. For instance:
+        // ```
+        // if b { panic!() }
+        // else {
+        //   ...
+        // }
+        // ```
+        // We shouldn't have to detect such patterns. If we have, maybe we can
+        // just check that the visitor's state is unchanged by comparing it
+        // to self.
+        // We are not complete: maybe a branch just lead to a panic, in which
+        // case
+        while let Option::Some(v) = it.next() {
+            assert!(nv.tmp_vars == v.tmp_vars);
+        }
+
+        // Simply replace self with the new visitors
+        self.tmp_vars = nv.tmp_vars;
     }
 
     fn visit_raw_statement(&mut self, s: &mut RawStatement) {
@@ -815,9 +854,11 @@ impl AstMutVisitor<()> for SimplifyBinOps {
 struct RemoveNops {}
 
 impl AstMutVisitor<()> for RemoveNops {
-    fn duplicate(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
         visitor(self)
     }
+
+    fn merge(&mut self) {}
 
     fn visit_statement(&mut self, s: &mut Statement) {
         match &s.content {
@@ -859,9 +900,11 @@ impl ComputeUsedLocals {
 }
 
 impl AstSharedVisitor<()> for ComputeUsedLocals {
-    fn duplicate(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
         visitor(self)
     }
+
+    fn merge(&mut self) {}
 
     fn visit_var_id(&mut self, vid: &VarId::Id) {
         match self.vars.get_mut(vid) {
@@ -896,7 +939,8 @@ pub fn simplify(
         if !release {
             // New series of passes implemented using the visitor. First, eliminate binary operations.
             let mut s = SimplifyBinOps {
-                tmp_vars: HashMap::new(),
+                tmp_vars: im::HashMap::new(),
+                spawned: Vec::new(),
             };
             s.visit_statement(&mut b.body);
 

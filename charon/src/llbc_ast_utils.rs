@@ -566,8 +566,12 @@ impl GlobalDecl {
 ///
 /// TODO: implement macros to automatically derive visitors
 pub trait AstMutVisitor<T> {
-    /// Duplicate the visitor (used for the branchings)
-    fn duplicate(&mut self, visitor: &mut dyn FnMut(&mut Self));
+    /// Spawn a new visitor visitor (used for the branchings)
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self));
+
+    /// We call this function right after we explored all the branches
+    /// in a branching.
+    fn merge(&mut self);
 
     fn visit_statement(&mut self, st: &mut Statement) {
         self.visit_raw_statement(&mut st.content)
@@ -678,8 +682,9 @@ pub trait AstMutVisitor<T> {
         else_branch: &mut Statement,
     ) {
         self.visit_operand(scrut);
-        self.duplicate(&mut |v| v.visit_statement(then_branch));
-        self.duplicate(&mut |v| v.visit_statement(else_branch));
+        self.spawn(&mut |v| v.visit_statement(then_branch));
+        self.spawn(&mut |v| v.visit_statement(else_branch));
+        self.merge();
     }
 
     fn visit_switch_int(
@@ -691,9 +696,10 @@ pub trait AstMutVisitor<T> {
     ) {
         self.visit_operand(scrut);
         for (_, st) in branches {
-            self.duplicate(&mut |v| v.visit_statement(st));
+            self.spawn(&mut |v| v.visit_statement(st));
         }
-        self.duplicate(&mut |v| v.visit_statement(otherwise));
+        self.spawn(&mut |v| v.visit_statement(otherwise));
+        self.merge();
     }
 
     fn visit_match(
@@ -704,9 +710,10 @@ pub trait AstMutVisitor<T> {
     ) {
         self.visit_place(scrut);
         for (_, st) in branches {
-            self.duplicate(&mut |v| v.visit_statement(st));
+            self.spawn(&mut |v| v.visit_statement(st));
         }
-        self.duplicate(&mut |v| v.visit_statement(otherwise));
+        self.spawn(&mut |v| v.visit_statement(otherwise));
+        self.merge();
     }
 
     fn visit_loop(&mut self, lp: &mut Statement) {
@@ -831,8 +838,12 @@ pub trait AstMutVisitor<T> {
 ///
 /// TODO: implement macros to automatically derive visitors
 pub trait AstSharedVisitor<T> {
-    /// Duplicate the visitor (used for the branchings)
-    fn duplicate(&mut self, visitor: &mut dyn FnMut(&mut Self));
+    /// Spawn the visitor (used for the branchings)
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self));
+
+    /// We call this function right after we explored all the branches
+    /// in a branching.
+    fn merge(&mut self);
 
     fn visit_statement(&mut self, st: &Statement) {
         self.visit_raw_statement(&st.content)
@@ -938,8 +949,9 @@ pub trait AstSharedVisitor<T> {
 
     fn visit_if(&mut self, scrut: &Operand, then_branch: &Statement, else_branch: &Statement) {
         self.visit_operand(scrut);
-        self.duplicate(&mut |v| v.visit_statement(then_branch));
-        self.duplicate(&mut |v| v.visit_statement(else_branch));
+        self.spawn(&mut |v| v.visit_statement(then_branch));
+        self.spawn(&mut |v| v.visit_statement(else_branch));
+        self.merge();
     }
 
     fn visit_switch_int(
@@ -951,9 +963,10 @@ pub trait AstSharedVisitor<T> {
     ) {
         self.visit_operand(scrut);
         for (_, st) in branches {
-            self.duplicate(&mut |v| v.visit_statement(st));
+            self.spawn(&mut |v| v.visit_statement(st));
         }
-        self.duplicate(&mut |v| v.visit_statement(otherwise));
+        self.spawn(&mut |v| v.visit_statement(otherwise));
+        self.merge();
     }
 
     fn visit_match(
@@ -964,9 +977,10 @@ pub trait AstSharedVisitor<T> {
     ) {
         self.visit_place(scrut);
         for (_, st) in branches {
-            self.duplicate(&mut |v| v.visit_statement(st));
+            self.spawn(&mut |v| v.visit_statement(st));
         }
-        self.duplicate(&mut |v| v.visit_statement(otherwise));
+        self.spawn(&mut |v| v.visit_statement(otherwise));
+        self.merge();
     }
 
     fn visit_loop(&mut self, lp: &Statement) {
