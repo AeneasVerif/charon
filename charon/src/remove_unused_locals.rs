@@ -48,7 +48,7 @@ fn update_locals(
         used_locals.insert(VarId::Id::new(i));
     }
     // Explore the body
-    let used_locals_cnt = crate::simplify_ops::compute_used_locals_in_statement(st);
+    let used_locals_cnt = crate::simplify_ops::ComputeUsedLocals::compute_in_statement(st);
     for (vid, cnt) in used_locals_cnt.iter() {
         if *cnt > 0 {
             used_locals.insert(*vid);

@@ -886,16 +886,21 @@ fn remove_nops(s: &mut Statement) {
 }
 
 #[derive(Debug, Clone)]
-struct ComputeUsedLocals {
+pub(crate) struct ComputeUsedLocals {
     vars: im::HashMap<VarId::Id, usize>,
 }
 
 impl ComputeUsedLocals {
-    // TODO: generalize to use an IntoIter
     fn new() -> Self {
         ComputeUsedLocals {
             vars: im::HashMap::new(),
         }
+    }
+
+    pub(crate) fn compute_in_statement(st: &Statement) -> im::HashMap<VarId::Id, usize> {
+        let mut visitor = Self::new();
+        visitor.visit_statement(st);
+        visitor.vars
     }
 }
 
@@ -914,12 +919,6 @@ impl AstSharedVisitor<()> for ComputeUsedLocals {
             Option::Some(cnt) => *cnt += 1,
         }
     }
-}
-
-pub fn compute_used_locals_in_statement(st: &Statement) -> im::HashMap<VarId::Id, usize> {
-    let mut visitor = ComputeUsedLocals::new();
-    visitor.visit_statement(&st);
-    visitor.vars
 }
 
 /// `fmt_ctx` is used for pretty-printing purposes.
