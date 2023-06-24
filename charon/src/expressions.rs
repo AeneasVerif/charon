@@ -27,7 +27,7 @@ pub type Projection = Vector<ProjectionElem>;
 /// `((_0 as Right).0: T2) = move _1;`
 /// In MIR, downcasts always happen before field projections: in our internal
 /// language, we thus merge downcasts and field projections.
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum ProjectionElem {
     /// Dereference a shared/mutable reference.
     Deref,
@@ -215,7 +215,7 @@ pub enum Rvalue {
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
     Global(GlobalDeclId::Id),
-    Len(Place)
+    Len(Place),
 }
 
 #[derive(Debug, Clone, VariantIndexArity)]

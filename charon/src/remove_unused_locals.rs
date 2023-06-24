@@ -57,6 +57,7 @@ fn update_locals(
             used_locals.insert(*vid);
         }
     }
+    trace!("used_locals_cnt: {:?}", used_locals_cnt);
 
     // Filter: only keep the variables which are used, and update
     // their indices so as not to have "holes"
@@ -90,6 +91,7 @@ pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut Glob
         take(b, |mut b| {
             let (locals, vids_map) = update_locals(b.arg_count, b.locals, &b.body);
             b.locals = locals;
+            trace!("vids_maps: {:?}", vids_map);
             UpdateUsedLocals::update_statement(vids_map, &mut b.body);
             b
         });

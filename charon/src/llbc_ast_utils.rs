@@ -87,6 +87,8 @@ pub fn combine_switch_targets_meta(targets: &Switch) -> Meta {
 
 /// Apply a map transformer on statements, in a bottom-up manner.
 /// Useful to implement a pass on operands (e.g., [crate::remove_drop_never]).
+///
+/// TODO: remove: we should use the visitors instead
 pub fn transform_statements<F: FnMut(Statement) -> Statement>(
     f: &mut F,
     mut st: Statement,

@@ -17,13 +17,14 @@ use take_mut::take;
 
 use crate::expressions::*;
 use crate::llbc_ast::{
-    new_sequence, Assert, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Switch,
+    new_sequence, Assert, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Switch, Var,
 };
 use crate::llbc_ast_utils::{MutAstVisitor, SharedAstVisitor};
 use crate::meta::combine_meta;
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::values::*;
+use macros::{EnumAsGetters, EnumIsA};
 use std::iter::FromIterator;
 
 /// Small utility: assert that a boolean is true, or return false
@@ -39,26 +40,6 @@ macro_rules! assert_or_return {
             return false;
         }
     }};
-}
-
-/// Return true iff: `place ++ [pelem] == full_place`
-fn check_places_similar_but_last_proj_elem(
-    place: &Place,
-    pelem: &ProjectionElem,
-    full_place: &Place,
-) -> bool {
-    if place.var_id == full_place.var_id
-        && place.projection.len() + 1 == full_place.projection.len()
-    {
-        for i in 0..place.projection.len() {
-            if place.projection[i] != full_place.projection[i] {
-                return false;
-            }
-        }
-
-        return *pelem == full_place.projection[place.projection.len()];
-    }
-    false
 }
 
 /// Return true if the binary operation might fail and thus requires its result
@@ -80,7 +61,7 @@ fn binop_requires_assert_after(binop: BinOp) -> bool {
     }
 }
 
-/// Return true if the unary operation has a precondition (negating the number
+/// Return true if the unary operation has a precondition (negating a number
 /// won't lead to an overflow, for instance).
 fn unop_requires_assert_before(unop: UnOp) -> bool {
     match unop {
@@ -88,21 +69,14 @@ fn unop_requires_assert_before(unop: UnOp) -> bool {
         UnOp::Neg => true,
         UnOp::Cast(_, _) => {
             // This case is peculiar, because rustc doesn't insert assertions
-            // while it can actually fail
+            // while it can actually fail. TODO: actually, sure about that?
             false
         }
     }
 }
 
 fn unop_can_fail(unop: UnOp) -> bool {
-    match unop {
-        UnOp::Not => false,
-        UnOp::Neg => true,
-        UnOp::Cast(_, _) => {
-            // See [unop_requires_assert_before]
-            false
-        }
-    }
+    unop_requires_assert_before(unop)
 }
 
 /// Return true if the binary operation has a precondition (divisor is non zero
@@ -125,10 +99,6 @@ fn binop_requires_assert_before(binop: BinOp) -> bool {
         | BinOp::Shr => false,
         BinOp::Div | BinOp::Rem => true,
     }
-}
-
-fn binop_can_fail(binop: BinOp) -> bool {
-    binop_requires_assert_after(binop) || binop_requires_assert_before(binop)
 }
 
 /// Check if this is a group of statements of the form: "check that we can do
@@ -260,126 +230,6 @@ fn check_if_simplifiable_assert_then_unop(
 ///   ```
 fn simplify_assert_then_unop(_st1: Statement, _st2: Statement, st3: Statement) -> Statement {
     st3
-}
-
-/// Check if this is a group of statements of the following form, unless we
-/// compile for release:
-/// - do an operation,
-/// - check it succeeded (didn't overflow, etc.)
-/// - retrieve the value
-///
-/// Check if this is a group of statements which should be collapsed to a
-/// single checked binop.
-/// Simply check if the first statements is a checked binop.
-fn check_if_binop_then_assert(
-    release: bool,
-    st1: &Statement,
-    st2: &Statement,
-    st3: &Statement,
-) -> bool {
-    match &st1.content {
-        RawStatement::Assign(_, Rvalue::BinaryOp(binop, _, _)) => {
-            if binop_requires_assert_after(*binop) {
-                // We found a checked binary op.
-                //
-                // This group of statements should exactly match the following pattern:
-                //   ```
-                //   tmp := copy x + copy y; // Possibly a different binop
-                //   assert(move (tmp.1) == false);
-                //   dest := move (tmp.0);
-                //   ...
-                //   ```
-                // If it is note the case, we can't collapse...
-                check_if_simplifiable_binop_then_assert(release, st1, st2, st3)
-            } else {
-                false
-            }
-        }
-        _ => false,
-    }
-}
-
-/// Make sure the statements match the following pattern, unless we compile
-/// for release:
-///   ```text
-///   tmp := op1 + op2; // Possibly a different binop
-///   assert(move (tmp.1) == false);
-///   dest := move (tmp.0);
-///   ...
-///   ```
-fn check_if_simplifiable_binop_then_assert(
-    release: bool,
-    st1: &Statement,
-    st2: &Statement,
-    st3: &Statement,
-) -> bool {
-    match (&st1.content, &st2.content, &st3.content) {
-        (
-            RawStatement::Assign(bp, Rvalue::BinaryOp(binop, _op1, _op2)),
-            RawStatement::Assert(Assert {
-                cond: Operand::Move(cond_op),
-                expected,
-            }),
-            RawStatement::Assign(_mp, Rvalue::Use(Operand::Move(mr))),
-        ) => {
-            assert_or_return!(binop_requires_assert_after(*binop));
-            assert_or_return!(!(*expected));
-
-            // We must have:
-            // cond_op == bp.1
-            // mr == bp.0
-            let check1 = check_places_similar_but_last_proj_elem(
-                bp,
-                &ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(1)),
-                cond_op,
-            );
-            assert_or_return!(check1);
-
-            let check2 = check_places_similar_but_last_proj_elem(
-                bp,
-                &ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(0)),
-                mr,
-            );
-            assert_or_return!(check2);
-            true
-        }
-        _ => {
-            if false && !release {
-                panic!(
-                    "# Statements do not have the expected shape\n{:?}\n{:?}\n{:?}",
-                    st1, st2, st3
-                )
-            }
-            false
-        }
-    }
-}
-
-/// Simplify patterns of the following form, if we are in release mode:
-///   ```text
-///   tmp := op1 + op2; // Possibly a different binop
-///   assert(move (tmp.1) == false);
-///   dest := move (tmp.0);
-///   ...
-///   ```
-/// to:
-///   ```text
-///   dest := copy x + copy y; // Possibly a different binop
-///   ...
-///   ```
-/// Note that the type of the binop changes in the two situations (in the
-/// translation, before the transformation `+` returns a pair (bool, int),
-/// after it has a monadic type).
-fn simplify_binop_then_assert(st1: Statement, st2: Statement, st3: Statement) -> Statement {
-    match (st1.content, st2.content, st3.content) {
-        (RawStatement::Assign(_, binop), RawStatement::Assert(_), RawStatement::Assign(mp, _)) => {
-            let meta = combine_meta(&st1.meta, &combine_meta(&st2.meta, &st3.meta));
-            Statement::new(meta, RawStatement::Assign(mp, binop))
-        }
-        _ => {
-            unreachable!();
-        }
-    }
 }
 
 /// Check if this is a group of statements of the form: "check that we can do
@@ -561,7 +411,7 @@ fn simplify_st_seq(
         if check_if_assert_then_unop(release, &st1, &st2, &st3) {
             simplify_assert_then_unop(st1, st2, st3)
         }
-        // Simplify unchecked binops (division, modulo)
+        // Simplify checked binops (division, modulo)
         else if check_if_assert_then_binop(release, &st1, &st2, &st3) {
             simplify_assert_then_binop(st1, st2, st3)
         } else {
@@ -595,7 +445,7 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
                     // If it is an unsimplified binop, it must be / or %
                     // and the divisor must be a non-zero constant integer,
                     // unless we compile for release
-                    if binop_can_fail(*binop) {
+                    if binop_requires_assert_before(*binop) {
                         match binop {
                             BinOp::Div | BinOp::Rem => {
                                 let (_, cv) = divisor.as_const();
@@ -608,7 +458,7 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
                                 };
                             }
                             _ => {
-                                assert!(true || release);
+                                assert!(release);
                             }
                         }
                     }
@@ -706,74 +556,151 @@ fn simplify_st(release: bool, st: Statement) -> Statement {
     Statement::new(st.meta, content)
 }
 
-/// A pass dedicated to the simplification of binary operators. In debug mode, binary operators
-/// appear in MIR as:
-///   tmp := e1 <OP> e2
-///   assert (move tmp.0 == false)
-///   ...
-///   dst := move tmp.0
-/// We rewrite these as:
-///   tmp := e1 <OP> e2
-///   ...
-///   dst := move tmp
-/// A later phase is concerned with further eliminating tmp, if possible.
+/// A pass dedicated to the simplification of binary operators which require
+/// dynamic checks.
+///
+/// There are two kinds of such operators:
+/// - the operators which require an assert *afterwards* (typically, addition:
+///   we check that no over/under-flow occured).
+///
+///   They appear in MIR as:
+///   ```
+///     tmp := e1 <OP> e2
+///     ...
+///     assert (move tmp.0 == false)
+///     ...
+///     dst := move tmp.0
+///   ```
+///
+///   We rewrite these as:
+///   ```
+///     tmp1 := e1 <OP> e2
+///     ...
+///     nop
+///     ...
+///     dst := move tmp1
+///   ```
+///
+/// - the operators which require an assert *before* (typically, division: we
+///   check that the divisor is not equal to zero before doing the operation).
+///
+///   They appear in MIR as:
+///   ```
+///     tmp := (copy divisor) == 0 // The divisor can be a constant
+///     ...
+///     assert (move tmp == false)
+///     ...
+///     dst := move dividend / divisor
+///   ```
+///   We rewrite these as:
+///   ```
+///     nop
+///     ...
+///     nop
+///     ...
+///     dst := move divident / divisor
+///   ```
+/// Later phases are concerned with further eliminating the nops and `tmp1`,
+/// if possible.
+///
+/// Also, some of the checks may be present only in debug mode.
 
-#[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
-enum State {
-    Defined,
-    FoundAssert,
+/// State to record if we eliminated binop operations which require to
+/// check the result afterwards.
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, EnumAsGetters, EnumIsA)]
+enum BinOpThenCheckState {
+    /// We found a use of a binary operation.
+    /// We store the fresh variable with which we will replace the current
+    /// temporary variable.
+    Defined(VarId::Id),
+    FoundAssert(VarId::Id),
     FoundMove,
 }
 
 #[derive(Debug)]
-struct SimplifyBinOps {
-    tmp_vars: im::HashMap<VarId::Id, State>,
+struct SimplifyBinOpsThenCheck {
+    tmp_vars: im::HashMap<VarId::Id, BinOpThenCheckState>,
+    locals: VarId::Vector<Var>,
     /// Whenever we spawn a visitor in a branching, we insert it here.
     /// We merge them all upon calling [merge].
     spawned: Vec<Self>,
 }
 
-impl MutExprVisitor for SimplifyBinOps {}
-impl MutAstVisitor for SimplifyBinOps {
+impl SimplifyBinOpsThenCheck {
+    /// Given a temporary variable `v` of type (SCALAR, bool), return a fresh
+    /// temporary variable `v'` of type `SCALAR` (that we also add to the locals).
+    fn fresh_tmp_var_mapping(&mut self, v: VarId::Id) -> VarId::Id {
+        // Lookup the variable
+        let var = self.locals.get(v).unwrap();
+
+        // Check its type
+        let (tid, _, tys) = var.ty.as_adt();
+        assert!(tid.is_tuple());
+        assert!(tys.len() == 2);
+        assert!(tys[1] == Ty::Bool);
+        let scalar_ty = tys[0].clone();
+        assert!(scalar_ty.is_integer());
+
+        // Generate a fresh variable
+        let n_vid = VarId::Id::new(self.locals.len());
+        let n_var = Var {
+            index: n_vid,
+            name: None,
+            ty: scalar_ty,
+        };
+
+        // Add to the locals
+        self.locals.push_back(n_var);
+
+        // Return
+        n_vid
+    }
+}
+
+impl MutExprVisitor for SimplifyBinOpsThenCheck {
+    fn visit_var_id(&mut self, vid: &mut VarId::Id) {
+        // Sanity check: the temporary variables are not used where they shouldn't
+        assert!(self.tmp_vars.get(vid).is_none());
+    }
+}
+
+impl MutAstVisitor for SimplifyBinOpsThenCheck {
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
         // Create a new visitor from self and push it at the end of the spawned visitors
-        let mut nv = SimplifyBinOps {
+        let mut nv = SimplifyBinOpsThenCheck {
             tmp_vars: self.tmp_vars.clone(),
+            locals: self.locals.clone(),
             spawned: Vec::new(),
         };
         visitor(&mut nv);
+        self.locals = nv.locals.clone();
         self.spawned.push(nv);
     }
 
     fn merge(&mut self) {
         // Replace the spawned iterators with an empty vector
-        let mut it = std::mem::replace(&mut self.spawned, Vec::new()).into_iter();
+        let mut spawned = std::mem::replace(&mut self.spawned, Vec::new());
 
         // There should be at least one spawned visitor
-        let nv = it.next().unwrap();
+        let mut ntmp_vars = im::HashMap::new();
 
-        // When merging we just check that all the visitors reached the same
-        // state.
+        // When merging merge the maps from variable id to state and while doing
+        // so we check that all the states go to the `FoundMove` state (i.e.,
+        // there is no pending simplification).
         //
-        // Note that this is not complete. For instance, maybe one branch just
-        // reached a terminal statement. For instance:
-        // ```
-        // if b { panic!() }
-        // else {
-        //   ...
-        // }
-        // ```
-        // We shouldn't have to detect such patterns. If we have, maybe we can
-        // just check that the visitor's state is unchanged by comparing it
-        // to self.
-        // We are not complete: maybe a branch just lead to a panic, in which
-        // case
-        while let Option::Some(v) = it.next() {
-            assert!(nv.tmp_vars == v.tmp_vars);
+        // This implies that no simplifiable operation is spread accross a
+        // branching (i.e., some of the statements are before the branching
+        // and some of the operations are after/inside the branches).
+        for v in spawned {
+            // Make a union of the two maps
+            for (vid, nst) in v.tmp_vars.into_iter() {
+                assert!(nst.is_found_move());
+                let _ = ntmp_vars.insert(vid, nst);
+            }
         }
 
         // Simply replace self with the new visitors
-        self.tmp_vars = nv.tmp_vars;
+        self.tmp_vars = ntmp_vars;
     }
 
     fn visit_raw_statement(&mut self, s: &mut RawStatement) {
@@ -782,19 +709,22 @@ impl MutAstVisitor for SimplifyBinOps {
         // terminal nodes - and have to pay attention to branchings: we can
         // discuss that).
         match s {
-            // 1. Find a statement of the form tmp := <op1> + <op2>
-            RawStatement::Assign(
-                p,
-                Rvalue::BinaryOp(
-                    BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Shl | BinOp::Shr,
-                    _,
-                    _,
-                ),
-            ) => {
+            // 1. Find a statement of the form tmp := <op1> <bop> <op2>
+            RawStatement::Assign(p, Rvalue::BinaryOp(bop, _, _))
+                if binop_requires_assert_after(*bop) =>
+            {
                 assert!(p.projection.is_empty());
+
+                // Replace the temporary variable
+                let tmp = p.var_id;
+                let ntmp = self.fresh_tmp_var_mapping(tmp);
+                p.var_id = ntmp;
+
                 // Initial state: we have seen the initial definition of the variable.
-                // TODO: introduce a new temporary variable.
-                assert!(self.tmp_vars.insert(p.var_id, State::Defined).is_none());
+                assert!(self
+                    .tmp_vars
+                    .insert(tmp, BinOpThenCheckState::Defined(ntmp))
+                    .is_none());
             }
 
             // 2. Catch assert (move tmp.1 == false)
@@ -806,18 +736,20 @@ impl MutAstVisitor for SimplifyBinOps {
                     }),
                 expected: false,
             }) => {
-                let st = self.tmp_vars.get(v);
-                let v = *v;
-                // TODO: add a comment as to why projector .0 is FieldId 1?!
-                if p.len() == 1
-                    && p[0] == ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(1))
-                    && st.is_some()
-                    && *st.unwrap() == State::Defined
-                {
+                if let Some(tmp_st) = self.tmp_vars.get(v) {
+                    let tmp_st = *tmp_st;
+                    let v = *v;
+                    assert!(tmp_st.is_defined());
+                    assert!(p.len() == 1);
+                    assert!(p[0].as_field() == (&FieldProjKind::Tuple(2), &FieldId::Id::new(1)));
+
+                    // Replace the statement
                     *s = RawStatement::Nop;
-                    // Next state: we have eliminated the assert, but still have to find the actual
-                    // use.
-                    let _ = self.tmp_vars.insert(v, State::FoundAssert);
+
+                    // Move to the next state: we have eliminated the assert, but still
+                    // have to find the actual use.
+                    let nst = BinOpThenCheckState::FoundAssert(*tmp_st.as_defined());
+                    let _ = self.tmp_vars.insert(v, nst);
                 } else {
                     self.default_visit_raw_statement(s)
                 }
@@ -831,17 +763,25 @@ impl MutAstVisitor for SimplifyBinOps {
                     projection: p,
                 })),
             ) => {
-                let st = self.tmp_vars.get(v);
-                if p.len() == 1
-                    && p[0] == ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(0))
-                    && st.is_some()
-                    && *st.unwrap() == State::FoundAssert
-                {
+                if let Some(tmp_st) = self.tmp_vars.get(v) {
+                    let tmp_st = *tmp_st;
+                    let nvid = *tmp_st.as_found_assert();
+                    assert!(p.len() == 1);
+                    assert!(
+                        p[0] == ProjectionElem::Field(FieldProjKind::Tuple(2), FieldId::Id::new(0))
+                    );
+
+                    // Replace the rvalue
+                    let old_vid = *v;
                     *p = im::vector![];
+                    *v = nvid;
+
                     // Final state: we have found and eliminated the use.
-                    let _ = self.tmp_vars.insert(*v, State::FoundMove);
+                    let _ = self
+                        .tmp_vars
+                        .insert(old_vid, BinOpThenCheckState::FoundMove);
                 } else {
-                    self.default_visit_raw_statement(s)
+                    self.default_visit_raw_statement(s);
                 }
             }
 
@@ -905,13 +845,23 @@ impl ComputeUsedLocals {
         visitor.visit_statement(st);
         visitor.vars
     }
+
+    pub(crate) fn compute_in_operands(ops: &[Operand]) -> im::HashMap<VarId::Id, usize> {
+        let mut visitor = Self::new();
+        ops.iter().for_each(|op| visitor.visit_operand(op));
+        visitor.vars
+    }
+
+    pub(crate) fn compute_used_set_in_operands(ops: &[Operand]) -> im::HashSet<VarId::Id> {
+        im::HashSet::from_iter(Self::compute_in_operands(ops).into_iter().map(|(id, _)| id))
+    }
 }
 
 impl SharedExprVisitor for ComputeUsedLocals {
     fn visit_var_id(&mut self, vid: &VarId::Id) {
         match self.vars.get_mut(vid) {
             Option::None => {
-                let _ = self.vars.insert(*vid, 0);
+                let _ = self.vars.insert(*vid, 1);
             }
             Option::Some(cnt) => *cnt += 1,
         }
@@ -938,19 +888,36 @@ pub fn simplify(
             "# About to simplify operands in decl: {name}:\n{}",
             b.fmt_with_ctx_names(fmt_ctx)
         );
+
+        // Apply the first simplification pass
         take(&mut b.body, |b| simplify_st(release, b));
 
+        trace!(
+            "# After first simplification pass of: {name}:\n{}",
+            b.fmt_with_ctx_names(fmt_ctx)
+        );
+
         if !release {
-            // New series of passes implemented using the visitor. First, eliminate binary operations.
-            let mut s = SimplifyBinOps {
+            // New series of passes implemented using the visitor.
+            // First, eliminate binary operations.
+            let mut s = SimplifyBinOpsThenCheck {
                 tmp_vars: im::HashMap::new(),
                 spawned: Vec::new(),
+                locals: b.locals.clone(),
             };
             s.visit_statement(&mut b.body);
+            b.locals = s.locals;
 
-            // Reconstruct the linked list of statements, skipping Nops. This reallocates a bunch of
-            // stuff, but I'm not sure how to achieve this with the visitor, seeing that
-            // RawStatement is not marked as copy (should it?).
+            trace!(
+                "# After 2nd simplification pass of: {name}:\n{}\n\nstate:\n{:?}",
+                b.fmt_with_ctx_names(fmt_ctx),
+                &s.tmp_vars
+            );
+
+            // Sanity check: we performed all the required simplifications
+            assert!(s.tmp_vars.iter().all(|(_, s)| s.is_found_move()));
+
+            // Reconstruct the linked list of statements, skipping Nops
             remove_nops(&mut b.body);
         }
 
