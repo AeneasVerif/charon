@@ -4,10 +4,7 @@
 use std::ops::DerefMut;
 
 use crate::common::*;
-use crate::expressions::{
-    AggregateKind, BinOp, BorrowKind, FieldProjKind, Operand, OperandConstantValue, Place,
-    Projection, ProjectionElem, Rvalue, UnOp,
-};
+use crate::expressions::{Operand, Place, Rvalue};
 use crate::formatter::Formatter;
 use crate::llbc_ast::{
     Assert, Call, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
@@ -565,7 +562,7 @@ impl GlobalDecl {
 /// visitor inherit from those traits.
 ///
 /// TODO: implement macros to automatically derive visitors
-pub trait AstMutVisitor<T> {
+pub trait MutAstVisitor: crate::expressions::MutExprVisitor {
     /// Spawn a new visitor visitor (used for the branchings)
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self));
 
@@ -719,114 +716,6 @@ pub trait AstMutVisitor<T> {
     fn visit_loop(&mut self, lp: &mut Statement) {
         self.visit_statement(lp)
     }
-
-    fn visit_place(&mut self, p: &mut Place) {
-        self.visit_var_id(&mut p.var_id);
-        self.visit_projection(&mut p.projection);
-    }
-
-    fn visit_var_id(&mut self, _: &mut VarId::Id) {}
-
-    fn visit_projection(&mut self, p: &mut Projection) {
-        for pe in p.iter_mut() {
-            self.visit_projection_elem(pe)
-        }
-    }
-
-    fn default_visit_projection_elem(&mut self, pe: &mut ProjectionElem) {
-        match pe {
-            ProjectionElem::Deref => self.visit_deref(),
-            ProjectionElem::DerefBox => self.visit_deref_box(),
-            ProjectionElem::DerefRawPtr => self.visit_deref_raw_ptr(),
-            ProjectionElem::DerefPtrUnique => self.visit_deref_ptr_unique(),
-            ProjectionElem::DerefPtrNonNull => self.visit_deref_ptr_non_null(),
-            ProjectionElem::Field(proj_kind, fid) => self.visit_projection_field(proj_kind, fid),
-            ProjectionElem::Offset(o) => self.visit_var_id(o),
-        }
-    }
-
-    fn visit_projection_elem(&mut self, pe: &mut ProjectionElem) {
-        self.default_visit_projection_elem(pe)
-    }
-
-    fn visit_deref(&mut self) {}
-    fn visit_deref_box(&mut self) {}
-    fn visit_deref_raw_ptr(&mut self) {}
-    fn visit_deref_ptr_unique(&mut self) {}
-    fn visit_deref_ptr_non_null(&mut self) {}
-    fn visit_projection_field(&mut self, _: &mut FieldProjKind, _: &mut FieldId::Id) {}
-
-    fn default_visit_operand(&mut self, o: &mut Operand) {
-        match o {
-            Operand::Copy(p) => self.visit_copy(p),
-            Operand::Move(p) => self.visit_move(p),
-            Operand::Const(ety, cv) => self.visit_operand_const(ety, cv),
-        }
-    }
-
-    fn visit_operand(&mut self, o: &mut Operand) {
-        self.default_visit_operand(o)
-    }
-
-    fn visit_copy(&mut self, p: &mut Place) {
-        self.visit_place(p)
-    }
-
-    fn visit_move(&mut self, p: &mut Place) {
-        self.visit_place(p)
-    }
-
-    fn visit_operand_const(&mut self, _: &mut ETy, _: &mut OperandConstantValue) {}
-
-    fn default_visit_rvalue(&mut self, rv: &mut Rvalue) {
-        match rv {
-            Rvalue::Use(o) => self.visit_use(o),
-            Rvalue::Ref(p, bkind) => self.visit_ref(p, bkind),
-            Rvalue::UnaryOp(op, o1) => self.visit_unary_op(op, o1),
-            Rvalue::BinaryOp(op, o1, o2) => self.visit_binary_op(op, o1, o2),
-            Rvalue::Discriminant(p) => self.visit_discriminant(p),
-            Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
-            Rvalue::Global(gid) => self.visit_global(gid),
-            Rvalue::Len(p) => self.visit_len(p),
-        }
-    }
-
-    fn visit_rvalue(&mut self, o: &mut Rvalue) {
-        self.default_visit_rvalue(o)
-    }
-
-    fn visit_use(&mut self, o: &mut Operand) {
-        self.visit_operand(o)
-    }
-
-    fn visit_ref(&mut self, p: &mut Place, _: &mut BorrowKind) {
-        self.visit_place(p)
-    }
-
-    fn visit_unary_op(&mut self, _: &mut UnOp, o1: &mut Operand) {
-        self.visit_operand(o1)
-    }
-
-    fn visit_binary_op(&mut self, _: &mut BinOp, o1: &mut Operand, o2: &mut Operand) {
-        self.visit_operand(o1);
-        self.visit_operand(o2);
-    }
-
-    fn visit_discriminant(&mut self, p: &mut Place) {
-        self.visit_place(p)
-    }
-
-    fn visit_aggregate(&mut self, _: &mut AggregateKind, ops: &mut Vec<Operand>) {
-        for o in ops {
-            self.visit_operand(o)
-        }
-    }
-
-    fn visit_global(&mut self, _: &mut GlobalDeclId::Id) {}
-
-    fn visit_len(&mut self, p: &mut Place) {
-        self.visit_place(p)
-    }
 }
 
 /// A non-mutable visitor for the LLBC AST
@@ -837,7 +726,7 @@ pub trait AstMutVisitor<T> {
 /// visitor inherit from those traits.
 ///
 /// TODO: implement macros to automatically derive visitors
-pub trait AstSharedVisitor<T> {
+pub trait SharedAstVisitor: crate::expressions::SharedExprVisitor {
     /// Spawn the visitor (used for the branchings)
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self));
 
@@ -985,113 +874,5 @@ pub trait AstSharedVisitor<T> {
 
     fn visit_loop(&mut self, lp: &Statement) {
         self.visit_statement(lp)
-    }
-
-    fn visit_place(&mut self, p: &Place) {
-        self.visit_var_id(&p.var_id);
-        self.visit_projection(&p.projection);
-    }
-
-    fn visit_var_id(&mut self, _: &VarId::Id) {}
-
-    fn visit_projection(&mut self, p: &Projection) {
-        for pe in p.iter() {
-            self.visit_projection_elem(pe)
-        }
-    }
-
-    fn default_visit_projection_elem(&mut self, pe: &ProjectionElem) {
-        match pe {
-            ProjectionElem::Deref => self.visit_deref(),
-            ProjectionElem::DerefBox => self.visit_deref_box(),
-            ProjectionElem::DerefRawPtr => self.visit_deref_raw_ptr(),
-            ProjectionElem::DerefPtrUnique => self.visit_deref_ptr_unique(),
-            ProjectionElem::DerefPtrNonNull => self.visit_deref_ptr_non_null(),
-            ProjectionElem::Field(proj_kind, fid) => self.visit_projection_field(proj_kind, fid),
-            ProjectionElem::Offset(o) => self.visit_var_id(o),
-        }
-    }
-
-    fn visit_projection_elem(&mut self, pe: &ProjectionElem) {
-        self.default_visit_projection_elem(pe)
-    }
-
-    fn visit_deref(&mut self) {}
-    fn visit_deref_box(&mut self) {}
-    fn visit_deref_raw_ptr(&mut self) {}
-    fn visit_deref_ptr_unique(&mut self) {}
-    fn visit_deref_ptr_non_null(&mut self) {}
-    fn visit_projection_field(&mut self, _: &FieldProjKind, _: &FieldId::Id) {}
-
-    fn default_visit_operand(&mut self, o: &Operand) {
-        match o {
-            Operand::Copy(p) => self.visit_copy(p),
-            Operand::Move(p) => self.visit_move(p),
-            Operand::Const(ety, cv) => self.visit_operand_const(ety, cv),
-        }
-    }
-
-    fn visit_operand(&mut self, o: &Operand) {
-        self.default_visit_operand(o)
-    }
-
-    fn visit_copy(&mut self, p: &Place) {
-        self.visit_place(p)
-    }
-
-    fn visit_move(&mut self, p: &Place) {
-        self.visit_place(p)
-    }
-
-    fn visit_operand_const(&mut self, _: &ETy, _: &OperandConstantValue) {}
-
-    fn default_visit_rvalue(&mut self, rv: &Rvalue) {
-        match rv {
-            Rvalue::Use(o) => self.visit_use(o),
-            Rvalue::Ref(p, bkind) => self.visit_ref(p, bkind),
-            Rvalue::UnaryOp(op, o1) => self.visit_unary_op(op, o1),
-            Rvalue::BinaryOp(op, o1, o2) => self.visit_binary_op(op, o1, o2),
-            Rvalue::Discriminant(p) => self.visit_discriminant(p),
-            Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
-            Rvalue::Global(gid) => self.visit_global(gid),
-            Rvalue::Len(p) => self.visit_len(p),
-        }
-    }
-
-    fn visit_rvalue(&mut self, o: &Rvalue) {
-        self.default_visit_rvalue(o)
-    }
-
-    fn visit_use(&mut self, o: &Operand) {
-        self.visit_operand(o)
-    }
-
-    fn visit_ref(&mut self, p: &Place, _: &BorrowKind) {
-        self.visit_place(p)
-    }
-
-    fn visit_unary_op(&mut self, _: &UnOp, o1: &Operand) {
-        self.visit_operand(o1)
-    }
-
-    fn visit_binary_op(&mut self, _: &BinOp, o1: &Operand, o2: &Operand) {
-        self.visit_operand(o1);
-        self.visit_operand(o2);
-    }
-
-    fn visit_discriminant(&mut self, p: &Place) {
-        self.visit_place(p)
-    }
-
-    fn visit_aggregate(&mut self, _: &AggregateKind, ops: &Vec<Operand>) {
-        for o in ops {
-            self.visit_operand(o)
-        }
-    }
-
-    fn visit_global(&mut self, _: &GlobalDeclId::Id) {}
-
-    fn visit_len(&mut self, p: &Place) {
-        self.visit_place(p)
     }
 }

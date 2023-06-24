@@ -9,6 +9,7 @@ use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use crate::values;
 use crate::values::*;
+use macros::make_generic_in_borrows;
 use serde::ser::SerializeStruct;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
@@ -354,3 +355,121 @@ impl Serialize for OperandConstantValue {
         }
     }
 }
+
+make_generic_in_borrows! {
+
+/// A shared visitor for expressions.
+///
+/// TODO: implement macros to automatically derive visitors, or at least to
+/// factor out the mut/shared versions of the visitors.
+pub trait ExprVisitor {
+    fn visit_place(&mut self, p: &Place) {
+        self.visit_var_id(&p.var_id);
+        self.visit_projection(&p.projection);
+    }
+
+    fn visit_var_id(&mut self, _: &VarId::Id) {}
+
+    fn visit_projection(&mut self, p: &Projection) {
+        for pe in p.iter() {
+            self.visit_projection_elem(pe)
+        }
+    }
+
+    fn default_visit_projection_elem(&mut self, pe: &ProjectionElem) {
+        match pe {
+            ProjectionElem::Deref => self.visit_deref(),
+            ProjectionElem::DerefBox => self.visit_deref_box(),
+            ProjectionElem::DerefRawPtr => self.visit_deref_raw_ptr(),
+            ProjectionElem::DerefPtrUnique => self.visit_deref_ptr_unique(),
+            ProjectionElem::DerefPtrNonNull => self.visit_deref_ptr_non_null(),
+            ProjectionElem::Field(proj_kind, fid) => self.visit_projection_field(proj_kind, fid),
+            ProjectionElem::Offset(o) => self.visit_var_id(o),
+        }
+    }
+
+    fn visit_projection_elem(&mut self, pe: &ProjectionElem) {
+        self.default_visit_projection_elem(pe)
+    }
+
+    fn visit_deref(&mut self) {}
+    fn visit_deref_box(&mut self) {}
+    fn visit_deref_raw_ptr(&mut self) {}
+    fn visit_deref_ptr_unique(&mut self) {}
+    fn visit_deref_ptr_non_null(&mut self) {}
+    fn visit_projection_field(&mut self, _: &FieldProjKind, _: &FieldId::Id) {}
+
+    fn default_visit_operand(&mut self, o: &Operand) {
+        match o {
+            Operand::Copy(p) => self.visit_copy(p),
+            Operand::Move(p) => self.visit_move(p),
+            Operand::Const(ety, cv) => self.visit_operand_const(ety, cv),
+        }
+    }
+
+    fn visit_operand(&mut self, o: &Operand) {
+        self.default_visit_operand(o)
+    }
+
+    fn visit_copy(&mut self, p: &Place) {
+        self.visit_place(p)
+    }
+
+    fn visit_move(&mut self, p: &Place) {
+        self.visit_place(p)
+    }
+
+    fn visit_operand_const(&mut self, _: &ETy, _: &OperandConstantValue) {}
+
+    fn default_visit_rvalue(&mut self, rv: &Rvalue) {
+        match rv {
+            Rvalue::Use(o) => self.visit_use(o),
+            Rvalue::Ref(p, bkind) => self.visit_ref(p, bkind),
+            Rvalue::UnaryOp(op, o1) => self.visit_unary_op(op, o1),
+            Rvalue::BinaryOp(op, o1, o2) => self.visit_binary_op(op, o1, o2),
+            Rvalue::Discriminant(p) => self.visit_discriminant(p),
+            Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
+            Rvalue::Global(gid) => self.visit_global(gid),
+            Rvalue::Len(p) => self.visit_len(p),
+        }
+    }
+
+    fn visit_rvalue(&mut self, o: &Rvalue) {
+        self.default_visit_rvalue(o)
+    }
+
+    fn visit_use(&mut self, o: &Operand) {
+        self.visit_operand(o)
+    }
+
+    fn visit_ref(&mut self, p: &Place, _: &BorrowKind) {
+        self.visit_place(p)
+    }
+
+    fn visit_unary_op(&mut self, _: &UnOp, o1: &Operand) {
+        self.visit_operand(o1)
+    }
+
+    fn visit_binary_op(&mut self, _: &BinOp, o1: &Operand, o2: &Operand) {
+        self.visit_operand(o1);
+        self.visit_operand(o2);
+    }
+
+    fn visit_discriminant(&mut self, p: &Place) {
+        self.visit_place(p)
+    }
+
+    fn visit_aggregate(&mut self, _: &AggregateKind, ops: &Vec<Operand>) {
+        for o in ops {
+            self.visit_operand(o)
+        }
+    }
+
+    fn visit_global(&mut self, _: &GlobalDeclId::Id) {}
+
+    fn visit_len(&mut self, p: &Place) {
+        self.visit_place(p)
+    }
+}
+
+} // make_generic_in_borrows

@@ -3,8 +3,9 @@
 //! type `Never`. We actually check that there are no such local variables
 //! remaining afterwards.
 
+use crate::expressions::MutExprVisitor;
 use crate::id_vector::ToUsize;
-use crate::llbc_ast::{AstMutVisitor, CtxNames, FunDecls, GlobalDecls, Statement};
+use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, MutAstVisitor, Statement};
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
@@ -22,16 +23,18 @@ impl UpdateUsedLocals {
     }
 }
 
-impl AstMutVisitor<()> for UpdateUsedLocals {
+impl MutExprVisitor for UpdateUsedLocals {
+    fn visit_var_id(&mut self, vid: &mut VarId::Id) {
+        *vid = *self.vids_map.get(vid).unwrap();
+    }
+}
+
+impl MutAstVisitor for UpdateUsedLocals {
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
         visitor(self)
     }
 
     fn merge(&mut self) {}
-
-    fn visit_var_id(&mut self, vid: &mut VarId::Id) {
-        *vid = *self.vids_map.get(vid).unwrap();
-    }
 }
 
 /// Compute the set of used locals, filter the unused locals and compute a new

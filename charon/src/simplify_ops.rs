@@ -19,7 +19,7 @@ use crate::expressions::*;
 use crate::llbc_ast::{
     new_sequence, Assert, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Switch,
 };
-use crate::llbc_ast_utils::{AstMutVisitor, AstSharedVisitor};
+use crate::llbc_ast_utils::{MutAstVisitor, SharedAstVisitor};
 use crate::meta::combine_meta;
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
@@ -733,7 +733,8 @@ struct SimplifyBinOps {
     spawned: Vec<Self>,
 }
 
-impl AstMutVisitor<()> for SimplifyBinOps {
+impl MutExprVisitor for SimplifyBinOps {}
+impl MutAstVisitor for SimplifyBinOps {
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
         // Create a new visitor from self and push it at the end of the spawned visitors
         let mut nv = SimplifyBinOps {
@@ -853,7 +854,9 @@ impl AstMutVisitor<()> for SimplifyBinOps {
 
 struct RemoveNops {}
 
-impl AstMutVisitor<()> for RemoveNops {
+impl MutExprVisitor for RemoveNops {}
+
+impl MutAstVisitor for RemoveNops {
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
         visitor(self)
     }
@@ -904,13 +907,7 @@ impl ComputeUsedLocals {
     }
 }
 
-impl AstSharedVisitor<()> for ComputeUsedLocals {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-
+impl SharedExprVisitor for ComputeUsedLocals {
     fn visit_var_id(&mut self, vid: &VarId::Id) {
         match self.vars.get_mut(vid) {
             Option::None => {
@@ -919,6 +916,14 @@ impl AstSharedVisitor<()> for ComputeUsedLocals {
             Option::Some(cnt) => *cnt += 1,
         }
     }
+}
+
+impl SharedAstVisitor for ComputeUsedLocals {
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
+    fn merge(&mut self) {}
 }
 
 /// `fmt_ctx` is used for pretty-printing purposes.
