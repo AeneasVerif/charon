@@ -553,6 +553,7 @@ impl GlobalDecl {
 
 // Derive two implementations at once: one which uses shared borrows, and one
 // which uses mutable borrows.
+// Generates the traits: `SharedAstVisitor` and `MutAstVisitor`.
 make_generic_in_borrows! {
 
 /// A visitor for the LLBC AST

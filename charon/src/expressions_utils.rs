@@ -358,6 +358,7 @@ impl Serialize for OperandConstantValue {
 
 // Derive two implementations at once: one which uses shared borrows, and one
 // which uses mutable borrows.
+// Generates the traits: `SharedExprVisitor` and `MutExprVisitor`.
 make_generic_in_borrows! {
 
 /// A visitor for expressions.

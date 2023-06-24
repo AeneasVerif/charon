@@ -1232,6 +1232,9 @@ fn generic_pat_to_mut(p: &mut Pat) {
 /// Note that this macro is meant to work on a limited set of cases: it is not
 /// very general.
 /// For instance, for now it only works on traits.
+///
+/// Applied on a trait definition named "Trait", it will generate two traits:
+/// "MutTrait" and "SharedTrait".
 #[proc_macro]
 pub fn make_generic_in_borrows(tokens: TokenStream) -> TokenStream {
     let input_item = parse_macro_input!(tokens as ItemTrait);
