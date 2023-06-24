@@ -4,10 +4,10 @@ use crate::meta::Meta;
 use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
+use crate::values::ScalarValue;
 use im::Vector;
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
-use crate::values::ScalarValue;
 
 pub type FieldName = String;
 
@@ -224,6 +224,9 @@ where
     /// ```
     /// For now, we detect this case (this is hardcoded in [crate::register] and
     /// [crate::translate_functions_to_ullbc]) to rewrite it to `free(move b)`.
+    ///
+    /// TODO: maybe we should simply deactivate support for optimized code: who
+    /// wants to verify this?
     RawPtr(Box<Ty<R>>, RefKind),
 }
 

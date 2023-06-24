@@ -7,6 +7,9 @@ use rustc_middle::mir::Body;
 use rustc_middle::ty::{TyCtxt, WithOptConstParam};
 use std::cell::Ref;
 
+/// TODO: maybe we should always target MIR Built, this would make things
+/// simpler. In particular, the MIR optimized is very low level and
+/// reveals too many types and data-structures that we don't want to manipulate.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum MirLevel {
     /// Original MIR, directly translated from HIR.

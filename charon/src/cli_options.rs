@@ -19,9 +19,6 @@ pub struct CliOpts {
     /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)
     #[structopt(long = "ullbc")]
     pub ullbc: bool,
-    /// Compile for release target instead of debug
-    #[structopt(long = "release")]
-    pub release: bool,
     /// Compile the package's library
     #[structopt(long = "lib")]
     pub lib: bool,

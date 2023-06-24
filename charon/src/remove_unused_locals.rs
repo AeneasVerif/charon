@@ -3,13 +3,93 @@
 //! type `Never`. We actually check that there are no such local variables
 //! remaining afterwards.
 
-use crate::expressions::MutExprVisitor;
+#![allow(dead_code)]
+
+use crate::expressions::{MutExprVisitor, SharedExprVisitor};
 use crate::id_vector::ToUsize;
-use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, MutAstVisitor, Statement};
+use crate::llbc_ast::{
+    CtxNames, FunDecls, GlobalDecls, MutAstVisitor, RawStatement, SharedAstVisitor, Statement,
+};
+use crate::meta::combine_meta;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
 use take_mut::take;
+
+struct RemoveNops {}
+
+impl MutExprVisitor for RemoveNops {}
+
+impl MutAstVisitor for RemoveNops {
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
+    fn merge(&mut self) {}
+
+    fn visit_statement(&mut self, s: &mut Statement) {
+        match &s.content {
+            RawStatement::Sequence(s1, _) => {
+                if s1.content.is_nop() {
+                    take(s, |s| {
+                        let (s1, s2) = s.content.to_sequence();
+                        Statement {
+                            content: s2.content,
+                            meta: combine_meta(&s1.meta, &s2.meta),
+                        }
+                    })
+                } else {
+                    self.default_visit_raw_statement(&mut s.content)
+                }
+            }
+            _ => self.default_visit_raw_statement(&mut s.content),
+        }
+    }
+}
+
+// TODO: remove?
+pub(crate) fn remove_nops(s: &mut Statement) {
+    let mut v = RemoveNops {};
+    v.visit_statement(s);
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct ComputeUsedLocals {
+    vars: im::HashMap<VarId::Id, usize>,
+}
+
+impl ComputeUsedLocals {
+    fn new() -> Self {
+        ComputeUsedLocals {
+            vars: im::HashMap::new(),
+        }
+    }
+
+    pub(crate) fn compute_in_statement(st: &Statement) -> im::HashMap<VarId::Id, usize> {
+        let mut visitor = Self::new();
+        visitor.visit_statement(st);
+        visitor.vars
+    }
+}
+
+impl SharedExprVisitor for ComputeUsedLocals {
+    fn visit_var_id(&mut self, vid: &VarId::Id) {
+        match self.vars.get_mut(vid) {
+            Option::None => {
+                let _ = self.vars.insert(*vid, 1);
+            }
+            Option::Some(cnt) => *cnt += 1,
+        }
+    }
+}
+
+impl SharedAstVisitor for ComputeUsedLocals {
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
+    fn merge(&mut self) {}
+}
 
 #[derive(Debug, Clone)]
 struct UpdateUsedLocals {
@@ -51,7 +131,7 @@ fn update_locals(
         used_locals.insert(VarId::Id::new(i));
     }
     // Explore the body
-    let used_locals_cnt = crate::simplify_ops::ComputeUsedLocals::compute_in_statement(st);
+    let used_locals_cnt = ComputeUsedLocals::compute_in_statement(st);
     for (vid, cnt) in used_locals_cnt.iter() {
         if *cnt > 0 {
             used_locals.insert(*vid);

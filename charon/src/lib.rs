@@ -75,7 +75,6 @@ pub mod remove_read_discriminant;
 pub mod remove_unused_locals;
 pub mod reorder_decls;
 pub mod rust_to_local_ids;
-pub mod simplify_ops;
 pub mod translate_functions_to_ullbc;
 pub mod translate_types;
 pub mod types;
