@@ -12,6 +12,7 @@ use std::cmp::max;
 use std::fmt::Debug;
 
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
+/// TODO: generalize this with visitors
 pub fn iter_function_bodies<T: Debug + Clone + Serialize>(
     funs: &mut FunDeclId::Vector<GFunDecl<T>>,
 ) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
@@ -23,6 +24,7 @@ pub fn iter_function_bodies<T: Debug + Clone + Serialize>(
 
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
 /// Same as [iter_function_bodies] (but the `flat_map` lambda cannot be generic).
+/// TODO: generalize this with visitors
 pub fn iter_global_bodies<T: Debug + Clone + Serialize>(
     globals: &mut GlobalDeclId::Vector<GGlobalDecl<T>>,
 ) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
