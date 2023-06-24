@@ -18,6 +18,7 @@ use crate::ullbc_ast::{
     GlobalNamesFormatter, TAB_INCR,
 };
 use crate::values::*;
+use macros::make_generic_in_borrows;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 use take_mut::take;
@@ -550,7 +551,11 @@ impl GlobalDecl {
     }
 }
 
-/// A mutable visitor for the LLBC AST
+// Derive two implementations at once: one which uses shared borrows, and one
+// which uses mutable borrows.
+make_generic_in_borrows! {
+
+/// A visitor for the LLBC AST
 ///
 /// Remark: we can't call the "super" method when reimplementing a method
 /// (unlike what can be done in, say, OCaml). This makes imlementing visitors
@@ -558,175 +563,8 @@ impl GlobalDecl {
 /// a "standard" version to be overriden, and a "default" version which should
 /// not be overriden and gives access to the "super" method.
 ///
-/// TODO: split into several visitors, for Operand, etc., and make the AST
-/// visitor inherit from those traits.
-///
-/// TODO: implement macros to automatically derive visitors
-pub trait MutAstVisitor: crate::expressions::MutExprVisitor {
-    /// Spawn a new visitor visitor (used for the branchings)
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self));
-
-    /// We call this function right after we explored all the branches
-    /// in a branching.
-    fn merge(&mut self);
-
-    fn visit_statement(&mut self, st: &mut Statement) {
-        self.visit_raw_statement(&mut st.content)
-    }
-
-    fn default_visit_raw_statement(&mut self, st: &mut RawStatement) {
-        match st {
-            RawStatement::Assign(p, rv) => {
-                self.visit_assign(p, rv);
-            }
-            RawStatement::FakeRead(p) => {
-                self.visit_fake_read(p);
-            }
-            RawStatement::SetDiscriminant(p, vid) => {
-                self.visit_set_discriminant(p, vid);
-            }
-            RawStatement::Drop(p) => {
-                self.visit_drop(p);
-            }
-            RawStatement::Assert(a) => {
-                self.visit_assert(a);
-            }
-            RawStatement::Call(c) => {
-                self.visit_call(c);
-            }
-            RawStatement::Panic => {
-                self.visit_panic();
-            }
-            RawStatement::Return => self.visit_return(),
-            RawStatement::Break(i) => {
-                self.visit_break(i);
-            }
-            RawStatement::Continue(i) => {
-                self.visit_continue(i);
-            }
-            RawStatement::Nop => self.visit_nop(),
-            RawStatement::Sequence(st1, st2) => self.visit_sequence(st1, st2),
-            RawStatement::Switch(s) => self.visit_switch(s),
-            RawStatement::Loop(lp) => self.visit_loop(lp),
-        }
-    }
-
-    fn visit_raw_statement(&mut self, st: &mut RawStatement) {
-        self.default_visit_raw_statement(st);
-    }
-
-    fn visit_assign(&mut self, p: &mut Place, rv: &mut Rvalue) {
-        self.visit_place(p);
-        self.visit_rvalue(rv)
-    }
-
-    fn visit_fake_read(&mut self, p: &mut Place) {
-        self.visit_place(p);
-    }
-
-    fn visit_set_discriminant(&mut self, p: &mut Place, _: &mut VariantId::Id) {
-        self.visit_place(p);
-    }
-
-    fn visit_drop(&mut self, p: &mut Place) {
-        self.visit_place(p);
-    }
-
-    fn visit_assert(&mut self, a: &mut Assert) {
-        self.visit_operand(&mut a.cond);
-    }
-
-    fn visit_call(&mut self, c: &mut Call) {
-        for o in &mut c.args {
-            self.visit_operand(o);
-        }
-        self.visit_place(&mut c.dest);
-    }
-
-    fn visit_panic(&mut self) {}
-    fn visit_return(&mut self) {}
-    fn visit_break(&mut self, _: &mut usize) {}
-    fn visit_continue(&mut self, _: &mut usize) {}
-    fn visit_nop(&mut self) {}
-
-    fn visit_sequence(&mut self, st1: &mut Statement, st2: &mut Statement) {
-        self.visit_statement(st1);
-        self.visit_statement(st2);
-    }
-
-    fn default_visit_switch(&mut self, s: &mut Switch) {
-        match s {
-            Switch::If(scrut, then_branch, else_branch) => {
-                self.visit_if(scrut, then_branch, else_branch)
-            }
-            Switch::SwitchInt(scrut, int_ty, branches, otherwise) => {
-                self.visit_switch_int(scrut, int_ty, branches, otherwise)
-            }
-            Switch::Match(scrut, branches, otherwise) => {
-                self.visit_match(scrut, branches, otherwise)
-            }
-        }
-    }
-
-    fn visit_switch(&mut self, s: &mut Switch) {
-        self.default_visit_switch(s)
-    }
-
-    fn visit_if(
-        &mut self,
-        scrut: &mut Operand,
-        then_branch: &mut Statement,
-        else_branch: &mut Statement,
-    ) {
-        self.visit_operand(scrut);
-        self.spawn(&mut |v| v.visit_statement(then_branch));
-        self.spawn(&mut |v| v.visit_statement(else_branch));
-        self.merge();
-    }
-
-    fn visit_switch_int(
-        &mut self,
-        scrut: &mut Operand,
-        _: &mut IntegerTy,
-        branches: &mut Vec<(Vec<ScalarValue>, Statement)>,
-        otherwise: &mut Statement,
-    ) {
-        self.visit_operand(scrut);
-        for (_, st) in branches {
-            self.spawn(&mut |v| v.visit_statement(st));
-        }
-        self.spawn(&mut |v| v.visit_statement(otherwise));
-        self.merge();
-    }
-
-    fn visit_match(
-        &mut self,
-        scrut: &mut Place,
-        branches: &mut Vec<(Vec<VariantId::Id>, Statement)>,
-        otherwise: &mut Statement,
-    ) {
-        self.visit_place(scrut);
-        for (_, st) in branches {
-            self.spawn(&mut |v| v.visit_statement(st));
-        }
-        self.spawn(&mut |v| v.visit_statement(otherwise));
-        self.merge();
-    }
-
-    fn visit_loop(&mut self, lp: &mut Statement) {
-        self.visit_statement(lp)
-    }
-}
-
-/// A non-mutable visitor for the LLBC AST
-///
-/// See the remarks for [AstMutVisitor]
-///
-/// TODO: split into several visitors, for Operand, etc., and make the AST
-/// visitor inherit from those traits.
-///
-/// TODO: implement macros to automatically derive visitors
-pub trait SharedAstVisitor: crate::expressions::SharedExprVisitor {
+/// TODO: implement macros to automatically derive visitors.
+pub trait AstVisitor: crate::expressions::ExprVisitor {
     /// Spawn the visitor (used for the branchings)
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self));
 
@@ -876,3 +714,5 @@ pub trait SharedAstVisitor: crate::expressions::SharedExprVisitor {
         self.visit_statement(lp)
     }
 }
+
+} // make_generic_in_borrows

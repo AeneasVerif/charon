@@ -13,10 +13,10 @@ use std::vec::Vec;
 use syn::punctuated::Punctuated;
 use syn::token::{Add, Comma};
 use syn::{
-    parse, parse_macro_input, Arm, Binding, Block, Constraint, Data, DataEnum, DeriveInput, Expr,
-    Fields, FnArg, GenericArgument, GenericParam, Ident, ItemTrait, Lifetime, Lit, Path,
-    PathArguments, PathSegment, ReturnType, Stmt, TraitBound, TraitBoundModifier, TraitItem,
-    TraitItemMethod, Type, TypeParamBound, TypePath, WhereClause, WherePredicate,
+    parse, parse_macro_input, Binding, Block, Constraint, Data, DataEnum, DeriveInput, Expr,
+    Fields, FnArg, GenericArgument, GenericParam, Ident, ItemTrait, Lifetime, Lit, Pat, Path,
+    PathArguments, PathSegment, ReturnType, Stmt, TraitBound, TraitBoundModifier, TraitItem, Type,
+    TypeParamBound, TypePath, WhereClause, WherePredicate,
 };
 
 const _TAB: &'static str = "    ";
@@ -1086,6 +1086,7 @@ fn generic_expr_to_mut(e: &mut Expr) {
         }
         Expr::Closure(e) => {
             // Keeping things simple
+            e.inputs.iter_mut().for_each(|i| generic_pat_to_mut(i));
             generic_expr_to_mut(&mut (*e.body));
         }
         Expr::Field(e) => {
@@ -1146,6 +1147,7 @@ fn generic_expr_to_mut(e: &mut Expr) {
         }
         Expr::Reference(e) => {
             // IMPORTANT: change the mutability
+            // Remark: closures are handled elsewhere
             e.mutability = Option::Some(syn::token::Mut([Span::call_site().into()]));
             generic_expr_to_mut(&mut (*e.expr));
         }
@@ -1189,7 +1191,6 @@ fn generic_expr_to_mut(e: &mut Expr) {
 /// ```
 fn generic_supertraits_to_mut_shared(tr: &mut ItemTrait, to_mut: bool) {
     for p in tr.supertraits.iter_mut() {
-        println!("{}", p.to_token_stream());
         match p {
             TypeParamBound::Trait(t) => {
                 // Update the path: update the last segment
@@ -1215,6 +1216,13 @@ fn generic_mk_ident(id: &syn::Ident, to_mut: bool) -> syn::Ident {
         format!("Shared{}", id)
     };
     syn::Ident::new(&name, Span::call_site().into())
+}
+
+fn generic_pat_to_mut(p: &mut Pat) {
+    match p {
+        Pat::Type(p) => generic_type_to_mut(&mut p.ty),
+        _ => (),
+    }
 }
 
 /// We use this macro to write implementation which are generic in borrow

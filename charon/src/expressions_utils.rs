@@ -356,12 +356,13 @@ impl Serialize for OperandConstantValue {
     }
 }
 
+// Derive two implementations at once: one which uses shared borrows, and one
+// which uses mutable borrows.
 make_generic_in_borrows! {
 
-/// A shared visitor for expressions.
+/// A visitor for expressions.
 ///
-/// TODO: implement macros to automatically derive visitors, or at least to
-/// factor out the mut/shared versions of the visitors.
+/// TODO: implement macros to automatically derive visitors.
 pub trait ExprVisitor {
     fn visit_place(&mut self, p: &Place) {
         self.visit_var_id(&p.var_id);
