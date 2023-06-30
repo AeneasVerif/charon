@@ -157,6 +157,24 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     // Besides, as there may be several "impl" blocks for one type, each impl
     // block is identified by a unique number (rustc calls this a
     // "disambiguator"), which we grab.
+    //
+    // Example:
+    // ========
+    // For instance, if we write the following code in crate `test` and module
+    // `bla`:
+    // ```
+    // impl<T> Foo<T> {
+    //   fn foo() { ... }
+    // }
+    //
+    // impl<T> Foo<T> {
+    //   fn bar() { ... }
+    // }
+    // ```
+    //
+    // The names we will generate for `foo` and `bar` are:
+    // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(0), Ident("foo")]`
+    // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(1), Ident("bar")]`
     let mut found_crate_name = false;
     let mut id = def_id;
     let mut name: Vec<PathElem> = Vec::new();
