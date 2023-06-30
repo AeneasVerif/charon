@@ -221,7 +221,8 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                         type_name.name.pop().unwrap().to_string()
                     }
                     // Builtin cases.
-                    rustc_middle::ty::TyKind::Int(_) | rustc_middle::ty::TyKind::Uint(_) => {
+                    rustc_middle::ty::TyKind::Int(_) | rustc_middle::ty::TyKind::Uint(_) |
+                    rustc_middle::ty::TyKind::Array(..) | rustc_middle::ty::TyKind::Slice(_) => {
                         format!("{ty:?}")
                     }
                     _ => unreachable!(),
