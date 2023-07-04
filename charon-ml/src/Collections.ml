@@ -54,6 +54,10 @@ module List = struct
 
       Iterate over a list, but call a function between every two elements
       (but not before the first element, and not after the last).
+
+      A simple use case is the following: you have a list `[x0, ..., xn]`
+      and want to print the elements in the list separated by a comma, like
+      this: `x0, ..., xn`.
    *)
   let iter_link (link : unit -> unit) (f : 'a -> unit) (ls : 'a list) : unit =
     let rec iter ls =
