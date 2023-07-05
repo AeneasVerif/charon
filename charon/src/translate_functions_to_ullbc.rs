@@ -35,13 +35,14 @@ use rustc_middle::mir::{
     TerminatorKind, START_BLOCK,
 };
 use rustc_middle::ty as mir_ty;
-use rustc_middle::ty::{ConstKind, Ty, TyCtxt, TyKind};
+use rustc_middle::ty::{ConstKind, Ty, TyCtxt, TyKind, ParamEnv};
 use rustc_session::Session;
 use rustc_span::Span;
 use std::collections::HashMap;
 use std::iter::zip;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name, TypeTransContext};
+use core::convert::*;
 
 /// Translation context for function and global definitions
 /// TODO: we should put the `TyCtx` and the `Session` in there
@@ -1186,9 +1187,22 @@ fn translate_rvalue<'tcx>(
             let place = translate_place(bt_ctx, place);
             e::Rvalue::Use(e::Operand::Copy(place))
         }
-        mir::Rvalue::Repeat(_operand, _const) => {
-            // [x; 32]
-            unimplemented!();
+        mir::Rvalue::Repeat(operand, cnst) => {
+            // ParamEnv is used for tracking `where` clauses; not needed for us here.
+            // NOTE: more recent versions of `rustc` seem to fix this API to return a `usize`, thus
+            // avoiding the `try_into()` below.
+            let c = cnst.try_eval_usize(tcx, ParamEnv::empty()).unwrap();
+            // We are effectively desugaring the repeat in Charon, turning it into an array literal
+            // where the operand is repeated `cnst` times.
+            let (operand, t) = translate_operand_with_type(bt_ctx, operand);
+            let mut operands = Vec::with_capacity(c.try_into().unwrap());
+            for _ in 0..c {
+                operands.push(operand.clone());
+            }
+            // We *have* to desugar here; we don't have enough context (the destination place, the
+            // lifetime variable) to translate this into a built-in function call. This is why we
+            // don't have a ArrayRepeat AssumedFunId.
+            e::Rvalue::Aggregate(e::AggregateKind::Array(t), operands)
         }
         mir::Rvalue::Ref(_region, borrow_kind, place) => {
             let place = translate_place(bt_ctx, place);
@@ -2102,7 +2116,9 @@ fn translate_primitive_function_call(
         ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
             translate_vec_index(aid, region_args, type_args, args, dest, target)
         }
-        ast::AssumedFunId::BoxFree => {
+        | ast::AssumedFunId::ArrayIndex
+        | ast::AssumedFunId::ArrayUpdate
+        | ast::AssumedFunId::BoxFree => {
             unreachable!();
         }
     }

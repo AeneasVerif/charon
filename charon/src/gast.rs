@@ -156,4 +156,7 @@ pub enum AssumedFunId {
     VecIndex,
     /// `core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>`
     VecIndexMut,
+    /// Array functions
+    ArrayIndex,
+    ArrayUpdate,
 }

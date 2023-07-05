@@ -125,6 +125,12 @@ where
             AssumedFunId::VecIndexMut => {
                 format!("core::ops::index::IndexMut<alloc::vec::Vec{rt_args}>::index_mut",)
             }
+            AssumedFunId::ArrayIndex => {
+                format!("core::ops::array::Index{rt_args}::index",)
+            }
+            AssumedFunId::ArrayUpdate => {
+                format!("core::ops::array::Update{rt_args}::update",)
+            }
         },
     };
 

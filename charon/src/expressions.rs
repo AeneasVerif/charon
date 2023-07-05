@@ -215,6 +215,7 @@ pub enum Rvalue {
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
     Global(GlobalDeclId::Id),
+    // JP: is this VecLen?
     Len(Place),
 }
 

@@ -264,8 +264,9 @@ where
         TyKind::Array(ty, const_param) => {
             trace!("Array");
 
-            // TODO: this only handles the case where the length of the array is a constant (i.e.,
-            // a literal, not a reference to a variable in scope)
+            // Insofar as I understand, array bounds and lengths ought to be eval-able at
+            // compile-time, meaning that if I read the code of ConstKind and ValTree properly,
+            //
             let ValTree::Leaf(v) = const_param.to_valtree() else { todo!() };
             let c = match const_param.ty().kind() {
                 TyKind::Uint(UintTy::U8) => ScalarValue::U8(v.try_to_u8().unwrap()),

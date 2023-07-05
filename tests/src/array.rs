@@ -19,3 +19,7 @@ fn f2 () -> u32 {
     let b = [ 0; SZ ];
     return sum2(&a, &b[16..18])
 }
+
+fn main() {
+    print!("{}", f2());
+}
