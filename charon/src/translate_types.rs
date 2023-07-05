@@ -15,7 +15,7 @@ use crate::values::ScalarValue;
 use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Mutability;
-use rustc_middle::ty::{Ty, TyCtxt, TyKind, ValTree, UintTy};
+use rustc_middle::ty::{Ty, TyCtxt, TyKind, ParamEnv};
 use rustc_session::Session;
 use core::convert::*;
 
@@ -181,7 +181,7 @@ pub fn translate_erased_region(region: rustc_middle::ty::RegionKind<'_>) -> ty::
 /// regions can be translated in several manners (non-erased region or erased
 /// regions), in which case the return type is different.
 pub fn translate_ty<'tcx, R>(
-    tcx: TyCtxt,
+    tcx: TyCtxt<'tcx>,
     trans_ctx: &TypeTransContext,
     region_translator: &dyn Fn(&rustc_middle::ty::RegionKind<'tcx>) -> R,
     type_params: &im::OrdMap<u32, ty::Ty<R>>,
@@ -198,7 +198,7 @@ where
 /// See the comments for [translate_ty] (the two functions do the same thing,
 /// they simply don't take the same input parameters).
 pub fn translate_ty_kind<'tcx, R>(
-    tcx: TyCtxt,
+    tcx: TyCtxt<'tcx>,
     trans_ctx: &TypeTransContext,
     region_translator: &dyn Fn(&rustc_middle::ty::RegionKind<'tcx>) -> R,
     type_params: &im::OrdMap<u32, ty::Ty<R>>,
@@ -264,22 +264,9 @@ where
         TyKind::Array(ty, const_param) => {
             trace!("Array");
 
-            // Insofar as I understand, array bounds and lengths ought to be eval-able at
-            // compile-time, meaning that if I read the code of ConstKind and ValTree properly,
-            //
-            let ValTree::Leaf(v) = const_param.to_valtree() else { todo!() };
-            let c = match const_param.ty().kind() {
-                TyKind::Uint(UintTy::U8) => ScalarValue::U8(v.try_to_u8().unwrap()),
-                TyKind::Uint(UintTy::U16) => ScalarValue::U16(v.try_to_u16().unwrap()),
-                TyKind::Uint(UintTy::U32) => ScalarValue::U32(v.try_to_u32().unwrap()),
-                TyKind::Uint(UintTy::U64) => ScalarValue::U64(v.try_to_u64().unwrap()),
-                TyKind::Uint(UintTy::U128) => ScalarValue::U128(v.try_to_u128().unwrap()),
-                TyKind::Uint(UintTy::Usize) =>
-                    ScalarValue::Usize(usize::try_from(v.try_to_machine_usize(tcx).unwrap()).unwrap()),
-                _ => panic!("Unknown size for array length"),
-            };
+            let c = const_param.try_eval_usize(tcx, ParamEnv::empty()).unwrap();
             let ty = translate_ty(tcx, trans_ctx, region_translator, type_params, ty)?;
-            Ok(ty::Ty::Array(Box::new(ty), c))
+            Ok(ty::Ty::Array(Box::new(ty), ScalarValue::U64(c)))
         }
         TyKind::Slice(ty) => {
             trace!("Slice");
@@ -400,7 +387,7 @@ where
 /// variable ids.
 /// Simply calls [`translate_ty`](translate_ty)
 pub fn translate_sig_ty<'tcx>(
-    tcx: TyCtxt,
+    tcx: TyCtxt<'tcx>,
     trans_ctx: &TypeTransContext,
     region_params: &im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id>,
     type_params: &im::OrdMap<u32, ty::RTy>,
@@ -417,11 +404,11 @@ pub fn translate_sig_ty<'tcx>(
 
 /// Translate a type where the regions are erased
 /// Simply calls [translate_ty]
-pub fn translate_ety(
-    tcx: TyCtxt,
+pub fn translate_ety<'tcx>(
+    tcx: TyCtxt<'tcx>,
     trans_ctx: &TypeTransContext,
     type_params: &im::OrdMap<u32, ty::ETy>,
-    ty: &Ty,
+    ty: &Ty<'tcx>,
 ) -> Result<ty::ETy> {
     translate_ty(
         tcx,
@@ -433,11 +420,11 @@ pub fn translate_ety(
 }
 
 /// Simply calls [translate_ty_kind]
-pub fn translate_ety_kind(
-    tcx: TyCtxt,
+pub fn translate_ety_kind<'tcx>(
+    tcx: TyCtxt<'tcx>,
     trans_ctx: &TypeTransContext,
     type_params: &im::OrdMap<u32, ty::ETy>,
-    ty: &TyKind,
+    ty: &TyKind<'tcx>,
 ) -> Result<ty::ETy> {
     translate_ty_kind(
         tcx,
@@ -449,7 +436,7 @@ pub fn translate_ety_kind(
 }
 
 fn translate_substs<'tcx, R>(
-    tcx: TyCtxt,
+    tcx: TyCtxt<'tcx>,
     trans_ctx: &TypeTransContext,
     region_translator: &dyn Fn(&rustc_middle::ty::RegionKind<'tcx>) -> R,
     type_params: &im::OrdMap<u32, ty::Ty<R>>,
@@ -508,7 +495,7 @@ where
 }
 
 /// Translate a type def id
-fn translate_defid(tcx: TyCtxt, trans_ctx: &TypeTransContext, def_id: DefId) -> ty::TypeId {
+fn translate_defid<'tcx>(tcx: TyCtxt<'tcx>, trans_ctx: &TypeTransContext, def_id: DefId) -> ty::TypeId {
     trace!("{:?}", def_id);
 
     if def_id.is_local() {
@@ -745,9 +732,9 @@ fn translate_transparent_type<'tcx>(
 /// Note that we translate the types one by one: we don't need to take into
 /// account the fact that some types are mutually recursive at this point
 /// (we will need to take that into account when generating the code in a file).
-fn translate_type(
+fn translate_type<'tcx>(
     sess: &Session,
-    tcx: TyCtxt,
+    tcx: TyCtxt<'tcx>,
     decls: &OrderedDecls,
     type_defs: &mut ty::TypeDecls,
     trans_id: ty::TypeDeclId::Id,
@@ -812,9 +799,9 @@ fn translate_type(
 /// necessary), because what is important is the file generation later.
 /// Still, now that the order is computed, it's better to use it (leads to a
 /// better indexing, for instance).
-pub fn translate_types(
+pub fn translate_types<'tcx>(
     sess: &Session,
-    tcx: TyCtxt,
+    tcx: TyCtxt<'tcx>,
     decls: &OrderedDecls,
 ) -> Result<(TypesConstraintsMap, ty::TypeDecls)> {
     trace!();

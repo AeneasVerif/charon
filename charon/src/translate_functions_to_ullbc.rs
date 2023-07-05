@@ -291,14 +291,14 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>>
     }
 }
 
-fn translate_ety(bt_ctx: &BodyTransContext<'_, '_, '_>, ty: &mir_ty::Ty) -> Result<ty::ETy> {
+fn translate_ety<'tcx>(bt_ctx: &BodyTransContext<'tcx, '_, '_>, ty: &mir_ty::Ty<'tcx>) -> Result<ty::ETy> {
     let ty_ctx = TypeTransContext::new(bt_ctx.ft_ctx.type_defs, bt_ctx.ft_ctx.ordered);
     translate_types::translate_ety(bt_ctx.ft_ctx.tcx, &ty_ctx, &bt_ctx.rtype_vars_to_etypes, ty)
 }
 
-fn translate_ety_kind(
-    bt_ctx: &BodyTransContext<'_, '_, '_>,
-    ty: &mir_ty::TyKind,
+fn translate_ety_kind<'tcx>(
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
+    ty: &mir_ty::TyKind<'tcx>,
 ) -> Result<ty::ETy> {
     let ty_ctx = TypeTransContext::new(bt_ctx.ft_ctx.type_defs, bt_ctx.ft_ctx.ordered);
     translate_types::translate_ety_kind(
