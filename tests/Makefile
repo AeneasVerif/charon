@@ -57,7 +57,7 @@ test-%:
 	$(CHARON_CMD) --dest $(DEST)/ullbc --ullbc
 	$(CHARON_CMD) --dest $(DEST)/llbc_prom --mir_promoted
 # TODO: this fails for now (there is some very low-level desugaring happening)
-#	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized 
+#	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
 
 else
 
