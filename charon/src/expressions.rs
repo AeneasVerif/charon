@@ -211,7 +211,7 @@ pub enum Rvalue {
     Global(GlobalDeclId::Id),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, VariantIndexArity)]
 pub enum AggregateKind {
     Tuple,
     // TODO: treat Option in a general manner (we should extract the definitions

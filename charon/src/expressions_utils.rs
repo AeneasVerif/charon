@@ -248,8 +248,6 @@ impl Rvalue {
                         for (i, op) in ops.iter().enumerate() {
                             let field_id = FieldId::Id::new(i);
                             let field_name = ctx.format_object((*def_id, *variant_id, field_id));
-                            // TODO: this is reformatting the operand, which was already converted
-                            // to a string, above
                             fields.push(format!("{}: {}", field_name, op.fmt_with_ctx(ctx)));
                         }
 
@@ -290,14 +288,19 @@ impl Serialize for AggregateKind {
         // consistent with what the automatically generated serializer does):
         // - if the arity is > 0, use `serialize_tuple_variant`
         // - otherwise simply serialize a string with the variant name
+        //
+        // Remark: we change the names of the variants, which is why we don't
+        // use the [variant_name] function.
+        let enum_name = "AggregateKind";
+        let (variant_index, variant_arity) = self.variant_index_arity();
         match self {
             AggregateKind::Tuple => "AggregatedTuple".serialize(serializer),
             AggregateKind::Option(variant_id, ty) => {
                 let mut vs = serializer.serialize_tuple_variant(
-                    "AggregateKind",
-                    1,
+                    enum_name,
+                    variant_index,
                     "AggregatedOption",
-                    2,
+                    variant_arity,
                 )?;
 
                 vs.serialize_field(variant_id)?;
@@ -306,8 +309,12 @@ impl Serialize for AggregateKind {
                 vs.end()
             }
             AggregateKind::Adt(def_id, opt_variant_id, regions, tys) => {
-                let mut vs =
-                    serializer.serialize_tuple_variant("AggregateKind", 2, "AggregatedAdt", 4)?;
+                let mut vs = serializer.serialize_tuple_variant(
+                    enum_name,
+                    variant_index,
+                    "AggregatedAdt",
+                    variant_arity,
+                )?;
 
                 vs.serialize_field(def_id)?;
                 vs.serialize_field(opt_variant_id)?;
@@ -319,8 +326,12 @@ impl Serialize for AggregateKind {
                 vs.end()
             }
             AggregateKind::Array(ty) => {
-                let mut vs =
-                    serializer.serialize_tuple_variant("AggregateKind", 3, "AggregatedArray", 1)?;
+                let mut vs = serializer.serialize_tuple_variant(
+                    enum_name,
+                    variant_index,
+                    "AggregatedArray",
+                    variant_arity,
+                )?;
                 vs.serialize_field(ty)?;
                 vs.end()
             }
