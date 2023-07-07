@@ -53,6 +53,7 @@ impl std::fmt::Display for UnOp {
             UnOp::Not => write!(f, "~"),
             UnOp::Neg => write!(f, "-"),
             UnOp::Cast(src, tgt) => write!(f, "cast<{src},{tgt}>"),
+            UnOp::SliceNew(l) => write!(f, "mk_slice<{:?}>", l),
         }
     }
 }

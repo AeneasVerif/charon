@@ -103,6 +103,7 @@ pub enum UnOp {
     /// The first integer type gives the source type, the second one gives
     /// the destination type.
     Cast(IntegerTy, IntegerTy),
+    SliceNew(ScalarValue),
 }
 
 /// Binary operations.

@@ -36,6 +36,7 @@ use rustc_middle::mir::{
 };
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{ConstKind, Ty, TyCtxt, TyKind, ParamEnv};
+use rustc_middle::ty::adjustment::PointerCast;
 use rustc_session::Session;
 use rustc_span::Span;
 use std::collections::HashMap;
@@ -1224,31 +1225,40 @@ fn translate_rvalue<'tcx>(
             // Put aside the pointer casts (which we don't support), I think
             // casts should only be from integers/booleans to integer/booleans.
 
-            // Sanity check
-            assert!(match cast_kind {
-                rustc_middle::mir::CastKind::IntToInt => true,
-                rustc_middle::mir::CastKind::FloatToInt
-                | rustc_middle::mir::CastKind::FloatToFloat
-                | rustc_middle::mir::CastKind::IntToFloat
-                | rustc_middle::mir::CastKind::PtrToPtr
-                | rustc_middle::mir::CastKind::FnPtrToPtr
-                | rustc_middle::mir::CastKind::Pointer(_)
-                | rustc_middle::mir::CastKind::PointerExposeAddress
-                | rustc_middle::mir::CastKind::PointerFromExposedAddress
-                | rustc_middle::mir::CastKind::DynStar => false,
-            });
-
             // Translate the target type
             let tgt_ty = translate_ety(bt_ctx, tgt_ty).unwrap();
 
             // Translate the operand
             let (op, src_ty) = translate_operand_with_type(bt_ctx, operand);
 
-            // We only support source and target types for integers
-            let tgt_ty = *tgt_ty.as_integer();
-            let src_ty = *src_ty.as_integer();
+            match (cast_kind, &src_ty, &tgt_ty) {
+                | (rustc_middle::mir::CastKind::IntToInt, _, _) => {
+                    // We only support source and target types for integers
+                    let tgt_ty = *tgt_ty.as_integer();
+                    let src_ty = *src_ty.as_integer();
 
-            e::Rvalue::UnaryOp(e::UnOp::Cast(src_ty, tgt_ty), op)
+                    e::Rvalue::UnaryOp(e::UnOp::Cast(src_ty, tgt_ty), op)
+                },
+                | (rustc_middle::mir::CastKind::Pointer(PointerCast::Unsize),
+                    ty::Ty::Ref(_, t1, _),
+                    ty::Ty::Ref(_, t2, _)) => {
+                        // In MIR terminology, we go from &[T; l] to &[T] which means we
+                        // effectively "unsize" the type, as `l` no longer appears in the
+                        // destination type. At runtime, the converse happens: the length
+                        // materializes into the fat pointer.
+                        match (&**t1, &**t2) {
+                            (ty::Ty::Array(_, l), ty::Ty::Slice(_)) => {
+                                e::Rvalue::UnaryOp(e::UnOp::SliceNew(*l), op)
+                            },
+                            _ => {
+                                panic!("Unsupported cast: {:?}, src={:?}, dst={:?}", rvalue, src_ty, tgt_ty)
+                            }
+                        }
+                },
+                | _ => {
+                    panic!("Unsupported cast: {:?}, src={:?}, dst={:?}", rvalue, src_ty, tgt_ty)
+                }
+            }
         }
         mir::Rvalue::BinaryOp(binop, operands) | mir::Rvalue::CheckedBinaryOp(binop, operands) => {
             // We merge checked and unchecked binary operations
