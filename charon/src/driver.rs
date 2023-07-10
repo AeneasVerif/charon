@@ -293,6 +293,14 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // Because we don't have loops, constants are not yet touched.
         let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
 
+        trace!("# Final LLBC:\n");
+        for def in &llbc_funs {
+            trace!(
+                "#{}\n",
+                def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
+            );
+        }
+
         // # Step 15: generate the files.
         export::export_llbc(
             crate_name,

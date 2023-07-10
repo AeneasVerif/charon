@@ -263,6 +263,9 @@ impl Rvalue {
                     AggregateKind::Array(_) => {
                         format!("[{}]", ops_s.join(", "))
                     }
+                    AggregateKind::Range(_) => {
+                        format!("@Range")
+                    }
                 }
             }
             Rvalue::Global(gid) => ctx.format_object(*gid),
@@ -329,6 +332,18 @@ impl Serialize for AggregateKind {
 
                 vs.end()
             }
+            AggregateKind::Range(ty) => {
+                let mut vs = serializer.serialize_tuple_variant(
+                    enum_name,
+                    variant_index,
+                    "AggregatedRange",
+                    variant_arity,
+                )?;
+
+                vs.serialize_field(ty)?;
+
+                vs.end()
+            },
             AggregateKind::Array(ty) => {
                 let mut vs = serializer.serialize_tuple_variant(
                     enum_name,

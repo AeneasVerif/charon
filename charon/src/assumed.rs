@@ -14,6 +14,7 @@ use crate::ullbc_ast;
 pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
 pub static VEC_NAME: [&str; 3] = ["alloc", "vec", "Vec"];
 pub static OPTION_NAME: [&str; 3] = ["core", "option", "Option"];
+pub static RANGE_NAME: [&str; 4] = ["core", "ops", "range", "Range"];
 
 pub static OPTION_NONE_VARIANT_ID: types::VariantId::Id = types::VariantId::ZERO;
 pub static OPTION_SOME_VARIANT_ID: types::VariantId::Id = types::VariantId::ONE;

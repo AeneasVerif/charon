@@ -1371,26 +1371,36 @@ fn translate_rvalue<'tcx>(
                         // For instance, we can access the variants of any external
                         // enumeration marked as `public`.
                         let name = type_def_id_to_name(tcx, *adt_id);
-                        assert!(name.equals_ref_name(&assumed::OPTION_NAME));
+                        if name.equals_ref_name(&assumed::OPTION_NAME) {
+                            // Sanity checks
+                            assert!(region_params.is_empty());
+                            assert!(type_params.len() == 1);
 
-                        // Sanity checks
-                        assert!(region_params.is_empty());
-                        assert!(type_params.len() == 1);
+                            // Find the variant
+                            let variant_id = translate_variant_id(*variant_idx);
+                            if variant_id == assumed::OPTION_NONE_VARIANT_ID {
+                                assert!(operands_t.is_empty());
+                            } else if variant_id == assumed::OPTION_SOME_VARIANT_ID {
+                                assert!(operands_t.len() == 1);
+                            } else {
+                                unreachable!();
+                            }
 
-                        // Find the variant
-                        let variant_id = translate_variant_id(*variant_idx);
-                        if variant_id == assumed::OPTION_NONE_VARIANT_ID {
-                            assert!(operands_t.is_empty());
-                        } else if variant_id == assumed::OPTION_SOME_VARIANT_ID {
-                            assert!(operands_t.len() == 1);
-                        } else {
-                            unreachable!();
+                            let akind =
+                                e::AggregateKind::Option(variant_id, type_params.pop().unwrap());
+
+                            e::Rvalue::Aggregate(akind, operands_t)
                         }
-
-                        let akind =
-                            e::AggregateKind::Option(variant_id, type_params.pop().unwrap());
-
-                        e::Rvalue::Aggregate(akind, operands_t)
+                        else if name.equals_ref_name(&assumed::RANGE_NAME) {
+                            // Sanity checks
+                            assert!(region_params.is_empty());
+                            // Ranges are parametric over the type of indices
+                            assert!(type_params.len() == 1);
+                            e::Rvalue::Aggregate(e::AggregateKind::Range(type_params.pop().unwrap()), operands_t)
+                        }
+                        else {
+                            panic!("Unsupported ADT: {}", name);
+                        }
                     }
                 }
                 mir::AggregateKind::Closure(_def_id, _subst) => {

@@ -227,6 +227,7 @@ pub enum AggregateKind {
     // of the external enumerations - because as they are public, their variants are
     // public)
     Option(VariantId::Id, ETy),
+    Range(ETy),
     Adt(
         TypeDeclId::Id,
         Option<VariantId::Id>,
