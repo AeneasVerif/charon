@@ -131,6 +131,9 @@ where
             AssumedFunId::ArrayUpdate => {
                 format!("core::ops::array::Update{rt_args}::update",)
             }
+            AssumedFunId::ArraySlice => {
+                format!("core::ops::array::Slice{rt_args}::slice",)
+            }
         },
     };
 

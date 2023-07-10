@@ -103,6 +103,7 @@ pub enum UnOp {
     /// The first integer type gives the source type, the second one gives
     /// the destination type.
     Cast(IntegerTy, IntegerTy),
+    // Coercion from array (i.e., [T; N]) to slice.
     SliceNew(ScalarValue),
 }
 
@@ -216,7 +217,7 @@ pub enum Rvalue {
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
     Global(GlobalDeclId::Id),
-    // JP: is this VecLen?
+    // JP: is this VecLen? Or overloaded for Vec, Slice, Array?
     Len(Place),
 }
 

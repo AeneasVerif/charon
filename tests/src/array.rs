@@ -14,9 +14,13 @@ fn sum2(s: &[u32], s2: &[u32]) -> u32 {
 
 // TODO: this makes the compilation fail
 // const SZ: usize = 32;
+//
+fn f3(_: u32) -> () {
+}
 
 fn f2() -> u32 {
     let a: [u32; 2] = [1, 2];
     let b = [0; 32];
+    f3(b[0]);
     sum2(&a, &b[16..18])
 }

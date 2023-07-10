@@ -1947,7 +1947,7 @@ fn translate_function_call<'tcx>(
             let is_prim = if def_id.is_local() {
                 false
             } else {
-                assumed::get_fun_id_from_name(&name).is_some()
+                assumed::get_fun_id_from_name(&name, &type_args).is_some()
             };
 
             if !is_prim {
@@ -2099,10 +2099,9 @@ fn translate_primitive_function_call(
     let name = function_def_id_to_name(tcx, def_id);
     trace!("name: {}", name);
 
-    // Check if the function has primitive support, by trying to look up
+    // We assume the function has primitive support, and look up
     // its primitive identifier
-    let aid = assumed::get_fun_id_from_name(&name).unwrap();
-    // The function is considered primitive
+    let aid = assumed::get_fun_id_from_name(&name, &type_args).unwrap();
 
     // Translate the function call
     // Note that some functions are actually traits (deref, index, etc.):
@@ -2136,8 +2135,24 @@ fn translate_primitive_function_call(
         ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
             translate_vec_index(aid, region_args, type_args, args, dest, target)
         }
-        | ast::AssumedFunId::ArrayIndex
+        | ast::AssumedFunId::ArraySlice => {
+            // Slice (a, r), where `a` is the array and `r` the range. Note that this isn't any
+            // different from a regular function call. Ideally, we'd have a generic assumed
+            // function mechanism.
+            assert!(type_args.len() == 1);
+            assert!(args.len() == 2);
+
+            Ok(ast::RawTerminator::Call {
+                func: ast::FunId::Assumed(aid),
+                region_args,
+                type_args,
+                args,
+                dest,
+                target,
+            })
+        }
         | ast::AssumedFunId::ArrayUpdate
+        | ast::AssumedFunId::ArrayIndex
         | ast::AssumedFunId::BoxFree => {
             unreachable!();
         }

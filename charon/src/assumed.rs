@@ -68,6 +68,8 @@ enum FunId {
     VecPush,
     VecInsert,
     VecLen,
+    // TODO: since this module only matches on the trait, not a particular choice of instantiation,
+    // this should be renamed into GenericIndex, and GenericIndexMut
     VecIndex,
     VecIndexMut,
 }
@@ -131,7 +133,7 @@ fn get_fun_id_from_name_full(name: &FunName) -> Option<FunId> {
     }
 }
 
-pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
+pub fn get_fun_id_from_name(name: &FunName, type_args: &Vec<types::ETy>) -> Option<ullbc_ast::AssumedFunId> {
     match get_fun_id_from_name_full(name) {
         Option::Some(id) => {
             let id = match id {
@@ -145,8 +147,29 @@ pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
                 FunId::VecPush => ullbc_ast::AssumedFunId::VecPush,
                 FunId::VecInsert => ullbc_ast::AssumedFunId::VecInsert,
                 FunId::VecLen => ullbc_ast::AssumedFunId::VecLen,
-                FunId::VecIndex => ullbc_ast::AssumedFunId::VecIndex,
-                FunId::VecIndexMut => ullbc_ast::AssumedFunId::VecIndexMut,
+                FunId::VecIndex => {
+                    assert!(type_args.len() == 1);
+                    // Indexing into an array (pointer arithmetic + dereference) is represented in MIR
+                    // by an Offset projector followed by a Deref operation.
+                    //
+                    // Here, we see the Index trait on arrays, which does NOT mean indexing into an
+                    // array (like above). Instead, it refers to a particular implementation that
+                    // demands that the index be a Range<usize>, and that returns a Slice. See:
+                    // - https://doc.rust-lang.org/src/core/array/mod.rs.html#340
+                    // - https://doc.rust-lang.org/src/core/slice/index.rs.html#11
+                    // - https://doc.rust-lang.org/src/core/slice/index.rs.html#350
+                    match type_args[0] {
+                        types::Ty::Array(..) =>
+                            ullbc_ast::AssumedFunId::ArraySlice,
+                        _ =>
+                            ullbc_ast::AssumedFunId::VecIndex
+                        // TODO: figure out whether indexing into a slice (i.e. bounds-check,
+                        // pointer arithmetic, dereference) also appears as an implementation of
+                        // the Index trait or as a primitive operation like array indexing.
+                    }
+                },
+                FunId::VecIndexMut =>
+                    ullbc_ast::AssumedFunId::VecIndexMut,
             };
             Option::Some(id)
         }
