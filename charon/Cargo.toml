@@ -34,7 +34,6 @@ env_logger = "0.8.4"
 petgraph = "0.6.2"
 multimap = "0.8.3"
 serial_test = "0.5.1"
-chrono = "0.4.23"
 structopt = "0.3.26"
 macros = { path = "./macros" }
 take_mut = "0.2.2"
