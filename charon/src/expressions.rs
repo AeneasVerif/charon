@@ -217,7 +217,9 @@ pub enum Rvalue {
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
     Global(GlobalDeclId::Id),
-    // JP: is this VecLen? Or overloaded for Vec, Slice, Array?
+    // Length of a memory location, right now only used as Len(Deref(VarId)), when the variable is
+    // an array. As such, this should *always* be resolve-able at compile-time. The run-time length
+    // of e.g. a vector or a slice is represented differently (but pretty-prints the same, FIXME).
     Len(Place),
 }
 

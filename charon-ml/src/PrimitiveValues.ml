@@ -1,7 +1,5 @@
 (** The primitive values. *)
 
-open Types
-
 (** We use big integers to store the integer values (this way we don't have
     to think about the bounds, nor architecture issues - Rust allows to
     manipulate 128-bit integers for instance).
@@ -21,6 +19,21 @@ let pp_big_int (fmt : Format.formatter) (bi : big_int) : unit =
 
 let compare_big_int (bi0 : big_int) (bi1 : big_int) : int = Z.compare bi0 bi1
 let show_big_int (bi : big_int) : string = Z.to_string bi
+
+type integer_type =
+  | Isize
+  | I8
+  | I16
+  | I32
+  | I64
+  | I128
+  | Usize
+  | U8
+  | U16
+  | U32
+  | U64
+  | U128
+[@@deriving show, ord]
 
 (** A scalar value
 

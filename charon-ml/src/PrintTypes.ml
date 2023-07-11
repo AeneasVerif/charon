@@ -4,6 +4,7 @@ module T = Types
 module TU = TypesUtils
 module E = Expressions
 module A = LlbcAst
+module PV = PrimitiveValues
 open PrintUtils
 
 let type_var_id_to_string (id : T.TypeVarId.id) : string =
@@ -44,18 +45,18 @@ type rtype_formatter = T.RegionId.id T.region type_formatter
 type etype_formatter = T.erased_region type_formatter
 
 let integer_type_to_string = function
-  | T.Isize -> "isize"
-  | T.I8 -> "i8"
-  | T.I16 -> "i16"
-  | T.I32 -> "i32"
-  | T.I64 -> "i64"
-  | T.I128 -> "i128"
-  | T.Usize -> "usize"
-  | T.U8 -> "u8"
-  | T.U16 -> "u16"
-  | T.U32 -> "u32"
-  | T.U64 -> "u64"
-  | T.U128 -> "u128"
+  | PV.Isize -> "isize"
+  | PV.I8 -> "i8"
+  | PV.I16 -> "i16"
+  | PV.I32 -> "i32"
+  | PV.I64 -> "i64"
+  | PV.I128 -> "i128"
+  | PV.Usize -> "usize"
+  | PV.U8 -> "u8"
+  | PV.U16 -> "u16"
+  | PV.U32 -> "u32"
+  | PV.U64 -> "u64"
+  | PV.U128 -> "u128"
 
 let type_id_to_string (fmt : 'r type_formatter) (id : T.type_id) : string =
   match id with
@@ -66,6 +67,9 @@ let type_id_to_string (fmt : 'r type_formatter) (id : T.type_id) : string =
       | Box -> "alloc::boxed::Box"
       | Vec -> "alloc::vec::Vec"
       | Option -> "core::option::Option")
+
+let scalar_value_to_string { PV.value; int_ty } =
+  Z.to_string value ^ integer_type_to_string int_ty
 
 let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
   match ty with
@@ -79,7 +83,7 @@ let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
   | T.Never -> "!"
   | T.Integer int_ty -> integer_type_to_string int_ty
   | T.Str -> "str"
-  | T.Array aty -> "[" ^ ty_to_string fmt aty ^ "; ?]"
+  | T.Array (aty, len) -> "[" ^ ty_to_string fmt aty ^ "; " ^ scalar_value_to_string len ^ "]"
   | T.Slice sty -> "[" ^ ty_to_string fmt sty ^ "]"
   | T.Ref (r, rty, ref_kind) -> (
       match ref_kind with

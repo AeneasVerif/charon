@@ -54,6 +54,9 @@ let rec projection_to_string (fmt : expr_formatter) (inside : string)
   | pe :: p' -> (
       let s = projection_to_string fmt inside p' in
       match pe with
+      | E.Offset var_id ->
+        let var = fmt.var_id_to_string var_id in
+        s ^ "[@" ^ var ^ "]"
       | E.Deref -> "*(" ^ s ^ ")"
       | E.DerefBox -> "deref_box(" ^ s ^ ")"
       | E.Field (E.ProjOption variant_id, fid) ->
@@ -87,6 +90,7 @@ let unop_to_string (unop : E.unop) : string =
       ^ ","
       ^ PT.integer_type_to_string tgt
       ^ ">"
+  | E.SliceNew l -> "array_to_slice<" ^ PPV.scalar_value_to_string l ^ ">"
 
 let binop_to_string (binop : E.binop) : string =
   match binop with
@@ -120,6 +124,9 @@ let operand_to_string (fmt : expr_formatter) (op : E.operand) : string =
 
 let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
   match rv with
+  | E.Len p ->
+      let p = place_to_string fmt p in
+      "@len("^p^")"
   | E.Use op -> operand_to_string fmt op
   | E.Ref (p, bk) -> (
       let p = place_to_string fmt p in
@@ -168,4 +175,8 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
                 let fields = String.concat " " fields in
                 "{ " ^ fields ^ " }"
           in
-          variant_name ^ " " ^ fields)
+          variant_name ^ " " ^ fields
+      | E.AggregatedRange _ ->
+          "@Range" (* TODO: why don't I have access to a type printer here? *)
+      | E.AggregatedArray _ ->
+          "@Array" (* TODO: why don't I have access to a type printer here? *))

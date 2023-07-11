@@ -61,7 +61,11 @@ type field_proj_kind =
         concrete = true;
       }]
 
-type projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
+type projection_elem =
+  | Deref
+  | DerefBox
+  | Field of field_proj_kind * field_id
+  | Offset of var_id
 [@@deriving
   show,
     visitors
@@ -140,6 +144,9 @@ type unop =
   | Neg
   | Cast of integer_type * integer_type
       (** Cast an integer from a source type to a target type *)
+  | SliceNew of scalar_value
+      (** Cast an array into the corresponding slice, which involves the
+          construction of a fat pointer at run-time. *)
 [@@deriving show, ord]
 
 (** A binary operation
@@ -274,6 +281,8 @@ type aggregate_kind =
   (* TODO: AggregatedOption should be merged with AggregatedAdt *)
   | AggregatedAdt of
       type_decl_id * variant_id option * erased_region list * ety list
+  | AggregatedRange of ety
+  | AggregatedArray of ety
 [@@deriving
   show,
     visitors
@@ -324,6 +333,7 @@ type rvalue =
   | Discriminant of place
   | Aggregate of aggregate_kind * operand list
   | Global of global_decl_id
+  | Len of place
 [@@deriving
   show,
     visitors

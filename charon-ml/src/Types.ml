@@ -1,6 +1,7 @@
 open Identifiers
 open Names
 open Meta
+open PrimitiveValues
 module TypeVarId = IdGen ()
 module TypeDeclId = IdGen ()
 module VariantId = IdGen ()
@@ -38,7 +39,7 @@ type type_var = (TypeVarId.id, string) indexed_var [@@deriving show]
 type region_var = (RegionVarId.id, string option) indexed_var [@@deriving show]
 
 (** A region.
-    
+
     Regions are used in function signatures (in which case we use region variable
     ids) and in symbolic variables and projections (in which case we use region
     ids).
@@ -49,7 +50,7 @@ type 'rid region =
 [@@deriving show, ord]
 
 (** The type of erased regions.
-    
+
     We could use unit, but having a dedicated type makes things more explicit.
  *)
 type erased_region = Erased [@@deriving show, ord]
@@ -75,21 +76,6 @@ type region_var_group = (RegionGroupId.id, RegionVarId.id) g_region_group
 
 type region_var_groups = (RegionGroupId.id, RegionVarId.id) g_region_groups
 [@@deriving show]
-
-type integer_type =
-  | Isize
-  | I8
-  | I16
-  | I32
-  | I64
-  | I128
-  | Usize
-  | U8
-  | U16
-  | U32
-  | U64
-  | U128
-[@@deriving show, ord]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
 let all_unsigned_int_types = [ Usize; U8; U16; U32; U64; U128 ]
@@ -149,7 +135,7 @@ type 'r ty =
   | Never
   | Integer of integer_type
   | Str
-  | Array of 'r ty (* TODO: there should be a constant with the array *)
+  | Array of 'r ty * (PrimitiveValues.scalar_value [@opaque])
   | Slice of 'r ty
   | Ref of 'r * 'r ty * ref_kind
 [@@deriving
@@ -192,7 +178,7 @@ type sty = RegionVarId.id gr_ty [@@deriving show, ord]
 type rty = RegionId.id gr_ty [@@deriving show, ord]
 
 (** Type with *E*rased regions.
-    
+
     Used in function bodies, "regular" value types, etc.
  *)
 type ety = erased_region ty [@@deriving show, ord]

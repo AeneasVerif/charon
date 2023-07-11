@@ -34,6 +34,7 @@ type assumed_fun_id =
   | VecIndex  (** [core::ops::index::Index::index<alloc::vec::Vec<T>, usize>] *)
   | VecIndexMut
       (** [core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>] *)
+  | ArraySlice
 [@@deriving show, ord]
 
 type fun_id = Regular of FunDeclId.id | Assumed of assumed_fun_id

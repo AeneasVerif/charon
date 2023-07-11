@@ -1,4 +1,3 @@
-open Types
 open PrimitiveValues
 
 (** The minimum/maximum values an integer type can have depending on its type *)

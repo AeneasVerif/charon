@@ -119,7 +119,7 @@ let rec ety_no_regions_to_gr_ty (ty : ety) : 'a gr_ty =
   | Never -> Never
   | Integer int_ty -> Integer int_ty
   | Str -> Str
-  | Array ty -> Array (ety_no_regions_to_gr_ty ty)
+  | Array (ty, len) -> Array (ety_no_regions_to_gr_ty ty, len)
   | Slice ty -> Slice (ety_no_regions_to_gr_ty ty)
   | Ref (_, _, _) ->
       raise
