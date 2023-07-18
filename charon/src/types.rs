@@ -198,7 +198,6 @@ where
     Integer(IntegerTy),
     // We don't support floating point numbers on purpose
     Str,
-    // TODO: there should be a constant with the array
     Array(Box<Ty<R>>, ScalarValue),
     Slice(Box<Ty<R>>),
     /// A borrow

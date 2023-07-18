@@ -7,6 +7,8 @@ module TypeDeclId = IdGen ()
 module VariantId = IdGen ()
 module FieldId = IdGen ()
 
+type integer_type = PrimitiveValues.integer_type [@@deriving show, ord]
+
 (** We define this type to control the name of the visitor functions
     (see e.g., {!Types.iter_ty_base} and {!Types.TypeVar}).
   *)
