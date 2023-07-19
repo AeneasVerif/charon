@@ -400,6 +400,7 @@ pub fn const_generic_var_id_to_pretty_string(id: ConstGenericVarId::Id) -> Strin
     format!("@Const{id}")
 }
 
+// TODO: This (and the ones below) should instead be an impl T { fn to_string ... }
 pub fn integer_ty_to_string(ty: IntegerTy) -> String {
     match ty {
         IntegerTy::Isize => "isize".to_string(),
@@ -809,7 +810,7 @@ where
         self.substitute(&|_| ErasedRegion::Erased, &|tid| {
             subst.get(tid).unwrap().clone()
         },
-        &|cgid| cgsubst.get(cgid).unwrap().clone()
+        &|cgid| cgsubst.get(cgid).unwrap().clone())
     }
 
     /// Returns `true` if the type contains some region or type variables

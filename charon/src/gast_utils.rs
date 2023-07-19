@@ -65,11 +65,11 @@ impl std::string::ToString for Var {
 impl Var {
     /// Substitute the region parameters and type variables and return
     /// the resulting variable
-    pub fn substitute(&self, subst: &ETypeSubst) -> Var {
+    pub fn substitute(&self, subst: &ETypeSubst, cgsubst: &ConstGenericSubst) -> Var {
         Var {
             index: self.index,
             name: self.name.clone(),
-            ty: self.ty.substitute_types(subst),
+            ty: self.ty.substitute_types(subst, cgsubst),
         }
     }
 }
@@ -86,6 +86,7 @@ where
         + Formatter<TypeVarId::Id>
         + Formatter<&'a ErasedRegion>
         + Formatter<TypeDeclId::Id>
+        + Formatter<ConstGenericVarId::Id>
         + Formatter<FunDeclId::Id>
         + Formatter<GlobalDeclId::Id>
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
@@ -154,6 +155,7 @@ impl<T: Debug + Clone + Serialize> GExprBody<T> {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
@@ -210,7 +212,8 @@ impl FunSig {
         T: Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<RegionVarId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>,
+            + Formatter<&'a Region<RegionVarId::Id>>
+            + Formatter<ConstGenericVarId::Id>,
     {
         // Type parameters
         let params = if self.region_params.len() + self.type_params.len() == 0 {
@@ -283,7 +286,7 @@ impl<'a> Formatter<TypeDeclId::Id> for FunSigFormatter<'a> {
 impl <'a> Formatter<ConstGenericVarId::Id> for FunSigFormatter<'a> {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
         let cg_var = self.sig.const_generic_params.get(id).unwrap();
-        format!("{} : {}", cg_var.name.to_string(), cg_var.ty.to_string())
+        cg_var.to_string()
     }
 }
 
@@ -314,10 +317,12 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
     where
         T1: Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>,
+            + Formatter<&'a Region<RegionVarId::Id>>
+            + Formatter<ConstGenericVarId::Id>,
         T2: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
@@ -406,6 +411,7 @@ impl<CD: Debug + Clone + Serialize> GGlobalDecl<CD> {
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a ErasedRegion>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
@@ -449,6 +455,8 @@ pub struct GAstFormatter<'ctx, FD, GD> {
     pub type_vars: Option<&'ctx TypeVarId::Vector<TypeVar>>,
     /// Same as for `type_vars`.
     pub vars: Option<&'ctx VarId::Vector<Var>>,
+    /// Same as for `type_vars` 
+    pub const_generic_vars: Option<&'ctx ConstGenericVarId::Vector<ConstGenericVar>>,
 }
 
 pub struct CtxNames<'ctx> {
@@ -478,6 +486,7 @@ impl<'ctx, FD, GD> GAstFormatter<'ctx, FD, GD> {
         global_context: &'ctx GD,
         type_vars: Option<&'ctx TypeVarId::Vector<TypeVar>>,
         vars: Option<&'ctx VarId::Vector<Var>>,
+        const_generic_vars: Option<&'ctx ConstGenericVarId::Vector<ConstGenericVar>>,
     ) -> Self {
         GAstFormatter {
             type_context,
@@ -485,6 +494,7 @@ impl<'ctx, FD, GD> GAstFormatter<'ctx, FD, GD> {
             global_context,
             type_vars,
             vars,
+            const_generic_vars
         }
     }
 }
@@ -561,6 +571,17 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id
                 }
             }
             _ => unreachable!(),
+        }
+    }
+}
+
+impl<'ctx, FD, GD> Formatter<ConstGenericVarId::Id> for GAstFormatter<'ctx, FD, GD> {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        if self.const_generic_vars.is_some() {
+            let v = self.const_generic_vars.unwrap().get(id).unwrap();
+            v.to_string()
+        } else {
+            const_generic_var_id_to_pretty_string(id)
         }
     }
 }

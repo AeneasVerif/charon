@@ -229,6 +229,7 @@ impl Statement {
         T: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
