@@ -539,16 +539,18 @@ fn translate_projection<'tcx, 'ctx>(
                         let proj_kind = e::FieldProjKind::Adt(type_id, downcast_id);
                         e::ProjectionElem::Field(proj_kind, field_id)
                     }
-                    ty::Ty::Adt(ty::TypeId::Tuple, regions, tys) => {
+                    ty::Ty::Adt(ty::TypeId::Tuple, regions, tys, cgs) => {
                         assert!(regions.is_empty());
                         assert!(downcast_id.is_none());
+                        assert!(cgs.is_empty());
                         path_type = tys.get(field.as_usize()).unwrap().clone();
                         let proj_kind = e::FieldProjKind::Tuple(tys.len());
                         e::ProjectionElem::Field(proj_kind, field_id)
                     }
-                    ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Option), regions, tys) => {
+                    ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Option), regions, tys, cgs) => {
                         assert!(regions.is_empty());
                         assert!(tys.len() == 1);
+                        assert!(cgs.is_empty());
                         assert!(downcast_id.is_some());
                         assert!(field_id == ty::FieldId::ZERO);
 
@@ -558,7 +560,7 @@ fn translate_projection<'tcx, 'ctx>(
                         let proj_kind = e::FieldProjKind::Option(variant_id);
                         e::ProjectionElem::Field(proj_kind, field_id)
                     }
-                    ty::Ty::Adt(ty::TypeId::Assumed(aty), regions, tys)
+                    ty::Ty::Adt(ty::TypeId::Assumed(aty), regions, tys, cgs)
                         if aty == ty::AssumedTy::Box
                             || aty == ty::AssumedTy::PtrUnique
                             || aty == ty::AssumedTy::PtrNonNull =>
@@ -575,6 +577,7 @@ fn translate_projection<'tcx, 'ctx>(
                         // Some more sanity checks
                         assert!(regions.is_empty());
                         assert!(tys.len() == 1);
+                        assert!(cgs.is_empty());
                         assert!(downcast_id.is_none());
                         assert!(field_id == ty::FieldId::ZERO);
 
@@ -688,7 +691,7 @@ fn translate_constant_scalar_type(ty: &TyKind, decls: &DeclTransContext<'_, '_>)
             // variant, and this variant doesn't take parameters.
             // Retrieve the definition.
             let id = decls.ordered.type_rid_to_id.get(&adt_def.did()).unwrap();
-            ty::Ty::Adt(ty::TypeId::Adt(*id), Vector::new(), Vector::new())
+            ty::Ty::Adt(ty::TypeId::Adt(*id), Vector::new(), Vector::new(), Vector::new())
         }
         TyKind::Tuple(substs) => {
             // There can be tuple([]) for unit
