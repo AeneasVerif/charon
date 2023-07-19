@@ -647,23 +647,23 @@ fn translate_projection<'tcx, 'ctx>(
 /// Either a bool, a char, an integer, an enumeration ADT, an empty tuple or a static reference.
 fn translate_constant_scalar_type(ty: &TyKind, decls: &DeclTransContext<'_, '_>) -> ty::ETy {
     match ty {
-        TyKind::Bool => ty::Ty::Bool,
-        TyKind::Char => ty::Ty::Char,
+        TyKind::Bool => ty::Ty::Primitive(ty::PrimitiveValueTy::Bool),
+        TyKind::Char => ty::Ty::Primitive(ty::PrimitiveValueTy::Char),
         TyKind::Int(int_ty) => match int_ty {
-            mir_ty::IntTy::Isize => ty::Ty::Integer(ty::IntegerTy::Isize),
-            mir_ty::IntTy::I8 => ty::Ty::Integer(ty::IntegerTy::I8),
-            mir_ty::IntTy::I16 => ty::Ty::Integer(ty::IntegerTy::I16),
-            mir_ty::IntTy::I32 => ty::Ty::Integer(ty::IntegerTy::I32),
-            mir_ty::IntTy::I64 => ty::Ty::Integer(ty::IntegerTy::I64),
-            mir_ty::IntTy::I128 => ty::Ty::Integer(ty::IntegerTy::I128),
+            mir_ty::IntTy::Isize => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::Isize)),
+            mir_ty::IntTy::I8 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I8)),
+            mir_ty::IntTy::I16 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I16)),
+            mir_ty::IntTy::I32 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I32)),
+            mir_ty::IntTy::I64 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I64)),
+            mir_ty::IntTy::I128 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I128)),
         },
         TyKind::Uint(uint_ty) => match uint_ty {
-            mir_ty::UintTy::Usize => ty::Ty::Integer(ty::IntegerTy::Usize),
-            mir_ty::UintTy::U8 => ty::Ty::Integer(ty::IntegerTy::U8),
-            mir_ty::UintTy::U16 => ty::Ty::Integer(ty::IntegerTy::U16),
-            mir_ty::UintTy::U32 => ty::Ty::Integer(ty::IntegerTy::U32),
-            mir_ty::UintTy::U64 => ty::Ty::Integer(ty::IntegerTy::U64),
-            mir_ty::UintTy::U128 => ty::Ty::Integer(ty::IntegerTy::U128),
+            mir_ty::UintTy::Usize => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::Usize)),
+            mir_ty::UintTy::U8 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U8)),
+            mir_ty::UintTy::U16 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U16)),
+            mir_ty::UintTy::U32 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U32)),
+            mir_ty::UintTy::U64 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U64)),
+            mir_ty::UintTy::U128 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U128)),
         },
         TyKind::Adt(adt_def, substs) => {
             assert!(substs.is_empty());
@@ -742,9 +742,9 @@ fn translate_constant_integer_like_value(
     // We match on the type and convert the value following this,
     // by calling the appropriate `to_*` method.
     match ty {
-        ty::Ty::Bool => v::PrimitiveValue::Bool(scalar.to_bool().unwrap()),
-        ty::Ty::Char => v::PrimitiveValue::Char(scalar.to_char().unwrap()),
-        ty::Ty::Integer(i) => v::PrimitiveValue::Scalar(match i {
+        ty::Ty::Primitive(ty::PrimitiveValueTy::Bool) => v::PrimitiveValue::Bool(scalar.to_bool().unwrap()),
+        ty::Ty::Primitive(ty::PrimitiveValueTy::Char) => v::PrimitiveValue::Char(scalar.to_char().unwrap()),
+        ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(i)) => v::PrimitiveValue::Scalar(match i {
             ty::IntegerTy::Isize => {
                 // This is a bit annoying: there is no
                 // `to_isize`. For now, we make the hypothesis
@@ -793,7 +793,9 @@ fn translate_constant_scalar_value(
     // degenerate ADT or tuple (if an ADT has only one variant and no fields,
     // it is a constant, and unit is encoded by MIR as a 0-tuple).
     match llbc_ty {
-        ty::Ty::Bool | ty::Ty::Char | ty::Ty::Integer(_) => {
+        ty::Ty::Primitive(ty::PrimitiveValueTy::Bool) |
+        ty::Ty::Primitive(ty::PrimitiveValueTy::Char) |
+        ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(_)) => {
             let v = translate_constant_integer_like_value(llbc_ty, scalar);
             e::OperandConstantValue::PrimitiveValue(v)
         }
@@ -1686,7 +1688,7 @@ fn translate_switch_targets<'tcx>(
     let targets_vec: Vec<(u128, BasicBlock)> = targets.iter().map(|(v, b)| (v, b)).collect();
 
     match switch_ty {
-        ty::Ty::Bool => {
+        ty::Ty::Primitive(ty::PrimitiveValueTy::Bool) => {
             // This is an: `if ... then ... else ...`
             assert!(targets_vec.len() == 1);
             // It seems the block targets are inverted
@@ -1700,7 +1702,7 @@ fn translate_switch_targets<'tcx>(
 
             Ok(ast::SwitchTargets::If(if_block, otherwise_block))
         }
-        ty::Ty::Integer(int_ty) => {
+        ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(int_ty)) => {
             // This is a: switch(int).
             // Convert all the test values to the proper values.
             let mut targets_map: LinkedHashMap<v::ScalarValue, ast::BlockId::Id> =

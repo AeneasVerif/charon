@@ -222,15 +222,15 @@ where
 {
     trace!("{:?}", ty_kind);
     match ty_kind {
-        TyKind::Bool => Ok(ty::Ty::Primitive(PrimitiveValueTy::Bool)),
-        TyKind::Char => Ok(ty::Ty::Primitive(PrimitiveValueTy::Char)),
-        TyKind::Int(int_ty) => Ok(ty::Ty::Primitive(PrimitiveValueTy::Integer(ty::IntegerTy::rust_int_ty_to_integer_ty(
+        TyKind::Bool => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Bool)),
+        TyKind::Char => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Char)),
+        TyKind::Int(int_ty) => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::rust_int_ty_to_integer_ty(
             *int_ty,
         )))),
-        TyKind::Uint(int_ty) => Ok(ty::Ty::Primitive(PrimitiveValueTy::Integer(ty::IntegerTy::rust_uint_ty_to_integer_ty(
+        TyKind::Uint(int_ty) => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::rust_uint_ty_to_integer_ty(
             *int_ty,
         )))),
-        TyKind::Str => Ok(ty::Ty::Primitive(PrimitiveValueTy::Str)),
+        TyKind::Str => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Str)),
         TyKind::Float(_) => {
             trace!("Float");
             // This case should have been filtered during the registration phase
