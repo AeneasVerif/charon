@@ -590,6 +590,7 @@ fn translate_projection<'tcx, 'ctx>(
                                     ty::TypeId::Assumed(ty::AssumedTy::PtrUnique),
                                     im::vector![],
                                     im::vector![type_param],
+                                    im::vector![],
                                 )
                             }
                             ty::AssumedTy::PtrUnique => {
@@ -598,6 +599,7 @@ fn translate_projection<'tcx, 'ctx>(
                                     ty::TypeId::Assumed(ty::AssumedTy::PtrNonNull),
                                     im::vector![],
                                     im::vector![type_param],
+                                    im::vector![],
                                 )
                             }
                             ty::AssumedTy::PtrNonNull => {
