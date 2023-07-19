@@ -327,6 +327,7 @@ where
                 ty::TypeId::Tuple,
                 Vector::new(),
                 Vector::from(params),
+                Vector::new(),
             ))
         }
 

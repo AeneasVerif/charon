@@ -521,7 +521,7 @@ fn translate_projection<'tcx, 'ctx>(
                 // Update the path type and generate the proj kind at the
                 // same time.
                 let proj_elem = match path_type {
-                    ty::Ty::Adt(ty::TypeId::Adt(type_id), _regions, tys) => {
+                    ty::Ty::Adt(ty::TypeId::Adt(type_id), _regions, tys, cgs) => {
                         let type_def = type_defs.get_type_def(type_id).unwrap();
 
                         // If (and only if) the ADT is an enumeration, we should
@@ -533,6 +533,7 @@ fn translate_projection<'tcx, 'ctx>(
                             downcast_id,
                             &tys,
                             field_id,
+                            &cgs,
                         );
 
                         let proj_kind = e::FieldProjKind::Adt(type_id, downcast_id);
@@ -690,7 +691,7 @@ fn translate_constant_scalar_type(ty: &TyKind, decls: &DeclTransContext<'_, '_>)
         TyKind::Tuple(substs) => {
             // There can be tuple([]) for unit
             assert!(substs.is_empty());
-            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), Vector::new())
+            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), Vector::new(), Vector::new())
         }
         // Only accept scalars that are shared references with erased regions : it's a static.
         TyKind::Ref(region, ref_ty, mir::Mutability::Not) => match region.kind() {
@@ -728,7 +729,7 @@ fn translate_constant_reference_type<'tcx>(
             let type_params = translate_subst_in_body(bt_ctx, substs).unwrap();
             trace!("{:?}", type_params);
             let field_tys = type_params.into_iter().collect();
-            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), field_tys)
+            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), field_tys, Vector::new())
         }
         TyKind::Adt(_, _) => {
             // Following tests, it seems rustc doesn't introduce constants
@@ -813,9 +814,10 @@ fn translate_constant_scalar_value(
             let v = translate_constant_integer_like_value(llbc_ty, scalar);
             e::OperandConstantValue::PrimitiveValue(v)
         }
-        ty::Ty::Adt(ty::TypeId::Adt(id), region_tys, field_tys) => {
+        ty::Ty::Adt(ty::TypeId::Adt(id), region_tys, field_tys, cgs) => {
             assert!(region_tys.is_empty());
             assert!(field_tys.is_empty());
+            assert!(cgs.is_empty());
 
             let def = decls.type_defs.get_type_def(*id).unwrap();
 
@@ -834,9 +836,10 @@ fn translate_constant_scalar_value(
             };
             e::OperandConstantValue::Adt(variant_id, Vec::new())
         }
-        ty::Ty::Adt(ty::TypeId::Tuple, region_tys, field_tys) => {
+        ty::Ty::Adt(ty::TypeId::Tuple, region_tys, field_tys, cgs) => {
             assert!(region_tys.is_empty());
             assert!(field_tys.is_empty());
+            assert!(cgs.is_empty());
             e::OperandConstantValue::Adt(Option::None, Vec::new())
         }
         ty::Ty::Ref(ty::ErasedRegion::Erased, _, ty::RefKind::Shared) => match scalar {
@@ -901,9 +904,10 @@ fn translate_constant_reference_value<'tcx>(
 
     // Sanity check
     match llbc_ty {
-        ty::Ty::Adt(ty::TypeId::Tuple, regions, fields_tys) => {
+        ty::Ty::Adt(ty::TypeId::Tuple, regions, fields_tys, cgs) => {
             assert!(regions.is_empty());
             assert!(zip(&fields, fields_tys).all(|(f, ty)| &f.0 == ty));
+            assert!(cgs.is_empty());
         }
         _ => unreachable!("Expected a tuple, got {:?}", mir_ty),
     };
@@ -1250,7 +1254,7 @@ fn translate_rvalue<'tcx>(
             match (cast_kind, &src_ty, &tgt_ty) {
                 | (rustc_middle::mir::CastKind::IntToInt, _, _) => {
                     // We only support source and target types for integers
-                    let tgt_ty = *tgt_ty.as_integer();
+                    let tgt_ty = *tgt_ty.as_primitive().as_integer();
                     let src_ty = *src_ty.as_primitive().as_integer();
 
                     e::Rvalue::UnaryOp(e::UnOp::Cast(src_ty, tgt_ty), op)
