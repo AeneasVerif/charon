@@ -104,6 +104,17 @@ impl std::string::ToString for RegionVar {
     }
 }
 
+impl std::string::ToString for ConstGenericVar {
+    fn to_string(&self) -> String {
+        let id = const_generic_var_id_to_pretty_string(self.index);
+        let name = match &self.name {
+            Some(name) => name.to_string(),
+            None => id  
+        };
+        format!("const {} : {}", name, primitive_ty_to_string(self.ty))
+    }
+}
+
 impl TypeDecl {
     /// The variant id should be `None` if it is a structure and `Some` if it
     /// is an enumeration.
@@ -163,14 +174,16 @@ impl TypeDecl {
         &self,
         variant_id: Option<VariantId::Id>,
         inst_types: &Vector<ETy>,
+        cgs: &Vector<ConstGeneric>,
     ) -> Vector<ETy> {
         // Introduce the substitution
         let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
+        let cg_subst = make_cg_subst(self.const_generic_params.iter().map(|x| x.index), cgs.iter());
 
         let fields = self.get_fields(variant_id);
         let field_types: Vec<ETy> = fields
             .iter()
-            .map(|f| f.ty.erase_regions_substitute_types(&ty_subst))
+            .map(|f| f.ty.erase_regions_substitute_types(&ty_subst, &cg_subst))
             .collect();
 
         Vector::from(field_types)
@@ -788,14 +801,15 @@ where
 
     /// Erase the regions
     pub fn erase_regions(&self) -> ETy {
-        self.substitute(&|_| ErasedRegion::Erased, &|tid| Ty::TypeVar(*tid), &|cgid| Ty::Primitive(*cgid))
+        self.substitute(&|_| ErasedRegion::Erased, &|tid| Ty::TypeVar(*tid), &|cgid| ConstGeneric::Var(*cgid))
     }
 
     /// Erase the regions and substitute the types at the same time
-    pub fn erase_regions_substitute_types(&self, subst: &TypeSubst<ErasedRegion>) -> ETy {
+    pub fn erase_regions_substitute_types(&self, subst: &TypeSubst<ErasedRegion>, cgsubst: &ConstGenericSubst) -> ETy {
         self.substitute(&|_| ErasedRegion::Erased, &|tid| {
             subst.get(tid).unwrap().clone()
-        })
+        },
+        &|cgid| cgsubst.get(cgid).unwrap().clone()
     }
 
     /// Returns `true` if the type contains some region or type variables
@@ -839,6 +853,7 @@ impl RTy {
                 Region::Var(rid) => *rsubst.get(rid).unwrap(),
             },
             &|tid| tsubst.get(tid).unwrap().clone(),
+            &|cgid| ConstGeneric::Var(*cgid)
         )
     }
 }
@@ -898,8 +913,9 @@ where
 }
 
 pub fn make_cg_subst<
+    'a,
     I1: Iterator<Item = ConstGenericVarId::Id>,
-    I2: Iterator<Item = ConstGeneric>,
+    I2: Iterator<Item = &'a ConstGeneric>,
 >(
     keys: I1,
     values: I2,
@@ -938,7 +954,7 @@ impl Formatter<RegionVarId::Id> for TypeDecl {
 impl Formatter<ConstGenericVarId::Id> for TypeDecl {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
         let var = self.const_generic_params.get(id).unwrap();
-        format!("{} : {}", var.name.to_string(), var.ty.to_string())
+        var.to_string()
     }
 }
 

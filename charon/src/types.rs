@@ -47,7 +47,7 @@ pub struct RegionVar {
 #[derive(Debug, Clone, Serialize)]
 pub struct ConstGenericVar {
     /// Unique index identifying the variable
-    pub index: RegionVarId::Id,
+    pub index: ConstGenericVarId::Id,
     /// Const generic name
     pub name: Option<String>,
     /// Type of the const generic
