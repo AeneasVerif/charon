@@ -4,7 +4,7 @@ use crate::meta::Meta;
 use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
-use crate::values::ScalarValue;
+use crate::values::{ScalarValue, PrimitiveValue};
 use im::Vector;
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
@@ -21,6 +21,7 @@ generate_index_type!(TypeDeclId);
 generate_index_type!(VariantId);
 generate_index_type!(FieldId);
 generate_index_type!(RegionVarId);
+generate_index_type!(ConstGenericId);
 
 /// Type variable.
 /// We make sure not to mix variables and type variables by having two distinct
@@ -36,6 +37,15 @@ pub struct TypeVar {
 /// Region variable.
 #[derive(Debug, Clone, Serialize)]
 pub struct RegionVar {
+    /// Unique index identifying the variable
+    pub index: RegionVarId::Id,
+    /// Region name
+    pub name: Option<String>,
+}
+
+/// Const Generic Variable
+#[derive(Debug, Clone, Serialize)]
+pub struct ConstGenericVar {
     /// Unique index identifying the variable
     pub index: RegionVarId::Id,
     /// Region name
@@ -146,9 +156,13 @@ pub enum TypeId {
     /// and external ADTs).
     Adt(TypeDeclId::Id),
     Tuple,
-    /// Assumed type. A non-primitive type coming from a standard library
+    /// Assumed type. Either a primitive type like array or slice, or a
+    /// non-primitive type coming from a standard library
     /// and that we handle like a primitive type. Types falling into this
     /// category include: Box, Vec, Cell...
+    /// The Array and Slice types were initially modelled as primitive in
+    /// the [Ty] type. We decided to move them to assumed types as it allows
+    /// for more uniform treatment throughout the codebase.
     Assumed(AssumedTy),
 }
 
@@ -157,6 +171,22 @@ pub enum TypeId {
 #[derive(Clone)]
 pub struct TypeDecls {
     pub types: TypeDeclId::Vector<TypeDecl>,
+}
+
+/// Types of primitive values. Either an integer, bool, char
+#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
+pub enum PrimitiveValueTy { // TODO: Rename to LiteralTy
+  Integer(IntegerTy),
+  Bool,
+  Char,
+  Str, // TODO: Turn this into an assumed type
+}
+
+/// Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value
+#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
+pub enum ConstGeneric {
+  Var(ConstGenericId::Id),
+  Value(PrimitiveValue),
 }
 
 /// A type.
@@ -176,12 +206,12 @@ where
     /// Note that here ADTs are very general. They can be:
     /// - user-defined ADTs
     /// - tuples (including `unit`, which is a 0-tuple)
-    /// - assumed types
+    /// - assumed types (includes some primitive types, e.g., arrays or slices)
     /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
-    Adt(TypeId, Vector<R>, Vector<Ty<R>>),
+    /// The last list is used encode const generics, e.g., the size of an array
+    Adt(TypeId, Vector<R>, Vector<Ty<R>>, Vector<ConstGeneric>),
     TypeVar(TypeVarId::Id),
-    Bool,
-    Char,
+    Primitive(PrimitiveValueTy), // TODO: Rename to Literal
     /// The never type, for computations which don't return. It is sometimes
     /// necessary for intermediate variables. For instance, if we do (coming
     /// from the rust documentation):
@@ -195,11 +225,7 @@ where
     /// can be coerced to any type.
     /// TODO: but do we really use this type for variables?...
     Never,
-    Integer(IntegerTy),
     // We don't support floating point numbers on purpose
-    Str,
-    Array(Box<Ty<R>>, ScalarValue),
-    Slice(Box<Ty<R>>),
     /// A borrow
     Ref(R, Box<Ty<R>>, RefKind),
     /// A raw pointer.
@@ -264,4 +290,8 @@ pub enum AssumedTy {
     PtrUnique,
     /// Same comments as for [AssumedTy::PtrUnique]
     PtrNonNull,
+    /// Primitive type
+    Array,
+    /// Primitive type
+    Slice,
 }
