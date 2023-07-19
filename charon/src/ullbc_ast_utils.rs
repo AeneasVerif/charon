@@ -96,7 +96,7 @@ impl Terminator {
     }
 
     /// Substitute the type variables and return the resulting terminator
-    pub fn substitute(&self, subst: &ETypeSubst) -> Terminator {
+    pub fn substitute(&self, subst: &ETypeSubst, cgsubst: &ConstGenericSubst) -> Terminator {
         let terminator = match &self.content {
             RawTerminator::Goto { target } => RawTerminator::Goto { target: *target },
             RawTerminator::Switch { discr, targets } => RawTerminator::Switch {
@@ -122,7 +122,7 @@ impl Terminator {
                 region_args: region_args.clone(),
                 type_args: type_args
                     .iter()
-                    .map(|ty| ty.substitute_types(subst))
+                    .map(|ty| ty.substitute_types(subst, cgsubst))
                     .collect(),
                 args: Vec::from_iter(args.iter().map(|arg| arg.substitute(subst))),
                 dest: dest.substitute(subst),
@@ -145,13 +145,13 @@ impl Terminator {
 
 impl BlockData {
     /// Substitute the type variables and return the resulting `BlockData`
-    pub fn substitute(&self, subst: &ETypeSubst) -> BlockData {
+    pub fn substitute(&self, subst: &ETypeSubst, cgsubst: &ConstGenericSubst) -> BlockData {
         let statements = self
             .statements
             .iter()
             .map(|x| x.substitute(subst))
             .collect();
-        let terminator = self.terminator.substitute(subst);
+        let terminator = self.terminator.substitute(subst, cgsubst);
         BlockData {
             statements,
             terminator,
@@ -201,6 +201,7 @@ impl Terminator {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
@@ -265,6 +266,7 @@ impl BlockData {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
@@ -295,6 +297,7 @@ where
         + Formatter<TypeVarId::Id>
         + Formatter<&'a ErasedRegion>
         + Formatter<TypeDeclId::Id>
+        + Formatter<ConstGenericVarId::Id>
         + Formatter<FunDeclId::Id>
         + Formatter<GlobalDeclId::Id>
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
@@ -326,7 +329,7 @@ impl ExprBody {
         let locals = Some(&self.locals);
         let fun_ctx = FunDeclsFormatter::new(fun_ctx);
         let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
+        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
         self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
@@ -339,7 +342,7 @@ impl ExprBody {
         let locals = Some(&self.locals);
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
+        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
         self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
@@ -435,6 +438,7 @@ impl FunDecl {
             global_ctx,
             Some(&self.signature.type_params),
             locals,
+            Some(&self.signature.const_generic_params),
         );
 
         // Use the contexts for printing
@@ -480,7 +484,7 @@ impl GlobalDecl {
         GD: Formatter<GlobalDeclId::Id>,
     {
         let locals = self.body.as_ref().map(|body| &body.locals);
-        let ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals);
+        let ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals, None);
 
         // Use the contexts for printing
         self.gfmt_with_ctx("", &ctx)

@@ -47,6 +47,9 @@ struct TypeDeclFormatter<'a, 'ctx> {
     /// The type parameters of the definition we are printing (needed to
     /// correctly pretty print type var ids)
     type_params: &'a ty::TypeVarId::Vector<ty::TypeVar>,
+    /// The const generic parameters of the definition we are printing (needed to
+    /// correctly pretty print type var ids)
+    const_generic_params: &'a ty::ConstGenericVarId::Vector<ty::ConstGenericVar>,
 }
 
 impl<'ctx> Formatter<ty::TypeDeclId::Id> for TypeTransContext<'ctx> {
@@ -59,6 +62,15 @@ impl<'a, 'ctx> Formatter<ty::RegionVarId::Id> for TypeDeclFormatter<'a, 'ctx> {
     fn format_object(&self, id: ty::RegionVarId::Id) -> String {
         // Lookup the region parameter
         let v = self.region_params.get(id).unwrap();
+        // Format
+        v.to_string()
+    }
+}
+
+impl<'a, 'ctx> Formatter<ty::ConstGenericVarId::Id> for TypeDeclFormatter<'a, 'ctx> {
+    fn format_object(&self, id: ty::ConstGenericVarId::Id) -> String {
+        // Lookup the region parameter
+        let v = self.const_generic_params.get(id).unwrap();
         // Format
         v.to_string()
     }
@@ -105,6 +117,7 @@ impl<'ctx> Formatter<&ty::TypeDecl> for TypeTransContext<'ctx> {
             tt_ctx: self,
             region_params: &def.region_params,
             type_params: &def.type_params,
+            const_generic_params: &def.const_generic_params,
         };
         formatter.format_object(def)
     }
@@ -209,15 +222,15 @@ where
 {
     trace!("{:?}", ty_kind);
     match ty_kind {
-        TyKind::Bool => Ok(ty::Ty::Bool),
-        TyKind::Char => Ok(ty::Ty::Char),
-        TyKind::Int(int_ty) => Ok(ty::Ty::Integer(ty::IntegerTy::rust_int_ty_to_integer_ty(
+        TyKind::Bool => Ok(ty::Ty::Primitive(PrimitiveValueTy::Bool)),
+        TyKind::Char => Ok(ty::Ty::Primitive(PrimitiveValueTy::Char)),
+        TyKind::Int(int_ty) => Ok(ty::Ty::Primitive(PrimitiveValueTy::Integer(ty::IntegerTy::rust_int_ty_to_integer_ty(
             *int_ty,
-        ))),
-        TyKind::Uint(int_ty) => Ok(ty::Ty::Integer(ty::IntegerTy::rust_uint_ty_to_integer_ty(
+        )))),
+        TyKind::Uint(int_ty) => Ok(ty::Ty::Primitive(PrimitiveValueTy::Integer(ty::IntegerTy::rust_uint_ty_to_integer_ty(
             *int_ty,
-        ))),
-        TyKind::Str => Ok(ty::Ty::Str),
+        )))),
+        TyKind::Str => Ok(ty::Ty::Primitive(PrimitiveValueTy::Str)),
         TyKind::Float(_) => {
             trace!("Float");
             // This case should have been filtered during the registration phase
