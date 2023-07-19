@@ -532,8 +532,8 @@ fn translate_projection<'tcx, 'ctx>(
                         path_type = type_def.get_erased_regions_instantiated_field_type(
                             downcast_id,
                             &tys,
-                            field_id,
                             &cgs,
+                            field_id,
                         );
 
                         let proj_kind = e::FieldProjKind::Adt(type_id, downcast_id);
