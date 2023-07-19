@@ -485,11 +485,12 @@ fn translate_projection<'tcx, 'ctx>(
                         path_type = ty.deref().clone();
                         projection.push_back(e::ProjectionElem::Deref);
                     }
-                    ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Box), regions, tys) => {
+                    ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Box), regions, tys, cgs) => {
                         // This case only happens in some MIR levels
                         assert!(!boxes_are_desugared(mir_level));
                         assert!(regions.is_empty());
                         assert!(tys.len() == 1);
+                        assert!(cgs.is_empty());
                         path_type = tys[0].clone();
                         projection.push_back(e::ProjectionElem::DerefBox);
                     }
@@ -1237,7 +1238,7 @@ fn translate_rvalue<'tcx>(
                 | (rustc_middle::mir::CastKind::IntToInt, _, _) => {
                     // We only support source and target types for integers
                     let tgt_ty = *tgt_ty.as_integer();
-                    let src_ty = *src_ty.as_integer();
+                    let src_ty = *src_ty.as_primitive().as_integer();
 
                     e::Rvalue::UnaryOp(e::UnOp::Cast(src_ty, tgt_ty), op)
                 },
