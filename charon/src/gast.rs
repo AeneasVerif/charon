@@ -54,6 +54,7 @@ pub struct FunSig {
     /// The lifetime's hierarchy between the different regions.
     pub regions_hierarchy: RegionGroups,
     pub type_params: TypeVarId::Vector<TypeVar>,
+    pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
     pub inputs: Vec<RTy>,
     pub output: RTy,
 }

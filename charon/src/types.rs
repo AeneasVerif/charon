@@ -4,7 +4,7 @@ use crate::meta::Meta;
 use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
-use crate::values::{ScalarValue, PrimitiveValue};
+use crate::values::PrimitiveValue;
 use im::Vector;
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
@@ -21,7 +21,7 @@ generate_index_type!(TypeDeclId);
 generate_index_type!(VariantId);
 generate_index_type!(FieldId);
 generate_index_type!(RegionVarId);
-generate_index_type!(ConstGenericId);
+generate_index_type!(ConstGenericVarId);
 
 /// Type variable.
 /// We make sure not to mix variables and type variables by having two distinct
@@ -48,8 +48,10 @@ pub struct RegionVar {
 pub struct ConstGenericVar {
     /// Unique index identifying the variable
     pub index: RegionVarId::Id,
-    /// Region name
+    /// Const generic name
     pub name: Option<String>,
+    /// Type of the const generic
+    pub ty: PrimitiveValueTy,
 }
 
 /// Region as used in a function's signatures (in which case we use region variable
@@ -93,6 +95,7 @@ pub struct TypeDecl {
     pub name: TypeName,
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
+    pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
     /// The lifetime's hierarchy between the different regions.
     pub regions_hierarchy: RegionGroups,
     /// The type kind: enum, struct, or opaque.
@@ -174,7 +177,7 @@ pub struct TypeDecls {
 }
 
 /// Types of primitive values. Either an integer, bool, char
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity, Serialize)]
 pub enum PrimitiveValueTy { // TODO: Rename to LiteralTy
   Integer(IntegerTy),
   Bool,
@@ -183,9 +186,9 @@ pub enum PrimitiveValueTy { // TODO: Rename to LiteralTy
 }
 
 /// Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
+#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity, Serialize)]
 pub enum ConstGeneric {
-  Var(ConstGenericId::Id),
+  Var(ConstGenericVarId::Id),
   Value(PrimitiveValue),
 }
 

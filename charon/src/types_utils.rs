@@ -18,6 +18,22 @@ pub type RegionSubst<R> = HashMap<RegionVarId::Id, R>;
 pub type TypeSubst<R> = HashMap<TypeVarId::Id, Ty<R>>;
 /// Type substitution where the regions are erased
 pub type ETypeSubst = TypeSubst<ErasedRegion>;
+pub type ConstGenericSubst = HashMap<ConstGenericVarId::Id, ConstGeneric>;
+
+impl ConstGenericVarId::Id {
+  pub fn substitute(&self, cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric) -> ConstGeneric {
+    cgsubst(self)
+  }
+}
+
+impl ConstGeneric {
+  pub fn substitute(&self, cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric) -> ConstGeneric {
+    match self {
+      ConstGeneric::Var(id) => id.substitute(cgsubst),
+      ConstGeneric::Value(v) => ConstGeneric::Value(*v)
+    }
+  }
+}
 
 impl RegionVarId::Id {
     pub fn substitute<R>(&self, rsubst: &RegionSubst<R>) -> R
@@ -166,10 +182,12 @@ impl TypeDecl {
         &self,
         variant_id: Option<VariantId::Id>,
         inst_types: &Vector<ETy>,
+        cgs: &Vector<ConstGeneric>,
         field_id: FieldId::Id,
     ) -> ETy {
         // Introduce the substitution
         let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
+        let cg_subst = make_cg_subst(self.const_generic_params.iter().map(|x| x.index), cgs.iter());
 
         let fields = self.get_fields(variant_id);
         let field_type = fields
@@ -177,7 +195,7 @@ impl TypeDecl {
             .unwrap()
             .ty
             .erase_regions()
-            .substitute_types(&ty_subst);
+            .substitute_types(&ty_subst, &cg_subst);
         field_type
     }
 
@@ -186,7 +204,8 @@ impl TypeDecl {
         T: Formatter<TypeVarId::Id>
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDeclId::Id>,
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>,
     {
         let regions_hierarchy: Vec<String> = self
             .regions_hierarchy
@@ -257,7 +276,8 @@ impl Variant {
         T: Formatter<TypeVarId::Id>
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDeclId::Id>,
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>,
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
@@ -271,7 +291,8 @@ impl Field {
         T: Formatter<TypeVarId::Id>
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDeclId::Id>,
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>,
     {
         match &self.name {
             Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
@@ -362,6 +383,10 @@ pub fn region_var_id_to_pretty_string(id: RegionVarId::Id) -> String {
     format!("@R{id}")
 }
 
+pub fn const_generic_var_id_to_pretty_string(id: ConstGenericVarId::Id) -> String {
+    format!("@Const{id}")
+}
+
 pub fn integer_ty_to_string(ty: IntegerTy) -> String {
     match ty {
         IntegerTy::Isize => "isize".to_string(),
@@ -376,6 +401,15 @@ pub fn integer_ty_to_string(ty: IntegerTy) -> String {
         IntegerTy::U32 => "u32".to_string(),
         IntegerTy::U64 => "u64".to_string(),
         IntegerTy::U128 => "u128".to_string(),
+    }
+}
+
+pub fn primitive_ty_to_string(ty: PrimitiveValueTy) -> String {
+    match ty {
+      PrimitiveValueTy::Integer(ty) => integer_ty_to_string(ty),
+      PrimitiveValueTy::Bool => "bool".to_string(),
+      PrimitiveValueTy::Char => "char".to_string(),
+      PrimitiveValueTy::Str => "str".to_string()
     }
 }
 
@@ -420,6 +454,18 @@ impl TypeId {
     }
 }
 
+impl ConstGeneric {
+  pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+  where
+      T: Formatter<ConstGenericVarId::Id>, 
+  {
+    match self {
+      ConstGeneric::Var(id) => ctx.format_object(*id),
+      ConstGeneric::Value(v) => v.to_string()
+    }
+  }
+}
+
 impl<R> Ty<R>
 where
     R: Clone + Eq,
@@ -427,8 +473,9 @@ where
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
         match self {
-            Ty::Adt(TypeId::Tuple, regions, tys) => {
+            Ty::Adt(TypeId::Tuple, regions, tys, cgs) => {
                 assert!(regions.is_empty());
+                assert!(cgs.is_empty());
                 tys.is_empty()
             }
             _ => false,
@@ -437,39 +484,28 @@ where
 
     /// Return the unit type
     pub fn mk_unit() -> Ty<R> {
-        Ty::Adt(TypeId::Tuple, Vector::new(), Vector::new())
+        Ty::Adt(TypeId::Tuple, Vector::new(), Vector::new(), Vector::new())
     }
 
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
-        self.is_integer()
+      match self {
+          Ty::Primitive(kind) => kind.is_integer(), 
+          _ => false
+        }
     }
 
     pub fn is_unsigned_scalar(&self) -> bool {
         match self {
-            Ty::Integer(kind) => kind.is_unsigned(),
+            Ty::Primitive(PrimitiveValueTy::Integer(kind)) => kind.is_unsigned(),
             _ => false,
         }
     }
 
     pub fn is_signed_scalar(&self) -> bool {
         match self {
-            Ty::Integer(kind) => kind.is_signed(),
+            Ty::Primitive(PrimitiveValueTy::Integer(kind)) => kind.is_signed(),
             _ => false,
-        }
-    }
-
-    /// Is the type a leaf type (without children)?
-    /// - true if bool, char, var...
-    /// - false if adt, array...
-    pub fn is_leaf(&self) -> bool {
-        match self {
-            Ty::Adt(_, _, _)
-            | Ty::Array(_, _)
-            | Ty::Slice(_)
-            | Ty::Ref(_, _, _)
-            | Ty::RawPtr(_, _) => false,
-            Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => true,
         }
     }
 
@@ -481,10 +517,10 @@ where
     pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
     where
         R: 'a,
-        T: Formatter<TypeVarId::Id> + Formatter<TypeDeclId::Id> + Formatter<&'a R>,
+        T: Formatter<ConstGenericVarId::Id> + Formatter<TypeVarId::Id> + Formatter<TypeDeclId::Id> + Formatter<&'a R>,
     {
         match self {
-            Ty::Adt(id, regions, inst_types) => {
+            Ty::Adt(id, regions, inst_types, cgs) => {
                 let adt_ident = id.fmt_with_ctx(ctx);
 
                 let num_params = regions.len() + inst_types.len();
@@ -492,8 +528,11 @@ where
                 let regions: Vec<String> = regions.iter().map(|r| ctx.format_object(r)).collect();
                 let mut types: Vec<String> =
                     inst_types.iter().map(|ty| ty.fmt_with_ctx(ctx)).collect();
+                let mut cgs: Vec<String> =
+                    cgs.iter().map(|cg| cg.fmt_with_ctx(ctx)).collect();
                 let mut all_params = regions;
                 all_params.append(&mut types);
+                all_params.append(&mut cgs);
                 let all_params = all_params.join(", ");
 
                 if id.is_tuple() {
@@ -505,13 +544,8 @@ where
                 }
             }
             Ty::TypeVar(id) => ctx.format_object(*id),
-            Ty::Bool => "bool".to_string(),
-            Ty::Char => "char".to_string(),
+            Ty::Primitive(kind) => primitive_ty_to_string(*kind),
             Ty::Never => "!".to_string(),
-            Ty::Integer(int_ty) => integer_ty_to_string(*int_ty),
-            Ty::Str => "str".to_string(),
-            Ty::Array(ty, l) => format!("[{}; {l:?}]", ty.fmt_with_ctx(ctx)),
-            Ty::Slice(ty) => format!("[{}]", ty.fmt_with_ctx(ctx)),
             Ty::Ref(r, ty, kind) => match kind {
                 RefKind::Mut => {
                     format!("&{} mut ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx))
@@ -530,9 +564,10 @@ where
     /// Return true if the type is Box
     pub fn is_box(&self) -> bool {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys) => {
+            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys, cgs) => {
                 assert!(regions.is_empty());
                 assert!(tys.len() == 1);
+                assert!(cgs.is_empty());
                 true
             }
             _ => false,
@@ -541,9 +576,10 @@ where
 
     pub fn as_box(&self) -> Option<&Ty<R>> {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys) => {
+            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys, cgs) => {
                 assert!(regions.is_empty());
                 assert!(tys.len() == 1);
+                assert!(cgs.is_empty());
                 Some(tys.get(0).unwrap())
             }
             _ => None,
@@ -553,9 +589,10 @@ where
     /// Return true if the type is Vec
     pub fn is_vec(&self) -> bool {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys) => {
+            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys, cgs) => {
                 assert!(regions.is_empty());
                 assert!(tys.len() == 1);
+                assert!(cgs.is_empty());
                 true
             }
             _ => false,
@@ -564,9 +601,10 @@ where
 
     pub fn as_vec(&self) -> Option<&Ty<R>> {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys) => {
+            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys, cgs) => {
                 assert!(regions.is_empty());
                 assert!(tys.len() == 1);
+                assert!(cgs.is_empty());
                 Some(tys.get(0).unwrap())
             }
             _ => None,
@@ -580,11 +618,10 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
     pub fn contains_region_var(&self, rset: &OrdSet<Rid>) -> bool {
         match self {
             Ty::TypeVar(_) => false,
-            Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
-            Ty::Array(ty, _) | Ty::Slice(ty) => ty.contains_region_var(rset),
+            Ty::Primitive(_) | Ty::Never => false,
             Ty::Ref(r, ty, _) => r.contains_var(rset) || ty.contains_region_var(rset),
             Ty::RawPtr(ty, _) => ty.contains_region_var(rset),
-            Ty::Adt(_, regions, tys) => regions
+            Ty::Adt(_, regions, tys, _) => regions
                 .iter()
                 .any(|r| r.contains_var(rset) || tys.iter().any(|x| x.contains_region_var(rset))),
         }
@@ -652,6 +689,12 @@ impl<'a> Formatter<TypeDeclId::Id> for IncompleteFormatter<'a> {
     }
 }
 
+impl<'a> Formatter<ConstGenericVarId::Id> for IncompleteFormatter<'a> {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        self.def.format_object(id)
+    }
+}
+
 pub struct DummyFormatter {}
 
 impl Formatter<TypeVarId::Id> for DummyFormatter {
@@ -687,6 +730,12 @@ impl Formatter<TypeDeclId::Id> for DummyFormatter {
     }
 }
 
+impl Formatter<ConstGenericVarId::Id> for DummyFormatter {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        const_generic_var_id_to_pretty_string(id)
+    }
+}
+
 impl std::string::ToString for Ty<ErasedRegion> {
     fn to_string(&self) -> String {
         self.fmt_with_ctx(&DummyFormatter {})
@@ -702,28 +751,25 @@ where
         &self,
         rsubst: &dyn Fn(&R) -> R1,
         tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
+        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric 
     ) -> Ty<R1>
     where
         R1: Clone + Eq,
     {
         match self {
-            Ty::Adt(id, regions, tys) => {
+            Ty::Adt(id, regions, tys, cgs) => {
                 let nregions = Ty::substitute_regions(regions, rsubst);
-                let ntys = tys.iter().map(|ty| ty.substitute(rsubst, tsubst)).collect();
-                Ty::Adt(id.clone(), nregions, ntys)
+                let ntys = tys.iter().map(|ty| ty.substitute(rsubst, tsubst, cgsubst)).collect();
+                let ncgs = cgs.iter().map(|cg| cg.substitute(cgsubst)).collect();
+                Ty::Adt(id.clone(), nregions, ntys, ncgs)
             }
             Ty::TypeVar(id) => tsubst(id),
-            Ty::Bool => Ty::Bool,
-            Ty::Char => Ty::Char,
+            Ty::Primitive(pty) => Ty::Primitive(*pty),
             Ty::Never => Ty::Never,
-            Ty::Integer(k) => Ty::Integer(*k),
-            Ty::Str => Ty::Str,
-            Ty::Array(ty, l) => Ty::Array(Box::new(ty.substitute(rsubst, tsubst)), *l),
-            Ty::Slice(ty) => Ty::Slice(Box::new(ty.substitute(rsubst, tsubst))),
             Ty::Ref(rid, ty, kind) => {
-                Ty::Ref(rsubst(rid), Box::new(ty.substitute(rsubst, tsubst)), *kind)
+                Ty::Ref(rsubst(rid), Box::new(ty.substitute(rsubst, tsubst, cgsubst)), *kind)
             }
-            Ty::RawPtr(ty, kind) => Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst)), *kind),
+            Ty::RawPtr(ty, kind) => Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst, cgsubst)), *kind),
         }
     }
 
@@ -735,13 +781,14 @@ where
     }
 
     /// Substitute the type parameters
-    pub fn substitute_types(&self, subst: &TypeSubst<R>) -> Self {
-        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone())
+    // TODO: tsubst and cgsubst should be closures instead of hashmaps
+    pub fn substitute_types(&self, subst: &TypeSubst<R>, cgsubst: &ConstGenericSubst) -> Self {
+        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone(), &|cgid| cgsubst.get(cgid).unwrap().clone())
     }
 
     /// Erase the regions
     pub fn erase_regions(&self) -> ETy {
-        self.substitute(&|_| ErasedRegion::Erased, &|tid| Ty::TypeVar(*tid))
+        self.substitute(&|_| ErasedRegion::Erased, &|tid| Ty::TypeVar(*tid), &|cgid| Ty::Primitive(*cgid))
     }
 
     /// Erase the regions and substitute the types at the same time
@@ -755,11 +802,10 @@ where
     pub fn contains_variables(&self) -> bool {
         match self {
             Ty::TypeVar(_) => true,
-            Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
-            Ty::Array(ty, _) | Ty::Slice(ty) => ty.contains_variables(),
+            Ty::Primitive(_) | Ty::Never => false,
             Ty::Ref(_, _, _) => true, // Always contains a region identifier
             Ty::RawPtr(ty, _) => ty.contains_variables(),
-            Ty::Adt(_, regions, tys) => {
+            Ty::Adt(_, regions, tys, _) => {
                 !regions.is_empty() || tys.iter().any(|x| x.contains_variables())
             }
         }
@@ -769,11 +815,10 @@ where
     pub fn contains_regions(&self) -> bool {
         match self {
             Ty::TypeVar(_) => false,
-            Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
-            Ty::Array(ty, _) | Ty::Slice(ty) => ty.contains_regions(),
+            Ty::Primitive(_) | Ty::Never => false,
             Ty::Ref(_, _, _) => true,
             Ty::RawPtr(ty, _) => ty.contains_regions(),
-            Ty::Adt(_, regions, tys) => {
+            Ty::Adt(_, regions, tys, _) => {
                 !regions.is_empty() || tys.iter().any(|x| x.contains_regions())
             }
         }
@@ -852,6 +897,17 @@ where
     make_subst(keys, values)
 }
 
+pub fn make_cg_subst<
+    I1: Iterator<Item = ConstGenericVarId::Id>,
+    I2: Iterator<Item = ConstGeneric>,
+>(
+    keys: I1,
+    values: I2,
+) -> ConstGenericSubst
+{
+    make_subst(keys, values)
+}
+
 impl TypeDecls {
     #[allow(clippy::new_without_default)]
     pub fn new() -> TypeDecls {
@@ -878,6 +934,14 @@ impl Formatter<RegionVarId::Id> for TypeDecl {
         var.to_string()
     }
 }
+
+impl Formatter<ConstGenericVarId::Id> for TypeDecl {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        let var = self.const_generic_params.get(id).unwrap();
+        format!("{} : {}", var.name.to_string(), var.ty.to_string())
+    }
+}
+
 
 impl<Rid: Copy + Eq> Formatter<&Region<Rid>> for TypeDecl
 where
@@ -921,28 +985,23 @@ impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
                 variant_arity,
             )?;
             match self {
-                Ty::Adt(id, regions, tys) => {
+                Ty::Adt(id, regions, tys, cgs) => {
                     vs.serialize_field(id)?;
                     let regions = VectorSerializer::new(regions);
                     vs.serialize_field(&regions)?;
                     let tys = VectorSerializer::new(tys);
                     vs.serialize_field(&tys)?;
+                    let cgs = VectorSerializer::new(cgs);
+                    vs.serialize_field(&cgs)?;
                 }
                 Ty::TypeVar(var_id) => {
                     vs.serialize_field(var_id)?;
                 }
-                Ty::Bool | Ty::Char | Ty::Never | Ty::Str => {
+                Ty::Primitive(pty) => {
+                    vs.serialize_field(pty)?;
+                }
+                Ty::Never => {
                     unreachable!();
-                }
-                Ty::Integer(int_ty) => {
-                    vs.serialize_field(int_ty)?;
-                }
-                Ty::Array(ty, l) => {
-                    vs.serialize_field(ty)?;
-                    vs.serialize_field(l)?;
-                }
-                Ty::Slice(ty) => {
-                    vs.serialize_field(ty)?;
                 }
                 Ty::Ref(region, ty, ref_kind) => {
                     vs.serialize_field(region)?;
@@ -965,9 +1024,9 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
     pub fn contains_never(&self) -> bool {
         match self {
             Ty::Never => true,
-            Ty::Adt(_, _, tys) => tys.iter().any(|ty| ty.contains_never()),
-            Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Str | Ty::Integer(_) => false,
-            Ty::Array(ty, _) | Ty::Slice(ty) | Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => {
+            Ty::Adt(_, _, tys, _) => tys.iter().any(|ty| ty.contains_never()),
+            Ty::TypeVar(_) | Ty::Primitive(_) => false,
+            Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => {
                 ty.contains_never()
             }
         }

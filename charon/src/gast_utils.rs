@@ -280,6 +280,13 @@ impl<'a> Formatter<TypeDeclId::Id> for FunSigFormatter<'a> {
     }
 }
 
+impl <'a> Formatter<ConstGenericVarId::Id> for FunSigFormatter<'a> {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        let cg_var = self.sig.const_generic_params.get(id).unwrap();
+        format!("{} : {}", cg_var.name.to_string(), cg_var.ty.to_string())
+    }
+}
+
 impl FunSig {
     pub fn fmt_with_decls(&self, ty_ctx: &TypeDecls) -> String {
         // Initialize the formatting context
