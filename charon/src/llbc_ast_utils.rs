@@ -430,7 +430,8 @@ impl ExprBody {
         let locals = Some(&self.locals);
         let fun_ctx = FunDeclsFormatter::new(fun_ctx);
         let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
+        // No local types or const generics, both are set to None
+        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
         self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
@@ -443,7 +444,7 @@ impl ExprBody {
         let locals = Some(&self.locals);
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
+        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
         self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
@@ -476,6 +477,7 @@ impl FunDecl {
             global_ctx,
             Some(&self.signature.type_params),
             locals,
+            Some(&self.signature.const_generic_params),
         );
 
         // Use the contexts for printing
@@ -521,7 +523,7 @@ impl GlobalDecl {
         GD: Formatter<GlobalDeclId::Id>,
     {
         let locals = self.body.as_ref().map(|body| &body.locals);
-        let fmt_ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals);
+        let fmt_ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals, None);
 
         // Use the contexts for printing
         self.gfmt_with_ctx("", &fmt_ctx)
