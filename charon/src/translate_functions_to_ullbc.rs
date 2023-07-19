@@ -103,6 +103,10 @@ struct BodyTransContext<'tcx, 'ctx, 'ctx1> {
     vars: v::VarId::Vector<ast::Var>,
     /// The map from rust variable indices to translated variables indices.
     rvars_to_ids: im::OrdMap<u32, v::VarId::Id>,
+    /// Id counter for the const generic variables
+    const_generic_counter: ty::ConstGenericVarId::Generator,
+    /// The const generic variables
+    const_generic_vars: ty::ConstGenericVarId::Vector<ty::ConstGenericVar>,
     /// Block id counter
     blocks_counter: ast::BlockId::Generator,
     /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
@@ -145,6 +149,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
             vars_counter: v::VarId::Generator::new(),
             vars: v::VarId::Vector::new(),
             rvars_to_ids: im::OrdMap::new(),
+            const_generic_counter: ty::ConstGenericVarId::Generator::new(),
+            const_generic_vars: ty::ConstGenericVarId::Vector::new(),
             blocks_counter: ast::BlockId::Generator::new(),
             blocks: im::OrdMap::new(),
             rblocks_to_ids: im::OrdMap::new(),
@@ -261,6 +267,13 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Region<ty::RegionVarId::Id>>
 {
     fn format_object(&self, r: &ty::Region<ty::RegionVarId::Id>) -> String {
         r.fmt_with_ctx(self)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<ty::ConstGenericVarId::Id> for BodyTransContext<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ty::ConstGenericVarId::Id) -> String {
+        let v = self.const_generic_vars.get(id).unwrap();
+        v.to_string()
     }
 }
 
