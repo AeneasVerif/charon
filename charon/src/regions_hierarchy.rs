@@ -249,9 +249,7 @@ fn compute_full_regions_constraints_for_ty(
     ty: &RTy,
 ) {
     match ty {
-        // (AF) If I understand this function correctly, we can ignore the const generics,
-        // as they do not involve regions. Not modifying for now to track the error and comment
-        Ty::Adt(type_id, regions, types) => {
+        Ty::Adt(type_id, regions, types, _) => {
             // Introduce constraints for all the regions given as parameters
             for r in regions {
                 add_region_constraints(
