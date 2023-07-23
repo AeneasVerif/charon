@@ -236,6 +236,6 @@ pub enum AggregateKind {
         Option<VariantId::Id>,
         Vec<ErasedRegion>,
         Vec<ETy>,
+        Vec<ConstGeneric>,
     ),
-    Array(ETy),
 }

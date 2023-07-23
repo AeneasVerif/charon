@@ -163,4 +163,5 @@ pub enum AssumedFunId {
     // Converts a [T;N] into an &[T], but taking a range as an argument (unlike the SliceNew
     // UnaryOp, which takes no argument).
     ArraySlice,
+    ArrayMutSlice,
 }

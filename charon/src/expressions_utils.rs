@@ -245,7 +245,7 @@ impl Rvalue {
                             unreachable!();
                         }
                     }
-                    AggregateKind::Adt(def_id, variant_id, _, _) => {
+                    AggregateKind::Adt(def_id, variant_id, _, _, _) => {
                         // Format every field
                         let mut fields = vec![];
                         for (i, op) in ops.iter().enumerate() {
@@ -259,9 +259,6 @@ impl Rvalue {
                             Some(variant_id) => ctx.format_object((*def_id, *variant_id)),
                         };
                         format!("{} {{ {} }}", variant, fields.join(", "))
-                    }
-                    AggregateKind::Array(_) => {
-                        format!("[{}]", ops_s.join(", "))
                     }
                     AggregateKind::Range(_) => {
                         format!("@Range")
@@ -315,7 +312,7 @@ impl Serialize for AggregateKind {
 
                 vs.end()
             }
-            AggregateKind::Adt(def_id, opt_variant_id, regions, tys) => {
+            AggregateKind::Adt(def_id, opt_variant_id, regions, tys, cgs) => {
                 let mut vs = serializer.serialize_tuple_variant(
                     enum_name,
                     variant_index,
@@ -329,6 +326,8 @@ impl Serialize for AggregateKind {
                 vs.serialize_field(&regions)?;
                 let tys = VecSerializer::new(tys);
                 vs.serialize_field(&tys)?;
+                let cgs = VecSerializer::new(cgs);
+                vs.serialize_field(&cgs)?;
 
                 vs.end()
             }
@@ -342,16 +341,6 @@ impl Serialize for AggregateKind {
 
                 vs.serialize_field(ty)?;
 
-                vs.end()
-            },
-            AggregateKind::Array(ty) => {
-                let mut vs = serializer.serialize_tuple_variant(
-                    enum_name,
-                    variant_index,
-                    "AggregatedArray",
-                    variant_arity,
-                )?;
-                vs.serialize_field(ty)?;
                 vs.end()
             }
         }
