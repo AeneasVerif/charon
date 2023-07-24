@@ -1840,8 +1840,7 @@ fn translate_primitive_function_call(
         }
         ast::AssumedFunId::ArrayIndex
         | ast::AssumedFunId::ArrayMutIndex
-        | ast::AssumedFunId::ArrayToSlice
-        | ast::AssumedFunId::ArrayUpdate => {
+        | ast::AssumedFunId::ArrayToSlice => {
             // Those cases are introduced later, in micro-passes, by desugaring
             // projections (for ArrayIndex and ArrayMutIndex) and operations
             // (for ArrayToSlice) to function calls.

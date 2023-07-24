@@ -138,9 +138,6 @@ where
             AssumedFunId::ArrayMutIndex => {
                 format!("core::ops::array::IndexMut[{rt_args}]::mut_index",)
             }
-            AssumedFunId::ArrayUpdate => {
-                format!("core::ops::array::Update[{rt_args}]::update",)
-            }
             AssumedFunId::ArraySlice => {
                 format!("@ArraySlice{rt_args}::slice",)
             }
