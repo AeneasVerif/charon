@@ -1813,10 +1813,13 @@ fn translate_primitive_function_call(
             dest,
             target,
         ),
-        ast::AssumedFunId::ArraySlice | ast::AssumedFunId::ArrayMutSlice => {
-            // Slice (a, r), where `a` is the array and `r` the range. Note that this isn't any
-            // different from a regular function call. Ideally, we'd have a generic assumed
-            // function mechanism.
+        ast::AssumedFunId::ArraySlice
+        | ast::AssumedFunId::ArrayMutSlice
+        | ast::AssumedFunId::SliceSlice
+        | ast::AssumedFunId::SliceMutSlice => {
+            // Take a slice from an array/slice.
+            // Note that this isn't any different from a regular function call. Ideally,
+            // we'd have a generic assumed function mechanism.
             assert!(type_args.len() == 1);
             assert!(args.len() == 2);
 
@@ -1831,14 +1834,17 @@ fn translate_primitive_function_call(
 
             Ok(ast::RawTerminator::Call { call, target })
         }
-        ast::AssumedFunId::ArrayIndex | ast::AssumedFunId::ArrayMutIndex => {
-            unimplemented!();
-        }
-        ast::AssumedFunId::ArrayUpdate | ast::AssumedFunId::BoxFree => {
+        ast::AssumedFunId::BoxFree => {
+            // Special case handled elsewhere
             unreachable!();
         }
-        ast::AssumedFunId::ArrayToSlice => {
-            // This case is introduced later, in a micro-pass
+        ast::AssumedFunId::ArrayIndex
+        | ast::AssumedFunId::ArrayMutIndex
+        | ast::AssumedFunId::ArrayToSlice
+        | ast::AssumedFunId::ArrayUpdate => {
+            // Those cases are introduced later, in micro-passes, by desugaring
+            // projections (for ArrayIndex and ArrayMutIndex) and operations
+            // (for ArrayToSlice) to function calls.
             unreachable!()
         }
     }

@@ -168,6 +168,9 @@ pub enum AssumedFunId {
     /// We introduced this in a micro-pass: this is originally a unop, that we
     /// later transform to a function call.
     ArrayToSlice,
+    /// Take a subslice from a slice
+    SliceSlice,
+    SliceMutSlice,
 }
 
 /// TODO: factor out with [Rvalue]

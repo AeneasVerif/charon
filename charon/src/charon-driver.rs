@@ -35,7 +35,6 @@ extern crate take_mut;
 mod common;
 mod assumed;
 mod cli_options;
-mod divergent;
 mod driver;
 mod export;
 mod expressions;

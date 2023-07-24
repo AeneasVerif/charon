@@ -45,7 +45,6 @@ extern crate take_mut;
 pub mod common;
 pub mod assumed;
 pub mod cli_options;
-pub mod divergent;
 pub mod driver;
 pub mod export;
 pub mod expressions;

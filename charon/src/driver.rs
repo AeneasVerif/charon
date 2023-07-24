@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use crate::cli_options;
-use crate::divergent;
 use crate::export;
 use crate::extract_global_assignments;
 use crate::get_mir::MirLevel;
@@ -286,15 +285,6 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // # Micro-pass: remove the locals which are never used. After doing so, we
         // check that there are no remaining locals with type `Never`.
         remove_unused_locals::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
-
-        // # Micro-pass: compute which functions are potentially divergent. A function
-        // is potentially divergent if it is recursive, contains a loop or transitively
-        // calls a potentially divergent function.
-        // Note that in the future, we may complement this basic analysis with a
-        // finer analysis to detect recursive functions which are actually total
-        // by construction.
-        // Because we don't have loops, constants are not yet touched.
-        let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
 
         trace!("# Final LLBC:\n");
         for def in &llbc_funs {

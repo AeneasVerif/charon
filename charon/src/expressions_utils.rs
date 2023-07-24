@@ -264,7 +264,7 @@ impl Rvalue {
                         format!("[{}]", ops_s.join(", "))
                     }
                     AggregateKind::Range(_) => {
-                        format!("@Range")
+                        format!("@Range[{}]", ops_s.join(", "))
                     }
                 }
             }

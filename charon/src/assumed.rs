@@ -193,7 +193,15 @@ pub fn get_fun_id_from_name(
                                         ullbc_ast::AssumedFunId::ArrayMutSlice
                                     }
                                 }
-                                _ => unimplemented!(),
+                                types::AssumedTy::Slice => {
+                                    if id.is_index() {
+                                        ullbc_ast::AssumedFunId::SliceSlice
+                                    } else {
+                                        // mut case
+                                        ullbc_ast::AssumedFunId::SliceMutSlice
+                                    }
+                                }
+                                _ => unimplemented!("ty: {:?}", aty),
                             }
                         }
                         _ => unimplemented!(),

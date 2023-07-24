@@ -142,13 +142,19 @@ where
                 format!("core::ops::array::Update[{rt_args}]::update",)
             }
             AssumedFunId::ArraySlice => {
-                format!("core::ops::array::Slice{rt_args}::slice",)
+                format!("@ArraySlice{rt_args}::slice",)
             }
             AssumedFunId::ArrayMutSlice => {
-                format!("core::ops::array::Slice{rt_args}::mut_slice",)
+                format!("@ArrayMutSliceSlice{rt_args}::mut_slice",)
             }
             AssumedFunId::ArrayToSlice => {
                 format!("array_to_slice{rt_args}",)
+            }
+            AssumedFunId::SliceSlice => {
+                format!("@SliceSlice{rt_args}::slice",)
+            }
+            AssumedFunId::SliceMutSlice => {
+                format!("@SliceMutSlice{rt_args}::mut_slice",)
             }
         },
     };
