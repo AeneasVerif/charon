@@ -62,6 +62,21 @@ pub enum SwitchTargets {
     ),
 }
 
+/// TODO: factor out with [Rvalue]
+#[derive(Debug, Clone, Serialize)]
+pub struct Call {
+    pub func: FunId,
+    /// Technically this is useless, but we still keep it because we might
+    /// want to introduce some information (and the way we encode from MIR
+    /// is as simple as possible - and in MIR we also have a vector of erased
+    /// regions).
+    pub region_args: Vec<ErasedRegion>,
+    pub type_args: Vec<ETy>,
+    pub const_generic_args: Vec<ConstGeneric>,
+    pub args: Vec<Operand>,
+    pub dest: Place,
+}
+
 /// A raw terminator: a terminator without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
 pub enum RawTerminator {
@@ -82,15 +97,7 @@ pub enum RawTerminator {
     /// Function call.
     /// For now, we only accept calls to top-level functions.
     Call {
-        func: FunId,
-        /// Technically, this is useless, but we still keep it because we might
-        /// want to introduce some information (and the way we encode from MIR
-        /// is as simple as possible - and in MIR we also have a vector of erased
-        /// regions).
-        region_args: Vec<ErasedRegion>,
-        type_args: Vec<ETy>,
-        args: Vec<Operand>,
-        dest: Place,
+        call: Call,
         target: BlockId::Id,
     },
     Assert {

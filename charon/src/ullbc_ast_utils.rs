@@ -110,24 +110,34 @@ impl Terminator {
                 place: place.substitute(subst),
                 target: *target,
             },
-            RawTerminator::Call {
-                func,
-                region_args,
-                type_args,
-                args,
-                dest,
-                target,
-            } => RawTerminator::Call {
-                func: func.clone(),
-                region_args: region_args.clone(),
-                type_args: type_args
-                    .iter()
-                    .map(|ty| ty.substitute_types(subst, cgsubst))
-                    .collect(),
-                args: Vec::from_iter(args.iter().map(|arg| arg.substitute(subst))),
-                dest: dest.substitute(subst),
-                target: *target,
-            },
+            RawTerminator::Call { call, target } => {
+                let Call {
+                    func,
+                    region_args,
+                    type_args,
+                    const_generic_args,
+                    args,
+                    dest,
+                } = call;
+                let call = Call {
+                    func: func.clone(),
+                    region_args: region_args.clone(),
+                    type_args: type_args
+                        .iter()
+                        .map(|ty| ty.substitute_types(subst, cgsubst))
+                        .collect(),
+                    const_generic_args: const_generic_args
+                        .iter()
+                        .map(|cg| cg.substitute(&|var| cgsubst.get(var).unwrap().clone()))
+                        .collect(),
+                    args: Vec::from_iter(args.iter().map(|arg| arg.substitute(subst))),
+                    dest: dest.substitute(subst),
+                };
+                RawTerminator::Call {
+                    call,
+                    target: *target,
+                }
+            }
             RawTerminator::Assert {
                 cond,
                 expected,
@@ -233,15 +243,16 @@ impl Terminator {
             RawTerminator::Drop { place, target } => {
                 format!("drop {} -> bb{}", place.fmt_with_ctx(ctx), target)
             }
-            RawTerminator::Call {
-                func,
-                region_args,
-                type_args,
-                args,
-                dest,
-                target,
-            } => {
-                let call = fmt_call(ctx, func, region_args, type_args, args);
+            RawTerminator::Call { call, target } => {
+                let Call {
+                    func,
+                    region_args,
+                    type_args,
+                    const_generic_args,
+                    args,
+                    dest,
+                } = call;
+                let call = fmt_call(ctx, func, region_args, type_args, const_generic_args, args);
 
                 format!("{} := {} -> bb{}", dest.fmt_with_ctx(ctx), call, target,)
             }
@@ -575,15 +586,8 @@ impl BlockData {
             RawTerminator::Switch { discr, targets: _ } => {
                 f(meta, &mut nst, discr);
             }
-            RawTerminator::Call {
-                func: _,
-                region_args: _,
-                type_args: _,
-                args,
-                dest: _,
-                target: _,
-            } => {
-                for arg in args {
+            RawTerminator::Call { call, target: _ } => {
+                for arg in &mut call.args {
                     f(meta, &mut nst, arg);
                 }
             }

@@ -65,6 +65,7 @@ mod remove_read_discriminant;
 mod remove_unused_locals;
 mod reorder_decls;
 mod rust_to_local_ids;
+mod translate_constants;
 mod translate_functions_to_ullbc;
 mod translate_types;
 mod types;

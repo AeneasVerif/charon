@@ -266,10 +266,11 @@ impl Statement {
                     func,
                     region_args,
                     type_args,
+                    const_generic_args,
                     args,
                     dest,
                 } = call;
-                let call = fmt_call(ctx, func, region_args, type_args, args);
+                let call = fmt_call(ctx, func, region_args, type_args, const_generic_args, args);
                 format!("{}{} := {}", tab, dest.fmt_with_ctx(ctx), call)
             }
             RawStatement::Panic => format!("{tab}panic"),

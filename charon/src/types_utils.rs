@@ -21,18 +21,24 @@ pub type ETypeSubst = TypeSubst<ErasedRegion>;
 pub type ConstGenericSubst = HashMap<ConstGenericVarId::Id, ConstGeneric>;
 
 impl ConstGenericVarId::Id {
-  pub fn substitute(&self, cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric) -> ConstGeneric {
-    cgsubst(self)
-  }
+    pub fn substitute(
+        &self,
+        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
+    ) -> ConstGeneric {
+        cgsubst(self)
+    }
 }
 
 impl ConstGeneric {
-  pub fn substitute(&self, cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric) -> ConstGeneric {
-    match self {
-      ConstGeneric::Var(id) => id.substitute(cgsubst),
-      ConstGeneric::Value(v) => ConstGeneric::Value(*v)
+    pub fn substitute(
+        &self,
+        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
+    ) -> ConstGeneric {
+        match self {
+            ConstGeneric::Var(id) => id.substitute(cgsubst),
+            ConstGeneric::Value(v) => ConstGeneric::Value(v.clone()),
+        }
     }
-  }
 }
 
 impl RegionVarId::Id {
@@ -109,7 +115,7 @@ impl std::string::ToString for ConstGenericVar {
         let id = const_generic_var_id_to_pretty_string(self.index);
         let name = match &self.name {
             Some(name) => name.to_string(),
-            None => id  
+            None => id,
         };
         format!("const {} : {}", name, primitive_ty_to_string(self.ty))
     }
@@ -178,7 +184,10 @@ impl TypeDecl {
     ) -> Vector<ETy> {
         // Introduce the substitution
         let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
-        let cg_subst = make_cg_subst(self.const_generic_params.iter().map(|x| x.index), cgs.iter());
+        let cg_subst = make_cg_subst(
+            self.const_generic_params.iter().map(|x| x.index),
+            cgs.iter(),
+        );
 
         let fields = self.get_fields(variant_id);
         let field_types: Vec<ETy> = fields
@@ -200,7 +209,10 @@ impl TypeDecl {
     ) -> ETy {
         // Introduce the substitution
         let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
-        let cg_subst = make_cg_subst(self.const_generic_params.iter().map(|x| x.index), cgs.iter());
+        let cg_subst = make_cg_subst(
+            self.const_generic_params.iter().map(|x| x.index),
+            cgs.iter(),
+        );
 
         let fields = self.get_fields(variant_id);
         let field_type = fields
@@ -420,10 +432,10 @@ pub fn integer_ty_to_string(ty: IntegerTy) -> String {
 
 pub fn primitive_ty_to_string(ty: PrimitiveValueTy) -> String {
     match ty {
-      PrimitiveValueTy::Integer(ty) => integer_ty_to_string(ty),
-      PrimitiveValueTy::Bool => "bool".to_string(),
-      PrimitiveValueTy::Char => "char".to_string(),
-      PrimitiveValueTy::Str => "str".to_string()
+        PrimitiveValueTy::Integer(ty) => integer_ty_to_string(ty),
+        PrimitiveValueTy::Bool => "bool".to_string(),
+        PrimitiveValueTy::Char => "char".to_string(),
+        PrimitiveValueTy::Str => "str".to_string(),
     }
 }
 
@@ -469,15 +481,15 @@ impl TypeId {
 }
 
 impl ConstGeneric {
-  pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
-  where
-      T: Formatter<ConstGenericVarId::Id>, 
-  {
-    match self {
-      ConstGeneric::Var(id) => ctx.format_object(*id),
-      ConstGeneric::Value(v) => v.to_string()
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    where
+        T: Formatter<ConstGenericVarId::Id>,
+    {
+        match self {
+            ConstGeneric::Var(id) => ctx.format_object(*id),
+            ConstGeneric::Value(v) => v.to_string(),
+        }
     }
-  }
 }
 
 impl<R> Ty<R>
@@ -503,9 +515,9 @@ where
 
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
-      match self {
-          Ty::Primitive(kind) => kind.is_integer(), 
-          _ => false
+        match self {
+            Ty::Primitive(kind) => kind.is_integer(),
+            _ => false,
         }
     }
 
@@ -531,7 +543,10 @@ where
     pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
     where
         R: 'a,
-        T: Formatter<ConstGenericVarId::Id> + Formatter<TypeVarId::Id> + Formatter<TypeDeclId::Id> + Formatter<&'a R>,
+        T: Formatter<ConstGenericVarId::Id>
+            + Formatter<TypeVarId::Id>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<&'a R>,
     {
         match self {
             Ty::Adt(id, regions, inst_types, cgs) => {
@@ -542,8 +557,7 @@ where
                 let regions: Vec<String> = regions.iter().map(|r| ctx.format_object(r)).collect();
                 let mut types: Vec<String> =
                     inst_types.iter().map(|ty| ty.fmt_with_ctx(ctx)).collect();
-                let mut cgs: Vec<String> =
-                    cgs.iter().map(|cg| cg.fmt_with_ctx(ctx)).collect();
+                let mut cgs: Vec<String> = cgs.iter().map(|cg| cg.fmt_with_ctx(ctx)).collect();
                 let mut all_params = regions;
                 all_params.append(&mut types);
                 all_params.append(&mut cgs);
@@ -765,7 +779,7 @@ where
         &self,
         rsubst: &dyn Fn(&R) -> R1,
         tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
-        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric 
+        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
     ) -> Ty<R1>
     where
         R1: Clone + Eq,
@@ -773,17 +787,24 @@ where
         match self {
             Ty::Adt(id, regions, tys, cgs) => {
                 let nregions = Ty::substitute_regions(regions, rsubst);
-                let ntys = tys.iter().map(|ty| ty.substitute(rsubst, tsubst, cgsubst)).collect();
+                let ntys = tys
+                    .iter()
+                    .map(|ty| ty.substitute(rsubst, tsubst, cgsubst))
+                    .collect();
                 let ncgs = cgs.iter().map(|cg| cg.substitute(cgsubst)).collect();
                 Ty::Adt(id.clone(), nregions, ntys, ncgs)
             }
             Ty::TypeVar(id) => tsubst(id),
             Ty::Primitive(pty) => Ty::Primitive(*pty),
             Ty::Never => Ty::Never,
-            Ty::Ref(rid, ty, kind) => {
-                Ty::Ref(rsubst(rid), Box::new(ty.substitute(rsubst, tsubst, cgsubst)), *kind)
+            Ty::Ref(rid, ty, kind) => Ty::Ref(
+                rsubst(rid),
+                Box::new(ty.substitute(rsubst, tsubst, cgsubst)),
+                *kind,
+            ),
+            Ty::RawPtr(ty, kind) => {
+                Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst, cgsubst)), *kind)
             }
-            Ty::RawPtr(ty, kind) => Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst, cgsubst)), *kind),
         }
     }
 
@@ -797,20 +818,31 @@ where
     /// Substitute the type parameters
     // TODO: tsubst and cgsubst should be closures instead of hashmaps
     pub fn substitute_types(&self, subst: &TypeSubst<R>, cgsubst: &ConstGenericSubst) -> Self {
-        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone(), &|cgid| cgsubst.get(cgid).unwrap().clone())
+        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone(), &|cgid| {
+            cgsubst.get(cgid).unwrap().clone()
+        })
     }
 
     /// Erase the regions
     pub fn erase_regions(&self) -> ETy {
-        self.substitute(&|_| ErasedRegion::Erased, &|tid| Ty::TypeVar(*tid), &|cgid| ConstGeneric::Var(*cgid))
+        self.substitute(
+            &|_| ErasedRegion::Erased,
+            &|tid| Ty::TypeVar(*tid),
+            &|cgid| ConstGeneric::Var(*cgid),
+        )
     }
 
     /// Erase the regions and substitute the types at the same time
-    pub fn erase_regions_substitute_types(&self, subst: &TypeSubst<ErasedRegion>, cgsubst: &ConstGenericSubst) -> ETy {
-        self.substitute(&|_| ErasedRegion::Erased, &|tid| {
-            subst.get(tid).unwrap().clone()
-        },
-        &|cgid| cgsubst.get(cgid).unwrap().clone())
+    pub fn erase_regions_substitute_types(
+        &self,
+        subst: &TypeSubst<ErasedRegion>,
+        cgsubst: &ConstGenericSubst,
+    ) -> ETy {
+        self.substitute(
+            &|_| ErasedRegion::Erased,
+            &|tid| subst.get(tid).unwrap().clone(),
+            &|cgid| cgsubst.get(cgid).unwrap().clone(),
+        )
     }
 
     /// Returns `true` if the type contains some region or type variables
@@ -854,7 +886,7 @@ impl RTy {
                 Region::Var(rid) => *rsubst.get(rid).unwrap(),
             },
             &|tid| tsubst.get(tid).unwrap().clone(),
-            &|cgid| ConstGeneric::Var(*cgid)
+            &|cgid| ConstGeneric::Var(*cgid),
         )
     }
 }
@@ -920,8 +952,7 @@ pub fn make_cg_subst<
 >(
     keys: I1,
     values: I2,
-) -> ConstGenericSubst
-{
+) -> ConstGenericSubst {
     make_subst(keys, values)
 }
 
@@ -958,7 +989,6 @@ impl Formatter<ConstGenericVarId::Id> for TypeDecl {
         var.to_string()
     }
 }
-
 
 impl<Rid: Copy + Eq> Formatter<&Region<Rid>> for TypeDecl
 where
@@ -1043,9 +1073,7 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
             Ty::Never => true,
             Ty::Adt(_, _, tys, _) => tys.iter().any(|ty| ty.contains_never()),
             Ty::TypeVar(_) | Ty::Primitive(_) => false,
-            Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => {
-                ty.contains_never()
-            }
+            Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => ty.contains_never(),
         }
     }
 }

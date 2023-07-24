@@ -9,9 +9,7 @@ use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
 use crate::generics;
-use crate::get_mir::{
-    boxes_are_desugared, extract_constants_at_top_level, get_mir_for_def_id_and_level, MirLevel,
-};
+use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level, MirLevel};
 use crate::id_vector;
 use crate::meta;
 use crate::meta::{FileId, FileName};
@@ -20,13 +18,17 @@ use crate::names::{function_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy as rh;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
+use crate::translate_constants::{
+    translate_evaluated_operand_constant, translate_operand_constant,
+};
 use crate::translate_types;
 use crate::types as ty;
 use crate::types::{FieldId, VariantId};
 use crate::ullbc_ast as ast;
 use crate::values as v;
+use crate::values::{PrimitiveValue, ScalarValue};
+use core::convert::*;
 use hashlink::linked_hash_map::LinkedHashMap;
-use im::Vector;
 use log::warn;
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir;
@@ -35,15 +37,13 @@ use rustc_middle::mir::{
     TerminatorKind, START_BLOCK,
 };
 use rustc_middle::ty as mir_ty;
-use rustc_middle::ty::{ConstKind, Ty, TyCtxt, TyKind, ParamEnv};
 use rustc_middle::ty::adjustment::PointerCast;
+use rustc_middle::ty::{ParamEnv, TyCtxt, TyKind};
 use rustc_session::Session;
 use rustc_span::Span;
 use std::collections::HashMap;
-use std::iter::zip;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name, TypeTransContext};
-use core::convert::*;
 
 /// Translation context for function and global definitions
 /// TODO: we should put the `TyCtx` and the `Session` in there
@@ -91,12 +91,6 @@ struct BodyTransContext<'tcx, 'ctx, 'ctx1> {
     /// The map from rust type variable indices to translated type variable
     /// indices.
     rtype_vars_to_ids: im::OrdMap<u32, ty::TypeVarId::Id>,
-    /// Redundant with `rtype_vars_to_ids`. We need this for [translate_types::translate_ety].
-    /// This maps type variables to types with regions used in signatures.
-    rtype_vars_to_rtypes: im::OrdMap<u32, ty::RTy>,
-    /// Redundant with `rtype_vars_to_ids`. We need this for [translate_types::translate_ety].
-    /// This maps type variables to types with erased regions.
-    rtype_vars_to_etypes: im::OrdMap<u32, ty::ETy>,
     /// Id counter for the variables
     vars_counter: v::VarId::Generator,
     /// The "regular" variables
@@ -144,8 +138,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
             type_vars_counter: ty::TypeVarId::Generator::new(),
             type_vars: ty::TypeVarId::Vector::new(),
             rtype_vars_to_ids: im::OrdMap::new(),
-            rtype_vars_to_rtypes: im::OrdMap::new(),
-            rtype_vars_to_etypes: im::OrdMap::new(),
             vars_counter: v::VarId::Generator::new(),
             vars: v::VarId::Vector::new(),
             rvars_to_ids: im::OrdMap::new(),
@@ -200,10 +192,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
         };
         self.type_vars.insert(var_id, var);
         self.rtype_vars_to_ids.insert(rindex, var_id);
-        self.rtype_vars_to_rtypes
-            .insert(rindex, ty::Ty::TypeVar(var_id));
-        self.rtype_vars_to_etypes
-            .insert(rindex, ty::Ty::TypeVar(var_id));
         var_id
     }
 
@@ -270,7 +258,9 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Region<ty::RegionVarId::Id>>
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<ty::ConstGenericVarId::Id> for BodyTransContext<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> Formatter<ty::ConstGenericVarId::Id>
+    for BodyTransContext<'tcx, 'ctx, 'ctx1>
+{
     fn format_object(&self, id: ty::ConstGenericVarId::Id) -> String {
         let v = self.const_generic_vars.get(id).unwrap();
         v.to_string()
@@ -305,36 +295,44 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>>
     }
 }
 
-fn translate_ety<'tcx>(bt_ctx: &BodyTransContext<'tcx, '_, '_>, ty: &mir_ty::Ty<'tcx>) -> Result<ty::ETy> {
-    let ty_ctx = TypeTransContext::new(bt_ctx.ft_ctx.type_defs, bt_ctx.ft_ctx.ordered);
-    translate_types::translate_ety(bt_ctx.ft_ctx.tcx, &ty_ctx, &bt_ctx.rtype_vars_to_etypes, ty)
+impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
+    fn to_type_trans_context(&self) -> TypeTransContext<'tcx, 'ctx> {
+        TypeTransContext::new(
+            // For the def id: we use the function/global def id
+            self.def_id,
+            self.ft_ctx.tcx,
+            self.ft_ctx.type_defs,
+            self.ft_ctx.global_defs,
+            self.ft_ctx.ordered,
+            self.rregions_to_ids.clone(),
+            self.rtype_vars_to_ids.clone(),
+            self.ft_ctx.mir_level,
+        )
+    }
+}
+
+fn translate_ety<'tcx>(
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
+    ty: &mir_ty::Ty<'tcx>,
+) -> Result<ty::ETy> {
+    let tt_ctx = bt_ctx.to_type_trans_context();
+    translate_types::translate_ety(&tt_ctx, ty)
 }
 
 fn translate_ety_kind<'tcx>(
     bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     ty: &mir_ty::TyKind<'tcx>,
 ) -> Result<ty::ETy> {
-    let ty_ctx = TypeTransContext::new(bt_ctx.ft_ctx.type_defs, bt_ctx.ft_ctx.ordered);
-    translate_types::translate_ety_kind(
-        bt_ctx.ft_ctx.tcx,
-        &ty_ctx,
-        &bt_ctx.rtype_vars_to_etypes,
-        ty,
-    )
+    let tt_ctx = bt_ctx.to_type_trans_context();
+    translate_types::translate_ety_kind(&tt_ctx, ty)
 }
 
 fn translate_sig_ty<'tcx>(
     bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     ty: &mir_ty::Ty<'tcx>,
 ) -> Result<ty::RTy> {
-    let ty_ctx = TypeTransContext::new(bt_ctx.ft_ctx.type_defs, bt_ctx.ft_ctx.ordered);
-    translate_types::translate_sig_ty(
-        bt_ctx.ft_ctx.tcx,
-        &ty_ctx,
-        &bt_ctx.rregions_to_ids,
-        &bt_ctx.rtype_vars_to_rtypes,
-        ty,
-    )
+    let tt_ctx = bt_ctx.to_type_trans_context();
+    translate_types::translate_sig_ty(&tt_ctx, ty)
 }
 
 /// Translate a function's local variables by adding them in the environment.
@@ -663,405 +661,6 @@ fn translate_projection<'tcx, 'ctx>(
     (projection, path_type)
 }
 
-/// Translate the type of a [mir::interpret::ConstValue::Scalar] value :
-/// Either a bool, a char, an integer, an enumeration ADT, an empty tuple or a static reference.
-fn translate_constant_scalar_type(ty: &TyKind, decls: &DeclTransContext<'_, '_>) -> ty::ETy {
-    match ty {
-        TyKind::Bool => ty::Ty::Primitive(ty::PrimitiveValueTy::Bool),
-        TyKind::Char => ty::Ty::Primitive(ty::PrimitiveValueTy::Char),
-        TyKind::Int(int_ty) => match int_ty {
-            mir_ty::IntTy::Isize => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::Isize)),
-            mir_ty::IntTy::I8 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I8)),
-            mir_ty::IntTy::I16 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I16)),
-            mir_ty::IntTy::I32 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I32)),
-            mir_ty::IntTy::I64 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I64)),
-            mir_ty::IntTy::I128 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I128)),
-        },
-        TyKind::Uint(uint_ty) => match uint_ty {
-            mir_ty::UintTy::Usize => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::Usize)),
-            mir_ty::UintTy::U8 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U8)),
-            mir_ty::UintTy::U16 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U16)),
-            mir_ty::UintTy::U32 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U32)),
-            mir_ty::UintTy::U64 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U64)),
-            mir_ty::UintTy::U128 => ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U128)),
-        },
-        TyKind::Adt(adt_def, substs) => {
-            assert!(substs.is_empty());
-            // It seems we can have ADTs when there is only one
-            // variant, and this variant doesn't take parameters.
-            // Retrieve the definition.
-            let id = decls.ordered.type_rid_to_id.get(&adt_def.did()).unwrap();
-            ty::Ty::Adt(ty::TypeId::Adt(*id), Vector::new(), Vector::new(), Vector::new())
-        }
-        TyKind::Tuple(substs) => {
-            // There can be tuple([]) for unit
-            assert!(substs.is_empty());
-            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), Vector::new(), Vector::new())
-        }
-        // Only accept scalars that are shared references with erased regions : it's a static.
-        TyKind::Ref(region, ref_ty, mir::Mutability::Not) => match region.kind() {
-            mir_ty::RegionKind::ReErased => ty::Ty::Ref(
-                ty::ErasedRegion::Erased,
-                Box::new(translate_constant_scalar_type(ref_ty.kind(), decls)),
-                ty::RefKind::Shared,
-            ),
-            _ => unreachable!(),
-        },
-        TyKind::Float(_) => {
-            // We don't support floating point numbers:
-            // this should have been detected and eliminated before.
-            unreachable!();
-        }
-        _ => {
-            // The remaining types should not be used for constants, or
-            // should have been filtered by the caller.
-            error!("unexpected type: {:?}", ty);
-            unreachable!();
-        }
-    }
-}
-
-/// Translate the type of a [mir::interpret::ConstValue::ByRef] value.
-/// Currently, it should be a tuple.
-fn translate_constant_reference_type<'tcx>(
-    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
-    ty: &TyKind<'tcx>,
-) -> ty::ETy {
-    // Match on the type to destructure
-    match ty {
-        TyKind::Tuple(substs) => {
-            // Here, the substitution only contains types (no regions)
-            let type_params = translate_subst_in_body(bt_ctx, substs).unwrap();
-            trace!("{:?}", type_params);
-            let field_tys = type_params.into_iter().collect();
-            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), field_tys, Vector::new())
-        }
-        TyKind::Adt(_, _) => {
-            // Following tests, it seems rustc doesn't introduce constants
-            // references when initializing ADTs, only when initializing tuples.
-            // Anyway, our `OperandConstantValue` handles all cases so updating
-            // the code to handle ADTs in a general manner wouldn't be a
-            // problem.
-            unreachable!("unexpected ADT type: {:?}", ty);
-        }
-        _ => {
-            // The remaining types should not be used for constants, or
-            // should have been filtered by the caller.
-            unreachable!("unexpected type: {:?}", ty);
-        }
-    }
-}
-
-/// Translate a typed constant value (either a bool, a char or an integer).
-fn translate_constant_integer_like_value(
-    ty: &ty::ETy,
-    scalar: &mir::interpret::Scalar,
-) -> v::PrimitiveValue {
-    trace!();
-    // The documentation explicitly says not to match on a scalar.
-    // We match on the type and convert the value following this,
-    // by calling the appropriate `to_*` method.
-    match ty {
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Bool) => v::PrimitiveValue::Bool(scalar.to_bool().unwrap()),
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Char) => v::PrimitiveValue::Char(scalar.to_char().unwrap()),
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(i)) => v::PrimitiveValue::Scalar(match i {
-            ty::IntegerTy::Isize => {
-                // This is a bit annoying: there is no
-                // `to_isize`. For now, we make the hypothesis
-                // that isize is an int64
-                assert!(std::mem::size_of::<isize>() == 8);
-                v::ScalarValue::Isize(scalar.to_i64().unwrap() as isize)
-            }
-            ty::IntegerTy::Usize => {
-                // Same as above for usize.
-                assert!(std::mem::size_of::<usize>() == 8);
-                v::ScalarValue::Usize(scalar.to_u64().unwrap() as usize)
-            }
-            ty::IntegerTy::I8 => v::ScalarValue::I8(scalar.to_i8().unwrap()),
-            ty::IntegerTy::U8 => v::ScalarValue::U8(scalar.to_u8().unwrap()),
-            ty::IntegerTy::I16 => v::ScalarValue::I16(scalar.to_i16().unwrap()),
-            ty::IntegerTy::U16 => v::ScalarValue::U16(scalar.to_u16().unwrap()),
-            ty::IntegerTy::I32 => v::ScalarValue::I32(scalar.to_i32().unwrap()),
-            ty::IntegerTy::U32 => v::ScalarValue::U32(scalar.to_u32().unwrap()),
-            ty::IntegerTy::I64 => v::ScalarValue::I64(scalar.to_i64().unwrap()),
-            ty::IntegerTy::U64 => v::ScalarValue::U64(scalar.to_u64().unwrap()),
-            ty::IntegerTy::I128 => v::ScalarValue::I128(scalar.to_i128().unwrap()),
-            ty::IntegerTy::U128 => v::ScalarValue::U128(scalar.to_u128().unwrap()),
-        }),
-        _ => {
-            // The remaining types should not be used for constants,
-            // or should have been filtered by the caller.
-            error!("unexpected type: {:?}", ty);
-            unreachable!();
-        }
-    }
-}
-
-/// Translate a constant typed by [translate_constant_scalar_type].
-fn translate_constant_scalar_value(
-    decls: &DeclTransContext<'_, '_>,
-    llbc_ty: &ty::ETy,
-    scalar: &mir::interpret::Scalar,
-) -> e::OperandConstantValue {
-    trace!("{:?}", scalar);
-
-    let tcx = decls.tcx;
-
-    // The documentation explicitly says not to match on a scalar.
-    // A constant operand scalar is usually an instance of a primitive type
-    // (bool, char, integer...). However, it may also be an instance of a
-    // degenerate ADT or tuple (if an ADT has only one variant and no fields,
-    // it is a constant, and unit is encoded by MIR as a 0-tuple).
-    match llbc_ty {
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Bool) |
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Char) |
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(_)) => {
-            let v = translate_constant_integer_like_value(llbc_ty, scalar);
-            e::OperandConstantValue::PrimitiveValue(v)
-        }
-        ty::Ty::Adt(ty::TypeId::Adt(id), region_tys, field_tys, cgs) => {
-            assert!(region_tys.is_empty());
-            assert!(field_tys.is_empty());
-            assert!(cgs.is_empty());
-
-            let def = decls.type_defs.get_type_def(*id).unwrap();
-
-            // Check that there is only one variant, with no fields
-            // and no parameters. Construct the value at the same time.
-            assert!(def.type_params.is_empty());
-            let variant_id = match &def.kind {
-                ty::TypeDeclKind::Enum(variants) => {
-                    assert!(variants.len() == 1);
-                    Option::Some(ty::VariantId::ZERO)
-                }
-                ty::TypeDeclKind::Struct(_) => Option::None,
-                ty::TypeDeclKind::Opaque => {
-                    unreachable!("Can't analyze a constant value built from an opaque type")
-                }
-            };
-            e::OperandConstantValue::Adt(variant_id, Vec::new())
-        }
-        ty::Ty::Adt(ty::TypeId::Tuple, region_tys, field_tys, cgs) => {
-            assert!(region_tys.is_empty());
-            assert!(field_tys.is_empty());
-            assert!(cgs.is_empty());
-            e::OperandConstantValue::Adt(Option::None, Vec::new())
-        }
-        ty::Ty::Ref(ty::ErasedRegion::Erased, _, ty::RefKind::Shared) => match scalar {
-            mir::interpret::Scalar::Ptr(p, _) => match tcx.global_alloc(p.provenance) {
-                mir::interpret::GlobalAlloc::Static(s) => {
-                    let id = decls.ordered.global_rid_to_id.get(&s).unwrap();
-                    e::OperandConstantValue::StaticId(*id)
-                }
-                _ => unreachable!(
-                    "Expected static pointer, got {:?}",
-                    tcx.global_alloc(p.provenance)
-                ),
-            },
-            _ => unreachable!("Expected static pointer, got {:?}", scalar),
-        },
-        _ => {
-            // The remaining types should not be used for constants
-            unreachable!("unexpected type: {:?}, for scalar: {:?}", llbc_ty, scalar);
-        }
-    }
-}
-
-/// Translate a constant typed by [translate_constant_reference_type].
-/// This should always be a tuple.
-fn translate_constant_reference_value<'tcx>(
-    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
-    llbc_ty: &ty::ETy,
-    mir_ty: &Ty<'tcx>, // TODO: remove?
-    value: &mir::interpret::ConstValue<'tcx>,
-) -> e::OperandConstantValue {
-    trace!();
-
-    let tcx = bt_ctx.ft_ctx.tcx;
-
-    // We use [try_destructure_mir_constant] to destructure the constant
-    // We need a param_env: we use the function def id as a dummy id...
-    let param_env = tcx.param_env(bt_ctx.def_id);
-    // We have to clone some values: it is a bit annoying, but I don't
-    // manage to get the lifetimes working otherwise...
-    let cvalue = rustc_middle::mir::ConstantKind::Val(*value, *mir_ty);
-    let param_env_and_const = rustc_middle::ty::ParamEnvAnd {
-        param_env,
-        value: cvalue,
-    };
-
-    let dc = tcx
-        .try_destructure_mir_constant(param_env_and_const)
-        .unwrap();
-    trace!("{:?}", dc);
-
-    // Iterate over the fields
-    assert!(dc.variant.is_none());
-
-    // Below: we are mutually recursive with [translate_constant_kind],
-    // which takes a [ConstantKind] as input (see `cvalue` above), but it should be
-    // ok because we call it on a strictly smaller value.
-    let fields: Vec<(ty::ETy, e::OperandConstantValue)> = dc
-        .fields
-        .iter()
-        .map(|f| translate_constant_kind(bt_ctx, f))
-        .collect();
-
-    // Sanity check
-    match llbc_ty {
-        ty::Ty::Adt(ty::TypeId::Tuple, regions, fields_tys, cgs) => {
-            assert!(regions.is_empty());
-            assert!(zip(&fields, fields_tys).all(|(f, ty)| &f.0 == ty));
-            assert!(cgs.is_empty());
-        }
-        _ => unreachable!("Expected a tuple, got {:?}", mir_ty),
-    };
-
-    let fields: Vec<e::OperandConstantValue> = fields.into_iter().map(|f| f.1).collect();
-    e::OperandConstantValue::Adt(Option::None, fields)
-}
-
-/// Translate a [mir::interpret::ConstValue]
-fn translate_const_value<'tcx>(
-    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
-    llbc_ty: &ty::ETy,
-    mir_ty: &Ty<'tcx>, // TODO: remove?
-    val: &mir::interpret::ConstValue<'tcx>,
-) -> e::OperandConstantValue {
-    trace!("{:?}", val);
-    match val {
-        mir::interpret::ConstValue::Scalar(scalar) => {
-            translate_constant_scalar_value(bt_ctx.ft_ctx, llbc_ty, scalar)
-        }
-        mir::interpret::ConstValue::ByRef { .. } => {
-            translate_constant_reference_value(bt_ctx, llbc_ty, mir_ty, val)
-        }
-        mir::interpret::ConstValue::Slice { .. } => unimplemented!(),
-        mir::interpret::ConstValue::ZeroSized { .. } => {
-            // Should be unit
-            assert!(llbc_ty.is_unit());
-            e::OperandConstantValue::Adt(None, Vec::new())
-        }
-    }
-}
-
-fn translate_evaluated_operand_constant<'tcx>(
-    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
-    ty: &Ty<'tcx>,
-    val: &mir::interpret::ConstValue<'tcx>,
-) -> (ty::ETy, e::OperandConstantValue) {
-    let llbc_ty = translate_ety(bt_ctx, ty).unwrap();
-    let im_val = translate_const_value(bt_ctx, &llbc_ty, ty, val);
-    (llbc_ty, im_val)
-}
-
-/// This function translates a constant id, under the condition that the
-/// constants are extraced at the top level.
-fn translate_constant_id_as_top_level(
-    bt_ctx: &BodyTransContext<'_, '_, '_>,
-    rid: DefId,
-) -> (ty::ETy, e::OperandConstantValue) {
-    // Sanity check
-    assert!(extract_constants_at_top_level(bt_ctx.ft_ctx.mir_level));
-
-    // Lookup the constant identifier and refer to it.
-    let id = *bt_ctx.ft_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
-    let decl = bt_ctx.ft_ctx.global_defs.get(id).unwrap();
-    (decl.ty.clone(), e::OperandConstantValue::ConstantId(id))
-}
-
-fn translate_const_kind_unevaluated<'tcx>(
-    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
-    mir_ty: &mir_ty::Ty<'tcx>,
-    ucv: &rustc_middle::mir::UnevaluatedConst<'tcx>,
-) -> (ty::ETy, e::OperandConstantValue) {
-    // Two cases:
-    // - if we extract the constants at top level, we lookup the constant
-    //   identifier and refer to it
-    // - otherwise, we evaluate the constant and insert it in place
-    if extract_constants_at_top_level(bt_ctx.ft_ctx.mir_level) {
-        translate_constant_id_as_top_level(bt_ctx, ucv.def.did)
-    } else {
-        // Evaluate the constant.
-        // We need a param_env: we use the function def id as a dummy id...
-        let tcx = bt_ctx.ft_ctx.tcx;
-        let param_env = tcx.param_env(bt_ctx.def_id);
-        let cv = tcx.const_eval_resolve(param_env, *ucv, None).unwrap();
-        let llbc_ty = translate_ety(bt_ctx, mir_ty).unwrap();
-        let v = translate_const_value(bt_ctx, &llbc_ty, mir_ty, &cv);
-        (llbc_ty, v)
-    }
-}
-
-/// Translate a constant which may not be yet evaluated.
-fn translate_constant_kind<'tcx>(
-    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
-    constant: &rustc_middle::mir::ConstantKind<'tcx>,
-) -> (ty::ETy, e::OperandConstantValue) {
-    trace!("{:?}", constant);
-
-    match constant {
-        // This is the "normal" constant case
-        // TODO: this changed when we updated from Nightly 2022-01-29 to
-        // Nightly 2022-09-19, and the `Val` case used to be ignored.
-        // SH: I'm not sure which corresponds to what (the documentation
-        // is not super clear).
-        mir::ConstantKind::Ty(c) => {
-            match c.kind() {
-                ConstKind::Value(_) => {
-                    // TODO: the value is now a [ValTree]
-                    unimplemented!();
-                }
-                ConstKind::Expr(_) => {
-                    unimplemented!();
-                }
-                ConstKind::Unevaluated(ucv) => {
-                    // Two cases:
-                    // - if we extract the constants at top level, we lookup the constant
-                    //   identifier and refer to it
-                    // - otherwise, we evaluate the constant and insert it in place
-                    if extract_constants_at_top_level(bt_ctx.ft_ctx.mir_level) {
-                        translate_constant_id_as_top_level(bt_ctx, ucv.def.did)
-                    } else {
-                        // TODO: we can't call [translate_const_kind_unevaluated]:
-                        // the types don't match.
-                        // We could use [TyCtxt.const_eval_resolve_for_typeck]
-                        // to get a [ValTree]
-                        unimplemented!();
-                    }
-                }
-                ConstKind::Param(_)
-                | ConstKind::Infer(_)
-                | ConstKind::Bound(_, _)
-                | ConstKind::Placeholder(_)
-                | ConstKind::Error(_) => {
-                    unreachable!("Unexpected: {:?}", constant);
-                }
-            }
-        }
-        // I'm not sure what this is about: the documentation is weird.
-        mir::ConstantKind::Val(cv, ty) => {
-            trace!("cv: {:?}, ty: {:?}", cv, ty);
-            translate_evaluated_operand_constant(bt_ctx, ty, cv)
-        }
-        rustc_middle::mir::ConstantKind::Unevaluated(ucv, mir_ty) => {
-            translate_const_kind_unevaluated(bt_ctx, mir_ty, ucv)
-        }
-    }
-}
-
-/// Translate a constant which may not be yet evaluated.
-fn translate_operand_constant<'tcx>(
-    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
-    constant: &mir::Constant<'tcx>,
-) -> (ty::ETy, e::OperandConstantValue) {
-    trace!("{:?}", constant);
-    use std::ops::Deref;
-    let constant = &constant.deref();
-
-    translate_constant_kind(bt_ctx, &constant.literal)
-}
-
 /// Translate an operand with its type
 fn translate_operand_with_type<'tcx>(
     bt_ctx: &BodyTransContext<'tcx, '_, '_>,
@@ -1078,7 +677,8 @@ fn translate_operand_with_type<'tcx>(
             (e::Operand::Move(p), ty)
         }
         Operand::Constant(constant) => {
-            let (ty, constant) = translate_operand_constant(bt_ctx, constant);
+            let (ty, constant) =
+                translate_operand_constant(&bt_ctx.to_type_trans_context(), constant);
             (e::Operand::Const(ty.clone(), constant), ty)
         }
     }
@@ -1228,7 +828,8 @@ fn translate_rvalue<'tcx>(
             // We *have* to desugar here; we don't have enough context (the destination place, the
             // lifetime variable) to translate this into a built-in function call. This is why we
             // don't have a ArrayRepeat AssumedFunId.
-            e::Rvalue::Aggregate(e::AggregateKind::Array(t), operands)
+            let c = ty::ConstGeneric::Value(PrimitiveValue::Scalar(ScalarValue::Usize(c as usize)));
+            e::Rvalue::Aggregate(e::AggregateKind::Array(t, c), operands)
         }
         mir::Rvalue::Ref(_region, borrow_kind, place) => {
             let place = translate_place(bt_ctx, place);
@@ -1257,31 +858,43 @@ fn translate_rvalue<'tcx>(
             let (op, src_ty) = translate_operand_with_type(bt_ctx, operand);
 
             match (cast_kind, &src_ty, &tgt_ty) {
-                | (rustc_middle::mir::CastKind::IntToInt, _, _) => {
+                (rustc_middle::mir::CastKind::IntToInt, _, _) => {
                     // We only support source and target types for integers
                     let tgt_ty = *tgt_ty.as_primitive().as_integer();
                     let src_ty = *src_ty.as_primitive().as_integer();
 
                     e::Rvalue::UnaryOp(e::UnOp::Cast(src_ty, tgt_ty), op)
-                },
-                | (rustc_middle::mir::CastKind::Pointer(PointerCast::Unsize),
+                }
+                (
+                    rustc_middle::mir::CastKind::Pointer(PointerCast::Unsize),
                     ty::Ty::Ref(_, t1, _),
-                    ty::Ty::Ref(_, t2, _)) => {
-                        // In MIR terminology, we go from &[T; l] to &[T] which means we
-                        // effectively "unsize" the type, as `l` no longer appears in the
-                        // destination type. At runtime, the converse happens: the length
-                        // materializes into the fat pointer.
-                        match (&**t1, &**t2) {
-                            (ty::Ty::Array(_, l), ty::Ty::Slice(_)) => {
-                                e::Rvalue::UnaryOp(e::UnOp::SliceNew(*l), op)
-                            },
-                            _ => {
-                                panic!("Unsupported cast: {:?}, src={:?}, dst={:?}", rvalue, src_ty, tgt_ty)
-                            }
+                    ty::Ty::Ref(_, t2, _),
+                ) => {
+                    // In MIR terminology, we go from &[T; l] to &[T] which means we
+                    // effectively "unsize" the type, as `l` no longer appears in the
+                    // destination type. At runtime, the converse happens: the length
+                    // materializes into the fat pointer.
+                    match (&**t1, &**t2) {
+                        (
+                            ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Array), _, tys, _),
+                            ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Slice), _, tys1, _),
+                        ) => {
+                            assert!(tys[0] == tys1[0]);
+                            e::Rvalue::UnaryOp(e::UnOp::ArrayToSlice, op)
                         }
-                },
-                | _ => {
-                    panic!("Unsupported cast: {:?}, src={:?}, dst={:?}", rvalue, src_ty, tgt_ty)
+                        _ => {
+                            panic!(
+                                "Unsupported cast: {:?}, src={:?}, dst={:?}",
+                                rvalue, src_ty, tgt_ty
+                            )
+                        }
+                    }
+                }
+                _ => {
+                    panic!(
+                        "Unsupported cast: {:?}, src={:?}, dst={:?}",
+                        rvalue, src_ty, tgt_ty
+                    )
                 }
             }
         }
@@ -1330,8 +943,11 @@ fn translate_rvalue<'tcx>(
 
             match aggregate_kind.deref() {
                 mir::AggregateKind::Array(ty) => {
-                    let t_ty = translate_ety(bt_ctx, &ty);
-                    e::Rvalue::Aggregate(e::AggregateKind::Array(t_ty.unwrap()), operands_t)
+                    let t_ty = translate_ety(bt_ctx, &ty).unwrap();
+                    let cg = ty::ConstGeneric::Value(PrimitiveValue::Scalar(ScalarValue::Usize(
+                        operands_t.len(),
+                    )));
+                    e::Rvalue::Aggregate(e::AggregateKind::Array(t_ty, cg), operands_t)
                 }
                 mir::AggregateKind::Tuple => {
                     e::Rvalue::Aggregate(e::AggregateKind::Tuple, operands_t)
@@ -1355,7 +971,7 @@ fn translate_rvalue<'tcx>(
                     assert!(field_index.is_none());
 
                     // Translate the substitution
-                    let (region_params, mut type_params) =
+                    let (region_params, mut type_params, cg_params) =
                         translate_subst_generic_args_in_body(bt_ctx, None, substs).unwrap();
 
                     if adt_id.is_local() {
@@ -1385,8 +1001,13 @@ fn translate_rvalue<'tcx>(
                             }
                         };
 
-                        let akind =
-                            e::AggregateKind::Adt(id_t, variant_id, region_params, type_params);
+                        let akind = e::AggregateKind::Adt(
+                            id_t,
+                            variant_id,
+                            region_params,
+                            type_params,
+                            cg_params,
+                        );
 
                         e::Rvalue::Aggregate(akind, operands_t)
                     } else {
@@ -1415,15 +1036,16 @@ fn translate_rvalue<'tcx>(
                                 e::AggregateKind::Option(variant_id, type_params.pop().unwrap());
 
                             e::Rvalue::Aggregate(akind, operands_t)
-                        }
-                        else if name.equals_ref_name(&assumed::RANGE_NAME) {
+                        } else if name.equals_ref_name(&assumed::RANGE_NAME) {
                             // Sanity checks
                             assert!(region_params.is_empty());
                             // Ranges are parametric over the type of indices
                             assert!(type_params.len() == 1);
-                            e::Rvalue::Aggregate(e::AggregateKind::Range(type_params.pop().unwrap()), operands_t)
-                        }
-                        else {
+                            e::Rvalue::Aggregate(
+                                e::AggregateKind::Range(type_params.pop().unwrap()),
+                                operands_t,
+                            )
+                        } else {
                             panic!("Unsupported ADT: {}", name);
                         }
                     }
@@ -1936,12 +1558,16 @@ fn translate_function_call<'tcx>(
             let t_arg = translate_move_box_first_projector_operand(bt_ctx, arg);
 
             // Return
-            Ok(ast::RawTerminator::Call {
+            let call = ast::Call {
                 func: ast::FunId::Assumed(ast::AssumedFunId::BoxFree),
                 region_args: vec![],
                 type_args: vec![t_ty],
+                const_generic_args: vec![],
                 args: vec![t_arg],
                 dest: lval,
+            };
+            Ok(ast::RawTerminator::Call {
+                call,
                 target: next_block,
             })
         } else {
@@ -1960,7 +1586,7 @@ fn translate_function_call<'tcx>(
             };
 
             // Translate the type parameters
-            let (region_args, type_args) =
+            let (region_args, type_args, const_generic_args) =
                 translate_subst_generic_args_in_body(bt_ctx, used_type_args, substs)?;
 
             // Translate the arguments
@@ -1980,13 +1606,17 @@ fn translate_function_call<'tcx>(
                 let def_id = bt_ctx.ft_ctx.get_def_id_from_rid(def_id).unwrap();
 
                 let func = ast::FunId::Regular(def_id);
-
-                Ok(ast::RawTerminator::Call {
+                let call = ast::Call {
                     func,
                     region_args,
                     type_args,
+                    const_generic_args,
                     args,
                     dest: lval,
+                };
+
+                Ok(ast::RawTerminator::Call {
+                    call,
                     target: next_block,
                 })
             } else {
@@ -2004,6 +1634,7 @@ fn translate_function_call<'tcx>(
                     def_id,
                     region_args,
                     type_args,
+                    const_generic_args,
                     args,
                     lval,
                     next_block,
@@ -2020,7 +1651,7 @@ fn translate_subst_generic_args_in_body<'tcx, 'ctx, 'ctx1>(
     bt_ctx: &BodyTransContext<'tcx, 'ctx, 'ctx1>,
     used_args: Option<Vec<bool>>,
     substs: &rustc_middle::ty::subst::InternalSubsts<'tcx>,
-) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>)> {
+) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>, Vec<ty::ConstGeneric>)> {
     let substs: Vec<rustc_middle::ty::subst::GenericArg<'tcx>> = match used_args {
         Option::None => substs.iter().collect(),
         Option::Some(used_args) => {
@@ -2035,6 +1666,7 @@ fn translate_subst_generic_args_in_body<'tcx, 'ctx, 'ctx1>(
 
     let mut t_args_regions = Vec::new();
     let mut t_args_tys = Vec::new();
+    let t_args_cgs = Vec::new();
     for param in substs.iter() {
         match param.unpack() {
             rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
@@ -2046,12 +1678,13 @@ fn translate_subst_generic_args_in_body<'tcx, 'ctx, 'ctx1>(
                 t_args_regions.push(translate_erased_region(region.kind()));
             }
             rustc_middle::ty::subst::GenericArgKind::Const(_) => {
+                // TODO:
                 unimplemented!();
             }
         }
     }
 
-    Ok((t_args_regions, t_args_tys))
+    Ok((t_args_regions, t_args_tys, t_args_cgs))
 }
 
 /// Translate a parameter substitution used inside a function body.
@@ -2114,6 +1747,7 @@ fn translate_primitive_function_call(
     def_id: DefId,
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
+    const_generic_args: Vec<ty::ConstGeneric>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -2146,39 +1780,57 @@ fn translate_primitive_function_call(
         | ast::AssumedFunId::VecNew
         | ast::AssumedFunId::VecPush
         | ast::AssumedFunId::VecInsert
-        | ast::AssumedFunId::VecLen => Ok(ast::RawTerminator::Call {
-            func: ast::FunId::Assumed(aid),
+        | ast::AssumedFunId::VecLen => {
+            let call = ast::Call {
+                func: ast::FunId::Assumed(aid),
+                region_args,
+                type_args,
+                const_generic_args,
+                args,
+                dest,
+            };
+            Ok(ast::RawTerminator::Call { call, target })
+        }
+        ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => translate_box_deref(
+            aid,
             region_args,
             type_args,
+            const_generic_args,
             args,
             dest,
             target,
-        }),
-        ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => {
-            translate_box_deref(aid, region_args, type_args, args, dest, target)
-        }
-        ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
-            translate_vec_index(aid, region_args, type_args, args, dest, target)
-        }
-        | ast::AssumedFunId::ArraySlice => {
+        ),
+        ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => translate_vec_index(
+            aid,
+            region_args,
+            type_args,
+            const_generic_args,
+            args,
+            dest,
+            target,
+        ),
+        ast::AssumedFunId::ArraySlice | ast::AssumedFunId::ArrayMutSlice => {
             // Slice (a, r), where `a` is the array and `r` the range. Note that this isn't any
             // different from a regular function call. Ideally, we'd have a generic assumed
             // function mechanism.
             assert!(type_args.len() == 1);
             assert!(args.len() == 2);
 
-            Ok(ast::RawTerminator::Call {
+            let call = ast::Call {
                 func: ast::FunId::Assumed(aid),
                 region_args,
                 type_args,
+                const_generic_args,
                 args,
                 dest,
-                target,
-            })
+            };
+
+            Ok(ast::RawTerminator::Call { call, target })
         }
-        | ast::AssumedFunId::ArrayUpdate
-        | ast::AssumedFunId::ArrayIndex
-        | ast::AssumedFunId::BoxFree => {
+        ast::AssumedFunId::ArrayIndex | ast::AssumedFunId::ArrayMutIndex => {
+            unimplemented!();
+        }
+        ast::AssumedFunId::ArrayUpdate | ast::AssumedFunId::BoxFree => {
             unreachable!();
         }
     }
@@ -2190,6 +1842,7 @@ fn translate_box_deref(
     aid: ast::AssumedFunId,
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
+    const_generic_args: Vec<ty::ConstGeneric>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -2212,14 +1865,15 @@ fn translate_box_deref(
     let boxed_ty = boxed_ty.unwrap();
     let type_args = vec![boxed_ty.clone()];
 
-    Ok(ast::RawTerminator::Call {
+    let call = ast::Call {
         func: ast::FunId::Assumed(aid),
         region_args,
         type_args,
+        const_generic_args,
         args,
         dest,
-        target,
-    })
+    };
+    Ok(ast::RawTerminator::Call { call, target })
 }
 
 /// Translate `core::ops::index::{Index,IndexMut}::{index,index_mut}`
@@ -2228,6 +1882,7 @@ fn translate_vec_index(
     aid: ast::AssumedFunId,
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
+    const_generic_args: Vec<ty::ConstGeneric>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -2251,14 +1906,15 @@ fn translate_vec_index(
     };
 
     let type_args = vec![arg_ty.clone()];
-    Ok(ast::RawTerminator::Call {
+    let call = ast::Call {
         func: ast::FunId::Assumed(aid),
         region_args,
         type_args,
+        const_generic_args,
         args,
         dest,
-        target,
-    })
+    };
+    Ok(ast::RawTerminator::Call { call, target })
 }
 
 /// Small utility
@@ -2411,6 +2067,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
         num_early_bound_regions: late_bound_regions.len(),
         regions_hierarchy: rh::RegionGroups::new(), // Hierarchy not yet computed
         type_params: bt_ctx.type_vars.clone(),
+        const_generic_params: ty::ConstGenericVarId::Vector::new(), // TODO
         inputs,
         output,
     };
@@ -2610,9 +2267,17 @@ fn translate_global(
     let mir_ty = tcx.type_of(info.rid);
 
     let type_ = {
-        let ty_ctx = TypeTransContext::new(ft_ctx.type_defs, ft_ctx.ordered);
-        let empty = im::OrdMap::new();
-        translate_types::translate_ety(tcx, &ty_ctx, &empty, &mir_ty)?
+        let tt_ctx = TypeTransContext::new(
+            info.rid,
+            tcx,
+            type_defs,
+            global_defs,
+            ordered,
+            im::OrdMap::new(),
+            im::OrdMap::new(),
+            mir_level,
+        );
+        translate_types::translate_ety(&tt_ctx, &mir_ty)?
     };
 
     let bt_ctx = BodyTransContext::new(info.rid, &ft_ctx);
@@ -2640,7 +2305,11 @@ fn translate_global(
                     // Evaluate the constant
                     // We need a param_env: we use the expression def id as a dummy id...
 
-                    let (ty, val) = translate_evaluated_operand_constant(&bt_ctx, &mir_ty, &c);
+                    let (ty, val) = translate_evaluated_operand_constant(
+                        &bt_ctx.to_type_trans_context(),
+                        &mir_ty,
+                        &c,
+                    );
                     Option::Some(global_generate_assignment_body(
                         sess,
                         tcx,

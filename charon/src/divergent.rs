@@ -32,7 +32,9 @@ fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &llbc::
                 | ast::AssumedFunId::VecIndex
                 | ast::AssumedFunId::VecIndexMut
                 | ast::AssumedFunId::ArrayIndex
+                | ast::AssumedFunId::ArrayMutIndex
                 | ast::AssumedFunId::ArraySlice
+                | ast::AssumedFunId::ArrayMutSlice
                 | ast::AssumedFunId::ArrayUpdate => false,
             },
         },

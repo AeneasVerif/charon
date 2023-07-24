@@ -182,7 +182,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
 
     // # Step 4: translate the types
     let (types_constraints, type_defs) =
-        translate_types::translate_types(sess, tcx, &ordered_decls)?;
+        translate_types::translate_types(sess, tcx, &ordered_decls, mir_level)?;
 
     // # Step 5: translate the functions to ULLBC (Unstructured LLBC).
     // Note that from now onwards, both type and function definitions have been

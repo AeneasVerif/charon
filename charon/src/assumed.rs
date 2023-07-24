@@ -57,6 +57,7 @@ pub static MARKER_SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
 /// - some of the functions (the panic functions) will actually not be translated
 ///   to functions: there are thus missing identifiers.
 /// - some of the ids here are actually traits, that we disambiguate later
+/// TODO: merge with the other enum?
 #[derive(EnumIsA)]
 enum FunId {
     /// `core::panicking::panic`
@@ -76,10 +77,6 @@ enum FunId {
     VecPush,
     VecInsert,
     VecLen,
-    /// `Index::index` for `Vec`
-    VecIndex,
-    /// `Index::index_mut` for `Vec`
-    VecIndexMut,
 }
 
 pub fn get_type_id_from_name(name: &TypeName) -> Option<types::AssumedTy> {
@@ -232,6 +229,7 @@ pub fn type_to_used_params(name: &TypeName) -> Option<Vec<bool>> {
                 AssumedTy::PtrUnique | AssumedTy::PtrNonNull => {
                     vec![true]
                 }
+                AssumedTy::Array | AssumedTy::Slice => vec![true],
             };
             Option::Some(id)
         }
@@ -295,12 +293,12 @@ pub fn function_to_info(name: &FunName) -> Option<FunInfo> {
                     used_type_params: vec![true, false],
                     used_args: vec![true],
                 },
-                FunId::VecIndex => FunInfo {
+                FunId::Index => FunInfo {
                     // The second type parameter is for the index type (`usize` for vectors)
                     used_type_params: vec![true, false],
                     used_args: vec![true, true],
                 },
-                FunId::VecIndexMut => FunInfo {
+                FunId::IndexMut => FunInfo {
                     // The second type parameter is for the index type (`usize` for vectors)
                     used_type_params: vec![true, false],
                     used_args: vec![true, true],

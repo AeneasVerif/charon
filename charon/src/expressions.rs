@@ -103,8 +103,8 @@ pub enum UnOp {
     /// The first integer type gives the source type, the second one gives
     /// the destination type.
     Cast(IntegerTy, IntegerTy),
-    // Coercion from array (i.e., [T; N]) to slice.
-    SliceNew(ScalarValue),
+    /// Coercion from array (i.e., [T; N]) to slice.
+    ArrayToSlice,
 }
 
 /// Binary operations.
@@ -230,6 +230,7 @@ pub enum AggregateKind {
     // of the external enumerations - because as they are public, their variants are
     // public)
     Option(VariantId::Id, ETy),
+    // TODO: do we really need this?
     Range(ETy),
     Adt(
         TypeDeclId::Id,
@@ -238,4 +239,7 @@ pub enum AggregateKind {
         Vec<ETy>,
         Vec<ConstGeneric>,
     ),
+    // We don't put this with the ADT cas because this is the only assumed type
+    // with aggregates.
+    Array(ETy, ConstGeneric),
 }

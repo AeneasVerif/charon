@@ -53,7 +53,7 @@ impl std::fmt::Display for UnOp {
             UnOp::Not => write!(f, "~"),
             UnOp::Neg => write!(f, "-"),
             UnOp::Cast(src, tgt) => write!(f, "cast<{src},{tgt}>"),
-            UnOp::SliceNew(l) => write!(f, "mk_slice<{:?}>", l),
+            UnOp::ArrayToSlice => write!(f, "array_to_slice"),
         }
     }
 }
@@ -260,6 +260,9 @@ impl Rvalue {
                         };
                         format!("{} {{ {} }}", variant, fields.join(", "))
                     }
+                    AggregateKind::Array(_, _) => {
+                        format!("[{}]", ops_s.join(", "))
+                    }
                     AggregateKind::Range(_) => {
                         format!("@Range")
                     }
@@ -328,7 +331,17 @@ impl Serialize for AggregateKind {
                 vs.serialize_field(&tys)?;
                 let cgs = VecSerializer::new(cgs);
                 vs.serialize_field(&cgs)?;
-
+                vs.end()
+            }
+            AggregateKind::Array(ty, cg) => {
+                let mut vs = serializer.serialize_tuple_variant(
+                    enum_name,
+                    variant_index,
+                    "AggregatedArray",
+                    variant_arity,
+                )?;
+                vs.serialize_field(ty)?;
+                vs.serialize_field(cg)?;
                 vs.end()
             }
             AggregateKind::Range(ty) => {

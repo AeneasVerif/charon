@@ -79,6 +79,7 @@ pub fn fmt_call<'a, 'b, T>(
     func: &'a FunId,
     region_args: &'a Vec<ErasedRegion>,
     type_args: &'a Vec<ETy>,
+    const_generic_args: &'a Vec<ConstGeneric>,
     args: &'a [Operand],
 ) -> String
 where
@@ -92,13 +93,18 @@ where
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
         + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
 {
-    let rt_args = if region_args.len() + type_args.len() == 0 {
+    let rt_args = if region_args.len() + type_args.len() + const_generic_args.len() == 0 {
         "".to_string()
     } else {
         let regions_s: Vec<String> = region_args.iter().map(|x| x.to_string()).collect();
         let mut types_s: Vec<String> = type_args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
+        let mut cgs_s: Vec<String> = const_generic_args
+            .iter()
+            .map(|x| x.fmt_with_ctx(ctx))
+            .collect();
         let mut s = regions_s;
         s.append(&mut types_s);
+        s.append(&mut cgs_s);
         format!("<{}>", s.join(", "))
     };
     let args: Vec<String> = args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
@@ -127,13 +133,19 @@ where
                 format!("core::ops::index::IndexMut<alloc::vec::Vec{rt_args}>::index_mut",)
             }
             AssumedFunId::ArrayIndex => {
-                format!("core::ops::array::Index{rt_args}::index",)
+                format!("core::ops::array::Index[{rt_args}]::index",)
+            }
+            AssumedFunId::ArrayMutIndex => {
+                format!("core::ops::array::IndexMut[{rt_args}]::mut_index",)
             }
             AssumedFunId::ArrayUpdate => {
-                format!("core::ops::array::Update{rt_args}::update",)
+                format!("core::ops::array::Update[{rt_args}]::update",)
             }
             AssumedFunId::ArraySlice => {
                 format!("core::ops::array::Slice{rt_args}::slice",)
+            }
+            AssumedFunId::ArrayMutSlice => {
+                format!("core::ops::array::Slice{rt_args}::mut_slice",)
             }
         },
     };
@@ -283,7 +295,7 @@ impl<'a> Formatter<TypeDeclId::Id> for FunSigFormatter<'a> {
     }
 }
 
-impl <'a> Formatter<ConstGenericVarId::Id> for FunSigFormatter<'a> {
+impl<'a> Formatter<ConstGenericVarId::Id> for FunSigFormatter<'a> {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
         let cg_var = self.sig.const_generic_params.get(id).unwrap();
         cg_var.to_string()
@@ -455,7 +467,7 @@ pub struct GAstFormatter<'ctx, FD, GD> {
     pub type_vars: Option<&'ctx TypeVarId::Vector<TypeVar>>,
     /// Same as for `type_vars`.
     pub vars: Option<&'ctx VarId::Vector<Var>>,
-    /// Same as for `type_vars` 
+    /// Same as for `type_vars`
     pub const_generic_vars: Option<&'ctx ConstGenericVarId::Vector<ConstGenericVar>>,
 }
 
@@ -494,7 +506,7 @@ impl<'ctx, FD, GD> GAstFormatter<'ctx, FD, GD> {
             global_context,
             type_vars,
             vars,
-            const_generic_vars
+            const_generic_vars,
         }
     }
 }

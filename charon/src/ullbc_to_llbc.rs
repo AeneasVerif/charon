@@ -57,14 +57,7 @@ fn get_block_targets(body: &src::ExprBody, block_id: src::BlockId::Id) -> Vec<sr
     match &block.terminator.content {
         src::RawTerminator::Goto { target }
         | src::RawTerminator::Drop { place: _, target }
-        | src::RawTerminator::Call {
-            func: _,
-            region_args: _,
-            type_args: _,
-            args: _,
-            dest: _,
-            target,
-        }
+        | src::RawTerminator::Call { call: _, target }
         | src::RawTerminator::Assert {
             cond: _,
             expected: _,
@@ -1468,14 +1461,7 @@ fn translate_terminator(
             let st = tgt::Statement::new(src_meta, tgt::RawStatement::Drop(place.clone()));
             Some(combine_statement_and_statement(st, opt_child))
         }
-        src::RawTerminator::Call {
-            func,
-            region_args,
-            type_args,
-            args,
-            dest,
-            target,
-        } => {
+        src::RawTerminator::Call { call, target } => {
             let opt_child = translate_child_block(
                 info,
                 parent_loops,
@@ -1483,13 +1469,7 @@ fn translate_terminator(
                 terminator.meta,
                 *target,
             );
-            let st = tgt::RawStatement::Call(tgt::Call {
-                func: func.clone(),
-                region_args: region_args.clone(),
-                type_args: type_args.clone(),
-                args: args.clone(),
-                dest: dest.clone(),
-            });
+            let st = tgt::RawStatement::Call(call.clone());
             let st = tgt::Statement::new(src_meta, st);
             Some(combine_statement_and_statement(st, opt_child))
         }
