@@ -35,7 +35,8 @@ fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &llbc::
                 | ast::AssumedFunId::ArrayMutIndex
                 | ast::AssumedFunId::ArraySlice
                 | ast::AssumedFunId::ArrayMutSlice
-                | ast::AssumedFunId::ArrayUpdate => false,
+                | ast::AssumedFunId::ArrayUpdate
+                | ast::AssumedFunId::ArrayToSlice => false,
             },
         },
         RawStatement::Sequence(st1, st2) => {

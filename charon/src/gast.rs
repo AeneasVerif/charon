@@ -1,7 +1,7 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 #![allow(dead_code)]
 
-pub use crate::expressions::GlobalDeclId;
+pub use crate::expressions::{GlobalDeclId, Operand, Place};
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
 use crate::names::FunName;
@@ -161,8 +161,26 @@ pub enum AssumedFunId {
     ArrayIndex,
     ArrayMutIndex,
     ArrayUpdate,
-    // Converts a [T;N] into an &[T], but taking a range as an argument (unlike the SliceNew
-    // UnaryOp, which takes no argument).
+    /// Converts a [T;N] into an &[T], but taking a range as an argument (unlike the
+    /// SliceNew UnaryOp, which takes no argument).
     ArraySlice,
     ArrayMutSlice,
+    /// We introduced this in a micro-pass: this is originally a unop, that we
+    /// later transform to a function call.
+    ArrayToSlice,
+}
+
+/// TODO: factor out with [Rvalue]
+#[derive(Debug, Clone, Serialize)]
+pub struct Call {
+    pub func: FunId,
+    /// Technically this is useless, but we still keep it because we might
+    /// want to introduce some information (and the way we encode from MIR
+    /// is as simple as possible - and in MIR we also have a vector of erased
+    /// regions).
+    pub region_args: Vec<ErasedRegion>,
+    pub type_args: Vec<ETy>,
+    pub const_generic_args: Vec<ConstGeneric>,
+    pub args: Vec<Operand>,
+    pub dest: Place,
 }

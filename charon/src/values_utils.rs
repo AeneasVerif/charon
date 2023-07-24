@@ -287,32 +287,32 @@ impl ScalarValue {
     }
 }
 
-impl std::string::ToString for ScalarValue {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for ScalarValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
-            ScalarValue::Isize(v) => format!("{v} : isize"),
-            ScalarValue::I8(v) => format!("{v} : i8"),
-            ScalarValue::I16(v) => format!("{v} : i16"),
-            ScalarValue::I32(v) => format!("{v} : i32"),
-            ScalarValue::I64(v) => format!("{v} : i64"),
-            ScalarValue::I128(v) => format!("{v} : i128"),
-            ScalarValue::Usize(v) => format!("{v} : usize"),
-            ScalarValue::U8(v) => format!("{v} : u8"),
-            ScalarValue::U16(v) => format!("{v} : u16"),
-            ScalarValue::U32(v) => format!("{v} : u32"),
-            ScalarValue::U64(v) => format!("{v} : u64"),
-            ScalarValue::U128(v) => format!("{v} : u128"),
+            ScalarValue::Isize(v) => write!(f, "{v} : isize"),
+            ScalarValue::I8(v) => write!(f, "{v} : i8"),
+            ScalarValue::I16(v) => write!(f, "{v} : i16"),
+            ScalarValue::I32(v) => write!(f, "{v} : i32"),
+            ScalarValue::I64(v) => write!(f, "{v} : i64"),
+            ScalarValue::I128(v) => write!(f, "{v} : i128"),
+            ScalarValue::Usize(v) => write!(f, "{v} : usize"),
+            ScalarValue::U8(v) => write!(f, "{v} : u8"),
+            ScalarValue::U16(v) => write!(f, "{v} : u16"),
+            ScalarValue::U32(v) => write!(f, "{v} : u32"),
+            ScalarValue::U64(v) => write!(f, "{v} : u64"),
+            ScalarValue::U128(v) => write!(f, "{v} : u128"),
         }
     }
 }
 
-impl std::string::ToString for PrimitiveValue {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for PrimitiveValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
-            PrimitiveValue::Scalar(v) => v.to_string(),
-            PrimitiveValue::Bool(v) => v.to_string(),
-            PrimitiveValue::Char(v) => v.to_string(),
-            PrimitiveValue::String(v) => v.to_string(),
+            PrimitiveValue::Scalar(v) => write!(f, "{v}"),
+            PrimitiveValue::Bool(v) => write!(f, "{v}"),
+            PrimitiveValue::Char(v) => write!(f, "{v}"),
+            PrimitiveValue::String(v) => write!(f, "{v}"),
         }
     }
 }

@@ -89,7 +89,7 @@ pub enum BorrowKind {
 }
 
 /// Unary operation
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize)]
 pub enum UnOp {
     Not,
     /// This can overflow. In practice, rust introduces an assert before
@@ -104,7 +104,10 @@ pub enum UnOp {
     /// the destination type.
     Cast(IntegerTy, IntegerTy),
     /// Coercion from array (i.e., [T; N]) to slice.
-    ArrayToSlice,
+    /// We later transform this to a function call.
+    /// The type and the scalar value are not *necessary* as we can retrieve it from the
+    /// context, but storing it here is very useful.
+    ArrayToSlice(ETy, ConstGeneric),
 }
 
 /// Binary operations.

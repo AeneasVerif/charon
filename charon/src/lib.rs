@@ -66,6 +66,7 @@ pub mod meta;
 pub mod meta_utils;
 pub mod names;
 pub mod names_utils;
+pub mod ops_to_function_calls;
 pub mod reconstruct_asserts;
 pub mod regions_hierarchy;
 pub mod register;

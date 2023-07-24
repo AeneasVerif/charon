@@ -56,6 +56,7 @@ mod meta;
 mod meta_utils;
 mod names;
 mod names_utils;
+mod ops_to_function_calls;
 mod reconstruct_asserts;
 mod regions_hierarchy;
 mod register;

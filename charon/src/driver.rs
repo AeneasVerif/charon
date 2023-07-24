@@ -7,6 +7,7 @@ use crate::extract_global_assignments;
 use crate::get_mir::MirLevel;
 use crate::insert_assign_return_unit;
 use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId};
+use crate::ops_to_function_calls;
 use crate::reconstruct_asserts;
 use crate::register;
 use crate::regularize_constant_adts;
@@ -217,18 +218,17 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         GlobalDeclId::Vector::from_iter(ullbc_globals.iter().map(|d| d.name.to_string()));
     let fmt_ctx = CtxNames::new(&type_defs, &fun_names, &global_names);
 
-    // # Step 6: replace constant ([OperandConstantValue]) ADTs by regular
+    // # Micro-pass: replace constant ([OperandConstantValue]) ADTs by regular
     // (Aggregated) ADTs.
     regularize_constant_adts::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
 
-    // # Step 7: extract statics and constant globals from operands (put them in
+    // # Micro-pass: extract statics and constant globals from operands (put them in
     // a let binding). This pass relies on the absence of constant ADTs from
     // the previous step: it does not inspect them (and would thus miss globals
     // in constant ADTs).
     extract_global_assignments::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
 
-    // # Step 8:
-    // There are two options:
+    // # There are two options:
     // - either the user wants the unstructured LLBC, in which case we stop there
     // - or they want the structured LLBC, in which case we reconstruct the
     //   control-flow and apply micro-passes
@@ -253,7 +253,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             &ullbc_globals,
         );
 
-        // # Step 9: reconstruct the asserts
+        // # Micro-pass: reconstruct the asserts
         reconstruct_asserts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
         for def in &llbc_funs {
@@ -263,10 +263,13 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             );
         }
 
-        // # Step 10: Remove the discriminant reads (merge them with the switches)
+        // # Micro-pass: replace some operations to function calls
+        ops_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Micro-pass: Remove the discriminant reads (merge them with the switches)
         remove_read_discriminant::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 11: add the missing assignments to the return value.
+        // # Micro-pass: add the missing assignments to the return value.
         // When the function return type is unit, the generated MIR doesn't
         // set the return value to `()`. This can be a concern: in the case
         // of Aeneas, it means the return variable contains ⊥ upon returning.
@@ -276,15 +279,15 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // the main or at compile-time).
         insert_assign_return_unit::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 12: remove the drops of locals whose type is `Never` (`!`). This
+        // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
         // is in preparation of the next transformation.
         remove_drop_never::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 13: remove the locals which are never used. After doing so, we
+        // # Micro-pass: remove the locals which are never used. After doing so, we
         // check that there are no remaining locals with type `Never`.
         remove_unused_locals::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 14: compute which functions are potentially divergent. A function
+        // # Micro-pass: compute which functions are potentially divergent. A function
         // is potentially divergent if it is recursive, contains a loop or transitively
         // calls a potentially divergent function.
         // Note that in the future, we may complement this basic analysis with a
@@ -301,7 +304,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             );
         }
 
-        // # Step 15: generate the files.
+        // # Final step: generate the files.
         export::export_llbc(
             crate_name,
             &ordered_decls,

@@ -8,10 +8,10 @@
 
 #![allow(dead_code)]
 use crate::expressions::*;
+pub use crate::gast::*;
 pub use crate::llbc_ast_utils::*;
 use crate::meta::Meta;
 use crate::types::*;
-use crate::ullbc_ast::*;
 pub use crate::ullbc_ast::{Call, CtxNames, FunDeclId, GlobalDeclId, Var};
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};

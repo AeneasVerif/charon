@@ -876,11 +876,15 @@ fn translate_rvalue<'tcx>(
                     // materializes into the fat pointer.
                     match (&**t1, &**t2) {
                         (
-                            ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Array), _, tys, _),
+                            ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Array), _, tys, cgs),
                             ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Slice), _, tys1, _),
                         ) => {
+                            assert!(tys.len() == 1 && cgs.len() == 1);
                             assert!(tys[0] == tys1[0]);
-                            e::Rvalue::UnaryOp(e::UnOp::ArrayToSlice, op)
+                            e::Rvalue::UnaryOp(
+                                e::UnOp::ArrayToSlice(tys[0].clone(), cgs[0].clone()),
+                                op,
+                            )
                         }
                         _ => {
                             panic!(
@@ -1832,6 +1836,10 @@ fn translate_primitive_function_call(
         }
         ast::AssumedFunId::ArrayUpdate | ast::AssumedFunId::BoxFree => {
             unreachable!();
+        }
+        ast::AssumedFunId::ArrayToSlice => {
+            // This case is introduced later, in a micro-pass
+            unreachable!()
         }
     }
 }

@@ -147,6 +147,9 @@ where
             AssumedFunId::ArrayMutSlice => {
                 format!("core::ops::array::Slice{rt_args}::mut_slice",)
             }
+            AssumedFunId::ArrayToSlice => {
+                format!("array_to_slice{rt_args}",)
+            }
         },
     };
 
