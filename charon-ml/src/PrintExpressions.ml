@@ -76,6 +76,9 @@ let rec projection_to_string (fmt : expr_formatter) (inside : string)
               let variant_name = fmt.adt_variant_to_string adt_id variant_id in
               "(" ^ s ^ " as " ^ variant_name ^ ")." ^ field_name))
 
+let projection_to_string fmt inside p =
+  projection_to_string fmt inside (List.rev p)
+
 let place_to_string (fmt : expr_formatter) (p : E.place) : string =
   let var = fmt.var_id_to_string p.E.var_id in
   projection_to_string fmt var p.E.projection

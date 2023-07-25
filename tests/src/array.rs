@@ -11,14 +11,15 @@ fn take_mut_slice(_: &mut [u32]) {}
 
 fn take_all() {
     let mut x: [u32; 2] = [0, 0];
-    // x is deep copied
+    // x is deep copied (copy node appears in Charon, followed by a move)
     take_array(x);
     take_array(x);
-    // x passed by address
+    // x passed by address, there is a reborrow here
     take_array_borrow(&x);
     // automatic cast from array to slice (spanning entire array)
     take_slice(&x);
-    // same
+    // note that both appear as SliceNew expressions, meaning the SliceNew UnOp is overloaded for
+    // mut and non-mut cases
     take_mut_slice(&mut x);
 }
 
@@ -101,4 +102,14 @@ fn f2() -> u32 {
     let b = [0; 32];
     let (b, _) = f4(&b, 16, 18);
     sum2(&a, b)
+}
+
+// To avoid lifetime shortening
+fn ite() {
+    let mut x: [u32; 2] = [0,0];
+    if true {
+        let mut y: [u32; 2] = [0,0];
+        index_mut_slice(&mut x);
+        index_mut_slice(&mut y);
+    }
 }
