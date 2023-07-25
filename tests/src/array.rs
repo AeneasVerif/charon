@@ -58,6 +58,20 @@ fn range_all() {
     update_mut_slice(&mut x[1..3]);
 }
 
+// Nano-tests, with dereferences
+// -----------------------------
+
+fn deref_array_borrow(x: &[u32; 2]) -> u32 {
+    let x: [u32;2] = *x;
+    x[0]
+}
+
+fn deref_array_mut_borrow(x: &mut [u32; 2]) -> u32 {
+    let x: [u32;2] = *x;
+    x[0]
+}
+
+
 // Non-copiable arrays
 // -------------------
 
