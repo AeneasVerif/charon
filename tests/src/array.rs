@@ -1,6 +1,83 @@
 //! Exercise the translation of arrays
 #![allow(dead_code)]
 
+// Nano-tests
+// ----------
+
+fn take_array(_: [u32; 2]) {}
+fn take_array_borrow(_: &[u32; 2]) {}
+fn take_slice(_: &[u32]) {}
+fn take_mut_slice(_: &mut [u32]) {}
+
+fn take_all() {
+    let mut x: [u32; 2] = [0, 0];
+    // x is deep copied
+    take_array(x);
+    take_array(x);
+    // x passed by address
+    take_array_borrow(&x);
+    // automatic cast from array to slice (spanning entire array)
+    take_slice(&x);
+    // same
+    take_mut_slice(&mut x);
+}
+
+fn index_array(x: [u32; 2]) -> u32 { x[0] }
+fn index_array_borrow(x: &[u32; 2]) -> u32 { x[0] }
+fn index_slice(x: &[u32]) -> u32 { x[0] }
+fn index_mut_slice(x: &mut [u32]) -> u32 { x[0] }
+
+fn index_all() -> u32 {
+    let mut x: [u32; 2] = [0, 0];
+    index_array(x) +
+    index_array(x) +
+    index_array_borrow(&x) +
+    index_slice(&x) +
+    index_mut_slice(&mut x)
+}
+
+fn update_array(mut x: [u32; 2]) { x[0] = 1 }
+fn update_array_mut_borrow(x: &mut [u32; 2]) { x[0] = 1 }
+fn update_mut_slice(x: &mut [u32]) { x[0] = 1 }
+
+fn update_all() {
+    let mut x: [u32; 2] = [0, 0];
+    update_array(x);
+    update_array(x);
+    update_array_mut_borrow(&mut x);
+    update_mut_slice(&mut x);
+}
+
+// Nano-tests, with ranges
+// -----------------------
+
+fn range_all() {
+    let mut x: [u32; 4] = [ 0, 0, 0, 0 ];
+    // CONFIRM: there is no way to shrink [T;N] into [T;M] with M<N?
+    update_mut_slice(&mut x[1..3]);
+}
+
+// Non-copiable arrays
+// -------------------
+
+enum T { A, B }
+
+fn take_array_t(_: [T; 2]) {
+}
+
+fn non_copyable_array() {
+    let x: [T; 2] = [ T::A, T::B ];
+    // x is moved (not deep copied!)
+    // TODO: determine whether the translation needs to be aware of that and pass by ref instead of by copy
+    take_array_t(x);
+
+    // this fails, naturally:
+    // take_array_t(x);
+}
+
+// Larger, random tests
+// --------------------
+
 fn sum2(s: &[u32], s2: &[u32]) -> u32 {
     let mut sum = 0;
     assert!(s.len() == s2.len());
@@ -15,17 +92,13 @@ fn sum2(s: &[u32], s2: &[u32]) -> u32 {
 // TODO: this makes the compilation fail
 // const SZ: usize = 32;
 
-fn f3(_: u32) -> () {
-
-}
-
-fn f4(x: &[u32; 32], y: usize, z: usize) -> &[u32] {
-    &x[y..z]
+fn f4(x: &[u32; 32], y: usize, z: usize) -> (&[u32], u32) {
+    (&x[y..z], x[0])
 }
 
 fn f2() -> u32 {
     let a: [u32; 2] = [1, 2];
-    f3(a[0]);
     let b = [0; 32];
-    sum2(&a, f4(&b, 16, 18))
+    let (b, _) = f4(&b, 16, 18);
+    sum2(&a, b)
 }

@@ -596,6 +596,7 @@ let assumed_fun_id_of_json (js : json) : (A.assumed_fun_id, string) result =
   | `String "VecIndex" -> Ok A.VecIndex
   | `String "VecIndexMut" -> Ok A.VecIndexMut
   | `String "ArraySlice" -> Ok A.ArraySlice
+  | `String "ArraySliceMut" -> Ok A.ArraySliceMut
   | _ -> Error ("assumed_fun_id_of_json failed on:" ^ show js)
 
 let fun_id_of_json (js : json) : (A.fun_id, string) result =

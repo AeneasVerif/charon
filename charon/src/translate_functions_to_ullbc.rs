@@ -2120,6 +2120,8 @@ fn translate_primitive_function_call(
         | ast::AssumedFunId::BoxNew
         | ast::AssumedFunId::VecNew
         | ast::AssumedFunId::VecPush
+        | ast::AssumedFunId::ArraySlice
+        | ast::AssumedFunId::ArraySliceMut
         | ast::AssumedFunId::VecInsert
         | ast::AssumedFunId::VecLen => Ok(ast::RawTerminator::Call {
             func: ast::FunId::Assumed(aid),
@@ -2134,22 +2136,6 @@ fn translate_primitive_function_call(
         }
         ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
             translate_vec_index(aid, region_args, type_args, args, dest, target)
-        }
-        | ast::AssumedFunId::ArraySlice => {
-            // Slice (a, r), where `a` is the array and `r` the range. Note that this isn't any
-            // different from a regular function call. Ideally, we'd have a generic assumed
-            // function mechanism.
-            assert!(type_args.len() == 1);
-            assert!(args.len() == 2);
-
-            Ok(ast::RawTerminator::Call {
-                func: ast::FunId::Assumed(aid),
-                region_args,
-                type_args,
-                args,
-                dest,
-                target,
-            })
         }
         | ast::AssumedFunId::ArrayUpdate
         | ast::AssumedFunId::ArrayIndex

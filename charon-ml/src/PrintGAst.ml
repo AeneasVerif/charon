@@ -102,7 +102,9 @@ let call_to_string (fmt : ast_formatter) (indent : string) (call : GA.call) :
             "core::ops::index::IndexMut<alloc::vec::Vec" ^ t_params
             ^ ">::index_mut"
         | GA.ArraySlice ->
-            "mk_slice<" ^ t_params ^ ">")
+            "mk_slice<" ^ t_params ^ ">"
+        | GA.ArraySliceMut ->
+            "mk_slice_mut<" ^ t_params ^ ">")
   in
   let dest = PE.place_to_string fmt call.GA.dest in
   indent ^ dest ^ " := move " ^ name_args ^ args

@@ -168,8 +168,14 @@ pub fn get_fun_id_from_name(name: &FunName, type_args: &Vec<types::ETy>) -> Opti
                         // the Index trait or as a primitive operation like array indexing.
                     }
                 },
-                FunId::VecIndexMut =>
-                    ullbc_ast::AssumedFunId::VecIndexMut,
+                FunId::VecIndexMut => {
+                    match type_args[0] {
+                        types::Ty::Array(..) =>
+                            ullbc_ast::AssumedFunId::ArraySliceMut,
+                        _ =>
+                            ullbc_ast::AssumedFunId::VecIndexMut
+                    }
+                }
             };
             Option::Some(id)
         }
