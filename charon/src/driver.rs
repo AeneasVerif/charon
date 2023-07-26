@@ -4,6 +4,7 @@ use crate::cli_options;
 use crate::export;
 use crate::extract_global_assignments;
 use crate::get_mir::MirLevel;
+use crate::index_to_function_calls;
 use crate::insert_assign_return_unit;
 use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId};
 use crate::ops_to_function_calls;
@@ -271,9 +272,14 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             );
         }
 
-        // # Micro-pass: replace some operations/projections with function calls
-        // (introduces: ArrayToSlice, ArrayIndex, etc.)
+        // # Micro-pass: replace some unops/binops with function calls
+        // (introduces: ArrayToSlice, etc.)
         ops_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Micro-pass: replace the arrays/slices index operations with function
+        // calls.
+        // (introduces: ArraySharedIndex, ArrayMutIndex, etc.)
+        index_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: Remove the discriminant reads (merge them with the switches)
         remove_read_discriminant::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);

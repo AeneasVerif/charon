@@ -1,4 +1,4 @@
-//! Desugar some operations to function calls.
+//! Desugar some unary/binary operations to function calls.
 //! For instance, we desugar ArrayToSlice from an unop to a function call.
 //! This allows a more uniform treatment later on.
 //! TODO: actually transform all the unops and binops to function calls?

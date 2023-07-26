@@ -47,6 +47,7 @@ mod generics;
 mod get_mir;
 mod graphs;
 mod id_vector;
+mod index_to_function_calls;
 mod insert_assign_return_unit;
 mod llbc_ast;
 mod llbc_ast_utils;

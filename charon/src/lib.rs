@@ -57,6 +57,7 @@ pub mod generics;
 pub mod get_mir;
 pub mod graphs;
 pub mod id_vector;
+pub mod index_to_function_calls;
 pub mod insert_assign_return_unit;
 pub mod llbc_ast;
 pub mod llbc_ast_utils;
