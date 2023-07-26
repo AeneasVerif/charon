@@ -17,6 +17,10 @@ use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
 
+/// Asserts are special constructs introduced by Rust to perform dynamic
+/// checks, to detect out-of-bounds accesses or divisions by zero for
+/// instance. We eliminate the assertions in [crate::remove_dynamic_checks],
+/// then introduce other dynamic checks in [crate::reconstruct_asserts].
 #[derive(Debug, Clone, Serialize)]
 pub struct Assert {
     pub cond: Operand,

@@ -61,6 +61,7 @@ mod regions_hierarchy;
 mod register;
 mod regularize_constant_adts;
 mod remove_drop_never;
+mod remove_dynamic_checks;
 mod remove_read_discriminant;
 mod remove_unused_locals;
 mod reorder_decls;

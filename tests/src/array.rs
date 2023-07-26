@@ -9,9 +9,12 @@ fn array_to_mut_slice<T>(s: &mut [T; 32]) -> &mut [T] {
     s
 }
 
-fn index_array<T>(s: &[T; 32], i: usize) -> &T {
+fn index_array_shared<T>(s: &[T; 32], i: usize) -> &T {
     &s[i]
 }
+
+// Remark: can't move out of an array
+// Also: can't move out of a slice.
 
 fn index_array_u32(s: [u32; 32], i: usize) -> u32 {
     s[i]
@@ -71,6 +74,10 @@ fn update_update_slice(s: &mut [&mut [u32]], i: usize, j: usize) {
 
 fn update_update_array(mut s: [[u32; 32]; 32], i: usize, j: usize) {
     s[i][j] = 0;
+}
+
+fn array_local_deep_copy(x: &[u32; 32]) {
+    let _y = *x;
 }
 
 fn f0() {

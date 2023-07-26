@@ -101,9 +101,11 @@ pub enum UnOp {
     /// the destination type.
     Cast(IntegerTy, IntegerTy),
     /// Coercion from array (i.e., [T; N]) to slice.
-    /// We introduce this unop when translating from MIR, then transform it to a function
-    /// call in a micro pass. The type and the scalar value are not *necessary* as we can
-    /// retrieve them from the context, but storing them here is very useful.
+    ///
+    /// **Remark:** We introduce this unop when translating from MIR, **then transform**
+    /// it to a function call in a micro pass. The type and the scalar value are not
+    /// *necessary* as we can retrieve them from the context, but storing them here is
+    /// very useful.
     ArrayToSlice(ETy, ConstGeneric),
 }
 
@@ -185,7 +187,7 @@ pub enum OperandConstantValue {
 
 /// TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
 /// We can also factor out the unops, binops with the function calls.
-#[derive(Debug, Clone, Serialize, EnumToGetters, EnumIsA)]
+#[derive(Debug, Clone, Serialize, EnumToGetters, EnumAsGetters, EnumIsA)]
 pub enum Rvalue {
     Use(Operand),
     Ref(Place, BorrowKind),

@@ -11,6 +11,7 @@ use crate::reconstruct_asserts;
 use crate::register;
 use crate::regularize_constant_adts;
 use crate::remove_drop_never;
+use crate::remove_dynamic_checks;
 use crate::remove_read_discriminant;
 use crate::remove_unused_locals;
 use crate::reorder_decls;
@@ -251,6 +252,14 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             &ullbc_funs,
             &ullbc_globals,
         );
+
+        // # Micro-pass: remove the dynamic checks for array/slice bounds
+        // and division by zero.
+        // **WARNING**: this pass uses the fact that the dynamic checks
+        // introduced by Rustc use a special "assert" construct. Because of
+        // this, it must happen *before* the [reconstruct_asserts] pass.
+        // See the comments in [crate::remove_dynamic_checks].
+        remove_dynamic_checks::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: reconstruct the asserts
         reconstruct_asserts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
