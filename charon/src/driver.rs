@@ -262,7 +262,8 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             );
         }
 
-        // # Micro-pass: replace some operations to function calls
+        // # Micro-pass: replace some operations/projections with function calls
+        // (introduces: ArrayToSlice, ArrayIndex, etc.)
         ops_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: Remove the discriminant reads (merge them with the switches)

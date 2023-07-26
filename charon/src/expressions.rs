@@ -53,12 +53,9 @@ pub enum ProjectionElem {
     /// (for pretty printing for instance). We retrieve it through
     /// type-checking.
     Field(FieldProjKind, FieldId::Id),
-    /// NOTE: this is named, confusingly, as Index in MIR -- we rectify the naming
-    /// MIR imposes that the argument to an offset projection be a local variable, meaning that
-    /// even constant indices into arrays are let-bound as separate variables. We relax the
-    /// criterion here, so as to allow further optimizations of the code being handing it over to
-    /// clients.
-    Offset(VarId::Id),
+    /// MIR imposes that the argument to an offset projection be a local variable, meaning
+    /// that even constant indices into arrays are let-bound as separate variables.
+    Index(VarId::Id),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
@@ -104,9 +101,9 @@ pub enum UnOp {
     /// the destination type.
     Cast(IntegerTy, IntegerTy),
     /// Coercion from array (i.e., [T; N]) to slice.
-    /// We later transform this to a function call.
-    /// The type and the scalar value are not *necessary* as we can retrieve it from the
-    /// context, but storing it here is very useful.
+    /// We introduce this unop when translating from MIR, then transform it to a function
+    /// call in a micro pass. The type and the scalar value are not *necessary* as we can
+    /// retrieve them from the context, but storing them here is very useful.
     ArrayToSlice(ETy, ConstGeneric),
 }
 

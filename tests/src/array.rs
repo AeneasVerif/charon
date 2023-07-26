@@ -13,6 +13,14 @@ fn index_array<T>(s: &[T; 32], i: usize) -> &T {
     &s[i]
 }
 
+fn index_array_u32(s: [u32; 32], i: usize) -> u32 {
+    s[i]
+}
+
+fn index_array_copy(x: &[u32; 32]) -> u32 {
+    x[0]
+}
+
 fn index_mut_array<T>(s: &mut [T; 32], i: usize) -> &mut T {
     &mut s[i]
 }
@@ -41,6 +49,40 @@ fn array_subslice_mut(x: &mut [u32; 32], y: usize, z: usize) -> &mut [u32] {
     &mut x[y..z]
 }
 
+fn index_slice_0<T>(s: &[T]) -> &T {
+    &s[0]
+}
+
+fn index_array_0<T>(s: &[T; 32]) -> &T {
+    &s[0]
+}
+
+fn index_index_slice<'a, T>(s: &'a [&[T]], i: usize, j: usize) -> &'a T {
+    &s[i][j]
+}
+
+fn index_index_array(s: [[u32; 32]; 32], i: usize, j: usize) -> u32 {
+    s[i][j]
+}
+
+fn update_update_slice(s: &mut [&mut [u32]], i: usize, j: usize) {
+    s[i][j] = 0;
+}
+
+fn update_update_array(mut s: [[u32; 32]; 32], i: usize, j: usize) {
+    s[i][j] = 0;
+}
+
+fn f0() {
+    let s: &mut [u32] = &mut [1, 2];
+    s[0] = 1;
+}
+
+fn f1() {
+    let mut s: [u32; 2] = [1, 2];
+    s[0] = 1;
+}
+
 fn sum(s: &[u32]) -> u32 {
     let mut sum = 0;
     let mut i = 0;
@@ -62,6 +104,13 @@ fn sum2(s: &[u32], s2: &[u32]) -> u32 {
     sum
 }
 
+fn f2() -> u32 {
+    let a: [u32; 2] = [1, 2];
+    f3(a[0]);
+    let b = [0; 32];
+    sum2(&a, f4(&b, 16, 18))
+}
+
 fn f3(_: u32) {}
 
 // TODO: this makes the compilation fail
@@ -69,11 +118,4 @@ fn f3(_: u32) {}
 
 fn f4(x: &[u32; 32], y: usize, z: usize) -> &[u32] {
     &x[y..z]
-}
-
-fn f2() -> u32 {
-    let a: [u32; 2] = [1, 2];
-    f3(a[0]);
-    let b = [0; 32];
-    sum2(&a, f4(&b, 16, 18))
 }

@@ -510,7 +510,7 @@ fn translate_projection<'tcx, 'ctx>(
                         projection.push_back(e::ProjectionElem::DerefRawPtr);
                     }
                     _ => {
-                        unreachable!("- pelem: {:?}\n- path_type: {:?}", pelem, path_type);
+                        unreachable!("\n- pelem: {:?}\n- path_type: {:?}", pelem, path_type);
                     }
                 }
             }
@@ -621,15 +621,30 @@ fn translate_projection<'tcx, 'ctx>(
                 projection.push_back(proj_elem);
                 downcast_id = None;
             }
-            mir::ProjectionElem::Index(local) => {
-                let v = bt_ctx.get_local(&local).unwrap();
-                projection.push_back(e::ProjectionElem::Offset(v));
-            }
+            mir::ProjectionElem::Index(local) => match path_type {
+                ty::Ty::Adt(
+                    ty::TypeId::Assumed(ty::AssumedTy::Array | ty::AssumedTy::Slice),
+                    _,
+                    tys,
+                    _,
+                ) => {
+                    assert!(tys.len() == 1);
+
+                    let v = bt_ctx.get_local(&local).unwrap();
+                    projection.push_back(e::ProjectionElem::Index(v));
+
+                    path_type = tys[0].clone();
+                }
+                _ => {
+                    unreachable!("ProjectionElem::Index, path_type:\n{:?}", path_type)
+                }
+            },
             mir::ProjectionElem::ConstantIndex {
                 offset: _,
                 min_length: _,
                 from_end: _,
             } => {
+                // This doesn't seem to occur in MIR built
                 unimplemented!();
             }
             mir::ProjectionElem::Subslice {
@@ -637,6 +652,7 @@ fn translate_projection<'tcx, 'ctx>(
                 to: _,
                 from_end: _,
             } => {
+                // This doesn't seem to occur in MIR built
                 unimplemented!();
             }
             mir::ProjectionElem::OpaqueCast(_) => {
