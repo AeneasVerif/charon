@@ -548,7 +548,7 @@ impl BlockData {
                     f(meta, nst, op);
                 }
             }
-            Rvalue::Global(_) | Rvalue::Discriminant(_) | Rvalue::Ref(_, _) | Rvalue::Len(_, _) => {
+            Rvalue::Global(_) | Rvalue::Discriminant(_) | Rvalue::Ref(_, _) | Rvalue::Len(..) => {
                 // No operands: nothing to do
             }
         }

@@ -229,10 +229,17 @@ pub enum Rvalue {
     Global(GlobalDeclId::Id),
     /// Length of a memory location. The run-time length of e.g. a vector or a slice is
     /// represented differently (but pretty-prints the same, FIXME).
-    /// We remember if the value to dereference is an array or a slice for
-    /// convenience purposes.
-    /// TODO: micro-pass to transform to function call.
-    Len(Place, ArrayOrSlice),
+    /// Should be seen as a function of signature:
+    /// - `fn<T;N>(&[T;N]) -> usize`
+    /// - `fn<T>(&[T]) -> usize`
+    ///
+    /// We store the type argument and the const generic (the latter only for arrays).
+    ///
+    /// [Len] is introduced by rustc for the bound checks: we **eliminate it
+    /// together with the bounds checks**. Whenever the user writes `x.len()`
+    /// where `x` is a slice or an array, they actually call a non-primitive
+    /// function.
+    Len(Place, ETy, Option<ConstGeneric>),
 }
 
 #[derive(Debug, Clone, VariantIndexArity)]

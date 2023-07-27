@@ -23,30 +23,32 @@ impl MutAstVisitor for RemoveDynChecks {
     fn merge(&mut self) {}
 
     /// We simply detect sequences of the following shapes, and remove them:
-    /// ```
-    /// b := copy x < copy y
-    /// assert(move b == true)
-    /// ```
-    ///
+    /// # 1. Division/remainder
     /// ```
     /// b := copy x == const 0
     /// assert(move b == false)
+    ///
+    /// # 2. Arrays/slices
+    /// ```
+    /// l := len(a)
+    /// b := copy x < copy l
+    /// assert(move b == true)
+    /// ```
     /// ```
     fn visit_statement(&mut self, s: &mut Statement) {
         if s.content.is_sequence() {
             let (s0, s1) = s.content.as_sequence();
             if s1.content.is_sequence() {
-                let (s1, _) = s1.content.as_sequence();
+                let (s1, s2) = s1.content.as_sequence();
+                // Division/remainder
                 if s0.content.is_assign() && s1.content.is_assert() {
                     let (dest_p, rv) = s0.content.as_assign();
                     let a = s1.content.as_assert();
 
                     if rv.is_binary_op() {
                         let (binop, _, _) = rv.as_binary_op();
-                        // If the binop is `==`, we don't check that the second
-                        // operand is 0...
-                        let binop_ok =
-                            (binop.is_lt() && a.expected) || (binop.is_eq() && !a.expected);
+                        // We don't check that the second operand is 0...
+                        let binop_ok = binop.is_eq() && !a.expected;
 
                         if binop_ok && a.cond.is_move() {
                             let move_p = a.cond.as_move();
@@ -65,11 +67,53 @@ impl MutAstVisitor for RemoveDynChecks {
                         }
                     }
                 }
+                // Arrays/Slices
+                else if s0.content.is_assign()
+                    && s1.content.is_assign()
+                    && s2.content.is_sequence()
+                {
+                    let (s2, _) = s2.content.as_sequence();
+                    // s0 should be: `l := len(a)`
+                    let (dest_l_p, l_rv) = s0.content.as_assign();
+                    // s1 should be: `b := copy x < copy l`
+                    let (dest_b_p, b_rv) = s1.content.as_assign();
+                    if s2.content.is_assert() {
+                        // s2 should be: `assert(move b == true)`
+                        let a = s2.content.as_assert();
+
+                        if l_rv.is_len() && b_rv.is_binary_op() {
+                            let (binop, _, l_op) = b_rv.as_binary_op();
+                            let binop_ok = binop.is_lt() && a.expected && l_op.is_copy();
+
+                            if binop_ok && a.cond.is_move() {
+                                let l_op_place = l_op.as_copy();
+                                let move_p = a.cond.as_move();
+
+                                if dest_l_p == l_op_place && move_p == dest_b_p {
+                                    // Eliminate the first three statements
+                                    take(s, |s| {
+                                        let (_, s1) = s.content.to_sequence();
+                                        let (_, s2) = s1.content.to_sequence();
+                                        let (_, s3) = s2.content.to_sequence();
+                                        *s3
+                                    });
+                                    self.visit_statement(s);
+                                    // Return so as not to take the default branch
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         // Dive in.
-        // Make sure we eliminate all the asserts.
+        // Make sure we eliminate all the asserts and all the len
         assert!(!s.content.is_assert());
+        if s.content.is_assign() {
+            let (_, rv) = s.content.as_assign();
+            assert!(!rv.is_len());
+        }
         self.default_visit_raw_statement(&mut s.content);
     }
 }

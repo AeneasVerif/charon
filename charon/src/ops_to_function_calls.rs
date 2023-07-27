@@ -5,13 +5,43 @@
 
 #![allow(dead_code)]
 
-use crate::expressions::{MutExprVisitor, Rvalue, UnOp};
+use crate::expressions::{ArrayOrSlice, MutExprVisitor, Rvalue, UnOp};
 use crate::llbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::llbc_ast::{
     AssumedFunId, Call, CtxNames, FunDecls, FunId, GlobalDecls, MutAstVisitor, RawStatement,
     Statement,
 };
+use crate::types::ErasedRegion;
 use crate::types::RefKind;
+
+fn transform_st(s: &mut Statement) -> Vec<Statement> {
+    match &s.content {
+        // Transform the ArrayToSlice unop
+        RawStatement::Assign(p, Rvalue::UnaryOp(UnOp::ArrayToSlice(ref_kind, ty, cg), op)) => {
+            // We could avoid the clone operations below if we take the content of
+            // the statement. In practice, this shouldn't have much impact.
+            let id = match ref_kind {
+                RefKind::Mut => AssumedFunId::ArrayToMutSlice,
+                RefKind::Shared => AssumedFunId::ArrayToSharedSlice,
+            };
+            let func = FunId::Assumed(id);
+            let region_args = vec![ErasedRegion::Erased];
+            let type_args = vec![ty.clone()];
+            let const_generic_args = vec![cg.clone()];
+            s.content = RawStatement::Call(Call {
+                func,
+                region_args,
+                type_args,
+                const_generic_args,
+                args: vec![op.clone()],
+                dest: p.clone(),
+            });
+
+            vec![]
+        }
+        _ => vec![],
+    }
+}
 
 struct OpsToFunCall {}
 
@@ -24,31 +54,7 @@ impl MutAstVisitor for OpsToFunCall {
 
     fn merge(&mut self) {}
 
-    fn visit_statement(&mut self, s: &mut Statement) {
-        match &s.content {
-            RawStatement::Assign(p, Rvalue::UnaryOp(UnOp::ArrayToSlice(ref_kind, ty, cg), op)) => {
-                // We could avoid the clone operations below if we take the content of
-                // the statement. In practice, this shouldn't have much impact.
-                let id = match ref_kind {
-                    RefKind::Mut => AssumedFunId::ArrayToMutSlice,
-                    RefKind::Shared => AssumedFunId::ArrayToSharedSlice,
-                };
-                let func = FunId::Assumed(id);
-                let region_args = Vec::new();
-                let type_args = vec![ty.clone()];
-                let const_generic_args = vec![cg.clone()];
-                s.content = RawStatement::Call(Call {
-                    func,
-                    region_args,
-                    type_args,
-                    const_generic_args,
-                    args: vec![op.clone()],
-                    dest: p.clone(),
-                })
-            }
-            _ => self.default_visit_raw_statement(&mut s.content),
-        }
-    }
+    fn visit_statement(&mut self, s: &mut Statement) {}
 }
 
 pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
@@ -57,8 +63,7 @@ pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut Glob
             "# About to transform some operations to function calls: {name}:\n{}",
             b.fmt_with_ctx_names(fmt_ctx)
         );
-        let mut visitor = OpsToFunCall {};
-        visitor.visit_statement(&mut b.body);
+        b.body.transform(&mut transform_st);
         trace!(
             "# After transforming some operations to function calls: {name}:\n{}",
             b.fmt_with_ctx_names(fmt_ctx)

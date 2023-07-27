@@ -4,7 +4,7 @@
 use std::ops::DerefMut;
 
 use crate::common::*;
-use crate::expressions::{Operand, Place, Rvalue};
+use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
 use crate::formatter::Formatter;
 use crate::llbc_ast::{
     Assert, Call, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
@@ -83,68 +83,6 @@ pub fn combine_switch_targets_meta(targets: &Switch) -> Meta {
             meta::combine_meta(&mbranches, &otherwise.meta)
         }
     }
-}
-
-/// Apply a map transformer on statements, in a bottom-up manner.
-/// Useful to implement a pass on operands (e.g., [crate::remove_drop_never]).
-///
-/// TODO: remove: we should use the visitors instead
-pub fn transform_statements<F: FnMut(Statement) -> Statement>(
-    f: &mut F,
-    mut st: Statement,
-) -> Statement {
-    // Apply the transformer bottom-up
-    st.content = match st.content {
-        RawStatement::Switch(switch) => {
-            let switch = match switch {
-                Switch::If(op, mut st1, mut st2) => {
-                    *st1 = transform_statements(f, *st1);
-                    *st2 = transform_statements(f, *st2);
-                    Switch::If(op, st1, st2)
-                }
-                Switch::SwitchInt(op, int_ty, branches, mut otherwise) => {
-                    let branches: Vec<(Vec<ScalarValue>, Statement)> = branches
-                        .into_iter()
-                        .map(|x| (x.0, transform_statements(f, x.1)))
-                        .collect();
-                    *otherwise = transform_statements(f, *otherwise);
-                    Switch::SwitchInt(op, int_ty, branches, otherwise)
-                }
-                Switch::Match(op, branches, mut otherwise) => {
-                    let branches: Vec<(Vec<VariantId::Id>, Statement)> = branches
-                        .into_iter()
-                        .map(|x| (x.0, transform_statements(f, x.1)))
-                        .collect();
-                    *otherwise = transform_statements(f, *otherwise);
-                    Switch::Match(op, branches, otherwise)
-                }
-            };
-            RawStatement::Switch(switch)
-        }
-        RawStatement::Assign(p, r) => RawStatement::Assign(p, r),
-        RawStatement::Call(c) => RawStatement::Call(c),
-        RawStatement::Assert(a) => RawStatement::Assert(a),
-        RawStatement::FakeRead(p) => RawStatement::FakeRead(p),
-        RawStatement::SetDiscriminant(p, vid) => RawStatement::SetDiscriminant(p, vid),
-        RawStatement::Drop(p) => RawStatement::Drop(p),
-        RawStatement::Panic => RawStatement::Panic,
-        RawStatement::Return => RawStatement::Return,
-        RawStatement::Break(i) => RawStatement::Break(i),
-        RawStatement::Continue(i) => RawStatement::Continue(i),
-        RawStatement::Nop => RawStatement::Nop,
-        RawStatement::Sequence(st1, st2) => {
-            let st1 = transform_statements(f, *st1);
-            let st2 = transform_statements(f, *st2);
-            new_sequence(st1, st2).content
-        }
-        RawStatement::Loop(mut st) => {
-            *st = transform_statements(f, *st);
-            RawStatement::Loop(st)
-        }
-    };
-
-    // Apply on the current statement
-    f(st)
 }
 
 impl Switch {
@@ -723,3 +661,61 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
 }
 
 } // make_generic_in_borrows
+
+/// Helper for [transform_statements]
+struct TransformStatements<'a, F: FnMut(&mut Statement) -> Vec<Statement>> {
+    tr: &'a mut F,
+}
+
+impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutExprVisitor for TransformStatements<'a, F> {}
+impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutAstVisitor for TransformStatements<'a, F> {
+    fn visit_statement(&mut self, st: &mut Statement) {
+        match &mut st.content {
+            RawStatement::Sequence(st1, st2) => {
+                // Bottom-up
+                self.visit_statement(st2);
+                self.default_visit_raw_statement(&mut st1.content);
+
+                // Transform the current statement
+                let st_seq = (self.tr)(st1);
+                if !st_seq.is_empty() {
+                    take(st, |st| chain_statements(st_seq, st))
+                }
+            }
+            _ => {
+                // Bottom-up
+                self.default_visit_raw_statement(&mut st.content);
+
+                // Transform the current statement
+                let st_seq = (self.tr)(st);
+                if !st_seq.is_empty() {
+                    take(st, |st| chain_statements(st_seq, st))
+                }
+            }
+        }
+    }
+
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
+    fn merge(&mut self) {}
+}
+
+impl Statement {
+    /// Apply a transformer to all the statements, in a bottom-up manner.
+    ///
+    /// The transformer should:
+    /// - mutate the current statement in place
+    /// - return the sequence of statements to introduce before the current statement
+    ///
+    /// We do the transformation in such a way that the
+    /// sequences of statements are properly chained. In particuliar,
+    /// if in `s1; s2` we transform `s1` to the sequence `s1_1; s1_2`,
+    /// then the resulting statement is `s1_1; s1_2; s2` and **not**
+    /// `{ s1_1; s1_2 }; s2`.
+    pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, f: &mut F) {
+        let mut visitor = TransformStatements { tr: f };
+        visitor.visit_statement(self);
+    }
+}

@@ -9,6 +9,18 @@ fn array_to_mut_slice<T>(s: &mut [T; 32]) -> &mut [T] {
     s
 }
 
+fn array_len<T>(s: [T; 32]) -> usize {
+    s.len()
+}
+
+fn shared_array_len<T>(s: &[T; 32]) -> usize {
+    s.len()
+}
+
+fn shared_slice_len<T>(s: &[T]) -> usize {
+    s.len()
+}
+
 fn index_array_shared<T>(s: &[T; 32], i: usize) -> &T {
     &s[i]
 }

@@ -269,7 +269,7 @@ impl Rvalue {
                 }
             }
             Rvalue::Global(gid) => ctx.format_object(*gid),
-            Rvalue::Len(place, _) => format!("len({})", place.fmt_with_ctx(ctx)),
+            Rvalue::Len(place, ..) => format!("len({})", place.fmt_with_ctx(ctx)),
         }
     }
 
@@ -450,7 +450,9 @@ pub trait ExprVisitor {
             Rvalue::Discriminant(p) => self.visit_discriminant(p),
             Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
             Rvalue::Global(gid) => self.visit_global(gid),
-            Rvalue::Len(p, _) => self.visit_len(p),
+            Rvalue::Len(p, ty, cg) => {
+                self.visit_len(p, ty, cg)
+            }
         }
     }
 
@@ -487,7 +489,7 @@ pub trait ExprVisitor {
 
     fn visit_global(&mut self, _: &GlobalDeclId::Id) {}
 
-    fn visit_len(&mut self, p: &Place) {
+    fn visit_len(&mut self, p: &Place, _ty :&ETy, _cg: &Option<ConstGeneric>) {
         self.visit_place(p)
     }
 }

@@ -865,22 +865,22 @@ fn translate_rvalue<'tcx>(
         }
         mir::Rvalue::Len(place) => {
             let (place, ty) = translate_place_with_type(bt_ctx, place);
-            let kind = match ty {
+            let cg = match &ty {
                 ty::Ty::Adt(
                     ty::TypeId::Assumed(aty @ (ty::AssumedTy::Array | ty::AssumedTy::Slice)),
                     _,
                     _,
-                    _,
+                    cgs,
                 ) => {
                     if aty.is_array() {
-                        e::ArrayOrSlice::Array
+                        Option::Some(cgs[0].clone())
                     } else {
-                        e::ArrayOrSlice::Slice
+                        Option::None
                     }
                 }
                 _ => unreachable!(),
             };
-            e::Rvalue::Len(place, kind)
+            e::Rvalue::Len(place, ty, cg)
         }
         mir::Rvalue::Cast(cast_kind, operand, tgt_ty) => {
             trace!("Rvalue::Cast: {:?}", rvalue);
@@ -1875,12 +1875,10 @@ fn translate_primitive_function_call(
             // Special case handled elsewhere
             unreachable!();
         }
-        ast::AssumedFunId::ArrayLen
-        | ast::AssumedFunId::ArraySharedIndex
+        ast::AssumedFunId::ArraySharedIndex
         | ast::AssumedFunId::ArrayMutIndex
         | ast::AssumedFunId::ArrayToSharedSlice
         | ast::AssumedFunId::ArrayToMutSlice
-        | ast::AssumedFunId::SliceLen
         | ast::AssumedFunId::SliceSharedIndex
         | ast::AssumedFunId::SliceMutIndex => {
             // Those cases are introduced later, in micro-passes, by desugaring

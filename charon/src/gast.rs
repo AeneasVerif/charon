@@ -157,10 +157,6 @@ pub enum AssumedFunId {
     VecIndex,
     /// `core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>`
     VecIndexMut,
-    /// Converted from [Rvalue::Len]
-    ///
-    /// Signature: `fn<T,N>(&[T;N]) -> usize`
-    ArrayLen,
     /// Converted from [ProjectionElem::Index].
     ///
     /// Signature: `fn<T,N>(&[T;N], usize) -> &T`
@@ -187,10 +183,6 @@ pub enum AssumedFunId {
     /// Introduced by disambiguating the `Index::index` trait (takes a range
     /// as argument).
     ArrayMutSubslice,
-    /// Converted from [Rvalue::Len]
-    ///
-    /// Signature: `fn<T,N>(&[T;N]) -> usize`
-    SliceLen,
     /// Converted from [ProjectionElem::Index].
     ///
     /// Signature: `fn<T>(&[T], usize) -> &T`
