@@ -258,12 +258,12 @@ where
 {
     trace!("{:?}", ty_kind);
     match ty_kind {
-        TyKind::Bool => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Bool)),
-        TyKind::Char => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Char)),
-        TyKind::Int(int_ty) => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(
+        TyKind::Bool => Ok(ty::Ty::Literal(ty::LiteralTy::Bool)),
+        TyKind::Char => Ok(ty::Ty::Literal(ty::LiteralTy::Char)),
+        TyKind::Int(int_ty) => Ok(ty::Ty::Literal(ty::LiteralTy::Integer(
             ty::IntegerTy::rust_int_ty_to_integer_ty(*int_ty),
         ))),
-        TyKind::Uint(int_ty) => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(
+        TyKind::Uint(int_ty) => Ok(ty::Ty::Literal(ty::LiteralTy::Integer(
             ty::IntegerTy::rust_uint_ty_to_integer_ty(*int_ty),
         ))),
         TyKind::Float(_) => {
@@ -633,7 +633,7 @@ fn translate_type_generics<'tcx>(
                 // The type should be primitive, meaning it shouldn't contain variables,
                 // non-primitive adts, etc. As a result, we can use an empty context.
                 let ty = translate_ety(&empty_tt_ctx, &c.ty()).unwrap();
-                let ty = ty.to_primitive();
+                let ty = ty.to_literal();
                 match c.kind() {
                     rustc_middle::ty::ConstKind::Param(cp) => {
                         let cg_var = ty::ConstGenericVar {

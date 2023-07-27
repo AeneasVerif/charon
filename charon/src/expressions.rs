@@ -170,7 +170,7 @@ pub enum Operand {
 /// see [extract_global_assignments.rs].
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
-    PrimitiveValue(PrimitiveValue),
+    Literal(Literal),
     ///
     /// In most situations:
     /// Enumeration with one variant with no fields, structure with

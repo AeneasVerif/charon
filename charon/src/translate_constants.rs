@@ -34,47 +34,23 @@ fn translate_subst_with_erased_regions<'tcx>(
 /// Either a bool, a char, an integer, an enumeration ADT, an empty tuple or a static reference.
 fn translate_constant_scalar_type(ty: &TyKind, ordered_decls: &OrderedDecls) -> ty::ETy {
     match ty {
-        TyKind::Bool => ty::Ty::Primitive(ty::PrimitiveValueTy::Bool),
-        TyKind::Char => ty::Ty::Primitive(ty::PrimitiveValueTy::Char),
+        TyKind::Bool => ty::Ty::Literal(ty::LiteralTy::Bool),
+        TyKind::Char => ty::Ty::Literal(ty::LiteralTy::Char),
         TyKind::Int(int_ty) => match int_ty {
-            mir_ty::IntTy::Isize => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::Isize))
-            }
-            mir_ty::IntTy::I8 => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I8))
-            }
-            mir_ty::IntTy::I16 => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I16))
-            }
-            mir_ty::IntTy::I32 => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I32))
-            }
-            mir_ty::IntTy::I64 => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I64))
-            }
-            mir_ty::IntTy::I128 => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::I128))
-            }
+            mir_ty::IntTy::Isize => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::Isize)),
+            mir_ty::IntTy::I8 => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::I8)),
+            mir_ty::IntTy::I16 => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::I16)),
+            mir_ty::IntTy::I32 => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::I32)),
+            mir_ty::IntTy::I64 => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::I64)),
+            mir_ty::IntTy::I128 => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::I128)),
         },
         TyKind::Uint(uint_ty) => match uint_ty {
-            mir_ty::UintTy::Usize => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::Usize))
-            }
-            mir_ty::UintTy::U8 => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U8))
-            }
-            mir_ty::UintTy::U16 => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U16))
-            }
-            mir_ty::UintTy::U32 => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U32))
-            }
-            mir_ty::UintTy::U64 => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U64))
-            }
-            mir_ty::UintTy::U128 => {
-                ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(ty::IntegerTy::U128))
-            }
+            mir_ty::UintTy::Usize => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::Usize)),
+            mir_ty::UintTy::U8 => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::U8)),
+            mir_ty::UintTy::U16 => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::U16)),
+            mir_ty::UintTy::U32 => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::U32)),
+            mir_ty::UintTy::U64 => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::U64)),
+            mir_ty::UintTy::U128 => ty::Ty::Literal(ty::LiteralTy::Integer(ty::IntegerTy::U128)),
         },
         TyKind::Adt(adt_def, substs) => {
             assert!(substs.is_empty());
@@ -157,19 +133,15 @@ fn translate_constant_reference_type<'tcx>(
 fn translate_constant_integer_like_value(
     ty: &ty::ETy,
     scalar: &mir::interpret::Scalar,
-) -> v::PrimitiveValue {
+) -> v::Literal {
     trace!();
     // The documentation explicitly says not to match on a scalar.
     // We match on the type and convert the value following this,
     // by calling the appropriate `to_*` method.
     match ty {
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Bool) => {
-            v::PrimitiveValue::Bool(scalar.to_bool().unwrap())
-        }
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Char) => {
-            v::PrimitiveValue::Char(scalar.to_char().unwrap())
-        }
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(i)) => v::PrimitiveValue::Scalar(match i {
+        ty::Ty::Literal(ty::LiteralTy::Bool) => v::Literal::Bool(scalar.to_bool().unwrap()),
+        ty::Ty::Literal(ty::LiteralTy::Char) => v::Literal::Char(scalar.to_char().unwrap()),
+        ty::Ty::Literal(ty::LiteralTy::Integer(i)) => v::Literal::Scalar(match i {
             ty::IntegerTy::Isize => {
                 // This is a bit annoying: there is no
                 // `to_isize`. For now, we make the hypothesis
@@ -216,11 +188,11 @@ fn translate_constant_scalar_value(
     // degenerate ADT or tuple (if an ADT has only one variant and no fields,
     // it is a constant, and unit is encoded by MIR as a 0-tuple).
     match llbc_ty {
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Bool)
-        | ty::Ty::Primitive(ty::PrimitiveValueTy::Char)
-        | ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(_)) => {
+        ty::Ty::Literal(ty::LiteralTy::Bool)
+        | ty::Ty::Literal(ty::LiteralTy::Char)
+        | ty::Ty::Literal(ty::LiteralTy::Integer(_)) => {
             let v = translate_constant_integer_like_value(llbc_ty, scalar);
-            e::OperandConstantValue::PrimitiveValue(v)
+            e::OperandConstantValue::Literal(v)
         }
         ty::Ty::Adt(ty::TypeId::Adt(id), region_tys, field_tys, cgs) => {
             assert!(region_tys.is_empty());
@@ -400,30 +372,28 @@ pub(crate) fn translate_const_kind<'tcx>(
             // We only support integers and scalars
             let ty = translate_ety(tt_ctx, &constant.ty()).unwrap();
             let v = match v {
-                mir_ty::ValTree::Leaf(v) => match ty.as_primitive() {
-                    ty::PrimitiveValueTy::Integer(int_ty) => {
+                mir_ty::ValTree::Leaf(v) => match ty.as_literal() {
+                    ty::LiteralTy::Integer(int_ty) => {
                         if int_ty.is_signed() {
                             let v = v.try_to_int(v.size()).unwrap();
-                            v::PrimitiveValue::Scalar(v::ScalarValue::from_int(*int_ty, v).unwrap())
+                            v::Literal::Scalar(v::ScalarValue::from_int(*int_ty, v).unwrap())
                         } else {
                             let v = v.try_to_uint(v.size()).unwrap();
-                            v::PrimitiveValue::Scalar(
-                                v::ScalarValue::from_uint(*int_ty, v).unwrap(),
-                            )
+                            v::Literal::Scalar(v::ScalarValue::from_uint(*int_ty, v).unwrap())
                         }
                     }
-                    ty::PrimitiveValueTy::Bool => {
+                    ty::LiteralTy::Bool => {
                         let v = v.try_to_bool().unwrap();
-                        v::PrimitiveValue::Bool(v)
+                        v::Literal::Bool(v)
                     }
-                    ty::PrimitiveValueTy::Char => unimplemented!(),
+                    ty::LiteralTy::Char => unimplemented!(),
                 },
                 mir_ty::ValTree::Branch(_) => {
                     // In practice I don't know when this is used
                     unimplemented!()
                 }
             };
-            (ty, e::OperandConstantValue::PrimitiveValue(v))
+            (ty, e::OperandConstantValue::Literal(v))
         }
         ConstKind::Expr(_) => {
             unimplemented!();
@@ -462,9 +432,9 @@ pub(crate) fn translate_const_kind_as_const_generic<'tcx>(
     constant: rustc_middle::ty::Const<'tcx>,
 ) -> ty::ConstGeneric {
     let (ty, c) = translate_const_kind(tt_ctx, constant);
-    assert!(ty.is_primitive());
+    assert!(ty.is_literal());
     match c {
-        e::OperandConstantValue::PrimitiveValue(v) => ty::ConstGeneric::Value(v),
+        e::OperandConstantValue::Literal(v) => ty::ConstGeneric::Value(v),
         e::OperandConstantValue::Adt(..) => unreachable!(),
         e::OperandConstantValue::ConstantId(v) => ty::ConstGeneric::Global(v),
         e::OperandConstantValue::StaticId(_) => unreachable!(),

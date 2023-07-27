@@ -351,7 +351,7 @@ fn compute_full_regions_constraints_for_ty(
                 }
             }
         }
-        Ty::Primitive(_) | Ty::Never => {
+        Ty::Literal(_) | Ty::Never => {
             // Nothing to do
         }
         Ty::Ref(region, ref_ty, _mutability) => {

@@ -4,7 +4,7 @@ use crate::meta::Meta;
 use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
-use crate::values::PrimitiveValue;
+use crate::values::Literal;
 use im::Vector;
 use macros::{
     generate_index_type, EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName,
@@ -54,7 +54,7 @@ pub struct ConstGenericVar {
     /// Const generic name
     pub name: String,
     /// Type of the const generic
-    pub ty: PrimitiveValueTy,
+    pub ty: LiteralTy,
 }
 
 /// Region as used in a function's signatures (in which case we use region variable
@@ -187,8 +187,7 @@ pub type TypeDecls = TypeDeclId::Vector<TypeDecl>;
     VariantIndexArity,
     Serialize,
 )]
-pub enum PrimitiveValueTy {
-    // TODO: Rename to LiteralTy
+pub enum LiteralTy {
     Integer(IntegerTy),
     Bool,
     Char,
@@ -204,7 +203,7 @@ pub enum ConstGeneric {
     /// A const generic variable
     Var(ConstGenericVarId::Id),
     /// A concrete value
-    Value(PrimitiveValue),
+    Value(Literal),
 }
 
 /// A type.
@@ -239,7 +238,7 @@ where
     /// The last list is used encode const generics, e.g., the size of an array
     Adt(TypeId, Vector<R>, Vector<Ty<R>>, Vector<ConstGeneric>),
     TypeVar(TypeVarId::Id),
-    Primitive(PrimitiveValueTy), // TODO: Rename to Literal
+    Literal(LiteralTy),
     /// The never type, for computations which don't return. It is sometimes
     /// necessary for intermediate variables. For instance, if we do (coming
     /// from the rust documentation):

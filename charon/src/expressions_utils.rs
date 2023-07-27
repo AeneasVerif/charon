@@ -151,7 +151,7 @@ impl OperandConstantValue {
             + Formatter<ConstGenericVarId::Id>,
     {
         match self {
-            OperandConstantValue::PrimitiveValue(c) => c.to_string(),
+            OperandConstantValue::Literal(c) => c.to_string(),
             OperandConstantValue::Adt(variant_id, values) => {
                 // It is a bit annoying: in order to properly format the value,
                 // we need the type (which contains the type def id).
@@ -373,7 +373,7 @@ impl Serialize for OperandConstantValue {
         match self {
             // [OperandConstantValue] exists only to handle temporary cases inherited from the MIR:
             // for the final (U)LLBC format, we simply export the underlying constant value.
-            OperandConstantValue::PrimitiveValue(cv) => cv.serialize(serializer),
+            OperandConstantValue::Literal(cv) => cv.serialize(serializer),
             _ => unreachable!("unexpected `{:?}`: `OperandConstantValue` fields other than `ConstantValue` are temporary and should not occur in serialized LLBC", self),
         }
     }

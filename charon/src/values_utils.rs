@@ -295,13 +295,12 @@ impl std::fmt::Display for ScalarValue {
     }
 }
 
-impl std::fmt::Display for PrimitiveValue {
+impl std::fmt::Display for Literal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
-            PrimitiveValue::Scalar(v) => write!(f, "{v}"),
-            PrimitiveValue::Bool(v) => write!(f, "{v}"),
-            PrimitiveValue::Char(v) => write!(f, "{v}"),
-            PrimitiveValue::String(v) => write!(f, "{v}"),
+            Literal::Scalar(v) => write!(f, "{v}"),
+            Literal::Bool(v) => write!(f, "{v}"),
+            Literal::Char(v) => write!(f, "{v}"),
         }
     }
 }

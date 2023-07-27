@@ -112,7 +112,7 @@ impl std::string::ToString for RegionVar {
 
 impl std::string::ToString for ConstGenericVar {
     fn to_string(&self) -> String {
-        format!("const {} : {}", self.name, primitive_ty_to_string(self.ty))
+        format!("const {} : {}", self.name, literal_ty_to_string(self.ty))
     }
 }
 
@@ -429,11 +429,11 @@ pub fn integer_ty_to_string(ty: IntegerTy) -> String {
     }
 }
 
-pub fn primitive_ty_to_string(ty: PrimitiveValueTy) -> String {
+pub fn literal_ty_to_string(ty: LiteralTy) -> String {
     match ty {
-        PrimitiveValueTy::Integer(ty) => integer_ty_to_string(ty),
-        PrimitiveValueTy::Bool => "bool".to_string(),
-        PrimitiveValueTy::Char => "char".to_string(),
+        LiteralTy::Integer(ty) => integer_ty_to_string(ty),
+        LiteralTy::Bool => "bool".to_string(),
+        LiteralTy::Char => "char".to_string(),
     }
 }
 
@@ -515,21 +515,21 @@ where
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
         match self {
-            Ty::Primitive(kind) => kind.is_integer(),
+            Ty::Literal(kind) => kind.is_integer(),
             _ => false,
         }
     }
 
     pub fn is_unsigned_scalar(&self) -> bool {
         match self {
-            Ty::Primitive(PrimitiveValueTy::Integer(kind)) => kind.is_unsigned(),
+            Ty::Literal(LiteralTy::Integer(kind)) => kind.is_unsigned(),
             _ => false,
         }
     }
 
     pub fn is_signed_scalar(&self) -> bool {
         match self {
-            Ty::Primitive(PrimitiveValueTy::Integer(kind)) => kind.is_signed(),
+            Ty::Literal(LiteralTy::Integer(kind)) => kind.is_signed(),
             _ => false,
         }
     }
@@ -572,7 +572,7 @@ where
                 }
             }
             Ty::TypeVar(id) => ctx.format_object(*id),
-            Ty::Primitive(kind) => primitive_ty_to_string(*kind),
+            Ty::Literal(kind) => literal_ty_to_string(*kind),
             Ty::Never => "!".to_string(),
             Ty::Ref(r, ty, kind) => match kind {
                 RefKind::Mut => {
@@ -646,7 +646,7 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
     pub fn contains_region_var(&self, rset: &OrdSet<Rid>) -> bool {
         match self {
             Ty::TypeVar(_) => false,
-            Ty::Primitive(_) | Ty::Never => false,
+            Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(r, ty, _) => r.contains_var(rset) || ty.contains_region_var(rset),
             Ty::RawPtr(ty, _) => ty.contains_region_var(rset),
             Ty::Adt(_, regions, tys, _) => regions
@@ -807,7 +807,7 @@ where
                 Ty::Adt(id.clone(), nregions, ntys, ncgs)
             }
             Ty::TypeVar(id) => tsubst(id),
-            Ty::Primitive(pty) => Ty::Primitive(*pty),
+            Ty::Literal(pty) => Ty::Literal(*pty),
             Ty::Never => Ty::Never,
             Ty::Ref(rid, ty, kind) => Ty::Ref(
                 rsubst(rid),
@@ -861,7 +861,7 @@ where
     pub fn contains_variables(&self) -> bool {
         match self {
             Ty::TypeVar(_) => true,
-            Ty::Primitive(_) | Ty::Never => false,
+            Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(_, _, _) => true, // Always contains a region identifier
             Ty::RawPtr(ty, _) => ty.contains_variables(),
             Ty::Adt(_, regions, tys, _) => {
@@ -874,7 +874,7 @@ where
     pub fn contains_regions(&self) -> bool {
         match self {
             Ty::TypeVar(_) => false,
-            Ty::Primitive(_) | Ty::Never => false,
+            Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(_, _, _) => true,
             Ty::RawPtr(ty, _) => ty.contains_regions(),
             Ty::Adt(_, regions, tys, _) => {
@@ -1043,7 +1043,7 @@ impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
                 Ty::TypeVar(var_id) => {
                     vs.serialize_field(var_id)?;
                 }
-                Ty::Primitive(pty) => {
+                Ty::Literal(pty) => {
                     vs.serialize_field(pty)?;
                 }
                 Ty::Never => {
@@ -1071,7 +1071,7 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
         match self {
             Ty::Never => true,
             Ty::Adt(_, _, tys, _) => tys.iter().any(|ty| ty.contains_never()),
-            Ty::TypeVar(_) | Ty::Primitive(_) => false,
+            Ty::TypeVar(_) | Ty::Literal(_) => false,
             Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => ty.contains_never(),
         }
     }

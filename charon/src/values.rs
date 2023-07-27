@@ -20,12 +20,10 @@ generate_index_type!(VarId);
 ///
 /// Those are for instance used for the constant operands [crate::expressions::Operand::Const]
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, Serialize)]
-pub enum PrimitiveValue {
-    // TODO: Rename to LiteralValue
+pub enum Literal {
     Scalar(ScalarValue),
     Bool(bool),
     Char(char),
-    String(String), // TODO: Move to assumed type
 }
 
 /// It might be a good idea to use a structure:

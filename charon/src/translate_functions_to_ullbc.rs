@@ -24,10 +24,10 @@ use crate::translate_constants::{
 };
 use crate::translate_types;
 use crate::types as ty;
-use crate::types::{FieldId, PrimitiveValueTy, VariantId};
+use crate::types::{FieldId, LiteralTy, VariantId};
 use crate::ullbc_ast as ast;
 use crate::values as v;
-use crate::values::{PrimitiveValue, ScalarValue};
+use crate::values::{Literal, ScalarValue};
 use core::convert::*;
 use hashlink::linked_hash_map::LinkedHashMap;
 use log::warn;
@@ -213,7 +213,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
         self.rvars_to_ids.insert(rid, var_id);
     }
 
-    fn push_const_generic_var(&mut self, rid: u32, ty: PrimitiveValueTy, name: String) {
+    fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
         use crate::id_vector::ToUsize;
         let var_id = self.const_generic_counter.fresh_id();
         assert!(var_id.to_usize() == self.vars.len());
@@ -913,8 +913,8 @@ fn translate_rvalue<'tcx>(
             match (cast_kind, &src_ty, &tgt_ty) {
                 (rustc_middle::mir::CastKind::IntToInt, _, _) => {
                     // We only support source and target types for integers
-                    let tgt_ty = *tgt_ty.as_primitive().as_integer();
-                    let src_ty = *src_ty.as_primitive().as_integer();
+                    let tgt_ty = *tgt_ty.as_literal().as_integer();
+                    let src_ty = *src_ty.as_literal().as_integer();
 
                     e::Rvalue::UnaryOp(e::UnOp::Cast(src_ty, tgt_ty), op)
                 }
@@ -1002,7 +1002,7 @@ fn translate_rvalue<'tcx>(
             match aggregate_kind.deref() {
                 mir::AggregateKind::Array(ty) => {
                     let t_ty = translate_ety(bt_ctx, &ty).unwrap();
-                    let cg = ty::ConstGeneric::Value(PrimitiveValue::Scalar(ScalarValue::Usize(
+                    let cg = ty::ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
                         operands_t.len() as u64,
                     )));
                     e::Rvalue::Aggregate(e::AggregateKind::Array(t_ty, cg), operands_t)
@@ -1390,7 +1390,7 @@ fn translate_switch_targets<'tcx>(
     let targets_vec: Vec<(u128, BasicBlock)> = targets.iter().map(|(v, b)| (v, b)).collect();
 
     match switch_ty {
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Bool) => {
+        ty::Ty::Literal(ty::LiteralTy::Bool) => {
             // This is an: `if ... then ... else ...`
             assert!(targets_vec.len() == 1);
             // It seems the block targets are inverted
@@ -1404,7 +1404,7 @@ fn translate_switch_targets<'tcx>(
 
             Ok(ast::SwitchTargets::If(if_block, otherwise_block))
         }
-        ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(int_ty)) => {
+        ty::Ty::Literal(ty::LiteralTy::Integer(int_ty)) => {
             // This is a: switch(int).
             // Convert all the test values to the proper values.
             let mut targets_map: LinkedHashMap<v::ScalarValue, ast::BlockId::Id> =
@@ -2088,7 +2088,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
                 // The type should be primitive, meaning it shouldn't contain
                 // variables, etc. (we could use an empty context).
                 let ty = translate_ety(&bt_ctx, &c.ty()).unwrap();
-                let ty = ty.to_primitive();
+                let ty = ty.to_literal();
                 match c.kind() {
                     rustc_middle::ty::ConstKind::Param(cp) => {
                         bt_ctx.push_const_generic_var(cp.index, ty, cp.name.to_ident_string());
