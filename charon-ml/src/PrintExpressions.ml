@@ -93,7 +93,7 @@ let unop_to_string (unop : E.unop) : string =
       ^ ","
       ^ PT.integer_type_to_string tgt
       ^ ">"
-  | E.SliceNew l -> "array_to_slice<" ^ PPV.scalar_value_to_string l ^ ">"
+  | E.SliceNew l -> "slice_new<" ^ PPV.scalar_value_to_string l ^ ">"
 
 let binop_to_string (binop : E.binop) : string =
   match binop with
