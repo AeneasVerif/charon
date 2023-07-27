@@ -7,7 +7,6 @@ use crate::rust_to_local_ids::*;
 use crate::translate_types;
 use crate::types as ty;
 use crate::values as v;
-use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir;
 use rustc_middle::ty as mir_ty;
@@ -58,22 +57,12 @@ fn translate_constant_scalar_type(ty: &TyKind, ordered_decls: &OrderedDecls) -> 
             // variant, and this variant doesn't take parameters.
             // Retrieve the definition.
             let id = ordered_decls.type_rid_to_id.get(&adt_def.did()).unwrap();
-            ty::Ty::Adt(
-                ty::TypeId::Adt(*id),
-                Vector::new(),
-                Vector::new(),
-                Vector::new(),
-            )
+            ty::Ty::Adt(ty::TypeId::Adt(*id), Vec::new(), Vec::new(), Vec::new())
         }
         TyKind::Tuple(substs) => {
             // There can be tuple([]) for unit
             assert!(substs.is_empty());
-            ty::Ty::Adt(
-                ty::TypeId::Tuple,
-                Vector::new(),
-                Vector::new(),
-                Vector::new(),
-            )
+            ty::Ty::Adt(ty::TypeId::Tuple, Vec::new(), Vec::new(), Vec::new())
         }
         // Only accept scalars that are shared references with erased regions : it's a static.
         TyKind::Ref(region, ref_ty, mir::Mutability::Not) => match region.kind() {
@@ -111,7 +100,7 @@ fn translate_constant_reference_type<'tcx>(
             let type_params = translate_subst_with_erased_regions(tt_ctx, substs).unwrap();
             trace!("{:?}", type_params);
             let field_tys = type_params.into_iter().collect();
-            ty::Ty::Adt(ty::TypeId::Tuple, Vector::new(), field_tys, Vector::new())
+            ty::Ty::Adt(ty::TypeId::Tuple, Vec::new(), field_tys, Vec::new())
         }
         TyKind::Adt(_, _) => {
             // Following tests, it seems rustc doesn't introduce constants

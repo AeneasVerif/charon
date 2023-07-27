@@ -11,7 +11,6 @@ use crate::llbc_ast::{
 use crate::meta::Meta;
 use crate::types::{AssumedTy, ConstGeneric, ErasedRegion, RefKind, Ty};
 use crate::values::VarId;
-use im::Vector;
 use std::mem::replace;
 
 /// Visitor to transform the operands by introducing intermediate let
@@ -33,7 +32,7 @@ impl<'a> Transform<'a> {
     fn visit_transform_place(&mut self, mut_access: bool, p: &mut Place) {
         // Explore the place from the **end** to the beginning
         let mut var_id = p.var_id;
-        let mut proj = Vector::new();
+        let mut proj = Vec::new();
         for pe in p.projection.clone().into_iter() {
             if pe.is_index() {
                 let (index_var_id, buf_ty) = pe.to_index();
@@ -95,10 +94,7 @@ impl<'a> Transform<'a> {
                 let elem_borrow_var = self.locals.fresh_var(Option::None, elem_borrow_ty);
                 let arg_buf = Operand::Move(Place::new(buf_borrow_var));
                 let arg_index = Operand::Copy(Place::new(index_var_id));
-                let index_dest = Place {
-                    var_id: elem_borrow_var,
-                    projection: Vector::new(),
-                };
+                let index_dest = Place::new(elem_borrow_var);
                 let index_id = FunId::Assumed(index_id);
                 let index_call = Call {
                     func: index_id,
@@ -116,10 +112,10 @@ impl<'a> Transform<'a> {
 
                 // Update the variable in the place, and the projection
                 var_id = elem_borrow_var;
-                proj = im::vector![ProjectionElem::Deref];
+                proj = vec![ProjectionElem::Deref];
             } else {
                 // Just stack the projection element
-                proj.push_back(pe);
+                proj.push(pe);
             }
         }
 

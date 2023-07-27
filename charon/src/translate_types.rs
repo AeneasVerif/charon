@@ -15,7 +15,6 @@ use crate::types as ty;
 use crate::types::{ConstGeneric, TypeDeclId};
 use crate::ullbc_ast as ast;
 use core::convert::*;
-use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Mutability;
 use rustc_middle::ty::{Ty, TyCtxt, TyKind};
@@ -297,34 +296,29 @@ where
             let def_id = translate_defid(tt_ctx, adt_did);
 
             // Return the instantiated ADT
-            Ok(ty::Ty::Adt(
-                def_id,
-                Vector::from(regions),
-                Vector::from(params),
-                Vector::from(cgs),
-            ))
+            Ok(ty::Ty::Adt(def_id, regions, params, cgs))
         }
         TyKind::Str => {
             trace!("Str");
 
             let id = ty::TypeId::Assumed(ty::AssumedTy::Str);
-            Ok(ty::Ty::Adt(id, Vector::new(), Vector::new(), Vector::new()))
+            Ok(ty::Ty::Adt(id, Vec::new(), Vec::new(), Vec::new()))
         }
         TyKind::Array(ty, const_param) => {
             trace!("Array");
 
             let c = translate_const_kind_as_const_generic(tt_ctx, *const_param);
-            let tys = im::vector![translate_ty(tt_ctx, region_translator, ty)?];
-            let cgs = im::vector![c];
+            let tys = vec![translate_ty(tt_ctx, region_translator, ty)?];
+            let cgs = vec![c];
             let id = ty::TypeId::Assumed(ty::AssumedTy::Array);
-            Ok(ty::Ty::Adt(id, Vector::new(), tys, cgs))
+            Ok(ty::Ty::Adt(id, Vec::new(), tys, cgs))
         }
         TyKind::Slice(ty) => {
             trace!("Slice");
 
-            let tys = im::vector![translate_ty(tt_ctx, region_translator, ty)?];
+            let tys = vec![translate_ty(tt_ctx, region_translator, ty)?];
             let id = ty::TypeId::Assumed(ty::AssumedTy::Slice);
-            Ok(ty::Ty::Adt(id, Vector::new(), tys, Vector::new()))
+            Ok(ty::Ty::Adt(id, Vec::new(), tys, Vec::new()))
         }
         TyKind::Ref(region, ty, mutability) => {
             trace!("Ref");
@@ -357,9 +351,9 @@ where
 
             Ok(ty::Ty::Adt(
                 ty::TypeId::Tuple,
-                Vector::new(),
-                Vector::from(params),
-                Vector::new(),
+                Vec::new(),
+                params,
+                Vec::new(),
             ))
         }
 

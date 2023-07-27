@@ -5,7 +5,6 @@ use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
 use crate::values::Literal;
-use im::Vector;
 use macros::{
     generate_index_type, EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName,
 };
@@ -224,6 +223,7 @@ pub enum ConstGeneric {
     EnumAsGetters,
     EnumToGetters,
     VariantIndexArity,
+    Serialize,
 )]
 pub enum Ty<R>
 where
@@ -236,7 +236,7 @@ where
     /// - assumed types (includes some primitive types, e.g., arrays or slices)
     /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
     /// The last list is used encode const generics, e.g., the size of an array
-    Adt(TypeId, Vector<R>, Vector<Ty<R>>, Vector<ConstGeneric>),
+    Adt(TypeId, Vec<R>, Vec<Ty<R>>, Vec<ConstGeneric>),
     TypeVar(TypeVarId::Id),
     Literal(LiteralTy),
     /// The never type, for computations which don't return. It is sometimes

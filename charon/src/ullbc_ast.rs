@@ -9,7 +9,6 @@ pub use crate::types::GlobalDeclId;
 use crate::types::*;
 pub use crate::ullbc_ast_utils::*;
 use crate::values::*;
-use hashlink::linked_hash_map::LinkedHashMap;
 use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
@@ -46,20 +45,14 @@ pub struct Statement {
     pub content: RawStatement,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Serialize)]
 pub enum SwitchTargets {
     /// Gives the `if` block and the `else` block
     If(BlockId::Id, BlockId::Id),
     /// Gives the integer type, a map linking values to switch branches, and the
     /// otherwise block. Note that matches over enumerations are performed by
     /// switching over the discriminant, which is an integer.
-    /// Also, we use a `LinkedHashMap` to make sure the order of the switch
-    /// branches is preserved.
-    SwitchInt(
-        IntegerTy,
-        LinkedHashMap<ScalarValue, BlockId::Id>,
-        BlockId::Id,
-    ),
+    SwitchInt(IntegerTy, Vec<(ScalarValue, BlockId::Id)>, BlockId::Id),
 }
 
 /// A raw terminator: a terminator without meta data.

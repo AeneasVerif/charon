@@ -2,7 +2,6 @@
 #![allow(dead_code)]
 
 use crate::assumed;
-use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::types::*;
@@ -10,29 +9,15 @@ use crate::ullbc_ast::GlobalDeclId;
 use crate::values;
 use crate::values::*;
 use macros::make_generic_in_borrows;
-use serde::ser::SerializeStruct;
-use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
+use std::vec::Vec;
 
 impl Place {
     pub fn new(var_id: VarId::Id) -> Place {
         Place {
             var_id,
-            projection: im::Vector::new(),
+            projection: Vec::new(),
         }
-    }
-}
-
-impl Serialize for Place {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut s = serializer.serialize_struct("Place", 2)?;
-        s.serialize_field("var_id", &self.var_id)?;
-        let projection = VectorSerializer::new(&self.projection);
-        s.serialize_field("projection", &projection)?;
-        s.end()
     }
 }
 
@@ -287,81 +272,6 @@ impl Rvalue {
 impl std::fmt::Display for Rvalue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
-    }
-}
-
-impl Serialize for AggregateKind {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        // Note that we rename the variant names
-        // Also, it seems the "standard" way of doing is the following (this is
-        // consistent with what the automatically generated serializer does):
-        // - if the arity is > 0, use `serialize_tuple_variant`
-        // - otherwise simply serialize a string with the variant name
-        //
-        // Remark: we change the names of the variants, which is why we don't
-        // use the [variant_name] function.
-        let enum_name = "AggregateKind";
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        match self {
-            AggregateKind::Tuple => "AggregatedTuple".serialize(serializer),
-            AggregateKind::Option(variant_id, ty) => {
-                let mut vs = serializer.serialize_tuple_variant(
-                    enum_name,
-                    variant_index,
-                    "AggregatedOption",
-                    variant_arity,
-                )?;
-
-                vs.serialize_field(variant_id)?;
-                vs.serialize_field(ty)?;
-
-                vs.end()
-            }
-            AggregateKind::Adt(def_id, opt_variant_id, regions, tys, cgs) => {
-                let mut vs = serializer.serialize_tuple_variant(
-                    enum_name,
-                    variant_index,
-                    "AggregatedAdt",
-                    variant_arity,
-                )?;
-
-                vs.serialize_field(def_id)?;
-                vs.serialize_field(opt_variant_id)?;
-                let regions = VecSerializer::new(regions);
-                vs.serialize_field(&regions)?;
-                let tys = VecSerializer::new(tys);
-                vs.serialize_field(&tys)?;
-                let cgs = VecSerializer::new(cgs);
-                vs.serialize_field(&cgs)?;
-                vs.end()
-            }
-            AggregateKind::Array(ty, cg) => {
-                let mut vs = serializer.serialize_tuple_variant(
-                    enum_name,
-                    variant_index,
-                    "AggregatedArray",
-                    variant_arity,
-                )?;
-                vs.serialize_field(ty)?;
-                vs.serialize_field(cg)?;
-                vs.end()
-            }
-            AggregateKind::Range(ty) => {
-                let mut vs = serializer.serialize_tuple_variant(
-                    enum_name,
-                    variant_index,
-                    "AggregatedRange",
-                    variant_arity,
-                )?;
-
-                vs.serialize_field(ty)?;
-
-                vs.end()
-            }
-        }
     }
 }
 

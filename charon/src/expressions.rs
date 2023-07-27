@@ -3,18 +3,17 @@
 pub use crate::expressions_utils::*;
 use crate::types::*;
 use crate::values::*;
-use im::Vector; // TODO: im::Vector is not necessary anymore
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
 use std::vec::Vec;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct Place {
     pub var_id: VarId::Id,
     pub projection: Projection,
 }
 
-pub type Projection = Vector<ProjectionElem>;
+pub type Projection = Vec<ProjectionElem>;
 
 /// Note that we don't have the equivalent of "downcasts".
 /// Downcasts are actually necessary, for instance when initializing enumeration
@@ -239,7 +238,7 @@ pub enum Rvalue {
     Len(Place, ETy, Option<ConstGeneric>),
 }
 
-#[derive(Debug, Clone, VariantIndexArity)]
+#[derive(Debug, Clone, VariantIndexArity, Serialize)]
 pub enum AggregateKind {
     Tuple,
     // TODO: treat Option in a general manner (we should extract the definitions

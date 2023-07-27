@@ -2,14 +2,11 @@
 #![allow(dead_code)]
 
 use crate::assumed::get_name_from_type_id;
-use crate::common::*;
 use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
-use im::{HashMap, OrdSet, Vector};
+use im::{HashMap, OrdSet};
 use rustc_middle::ty::{IntTy, UintTy};
-use serde::ser::SerializeTupleVariant;
-use serde::{Serialize, Serializer};
 use std::iter::FromIterator;
 use std::iter::Iterator;
 
@@ -138,8 +135,8 @@ impl TypeDecl {
     /// `None` if the type is opaque.
     pub fn get_instantiated_variants(
         &self,
-        inst_regions: &Vector<Region<RegionVarId::Id>>,
-        inst_types: &Vector<RTy>,
+        inst_regions: &Vec<Region<RegionVarId::Id>>,
+        inst_types: &Vec<RTy>,
     ) -> Option<VariantId::Vector<FieldId::Vector<RTy>>> {
         // Introduce the substitutions
         let r_subst = make_region_subst(
@@ -174,9 +171,9 @@ impl TypeDecl {
     pub fn get_erased_regions_instantiated_field_types(
         &self,
         variant_id: Option<VariantId::Id>,
-        inst_types: &Vector<ETy>,
-        cgs: &Vector<ConstGeneric>,
-    ) -> Vector<ETy> {
+        inst_types: &Vec<ETy>,
+        cgs: &Vec<ConstGeneric>,
+    ) -> Vec<ETy> {
         // Introduce the substitution
         let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
         let cg_subst = make_cg_subst(
@@ -190,7 +187,7 @@ impl TypeDecl {
             .map(|f| f.ty.erase_regions_substitute_types(&ty_subst, &cg_subst))
             .collect();
 
-        Vector::from(field_types)
+        Vec::from(field_types)
     }
 
     /// The variant id should be `None` if it is a structure and `Some` if it
@@ -198,8 +195,8 @@ impl TypeDecl {
     pub fn get_erased_regions_instantiated_field_type(
         &self,
         variant_id: Option<VariantId::Id>,
-        inst_types: &Vector<ETy>,
-        cgs: &Vector<ConstGeneric>,
+        inst_types: &Vec<ETy>,
+        cgs: &Vec<ConstGeneric>,
         field_id: FieldId::Id,
     ) -> ETy {
         // Introduce the substitution
@@ -509,7 +506,7 @@ where
 
     /// Return the unit type
     pub fn mk_unit() -> Ty<R> {
-        Ty::Adt(TypeId::Tuple, Vector::new(), Vector::new(), Vector::new())
+        Ty::Adt(TypeId::Tuple, Vec::new(), Vec::new(), Vec::new())
     }
 
     /// Return true if this is a scalar type
@@ -820,11 +817,11 @@ where
         }
     }
 
-    fn substitute_regions<R1>(regions: &Vector<R>, rsubst: &dyn Fn(&R) -> R1) -> Vector<R1>
+    fn substitute_regions<R1>(regions: &Vec<R>, rsubst: &dyn Fn(&R) -> R1) -> Vec<R1>
     where
         R1: Clone + Eq,
     {
-        Vector::from_iter(regions.iter().map(|rid| rsubst(rid)))
+        Vec::from_iter(regions.iter().map(|rid| rsubst(rid)))
     }
 
     /// Substitute the type parameters
@@ -912,8 +909,8 @@ where
     T2: Clone,
 {
     // We don't need to do this, but we want to check the lengths
-    let keys: Vector<T1> = keys.collect();
-    let values: Vector<T2> = values.cloned().collect();
+    let keys: Vec<T1> = keys.collect();
+    let values: Vec<T2> = values.cloned().collect();
     assert!(
         keys.len() == values.len(),
         "keys and values don't have the same length"
@@ -1008,61 +1005,6 @@ impl Formatter<TypeDeclId::Id> for TypeDecls {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
         let def = self.get(id).unwrap();
         def.name.to_string()
-    }
-}
-
-impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let enum_name = "Ty";
-        let variant_name = self.variant_name();
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        // It seems the "standard" way of doing is the following (this is
-        // consistent with what the automatically generated serializer does):
-        // - if the arity is > 0, use `serialize_tuple_variant`
-        // - otherwise simply serialize a string with the variant name
-        if variant_arity > 0 {
-            let mut vs = serializer.serialize_tuple_variant(
-                enum_name,
-                variant_index,
-                variant_name,
-                variant_arity,
-            )?;
-            match self {
-                Ty::Adt(id, regions, tys, cgs) => {
-                    vs.serialize_field(id)?;
-                    let regions = VectorSerializer::new(regions);
-                    vs.serialize_field(&regions)?;
-                    let tys = VectorSerializer::new(tys);
-                    vs.serialize_field(&tys)?;
-                    let cgs = VectorSerializer::new(cgs);
-                    vs.serialize_field(&cgs)?;
-                }
-                Ty::TypeVar(var_id) => {
-                    vs.serialize_field(var_id)?;
-                }
-                Ty::Literal(pty) => {
-                    vs.serialize_field(pty)?;
-                }
-                Ty::Never => {
-                    unreachable!();
-                }
-                Ty::Ref(region, ty, ref_kind) => {
-                    vs.serialize_field(region)?;
-                    vs.serialize_field(ty)?;
-                    vs.serialize_field(ref_kind)?;
-                }
-                Ty::RawPtr(ty, ref_kind) => {
-                    vs.serialize_field(ty)?;
-                    vs.serialize_field(ref_kind)?;
-                }
-            }
-            vs.end()
-        } else {
-            variant_name.serialize(serializer)
-        }
     }
 }
 

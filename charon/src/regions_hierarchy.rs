@@ -487,13 +487,13 @@ fn compute_regions_constraints_for_type_decl_group(
             // over the generics in the type declarations
 
             // Instantiate the type definition variants
-            let region_params = im::Vector::from_iter(
+            let region_params = Vec::from_iter(
                 type_def
                     .region_params
                     .iter()
                     .map(|rvar| Region::Var(rvar.index)),
             );
-            let type_params = im::Vector::from_iter(
+            let type_params = Vec::from_iter(
                 type_def
                     .type_params
                     .iter()

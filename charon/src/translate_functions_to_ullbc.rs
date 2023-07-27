@@ -29,7 +29,6 @@ use crate::ullbc_ast as ast;
 use crate::values as v;
 use crate::values::{Literal, ScalarValue};
 use core::convert::*;
-use hashlink::linked_hash_map::LinkedHashMap;
 use log::warn;
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir;
@@ -519,7 +518,7 @@ fn translate_projection<'tcx, 'ctx>(
                 match path_type {
                     ty::Ty::Ref(_, ty, _) => {
                         path_type = ty.deref().clone();
-                        projection.push_back(e::ProjectionElem::Deref);
+                        projection.push(e::ProjectionElem::Deref);
                     }
                     ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Box), regions, tys, cgs) => {
                         // This case only happens in some MIR levels
@@ -528,11 +527,11 @@ fn translate_projection<'tcx, 'ctx>(
                         assert!(tys.len() == 1);
                         assert!(cgs.is_empty());
                         path_type = tys[0].clone();
-                        projection.push_back(e::ProjectionElem::DerefBox);
+                        projection.push(e::ProjectionElem::DerefBox);
                     }
                     ty::Ty::RawPtr(ty, _) => {
                         path_type = ty.deref().clone();
-                        projection.push_back(e::ProjectionElem::DerefRawPtr);
+                        projection.push(e::ProjectionElem::DerefRawPtr);
                     }
                     _ => {
                         unreachable!("\n- pelem: {:?}\n- path_type: {:?}", pelem, path_type);
@@ -614,18 +613,18 @@ fn translate_projection<'tcx, 'ctx>(
                                 elem = e::ProjectionElem::DerefBox;
                                 path_type = ty::Ty::Adt(
                                     ty::TypeId::Assumed(ty::AssumedTy::PtrUnique),
-                                    im::vector![],
-                                    im::vector![type_param],
-                                    im::vector![],
+                                    vec![],
+                                    vec![type_param],
+                                    vec![],
                                 )
                             }
                             ty::AssumedTy::PtrUnique => {
                                 elem = e::ProjectionElem::DerefPtrUnique;
                                 path_type = ty::Ty::Adt(
                                     ty::TypeId::Assumed(ty::AssumedTy::PtrNonNull),
-                                    im::vector![],
-                                    im::vector![type_param],
-                                    im::vector![],
+                                    vec![],
+                                    vec![type_param],
+                                    vec![],
                                 )
                             }
                             ty::AssumedTy::PtrNonNull => {
@@ -643,7 +642,7 @@ fn translate_projection<'tcx, 'ctx>(
                         unreachable!();
                     }
                 };
-                projection.push_back(proj_elem);
+                projection.push(proj_elem);
                 downcast_id = None;
             }
             mir::ProjectionElem::Index(local) => match &path_type {
@@ -656,7 +655,7 @@ fn translate_projection<'tcx, 'ctx>(
                     assert!(tys.len() == 1);
 
                     let v = bt_ctx.get_local(&local).unwrap();
-                    projection.push_back(e::ProjectionElem::Index(v, path_type.clone()));
+                    projection.push(e::ProjectionElem::Index(v, path_type.clone()));
 
                     path_type = tys[0].clone();
                 }
@@ -1407,15 +1406,13 @@ fn translate_switch_targets<'tcx>(
         ty::Ty::Literal(ty::LiteralTy::Integer(int_ty)) => {
             // This is a: switch(int).
             // Convert all the test values to the proper values.
-            let mut targets_map: LinkedHashMap<v::ScalarValue, ast::BlockId::Id> =
-                LinkedHashMap::new();
+            let mut targets_map: Vec<(v::ScalarValue, ast::BlockId::Id)> = Vec::new();
             for (v, tgt) in targets_vec {
                 // We need to reinterpret the bytes (`v as i128` is not correct)
                 let raw: [u8; 16] = v.to_le_bytes();
                 let v = v::ScalarValue::from_le_bytes(*int_ty, raw);
                 let tgt = translate_basic_block(bt_ctx, body, tgt)?;
-                assert!(!targets_map.contains_key(&v));
-                targets_map.insert(v, tgt);
+                targets_map.push((v, tgt));
             }
             let otherwise_block = translate_basic_block(bt_ctx, body, targets.otherwise())?;
 

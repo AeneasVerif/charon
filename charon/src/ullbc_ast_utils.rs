@@ -1,7 +1,6 @@
 //! Implementations for [crate::ullbc_ast]
 #![allow(dead_code)]
 
-use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 pub use crate::gast_utils::*;
@@ -9,8 +8,6 @@ use crate::meta::Meta;
 use crate::types::*;
 use crate::ullbc_ast::*;
 use crate::values::*;
-use serde::ser::SerializeTupleVariant;
-use serde::{Serialize, Serializer};
 use std::iter::FromIterator;
 use take_mut::take;
 
@@ -34,36 +31,6 @@ impl SwitchTargets {
     /// Perform a type substitution - actually simply clone the object
     pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
         self.clone()
-    }
-}
-
-impl Serialize for SwitchTargets {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let enum_name = "SwitchTargets";
-        let variant_name = self.variant_name();
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        let mut vs = serializer.serialize_tuple_variant(
-            enum_name,
-            variant_index,
-            variant_name,
-            variant_arity,
-        )?;
-        match self {
-            SwitchTargets::If(id1, id2) => {
-                vs.serialize_field(id1)?;
-                vs.serialize_field(id2)?;
-            }
-            SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
-                vs.serialize_field(int_ty)?;
-                let targets = LinkedHashMapSerializer::new(targets);
-                vs.serialize_field(&targets)?;
-                vs.serialize_field(otherwise)?;
-            }
-        }
-        vs.end()
     }
 }
 
