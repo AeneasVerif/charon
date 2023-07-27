@@ -623,7 +623,7 @@ fn translate_projection<'tcx, 'ctx>(
             }
             mir::ProjectionElem::Index(local) => match path_type {
                 ty::Ty::Adt(
-                    ty::TypeId::Assumed(ty::AssumedTy::Array | ty::AssumedTy::Slice),
+                    ty::TypeId::Assumed(aty @ (ty::AssumedTy::Array | ty::AssumedTy::Slice)),
                     _,
                     tys,
                     _,
@@ -631,7 +631,12 @@ fn translate_projection<'tcx, 'ctx>(
                     assert!(tys.len() == 1);
 
                     let v = bt_ctx.get_local(&local).unwrap();
-                    projection.push_back(e::ProjectionElem::Index(v));
+                    let kind = match aty {
+                        ty::AssumedTy::Array => e::ArrayOrSlice::Array,
+                        ty::AssumedTy::Slice => e::ArrayOrSlice::Slice,
+                        _ => unreachable!(),
+                    };
+                    projection.push_back(e::ProjectionElem::Index(kind, v));
 
                     path_type = tys[0].clone();
                 }
@@ -859,8 +864,23 @@ fn translate_rvalue<'tcx>(
             unreachable!();
         }
         mir::Rvalue::Len(place) => {
-            let place = translate_place(bt_ctx, place);
-            e::Rvalue::Len(place)
+            let (place, ty) = translate_place_with_type(bt_ctx, place);
+            let kind = match ty {
+                ty::Ty::Adt(
+                    ty::TypeId::Assumed(aty @ (ty::AssumedTy::Array | ty::AssumedTy::Slice)),
+                    _,
+                    _,
+                    _,
+                ) => {
+                    if aty.is_array() {
+                        e::ArrayOrSlice::Array
+                    } else {
+                        e::ArrayOrSlice::Slice
+                    }
+                }
+                _ => unreachable!(),
+            };
+            e::Rvalue::Len(place, kind)
         }
         mir::Rvalue::Cast(cast_kind, operand, tgt_ty) => {
             trace!("Rvalue::Cast: {:?}", rvalue);
@@ -883,8 +903,8 @@ fn translate_rvalue<'tcx>(
                 }
                 (
                     rustc_middle::mir::CastKind::Pointer(PointerCast::Unsize),
-                    ty::Ty::Ref(_, t1, _),
-                    ty::Ty::Ref(_, t2, _),
+                    ty::Ty::Ref(_, t1, kind1),
+                    ty::Ty::Ref(_, t2, kind2),
                 ) => {
                     // In MIR terminology, we go from &[T; l] to &[T] which means we
                     // effectively "unsize" the type, as `l` no longer appears in the
@@ -897,8 +917,9 @@ fn translate_rvalue<'tcx>(
                         ) => {
                             assert!(tys.len() == 1 && cgs.len() == 1);
                             assert!(tys[0] == tys1[0]);
+                            assert!(kind1 == kind2);
                             e::Rvalue::UnaryOp(
-                                e::UnOp::ArrayToSlice(tys[0].clone(), cgs[0].clone()),
+                                e::UnOp::ArrayToSlice(*kind1, tys[0].clone(), cgs[0].clone()),
                                 op,
                             )
                         }
@@ -1829,11 +1850,11 @@ fn translate_primitive_function_call(
             dest,
             target,
         ),
-        ast::AssumedFunId::ArraySlice
-        | ast::AssumedFunId::ArrayMutSlice
-        | ast::AssumedFunId::SliceSlice
-        | ast::AssumedFunId::SliceMutSlice => {
-            // Take a slice from an array/slice.
+        ast::AssumedFunId::ArraySharedSubslice
+        | ast::AssumedFunId::ArrayMutSubslice
+        | ast::AssumedFunId::SliceSharedSubslice
+        | ast::AssumedFunId::SliceMutSubslice => {
+            // Take a subslice from an array/slice.
             // Note that this isn't any different from a regular function call. Ideally,
             // we'd have a generic assumed function mechanism.
             assert!(type_args.len() == 1);
@@ -1854,12 +1875,17 @@ fn translate_primitive_function_call(
             // Special case handled elsewhere
             unreachable!();
         }
-        ast::AssumedFunId::ArrayIndex
+        ast::AssumedFunId::ArrayLen
+        | ast::AssumedFunId::ArraySharedIndex
         | ast::AssumedFunId::ArrayMutIndex
-        | ast::AssumedFunId::ArrayToSlice => {
+        | ast::AssumedFunId::ArrayToSharedSlice
+        | ast::AssumedFunId::ArrayToMutSlice
+        | ast::AssumedFunId::SliceLen
+        | ast::AssumedFunId::SliceSharedIndex
+        | ast::AssumedFunId::SliceMutIndex => {
             // Those cases are introduced later, in micro-passes, by desugaring
-            // projections (for ArrayIndex and ArrayMutIndex) and operations
-            // (for ArrayToSlice) to function calls.
+            // projections (for ArrayIndex and ArrayMutIndex for instnace) and=
+            // operations (for ArrayToSlice for instance) to function calls.
             unreachable!()
         }
     }

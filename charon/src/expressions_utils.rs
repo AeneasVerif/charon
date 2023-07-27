@@ -53,7 +53,7 @@ impl std::fmt::Display for UnOp {
             UnOp::Not => write!(f, "~"),
             UnOp::Neg => write!(f, "-"),
             UnOp::Cast(src, tgt) => write!(f, "cast<{src},{tgt}>"),
-            UnOp::ArrayToSlice(_, _) => write!(f, "array_to_slice"),
+            UnOp::ArrayToSlice(..) => write!(f, "array_to_slice"),
         }
     }
 }
@@ -124,7 +124,7 @@ impl Place {
                         out = format!("({out}).{field_id}");
                     }
                 },
-                ProjectionElem::Index(i) => out = format!("({out})[{}]", ctx.format_object(*i)),
+                ProjectionElem::Index(_, i) => out = format!("({out})[{}]", ctx.format_object(*i)),
             }
         }
 
@@ -269,7 +269,7 @@ impl Rvalue {
                 }
             }
             Rvalue::Global(gid) => ctx.format_object(*gid),
-            Rvalue::Len(place) => format!("len({})", place.fmt_with_ctx(ctx)),
+            Rvalue::Len(place, _) => format!("len({})", place.fmt_with_ctx(ctx)),
         }
     }
 
@@ -404,7 +404,7 @@ pub trait ExprVisitor {
             ProjectionElem::DerefPtrUnique => self.visit_deref_ptr_unique(),
             ProjectionElem::DerefPtrNonNull => self.visit_deref_ptr_non_null(),
             ProjectionElem::Field(proj_kind, fid) => self.visit_projection_field(proj_kind, fid),
-            ProjectionElem::Index(o) => self.visit_var_id(o),
+            ProjectionElem::Index(_, o) => self.visit_var_id(o),
         }
     }
 
@@ -450,7 +450,7 @@ pub trait ExprVisitor {
             Rvalue::Discriminant(p) => self.visit_discriminant(p),
             Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
             Rvalue::Global(gid) => self.visit_global(gid),
-            Rvalue::Len(p) => self.visit_len(p),
+            Rvalue::Len(p, _) => self.visit_len(p),
         }
     }
 

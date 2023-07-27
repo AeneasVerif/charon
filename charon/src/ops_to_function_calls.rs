@@ -11,6 +11,7 @@ use crate::llbc_ast::{
     AssumedFunId, Call, CtxNames, FunDecls, FunId, GlobalDecls, MutAstVisitor, RawStatement,
     Statement,
 };
+use crate::types::RefKind;
 
 struct OpsToFunCall {}
 
@@ -25,10 +26,14 @@ impl MutAstVisitor for OpsToFunCall {
 
     fn visit_statement(&mut self, s: &mut Statement) {
         match &s.content {
-            RawStatement::Assign(p, Rvalue::UnaryOp(UnOp::ArrayToSlice(ty, cg), op)) => {
+            RawStatement::Assign(p, Rvalue::UnaryOp(UnOp::ArrayToSlice(ref_kind, ty, cg), op)) => {
                 // We could avoid the clone operations below if we take the content of
                 // the statement. In practice, this shouldn't have much impact.
-                let func = FunId::Assumed(AssumedFunId::ArrayToSlice);
+                let id = match ref_kind {
+                    RefKind::Mut => AssumedFunId::ArrayToMutSlice,
+                    RefKind::Shared => AssumedFunId::ArrayToSharedSlice,
+                };
+                let func = FunId::Assumed(id);
                 let region_args = Vec::new();
                 let type_args = vec![ty.clone()];
                 let const_generic_args = vec![cg.clone()];

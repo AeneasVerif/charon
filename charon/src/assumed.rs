@@ -187,18 +187,18 @@ pub fn get_fun_id_from_name(
                                 }
                                 types::AssumedTy::Array => {
                                     if id.is_index() {
-                                        ullbc_ast::AssumedFunId::ArraySlice
+                                        ullbc_ast::AssumedFunId::ArraySharedSubslice
                                     } else {
                                         // mut case
-                                        ullbc_ast::AssumedFunId::ArrayMutSlice
+                                        ullbc_ast::AssumedFunId::ArrayMutSubslice
                                     }
                                 }
                                 types::AssumedTy::Slice => {
                                     if id.is_index() {
-                                        ullbc_ast::AssumedFunId::SliceSlice
+                                        ullbc_ast::AssumedFunId::SliceSharedSubslice
                                     } else {
                                         // mut case
-                                        ullbc_ast::AssumedFunId::SliceMutSlice
+                                        ullbc_ast::AssumedFunId::SliceMutSubslice
                                     }
                                 }
                                 _ => unimplemented!("ty: {:?}", aty),

@@ -27,7 +27,7 @@ pub type Projection = Vector<ProjectionElem>;
 /// `((_0 as Right).0: T2) = move _1;`
 /// In MIR, downcasts always happen before field projections: in our internal
 /// language, we thus merge downcasts and field projections.
-#[derive(Debug, PartialEq, Eq, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum ProjectionElem {
     /// Dereference a shared/mutable reference.
     Deref,
@@ -39,6 +39,7 @@ pub enum ProjectionElem {
     /// In rust, this comes from the `*` operator applied on boxes.
     DerefBox,
     /// Dereference a raw pointer. See the comments for [crate::types::Ty::RawPtr].
+    /// TODO: remove those? Or if we keep them, change to: `Deref(DerefKind)`?
     DerefRawPtr,
     /// Dereference a unique pointer. See the comments for [crate::types::Ty::RawPtr].
     DerefPtrUnique,
@@ -53,9 +54,15 @@ pub enum ProjectionElem {
     /// (for pretty printing for instance). We retrieve it through
     /// type-checking.
     Field(FieldProjKind, FieldId::Id),
-    /// MIR imposes that the argument to an offset projection be a local variable, meaning
+    /// MIR imposes that the argument to an index projection be a local variable, meaning
     /// that even constant indices into arrays are let-bound as separate variables.
-    Index(VarId::Id),
+    Index(ArrayOrSlice, VarId::Id),
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
+pub enum ArrayOrSlice {
+    Array,
+    Slice,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
@@ -105,8 +112,9 @@ pub enum UnOp {
     /// **Remark:** We introduce this unop when translating from MIR, **then transform**
     /// it to a function call in a micro pass. The type and the scalar value are not
     /// *necessary* as we can retrieve them from the context, but storing them here is
-    /// very useful.
-    ArrayToSlice(ETy, ConstGeneric),
+    /// very useful. The [RefKind] argument states whethere we operate on a mutable
+    /// or a shared borrow to an array.
+    ArrayToSlice(RefKind, ETy, ConstGeneric),
 }
 
 /// Binary operations.
@@ -219,10 +227,12 @@ pub enum Rvalue {
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
     Global(GlobalDeclId::Id),
-    // Length of a memory location, right now only used as Len(Deref(VarId)), when the variable is
-    // an array. As such, this should *always* be resolve-able at compile-time. The run-time length
-    // of e.g. a vector or a slice is represented differently (but pretty-prints the same, FIXME).
-    Len(Place),
+    /// Length of a memory location. The run-time length of e.g. a vector or a slice is
+    /// represented differently (but pretty-prints the same, FIXME).
+    /// We remember if the value to dereference is an array or a slice for
+    /// convenience purposes.
+    /// TODO: micro-pass to transform to function call.
+    Len(Place, ArrayOrSlice),
 }
 
 #[derive(Debug, Clone, VariantIndexArity)]

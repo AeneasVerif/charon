@@ -112,48 +112,9 @@ where
 
     let f = match func {
         FunId::Regular(def_id) => format!("{}{}", ctx.format_object(*def_id), rt_args),
-        FunId::Assumed(assumed) => match assumed {
-            AssumedFunId::Replace => format!("core::mem::replace{rt_args}"),
-            AssumedFunId::BoxNew => format!("alloc::boxed::Box{rt_args}::new"),
-            AssumedFunId::BoxDeref => {
-                format!("core::ops::deref::Deref<alloc::boxed::Box{rt_args}>::deref",)
-            }
-            AssumedFunId::BoxDerefMut => {
-                format!("core::ops::deref::DerefMut<alloc::boxed::Box{rt_args}>::deref_mut",)
-            }
-            AssumedFunId::BoxFree => format!("alloc::alloc::box_free{rt_args}"),
-            AssumedFunId::VecNew => format!("alloc::vec::Vec{rt_args}::new"),
-            AssumedFunId::VecPush => format!("alloc::vec::Vec{rt_args}::push"),
-            AssumedFunId::VecInsert => format!("alloc::vec::Vec{rt_args}::insert"),
-            AssumedFunId::VecLen => format!("alloc::vec::Vec{rt_args}::len"),
-            AssumedFunId::VecIndex => {
-                format!("core::ops::index::Index<alloc::vec::Vec{rt_args}>::index")
-            }
-            AssumedFunId::VecIndexMut => {
-                format!("core::ops::index::IndexMut<alloc::vec::Vec{rt_args}>::index_mut",)
-            }
-            AssumedFunId::ArrayIndex => {
-                format!("core::ops::array::Index[{rt_args}]::index",)
-            }
-            AssumedFunId::ArrayMutIndex => {
-                format!("core::ops::array::IndexMut[{rt_args}]::mut_index",)
-            }
-            AssumedFunId::ArraySlice => {
-                format!("@ArraySlice{rt_args}::slice",)
-            }
-            AssumedFunId::ArrayMutSlice => {
-                format!("@ArrayMutSliceSlice{rt_args}::mut_slice",)
-            }
-            AssumedFunId::ArrayToSlice => {
-                format!("array_to_slice{rt_args}",)
-            }
-            AssumedFunId::SliceSlice => {
-                format!("@SliceSlice{rt_args}::slice",)
-            }
-            AssumedFunId::SliceMutSlice => {
-                format!("@SliceMutSlice{rt_args}::mut_slice",)
-            }
-        },
+        FunId::Assumed(assumed) => {
+            format!("@{}<{rt_args}>", assumed.variant_name())
+        }
     };
 
     format!("{f}({args})")

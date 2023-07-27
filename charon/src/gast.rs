@@ -117,7 +117,7 @@ pub enum FunId {
 
 /// An assumed function identifier, identifying a function coming from a
 /// standard library.
-#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, Serialize)]
+#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum AssumedFunId {
     /// `core::mem::replace`
     Replace,
@@ -157,19 +157,58 @@ pub enum AssumedFunId {
     VecIndex,
     /// `core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>`
     VecIndexMut,
-    /// Array functions
-    ArrayIndex,
+    /// Converted from [Rvalue::Len]
+    ///
+    /// Signature: `fn<T,N>(&[T;N]) -> usize`
+    ArrayLen,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T,N>(&[T;N], usize) -> &T`
+    ArraySharedIndex,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T,N>(&mut [T;N], usize) -> &mut T`
     ArrayMutIndex,
-    /// Converts a [T;N] into an &[T], but taking a range as an argument (unlike the
-    /// SliceNew UnaryOp, which takes no argument).
-    ArraySlice,
-    ArrayMutSlice,
-    /// We introduced this in a micro-pass: this is originally a unop, that we
-    /// later transform to a function call.
-    ArrayToSlice,
-    /// Take a subslice from a slice
-    SliceSlice,
-    SliceMutSlice,
+    /// Cast an array as a slice.
+    ///
+    /// Converted from [UnOp::ArrayToSlice]
+    ArrayToSharedSlice,
+    /// Cast an array as a slice.
+    ///
+    /// Converted from [UnOp::ArrayToSlice]
+    ArrayToMutSlice,
+    /// Take a subslice from an array.
+    ///
+    /// Introduced by disambiguating the `Index::index` trait (takes a range
+    /// as argument).
+    ArraySharedSubslice,
+    /// Take a subslice from an array.
+    ///
+    /// Introduced by disambiguating the `Index::index` trait (takes a range
+    /// as argument).
+    ArrayMutSubslice,
+    /// Converted from [Rvalue::Len]
+    ///
+    /// Signature: `fn<T,N>(&[T;N]) -> usize`
+    SliceLen,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T>(&[T], usize) -> &T`
+    SliceSharedIndex,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T>(&mut [T], usize) -> &mut T`
+    SliceMutIndex,
+    /// Take a subslice from a slice.
+    ///
+    /// Introduced by disambiguating the `Index::index` trait (takes a range
+    /// as argument).
+    SliceSharedSubslice,
+    /// Take a subslice from a slice.
+    ///
+    /// Introduced by disambiguating the `Index::index` trait (takes a range
+    /// as argument).
+    SliceMutSubslice,
 }
 
 /// TODO: factor out with [Rvalue]
