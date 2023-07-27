@@ -47,37 +47,39 @@ let expr_to_stype_formatter (fmt : expr_formatter) : PT.stype_formatter =
     PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
   }
 
-let rec projection_to_string (fmt : expr_formatter) (inside : string)
+let rec projection_to_string (fmt : expr_formatter) (s : string)
     (p : E.projection) : string =
   match p with
-  | [] -> inside
-  | pe :: p' -> (
-      let s = projection_to_string fmt inside p' in
-      match pe with
-      | E.Offset var_id ->
-        let var = fmt.var_id_to_string var_id in
-        s ^ "[@" ^ var ^ "]"
-      | E.Deref -> "*(" ^ s ^ ")"
-      | E.DerefBox -> "deref_box(" ^ s ^ ")"
-      | E.Field (E.ProjOption variant_id, fid) ->
-          assert (variant_id = T.option_some_id);
-          assert (fid = T.FieldId.zero);
-          "(" ^ s ^ " as Option::Some)." ^ T.FieldId.to_string fid
-      | E.Field (E.ProjTuple _, fid) -> "(" ^ s ^ ")." ^ T.FieldId.to_string fid
-      | E.Field (E.ProjAdt (adt_id, opt_variant_id), fid) -> (
-          let field_name =
-            match fmt.adt_field_to_string adt_id opt_variant_id fid with
-            | Some field_name -> field_name
-            | None -> T.FieldId.to_string fid
-          in
-          match opt_variant_id with
-          | None -> "(" ^ s ^ ")." ^ field_name
-          | Some variant_id ->
-              let variant_name = fmt.adt_variant_to_string adt_id variant_id in
-              "(" ^ s ^ " as " ^ variant_name ^ ")." ^ field_name))
-
-let projection_to_string fmt inside p =
-  projection_to_string fmt inside (List.rev p)
+  | [] -> s
+  | pe :: p' ->
+      let s =
+        match pe with
+        | E.Offset var_id ->
+            let var = fmt.var_id_to_string var_id in
+            s ^ "[@" ^ var ^ "]"
+        | E.Deref -> "*(" ^ s ^ ")"
+        | E.DerefBox -> "deref_box(" ^ s ^ ")"
+        | E.Field (E.ProjOption variant_id, fid) ->
+            assert (variant_id = T.option_some_id);
+            assert (fid = T.FieldId.zero);
+            "(" ^ s ^ " as Option::Some)." ^ T.FieldId.to_string fid
+        | E.Field (E.ProjTuple _, fid) ->
+            "(" ^ s ^ ")." ^ T.FieldId.to_string fid
+        | E.Field (E.ProjAdt (adt_id, opt_variant_id), fid) -> (
+            let field_name =
+              match fmt.adt_field_to_string adt_id opt_variant_id fid with
+              | Some field_name -> field_name
+              | None -> T.FieldId.to_string fid
+            in
+            match opt_variant_id with
+            | None -> "(" ^ s ^ ")." ^ field_name
+            | Some variant_id ->
+                let variant_name =
+                  fmt.adt_variant_to_string adt_id variant_id
+                in
+                "(" ^ s ^ " as " ^ variant_name ^ ")." ^ field_name)
+      in
+      projection_to_string fmt s p'
 
 let place_to_string (fmt : expr_formatter) (p : E.place) : string =
   let var = fmt.var_id_to_string p.E.var_id in
@@ -129,7 +131,7 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
   match rv with
   | E.Len p ->
       let p = place_to_string fmt p in
-      "@len("^p^")"
+      "@len(" ^ p ^ ")"
   | E.Use op -> operand_to_string fmt op
   | E.Ref (p, bk) -> (
       let p = place_to_string fmt p in
