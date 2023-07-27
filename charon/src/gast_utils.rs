@@ -56,7 +56,7 @@ impl std::string::ToString for Var {
         match &self.name {
             // We display both the variable name and its id because some
             // variables may have the same name (in different scopes)
-            Some(name) => format!("{name}({id})"),
+            Some(name) => format!("{name}{id}"),
             None => id,
         }
     }
@@ -165,9 +165,10 @@ impl<T: Debug + Clone + Serialize> GExprBody<T> {
                 }
             };
 
+            let var_id = var_id_to_pretty_string(v.index);
             let var_name = match &v.name {
-                Some(name) => name.clone(),
-                None => var_id_to_pretty_string(v.index),
+                Some(name) => format!("{name}{var_id}"),
+                None => var_id,
             };
 
             locals.push(

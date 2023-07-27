@@ -10,7 +10,7 @@ use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 
 pub fn var_id_to_pretty_string(id: VarId::Id) -> String {
-    format!("var@{id}")
+    format!("@{id}")
 }
 
 #[derive(Debug, Clone)]
