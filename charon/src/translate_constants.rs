@@ -175,12 +175,12 @@ fn translate_constant_integer_like_value(
                 // `to_isize`. For now, we make the hypothesis
                 // that isize is an int64
                 assert!(std::mem::size_of::<isize>() == 8);
-                v::ScalarValue::Isize(scalar.to_i64().unwrap() as isize)
+                v::ScalarValue::Isize(scalar.to_i64().unwrap())
             }
             ty::IntegerTy::Usize => {
                 // Same as above for usize.
                 assert!(std::mem::size_of::<usize>() == 8);
-                v::ScalarValue::Usize(scalar.to_u64().unwrap() as usize)
+                v::ScalarValue::Usize(scalar.to_u64().unwrap())
             }
             ty::IntegerTy::I8 => v::ScalarValue::I8(scalar.to_i8().unwrap()),
             ty::IntegerTy::U8 => v::ScalarValue::U8(scalar.to_u8().unwrap()),

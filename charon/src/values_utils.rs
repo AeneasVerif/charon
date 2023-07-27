@@ -99,23 +99,6 @@ impl ScalarValue {
         }
     }
 
-    pub fn is_min(&self) -> bool {
-        match self {
-            ScalarValue::Isize(v) => *v == isize::MIN,
-            ScalarValue::I8(v) => *v == i8::MIN,
-            ScalarValue::I16(v) => *v == i16::MIN,
-            ScalarValue::I32(v) => *v == i32::MIN,
-            ScalarValue::I64(v) => *v == i64::MIN,
-            ScalarValue::I128(v) => *v == i128::MIN,
-            ScalarValue::Usize(v) => *v == usize::MIN,
-            ScalarValue::U8(v) => *v == u8::MIN,
-            ScalarValue::U16(v) => *v == u16::MIN,
-            ScalarValue::U32(v) => *v == u32::MIN,
-            ScalarValue::U64(v) => *v == u64::MIN,
-            ScalarValue::U128(v) => *v == u128::MIN,
-        }
-    }
-
     pub fn is_int(&self) -> bool {
         matches!(
             self,
@@ -169,7 +152,7 @@ impl ScalarValue {
 
     pub fn from_unchecked_uint(ty: IntegerTy, v: u128) -> ScalarValue {
         match ty {
-            IntegerTy::Usize => ScalarValue::Usize(v as usize),
+            IntegerTy::Usize => ScalarValue::Usize(v as u64),
             IntegerTy::U8 => ScalarValue::U8(v as u8),
             IntegerTy::U16 => ScalarValue::U16(v as u16),
             IntegerTy::U32 => ScalarValue::U32(v as u32),
@@ -217,7 +200,7 @@ impl ScalarValue {
 
     pub fn from_unchecked_int(ty: IntegerTy, v: i128) -> ScalarValue {
         match ty {
-            IntegerTy::Isize => ScalarValue::Isize(v as isize),
+            IntegerTy::Isize => ScalarValue::Isize(v as i64),
             IntegerTy::I8 => ScalarValue::I8(v as i8),
             IntegerTy::I16 => ScalarValue::I16(v as i16),
             IntegerTy::I32 => ScalarValue::I32(v as i32),
@@ -232,7 +215,7 @@ impl ScalarValue {
         match ty {
             IntegerTy::Isize => {
                 let b: [u8; 8] = b[0..8].try_into().unwrap();
-                ScalarValue::Isize(isize::from_le_bytes(b))
+                ScalarValue::Isize(i64::from_le_bytes(b))
             }
             IntegerTy::I8 => {
                 let b: [u8; 1] = b[0..1].try_into().unwrap();
@@ -256,7 +239,7 @@ impl ScalarValue {
             }
             IntegerTy::Usize => {
                 let b: [u8; 8] = b[0..8].try_into().unwrap();
-                ScalarValue::Usize(usize::from_le_bytes(b))
+                ScalarValue::Usize(u64::from_le_bytes(b))
             }
             IntegerTy::U8 => {
                 let b: [u8; 1] = b[0..1].try_into().unwrap();

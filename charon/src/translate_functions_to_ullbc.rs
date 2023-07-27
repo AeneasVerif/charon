@@ -860,7 +860,7 @@ fn translate_rvalue<'tcx>(
             // TODO: allow having other kinds of const generics, and desugar later to a function call
             let cv = *c.as_value().as_scalar().as_usize();
             let (operand, t) = translate_operand_with_type(bt_ctx, operand);
-            let mut operands = Vec::with_capacity(cv);
+            let mut operands = Vec::with_capacity(cv as usize);
             for _ in 0..cv {
                 operands.push(operand.clone());
             }
@@ -1003,7 +1003,7 @@ fn translate_rvalue<'tcx>(
                 mir::AggregateKind::Array(ty) => {
                     let t_ty = translate_ety(bt_ctx, &ty).unwrap();
                     let cg = ty::ConstGeneric::Value(PrimitiveValue::Scalar(ScalarValue::Usize(
-                        operands_t.len(),
+                        operands_t.len() as u64,
                     )));
                     e::Rvalue::Aggregate(e::AggregateKind::Array(t_ty, cg), operands_t)
                 }
