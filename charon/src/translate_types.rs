@@ -10,15 +10,15 @@ use crate::regions_hierarchy;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::reorder_decls::DeclarationGroup;
 use crate::rust_to_local_ids::*;
+use crate::translate_constants::translate_const_kind_as_const_generic;
 use crate::types as ty;
 use crate::types::{ConstGeneric, TypeDeclId};
 use crate::ullbc_ast as ast;
-use crate::values::{PrimitiveValue, ScalarValue};
 use core::convert::*;
 use im::Vector;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Mutability;
-use rustc_middle::ty::{ParamEnv, Ty, TyCtxt, TyKind};
+use rustc_middle::ty::{Ty, TyCtxt, TyKind};
 use rustc_session::Session;
 
 /// Translation context for type definitions
@@ -42,6 +42,8 @@ pub struct TypeTransContext<'tcx, 'ctx> {
     pub region_params_map: im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id>,
     /// The map from Rust type var identifier to LLBC type var
     pub type_params_map: im::OrdMap<u32, ty::TypeVarId::Id>,
+    /// The map from Rust const generic var identifiers to LLBC const generic vars
+    pub const_generic_params_map: im::OrdMap<u32, ty::ConstGenericVarId::Id>,
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
 }
@@ -55,6 +57,7 @@ impl<'tcx, 'ctx> TypeTransContext<'tcx, 'ctx> {
         ordered: &'ctx OrderedDecls,
         region_params_map: im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id>,
         type_params_map: im::OrdMap<u32, ty::TypeVarId::Id>,
+        const_generic_params_map: im::OrdMap<u32, ty::ConstGenericVarId::Id>,
         mir_level: MirLevel,
     ) -> Self {
         Self {
@@ -65,6 +68,7 @@ impl<'tcx, 'ctx> TypeTransContext<'tcx, 'ctx> {
             ordered,
             region_params_map,
             type_params_map,
+            const_generic_params_map,
             mir_level,
         }
     }
@@ -77,6 +81,7 @@ impl<'tcx, 'ctx> TypeTransContext<'tcx, 'ctx> {
 /// Auxiliary definition used to format definitions.
 struct TypeDeclFormatter<'a> {
     type_defs: &'a ty::TypeDecls,
+    global_defs: &'a ast::GlobalDecls,
     /// The region parameters of the definition we are printing (needed to
     /// correctly pretty print region var ids)
     region_params: &'a ty::RegionVarId::Vector<ty::RegionVar>,
@@ -145,12 +150,19 @@ impl<'a> Formatter<ty::TypeDeclId::Id> for TypeDeclFormatter<'a> {
     }
 }
 
+impl<'a> Formatter<ty::GlobalDeclId::Id> for TypeDeclFormatter<'a> {
+    fn format_object(&self, id: ty::GlobalDeclId::Id) -> String {
+        self.global_defs.format_object(id)
+    }
+}
+
 impl<'tcx, 'ctx> Formatter<&ty::TypeDecl> for TypeTransContext<'tcx, 'ctx> {
     fn format_object(&self, def: &ty::TypeDecl) -> String {
         // Create a type def formatter (which will take care of the
         // type parameters)
         let formatter = TypeDeclFormatter {
             type_defs: self.type_defs,
+            global_defs: self.global_defs,
             region_params: &def.region_params,
             type_params: &def.type_params,
             const_generic_params: &def.const_generic_params,
@@ -296,13 +308,9 @@ where
         TyKind::Array(ty, const_param) => {
             trace!("Array");
 
-            let c = const_param
-                .try_eval_usize(tt_ctx.tcx, ParamEnv::empty())
-                .unwrap();
+            let c = translate_const_kind_as_const_generic(tt_ctx, *const_param);
             let ty = vec![translate_ty(tt_ctx, region_translator, ty)?];
-            let cgs = vec![ty::ConstGeneric::Value(PrimitiveValue::Scalar(
-                ScalarValue::Usize(c as usize),
-            ))];
+            let cgs = vec![c];
             let id = ty::TypeId::Assumed(ty::AssumedTy::Array);
             Ok(ty::Ty::Adt(
                 id,
@@ -545,6 +553,7 @@ struct TypeGenericsInfo<'tcx> {
     type_params: Vec<ty::TypeVar>,
     type_params_map: im::OrdMap<u32, ty::TypeVarId::Id>,
     const_generic_params: Vec<ty::ConstGenericVar>,
+    const_generic_params_map: im::OrdMap<u32, ty::ConstGenericVarId::Id>,
 }
 
 /// Auxiliary helper.
@@ -556,7 +565,14 @@ struct TypeGenericsInfo<'tcx> {
 ///
 /// Rem.: this seems simpler in [crate::translate_functions_to_ullbc].
 /// TODO: compare and simplify/factorize?
-fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGenericsInfo<'tcx> {
+fn translate_type_generics<'tcx>(
+    tcx: TyCtxt<'tcx>,
+    def_id: DefId,
+    decls: &OrderedDecls,
+    type_defs: &mut ty::TypeDecls,
+    global_defs: &ast::GlobalDecls,
+    mir_level: MirLevel,
+) -> TypeGenericsInfo<'tcx> {
     // Check the generics
     generics::check_type_generics(tcx, def_id);
 
@@ -574,7 +590,22 @@ fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGeneri
     let mut type_params: Vec<ty::TypeVar> = vec![];
     let mut type_params_map: im::OrdMap<u32, ty::TypeVarId::Id> = im::OrdMap::new();
     let mut type_params_counter = ty::TypeVarId::Generator::new();
-    let const_generic_params = vec![];
+    let mut const_generic_params = vec![];
+    let mut const_generic_params_map = im::OrdMap::new();
+    let mut const_generic_counter = ty::ConstGenericVarId::Generator::new();
+
+    let empty_tt_ctx = TypeTransContext::new(
+        def_id,
+        tcx,
+        type_defs,
+        global_defs,
+        decls,
+        im::OrdMap::new(),
+        im::OrdMap::new(),
+        im::OrdMap::new(),
+        mir_level,
+    );
+
     for p in substs.iter() {
         match p.unpack() {
             rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
@@ -603,8 +634,24 @@ fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGeneri
                 region_params_map.insert(*region, t_region.index);
                 region_params.push(t_region);
             }
-            rustc_middle::ty::subst::GenericArgKind::Const(_) => {
-                unimplemented!();
+            rustc_middle::ty::subst::GenericArgKind::Const(c) => {
+                // The type should be primitive, meaning it shouldn't contain variables,
+                // non-primitive adts, etc. As a result, we can use an empty context.
+                let ty = translate_ety(&empty_tt_ctx, &c.ty()).unwrap();
+                let ty = ty.to_primitive();
+                match c.kind() {
+                    rustc_middle::ty::ConstKind::Param(cp) => {
+                        let cg_var = ty::ConstGenericVar {
+                            index: const_generic_counter.fresh_id(),
+                            name: cp.name.to_ident_string(),
+                            ty,
+                        };
+                        let index = cg_var.index;
+                        const_generic_params.push(cg_var);
+                        const_generic_params_map.insert(cp.index, index);
+                    }
+                    _ => unreachable!(),
+                }
             }
         }
     }
@@ -633,6 +680,7 @@ fn translate_type_generics<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> TypeGeneri
         type_params,
         type_params_map,
         const_generic_params,
+        const_generic_params_map,
     }
 }
 
@@ -763,7 +811,8 @@ fn translate_type<'tcx>(
         type_params,
         type_params_map,
         const_generic_params,
-    } = translate_type_generics(tcx, info.rid);
+        const_generic_params_map,
+    } = translate_type_generics(tcx, info.rid, decls, type_defs, global_defs, mir_level);
 
     // Initialize the type translation context
     let tt_ctx = TypeTransContext::new(
@@ -774,6 +823,7 @@ fn translate_type<'tcx>(
         decls,
         region_params_map,
         type_params_map,
+        const_generic_params_map,
         mir_level,
     );
 
@@ -813,9 +863,9 @@ fn translate_type<'tcx>(
     trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
     // Small sanity check - we have to translate the definitions in the proper
     // order, otherwise we mess up with the vector of ids
-    assert!(type_defs.types.len() == trans_id.to_usize());
+    assert!(type_defs.len() == trans_id.to_usize());
 
-    type_defs.types.push_back(type_def);
+    type_defs.push_back(type_def);
     Ok(())
 }
 
@@ -838,7 +888,7 @@ pub fn translate_types<'tcx>(
     let mut type_defs = ty::TypeDecls::new();
 
     // TODO: for now we initialize the global map as an empty map
-    // This won't be an issue once we merge the contexts
+    // This won't be an issue once we merge the contexts.
     let global_defs = ast::GlobalDeclId::Vector::new();
 
     // Translate the types one by one
@@ -893,9 +943,10 @@ pub fn translate_types<'tcx>(
     );
 
     // Print the translated types
-    for d in type_defs.types.iter() {
+    for d in type_defs.iter() {
         let formatter = TypeDeclFormatter {
             type_defs: &type_defs,
+            global_defs: &global_defs,
             region_params: &d.region_params,
             type_params: &d.type_params,
             const_generic_params: &d.const_generic_params,

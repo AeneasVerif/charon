@@ -227,7 +227,7 @@ fn translate_constant_scalar_value(
             assert!(field_tys.is_empty());
             assert!(cgs.is_empty());
 
-            let def = tt_ctx.type_defs.get_type_def(*id).unwrap();
+            let def = tt_ctx.type_defs.get(*id).unwrap();
 
             // Check that there is only one variant, with no fields
             // and no parameters. Construct the value at the same time.
@@ -388,12 +388,43 @@ fn translate_const_kind_unevaluated<'tcx>(
 
 pub(crate) fn translate_const_kind<'tcx>(
     tt_ctx: &TypeTransContext<'tcx, '_>,
-    constant: rustc_middle::ty::ConstKind<'tcx>,
+    constant: rustc_middle::ty::Const<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
-    match constant {
-        ConstKind::Value(_) => {
-            // TODO: the value is now a [ValTree]
-            unimplemented!();
+    match constant.kind() {
+        ConstKind::Value(v) => {
+            // The value is a [ValTree].
+            // For now, we only imlement support for a limited subset of the cases -
+            // there are many cases for which I don't know in which situations they
+            // happen.
+
+            // We only support integers and scalars
+            let ty = translate_ety(tt_ctx, &constant.ty()).unwrap();
+            let v = match v {
+                mir_ty::ValTree::Leaf(v) => match ty.as_primitive() {
+                    ty::PrimitiveValueTy::Integer(int_ty) => {
+                        if int_ty.is_signed() {
+                            let v = v.try_to_int(v.size()).unwrap();
+                            v::PrimitiveValue::Scalar(v::ScalarValue::from_int(*int_ty, v).unwrap())
+                        } else {
+                            let v = v.try_to_uint(v.size()).unwrap();
+                            v::PrimitiveValue::Scalar(
+                                v::ScalarValue::from_uint(*int_ty, v).unwrap(),
+                            )
+                        }
+                    }
+                    ty::PrimitiveValueTy::Bool => {
+                        let v = v.try_to_bool().unwrap();
+                        v::PrimitiveValue::Bool(v)
+                    }
+                    ty::PrimitiveValueTy::Char => unimplemented!(),
+                    ty::PrimitiveValueTy::Str => unreachable!(),
+                },
+                mir_ty::ValTree::Branch(_) => {
+                    // In practice I don't know when this is used
+                    unimplemented!()
+                }
+            };
+            (ty, e::OperandConstantValue::PrimitiveValue(v))
         }
         ConstKind::Expr(_) => {
             unimplemented!();
@@ -413,13 +444,32 @@ pub(crate) fn translate_const_kind<'tcx>(
                 unimplemented!();
             }
         }
-        ConstKind::Param(_)
-        | ConstKind::Infer(_)
+        ConstKind::Param(cp) => {
+            let ty = translate_ety(tt_ctx, &constant.ty()).unwrap();
+            let cg_id = tt_ctx.const_generic_params_map.get(&cp.index).unwrap();
+            (ty, e::OperandConstantValue::Var(*cg_id))
+        }
+        ConstKind::Infer(_)
         | ConstKind::Bound(_, _)
         | ConstKind::Placeholder(_)
         | ConstKind::Error(_) => {
             unreachable!("Unexpected: {:?}", constant);
         }
+    }
+}
+
+pub(crate) fn translate_const_kind_as_const_generic<'tcx>(
+    tt_ctx: &TypeTransContext<'tcx, '_>,
+    constant: rustc_middle::ty::Const<'tcx>,
+) -> ty::ConstGeneric {
+    let (ty, c) = translate_const_kind(tt_ctx, constant);
+    assert!(ty.is_primitive());
+    match c {
+        e::OperandConstantValue::PrimitiveValue(v) => ty::ConstGeneric::Value(v),
+        e::OperandConstantValue::Adt(..) => unreachable!(),
+        e::OperandConstantValue::ConstantId(v) => ty::ConstGeneric::Global(v),
+        e::OperandConstantValue::StaticId(_) => unreachable!(),
+        e::OperandConstantValue::Var(v) => ty::ConstGeneric::Var(v),
     }
 }
 
@@ -436,7 +486,7 @@ pub(crate) fn translate_constant_kind<'tcx>(
         // Nightly 2022-09-19, and the `Val` case used to be ignored.
         // SH: I'm not sure which corresponds to what (the documentation
         // is not super clear).
-        mir::ConstantKind::Ty(c) => translate_const_kind(tt_ctx, c.kind()),
+        mir::ConstantKind::Ty(c) => translate_const_kind(tt_ctx, *c),
         // I'm not sure what this is about: the documentation is weird.
         mir::ConstantKind::Val(cv, ty) => {
             trace!("cv: {:?}, ty: {:?}", cv, ty);

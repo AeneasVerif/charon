@@ -19,11 +19,12 @@ use crate::regions_hierarchy as rh;
 use crate::regions_hierarchy::TypesConstraintsMap;
 use crate::rust_to_local_ids::*;
 use crate::translate_constants::{
-    translate_evaluated_operand_constant, translate_operand_constant,
+    translate_const_kind_as_const_generic, translate_evaluated_operand_constant,
+    translate_operand_constant,
 };
 use crate::translate_types;
 use crate::types as ty;
-use crate::types::{FieldId, VariantId};
+use crate::types::{FieldId, PrimitiveValueTy, VariantId};
 use crate::ullbc_ast as ast;
 use crate::values as v;
 use crate::values::{PrimitiveValue, ScalarValue};
@@ -38,7 +39,7 @@ use rustc_middle::mir::{
 };
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::adjustment::PointerCast;
-use rustc_middle::ty::{ParamEnv, TyCtxt, TyKind};
+use rustc_middle::ty::{TyCtxt, TyKind};
 use rustc_session::Session;
 use rustc_span::Span;
 use std::collections::HashMap;
@@ -101,6 +102,9 @@ struct BodyTransContext<'tcx, 'ctx, 'ctx1> {
     const_generic_counter: ty::ConstGenericVarId::Generator,
     /// The const generic variables
     const_generic_vars: ty::ConstGenericVarId::Vector<ty::ConstGenericVar>,
+    /// The map from rust const generic variables to translate const generic
+    /// variable indices.
+    rconst_generic_vars_to_ids: im::OrdMap<u32, ty::ConstGenericVarId::Id>,
     /// Block id counter
     blocks_counter: ast::BlockId::Generator,
     /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
@@ -143,6 +147,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
             rvars_to_ids: im::OrdMap::new(),
             const_generic_counter: ty::ConstGenericVarId::Generator::new(),
             const_generic_vars: ty::ConstGenericVarId::Vector::new(),
+            rconst_generic_vars_to_ids: im::OrdMap::new(),
             blocks_counter: ast::BlockId::Generator::new(),
             blocks: im::OrdMap::new(),
             rblocks_to_ids: im::OrdMap::new(),
@@ -206,6 +211,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
         };
         self.vars.insert(var_id, var);
         self.rvars_to_ids.insert(rid, var_id);
+    }
+
+    fn push_const_generic_var(&mut self, rid: u32, ty: PrimitiveValueTy, name: String) {
+        use crate::id_vector::ToUsize;
+        let var_id = self.const_generic_counter.fresh_id();
+        assert!(var_id.to_usize() == self.vars.len());
+        let var = ty::ConstGenericVar {
+            index: var_id,
+            name,
+            ty,
+        };
+        self.const_generic_vars.insert(var_id, var);
+        self.rconst_generic_vars_to_ids.insert(rid, var_id);
     }
 
     fn fresh_block_id(&mut self, rid: BasicBlock) -> ast::BlockId::Id {
@@ -279,6 +297,12 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<ty::TypeDeclId::Id> for BodyTransContext<'tcx,
     }
 }
 
+impl<'tcx, 'ctx, 'ctx1> Formatter<ty::GlobalDeclId::Id> for BodyTransContext<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ty::GlobalDeclId::Id) -> String {
+        self.ft_ctx.global_defs.format_object(id)
+    }
+}
+
 impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::Region<ty::RegionVarId::Id>>>
     for BodyTransContext<'tcx, 'ctx, 'ctx1>
 {
@@ -306,6 +330,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
             self.ft_ctx.ordered,
             self.rregions_to_ids.clone(),
             self.rtype_vars_to_ids.clone(),
+            self.rconst_generic_vars_to_ids.clone(),
             self.ft_ctx.mir_level,
         )
     }
@@ -520,7 +545,7 @@ fn translate_projection<'tcx, 'ctx>(
                 // same time.
                 let proj_elem = match path_type {
                     ty::Ty::Adt(ty::TypeId::Adt(type_id), _regions, tys, cgs) => {
-                        let type_def = type_defs.get_type_def(type_id).unwrap();
+                        let type_def = type_defs.get(type_id).unwrap();
 
                         // If (and only if) the ADT is an enumeration, we should
                         // have downcast information (that we need to figure out
@@ -816,7 +841,6 @@ fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
 
 /// Translate an rvalue
 fn translate_rvalue<'tcx>(
-    tcx: TyCtxt<'tcx>,
     bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     rvalue: &mir::Rvalue<'tcx>,
 ) -> e::Rvalue {
@@ -830,21 +854,19 @@ fn translate_rvalue<'tcx>(
             e::Rvalue::Use(e::Operand::Copy(place))
         }
         mir::Rvalue::Repeat(operand, cnst) => {
-            // ParamEnv is used for tracking `where` clauses; not needed for us here.
-            // NOTE: more recent versions of `rustc` seem to fix this API to return a `usize`, thus
-            // avoiding the `try_into()` below.
-            let c = cnst.try_eval_usize(tcx, ParamEnv::empty()).unwrap();
+            let c = translate_const_kind_as_const_generic(&bt_ctx.to_type_trans_context(), *cnst);
             // We are effectively desugaring the repeat in Charon, turning it into an array literal
             // where the operand is repeated `cnst` times.
+            // TODO: allow having other kinds of const generics, and desugar later to a function call
+            let cv = *c.as_value().as_scalar().as_usize();
             let (operand, t) = translate_operand_with_type(bt_ctx, operand);
-            let mut operands = Vec::with_capacity(c.try_into().unwrap());
-            for _ in 0..c {
+            let mut operands = Vec::with_capacity(cv);
+            for _ in 0..cv {
                 operands.push(operand.clone());
             }
             // We *have* to desugar here; we don't have enough context (the destination place, the
             // lifetime variable) to translate this into a built-in function call. This is why we
             // don't have a ArrayRepeat AssumedFunId.
-            let c = ty::ConstGeneric::Value(PrimitiveValue::Scalar(ScalarValue::Usize(c as usize)));
             e::Rvalue::Aggregate(e::AggregateKind::Array(t, c), operands)
         }
         mir::Rvalue::Ref(_region, borrow_kind, place) => {
@@ -1013,7 +1035,7 @@ fn translate_rvalue<'tcx>(
                     if adt_id.is_local() {
                         // Local ADT: retrieve the definition
                         let id_t = *bt_ctx.ft_ctx.ordered.type_rid_to_id.get(adt_id).unwrap();
-                        let def = bt_ctx.get_type_defs().get_type_def(id_t).unwrap();
+                        let def = bt_ctx.get_type_defs().get(id_t).unwrap();
 
                         assert!(region_params.len() == def.region_params.len());
                         assert!(type_params.len() == def.type_params.len());
@@ -1052,7 +1074,7 @@ fn translate_rvalue<'tcx>(
                         // TODO: treat all external ADTs in a consistant manner.
                         // For instance, we can access the variants of any external
                         // enumeration marked as `public`.
-                        let name = type_def_id_to_name(tcx, *adt_id);
+                        let name = type_def_id_to_name(bt_ctx.ft_ctx.tcx, *adt_id);
                         if name.equals_ref_name(&assumed::OPTION_NAME) {
                             // Sanity checks
                             assert!(region_params.is_empty());
@@ -1113,13 +1135,12 @@ fn translate_statement<'tcx>(
     use std::ops::Deref;
 
     let sess = bt_ctx.ft_ctx.sess;
-    let tcx = bt_ctx.ft_ctx.tcx;
 
     let t_statement: Option<ast::RawStatement> = match &statement.kind {
         StatementKind::Assign(assign) => {
             let (place, rvalue) = assign.deref();
             let t_place = translate_place(bt_ctx, place);
-            let t_rvalue = translate_rvalue(tcx, bt_ctx, rvalue);
+            let t_rvalue = translate_rvalue(bt_ctx, rvalue);
 
             Some(ast::RawStatement::Assign(t_place, t_rvalue))
         }
@@ -1702,7 +1723,7 @@ fn translate_subst_generic_args_in_body<'tcx, 'ctx, 'ctx1>(
 
     let mut t_args_regions = Vec::new();
     let mut t_args_tys = Vec::new();
-    let t_args_cgs = Vec::new();
+    let mut t_args_cgs = Vec::new();
     for param in substs.iter() {
         match param.unpack() {
             rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
@@ -1713,9 +1734,10 @@ fn translate_subst_generic_args_in_body<'tcx, 'ctx, 'ctx1>(
             rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
                 t_args_regions.push(translate_erased_region(region.kind()));
             }
-            rustc_middle::ty::subst::GenericArgKind::Const(_) => {
-                // TODO:
-                unimplemented!();
+            rustc_middle::ty::subst::GenericArgKind::Const(c) => {
+                let t_cg =
+                    translate_const_kind_as_const_generic(&bt_ctx.to_type_trans_context(), c);
+                t_args_cgs.push(t_cg);
             }
         }
     }
@@ -2062,8 +2084,17 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
                 let name = translate_region_name(&region);
                 bt_ctx.push_region(*region, name);
             }
-            rustc_middle::ty::subst::GenericArgKind::Const(_) => {
-                unimplemented!();
+            rustc_middle::ty::subst::GenericArgKind::Const(c) => {
+                // The type should be primitive, meaning it shouldn't contain
+                // variables, etc. (we could use an empty context).
+                let ty = translate_ety(&bt_ctx, &c.ty()).unwrap();
+                let ty = ty.to_primitive();
+                match c.kind() {
+                    rustc_middle::ty::ConstKind::Param(cp) => {
+                        bt_ctx.push_const_generic_var(cp.index, ty, cp.name.to_ident_string());
+                    }
+                    _ => unreachable!(),
+                }
             }
         }
     }
@@ -2115,7 +2146,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
         num_early_bound_regions: late_bound_regions.len(),
         regions_hierarchy: rh::RegionGroups::new(), // Hierarchy not yet computed
         type_params: bt_ctx.type_vars.clone(),
-        const_generic_params: ty::ConstGenericVarId::Vector::new(), // TODO
+        const_generic_params: bt_ctx.const_generic_vars.clone(),
         inputs,
         output,
     };
@@ -2314,13 +2345,14 @@ fn translate_global(
     trace!("Translating global type");
     let mir_ty = tcx.type_of(info.rid);
 
-    let type_ = {
+    let g_ty = {
         let tt_ctx = TypeTransContext::new(
             info.rid,
             tcx,
             type_defs,
             global_defs,
             ordered,
+            im::OrdMap::new(),
             im::OrdMap::new(),
             im::OrdMap::new(),
             mir_level,
@@ -2380,7 +2412,7 @@ fn translate_global(
         def_id,
         meta,
         name,
-        ty: type_,
+        ty: g_ty,
         body,
     })
 }
@@ -2395,7 +2427,7 @@ pub fn translate_functions(
     mir_level: MirLevel,
 ) -> Result<(ast::FunDecls, ast::GlobalDecls)> {
     let mut fun_defs = ast::FunDecls::new();
-    let mut const_defs = ast::GlobalDecls::new();
+    let mut global_defs = ast::GlobalDecls::new();
 
     // Translate the bodies one at a time
     for decl in &ordered.decls {
@@ -2409,7 +2441,7 @@ pub fn translate_functions(
                     types_constraints,
                     type_defs,
                     &fun_defs,
-                    &const_defs,
+                    &global_defs,
                     mir_level,
                     *def_id,
                 )?;
@@ -2427,7 +2459,7 @@ pub fn translate_functions(
                         types_constraints,
                         type_defs,
                         &fun_defs,
-                        &const_defs,
+                        &global_defs,
                         mir_level,
                         *def_id,
                     )?;
@@ -2438,39 +2470,39 @@ pub fn translate_functions(
                 }
             }
             DeclarationGroup::Global(GDeclarationGroup::NonRec(def_id)) => {
-                let const_def = translate_global(
+                let global_def = translate_global(
                     sess,
                     tcx,
                     ordered,
                     types_constraints,
                     type_defs,
                     &fun_defs,
-                    &const_defs,
+                    &global_defs,
                     mir_level,
                     *def_id,
                 )?;
                 // We have to make sure we translate the definitions in the
                 // proper order, otherwise we mess with the vector of ids
-                assert!(def_id.to_usize() == const_defs.len());
-                const_defs.push_back(const_def);
+                assert!(def_id.to_usize() == global_defs.len());
+                global_defs.push_back(global_def);
             }
             DeclarationGroup::Global(GDeclarationGroup::Rec(ids)) => {
                 for def_id in ids {
-                    let const_def = translate_global(
+                    let global_def = translate_global(
                         sess,
                         tcx,
                         ordered,
                         types_constraints,
                         type_defs,
                         &fun_defs,
-                        &const_defs,
+                        &global_defs,
                         mir_level,
                         *def_id,
                     )?;
                     // We have to make sure we translate the definitions in the
                     // proper order, otherwise we mess with the vector of ids
-                    assert!(def_id.to_usize() == const_defs.len());
-                    const_defs.push_back(const_def);
+                    assert!(def_id.to_usize() == global_defs.len());
+                    global_defs.push_back(global_def);
                 }
             }
             DeclarationGroup::Type(_) => {
@@ -2484,16 +2516,16 @@ pub fn translate_functions(
     for def in &fun_defs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            def.signature.fmt_with_decls(type_defs),
-            def.fmt_with_decls(type_defs, &fun_defs, &const_defs)
+            def.signature.fmt_with_decls(type_defs, &global_defs),
+            def.fmt_with_decls(type_defs, &fun_defs, &global_defs)
         );
     }
-    for def in &const_defs {
+    for def in &global_defs {
         trace!(
             "# Constant definition:\n{}\n",
-            def.fmt_with_decls(type_defs, &fun_defs, &const_defs)
+            def.fmt_with_decls(type_defs, &fun_defs, &global_defs)
         );
     }
 
-    Ok((fun_defs, const_defs))
+    Ok((fun_defs, global_defs))
 }

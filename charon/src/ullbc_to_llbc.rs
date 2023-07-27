@@ -1915,7 +1915,7 @@ pub fn translate_functions(
     for fun in &tgt_funs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            fun.signature.fmt_with_decls(type_defs),
+            fun.signature.fmt_with_decls(type_defs, src_globals),
             fun.fmt_with_decls(type_defs, &tgt_funs, &tgt_globals)
         );
     }

@@ -406,6 +406,7 @@ impl FunDecl {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,
+            global_ctx,
             sig: &self.signature,
         };
 

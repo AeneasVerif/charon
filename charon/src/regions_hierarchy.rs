@@ -443,7 +443,7 @@ fn compute_regions_constraints_for_type_decl_group(
     // Initialize the constraints map - TODO: this will be different once we
     // support constraints over the generics in the definitions
     for id in type_ids.iter() {
-        let type_def = types.get_type_def(*id).unwrap();
+        let type_def = types.get(*id).unwrap();
         let region_vars_constraints = RegionVarsConstraintsMap::from_iter(
             type_def
                 .region_params
@@ -478,7 +478,7 @@ fn compute_regions_constraints_for_type_decl_group(
 
         // Accumulate constraints for every variant of every type
         for id in type_ids.iter() {
-            let type_def = types.get_type_def(*id).unwrap();
+            let type_def = types.get(*id).unwrap();
 
             // If the type is transparent, we explore the ADT variants.
             // If the type is opaque, there is nothing to do.
@@ -564,7 +564,7 @@ fn compute_regions_constraints_for_type_decl_group(
     // Compute the SCCs
     let mut sccs_vec: Vec<SCCs<Region<RegionVarId::Id>>> = Vec::new();
     for id in type_ids.iter() {
-        let type_def = types.get_type_def(*id).unwrap();
+        let type_def = types.get(*id).unwrap();
         let sccs = compute_sccs_from_lifetime_constraints(
             acc_constraints_map.get(id).unwrap(),
             &type_def.region_params,
@@ -600,7 +600,7 @@ pub fn compute_regions_hierarchy_for_type_decl_group(
     for (id, sccs) in type_ids.into_iter().zip(constraints.into_iter()) {
         let regions_group = compute_regions_hierarchy_from_constraints(sccs);
 
-        let type_def = types.types.get_mut(id).unwrap();
+        let type_def = types.get_mut(id).unwrap();
         type_def.regions_hierarchy = regions_group;
     }
 }
@@ -751,7 +751,6 @@ pub fn types_constraints_map_fmt_with_ctx(
     // We iterate over the type definitions, not the types constraints map,
     // in order to make sure we preserve the type definitions order
     let types_constraints: Vec<String> = types
-        .types
         .iter()
         .map(|type_def| {
             let cmap = cs.get(&type_def.def_id).unwrap();

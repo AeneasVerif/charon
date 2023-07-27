@@ -1,12 +1,13 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 #![allow(dead_code)]
 
-pub use crate::expressions::{GlobalDeclId, Operand, Place};
+pub use crate::expressions::{Operand, Place};
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
 use crate::names::FunName;
 use crate::names::GlobalName;
 use crate::regions_hierarchy::RegionGroups;
+pub use crate::types::GlobalDeclId;
 use crate::types::*;
 use crate::values::*;
 use macros::generate_index_type;

@@ -4,7 +4,6 @@
 use crate::assumed::get_name_from_type_id;
 use crate::common::*;
 use crate::formatter::Formatter;
-use crate::id_vector;
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use im::{HashMap, OrdSet, Vector};
@@ -37,6 +36,7 @@ impl ConstGeneric {
         match self {
             ConstGeneric::Var(id) => id.substitute(cgsubst),
             ConstGeneric::Value(v) => ConstGeneric::Value(v.clone()),
+            ConstGeneric::Global(id) => ConstGeneric::Global(*id),
         }
     }
 }
@@ -112,12 +112,7 @@ impl std::string::ToString for RegionVar {
 
 impl std::string::ToString for ConstGenericVar {
     fn to_string(&self) -> String {
-        let id = const_generic_var_id_to_pretty_string(self.index);
-        let name = match &self.name {
-            Some(name) => name.to_string(),
-            None => id,
-        };
-        format!("const {} : {}", name, primitive_ty_to_string(self.ty))
+        format!("const {} : {}", self.name, primitive_ty_to_string(self.ty))
     }
 }
 
@@ -230,6 +225,7 @@ impl TypeDecl {
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
             + Formatter<TypeDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<ConstGenericVarId::Id>,
     {
         let regions_hierarchy: Vec<String> = self
@@ -302,7 +298,8 @@ impl Variant {
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
             + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>,
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<GlobalDeclId::Id>,
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
@@ -317,7 +314,8 @@ impl Field {
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
             + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>,
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<GlobalDeclId::Id>,
     {
         match &self.name {
             Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
@@ -400,9 +398,6 @@ impl IntegerTy {
 pub fn type_def_id_to_pretty_string(id: TypeDeclId::Id) -> String {
     format!("@Adt{id}")
 }
-pub fn const_def_id_to_pretty_string(id: GlobalDeclId::Id) -> String {
-    format!("@Const{id}")
-}
 
 pub fn region_var_id_to_pretty_string(id: RegionVarId::Id) -> String {
     format!("@R{id}")
@@ -410,6 +405,10 @@ pub fn region_var_id_to_pretty_string(id: RegionVarId::Id) -> String {
 
 pub fn const_generic_var_id_to_pretty_string(id: ConstGenericVarId::Id) -> String {
     format!("@Const{id}")
+}
+
+pub fn global_decl_id_to_pretty_string(id: GlobalDeclId::Id) -> String {
+    format!("@Global{id}")
 }
 
 // TODO: This (and the ones below) should instead be an impl T { fn to_string ... }
@@ -483,11 +482,12 @@ impl TypeId {
 impl ConstGeneric {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<ConstGenericVarId::Id>,
+        T: Formatter<ConstGenericVarId::Id> + Formatter<GlobalDeclId::Id>,
     {
         match self {
             ConstGeneric::Var(id) => ctx.format_object(*id),
             ConstGeneric::Value(v) => v.to_string(),
+            ConstGeneric::Global(id) => ctx.format_object(*id),
         }
     }
 }
@@ -546,6 +546,7 @@ where
         T: Formatter<ConstGenericVarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<&'a R>,
     {
         match self {
@@ -688,6 +689,12 @@ impl<'a> Formatter<TypeVarId::Id> for IncompleteFormatter<'a> {
     }
 }
 
+impl<'a> Formatter<GlobalDeclId::Id> for IncompleteFormatter<'a> {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        global_decl_id_to_pretty_string(id)
+    }
+}
+
 impl<'a, 'b, Rid: Copy + Eq> Formatter<&'b Region<Rid>> for IncompleteFormatter<'a>
 where
     TypeDecl: Formatter<&'b Region<Rid>>,
@@ -761,6 +768,12 @@ impl Formatter<TypeDeclId::Id> for DummyFormatter {
 impl Formatter<ConstGenericVarId::Id> for DummyFormatter {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
         const_generic_var_id_to_pretty_string(id)
+    }
+}
+
+impl Formatter<GlobalDeclId::Id> for DummyFormatter {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        global_decl_id_to_pretty_string(id)
     }
 }
 
@@ -956,19 +969,6 @@ pub fn make_cg_subst<
     make_subst(keys, values)
 }
 
-impl TypeDecls {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> TypeDecls {
-        TypeDecls {
-            types: id_vector::Vector::new(),
-        }
-    }
-
-    pub fn get_type_def(&self, type_id: TypeDeclId::Id) -> Option<&TypeDecl> {
-        self.types.get(type_id)
-    }
-}
-
 impl Formatter<TypeVarId::Id> for TypeDecl {
     fn format_object(&self, id: TypeVarId::Id) -> String {
         let var = self.type_params.get(id).unwrap();
@@ -1007,7 +1007,7 @@ impl Formatter<&ErasedRegion> for TypeDecl {
 
 impl Formatter<TypeDeclId::Id> for TypeDecls {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        let def = self.get_type_def(id).unwrap();
+        let def = self.get(id).unwrap();
         def.name.to_string()
     }
 }

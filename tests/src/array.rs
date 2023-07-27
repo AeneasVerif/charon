@@ -32,6 +32,14 @@ fn index_array_u32(s: [u32; 32], i: usize) -> u32 {
     s[i]
 }
 
+fn index_array_generic<const N: usize>(s: [u32; N], i: usize) -> u32 {
+    s[i]
+}
+
+fn index_array_generic_call<const N: usize>(s: [u32; N], i: usize) -> u32 {
+    index_array_generic(s, i)
+}
+
 fn index_array_copy(x: &[u32; 32]) -> u32 {
     x[0]
 }

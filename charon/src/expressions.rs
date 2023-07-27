@@ -4,12 +4,9 @@ pub use crate::expressions_utils::*;
 use crate::types::*;
 use crate::values::*;
 use im::Vector; // TODO: im::Vector is not necessary anymore
-use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
 use std::vec::Vec;
-
-generate_index_type!(GlobalDeclId);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Place {
@@ -189,6 +186,8 @@ pub enum OperandConstantValue {
     ///
     /// Same as for constants, except that statics are accessed through references.
     StaticId(GlobalDeclId::Id),
+    /// A const generic var
+    Var(ConstGenericVarId::Id),
 }
 
 /// TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).

@@ -146,7 +146,9 @@ impl std::fmt::Display for Place {
 impl OperandConstantValue {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<TypeDeclId::Id> + Formatter<GlobalDeclId::Id>,
+        T: Formatter<TypeDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>,
     {
         match self {
             OperandConstantValue::PrimitiveValue(c) => c.to_string(),
@@ -163,6 +165,7 @@ impl OperandConstantValue {
             }
             OperandConstantValue::ConstantId(id) => ctx.format_object(*id),
             OperandConstantValue::StaticId(id) => format!("alloc: &{}", ctx.format_object(*id)),
+            OperandConstantValue::Var(id) => format!("const {}", ctx.format_object(*id)),
         }
     }
 }
@@ -179,6 +182,7 @@ impl Operand {
         T: Formatter<VarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<GlobalDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
@@ -209,6 +213,7 @@ impl Rvalue {
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<TypeVarId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<&'a ErasedRegion>,
     {
         match self {

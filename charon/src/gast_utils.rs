@@ -201,17 +201,26 @@ impl FunSig {
             + Formatter<TypeDeclId::Id>
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
+            + Formatter<GlobalDeclId::Id>
             + Formatter<ConstGenericVarId::Id>,
     {
         // Type parameters
-        let params = if self.region_params.len() + self.type_params.len() == 0 {
-            "".to_string()
-        } else {
+        let params = {
             let regions: Vec<String> = self.region_params.iter().map(|x| x.to_string()).collect();
             let mut types: Vec<String> = self.type_params.iter().map(|x| x.to_string()).collect();
+            let mut cgs: Vec<String> = self
+                .const_generic_params
+                .iter()
+                .map(|x| x.to_string())
+                .collect();
             let mut params = regions;
             params.append(&mut types);
-            format!("<{}>", params.join(", "))
+            params.append(&mut cgs);
+            if params.is_empty() {
+                "".to_string()
+            } else {
+                format!("<{}>", params.join(", "))
+            }
         };
 
         // Arguments
@@ -242,46 +251,69 @@ impl FunSig {
     }
 }
 
-pub struct FunSigFormatter<'a> {
+pub struct FunSigFormatter<'a, GD> {
     pub ty_ctx: &'a TypeDecls,
+    pub global_ctx: &'a GD,
     pub sig: &'a FunSig,
 }
 
-impl<'a> Formatter<TypeVarId::Id> for FunSigFormatter<'a> {
+impl<'a, GD> Formatter<TypeVarId::Id> for FunSigFormatter<'a, GD> {
     fn format_object(&self, id: TypeVarId::Id) -> String {
         self.sig.type_params.get(id).unwrap().to_string()
     }
 }
 
-impl<'a> Formatter<RegionVarId::Id> for FunSigFormatter<'a> {
+impl<'a, GD> Formatter<RegionVarId::Id> for FunSigFormatter<'a, GD> {
     fn format_object(&self, id: RegionVarId::Id) -> String {
         self.sig.region_params.get(id).unwrap().to_string()
     }
 }
 
-impl<'a> Formatter<&Region<RegionVarId::Id>> for FunSigFormatter<'a> {
+impl<'a, GD> Formatter<&Region<RegionVarId::Id>> for FunSigFormatter<'a, GD> {
     fn format_object(&self, r: &Region<RegionVarId::Id>) -> String {
         r.fmt_with_ctx(self)
     }
 }
 
-impl<'a> Formatter<TypeDeclId::Id> for FunSigFormatter<'a> {
+impl<'a, GD> Formatter<TypeDeclId::Id> for FunSigFormatter<'a, GD> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
         self.ty_ctx.format_object(id)
     }
 }
 
-impl<'a> Formatter<ConstGenericVarId::Id> for FunSigFormatter<'a> {
+impl<'a, GD> Formatter<GlobalDeclId::Id> for FunSigFormatter<'a, GD>
+where
+    GD: Formatter<GlobalDeclId::Id>,
+{
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        self.global_ctx.format_object(id)
+    }
+}
+
+impl<'a, GD> Formatter<ConstGenericVarId::Id> for FunSigFormatter<'a, GD> {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
-        let cg_var = self.sig.const_generic_params.get(id).unwrap();
-        cg_var.to_string()
+        match self.sig.const_generic_params.get(id) {
+            Option::None => {
+                error!("Could not find a ConsGenericVarId::Id for pretty-printing");
+                const_generic_var_id_to_pretty_string(id)
+            }
+            Option::Some(cg_var) => cg_var.to_string(),
+        }
     }
 }
 
 impl FunSig {
-    pub fn fmt_with_decls(&self, ty_ctx: &TypeDecls) -> String {
+    pub fn fmt_with_decls<GD: Formatter<GlobalDeclId::Id>>(
+        &self,
+        ty_ctx: &TypeDecls,
+        global_ctx: &GD,
+    ) -> String {
         // Initialize the formatting context
-        let ctx = FunSigFormatter { ty_ctx, sig: self };
+        let ctx = FunSigFormatter {
+            ty_ctx,
+            global_ctx,
+            sig: self,
+        };
 
         // Use the context for printing
         self.fmt_with_ctx(&ctx)
@@ -306,7 +338,8 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
         T1: Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<ConstGenericVarId::Id>,
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<GlobalDeclId::Id>,
         T2: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
@@ -322,9 +355,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
         let name = self.name.to_string();
 
         // Type parameters
-        let params = if self.signature.region_params.len() + self.signature.type_params.len() == 0 {
-            "".to_string()
-        } else {
+        let params = {
             let regions: Vec<String> = self
                 .signature
                 .region_params
@@ -337,9 +368,20 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
                 .iter()
                 .map(|x| x.to_string())
                 .collect();
+            let mut cgs: Vec<String> = self
+                .signature
+                .const_generic_params
+                .iter()
+                .map(|x| x.to_string())
+                .collect();
             let mut params = regions;
             params.append(&mut types);
-            format!("<{}>", params.join(", "))
+            params.append(&mut cgs);
+            if params.is_empty() {
+                "".to_string()
+            } else {
+                format!("<{}>", params.join(", "))
+            }
         };
 
         // Arguments
@@ -520,7 +562,7 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, VariantId::Id)> for GAstFormatter<
     fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
         let (def_id, variant_id) = id;
         let ctx = self.type_context;
-        let def = ctx.get_type_def(def_id).unwrap();
+        let def = ctx.get(def_id).unwrap();
         let variants = def.kind.as_enum();
         let mut name = def.name.to_string();
         let variant_name = &variants.get(variant_id).unwrap().name;
@@ -537,7 +579,7 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id
     fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (def_id, opt_variant_id, field_id) = id;
         let ctx = self.type_context;
-        let gen_def = ctx.get_type_def(def_id).unwrap();
+        let gen_def = ctx.get(def_id).unwrap();
         match (&gen_def.kind, opt_variant_id) {
             (TypeDeclKind::Enum(variants), Some(variant_id)) => {
                 let field = variants
@@ -566,8 +608,13 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id
 impl<'ctx, FD, GD> Formatter<ConstGenericVarId::Id> for GAstFormatter<'ctx, FD, GD> {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
         if self.const_generic_vars.is_some() {
-            let v = self.const_generic_vars.unwrap().get(id).unwrap();
-            v.to_string()
+            match self.const_generic_vars.unwrap().get(id) {
+                Option::None => {
+                    error!("Could not find a ConsGenericVarId::Id for pretty-printing");
+                    const_generic_var_id_to_pretty_string(id)
+                }
+                Option::Some(cg_var) => cg_var.to_string(),
+            }
         } else {
             const_generic_var_id_to_pretty_string(id)
         }
@@ -580,7 +627,10 @@ impl<'ctx, FD, GD> Formatter<&ErasedRegion> for GAstFormatter<'ctx, FD, GD> {
     }
 }
 
-impl<'ctx, FD, GD> Formatter<&ETy> for GAstFormatter<'ctx, FD, GD> {
+impl<'ctx, FD, GD> Formatter<&ETy> for GAstFormatter<'ctx, FD, GD>
+where
+    Self: Formatter<GlobalDeclId::Id>,
+{
     fn format_object(&self, ty: &ETy) -> String {
         ty.fmt_with_ctx(self)
     }

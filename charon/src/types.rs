@@ -6,7 +6,9 @@ use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
 use crate::values::PrimitiveValue;
 use im::Vector;
-use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use macros::{
+    generate_index_type, EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName,
+};
 use serde::Serialize;
 
 pub type FieldName = String;
@@ -22,6 +24,7 @@ generate_index_type!(VariantId);
 generate_index_type!(FieldId);
 generate_index_type!(RegionVarId);
 generate_index_type!(ConstGenericVarId);
+generate_index_type!(GlobalDeclId);
 
 /// Type variable.
 /// We make sure not to mix variables and type variables by having two distinct
@@ -49,7 +52,7 @@ pub struct ConstGenericVar {
     /// Unique index identifying the variable
     pub index: ConstGenericVarId::Id,
     /// Const generic name
-    pub name: Option<String>,
+    pub name: String,
     /// Type of the const generic
     pub ty: PrimitiveValueTy,
 }
@@ -169,27 +172,40 @@ pub enum TypeId {
     Assumed(AssumedTy),
 }
 
-/// Type context.
-/// Contains type definitions and declarations
-#[derive(Clone)]
-pub struct TypeDecls {
-    pub types: TypeDeclId::Vector<TypeDecl>,
-}
+pub type TypeDecls = TypeDeclId::Vector<TypeDecl>;
 
 /// Types of primitive values. Either an integer, bool, char
-#[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity, Serialize)]
-pub enum PrimitiveValueTy { // TODO: Rename to LiteralTy
-  Integer(IntegerTy),
-  Bool,
-  Char,
-  Str, // TODO: Turn this into an assumed type
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Copy,
+    VariantName,
+    EnumIsA,
+    EnumAsGetters,
+    VariantIndexArity,
+    Serialize,
+)]
+pub enum PrimitiveValueTy {
+    // TODO: Rename to LiteralTy
+    Integer(IntegerTy),
+    Bool,
+    Char,
+    Str, // TODO: Turn this into an assumed type
 }
 
 /// Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity, Serialize)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity, Serialize,
+)]
 pub enum ConstGeneric {
-  Var(ConstGenericVarId::Id),
-  Value(PrimitiveValue),
+    /// A global constant
+    Global(GlobalDeclId::Id),
+    /// A const generic variable
+    Var(ConstGenericVarId::Id),
+    /// A concrete value
+    Value(PrimitiveValue),
 }
 
 /// A type.
@@ -200,7 +216,17 @@ pub enum ConstGeneric {
 /// error prone) in our encoding by using two different types: [`Region`](Region)
 /// and [`ErasedRegion`](ErasedRegion), the latter being an enumeration with only
 /// one variant.
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    VariantName,
+    EnumIsA,
+    EnumAsGetters,
+    EnumToGetters,
+    VariantIndexArity,
+)]
 pub enum Ty<R>
 where
     R: Clone + std::cmp::Eq,

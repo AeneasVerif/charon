@@ -178,6 +178,7 @@ impl Statement {
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<TypeVarId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<&'a ErasedRegion>,
     {
         match &self.content {
@@ -425,6 +426,13 @@ impl<'ctx> Formatter<GlobalDeclId::Id> for GlobalDeclsFormatter<'ctx> {
     }
 }
 
+impl Formatter<GlobalDeclId::Id> for GlobalDecls {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        let d = self.get(id).unwrap();
+        d.name.to_string()
+    }
+}
+
 impl FunDecl {
     pub fn fmt_with_ctx<'ctx, FD, GD>(
         &self,
@@ -439,6 +447,7 @@ impl FunDecl {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,
+            global_ctx,
             sig: &self.signature,
         };
 

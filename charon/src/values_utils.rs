@@ -39,13 +39,19 @@ impl Formatter<TypeDeclId::Id> for DummyFormatter {
 
 impl Formatter<GlobalDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        const_def_id_to_pretty_string(id)
+        global_decl_id_to_pretty_string(id)
     }
 }
 
 impl Formatter<TypeVarId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeVarId::Id) -> String {
         type_var_id_to_pretty_string(id)
+    }
+}
+
+impl Formatter<ConstGenericVarId::Id> for DummyFormatter {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        const_generic_var_id_to_pretty_string(id)
     }
 }
 

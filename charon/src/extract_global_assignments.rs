@@ -28,7 +28,7 @@ fn deref_static_type(ref_ty: &ETy) -> &ETy {
     }
 }
 
-/// If the operand is a constant global identifier, push an `AssignGlobal` statement
+/// If the operand is a global identifier, push an `AssignGlobal` statement
 /// that binds a new variable to the global and move it in the operand:
 /// `... const X ...`
 /// becomes
@@ -55,7 +55,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
     };
 
     let var = match *c {
-        OperandConstantValue::PrimitiveValue(_) => return,
+        OperandConstantValue::PrimitiveValue(_) | OperandConstantValue::Var(..) => return,
         OperandConstantValue::Adt(_, _) => {
             unreachable!("Constant ADTs should have been replaced by now")
         }
