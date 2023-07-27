@@ -332,6 +332,7 @@ fn compute_full_regions_constraints_for_ty(
                     | AssumedTy::Vec
                     | AssumedTy::Option
                     | AssumedTy::PtrUnique
+                    | AssumedTy::Str
                     | AssumedTy::PtrNonNull
                     | AssumedTy::Array
                     | AssumedTy::Slice,

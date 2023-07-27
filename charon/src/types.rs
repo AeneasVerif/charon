@@ -192,7 +192,6 @@ pub enum PrimitiveValueTy {
     Integer(IntegerTy),
     Bool,
     Char,
-    Str, // TODO: Turn this into an assumed type
 }
 
 /// Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value
@@ -323,4 +322,6 @@ pub enum AssumedTy {
     Array,
     /// Primitive type
     Slice,
+    /// Primitive type
+    Str,
 }

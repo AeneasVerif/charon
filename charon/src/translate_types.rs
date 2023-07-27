@@ -266,7 +266,6 @@ where
         TyKind::Uint(int_ty) => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Integer(
             ty::IntegerTy::rust_uint_ty_to_integer_ty(*int_ty),
         ))),
-        TyKind::Str => Ok(ty::Ty::Primitive(ty::PrimitiveValueTy::Str)),
         TyKind::Float(_) => {
             trace!("Float");
             // This case should have been filtered during the registration phase
@@ -305,31 +304,27 @@ where
                 Vector::from(cgs),
             ))
         }
+        TyKind::Str => {
+            trace!("Str");
+
+            let id = ty::TypeId::Assumed(ty::AssumedTy::Str);
+            Ok(ty::Ty::Adt(id, Vector::new(), Vector::new(), Vector::new()))
+        }
         TyKind::Array(ty, const_param) => {
             trace!("Array");
 
             let c = translate_const_kind_as_const_generic(tt_ctx, *const_param);
-            let ty = vec![translate_ty(tt_ctx, region_translator, ty)?];
-            let cgs = vec![c];
+            let tys = im::vector![translate_ty(tt_ctx, region_translator, ty)?];
+            let cgs = im::vector![c];
             let id = ty::TypeId::Assumed(ty::AssumedTy::Array);
-            Ok(ty::Ty::Adt(
-                id,
-                Vector::new(),
-                Vector::from(ty),
-                Vector::from(cgs),
-            ))
+            Ok(ty::Ty::Adt(id, Vector::new(), tys, cgs))
         }
         TyKind::Slice(ty) => {
             trace!("Slice");
 
-            let ty = vec![translate_ty(tt_ctx, region_translator, ty)?];
+            let tys = im::vector![translate_ty(tt_ctx, region_translator, ty)?];
             let id = ty::TypeId::Assumed(ty::AssumedTy::Slice);
-            Ok(ty::Ty::Adt(
-                id,
-                Vector::new(),
-                Vector::from(ty),
-                Vector::new(),
-            ))
+            Ok(ty::Ty::Adt(id, Vector::new(), tys, Vector::new()))
         }
         TyKind::Ref(region, ty, mutability) => {
             trace!("Ref");

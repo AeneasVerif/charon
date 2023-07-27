@@ -434,7 +434,6 @@ pub fn primitive_ty_to_string(ty: PrimitiveValueTy) -> String {
         PrimitiveValueTy::Integer(ty) => integer_ty_to_string(ty),
         PrimitiveValueTy::Bool => "bool".to_string(),
         PrimitiveValueTy::Char => "char".to_string(),
-        PrimitiveValueTy::Str => "str".to_string(),
     }
 }
 

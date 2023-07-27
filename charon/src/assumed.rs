@@ -103,6 +103,7 @@ pub fn get_name_from_type_id(id: types::AssumedTy) -> Vec<String> {
         AssumedTy::Option => OPTION_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::PtrUnique => PTR_UNIQUE_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::PtrNonNull => PTR_NON_NULL_NAME.iter().map(|s| s.to_string()).collect(),
+        AssumedTy::Str => vec!["Str".to_string()],
         AssumedTy::Array => vec!["Array".to_string()],
         AssumedTy::Slice => vec!["Slice".to_string()],
     }
@@ -236,6 +237,9 @@ pub fn type_to_used_params(name: &TypeName) -> Option<Vec<bool>> {
                 }
                 AssumedTy::PtrUnique | AssumedTy::PtrNonNull => {
                     vec![true]
+                }
+                AssumedTy::Str => {
+                    vec![]
                 }
                 AssumedTy::Array | AssumedTy::Slice => vec![true],
             };

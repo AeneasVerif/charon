@@ -417,7 +417,6 @@ pub(crate) fn translate_const_kind<'tcx>(
                         v::PrimitiveValue::Bool(v)
                     }
                     ty::PrimitiveValueTy::Char => unimplemented!(),
-                    ty::PrimitiveValueTy::Str => unreachable!(),
                 },
                 mir_ty::ValTree::Branch(_) => {
                     // In practice I don't know when this is used
