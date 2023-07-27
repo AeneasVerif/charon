@@ -124,7 +124,7 @@ impl Place {
                         out = format!("({out}).{field_id}");
                     }
                 },
-                ProjectionElem::Index(_, i) => out = format!("({out})[{}]", ctx.format_object(*i)),
+                ProjectionElem::Index(i, _) => out = format!("({out})[{}]", ctx.format_object(*i)),
             }
         }
 
@@ -404,7 +404,7 @@ pub trait ExprVisitor {
             ProjectionElem::DerefPtrUnique => self.visit_deref_ptr_unique(),
             ProjectionElem::DerefPtrNonNull => self.visit_deref_ptr_non_null(),
             ProjectionElem::Field(proj_kind, fid) => self.visit_projection_field(proj_kind, fid),
-            ProjectionElem::Index(_, o) => self.visit_var_id(o),
+            ProjectionElem::Index(i, _) => self.visit_var_id(i),
         }
     }
 

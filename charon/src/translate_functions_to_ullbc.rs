@@ -621,9 +621,9 @@ fn translate_projection<'tcx, 'ctx>(
                 projection.push_back(proj_elem);
                 downcast_id = None;
             }
-            mir::ProjectionElem::Index(local) => match path_type {
+            mir::ProjectionElem::Index(local) => match &path_type {
                 ty::Ty::Adt(
-                    ty::TypeId::Assumed(aty @ (ty::AssumedTy::Array | ty::AssumedTy::Slice)),
+                    ty::TypeId::Assumed(ty::AssumedTy::Array | ty::AssumedTy::Slice),
                     _,
                     tys,
                     _,
@@ -631,12 +631,7 @@ fn translate_projection<'tcx, 'ctx>(
                     assert!(tys.len() == 1);
 
                     let v = bt_ctx.get_local(&local).unwrap();
-                    let kind = match aty {
-                        ty::AssumedTy::Array => e::ArrayOrSlice::Array,
-                        ty::AssumedTy::Slice => e::ArrayOrSlice::Slice,
-                        _ => unreachable!(),
-                    };
-                    projection.push_back(e::ProjectionElem::Index(kind, v));
+                    projection.push_back(e::ProjectionElem::Index(v, path_type.clone()));
 
                     path_type = tys[0].clone();
                 }

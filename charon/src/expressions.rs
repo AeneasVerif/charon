@@ -27,7 +27,9 @@ pub type Projection = Vector<ProjectionElem>;
 /// `((_0 as Right).0: T2) = move _1;`
 /// In MIR, downcasts always happen before field projections: in our internal
 /// language, we thus merge downcasts and field projections.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, EnumIsA, EnumAsGetters, EnumToGetters, VariantName, Serialize,
+)]
 pub enum ProjectionElem {
     /// Dereference a shared/mutable reference.
     Deref,
@@ -56,13 +58,9 @@ pub enum ProjectionElem {
     Field(FieldProjKind, FieldId::Id),
     /// MIR imposes that the argument to an index projection be a local variable, meaning
     /// that even constant indices into arrays are let-bound as separate variables.
-    Index(ArrayOrSlice, VarId::Id),
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
-pub enum ArrayOrSlice {
-    Array,
-    Slice,
+    /// We also keep the type of the array/slice that we index for convenience purposes
+    /// (this is not necessary).
+    Index(VarId::Id, ETy),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]

@@ -5,11 +5,10 @@
 
 #![allow(dead_code)]
 
-use crate::expressions::{ArrayOrSlice, MutExprVisitor, Rvalue, UnOp};
+use crate::expressions::{Rvalue, UnOp};
 use crate::llbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::llbc_ast::{
-    AssumedFunId, Call, CtxNames, FunDecls, FunId, GlobalDecls, MutAstVisitor, RawStatement,
-    Statement,
+    AssumedFunId, Call, CtxNames, FunDecls, FunId, GlobalDecls, RawStatement, Statement,
 };
 use crate::types::ErasedRegion;
 use crate::types::RefKind;
@@ -41,20 +40,6 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
         }
         _ => vec![],
     }
-}
-
-struct OpsToFunCall {}
-
-impl MutExprVisitor for OpsToFunCall {}
-
-impl MutAstVisitor for OpsToFunCall {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-
-    fn visit_statement(&mut self, s: &mut Statement) {}
 }
 
 pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {

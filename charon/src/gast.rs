@@ -177,6 +177,9 @@ pub enum AssumedFunId {
     ///
     /// Introduced by disambiguating the `Index::index` trait (takes a range
     /// as argument).
+    ///
+    /// TODO: there are a lot of shared/mut version. Parameterize them with
+    /// a mutability attribute?
     ArraySharedSubslice,
     /// Take a subslice from an array.
     ///

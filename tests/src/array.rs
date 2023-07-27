@@ -56,6 +56,14 @@ fn slice_subslice_mut(x: &mut [u32], y: usize, z: usize) -> &mut [u32] {
     &mut x[y..z]
 }
 
+fn array_to_slice_shared(x: &[u32; 32]) -> &[u32] {
+    x
+}
+
+fn array_to_slice_mut(x: &mut [u32; 32]) -> &mut [u32] {
+    x
+}
+
 fn array_subslice(x: &[u32; 32], y: usize, z: usize) -> &[u32] {
     &x[y..z]
 }

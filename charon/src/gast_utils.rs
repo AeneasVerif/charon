@@ -62,6 +62,14 @@ impl std::string::ToString for Var {
     }
 }
 
+impl VarId::Vector<Var> {
+    pub fn fresh_var(&mut self, name: Option<String>, ty: ETy) -> VarId::Id {
+        let index = VarId::Id::new(self.len());
+        self.push_back(Var { index, name, ty });
+        index
+    }
+}
+
 impl Var {
     /// Substitute the region parameters and type variables and return
     /// the resulting variable
@@ -113,7 +121,7 @@ where
     let f = match func {
         FunId::Regular(def_id) => format!("{}{}", ctx.format_object(*def_id), rt_args),
         FunId::Assumed(assumed) => {
-            format!("@{}<{rt_args}>", assumed.variant_name())
+            format!("@{}{rt_args}", assumed.variant_name())
         }
     };
 
