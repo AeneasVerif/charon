@@ -266,7 +266,7 @@ where
 
             let c = const_param.try_eval_usize(tcx, ParamEnv::empty()).unwrap();
             let ty = translate_ty(tcx, trans_ctx, region_translator, type_params, ty)?;
-            Ok(ty::Ty::Array(Box::new(ty), ScalarValue::U64(c)))
+            Ok(ty::Ty::Array(Box::new(ty), ScalarValue::Usize(usize::try_from(c).unwrap())))
         }
         TyKind::Slice(ty) => {
             trace!("Slice");
