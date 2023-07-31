@@ -24,7 +24,7 @@ let type_decl_get_fields (def : type_decl)
              - def: " ^ show_type_decl def ^ "\n- opt_variant_id: "
           ^ opt_variant_id))
 
-(** Return [true] if a {!Types.ty} is actually [unit] *)
+(** Return [true] if a {!type: Types.ty} is actually [unit] *)
 let ty_is_unit (ty : 'r ty) : bool =
   match ty with Adt (Tuple, [], [], []) -> true | _ -> false
 
@@ -127,7 +127,7 @@ let rec ety_no_regions_to_gr_ty (ty : ety) : 'a gr_ty =
 let ety_no_regions_to_rty (ty : ety) : rty = ety_no_regions_to_gr_ty ty
 let ety_no_regions_to_sty (ty : ety) : sty = ety_no_regions_to_gr_ty ty
 
-(** Check if a {!Types.ty} contains regions from a given set *)
+(** Check if a {!type: Types.ty} contains regions from a given set *)
 let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : rty) : bool =
   let obj =
     object

@@ -17,7 +17,5 @@ format:
 .PHONY: copy-tests
 copy-tests:
 	mkdir -p tests/serialized
-	cp ../tests/ullbc/* tests/serialized
 	cp ../tests/llbc/* tests/serialized
-	cp ../tests-polonius/ullbc/* tests/serialized
 	cp ../tests-polonius/llbc/* tests/serialized

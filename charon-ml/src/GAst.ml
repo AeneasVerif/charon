@@ -97,6 +97,7 @@ type call = {
   func : fun_id;
   region_args : erased_region list;
   type_args : ety list;
+  const_generic_args : const_generic list;
   args : operand list;
   dest : place;
 }
@@ -142,7 +143,7 @@ type fun_sig = {
           See {!Identifiers.Id.mapi} for instance.
        *)
   const_generic_params : const_generic_var list;
-      (** The const generic parameters can be indexed with {!Type.ConstGenericVarId.id}.
+      (** The const generic parameters can be indexed with {!Types.ConstGenericVarId.id}.
 
           See {!Identifiers.Id.mapi} for instance.
        *)

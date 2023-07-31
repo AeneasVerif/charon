@@ -231,6 +231,7 @@ class ['self] iter_aggregate_kind_base =
   object (_self : 'self)
     inherit [_] iter_operand
     method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
+    method visit_const_generic : 'env -> const_generic -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the operand map visitor *)
@@ -239,6 +240,9 @@ class ['self] map_aggregate_kind_base =
     inherit [_] map_operand
 
     method visit_erased_region : 'env -> erased_region -> erased_region =
+      fun _ x -> x
+
+    method visit_const_generic : 'env -> const_generic -> const_generic =
       fun _ x -> x
   end
 
@@ -268,7 +272,11 @@ type aggregate_kind =
   | AggregatedOption of variant_id * ety
   (* TODO: AggregatedOption should be merged with AggregatedAdt *)
   | AggregatedAdt of
-      type_decl_id * variant_id option * erased_region list * ety list
+      type_decl_id
+      * variant_id option
+      * erased_region list
+      * ety list
+      * const_generic list
   | AggregatedRange of ety
   | AggregatedArray of ety
 [@@deriving

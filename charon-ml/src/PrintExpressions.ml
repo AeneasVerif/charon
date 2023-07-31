@@ -158,7 +158,7 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
             let op = List.hd ops in
             "@Option::Some(" ^ op ^ ")")
           else raise (Failure "Unreachable")
-      | E.AggregatedAdt (def_id, opt_variant_id, _regions, _types) ->
+      | E.AggregatedAdt (def_id, opt_variant_id, _regions, _types, _cgs) ->
           let adt_name = fmt.type_decl_id_to_string def_id in
           let variant_name =
             match opt_variant_id with

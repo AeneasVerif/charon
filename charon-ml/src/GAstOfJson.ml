@@ -187,7 +187,7 @@ let integer_type_of_json (js : json) : (PV.integer_type, string) result =
 let literal_type_of_json (js : json) : (PV.literal_type, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Integer", `List [ int_ty ]) ] ->
+    | `Assoc [ ("Integer", int_ty) ] ->
         let* int_ty = integer_type_of_json int_ty in
         Ok (PV.Integer int_ty)
     | `String "Bool" -> Ok PV.Bool
@@ -338,10 +338,10 @@ let rec ty_of_json (r_of_json : json -> ('r, string) result) (js : json) :
         (* Sanity check *)
         (match id with T.Tuple -> assert (List.length regions = 0) | _ -> ());
         Ok (T.Adt (id, regions, types, cgs))
-    | `Assoc [ ("TypeVar", `List [ id ]) ] ->
+    | `Assoc [ ("TypeVar", id) ] ->
         let* id = T.TypeVarId.id_of_json id in
         Ok (T.TypeVar id)
-    | `Assoc [ ("Literal", `List [ ty ]) ] ->
+    | `Assoc [ ("Literal", ty) ] ->
         let* ty = literal_type_of_json ty in
         Ok (T.Literal ty)
     | `Assoc [ ("Ref", `List [ region; ty; ref_kind ]) ] ->
@@ -570,24 +570,24 @@ let operand_of_json (js : json) : (E.operand, string) result =
 let aggregate_kind_of_json (js : json) : (E.aggregate_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "AggregatedTuple" -> Ok E.AggregatedTuple
-    | `Assoc [ ("AggregatedOption", `List [ variant_id; ty ]) ] ->
+    | `String "Tuple" -> Ok E.AggregatedTuple
+    | `Assoc [ ("Option", `List [ variant_id; ty ]) ] ->
         let* variant_id = T.VariantId.id_of_json variant_id in
         let* ty = ety_of_json ty in
         Ok (E.AggregatedOption (variant_id, ty))
-    | `Assoc [ ("AggregatedAdt", `List [ id; opt_variant_id; regions; tys ]) ]
-      ->
+    | `Assoc [ ("Adt", `List [ id; opt_variant_id; regions; tys; cgs ]) ] ->
         let* id = T.TypeDeclId.id_of_json id in
         let* opt_variant_id =
           option_of_json T.VariantId.id_of_json opt_variant_id
         in
         let* regions = list_of_json erased_region_of_json regions in
         let* tys = list_of_json ety_of_json tys in
-        Ok (E.AggregatedAdt (id, opt_variant_id, regions, tys))
-    | `Assoc [ ("AggregatedRange", `List [ ty ]) ] ->
+        let* cgs = list_of_json const_generic_of_json cgs in
+        Ok (E.AggregatedAdt (id, opt_variant_id, regions, tys, cgs))
+    | `Assoc [ ("Range", `List [ ty ]) ] ->
         let* ty = ety_of_json ty in
         Ok (E.AggregatedRange ty)
-    | `Assoc [ ("AggregatedArray", `List [ ty ]) ] ->
+    | `Assoc [ ("Array", `List [ ty ]) ] ->
         let* ty = ety_of_json ty in
         Ok (E.AggregatedArray ty)
     | _ -> Error "")
@@ -694,6 +694,29 @@ let fun_sig_of_json (js : json) : (A.fun_sig, string) result =
             inputs;
             output;
           }
+    | _ -> Error "")
+
+let call_of_json (js : json) : (A.call, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("func", func);
+          ("region_args", region_args);
+          ("type_args", type_args);
+          ("const_generic_args", const_generic_args);
+          ("args", args);
+          ("dest", dest);
+        ] ->
+        let* func = fun_id_of_json func in
+        let* region_args = list_of_json erased_region_of_json region_args in
+        let* type_args = list_of_json ety_of_json type_args in
+        let* const_generic_args =
+          list_of_json const_generic_of_json const_generic_args
+        in
+        let* args = list_of_json operand_of_json args in
+        let* dest = place_of_json dest in
+        Ok { A.func; region_args; type_args; const_generic_args; args; dest }
     | _ -> Error "")
 
 let gexpr_body_of_json (body_of_json : json -> ('body, string) result)

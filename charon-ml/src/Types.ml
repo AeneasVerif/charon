@@ -171,7 +171,7 @@ type const_generic =
         polymorphic = false;
       }]
 
-(** Ancestor for iter visitor for {!Types.ty} *)
+(** Ancestor for iter visitor for {!type: Types.ty} *)
 class ['self] iter_ty_base =
   object (_self : 'self)
     inherit [_] iter_const_generic
@@ -182,7 +182,7 @@ class ['self] iter_ty_base =
     method visit_literal_type : 'env -> literal_type -> unit = fun _ _ -> ()
   end
 
-(** Ancestor for map visitor for {!Types.ty} *)
+(** Ancestor for map visitor for {!type: Types.ty} *)
 class virtual ['self] map_ty_base =
   object (_self : 'self)
     inherit [_] map_const_generic

@@ -25,6 +25,7 @@ const THREE_TABS: &'static str = "            ";
 
 /// This is very annoying, but we can't use a global constant string in `format`:
 /// we need to define a macro to return a string literal.
+/// TODO: turn [generic_index_type] into a simpl macro rule.
 macro_rules! index_generic_code {
     () => {
         "

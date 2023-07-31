@@ -176,8 +176,10 @@ pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut Glob
             b
         });
         trace!(
-            "# After removing locals of: {name}:\n{}",
+            "# After removing unused locals of: {name}:\n{}",
             b.fmt_with_ctx_names(fmt_ctx)
         );
+        // Check that there are no remaining locals with the type `Never`
+        assert!(b.locals.iter().all(|v| !v.ty.is_never()));
     }
 }
