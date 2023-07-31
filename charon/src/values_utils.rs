@@ -6,7 +6,6 @@ use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use crate::values::*;
-use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 
 pub fn var_id_to_pretty_string(id: VarId::Id) -> String {
@@ -312,31 +311,21 @@ impl Serialize for ScalarValue {
     {
         let enum_name = "ScalarValue";
         let variant_name = self.variant_name();
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        if variant_arity > 0 {
-            let mut vs = serializer.serialize_tuple_variant(
-                enum_name,
-                variant_index,
-                variant_name,
-                variant_arity,
-            )?;
-            match self {
-                ScalarValue::Isize(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::I8(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::I16(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::I32(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::I64(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::I128(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::Usize(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::U8(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::U16(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::U32(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::U64(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::U128(i) => vs.serialize_field(&i.to_string())?,
-            };
-            vs.end()
-        } else {
-            variant_name.serialize(serializer)
-        }
+        let (variant_index, _variant_arity) = self.variant_index_arity();
+        let v = match self {
+            ScalarValue::Isize(i) => i.to_string(),
+            ScalarValue::I8(i) => i.to_string(),
+            ScalarValue::I16(i) => i.to_string(),
+            ScalarValue::I32(i) => i.to_string(),
+            ScalarValue::I64(i) => i.to_string(),
+            ScalarValue::I128(i) => i.to_string(),
+            ScalarValue::Usize(i) => i.to_string(),
+            ScalarValue::U8(i) => i.to_string(),
+            ScalarValue::U16(i) => i.to_string(),
+            ScalarValue::U32(i) => i.to_string(),
+            ScalarValue::U64(i) => i.to_string(),
+            ScalarValue::U128(i) => i.to_string(),
+        };
+        serializer.serialize_newtype_variant(enum_name, variant_index, variant_name, &v)
     }
 }

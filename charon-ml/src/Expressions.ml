@@ -278,7 +278,7 @@ type aggregate_kind =
       * ety list
       * const_generic list
   | AggregatedRange of ety
-  | AggregatedArray of ety
+  | AggregatedArray of ety * const_generic
 [@@deriving
   show,
     visitors

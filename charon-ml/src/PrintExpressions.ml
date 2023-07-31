@@ -180,7 +180,11 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
                 "{ " ^ fields ^ " }"
           in
           variant_name ^ " " ^ fields
-      | E.AggregatedRange _ ->
-          "@Range" (* TODO: why don't I have access to a type printer here? *)
-      | E.AggregatedArray _ ->
-          "@Array" (* TODO: why don't I have access to a type printer here? *))
+      | E.AggregatedRange ty ->
+          let fmt = expr_to_etype_formatter fmt in
+          "@Range " ^ PT.ety_to_string fmt ty
+      | E.AggregatedArray (ty, cg) ->
+          let fmt = expr_to_etype_formatter fmt in
+          "@Array(" ^ PT.ety_to_string fmt ty ^ ", "
+          ^ PT.const_generic_to_string fmt cg
+          ^ ")")

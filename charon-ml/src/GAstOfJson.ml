@@ -251,40 +251,40 @@ let scalar_value_of_json (js : json) : (PV.scalar_value, string) result =
   let res =
     combine_error_msgs js __FUNCTION__
       (match js with
-      | `Assoc [ ("Isize", `List [ bi ]) ] ->
+      | `Assoc [ ("Isize", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = Isize }
-      | `Assoc [ ("I8", `List [ bi ]) ] ->
+      | `Assoc [ ("I8", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = I8 }
-      | `Assoc [ ("I16", `List [ bi ]) ] ->
+      | `Assoc [ ("I16", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = I16 }
-      | `Assoc [ ("I32", `List [ bi ]) ] ->
+      | `Assoc [ ("I32", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = I32 }
-      | `Assoc [ ("I64", `List [ bi ]) ] ->
+      | `Assoc [ ("I64", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = I64 }
-      | `Assoc [ ("I128", `List [ bi ]) ] ->
+      | `Assoc [ ("I128", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = I128 }
-      | `Assoc [ ("Usize", `List [ bi ]) ] ->
+      | `Assoc [ ("Usize", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = Usize }
-      | `Assoc [ ("U8", `List [ bi ]) ] ->
+      | `Assoc [ ("U8", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = U8 }
-      | `Assoc [ ("U16", `List [ bi ]) ] ->
+      | `Assoc [ ("U16", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = U16 }
-      | `Assoc [ ("U32", `List [ bi ]) ] ->
+      | `Assoc [ ("U32", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = U32 }
-      | `Assoc [ ("U64", `List [ bi ]) ] ->
+      | `Assoc [ ("U64", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = U64 }
-      | `Assoc [ ("U128", `List [ bi ]) ] ->
+      | `Assoc [ ("U128", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = U128 }
       | _ -> Error "")
@@ -301,13 +301,13 @@ let scalar_value_of_json (js : json) : (PV.scalar_value, string) result =
 let literal_of_json (js : json) : (PV.literal, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Scalar", `List [ v ]) ] ->
+    | `Assoc [ ("Scalar", v) ] ->
         let* v = scalar_value_of_json v in
         Ok (PV.Scalar v)
-    | `Assoc [ ("Bool", `List [ v ]) ] ->
+    | `Assoc [ ("Bool", v) ] ->
         let* v = bool_of_json v in
         Ok (PV.Bool v)
-    | `Assoc [ ("Char", `List [ v ]) ] ->
+    | `Assoc [ ("Char", v) ] ->
         let* v = char_of_json v in
         Ok (PV.Char v)
     | _ -> Error "")
@@ -315,13 +315,13 @@ let literal_of_json (js : json) : (PV.literal, string) result =
 let const_generic_of_json (js : json) : (T.const_generic, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Global", `List [ id ]) ] ->
+    | `Assoc [ ("Global", id) ] ->
         let* id = E.GlobalDeclId.id_of_json id in
         Ok (T.Global id)
-    | `Assoc [ ("Var", `List [ id ]) ] ->
+    | `Assoc [ ("Var", id) ] ->
         let* id = T.ConstGenericVarId.id_of_json id in
         Ok (T.Var id)
-    | `Assoc [ ("Value", `List [ lit ]) ] ->
+    | `Assoc [ ("Value", lit) ] ->
         let* lit = literal_of_json lit in
         Ok (T.Value lit)
     | _ -> Error "")
@@ -584,12 +584,13 @@ let aggregate_kind_of_json (js : json) : (E.aggregate_kind, string) result =
         let* tys = list_of_json ety_of_json tys in
         let* cgs = list_of_json const_generic_of_json cgs in
         Ok (E.AggregatedAdt (id, opt_variant_id, regions, tys, cgs))
-    | `Assoc [ ("Range", `List [ ty ]) ] ->
+    | `Assoc [ ("Range", ty) ] ->
         let* ty = ety_of_json ty in
         Ok (E.AggregatedRange ty)
-    | `Assoc [ ("Array", `List [ ty ]) ] ->
+    | `Assoc [ ("Array", `List [ ty; cg ]) ] ->
         let* ty = ety_of_json ty in
-        Ok (E.AggregatedArray ty)
+        let* cg = const_generic_of_json cg in
+        Ok (E.AggregatedArray (ty, cg))
     | _ -> Error "")
 
 let rvalue_of_json (js : json) : (E.rvalue, string) result =
