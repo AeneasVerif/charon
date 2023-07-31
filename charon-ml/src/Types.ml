@@ -6,21 +6,30 @@ module TypeVarId = IdGen ()
 module TypeDeclId = IdGen ()
 module VariantId = IdGen ()
 module FieldId = IdGen ()
-
-type integer_type = PrimitiveValues.integer_type [@@deriving show, ord]
+module GlobalDeclId = IdGen ()
+module ConstGenericVarId = IdGen ()
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!Types.iter_ty_base} and {!Types.TypeVar}).
   *)
 type type_var_id = TypeVarId.id [@@deriving show, ord]
 
-(** We define this type to control the name of the visitor functions
-    (see e.g., {!Charon.LlbcAst.iter_statement_base} and {!Charon.LlbcAst.SetDiscriminant}).
-  *)
+(** Same remark as for {!type_var_id} *)
+type const_generic_var_id = ConstGenericVarId.id [@@deriving show, ord]
+
+(** Same remark as for {!type_var_id} *)
+type global_decl_id = GlobalDeclId.id [@@deriving show, ord]
+
+type integer_type = PrimitiveValues.integer_type [@@deriving show, ord]
+
+(** Same remark as for {!type_var_id} *)
 type variant_id = VariantId.id [@@deriving show, ord]
 
+(** Same remark as for {!type_var_id} *)
 type field_id = FieldId.id [@@deriving show, ord]
-type type_decl_id = TypeDeclId.id [@@deriving show]
+
+(** Same remark as for {!type_var_id} *)
+type type_decl_id = TypeDeclId.id [@@deriving show, ord]
 
 (** Region variable ids. Used in function signatures. *)
 module RegionVarId =
@@ -39,6 +48,13 @@ type ('id, 'name) indexed_var = {
 
 type type_var = (TypeVarId.id, string) indexed_var [@@deriving show]
 type region_var = (RegionVarId.id, string option) indexed_var [@@deriving show]
+
+type const_generic_var = {
+  index : ConstGenericVarId.id;
+  name : string;
+  ty : literal_type;
+}
+[@@deriving show, ord]
 
 (** A region.
 
@@ -84,7 +100,9 @@ let all_unsigned_int_types = [ Usize; U8; U16; U32; U64; U128 ]
 let all_int_types = List.append all_signed_int_types all_unsigned_int_types
 
 type ref_kind = Mut | Shared [@@deriving show, ord]
-type assumed_ty = Box | Vec | Option [@@deriving show, ord]
+
+type assumed_ty = Box | Vec | Option | Array | Slice | Str
+[@@deriving show, ord]
 
 (** The variant id for [Option::None] *)
 let option_none_id = VariantId.of_int 0
@@ -100,45 +118,92 @@ let option_some_id = VariantId.of_int 1
 type type_id = AdtId of TypeDeclId.id | Tuple | Assumed of assumed_ty
 [@@deriving show, ord]
 
+(** Ancestor for iter visitor for {!Types.const_generic} *)
+class ['self] iter_const_generic_base =
+  object (_self : 'self)
+    inherit [_] VisitorsRuntime.iter
+    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
+
+    method visit_const_generic_var_id : 'env -> const_generic_var_id -> unit =
+      fun _ _ -> ()
+
+    method visit_literal : 'env -> literal -> unit = fun _ _ -> ()
+  end
+
+(** Ancestor for map visitor for {!Types.const_generic} *)
+class virtual ['self] map_const_generic_base =
+  object (_self : 'self)
+    inherit [_] VisitorsRuntime.map
+
+    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
+      fun _ x -> x
+
+    method visit_const_generic_var_id
+        : 'env -> const_generic_var_id -> const_generic_var_id =
+      fun _ x -> x
+
+    method visit_literal : 'env -> literal -> literal = fun _ x -> x
+  end
+
+type const_generic =
+  | Global of global_decl_id
+  | Var of const_generic_var_id
+  | Value of literal
+[@@deriving
+  show,
+    ord,
+    visitors
+      {
+        name = "iter_const_generic";
+        variety = "iter";
+        ancestors = [ "iter_const_generic_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+        polymorphic = false;
+      },
+    visitors
+      {
+        name = "map_const_generic";
+        variety = "map";
+        ancestors = [ "map_const_generic_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
+        concrete = false;
+        polymorphic = false;
+      }]
+
 (** Ancestor for iter visitor for {!Types.ty} *)
 class ['self] iter_ty_base =
   object (_self : 'self)
-    inherit [_] VisitorsRuntime.iter
+    inherit [_] iter_const_generic
     method visit_'r : 'env -> 'r -> unit = fun _ _ -> ()
     method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
     method visit_type_id : 'env -> type_id -> unit = fun _ _ -> ()
-    method visit_integer_type : 'env -> integer_type -> unit = fun _ _ -> ()
     method visit_ref_kind : 'env -> ref_kind -> unit = fun _ _ -> ()
+    method visit_literal_type : 'env -> literal_type -> unit = fun _ _ -> ()
   end
 
 (** Ancestor for map visitor for {!Types.ty} *)
 class virtual ['self] map_ty_base =
   object (_self : 'self)
-    inherit [_] VisitorsRuntime.map
+    inherit [_] map_const_generic
     method virtual visit_'r : 'env -> 'r -> 's
 
     method visit_type_var_id : 'env -> type_var_id -> type_var_id =
       fun _ id -> id
 
     method visit_type_id : 'env -> type_id -> type_id = fun _ id -> id
-
-    method visit_integer_type : 'env -> integer_type -> integer_type =
-      fun _ ity -> ity
-
     method visit_ref_kind : 'env -> ref_kind -> ref_kind = fun _ rk -> rk
+
+    method visit_literal_type : 'env -> literal_type -> literal_type =
+      fun _ x -> x
   end
 
 type 'r ty =
-  | Adt of type_id * 'r list * 'r ty list
+  | Adt of type_id * 'r list * 'r ty list * const_generic list
       (** {!Types.ty.Adt} encodes ADTs, tuples and assumed types *)
   | TypeVar of type_var_id
-  | Bool
-  | Char
+  | Literal of literal_type
   | Never
-  | Integer of integer_type
-  | Str
-  | Array of 'r ty * (PrimitiveValues.scalar_value [@opaque])
-  | Slice of 'r ty
   | Ref of 'r * 'r ty * ref_kind
 [@@deriving
   show,
@@ -157,7 +222,7 @@ type 'r ty =
         name = "map_ty";
         variety = "map";
         ancestors = [ "map_ty_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
         concrete = false;
         polymorphic = false;
       }]
@@ -220,6 +285,7 @@ type type_decl = {
   name : type_name;
   region_params : region_var list;
   type_params : type_var list;
+  const_generic_params : const_generic_var list;
   kind : type_decl_kind;
   regions_hierarchy : region_var_groups;
       (** Stores the hierarchy between the regions (which regions have the

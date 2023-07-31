@@ -35,6 +35,10 @@ type integer_type =
   | U128
 [@@deriving show, ord]
 
+(* TODO: make literal_type consistent with literal: "integer" or "scalar" *)
+type literal_type = Integer of integer_type | Bool | Char
+[@@deriving show, ord]
+
 (** A scalar value
 
     Note that we use unbounded integers everywhere.
@@ -43,14 +47,10 @@ type integer_type =
 type scalar_value = { value : big_int; int_ty : integer_type }
 [@@deriving show, ord]
 
-(** A primitive value.
+(** A literal value.
 
     Can be used by operands (in which case it represents a constant) or by
-    the interpreter to represent a concrete, primitive value.
+    the interpreter to represent a concrete, literal value.
  *)
-type primitive_value =
-  | Scalar of scalar_value
-  | Bool of bool
-  | Char of char
-  | String of string
+type literal = Scalar of scalar_value | Bool of bool | Char of char
 [@@deriving show, ord]

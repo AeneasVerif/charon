@@ -160,6 +160,7 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
          num_early_bound_regions = 0;
          regions_hierarchy = [];
          type_params = [];
+         const_generic_params = [];
          inputs = [];
          output = TU.ety_no_regions_to_sty ty;
        }

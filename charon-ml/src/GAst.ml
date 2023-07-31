@@ -34,7 +34,16 @@ type assumed_fun_id =
   | VecIndex  (** [core::ops::index::Index::index<alloc::vec::Vec<T>, usize>] *)
   | VecIndexMut
       (** [core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>] *)
-  | ArraySlice
+  | ArraySharedIndex
+  | ArrayMutIndex
+  | ArrayToSharedSlice
+  | ArrayToMutSlice
+  | ArraySharedSubslice
+  | ArrayMutSubslice
+  | SliceSharedIndex
+  | SliceMutIndex
+  | SliceSharedSubslice
+  | SliceMutSubslice
 [@@deriving show, ord]
 
 type fun_id = Regular of FunDeclId.id | Assumed of assumed_fun_id
@@ -129,6 +138,11 @@ type fun_sig = {
   regions_hierarchy : region_var_groups;
   type_params : type_var list;
       (** The type parameters can be indexed with {!Types.TypeVarId.id}.
+
+          See {!Identifiers.Id.mapi} for instance.
+       *)
+  const_generic_params : const_generic_var list;
+      (** The const generic parameters can be indexed with {!Type.ConstGenericVarId.id}.
 
           See {!Identifiers.Id.mapi} for instance.
        *)

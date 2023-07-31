@@ -2,17 +2,12 @@ open Identifiers
 open Types
 open PrimitiveValues
 module VarId = IdGen ()
-module GlobalDeclId = IdGen ()
+module GlobalDeclId = Types.GlobalDeclId
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!Charon.UllbcAst.iter_statement_base}).
   *)
 type var_id = VarId.id [@@deriving show, ord]
-
-(** We define this type to control the name of the visitor functions
-    (see e.g., {!Charon.GAst.iter_ast_base} and {!rvalue}).
-  *)
-type global_decl_id = GlobalDeclId.id [@@deriving show]
 
 (** Ancestor the field_proj_kind iter visitor *)
 class ['self] iter_field_proj_kind_base =
@@ -200,9 +195,7 @@ class ['self] iter_operand_base =
   object (_self : 'self)
     inherit [_] iter_place
     method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
-
-    method visit_primitive_value : 'env -> primitive_value -> unit =
-      fun _ _ -> ()
+    method visit_literal : 'env -> literal -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the operand map visitor *)
@@ -210,15 +203,10 @@ class ['self] map_operand_base =
   object (_self : 'self)
     inherit [_] map_place
     method visit_ety : 'env -> ety -> ety = fun _ x -> x
-
-    method visit_primitive_value : 'env -> primitive_value -> primitive_value =
-      fun _ x -> x
+    method visit_literal : 'env -> literal -> literal = fun _ x -> x
   end
 
-type operand =
-  | Copy of place
-  | Move of place
-  | Constant of ety * primitive_value
+type operand = Copy of place | Move of place | Constant of ety * literal
 [@@deriving
   show,
     visitors

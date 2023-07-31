@@ -6,11 +6,17 @@ module E = Expressions
 module A = LlbcAst
 module PV = PrimitiveValues
 open PrintUtils
+open PrintPrimitiveValues
 
 let type_var_id_to_string (id : T.TypeVarId.id) : string =
   "T@" ^ T.TypeVarId.to_string id
 
 let type_var_to_string (tv : T.type_var) : string = tv.name
+
+let const_generic_var_id_to_string (id : T.ConstGenericVarId.id) : string =
+  "N@" ^ T.ConstGenericVarId.to_string id
+
+let const_generic_var_to_string (v : T.const_generic_var) : string = v.name
 
 let region_var_to_string (rv : T.region_var) : string =
   match rv.name with
@@ -38,25 +44,13 @@ type 'r type_formatter = {
   r_to_string : 'r -> string;
   type_var_id_to_string : T.TypeVarId.id -> string;
   type_decl_id_to_string : T.TypeDeclId.id -> string;
+  const_generic_var_id_to_string : T.ConstGenericVarId.id -> string;
+  global_decl_id_to_string : T.GlobalDeclId.id -> string;
 }
 
 type stype_formatter = T.RegionVarId.id T.region type_formatter
 type rtype_formatter = T.RegionId.id T.region type_formatter
 type etype_formatter = T.erased_region type_formatter
-
-let integer_type_to_string = function
-  | PV.Isize -> "isize"
-  | PV.I8 -> "i8"
-  | PV.I16 -> "i16"
-  | PV.I32 -> "i32"
-  | PV.I64 -> "i64"
-  | PV.I128 -> "i128"
-  | PV.Usize -> "usize"
-  | PV.U8 -> "u8"
-  | PV.U16 -> "u16"
-  | PV.U32 -> "u32"
-  | PV.U64 -> "u64"
-  | PV.U128 -> "u128"
 
 let type_id_to_string (fmt : 'r type_formatter) (id : T.type_id) : string =
   match id with
@@ -66,37 +60,42 @@ let type_id_to_string (fmt : 'r type_formatter) (id : T.type_id) : string =
       match aty with
       | Box -> "alloc::boxed::Box"
       | Vec -> "alloc::vec::Vec"
-      | Option -> "core::option::Option")
+      | Option -> "core::option::Option"
+      | Str -> "str"
+      | Array -> "@Array"
+      | Slice -> "@Slice")
 
-let scalar_value_to_string { PV.value; int_ty } =
-  Z.to_string value ^ integer_type_to_string int_ty
+let const_generic_to_string (fmt : 'r type_formatter) (cg : T.const_generic) :
+    string =
+  match cg with
+  | Global id -> fmt.global_decl_id_to_string id
+  | Var id -> fmt.const_generic_var_id_to_string id
+  | Value lit -> literal_to_string lit
 
 let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
   match ty with
-  | T.Adt (id, regions, tys) ->
+  | T.Adt (id, regions, tys, cgs) ->
       let is_tuple = match id with T.Tuple -> true | _ -> false in
-      let params = params_to_string fmt is_tuple regions tys in
+      let params = params_to_string fmt is_tuple regions tys cgs in
       type_id_to_string fmt id ^ params
   | T.TypeVar tv -> fmt.type_var_id_to_string tv
-  | T.Bool -> "bool"
-  | T.Char -> "char"
   | T.Never -> "!"
-  | T.Integer int_ty -> integer_type_to_string int_ty
-  | T.Str -> "str"
-  | T.Array (aty, len) -> "[" ^ ty_to_string fmt aty ^ "; " ^ scalar_value_to_string len ^ "]"
-  | T.Slice sty -> "[" ^ ty_to_string fmt sty ^ "]"
+  | T.Literal lit_ty -> literal_type_to_string lit_ty
   | T.Ref (r, rty, ref_kind) -> (
       match ref_kind with
       | T.Mut -> "&" ^ fmt.r_to_string r ^ " mut (" ^ ty_to_string fmt rty ^ ")"
       | T.Shared -> "&" ^ fmt.r_to_string r ^ " (" ^ ty_to_string fmt rty ^ ")")
 
 and params_to_string (fmt : 'r type_formatter) (is_tuple : bool)
-    (regions : 'r list) (types : 'r T.ty list) : string =
+    (regions : 'r list) (types : 'r T.ty list) (cgs : T.const_generic list) :
+    string =
   let regions = List.map fmt.r_to_string regions in
   let types = List.map (ty_to_string fmt) types in
-  let params = String.concat ", " (List.append regions types) in
-  if is_tuple then "(" ^ params ^ ")"
-  else if List.length regions + List.length types > 0 then "<" ^ params ^ ">"
+  let cgs = List.map (const_generic_to_string fmt) cgs in
+  let params = List.flatten [ regions; types; cgs ] in
+  let params_s = String.concat ", " params in
+  if is_tuple then "(" ^ params_s ^ ")"
+  else if List.length params > 0 then "<" ^ params_s ^ ">"
   else ""
 
 let sty_to_string (fmt : stype_formatter) (ty : T.sty) : string =
@@ -119,29 +118,47 @@ let variant_to_string fmt (v : T.variant) : string =
   ^ ")"
 
 let type_decl_to_string (type_decl_id_to_string : T.TypeDeclId.id -> string)
-    (def : T.type_decl) : string =
+    (global_decl_id_to_string : T.GlobalDeclId.id -> string) (def : T.type_decl)
+    : string =
   let regions = def.region_params in
   let types = def.type_params in
+  let cgs = def.const_generic_params in
   let rid_to_string rid =
-    match List.find_opt (fun rv -> rv.T.index = rid) regions with
+    match
+      List.find_opt (fun (rv : T.region_var) -> rv.T.index = rid) regions
+    with
     | Some rv -> region_var_to_string rv
     | None -> raise (Failure "Unreachable")
   in
   let r_to_string = region_to_string rid_to_string in
   let type_var_id_to_string id =
-    match List.find_opt (fun tv -> tv.T.index = id) types with
+    match List.find_opt (fun (tv : T.type_var) -> tv.T.index = id) types with
     | Some tv -> type_var_to_string tv
     | None -> raise (Failure "Unreachable")
   in
-  let fmt = { r_to_string; type_var_id_to_string; type_decl_id_to_string } in
+  let const_generic_var_id_to_string id =
+    match
+      List.find_opt (fun (v : T.const_generic_var) -> v.T.index = id) cgs
+    with
+    | Some v -> const_generic_var_to_string v
+    | None -> raise (Failure "Unreachable")
+  in
+  let fmt =
+    {
+      r_to_string;
+      type_var_id_to_string;
+      type_decl_id_to_string;
+      const_generic_var_id_to_string;
+      global_decl_id_to_string;
+    }
+  in
   let name = name_to_string def.name in
   let params =
-    if List.length regions + List.length types > 0 then
-      let regions = List.map region_var_to_string regions in
-      let types = List.map type_var_to_string types in
-      let params = String.concat ", " (List.append regions types) in
-      "<" ^ params ^ ">"
-    else ""
+    let regions = List.map region_var_to_string regions in
+    let types = List.map type_var_to_string types in
+    let cgs = List.map const_generic_var_to_string cgs in
+    let params = List.flatten [ regions; types; cgs ] in
+    if List.length params > 0 then "<" ^ String.concat ", " params ^ ">" else ""
   in
   match def.kind with
   | T.Struct fields ->

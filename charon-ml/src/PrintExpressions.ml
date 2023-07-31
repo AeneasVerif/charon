@@ -15,6 +15,7 @@ type expr_formatter = {
   r_to_string : T.RegionId.id -> string;
   type_var_id_to_string : T.TypeVarId.id -> string;
   type_decl_id_to_string : T.TypeDeclId.id -> string;
+  const_generic_var_id_to_string : T.ConstGenericVarId.id -> string;
   adt_variant_to_string : T.TypeDeclId.id -> T.VariantId.id -> string;
   adt_field_to_string :
     T.TypeDeclId.id -> T.VariantId.id option -> T.FieldId.id -> string option;
@@ -22,7 +23,6 @@ type expr_formatter = {
   adt_field_names :
     T.TypeDeclId.id -> T.VariantId.id option -> string list option;
   fun_decl_id_to_string : A.FunDeclId.id -> string;
-      (** This is actually not necessary for expressions *)
   global_decl_id_to_string : A.GlobalDeclId.id -> string;
 }
 
@@ -31,6 +31,8 @@ let expr_to_etype_formatter (fmt : expr_formatter) : PT.etype_formatter =
     PT.r_to_string = PT.erased_region_to_string;
     PT.type_var_id_to_string = fmt.type_var_id_to_string;
     PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
+    PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
+    PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
   }
 
 let expr_to_rtype_formatter (fmt : expr_formatter) : PT.rtype_formatter =
@@ -38,6 +40,8 @@ let expr_to_rtype_formatter (fmt : expr_formatter) : PT.rtype_formatter =
     PT.r_to_string = PT.region_to_string fmt.r_to_string;
     PT.type_var_id_to_string = fmt.type_var_id_to_string;
     PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
+    PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
+    PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
   }
 
 let expr_to_stype_formatter (fmt : expr_formatter) : PT.stype_formatter =
@@ -45,6 +49,8 @@ let expr_to_stype_formatter (fmt : expr_formatter) : PT.stype_formatter =
     PT.r_to_string = PT.region_to_string fmt.rvar_to_string;
     PT.type_var_id_to_string = fmt.type_var_id_to_string;
     PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
+    PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
+    PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
   }
 
 let rec projection_to_string (fmt : expr_formatter) (inside : string)
@@ -55,8 +61,8 @@ let rec projection_to_string (fmt : expr_formatter) (inside : string)
       let s = projection_to_string fmt inside p' in
       match pe with
       | E.Offset var_id ->
-        let var = fmt.var_id_to_string var_id in
-        s ^ "[@" ^ var ^ "]"
+          let var = fmt.var_id_to_string var_id in
+          s ^ "[@" ^ var ^ "]"
       | E.Deref -> "*(" ^ s ^ ")"
       | E.DerefBox -> "deref_box(" ^ s ^ ")"
       | E.Field (E.ProjOption variant_id, fid) ->
@@ -86,9 +92,9 @@ let unop_to_string (unop : E.unop) : string =
   | E.Neg -> "-"
   | E.Cast (src, tgt) ->
       "cast<"
-      ^ PT.integer_type_to_string src
+      ^ PPV.integer_type_to_string src
       ^ ","
-      ^ PT.integer_type_to_string tgt
+      ^ PPV.integer_type_to_string tgt
       ^ ">"
   | E.SliceNew l -> "array_to_slice<" ^ PPV.scalar_value_to_string l ^ ">"
 
@@ -116,9 +122,7 @@ let operand_to_string (fmt : expr_formatter) (op : E.operand) : string =
   | E.Copy p -> "copy " ^ place_to_string fmt p
   | E.Move p -> "move " ^ place_to_string fmt p
   | E.Constant (ty, cv) ->
-      "("
-      ^ PPV.primitive_value_to_string cv
-      ^ " : "
+      "(" ^ PPV.literal_to_string cv ^ " : "
       ^ PT.ety_to_string (expr_to_etype_formatter fmt) ty
       ^ ")"
 
@@ -126,7 +130,7 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
   match rv with
   | E.Len p ->
       let p = place_to_string fmt p in
-      "@len("^p^")"
+      "@len(" ^ p ^ ")"
   | E.Use op -> operand_to_string fmt op
   | E.Ref (p, bk) -> (
       let p = place_to_string fmt p in

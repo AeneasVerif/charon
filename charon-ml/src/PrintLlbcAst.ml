@@ -157,18 +157,24 @@ module Crate = struct
       (_decl : A.global_decl) : PA.ast_formatter =
     let region_vars = [] in
     let type_params = [] in
+    let cg_params = [] in
     let locals = [] in
     let get_global_decl_name_as_string decl =
       global_name_to_string decl.A.name
     in
     PrintGAst.decl_ctx_to_ast_formatter type_context fun_context global_context
-      region_vars type_params locals get_global_decl_name_as_string
+      region_vars type_params cg_params locals get_global_decl_name_as_string
 
   (** This function pretty-prints a type declaration by using a declaration
       context *)
   let type_decl_to_string (type_context : T.type_decl T.TypeDeclId.Map.t)
-      (decl : T.type_decl) : string =
-    PrintGAst.ctx_and_type_decl_to_string type_context decl
+      (global_context : A.global_decl T.GlobalDeclId.Map.t) (decl : T.type_decl)
+      : string =
+    let get_global_decl_name_as_string decl =
+      global_name_to_string decl.A.name
+    in
+    PrintGAst.ctx_and_type_decl_to_string type_context global_context
+      get_global_decl_name_as_string decl
 
   (** This function pretty-prints a global declaration by using a declaration
       context *)
@@ -195,8 +201,10 @@ module Crate = struct
     PA.fun_decl_to_string fmt "" "  " def
 
   let crate_type_decl_to_string (m : A.crate) (decl : T.type_decl) : string =
-    let types_defs_map, _, _ = LlbcAstUtils.compute_defs_maps m in
-    type_decl_to_string types_defs_map decl
+    let types_defs_map, _, globals_defs_map =
+      LlbcAstUtils.compute_defs_maps m
+    in
+    type_decl_to_string types_defs_map globals_defs_map decl
 
   let crate_global_decl_to_string (m : A.crate) (decl : A.global_decl) : string
       =
@@ -217,7 +225,9 @@ module Crate = struct
     in
 
     (* The types *)
-    let type_decls = List.map (type_decl_to_string types_defs_map) m.A.types in
+    let type_decls =
+      List.map (type_decl_to_string types_defs_map globals_defs_map) m.A.types
+    in
 
     (* The globals *)
     let global_decls =

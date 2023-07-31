@@ -35,6 +35,10 @@ let gdecls_and_gfun_decl_to_ast_formatter
     let var = T.TypeVarId.nth fdef.signature.type_params vid in
     PT.type_var_to_string var
   in
+  let const_generic_var_id_to_string vid =
+    let var = T.ConstGenericVarId.nth fdef.signature.const_generic_params vid in
+    PT.const_generic_var_to_string var
+  in
   let type_decl_id_to_string def_id =
     let def = T.TypeDeclId.Map.find def_id type_decls in
     name_to_string def.name
@@ -61,6 +65,7 @@ let gdecls_and_gfun_decl_to_ast_formatter
     r_to_string;
     type_var_id_to_string;
     type_decl_id_to_string;
+    const_generic_var_id_to_string;
     adt_variant_to_string;
     var_id_to_string;
     adt_field_names;
@@ -101,8 +106,16 @@ let call_to_string (fmt : ast_formatter) (indent : string) (call : GA.call) :
         | GA.VecIndexMut ->
             "core::ops::index::IndexMut<alloc::vec::Vec" ^ t_params
             ^ ">::index_mut"
-        | GA.ArraySlice ->
-            "mk_slice<" ^ t_params ^ ">")
+        | GA.ArraySharedIndex -> "@ArraySharedIndex" ^ t_params
+        | GA.ArrayMutIndex -> "@ArrayMutIndex" ^ t_params
+        | GA.ArrayToSharedSlice -> "@ArrayToSharedSlice" ^ t_params
+        | GA.ArrayToMutSlice -> "@ArrayToMutSlice" ^ t_params
+        | GA.ArraySharedSubslice -> "@ArraySharedSubslice" ^ t_params
+        | GA.ArrayMutSubslice -> "@ArrayMutSubslice" ^ t_params
+        | GA.SliceSharedIndex -> "@SliceSharedIndex" ^ t_params
+        | GA.SliceMutIndex -> "@SliceMutIndex" ^ t_params
+        | GA.SliceSharedSubslice -> "@SliceSharedSubslice" ^ t_params
+        | GA.SliceMutSubslice -> "@SliceMutSubslice" ^ t_params)
   in
   let dest = PE.place_to_string fmt call.GA.dest in
   indent ^ dest ^ " := move " ^ name_args ^ args
@@ -189,12 +202,18 @@ let gfun_decl_to_string (fmt : ast_formatter) (indent : string)
 
 (** This function pretty-prints a type definition by using a definition context *)
 let ctx_and_type_decl_to_string (type_context : T.type_decl T.TypeDeclId.Map.t)
-    (decl : T.type_decl) : string =
+    (global_context : 'global_decl GA.GlobalDeclId.Map.t)
+    (get_global_decl_name_as_string : 'gdecl -> string) (decl : T.type_decl) :
+    string =
   let type_decl_id_to_string (id : T.TypeDeclId.id) : string =
     let decl = T.TypeDeclId.Map.find id type_context in
     name_to_string decl.name
   in
-  PT.type_decl_to_string type_decl_id_to_string decl
+  let global_decl_id_to_string def_id =
+    let def = GA.GlobalDeclId.Map.find def_id global_context in
+    get_global_decl_name_as_string def
+  in
+  PT.type_decl_to_string type_decl_id_to_string global_decl_id_to_string decl
 
 (** Generate an [ast_formatter] by using a declaration context and some additional
     parameters *)
@@ -202,8 +221,8 @@ let decl_ctx_to_ast_formatter (type_context : T.type_decl T.TypeDeclId.Map.t)
     (fun_context : 'body GA.gfun_decl GA.FunDeclId.Map.t)
     (global_context : 'global_decl GA.GlobalDeclId.Map.t)
     (region_vars : T.region_var list) (type_params : T.type_var list)
-    (locals : GA.var list) (get_global_decl_name_as_string : 'gdecl -> string) :
-    ast_formatter =
+    (const_generic_params : T.const_generic_var list) (locals : GA.var list)
+    (get_global_decl_name_as_string : 'gdecl -> string) : ast_formatter =
   let rvar_to_string vid =
     let var = T.RegionVarId.nth region_vars vid in
     PT.region_var_to_string var
@@ -215,6 +234,10 @@ let decl_ctx_to_ast_formatter (type_context : T.type_decl T.TypeDeclId.Map.t)
   let type_var_id_to_string vid =
     let var = T.TypeVarId.nth type_params vid in
     PT.type_var_to_string var
+  in
+  let const_generic_var_id_to_string vid =
+    let var = T.ConstGenericVarId.nth const_generic_params vid in
+    PT.const_generic_var_to_string var
   in
   let type_decl_id_to_string def_id =
     let def = T.TypeDeclId.Map.find def_id type_context in
@@ -244,6 +267,7 @@ let decl_ctx_to_ast_formatter (type_context : T.type_decl T.TypeDeclId.Map.t)
     r_to_string;
     type_var_id_to_string;
     type_decl_id_to_string;
+    const_generic_var_id_to_string;
     adt_variant_to_string;
     adt_field_to_string;
     var_id_to_string;
@@ -262,6 +286,7 @@ let decl_ctx_and_fun_decl_to_ast_formatter
     (def : 'body GA.gfun_decl) : ast_formatter =
   let region_vars = def.signature.region_params in
   let type_params = def.signature.type_params in
+  let cg_params = def.signature.const_generic_params in
   let locals = match def.body with None -> [] | Some body -> body.locals in
   decl_ctx_to_ast_formatter type_context fun_context global_context region_vars
-    type_params locals get_global_decl_name_as_string
+    type_params cg_params locals get_global_decl_name_as_string
