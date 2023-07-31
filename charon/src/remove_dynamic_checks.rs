@@ -24,12 +24,12 @@ impl MutAstVisitor for RemoveDynChecks {
 
     /// We simply detect sequences of the following shapes, and remove them:
     /// # 1. Division/remainder
-    /// ```
+    /// ```text
     /// b := copy x == const 0
     /// assert(move b == false)
     ///
     /// # 2. Arrays/slices
-    /// ```
+    /// ```text
     /// l := len(a)
     /// b := copy x < copy l
     /// assert(move b == true)
