@@ -68,9 +68,9 @@ let type_id_to_string (fmt : 'r type_formatter) (id : T.type_id) : string =
 let const_generic_to_string (fmt : 'r type_formatter) (cg : T.const_generic) :
     string =
   match cg with
-  | Global id -> fmt.global_decl_id_to_string id
-  | Var id -> fmt.const_generic_var_id_to_string id
-  | Value lit -> literal_to_string lit
+  | ConstGenericGlobal id -> fmt.global_decl_id_to_string id
+  | ConstGenericVar id -> fmt.const_generic_var_id_to_string id
+  | ConstGenericValue lit -> literal_to_string lit
 
 let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
   match ty with

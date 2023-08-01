@@ -128,9 +128,6 @@ let operand_to_string (fmt : expr_formatter) (op : E.operand) : string =
 
 let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
   match rv with
-  | E.Len p ->
-      let p = place_to_string fmt p in
-      "@len(" ^ p ^ ")"
   | E.Use op -> operand_to_string fmt op
   | E.Ref (p, bk) -> (
       let p = place_to_string fmt p in

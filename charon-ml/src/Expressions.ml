@@ -194,16 +194,16 @@ let all_binops =
 class ['self] iter_operand_base =
   object (_self : 'self)
     inherit [_] iter_place
+    inherit! [_] iter_const_generic
     method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
-    method visit_literal : 'env -> literal -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the operand map visitor *)
 class ['self] map_operand_base =
   object (_self : 'self)
     inherit [_] map_place
+    inherit! [_] map_const_generic
     method visit_ety : 'env -> ety -> ety = fun _ x -> x
-    method visit_literal : 'env -> literal -> literal = fun _ x -> x
   end
 
 type operand = Copy of place | Move of place | Constant of ety * literal
@@ -231,7 +231,6 @@ class ['self] iter_aggregate_kind_base =
   object (_self : 'self)
     inherit [_] iter_operand
     method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
-    method visit_const_generic : 'env -> const_generic -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the operand map visitor *)
@@ -240,9 +239,6 @@ class ['self] map_aggregate_kind_base =
     inherit [_] map_operand
 
     method visit_erased_region : 'env -> erased_region -> erased_region =
-      fun _ x -> x
-
-    method visit_const_generic : 'env -> const_generic -> const_generic =
       fun _ x -> x
   end
 
@@ -277,7 +273,7 @@ type aggregate_kind =
       * erased_region list
       * ety list
       * const_generic list
-  | AggregatedRange of ety
+  | AggregatedRange of ety (* TODO: merge with the Rust *)
   | AggregatedArray of ety * const_generic
 [@@deriving
   show,
@@ -305,7 +301,6 @@ class ['self] iter_rvalue_base =
     method visit_unop : 'env -> unop -> unit = fun _ _ -> ()
     method visit_binop : 'env -> binop -> unit = fun _ _ -> ()
     method visit_borrow_kind : 'env -> borrow_kind -> unit = fun _ _ -> ()
-    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the rvalue map visitor *)
@@ -315,9 +310,6 @@ class ['self] map_rvalue_base =
     method visit_unop : 'env -> unop -> unop = fun _ x -> x
     method visit_binop : 'env -> binop -> binop = fun _ x -> x
     method visit_borrow_kind : 'env -> borrow_kind -> borrow_kind = fun _ x -> x
-
-    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
-      fun _ x -> x
   end
 
 (* TODO: move the aggregate kind to operands *)
@@ -329,7 +321,6 @@ type rvalue =
   | Discriminant of place
   | Aggregate of aggregate_kind * operand list
   | Global of global_decl_id
-  | Len of place
 [@@deriving
   show,
     visitors

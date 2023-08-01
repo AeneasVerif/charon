@@ -53,23 +53,25 @@ type fun_id = Regular of FunDeclId.id | Assumed of assumed_fun_id
 class ['self] iter_ast_base =
   object (_self : 'self)
     inherit [_] iter_rvalue
+    inherit! [_] iter_literal
+    (* Remark: can't inherit iter_literal_type because of a name collision (`Bool`) *)
+
     method visit_fun_id : 'env -> fun_id -> unit = fun _ _ -> ()
     method visit_meta : 'env -> meta -> unit = fun _ _ -> ()
     method visit_integer_type : 'env -> integer_type -> unit = fun _ _ -> ()
-    method visit_scalar_value : 'env -> scalar_value -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the AST map visitors *)
 class ['self] map_ast_base =
   object (_self : 'self)
     inherit [_] map_rvalue
+    inherit! [_] map_literal
+    (* Remark: can't inherit map_literal_type because of a name collision (`Bool`) *)
+
     method visit_fun_id : 'env -> fun_id -> fun_id = fun _ x -> x
     method visit_meta : 'env -> meta -> meta = fun _ x -> x
 
     method visit_integer_type : 'env -> integer_type -> integer_type =
-      fun _ x -> x
-
-    method visit_scalar_value : 'env -> scalar_value -> scalar_value =
       fun _ x -> x
   end
 

@@ -145,10 +145,12 @@ class virtual ['self] map_const_generic_base =
     method visit_literal : 'env -> literal -> literal = fun _ x -> x
   end
 
+(** Remark: we have to use long names because otherwise we have collisions in
+    the functions derived for the visitors *)
 type const_generic =
-  | Global of global_decl_id
-  | Var of const_generic_var_id
-  | Value of literal
+  | ConstGenericGlobal of global_decl_id
+  | ConstGenericVar of const_generic_var_id
+  | ConstGenericValue of literal
 [@@deriving
   show,
     ord,

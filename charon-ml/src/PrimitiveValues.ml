@@ -35,9 +35,43 @@ type integer_type =
   | U128
 [@@deriving show, ord]
 
+(** Ancestor the literal_type iter visitor *)
+class ['self] iter_literal_type_base =
+  object (_self : 'self)
+    inherit [_] VisitorsRuntime.iter
+    method visit_integer_type : 'env -> integer_type -> unit = fun _ _ -> ()
+  end
+
+(** Ancestor the literal_type map visitor *)
+class ['self] map_literal_type_base =
+  object (_self : 'self)
+    inherit [_] VisitorsRuntime.map
+
+    method visit_integer_type : 'env -> integer_type -> integer_type =
+      fun _ x -> x
+  end
+
 (* TODO: make literal_type consistent with literal: "integer" or "scalar" *)
 type literal_type = Integer of integer_type | Bool | Char
-[@@deriving show, ord]
+[@@deriving
+  show,
+    ord,
+    visitors
+      {
+        name = "iter_literal_type";
+        variety = "iter";
+        ancestors = [ "iter_literal_type_base" ];
+        nude = true;
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_literal_type";
+        variety = "map";
+        ancestors = [ "map_literal_type_base" ];
+        nude = true;
+        concrete = true;
+      }]
 
 (** A scalar value
 
@@ -47,10 +81,44 @@ type literal_type = Integer of integer_type | Bool | Char
 type scalar_value = { value : big_int; int_ty : integer_type }
 [@@deriving show, ord]
 
+(** Ancestor the literal iter visitor *)
+class ['self] iter_literal_base =
+  object (_self : 'self)
+    inherit [_] VisitorsRuntime.iter
+    method visit_scalar_value : 'env -> scalar_value -> unit = fun _ _ -> ()
+  end
+
+(** Ancestor the literal map visitor *)
+class ['self] map_literal_base =
+  object (_self : 'self)
+    inherit [_] VisitorsRuntime.map
+
+    method visit_scalar_value : 'env -> scalar_value -> scalar_value =
+      fun _ x -> x
+  end
+
 (** A literal value.
 
     Can be used by operands (in which case it represents a constant) or by
     the interpreter to represent a concrete, literal value.
  *)
 type literal = Scalar of scalar_value | Bool of bool | Char of char
-[@@deriving show, ord]
+[@@deriving
+  show,
+    ord,
+    visitors
+      {
+        name = "iter_literal";
+        variety = "iter";
+        ancestors = [ "iter_literal_base" ];
+        nude = true;
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_literal";
+        variety = "map";
+        ancestors = [ "map_literal_base" ];
+        nude = true;
+        concrete = true;
+      }]

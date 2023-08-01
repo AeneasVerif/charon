@@ -317,13 +317,13 @@ let const_generic_of_json (js : json) : (T.const_generic, string) result =
     (match js with
     | `Assoc [ ("Global", id) ] ->
         let* id = E.GlobalDeclId.id_of_json id in
-        Ok (T.Global id)
+        Ok (T.ConstGenericGlobal id)
     | `Assoc [ ("Var", id) ] ->
         let* id = T.ConstGenericVarId.id_of_json id in
-        Ok (T.Var id)
+        Ok (T.ConstGenericVar id)
     | `Assoc [ ("Value", lit) ] ->
         let* lit = literal_of_json lit in
-        Ok (T.Value lit)
+        Ok (T.ConstGenericValue lit)
     | _ -> Error "")
 
 let rec ty_of_json (r_of_json : json -> ('r, string) result) (js : json) :
@@ -622,9 +622,6 @@ let rvalue_of_json (js : json) : (E.rvalue, string) result =
         let* aggregate_kind = aggregate_kind_of_json aggregate_kind in
         let* ops = list_of_json operand_of_json ops in
         Ok (E.Aggregate (aggregate_kind, ops))
-    | `Assoc [ ("Len", place) ] ->
-        let* place = place_of_json place in
-        Ok (E.Len place)
     | _ -> Error "")
 
 let assumed_fun_id_of_json (js : json) : (A.assumed_fun_id, string) result =
