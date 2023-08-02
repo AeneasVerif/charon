@@ -54,6 +54,12 @@ let ty_as_custom_adt (ty : 'r ty) :
   | Adt (AdtId id, regions, tys, cgs) -> (id, regions, tys, cgs)
   | _ -> raise (Failure "Unreachable")
 
+let ty_as_literal (ty : 'r ty) : literal_type =
+  match ty with Literal lty -> lty | _ -> raise (Failure "Unreachable")
+
+let const_generic_as_literal (cg : const_generic) : PrimitiveValues.literal =
+  match cg with ConstGenericValue v -> v | _ -> raise (Failure "Unreachable")
+
 (** The unit type *)
 let mk_unit_ty : 'r ty = Adt (Tuple, [], [], [])
 
