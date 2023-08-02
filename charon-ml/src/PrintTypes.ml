@@ -63,7 +63,8 @@ let type_id_to_string (fmt : 'r type_formatter) (id : T.type_id) : string =
       | Option -> "core::option::Option"
       | Str -> "str"
       | Array -> "@Array"
-      | Slice -> "@Slice")
+      | Slice -> "@Slice"
+      | Range -> "@Range")
 
 let const_generic_to_string (fmt : 'r type_formatter) (cg : T.const_generic) :
     string =
