@@ -88,17 +88,23 @@ fn index_array_0<T>(s: &[T; 32]) -> &T {
     &s[0]
 }
 
+/*
+// Unsupported by Aeneas
 fn index_index_slice<'a, T>(s: &'a [&[T]], i: usize, j: usize) -> &'a T {
     &s[i][j]
 }
+*/
 
 fn index_index_array(s: [[u32; 32]; 32], i: usize, j: usize) -> u32 {
     s[i][j]
 }
 
+/*
+// Unsupported by Aeneas
 fn update_update_slice(s: &mut [&mut [u32]], i: usize, j: usize) {
     s[i][j] = 0;
 }
+*/
 
 fn update_update_array(mut s: [[u32; 32]; 32], i: usize, j: usize) {
     s[i][j] = 0;

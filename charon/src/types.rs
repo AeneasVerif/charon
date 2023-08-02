@@ -312,6 +312,8 @@ pub enum AssumedTy {
     Vec,
     /// Comes from the standard library
     Option,
+    /// Comes from the standard library
+    Range,
     /// Comes from the standard library. See the comments for [Ty::RawPtr]
     /// as to why we have this here.
     PtrUnique,

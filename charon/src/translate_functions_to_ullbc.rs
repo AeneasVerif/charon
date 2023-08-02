@@ -1873,6 +1873,12 @@ fn translate_primitive_function_call(
             // we'd have a generic assumed function mechanism.
             assert!(type_args.len() == 1);
             assert!(args.len() == 2);
+            assert!(const_generic_args.is_empty());
+            // We need to unwrap the type to retrieve the `T` inside the `Slice<T>`
+            // or the `Array<T, N>`
+            let (_, _, type_args, const_generic_args) = type_args[0].clone().to_adt();
+            assert!(type_args.len() == 1);
+            assert!(const_generic_args.len() <= 1);
 
             let call = ast::Call {
                 func: ast::FunId::Assumed(aid),

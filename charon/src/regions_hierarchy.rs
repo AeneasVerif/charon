@@ -335,7 +335,8 @@ fn compute_full_regions_constraints_for_ty(
                     | AssumedTy::Str
                     | AssumedTy::PtrNonNull
                     | AssumedTy::Array
-                    | AssumedTy::Slice,
+                    | AssumedTy::Slice
+                    | AssumedTy::Range,
                 ) => {
                     // Explore the types given as parameters
                     for fty in types {

@@ -82,6 +82,8 @@ enum FunId {
 pub fn get_type_id_from_name(name: &TypeName) -> Option<types::AssumedTy> {
     if name.equals_ref_name(&BOX_NAME) {
         Option::Some(types::AssumedTy::Box)
+    } else if name.equals_ref_name(&RANGE_NAME) {
+        Option::Some(types::AssumedTy::Range)
     } else if name.equals_ref_name(&VEC_NAME) {
         Option::Some(types::AssumedTy::Vec)
     } else if name.equals_ref_name(&OPTION_NAME) {
@@ -99,6 +101,7 @@ pub fn get_name_from_type_id(id: types::AssumedTy) -> Vec<String> {
     use types::AssumedTy;
     match id {
         AssumedTy::Box => BOX_NAME.iter().map(|s| s.to_string()).collect(),
+        AssumedTy::Range => RANGE_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::Vec => VEC_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::Option => OPTION_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::PtrUnique => PTR_UNIQUE_NAME.iter().map(|s| s.to_string()).collect(),
@@ -240,6 +243,9 @@ pub fn type_to_used_params(name: &TypeName) -> Option<Vec<bool>> {
                 }
                 AssumedTy::Str => {
                     vec![]
+                }
+                AssumedTy::Range => {
+                    vec![true]
                 }
                 AssumedTy::Array | AssumedTy::Slice => vec![true],
             };
