@@ -131,14 +131,12 @@ type place = { var_id : var_id; projection : projection }
 
 type borrow_kind = Shared | Mut | TwoPhaseMut | Shallow [@@deriving show]
 
+(* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass *)
 type unop =
   | Not
   | Neg
   | Cast of integer_type * integer_type
       (** Cast an integer from a source type to a target type *)
-  | SliceNew of scalar_value
-      (** Cast an array into the corresponding slice, which involves the
-          construction of a fat pointer at run-time. *)
 [@@deriving show, ord]
 
 (** A binary operation

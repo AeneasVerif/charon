@@ -169,7 +169,8 @@ let rec ty_is_primitively_copyable (ty : 'r ty) : bool =
   match ty with
   | Adt (Assumed Option, _, tys, _) ->
       List.for_all ty_is_primitively_copyable tys
-  | Adt ((AdtId _ | Assumed (Box | Vec | Str | Slice)), _, _, _) -> false
+  | Adt ((AdtId _ | Assumed (Box | Vec | Str | Slice | Range)), _, _, _) ->
+      false
   | Adt ((Tuple | Assumed Array), _, tys, _) ->
       List.for_all ty_is_primitively_copyable tys
   | TypeVar _ | Never -> false

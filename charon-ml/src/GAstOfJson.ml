@@ -510,9 +510,6 @@ let unop_of_json (js : json) : (E.unop, string) result =
       let* src_ty = integer_type_of_json src_ty in
       let* tgt_ty = integer_type_of_json tgt_ty in
       Ok (E.Cast (src_ty, tgt_ty))
-  | `Assoc [ ("SliceNew", sv) ] ->
-      let* sv = scalar_value_of_json sv in
-      Ok (E.SliceNew sv)
   | _ -> Error ("unop_of_json failed on:" ^ show js)
 
 let binop_of_json (js : json) : (E.binop, string) result =
