@@ -56,11 +56,8 @@ type field_proj_kind =
         concrete = true;
       }]
 
-type projection_elem =
-  | Deref
-  | DerefBox
-  | Field of field_proj_kind * field_id
-  | Offset of var_id
+(* Remark: no `Index` variant, as it is eliminated by a micro-pass *)
+type projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
 [@@deriving
   show,
     visitors

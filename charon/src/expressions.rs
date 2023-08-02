@@ -56,6 +56,7 @@ pub enum ProjectionElem {
     /// that even constant indices into arrays are let-bound as separate variables.
     /// We also keep the type of the array/slice that we index for convenience purposes
     /// (this is not necessary).
+    /// We **eliminate** this variant in a micro-pass.
     Index(VarId::Id, ETy),
 }
 

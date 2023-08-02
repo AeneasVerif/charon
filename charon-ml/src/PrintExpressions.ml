@@ -60,9 +60,6 @@ let rec projection_to_string (fmt : expr_formatter) (inside : string)
   | pe :: p' -> (
       let s = projection_to_string fmt inside p' in
       match pe with
-      | E.Offset var_id ->
-          let var = fmt.var_id_to_string var_id in
-          s ^ "[@" ^ var ^ "]"
       | E.Deref -> "*(" ^ s ^ ")"
       | E.DerefBox -> "deref_box(" ^ s ^ ")"
       | E.Field (E.ProjOption variant_id, fid) ->

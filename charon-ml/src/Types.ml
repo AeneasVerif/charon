@@ -48,6 +48,7 @@ type ('id, 'name) indexed_var = {
 
 type type_var = (TypeVarId.id, string) indexed_var [@@deriving show]
 type region_var = (RegionVarId.id, string option) indexed_var [@@deriving show]
+type literal_type = PrimitiveValues.literal_type [@@deriving show, ord]
 
 type const_generic_var = {
   index : ConstGenericVarId.id;

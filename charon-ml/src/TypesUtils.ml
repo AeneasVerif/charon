@@ -24,6 +24,9 @@ let type_decl_get_fields (def : type_decl)
              - def: " ^ show_type_decl def ^ "\n- opt_variant_id: "
           ^ opt_variant_id))
 
+let type_decl_is_enum (def : type_decl) : bool =
+  match def.kind with Struct _ -> false | Enum _ -> true | Opaque -> false
+
 (** Return [true] if a {!type: Types.ty} is actually [unit] *)
 let ty_is_unit (ty : 'r ty) : bool =
   match ty with Adt (Tuple, [], [], []) -> true | _ -> false

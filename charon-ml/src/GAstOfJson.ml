@@ -480,9 +480,6 @@ let projection_elem_of_json (js : json) : (E.projection_elem, string) result =
         let* proj_kind = field_proj_kind_of_json proj_kind in
         let* field_id = T.FieldId.id_of_json field_id in
         Ok (E.Field (proj_kind, field_id))
-    | `Assoc [ ("Offset", var_id) ] ->
-        let* var_id = E.VarId.id_of_json var_id in
-        Ok (E.Offset var_id)
     | _ -> Error ("projection_elem_of_json failed on:" ^ show js))
 
 let projection_of_json (js : json) : (E.projection, string) result =
