@@ -97,6 +97,9 @@ module List = struct
     match ls with
     | x :: ls' -> (x, ls')
     | _ -> raise (Failure "The list should have length > 0")
+
+  let rec repeat (n : int) (x : 'a) : 'a list =
+    if n > 0 then x :: repeat (n - 1) x else []
 end
 
 module type OrderedType = sig

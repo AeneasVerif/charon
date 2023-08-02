@@ -1,11 +1,13 @@
 //! Exercise the translation of arrays
 #![allow(dead_code)]
 
-fn array_to_slice<T>(s: &[T; 32]) -> &[T] {
+// The suffix `_` prevents name collisions in some backends
+fn array_to_shared_slice_<T>(s: &[T; 32]) -> &[T] {
     s
 }
 
-fn array_to_mut_slice<T>(s: &mut [T; 32]) -> &mut [T] {
+// The suffix `_` prevents name collisions in some backends
+fn array_to_mut_slice_<T>(s: &mut [T; 32]) -> &mut [T] {
     s
 }
 
