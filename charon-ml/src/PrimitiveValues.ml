@@ -51,6 +51,24 @@ class ['self] map_literal_type_base =
       fun _ x -> x
   end
 
+(** Ancestor the literal_type reduce visitor *)
+class virtual ['self] reduce_literal_type_base =
+  object (self : 'self)
+    inherit [_] VisitorsRuntime.reduce
+
+    method visit_integer_type : 'env -> integer_type -> 'a =
+      fun _ _ -> self#zero
+  end
+
+(** Ancestor the literal_type mapreduce visitor *)
+class virtual ['self] mapreduce_literal_type_base =
+  object (self : 'self)
+    inherit [_] VisitorsRuntime.mapreduce
+
+    method visit_integer_type : 'env -> integer_type -> integer_type * 'a =
+      fun _ x -> (x, self#zero)
+  end
+
 (* TODO: make literal_type consistent with literal: "integer" or "scalar" *)
 type literal_type = Integer of integer_type | Bool | Char
 [@@deriving
@@ -71,6 +89,20 @@ type literal_type = Integer of integer_type | Bool | Char
         ancestors = [ "map_literal_type_base" ];
         nude = true;
         concrete = true;
+      },
+    visitors
+      {
+        name = "reduce_literal_type";
+        variety = "reduce";
+        ancestors = [ "reduce_literal_type_base" ];
+        nude = true;
+      },
+    visitors
+      {
+        name = "mapreduce_literal_type";
+        variety = "mapreduce";
+        ancestors = [ "mapreduce_literal_type_base" ];
+        nude = true;
       }]
 
 (** A scalar value

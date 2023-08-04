@@ -133,7 +133,7 @@ class ['self] iter_const_generic_base =
   end
 
 (** Ancestor for map visitor for {!Types.const_generic} *)
-class virtual ['self] map_const_generic_base =
+class ['self] map_const_generic_base =
   object (_self : 'self)
     inherit [_] VisitorsRuntime.map
 
@@ -145,6 +145,37 @@ class virtual ['self] map_const_generic_base =
       fun _ x -> x
 
     method visit_literal : 'env -> literal -> literal = fun _ x -> x
+  end
+
+(** Ancestor for reduce visitor for {!Types.const_generic} *)
+class virtual ['self] reduce_const_generic_base =
+  object (self : 'self)
+    inherit [_] VisitorsRuntime.reduce
+
+    method visit_global_decl_id : 'env -> global_decl_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_const_generic_var_id : 'env -> const_generic_var_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_literal : 'env -> literal -> 'a = fun _ _ -> self#zero
+  end
+
+(** Ancestor for mapreduce visitor for {!Types.const_generic} *)
+class virtual ['self] mapreduce_const_generic_base =
+  object (self : 'self)
+    inherit [_] VisitorsRuntime.mapreduce
+
+    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id * 'a
+        =
+      fun _ x -> (x, self#zero)
+
+    method visit_const_generic_var_id
+        : 'env -> const_generic_var_id -> const_generic_var_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_literal : 'env -> literal -> literal * 'a =
+      fun _ x -> (x, self#zero)
   end
 
 (** Remark: we have to use long names because otherwise we have collisions in
@@ -171,7 +202,23 @@ type const_generic =
         variety = "map";
         ancestors = [ "map_const_generic_base" ];
         nude = true (* Don't inherit {!VisitorsRuntime.map} *);
-        concrete = false;
+        concrete = true;
+        polymorphic = false;
+      },
+    visitors
+      {
+        name = "reduce_const_generic";
+        variety = "reduce";
+        ancestors = [ "reduce_const_generic_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.reduce} *);
+        polymorphic = false;
+      },
+    visitors
+      {
+        name = "mapreduce_const_generic";
+        variety = "mapreduce";
+        ancestors = [ "mapreduce_const_generic_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.mapreduce} *);
         polymorphic = false;
       }]
 
