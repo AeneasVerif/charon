@@ -112,6 +112,7 @@ let call_to_string (fmt : ast_formatter) (indent : string) (call : GA.call) :
         | GA.ArrayToMutSlice -> "@ArrayToMutSlice" ^ t_params
         | GA.ArraySharedSubslice -> "@ArraySharedSubslice" ^ t_params
         | GA.ArrayMutSubslice -> "@ArrayMutSubslice" ^ t_params
+        | GA.SliceLen -> "@SliceLen" ^ t_params
         | GA.SliceSharedIndex -> "@SliceSharedIndex" ^ t_params
         | GA.SliceMutIndex -> "@SliceMutIndex" ^ t_params
         | GA.SliceSharedSubslice -> "@SliceSharedSubslice" ^ t_params

@@ -1835,7 +1835,8 @@ fn translate_primitive_function_call(
         | ast::AssumedFunId::VecNew
         | ast::AssumedFunId::VecPush
         | ast::AssumedFunId::VecInsert
-        | ast::AssumedFunId::VecLen => {
+        | ast::AssumedFunId::VecLen
+        | ast::AssumedFunId::SliceLen => {
             let call = ast::Call {
                 func: ast::FunId::Assumed(aid),
                 region_args,

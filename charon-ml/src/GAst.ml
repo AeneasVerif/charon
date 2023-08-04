@@ -40,6 +40,7 @@ type assumed_fun_id =
   | ArrayToMutSlice
   | ArraySharedSubslice
   | ArrayMutSubslice
+  | SliceLen
   | SliceSharedIndex
   | SliceMutIndex
   | SliceSharedSubslice

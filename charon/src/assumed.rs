@@ -39,6 +39,9 @@ pub static BOX_FREE_NAME: [&str; 3] = ["alloc", "alloc", "box_free"];
 pub static INDEX_NAME: [&str; 5] = ["core", "ops", "index", "Index", "index"];
 pub static INDEX_MUT_NAME: [&str; 5] = ["core", "ops", "index", "IndexMut", "index_mut"];
 
+// Slices
+pub static SLICE_LEN_NAME: [&str; 4] = ["core", "slice", "[T]", "len"]; // TODO: fix the `[T]` name element
+
 // Vectors
 pub static VEC_NEW_NAME: [&str; 4] = ["alloc", "vec", "Vec", "new"];
 pub static VEC_PUSH_NAME: [&str; 4] = ["alloc", "vec", "Vec", "push"];
@@ -73,6 +76,7 @@ enum FunId {
     Index,
     /// `index_mut` function of the `IndexMut` trait
     IndexMut,
+    SliceLen,
     VecNew,
     VecPush,
     VecInsert,
@@ -139,6 +143,8 @@ fn get_fun_id_from_name_full(name: &FunName) -> Option<FunId> {
         Option::Some(FunId::Index)
     } else if name.equals_ref_name(&INDEX_MUT_NAME) {
         Option::Some(FunId::IndexMut)
+    } else if name.equals_ref_name(&SLICE_LEN_NAME) {
+        Option::Some(FunId::SliceLen)
     } else {
         Option::None
     }
@@ -161,6 +167,7 @@ pub fn get_fun_id_from_name(
                 FunId::VecPush => ullbc_ast::AssumedFunId::VecPush,
                 FunId::VecInsert => ullbc_ast::AssumedFunId::VecInsert,
                 FunId::VecLen => ullbc_ast::AssumedFunId::VecLen,
+                FunId::SliceLen => ullbc_ast::AssumedFunId::SliceLen,
                 FunId::Index | FunId::IndexMut => {
                     assert!(type_args.len() == 1);
                     use types::*;
@@ -309,6 +316,10 @@ pub fn function_to_info(name: &FunName) -> Option<FunInfo> {
                 },
                 FunId::VecLen => FunInfo {
                     used_type_params: vec![true, false],
+                    used_args: vec![true],
+                },
+                FunId::SliceLen => FunInfo {
+                    used_type_params: vec![true],
                     used_args: vec![true],
                 },
                 FunId::Index => FunInfo {

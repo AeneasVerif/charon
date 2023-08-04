@@ -146,6 +146,7 @@ pub enum AssumedFunId {
     ///
     /// Also see the comments in [crate::assumed::type_to_used_params].
     BoxFree,
+    SliceLen,
     /// `alloc::vec::Vec::new`
     VecNew,
     /// `alloc::vec::Vec::push`

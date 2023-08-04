@@ -58,11 +58,11 @@ fn index_mut_slice<T>(s: &mut [T], i: usize) -> &mut T {
     &mut s[i]
 }
 
-fn slice_subslice(x: &[u32], y: usize, z: usize) -> &[u32] {
+fn slice_subslice_shared_(x: &[u32], y: usize, z: usize) -> &[u32] {
     &x[y..z]
 }
 
-fn slice_subslice_mut(x: &mut [u32], y: usize, z: usize) -> &mut [u32] {
+fn slice_subslice_mut_(x: &mut [u32], y: usize, z: usize) -> &mut [u32] {
     &mut x[y..z]
 }
 
@@ -74,11 +74,11 @@ fn array_to_slice_mut(x: &mut [u32; 32]) -> &mut [u32] {
     x
 }
 
-fn array_subslice(x: &[u32; 32], y: usize, z: usize) -> &[u32] {
+fn array_subslice_shared_(x: &[u32; 32], y: usize, z: usize) -> &[u32] {
     &x[y..z]
 }
 
-fn array_subslice_mut(x: &mut [u32; 32], y: usize, z: usize) -> &mut [u32] {
+fn array_subslice_mut_(x: &mut [u32; 32], y: usize, z: usize) -> &mut [u32] {
     &mut x[y..z]
 }
 
@@ -147,14 +147,14 @@ fn sum2(s: &[u32], s2: &[u32]) -> u32 {
     sum
 }
 
-fn f2() -> u32 {
+fn f2(_: u32) {}
+
+fn f3() -> u32 {
     let a: [u32; 2] = [1, 2];
     f3(a[0]);
     let b = [0; 32];
     sum2(&a, f4(&b, 16, 18))
 }
-
-fn f3(_: u32) {}
 
 // TODO: this makes the compilation fail
 //const SZ: usize = 32;
