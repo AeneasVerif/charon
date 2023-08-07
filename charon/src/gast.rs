@@ -146,7 +146,6 @@ pub enum AssumedFunId {
     ///
     /// Also see the comments in [crate::assumed::type_to_used_params].
     BoxFree,
-    SliceLen,
     /// `alloc::vec::Vec::new`
     VecNew,
     /// `alloc::vec::Vec::push`
@@ -188,6 +187,12 @@ pub enum AssumedFunId {
     /// Introduced by disambiguating the `Index::index` trait (takes a range
     /// as argument).
     ArraySubsliceMut,
+    /// Remark: when we write `a.len()` in Rust, where `a` is an array, the
+    /// statement is desugared to a conversion from array to slice, followed
+    /// by a call to the `len` function for slices.
+    ///
+    /// Signature: `fn<T>(&[T]) -> usize`
+    SliceLen,
     /// Converted from [ProjectionElem::Index].
     ///
     /// Signature: `fn<T>(&[T], usize) -> &T`
