@@ -1,7 +1,6 @@
 //! Implementations for [crate::ullbc_ast]
 #![allow(dead_code)]
 
-use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 pub use crate::gast_utils::*;
@@ -9,8 +8,6 @@ use crate::meta::Meta;
 use crate::types::*;
 use crate::ullbc_ast::*;
 use crate::values::*;
-use serde::ser::SerializeTupleVariant;
-use serde::{Serialize, Serializer};
 use std::iter::FromIterator;
 use take_mut::take;
 
@@ -34,36 +31,6 @@ impl SwitchTargets {
     /// Perform a type substitution - actually simply clone the object
     pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
         self.clone()
-    }
-}
-
-impl Serialize for SwitchTargets {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let enum_name = "SwitchTargets";
-        let variant_name = self.variant_name();
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        let mut vs = serializer.serialize_tuple_variant(
-            enum_name,
-            variant_index,
-            variant_name,
-            variant_arity,
-        )?;
-        match self {
-            SwitchTargets::If(id1, id2) => {
-                vs.serialize_field(id1)?;
-                vs.serialize_field(id2)?;
-            }
-            SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
-                vs.serialize_field(int_ty)?;
-                let targets = LinkedHashMapSerializer::new(targets);
-                vs.serialize_field(&targets)?;
-                vs.serialize_field(otherwise)?;
-            }
-        }
-        vs.end()
     }
 }
 
@@ -96,7 +63,7 @@ impl Terminator {
     }
 
     /// Substitute the type variables and return the resulting terminator
-    pub fn substitute(&self, subst: &ETypeSubst) -> Terminator {
+    pub fn substitute(&self, subst: &ETypeSubst, cgsubst: &ConstGenericSubst) -> Terminator {
         let terminator = match &self.content {
             RawTerminator::Goto { target } => RawTerminator::Goto { target: *target },
             RawTerminator::Switch { discr, targets } => RawTerminator::Switch {
@@ -110,24 +77,34 @@ impl Terminator {
                 place: place.substitute(subst),
                 target: *target,
             },
-            RawTerminator::Call {
-                func,
-                region_args,
-                type_args,
-                args,
-                dest,
-                target,
-            } => RawTerminator::Call {
-                func: func.clone(),
-                region_args: region_args.clone(),
-                type_args: type_args
-                    .iter()
-                    .map(|ty| ty.substitute_types(subst))
-                    .collect(),
-                args: Vec::from_iter(args.iter().map(|arg| arg.substitute(subst))),
-                dest: dest.substitute(subst),
-                target: *target,
-            },
+            RawTerminator::Call { call, target } => {
+                let Call {
+                    func,
+                    region_args,
+                    type_args,
+                    const_generic_args,
+                    args,
+                    dest,
+                } = call;
+                let call = Call {
+                    func: func.clone(),
+                    region_args: region_args.clone(),
+                    type_args: type_args
+                        .iter()
+                        .map(|ty| ty.substitute_types(subst, cgsubst))
+                        .collect(),
+                    const_generic_args: const_generic_args
+                        .iter()
+                        .map(|cg| cg.substitute(&|var| cgsubst.get(var).unwrap().clone()))
+                        .collect(),
+                    args: Vec::from_iter(args.iter().map(|arg| arg.substitute(subst))),
+                    dest: dest.substitute(subst),
+                };
+                RawTerminator::Call {
+                    call,
+                    target: *target,
+                }
+            }
             RawTerminator::Assert {
                 cond,
                 expected,
@@ -145,13 +122,13 @@ impl Terminator {
 
 impl BlockData {
     /// Substitute the type variables and return the resulting `BlockData`
-    pub fn substitute(&self, subst: &ETypeSubst) -> BlockData {
+    pub fn substitute(&self, subst: &ETypeSubst, cgsubst: &ConstGenericSubst) -> BlockData {
         let statements = self
             .statements
             .iter()
             .map(|x| x.substitute(subst))
             .collect();
-        let terminator = self.terminator.substitute(subst);
+        let terminator = self.terminator.substitute(subst, cgsubst);
         BlockData {
             statements,
             terminator,
@@ -168,6 +145,7 @@ impl Statement {
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<TypeVarId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<&'a ErasedRegion>,
     {
         match &self.content {
@@ -201,6 +179,7 @@ impl Terminator {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
@@ -232,15 +211,16 @@ impl Terminator {
             RawTerminator::Drop { place, target } => {
                 format!("drop {} -> bb{}", place.fmt_with_ctx(ctx), target)
             }
-            RawTerminator::Call {
-                func,
-                region_args,
-                type_args,
-                args,
-                dest,
-                target,
-            } => {
-                let call = fmt_call(ctx, func, region_args, type_args, args);
+            RawTerminator::Call { call, target } => {
+                let Call {
+                    func,
+                    region_args,
+                    type_args,
+                    const_generic_args,
+                    args,
+                    dest,
+                } = call;
+                let call = fmt_call(ctx, func, region_args, type_args, const_generic_args, args);
 
                 format!("{} := {} -> bb{}", dest.fmt_with_ctx(ctx), call, target,)
             }
@@ -265,6 +245,7 @@ impl BlockData {
             + Formatter<TypeVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
@@ -295,6 +276,7 @@ where
         + Formatter<TypeVarId::Id>
         + Formatter<&'a ErasedRegion>
         + Formatter<TypeDeclId::Id>
+        + Formatter<ConstGenericVarId::Id>
         + Formatter<FunDeclId::Id>
         + Formatter<GlobalDeclId::Id>
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
@@ -326,7 +308,7 @@ impl ExprBody {
         let locals = Some(&self.locals);
         let fun_ctx = FunDeclsFormatter::new(fun_ctx);
         let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
+        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
         self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
@@ -339,7 +321,7 @@ impl ExprBody {
         let locals = Some(&self.locals);
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
+        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
         self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
@@ -411,6 +393,13 @@ impl<'ctx> Formatter<GlobalDeclId::Id> for GlobalDeclsFormatter<'ctx> {
     }
 }
 
+impl Formatter<GlobalDeclId::Id> for GlobalDecls {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        let d = self.get(id).unwrap();
+        d.name.to_string()
+    }
+}
+
 impl FunDecl {
     pub fn fmt_with_ctx<'ctx, FD, GD>(
         &self,
@@ -425,6 +414,7 @@ impl FunDecl {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,
+            global_ctx,
             sig: &self.signature,
         };
 
@@ -435,6 +425,7 @@ impl FunDecl {
             global_ctx,
             Some(&self.signature.type_params),
             locals,
+            Some(&self.signature.const_generic_params),
         );
 
         // Use the contexts for printing
@@ -480,7 +471,7 @@ impl GlobalDecl {
         GD: Formatter<GlobalDeclId::Id>,
     {
         let locals = self.body.as_ref().map(|body| &body.locals);
-        let ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals);
+        let ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals, None);
 
         // Use the contexts for printing
         self.gfmt_with_ctx("", &ctx)
@@ -533,7 +524,7 @@ impl BlockData {
                     f(meta, nst, op);
                 }
             }
-            Rvalue::Global(_) | Rvalue::Discriminant(_) | Rvalue::Ref(_, _) => {
+            Rvalue::Global(_) | Rvalue::Discriminant(_) | Rvalue::Ref(_, _) | Rvalue::Len(..) => {
                 // No operands: nothing to do
             }
         }
@@ -571,15 +562,8 @@ impl BlockData {
             RawTerminator::Switch { discr, targets: _ } => {
                 f(meta, &mut nst, discr);
             }
-            RawTerminator::Call {
-                func: _,
-                region_args: _,
-                type_args: _,
-                args,
-                dest: _,
-                target: _,
-            } => {
-                for arg in args {
+            RawTerminator::Call { call, target: _ } => {
+                for arg in &mut call.args {
                     f(meta, &mut nst, arg);
                 }
             }

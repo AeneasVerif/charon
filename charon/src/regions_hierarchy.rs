@@ -249,7 +249,7 @@ fn compute_full_regions_constraints_for_ty(
     ty: &RTy,
 ) {
     match ty {
-        Ty::Adt(type_id, regions, types) => {
+        Ty::Adt(type_id, regions, types, _) => {
             // Introduce constraints for all the regions given as parameters
             for r in regions {
                 add_region_constraints(
@@ -332,7 +332,11 @@ fn compute_full_regions_constraints_for_ty(
                     | AssumedTy::Vec
                     | AssumedTy::Option
                     | AssumedTy::PtrUnique
-                    | AssumedTy::PtrNonNull,
+                    | AssumedTy::Str
+                    | AssumedTy::PtrNonNull
+                    | AssumedTy::Array
+                    | AssumedTy::Slice
+                    | AssumedTy::Range,
                 ) => {
                     // Explore the types given as parameters
                     for fty in types {
@@ -348,14 +352,8 @@ fn compute_full_regions_constraints_for_ty(
                 }
             }
         }
-        Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => {
+        Ty::Literal(_) | Ty::Never => {
             // Nothing to do
-        }
-        Ty::Array(_aty) => {
-            unimplemented!();
-        }
-        Ty::Slice(_sty) => {
-            unimplemented!();
         }
         Ty::Ref(region, ref_ty, _mutability) => {
             // Add the constraint for the region in the reference
@@ -379,7 +377,7 @@ fn compute_full_regions_constraints_for_ty(
                 ref_ty,
             );
         }
-        Ty::RawPtr(ptr_ty, _mutability) => {
+        Ty::RawPtr(ptr_ty, _) => {
             // Dive in
             compute_full_regions_constraints_for_ty(
                 updated,
@@ -447,7 +445,7 @@ fn compute_regions_constraints_for_type_decl_group(
     // Initialize the constraints map - TODO: this will be different once we
     // support constraints over the generics in the definitions
     for id in type_ids.iter() {
-        let type_def = types.get_type_def(*id).unwrap();
+        let type_def = types.get(*id).unwrap();
         let region_vars_constraints = RegionVarsConstraintsMap::from_iter(
             type_def
                 .region_params
@@ -482,7 +480,7 @@ fn compute_regions_constraints_for_type_decl_group(
 
         // Accumulate constraints for every variant of every type
         for id in type_ids.iter() {
-            let type_def = types.get_type_def(*id).unwrap();
+            let type_def = types.get(*id).unwrap();
 
             // If the type is transparent, we explore the ADT variants.
             // If the type is opaque, there is nothing to do.
@@ -490,13 +488,13 @@ fn compute_regions_constraints_for_type_decl_group(
             // over the generics in the type declarations
 
             // Instantiate the type definition variants
-            let region_params = im::Vector::from_iter(
+            let region_params = Vec::from_iter(
                 type_def
                     .region_params
                     .iter()
                     .map(|rvar| Region::Var(rvar.index)),
             );
-            let type_params = im::Vector::from_iter(
+            let type_params = Vec::from_iter(
                 type_def
                     .type_params
                     .iter()
@@ -568,7 +566,7 @@ fn compute_regions_constraints_for_type_decl_group(
     // Compute the SCCs
     let mut sccs_vec: Vec<SCCs<Region<RegionVarId::Id>>> = Vec::new();
     for id in type_ids.iter() {
-        let type_def = types.get_type_def(*id).unwrap();
+        let type_def = types.get(*id).unwrap();
         let sccs = compute_sccs_from_lifetime_constraints(
             acc_constraints_map.get(id).unwrap(),
             &type_def.region_params,
@@ -604,7 +602,7 @@ pub fn compute_regions_hierarchy_for_type_decl_group(
     for (id, sccs) in type_ids.into_iter().zip(constraints.into_iter()) {
         let regions_group = compute_regions_hierarchy_from_constraints(sccs);
 
-        let type_def = types.types.get_mut(id).unwrap();
+        let type_def = types.get_mut(id).unwrap();
         type_def.regions_hierarchy = regions_group;
     }
 }
@@ -755,7 +753,6 @@ pub fn types_constraints_map_fmt_with_ctx(
     // We iterate over the type definitions, not the types constraints map,
     // in order to make sure we preserve the type definitions order
     let types_constraints: Vec<String> = types
-        .types
         .iter()
         .map(|type_def| {
             let cmap = cs.get(&type_def.def_id).unwrap();

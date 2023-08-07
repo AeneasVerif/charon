@@ -108,9 +108,10 @@ fn process(options: &CliOpts) -> Result<(), i32> {
         cmd.arg(options.bin.as_ref().unwrap().clone());
     }
 
-    if options.release {
-        cmd.arg("--release");
-    }
+    // Always compile in release mode: in effect, we want to analyze the released
+    // code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
+    // have to clean.
+    cmd.arg("--release");
 
     let exit_status = cmd
         .spawn()

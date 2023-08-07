@@ -82,7 +82,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
         name: crate_name,
         id_to_file,
         declarations: VecSW::new(&ordered_decls.decls),
-        types: &type_defs.types,
+        types: type_defs,
         functions: fun_defs,
         globals: global_defs,
     };

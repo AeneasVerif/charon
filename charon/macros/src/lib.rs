@@ -4,7 +4,8 @@
 
 extern crate proc_macro;
 extern crate syn;
-use proc_macro::{TokenStream, TokenTree};
+use proc_macro::{Span, TokenStream, TokenTree};
+use quote::ToTokens;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
@@ -12,9 +13,10 @@ use std::vec::Vec;
 use syn::punctuated::Punctuated;
 use syn::token::{Add, Comma};
 use syn::{
-    parse, Binding, Constraint, Data, DataEnum, DeriveInput, Expr, Fields, GenericArgument,
-    GenericParam, Ident, Lifetime, Lit, Path, PathArguments, PathSegment, TraitBound,
-    TraitBoundModifier, Type, TypeParamBound, TypePath, WhereClause, WherePredicate,
+    parse, parse_macro_input, Binding, Block, Constraint, Data, DataEnum, DeriveInput, Expr,
+    Fields, FnArg, GenericArgument, GenericParam, Ident, ItemTrait, Lifetime, Lit, Pat, Path,
+    PathArguments, PathSegment, ReturnType, Stmt, TraitBound, TraitBoundModifier, TraitItem, Type,
+    TypeParamBound, TypePath, WhereClause, WherePredicate,
 };
 
 const _TAB: &'static str = "    ";
@@ -23,6 +25,7 @@ const THREE_TABS: &'static str = "            ";
 
 /// This is very annoying, but we can't use a global constant string in `format`:
 /// we need to define a macro to return a string literal.
+/// TODO: turn [generic_index_type] into a simpl macro rule.
 macro_rules! index_generic_code {
     () => {
         "
@@ -1018,4 +1021,288 @@ fn test_snake_case() {
     let s = to_snake_case("ConstantValue");
     println!("{}", s);
     assert!(s == "constant_value".to_string());
+}
+
+fn generic_type_to_mut(ty: &mut Type) {
+    match ty {
+        Type::Reference(r) => match &mut r.mutability {
+            Option::None => {
+                r.mutability = Option::Some(syn::token::Mut([Span::call_site().into()]))
+            }
+            Option::Some(_) => (),
+        },
+        _ => (),
+    }
+}
+
+fn generic_stmt_to_mut(s: &mut Stmt) {
+    match s {
+        Stmt::Local(s) => s
+            .init
+            .iter_mut()
+            .for_each(|e| generic_expr_to_mut(&mut e.1)),
+        Stmt::Item(_) => unimplemented!("Stmt::Item"),
+        Stmt::Expr(e) => generic_expr_to_mut(e),
+        Stmt::Semi(e, _) => generic_expr_to_mut(e),
+    }
+}
+
+fn generic_stmts_to_mut(stmts: &mut Vec<Stmt>) {
+    for stmt in stmts {
+        generic_stmt_to_mut(stmt)
+    }
+}
+
+fn generic_block_to_mut(e: &mut Block) {
+    generic_stmts_to_mut(&mut (e.stmts));
+}
+
+fn generic_expr_to_mut(e: &mut Expr) {
+    // There are really a lot of cases: we try to filter the ones in which
+    // we are not interested.
+    match e {
+        Expr::Assign(e) => {
+            generic_expr_to_mut(&mut (*e.left));
+            generic_expr_to_mut(&mut (*e.right));
+        }
+        Expr::AssignOp(e) => {
+            generic_expr_to_mut(&mut (*e.left));
+            generic_expr_to_mut(&mut (*e.right));
+        }
+        Expr::Binary(e) => {
+            generic_expr_to_mut(&mut (*e.left));
+            generic_expr_to_mut(&mut (*e.right));
+        }
+        Expr::Block(e) => {
+            generic_block_to_mut(&mut (e.block));
+        }
+        Expr::Box(e) => {
+            generic_expr_to_mut(&mut (*e.expr));
+        }
+        Expr::Call(e) => {
+            generic_expr_to_mut(&mut (*e.func));
+            for arg in e.args.iter_mut() {
+                generic_expr_to_mut(arg);
+            }
+        }
+        Expr::Closure(e) => {
+            // Keeping things simple
+            e.inputs.iter_mut().for_each(|i| generic_pat_to_mut(i));
+            generic_expr_to_mut(&mut (*e.body));
+        }
+        Expr::Field(e) => {
+            generic_expr_to_mut(&mut (*e.base));
+        }
+        Expr::ForLoop(e) => {
+            // We ignore the pattern for now
+            generic_expr_to_mut(&mut (*e.expr));
+            generic_block_to_mut(&mut (e.body));
+        }
+        Expr::Group(e) => {
+            generic_expr_to_mut(&mut (*e.expr));
+        }
+        Expr::If(e) => {
+            generic_expr_to_mut(&mut (*e.cond));
+            generic_block_to_mut(&mut (e.then_branch));
+            e.else_branch
+                .iter_mut()
+                .for_each(|(_, b)| generic_expr_to_mut(b));
+        }
+        Expr::Index(e) => {
+            generic_expr_to_mut(&mut (*e.expr));
+            generic_expr_to_mut(&mut (*e.index));
+        }
+        Expr::Let(e) => {
+            // Ignoring the pattern
+            generic_expr_to_mut(&mut (*e.expr));
+        }
+        Expr::Loop(e) => {
+            generic_block_to_mut(&mut (e.body));
+        }
+        Expr::Macro(_) => {
+            // Doing nothing
+        }
+        Expr::Match(e) => {
+            generic_expr_to_mut(&mut (*e.expr));
+            e.arms.iter_mut().for_each(|a| {
+                a.guard.iter_mut().for_each(|(_, g)| generic_expr_to_mut(g));
+                generic_expr_to_mut(&mut a.body)
+            });
+        }
+        Expr::MethodCall(e) => {
+            generic_expr_to_mut(&mut (*e.receiver));
+            e.args.iter_mut().for_each(|a| generic_expr_to_mut(a));
+
+            // IMPORTANT: check the name of the method: if it is `iter` change
+            // to `iter_mut`
+            let id = e.method.to_string();
+            if id == "iter" {
+                e.method = Ident::new("iter_mut", Span::call_site().into());
+            }
+        }
+        Expr::Paren(e) => {
+            generic_expr_to_mut(&mut (*e.expr));
+        }
+        Expr::Path(_) => {
+            // Doing nothing
+        }
+        Expr::Reference(e) => {
+            // IMPORTANT: change the mutability
+            // Remark: closures are handled elsewhere
+            e.mutability = Option::Some(syn::token::Mut([Span::call_site().into()]));
+            generic_expr_to_mut(&mut (*e.expr));
+        }
+        Expr::Return(e) => {
+            e.expr.iter_mut().for_each(|e| generic_expr_to_mut(e));
+        }
+        Expr::Type(e) => {
+            generic_expr_to_mut(&mut (*e.expr));
+            generic_type_to_mut(&mut (*e.ty));
+        }
+        Expr::While(e) => {
+            generic_expr_to_mut(&mut (*e.cond));
+            generic_block_to_mut(&mut (e.body));
+        }
+        _ => (),
+    }
+}
+
+/// We use this method to update the names of the supertraits
+/// when defining an implementation generic over the borrow type.
+///
+/// For instance, if we write:
+/// ```
+/// make_generic_in_borrows! {
+///   trait AstVisitor : ExprVisitor { ... }
+/// }
+/// ```
+///
+/// We want to generate two definitions:
+/// ```
+/// make_generic_in_borrows! {
+///   trait SharedAstVisitor : SharedExprVisitor { ... }
+/// }
+/// ```
+///
+/// and:
+/// ```
+/// make_generic_in_borrows! {
+///   trait MutAstVisitor : MutExprVisitor { ... }
+/// }
+/// ```
+fn generic_supertraits_to_mut_shared(tr: &mut ItemTrait, to_mut: bool) {
+    for p in tr.supertraits.iter_mut() {
+        match p {
+            TypeParamBound::Trait(t) => {
+                // Update the path: update the last segment
+                let mut it = t.path.segments.iter_mut();
+                let mut last_s = it.next().unwrap();
+                while let Some(s) = it.next() {
+                    last_s = s;
+                }
+                last_s.ident = generic_mk_ident(&last_s.ident, to_mut);
+            }
+            TypeParamBound::Lifetime(_) => (),
+        }
+    }
+}
+
+fn generic_mk_ident(id: &syn::Ident, to_mut: bool) -> syn::Ident {
+    // TODO: not sure about the spans
+    // Not very clean, but does the job
+    let id = id.to_string();
+    let name = if to_mut {
+        format!("Mut{}", id)
+    } else {
+        format!("Shared{}", id)
+    };
+    syn::Ident::new(&name, Span::call_site().into())
+}
+
+fn generic_pat_to_mut(p: &mut Pat) {
+    match p {
+        Pat::Type(p) => generic_type_to_mut(&mut p.ty),
+        _ => (),
+    }
+}
+
+/// We use this macro to write implementation which are generic in borrow
+/// kinds (i.e., from one implementation, we derive two implementations which
+/// use shared borrows or mut borrows).
+///
+/// Note that this macro is meant to work on a limited set of cases: it is not
+/// very general.
+/// For instance, for now it only works on traits.
+///
+/// Applied on a trait definition named "Trait", it will generate two traits:
+/// "MutTrait" and "SharedTrait".
+#[proc_macro]
+pub fn make_generic_in_borrows(tokens: TokenStream) -> TokenStream {
+    let input_item = parse_macro_input!(tokens as ItemTrait);
+    // We should have received the shared version
+    let mut shared_item = input_item.clone();
+    let mut mut_item = input_item;
+
+    let id = &shared_item.ident;
+    mut_item.ident = generic_mk_ident(id, true);
+    shared_item.ident = generic_mk_ident(id, false);
+
+    generic_supertraits_to_mut_shared(&mut shared_item, false);
+    generic_supertraits_to_mut_shared(&mut mut_item, true);
+
+    // Update the mutable version
+    for item in &mut mut_item.items {
+        match item {
+            TraitItem::Const(_) | TraitItem::Type(_) | TraitItem::Macro(_) => {
+                unimplemented!("Trait item")
+            }
+            TraitItem::Verbatim(_) => (),
+            TraitItem::Method(s) => {
+                // Update the signature
+                for input in &mut s.sig.inputs {
+                    match input {
+                        FnArg::Receiver(_) => {
+                            /* We don't touch the self parameter for now */
+                            ()
+                        }
+                        FnArg::Typed(arg) => {
+                            // Change the reference types
+                            generic_type_to_mut(&mut (*arg.ty));
+                        }
+                    }
+                }
+
+                match &mut s.sig.output {
+                    ReturnType::Default => (),
+                    ReturnType::Type(_, ty) => {
+                        generic_type_to_mut(ty);
+                    }
+                }
+
+                // Update the body
+                // - we replace all the references
+                // - we replace the occurrences of `iter`
+                match &mut s.default {
+                    Option::None => (),
+                    Option::Some(body) => {
+                        generic_stmts_to_mut(&mut body.stmts);
+                    }
+                }
+            }
+            #[cfg_attr(test, deny(non_exhaustive_omitted_patterns))]
+            _ => {
+                /* See the fox of [TraitItem] */
+                unimplemented!()
+            }
+        }
+    }
+
+    // TODO: This is not very clean, but I don't know how to concatenate stream tokens
+    format!(
+        "{}\n{}",
+        shared_item.to_token_stream(),
+        mut_item.to_token_stream()
+    )
+    .parse()
+    .unwrap()
 }

@@ -16,25 +16,6 @@ let assertion_of_json (js : json) : (A.assertion, string) result =
         Ok { A.cond; expected }
     | _ -> Error "")
 
-let call_of_json (js : json) : (A.call, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("func", func);
-          ("region_args", region_args);
-          ("type_args", type_args);
-          ("args", args);
-          ("dest", dest);
-        ] ->
-        let* func = fun_id_of_json func in
-        let* region_args = list_of_json erased_region_of_json region_args in
-        let* type_args = list_of_json ety_of_json type_args in
-        let* args = list_of_json operand_of_json args in
-        let* dest = place_of_json dest in
-        Ok { A.func; region_args; type_args; args; dest }
-    | _ -> Error "")
-
 let rec statement_of_json (id_to_file : id_to_file_map) (js : json) :
     (A.statement, string) result =
   combine_error_msgs js __FUNCTION__
@@ -160,6 +141,7 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
          num_early_bound_regions = 0;
          regions_hierarchy = [];
          type_params = [];
+         const_generic_params = [];
          inputs = [];
          output = TU.ety_no_regions_to_sty ty;
        }

@@ -2,17 +2,12 @@ open Identifiers
 open Types
 open PrimitiveValues
 module VarId = IdGen ()
-module GlobalDeclId = IdGen ()
+module GlobalDeclId = Types.GlobalDeclId
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!Charon.UllbcAst.iter_statement_base}).
   *)
 type var_id = VarId.id [@@deriving show, ord]
-
-(** We define this type to control the name of the visitor functions
-    (see e.g., {!Charon.GAst.iter_ast_base} and {!rvalue}).
-  *)
-type global_decl_id = GlobalDeclId.id [@@deriving show]
 
 (** Ancestor the field_proj_kind iter visitor *)
 class ['self] iter_field_proj_kind_base =
@@ -61,6 +56,7 @@ type field_proj_kind =
         concrete = true;
       }]
 
+(* Remark: no `Index` variant, as it is eliminated by a micro-pass *)
 type projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
 [@@deriving
   show,
@@ -135,6 +131,7 @@ type place = { var_id : var_id; projection : projection }
 
 type borrow_kind = Shared | Mut | TwoPhaseMut | Shallow [@@deriving show]
 
+(* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass *)
 type unop =
   | Not
   | Neg
@@ -192,26 +189,19 @@ let all_binops =
 class ['self] iter_operand_base =
   object (_self : 'self)
     inherit [_] iter_place
+    inherit! [_] iter_const_generic
     method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
-
-    method visit_primitive_value : 'env -> primitive_value -> unit =
-      fun _ _ -> ()
   end
 
 (** Ancestor the operand map visitor *)
 class ['self] map_operand_base =
   object (_self : 'self)
     inherit [_] map_place
+    inherit! [_] map_const_generic
     method visit_ety : 'env -> ety -> ety = fun _ x -> x
-
-    method visit_primitive_value : 'env -> primitive_value -> primitive_value =
-      fun _ x -> x
   end
 
-type operand =
-  | Copy of place
-  | Move of place
-  | Constant of ety * primitive_value
+type operand = Copy of place | Move of place | Constant of ety * literal
 [@@deriving
   show,
     visitors
@@ -254,7 +244,7 @@ class ['self] map_aggregate_kind_base =
     {[
       let ls = Cons(hd, tl);
     ]}
-    
+
     In MIR we have (yes, the discriminant update happens *at the end* for some
     reason):
     {[
@@ -262,7 +252,7 @@ class ['self] map_aggregate_kind_base =
       (ls as Cons).1 = move tl;
       discriminant(ls) = 0; // assuming [Cons] is the variant of index 0
     ]}
-    
+
     Rem.: in the Aeneas semantics, both cases are handled (in case of desaggregated
     initialization, [ls] is initialized to [⊥], then this [⊥] is expanded to
     [Cons (⊥, ⊥)] upon the first assignment, at which point we can initialize
@@ -273,7 +263,13 @@ type aggregate_kind =
   | AggregatedOption of variant_id * ety
   (* TODO: AggregatedOption should be merged with AggregatedAdt *)
   | AggregatedAdt of
-      type_decl_id * variant_id option * erased_region list * ety list
+      type_decl_id
+      * variant_id option
+      * erased_region list
+      * ety list
+      * const_generic list
+  | AggregatedRange of ety (* TODO: merge with the Rust *)
+  | AggregatedArray of ety * const_generic
 [@@deriving
   show,
     visitors
@@ -300,7 +296,6 @@ class ['self] iter_rvalue_base =
     method visit_unop : 'env -> unop -> unit = fun _ _ -> ()
     method visit_binop : 'env -> binop -> unit = fun _ _ -> ()
     method visit_borrow_kind : 'env -> borrow_kind -> unit = fun _ _ -> ()
-    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the rvalue map visitor *)
@@ -310,9 +305,6 @@ class ['self] map_rvalue_base =
     method visit_unop : 'env -> unop -> unop = fun _ x -> x
     method visit_binop : 'env -> binop -> binop = fun _ x -> x
     method visit_borrow_kind : 'env -> borrow_kind -> borrow_kind = fun _ x -> x
-
-    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
-      fun _ x -> x
   end
 
 (* TODO: move the aggregate kind to operands *)

@@ -9,11 +9,13 @@
 use crate::names::*;
 use crate::types;
 use crate::ullbc_ast;
+use macros::EnumIsA;
 
 // Assumed types
 pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
 pub static VEC_NAME: [&str; 3] = ["alloc", "vec", "Vec"];
 pub static OPTION_NAME: [&str; 3] = ["core", "option", "Option"];
+pub static RANGE_NAME: [&str; 4] = ["core", "ops", "range", "Range"];
 
 pub static OPTION_NONE_VARIANT_ID: types::VariantId::Id = types::VariantId::ZERO;
 pub static OPTION_SOME_VARIANT_ID: types::VariantId::Id = types::VariantId::ONE;
@@ -33,15 +35,18 @@ pub static DEREF_DEREF_NAME: [&str; 5] = ["core", "ops", "deref", "Deref", "dere
 pub static DEREF_DEREF_MUT_NAME: [&str; 5] = ["core", "ops", "deref", "DerefMut", "deref_mut"];
 pub static BOX_FREE_NAME: [&str; 3] = ["alloc", "alloc", "box_free"];
 
+// Index traits
+pub static INDEX_NAME: [&str; 5] = ["core", "ops", "index", "Index", "index"];
+pub static INDEX_MUT_NAME: [&str; 5] = ["core", "ops", "index", "IndexMut", "index_mut"];
+
+// Slices
+pub static SLICE_LEN_NAME: [&str; 4] = ["core", "slice", "[T]", "len"]; // TODO: fix the `[T]` name element
+
 // Vectors
 pub static VEC_NEW_NAME: [&str; 4] = ["alloc", "vec", "Vec", "new"];
 pub static VEC_PUSH_NAME: [&str; 4] = ["alloc", "vec", "Vec", "push"];
 pub static VEC_INSERT_NAME: [&str; 4] = ["alloc", "vec", "Vec", "insert"];
 pub static VEC_LEN_NAME: [&str; 4] = ["alloc", "vec", "Vec", "len"];
-// This is a trait: for now we assume it is only used on vectors
-pub static INDEX_NAME: [&str; 5] = ["core", "ops", "index", "Index", "index"];
-// This is a trait: for now we assume it is only used on vectors
-pub static INDEX_MUT_NAME: [&str; 5] = ["core", "ops", "index", "IndexMut", "index_mut"];
 
 // Pointers
 pub static PTR_UNIQUE_NAME: [&str; 3] = ["core", "ptr", "Unique"];
@@ -51,8 +56,12 @@ pub static PTR_NON_NULL_NAME: [&str; 3] = ["core", "ptr", "NonNull"];
 pub static MARKER_SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
 
 /// We redefine identifiers for assumed functions here, instead of reusing the
-/// identifiers from [ullbc_ast], because some of the functions (the panic functions)
-/// will actually not be translated to functions: there are thus missing identifiers.
+/// identifiers from [ullbc_ast], because:
+/// - some of the functions (the panic functions) will actually not be translated
+///   to functions: there are thus missing identifiers.
+/// - some of the ids here are actually traits, that we disambiguate later
+/// TODO: merge with the other enum?
+#[derive(EnumIsA)]
 enum FunId {
     /// `core::panicking::panic`
     Panic,
@@ -63,17 +72,22 @@ enum FunId {
     BoxDeref,
     BoxDerefMut,
     BoxFree,
+    /// `index` function of the `Index` trait
+    Index,
+    /// `index_mut` function of the `IndexMut` trait
+    IndexMut,
+    SliceLen,
     VecNew,
     VecPush,
     VecInsert,
     VecLen,
-    VecIndex,
-    VecIndexMut,
 }
 
 pub fn get_type_id_from_name(name: &TypeName) -> Option<types::AssumedTy> {
     if name.equals_ref_name(&BOX_NAME) {
         Option::Some(types::AssumedTy::Box)
+    } else if name.equals_ref_name(&RANGE_NAME) {
+        Option::Some(types::AssumedTy::Range)
     } else if name.equals_ref_name(&VEC_NAME) {
         Option::Some(types::AssumedTy::Vec)
     } else if name.equals_ref_name(&OPTION_NAME) {
@@ -91,10 +105,14 @@ pub fn get_name_from_type_id(id: types::AssumedTy) -> Vec<String> {
     use types::AssumedTy;
     match id {
         AssumedTy::Box => BOX_NAME.iter().map(|s| s.to_string()).collect(),
+        AssumedTy::Range => RANGE_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::Vec => VEC_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::Option => OPTION_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::PtrUnique => PTR_UNIQUE_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::PtrNonNull => PTR_NON_NULL_NAME.iter().map(|s| s.to_string()).collect(),
+        AssumedTy::Str => vec!["Str".to_string()],
+        AssumedTy::Array => vec!["Array".to_string()],
+        AssumedTy::Slice => vec!["Slice".to_string()],
     }
 }
 
@@ -122,15 +140,20 @@ fn get_fun_id_from_name_full(name: &FunName) -> Option<FunId> {
     } else if name.equals_ref_name(&VEC_LEN_NAME) {
         Option::Some(FunId::VecLen)
     } else if name.equals_ref_name(&INDEX_NAME) {
-        Option::Some(FunId::VecIndex)
+        Option::Some(FunId::Index)
     } else if name.equals_ref_name(&INDEX_MUT_NAME) {
-        Option::Some(FunId::VecIndexMut)
+        Option::Some(FunId::IndexMut)
+    } else if name.equals_ref_name(&SLICE_LEN_NAME) {
+        Option::Some(FunId::SliceLen)
     } else {
         Option::None
     }
 }
 
-pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
+pub fn get_fun_id_from_name(
+    name: &FunName,
+    type_args: &Vec<types::ETy>,
+) -> Option<ullbc_ast::AssumedFunId> {
     match get_fun_id_from_name_full(name) {
         Option::Some(id) => {
             let id = match id {
@@ -144,8 +167,57 @@ pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
                 FunId::VecPush => ullbc_ast::AssumedFunId::VecPush,
                 FunId::VecInsert => ullbc_ast::AssumedFunId::VecInsert,
                 FunId::VecLen => ullbc_ast::AssumedFunId::VecLen,
-                FunId::VecIndex => ullbc_ast::AssumedFunId::VecIndex,
-                FunId::VecIndexMut => ullbc_ast::AssumedFunId::VecIndexMut,
+                FunId::SliceLen => ullbc_ast::AssumedFunId::SliceLen,
+                FunId::Index | FunId::IndexMut => {
+                    assert!(type_args.len() == 1);
+                    use types::*;
+
+                    // Indexing into an array (pointer arithmetic + dereference) is represented in MIR
+                    // by an Offset projector followed by a Deref operation.
+                    //
+                    // Here, we see the Index trait on arrays, which does NOT mean indexing into an
+                    // array (like above). Instead, it refers to a particular implementation that
+                    // demands that the index be a Range<usize>, and that returns a Slice. See:
+                    // - https://doc.rust-lang.org/src/core/array/mod.rs.html#340
+                    // - https://doc.rust-lang.org/src/core/slice/index.rs.html#11
+                    // - https://doc.rust-lang.org/src/core/slice/index.rs.html#350
+                    match type_args[0] {
+                        Ty::Adt(TypeId::Assumed(aty), ..) => {
+                            // TODO: figure out whether indexing into a slice
+                            // (i.e. bounds-check, pointer arithmetic, dereference) also
+                            // appears as an implementation of the Index trait or as a
+                            // primitive operation like array indexing.
+                            match aty {
+                                types::AssumedTy::Vec => {
+                                    if id.is_index() {
+                                        ullbc_ast::AssumedFunId::VecIndex
+                                    } else {
+                                        // mut case
+                                        ullbc_ast::AssumedFunId::VecIndexMut
+                                    }
+                                }
+                                types::AssumedTy::Array => {
+                                    if id.is_index() {
+                                        ullbc_ast::AssumedFunId::ArraySubsliceShared
+                                    } else {
+                                        // mut case
+                                        ullbc_ast::AssumedFunId::ArraySubsliceMut
+                                    }
+                                }
+                                types::AssumedTy::Slice => {
+                                    if id.is_index() {
+                                        ullbc_ast::AssumedFunId::SliceSubsliceShared
+                                    } else {
+                                        // mut case
+                                        ullbc_ast::AssumedFunId::SliceSubsliceMut
+                                    }
+                                }
+                                _ => unimplemented!("ty: {:?}", aty),
+                            }
+                        }
+                        _ => unimplemented!(),
+                    }
+                }
             };
             Option::Some(id)
         }
@@ -176,6 +248,13 @@ pub fn type_to_used_params(name: &TypeName) -> Option<Vec<bool>> {
                 AssumedTy::PtrUnique | AssumedTy::PtrNonNull => {
                     vec![true]
                 }
+                AssumedTy::Str => {
+                    vec![]
+                }
+                AssumedTy::Range => {
+                    vec![true]
+                }
+                AssumedTy::Array | AssumedTy::Slice => vec![true],
             };
             Option::Some(id)
         }
@@ -239,12 +318,16 @@ pub fn function_to_info(name: &FunName) -> Option<FunInfo> {
                     used_type_params: vec![true, false],
                     used_args: vec![true],
                 },
-                FunId::VecIndex => FunInfo {
+                FunId::SliceLen => FunInfo {
+                    used_type_params: vec![true],
+                    used_args: vec![true],
+                },
+                FunId::Index => FunInfo {
                     // The second type parameter is for the index type (`usize` for vectors)
                     used_type_params: vec![true, false],
                     used_args: vec![true, true],
                 },
-                FunId::VecIndexMut => FunInfo {
+                FunId::IndexMut => FunInfo {
                     // The second type parameter is for the index type (`usize` for vectors)
                     used_type_params: vec![true, false],
                     used_args: vec![true, true],

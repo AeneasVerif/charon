@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use crate::meta;
-use hashlink::linked_hash_map::LinkedHashMap;
 use im::Vector;
 use rustc_error_messages::MultiSpan;
 use rustc_errors::DiagnosticId;
@@ -262,28 +261,6 @@ impl<'a, T: Clone + Serialize> Serialize for VectorSerializer<'a, T> {
         S: Serializer,
     {
         serialize_vector(self.vector, serializer)
-    }
-}
-
-/// Wrapper to serialize linked hash maps.
-///
-/// We need this because serialization is implemented via the trait system.
-pub struct LinkedHashMapSerializer<'a, K, V> {
-    pub map: &'a LinkedHashMap<K, V>,
-}
-
-impl<'a, K, V> LinkedHashMapSerializer<'a, K, V> {
-    pub fn new(map: &'a LinkedHashMap<K, V>) -> Self {
-        LinkedHashMapSerializer { map }
-    }
-}
-
-impl<'a, K: Serialize, V: Serialize> Serialize for LinkedHashMapSerializer<'a, K, V> {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serialize_collection(self.map.iter(), serializer)
     }
 }
 

@@ -25,7 +25,7 @@ charon-tests: \
 	test-loops test-loops_cfg test-hashmap \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
-	test-constants
+	test-constants test-array
 
 test-nested_borrows: OPTIONS += --no-code-duplication
 test-no_nested_borrows: OPTIONS += --no-code-duplication
@@ -39,6 +39,7 @@ test-constants: OPTIONS += --no-code-duplication
 test-matches:
 test-external: OPTIONS += --no-code-duplication
 test-matches_duplicate:
+test-array:
 
 # =============================================================================
 # The tests.
@@ -56,11 +57,8 @@ test-%:
 	$(CHARON_CMD) --dest $(DEST)/llbc
 	$(CHARON_CMD) --dest $(DEST)/ullbc --ullbc
 	$(CHARON_CMD) --dest $(DEST)/llbc_prom --mir_promoted
-	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
-	$(CHARON_CMD) --dest $(DEST)/llbc_release --release
-	$(CHARON_CMD) --dest $(DEST)/llbc_release_prom --release --mir_promoted
 # TODO: this fails for now (there is some very low-level desugaring happening)
-#	$(CHARON_CMD) --dest $(DEST)/llbc_release_opt --release --mir_optimized 
+#	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
 
 else
 

@@ -3,203 +3,122 @@
 //! type `Never`. We actually check that there are no such local variables
 //! remaining afterwards.
 
-use crate::expressions::*;
+#![allow(dead_code)]
+
+use crate::expressions::{MutExprVisitor, SharedExprVisitor};
 use crate::id_vector::ToUsize;
-use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Switch};
+use crate::llbc_ast::{
+    CtxNames, FunDecls, GlobalDecls, MutAstVisitor, RawStatement, SharedAstVisitor, Statement,
+};
+use crate::meta::combine_meta;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
-use std::iter::FromIterator;
 use take_mut::take;
 
-fn compute_used_locals_in_place(locals: &mut HashSet<VarId::Id>, p: &Place) {
-    locals.insert(p.var_id);
-}
+struct RemoveNops {}
 
-fn compute_used_locals_in_operand(locals: &mut HashSet<VarId::Id>, op: &Operand) {
-    match op {
-        Operand::Copy(p) | Operand::Move(p) => compute_used_locals_in_place(locals, p),
-        Operand::Const(_, _) => (),
+impl MutExprVisitor for RemoveNops {}
+
+impl MutAstVisitor for RemoveNops {
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
     }
-}
 
-fn compute_used_locals_in_operands(locals: &mut HashSet<VarId::Id>, ops: &Vec<Operand>) {
-    for op in ops {
-        compute_used_locals_in_operand(locals, op)
-    }
-}
+    fn merge(&mut self) {}
 
-fn compute_used_locals_in_rvalue(locals: &mut HashSet<VarId::Id>, rv: &Rvalue) {
-    match rv {
-        Rvalue::Use(op) => compute_used_locals_in_operand(locals, op),
-        Rvalue::Ref(p, _) => compute_used_locals_in_place(locals, p),
-        Rvalue::UnaryOp(_, op) => compute_used_locals_in_operand(locals, op),
-        Rvalue::BinaryOp(_, op1, op2) => {
-            compute_used_locals_in_operand(locals, op1);
-            compute_used_locals_in_operand(locals, op2);
-        }
-        Rvalue::Discriminant(p) => compute_used_locals_in_place(locals, p),
-        Rvalue::Global(_) => (),
-        Rvalue::Aggregate(_, ops) => {
-            compute_used_locals_in_operands(locals, ops);
-        }
-    }
-}
-
-fn compute_used_locals_in_statement(locals: &mut HashSet<VarId::Id>, st: &Statement) {
-    match &st.content {
-        RawStatement::Return => (),
-        RawStatement::Assign(p, rv) => {
-            compute_used_locals_in_rvalue(locals, rv);
-            compute_used_locals_in_place(locals, p);
-        }
-        RawStatement::FakeRead(p) => compute_used_locals_in_place(locals, p),
-        RawStatement::SetDiscriminant(p, _) => compute_used_locals_in_place(locals, p),
-        RawStatement::Drop(p) => compute_used_locals_in_place(locals, p),
-        RawStatement::Assert(assert) => compute_used_locals_in_operand(locals, &assert.cond),
-        RawStatement::Call(call) => {
-            compute_used_locals_in_operands(locals, &call.args);
-            compute_used_locals_in_place(locals, &call.dest);
-        }
-        RawStatement::Panic => (),
-        RawStatement::Break(_) => (),
-        RawStatement::Continue(_) => (),
-        RawStatement::Nop => (),
-        RawStatement::Switch(m) => match m {
-            Switch::If(op, st1, st2) => {
-                compute_used_locals_in_operand(locals, op);
-                compute_used_locals_in_statement(locals, st1);
-                compute_used_locals_in_statement(locals, st2);
-            }
-            Switch::SwitchInt(op, _, targets, otherwise) => {
-                compute_used_locals_in_operand(locals, op);
-                compute_used_locals_in_statement(locals, otherwise);
-                for (_, tgt) in targets {
-                    compute_used_locals_in_statement(locals, tgt);
+    fn visit_statement(&mut self, s: &mut Statement) {
+        match &s.content {
+            RawStatement::Sequence(s1, _) => {
+                if s1.content.is_nop() {
+                    take(s, |s| {
+                        let (s1, s2) = s.content.to_sequence();
+                        Statement {
+                            content: s2.content,
+                            meta: combine_meta(&s1.meta, &s2.meta),
+                        }
+                    })
+                } else {
+                    self.default_visit_raw_statement(&mut s.content)
                 }
             }
-            Switch::Match(p, targets, otherwise) => {
-                compute_used_locals_in_place(locals, p);
-                compute_used_locals_in_statement(locals, otherwise);
-                for (_, tgt) in targets {
-                    compute_used_locals_in_statement(locals, tgt);
-                }
+            _ => self.default_visit_raw_statement(&mut s.content),
+        }
+    }
+}
+
+// TODO: remove?
+pub(crate) fn remove_nops(s: &mut Statement) {
+    let mut v = RemoveNops {};
+    v.visit_statement(s);
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct ComputeUsedLocals {
+    vars: im::HashMap<VarId::Id, usize>,
+}
+
+impl ComputeUsedLocals {
+    fn new() -> Self {
+        ComputeUsedLocals {
+            vars: im::HashMap::new(),
+        }
+    }
+
+    pub(crate) fn compute_in_statement(st: &Statement) -> im::HashMap<VarId::Id, usize> {
+        let mut visitor = Self::new();
+        visitor.visit_statement(st);
+        visitor.vars
+    }
+}
+
+impl SharedExprVisitor for ComputeUsedLocals {
+    fn visit_var_id(&mut self, vid: &VarId::Id) {
+        match self.vars.get_mut(vid) {
+            Option::None => {
+                let _ = self.vars.insert(*vid, 1);
             }
-        },
-        RawStatement::Loop(loop_body) => compute_used_locals_in_statement(locals, loop_body),
-        RawStatement::Sequence(st1, st2) => {
-            compute_used_locals_in_statement(locals, st1);
-            compute_used_locals_in_statement(locals, st2);
+            Option::Some(cnt) => *cnt += 1,
         }
     }
 }
 
-fn transform_place(vids_map: &HashMap<VarId::Id, VarId::Id>, mut p: Place) -> Place {
-    let nvid = vids_map.get(&p.var_id).unwrap();
-    p.var_id = *nvid;
-    p
+impl SharedAstVisitor for ComputeUsedLocals {
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
+    fn merge(&mut self) {}
 }
 
-fn transform_operand(vids_map: &HashMap<VarId::Id, VarId::Id>, op: Operand) -> Operand {
-    match op {
-        Operand::Copy(p) => Operand::Copy(transform_place(vids_map, p)),
-        Operand::Move(p) => Operand::Move(transform_place(vids_map, p)),
-        Operand::Const(ty, cv) => Operand::Const(ty, cv),
+#[derive(Debug, Clone)]
+struct UpdateUsedLocals {
+    vids_map: HashMap<VarId::Id, VarId::Id>,
+}
+
+impl UpdateUsedLocals {
+    fn update_statement(vids_map: HashMap<VarId::Id, VarId::Id>, st: &mut Statement) {
+        let mut v = UpdateUsedLocals { vids_map };
+        v.visit_statement(st);
     }
 }
 
-fn transform_operands(vids_map: &HashMap<VarId::Id, VarId::Id>, ops: Vec<Operand>) -> Vec<Operand> {
-    ops.into_iter()
-        .map(|op| transform_operand(vids_map, op))
-        .collect()
-}
-
-fn transform_rvalue(vids_map: &HashMap<VarId::Id, VarId::Id>, rv: Rvalue) -> Rvalue {
-    match rv {
-        Rvalue::Use(op) => Rvalue::Use(transform_operand(vids_map, op)),
-        Rvalue::Ref(p, kind) => Rvalue::Ref(transform_place(vids_map, p), kind),
-        Rvalue::UnaryOp(unop, op) => Rvalue::UnaryOp(unop, transform_operand(vids_map, op)),
-        Rvalue::BinaryOp(binop, op1, op2) => {
-            let op1 = transform_operand(vids_map, op1);
-            let op2 = transform_operand(vids_map, op2);
-            Rvalue::BinaryOp(binop, op1, op2)
-        }
-        Rvalue::Global(gid) => Rvalue::Global(gid),
-        Rvalue::Discriminant(p) => Rvalue::Discriminant(transform_place(vids_map, p)),
-        Rvalue::Aggregate(kind, ops) => {
-            let ops = transform_operands(vids_map, ops);
-            Rvalue::Aggregate(kind, ops)
-        }
+impl MutExprVisitor for UpdateUsedLocals {
+    fn visit_var_id(&mut self, vid: &mut VarId::Id) {
+        *vid = *self.vids_map.get(vid).unwrap();
     }
 }
 
-fn transform_st(vids_map: &HashMap<VarId::Id, VarId::Id>, st: Statement) -> Statement {
-    let st_raw = match st.content {
-        RawStatement::Return => RawStatement::Return,
-        RawStatement::Assign(p, rv) => {
-            RawStatement::Assign(transform_place(vids_map, p), transform_rvalue(vids_map, rv))
-        }
-        RawStatement::FakeRead(p) => RawStatement::FakeRead(transform_place(vids_map, p)),
-        RawStatement::SetDiscriminant(p, variant_id) => {
-            RawStatement::SetDiscriminant(transform_place(vids_map, p), variant_id)
-        }
-        RawStatement::Drop(p) => RawStatement::Drop(transform_place(vids_map, p)),
-        RawStatement::Assert(mut assert) => {
-            assert.cond = transform_operand(vids_map, assert.cond);
-            RawStatement::Assert(assert)
-        }
-        RawStatement::Call(mut call) => {
-            call.args = transform_operands(vids_map, call.args);
-            call.dest = transform_place(vids_map, call.dest);
-            RawStatement::Call(call)
-        }
-        RawStatement::Panic => RawStatement::Panic,
-        RawStatement::Break(i) => RawStatement::Break(i),
-        RawStatement::Continue(i) => RawStatement::Continue(i),
-        RawStatement::Nop => RawStatement::Nop,
-        RawStatement::Switch(switch) => {
-            let switch = match switch {
-                Switch::If(op, st1, st2) => {
-                    let op = transform_operand(vids_map, op);
-                    let st1 = Box::new(transform_st(vids_map, *st1));
-                    let st2 = Box::new(transform_st(vids_map, *st2));
-                    Switch::If(op, st1, st2)
-                }
-                Switch::SwitchInt(op, int_ty, targets, mut otherwise) => {
-                    let op = transform_operand(vids_map, op);
-                    let targets = Vec::from_iter(
-                        targets
-                            .into_iter()
-                            .map(|(v, e)| (v, transform_st(vids_map, e))),
-                    );
-                    *otherwise = transform_st(vids_map, *otherwise);
-                    Switch::SwitchInt(op, int_ty, targets, otherwise)
-                }
-                Switch::Match(p, targets, mut otherwise) => {
-                    let p = transform_place(vids_map, p);
-                    let targets = Vec::from_iter(
-                        targets
-                            .into_iter()
-                            .map(|(v, e)| (v, transform_st(vids_map, e))),
-                    );
-                    *otherwise = transform_st(vids_map, *otherwise);
-                    Switch::Match(p, targets, otherwise)
-                }
-            };
-            RawStatement::Switch(switch)
-        }
-        RawStatement::Loop(loop_body) => {
-            RawStatement::Loop(Box::new(transform_st(vids_map, *loop_body)))
-        }
-        RawStatement::Sequence(st1, st2) => RawStatement::Sequence(
-            Box::new(transform_st(vids_map, *st1)),
-            Box::new(transform_st(vids_map, *st2)),
-        ),
-    };
+impl MutAstVisitor for UpdateUsedLocals {
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
 
-    Statement::new(st.meta, st_raw)
+    fn merge(&mut self) {}
 }
 
+/// Compute the set of used locals, filter the unused locals and compute a new
+/// mapping from variable index to variable index.
 fn update_locals(
     num_inputs: usize,
     old_locals: VarId::Vector<Var>,
@@ -212,7 +131,13 @@ fn update_locals(
         used_locals.insert(VarId::Id::new(i));
     }
     // Explore the body
-    compute_used_locals_in_statement(&mut used_locals, st);
+    let used_locals_cnt = ComputeUsedLocals::compute_in_statement(st);
+    for (vid, cnt) in used_locals_cnt.iter() {
+        if *cnt > 0 {
+            used_locals.insert(*vid);
+        }
+    }
+    trace!("used_locals_cnt: {:?}", used_locals_cnt);
 
     // Filter: only keep the variables which are used, and update
     // their indices so as not to have "holes"
@@ -246,8 +171,15 @@ pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut Glob
         take(b, |mut b| {
             let (locals, vids_map) = update_locals(b.arg_count, b.locals, &b.body);
             b.locals = locals;
-            b.body = transform_st(&vids_map, b.body);
+            trace!("vids_maps: {:?}", vids_map);
+            UpdateUsedLocals::update_statement(vids_map, &mut b.body);
             b
         });
+        trace!(
+            "# After removing unused locals of: {name}:\n{}",
+            b.fmt_with_ctx_names(fmt_ctx)
+        );
+        // Check that there are no remaining locals with the type `Never`
+        assert!(b.locals.iter().all(|v| !v.ty.is_never()));
     }
 }

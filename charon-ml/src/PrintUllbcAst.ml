@@ -39,8 +39,7 @@ module Ast = struct
         indent ^ "storage_dead " ^ fmt.var_id_to_string var_id
     | A.Deinit p -> indent ^ "deinit " ^ PE.place_to_string fmt p
 
-  let switch_to_string (indent : string) (tgt : A.switch) :
-      string =
+  let switch_to_string (indent : string) (tgt : A.switch) : string =
     match tgt with
     | A.If (b0, b1) ->
         let b0 = block_id_to_string b0 in
@@ -150,18 +149,24 @@ module Crate = struct
       (decl : A.global_decl) : PA.ast_formatter =
     let region_vars = [] in
     let type_params = [] in
+    let cg_params = [] in
     let locals = match decl.body with None -> [] | Some body -> body.locals in
     let get_global_decl_name_as_string decl =
       global_name_to_string decl.A.name
     in
     PrintGAst.decl_ctx_to_ast_formatter type_context fun_context global_context
-      region_vars type_params locals get_global_decl_name_as_string
+      region_vars type_params cg_params locals get_global_decl_name_as_string
 
   (** This function pretty-prints a type declaration by using a declaration
       context *)
   let type_decl_to_string (type_context : T.type_decl T.TypeDeclId.Map.t)
-      (decl : T.type_decl) : string =
-    PrintGAst.ctx_and_type_decl_to_string type_context decl
+      (global_context : A.global_decl A.GlobalDeclId.Map.t) (decl : T.type_decl)
+      : string =
+    let get_global_decl_name_as_string decl =
+      global_name_to_string decl.A.name
+    in
+    PrintGAst.ctx_and_type_decl_to_string type_context global_context
+      get_global_decl_name_as_string decl
 
   (** This function pretty-prints a global declaration by using a declaration
       context *)
@@ -193,7 +198,9 @@ module Crate = struct
     in
 
     (* The types *)
-    let type_decls = List.map (type_decl_to_string types_defs_map) m.A.types in
+    let type_decls =
+      List.map (type_decl_to_string types_defs_map globals_defs_map) m.A.types
+    in
 
     (* The globals *)
     let global_decls =

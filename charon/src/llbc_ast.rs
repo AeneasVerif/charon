@@ -8,33 +8,23 @@
 
 #![allow(dead_code)]
 use crate::expressions::*;
+pub use crate::gast::*;
 pub use crate::llbc_ast_utils::*;
 use crate::meta::Meta;
 use crate::types::*;
-use crate::ullbc_ast::*;
-pub use crate::ullbc_ast::{CtxNames, FunDeclId, GlobalDeclId, Var};
+pub use crate::ullbc_ast::{Call, CtxNames, FunDeclId, GlobalDeclId, Var};
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
 
+/// Asserts are special constructs introduced by Rust to perform dynamic
+/// checks, to detect out-of-bounds accesses or divisions by zero for
+/// instance. We eliminate the assertions in [crate::remove_dynamic_checks],
+/// then introduce other dynamic checks in [crate::reconstruct_asserts].
 #[derive(Debug, Clone, Serialize)]
 pub struct Assert {
     pub cond: Operand,
     pub expected: bool,
-}
-
-/// TODO: factor out with [Rvalue]
-#[derive(Debug, Clone, Serialize)]
-pub struct Call {
-    pub func: FunId,
-    /// Technically this is useless, but we still keep it because we might
-    /// want to introduce some information (and the way we encode from MIR
-    /// is as simple as possible - and in MIR we also have a vector of erased
-    /// regions).
-    pub region_args: Vec<ErasedRegion>,
-    pub type_args: Vec<ETy>,
-    pub args: Vec<Operand>,
-    pub dest: Place,
 }
 
 /// A raw statement: a statement without meta data.

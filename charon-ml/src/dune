@@ -27,14 +27,15 @@
   PrintPrimitiveValues
   PrintTypes
   PrintUtils
+  PrimitiveValues
+  PrimitiveValuesUtils
   Scalars
   Types
   TypesUtils
   UllbcAst
   UllbcAstUtils
   UllbcOfJson
-  Utils
-  PrimitiveValues))
+  Utils))
 
 (documentation
  (package charon))

@@ -6,11 +6,10 @@ use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use crate::values::*;
-use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 
 pub fn var_id_to_pretty_string(id: VarId::Id) -> String {
-    format!("var@{id}")
+    format!("@{id}")
 }
 
 #[derive(Debug, Clone)]
@@ -39,13 +38,19 @@ impl Formatter<TypeDeclId::Id> for DummyFormatter {
 
 impl Formatter<GlobalDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        const_def_id_to_pretty_string(id)
+        global_decl_id_to_pretty_string(id)
     }
 }
 
 impl Formatter<TypeVarId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeVarId::Id) -> String {
         type_var_id_to_pretty_string(id)
+    }
+}
+
+impl Formatter<ConstGenericVarId::Id> for DummyFormatter {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        const_generic_var_id_to_pretty_string(id)
     }
 }
 
@@ -90,23 +95,6 @@ impl ScalarValue {
             ScalarValue::U32(_) => IntegerTy::U32,
             ScalarValue::U64(_) => IntegerTy::U64,
             ScalarValue::U128(_) => IntegerTy::U128,
-        }
-    }
-
-    pub fn is_min(&self) -> bool {
-        match self {
-            ScalarValue::Isize(v) => *v == isize::MIN,
-            ScalarValue::I8(v) => *v == i8::MIN,
-            ScalarValue::I16(v) => *v == i16::MIN,
-            ScalarValue::I32(v) => *v == i32::MIN,
-            ScalarValue::I64(v) => *v == i64::MIN,
-            ScalarValue::I128(v) => *v == i128::MIN,
-            ScalarValue::Usize(v) => *v == usize::MIN,
-            ScalarValue::U8(v) => *v == u8::MIN,
-            ScalarValue::U16(v) => *v == u16::MIN,
-            ScalarValue::U32(v) => *v == u32::MIN,
-            ScalarValue::U64(v) => *v == u64::MIN,
-            ScalarValue::U128(v) => *v == u128::MIN,
         }
     }
 
@@ -163,7 +151,7 @@ impl ScalarValue {
 
     pub fn from_unchecked_uint(ty: IntegerTy, v: u128) -> ScalarValue {
         match ty {
-            IntegerTy::Usize => ScalarValue::Usize(v as usize),
+            IntegerTy::Usize => ScalarValue::Usize(v as u64),
             IntegerTy::U8 => ScalarValue::U8(v as u8),
             IntegerTy::U16 => ScalarValue::U16(v as u16),
             IntegerTy::U32 => ScalarValue::U32(v as u32),
@@ -211,7 +199,7 @@ impl ScalarValue {
 
     pub fn from_unchecked_int(ty: IntegerTy, v: i128) -> ScalarValue {
         match ty {
-            IntegerTy::Isize => ScalarValue::Isize(v as isize),
+            IntegerTy::Isize => ScalarValue::Isize(v as i64),
             IntegerTy::I8 => ScalarValue::I8(v as i8),
             IntegerTy::I16 => ScalarValue::I16(v as i16),
             IntegerTy::I32 => ScalarValue::I32(v as i32),
@@ -226,7 +214,7 @@ impl ScalarValue {
         match ty {
             IntegerTy::Isize => {
                 let b: [u8; 8] = b[0..8].try_into().unwrap();
-                ScalarValue::Isize(isize::from_le_bytes(b))
+                ScalarValue::Isize(i64::from_le_bytes(b))
             }
             IntegerTy::I8 => {
                 let b: [u8; 1] = b[0..1].try_into().unwrap();
@@ -250,7 +238,7 @@ impl ScalarValue {
             }
             IntegerTy::Usize => {
                 let b: [u8; 8] = b[0..8].try_into().unwrap();
-                ScalarValue::Usize(usize::from_le_bytes(b))
+                ScalarValue::Usize(u64::from_le_bytes(b))
             }
             IntegerTy::U8 => {
                 let b: [u8; 1] = b[0..1].try_into().unwrap();
@@ -287,32 +275,31 @@ impl ScalarValue {
     }
 }
 
-impl std::string::ToString for ScalarValue {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for ScalarValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
-            ScalarValue::Isize(v) => format!("{v} : isize"),
-            ScalarValue::I8(v) => format!("{v} : i8"),
-            ScalarValue::I16(v) => format!("{v} : i16"),
-            ScalarValue::I32(v) => format!("{v} : i32"),
-            ScalarValue::I64(v) => format!("{v} : i64"),
-            ScalarValue::I128(v) => format!("{v} : i128"),
-            ScalarValue::Usize(v) => format!("{v} : usize"),
-            ScalarValue::U8(v) => format!("{v} : u8"),
-            ScalarValue::U16(v) => format!("{v} : u16"),
-            ScalarValue::U32(v) => format!("{v} : u32"),
-            ScalarValue::U64(v) => format!("{v} : u64"),
-            ScalarValue::U128(v) => format!("{v} : u128"),
+            ScalarValue::Isize(v) => write!(f, "{v} : isize"),
+            ScalarValue::I8(v) => write!(f, "{v} : i8"),
+            ScalarValue::I16(v) => write!(f, "{v} : i16"),
+            ScalarValue::I32(v) => write!(f, "{v} : i32"),
+            ScalarValue::I64(v) => write!(f, "{v} : i64"),
+            ScalarValue::I128(v) => write!(f, "{v} : i128"),
+            ScalarValue::Usize(v) => write!(f, "{v} : usize"),
+            ScalarValue::U8(v) => write!(f, "{v} : u8"),
+            ScalarValue::U16(v) => write!(f, "{v} : u16"),
+            ScalarValue::U32(v) => write!(f, "{v} : u32"),
+            ScalarValue::U64(v) => write!(f, "{v} : u64"),
+            ScalarValue::U128(v) => write!(f, "{v} : u128"),
         }
     }
 }
 
-impl std::string::ToString for PrimitiveValue {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for Literal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
-            PrimitiveValue::Scalar(v) => v.to_string(),
-            PrimitiveValue::Bool(v) => v.to_string(),
-            PrimitiveValue::Char(v) => v.to_string(),
-            PrimitiveValue::String(v) => v.to_string(),
+            Literal::Scalar(v) => write!(f, "{v}"),
+            Literal::Bool(v) => write!(f, "{v}"),
+            Literal::Char(v) => write!(f, "{v}"),
         }
     }
 }
@@ -324,31 +311,21 @@ impl Serialize for ScalarValue {
     {
         let enum_name = "ScalarValue";
         let variant_name = self.variant_name();
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        if variant_arity > 0 {
-            let mut vs = serializer.serialize_tuple_variant(
-                enum_name,
-                variant_index,
-                variant_name,
-                variant_arity,
-            )?;
-            match self {
-                ScalarValue::Isize(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::I8(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::I16(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::I32(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::I64(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::I128(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::Usize(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::U8(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::U16(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::U32(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::U64(i) => vs.serialize_field(&i.to_string())?,
-                ScalarValue::U128(i) => vs.serialize_field(&i.to_string())?,
-            };
-            vs.end()
-        } else {
-            variant_name.serialize(serializer)
-        }
+        let (variant_index, _variant_arity) = self.variant_index_arity();
+        let v = match self {
+            ScalarValue::Isize(i) => i.to_string(),
+            ScalarValue::I8(i) => i.to_string(),
+            ScalarValue::I16(i) => i.to_string(),
+            ScalarValue::I32(i) => i.to_string(),
+            ScalarValue::I64(i) => i.to_string(),
+            ScalarValue::I128(i) => i.to_string(),
+            ScalarValue::Usize(i) => i.to_string(),
+            ScalarValue::U8(i) => i.to_string(),
+            ScalarValue::U16(i) => i.to_string(),
+            ScalarValue::U32(i) => i.to_string(),
+            ScalarValue::U64(i) => i.to_string(),
+            ScalarValue::U128(i) => i.to_string(),
+        };
+        serializer.serialize_newtype_variant(enum_name, variant_index, variant_name, &v)
     }
 }

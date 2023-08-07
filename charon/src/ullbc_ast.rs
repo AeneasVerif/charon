@@ -2,14 +2,13 @@
 //! reconstruction. In effect, this is a cleaned up version of MIR.
 #![allow(dead_code)]
 
-pub use crate::expressions::GlobalDeclId;
 use crate::expressions::*;
 pub use crate::gast::*;
 use crate::meta::Meta;
+pub use crate::types::GlobalDeclId;
 use crate::types::*;
 pub use crate::ullbc_ast_utils::*;
 use crate::values::*;
-use hashlink::linked_hash_map::LinkedHashMap;
 use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
@@ -46,20 +45,14 @@ pub struct Statement {
     pub content: RawStatement,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Serialize)]
 pub enum SwitchTargets {
     /// Gives the `if` block and the `else` block
     If(BlockId::Id, BlockId::Id),
     /// Gives the integer type, a map linking values to switch branches, and the
     /// otherwise block. Note that matches over enumerations are performed by
     /// switching over the discriminant, which is an integer.
-    /// Also, we use a `LinkedHashMap` to make sure the order of the switch
-    /// branches is preserved.
-    SwitchInt(
-        IntegerTy,
-        LinkedHashMap<ScalarValue, BlockId::Id>,
-        BlockId::Id,
-    ),
+    SwitchInt(IntegerTy, Vec<(ScalarValue, BlockId::Id)>, BlockId::Id),
 }
 
 /// A raw terminator: a terminator without meta data.
@@ -82,15 +75,7 @@ pub enum RawTerminator {
     /// Function call.
     /// For now, we only accept calls to top-level functions.
     Call {
-        func: FunId,
-        /// Technically, this is useless, but we still keep it because we might
-        /// want to introduce some information (and the way we encode from MIR
-        /// is as simple as possible - and in MIR we also have a vector of erased
-        /// regions).
-        region_args: Vec<ErasedRegion>,
-        type_args: Vec<ETy>,
-        args: Vec<Operand>,
-        dest: Place,
+        call: Call,
         target: BlockId::Id,
     },
     Assert {

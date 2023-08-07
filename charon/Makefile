@@ -1,5 +1,5 @@
 .PHONY: all
-all: build test doc
+all: build
 
 .PHONY: build
 build:

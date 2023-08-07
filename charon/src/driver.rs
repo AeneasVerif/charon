@@ -1,21 +1,22 @@
 #![allow(dead_code)]
 
 use crate::cli_options;
-use crate::divergent;
 use crate::export;
 use crate::extract_global_assignments;
 use crate::get_mir::MirLevel;
+use crate::index_to_function_calls;
 use crate::insert_assign_return_unit;
 use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId};
+use crate::ops_to_function_calls;
 use crate::reconstruct_asserts;
 use crate::register;
 use crate::regularize_constant_adts;
 use crate::remove_drop_never;
+use crate::remove_dynamic_checks;
 use crate::remove_read_discriminant;
 use crate::remove_unused_locals;
 use crate::reorder_decls;
 use crate::rust_to_local_ids;
-use crate::simplify_ops;
 use crate::translate_functions_to_ullbc;
 use crate::translate_types;
 use crate::ullbc_to_llbc;
@@ -183,7 +184,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
 
     // # Step 4: translate the types
     let (types_constraints, type_defs) =
-        translate_types::translate_types(sess, tcx, &ordered_decls)?;
+        translate_types::translate_types(sess, tcx, &ordered_decls, mir_level)?;
 
     // # Step 5: translate the functions to ULLBC (Unstructured LLBC).
     // Note that from now onwards, both type and function definitions have been
@@ -218,18 +219,17 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         GlobalDeclId::Vector::from_iter(ullbc_globals.iter().map(|d| d.name.to_string()));
     let fmt_ctx = CtxNames::new(&type_defs, &fun_names, &global_names);
 
-    // # Step 6: replace constant ([OperandConstantValue]) ADTs by regular
+    // # Micro-pass: replace constant ([OperandConstantValue]) ADTs by regular
     // (Aggregated) ADTs.
     regularize_constant_adts::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
 
-    // # Step 7: extract statics and constant globals from operands (put them in
+    // # Micro-pass: extract statics and constant globals from operands (put them in
     // a let binding). This pass relies on the absence of constant ADTs from
     // the previous step: it does not inspect them (and would thus miss globals
     // in constant ADTs).
     extract_global_assignments::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
 
-    // # Step 8:
-    // There are two options:
+    // # There are two options:
     // - either the user wants the unstructured LLBC, in which case we stop there
     // - or they want the structured LLBC, in which case we reconstruct the
     //   control-flow and apply micro-passes
@@ -254,18 +254,15 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             &ullbc_globals,
         );
 
-        // # Step 9: simplify the calls to unops and binops
-        // Note that we assume that the sequences have been flattened.
-        simplify_ops::simplify(options.release, &fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+        // # Micro-pass: remove the dynamic checks for array/slice bounds
+        // and division by zero.
+        // **WARNING**: this pass uses the fact that the dynamic checks
+        // introduced by Rustc use a special "assert" construct. Because of
+        // this, it must happen *before* the [reconstruct_asserts] pass.
+        // See the comments in [crate::remove_dynamic_checks].
+        remove_dynamic_checks::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        for def in &llbc_funs {
-            trace!(
-                "# After binop simplification:\n{}\n",
-                def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
-            );
-        }
-
-        // # Step 10: reconstruct the asserts
+        // # Micro-pass: reconstruct the asserts
         reconstruct_asserts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
         for def in &llbc_funs {
@@ -275,10 +272,19 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             );
         }
 
-        // # Step 11: Remove the discriminant reads (merge them with the switches)
+        // # Micro-pass: replace some unops/binops with function calls
+        // (introduces: ArrayToSlice, etc.)
+        ops_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Micro-pass: replace the arrays/slices index operations with function
+        // calls.
+        // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
+        index_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Micro-pass: Remove the discriminant reads (merge them with the switches)
         remove_read_discriminant::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 12: add the missing assignments to the return value.
+        // # Micro-pass: add the missing assignments to the return value.
         // When the function return type is unit, the generated MIR doesn't
         // set the return value to `()`. This can be a concern: in the case
         // of Aeneas, it means the return variable contains ⊥ upon returning.
@@ -288,24 +294,23 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // the main or at compile-time).
         insert_assign_return_unit::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 13: remove the drops of locals whose type is `Never` (`!`). This
+        // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
         // is in preparation of the next transformation.
         remove_drop_never::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 14: remove the locals which are never used. After doing so, we
+        // # Micro-pass: remove the locals which are never used. After doing so, we
         // check that there are no remaining locals with type `Never`.
         remove_unused_locals::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 15: compute which functions are potentially divergent. A function
-        // is potentially divergent if it is recursive, contains a loop or transitively
-        // calls a potentially divergent function.
-        // Note that in the future, we may complement this basic analysis with a
-        // finer analysis to detect recursive functions which are actually total
-        // by construction.
-        // Because we don't have loops, constants are not yet touched.
-        let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
+        trace!("# Final LLBC:\n");
+        for def in &llbc_funs {
+            trace!(
+                "#{}\n",
+                def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
+            );
+        }
 
-        // # Step 16: generate the files.
+        // # Final step: generate the files.
         export::export_llbc(
             crate_name,
             &ordered_decls,
