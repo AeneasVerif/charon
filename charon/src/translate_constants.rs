@@ -4,6 +4,7 @@ use crate::common::*;
 use crate::expressions as e;
 use crate::get_mir::extract_constants_at_top_level;
 use crate::rust_to_local_ids::*;
+use crate::translate_ctx::*;
 use crate::translate_types;
 use crate::types as ty;
 use crate::values as v;
@@ -12,7 +13,7 @@ use rustc_middle::mir;
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{ConstKind, Ty, TyKind};
 use std::iter::zip;
-use translate_types::{translate_ety, TypeTransContext};
+use translate_types::translate_ety;
 
 /// Translate a parameter substitution.
 ///
