@@ -225,13 +225,6 @@ impl TypeDecl {
             + Formatter<GlobalDeclId::Id>
             + Formatter<ConstGenericVarId::Id>,
     {
-        let regions_hierarchy: Vec<String> = self
-            .regions_hierarchy
-            .iter()
-            .map(|rg| rg.fmt_with_ctx(ctx))
-            .collect();
-        let regions_hierarchy = regions_hierarchy.join("\n");
-
         let params = TypeDecl::fmt_params(&self.region_params, &self.type_params);
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
@@ -241,10 +234,7 @@ impl TypeDecl {
                         .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)))
                         .collect();
                     let fields = fields.join(",");
-                    format!(
-                        "struct {}{} = {{{}\n}}\n{}",
-                        self.name, params, fields, regions_hierarchy
-                    )
+                    format!("struct {}{} = {{{}\n}}", self.name, params, fields)
                 } else {
                     format!("struct {}{} = {{}}", self.name, params)
                 }
@@ -255,15 +245,9 @@ impl TypeDecl {
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
                     .collect();
                 let variants = variants.join("\n");
-                format!(
-                    "enum {}{} =\n{}\n\nRegions hierarchy:\n{}",
-                    self.name, params, variants, regions_hierarchy
-                )
+                format!("enum {}{} =\n{}\n", self.name, params, variants)
             }
-            TypeDeclKind::Opaque => format!(
-                "opaque type {}{}\nRegions hierarchy:\n{}",
-                self.name, params, regions_hierarchy
-            ),
+            TypeDeclKind::Opaque => format!("opaque type {}{}", self.name, params),
         }
     }
 

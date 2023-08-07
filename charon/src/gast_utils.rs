@@ -14,7 +14,7 @@ use std::fmt::Debug;
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
 /// TODO: generalize this with visitors
 pub fn iter_function_bodies<T: Debug + Clone + Serialize>(
-    funs: &mut FunDeclId::Vector<GFunDecl<T>>,
+    funs: &mut FunDeclId::Map<GFunDecl<T>>,
 ) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
     funs.iter_mut().flat_map(|f| match f.body.as_mut() {
         None => None, // Option::map was complaining about borrowing f
@@ -26,7 +26,7 @@ pub fn iter_function_bodies<T: Debug + Clone + Serialize>(
 /// Same as [iter_function_bodies] (but the `flat_map` lambda cannot be generic).
 /// TODO: generalize this with visitors
 pub fn iter_global_bodies<T: Debug + Clone + Serialize>(
-    globals: &mut GlobalDeclId::Vector<GGlobalDecl<T>>,
+    globals: &mut GlobalDeclId::Map<GGlobalDecl<T>>,
 ) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
     globals.iter_mut().flat_map(|g| match g.body.as_mut() {
         None => None, // Option::map was complaining about borrowing g
@@ -491,15 +491,15 @@ pub struct GAstFormatter<'ctx, FD, GD> {
 
 pub struct CtxNames<'ctx> {
     pub type_context: &'ctx TypeDecls,
-    pub fun_context: &'ctx FunDeclId::Vector<String>,
-    pub global_context: &'ctx GlobalDeclId::Vector<String>,
+    pub fun_context: &'ctx FunDeclId::Map<String>,
+    pub global_context: &'ctx GlobalDeclId::Map<String>,
 }
 
 impl<'ctx> CtxNames<'ctx> {
     pub fn new(
         type_context: &'ctx TypeDecls,
-        fun_context: &'ctx FunDeclId::Vector<String>,
-        global_context: &'ctx GlobalDeclId::Vector<String>,
+        fun_context: &'ctx FunDeclId::Map<String>,
+        global_context: &'ctx GlobalDeclId::Map<String>,
     ) -> Self {
         CtxNames {
             type_context,
@@ -682,15 +682,15 @@ where
 }
 
 pub(crate) struct FunNamesFormatter<'ctx> {
-    decls: &'ctx FunDeclId::Vector<String>,
+    decls: &'ctx FunDeclId::Map<String>,
 }
 
 pub(crate) struct GlobalNamesFormatter<'ctx> {
-    decls: &'ctx GlobalDeclId::Vector<String>,
+    decls: &'ctx GlobalDeclId::Map<String>,
 }
 
 impl<'ctx> FunNamesFormatter<'ctx> {
-    pub fn new(decls: &'ctx FunDeclId::Vector<String>) -> Self {
+    pub fn new(decls: &'ctx FunDeclId::Map<String>) -> Self {
         FunNamesFormatter { decls }
     }
 }
@@ -702,7 +702,7 @@ impl<'ctx> Formatter<FunDeclId::Id> for FunNamesFormatter<'ctx> {
 }
 
 impl<'ctx> GlobalNamesFormatter<'ctx> {
-    pub fn new(decls: &'ctx GlobalDeclId::Vector<String>) -> Self {
+    pub fn new(decls: &'ctx GlobalDeclId::Map<String>) -> Self {
         GlobalNamesFormatter { decls }
     }
 }

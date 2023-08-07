@@ -377,8 +377,8 @@ impl ExprBody {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let locals = Some(&self.locals);
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
@@ -438,8 +438,8 @@ impl FunDecl {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
@@ -483,8 +483,8 @@ impl GlobalDecl {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);

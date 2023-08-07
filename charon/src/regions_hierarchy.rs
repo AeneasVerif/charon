@@ -6,7 +6,7 @@ use crate::common::*;
 use crate::formatter::Formatter;
 use crate::graphs::*;
 use crate::llbc_ast::FunDecls;
-use crate::rust_to_local_ids::TypeDeclarationGroup;
+use crate::reorder_decls as rd;
 use crate::types as ty;
 use crate::types::*;
 use crate::ullbc_ast::{FunDeclId, FunSig};
@@ -20,6 +20,8 @@ use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 generate_index_type!(RegionGroupId);
+
+pub type TypeDeclarationGroup = rd::GDeclarationGroup<ty::TypeDeclId::Id>;
 
 pub fn region_group_id_to_pretty_string(rid: RegionGroupId::Id) -> String {
     format!("rg@{rid}")

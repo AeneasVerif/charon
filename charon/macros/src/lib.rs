@@ -43,6 +43,7 @@ pub mod {} {{
     }}
 
     pub type Vector<T> = crate::id_vector::Vector<Id,T>;
+    pub type Map<T> = crate::id_map::Map<Id,T>;
 
     impl Id {{
         pub fn new(init: usize) -> Id {{
@@ -113,6 +114,33 @@ pub mod {} {{
             self.counter = self.counter.checked_add(1).unwrap();
             index
         }}
+    }}
+
+    pub struct MapGenerator<K : std::cmp::Eq + std::hash::Hash + std::cmp::Ord> {{
+      pub counter : Generator,
+      // We use a btree map so that the bindings are sorted by key
+      pub map : std::collections::BTreeMap<K, Id>,
+    }}
+
+    impl<K : std::cmp::Eq + std::hash::Hash + std::cmp::Ord> MapGenerator<K> {{
+      pub fn new() -> Self {{
+        MapGenerator {{ counter: Generator::new(), map: std::collections::BTreeMap::new() }}
+      }}
+
+      pub fn insert(&mut self, k: K) -> Id {{
+        match self.map.get(&k) {{
+          Option::Some(id) => *id,
+          Option::None => {{
+            let id = self.counter.fresh_id();
+            self.map.insert(k, id);
+            id
+          }}
+        }}
+      }}
+
+      pub fn get(&self, k: K) -> Option<Id> {{
+        self.map.get(&k).map(|id| *id)
+      }}
     }}
 }}"
     };

@@ -3,16 +3,38 @@
 #![allow(dead_code)]
 use crate::formatter::Formatter;
 use crate::get_mir::MirLevel;
-use crate::rust_to_local_ids::*;
+use crate::meta::{get_meta_from_rid, get_meta_from_rspan, FileId, FileName, Meta};
+use crate::names::Name;
+use crate::reorder_decls as rd;
 use crate::types as ty;
 use crate::types::LiteralTy;
 use crate::ullbc_ast as ast;
 use crate::values as v;
+use linked_hash_set::LinkedHashSet;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir;
 use rustc_middle::mir::BasicBlock;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
+use std::collections::{HashMap, HashSet};
+
+pub type AnyDeclRid = rd::AnyDeclId<DefId, DefId, DefId>;
+pub type AnyDeclId = rd::AnyDeclId<ty::TypeDeclId::Id, ast::FunDeclId::Id, ast::GlobalDeclId::Id>;
+
+pub struct CrateInfo {
+    pub crate_name: String,
+    pub opaque_mods: HashSet<String>,
+}
+
+impl CrateInfo {
+    pub(crate) fn is_opaque_decl(&self, name: &Name) -> bool {
+        name.is_in_modules(&self.crate_name, &self.opaque_mods)
+    }
+
+    fn is_transparent_decl(&self, name: &Name) -> bool {
+        !self.is_opaque_decl(name)
+    }
+}
 
 /// Translation context containing the top-level definitions.
 pub struct TransContext<'tcx, 'ctx> {
@@ -20,16 +42,27 @@ pub struct TransContext<'tcx, 'ctx> {
     pub sess: &'ctx Session,
     ///
     pub tcx: TyCtxt<'tcx>,
-    /// The ordered declarations
-    pub ordered: &'ctx OrderedDecls,
-    /// Type definitions
-    pub type_defs: &'ctx ty::TypeDecls,
-    /// The function definitions
-    pub fun_defs: &'ctx ast::FunDecls,
-    /// The global definitions
-    pub global_defs: &'ctx ast::GlobalDecls,
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
+    ///
+    pub crate_info: CrateInfo,
+    /// The declarations we came accross and which we haven't translated yet
+    pub stack: LinkedHashSet<AnyDeclRid>,
+    /// File names to ids and vice-versa
+    pub file_to_id: HashMap<FileName, FileId::Id>,
+    pub id_to_file: HashMap<FileId::Id, FileName>,
+    /// The map from Rust type ids to translated type ids
+    pub type_id_map: ty::TypeDeclId::MapGenerator<DefId>,
+    /// The translated type definitions
+    pub type_defs: ty::TypeDecls,
+    /// The map from Rust function ids to translated function ids
+    pub fun_id_map: ast::FunDeclId::MapGenerator<DefId>,
+    /// The translated function definitions
+    pub fun_defs: ast::FunDecls,
+    /// The map from Rust global ids to translated global ids
+    pub global_id_map: ast::GlobalDeclId::MapGenerator<DefId>,
+    /// The translated global definitions
+    pub global_defs: ast::GlobalDecls,
 }
 
 /// A translation context for type/global/function bodies.
@@ -38,16 +71,16 @@ pub struct TransContext<'tcx, 'ctx> {
 /// TODO: use other collections than `im::OrdMap`? (we don't need a O(1) clone
 /// operation).
 /// TODO: remove the borrow for the TransContext, or make it a mutable borrow.
-#[derive(Clone)]
 pub(crate) struct BodyTransContext<'tcx, 'ctx, 'ctx1> {
     /// This is used in very specific situations.
     pub def_id: DefId,
     /// The translation context containing the top-level definitions/ids.
-    pub t_ctx: &'ctx TransContext<'tcx, 'ctx1>,
+    pub t_ctx: &'ctx mut TransContext<'tcx, 'ctx1>,
     /// Region counter
     pub regions_counter: ty::RegionVarId::Generator,
     /// The regions - TODO: rename to region_vars
     pub region_vars: ty::RegionVarId::Vector<ty::RegionVar>,
+    // TODO: use the MapGenerator types
     /// The map from rust region to translated region indices
     pub region_vars_map: im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id>,
     /// Id counter for the type variables
@@ -83,23 +116,77 @@ pub(crate) struct BodyTransContext<'tcx, 'ctx, 'ctx1> {
 }
 
 impl<'tcx, 'ctx> TransContext<'tcx, 'ctx> {
-    // TODO: rename
-    pub(crate) fn get_def_id_from_rid(&self, def_id: DefId) -> Option<ast::FunDeclId::Id> {
-        self.ordered.fun_rid_to_id.get(&def_id).copied()
+    pub(crate) fn get_meta_from_rid(&self, def_id: DefId) -> Meta {
+        get_meta_from_rid(&self.sess, self.tcx, &self.file_to_id, def_id)
     }
 
-    // TODO: rename
-    pub(crate) fn get_def_rid_from_id(&self, def_id: ast::FunDeclId::Id) -> Option<DefId> {
-        self.ordered
-            .decls_info
-            .get(&AnyDeclId::Fun(def_id))
-            .map(|i| i.rid)
+    pub(crate) fn get_meta_from_rspan(&self, rspan: rustc_span::Span) -> Meta {
+        get_meta_from_rspan(&self.sess, &self.file_to_id, rspan)
+    }
+
+    pub(crate) fn id_is_opaque(&self, id: DefId) -> bool {
+        let name = crate::names_utils::item_def_id_to_name(self.tcx, id);
+        self.crate_info.is_opaque_decl(&name)
+    }
+
+    pub(crate) fn id_is_transparent(&self, id: DefId) -> bool {
+        !self.id_is_opaque(id)
+    }
+
+    pub(crate) fn push_id(&mut self, rust_id: DefId, id: AnyDeclRid) {
+        // Add the id to the stack of declarations to translate
+        self.stack.insert(id);
+    }
+
+    pub(crate) fn register_type_decl_id(&mut self, id: DefId) -> ty::TypeDeclId::Id {
+        match self.type_id_map.get(id) {
+            Option::Some(id) => id,
+            Option::None => {
+                let rid = rd::AnyDeclId::Type(id);
+                self.push_id(id, rid);
+                self.type_id_map.insert(id)
+            }
+        }
+    }
+
+    pub(crate) fn translate_type_decl_id(&mut self, id: DefId) -> ty::TypeDeclId::Id {
+        self.register_type_decl_id(id)
+    }
+
+    pub(crate) fn register_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
+        match self.fun_id_map.get(id) {
+            Option::Some(id) => id,
+            Option::None => {
+                let rid = rd::AnyDeclId::Fun(id);
+                self.push_id(id, rid);
+                self.fun_id_map.insert(id)
+            }
+        }
+    }
+
+    pub(crate) fn translate_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
+        self.register_fun_decl_id(id)
+    }
+
+    pub(crate) fn register_global_decl_id(&mut self, id: DefId) -> ty::GlobalDeclId::Id {
+        match self.global_id_map.get(id) {
+            Option::Some(id) => id,
+            Option::None => {
+                let rid = rd::AnyDeclId::Global(id);
+                self.push_id(id, rid);
+                self.global_id_map.insert(id)
+            }
+        }
+    }
+
+    pub(crate) fn translate_global_decl_id(&mut self, id: DefId) -> ast::GlobalDeclId::Id {
+        self.register_global_decl_id(id)
     }
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
-    pub(crate) fn new(def_id: DefId, t_ctx: &'ctx TransContext<'tcx, 'ctx1>) -> Self {
+    pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TransContext<'tcx, 'ctx1>) -> Self {
         BodyTransContext {
             def_id,
             t_ctx,
@@ -121,6 +208,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    pub(crate) fn get_meta_from_rid(&self, def_id: DefId) -> Meta {
+        self.t_ctx.get_meta_from_rid(def_id)
+    }
+
+    pub(crate) fn get_meta_from_rspan(&self, rspan: rustc_span::Span) -> Meta {
+        self.t_ctx.get_meta_from_rspan(rspan)
+    }
+
     pub(crate) fn get_local(&self, local: &mir::Local) -> Option<v::VarId::Id> {
         self.vars_map.get(&local.as_u32()).copied()
     }
@@ -133,8 +228,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
         self.vars.get(var_id)
     }
 
-    pub(crate) fn get_type_decl_id_from_rid(&self, def_id: DefId) -> ty::TypeDeclId::Id {
-        *self.t_ctx.ordered.type_rid_to_id.get(&def_id).unwrap()
+    pub(crate) fn register_type_decl_id(&mut self, id: DefId) -> ty::TypeDeclId::Id {
+        self.t_ctx.register_type_decl_id(id)
+    }
+
+    pub(crate) fn translate_type_decl_id(&mut self, id: DefId) -> ty::TypeDeclId::Id {
+        self.t_ctx.translate_type_decl_id(id)
+    }
+
+    pub(crate) fn register_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
+        self.t_ctx.register_fun_decl_id(id)
+    }
+
+    pub(crate) fn translate_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
+        self.t_ctx.translate_fun_decl_id(id)
+    }
+
+    pub(crate) fn register_global_decl_id(&mut self, id: DefId) -> ty::GlobalDeclId::Id {
+        self.t_ctx.register_global_decl_id(id)
+    }
+
+    pub(crate) fn translate_global_decl_id(&mut self, id: DefId) -> ast::GlobalDeclId::Id {
+        self.t_ctx.translate_global_decl_id(id)
     }
 
     pub(crate) fn get_region_from_rust(
@@ -208,7 +323,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn get_type_defs(&self) -> &ty::TypeDecls {
-        self.t_ctx.type_defs
+        &self.t_ctx.type_defs
     }
 }
 
@@ -367,8 +482,8 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::TypeDecl> for BodyTransContext<'tcx, 'ctx
         // Create a type def formatter (which will take care of the
         // type parameters)
         let formatter = TypeDeclFormatter {
-            type_defs: self.t_ctx.type_defs,
-            global_defs: self.t_ctx.global_defs,
+            type_defs: &self.t_ctx.type_defs,
+            global_defs: &self.t_ctx.global_defs,
             region_params: &def.region_params,
             type_params: &def.type_params,
             const_generic_params: &def.const_generic_params,

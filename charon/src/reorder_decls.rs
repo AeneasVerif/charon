@@ -1,7 +1,7 @@
 use crate::common::*;
+use crate::gast::{FunDeclId, GlobalDeclId};
 use crate::graphs::*;
-use crate::register::DeclKind;
-use crate::register::RegisteredDeclarations;
+use crate::types::TypeDeclId;
 use macros::EnumAsGetters;
 use macros::EnumIsA;
 use macros::{VariantIndexArity, VariantName};
@@ -13,6 +13,16 @@ use serde::{Serialize, Serializer};
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Error, Formatter};
 use std::vec::Vec;
+
+/// All kind of supported Rust top-level declarations.
+/// const and static variables are merged together in the global kind.
+/// TODO: remove?
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum DeclKind {
+    Type,
+    Fun,
+    Global,
+}
 
 /// A (group of) top-level declaration(s), properly reordered.
 /// "G" stands for "generic"
@@ -62,6 +72,8 @@ pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     /// Additional information on declarations
     pub decls_info: HashMap<AnyDeclId<TypeId, FunId, GlobalId>, DeclInfo>,
 }
+
+pub type Decls = DeclarationsGroups<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id>;
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
@@ -228,9 +240,7 @@ impl<'a, TypeId: Copy, FunId: Copy, GlobalId: Copy> std::iter::IntoIterator
     }
 }
 
-pub fn reorder_declarations(
-    decls: &RegisteredDeclarations,
-) -> Result<DeclarationsGroups<DefId, DefId, DefId>> {
+pub fn reorder_declarations(decls: &RegisteredDeclarations) -> Result<Decls> {
     trace!();
 
     // Step 1: Start by building the graph
