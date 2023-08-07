@@ -34,17 +34,17 @@ type assumed_fun_id =
   | VecIndex  (** [core::ops::index::Index::index<alloc::vec::Vec<T>, usize>] *)
   | VecIndexMut
       (** [core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>] *)
-  | ArraySharedIndex
-  | ArrayMutIndex
-  | ArrayToSharedSlice
-  | ArrayToMutSlice
-  | ArraySharedSubslice
-  | ArrayMutSubslice
+  | ArrayIndexShared
+  | ArrayIndexMut
+  | ArrayToSliceShared
+  | ArrayToSliceMut
+  | ArraySubsliceShared
+  | ArraySubsliceMut
   | SliceLen
-  | SliceSharedIndex
-  | SliceMutIndex
-  | SliceSharedSubslice
-  | SliceMutSubslice
+  | SliceIndexShared
+  | SliceIndexMut
+  | SliceSubsliceShared
+  | SliceSubsliceMut
 [@@deriving show, ord]
 
 type fun_id = Regular of FunDeclId.id | Assumed of assumed_fun_id

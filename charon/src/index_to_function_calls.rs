@@ -42,16 +42,16 @@ impl<'a> Transform<'a> {
                 let index_id = match id.as_assumed() {
                     AssumedTy::Array => {
                         if mut_access {
-                            AssumedFunId::ArrayMutIndex
+                            AssumedFunId::ArrayIndexMut
                         } else {
-                            AssumedFunId::ArraySharedIndex
+                            AssumedFunId::ArrayIndexShared
                         }
                     }
                     AssumedTy::Slice => {
                         if mut_access {
-                            AssumedFunId::SliceMutIndex
+                            AssumedFunId::SliceIndexMut
                         } else {
-                            AssumedFunId::SliceSharedIndex
+                            AssumedFunId::SliceIndexShared
                         }
                     }
                     _ => unreachable!(),
@@ -244,14 +244,14 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Vec<State
 ///   ... p[i] ...
 ///      ~~>
 ///   tmp0 = &mut p
-///   tmp1 = ArrayMutIndex(move p, i)
+///   tmp1 = ArrayIndexMut(move p, i)
 ///   ... *tmp1 ...
 ///
 ///   // If array and non-mutable access:
 ///   ... p[i] ...
 ///      ~~>
 ///   tmp0 := & p
-///   tmp1 := ArraySharedIndex(move tmp0, i)
+///   tmp1 := ArrayIndexShared(move tmp0, i)
 ///   ... *tmp1 ...
 ///
 ///   // Omitting the slice cases, which are similar
@@ -263,21 +263,21 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Vec<State
 ///   y : u32 = copy x[i]
 ///      ~~>
 ///   tmp0 : & [u32; N] := &x
-///   tmp1 : &u32 = ArraySharedIndex(move tmp0, i)
+///   tmp1 : &u32 = ArrayIndexShared(move tmp0, i)
 ///   y : u32 = copy (*tmp1)
 ///
 ///   // x : &[T; N]
 ///   y : &T = & (*x)[i]
 ///      ~~>
 ///   tmp0 : & [T; N] := & (*x)
-///   tmp1 : &T = ArraySharedIndex(move tmp0, i)
+///   tmp1 : &T = ArrayIndexShared(move tmp0, i)
 ///   y : &T = & (*tmp1)
 ///
 ///   // x : [u32; N]
 ///   y = &mut x[i]
 ///      ~~>
 ///   tmp0 : &mut [u32; N] := &mut x
-///   tmp1 : &mut u32 := ArrayMutIndex(move tmp0, i)
+///   tmp1 : &mut u32 := ArrayIndexMut(move tmp0, i)
 ///   y = &mut (*tmp)
 ///
 ///   // When using an index on the lhs:
@@ -285,7 +285,7 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Vec<State
 ///   y[i] = x
 ///      ~~>
 ///   tmp0 : &mut [T; N] := &mut y;
-///   tmp1 : &mut T = ArrayMutIndex(move y, i)
+///   tmp1 : &mut T = ArrayIndexMut(move y, i)
 ///   *tmp1 = x
 /// ```
 pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {

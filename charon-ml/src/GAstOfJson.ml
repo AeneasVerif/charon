@@ -632,17 +632,17 @@ let assumed_fun_id_of_json (js : json) : (A.assumed_fun_id, string) result =
   | `String "VecLen" -> Ok A.VecLen
   | `String "VecIndex" -> Ok A.VecIndex
   | `String "VecIndexMut" -> Ok A.VecIndexMut
-  | `String "ArraySharedIndex" -> Ok A.ArraySharedIndex
-  | `String "ArrayMutIndex" -> Ok A.ArrayMutIndex
-  | `String "ArrayToSharedSlice" -> Ok A.ArrayToSharedSlice
-  | `String "ArrayToMutSlice" -> Ok A.ArrayToMutSlice
-  | `String "ArraySharedSubslice" -> Ok A.ArraySharedSubslice
-  | `String "ArrayMutSubslice" -> Ok A.ArrayMutSubslice
+  | `String "ArrayIndexShared" -> Ok A.ArrayIndexShared
+  | `String "ArrayIndexMut" -> Ok A.ArrayIndexMut
+  | `String "ArrayToSliceShared" -> Ok A.ArrayToSliceShared
+  | `String "ArrayToSliceMut" -> Ok A.ArrayToSliceMut
+  | `String "ArraySubsliceShared" -> Ok A.ArraySubsliceShared
+  | `String "ArraySubsliceMut" -> Ok A.ArraySubsliceMut
   | `String "SliceLen" -> Ok A.SliceLen
-  | `String "SliceSharedIndex" -> Ok A.SliceSharedIndex
-  | `String "SliceMutIndex" -> Ok A.SliceMutIndex
-  | `String "SliceSharedSubslice" -> Ok A.SliceSharedSubslice
-  | `String "SliceMutSubslice" -> Ok A.SliceMutSubslice
+  | `String "SliceIndexShared" -> Ok A.SliceIndexShared
+  | `String "SliceIndexMut" -> Ok A.SliceIndexMut
+  | `String "SliceSubsliceShared" -> Ok A.SliceSubsliceShared
+  | `String "SliceSubsliceMut" -> Ok A.SliceSubsliceMut
   | _ -> Error ("assumed_fun_id_of_json failed on:" ^ show js)
 
 let fun_id_of_json (js : json) : (A.fun_id, string) result =

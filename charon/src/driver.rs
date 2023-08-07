@@ -278,7 +278,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
 
         // # Micro-pass: replace the arrays/slices index operations with function
         // calls.
-        // (introduces: ArraySharedIndex, ArrayMutIndex, etc.)
+        // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
         index_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: Remove the discriminant reads (merge them with the switches)

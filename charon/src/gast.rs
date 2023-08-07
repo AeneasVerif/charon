@@ -162,19 +162,19 @@ pub enum AssumedFunId {
     /// Converted from [ProjectionElem::Index].
     ///
     /// Signature: `fn<T,N>(&[T;N], usize) -> &T`
-    ArraySharedIndex,
+    ArrayIndexShared,
     /// Converted from [ProjectionElem::Index].
     ///
     /// Signature: `fn<T,N>(&mut [T;N], usize) -> &mut T`
-    ArrayMutIndex,
+    ArrayIndexMut,
     /// Cast an array as a slice.
     ///
     /// Converted from [UnOp::ArrayToSlice]
-    ArrayToSharedSlice,
+    ArrayToSliceShared,
     /// Cast an array as a slice.
     ///
     /// Converted from [UnOp::ArrayToSlice]
-    ArrayToMutSlice,
+    ArrayToSliceMut,
     /// Take a subslice from an array.
     ///
     /// Introduced by disambiguating the `Index::index` trait (takes a range
@@ -182,30 +182,30 @@ pub enum AssumedFunId {
     ///
     /// TODO: there are a lot of shared/mut version. Parameterize them with
     /// a mutability attribute?
-    ArraySharedSubslice,
+    ArraySubsliceShared,
     /// Take a subslice from an array.
     ///
     /// Introduced by disambiguating the `Index::index` trait (takes a range
     /// as argument).
-    ArrayMutSubslice,
+    ArraySubsliceMut,
     /// Converted from [ProjectionElem::Index].
     ///
     /// Signature: `fn<T>(&[T], usize) -> &T`
-    SliceSharedIndex,
+    SliceIndexShared,
     /// Converted from [ProjectionElem::Index].
     ///
     /// Signature: `fn<T>(&mut [T], usize) -> &mut T`
-    SliceMutIndex,
+    SliceIndexMut,
     /// Take a subslice from a slice.
     ///
     /// Introduced by disambiguating the `Index::index` trait (takes a range
     /// as argument).
-    SliceSharedSubslice,
+    SliceSubsliceShared,
     /// Take a subslice from a slice.
     ///
     /// Introduced by disambiguating the `Index::index` trait (takes a range
     /// as argument).
-    SliceMutSubslice,
+    SliceSubsliceMut,
 }
 
 /// TODO: factor out with [Rvalue]

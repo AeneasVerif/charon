@@ -1865,10 +1865,10 @@ fn translate_primitive_function_call(
             dest,
             target,
         ),
-        ast::AssumedFunId::ArraySharedSubslice
-        | ast::AssumedFunId::ArrayMutSubslice
-        | ast::AssumedFunId::SliceSharedSubslice
-        | ast::AssumedFunId::SliceMutSubslice => {
+        ast::AssumedFunId::ArraySubsliceShared
+        | ast::AssumedFunId::ArraySubsliceMut
+        | ast::AssumedFunId::SliceSubsliceShared
+        | ast::AssumedFunId::SliceSubsliceMut => {
             // Take a subslice from an array/slice.
             // Note that this isn't any different from a regular function call. Ideally,
             // we'd have a generic assumed function mechanism.
@@ -1896,14 +1896,14 @@ fn translate_primitive_function_call(
             // Special case handled elsewhere
             unreachable!();
         }
-        ast::AssumedFunId::ArraySharedIndex
-        | ast::AssumedFunId::ArrayMutIndex
-        | ast::AssumedFunId::ArrayToSharedSlice
-        | ast::AssumedFunId::ArrayToMutSlice
-        | ast::AssumedFunId::SliceSharedIndex
-        | ast::AssumedFunId::SliceMutIndex => {
+        ast::AssumedFunId::ArrayIndexShared
+        | ast::AssumedFunId::ArrayIndexMut
+        | ast::AssumedFunId::ArrayToSliceShared
+        | ast::AssumedFunId::ArrayToSliceMut
+        | ast::AssumedFunId::SliceIndexShared
+        | ast::AssumedFunId::SliceIndexMut => {
             // Those cases are introduced later, in micro-passes, by desugaring
-            // projections (for ArrayIndex and ArrayMutIndex for instnace) and=
+            // projections (for ArrayIndex and ArrayIndexMut for instnace) and=
             // operations (for ArrayToSlice for instance) to function calls.
             unreachable!()
         }

@@ -198,18 +198,18 @@ pub fn get_fun_id_from_name(
                                 }
                                 types::AssumedTy::Array => {
                                     if id.is_index() {
-                                        ullbc_ast::AssumedFunId::ArraySharedSubslice
+                                        ullbc_ast::AssumedFunId::ArraySubsliceShared
                                     } else {
                                         // mut case
-                                        ullbc_ast::AssumedFunId::ArrayMutSubslice
+                                        ullbc_ast::AssumedFunId::ArraySubsliceMut
                                     }
                                 }
                                 types::AssumedTy::Slice => {
                                     if id.is_index() {
-                                        ullbc_ast::AssumedFunId::SliceSharedSubslice
+                                        ullbc_ast::AssumedFunId::SliceSubsliceShared
                                     } else {
                                         // mut case
-                                        ullbc_ast::AssumedFunId::SliceMutSubslice
+                                        ullbc_ast::AssumedFunId::SliceSubsliceMut
                                     }
                                 }
                                 _ => unimplemented!("ty: {:?}", aty),

@@ -20,8 +20,8 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
             // We could avoid the clone operations below if we take the content of
             // the statement. In practice, this shouldn't have much impact.
             let id = match ref_kind {
-                RefKind::Mut => AssumedFunId::ArrayToMutSlice,
-                RefKind::Shared => AssumedFunId::ArrayToSharedSlice,
+                RefKind::Mut => AssumedFunId::ArrayToSliceMut,
+                RefKind::Shared => AssumedFunId::ArrayToSliceShared,
             };
             let func = FunId::Assumed(id);
             let region_args = vec![ErasedRegion::Erased];

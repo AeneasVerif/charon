@@ -106,17 +106,17 @@ let call_to_string (fmt : ast_formatter) (indent : string) (call : GA.call) :
         | GA.VecIndexMut ->
             "core::ops::index::IndexMut<alloc::vec::Vec" ^ t_params
             ^ ">::index_mut"
-        | GA.ArraySharedIndex -> "@ArraySharedIndex" ^ t_params
-        | GA.ArrayMutIndex -> "@ArrayMutIndex" ^ t_params
-        | GA.ArrayToSharedSlice -> "@ArrayToSharedSlice" ^ t_params
-        | GA.ArrayToMutSlice -> "@ArrayToMutSlice" ^ t_params
-        | GA.ArraySharedSubslice -> "@ArraySharedSubslice" ^ t_params
-        | GA.ArrayMutSubslice -> "@ArrayMutSubslice" ^ t_params
+        | GA.ArrayIndexShared -> "@ArrayIndexShared" ^ t_params
+        | GA.ArrayIndexMut -> "@ArrayIndexMut" ^ t_params
+        | GA.ArrayToSliceShared -> "@ArrayToSliceShared" ^ t_params
+        | GA.ArrayToSliceMut -> "@ArrayToSliceMut" ^ t_params
+        | GA.ArraySubsliceShared -> "@ArraySubsliceShared" ^ t_params
+        | GA.ArraySubsliceMut -> "@ArraySubsliceMut" ^ t_params
         | GA.SliceLen -> "@SliceLen" ^ t_params
-        | GA.SliceSharedIndex -> "@SliceSharedIndex" ^ t_params
-        | GA.SliceMutIndex -> "@SliceMutIndex" ^ t_params
-        | GA.SliceSharedSubslice -> "@SliceSharedSubslice" ^ t_params
-        | GA.SliceMutSubslice -> "@SliceMutSubslice" ^ t_params)
+        | GA.SliceIndexShared -> "@SliceIndexShared" ^ t_params
+        | GA.SliceIndexMut -> "@SliceIndexMut" ^ t_params
+        | GA.SliceSubsliceShared -> "@SliceSubsliceShared" ^ t_params
+        | GA.SliceSubsliceMut -> "@SliceSubsliceMut" ^ t_params)
   in
   let dest = PE.place_to_string fmt call.GA.dest in
   indent ^ dest ^ " := move " ^ name_args ^ args
