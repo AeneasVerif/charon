@@ -244,7 +244,7 @@ class ['self] map_aggregate_kind_base =
     {[
       let ls = Cons(hd, tl);
     ]}
-    
+
     In MIR we have (yes, the discriminant update happens *at the end* for some
     reason):
     {[
@@ -252,7 +252,7 @@ class ['self] map_aggregate_kind_base =
       (ls as Cons).1 = move tl;
       discriminant(ls) = 0; // assuming [Cons] is the variant of index 0
     ]}
-    
+
     Rem.: in the Aeneas semantics, both cases are handled (in case of desaggregated
     initialization, [ls] is initialized to [⊥], then this [⊥] is expanded to
     [Cons (⊥, ⊥)] upon the first assignment, at which point we can initialize

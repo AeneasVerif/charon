@@ -5,7 +5,6 @@ extern crate env_logger;
 /// Initialize the logger. We use a custom initialization to add some
 /// useful debugging information, including the line number in the file.
 pub fn initialize_logger() {
-    use chrono::offset::Local;
     use env_logger::fmt::Color;
     use env_logger::{Builder, Env};
     use std::io::Write;
@@ -35,9 +34,8 @@ pub fn initialize_logger() {
 
         writeln!(
             buf,
-            "{}{} {} {}:{}{} {}",
+            "{} {} {}:{}{} {}",
             bracket_style.value("["),
-            Local::now().format("%H:%M:%S"), // Rk.: use "%Y-%m-%d" to also have the date
             buf.default_styled_level(record.level()), // Print the level with colors
             path,
             line,
