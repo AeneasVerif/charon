@@ -46,30 +46,6 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name};
 
-fn translate_ety<'tcx>(
-    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
-    ty: &mir_ty::Ty<'tcx>,
-) -> Result<ty::ETy> {
-    let tt_ctx = bt_ctx.to_type_trans_context();
-    translate_types::translate_ety(&tt_ctx, ty)
-}
-
-fn translate_ety_kind<'tcx>(
-    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
-    ty: &mir_ty::TyKind<'tcx>,
-) -> Result<ty::ETy> {
-    let tt_ctx = bt_ctx.to_type_trans_context();
-    translate_types::translate_ety_kind(&tt_ctx, ty)
-}
-
-fn translate_sig_ty<'tcx>(
-    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
-    ty: &mir_ty::Ty<'tcx>,
-) -> Result<ty::RTy> {
-    let tt_ctx = bt_ctx.to_type_trans_context();
-    translate_types::translate_sig_ty(&tt_ctx, ty)
-}
-
 /// Translate a function's local variables by adding them in the environment.
 fn translate_body_locals<'tcx>(
     bt_ctx: &mut BodyTransContext<'tcx, '_, '_>,
@@ -98,7 +74,7 @@ fn translate_body_locals<'tcx>(
         let name: Option<String> = span_to_var_name.get(&span).cloned();
 
         // Translate the type
-        let ty = translate_ety(bt_ctx, &var.ty)?;
+        let ty = translate_types::translate_ety(bt_ctx, &var.ty)?;
 
         // Add the variable to the environment
         bt_ctx.push_var(index.as_u32(), ty, name);
@@ -129,7 +105,7 @@ fn translate_basic_block<'tcx>(
     block_id: BasicBlock,
 ) -> Result<ast::BlockId::Id> {
     // Check if the block has already been translated
-    let id = bt_ctx.rblocks_to_ids.get(&block_id);
+    let id = bt_ctx.blocks_map.get(&block_id);
     if let Some(id) = id {
         return Ok(*id);
     }
@@ -174,8 +150,8 @@ fn translate_place_with_type<'tcx, 'ctx>(
     let var = bt_ctx.get_var_from_id(var_id).unwrap();
     let (projection, ty) = translate_projection(
         bt_ctx,
-        bt_ctx.ft_ctx.mir_level,
-        bt_ctx.ft_ctx.type_defs,
+        bt_ctx.t_ctx.mir_level,
+        bt_ctx.t_ctx.type_defs,
         var.ty.clone(),
         place.projection,
     );
@@ -428,8 +404,7 @@ fn translate_operand_with_type<'tcx>(
             (e::Operand::Move(p), ty)
         }
         Operand::Constant(constant) => {
-            let (ty, constant) =
-                translate_operand_constant(&bt_ctx.to_type_trans_context(), constant);
+            let (ty, constant) = translate_operand_constant(bt_ctx, constant);
             (e::Operand::Const(ty.clone(), constant), ty)
         }
     }
@@ -564,7 +539,7 @@ fn translate_rvalue<'tcx>(
             e::Rvalue::Use(e::Operand::Copy(place))
         }
         mir::Rvalue::Repeat(operand, cnst) => {
-            let c = translate_const_kind_as_const_generic(&bt_ctx.to_type_trans_context(), *cnst);
+            let c = translate_const_kind_as_const_generic(bt_ctx, *cnst);
             // We are effectively desugaring the repeat in Charon, turning it into an array literal
             // where the operand is repeated `cnst` times.
             // TODO: allow having other kinds of const generics, and desugar later to a function call
@@ -615,7 +590,7 @@ fn translate_rvalue<'tcx>(
             // casts should only be from integers/booleans to integer/booleans.
 
             // Translate the target type
-            let tgt_ty = translate_ety(bt_ctx, tgt_ty).unwrap();
+            let tgt_ty = translate_types::translate_ety(bt_ctx, tgt_ty).unwrap();
 
             // Translate the operand
             let (op, src_ty) = translate_operand_with_type(bt_ctx, operand);
@@ -711,7 +686,7 @@ fn translate_rvalue<'tcx>(
 
             match aggregate_kind.deref() {
                 mir::AggregateKind::Array(ty) => {
-                    let t_ty = translate_ety(bt_ctx, &ty).unwrap();
+                    let t_ty = translate_types::translate_ety(bt_ctx, &ty).unwrap();
                     let cg = ty::ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
                         operands_t.len() as u64,
                     )));
@@ -744,7 +719,7 @@ fn translate_rvalue<'tcx>(
 
                     if adt_id.is_local() {
                         // Local ADT: retrieve the definition
-                        let id_t = *bt_ctx.ft_ctx.ordered.type_rid_to_id.get(adt_id).unwrap();
+                        let id_t = *bt_ctx.t_ctx.ordered.type_rid_to_id.get(adt_id).unwrap();
                         let def = bt_ctx.get_type_defs().get(id_t).unwrap();
 
                         assert!(region_params.len() == def.region_params.len());
@@ -784,7 +759,7 @@ fn translate_rvalue<'tcx>(
                         // TODO: treat all external ADTs in a consistant manner.
                         // For instance, we can access the variants of any external
                         // enumeration marked as `public`.
-                        let name = type_def_id_to_name(bt_ctx.ft_ctx.tcx, *adt_id);
+                        let name = type_def_id_to_name(bt_ctx.t_ctx.tcx, *adt_id);
                         if name.equals_ref_name(&assumed::OPTION_NAME) {
                             // Sanity checks
                             assert!(region_params.is_empty());
@@ -844,7 +819,7 @@ fn translate_statement<'tcx>(
 
     use std::ops::Deref;
 
-    let sess = bt_ctx.ft_ctx.sess;
+    let sess = bt_ctx.t_ctx.sess;
 
     let t_statement: Option<ast::RawStatement> = match &statement.kind {
         StatementKind::Assign(assign) => {
@@ -910,7 +885,7 @@ fn translate_statement<'tcx>(
         Some(t_statement) => {
             let meta = meta::get_meta_from_source_info(
                 sess,
-                &bt_ctx.ft_ctx.ordered.file_to_id,
+                &bt_ctx.t_ctx.ordered.file_to_id,
                 &body.source_scopes,
                 statement.source_info,
             );
@@ -928,13 +903,13 @@ fn translate_terminator<'tcx>(
 ) -> Result<ast::Terminator> {
     trace!("About to translate terminator (MIR) {:?}", terminator);
 
-    let sess = bt_ctx.ft_ctx.sess;
+    let sess = bt_ctx.t_ctx.sess;
 
     // Compute the meta information beforehand (we might need it to introduce
     // intermediate statements - we desugar some terminators)
     let meta = meta::get_meta_from_source_info(
         sess,
-        &bt_ctx.ft_ctx.ordered.file_to_id,
+        &bt_ctx.t_ctx.ordered.file_to_id,
         &body.source_scopes,
         terminator.source_info,
     );
@@ -1267,7 +1242,7 @@ fn translate_function_call<'tcx>(
     // support closures for now
     trace!("func: {:?}", func);
 
-    let tcx = bt_ctx.ft_ctx.tcx;
+    let tcx = bt_ctx.t_ctx.tcx;
 
     // Retrieve the function's identifier and instantiation
     let (def_id, substs) = get_function_from_operand(func);
@@ -1314,7 +1289,7 @@ fn translate_function_call<'tcx>(
 
             // Translate the type parameter
             let ty = substs.get(0).unwrap().expect_ty();
-            let t_ty = translate_ety(bt_ctx, &ty)?;
+            let t_ty = translate_types::translate_ety(bt_ctx, &ty)?;
 
             // Translate the first argument - note that we use a special
             // function to translate it: the operand should be of the form:
@@ -1368,7 +1343,7 @@ fn translate_function_call<'tcx>(
 
             if !is_prim {
                 // Retrieve the def id
-                let def_id = bt_ctx.ft_ctx.get_def_id_from_rid(def_id).unwrap();
+                let def_id = bt_ctx.t_ctx.get_def_id_from_rid(def_id).unwrap();
 
                 let func = ast::FunId::Regular(def_id);
                 let call = ast::Call {
@@ -1436,15 +1411,14 @@ fn translate_subst_generic_args_in_body<'tcx, 'ctx, 'ctx1>(
         match param.unpack() {
             rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
                 // Simply translate the type
-                let t_param_ty = translate_ety(bt_ctx, &param_ty)?;
+                let t_param_ty = translate_types::translate_ety(bt_ctx, &param_ty)?;
                 t_args_tys.push(t_param_ty);
             }
             rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
                 t_args_regions.push(translate_erased_region(region.kind()));
             }
             rustc_middle::ty::subst::GenericArgKind::Const(c) => {
-                let t_cg =
-                    translate_const_kind_as_const_generic(&bt_ctx.to_type_trans_context(), c);
+                let t_cg = translate_const_kind_as_const_generic(bt_ctx, c);
                 t_args_cgs.push(t_cg);
             }
         }
@@ -1463,7 +1437,7 @@ fn translate_subst_in_body<'tcx>(
     let mut t_args_tys = Vec::new();
 
     for param in substs.iter() {
-        t_args_tys.push(translate_ety(bt_ctx, &param)?);
+        t_args_tys.push(translate_types::translate_ety(bt_ctx, &param)?);
     }
     Ok(t_args_tys)
 }
@@ -1725,7 +1699,7 @@ pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
 /// type parameters, that we put in the translation context.
 fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     types_constraints: &TypesConstraintsMap,
-    decl_ctx: &'ctx DeclTransContext<'tcx, 'ctx1>,
+    decl_ctx: &'ctx TransContext<'tcx, 'ctx1>,
     def_id: DefId,
 ) -> (BodyTransContext<'tcx, 'ctx, 'ctx1>, ast::FunSig) {
     let tcx = decl_ctx.tcx;
@@ -1802,7 +1776,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
             rustc_middle::ty::subst::GenericArgKind::Const(c) => {
                 // The type should be primitive, meaning it shouldn't contain
                 // variables, etc. (we could use an empty context).
-                let ty = translate_ety(&bt_ctx, &c.ty()).unwrap();
+                let ty = translate_types::translate_ety(&bt_ctx, &c.ty()).unwrap();
                 let ty = ty.to_literal();
                 match c.kind() {
                     rustc_middle::ty::ConstKind::Param(cp) => {
@@ -1833,7 +1807,10 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
 
     trace!(
         "# Early and late bound regions:\n{}",
-        iterator_to_string(&|x: &ty::RegionVar| x.to_string(), bt_ctx.regions.iter())
+        iterator_to_string(
+            &|x: &ty::RegionVar| x.to_string(),
+            bt_ctx.region_vars.iter()
+        )
     );
     trace!(
         "# Type variables:\n{}",
@@ -1846,9 +1823,9 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
         signature
             .inputs()
             .iter()
-            .map(|ty| translate_sig_ty(&bt_ctx, ty).unwrap()),
+            .map(|ty| translate_types::translate_sig_ty(&bt_ctx, ty).unwrap()),
     );
-    let output = translate_sig_ty(&bt_ctx, &signature.output()).unwrap();
+    let output = translate_types::translate_sig_ty(&bt_ctx, &signature.output()).unwrap();
 
     trace!(
         "# Input variables types:\n{}",
@@ -1857,7 +1834,7 @@ fn translate_function_signature<'tcx, 'ctx, 'ctx1>(
     trace!("# Output variable type:\n{}", bt_ctx.format_object(&output));
 
     let sig = ast::FunSig {
-        region_params: bt_ctx.regions.clone(),
+        region_params: bt_ctx.region_vars.clone(),
         num_early_bound_regions: late_bound_regions.len(),
         regions_hierarchy: rh::RegionGroups::new(), // Hierarchy not yet computed
         type_params: bt_ctx.type_vars.clone(),
@@ -1881,13 +1858,13 @@ fn translate_body(
     local_id: LocalDefId,
     arg_count: usize,
 ) -> Result<ast::ExprBody> {
-    let sess = bt_ctx.ft_ctx.sess;
-    let tcx = bt_ctx.ft_ctx.tcx;
+    let sess = bt_ctx.t_ctx.sess;
+    let tcx = bt_ctx.t_ctx.tcx;
 
-    let body = get_mir_for_def_id_and_level(tcx, local_id, bt_ctx.ft_ctx.mir_level);
+    let body = get_mir_for_def_id_and_level(tcx, local_id, bt_ctx.t_ctx.mir_level);
 
     // Compute the meta information
-    let meta = meta::get_meta_from_rspan(sess, &bt_ctx.ft_ctx.ordered.file_to_id, body.span);
+    let meta = meta::get_meta_from_rspan(sess, &bt_ctx.t_ctx.ordered.file_to_id, body.span);
 
     // Initialize the local variables
     trace!("Translating the body locals");
@@ -1936,7 +1913,7 @@ fn translate_function(
     let meta = meta::get_meta_from_rid(sess, tcx, &ordered.file_to_id, info.rid);
 
     // Initialize the function translation context
-    let ft_ctx = DeclTransContext {
+    let t_ctx = TransContext {
         sess,
         tcx,
         ordered,
@@ -1953,7 +1930,7 @@ fn translate_function(
     // at the same time (the signature gives us the region and type parameters,
     // that we put in the translation context).
     trace!("Translating function signature");
-    let (bt_ctx, signature) = translate_function_signature(types_constraints, &ft_ctx, info.rid);
+    let (bt_ctx, signature) = translate_function_signature(types_constraints, &t_ctx, info.rid);
 
     // Check if the type is opaque or transparent
     let body = if !info.is_transparent || !info.is_local() {
@@ -2044,7 +2021,7 @@ fn translate_global(
     let meta = meta::get_meta_from_rid(sess, tcx, &ordered.file_to_id, info.rid);
 
     // Initialize the global translation context
-    let ft_ctx = DeclTransContext {
+    let t_ctx = TransContext {
         sess,
         tcx,
         ordered,
@@ -2054,28 +2031,15 @@ fn translate_global(
         mir_level,
     };
 
+    let bt_ctx = BodyTransContext::new(info.rid, &t_ctx);
+
     // Translate the global name
     let name = global_def_id_to_name(tcx, info.rid);
 
     trace!("Translating global type");
     let mir_ty = tcx.type_of(info.rid);
+    let g_ty = translate_types::translate_ety(&bt_ctx, &mir_ty)?;
 
-    let g_ty = {
-        let tt_ctx = TypeTransContext::new(
-            info.rid,
-            tcx,
-            type_defs,
-            global_defs,
-            ordered,
-            im::OrdMap::new(),
-            im::OrdMap::new(),
-            im::OrdMap::new(),
-            mir_level,
-        );
-        translate_types::translate_ety(&tt_ctx, &mir_ty)?
-    };
-
-    let bt_ctx = BodyTransContext::new(info.rid, &ft_ctx);
     let body = match (info.is_local(), info.is_transparent) {
         // It's a local and opaque global: we do not give it a body.
         (true, false) => Option::None,
@@ -2100,11 +2064,7 @@ fn translate_global(
                     // Evaluate the constant
                     // We need a param_env: we use the expression def id as a dummy id...
 
-                    let (ty, val) = translate_evaluated_operand_constant(
-                        &bt_ctx.to_type_trans_context(),
-                        &mir_ty,
-                        &c,
-                    );
+                    let (ty, val) = translate_evaluated_operand_constant(&bt_ctx, &mir_ty, &c);
                     Option::Some(global_generate_assignment_body(
                         sess,
                         tcx,

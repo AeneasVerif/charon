@@ -19,13 +19,13 @@ use translate_types::translate_ety;
 ///
 /// The regions parameters are expected to have been erased.
 fn translate_subst_with_erased_regions<'tcx>(
-    tt_ctx: &TypeTransContext<'tcx, '_>,
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     substs: &rustc_middle::ty::List<rustc_middle::ty::Ty<'tcx>>,
 ) -> Result<Vec<ty::ETy>> {
     let mut t_args_tys = Vec::new();
 
     for param in substs.iter() {
-        t_args_tys.push(translate_types::translate_ety(tt_ctx, &param)?);
+        t_args_tys.push(translate_types::translate_ety(bt_ctx, &param)?);
     }
     Ok(t_args_tys)
 }
@@ -91,14 +91,14 @@ fn translate_constant_scalar_type(ty: &TyKind, ordered_decls: &OrderedDecls) -> 
 /// Translate the type of a [mir::interpret::ConstValue::ByRef] value.
 /// Currently, it should be a tuple.
 fn translate_constant_reference_type<'tcx>(
-    tt_ctx: &TypeTransContext<'tcx, '_>,
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     ty: &TyKind<'tcx>,
 ) -> ty::ETy {
     // Match on the type to destructure
     match ty {
         TyKind::Tuple(substs) => {
             // Here, the substitution only contains types (no regions)
-            let type_params = translate_subst_with_erased_regions(tt_ctx, substs).unwrap();
+            let type_params = translate_subst_with_erased_regions(bt_ctx, substs).unwrap();
             trace!("{:?}", type_params);
             let field_tys = type_params.into_iter().collect();
             ty::Ty::Adt(ty::TypeId::Tuple, Vec::new(), field_tys, Vec::new())
@@ -166,7 +166,7 @@ fn translate_constant_integer_like_value(
 
 /// Translate a constant typed by [translate_constant_scalar_type].
 fn translate_constant_scalar_value(
-    tt_ctx: &TypeTransContext,
+    bt_ctx: &BodyTransContext,
     llbc_ty: &ty::ETy,
     scalar: &mir::interpret::Scalar,
 ) -> e::OperandConstantValue {
@@ -189,7 +189,7 @@ fn translate_constant_scalar_value(
             assert!(field_tys.is_empty());
             assert!(cgs.is_empty());
 
-            let def = tt_ctx.type_defs.get(*id).unwrap();
+            let def = bt_ctx.t_ctx.type_defs.get(*id).unwrap();
 
             // Check that there is only one variant, with no fields
             // and no parameters. Construct the value at the same time.
@@ -213,16 +213,18 @@ fn translate_constant_scalar_value(
             e::OperandConstantValue::Adt(Option::None, Vec::new())
         }
         ty::Ty::Ref(ty::ErasedRegion::Erased, _, ty::RefKind::Shared) => match scalar {
-            mir::interpret::Scalar::Ptr(p, _) => match tt_ctx.tcx.global_alloc(p.provenance) {
-                mir::interpret::GlobalAlloc::Static(s) => {
-                    let id = tt_ctx.ordered.global_rid_to_id.get(&s).unwrap();
-                    e::OperandConstantValue::StaticId(*id)
+            mir::interpret::Scalar::Ptr(p, _) => {
+                match bt_ctx.t_ctx.tcx.global_alloc(p.provenance) {
+                    mir::interpret::GlobalAlloc::Static(s) => {
+                        let id = bt_ctx.t_ctx.ordered.global_rid_to_id.get(&s).unwrap();
+                        e::OperandConstantValue::StaticId(*id)
+                    }
+                    _ => unreachable!(
+                        "Expected static pointer, got {:?}",
+                        bt_ctx.t_ctx.tcx.global_alloc(p.provenance)
+                    ),
                 }
-                _ => unreachable!(
-                    "Expected static pointer, got {:?}",
-                    tt_ctx.tcx.global_alloc(p.provenance)
-                ),
-            },
+            }
             _ => unreachable!("Expected static pointer, got {:?}", scalar),
         },
         _ => {
@@ -235,18 +237,18 @@ fn translate_constant_scalar_value(
 /// Translate a constant typed by [translate_constant_reference_type].
 /// This should always be a tuple.
 fn translate_constant_reference_value<'tcx>(
-    tt_ctx: &TypeTransContext<'tcx, '_>,
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     llbc_ty: &ty::ETy,
     mir_ty: &Ty<'tcx>, // TODO: remove?
     value: &mir::interpret::ConstValue<'tcx>,
 ) -> e::OperandConstantValue {
     trace!();
 
-    let tcx = tt_ctx.tcx;
+    let tcx = bt_ctx.t_ctx.tcx;
 
     // We use [try_destructure_mir_constant] to destructure the constant
     // We need a param_env: we use the function def id as a dummy id...
-    let param_env = tcx.param_env(tt_ctx.def_id);
+    let param_env = tcx.param_env(bt_ctx.def_id);
     // We have to clone some values: it is a bit annoying, but I don't
     // manage to get the lifetimes working otherwise...
     let cvalue = rustc_middle::mir::ConstantKind::Val(*value, *mir_ty);
@@ -269,7 +271,7 @@ fn translate_constant_reference_value<'tcx>(
     let fields: Vec<(ty::ETy, e::OperandConstantValue)> = dc
         .fields
         .iter()
-        .map(|f| translate_constant_kind(tt_ctx, f))
+        .map(|f| translate_constant_kind(bt_ctx, f))
         .collect();
 
     // Sanity check
@@ -288,7 +290,7 @@ fn translate_constant_reference_value<'tcx>(
 
 /// Translate a [mir::interpret::ConstValue]
 fn translate_const_value<'tcx>(
-    tt_ctx: &TypeTransContext<'tcx, '_>,
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     llbc_ty: &ty::ETy,
     mir_ty: &Ty<'tcx>, // TODO: remove?
     val: &mir::interpret::ConstValue<'tcx>,
@@ -296,10 +298,10 @@ fn translate_const_value<'tcx>(
     trace!("{:?}", val);
     match val {
         mir::interpret::ConstValue::Scalar(scalar) => {
-            translate_constant_scalar_value(tt_ctx, llbc_ty, scalar)
+            translate_constant_scalar_value(bt_ctx, llbc_ty, scalar)
         }
         mir::interpret::ConstValue::ByRef { .. } => {
-            translate_constant_reference_value(tt_ctx, llbc_ty, mir_ty, val)
+            translate_constant_reference_value(bt_ctx, llbc_ty, mir_ty, val)
         }
         mir::interpret::ConstValue::Slice { .. } => unimplemented!(),
         mir::interpret::ConstValue::ZeroSized { .. } => {
@@ -313,20 +315,20 @@ fn translate_const_value<'tcx>(
 /// This function translates a constant id, under the condition that the
 /// constants are extracted at the top level.
 fn translate_constant_id_as_top_level(
-    tt_ctx: &TypeTransContext<'_, '_>,
+    bt_ctx: &BodyTransContext,
     rid: DefId,
 ) -> (ty::ETy, e::OperandConstantValue) {
     // Sanity check
-    assert!(extract_constants_at_top_level(tt_ctx.mir_level));
+    assert!(extract_constants_at_top_level(bt_ctx.t_ctx.mir_level));
 
     // Lookup the constant identifier and refer to it.
-    let id = *tt_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
-    let decl = tt_ctx.global_defs.get(id).unwrap();
+    let id = *bt_ctx.t_ctx.ordered.global_rid_to_id.get(&rid).unwrap();
+    let decl = bt_ctx.t_ctx.global_defs.get(id).unwrap();
     (decl.ty.clone(), e::OperandConstantValue::ConstantId(id))
 }
 
 fn translate_const_kind_unevaluated<'tcx>(
-    tt_ctx: &TypeTransContext<'tcx, '_>,
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     mir_ty: &mir_ty::Ty<'tcx>,
     ucv: &rustc_middle::mir::UnevaluatedConst<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
@@ -334,22 +336,22 @@ fn translate_const_kind_unevaluated<'tcx>(
     // - if we extract the constants at top level, we lookup the constant
     //   identifier and refer to it
     // - otherwise, we evaluate the constant and insert it in place
-    if extract_constants_at_top_level(tt_ctx.mir_level) {
-        translate_constant_id_as_top_level(tt_ctx, ucv.def.did)
+    if extract_constants_at_top_level(bt_ctx.t_ctx.mir_level) {
+        translate_constant_id_as_top_level(bt_ctx, ucv.def.did)
     } else {
         // Evaluate the constant.
         // We need a param_env: we use the function def id as a dummy id...
-        let tcx = tt_ctx.tcx;
-        let param_env = tcx.param_env(tt_ctx.def_id);
+        let tcx = bt_ctx.t_ctx.tcx;
+        let param_env = tcx.param_env(bt_ctx.def_id);
         let cv = tcx.const_eval_resolve(param_env, *ucv, None).unwrap();
-        let llbc_ty = translate_ety(tt_ctx, mir_ty).unwrap();
-        let v = translate_const_value(tt_ctx, &llbc_ty, mir_ty, &cv);
+        let llbc_ty = translate_ety(bt_ctx, mir_ty).unwrap();
+        let v = translate_const_value(bt_ctx, &llbc_ty, mir_ty, &cv);
         (llbc_ty, v)
     }
 }
 
 pub(crate) fn translate_const_kind<'tcx>(
-    tt_ctx: &TypeTransContext<'tcx, '_>,
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     constant: rustc_middle::ty::Const<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
     match constant.kind() {
@@ -360,7 +362,7 @@ pub(crate) fn translate_const_kind<'tcx>(
             // happen.
 
             // We only support integers and scalars
-            let ty = translate_ety(tt_ctx, &constant.ty()).unwrap();
+            let ty = translate_ety(bt_ctx, &constant.ty()).unwrap();
             let v = match v {
                 mir_ty::ValTree::Leaf(v) => match ty.as_literal() {
                     ty::LiteralTy::Integer(int_ty) => {
@@ -393,8 +395,8 @@ pub(crate) fn translate_const_kind<'tcx>(
             // - if we extract the constants at top level, we lookup the constant
             //   identifier and refer to it
             // - otherwise, we evaluate the constant and insert it in place
-            if extract_constants_at_top_level(tt_ctx.mir_level) {
-                translate_constant_id_as_top_level(tt_ctx, ucv.def.did)
+            if extract_constants_at_top_level(bt_ctx.t_ctx.mir_level) {
+                translate_constant_id_as_top_level(bt_ctx, ucv.def.did)
             } else {
                 // TODO: we can't call [translate_const_kind_unevaluated]:
                 // the types don't match.
@@ -404,8 +406,8 @@ pub(crate) fn translate_const_kind<'tcx>(
             }
         }
         ConstKind::Param(cp) => {
-            let ty = translate_ety(tt_ctx, &constant.ty()).unwrap();
-            let cg_id = tt_ctx.const_generic_params_map.get(&cp.index).unwrap();
+            let ty = translate_ety(bt_ctx, &constant.ty()).unwrap();
+            let cg_id = bt_ctx.const_generic_vars_map.get(&cp.index).unwrap();
             (ty, e::OperandConstantValue::Var(*cg_id))
         }
         ConstKind::Infer(_)
@@ -418,10 +420,10 @@ pub(crate) fn translate_const_kind<'tcx>(
 }
 
 pub(crate) fn translate_const_kind_as_const_generic<'tcx>(
-    tt_ctx: &TypeTransContext<'tcx, '_>,
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     constant: rustc_middle::ty::Const<'tcx>,
 ) -> ty::ConstGeneric {
-    let (ty, c) = translate_const_kind(tt_ctx, constant);
+    let (ty, c) = translate_const_kind(bt_ctx, constant);
     assert!(ty.is_literal());
     match c {
         e::OperandConstantValue::Literal(v) => ty::ConstGeneric::Value(v),
@@ -434,7 +436,7 @@ pub(crate) fn translate_const_kind_as_const_generic<'tcx>(
 
 /// Translate a constant which may not be yet evaluated.
 pub(crate) fn translate_constant_kind<'tcx>(
-    tt_ctx: &TypeTransContext<'tcx, '_>,
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     constant: &rustc_middle::mir::ConstantKind<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
     trace!("{:?}", constant);
@@ -445,36 +447,36 @@ pub(crate) fn translate_constant_kind<'tcx>(
         // Nightly 2022-09-19, and the `Val` case used to be ignored.
         // SH: I'm not sure which corresponds to what (the documentation
         // is not super clear).
-        mir::ConstantKind::Ty(c) => translate_const_kind(tt_ctx, *c),
+        mir::ConstantKind::Ty(c) => translate_const_kind(bt_ctx, *c),
         // I'm not sure what this is about: the documentation is weird.
         mir::ConstantKind::Val(cv, ty) => {
             trace!("cv: {:?}, ty: {:?}", cv, ty);
-            translate_evaluated_operand_constant(tt_ctx, ty, cv)
+            translate_evaluated_operand_constant(bt_ctx, ty, cv)
         }
         rustc_middle::mir::ConstantKind::Unevaluated(ucv, mir_ty) => {
-            translate_const_kind_unevaluated(tt_ctx, mir_ty, ucv)
+            translate_const_kind_unevaluated(bt_ctx, mir_ty, ucv)
         }
     }
 }
 
 pub(crate) fn translate_evaluated_operand_constant<'tcx>(
-    tt_ctx: &TypeTransContext<'tcx, '_>,
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     ty: &Ty<'tcx>,
     val: &mir::interpret::ConstValue<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
-    let llbc_ty = translate_ety(tt_ctx, ty).unwrap();
-    let im_val = translate_const_value(tt_ctx, &llbc_ty, ty, val);
+    let llbc_ty = translate_ety(bt_ctx, ty).unwrap();
+    let im_val = translate_const_value(bt_ctx, &llbc_ty, ty, val);
     (llbc_ty, im_val)
 }
 
 /// Translate a constant which may not be yet evaluated.
 pub(crate) fn translate_operand_constant<'tcx>(
-    tt_ctx: &TypeTransContext<'tcx, '_>,
+    bt_ctx: &BodyTransContext<'tcx, '_, '_>,
     constant: &mir::Constant<'tcx>,
 ) -> (ty::ETy, e::OperandConstantValue) {
     trace!("{:?}", constant);
     use std::ops::Deref;
     let constant = &constant.deref();
 
-    translate_constant_kind(tt_ctx, &constant.literal)
+    translate_constant_kind(bt_ctx, &constant.literal)
 }
