@@ -1,4 +1,5 @@
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
+use crate::meta;
 use crate::names::{hir_item_to_name, item_def_id_to_name};
 use crate::reorder_decls as rd;
 use crate::translate_ctx::*;
@@ -154,6 +155,8 @@ pub fn translate<'tcx, 'ctx>(
         stack: LinkedHashSet::new(),
         file_to_id: HashMap::new(),
         id_to_file: HashMap::new(),
+        real_file_counter: meta::LocalFileId::Generator::new(),
+        virtual_file_counter: meta::VirtualFileId::Generator::new(),
         type_id_map: ty::TypeDeclId::MapGenerator::new(),
         type_defs: ty::TypeDeclId::Map::new(),
         fun_id_map: ast::FunDeclId::MapGenerator::new(),

@@ -11,7 +11,6 @@ use crate::formatter::Formatter;
 use crate::generics;
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::id_vector;
-use crate::meta;
 use crate::names::global_def_id_to_name;
 use crate::names::{function_def_id_to_name, type_def_id_to_name};
 use crate::regions_hierarchy::RegionGroups;
@@ -1104,8 +1103,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         use std::ops::Deref;
 
-        let sess = self.t_ctx.sess;
-
         let t_statement: Option<ast::RawStatement> = match &statement.kind {
             StatementKind::Assign(assign) => {
                 let (place, rvalue) = assign.deref();
@@ -1168,12 +1165,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         match t_statement {
             None => Ok(None),
             Some(t_statement) => {
-                let meta = meta::get_meta_from_source_info(
-                    sess,
-                    &self.t_ctx.file_to_id,
-                    &body.source_scopes,
-                    statement.source_info,
-                );
+                let meta = self
+                    .t_ctx
+                    .translate_meta_from_source_info(&body.source_scopes, statement.source_info);
 
                 Ok(Some(ast::Statement::new(meta, t_statement)))
             }
@@ -1188,16 +1182,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<ast::Terminator> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
 
-        let sess = self.t_ctx.sess;
-
         // Compute the meta information beforehand (we might need it to introduce
         // intermediate statements - we desugar some terminators)
-        let meta = meta::get_meta_from_source_info(
-            sess,
-            &self.t_ctx.file_to_id,
-            &body.source_scopes,
-            terminator.source_info,
-        );
+        let meta = self
+            .t_ctx
+            .translate_meta_from_source_info(&body.source_scopes, terminator.source_info);
 
         // Translate the terminator
         let t_terminator: ast::RawTerminator = match &terminator.kind {
@@ -1663,7 +1652,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let body = get_mir_for_def_id_and_level(tcx, local_id, self.t_ctx.mir_level);
 
         // Compute the meta information
-        let meta = self.get_meta_from_rspan(body.span);
+        let meta = self.translate_meta_from_rspan(body.span);
 
         // Initialize the local variables
         trace!("Translating the body locals");
@@ -1852,7 +1841,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let is_transparent = self.id_is_transparent(rust_id);
 
         // Compute the meta information
-        let meta = self.get_meta_from_rid(rust_id);
+        let meta = self.translate_meta_from_rid(rust_id);
 
         // Translate the function name
         let name = function_def_id_to_name(self.tcx, rust_id);
@@ -1895,7 +1884,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         val: e::OperandConstantValue,
     ) -> ast::ExprBody {
         // Compute the meta information (we use the same everywhere)
-        let meta = self.get_meta_from_rid(def_rid);
+        let meta = self.translate_meta_from_rid(def_rid);
 
         // # Variables
         // ret : ty
@@ -1935,7 +1924,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let name = global_def_id_to_name(self.tcx, rust_id);
 
         // Compute the meta information
-        let meta = self.get_meta_from_rid(rust_id);
+        let meta = self.translate_meta_from_rid(rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);

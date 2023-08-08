@@ -422,7 +422,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
 
                 // Translate the span information
-                let meta = self.get_meta_from_rid(field_def.did);
+                let meta = self.translate_meta_from_rid(field_def.did);
 
                 // Store the field
                 let field = ty::Field {
@@ -435,7 +435,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 field_id.incr();
             }
 
-            let meta = self.get_meta_from_rid(var_def.def_id);
+            let meta = self.translate_meta_from_rid(var_def.def_id);
             let variant_name = var_def.ident(self.t_ctx.tcx).name.to_ident_string();
             variants.push(ty::Variant {
                 meta,
@@ -578,7 +578,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let const_generic_params = bt_ctx.const_generic_vars.clone();
 
         // Translate the span information
-        let meta = bt_ctx.get_meta_from_rid(id);
+        let meta = bt_ctx.translate_meta_from_rid(id);
 
         let type_def = ty::TypeDecl {
             def_id: trans_id,

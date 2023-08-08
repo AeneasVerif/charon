@@ -3,7 +3,8 @@
 #![allow(dead_code)]
 use crate::formatter::Formatter;
 use crate::get_mir::MirLevel;
-use crate::meta::{get_meta_from_rid, get_meta_from_rspan, FileId, FileName, Meta};
+use crate::meta;
+use crate::meta::{FileId, FileName, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::{AnyRustId, AnyTransId};
 use crate::types as ty;
@@ -12,8 +13,10 @@ use crate::ullbc_ast as ast;
 use crate::values as v;
 use linked_hash_set::LinkedHashSet;
 use rustc_hir::def_id::DefId;
+use rustc_index::vec::IndexVec;
 use rustc_middle::mir;
 use rustc_middle::mir::BasicBlock;
+use rustc_middle::mir::{SourceInfo, SourceScope, SourceScopeData};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::collections::{HashMap, HashSet};
@@ -50,6 +53,8 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// File names to ids and vice-versa
     pub file_to_id: HashMap<FileName, FileId::Id>,
     pub id_to_file: HashMap<FileId::Id, FileName>,
+    pub real_file_counter: LocalFileId::Generator,
+    pub virtual_file_counter: VirtualFileId::Generator,
     /// The map from Rust type ids to translated type ids
     pub type_id_map: ty::TypeDeclId::MapGenerator<DefId>,
     /// The translated type definitions
@@ -115,12 +120,112 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
-    pub(crate) fn get_meta_from_rid(&self, def_id: DefId) -> Meta {
-        get_meta_from_rid(&self.sess, self.tcx, &self.file_to_id, def_id)
+    /// Register the file containing a definition (rem.: we register the
+    /// file containing the definition itself, not its def ident).
+    fn translate_file_from_def_id(&mut self, def_id: DefId) -> FileId::Id {
+        let span = meta::get_rspan_from_def_id(self.tcx, def_id);
+        self.translate_file_from_span(span)
     }
 
-    pub(crate) fn get_meta_from_rspan(&self, rspan: rustc_span::Span) -> Meta {
-        get_meta_from_rspan(&self.sess, &self.file_to_id, rspan)
+    /// Register the file referenced by a span
+    fn translate_file_from_span(&mut self, span: rustc_span::Span) -> FileId::Id {
+        let filename = meta::get_filename_from_rspan(self.sess, span);
+        self.register_file(filename)
+    }
+
+    /// Register a file if it is a "real" file and was not already registered
+    fn register_file(&mut self, filename: FileName) -> FileId::Id {
+        // Lookup the file if it was already registered
+        match self.file_to_id.get(&filename) {
+            Option::Some(id) => *id,
+            Option::None => {
+                // Generate the fresh id
+                let id = match &filename {
+                    FileName::Local(_) => FileId::Id::LocalId(self.real_file_counter.fresh_id()),
+                    FileName::Virtual(_) => {
+                        FileId::Id::VirtualId(self.virtual_file_counter.fresh_id())
+                    }
+                    FileName::NotReal(_) => unimplemented!(),
+                };
+                self.file_to_id.insert(filename.clone(), id);
+                self.id_to_file.insert(id, filename);
+                id
+            }
+        }
+    }
+
+    /// Compute the meta information for a Rust definition identified by its id.
+    pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
+        // Retrieve the span from the def id
+        let rspan = meta::get_rspan_from_def_id(self.tcx, def_id);
+
+        self.translate_meta_from_rspan(rspan)
+    }
+
+    pub fn translate_span(&mut self, rspan: rustc_span::Span) -> meta::Span {
+        // Retrieve the source map, which contains information about the source file:
+        // we need it to be able to interpret the span.
+        let source_map = self.sess.source_map();
+
+        // Find the source file and the span.
+        // It is very annoying: macros get expanded to statements whose spans refer
+        // to the file where the macro is defined, not the file where it is used.
+        let (beg, end) = source_map.is_valid_span(rspan).unwrap();
+        let filename = meta::convert_filename(&beg.file.name);
+        let file_id = match &filename {
+            FileName::NotReal(_) => {
+                // For now we forbid not real filenames
+                unimplemented!();
+            }
+            FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename),
+        };
+
+        let beg = meta::convert_loc(beg);
+        let end = meta::convert_loc(end);
+
+        // Put together
+        meta::Span { file_id, beg, end }
+    }
+
+    /// Compute meta data from a Rust source scope
+    pub fn translate_meta_from_source_info(
+        &mut self,
+        source_scopes: &IndexVec<SourceScope, SourceScopeData<'_>>,
+        source_info: SourceInfo,
+    ) -> Meta {
+        // Translate the span
+        let mut scope_data = source_scopes.get(source_info.scope).unwrap();
+        let span = self.translate_span(scope_data.span);
+
+        // Lookup the top-most inlined parent scope.
+        if scope_data.inlined_parent_scope.is_some() {
+            while scope_data.inlined_parent_scope.is_some() {
+                let parent_scope = scope_data.inlined_parent_scope.unwrap();
+                scope_data = source_scopes.get(parent_scope).unwrap();
+            }
+
+            let parent_span = self.translate_span(scope_data.span);
+
+            Meta {
+                span: parent_span,
+                generated_from_span: Some(span),
+            }
+        } else {
+            Meta {
+                span,
+                generated_from_span: None,
+            }
+        }
+    }
+
+    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: rustc_span::Span) -> Meta {
+        // Translate teh span
+        let span = self.translate_span(rspan);
+
+        Meta {
+            span,
+            generated_from_span: None,
+        }
     }
 
     pub(crate) fn id_is_opaque(&self, id: DefId) -> bool {
@@ -211,12 +316,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    pub(crate) fn get_meta_from_rid(&self, def_id: DefId) -> Meta {
-        self.t_ctx.get_meta_from_rid(def_id)
+    pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
+        self.t_ctx.translate_meta_from_rid(def_id)
     }
 
-    pub(crate) fn get_meta_from_rspan(&self, rspan: rustc_span::Span) -> Meta {
-        self.t_ctx.get_meta_from_rspan(rspan)
+    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: rustc_span::Span) -> Meta {
+        self.t_ctx.translate_meta_from_rspan(rspan)
     }
 
     pub(crate) fn get_local(&self, local: &mir::Local) -> Option<v::VarId::Id> {
