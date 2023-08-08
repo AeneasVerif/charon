@@ -116,7 +116,7 @@ impl<'tcx, 'ctx> TransContext<'tcx, 'ctx> {
                 // to check that all the opaque modules given as arguments actually
                 // exist
                 trace!("{:?}", def_id);
-                let module_name = item_def_id_to_name(self.ctx, def_id);
+                let module_name = item_def_id_to_name(self.tcx, def_id);
                 let opaque = self.id_is_opaque(def_id);
                 if opaque {
                     // Ignore
