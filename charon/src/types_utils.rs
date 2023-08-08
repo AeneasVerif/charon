@@ -1020,8 +1020,8 @@ pub trait TypeVisitor {
     fn default_visit_ty<R: Clone + std::cmp::Eq>(&mut self, ty: &Ty<R>) {
         use Ty::*;
         match ty {
-            Adt(id, rl, tys, cgs) => self.visit_ty_adt(*id, rl, tys, cgs),
-            TypeVar(vid) => self.visit_ty_type_var(*vid),
+            Adt(id, rl, tys, cgs) => self.visit_ty_adt(id, rl, tys, cgs),
+            TypeVar(vid) => self.visit_ty_type_var(vid),
             Literal(lit) => self.visit_ty_literal(lit),
             Never => self.visit_ty_never(),
             Ref(r, ty, rk) => self.visit_ty_ref(r, ty, rk),
@@ -1031,7 +1031,7 @@ pub trait TypeVisitor {
 
     fn visit_ty_adt<R: Clone + std::cmp::Eq>(
         &mut self,
-        id: TypeId,
+        id: &TypeId,
         rl: &Vec<R>,
         tys: &Vec<Ty<R>>,
         cgs: &Vec<ConstGeneric>,
@@ -1046,7 +1046,7 @@ pub trait TypeVisitor {
         }
     }
 
-    fn visit_ty_type_var(&mut self, vid: TypeVarId::Id) {
+    fn visit_ty_type_var(&mut self, vid: &TypeVarId::Id) {
         self.visit_type_var_id(vid);
     }
 
@@ -1064,7 +1064,7 @@ pub trait TypeVisitor {
         self.visit_ty(ty);
     }
 
-    fn visit_type_id(&mut self, id: TypeId) {
+    fn visit_type_id(&mut self, id: &TypeId) {
         use TypeId::*;
         match id {
             Adt(id) => self.visit_type_decl_id(id),
@@ -1073,22 +1073,22 @@ pub trait TypeVisitor {
         }
     }
 
-    fn visit_type_decl_id(&mut self, _: TypeDeclId::Id) {}
+    fn visit_type_decl_id(&mut self, _: &TypeDeclId::Id) {}
 
-    fn visit_assumed_ty(&mut self, _: AssumedTy) {}
+    fn visit_assumed_ty(&mut self, _: &AssumedTy) {}
 
     fn visit_const_generic(&mut self, cg: &ConstGeneric) {
         use ConstGeneric::*;
         match cg {
-            Global(id) => self.visit_global_decl_id(*id),
-            Var(id) => self.visit_const_generic_var_id(*id),
+            Global(id) => self.visit_global_decl_id(id),
+            Var(id) => self.visit_const_generic_var_id(id),
             Value(lit) => self.visit_literal(lit),
         }
     }
 
-    fn visit_global_decl_id(&mut self, _: GlobalDeclId::Id) {}
-    fn visit_type_var_id(&mut self, _: TypeVarId::Id) {}
-    fn visit_const_generic_var_id(&mut self, _: ConstGenericVarId::Id) {}
+    fn visit_global_decl_id(&mut self, _: &GlobalDeclId::Id) {}
+    fn visit_type_var_id(&mut self, _: &TypeVarId::Id) {}
+    fn visit_const_generic_var_id(&mut self, _: &ConstGenericVarId::Id) {}
 
     fn visit_literal(&mut self, _: &Literal) {}
 }

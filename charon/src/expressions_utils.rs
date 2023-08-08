@@ -365,9 +365,9 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         match op {
             Literal(lit) => self.visit_literal(lit),
             Adt(oid, ops) => self.visit_operand_const_adt(oid, ops),
-            ConstantId(id) => self.visit_global_decl_id(*id),
-            StaticId(id) => self.visit_global_decl_id(*id),
-            Var(id) => self.visit_const_generic_var_id(*id),
+            ConstantId(id) => self.visit_global_decl_id(id),
+            StaticId(id) => self.visit_global_decl_id(id),
+            Var(id) => self.visit_const_generic_var_id(id),
         }
     }
 
@@ -434,7 +434,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Option(_, ty) => self.visit_ty(ty),
             Range(ty) => self.visit_ty(ty),
             Adt(adt_id, _, _, tys, cgs) => {
-                self.visit_type_decl_id(*adt_id);
+                self.visit_type_decl_id(adt_id);
                 for ty in tys {
                     self.visit_ty(ty);
                 }
@@ -472,13 +472,13 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
 
     fn visit_fun_id(&mut self, fun_id: &FunId) {
         match fun_id {
-            FunId::Regular(fid) => self.visit_fun_decl_id(*fid),
-            FunId::Assumed(aid) => self.visit_assumed_fun_id(*aid),
+            FunId::Regular(fid) => self.visit_fun_decl_id(fid),
+            FunId::Assumed(aid) => self.visit_assumed_fun_id(aid),
         }
     }
 
-    fn visit_fun_decl_id(&mut self, fid: FunDeclId::Id) {}
-    fn visit_assumed_fun_id(&mut self, fid: AssumedFunId) {}
+    fn visit_fun_decl_id(&mut self, fid: &FunDeclId::Id) {}
+    fn visit_assumed_fun_id(&mut self, fid: &AssumedFunId) {}
 }
 
 } // make_generic_in_borrows

@@ -628,6 +628,54 @@ make_generic_in_borrows! {
 ///
 /// TODO: implement macros to automatically derive visitors.
 pub trait AstVisitor: crate::expressions::ExprVisitor {
+    fn visit_block_data(&mut self, block: &BlockData) {
+        for st in &block.statements {
+            self.visit_statement(st);
+        }
+        self.visit_terminator(&block.terminator);
+    }
+
+    fn visit_statement(&mut self, st: &Statement) {
+        self.visit_meta(&st.meta);
+        self.visit_raw_statement(&st.content);
+    }
+
+    fn visit_raw_statement(&mut self, st: &RawStatement) {
+        self.default_visit_raw_statement(st);
+    }
+
+    fn default_visit_raw_statement(&mut self, st: &RawStatement) {
+        use RawStatement::*;
+        match st {
+            Assign(p, rv) => self.visit_assign(p, rv),
+            FakeRead(p) => self.visit_fake_read(p),
+            SetDiscriminant(p, vid) => self.visit_set_discriminant(p, vid),
+            StorageDead(vid) => self.visit_storage_dead(vid),
+            Deinit(p) => self.visit_deinit(p),
+        }
+    }
+
+    fn visit_assign(&mut self, p: &Place, rv: &Rvalue) {
+        self.visit_place(p);
+        self.visit_rvalue(rv);
+    }
+
+    fn visit_fake_read(&mut self, p: &Place) {
+        self.visit_place(p);
+    }
+
+    fn visit_set_discriminant(&mut self, p: &Place, _vid: &VariantId::Id) {
+        self.visit_place(p);
+    }
+
+    fn visit_storage_dead(&mut self, vid: &VarId::Id) {
+        self.visit_var_id(vid);
+    }
+
+    fn visit_deinit(&mut self, p: &Place) {
+        self.visit_place(p);
+    }
+
     fn visit_terminator(&mut self, st: &Terminator) {
         self.visit_meta(&st.meta);
         self.visit_raw_terminator(&st.content);
@@ -638,7 +686,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     fn default_visit_raw_terminator(&mut self, st: &RawTerminator) {
         use RawTerminator::*;
         match st {
-            Goto { target } => self.visit_goto(*target),
+            Goto { target } => self.visit_goto(target),
             Switch { discr, targets } => {
                 self.visit_switch(discr, targets);
             }
@@ -646,17 +694,17 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
             Return => self.visit_return(),
             Unreachable => self.visit_unreachable(),
             Drop { place, target } => {
-                self.visit_drop(place, *target);
+                self.visit_drop(place, target);
             }
             Call { call, target } => {
-                self.visit_call_statement(call, *target);
+                self.visit_call_statement(call, target);
             }
             Assert {
                 cond,
                 expected,
                 target,
             } => {
-                self.visit_assert(cond, *expected, *target);
+                self.visit_assert(cond, expected, target);
             }
         }
     }
@@ -665,7 +713,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         self.default_visit_raw_terminator(st);
     }
 
-    fn visit_goto(&mut self, target: BlockId::Id) {
+    fn visit_goto(&mut self, target: &BlockId::Id) {
         self.visit_block_id(target)
     }
 
@@ -680,46 +728,46 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
 
     fn visit_unreachable(&mut self) {}
 
-    fn visit_drop(&mut self, place: &Place, target: BlockId::Id) {
+    fn visit_drop(&mut self, place: &Place, target: &BlockId::Id) {
         self.visit_place(place);
         self.visit_block_id(target);
     }
 
-    fn visit_call_statement(&mut self, call: &Call, target: BlockId::Id) {
+    fn visit_call_statement(&mut self, call: &Call, target: &BlockId::Id) {
         self.visit_call(call);
         self.visit_block_id(target);
     }
 
-    fn visit_assert(&mut self, cond: &Operand, expected: bool, target: BlockId::Id) {
+    fn visit_assert(&mut self, cond: &Operand, expected: &bool, target: &BlockId::Id) {
         self.visit_operand(cond);
         self.visit_block_id(target);
     }
 
-    fn visit_block_id(&mut self, id: BlockId::Id) {}
+    fn visit_block_id(&mut self, id: &BlockId::Id) {}
 
     fn visit_switch_targets(&mut self, targets: &SwitchTargets) {
         use SwitchTargets::*;
         match targets {
-            If(then_id, else_id) => self.visit_if(*then_id, *else_id),
+            If(then_id, else_id) => self.visit_if(then_id, else_id),
             SwitchInt(int_ty, branches, otherwise) => {
-                self.visit_switch_int(*int_ty, branches, *otherwise)
+                self.visit_switch_int(int_ty, branches, otherwise)
             }
         }
     }
 
-    fn visit_if(&mut self, then_id: BlockId::Id, else_id: BlockId::Id) {
+    fn visit_if(&mut self, then_id: &BlockId::Id, else_id: &BlockId::Id) {
         self.visit_block_id(then_id);
         self.visit_block_id(else_id);
     }
 
     fn visit_switch_int(
         &mut self,
-        int_ty: IntegerTy,
+        int_ty: &IntegerTy,
         branches: &Vec<(ScalarValue, BlockId::Id)>,
-        otherwise: BlockId::Id,
+        otherwise: &BlockId::Id,
     ) {
         for (_, br) in branches {
-            self.visit_block_id(*br);
+            self.visit_block_id(br);
         }
         self.visit_block_id(otherwise);
     }

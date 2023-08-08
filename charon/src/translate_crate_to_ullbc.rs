@@ -150,6 +150,7 @@ pub fn translate<'tcx, 'ctx>(
         tcx,
         mir_level,
         crate_info,
+        all_ids: LinkedHashSet::new(),
         stack: LinkedHashSet::new(),
         file_to_id: HashMap::new(),
         id_to_file: HashMap::new(),

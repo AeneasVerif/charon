@@ -19,7 +19,7 @@ use rustc_session::Session;
 use std::collections::{HashMap, HashSet};
 
 pub type AnyDeclRid = rd::AnyDeclId<DefId, DefId, DefId>;
-pub type AnyDeclId = rd::AnyDeclId<ty::TypeDeclId::Id, ast::FunDeclId::Id, ast::GlobalDeclId::Id>;
+pub type AnyDeclId = rd::AnyId; // TODO: remove
 
 pub struct CrateInfo {
     pub crate_name: String,
@@ -46,6 +46,8 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub mir_level: MirLevel,
     ///
     pub crate_info: CrateInfo,
+    /// All the ids
+    pub all_ids: LinkedHashSet<AnyDeclId>,
     /// The declarations we came accross and which we haven't translated yet
     pub stack: LinkedHashSet<AnyDeclRid>,
     /// File names to ids and vice-versa
@@ -133,9 +135,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         !self.id_is_opaque(id)
     }
 
-    pub(crate) fn push_id(&mut self, rust_id: DefId, id: AnyDeclRid) {
+    pub(crate) fn push_id(&mut self, _rust_id: DefId, id: AnyDeclRid, trans_id: AnyDeclId) {
         // Add the id to the stack of declarations to translate
         self.stack.insert(id);
+        self.all_ids.insert(trans_id);
     }
 
     pub(crate) fn register_type_decl_id(&mut self, id: DefId) -> ty::TypeDeclId::Id {
@@ -143,8 +146,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             Option::Some(id) => id,
             Option::None => {
                 let rid = rd::AnyDeclId::Type(id);
-                self.push_id(id, rid);
-                self.type_id_map.insert(id)
+                let trans_id = self.type_id_map.insert(id);
+                self.push_id(id, rid, AnyDeclId::Type(trans_id));
+                trans_id
             }
         }
     }
@@ -158,8 +162,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             Option::Some(id) => id,
             Option::None => {
                 let rid = rd::AnyDeclId::Fun(id);
-                self.push_id(id, rid);
-                self.fun_id_map.insert(id)
+                let trans_id = self.fun_id_map.insert(id);
+                self.push_id(id, rid, AnyDeclId::Fun(trans_id));
+                trans_id
             }
         }
     }
@@ -173,8 +178,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             Option::Some(id) => id,
             Option::None => {
                 let rid = rd::AnyDeclId::Global(id);
-                self.push_id(id, rid);
-                self.global_id_map.insert(id)
+                let trans_id = self.global_id_map.insert(id);
+                self.push_id(id, rid, AnyDeclId::Global(trans_id));
+                trans_id
             }
         }
     }
@@ -362,9 +368,7 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Region<ty::RegionVarId::Id>>
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<ty::ConstGenericVarId::Id>
-    for BodyTransCtx<'tcx, 'ctx, 'ctx1>
-{
+impl<'tcx, 'ctx, 'ctx1> Formatter<ty::ConstGenericVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: ty::ConstGenericVarId::Id) -> String {
         let v = self.const_generic_vars.get(id).unwrap();
         v.to_string()
@@ -397,9 +401,7 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::Region<ty::RegionVarId::Id>>>
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>>
-    for BodyTransCtx<'tcx, 'ctx, 'ctx1>
-{
+impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, ty: &ty::Ty<ty::ErasedRegion>) -> String {
         ty.fmt_with_ctx(self)
     }
