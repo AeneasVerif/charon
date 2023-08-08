@@ -231,7 +231,7 @@ pub enum ConstGeneric {
 )]
 pub enum Ty<R>
 where
-    R: Clone + std::cmp::Eq,
+    R: Clone + std::cmp::Eq, // TODO: do we really need to put those here?
 {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:

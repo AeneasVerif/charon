@@ -65,7 +65,7 @@ pub fn translate_erased_region(region: rustc_middle::ty::RegionKind<'_>) -> ty::
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a Ty.
     ///
     /// Typically used in this module to translate the fields of a structure/
@@ -463,7 +463,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx> TransContext<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Auxiliary helper.
     ///
     /// Translate the generics of a type definition.
@@ -477,7 +477,7 @@ impl<'tcx, 'ctx> TransContext<'tcx, 'ctx> {
         &'ctx1 mut self,
         def_id: DefId,
     ) -> (
-        BodyTransContext<'tcx, 'ctx1, 'ctx>,
+        BodyTransCtx<'tcx, 'ctx1, 'ctx>,
         rustc_middle::ty::subst::SubstsRef<'tcx>,
     ) {
         // Check the generics
@@ -487,7 +487,7 @@ impl<'tcx, 'ctx> TransContext<'tcx, 'ctx> {
         let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(self.tcx, def_id);
 
         // Initialize the body translation context
-        let mut bt_ctx = BodyTransContext::new(def_id, self);
+        let mut bt_ctx = BodyTransCtx::new(def_id, self);
 
         for p in substs.iter() {
             match p.unpack() {

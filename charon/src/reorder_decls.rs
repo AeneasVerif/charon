@@ -1,6 +1,7 @@
 use crate::common::*;
 use crate::gast::{FunDeclId, GlobalDeclId};
 use crate::graphs::*;
+use crate::translate_ctx::TransCtx;
 use crate::types::TypeDeclId;
 use macros::EnumAsGetters;
 use macros::EnumIsA;
@@ -240,11 +241,11 @@ impl<'a, TypeId: Copy, FunId: Copy, GlobalId: Copy> std::iter::IntoIterator
     }
 }
 
-pub fn reorder_declarations(decls: &RegisteredDeclarations) -> Result<Decls> {
+pub fn reorder_declarations(decls: &TransCtx) -> Result<Decls> {
     trace!();
 
     // Step 1: Start by building the graph
-    let mut graph = DiGraphMap::<DefId, ()>::new();
+    let mut graph = DiGraphMap::<AnyDeclId, ()>::new();
 
     // Add the nodes - note that we are using both local and external def ids.
     for (id, _) in decls.iter() {

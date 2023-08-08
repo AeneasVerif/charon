@@ -428,7 +428,7 @@ pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
     assert!(impl_item.of_trait.is_none()); // We don't support traits for now
 }
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a function's local variables by adding them in the environment.
     fn translate_body_locals(&mut self, body: &Body<'tcx>) -> Result<()> {
         // First, retrieve the debug info - we want to retrieve the names
@@ -1693,14 +1693,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx> TransContext<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Translate a function's signature, and initialize a body translation context
     /// at the same time - the function signature gives us the list of region and
     /// type parameters, that we put in the translation context.
     fn translate_function_signature<'ctx1>(
         &'ctx1 mut self,
         def_id: DefId,
-    ) -> (BodyTransContext<'tcx, 'ctx, 'ctx1>, ast::FunSig) {
+    ) -> (BodyTransCtx<'tcx, 'ctx, 'ctx1>, ast::FunSig) {
         let tcx = self.tcx;
 
         // Retrieve the function signature, which includes the lifetimes
@@ -1738,7 +1738,7 @@ impl<'tcx, 'ctx> TransContext<'tcx, 'ctx> {
         //   reimplementing our own function, which is quite simple.
 
         // We need a body translation context to keep track of all the variables
-        let mut bt_ctx = BodyTransContext::new(def_id, self);
+        let mut bt_ctx = BodyTransCtx::new(def_id, self);
 
         // **Sanity checks on the HIR**
         generics::check_function_generics(tcx, def_id);
@@ -1938,7 +1938,7 @@ impl<'tcx, 'ctx> TransContext<'tcx, 'ctx> {
         let meta = self.get_meta_from_rid(rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
 
-        let mut bt_ctx = BodyTransContext::new(rust_id, self);
+        let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id);

@@ -9,10 +9,12 @@
 use crate::expressions::MutExprVisitor;
 use crate::llbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, MutAstVisitor, Statement};
+use crate::types::MutTypeVisitor;
 use take_mut::take;
 
 struct RemoveDynChecks {}
 
+impl MutTypeVisitor for RemoveDynChecks {}
 impl MutExprVisitor for RemoveDynChecks {}
 
 impl MutAstVisitor for RemoveDynChecks {

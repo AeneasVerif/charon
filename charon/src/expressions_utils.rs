@@ -4,6 +4,7 @@
 use crate::assumed;
 use crate::expressions::*;
 use crate::formatter::Formatter;
+use crate::gast::{AssumedFunId, Call, FunDeclId, FunId};
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use crate::values;
@@ -297,7 +298,7 @@ make_generic_in_borrows! {
 /// A visitor for expressions.
 ///
 /// TODO: implement macros to automatically derive visitors.
-pub trait ExprVisitor {
+pub trait ExprVisitor: crate::types::TypeVisitor {
     fn visit_place(&mut self, p: &Place) {
         self.visit_var_id(&p.var_id);
         self.visit_projection(&p.projection);
@@ -354,7 +355,31 @@ pub trait ExprVisitor {
         self.visit_place(p)
     }
 
-    fn visit_operand_const(&mut self, _: &ETy, _: &OperandConstantValue) {}
+    fn visit_operand_const(&mut self, ty: &ETy, op: &OperandConstantValue) {
+        self.visit_ty(ty);
+        self.visit_operand_constant_value(op);
+    }
+
+    fn visit_operand_constant_value(&mut self, op: &OperandConstantValue) {
+        use OperandConstantValue::*;
+        match op {
+            Literal(lit) => self.visit_literal(lit),
+            Adt(oid, ops) => self.visit_operand_const_adt(oid, ops),
+            ConstantId(id) => self.visit_global_decl_id(*id),
+            StaticId(id) => self.visit_global_decl_id(*id),
+            Var(id) => self.visit_const_generic_var_id(*id),
+        }
+    }
+
+    fn visit_operand_const_adt(
+        &mut self,
+        _oid: &Option<VariantId::Id>,
+        ops: &Vec<OperandConstantValue>,
+    ) {
+        for op in ops {
+            self.visit_operand_constant_value(op)
+        }
+    }
 
     fn default_visit_rvalue(&mut self, rv: &Rvalue) {
         match rv {
@@ -365,9 +390,7 @@ pub trait ExprVisitor {
             Rvalue::Discriminant(p) => self.visit_discriminant(p),
             Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
             Rvalue::Global(gid) => self.visit_global(gid),
-            Rvalue::Len(p, ty, cg) => {
-                self.visit_len(p, ty, cg)
-            }
+            Rvalue::Len(p, ty, cg) => self.visit_len(p, ty, cg),
         }
     }
 
@@ -396,17 +419,66 @@ pub trait ExprVisitor {
         self.visit_place(p)
     }
 
-    fn visit_aggregate(&mut self, _: &AggregateKind, ops: &Vec<Operand>) {
+    fn visit_aggregate(&mut self, ak: &AggregateKind, ops: &Vec<Operand>) {
+        self.visit_aggregate_kind(ak);
         for o in ops {
             self.visit_operand(o)
         }
     }
 
+    fn visit_aggregate_kind(&mut self, ak: &AggregateKind) {
+        use AggregateKind::*;
+        // We could generalize and introduce auxiliary functions for
+        // the various cases - this is not necessary for now
+        match ak {
+            Option(_, ty) => self.visit_ty(ty),
+            Range(ty) => self.visit_ty(ty),
+            Adt(adt_id, _, _, tys, cgs) => {
+                self.visit_type_decl_id(*adt_id);
+                for ty in tys {
+                    self.visit_ty(ty);
+                }
+                for cg in cgs {
+                    self.visit_const_generic(cg);
+                }
+            }
+            Array(ty, cg) => {
+                self.visit_ty(ty);
+                self.visit_const_generic(cg);
+            }
+        }
+    }
+
     fn visit_global(&mut self, _: &GlobalDeclId::Id) {}
 
-    fn visit_len(&mut self, p: &Place, _ty :&ETy, _cg: &Option<ConstGeneric>) {
+    fn visit_len(&mut self, p: &Place, _ty: &ETy, _cg: &Option<ConstGeneric>) {
         self.visit_place(p)
     }
+
+    fn visit_call(&mut self, c: &Call) {
+        self.visit_fun_id(&c.func);
+        // We ignore the regions which are erased
+        for t in &c.type_args {
+            self.visit_ty(t);
+        }
+        for cg in &c.const_generic_args {
+            self.visit_const_generic(cg);
+        }
+        for o in &c.args {
+            self.visit_operand(o);
+        }
+        self.visit_place(&c.dest);
+    }
+
+    fn visit_fun_id(&mut self, fun_id: &FunId) {
+        match fun_id {
+            FunId::Regular(fid) => self.visit_fun_decl_id(*fid),
+            FunId::Assumed(aid) => self.visit_assumed_fun_id(*aid),
+        }
+    }
+
+    fn visit_fun_decl_id(&mut self, fid: FunDeclId::Id) {}
+    fn visit_assumed_fun_id(&mut self, fid: AssumedFunId) {}
 }
 
 } // make_generic_in_borrows

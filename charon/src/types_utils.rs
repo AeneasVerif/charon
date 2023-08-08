@@ -5,7 +5,9 @@ use crate::assumed::get_name_from_type_id;
 use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
+use crate::values::Literal;
 use im::{HashMap, OrdSet};
+use macros::make_generic_in_borrows;
 use rustc_middle::ty::{IntTy, UintTy};
 use std::iter::FromIterator;
 use std::iter::Iterator;
@@ -1002,3 +1004,93 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
         }
     }
 }
+
+// Derive two implementations at once: one which uses shared borrows, and one
+// which uses mutable borrows.
+// Generates the traits: `SharedTypeVisitor` and `MutTypeVisitor`.
+make_generic_in_borrows! {
+
+// TODO: we should use traits with default implementations to allow overriding
+// the default behavior (that would also prevent problems with naming collisions)
+pub trait TypeVisitor {
+    fn visit_ty<R: Clone + std::cmp::Eq>(&mut self, ty: &Ty<R>) {
+        self.default_visit_ty(ty)
+    }
+
+    fn default_visit_ty<R: Clone + std::cmp::Eq>(&mut self, ty: &Ty<R>) {
+        use Ty::*;
+        match ty {
+            Adt(id, rl, tys, cgs) => self.visit_ty_adt(*id, rl, tys, cgs),
+            TypeVar(vid) => self.visit_ty_type_var(*vid),
+            Literal(lit) => self.visit_ty_literal(lit),
+            Never => self.visit_ty_never(),
+            Ref(r, ty, rk) => self.visit_ty_ref(r, ty, rk),
+            RawPtr(ty, rk) => self.visit_ty_raw_ptr(ty, rk),
+        }
+    }
+
+    fn visit_ty_adt<R: Clone + std::cmp::Eq>(
+        &mut self,
+        id: TypeId,
+        rl: &Vec<R>,
+        tys: &Vec<Ty<R>>,
+        cgs: &Vec<ConstGeneric>,
+    ) {
+        self.visit_type_id(id);
+        // We ignore the regions
+        for ty in tys {
+            self.visit_ty(ty)
+        }
+        for cg in cgs {
+            self.visit_const_generic(cg);
+        }
+    }
+
+    fn visit_ty_type_var(&mut self, vid: TypeVarId::Id) {
+        self.visit_type_var_id(vid);
+    }
+
+    fn visit_ty_literal(&mut self, ty: &LiteralTy) {}
+
+    fn visit_ty_never(&mut self) {}
+
+    fn visit_ty_ref<R: Clone + std::cmp::Eq>(&mut self, _r: &R, ty: &Box<Ty<R>>, _rk: &RefKind) {
+        // We ignore the region
+        self.visit_ty(ty);
+    }
+
+    fn visit_ty_raw_ptr<R: Clone + std::cmp::Eq>(&mut self, ty: &Box<Ty<R>>, _rk: &RefKind) {
+        // We ignore the region
+        self.visit_ty(ty);
+    }
+
+    fn visit_type_id(&mut self, id: TypeId) {
+        use TypeId::*;
+        match id {
+            Adt(id) => self.visit_type_decl_id(id),
+            Tuple => (),
+            Assumed(aty) => self.visit_assumed_ty(aty),
+        }
+    }
+
+    fn visit_type_decl_id(&mut self, _: TypeDeclId::Id) {}
+
+    fn visit_assumed_ty(&mut self, _: AssumedTy) {}
+
+    fn visit_const_generic(&mut self, cg: &ConstGeneric) {
+        use ConstGeneric::*;
+        match cg {
+            Global(id) => self.visit_global_decl_id(*id),
+            Var(id) => self.visit_const_generic_var_id(*id),
+            Value(lit) => self.visit_literal(lit),
+        }
+    }
+
+    fn visit_global_decl_id(&mut self, _: GlobalDeclId::Id) {}
+    fn visit_type_var_id(&mut self, _: TypeVarId::Id) {}
+    fn visit_const_generic_var_id(&mut self, _: ConstGenericVarId::Id) {}
+
+    fn visit_literal(&mut self, _: &Literal) {}
+}
+
+} // make_generic_in_borrows

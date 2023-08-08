@@ -11,7 +11,7 @@ use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::collections::HashMap;
 
-impl<'tcx, 'ctx> TransContext<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn register_local_hir_impl_item(&mut self, _top_item: bool, impl_item: &ImplItem) {
         // TODO: make a proper error message
         assert!(impl_item.defaultness == Defaultness::Final);
@@ -144,8 +144,8 @@ pub fn translate<'tcx, 'ctx>(
     sess: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
-) -> TransContext<'tcx, 'ctx> {
-    let mut ctx = TransContext {
+) -> TransCtx<'tcx, 'ctx> {
+    let mut ctx = TransCtx {
         sess,
         tcx,
         mir_level,

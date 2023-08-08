@@ -9,7 +9,7 @@ use crate::llbc_ast::{
     MutAstVisitor, RawStatement, Statement, Switch,
 };
 use crate::meta::Meta;
-use crate::types::{AssumedTy, ConstGeneric, ErasedRegion, RefKind, Ty};
+use crate::types::{AssumedTy, ConstGeneric, ErasedRegion, MutTypeVisitor, RefKind, Ty};
 use crate::values::VarId;
 use std::mem::replace;
 
@@ -126,6 +126,8 @@ impl<'a> Transform<'a> {
         }
     }
 }
+
+impl<'a> MutTypeVisitor for Transform<'a> {}
 
 impl<'a> MutExprVisitor for Transform<'a> {
     fn visit_place(&mut self, p: &mut Place) {

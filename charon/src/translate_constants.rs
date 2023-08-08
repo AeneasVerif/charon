@@ -57,7 +57,7 @@ fn translate_constant_integer_like_value(
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransContext<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate the type of a [mir::interpret::ConstValue::Scalar] value :
     /// Either a bool, a char, an integer, an enumeration ADT, an empty tuple or a static reference.
     fn translate_constant_scalar_type(&mut self, ty: &TyKind) -> ty::ETy {

@@ -14,7 +14,7 @@ use syn::punctuated::Punctuated;
 use syn::token::{Add, Comma};
 use syn::{
     parse, parse_macro_input, Binding, Block, Constraint, Data, DataEnum, DeriveInput, Expr,
-    Fields, FnArg, GenericArgument, GenericParam, Ident, ItemTrait, Lifetime, Lit, Pat, Path,
+    Fields, FnArg, GenericArgument, GenericParam, Ident, Item, ItemTrait, Lifetime, Lit, Pat, Path,
     PathArguments, PathSegment, ReturnType, Stmt, TraitBound, TraitBoundModifier, TraitItem, Type,
     TypeParamBound, TypePath, WhereClause, WherePredicate,
 };
@@ -1069,7 +1069,7 @@ fn generic_stmt_to_mut(s: &mut Stmt) {
             .init
             .iter_mut()
             .for_each(|e| generic_expr_to_mut(&mut e.1)),
-        Stmt::Item(_) => unimplemented!("Stmt::Item"),
+        Stmt::Item(item) => generic_item_to_mut(item),
         Stmt::Expr(e) => generic_expr_to_mut(e),
         Stmt::Semi(e, _) => generic_expr_to_mut(e),
     }
@@ -1078,6 +1078,33 @@ fn generic_stmt_to_mut(s: &mut Stmt) {
 fn generic_stmts_to_mut(stmts: &mut Vec<Stmt>) {
     for stmt in stmts {
         generic_stmt_to_mut(stmt)
+    }
+}
+
+fn generic_item_to_mut(item: &mut Item) {
+    use Item::*;
+    match item {
+        Const(_) => unimplemented!("Item::Const"),
+        Enum(_) => unimplemented!("Item::Enum"),
+        ExternCrate(_) => unimplemented!("Item::ExternCrate"),
+        Fn(_) => unimplemented!("Item::Fn"),
+        ForeignMod(_) => unimplemented!("Item::ForeignMod"),
+        Impl(_) => unimplemented!("Item::Impl"),
+        Macro(_) => unimplemented!("Item::Macro"),
+        Macro2(_) => unimplemented!("Item::Macro2"),
+        Mod(_) => unimplemented!("Item::Mod"),
+        Static(_) => unimplemented!("Item::Static"),
+        Struct(_) => unimplemented!("Item::Struct"),
+        Trait(_) => unimplemented!("Item::Trait"),
+        TraitAlias(_) => unimplemented!("Item::TraitAlias"),
+        Type(_) => unimplemented!("Item::Type"),
+        Union(_) => unimplemented!("Item::Union"),
+        Use(_) => (), // Nothing to do
+        Verbatim(_) => unimplemented!("Item::Verbatim"),
+        #[cfg_attr(test, deny(non_exhaustive_omitted_patterns))]
+        _ => {
+            unimplemented!();
+        }
     }
 }
 
