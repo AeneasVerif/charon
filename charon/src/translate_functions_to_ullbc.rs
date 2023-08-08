@@ -1011,10 +1011,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         if adt_id.is_local() {
                             assert!(!self.t_ctx.id_is_opaque(*adt_id));
 
-                            // Local ADT: retrieve the definition
+                            // Local ADT: translate the id
                             let id_t = self.translate_type_decl_id(*adt_id);
 
-                            let kind = self.t_ctx.tcx.adt_def(self.def_id).adt_kind();
+                            let kind = self.t_ctx.tcx.adt_def(adt_id).adt_kind();
                             let variant_id = match kind {
                                 rustc_middle::ty::AdtKind::Struct => Option::None,
                                 rustc_middle::ty::AdtKind::Enum => {
