@@ -32,7 +32,7 @@ impl Formatter<VarId::Id> for DummyFormatter {
 
 impl Formatter<TypeDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        type_def_id_to_pretty_string(id)
+        type_decl_id_to_pretty_string(id)
     }
 }
 

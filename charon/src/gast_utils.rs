@@ -562,13 +562,23 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, VariantId::Id)> for GAstFormatter<
     fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
         let (def_id, variant_id) = id;
         let ctx = self.type_context;
-        let def = ctx.get(def_id).unwrap();
-        let variants = def.kind.as_enum();
-        let mut name = def.name.to_string();
-        let variant_name = &variants.get(variant_id).unwrap().name;
-        name.push_str("::");
-        name.push_str(variant_name);
-        name
+        // The definition may not be available yet, especially if we print-debug
+        // while translating the crate
+        match ctx.get(def_id) {
+            Option::None => format!(
+                "{}::{}",
+                type_decl_id_to_pretty_string(def_id),
+                variant_id_to_pretty_string(variant_id)
+            ),
+            Option::Some(def) => {
+                let variants = def.kind.as_enum();
+                let mut name = def.name.to_string();
+                let variant_name = &variants.get(variant_id).unwrap().name;
+                name.push_str("::");
+                name.push_str(variant_name);
+                name
+            }
+        }
     }
 }
 
@@ -579,28 +589,44 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id
     fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (def_id, opt_variant_id, field_id) = id;
         let ctx = self.type_context;
-        let gen_def = ctx.get(def_id).unwrap();
-        match (&gen_def.kind, opt_variant_id) {
-            (TypeDeclKind::Enum(variants), Some(variant_id)) => {
-                let field = variants
-                    .get(variant_id)
-                    .unwrap()
-                    .fields
-                    .get(field_id)
-                    .unwrap();
-                match &field.name {
-                    Option::Some(name) => name.clone(),
-                    Option::None => field_id.to_string(),
+        // The definition may not be available yet, especially if we print-debug
+        // while translating the crate
+        match ctx.get(def_id) {
+            Option::None => match opt_variant_id {
+                Option::None => format!(
+                    "{}::{}",
+                    type_decl_id_to_pretty_string(def_id),
+                    field_id_to_pretty_string(field_id)
+                ),
+                Option::Some(variant_id) => format!(
+                    "{}::{}::{}",
+                    type_decl_id_to_pretty_string(def_id),
+                    variant_id_to_pretty_string(variant_id),
+                    field_id_to_pretty_string(field_id)
+                ),
+            },
+            Option::Some(gen_def) => match (&gen_def.kind, opt_variant_id) {
+                (TypeDeclKind::Enum(variants), Some(variant_id)) => {
+                    let field = variants
+                        .get(variant_id)
+                        .unwrap()
+                        .fields
+                        .get(field_id)
+                        .unwrap();
+                    match &field.name {
+                        Option::Some(name) => name.clone(),
+                        Option::None => field_id.to_string(),
+                    }
                 }
-            }
-            (TypeDeclKind::Struct(fields), None) => {
-                let field = fields.get(field_id).unwrap();
-                match &field.name {
-                    Option::Some(name) => name.clone(),
-                    Option::None => field_id.to_string(),
+                (TypeDeclKind::Struct(fields), None) => {
+                    let field = fields.get(field_id).unwrap();
+                    match &field.name {
+                        Option::Some(name) => name.clone(),
+                        Option::None => field_id.to_string(),
+                    }
                 }
-            }
-            _ => unreachable!(),
+                _ => unreachable!(),
+            },
         }
     }
 }

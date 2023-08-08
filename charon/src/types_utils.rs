@@ -378,8 +378,17 @@ impl IntegerTy {
     }
 }
 
-pub fn type_def_id_to_pretty_string(id: TypeDeclId::Id) -> String {
+// TODO: turn into a method
+pub fn type_decl_id_to_pretty_string(id: TypeDeclId::Id) -> String {
     format!("@Adt{id}")
+}
+
+pub fn variant_id_to_pretty_string(id: VariantId::Id) -> String {
+    format!("@Variant{id}")
+}
+
+pub fn field_id_to_pretty_string(id: FieldId::Id) -> String {
+    format!("@Field{id}")
 }
 
 pub fn region_var_id_to_pretty_string(id: RegionVarId::Id) -> String {
@@ -702,7 +711,7 @@ impl<'a> Formatter<TypeDeclId::Id> for IncompleteFormatter<'a> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
         // For type def ids, we simply print the def id because
         // we lack context
-        type_def_id_to_pretty_string(id)
+        type_decl_id_to_pretty_string(id)
     }
 }
 
@@ -743,7 +752,7 @@ impl Formatter<RegionVarId::Id> for DummyFormatter {
 
 impl Formatter<TypeDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        type_def_id_to_pretty_string(id)
+        type_decl_id_to_pretty_string(id)
     }
 }
 
@@ -989,8 +998,12 @@ impl Formatter<&ErasedRegion> for TypeDecl {
 
 impl Formatter<TypeDeclId::Id> for TypeDecls {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        let def = self.get(id).unwrap();
-        def.name.to_string()
+        // The definition may not be available yet, especially if we print-debug
+        // while translating the crate
+        match self.get(id) {
+            Option::None => type_decl_id_to_pretty_string(id),
+            Option::Some(def) => def.name.to_string(),
+        }
     }
 }
 
