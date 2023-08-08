@@ -196,8 +196,8 @@ type declaration_group =
 type ('fun_decl, 'global_decl) gcrate = {
   name : string;
   declarations : declaration_group list;
-  types : type_decl list;
-  functions : 'fun_decl list;
-  globals : 'global_decl list;
+  types : type_decl TypeDeclId.Map.t;
+  functions : 'fun_decl FunDeclId.Map.t;
+  globals : 'global_decl GlobalDeclId.Map.t;
 }
 [@@deriving show]

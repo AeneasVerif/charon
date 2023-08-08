@@ -1,5 +1,4 @@
 include GAstUtils
-open Types
 open LlbcAst
 open Utils
 
@@ -21,12 +20,6 @@ let fun_decl_has_loops (fd : fun_decl) : bool =
   match fd.body with
   | Some body -> statement_has_loops body.body
   | None -> false
-
-let compute_defs_maps (c : crate) :
-    type_decl TypeDeclId.Map.t
-    * fun_decl FunDeclId.Map.t
-    * global_decl GlobalDeclId.Map.t =
-  GAstUtils.compute_defs_maps (fun g -> g.def_id) c
 
 (** Create a sequence *)
 let mk_sequence (st1 : statement) (st2 : statement) : statement =

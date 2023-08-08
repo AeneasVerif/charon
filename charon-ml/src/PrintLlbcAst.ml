@@ -201,47 +201,35 @@ module Crate = struct
     PA.fun_decl_to_string fmt "" "  " def
 
   let crate_type_decl_to_string (m : A.crate) (decl : T.type_decl) : string =
-    let types_defs_map, _, globals_defs_map =
-      LlbcAstUtils.compute_defs_maps m
-    in
-    type_decl_to_string types_defs_map globals_defs_map decl
+    type_decl_to_string m.types m.globals decl
 
   let crate_global_decl_to_string (m : A.crate) (decl : A.global_decl) : string
       =
-    let types_defs_map, funs_defs_map, globals_defs_map =
-      LlbcAstUtils.compute_defs_maps m
-    in
-    global_decl_to_string types_defs_map funs_defs_map globals_defs_map decl
+    global_decl_to_string m.types m.functions m.globals decl
 
   let crate_fun_decl_to_string (m : A.crate) (decl : A.fun_decl) : string =
-    let types_defs_map, funs_defs_map, globals_defs_map =
-      LlbcAstUtils.compute_defs_maps m
-    in
-    fun_decl_to_string types_defs_map funs_defs_map globals_defs_map decl
+    fun_decl_to_string m.types m.functions m.globals decl
 
   let crate_to_string (m : A.crate) : string =
-    let types_defs_map, funs_defs_map, globals_defs_map =
-      LlbcAstUtils.compute_defs_maps m
-    in
-
     (* The types *)
     let type_decls =
-      List.map (type_decl_to_string types_defs_map globals_defs_map) m.A.types
+      List.map
+        (fun (_, d) -> type_decl_to_string m.types m.globals d)
+        (T.TypeDeclId.Map.bindings m.A.types)
     in
 
     (* The globals *)
     let global_decls =
       List.map
-        (global_decl_to_string types_defs_map funs_defs_map globals_defs_map)
-        m.A.globals
+        (fun (_, d) -> global_decl_to_string m.types m.functions m.globals d)
+        (A.GlobalDeclId.Map.bindings m.A.globals)
     in
 
     (* The functions *)
     let fun_decls =
       List.map
-        (fun decl ->
-          fun_decl_to_string types_defs_map funs_defs_map globals_defs_map decl)
-        m.A.functions
+        (fun (_, d) -> fun_decl_to_string m.types m.functions m.globals d)
+        (A.FunDeclId.Map.bindings m.A.functions)
     in
 
     (* Put everything together *)

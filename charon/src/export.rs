@@ -47,9 +47,9 @@ struct GCrateSerializer<'a, FD: Serialize + Clone, GD: Serialize + Clone> {
     /// the file names, in order to save space.
     id_to_file: VecSW<'a, (FileId::Id, FileName)>,
     declarations: DeclarationsSerializer<'a>,
-    types: &'a TypeDeclId::Map<TypeDecl>,
-    functions: &'a FunDeclId::Map<FD>,
-    globals: &'a GlobalDeclId::Map<GD>,
+    types: VecSW<'a, TypeDecl>,
+    functions: VecSW<'a, FD>,
+    globals: VecSW<'a, GD>,
 }
 
 /// Export the translated definitions to a JSON file.
@@ -84,13 +84,18 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     let id_to_file = VecSW::new(&id_to_file);
 
     // Serialize
+    // Note that we replace the maps with vectors (the declarations contain
+    // their ids, so it is easy to reconstruct the maps from there).
+    let types = type_defs.iter().cloned().collect();
+    let funs = fun_defs.iter().cloned().collect();
+    let globals = global_defs.iter().cloned().collect();
     let crate_serializer = GCrateSerializer {
         name: crate_name,
         id_to_file,
         declarations: VecSW::new(ordered_decls),
-        types: type_defs,
-        functions: fun_defs,
-        globals: global_defs,
+        types: VecSW::new(&types),
+        functions: VecSW::new(&funs),
+        globals: VecSW::new(&globals),
     };
 
     // Create the directory, if necessary (note that if the target directory
