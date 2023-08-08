@@ -7,7 +7,7 @@ use crate::formatter::Formatter;
 use crate::graphs::*;
 use crate::llbc_ast::FunDecls;
 use crate::reorder_decls as rd;
-use crate::reorder_decls::{DeclarationGroup, Decls};
+use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups};
 use crate::translate_ctx::TransCtx;
 use crate::types as ty;
 use crate::types::*;
@@ -775,7 +775,7 @@ pub fn types_constraints_map_fmt_with_ctx(
     types_constraints.join("\n")
 }
 
-pub fn compute(ctx: &mut TransCtx, ordered_decls: &Decls) {
+pub fn compute(ctx: &mut TransCtx, ordered_decls: &DeclarationsGroups) {
     // First, compute the regions hierarchy for the types, and compute the types
     // constraints map while doing so. We compute by working on a whole type
     // declaration group at a time.

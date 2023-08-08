@@ -1,7 +1,7 @@
 use crate::common::*;
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
-use crate::reorder_decls::Decls;
+use crate::reorder_decls::DeclarationsGroups;
 use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId};
@@ -58,7 +58,7 @@ struct GCrateSerializer<'a, FD: Serialize + Clone, GD: Serialize + Clone> {
 pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     crate_name: String,
     id_to_file: &HashMap<FileId::Id, FileName>,
-    ordered_decls: &Decls,
+    ordered_decls: &DeclarationsGroups,
     type_defs: &TypeDecls,
     fun_defs: &FunDeclId::Map<FD>,
     global_defs: &GlobalDeclId::Map<GD>,
@@ -87,7 +87,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     let crate_serializer = GCrateSerializer {
         name: crate_name,
         id_to_file,
-        declarations: VecSW::new(&ordered_decls.decls),
+        declarations: VecSW::new(ordered_decls),
         types: type_defs,
         functions: fun_defs,
         globals: global_defs,
@@ -133,7 +133,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
 pub fn export_ullbc(
     crate_name: String,
     id_to_file: &HashMap<FileId::Id, FileName>,
-    ordered_decls: &Decls,
+    ordered_decls: &DeclarationsGroups,
     type_defs: &TypeDecls,
     fun_defs: &ullbc_ast::FunDecls,
     global_defs: &ullbc_ast::GlobalDecls,
@@ -155,7 +155,7 @@ pub fn export_ullbc(
 pub fn export_llbc(
     crate_name: String,
     id_to_file: &HashMap<FileId::Id, FileName>,
-    ordered_decls: &Decls,
+    ordered_decls: &DeclarationsGroups,
     type_defs: &TypeDecls,
     fun_defs: &llbc_ast::FunDecls,
     global_defs: &llbc_ast::GlobalDecls,

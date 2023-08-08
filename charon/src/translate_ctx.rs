@@ -5,7 +5,7 @@ use crate::formatter::Formatter;
 use crate::get_mir::MirLevel;
 use crate::meta::{get_meta_from_rid, get_meta_from_rspan, FileId, FileName, Meta};
 use crate::names::Name;
-use crate::reorder_decls as rd;
+use crate::reorder_decls::{AnyRustId, AnyTransId};
 use crate::types as ty;
 use crate::types::LiteralTy;
 use crate::ullbc_ast as ast;
@@ -17,9 +17,6 @@ use rustc_middle::mir::BasicBlock;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::collections::{HashMap, HashSet};
-
-pub type AnyDeclRid = rd::AnyDeclId<DefId, DefId, DefId>;
-pub type AnyDeclId = rd::AnyId; // TODO: remove
 
 pub struct CrateInfo {
     pub crate_name: String,
@@ -47,9 +44,9 @@ pub struct TransCtx<'tcx, 'ctx> {
     ///
     pub crate_info: CrateInfo,
     /// All the ids
-    pub all_ids: LinkedHashSet<AnyDeclId>,
+    pub all_ids: LinkedHashSet<AnyTransId>,
     /// The declarations we came accross and which we haven't translated yet
-    pub stack: LinkedHashSet<AnyDeclRid>,
+    pub stack: LinkedHashSet<AnyRustId>,
     /// File names to ids and vice-versa
     pub file_to_id: HashMap<FileName, FileId::Id>,
     pub id_to_file: HashMap<FileId::Id, FileName>,
@@ -135,7 +132,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         !self.id_is_opaque(id)
     }
 
-    pub(crate) fn push_id(&mut self, _rust_id: DefId, id: AnyDeclRid, trans_id: AnyDeclId) {
+    pub(crate) fn push_id(&mut self, _rust_id: DefId, id: AnyRustId, trans_id: AnyTransId) {
         // Add the id to the stack of declarations to translate
         self.stack.insert(id);
         self.all_ids.insert(trans_id);
@@ -145,9 +142,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         match self.type_id_map.get(id) {
             Option::Some(id) => id,
             Option::None => {
-                let rid = rd::AnyDeclId::Type(id);
+                let rid = AnyRustId::Type(id);
                 let trans_id = self.type_id_map.insert(id);
-                self.push_id(id, rid, AnyDeclId::Type(trans_id));
+                self.push_id(id, rid, AnyTransId::Type(trans_id));
                 trans_id
             }
         }
@@ -161,9 +158,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         match self.fun_id_map.get(id) {
             Option::Some(id) => id,
             Option::None => {
-                let rid = rd::AnyDeclId::Fun(id);
+                let rid = AnyRustId::Fun(id);
                 let trans_id = self.fun_id_map.insert(id);
-                self.push_id(id, rid, AnyDeclId::Fun(trans_id));
+                self.push_id(id, rid, AnyTransId::Fun(trans_id));
                 trans_id
             }
         }
@@ -177,9 +174,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         match self.global_id_map.get(id) {
             Option::Some(id) => id,
             Option::None => {
-                let rid = rd::AnyDeclId::Global(id);
+                let rid = AnyRustId::Global(id);
                 let trans_id = self.global_id_map.insert(id);
-                self.push_id(id, rid, AnyDeclId::Global(trans_id));
+                self.push_id(id, rid, AnyTransId::Global(trans_id));
                 trans_id
             }
         }
