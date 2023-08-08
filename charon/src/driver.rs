@@ -165,11 +165,9 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // - group the mutually recursive definitions
     let ordered_decls = reorder_decls::reorder_declarations(&ctx)?;
 
-    // # Compute the types constraint maps
-    todo!();
-
-    // # Compute the regions hierarchies for the function signatures
-    regions_hierarchy::compute(&mut ctx);
+    // # Compute the regions hierarchies for the types and the function signatures
+    // TODO: move to Aeneas
+    regions_hierarchy::compute(&mut ctx, &ordered_decls);
 
     //
     // =================
