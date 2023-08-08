@@ -52,7 +52,7 @@ pub fn make_locals_generator(locals: &mut VarId::Vector<Var>) -> impl FnMut(ETy)
 
 impl std::string::ToString for Var {
     fn to_string(&self) -> String {
-        let id = var_id_to_pretty_string(self.index);
+        let id = self.index.to_pretty_string();
         match &self.name {
             // We display both the variable name and its id because some
             // variables may have the same name (in different scopes)
@@ -165,7 +165,7 @@ impl<T: Debug + Clone + Serialize> GExprBody<T> {
                 }
             };
 
-            let var_id = var_id_to_pretty_string(v.index);
+            let var_id = v.index.to_pretty_string();
             let var_name = match &v.name {
                 Some(name) => format!("{name}{var_id}"),
                 None => var_id,
@@ -295,7 +295,7 @@ impl<'a, GD> Formatter<ConstGenericVarId::Id> for FunSigFormatter<'a, GD> {
         match self.sig.const_generic_params.get(id) {
             Option::None => {
                 error!("Could not find a ConsGenericVarId::Id for pretty-printing");
-                const_generic_var_id_to_pretty_string(id)
+                id.to_pretty_string()
             }
             Option::Some(cg_var) => cg_var.to_string(),
         }
@@ -393,7 +393,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
             args.push(
                 format!(
                     "{}: {}",
-                    var_id_to_pretty_string(id),
+                    id.to_pretty_string(),
                     arg_ty.fmt_with_ctx(sig_ctx)
                 )
                 .to_string(),
@@ -535,7 +535,7 @@ impl<'ctx, FD, GD> Formatter<VarId::Id> for GAstFormatter<'ctx, FD, GD> {
             let v = self.vars.unwrap().get(id).unwrap();
             v.to_string()
         } else {
-            var_id_to_pretty_string(id)
+            id.to_pretty_string()
         }
     }
 }
@@ -545,7 +545,7 @@ impl<'ctx, FD, GD> Formatter<TypeVarId::Id> for GAstFormatter<'ctx, FD, GD> {
         if self.type_vars.is_some() {
             self.type_vars.unwrap().get(id).unwrap().to_string()
         } else {
-            type_var_id_to_pretty_string(id)
+            id.to_pretty_string()
         }
     }
 }
@@ -567,8 +567,8 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, VariantId::Id)> for GAstFormatter<
         match ctx.get(def_id) {
             Option::None => format!(
                 "{}::{}",
-                type_decl_id_to_pretty_string(def_id),
-                variant_id_to_pretty_string(variant_id)
+                def_id.to_pretty_string(),
+                variant_id.to_pretty_string()
             ),
             Option::Some(def) => {
                 let variants = def.kind.as_enum();
@@ -595,14 +595,14 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id
             Option::None => match opt_variant_id {
                 Option::None => format!(
                     "{}::{}",
-                    type_decl_id_to_pretty_string(def_id),
-                    field_id_to_pretty_string(field_id)
+                    def_id.to_pretty_string(),
+                    field_id.to_pretty_string()
                 ),
                 Option::Some(variant_id) => format!(
                     "{}::{}::{}",
-                    type_decl_id_to_pretty_string(def_id),
-                    variant_id_to_pretty_string(variant_id),
-                    field_id_to_pretty_string(field_id)
+                    def_id.to_pretty_string(),
+                    variant_id.to_pretty_string(),
+                    field_id.to_pretty_string()
                 ),
             },
             Option::Some(gen_def) => match (&gen_def.kind, opt_variant_id) {
@@ -637,12 +637,12 @@ impl<'ctx, FD, GD> Formatter<ConstGenericVarId::Id> for GAstFormatter<'ctx, FD, 
             match self.const_generic_vars.unwrap().get(id) {
                 Option::None => {
                     error!("Could not find a ConsGenericVarId::Id for pretty-printing");
-                    const_generic_var_id_to_pretty_string(id)
+                    id.to_pretty_string()
                 }
                 Option::Some(cg_var) => cg_var.to_string(),
             }
         } else {
-            const_generic_var_id_to_pretty_string(id)
+            id.to_pretty_string()
         }
     }
 }

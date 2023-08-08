@@ -164,7 +164,7 @@ impl Statement {
                 variant_id
             ),
             RawStatement::StorageDead(vid) => {
-                format!("@storage_dead({})", var_id_to_pretty_string(*vid))
+                format!("@storage_dead({})", vid.to_pretty_string())
             }
             RawStatement::Deinit(place) => {
                 format!("@deinit({})", place.fmt_with_ctx(ctx))

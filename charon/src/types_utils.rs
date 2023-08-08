@@ -101,7 +101,7 @@ impl std::string::ToString for TypeVar {
 
 impl std::string::ToString for RegionVar {
     fn to_string(&self) -> String {
-        let id = region_var_id_to_pretty_string(self.index);
+        let id = self.index.to_pretty_string();
         match &self.name {
             Some(name) => name.to_string(),
             None => id,
@@ -111,7 +111,7 @@ impl std::string::ToString for RegionVar {
 
 impl std::string::ToString for ConstGenericVar {
     fn to_string(&self) -> String {
-        format!("const {} : {}", self.name, literal_ty_to_string(self.ty))
+        format!("const {} : {}", self.name, self.ty.to_string())
     }
 }
 
@@ -378,63 +378,78 @@ impl IntegerTy {
     }
 }
 
-// TODO: turn into a method
-pub fn type_decl_id_to_pretty_string(id: TypeDeclId::Id) -> String {
-    format!("@Adt{id}")
-}
-
-pub fn variant_id_to_pretty_string(id: VariantId::Id) -> String {
-    format!("@Variant{id}")
-}
-
-pub fn field_id_to_pretty_string(id: FieldId::Id) -> String {
-    format!("@Field{id}")
-}
-
-pub fn region_var_id_to_pretty_string(id: RegionVarId::Id) -> String {
-    format!("@R{id}")
-}
-
-pub fn const_generic_var_id_to_pretty_string(id: ConstGenericVarId::Id) -> String {
-    format!("@Const{id}")
-}
-
-pub fn global_decl_id_to_pretty_string(id: GlobalDeclId::Id) -> String {
-    format!("@Global{id}")
-}
-
-// TODO: This (and the ones below) should instead be an impl T { fn to_string ... }
-pub fn integer_ty_to_string(ty: IntegerTy) -> String {
-    match ty {
-        IntegerTy::Isize => "isize".to_string(),
-        IntegerTy::I8 => "i8".to_string(),
-        IntegerTy::I16 => "i16".to_string(),
-        IntegerTy::I32 => "i32".to_string(),
-        IntegerTy::I64 => "i64".to_string(),
-        IntegerTy::I128 => "i128".to_string(),
-        IntegerTy::Usize => "usize".to_string(),
-        IntegerTy::U8 => "u8".to_string(),
-        IntegerTy::U16 => "u16".to_string(),
-        IntegerTy::U32 => "u32".to_string(),
-        IntegerTy::U64 => "u64".to_string(),
-        IntegerTy::U128 => "u128".to_string(),
+impl TypeVarId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@T{self}")
     }
 }
 
-pub fn literal_ty_to_string(ty: LiteralTy) -> String {
-    match ty {
-        LiteralTy::Integer(ty) => integer_ty_to_string(ty),
-        LiteralTy::Bool => "bool".to_string(),
-        LiteralTy::Char => "char".to_string(),
+impl TypeDeclId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Adt{self}")
+    }
+}
+
+impl VariantId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Variant{self}")
+    }
+}
+
+impl FieldId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Field{self}")
+    }
+}
+
+impl RegionVarId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@R{self}")
+    }
+}
+
+impl ConstGenericVarId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Const{self}")
+    }
+}
+
+impl GlobalDeclId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Global{self}")
+    }
+}
+
+impl std::string::ToString for LiteralTy {
+    fn to_string(&self) -> String {
+        match self {
+            LiteralTy::Integer(ty) => ty.to_string(),
+            LiteralTy::Bool => "bool".to_string(),
+            LiteralTy::Char => "char".to_string(),
+        }
     }
 }
 
 impl std::fmt::Display for IntegerTy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", integer_ty_to_string(*self))
+        match self {
+            IntegerTy::Isize => write!(f, "isize"),
+            IntegerTy::I8 => write!(f, "i8"),
+            IntegerTy::I16 => write!(f, "i16"),
+            IntegerTy::I32 => write!(f, "i32"),
+            IntegerTy::I64 => write!(f, "i64"),
+            IntegerTy::I128 => write!(f, "i128"),
+            IntegerTy::Usize => write!(f, "usize"),
+            IntegerTy::U8 => write!(f, "u8"),
+            IntegerTy::U16 => write!(f, "u16"),
+            IntegerTy::U32 => write!(f, "u32"),
+            IntegerTy::U64 => write!(f, "u64"),
+            IntegerTy::U128 => write!(f, "u128"),
+        }
     }
 }
 
+// IntTy is not defined in the current crate
 pub fn intty_to_string(ty: IntTy) -> String {
     match ty {
         IntTy::Isize => "isize".to_string(),
@@ -446,6 +461,7 @@ pub fn intty_to_string(ty: IntTy) -> String {
     }
 }
 
+// UintTy is not defined in the current crate
 fn uintty_to_string(ty: UintTy) -> String {
     match ty {
         UintTy::Usize => "usize".to_string(),
@@ -564,7 +580,7 @@ where
                 }
             }
             Ty::TypeVar(id) => ctx.format_object(*id),
-            Ty::Literal(kind) => literal_ty_to_string(*kind),
+            Ty::Literal(kind) => kind.to_string(),
             Ty::Never => "!".to_string(),
             Ty::Ref(r, ty, kind) => match kind {
                 RefKind::Mut => {
@@ -648,10 +664,6 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
     }
 }
 
-pub fn type_var_id_to_pretty_string(id: TypeVarId::Id) -> String {
-    format!("@T{id}")
-}
-
 impl<Rid: Copy + Eq> std::fmt::Display for Region<Rid>
 where
     Rid: std::fmt::Display,
@@ -682,7 +694,7 @@ impl<'a> Formatter<TypeVarId::Id> for IncompleteFormatter<'a> {
 
 impl<'a> Formatter<GlobalDeclId::Id> for IncompleteFormatter<'a> {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        global_decl_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
@@ -711,7 +723,7 @@ impl<'a> Formatter<TypeDeclId::Id> for IncompleteFormatter<'a> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
         // For type def ids, we simply print the def id because
         // we lack context
-        type_decl_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
@@ -725,7 +737,7 @@ pub struct DummyFormatter {}
 
 impl Formatter<TypeVarId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeVarId::Id) -> String {
-        type_var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
@@ -746,25 +758,25 @@ impl Formatter<&ErasedRegion> for DummyFormatter {
 
 impl Formatter<RegionVarId::Id> for DummyFormatter {
     fn format_object(&self, id: RegionVarId::Id) -> String {
-        region_var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<TypeDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        type_decl_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<ConstGenericVarId::Id> for DummyFormatter {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
-        const_generic_var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<GlobalDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        global_decl_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
@@ -1001,7 +1013,7 @@ impl Formatter<TypeDeclId::Id> for TypeDecls {
         // The definition may not be available yet, especially if we print-debug
         // while translating the crate
         match self.get(id) {
-            Option::None => type_decl_id_to_pretty_string(id),
+            Option::None => id.to_pretty_string(),
             Option::Some(def) => def.name.to_string(),
         }
     }

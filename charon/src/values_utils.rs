@@ -8,8 +8,10 @@ use crate::ullbc_ast::GlobalDeclId;
 use crate::values::*;
 use serde::{Serialize, Serializer};
 
-pub fn var_id_to_pretty_string(id: VarId::Id) -> String {
-    format!("@{id}")
+impl VarId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@{self}")
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -26,31 +28,31 @@ pub struct DummyFormatter {}
 
 impl Formatter<VarId::Id> for DummyFormatter {
     fn format_object(&self, id: VarId::Id) -> String {
-        var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<TypeDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        type_decl_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<GlobalDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        global_decl_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<TypeVarId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeVarId::Id) -> String {
-        type_var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<ConstGenericVarId::Id> for DummyFormatter {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
-        const_generic_var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 

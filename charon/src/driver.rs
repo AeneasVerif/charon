@@ -240,6 +240,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // # Micro-pass: reconstruct the asserts
         reconstruct_asserts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
+        // TODO: we should mostly use the TransCtx to format declarations
         for (_, def) in &llbc_funs {
             trace!(
                 "# After asserts reconstruction:\n{}\n",
