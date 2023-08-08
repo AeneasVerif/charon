@@ -544,7 +544,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_projection(
         &mut self,
         var_ty: ty::ETy,
-        rprojection: &rustc_middle::ty::List<PlaceElem<'_>>,
+        rprojection: &rustc_middle::ty::List<PlaceElem<'tcx>>,
     ) -> (e::Projection, ty::ETy) {
         trace!("- projection: {:?}\n- var_ty: {:?}", rprojection, var_ty);
 
@@ -592,7 +592,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // Update the path type and generate the proj kind at the
                     // same time.
                     let proj_elem = match path_type {
-                        ty::Ty::Adt(ty::TypeId::Adt(type_id), _regions, tys, cgs) => {
+                        ty::Ty::Adt(ty::TypeId::Adt(type_id), _regions, _tys, _cgs) => {
                             path_type = self.translate_ety(&field_ty).unwrap();
 
                             let proj_kind = e::FieldProjKind::Adt(type_id, downcast_id);
@@ -1657,8 +1657,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         t_args
     }
 
-    fn translate_body(&mut self, local_id: LocalDefId, arg_count: usize) -> Result<ast::ExprBody> {
-        let sess = &self.t_ctx.sess;
+    fn translate_body(mut self, local_id: LocalDefId, arg_count: usize) -> Result<ast::ExprBody> {
         let tcx = self.t_ctx.tcx;
 
         let body = get_mir_for_def_id_and_level(tcx, local_id, self.t_ctx.mir_level);
@@ -1675,6 +1674,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.translate_transparent_expression_body(body)?;
 
         // We need to convert the blocks map to an index vector
+        // We clone things while we could move them...
         let mut blocks = ast::BlockId::Vector::new();
         for (id, block) in self.blocks {
             use crate::id_vector::ToUsize;
@@ -1700,7 +1700,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn translate_function_signature<'ctx1>(
         &'ctx1 mut self,
         def_id: DefId,
-    ) -> (BodyTransCtx<'tcx, 'ctx, 'ctx1>, ast::FunSig) {
+    ) -> (BodyTransCtx<'tcx, 'ctx1, 'ctx>, ast::FunSig) {
         let tcx = self.tcx;
 
         // Retrieve the function signature, which includes the lifetimes

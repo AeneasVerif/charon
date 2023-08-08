@@ -156,7 +156,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // # Translate the declarations in the crate.
     // We translate the declarations in an ad-hoc order, and do not group
     // the mutually recursive groups - we do this in the next step.
-    let ctx = translate_crate_to_ullbc::translate(crate_info, sess, tcx, mir_level);
+    let mut ctx = translate_crate_to_ullbc::translate(crate_info, sess, tcx, mir_level);
 
     // # Reorder the graph of dependencies and compute the strictly
     // connex components to:
@@ -177,7 +177,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // we simply apply some micro-passes to make the code cleaner, before
     // serializing the result.
 
-    let mut type_defs = &mut ctx.type_defs;
+    let type_defs = &mut ctx.type_defs;
     let mut ullbc_funs = &mut ctx.fun_defs;
     let mut ullbc_globals = &mut ctx.global_defs;
 

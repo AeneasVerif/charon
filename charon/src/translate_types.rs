@@ -270,10 +270,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// variable ids.
     /// Simply calls [`translate_ty`](translate_ty)
     pub(crate) fn translate_sig_ty(&mut self, ty: &Ty<'tcx>) -> Result<ty::RTy> {
-        self.translate_ty(
-            &|r| translate_non_erased_region(&self.region_vars_map, *r),
-            ty,
-        )
+        // Borrowing issues: we have to clone the region vars map.
+        // This shouldn't cost us too much. In case of performance issues,
+        // we can turn the map into an im::map
+        let region_vars_map = self.region_vars_map.clone();
+        self.translate_ty(&|r| translate_non_erased_region(&region_vars_map, *r), ty)
     }
 
     /// Translate a type where the regions are erased
@@ -553,6 +554,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// (we will need to take that into account when generating the code in a file).
     pub(crate) fn translate_type(&mut self, id: DefId) {
         let trans_id = self.translate_type_decl_id(id);
+        let is_transparent = self.id_is_transparent(id);
 
         // Check and translate the generics
         // TODO: use the body trans context as input, and don't return anything.
@@ -560,7 +562,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Check if the type is opaque or external, and delegate the translation
         // of the "body" to the proper function
-        let is_transparent = self.id_is_transparent(id);
         let kind = if !id.is_local() || !is_transparent {
             // Opaque types are:
             // - external types
@@ -571,7 +572,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Register the type
-        let name = type_def_id_to_name(self.tcx, id);
+        let name = type_def_id_to_name(bt_ctx.t_ctx.tcx, id);
         let region_params = bt_ctx.region_vars.clone();
         let type_params = bt_ctx.type_vars.clone();
         let const_generic_params = bt_ctx.const_generic_vars.clone();

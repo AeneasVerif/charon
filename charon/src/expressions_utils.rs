@@ -431,6 +431,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         // We could generalize and introduce auxiliary functions for
         // the various cases - this is not necessary for now
         match ak {
+            Tuple => (),
             Option(_, ty) => self.visit_ty(ty),
             Range(ty) => self.visit_ty(ty),
             Adt(adt_id, _, _, tys, cgs) => {

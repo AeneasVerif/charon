@@ -18,16 +18,6 @@ use std::collections::HashMap;
 use std::fmt::{Debug, Display, Error, Formatter};
 use std::vec::Vec;
 
-/// All kind of supported Rust top-level declarations.
-/// const and static variables are merged together in the global kind.
-/// TODO: remove?
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum DeclKind {
-    Type,
-    Fun,
-    Global,
-}
-
 /// A (group of) top-level declaration(s), properly reordered.
 /// "G" stands for "generic"
 #[derive(Debug, VariantIndexArity, VariantName)]
