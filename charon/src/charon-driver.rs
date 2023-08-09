@@ -2,8 +2,7 @@
 //! crate to LLBC.
 
 #![feature(rustc_private, register_tool)]
-#![feature(box_syntax, box_patterns)]
-#![feature(is_some_and)]
+#![feature(box_patterns)]
 #![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
@@ -12,6 +11,7 @@ extern crate hashlink;
 extern crate im;
 extern crate linked_hash_set;
 extern crate log;
+extern crate rustc_abi;
 extern crate rustc_ast;
 extern crate rustc_borrowck;
 extern crate rustc_const_eval;
@@ -129,7 +129,7 @@ fn main() {
     let mut compiler_args: Vec<String> = origin_args[1..].to_vec();
 
     // The first argument should be "rustc": replace it with the current executable
-    assert!(compiler_args[0] == "rustc");
+    assert!(compiler_args[0].ends_with("rustc"));
     compiler_args[0] = exec_path;
 
     if !has_sysroot_arg {

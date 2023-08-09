@@ -33,32 +33,32 @@ where
 /// We use both `ErrorEmitter` and the logger to report errors and warnings.
 /// Those two ways of reporting information don't target the same usage and
 /// the same users.
-/// - `ErrorEmitter` allows us to report a limited number clean messages to
+/// - `ErrorEmitter` allows us to report a limited number of messages to
 ///   the user, with the same formatting as the compiler messages.
 /// - On the other hand, the logger allows us to report and filter a big number
 ///   of detailed messages, for debugging purposes.
 pub trait ErrorEmitter {
-    fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &str);
+    fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &'static str);
 
-    fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &str);
+    fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &'static str);
 }
 
 impl ErrorEmitter for Session {
-    fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &str) {
+    fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &'static str) {
         self.span_err_with_code(s, msg, DiagnosticId::Error(String::from("Aeneas")));
     }
 
-    fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &str) {
+    fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &'static str) {
         self.span_warn_with_code(s, msg, DiagnosticId::Error(String::from("Aeneas")));
     }
 }
 
-pub fn span_err(sess: &Session, span: rustc_span::Span, msg: &str) {
+pub fn span_err(sess: &Session, span: rustc_span::Span, msg: &'static str) {
     log::error!("{}:\n{}", meta::span_to_string(sess, span), msg);
     sess.span_err(span, msg);
 }
 
-pub fn span_warn(sess: &Session, span: rustc_span::Span, msg: &str) {
+pub fn span_warn(sess: &Session, span: rustc_span::Span, msg: &'static str) {
     log::warn!("{}:\n{}", meta::span_to_string(sess, span), msg);
     sess.span_warn(span, msg);
 }

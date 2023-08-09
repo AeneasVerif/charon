@@ -339,7 +339,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         //   identifier and refer to it
         // - otherwise, we evaluate the constant and insert it in place
         if extract_constants_at_top_level(self.t_ctx.mir_level) {
-            self.translate_constant_id_as_top_level(ucv.def.did, mir_ty)
+            self.translate_constant_id_as_top_level(ucv.def, mir_ty)
         } else {
             // Evaluate the constant.
             // We need a param_env: we use the function def id as a dummy id...
@@ -398,7 +398,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 //   identifier and refer to it
                 // - otherwise, we evaluate the constant and insert it in place
                 if extract_constants_at_top_level(self.t_ctx.mir_level) {
-                    self.translate_constant_id_as_top_level(ucv.def.did, &constant.ty())
+                    self.translate_constant_id_as_top_level(ucv.def, &constant.ty())
                 } else {
                     // TODO: we can't call [translate_const_kind_unevaluated]:
                     // the types don't match.

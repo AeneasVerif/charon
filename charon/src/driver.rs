@@ -48,7 +48,7 @@ impl Callbacks for CharonCallbacks {
         queries
             .global_ctxt()
             .unwrap()
-            .peek_mut()
+            .get_mut()
             .enter(|tcx| {
                 let session = c.session();
                 translate(session, tcx, self)

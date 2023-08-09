@@ -4,7 +4,7 @@
 #![allow(dead_code)]
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir::Body;
-use rustc_middle::ty::{TyCtxt, WithOptConstParam};
+use rustc_middle::ty::TyCtxt;
 use std::cell::Ref;
 
 /// TODO: maybe we should always target MIR Built, this would make things
@@ -49,12 +49,12 @@ pub fn get_mir_for_def_id_and_level(
 ) -> &Body<'_> {
     match level {
         MirLevel::Built => {
-            let body = tcx.mir_built(WithOptConstParam::unknown(def_id));
+            let body = tcx.mir_built(def_id);
             // Rk.: leak is unstable
             Ref::leak(body.borrow())
         }
         MirLevel::Promoted => {
-            let (body, _) = tcx.mir_promoted(WithOptConstParam::unknown(def_id));
+            let (body, _) = tcx.mir_promoted(def_id);
             // Rk.: leak is unstable
             Ref::leak(body.borrow())
         }
