@@ -13,7 +13,7 @@ use crate::ullbc_ast as ast;
 use crate::values as v;
 use linked_hash_set::LinkedHashSet;
 use rustc_hir::def_id::DefId;
-use rustc_index::vec::IndexVec;
+use rustc_index::IndexVec;
 use rustc_middle::mir;
 use rustc_middle::mir::BasicBlock;
 use rustc_middle::mir::{SourceInfo, SourceScope, SourceScopeData};

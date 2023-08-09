@@ -23,6 +23,7 @@ use crate::values as v;
 use crate::values::{Literal, ScalarValue};
 use core::convert::*;
 use log::warn;
+use rustc_abi::FieldIdx;
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir;
 use rustc_middle::mir::{
@@ -40,7 +41,7 @@ fn translate_variant_id(id: rustc_target::abi::VariantIdx) -> VariantId::Id {
     VariantId::Id::new(id.as_usize())
 }
 
-fn translate_field_id(id: mir::Field) -> FieldId::Id {
+fn translate_field_id(id: FieldIdx) -> FieldId::Id {
     FieldId::Id::new(id.as_usize())
 }
 
@@ -100,8 +101,7 @@ fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
 /// Build an uninterpreted constant from a MIR constant identifier.
 fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> rustc_middle::mir::UnevaluatedConst<'tcx> {
     let p = mir_ty::List::empty();
-    let did = mir_ty::WithOptConstParam::unknown(id);
-    rustc_middle::mir::UnevaluatedConst::new(did, p)
+    rustc_middle::mir::UnevaluatedConst::new(id, p)
 }
 
 /// Return the `DefId` of the function referenced by an operand, with the
@@ -191,7 +191,7 @@ fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
         rustc_hir::definitions::DefPathData::Impl => {
             // Parent is an impl block! Retrieve the type definition (it
             // seems that `type_of` is the only way of getting it)
-            let parent_type = tcx.type_of(parent_def_id);
+            let parent_type = tcx.type_of(parent_def_id).subst_identity();
 
             // The parent type should be ADT
             match parent_type.kind() {
@@ -1117,6 +1117,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 Some(ast::RawStatement::FakeRead(t_place))
             }
+            StatementKind::PlaceMention(place) => {
+                // Simply accesses a place. Introduced for instance in place
+                // of `let _ = ...`. We desugar it to a fake read.
+                let t_place = self.translate_place(place);
+
+                Some(ast::RawStatement::FakeRead(t_place))
+            }
             StatementKind::SetDiscriminant {
                 place,
                 variant_index,
@@ -1158,6 +1165,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             StatementKind::Intrinsic(_) => {
                 unimplemented!();
+            }
+            StatementKind::ConstEvalCounter => {
+                // See the doc: only used in the interpreter, to check that
+                // const code doesn't run for too long or even indefinitely.
+                // We consider it as a no-op.
+                None
             }
         };
 
@@ -1208,61 +1221,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // we panic, the state gets stuck.
                 unreachable!();
             }
-            TerminatorKind::Abort => {
-                // TODO: we will translate this to `ast::RawTerminator::Abort`,
-                // but I want to see in which situations Abort appears.
-                unimplemented!();
-            }
             TerminatorKind::Return => ast::RawTerminator::Return,
             TerminatorKind::Unreachable => ast::RawTerminator::Unreachable,
+            TerminatorKind::Terminate => unimplemented!(),
             TerminatorKind::Drop {
                 place,
                 target,
-                unwind: _,
+                unwind: _, // We consider that panic is an error, and don't model unwinding
+                replace: _,
             } => ast::RawTerminator::Drop {
                 place: self.translate_place(place),
                 target: self.translate_basic_block(body, *target)?,
             },
-            TerminatorKind::DropAndReplace {
-                place,
-                value,
-                target,
-                unwind: _,
-            } => {
-                // We desugar this to `drop(place); place := value;
-
-                // Translate the next block
-                let target = self.translate_basic_block(body, *target)?;
-
-                // Translate the assignment
-                let place = self.translate_place(place);
-                let rv = e::Rvalue::Use(self.translate_operand(value));
-                let assign =
-                    ast::Statement::new(meta, ast::RawStatement::Assign(place.clone(), rv));
-
-                // Generate a goto
-                let goto = ast::Terminator::new(meta, ast::RawTerminator::Goto { target });
-
-                // This introduces a new block, which doesn't appear in the original MIR
-                let assign_id = self.blocks_counter.fresh_id();
-                let assign_block = ast::BlockData {
-                    statements: vec![assign],
-                    terminator: goto,
-                };
-                self.push_block(assign_id, assign_block);
-
-                // Translate the drop
-                ast::RawTerminator::Drop {
-                    place,
-                    target: assign_id,
-                }
-            }
             TerminatorKind::Call {
                 func,
                 args,
                 destination,
                 target,
-                cleanup: _, // Note that the state gets stuck if we need to unwind
+                unwind: _, // We consider that panic is an error, and don't model unwinding
                 from_hir_call: _,
                 fn_span: _,
             } => {
@@ -1272,9 +1248,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             TerminatorKind::Assert {
                 cond,
                 expected,
-                msg: _, // We ignore the message: if we panic, the state gets stuck
+                msg: _,
                 target,
-                cleanup: _, // If we panic, the state gets stuck: we don't need to model cleanup
+                unwind: _, // We consider that panic is an error, and don't model unwinding
             } => {
                 let cond = self.translate_operand(cond);
                 let target = self.translate_basic_block(body, *target)?;
@@ -1322,14 +1298,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let target = self.translate_basic_block(body, *real_target)?;
                 ast::RawTerminator::Goto { target }
             }
-            TerminatorKind::InlineAsm {
-                template: _,
-                operands: _,
-                options: _,
-                line_spans: _,
-                destination: _,
-                cleanup: _,
-            } => {
+            TerminatorKind::InlineAsm { .. } => {
                 // This case should have been eliminated during the registration phase
                 unreachable!();
             }
@@ -1693,7 +1662,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let tcx = self.tcx;
 
         // Retrieve the function signature, which includes the lifetimes
-        let signature = tcx.fn_sig(def_id);
+        let signature = tcx.fn_sig(def_id).subst_identity();
 
         // Instantiate the signature's bound region variables (the signature
         // is wrapped in a [`Binder`](rustc_middle::ty::Binder). This is inspired by
@@ -1736,7 +1705,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // parameters). As written above, this substitution contains all the type
         // variables, and the early-bound regions, but not the late-bound ones.
         // TODO: we do something similar in `translate_function`
-        let fun_type = tcx.type_of(def_id);
+        let fun_type = tcx.type_of(def_id).subst_identity();
         let substs = match fun_type.kind() {
             TyKind::FnDef(_def_id, substs_ref) => substs_ref,
             _ => {
@@ -1930,7 +1899,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         trace!("Translating global type");
-        let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id);
+        let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
         let g_ty = bt_ctx.translate_ety(&mir_ty).unwrap();
 
         let body = match (rust_id.is_local(), is_transparent) {

@@ -53,7 +53,7 @@ pub fn replace_late_bound_regions<'tcx, T>(
     def_id: DefId,
 ) -> (T, LinkedHashMap<BoundRegion, Region<'tcx>>)
 where
-    T: rustc_middle::ty::TypeFoldable<'tcx>,
+    T: rustc_middle::ty::TypeFoldable<TyCtxt<'tcx>>,
 {
     // Instantiate the regions bound in the signature, and generate a mapping
     // while doing so (the mapping uses a linked hash map so that we remember
@@ -65,10 +65,13 @@ where
     // much to create this mapping ourselves.
     let mut late_bound_regions: LinkedHashMap<BoundRegion, Region> = LinkedHashMap::new();
     let (value, _) = tcx.replace_late_bound_regions(value, |br| {
-        let nregion = tcx.mk_region(RegionKind::ReFree(FreeRegion {
-            scope: def_id,
-            bound_region: br.kind,
-        }));
+        let nregion = Region::new_from_kind(
+            tcx,
+            RegionKind::ReFree(FreeRegion {
+                scope: def_id,
+                bound_region: br.kind,
+            }),
+        );
         late_bound_regions.insert(br, nregion);
         nregion
     });
@@ -113,6 +116,9 @@ fn check_generics(tcx: TyCtxt<'_>, def_id: DefId) {
             PredicateKind::Clause(Clause::RegionOutlives(_)) => unimplemented!(),
             PredicateKind::Clause(Clause::TypeOutlives(_)) => unimplemented!(),
             PredicateKind::Clause(Clause::Projection(_)) => unimplemented!(),
+            PredicateKind::Clause(Clause::ConstArgHasType(..)) => {
+                // I don't really understand that one
+            }
             PredicateKind::WellFormed(_) => unimplemented!(),
             PredicateKind::ObjectSafe(_) => unimplemented!(),
             PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
@@ -122,6 +128,7 @@ fn check_generics(tcx: TyCtxt<'_>, def_id: DefId) {
             PredicateKind::ConstEquate(_, _) => unimplemented!(),
             PredicateKind::TypeWellFormedFromEnv(_) => unimplemented!(),
             PredicateKind::Ambiguous => unimplemented!(),
+            PredicateKind::AliasRelate(..) => unimplemented!(),
         }
     }
 }

@@ -16,12 +16,12 @@ pub fn translate_region_name(region: &rustc_middle::ty::RegionKind<'_>) -> Optio
     let s = match region {
         rustc_middle::ty::RegionKind::ReEarlyBound(r) => Some(r.name.to_ident_string()),
         rustc_middle::ty::RegionKind::ReLateBound(_, br) => match br.kind {
-            rustc_middle::ty::BoundRegionKind::BrAnon(_, _) => None,
+            rustc_middle::ty::BoundRegionKind::BrAnon(..) => None,
             rustc_middle::ty::BoundRegionKind::BrNamed(_, symbol) => Some(symbol.to_ident_string()),
             rustc_middle::ty::BoundRegionKind::BrEnv => Some("@env".to_owned()),
         },
         rustc_middle::ty::RegionKind::ReFree(r) => match r.bound_region {
-            rustc_middle::ty::BoundRegionKind::BrAnon(_, _) => None,
+            rustc_middle::ty::BoundRegionKind::BrAnon(..) => None,
             rustc_middle::ty::BoundRegionKind::BrNamed(_, symbol) => Some(symbol.to_ident_string()),
             rustc_middle::ty::BoundRegionKind::BrEnv => Some("@env".to_owned()),
         },
@@ -109,8 +109,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ))),
             TyKind::Float(_) => {
                 trace!("Float");
-                // This case should have been filtered during the registration phase
-                unreachable!();
+                unimplemented!();
             }
             TyKind::Never => Ok(ty::Ty::Never),
 
@@ -220,48 +219,49 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok(ty)
             }
 
-            // Below: those types should be unreachable: if such types are used in
-            // the MIR, we should have found them and failed during the registration
-            // phase.
             TyKind::Foreign(_) => {
                 trace!("Foreign");
-                unreachable!();
+                unimplemented!();
             }
             TyKind::Infer(_) => {
                 trace!("Infer");
-                unreachable!();
+                unimplemented!();
             }
 
             TyKind::FnDef(_, _) => {
                 trace!("FnDef");
-                unreachable!();
+                unimplemented!();
             }
 
             TyKind::Dynamic(_, _, _) => {
                 trace!("Dynamic");
-                unreachable!();
+                unimplemented!();
             }
             TyKind::Closure(_, _) => {
                 trace!("Closure");
-                unreachable!();
+                unimplemented!();
             }
 
             TyKind::Generator(_, _, _) | TyKind::GeneratorWitness(_) => {
                 trace!("Generator");
-                unreachable!();
+                unimplemented!();
             }
 
             TyKind::Error(_) => {
                 trace!("Error");
-                unreachable!();
+                unimplemented!();
             }
             TyKind::Bound(_, _) => {
                 trace!("Bound");
-                unreachable!();
+                unimplemented!();
             }
             TyKind::Placeholder(_) => {
                 trace!("PlaceHolder");
-                unreachable!();
+                unimplemented!();
+            }
+            TyKind::GeneratorWitnessMIR(..) => {
+                trace!("GeneratorWitnessMIR");
+                unimplemented!();
             }
         }
     }
@@ -455,8 +455,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 ty::TypeDeclKind::Enum(ty::VariantId::Vector::from(variants))
             }
             rustc_middle::ty::AdtKind::Union => {
-                // Should have been filtered during the registration phase
-                unreachable!();
+                unimplemented!();
             }
         };
 
