@@ -159,5 +159,17 @@ let crate_of_json (js : json) : (A.crate, string) result =
         let* types = list_of_json (type_decl_of_json id_to_file) types in
         let* functions = list_of_json (fun_decl_of_json id_to_file) functions in
         let* globals = list_of_json (global_decl_of_json id_to_file) globals in
+        let types =
+          T.TypeDeclId.Map.of_list
+            (List.map (fun (d : T.type_decl) -> (d.def_id, d)) types)
+        in
+        let functions =
+          A.FunDeclId.Map.of_list
+            (List.map (fun (d : A.fun_decl) -> (d.def_id, d)) functions)
+        in
+        let globals =
+          A.GlobalDeclId.Map.of_list
+            (List.map (fun (d : A.global_decl) -> (d.def_id, d)) globals)
+        in
         Ok { A.name; declarations; types; functions; globals }
     | _ -> Error "")

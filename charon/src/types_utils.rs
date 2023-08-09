@@ -5,7 +5,9 @@ use crate::assumed::get_name_from_type_id;
 use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
+use crate::values::Literal;
 use im::{HashMap, OrdSet};
+use macros::make_generic_in_borrows;
 use rustc_middle::ty::{IntTy, UintTy};
 use std::iter::FromIterator;
 use std::iter::Iterator;
@@ -99,7 +101,7 @@ impl std::string::ToString for TypeVar {
 
 impl std::string::ToString for RegionVar {
     fn to_string(&self) -> String {
-        let id = region_var_id_to_pretty_string(self.index);
+        let id = self.index.to_pretty_string();
         match &self.name {
             Some(name) => name.to_string(),
             None => id,
@@ -109,7 +111,7 @@ impl std::string::ToString for RegionVar {
 
 impl std::string::ToString for ConstGenericVar {
     fn to_string(&self) -> String {
-        format!("const {} : {}", self.name, literal_ty_to_string(self.ty))
+        format!("const {} : {}", self.name, self.ty.to_string())
     }
 }
 
@@ -225,13 +227,6 @@ impl TypeDecl {
             + Formatter<GlobalDeclId::Id>
             + Formatter<ConstGenericVarId::Id>,
     {
-        let regions_hierarchy: Vec<String> = self
-            .regions_hierarchy
-            .iter()
-            .map(|rg| rg.fmt_with_ctx(ctx))
-            .collect();
-        let regions_hierarchy = regions_hierarchy.join("\n");
-
         let params = TypeDecl::fmt_params(&self.region_params, &self.type_params);
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
@@ -241,10 +236,7 @@ impl TypeDecl {
                         .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)))
                         .collect();
                     let fields = fields.join(",");
-                    format!(
-                        "struct {}{} = {{{}\n}}\n{}",
-                        self.name, params, fields, regions_hierarchy
-                    )
+                    format!("struct {}{} = {{{}\n}}", self.name, params, fields)
                 } else {
                     format!("struct {}{} = {{}}", self.name, params)
                 }
@@ -255,15 +247,9 @@ impl TypeDecl {
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
                     .collect();
                 let variants = variants.join("\n");
-                format!(
-                    "enum {}{} =\n{}\n\nRegions hierarchy:\n{}",
-                    self.name, params, variants, regions_hierarchy
-                )
+                format!("enum {}{} =\n{}\n", self.name, params, variants)
             }
-            TypeDeclKind::Opaque => format!(
-                "opaque type {}{}\nRegions hierarchy:\n{}",
-                self.name, params, regions_hierarchy
-            ),
+            TypeDeclKind::Opaque => format!("opaque type {}{}", self.name, params),
         }
     }
 
@@ -392,54 +378,78 @@ impl IntegerTy {
     }
 }
 
-pub fn type_def_id_to_pretty_string(id: TypeDeclId::Id) -> String {
-    format!("@Adt{id}")
-}
-
-pub fn region_var_id_to_pretty_string(id: RegionVarId::Id) -> String {
-    format!("@R{id}")
-}
-
-pub fn const_generic_var_id_to_pretty_string(id: ConstGenericVarId::Id) -> String {
-    format!("@Const{id}")
-}
-
-pub fn global_decl_id_to_pretty_string(id: GlobalDeclId::Id) -> String {
-    format!("@Global{id}")
-}
-
-// TODO: This (and the ones below) should instead be an impl T { fn to_string ... }
-pub fn integer_ty_to_string(ty: IntegerTy) -> String {
-    match ty {
-        IntegerTy::Isize => "isize".to_string(),
-        IntegerTy::I8 => "i8".to_string(),
-        IntegerTy::I16 => "i16".to_string(),
-        IntegerTy::I32 => "i32".to_string(),
-        IntegerTy::I64 => "i64".to_string(),
-        IntegerTy::I128 => "i128".to_string(),
-        IntegerTy::Usize => "usize".to_string(),
-        IntegerTy::U8 => "u8".to_string(),
-        IntegerTy::U16 => "u16".to_string(),
-        IntegerTy::U32 => "u32".to_string(),
-        IntegerTy::U64 => "u64".to_string(),
-        IntegerTy::U128 => "u128".to_string(),
+impl TypeVarId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@T{self}")
     }
 }
 
-pub fn literal_ty_to_string(ty: LiteralTy) -> String {
-    match ty {
-        LiteralTy::Integer(ty) => integer_ty_to_string(ty),
-        LiteralTy::Bool => "bool".to_string(),
-        LiteralTy::Char => "char".to_string(),
+impl TypeDeclId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Adt{self}")
+    }
+}
+
+impl VariantId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Variant{self}")
+    }
+}
+
+impl FieldId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Field{self}")
+    }
+}
+
+impl RegionVarId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@R{self}")
+    }
+}
+
+impl ConstGenericVarId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Const{self}")
+    }
+}
+
+impl GlobalDeclId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Global{self}")
+    }
+}
+
+impl std::string::ToString for LiteralTy {
+    fn to_string(&self) -> String {
+        match self {
+            LiteralTy::Integer(ty) => ty.to_string(),
+            LiteralTy::Bool => "bool".to_string(),
+            LiteralTy::Char => "char".to_string(),
+        }
     }
 }
 
 impl std::fmt::Display for IntegerTy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", integer_ty_to_string(*self))
+        match self {
+            IntegerTy::Isize => write!(f, "isize"),
+            IntegerTy::I8 => write!(f, "i8"),
+            IntegerTy::I16 => write!(f, "i16"),
+            IntegerTy::I32 => write!(f, "i32"),
+            IntegerTy::I64 => write!(f, "i64"),
+            IntegerTy::I128 => write!(f, "i128"),
+            IntegerTy::Usize => write!(f, "usize"),
+            IntegerTy::U8 => write!(f, "u8"),
+            IntegerTy::U16 => write!(f, "u16"),
+            IntegerTy::U32 => write!(f, "u32"),
+            IntegerTy::U64 => write!(f, "u64"),
+            IntegerTy::U128 => write!(f, "u128"),
+        }
     }
 }
 
+// IntTy is not defined in the current crate
 pub fn intty_to_string(ty: IntTy) -> String {
     match ty {
         IntTy::Isize => "isize".to_string(),
@@ -451,6 +461,7 @@ pub fn intty_to_string(ty: IntTy) -> String {
     }
 }
 
+// UintTy is not defined in the current crate
 fn uintty_to_string(ty: UintTy) -> String {
     match ty {
         UintTy::Usize => "usize".to_string(),
@@ -569,7 +580,7 @@ where
                 }
             }
             Ty::TypeVar(id) => ctx.format_object(*id),
-            Ty::Literal(kind) => literal_ty_to_string(*kind),
+            Ty::Literal(kind) => kind.to_string(),
             Ty::Never => "!".to_string(),
             Ty::Ref(r, ty, kind) => match kind {
                 RefKind::Mut => {
@@ -653,10 +664,6 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
     }
 }
 
-pub fn type_var_id_to_pretty_string(id: TypeVarId::Id) -> String {
-    format!("@T{id}")
-}
-
 impl<Rid: Copy + Eq> std::fmt::Display for Region<Rid>
 where
     Rid: std::fmt::Display,
@@ -687,7 +694,7 @@ impl<'a> Formatter<TypeVarId::Id> for IncompleteFormatter<'a> {
 
 impl<'a> Formatter<GlobalDeclId::Id> for IncompleteFormatter<'a> {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        global_decl_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
@@ -716,7 +723,7 @@ impl<'a> Formatter<TypeDeclId::Id> for IncompleteFormatter<'a> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
         // For type def ids, we simply print the def id because
         // we lack context
-        type_def_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
@@ -730,7 +737,7 @@ pub struct DummyFormatter {}
 
 impl Formatter<TypeVarId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeVarId::Id) -> String {
-        type_var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
@@ -751,25 +758,25 @@ impl Formatter<&ErasedRegion> for DummyFormatter {
 
 impl Formatter<RegionVarId::Id> for DummyFormatter {
     fn format_object(&self, id: RegionVarId::Id) -> String {
-        region_var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<TypeDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        type_def_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<ConstGenericVarId::Id> for DummyFormatter {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
-        const_generic_var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<GlobalDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        global_decl_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
@@ -1003,8 +1010,12 @@ impl Formatter<&ErasedRegion> for TypeDecl {
 
 impl Formatter<TypeDeclId::Id> for TypeDecls {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        let def = self.get(id).unwrap();
-        def.name.to_string()
+        // The definition may not be available yet, especially if we print-debug
+        // while translating the crate
+        match self.get(id) {
+            Option::None => id.to_pretty_string(),
+            Option::Some(def) => def.name.to_string(),
+        }
     }
 }
 
@@ -1018,3 +1029,93 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
         }
     }
 }
+
+// Derive two implementations at once: one which uses shared borrows, and one
+// which uses mutable borrows.
+// Generates the traits: `SharedTypeVisitor` and `MutTypeVisitor`.
+make_generic_in_borrows! {
+
+// TODO: we should use traits with default implementations to allow overriding
+// the default behavior (that would also prevent problems with naming collisions)
+pub trait TypeVisitor {
+    fn visit_ty<R: Clone + std::cmp::Eq>(&mut self, ty: &Ty<R>) {
+        self.default_visit_ty(ty)
+    }
+
+    fn default_visit_ty<R: Clone + std::cmp::Eq>(&mut self, ty: &Ty<R>) {
+        use Ty::*;
+        match ty {
+            Adt(id, rl, tys, cgs) => self.visit_ty_adt(id, rl, tys, cgs),
+            TypeVar(vid) => self.visit_ty_type_var(vid),
+            Literal(lit) => self.visit_ty_literal(lit),
+            Never => self.visit_ty_never(),
+            Ref(r, ty, rk) => self.visit_ty_ref(r, ty, rk),
+            RawPtr(ty, rk) => self.visit_ty_raw_ptr(ty, rk),
+        }
+    }
+
+    fn visit_ty_adt<R: Clone + std::cmp::Eq>(
+        &mut self,
+        id: &TypeId,
+        rl: &Vec<R>,
+        tys: &Vec<Ty<R>>,
+        cgs: &Vec<ConstGeneric>,
+    ) {
+        self.visit_type_id(id);
+        // We ignore the regions
+        for ty in tys {
+            self.visit_ty(ty)
+        }
+        for cg in cgs {
+            self.visit_const_generic(cg);
+        }
+    }
+
+    fn visit_ty_type_var(&mut self, vid: &TypeVarId::Id) {
+        self.visit_type_var_id(vid);
+    }
+
+    fn visit_ty_literal(&mut self, ty: &LiteralTy) {}
+
+    fn visit_ty_never(&mut self) {}
+
+    fn visit_ty_ref<R: Clone + std::cmp::Eq>(&mut self, _r: &R, ty: &Box<Ty<R>>, _rk: &RefKind) {
+        // We ignore the region
+        self.visit_ty(ty);
+    }
+
+    fn visit_ty_raw_ptr<R: Clone + std::cmp::Eq>(&mut self, ty: &Box<Ty<R>>, _rk: &RefKind) {
+        // We ignore the region
+        self.visit_ty(ty);
+    }
+
+    fn visit_type_id(&mut self, id: &TypeId) {
+        use TypeId::*;
+        match id {
+            Adt(id) => self.visit_type_decl_id(id),
+            Tuple => (),
+            Assumed(aty) => self.visit_assumed_ty(aty),
+        }
+    }
+
+    fn visit_type_decl_id(&mut self, _: &TypeDeclId::Id) {}
+
+    fn visit_assumed_ty(&mut self, _: &AssumedTy) {}
+
+    fn visit_const_generic(&mut self, cg: &ConstGeneric) {
+        use ConstGeneric::*;
+        match cg {
+            Global(id) => self.visit_global_decl_id(id),
+            Var(id) => self.visit_const_generic_var_id(id),
+            Value(lit) => self.visit_literal(lit),
+        }
+    }
+
+    fn visit_global_decl_id(&mut self, _: &GlobalDeclId::Id) {}
+    fn visit_type_var_id(&mut self, _: &TypeVarId::Id) {}
+    fn visit_const_generic_var_id(&mut self, _: &ConstGenericVarId::Id) {}
+
+    fn visit_literal(&mut self, _: &Literal) {}
+}
+
+} // make_generic_in_borrows

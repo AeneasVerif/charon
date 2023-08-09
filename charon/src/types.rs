@@ -98,10 +98,14 @@ pub struct TypeDecl {
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
-    /// The lifetime's hierarchy between the different regions.
-    pub regions_hierarchy: RegionGroups,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
+    /// The lifetime's hierarchy between the different regions.
+    /// We initialize it to a dummy value, then compute it once the whole crate
+    /// has been translated.
+    ///
+    /// TODO: move to Aeneas
+    pub regions_hierarchy: RegionGroups,
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
@@ -171,7 +175,7 @@ pub enum TypeId {
     Assumed(AssumedTy),
 }
 
-pub type TypeDecls = TypeDeclId::Vector<TypeDecl>;
+pub type TypeDecls = TypeDeclId::Map<TypeDecl>;
 
 /// Types of primitive values. Either an integer, bool, char
 #[derive(
@@ -227,7 +231,7 @@ pub enum ConstGeneric {
 )]
 pub enum Ty<R>
 where
-    R: Clone + std::cmp::Eq,
+    R: Clone + std::cmp::Eq, // TODO: do we really need to put those here?
 {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:

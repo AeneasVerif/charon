@@ -11,6 +11,7 @@ use crate::llbc_ast::{
     CtxNames, FunDecls, GlobalDecls, MutAstVisitor, RawStatement, SharedAstVisitor, Statement,
 };
 use crate::meta::combine_meta;
+use crate::types::{MutTypeVisitor, SharedTypeVisitor};
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
@@ -18,6 +19,7 @@ use take_mut::take;
 
 struct RemoveNops {}
 
+impl MutTypeVisitor for RemoveNops {}
 impl MutExprVisitor for RemoveNops {}
 
 impl MutAstVisitor for RemoveNops {
@@ -72,6 +74,7 @@ impl ComputeUsedLocals {
     }
 }
 
+impl SharedTypeVisitor for ComputeUsedLocals {}
 impl SharedExprVisitor for ComputeUsedLocals {
     fn visit_var_id(&mut self, vid: &VarId::Id) {
         match self.vars.get_mut(vid) {
@@ -103,6 +106,7 @@ impl UpdateUsedLocals {
     }
 }
 
+impl MutTypeVisitor for UpdateUsedLocals {}
 impl MutExprVisitor for UpdateUsedLocals {
     fn visit_var_id(&mut self, vid: &mut VarId::Id) {
         *vid = *self.vids_map.get(vid).unwrap();

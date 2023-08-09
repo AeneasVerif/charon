@@ -377,8 +377,8 @@ impl ExprBody {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let locals = Some(&self.locals);
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
@@ -438,8 +438,8 @@ impl FunDecl {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
@@ -483,8 +483,8 @@ impl GlobalDecl {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
@@ -510,6 +510,7 @@ make_generic_in_borrows! {
 /// not be overriden and gives access to the "super" method.
 ///
 /// TODO: implement macros to automatically derive visitors.
+/// TODO: explore all the types
 pub trait AstVisitor: crate::expressions::ExprVisitor {
     /// Spawn the visitor (used for the branchings)
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self));
@@ -519,8 +520,11 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     fn merge(&mut self);
 
     fn visit_statement(&mut self, st: &Statement) {
+        self.visit_meta(&st.meta);
         self.visit_raw_statement(&st.content)
     }
+
+    fn visit_meta(&mut self, st: &Meta) {}
 
     fn default_visit_raw_statement(&mut self, st: &RawStatement) {
         match st {
@@ -582,13 +586,6 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
 
     fn visit_assert(&mut self, a: &Assert) {
         self.visit_operand(&a.cond);
-    }
-
-    fn visit_call(&mut self, c: &Call) {
-        for o in &c.args {
-            self.visit_operand(o);
-        }
-        self.visit_place(&c.dest);
     }
 
     fn visit_panic(&mut self) {}
@@ -668,6 +665,7 @@ struct TransformStatements<'a, F: FnMut(&mut Statement) -> Vec<Statement>> {
     tr: &'a mut F,
 }
 
+impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutTypeVisitor for TransformStatements<'a, F> {}
 impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutExprVisitor for TransformStatements<'a, F> {}
 impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutAstVisitor for TransformStatements<'a, F> {
     fn visit_statement(&mut self, st: &mut Statement) {

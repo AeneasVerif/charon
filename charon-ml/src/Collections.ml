@@ -137,6 +137,7 @@ module type Map = sig
 
   val add_list : (key * 'a) list -> 'a t -> 'a t
   val of_list : (key * 'a) list -> 'a t
+  val values : 'a t -> 'a list
 
   (** "Simple" pretty printing function.
   
@@ -179,6 +180,7 @@ module MakeMap (Ord : OrderedType) : Map with type key = Ord.t = struct
 
   let add_list bl m = List.fold_left (fun s (key, e) -> add key e s) m bl
   let of_list bl = add_list bl empty
+  let values m = List.map snd (bindings m)
 
   let to_string indent_opt a_to_string m =
     let indent, break =

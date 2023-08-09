@@ -58,30 +58,6 @@ let split_declarations (decls : declaration_group list) :
   in
   split decls
 
-(** Given a crate, compute maps from type/function/global ids to declarations *)
-let compute_defs_maps (get_global_id : 'global_decl -> GlobalDeclId.id)
-    (c : ('body gfun_decl, 'global_decl) gcrate) :
-    T.type_decl T.TypeDeclId.Map.t
-    * 'body gfun_decl FunDeclId.Map.t
-    * 'global_decl GlobalDeclId.Map.t =
-  let types_map =
-    List.fold_left
-      (fun m (def : T.type_decl) -> T.TypeDeclId.Map.add def.def_id def m)
-      T.TypeDeclId.Map.empty c.types
-  in
-  let funs_map =
-    List.fold_left
-      (fun m (def : 'body gfun_decl) -> FunDeclId.Map.add def.def_id def m)
-      FunDeclId.Map.empty c.functions
-  in
-  let globals_map =
-    List.fold_left
-      (fun m (def : 'global_decl) ->
-        GlobalDeclId.Map.add (get_global_id def) def m)
-      GlobalDeclId.Map.empty c.globals
-  in
-  (types_map, funs_map, globals_map)
-
 (** Split a module's declarations into three maps from type/fun/global ids to
     declaration groups.
  *)

@@ -6,7 +6,9 @@ use crate::common::*;
 use crate::formatter::Formatter;
 use crate::graphs::*;
 use crate::llbc_ast::FunDecls;
-use crate::rust_to_local_ids::TypeDeclarationGroup;
+use crate::reorder_decls as rd;
+use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups};
+use crate::translate_ctx::TransCtx;
 use crate::types as ty;
 use crate::types::*;
 use crate::ullbc_ast::{FunDeclId, FunSig};
@@ -20,6 +22,8 @@ use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 generate_index_type!(RegionGroupId);
+
+pub type TypeDeclarationGroup = rd::GDeclarationGroup<ty::TypeDeclId::Id>;
 
 pub fn region_group_id_to_pretty_string(rid: RegionGroupId::Id) -> String {
     format!("rg@{rid}")
@@ -769,4 +773,33 @@ pub fn types_constraints_map_fmt_with_ctx(
         })
         .collect();
     types_constraints.join("\n")
+}
+
+pub fn compute(ctx: &mut TransCtx, ordered_decls: &DeclarationsGroups) {
+    // First, compute the regions hierarchy for the types, and compute the types
+    // constraints map while doing so. We compute by working on a whole type
+    // declaration group at a time.
+    let mut types_constraints = TypesConstraintsMap::new();
+    let type_defs = &mut ctx.type_defs;
+    for dgroup in ordered_decls {
+        match dgroup {
+            DeclarationGroup::Type(decl) => {
+                compute_regions_hierarchy_for_type_decl_group(
+                    &mut types_constraints,
+                    type_defs,
+                    decl,
+                );
+            }
+            DeclarationGroup::Fun(_) | DeclarationGroup::Global(_) => {
+                // Ignore the functions and constants
+            }
+        }
+    }
+
+    // Use the types constraints map to compute the regions hierarchies for the
+    // function signatures
+    for decl in &mut ctx.fun_defs.iter_mut() {
+        decl.signature.regions_hierarchy =
+            compute_regions_hierarchy_for_sig(&mut types_constraints, &decl.signature);
+    }
 }

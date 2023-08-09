@@ -103,7 +103,7 @@ pub enum Switch {
 pub type ExprBody = GExprBody<Statement>;
 
 pub type FunDecl = GFunDecl<Statement>;
-pub type FunDecls = FunDeclId::Vector<FunDecl>;
+pub type FunDecls = FunDeclId::Map<FunDecl>;
 
 pub type GlobalDecl = GGlobalDecl<Statement>;
-pub type GlobalDecls = GlobalDeclId::Vector<GlobalDecl>;
+pub type GlobalDecls = GlobalDeclId::Map<GlobalDecl>;

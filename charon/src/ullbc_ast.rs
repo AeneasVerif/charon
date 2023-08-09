@@ -22,10 +22,10 @@ pub static START_BLOCK_ID: BlockId::Id = BlockId::ZERO;
 pub type ExprBody = GExprBody<BlockId::Vector<BlockData>>;
 
 pub type FunDecl = GFunDecl<BlockId::Vector<BlockData>>;
-pub type FunDecls = FunDeclId::Vector<FunDecl>;
+pub type FunDecls = FunDeclId::Map<FunDecl>;
 
 pub type GlobalDecl = GGlobalDecl<BlockId::Vector<BlockData>>;
-pub type GlobalDecls = GlobalDeclId::Vector<GlobalDecl>;
+pub type GlobalDecls = GlobalDeclId::Map<GlobalDecl>;
 
 /// A raw statement: a statement without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]

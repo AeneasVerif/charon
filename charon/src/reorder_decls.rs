@@ -1,7 +1,12 @@
 use crate::common::*;
+use crate::expressions::SharedExprVisitor;
+use crate::gast::{FunDeclId, GlobalDeclId};
 use crate::graphs::*;
-use crate::register::DeclKind;
-use crate::register::RegisteredDeclarations;
+use crate::translate_ctx::TransCtx;
+use crate::types::{SharedTypeVisitor, TypeDeclId, TypeDeclKind};
+use crate::ullbc_ast::{ExprBody, SharedAstVisitor};
+use hashlink::linked_hash_map::LinkedHashMap;
+use linked_hash_set::LinkedHashSet;
 use macros::EnumAsGetters;
 use macros::EnumIsA;
 use macros::{VariantIndexArity, VariantName};
@@ -10,7 +15,6 @@ use petgraph::graphmap::DiGraphMap;
 use rustc_hir::def_id::DefId;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
-use std::collections::HashMap;
 use std::fmt::{Debug, Display, Error, Formatter};
 use std::vec::Vec;
 
@@ -35,7 +39,52 @@ pub enum DeclarationGroup<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     Global(GDeclarationGroup<GlobalId>),
 }
 
-#[derive(PartialEq, Eq, Hash, EnumIsA, EnumAsGetters, VariantName)]
+impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationGroup<TypeId, FunId, GlobalId> {
+    fn make_type_group<'a>(is_rec: bool, gr: impl Iterator<Item = TypeId>) -> Self {
+        let gr: Vec<TypeId> = gr.collect();
+        if is_rec {
+            DeclarationGroup::Type(GDeclarationGroup::Rec(gr))
+        } else {
+            assert!(gr.len() == 1);
+            DeclarationGroup::Type(GDeclarationGroup::NonRec(gr[0]))
+        }
+    }
+
+    fn make_fun_group<'a>(is_rec: bool, gr: impl Iterator<Item = FunId>) -> Self {
+        let gr: Vec<FunId> = gr.collect();
+        if is_rec {
+            DeclarationGroup::Fun(GDeclarationGroup::Rec(gr))
+        } else {
+            assert!(gr.len() == 1);
+            DeclarationGroup::Fun(GDeclarationGroup::NonRec(gr[0]))
+        }
+    }
+
+    fn make_global_group<'a>(is_rec: bool, gr: impl Iterator<Item = GlobalId>) -> Self {
+        let gr: Vec<GlobalId> = gr.collect();
+        if is_rec {
+            DeclarationGroup::Global(GDeclarationGroup::Rec(gr))
+        } else {
+            assert!(gr.len() == 1);
+            DeclarationGroup::Global(GDeclarationGroup::NonRec(gr[0]))
+        }
+    }
+}
+
+#[derive(
+    PartialEq,
+    Eq,
+    Hash,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    VariantIndexArity,
+    Copy,
+    Clone,
+    Debug,
+    PartialOrd,
+    Ord,
+)]
 pub enum AnyDeclId<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
     Type(TypeId),
     Fun(FunId),
@@ -47,21 +96,8 @@ pub struct DeclInfo {
     pub is_transparent: bool,
 }
 
-/// The top-level declarations in a module and their external dependencies.
-/// External declarations are recognizable with `DefId::is_local()`:
-/// See [rust_to_local_ids.rs].
-pub struct DeclarationsGroups<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
-    /// The properly grouped and ordered declarations
-    pub decls: Vec<DeclarationGroup<TypeId, FunId, GlobalId>>,
-    /// All the type ids
-    pub type_ids: Vec<TypeId>,
-    /// All the function ids
-    pub fun_ids: Vec<FunId>,
-    /// All the global ids
-    pub global_ids: Vec<GlobalId>,
-    /// Additional information on declarations
-    pub decls_info: HashMap<AnyDeclId<TypeId, FunId, GlobalId>, DeclInfo>,
-}
+pub type DeclarationsGroups =
+    Vec<DeclarationGroup<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id>>;
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
@@ -156,119 +192,160 @@ impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, GlobalId: Copy + Seriali
     }
 }
 
-impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationsGroups<TypeId, FunId, GlobalId> {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> DeclarationsGroups<TypeId, FunId, GlobalId> {
-        DeclarationsGroups {
-            decls: vec![],
-            type_ids: vec![],
-            fun_ids: vec![],
-            global_ids: vec![],
-            decls_info: HashMap::new(),
+pub type AnyRustId = AnyDeclId<DefId, DefId, DefId>;
+pub type AnyTransId = AnyDeclId<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id>;
+
+pub struct Deps {
+    dgraph: DiGraphMap<AnyTransId, ()>,
+    /// Want to make sure we remember the order of insertion
+    graph: LinkedHashMap<AnyTransId, LinkedHashSet<AnyTransId>>,
+    /// We use this when exploring the graph
+    current_id: Option<AnyTransId>,
+}
+
+impl Deps {
+    fn new() -> Self {
+        Deps {
+            dgraph: DiGraphMap::new(),
+            graph: LinkedHashMap::new(),
+            current_id: Option::None,
         }
     }
 
-    fn push(&mut self, decl: DeclarationGroup<TypeId, FunId, GlobalId>) {
-        match &decl {
-            DeclarationGroup::Type(GDeclarationGroup::NonRec(id)) => {
-                self.type_ids.push(*id);
-            }
-            DeclarationGroup::Type(GDeclarationGroup::Rec(ids)) => {
-                for id in ids {
-                    self.type_ids.push(*id);
+    fn set_current_id(&mut self, id: AnyTransId) {
+        self.insert_node(id);
+        self.current_id = Option::Some(id);
+    }
+
+    fn unset_current_id(&mut self) {
+        self.current_id = Option::None;
+    }
+
+    fn insert_node(&mut self, id: AnyTransId) {
+        // We have to be careful about duplicate nodes
+        if !self.dgraph.contains_node(id) {
+            self.dgraph.add_node(id);
+            assert!(!self.graph.contains_key(&id));
+            self.graph.insert(id, LinkedHashSet::new());
+        }
+    }
+
+    fn insert_edge(&mut self, id1: AnyTransId) {
+        let id0 = self.current_id.unwrap();
+        self.insert_node(id1);
+        if !self.dgraph.contains_edge(id0, id1) {
+            self.dgraph.add_edge(id0, id1, ());
+            self.graph.get_mut(&id0).unwrap().insert(id1);
+        }
+    }
+}
+
+impl SharedTypeVisitor for Deps {
+    fn visit_type_decl_id(&mut self, id: &TypeDeclId::Id) {
+        let id = AnyDeclId::Type(*id);
+        self.insert_edge(id);
+    }
+
+    fn visit_global_decl_id(&mut self, id: &GlobalDeclId::Id) {
+        let id = AnyDeclId::Global(*id);
+        self.insert_edge(id);
+    }
+}
+
+impl SharedExprVisitor for Deps {
+    fn visit_fun_decl_id(&mut self, id: &FunDeclId::Id) {
+        let id = AnyDeclId::Fun(*id);
+        self.insert_edge(id);
+    }
+}
+
+impl SharedAstVisitor for Deps {}
+
+impl Deps {
+    fn visit_body(&mut self, body: &Option<ExprBody>) {
+        match &body {
+            Option::None => (),
+            Option::Some(body) => {
+                for v in &body.locals {
+                    self.visit_ty(&v.ty);
                 }
-            }
-            DeclarationGroup::Fun(GDeclarationGroup::NonRec(id)) => {
-                self.fun_ids.push(*id);
-            }
-            DeclarationGroup::Fun(GDeclarationGroup::Rec(ids)) => {
-                for id in ids {
-                    self.fun_ids.push(*id);
-                }
-            }
-            DeclarationGroup::Global(GDeclarationGroup::NonRec(id)) => {
-                self.global_ids.push(*id);
-            }
-            DeclarationGroup::Global(GDeclarationGroup::Rec(ids)) => {
-                for id in ids {
-                    self.global_ids.push(*id);
+                for block in &body.body {
+                    self.visit_block_data(block);
                 }
             }
         }
-        self.decls.push(decl);
     }
 }
 
-/// We use the [Debug] trait instead of [Display] for the identifiers, because
-/// the rustc [DefId] doesn't implement [Display]...
-impl<TypeId: Copy + Debug, FunId: Copy + Debug, GlobalId: Copy + Debug> Display
-    for DeclarationsGroups<TypeId, FunId, GlobalId>
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
-        write!(
-            f,
-            "{}",
-            vec_to_string(
-                &|d: &DeclarationGroup<TypeId, FunId, GlobalId>| d.to_string(),
-                &self.decls,
-            )
-        )
-    }
-}
-
-impl<'a, TypeId: Copy, FunId: Copy, GlobalId: Copy> std::iter::IntoIterator
-    for &'a DeclarationsGroups<TypeId, FunId, GlobalId>
-{
-    type Item = &'a DeclarationGroup<TypeId, FunId, GlobalId>;
-    type IntoIter = std::slice::Iter<'a, DeclarationGroup<TypeId, FunId, GlobalId>>;
-
-    #[inline]
-    fn into_iter(self) -> Self::IntoIter {
-        self.decls.iter()
-    }
-}
-
-pub fn reorder_declarations(
-    decls: &RegisteredDeclarations,
-) -> Result<DeclarationsGroups<DefId, DefId, DefId>> {
+pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
     trace!();
 
-    // Step 1: Start by building the graph
-    let mut graph = DiGraphMap::<DefId, ()>::new();
+    // Step 1: explore the declarations to build the graph
+    let mut graph = Deps::new();
+    for id in &ctx.all_ids {
+        graph.set_current_id(*id);
+        match id {
+            AnyTransId::Type(id) => {
+                let d = ctx.type_defs.get(*id).unwrap();
+                use TypeDeclKind::*;
+                match &d.kind {
+                    Struct(fields) => {
+                        for f in fields {
+                            graph.visit_ty(&f.ty)
+                        }
+                    }
+                    Enum(vl) => {
+                        for v in vl {
+                            for f in &v.fields {
+                                graph.visit_ty(&f.ty);
+                            }
+                        }
+                    }
+                    Opaque => (),
+                }
+            }
+            AnyTransId::Fun(id) => {
+                let d = ctx.fun_defs.get(*id).unwrap();
 
-    // Add the nodes - note that we are using both local and external def ids.
-    for (id, _) in decls.iter() {
-        graph.add_node(*id);
-    }
+                // Explore the signature
+                for ty in &d.signature.inputs {
+                    graph.visit_ty(ty);
+                }
+                graph.visit_ty(&d.signature.output);
 
-    // Add the edges, which go from a declaration to its dependency.
-    for (src, d) in decls.iter() {
-        for tgt in d.deps.iter().flatten() {
-            graph.add_edge(*src, *tgt, ());
+                // Explore the body
+                graph.visit_body(&d.body);
+            }
+            AnyTransId::Global(id) => {
+                let d = ctx.global_defs.get(*id).unwrap();
+
+                // Explore the body
+                graph.visit_body(&d.body);
+            }
         }
+        graph.unset_current_id();
     }
 
-    trace!("Graph: {:?}", graph);
+    trace!("Graph: {:?}", &graph.dgraph);
 
     // Step 2: Apply Tarjan's SCC (Strongly Connected Components) algorithm
-    let sccs = tarjan_scc(&graph);
+    let sccs = tarjan_scc(&graph.dgraph);
 
     // Step 3: Reorder the declarations in an order as close as possible to the one
     // given by the user. To be more precise, if we don't need to move
     // definitions, the order in which we generate the declarations should
     // be the same as the one in which the user wrote them.
-    let get_id_dependencies = &|id| decls[&id].deps.iter().flatten().copied().collect();
+    // Remark: the [get_id_dependencies] function will be called once per id, meaning
+    // it is ok if it is not very efficient and clones values.
+    let get_id_dependencies = &|id| graph.graph.get(&id).unwrap().iter().copied().collect();
+    let all_ids: Vec<AnyTransId> = graph.graph.keys().copied().collect();
     let SCCs {
         sccs: reordered_sccs,
         scc_deps: _,
-    } = reorder_sccs::<DefId>(
-        get_id_dependencies,
-        &decls.iter().map(|(id, _)| *id).collect(),
-        &sccs,
-    );
+    } = reorder_sccs::<AnyTransId>(get_id_dependencies, &all_ids, &sccs);
 
     // Finally, generate the list of declarations
-    let mut reordered_decls = DeclarationsGroups::new();
+    let mut reordered_decls: DeclarationsGroups = Vec::new();
 
     // Iterate over the SCC ids in the proper order
     for scc in reordered_sccs.iter() {
@@ -278,13 +355,13 @@ pub fn reorder_declarations(
         // Note that the length of an SCC should be at least 1.
         let mut it = scc.iter();
         let id0 = *it.next().unwrap();
-        let decl = &decls[&id0];
+        let decl = graph.graph.get(&id0).unwrap();
 
         // The group should consist of only functions, only types or only one global.
         for id in scc {
-            assert!(decls[id].kind == decl.kind);
+            assert!(id0.variant_index_arity() == id.variant_index_arity());
         }
-        if let DeclKind::Global = decl.kind {
+        if let AnyDeclId::Global(_) = id0 {
             assert!(scc.len() == 1);
         }
 
@@ -292,46 +369,30 @@ pub fn reorder_declarations(
         // we determine whether it is the case by checking if the def id is in
         // its own set of dependencies.
         let is_mutually_recursive = scc.len() > 1;
-        let is_simply_recursive =
-            !is_mutually_recursive && decl.deps.as_ref().is_some_and(|deps| deps.contains(&id0));
+        let is_simply_recursive = !is_mutually_recursive && decl.contains(&id0);
 
         // Add the declaration.
         // Note that we clone the vectors: it is not optimal, but they should
         // be pretty small.
-        let group = if is_mutually_recursive || is_simply_recursive {
-            GDeclarationGroup::Rec(scc.clone())
-        } else {
-            GDeclarationGroup::NonRec(id0)
+        let is_rec = is_mutually_recursive || is_simply_recursive;
+        let group: DeclarationGroup<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id> = match id0 {
+            AnyDeclId::Type(_) => DeclarationGroup::make_type_group(
+                is_rec,
+                scc.iter().map(AnyDeclId::as_type).copied(),
+            ),
+            AnyDeclId::Fun(_) => {
+                DeclarationGroup::make_fun_group(is_rec, scc.iter().map(AnyDeclId::as_fun).copied())
+            }
+            AnyDeclId::Global(_) => DeclarationGroup::make_global_group(
+                is_rec,
+                scc.iter().map(AnyDeclId::as_global).copied(),
+            ),
         };
-        reordered_decls.push(match decl.kind {
-            DeclKind::Type => DeclarationGroup::Type(group),
-            DeclKind::Fun => DeclarationGroup::Fun(group),
-            DeclKind::Global => DeclarationGroup::Global(group),
-        });
+
+        reordered_decls.push(group);
     }
 
-    trace!("{}", reordered_decls.to_string());
-
-    // Adds declarations information.
-    reordered_decls.decls_info = decls
-        .iter()
-        .map(|(id, decl)| {
-            (
-                match decl.kind {
-                    DeclKind::Type => AnyDeclId::Type(*id),
-                    DeclKind::Fun => AnyDeclId::Fun(*id),
-                    DeclKind::Global => AnyDeclId::Global(*id),
-                },
-                DeclInfo {
-                    is_transparent: decl.is_transparent(),
-                },
-            )
-        })
-        .collect();
-
-    // TODO: check that the mutually recursive groups don't mix opaque and
-    // transparent definitions (this is for sanity: this really *shouldn't*
-    // happen).
+    trace!("{:?}", reordered_decls);
 
     Ok(reordered_decls)
 }

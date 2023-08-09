@@ -52,12 +52,16 @@ pub struct FunSig {
     ///  ```
     ///  `'a` is early-bound while `'b` is late-bound.
     pub num_early_bound_regions: usize,
-    /// The lifetime's hierarchy between the different regions.
-    pub regions_hierarchy: RegionGroups,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
     pub inputs: Vec<RTy>,
     pub output: RTy,
+    /// The lifetime's hierarchy between the different regions.
+    /// We initialize it to a dummy value, and compute it once the whole
+    /// crate has been translated from MIR.
+    ///
+    /// TODO: move to Aeneas.
+    pub regions_hierarchy: RegionGroups,
 }
 
 /// An expression body.

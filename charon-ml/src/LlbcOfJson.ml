@@ -190,12 +190,20 @@ let crate_of_json (js : json) : (A.crate, string) result =
             globals
         in
         let globals, global_bodies = List.split globals in
-        Ok
-          {
-            A.name;
-            declarations;
-            types;
-            functions = functions @ global_bodies;
-            globals;
-          }
+        let types =
+          T.TypeDeclId.Map.of_list
+            (List.map (fun (d : T.type_decl) -> (d.def_id, d)) types)
+        in
+        (* Concatenate the functions and the global bodies *)
+        let functions =
+          A.FunDeclId.Map.of_list
+            (List.map
+               (fun (d : A.fun_decl) -> (d.def_id, d))
+               (functions @ global_bodies))
+        in
+        let globals =
+          A.GlobalDeclId.Map.of_list
+            (List.map (fun (d : A.global_decl) -> (d.def_id, d)) globals)
+        in
+        Ok { A.name; declarations; types; functions; globals }
     | _ -> Error "")

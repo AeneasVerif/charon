@@ -14,7 +14,7 @@ use std::fmt::Debug;
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
 /// TODO: generalize this with visitors
 pub fn iter_function_bodies<T: Debug + Clone + Serialize>(
-    funs: &mut FunDeclId::Vector<GFunDecl<T>>,
+    funs: &mut FunDeclId::Map<GFunDecl<T>>,
 ) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
     funs.iter_mut().flat_map(|f| match f.body.as_mut() {
         None => None, // Option::map was complaining about borrowing f
@@ -26,7 +26,7 @@ pub fn iter_function_bodies<T: Debug + Clone + Serialize>(
 /// Same as [iter_function_bodies] (but the `flat_map` lambda cannot be generic).
 /// TODO: generalize this with visitors
 pub fn iter_global_bodies<T: Debug + Clone + Serialize>(
-    globals: &mut GlobalDeclId::Vector<GGlobalDecl<T>>,
+    globals: &mut GlobalDeclId::Map<GGlobalDecl<T>>,
 ) -> impl Iterator<Item = (&Name, &mut GExprBody<T>)> {
     globals.iter_mut().flat_map(|g| match g.body.as_mut() {
         None => None, // Option::map was complaining about borrowing g
@@ -52,7 +52,7 @@ pub fn make_locals_generator(locals: &mut VarId::Vector<Var>) -> impl FnMut(ETy)
 
 impl std::string::ToString for Var {
     fn to_string(&self) -> String {
-        let id = var_id_to_pretty_string(self.index);
+        let id = self.index.to_pretty_string();
         match &self.name {
             // We display both the variable name and its id because some
             // variables may have the same name (in different scopes)
@@ -165,7 +165,7 @@ impl<T: Debug + Clone + Serialize> GExprBody<T> {
                 }
             };
 
-            let var_id = var_id_to_pretty_string(v.index);
+            let var_id = v.index.to_pretty_string();
             let var_name = match &v.name {
                 Some(name) => format!("{name}{var_id}"),
                 None => var_id,
@@ -295,7 +295,7 @@ impl<'a, GD> Formatter<ConstGenericVarId::Id> for FunSigFormatter<'a, GD> {
         match self.sig.const_generic_params.get(id) {
             Option::None => {
                 error!("Could not find a ConsGenericVarId::Id for pretty-printing");
-                const_generic_var_id_to_pretty_string(id)
+                id.to_pretty_string()
             }
             Option::Some(cg_var) => cg_var.to_string(),
         }
@@ -393,7 +393,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
             args.push(
                 format!(
                     "{}: {}",
-                    var_id_to_pretty_string(id),
+                    id.to_pretty_string(),
                     arg_ty.fmt_with_ctx(sig_ctx)
                 )
                 .to_string(),
@@ -491,15 +491,15 @@ pub struct GAstFormatter<'ctx, FD, GD> {
 
 pub struct CtxNames<'ctx> {
     pub type_context: &'ctx TypeDecls,
-    pub fun_context: &'ctx FunDeclId::Vector<String>,
-    pub global_context: &'ctx GlobalDeclId::Vector<String>,
+    pub fun_context: &'ctx FunDeclId::Map<String>,
+    pub global_context: &'ctx GlobalDeclId::Map<String>,
 }
 
 impl<'ctx> CtxNames<'ctx> {
     pub fn new(
         type_context: &'ctx TypeDecls,
-        fun_context: &'ctx FunDeclId::Vector<String>,
-        global_context: &'ctx GlobalDeclId::Vector<String>,
+        fun_context: &'ctx FunDeclId::Map<String>,
+        global_context: &'ctx GlobalDeclId::Map<String>,
     ) -> Self {
         CtxNames {
             type_context,
@@ -535,7 +535,7 @@ impl<'ctx, FD, GD> Formatter<VarId::Id> for GAstFormatter<'ctx, FD, GD> {
             let v = self.vars.unwrap().get(id).unwrap();
             v.to_string()
         } else {
-            var_id_to_pretty_string(id)
+            id.to_pretty_string()
         }
     }
 }
@@ -545,7 +545,7 @@ impl<'ctx, FD, GD> Formatter<TypeVarId::Id> for GAstFormatter<'ctx, FD, GD> {
         if self.type_vars.is_some() {
             self.type_vars.unwrap().get(id).unwrap().to_string()
         } else {
-            type_var_id_to_pretty_string(id)
+            id.to_pretty_string()
         }
     }
 }
@@ -562,13 +562,23 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, VariantId::Id)> for GAstFormatter<
     fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
         let (def_id, variant_id) = id;
         let ctx = self.type_context;
-        let def = ctx.get(def_id).unwrap();
-        let variants = def.kind.as_enum();
-        let mut name = def.name.to_string();
-        let variant_name = &variants.get(variant_id).unwrap().name;
-        name.push_str("::");
-        name.push_str(variant_name);
-        name
+        // The definition may not be available yet, especially if we print-debug
+        // while translating the crate
+        match ctx.get(def_id) {
+            Option::None => format!(
+                "{}::{}",
+                def_id.to_pretty_string(),
+                variant_id.to_pretty_string()
+            ),
+            Option::Some(def) => {
+                let variants = def.kind.as_enum();
+                let mut name = def.name.to_string();
+                let variant_name = &variants.get(variant_id).unwrap().name;
+                name.push_str("::");
+                name.push_str(variant_name);
+                name
+            }
+        }
     }
 }
 
@@ -579,28 +589,44 @@ impl<'ctx, FD, GD> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id
     fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (def_id, opt_variant_id, field_id) = id;
         let ctx = self.type_context;
-        let gen_def = ctx.get(def_id).unwrap();
-        match (&gen_def.kind, opt_variant_id) {
-            (TypeDeclKind::Enum(variants), Some(variant_id)) => {
-                let field = variants
-                    .get(variant_id)
-                    .unwrap()
-                    .fields
-                    .get(field_id)
-                    .unwrap();
-                match &field.name {
-                    Option::Some(name) => name.clone(),
-                    Option::None => field_id.to_string(),
+        // The definition may not be available yet, especially if we print-debug
+        // while translating the crate
+        match ctx.get(def_id) {
+            Option::None => match opt_variant_id {
+                Option::None => format!(
+                    "{}::{}",
+                    def_id.to_pretty_string(),
+                    field_id.to_pretty_string()
+                ),
+                Option::Some(variant_id) => format!(
+                    "{}::{}::{}",
+                    def_id.to_pretty_string(),
+                    variant_id.to_pretty_string(),
+                    field_id.to_pretty_string()
+                ),
+            },
+            Option::Some(gen_def) => match (&gen_def.kind, opt_variant_id) {
+                (TypeDeclKind::Enum(variants), Some(variant_id)) => {
+                    let field = variants
+                        .get(variant_id)
+                        .unwrap()
+                        .fields
+                        .get(field_id)
+                        .unwrap();
+                    match &field.name {
+                        Option::Some(name) => name.clone(),
+                        Option::None => field_id.to_string(),
+                    }
                 }
-            }
-            (TypeDeclKind::Struct(fields), None) => {
-                let field = fields.get(field_id).unwrap();
-                match &field.name {
-                    Option::Some(name) => name.clone(),
-                    Option::None => field_id.to_string(),
+                (TypeDeclKind::Struct(fields), None) => {
+                    let field = fields.get(field_id).unwrap();
+                    match &field.name {
+                        Option::Some(name) => name.clone(),
+                        Option::None => field_id.to_string(),
+                    }
                 }
-            }
-            _ => unreachable!(),
+                _ => unreachable!(),
+            },
         }
     }
 }
@@ -611,12 +637,12 @@ impl<'ctx, FD, GD> Formatter<ConstGenericVarId::Id> for GAstFormatter<'ctx, FD, 
             match self.const_generic_vars.unwrap().get(id) {
                 Option::None => {
                     error!("Could not find a ConsGenericVarId::Id for pretty-printing");
-                    const_generic_var_id_to_pretty_string(id)
+                    id.to_pretty_string()
                 }
                 Option::Some(cg_var) => cg_var.to_string(),
             }
         } else {
-            const_generic_var_id_to_pretty_string(id)
+            id.to_pretty_string()
         }
     }
 }
@@ -682,15 +708,15 @@ where
 }
 
 pub(crate) struct FunNamesFormatter<'ctx> {
-    decls: &'ctx FunDeclId::Vector<String>,
+    decls: &'ctx FunDeclId::Map<String>,
 }
 
 pub(crate) struct GlobalNamesFormatter<'ctx> {
-    decls: &'ctx GlobalDeclId::Vector<String>,
+    decls: &'ctx GlobalDeclId::Map<String>,
 }
 
 impl<'ctx> FunNamesFormatter<'ctx> {
-    pub fn new(decls: &'ctx FunDeclId::Vector<String>) -> Self {
+    pub fn new(decls: &'ctx FunDeclId::Map<String>) -> Self {
         FunNamesFormatter { decls }
     }
 }
@@ -702,7 +728,7 @@ impl<'ctx> Formatter<FunDeclId::Id> for FunNamesFormatter<'ctx> {
 }
 
 impl<'ctx> GlobalNamesFormatter<'ctx> {
-    pub fn new(decls: &'ctx GlobalDeclId::Vector<String>) -> Self {
+    pub fn new(decls: &'ctx GlobalDeclId::Map<String>) -> Self {
         GlobalNamesFormatter { decls }
     }
 }

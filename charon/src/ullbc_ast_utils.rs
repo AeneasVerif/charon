@@ -8,6 +8,7 @@ use crate::meta::Meta;
 use crate::types::*;
 use crate::ullbc_ast::*;
 use crate::values::*;
+use macros::make_generic_in_borrows;
 use std::iter::FromIterator;
 use take_mut::take;
 
@@ -163,7 +164,7 @@ impl Statement {
                 variant_id
             ),
             RawStatement::StorageDead(vid) => {
-                format!("@storage_dead({})", var_id_to_pretty_string(*vid))
+                format!("@storage_dead({})", vid.to_pretty_string())
             }
             RawStatement::Deinit(place) => {
                 format!("@deinit({})", place.fmt_with_ctx(ctx))
@@ -315,8 +316,8 @@ impl ExprBody {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let locals = Some(&self.locals);
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
@@ -446,8 +447,8 @@ impl FunDecl {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
@@ -491,8 +492,8 @@ impl GlobalDecl {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
@@ -507,6 +508,7 @@ impl GlobalDecl {
 impl BlockData {
     /// Visit the operands in an rvalue and generate statements.
     /// Used below in [BlockData::transform_operands].
+    /// TODO: use visitors
     fn transform_rvalue_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand)>(
         meta: &Meta,
         nst: &mut Vec<Statement>,
@@ -610,3 +612,165 @@ pub fn body_transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand
         take(block, |b| b.transform_operands(f));
     }
 }
+
+// Derive two implementations at once: one which uses shared borrows, and one
+// which uses mutable borrows.
+// Generates the traits: `SharedAstVisitor` and `MutAstVisitor`.
+make_generic_in_borrows! {
+
+/// A visitor for the ULLBC AST
+///
+/// Remark: we can't call the "super" method when reimplementing a method
+/// (unlike what can be done in, say, OCaml). This makes imlementing visitors
+/// slightly awkward, and is the reason why we split some visit functions in two:
+/// a "standard" version to be overriden, and a "default" version which should
+/// not be overriden and gives access to the "super" method.
+///
+/// TODO: implement macros to automatically derive visitors.
+pub trait AstVisitor: crate::expressions::ExprVisitor {
+    fn visit_block_data(&mut self, block: &BlockData) {
+        for st in &block.statements {
+            self.visit_statement(st);
+        }
+        self.visit_terminator(&block.terminator);
+    }
+
+    fn visit_statement(&mut self, st: &Statement) {
+        self.visit_meta(&st.meta);
+        self.visit_raw_statement(&st.content);
+    }
+
+    fn visit_raw_statement(&mut self, st: &RawStatement) {
+        self.default_visit_raw_statement(st);
+    }
+
+    fn default_visit_raw_statement(&mut self, st: &RawStatement) {
+        use RawStatement::*;
+        match st {
+            Assign(p, rv) => self.visit_assign(p, rv),
+            FakeRead(p) => self.visit_fake_read(p),
+            SetDiscriminant(p, vid) => self.visit_set_discriminant(p, vid),
+            StorageDead(vid) => self.visit_storage_dead(vid),
+            Deinit(p) => self.visit_deinit(p),
+        }
+    }
+
+    fn visit_assign(&mut self, p: &Place, rv: &Rvalue) {
+        self.visit_place(p);
+        self.visit_rvalue(rv);
+    }
+
+    fn visit_fake_read(&mut self, p: &Place) {
+        self.visit_place(p);
+    }
+
+    fn visit_set_discriminant(&mut self, p: &Place, _vid: &VariantId::Id) {
+        self.visit_place(p);
+    }
+
+    fn visit_storage_dead(&mut self, vid: &VarId::Id) {
+        self.visit_var_id(vid);
+    }
+
+    fn visit_deinit(&mut self, p: &Place) {
+        self.visit_place(p);
+    }
+
+    fn visit_terminator(&mut self, st: &Terminator) {
+        self.visit_meta(&st.meta);
+        self.visit_raw_terminator(&st.content);
+    }
+
+    fn visit_meta(&mut self, st: &Meta) {}
+
+    fn default_visit_raw_terminator(&mut self, st: &RawTerminator) {
+        use RawTerminator::*;
+        match st {
+            Goto { target } => self.visit_goto(target),
+            Switch { discr, targets } => {
+                self.visit_switch(discr, targets);
+            }
+            Panic => self.visit_panic(),
+            Return => self.visit_return(),
+            Unreachable => self.visit_unreachable(),
+            Drop { place, target } => {
+                self.visit_drop(place, target);
+            }
+            Call { call, target } => {
+                self.visit_call_statement(call, target);
+            }
+            Assert {
+                cond,
+                expected,
+                target,
+            } => {
+                self.visit_assert(cond, expected, target);
+            }
+        }
+    }
+
+    fn visit_raw_terminator(&mut self, st: &RawTerminator) {
+        self.default_visit_raw_terminator(st);
+    }
+
+    fn visit_goto(&mut self, target: &BlockId::Id) {
+        self.visit_block_id(target)
+    }
+
+    fn visit_switch(&mut self, discr: &Operand, targets: &SwitchTargets) {
+        self.visit_operand(discr);
+        self.visit_switch_targets(targets);
+    }
+
+    fn visit_panic(&mut self) {}
+
+    fn visit_return(&mut self) {}
+
+    fn visit_unreachable(&mut self) {}
+
+    fn visit_drop(&mut self, place: &Place, target: &BlockId::Id) {
+        self.visit_place(place);
+        self.visit_block_id(target);
+    }
+
+    fn visit_call_statement(&mut self, call: &Call, target: &BlockId::Id) {
+        self.visit_call(call);
+        self.visit_block_id(target);
+    }
+
+    fn visit_assert(&mut self, cond: &Operand, expected: &bool, target: &BlockId::Id) {
+        self.visit_operand(cond);
+        self.visit_block_id(target);
+    }
+
+    fn visit_block_id(&mut self, id: &BlockId::Id) {}
+
+    fn visit_switch_targets(&mut self, targets: &SwitchTargets) {
+        use SwitchTargets::*;
+        match targets {
+            If(then_id, else_id) => self.visit_if(then_id, else_id),
+            SwitchInt(int_ty, branches, otherwise) => {
+                self.visit_switch_int(int_ty, branches, otherwise)
+            }
+        }
+    }
+
+    fn visit_if(&mut self, then_id: &BlockId::Id, else_id: &BlockId::Id) {
+        self.visit_block_id(then_id);
+        self.visit_block_id(else_id);
+    }
+
+    fn visit_switch_int(
+        &mut self,
+        int_ty: &IntegerTy,
+        branches: &Vec<(ScalarValue, BlockId::Id)>,
+        otherwise: &BlockId::Id,
+    ) {
+        for (_, br) in branches {
+            self.visit_block_id(br);
+        }
+        self.visit_block_id(otherwise);
+    }
+}
+
+} // make_generic_in_borrows

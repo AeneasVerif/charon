@@ -419,8 +419,8 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("region_params", region_params);
           ("type_params", type_params);
           ("const_generic_params", const_generic_params);
-          ("regions_hierarchy", regions_hierarchy);
           ("kind", kind);
+          ("regions_hierarchy", regions_hierarchy);
         ] ->
         let* def_id = T.TypeDeclId.id_of_json def_id in
         let* meta = meta_of_json id_to_file meta in
@@ -663,11 +663,11 @@ let fun_sig_of_json (js : json) : (A.fun_sig, string) result =
         [
           ("region_params", region_params);
           ("num_early_bound_regions", num_early_bound_regions);
-          ("regions_hierarchy", regions_hierarchy);
           ("type_params", type_params);
           ("const_generic_params", const_generic_params);
           ("inputs", inputs);
           ("output", output);
+          ("regions_hierarchy", regions_hierarchy);
         ] ->
         let* region_params = list_of_json region_var_of_json region_params in
         let* num_early_bound_regions = int_of_json num_early_bound_regions in
