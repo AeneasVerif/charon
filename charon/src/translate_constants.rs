@@ -6,12 +6,14 @@ use crate::get_mir::extract_constants_at_top_level;
 use crate::translate_ctx::*;
 use crate::types as ty;
 use crate::values as v;
+use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir;
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{ConstKind, Ty, TyKind};
 use std::iter::zip;
 
+/*
 /// Translate a typed constant value (either a bool, a char or an integer).
 fn translate_constant_integer_like_value(
     ty: &ty::ETy,
@@ -55,9 +57,10 @@ fn translate_constant_integer_like_value(
             unreachable!();
         }
     }
-}
+}*/
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    /*
     /// Translate the type of a [mir::interpret::ConstValue::Scalar] value :
     /// Either a bool, a char, an integer, an enumeration ADT, an empty tuple or a static reference.
     fn translate_constant_scalar_type(&mut self, ty: &TyKind) -> ty::ETy {
@@ -352,10 +355,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    // TODO: rename, remove?
     pub(crate) fn translate_const_kind(
         &mut self,
         constant: rustc_middle::ty::Const<'tcx>,
     ) -> (ty::ETy, e::OperandConstantValue) {
+        // TODO: factor out
         match constant.kind() {
             ConstKind::Value(v) => {
                 // The value is a [ValTree].
@@ -419,6 +424,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unreachable!("Unexpected: {:?}", constant);
             }
         }
+    }*/
+
+    pub(crate) fn translate_constant_expr_as_const_generic(
+        &mut self,
+        constant: &hax::ConstantExpr,
+    ) -> ty::ConstGeneric {
+        unimplemented!()
     }
 
     pub(crate) fn translate_const_kind_as_const_generic(
@@ -461,14 +473,74 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    pub(crate) fn translate_constant_expr_kind_to_operand_constant_value(
+        &mut self,
+        v: hax::ConstantExprKind,
+    ) -> (ty::ETy, e::OperandConstantValue) {
+        use hax::ConstantExprKind;
+        match v {
+            ConstantExprKind::Literal(lit) => {
+                unimplemented!()
+            }
+            ConstantExprKind::Adt { info, fields } => {
+                unimplemented!()
+            }
+            ConstantExprKind::Array { fields } => {
+                unimplemented!()
+            }
+            ConstantExprKind::Tuple { fields } => {
+                unimplemented!()
+            }
+            ConstantExprKind::GlobalName { id } => {
+                unimplemented!()
+            }
+            ConstantExprKind::Borrow(be) => {
+                unimplemented!()
+            }
+            ConstantExprKind::ConstRef { id } => {
+                unimplemented!()
+            }
+        }
+    }
+
+    pub(crate) fn translate_constant_expr_to_operand_constant_value(
+        &mut self,
+        v: hax::ConstantExpr,
+    ) -> (ty::ETy, e::OperandConstantValue) {
+        self.translate_constant_expr_kind_to_operand_constant_value(*v.contents)
+    }
+
+    pub(crate) fn translate_constant_expr_to_const_generic(
+        &mut self,
+        v: &hax::ConstantExpr,
+    ) -> ty::ConstGeneric {
+        unimplemented!()
+    }
+
+    pub(crate) fn translate_constant_to_operand_constant_value(
+        &mut self,
+        v: &hax::Constant,
+    ) -> (ty::ETy, e::OperandConstantValue) {
+        unimplemented!()
+    }
+
+    // TODO: rename
     pub(crate) fn translate_evaluated_operand_constant(
         &mut self,
-        ty: &Ty<'tcx>,
+        ty: Ty<'tcx>,
         val: &mir::interpret::ConstValue<'tcx>,
+        span: rustc_span::Span,
     ) -> (ty::ETy, e::OperandConstantValue) {
-        let llbc_ty = self.translate_ety(ty).unwrap();
-        let im_val = self.translate_const_value(&llbc_ty, ty, val);
-        (llbc_ty, im_val)
+        // TODO: factor this out
+        let state = hax::state::State::new(
+            self.t_ctx.tcx,
+            &hax::options::Options {
+                inline_macro_calls: Vec::new(),
+            },
+        );
+
+        let val = hax::const_value_to_constant_expr(&state, *ty, *val, span);
+        self.translate_constant_expr_to_operand_constant_value(val)
     }
 
     /// Translate a constant which may not be yet evaluated.

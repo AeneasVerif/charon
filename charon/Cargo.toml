@@ -39,6 +39,7 @@ macros = { path = "./macros" }
 take_mut = "0.2.2"
 rustc_tools_util = "0.2.1"
 bumpalo = "3.11.1" # We constrain the version of [bumpalo] because of a vulnerability
+hax-frontend-exporter = { git = "https://github.com/hacspec/hacspec-v2.git", rev = "1f9a84f" }
 
 [dev-dependencies]
 assert_cmd = "1.0.8"

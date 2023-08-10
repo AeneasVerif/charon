@@ -6,6 +6,7 @@
 use crate::assumed;
 use crate::names::trait_def_id_to_name;
 use hashlink::linked_hash_map::LinkedHashMap;
+use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::{
     BoundRegion, Clause, FreeRegion, PredicateKind, Region, RegionKind, TyCtxt,
@@ -51,10 +52,18 @@ pub fn replace_late_bound_regions<'tcx, T>(
     tcx: TyCtxt<'tcx>,
     value: rustc_middle::ty::Binder<'tcx, T>,
     def_id: DefId,
-) -> (T, LinkedHashMap<BoundRegion, Region<'tcx>>)
+) -> (T, LinkedHashMap<hax::BoundRegion, hax::Region>)
 where
     T: rustc_middle::ty::TypeFoldable<TyCtxt<'tcx>>,
 {
+    // TODO: factor this out
+    let state = hax::state::State::new(
+        self.tcx,
+        &hax::options::Options {
+            inline_macro_calls: Vec::new(),
+        },
+    );
+
     // Instantiate the regions bound in the signature, and generate a mapping
     // while doing so (the mapping uses a linked hash map so that we remember
     // in which order we introduced the regions).
@@ -63,7 +72,7 @@ where
     // the regions were introduced (the map is a BTreeMap, so I guess it depends
     // on how the the bound variables were numbered) and it doesn't cost us
     // much to create this mapping ourselves.
-    let mut late_bound_regions: LinkedHashMap<BoundRegion, Region> = LinkedHashMap::new();
+    let mut late_bound_regions: LinkedHashMap<hax::BoundRegion, hax::Region> = LinkedHashMap::new();
     let (value, _) = tcx.replace_late_bound_regions(value, |br| {
         let nregion = Region::new_from_kind(
             tcx,
@@ -72,7 +81,7 @@ where
                 bound_region: br.kind,
             }),
         );
-        late_bound_regions.insert(br, nregion);
+        late_bound_regions.insert(br.sinto(&state), nregion.sinto(&state));
         nregion
     });
     (value, late_bound_regions)
@@ -81,6 +90,7 @@ where
 /// Function used for sanity checks: check the constraints given by a definition's
 /// generics (lifetime constraints, traits, etc.).
 /// For now we simply check that there are no such constraints...
+/// TODO: update to use Hax
 fn check_generics(tcx: TyCtxt<'_>, def_id: DefId) {
     // Retrieve the generics and the predicates (where-clauses)
     let _generics = tcx.generics_of(def_id);

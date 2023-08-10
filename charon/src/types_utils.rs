@@ -6,6 +6,7 @@ use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use crate::values::Literal;
+use hax_frontend_exporter as hax;
 use im::{HashMap, OrdSet};
 use macros::make_generic_in_borrows;
 use rustc_middle::ty::{IntTy, UintTy};
@@ -320,25 +321,27 @@ impl std::string::ToString for Field {
 }
 
 impl IntegerTy {
-    pub fn rust_int_ty_to_integer_ty(ty: IntTy) -> IntegerTy {
+    pub fn rust_int_ty_to_integer_ty(ty: hax::IntTy) -> IntegerTy {
+        use hax::IntTy::*;
         match ty {
-            IntTy::Isize => IntegerTy::Isize,
-            IntTy::I8 => IntegerTy::I8,
-            IntTy::I16 => IntegerTy::I16,
-            IntTy::I32 => IntegerTy::I32,
-            IntTy::I64 => IntegerTy::I64,
-            IntTy::I128 => IntegerTy::I128,
+            Isize => IntegerTy::Isize,
+            I8 => IntegerTy::I8,
+            I16 => IntegerTy::I16,
+            I32 => IntegerTy::I32,
+            I64 => IntegerTy::I64,
+            I128 => IntegerTy::I128,
         }
     }
 
-    pub fn rust_uint_ty_to_integer_ty(ty: UintTy) -> IntegerTy {
+    pub fn rust_uint_ty_to_integer_ty(ty: hax::UintTy) -> IntegerTy {
+        use hax::UintTy::*;
         match ty {
-            UintTy::Usize => IntegerTy::Usize,
-            UintTy::U8 => IntegerTy::U8,
-            UintTy::U16 => IntegerTy::U16,
-            UintTy::U32 => IntegerTy::U32,
-            UintTy::U64 => IntegerTy::U64,
-            UintTy::U128 => IntegerTy::U128,
+            Usize => IntegerTy::Usize,
+            U8 => IntegerTy::U8,
+            U16 => IntegerTy::U16,
+            U32 => IntegerTy::U32,
+            U64 => IntegerTy::U64,
+            U128 => IntegerTy::U128,
         }
     }
 
@@ -450,26 +453,28 @@ impl std::fmt::Display for IntegerTy {
 }
 
 // IntTy is not defined in the current crate
-pub fn intty_to_string(ty: IntTy) -> String {
+pub fn intty_to_string(ty: hax::IntTy) -> String {
+    use hax::IntTy::*;
     match ty {
-        IntTy::Isize => "isize".to_string(),
-        IntTy::I8 => "i8".to_string(),
-        IntTy::I16 => "i16".to_string(),
-        IntTy::I32 => "i32".to_string(),
-        IntTy::I64 => "i64".to_string(),
-        IntTy::I128 => "i128".to_string(),
+        Isize => "isize".to_string(),
+        I8 => "i8".to_string(),
+        I16 => "i16".to_string(),
+        I32 => "i32".to_string(),
+        I64 => "i64".to_string(),
+        I128 => "i128".to_string(),
     }
 }
 
 // UintTy is not defined in the current crate
-fn uintty_to_string(ty: UintTy) -> String {
+fn uintty_to_string(ty: hax::UintTy) -> String {
+    use hax::UintTy::*;
     match ty {
-        UintTy::Usize => "usize".to_string(),
-        UintTy::U8 => "u8".to_string(),
-        UintTy::U16 => "u16".to_string(),
-        UintTy::U32 => "u32".to_string(),
-        UintTy::U64 => "u64".to_string(),
-        UintTy::U128 => "u128".to_string(),
+        Usize => "usize".to_string(),
+        U8 => "u8".to_string(),
+        U16 => "u16".to_string(),
+        U32 => "u32".to_string(),
+        U64 => "u64".to_string(),
+        U128 => "u128".to_string(),
     }
 }
 

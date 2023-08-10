@@ -9,6 +9,7 @@ use std::vec::Vec;
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct Place {
+    // TODO: update to transform to a recursive type
     pub var_id: VarId::Id,
     pub projection: Projection,
 }
@@ -152,6 +153,7 @@ pub enum Operand {
 }
 
 /// Constant value for an operand.
+/// TODO: rename
 /// Only the `ConstantValue` case is remaining in LLBC final form.
 ///
 /// The other cases come from a straight translation from the MIR:

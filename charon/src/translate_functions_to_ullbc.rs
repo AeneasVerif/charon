@@ -22,14 +22,13 @@ use crate::ullbc_ast as ast;
 use crate::values as v;
 use crate::values::{Literal, ScalarValue};
 use core::convert::*;
+use hax_frontend_exporter as hax;
+use hax_frontend_exporter::SInto;
 use log::warn;
 use rustc_abi::FieldIdx;
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir;
-use rustc_middle::mir::{
-    BasicBlock, Body, Operand, Place, PlaceElem, Statement, StatementKind, Terminator,
-    TerminatorKind, START_BLOCK,
-};
+use rustc_middle::mir::{BasicBlock, Body, START_BLOCK};
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::adjustment::PointerCast;
 use rustc_middle::ty::{TyCtxt, TyKind};
@@ -37,19 +36,19 @@ use rustc_span::Span;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name};
 
-fn translate_variant_id(id: rustc_target::abi::VariantIdx) -> VariantId::Id {
-    VariantId::Id::new(id.as_usize())
+fn translate_variant_id(id: hax::VariantIdx) -> VariantId::Id {
+    VariantId::Id::new(id)
 }
 
-fn translate_field_id(id: FieldIdx) -> FieldId::Id {
+fn translate_field_id(id: hax::FieldIdx) -> FieldId::Id {
     FieldId::Id::new(id.as_usize())
 }
 
 /// Translate a `BorrowKind`
-fn translate_borrow_kind(borrow_kind: mir::BorrowKind) -> e::BorrowKind {
+fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> e::BorrowKind {
     match borrow_kind {
-        mir::BorrowKind::Shared => e::BorrowKind::Shared,
-        mir::BorrowKind::Mut {
+        hax::BorrowKind::Shared => e::BorrowKind::Shared,
+        hax::BorrowKind::Mut {
             allow_two_phase_borrow,
         } => {
             if allow_two_phase_borrow {
@@ -58,15 +57,15 @@ fn translate_borrow_kind(borrow_kind: mir::BorrowKind) -> e::BorrowKind {
                 e::BorrowKind::Mut
             }
         }
-        mir::BorrowKind::Unique => {
+        hax::BorrowKind::Unique => {
             unimplemented!();
         }
-        mir::BorrowKind::Shallow => e::BorrowKind::Shallow,
+        hax::BorrowKind::Shallow => e::BorrowKind::Shallow,
     }
 }
 
-fn translate_binaryop_kind(binop: mir::BinOp) -> e::BinOp {
-    use mir::BinOp;
+fn translate_binaryop_kind(binop: hax::BinOp) -> e::BinOp {
+    use hax::BinOp;
     match binop {
         BinOp::BitXor => e::BinOp::BitXor,
         BinOp::BitAnd => e::BinOp::BitAnd,
@@ -90,8 +89,8 @@ fn translate_binaryop_kind(binop: mir::BinOp) -> e::BinOp {
     }
 }
 
-fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
-    use mir::UnOp;
+fn translate_unaryop_kind(binop: hax::UnOp) -> e::UnOp {
+    use hax::UnOp;
     match binop {
         UnOp::Not => e::UnOp::Not,
         UnOp::Neg => e::UnOp::Neg,
@@ -102,58 +101,6 @@ fn translate_unaryop_kind(binop: mir::UnOp) -> e::UnOp {
 fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> rustc_middle::mir::UnevaluatedConst<'tcx> {
     let p = mir_ty::List::empty();
     rustc_middle::mir::UnevaluatedConst::new(id, p)
-}
-
-/// Return the `DefId` of the function referenced by an operand, with the
-/// parameters substitution.
-/// The `Operand` comes from a `TerminatorKind::Call`.
-/// Only supports calls to top-level functions (which are considered as constants
-/// by rustc); doesn't support closures for now.
-fn get_function_from_operand<'tcx>(
-    func: &Operand<'tcx>,
-) -> (DefId, &'tcx rustc_middle::ty::subst::InternalSubsts<'tcx>) {
-    trace!("func: {:?}", func);
-
-    use std::ops::Deref;
-    // Match on the func operand: it should be a constant as we don't support
-    // closures for now.
-    match func {
-        mir::Operand::Constant(c) => {
-            trace!("Operand::Constant: {:?}", c);
-            let c = c.deref();
-            match &c.literal {
-                mir::ConstantKind::Ty(c) => {
-                    // The type of the constant should be a FnDef, allowing
-                    // us to retrieve the function's identifier and instantiation.
-                    let c_ty = c.ty();
-                    assert!(c_ty.is_fn());
-                    match c_ty.kind() {
-                        mir_ty::TyKind::FnDef(def_id, subst) => (*def_id, subst),
-                        _ => {
-                            unreachable!();
-                        }
-                    }
-                }
-                mir::ConstantKind::Val(cv, c_ty) => {
-                    trace!("cv: {:?}, ty: {:?}", cv, c_ty);
-                    // Same as for the `Ty` case above
-                    assert!(c_ty.is_fn());
-                    match c_ty.kind() {
-                        mir_ty::TyKind::FnDef(def_id, subst) => (*def_id, subst),
-                        _ => {
-                            unreachable!();
-                        }
-                    }
-                }
-                mir::ConstantKind::Unevaluated(_, _) => {
-                    unimplemented!();
-                }
-            }
-        }
-        mir::Operand::Move(_place) | mir::Operand::Copy(_place) => {
-            unimplemented!();
-        }
-    }
 }
 
 /// A function definition can be top-level, or can be defined in an `impl`
@@ -225,9 +172,10 @@ fn translate_primitive_function_call(
     dest: e::Place,
     target: ast::BlockId::Id,
 ) -> Result<ast::RawTerminator> {
-    trace!("- def_id: {:?}", def_id,);
+    trace!("- def_id: {:?}", def_id);
 
     // Translate the function name
+    // TODO: replace
     let name = function_def_id_to_name(tcx, def_id);
     trace!("name: {}", name);
 
@@ -429,34 +377,20 @@ pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a function's local variables by adding them in the environment.
-    fn translate_body_locals(&mut self, body: &Body<'tcx>) -> Result<()> {
-        // First, retrieve the debug info - we want to retrieve the names
-        // of the variables (which otherwise are just referenced with indices).
-        // This is mostly to generate a clean and readable translation later on.
-        // It seems the only way of linking the locals to the debug info is
-        // through the spans.
-        let mut span_to_var_name: im::OrdMap<Span, String> = im::OrdMap::new();
-        for info in &body.var_debug_info {
-            span_to_var_name.insert(info.source_info.span, info.name.to_ident_string());
-        }
-
+    fn translate_body_locals(&mut self, body: &hax::MirBody<()>) -> Result<()> {
         // Translate the parameters
-        for (index, var) in body.local_decls.iter_enumerated() {
-            trace!(
-                "Translating local of index {} and type {:?}",
-                index.as_usize(),
-                var.ty
-            );
+        for (index, var) in body.local_decls.raw.iter().enumerate() {
+            trace!("Translating local of index {} and type {:?}", index, var.ty);
 
             // Find the name of the variable
             let span = var.source_info.span;
-            let name: Option<String> = span_to_var_name.get(&span).cloned();
+            let name: Option<String> = var.name.clone();
 
             // Translate the type
             let ty = self.translate_ety(&var.ty)?;
 
             // Add the variable to the environment
-            self.push_var(index.as_u32(), ty, name);
+            self.push_var(index, ty, name);
         }
 
         Ok(())
@@ -466,10 +400,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     /// The local variables should already have been translated and inserted in
     /// the context.
-    fn translate_transparent_expression_body(&mut self, body: &Body<'tcx>) -> Result<()> {
+    fn translate_transparent_expression_body(&mut self, body: &hax::MirBody<()>) -> Result<()> {
         trace!();
 
-        let id = self.translate_basic_block(body, START_BLOCK)?;
+        let id = self.translate_basic_block(body, rustc_index::Idx::new(START_BLOCK.as_usize()))?;
         assert!(id == ast::START_BLOCK_ID);
 
         Ok(())
@@ -477,8 +411,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     fn translate_basic_block(
         &mut self,
-        body: &Body<'tcx>,
-        block_id: BasicBlock,
+        body: &hax::MirBody<()>,
+        block_id: hax::BasicBlock,
     ) -> Result<ast::BlockId::Id> {
         // Check if the block has already been translated
         if let Some(id) = self.blocks_map.get(&block_id) {
@@ -502,8 +436,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Translate the terminator
-        let terminator = block.terminator();
-        let terminator = self.translate_terminator(body, terminator)?;
+        let terminator = block.terminator.unwrap();
+        let terminator = self.translate_terminator(body, &terminator)?;
 
         // Insert the block in the translated blocks
         let block = ast::BlockData {
@@ -517,237 +451,164 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate a place and return its type
-    fn translate_place_with_type(&mut self, place: &Place<'tcx>) -> (e::Place, ty::ETy) {
-        let var_id = self.get_local(&place.local).unwrap();
-        let var = self.get_var_from_id(var_id).unwrap();
-        let (projection, ty) = self.translate_projection(var.ty.clone(), place.projection);
-
+    fn translate_place_with_type(&mut self, place: &hax::Place) -> (e::Place, ty::ETy) {
+        let (var_id, projection, ty) = self.translate_projection(place);
         (e::Place { var_id, projection }, ty)
     }
 
     /// Translate a place
-    fn translate_place(&mut self, place: &Place<'tcx>) -> e::Place {
+    fn translate_place(&mut self, place: &hax::Place) -> e::Place {
         self.translate_place_with_type(place).0
     }
 
-    /// Translate a projection
-    ///
-    /// We use the variable type to disambiguate between different kinds of
-    /// projections. For instance, rust uses `Deref` both to dereference mutable/shared
-    /// references and to move values from inside a box. On our side, we distinguish
-    /// the two kinds of dereferences.
-    ///
-    /// We return the translated projection, and its type.
-    ///
-    /// - `mir_level`: used for sanity checks
+    /// Translate a place - TODO: rename
+    /// TODO: Hax represents places in a different manner than MIR. We should
+    /// update our representation of places to match the Hax representation.
     fn translate_projection(
         &mut self,
-        var_ty: ty::ETy,
-        rprojection: &rustc_middle::ty::List<PlaceElem<'tcx>>,
-    ) -> (e::Projection, ty::ETy) {
-        trace!("- projection: {:?}\n- var_ty: {:?}", rprojection, var_ty);
-
-        // We need to track the type of the value we look at, while exploring the path.
-        // This is important to disambiguate, for instance, dereferencement operations.
-        let mut path_type = var_ty;
-        // When projection an ADT's field, we need to remember what variant it
-        // should be in case of an enumeration (such information is introduced
-        // by Downcast projections *before* the field projection).
-        let mut downcast_id: Option<VariantId::Id> = None;
-
-        let mut projection = e::Projection::new();
-        for pelem in rprojection {
-            trace!("- pelem: {:?}\n- path_type: {:?}", pelem, path_type);
-            match pelem {
-                mir::ProjectionElem::Deref => {
-                    downcast_id = None;
-                    // We need to disambiguate the two kinds of dereferences
-                    use std::ops::Deref;
-                    match path_type {
-                        ty::Ty::Ref(_, ty, _) => {
-                            path_type = ty.deref().clone();
-                            projection.push(e::ProjectionElem::Deref);
-                        }
-                        ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Box), regions, tys, cgs) => {
-                            // This case only happens in some MIR levels
-                            assert!(!boxes_are_desugared(self.t_ctx.mir_level));
-                            assert!(regions.is_empty());
-                            assert!(tys.len() == 1);
-                            assert!(cgs.is_empty());
-                            path_type = tys[0].clone();
-                            projection.push(e::ProjectionElem::DerefBox);
-                        }
-                        ty::Ty::RawPtr(ty, _) => {
-                            path_type = ty.deref().clone();
-                            projection.push(e::ProjectionElem::DerefRawPtr);
-                        }
-                        _ => {
-                            unreachable!("\n- pelem: {:?}\n- path_type: {:?}", pelem, path_type);
+        place: &hax::Place,
+    ) -> (v::VarId::Id, e::Projection, ty::ETy) {
+        use hax::PlaceKind;
+        let current_ty = self.translate_ety(&place.ty).unwrap();
+        match place.kind {
+            PlaceKind::Local(local) => {
+                let var_id = self.get_local(&local).unwrap();
+                (var_id, Vec::new(), current_ty)
+            }
+            PlaceKind::Projection { place, kind } => {
+                let (var_id, mut projection, projected_ty) = self.translate_projection(&*place);
+                use hax::ProjectionElem;
+                match kind {
+                    ProjectionElem::Deref => {
+                        // We use the type to disambiguate
+                        match current_ty {
+                            ty::Ty::Ref(_, ty, _) => {
+                                projection.push(e::ProjectionElem::Deref);
+                            }
+                            ty::Ty::Adt(
+                                ty::TypeId::Assumed(ty::AssumedTy::Box),
+                                regions,
+                                tys,
+                                cgs,
+                            ) => {
+                                // This case only happens in some MIR levels
+                                assert!(!boxes_are_desugared(self.t_ctx.mir_level));
+                                assert!(regions.is_empty());
+                                assert!(tys.len() == 1);
+                                assert!(cgs.is_empty());
+                                projection.push(e::ProjectionElem::DerefBox);
+                            }
+                            ty::Ty::RawPtr(ty, _) => {
+                                projection.push(e::ProjectionElem::DerefRawPtr);
+                            }
+                            _ => {
+                                unreachable!(
+                                    "\n- place.kind: {:?}\n- current_ty: {:?}",
+                                    place.kind, current_ty
+                                );
+                            }
                         }
                     }
-                }
-                mir::ProjectionElem::Field(field, field_ty) => {
-                    let field_id = translate_field_id(field);
-                    // Update the path type and generate the proj kind at the
-                    // same time.
-                    let proj_elem = match path_type {
-                        ty::Ty::Adt(ty::TypeId::Adt(type_id), _regions, _tys, _cgs) => {
-                            path_type = self.translate_ety(&field_ty).unwrap();
+                    ProjectionElem::Field(field_kind) => {
+                        use hax::ProjectionElemFieldKind::*;
+                        let proj_elem = match field_kind {
+                            Tuple(id) => {
+                                let (_, _, tys, _) = current_ty.as_adt();
+                                let field_id = translate_field_id(id);
+                                let proj_kind = e::FieldProjKind::Tuple(tys.len());
+                                e::ProjectionElem::Field(proj_kind, field_id)
+                            }
+                            Adt {
+                                typ,
+                                variant,
+                                index,
+                            } => {
+                                let field_id = translate_field_id(index);
+                                let variant_id = variant.map(|vid| translate_variant_id(vid));
+                                match current_ty {
+                                    ty::Ty::Adt(ty::TypeId::Adt(type_id), ..) => {
+                                        let proj_kind = e::FieldProjKind::Adt(type_id, variant_id);
+                                        e::ProjectionElem::Field(proj_kind, field_id)
+                                    }
+                                    ty::Ty::Adt(ty::TypeId::Tuple, regions, tys, cgs) => {
+                                        assert!(regions.is_empty());
+                                        assert!(variant.is_none());
+                                        assert!(cgs.is_empty());
+                                        let proj_kind = e::FieldProjKind::Tuple(tys.len());
 
-                            let proj_kind = e::FieldProjKind::Adt(type_id, downcast_id);
-                            e::ProjectionElem::Field(proj_kind, field_id)
-                        }
-                        ty::Ty::Adt(ty::TypeId::Tuple, regions, tys, cgs) => {
-                            assert!(regions.is_empty());
-                            assert!(downcast_id.is_none());
-                            assert!(cgs.is_empty());
-                            path_type = tys.get(field.as_usize()).unwrap().clone();
-                            let proj_kind = e::FieldProjKind::Tuple(tys.len());
-                            e::ProjectionElem::Field(proj_kind, field_id)
-                        }
-                        ty::Ty::Adt(
-                            ty::TypeId::Assumed(ty::AssumedTy::Option),
-                            regions,
-                            tys,
-                            cgs,
-                        ) => {
-                            assert!(regions.is_empty());
-                            assert!(tys.len() == 1);
-                            assert!(cgs.is_empty());
-                            assert!(downcast_id.is_some());
-                            assert!(field_id == ty::FieldId::ZERO);
+                                        e::ProjectionElem::Field(proj_kind, field_id)
+                                    }
+                                    ty::Ty::Adt(
+                                        ty::TypeId::Assumed(ty::AssumedTy::Option),
+                                        regions,
+                                        tys,
+                                        cgs,
+                                    ) => {
+                                        assert!(regions.is_empty());
+                                        assert!(tys.len() == 1);
+                                        assert!(cgs.is_empty());
+                                        assert!(field_id == ty::FieldId::ZERO);
 
-                            path_type = tys.get(0).unwrap().clone();
-                            let variant_id = downcast_id.unwrap();
-                            assert!(variant_id == assumed::OPTION_SOME_VARIANT_ID);
-                            let proj_kind = e::FieldProjKind::Option(variant_id);
-                            e::ProjectionElem::Field(proj_kind, field_id)
-                        }
-                        ty::Ty::Adt(ty::TypeId::Assumed(aty), regions, tys, cgs)
-                            if aty == ty::AssumedTy::Box
-                                || aty == ty::AssumedTy::PtrUnique
-                                || aty == ty::AssumedTy::PtrNonNull =>
-                        {
-                            // The Box case only happens in some MIR levels.
-                            // We group the following cases here:
-                            // ```
-                            // (x:Box<T>).0: std::ptr::Unique<T>
-                            // (x:std::ptr::Unique<T>).0: std::ptr::NonNull<T>
-                            // (x:std::ptr::NonNull<T>).0: *const T // raw pointer
-                            // ```
-                            assert!(!aty.is_box() || boxes_are_desugared(self.t_ctx.mir_level));
+                                        let variant_id = variant_id.unwrap();
+                                        assert!(variant_id == assumed::OPTION_SOME_VARIANT_ID);
+                                        let proj_kind = e::FieldProjKind::Option(variant_id);
+                                        e::ProjectionElem::Field(proj_kind, field_id)
+                                    }
+                                    ty::Ty::Adt(
+                                        ty::TypeId::Assumed(ty::AssumedTy::Box),
+                                        regions,
+                                        tys,
+                                        cgs,
+                                    ) => {
+                                        assert!(!boxes_are_desugared(self.t_ctx.mir_level));
 
-                            // Some more sanity checks
-                            assert!(regions.is_empty());
-                            assert!(tys.len() == 1);
-                            assert!(cgs.is_empty());
-                            assert!(downcast_id.is_none());
-                            assert!(field_id == ty::FieldId::ZERO);
+                                        // Some more sanity checks
+                                        assert!(regions.is_empty());
+                                        assert!(tys.len() == 1);
+                                        assert!(cgs.is_empty());
+                                        assert!(variant_id.is_none());
+                                        assert!(field_id == ty::FieldId::ZERO);
 
-                            // Retrieve the type given by `T` above
-                            let type_param = tys.get(0).unwrap().clone();
-
-                            // Find the new field type
-                            let elem;
-                            match aty {
-                                ty::AssumedTy::Box => {
-                                    elem = e::ProjectionElem::DerefBox;
-                                    path_type = ty::Ty::Adt(
-                                        ty::TypeId::Assumed(ty::AssumedTy::PtrUnique),
-                                        vec![],
-                                        vec![type_param],
-                                        vec![],
-                                    )
+                                        e::ProjectionElem::DerefBox
+                                    }
+                                    _ => {
+                                        unreachable!();
+                                    }
                                 }
-                                ty::AssumedTy::PtrUnique => {
-                                    elem = e::ProjectionElem::DerefPtrUnique;
-                                    path_type = ty::Ty::Adt(
-                                        ty::TypeId::Assumed(ty::AssumedTy::PtrNonNull),
-                                        vec![],
-                                        vec![type_param],
-                                        vec![],
-                                    )
-                                }
-                                ty::AssumedTy::PtrNonNull => {
-                                    elem = e::ProjectionElem::DerefPtrNonNull;
-                                    path_type =
-                                        ty::Ty::RawPtr(Box::new(type_param), ty::RefKind::Shared)
-                                }
-                                _ => unreachable!(),
-                            };
-
-                            elem
-                        }
-                        _ => {
-                            trace!("Path type: {:?}", path_type);
-                            unreachable!();
-                        }
-                    };
-                    projection.push(proj_elem);
-                    downcast_id = None;
-                }
-                mir::ProjectionElem::Index(local) => match &path_type {
-                    ty::Ty::Adt(
-                        ty::TypeId::Assumed(ty::AssumedTy::Array | ty::AssumedTy::Slice),
-                        _,
-                        tys,
-                        _,
-                    ) => {
-                        assert!(tys.len() == 1);
-
-                        let v = self.get_local(&local).unwrap();
-                        projection.push(e::ProjectionElem::Index(v, path_type.clone()));
-
-                        path_type = tys[0].clone();
+                            }
+                        };
+                        projection.push(proj_elem);
                     }
-                    _ => {
-                        unreachable!("ProjectionElem::Index, path_type:\n{:?}", path_type)
+                    ProjectionElem::Index(local) => {
+                        let local = self.get_local(&local).unwrap();
+                        projection.push(e::ProjectionElem::Index(local, current_ty));
                     }
-                },
-                mir::ProjectionElem::ConstantIndex {
-                    offset: _,
-                    min_length: _,
-                    from_end: _,
-                } => {
-                    // This doesn't seem to occur in MIR built
-                    unimplemented!();
-                }
-                mir::ProjectionElem::Subslice {
-                    from: _,
-                    to: _,
-                    from_end: _,
-                } => {
-                    // This doesn't seem to occur in MIR built
-                    unimplemented!();
-                }
-                mir::ProjectionElem::OpaqueCast(_) => {
-                    unimplemented!();
-                }
-                mir::ProjectionElem::Downcast(_, variant_id) => {
-                    // Downcast an enum to a specific variant.
-                    // For example, the left value of:
-                    // `((_0 as Right).0: T2) = move _1;`
-                    // Note that on the above example, the downcast preceeds the
-                    // field projection.
-                    let vid = translate_variant_id(variant_id);
-                    // Don't update the variable type
-                    // Remember the new downcast
-                    downcast_id = Some(vid);
-                    // We don't translate downcasts: the information is merged with
-                    // field projections
-                }
+                    ProjectionElem::Downcast(..) => {
+                        // We view it as a nop (the information from the
+                        // downcast has been propagated to the other
+                        // projection elements by Hax)
+                        ()
+                    }
+                    ProjectionElem::ConstantIndex { .. } | ProjectionElem::Subslice { .. } => {
+                        // Those don't seem to occur in MIR built
+                        unimplemented!()
+                    }
+                    ProjectionElem::OpaqueCast => {
+                        // Don't know what that is
+                        unimplemented!()
+                    }
+                };
+
+                // Return
+                (var_id, projection, projected_ty)
             }
         }
-
-        (projection, path_type)
     }
 
     /// Translate an operand with its type
-    fn translate_operand_with_type(
-        &mut self,
-        operand: &mir::Operand<'tcx>,
-    ) -> (e::Operand, ty::ETy) {
+    fn translate_operand_with_type(&mut self, operand: &hax::Operand) -> (e::Operand, ty::ETy) {
         trace!();
+        use hax::Operand;
         match operand {
             Operand::Copy(place) => {
                 let (p, ty) = self.translate_place_with_type(place);
@@ -758,14 +619,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 (e::Operand::Move(p), ty)
             }
             Operand::Constant(constant) => {
-                let (ty, constant) = self.translate_operand_constant(constant);
+                let (ty, constant) = self.translate_constant_to_operand_constant_value(constant);
                 (e::Operand::Const(ty.clone(), constant), ty)
             }
         }
     }
 
     /// Translate an operand
-    fn translate_operand(&mut self, operand: &mir::Operand<'tcx>) -> e::Operand {
+    fn translate_operand(&mut self, operand: &hax::Operand) -> e::Operand {
         trace!();
         self.translate_operand_with_type(operand).0
     }
@@ -780,33 +641,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// ad-hoc behaviour (which comes from the fact that we abstract boxes, while
     /// the rust compiler is too precise when manipulating those boxes, which
     /// reveals implementation details).
-    fn translate_move_box_first_projector_operand(
-        &mut self,
-        operand: &mir::Operand<'tcx>,
-    ) -> e::Operand {
+    fn translate_move_box_first_projector_operand(&mut self, operand: &hax::Operand) -> e::Operand {
         trace!();
         match operand {
-            Operand::Move(place) => {
-                let var_id = self.get_local(&place.local).unwrap();
+            hax::Operand::Move(place) => {
+                let place = self.translate_place(place);
 
                 // Sanity check
-                let var = self.get_var_from_id(var_id).unwrap();
+                let var = self.get_var_from_id(place.var_id).unwrap();
                 assert!(var.ty.is_box());
 
-                assert!(place.projection.len() == 1);
-                let proj_elem = place.projection.get(0).unwrap();
-                match proj_elem {
-                    mir::ProjectionElem::Field(field, _) => {
-                        assert!(field.as_usize() == 0);
-                    }
-                    _ => {
-                        unreachable!();
-                    }
-                }
-                e::Operand::Move(e::Place {
-                    var_id,
-                    projection: e::Projection::new(),
-                })
+                e::Operand::Move(place)
             }
             _ => {
                 unreachable!();
@@ -815,18 +660,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate an rvalue
-    fn translate_rvalue(&mut self, rvalue: &mir::Rvalue<'tcx>) -> e::Rvalue {
+    fn translate_rvalue(&mut self, rvalue: &hax::Rvalue) -> e::Rvalue {
+        use hax::Rvalue;
         use std::ops::Deref;
         match rvalue {
-            mir::Rvalue::Use(operand) => e::Rvalue::Use(self.translate_operand(operand)),
-            mir::Rvalue::CopyForDeref(place) => {
+            Rvalue::Use(operand) => e::Rvalue::Use(self.translate_operand(operand)),
+            Rvalue::CopyForDeref(place) => {
                 // According to the documentation, it seems to be an optimisation
                 // for drop elaboration. We treat it as a regular copy.
                 let place = self.translate_place(place);
                 e::Rvalue::Use(e::Operand::Copy(place))
             }
-            mir::Rvalue::Repeat(operand, cnst) => {
-                let c = self.translate_const_kind_as_const_generic(*cnst);
+            Rvalue::Repeat(operand, cnst) => {
+                let c = self.translate_constant_expr_to_const_generic(cnst);
                 // We are effectively desugaring the repeat in Charon, turning it into an array literal
                 // where the operand is repeated `cnst` times.
                 // TODO: allow having other kinds of const generics, and desugar later to a function call
@@ -841,18 +687,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // don't have a ArrayRepeat AssumedFunId.
                 e::Rvalue::Aggregate(e::AggregateKind::Array(t, c), operands)
             }
-            mir::Rvalue::Ref(_region, borrow_kind, place) => {
+            Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(place);
                 let borrow_kind = translate_borrow_kind(*borrow_kind);
                 e::Rvalue::Ref(place, borrow_kind)
             }
-            mir::Rvalue::ThreadLocalRef(_) => {
+            Rvalue::ThreadLocalRef(_) => {
                 unreachable!();
             }
-            mir::Rvalue::AddressOf(_, _) => {
+            Rvalue::AddressOf(_, _) => {
                 unreachable!();
             }
-            mir::Rvalue::Len(place) => {
+            Rvalue::Len(place) => {
                 let (place, ty) = self.translate_place_with_type(place);
                 let cg = match &ty {
                     ty::Ty::Adt(
@@ -871,7 +717,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
                 e::Rvalue::Len(place, ty, cg)
             }
-            mir::Rvalue::Cast(cast_kind, operand, tgt_ty) => {
+            Rvalue::Cast(cast_kind, operand, tgt_ty) => {
                 trace!("Rvalue::Cast: {:?}", rvalue);
                 // Put aside the pointer casts (which we don't support), I think
                 // casts should only be from integers/booleans to integer/booleans.
@@ -882,8 +728,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // Translate the operand
                 let (op, src_ty) = self.translate_operand_with_type(operand);
 
+                use hax::CastKind;
                 match (cast_kind, &src_ty, &tgt_ty) {
-                    (rustc_middle::mir::CastKind::IntToInt, _, _) => {
+                    (CastKind::IntToInt, _, _) => {
                         // We only support source and target types for integers
                         let tgt_ty = *tgt_ty.as_literal().as_integer();
                         let src_ty = *src_ty.as_literal().as_integer();
@@ -891,7 +738,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         e::Rvalue::UnaryOp(e::UnOp::Cast(src_ty, tgt_ty), op)
                     }
                     (
-                        rustc_middle::mir::CastKind::Pointer(PointerCast::Unsize),
+                        CastKind::Pointer(hax::PointerCast::Unsize),
                         ty::Ty::Ref(_, t1, kind1),
                         ty::Ty::Ref(_, t2, kind2),
                     ) => {
@@ -928,8 +775,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 }
             }
-            mir::Rvalue::BinaryOp(binop, operands)
-            | mir::Rvalue::CheckedBinaryOp(binop, operands) => {
+            Rvalue::BinaryOp(binop, operands) | Rvalue::CheckedBinaryOp(binop, operands) => {
                 // We merge checked and unchecked binary operations
                 let (left, right) = operands.deref();
                 e::Rvalue::BinaryOp(
@@ -938,20 +784,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     self.translate_operand(right),
                 )
             }
-            mir::Rvalue::NullaryOp(nullop, _ty) => {
+            Rvalue::NullaryOp(nullop, _ty) => {
                 trace!("NullOp: {:?}", nullop);
                 // Nullary operations are very low-level and shouldn't be necessary
                 // unless one needs to write unsafe code.
                 unreachable!();
             }
-            mir::Rvalue::UnaryOp(unop, operand) => e::Rvalue::UnaryOp(
+            Rvalue::UnaryOp(unop, operand) => e::Rvalue::UnaryOp(
                 translate_unaryop_kind(*unop),
                 self.translate_operand(operand),
             ),
-            mir::Rvalue::Discriminant(place) => {
-                e::Rvalue::Discriminant(self.translate_place(place))
-            }
-            mir::Rvalue::Aggregate(aggregate_kind, operands) => {
+            Rvalue::Discriminant(place) => e::Rvalue::Discriminant(self.translate_place(place)),
+            Rvalue::Aggregate(aggregate_kind, operands) => {
                 // It seems this instruction is not present in certain passes:
                 // for example, it seems it is not used in optimized MIR, where
                 // ADT initialization is split into several instructions, for
@@ -970,24 +814,27 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // First translate the operands
                 let operands_t: Vec<e::Operand> = operands
+                    .raw
                     .iter()
                     .map(|op| self.translate_operand(op))
                     .collect();
 
+                use hax::AggregateKind;
                 match aggregate_kind.deref() {
-                    mir::AggregateKind::Array(ty) => {
+                    AggregateKind::Array(ty) => {
                         let t_ty = self.translate_ety(&ty).unwrap();
                         let cg = ty::ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
                             operands_t.len() as u64,
                         )));
                         e::Rvalue::Aggregate(e::AggregateKind::Array(t_ty, cg), operands_t)
                     }
-                    mir::AggregateKind::Tuple => {
+                    AggregateKind::Tuple => {
                         e::Rvalue::Aggregate(e::AggregateKind::Tuple, operands_t)
                     }
-                    mir::AggregateKind::Adt(
+                    AggregateKind::Adt(
                         adt_id,
                         variant_idx,
+                        kind,
                         substs,
                         user_annotation,
                         field_index,
@@ -1003,25 +850,27 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         assert!(user_annotation.is_none());
                         assert!(field_index.is_none());
 
+                        let rid = adt_id.rust_def_id.unwrap();
+
                         // Translate the substitution
                         let (region_params, mut type_params, cg_params) = self
                             .translate_subst_generic_args_in_body(None, substs)
                             .unwrap();
 
-                        if adt_id.is_local() {
-                            assert!(!self.t_ctx.id_is_opaque(*adt_id));
+                        if rid.is_local() {
+                            assert!(!self.t_ctx.id_is_opaque(rid));
 
                             // Local ADT: translate the id
-                            let id_t = self.translate_type_decl_id(*adt_id);
+                            let id_t = self.translate_type_decl_id(rid);
 
-                            let kind = self.t_ctx.tcx.adt_def(adt_id).adt_kind();
+                            use hax::AdtKind;
                             let variant_id = match kind {
-                                rustc_middle::ty::AdtKind::Struct => Option::None,
-                                rustc_middle::ty::AdtKind::Enum => {
+                                AdtKind::Struct => Option::None,
+                                AdtKind::Enum => {
                                     let variant_id = translate_variant_id(*variant_idx);
                                     Some(variant_id)
                                 }
-                                rustc_middle::ty::AdtKind::Union => {
+                                AdtKind::Union => {
                                     unimplemented!();
                                 }
                             };
@@ -1077,15 +926,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             }
                         }
                     }
-                    mir::AggregateKind::Closure(_def_id, _subst) => {
+                    AggregateKind::Closure(_def_id, _subst) => {
                         unimplemented!();
                     }
-                    mir::AggregateKind::Generator(_def_id, _subst, _movability) => {
+                    AggregateKind::Generator(_def_id, _subst, _movability) => {
                         unimplemented!();
                     }
                 }
             }
-            mir::Rvalue::ShallowInitBox(_, _) => {
+            Rvalue::ShallowInitBox(_, _) => {
                 unimplemented!();
             }
         }
@@ -1096,14 +945,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
     fn translate_statement(
         &mut self,
-        body: &Body<'tcx>,
-        statement: &Statement<'tcx>,
+        body: &hax::MirBody<()>,
+        statement: &hax::Statement,
     ) -> Result<Option<ast::Statement>> {
         trace!("About to translate statement (MIR) {:?}", statement);
 
         use std::ops::Deref;
 
-        let t_statement: Option<ast::RawStatement> = match &statement.kind {
+        use hax::StatementKind;
+        let t_statement: Option<ast::RawStatement> = match &*statement.kind {
             StatementKind::Assign(assign) => {
                 let (place, rvalue) = assign.deref();
                 let t_place = self.translate_place(place);
@@ -1190,8 +1040,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a terminator
     fn translate_terminator(
         &mut self,
-        body: &Body<'tcx>,
-        terminator: &Terminator<'tcx>,
+        body: &hax::MirBody<()>,
+        terminator: &hax::Terminator,
     ) -> Result<ast::Terminator> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
 
@@ -1202,6 +1052,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .translate_meta_from_source_info(&body.source_scopes, terminator.source_info);
 
         // Translate the terminator
+        use hax::TerminatorKind;
         let t_terminator: ast::RawTerminator = match &terminator.kind {
             TerminatorKind::Goto { target } => {
                 let target = self.translate_basic_block(body, *target)?;
@@ -1212,7 +1063,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let (discr, discr_ty) = self.translate_operand_with_type(discr);
 
                 // Translate the switch targets
-                let targets = self.translate_switch_targets(body, &discr_ty, targets)?;
+                let targets = self.translate_switch_targets(body, &discr_ty, targets);
 
                 ast::RawTerminator::Switch { discr, targets }
             }
@@ -1234,7 +1085,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 target: self.translate_basic_block(body, *target)?,
             },
             TerminatorKind::Call {
-                func,
+                fun_id,
+                substs,
                 args,
                 destination,
                 target,
@@ -1242,8 +1094,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 from_hir_call: _,
                 fn_span: _,
             } => {
-                trace!("Call: func: {:?}", func);
-                self.translate_function_call(body, func, args, destination, target)?
+                trace!("Call: func: {:?}", fun_id.rust_def_id);
+                self.translate_function_call(body, fun_id, substs, args, destination, target)?
             }
             TerminatorKind::Assert {
                 cond,
@@ -1311,50 +1163,30 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate switch targets
     fn translate_switch_targets(
         &mut self,
-        body: &Body<'tcx>,
+        body: &hax::MirBody<()>,
         switch_ty: &ty::ETy,
-        targets: &mir::SwitchTargets,
-    ) -> Result<ast::SwitchTargets> {
+        targets: &hax::SwitchTargets,
+    ) -> ast::SwitchTargets {
         trace!("targets: {:?}", targets);
-        let targets_vec: Vec<(u128, BasicBlock)> = targets.iter().map(|(v, b)| (v, b)).collect();
-
-        match switch_ty {
-            ty::Ty::Literal(ty::LiteralTy::Bool) => {
-                // This is an: `if ... then ... else ...`
-                assert!(targets_vec.len() == 1);
-                // It seems the block targets are inverted
-                let (test_val, otherwise_block) = targets_vec[0];
-
-                assert!(test_val == 0);
-
-                // It seems the block targets are inverted
-                let if_block = self.translate_basic_block(body, targets.otherwise())?;
-                let otherwise_block = self.translate_basic_block(body, otherwise_block)?;
-
-                Ok(ast::SwitchTargets::If(if_block, otherwise_block))
+        use hax::SwitchTargets;
+        match targets {
+            SwitchTargets::If(if_block, then_block) => {
+                let if_block = self.translate_basic_block(body, *if_block).unwrap();
+                let then_block = self.translate_basic_block(body, *then_block).unwrap();
+                ast::SwitchTargets::If(if_block, then_block)
             }
-            ty::Ty::Literal(ty::LiteralTy::Integer(int_ty)) => {
-                // This is a: switch(int).
-                // Convert all the test values to the proper values.
-                let mut targets_map: Vec<(v::ScalarValue, ast::BlockId::Id)> = Vec::new();
-                for (v, tgt) in targets_vec {
-                    // We need to reinterpret the bytes (`v as i128` is not correct)
-                    let raw: [u8; 16] = v.to_le_bytes();
-                    let v = v::ScalarValue::from_le_bytes(*int_ty, raw);
-                    let tgt = self.translate_basic_block(body, tgt)?;
-                    targets_map.push((v, tgt));
-                }
-                let otherwise_block = self.translate_basic_block(body, targets.otherwise())?;
-
-                Ok(ast::SwitchTargets::SwitchInt(
-                    *int_ty,
-                    targets_map,
-                    otherwise_block,
-                ))
-            }
-            _ => {
-                trace!("Unexpected switch_ty: {}", switch_ty.variant_name());
-                unreachable!();
+            SwitchTargets::SwitchInt(_, targets_map, otherwise) => {
+                let int_ty = *switch_ty.as_literal().as_integer();
+                let targets_map = targets_map
+                    .iter()
+                    .map(|(v, tgt)| {
+                        let v = v::ScalarValue::from_le_bytes(int_ty, v.data_le_bytes);
+                        let tgt = self.translate_basic_block(body, *tgt).unwrap();
+                        (v, tgt)
+                    })
+                    .collect();
+                let otherwise = self.translate_basic_block(body, *otherwise).unwrap();
+                ast::SwitchTargets::SwitchInt(int_ty, targets_map, otherwise)
             }
         }
     }
@@ -1365,24 +1197,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// the blocks we go to after the function call returns.
     fn translate_function_call(
         &mut self,
-        body: &mir::Body<'tcx>,
-        func: &Operand<'tcx>,
-        args: &Vec<Operand<'tcx>>,
-        destination: &Place<'tcx>,
-        target: &Option<BasicBlock>,
+        body: &hax::MirBody<()>,
+        def_id: &hax::DefId,
+        substs: &Vec<hax::GenericArg>,
+        args: &Vec<hax::Operand>,
+        destination: &hax::Place,
+        target: &Option<hax::BasicBlock>,
     ) -> Result<ast::RawTerminator> {
         trace!();
+        // TODO: don't do this
+        let def_id = def_id.rust_def_id.unwrap();
 
         // Translate the function operand - should be a constant: we don't
         // support closures for now
-        trace!("func: {:?}", func);
+        trace!("func: {:?}", def_id);
 
         let tcx = self.t_ctx.tcx;
 
-        // Retrieve the function's identifier and instantiation
-        let (def_id, substs) = get_function_from_operand(func);
-
         // Translate the name to check if is is `core::panicking::panic`
+        // TODO: replace
         let name = function_def_id_to_name(tcx, def_id);
 
         // If the call is `panic!`, then the target is `None`.
@@ -1423,8 +1256,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 assert!(args.len() == 2);
 
                 // Translate the type parameter
-                let ty = substs.get(0).unwrap().expect_ty();
-                let t_ty = self.translate_ety(&ty)?;
+                let t_ty = if let hax::GenericArg::Type(ty) = substs.get(0).unwrap() {
+                    self.translate_ety(ty)?
+                } else {
+                    unreachable!()
+                };
 
                 // Translate the first argument - note that we use a special
                 // function to translate it: the operand should be of the form:
@@ -1525,14 +1361,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_subst_generic_args_in_body(
         &mut self,
         used_args: Option<Vec<bool>>,
-        substs: &rustc_middle::ty::subst::InternalSubsts<'tcx>,
+        substs: &Vec<hax::GenericArg>,
     ) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>, Vec<ty::ConstGeneric>)> {
-        let substs: Vec<rustc_middle::ty::subst::GenericArg<'tcx>> = match used_args {
-            Option::None => substs.iter().collect(),
+        let substs: Vec<&hax::GenericArg> = match used_args {
+            Option::None => substs.into_iter().collect(),
             Option::Some(used_args) => {
                 assert!(substs.len() == used_args.len());
                 substs
-                    .iter()
+                    .into_iter()
                     .zip(used_args.into_iter())
                     .filter_map(|(param, used)| if used { Some(param) } else { None })
                     .collect()
@@ -1542,18 +1378,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let mut t_args_regions = Vec::new();
         let mut t_args_tys = Vec::new();
         let mut t_args_cgs = Vec::new();
-        for param in substs.iter() {
-            match param.unpack() {
-                rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
+        for param in substs.into_iter() {
+            use hax::GenericArg;
+            match param {
+                GenericArg::Type(param_ty) => {
                     // Simply translate the type
                     let t_param_ty = self.translate_ety(&param_ty)?;
                     t_args_tys.push(t_param_ty);
                 }
-                rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
-                    t_args_regions.push(translate_erased_region(region.kind()));
+                GenericArg::Lifetime(region) => {
+                    t_args_regions.push(translate_erased_region(*region));
                 }
-                rustc_middle::ty::subst::GenericArgKind::Const(c) => {
-                    let t_cg = self.translate_const_kind_as_const_generic(c);
+                GenericArg::Const(c) => {
+                    let t_cg = self.translate_constant_expr_to_const_generic(c);
                     t_args_cgs.push(t_cg);
                 }
             }
@@ -1562,29 +1399,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok((t_args_regions, t_args_tys, t_args_cgs))
     }
 
-    /// Translate a parameter substitution used inside a function body.
-    ///
-    /// Note that the regions parameters are expected to have been erased.
-    fn translate_subst_in_body(
-        &mut self,
-        substs: &rustc_middle::ty::List<rustc_middle::ty::Ty<'tcx>>,
-    ) -> Result<Vec<ty::ETy>> {
-        let mut t_args_tys = Vec::new();
-
-        for param in substs.iter() {
-            t_args_tys.push(self.translate_ety(&param)?);
-        }
-        Ok(t_args_tys)
-    }
-
     /// Evaluate function arguments in a context, and return the list of computed
     /// values.
     fn translate_arguments(
         &mut self,
         used_args: Option<Vec<bool>>,
-        args: &Vec<Operand<'tcx>>,
+        args: &Vec<hax::Operand>,
     ) -> Vec<e::Operand> {
-        let args: Vec<&Operand<'tcx>> = match used_args {
+        let args: Vec<&hax::Operand> = match used_args {
             Option::None => args.iter().collect(),
             Option::Some(used_args) => {
                 assert!(args.len() == used_args.len());
@@ -1599,10 +1421,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         for arg in args {
             // There should only be moved arguments, or constants
             match arg {
-                mir::Operand::Move(_) | mir::Operand::Constant(_) => {
+                hax::Operand::Move(_) | hax::Operand::Constant(_) => {
                     // OK
                 }
-                mir::Operand::Copy(_) => {
+                hax::Operand::Copy(_) => {
                     unreachable!();
                 }
             }
@@ -1618,18 +1440,31 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_body(mut self, local_id: LocalDefId, arg_count: usize) -> Result<ast::ExprBody> {
         let tcx = self.t_ctx.tcx;
 
+        // Retrive the body
         let body = get_mir_for_def_id_and_level(tcx, local_id, self.t_ctx.mir_level);
 
+        // TODO: factor this out
+        let state = hax::state::State::new_from_mir(
+            tcx,
+            &hax::options::Options {
+                inline_macro_calls: Vec::new(),
+            },
+            // TODO: do we really have to clone this?
+            body.clone(),
+        );
+        // Translate
+        let body: hax::MirBody<()> = body.sinto(&state);
+
         // Compute the meta information
-        let meta = self.translate_meta_from_rspan(body.span);
+        let meta = self.translate_meta_from_hax_span(body.span);
 
         // Initialize the local variables
         trace!("Translating the body locals");
-        self.translate_body_locals(body)?;
+        self.translate_body_locals(&body)?;
 
         // Translate the expression body
         trace!("Translating the expression body");
-        self.translate_transparent_expression_body(body)?;
+        self.translate_transparent_expression_body(&body)?;
 
         // We need to convert the blocks map to an index vector
         // We clone things while we could move them...
@@ -1660,6 +1495,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         def_id: DefId,
     ) -> (BodyTransCtx<'tcx, 'ctx1, 'ctx>, ast::FunSig) {
         let tcx = self.tcx;
+
+        // TODO: factor this out
+        let state = hax::state::State::new(
+            self.tcx,
+            &hax::options::Options {
+                inline_macro_calls: Vec::new(),
+            },
+        );
 
         // Retrieve the function signature, which includes the lifetimes
         let signature = tcx.fn_sig(def_id).subst_identity();
@@ -1712,10 +1555,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 unreachable!()
             }
         };
+        let substs = substs.sinto(&state);
 
-        for param in substs.iter() {
-            match param.unpack() {
-                rustc_middle::ty::subst::GenericArgKind::Type(param_ty) => {
+        for param in substs {
+            use hax::GenericArgKind;
+            match param {
+                GenericArgKind::Type(param_ty) => {
                     // This type should be a param type
                     match param_ty.kind() {
                         TyKind::Param(param_ty) => {
@@ -1726,11 +1571,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         }
                     }
                 }
-                rustc_middle::ty::subst::GenericArgKind::Lifetime(region) => {
+                GenericArgKind::Lifetime(region) => {
                     let name = translate_region_name(&region);
                     bt_ctx.push_region(*region, name);
                 }
-                rustc_middle::ty::subst::GenericArgKind::Const(c) => {
+                GenericArgKind::Const(c) => {
                     // The type should be primitive, meaning it shouldn't contain
                     // variables, etc. (we could use an empty context).
                     let ty = bt_ctx.translate_ety(&c.ty()).unwrap();
@@ -1757,9 +1602,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             generics::replace_late_bound_regions(tcx, signature, def_id);
 
         // Introduce identifiers and translated regions for the late-bound regions
-        for (_, region) in &late_bound_regions {
-            let name = translate_region_name(region);
-            bt_ctx.push_region(**region, name);
+        for (_, region) in late_bound_regions.into_iter() {
+            let name = translate_region_name(&region);
+            bt_ctx.push_region(region, name);
         }
 
         trace!(
@@ -1780,9 +1625,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             signature
                 .inputs()
                 .iter()
-                .map(|ty| bt_ctx.translate_sig_ty(ty).unwrap()),
+                .map(|ty| bt_ctx.translate_sig_ty(&(*ty).sinto(&state)).unwrap()),
         );
-        let output = bt_ctx.translate_sig_ty(&signature.output()).unwrap();
+        let output = bt_ctx
+            .translate_sig_ty(&signature.output().sinto(&state))
+            .unwrap();
 
         trace!(
             "# Input variables types:\n{}",
@@ -1889,6 +1736,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let def_id = self.translate_global_decl_id(rust_id);
 
+        // TODO: factor this out
+        let state = hax::state::State::new(
+            self.tcx,
+            &hax::options::Options {
+                inline_macro_calls: Vec::new(),
+            },
+        );
+
         // Translate the global name
         let name = global_def_id_to_name(self.tcx, rust_id);
 
@@ -1899,8 +1754,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         trace!("Translating global type");
-        let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
-        let g_ty = bt_ctx.translate_ety(&mir_ty).unwrap();
+        let ty = bt_ctx
+            .t_ctx
+            .tcx
+            .type_of(rust_id)
+            .subst_identity()
+            .sinto(&state);
+        let ty = bt_ctx.translate_ety(&ty).unwrap();
 
         let body = match (rust_id.is_local(), is_transparent) {
             // It's a local and opaque global: we do not give it a body.
@@ -1928,8 +1788,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 ) {
                     std::result::Result::Ok(c) => {
                         // Evaluate the constant
-                        // We need a param_env: we use the expression def id as a dummy id...
-                        let (ty, val) = bt_ctx.translate_evaluated_operand_constant(&mir_ty, &c);
+                        let span = bt_ctx.t_ctx.tcx.def_span(rust_id);
+                        let (ty, val) =
+                            bt_ctx.translate_evaluated_operand_constant(mir_ty, &c, span);
                         Option::Some(
                             bt_ctx
                                 .t_ctx

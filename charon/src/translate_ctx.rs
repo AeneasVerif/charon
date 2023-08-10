@@ -11,6 +11,7 @@ use crate::types as ty;
 use crate::types::LiteralTy;
 use crate::ullbc_ast as ast;
 use crate::values as v;
+use hax_frontend_exporter as hax;
 use linked_hash_set::LinkedHashSet;
 use rustc_hir::def_id::DefId;
 use rustc_index::IndexVec;
@@ -86,7 +87,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub region_vars: ty::RegionVarId::Vector<ty::RegionVar>,
     // TODO: use the MapGenerator types
     /// The map from rust region to translated region indices
-    pub region_vars_map: im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id>,
+    pub region_vars_map: im::OrdMap<hax::Region, ty::RegionVarId::Id>,
     /// Id counter for the type variables
     pub type_vars_counter: ty::TypeVarId::Generator,
     /// The type variables
@@ -99,7 +100,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The "regular" variables
     pub vars: v::VarId::Vector<ast::Var>,
     /// The map from rust variable indices to translated variables indices.
-    pub vars_map: im::OrdMap<u32, v::VarId::Id>,
+    pub vars_map: im::OrdMap<usize, v::VarId::Id>,
     /// Id counter for the const generic variables
     pub const_generic_counter: ty::ConstGenericVarId::Generator,
     /// The const generic variables
@@ -116,7 +117,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The map from rust blocks to translated blocks.
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
-    pub blocks_map: im::OrdMap<BasicBlock, ast::BlockId::Id>,
+    pub blocks_map: im::OrdMap<hax::BasicBlock, ast::BlockId::Id>,
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
@@ -162,6 +163,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.translate_meta_from_rspan(rspan)
     }
 
+    pub fn translate_hax_span(&mut self, span: hax::Span) -> meta::Span {
+        unimplemented!()
+    }
+
+    // TODO: remove
     pub fn translate_span(&mut self, rspan: rustc_span::Span) -> meta::Span {
         // Retrieve the source map, which contains information about the source file:
         // we need it to be able to interpret the span.
@@ -190,8 +196,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Compute meta data from a Rust source scope
     pub fn translate_meta_from_source_info(
         &mut self,
-        source_scopes: &IndexVec<SourceScope, SourceScopeData<'_>>,
-        source_info: SourceInfo,
+        source_scopes: &hax::IndexVec<hax::SourceScope, hax::SourceScopeData>,
+        source_info: hax::SourceInfo,
     ) -> Meta {
         // Translate the span
         let mut scope_data = source_scopes.get(source_info.scope).unwrap();
@@ -218,8 +224,18 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
+    pub(crate) fn translate_meta_from_hax_span(&mut self, span: hax::Span) -> Meta {
+        // Translate the span
+        let span = self.translate_span(span);
+
+        Meta {
+            span,
+            generated_from_span: None,
+        }
+    }
+
     pub(crate) fn translate_meta_from_rspan(&mut self, rspan: rustc_span::Span) -> Meta {
-        // Translate teh span
+        // Translate the span
         let span = self.translate_span(rspan);
 
         Meta {
@@ -324,7 +340,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_meta_from_rspan(rspan)
     }
 
-    pub(crate) fn get_local(&self, local: &mir::Local) -> Option<v::VarId::Id> {
+    pub fn translate_meta_from_hax_span(&mut self, span: hax::Span) -> Meta {
+        unimplemented!()
+    }
+
+    pub(crate) fn get_local(&self, local: &hax::Local) -> Option<v::VarId::Id> {
         self.vars_map.get(&local.as_u32()).copied()
     }
 
@@ -369,7 +389,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn push_region(
         &mut self,
-        r: rustc_middle::ty::RegionKind<'tcx>,
+        r: hax::Region,
         name: Option<String>,
     ) -> ty::RegionVarId::Id {
         use crate::id_vector::ToUsize;
@@ -394,7 +414,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         var_id
     }
 
-    pub(crate) fn push_var(&mut self, rid: u32, ty: ty::ETy, name: Option<String>) {
+    pub(crate) fn push_var(&mut self, rid: usize, ty: ty::ETy, name: Option<String>) {
         use crate::id_vector::ToUsize;
         let var_id = self.vars_counter.fresh_id();
         assert!(var_id.to_usize() == self.vars.len());
@@ -420,7 +440,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.const_generic_vars_map.insert(rid, var_id);
     }
 
-    pub(crate) fn fresh_block_id(&mut self, rid: BasicBlock) -> ast::BlockId::Id {
+    pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId::Id {
         let block_id = self.blocks_counter.fresh_id();
         self.blocks_map.insert(rid, block_id);
         block_id

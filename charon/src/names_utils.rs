@@ -5,6 +5,7 @@
 #![allow(dead_code)]
 
 use crate::names::*;
+use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
 use rustc_hir::definitions::DefPathData;
 use rustc_hir::{Item, ItemKind};
@@ -290,24 +291,8 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     Name { name }
 }
 
-pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
-    item_def_id_to_name(tcx, def_id)
-}
-
-pub fn module_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ModuleName {
-    item_def_id_to_name(tcx, def_id)
-}
-
-pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
-    item_def_id_to_name(tcx, def_id)
-}
-
-pub fn global_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> GlobalName {
-    item_def_id_to_name(tcx, def_id)
-}
-
-pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
-    item_def_id_to_name(tcx, def_id)
+pub fn def_id_to_name(def_id: &hax::DefId) -> Name {
+    todo!()
 }
 
 /// Returns an optional name for an HIR item.
