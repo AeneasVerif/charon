@@ -367,8 +367,8 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         match op {
             Literal(lit) => self.visit_literal(lit),
             Adt(oid, ops) => self.visit_operand_const_adt(oid, ops),
-            ConstantId(id) => self.visit_global_decl_id(id),
-            StaticId(id) => self.visit_global_decl_id(id),
+            Global(id) => self.visit_global_decl_id(id),
+            Ref(cv) => self.visit_operand_constant_value(cv),
             Var(id) => self.visit_const_generic_var_id(id),
         }
     }

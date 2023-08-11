@@ -54,7 +54,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
         _ => return,
     };
 
-    let var = match *c {
+    let var = match c {
         OperandConstantValue::Literal(_) | OperandConstantValue::Var(..) => return,
         OperandConstantValue::Adt(_, _) => {
             unreachable!("Constant ADTs should have been replaced by now")
@@ -63,7 +63,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
             let var = make_new_var(ty.clone());
             nst.push(Statement::new(
                 *meta,
-                RawStatement::Assign(Place::new(var), Rvalue::Global(global_id)),
+                RawStatement::Assign(Place::new(var), Rvalue::Global(*global_id)),
             ));
             var
         }

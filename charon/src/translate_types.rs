@@ -138,7 +138,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             Ty::Array(ty, const_param) => {
                 trace!("Array");
 
-                let c = self.translate_constant_expr_as_const_generic(&*const_param);
+                let c = self.translate_constant_expr_to_const_generic(&*const_param);
                 let tys = vec![self.translate_ty(region_translator, ty)?];
                 let cgs = vec![c];
                 let id = ty::TypeId::Assumed(ty::AssumedTy::Array);

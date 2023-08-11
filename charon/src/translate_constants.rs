@@ -421,13 +421,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }*/
 
-    pub(crate) fn translate_constant_expr_as_const_generic(
-        &mut self,
-        constant: &hax::ConstantExpr,
-    ) -> ty::ConstGeneric {
-        unimplemented!()
-    }
-
     /*    pub(crate) fn translate_const_kind_as_const_generic(
         &mut self,
         constant: rustc_middle::ty::Const<'tcx>,

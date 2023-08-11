@@ -174,14 +174,13 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
     // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(0), Ident("foo")]`
     // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(1), Ident("bar")]`
     let mut found_crate_name = false;
-    let mut id = def_id;
     let mut name: Vec<PathElem> = Vec::new();
 
     // Rk.: below we try to be as tight as possible with regards to sanity
     // checks, to make sure we understand what happens with def paths, and
     // fail whenever we get something which is even slightly outside what
     // we expect.
-    for data in &id.path {
+    for data in &def_id.path {
         // Match over the key data
         use hax::DefPathItem;
         match &data.data {
@@ -261,8 +260,6 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
         name.push(PathElem::Ident(def_id.krate.clone()));
     }
 
-    // Reverse the name and return
-    name.reverse();
     trace!("{:?}", name);
     Name { name }
 }
