@@ -447,7 +447,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Translate a place and return its type
     fn translate_place_with_type(&mut self, place: &hax::Place) -> (e::Place, ty::ETy) {
-        let (var_id, projection, ty) = self.translate_projection(place);
+        let ty = self.translate_ety(&place.ty).unwrap();
+        let (var_id, projection) = self.translate_projection(place);
         (e::Place { var_id, projection }, ty)
     }
 
@@ -459,19 +460,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a place - TODO: rename
     /// TODO: Hax represents places in a different manner than MIR. We should
     /// update our representation of places to match the Hax representation.
-    fn translate_projection(
-        &mut self,
-        place: &hax::Place,
-    ) -> (v::VarId::Id, e::Projection, ty::ETy) {
+    /// TODO: we don't need to return the projected type, it is directly
+    /// given by the place.
+    fn translate_projection(&mut self, place: &hax::Place) -> (v::VarId::Id, e::Projection) {
         use hax::PlaceKind;
-        let current_ty = self.translate_ety(&place.ty).unwrap();
         match &place.kind {
             PlaceKind::Local(local) => {
                 let var_id = self.get_local(&local).unwrap();
-                (var_id, Vec::new(), current_ty)
+                (var_id, Vec::new())
             }
             PlaceKind::Projection { place, kind } => {
-                let (var_id, mut projection, projected_ty) = self.translate_projection(&*place);
+                let (var_id, mut projection) = self.translate_projection(&*place);
+                // Compute the type of the value *before* projection - we use this
+                // to disambiguate
+                let current_ty = self.translate_ety(&place.ty).unwrap();
                 use hax::ProjectionElem;
                 match kind {
                     ProjectionElem::Deref => {
@@ -499,7 +501,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             _ => {
                                 unreachable!(
                                     "\n- place.kind: {:?}\n- current_ty: {:?}",
-                                    place.kind, current_ty
+                                    kind, current_ty
                                 );
                             }
                         }
@@ -582,7 +584,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // We view it as a nop (the information from the
                         // downcast has been propagated to the other
                         // projection elements by Hax)
-                        ()
                     }
                     ProjectionElem::ConstantIndex { .. } | ProjectionElem::Subslice { .. } => {
                         // Those don't seem to occur in MIR built
@@ -595,7 +596,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
 
                 // Return
-                (var_id, projection, projected_ty)
+                (var_id, projection)
             }
         }
     }
