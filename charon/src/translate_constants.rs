@@ -547,6 +547,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let var_id = self.const_generic_vars_map.get(&id.index).unwrap();
                 e::OperandConstantValue::Var(*var_id)
             }
+            ConstantExprKind::Todo(_) => {
+                // Case not yet handled by hax
+                unreachable!()
+            }
         }
     }
 
@@ -574,13 +578,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         v: &hax::Constant,
     ) -> e::OperandConstantValue {
-        use hax::ConstantKind;
-        match &v.literal.constant_kind {
-            ConstantKind::Const(c) => self.translate_constant_expr_to_operand_constant_value(c),
-            ConstantKind::Unevaluated(s) => {
-                unimplemented!("ConstantKind: Unevaluated: {s}")
-            }
-        }
+        self.translate_constant_expr_to_operand_constant_value(&v.literal.constant_kind)
     }
 
     // TODO: remove once we make the external globals opaque

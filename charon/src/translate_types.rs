@@ -157,9 +157,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let region = region_translator(region);
                 let ty = self.translate_ty(region_translator, ty)?;
                 let kind = if *mutability {
-                    ty::RefKind::Shared
-                } else {
                     ty::RefKind::Mut
+                } else {
+                    ty::RefKind::Shared
                 };
                 Ok(ty::Ty::Ref(region, Box::new(ty), kind))
             }
@@ -167,9 +167,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("RawPtr: {:?}", ty_and_mut);
                 let ty = self.translate_ty(region_translator, &ty_and_mut.ty)?;
                 let kind = if ty_and_mut.mutbl {
-                    ty::RefKind::Shared
-                } else {
                     ty::RefKind::Mut
+                } else {
+                    ty::RefKind::Shared
                 };
                 Ok(ty::Ty::RawPtr(Box::new(ty), kind))
             }
