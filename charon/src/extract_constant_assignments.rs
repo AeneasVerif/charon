@@ -59,7 +59,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
         OperandConstantValue::Adt(_, _) => {
             unreachable!("Constant ADTs should have been replaced by now")
         }
-        OperandConstantValue::ConstantId(global_id) => {
+        OperandConstantValue::Global(global_id) => {
             let var = make_new_var(ty.clone());
             nst.push(Statement::new(
                 *meta,
@@ -67,7 +67,10 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
             ));
             var
         }
-        OperandConstantValue::StaticId(global_id) => {
+        OperandConstantValue::Ref(global) => {
+            let global_id = *global.as_global();
+            // TODO: we assume the constant value in the reference is a global.
+            // We should generalize (probably by merging with regularize_constant_adts).
             let var = make_new_var(deref_static_type(ty).clone());
             let var_ref = make_new_var(ty.clone());
             let rvalue = Rvalue::Ref(Place::new(var), BorrowKind::Shared);

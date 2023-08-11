@@ -2,7 +2,7 @@
 
 use crate::cli_options;
 use crate::export;
-use crate::extract_global_assignments;
+use crate::extract_constant_assignments;
 use crate::get_mir::MirLevel;
 use crate::index_to_function_calls;
 use crate::insert_assign_return_unit;
@@ -197,11 +197,11 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // (Aggregated) ADTs.
     regularize_constant_adts::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
 
-    // # Micro-pass: extract statics and constant globals from operands (put them in
-    // a let binding). This pass relies on the absence of constant ADTs from
-    // the previous step: it does not inspect them (and would thus miss globals
-    // in constant ADTs).
-    extract_global_assignments::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
+    // # Micro-pass: extract access to globals and the use of references from
+    // constant values (we put them in auxiliary let bindings). This pass relies on the
+    // absence of constant ADTs from the previous step: it does not inspect them (and
+    // would thus miss globals in constant ADTs).
+    extract_constant_assignments::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
 
     // # There are two options:
     // - either the user wants the unstructured LLBC, in which case we stop there

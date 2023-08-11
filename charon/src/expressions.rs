@@ -158,7 +158,7 @@ pub enum Operand {
 ///
 /// The other cases come from a straight translation from the MIR:
 ///
-/// `Adt` case:
+/// [Adt] case:
 /// It is a bit annoying, but rustc treats some ADT and tuple instances as
 /// constants when generating MIR:
 /// - an enumeration with one variant and no fields is a constant.
@@ -167,9 +167,11 @@ pub enum Operand {
 ///   (if all the fields are constant) rather than as an aggregated value
 /// We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 ///
-/// `Identifier` and `Static` case:
-/// Match constant variables. We later desugar those to separate statements,
-/// see [extract_global_assignments.rs].
+/// [ConstantId] case: access to a global variable. We later desugar it to
+/// a separate statement.
+///
+/// [Ref] case: reference to a constant value. We later desugar it to a separate
+/// statement.
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
     Literal(Literal),
@@ -181,13 +183,15 @@ pub enum OperandConstantValue {
     /// Less frequently: arbitrary ADT values.
     Adt(Option<VariantId::Id>, Vec<OperandConstantValue>),
     ///
-    /// The case when the constant is elsewhere.
-    /// The MIR seems to forbid more complex expressions like paths :
-    /// Reading the constant a.b is translated to { _1 = const a; _2 = (_1.0) }.
-    ConstantId(GlobalDeclId::Id),
+    /// The value is a top-level value.
     ///
-    /// Same as for constants, except that statics are accessed through references.
-    StaticId(GlobalDeclId::Id),
+    /// Remark:
+    /// MIR seems to forbid more complex expressions like paths :
+    /// Reading the constant a.b is translated to { _1 = const a; _2 = (_1.0) }.
+    Global(GlobalDeclId::Id),
+    ///
+    /// A shared reference to a constant value
+    Ref(Box<OperandConstantValue>),
     /// A const generic var
     Var(ConstGenericVarId::Id),
 }

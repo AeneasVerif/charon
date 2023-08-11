@@ -39,7 +39,7 @@ mod driver;
 mod export;
 mod expressions;
 mod expressions_utils;
-mod extract_global_assignments;
+mod extract_constant_assignments;
 mod formatter;
 mod gast;
 mod gast_utils;

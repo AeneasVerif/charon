@@ -215,7 +215,7 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
                 found_crate_name = true;
                 name.push(PathElem::Ident(def_id.krate.clone()));
             }
-            DefPathItem::Impl(ty) => {
+            DefPathItem::Impl { ty, .. } => {
                 // Match over the type.
                 use hax::Ty;
                 name.push(PathElem::Ident(match ty {

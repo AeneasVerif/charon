@@ -3,6 +3,7 @@
 use crate::expressions as e;
 use crate::translate_ctx::*;
 use crate::types as ty;
+use crate::values as v;
 use hax_frontend_exporter as hax;
 use rustc_middle::mir;
 use rustc_middle::ty::Ty;
@@ -467,55 +468,126 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }*/
 
+    fn translate_constant_literal_to_operand_constant_value(
+        &mut self,
+        v: &hax::ConstantLiteral,
+    ) -> e::OperandConstantValue {
+        use crate::values::*;
+        use hax::ConstantLiteral;
+        let lit = match v {
+            ConstantLiteral::ByteStr(..) => {
+                unimplemented!()
+            }
+            ConstantLiteral::Char(c) => v::Literal::Char(*c),
+            ConstantLiteral::Bool(b) => v::Literal::Bool(*b),
+            ConstantLiteral::Int(i) => {
+                use hax::ConstantInt;
+                let scalar = match i {
+                    ConstantInt::Int(v, int_type) => {
+                        use hax::IntTy;
+                        match int_type {
+                            IntTy::Isize => ScalarValue::Isize(*v as i64),
+                            IntTy::I8 => ScalarValue::I8(*v as i8),
+                            IntTy::I16 => ScalarValue::I16(*v as i16),
+                            IntTy::I32 => ScalarValue::I32(*v as i32),
+                            IntTy::I64 => ScalarValue::I64(*v as i64),
+                            IntTy::I128 => ScalarValue::I128(*v as i128),
+                        }
+                    }
+                    ConstantInt::Uint(v, int_type) => {
+                        use hax::UintTy;
+                        match int_type {
+                            UintTy::Usize => ScalarValue::Usize(*v as u64),
+                            UintTy::U8 => ScalarValue::U8(*v as u8),
+                            UintTy::U16 => ScalarValue::U16(*v as u16),
+                            UintTy::U32 => ScalarValue::U32(*v as u32),
+                            UintTy::U64 => ScalarValue::U64(*v as u64),
+                            UintTy::U128 => ScalarValue::U128(*v as u128),
+                        }
+                    }
+                };
+                v::Literal::Scalar(scalar)
+            }
+        };
+        e::OperandConstantValue::Literal(lit)
+    }
+
     pub(crate) fn translate_constant_expr_kind_to_operand_constant_value(
         &mut self,
-        v: hax::ConstantExprKind,
-    ) -> (ty::ETy, e::OperandConstantValue) {
+        v: &hax::ConstantExprKind,
+    ) -> e::OperandConstantValue {
         use hax::ConstantExprKind;
         match v {
             ConstantExprKind::Literal(lit) => {
-                unimplemented!()
+                self.translate_constant_literal_to_operand_constant_value(lit)
             }
-            ConstantExprKind::Adt { info, fields } => {
-                unimplemented!()
+            ConstantExprKind::Adt {
+                info: _,
+                vid,
+                fields,
+            } => {
+                let fields: Vec<e::OperandConstantValue> = fields
+                    .iter()
+                    .map(|f| self.translate_constant_expr_to_operand_constant_value(&f.value))
+                    .collect();
+                let vid = vid.map(ty::VariantId::Id::new);
+                e::OperandConstantValue::Adt(vid, fields)
             }
-            ConstantExprKind::Array { fields } => {
+            ConstantExprKind::Array { .. } => {
                 unimplemented!()
             }
             ConstantExprKind::Tuple { fields } => {
-                unimplemented!()
+                let fields: Vec<e::OperandConstantValue> = fields
+                    .iter()
+                    .map(|f| self.translate_constant_expr_to_operand_constant_value(&f))
+                    .collect();
+                e::OperandConstantValue::Adt(Option::None, fields)
             }
-            ConstantExprKind::GlobalName { id } => {
-                unimplemented!()
-            }
+            ConstantExprKind::GlobalName { id } => e::OperandConstantValue::Global(
+                self.translate_global_decl_id(id.rust_def_id.unwrap()),
+            ),
             ConstantExprKind::Borrow(be) => {
-                unimplemented!()
+                let be = self.translate_constant_expr_to_operand_constant_value(be);
+                e::OperandConstantValue::Ref(Box::new(be))
             }
             ConstantExprKind::ConstRef { id } => {
-                unimplemented!()
+                let var_id = self.const_generic_vars_map.get(&id.index).unwrap();
+                e::OperandConstantValue::Var(*var_id)
             }
         }
     }
 
     pub(crate) fn translate_constant_expr_to_operand_constant_value(
         &mut self,
-        v: hax::ConstantExpr,
-    ) -> (ty::ETy, e::OperandConstantValue) {
-        self.translate_constant_expr_kind_to_operand_constant_value(*v.contents)
+        v: &hax::ConstantExpr,
+    ) -> e::OperandConstantValue {
+        self.translate_constant_expr_kind_to_operand_constant_value(&v.contents)
     }
 
     pub(crate) fn translate_constant_expr_to_const_generic(
         &mut self,
         v: &hax::ConstantExpr,
     ) -> ty::ConstGeneric {
-        unimplemented!()
+        match self.translate_constant_expr_to_operand_constant_value(v) {
+            e::OperandConstantValue::Literal(v) => ty::ConstGeneric::Value(v),
+            e::OperandConstantValue::Adt(..) => unreachable!(),
+            e::OperandConstantValue::Global(v) => ty::ConstGeneric::Global(v),
+            e::OperandConstantValue::Ref(_) => unreachable!(),
+            e::OperandConstantValue::Var(v) => ty::ConstGeneric::Var(v),
+        }
     }
 
     pub(crate) fn translate_constant_to_operand_constant_value(
         &mut self,
         v: &hax::Constant,
-    ) -> (ty::ETy, e::OperandConstantValue) {
-        unimplemented!()
+    ) -> e::OperandConstantValue {
+        use hax::ConstantKind;
+        match &v.literal.constant_kind {
+            ConstantKind::Const(c) => self.translate_constant_expr_to_operand_constant_value(c),
+            ConstantKind::Unevaluated(s) => {
+                unimplemented!("ConstantKind: Unevaluated: {s}")
+            }
+        }
     }
 
     // TODO: remove once we make the external globals opaque
@@ -534,19 +606,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
 
         let val = hax::const_value_to_constant_expr(&state, ty, *val, span);
-        self.translate_constant_expr_to_operand_constant_value(val)
-            .1
+        self.translate_constant_expr_to_operand_constant_value(&val)
     }
-
-    /*    /// Translate a constant which may not be yet evaluated.
-    pub(crate) fn translate_operand_constant(
-        &mut self,
-        constant: &mir::Constant<'tcx>,
-    ) -> (ty::ETy, e::OperandConstantValue) {
-        trace!("{:?}", constant);
-        use std::ops::Deref;
-        let constant = &constant.deref();
-
-        self.translate_constant_kind(&constant.literal)
-    }*/
 }

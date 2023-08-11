@@ -614,7 +614,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 (e::Operand::Move(p), ty)
             }
             Operand::Constant(constant) => {
-                let (ty, constant) = self.translate_constant_to_operand_constant_value(constant);
+                let ty = self.translate_ety(&constant.literal.typ).unwrap();
+                let constant = self.translate_constant_to_operand_constant_value(constant);
                 (e::Operand::Const(ty.clone(), constant), ty)
             }
         }
