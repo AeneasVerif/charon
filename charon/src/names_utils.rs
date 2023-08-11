@@ -6,8 +6,7 @@
 
 use crate::names::*;
 use hax_frontend_exporter as hax;
-use rustc_hir::def_id::DefId;
-use rustc_hir::definitions::DefPathData;
+use hax_frontend_exporter::SInto;
 use rustc_hir::{Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use serde::{Serialize, Serializer};
@@ -117,8 +116,8 @@ impl Serialize for Name {
     }
 }
 
-/// Retrieve an item name from a `DefId`.
-pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
+/// Retrieve an item name from a [DefId].
+pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
     trace!("{:?}", def_id);
 
     // We have to be a bit careful when retrieving names from def ids. For instance,
@@ -147,13 +146,11 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     //                       ^^^
     //           This is where "List" should be
     //
-    // What we do is the following:
-    // - we convert the path to a name starting *with the end*
-    // - whenever we find an "impl" path element, we can actually lookup its
-    //   type (yes, it makes sense for rustc...), which allows us to retrieve
-    //   the type identifier. We then grab its last path element of the type
-    //   identifier (say the identifier is "list::List", we only use "List"
-    //   and insert it in the name).
+    // For this reason, whenever we find an `Impl` path element, we actually
+    // lookup the type of the sub-path, which allows us to retrieve
+    // the type identifier. We then grab its last path element of the type
+    // identifier (say the identifier is "list::List", we only use "List")
+    // and insert it in the name.
     //
     // Besides, as there may be several "impl" blocks for one type, each impl
     // block is identified by a unique number (rustc calls this a
@@ -176,6 +173,7 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     // The names we will generate for `foo` and `bar` are:
     // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(0), Ident("foo")]`
     // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(1), Ident("bar")]`
+    let crate_name = def_id.krate.clone();
     let mut found_crate_name = false;
     let mut id = def_id;
     let mut name: Vec<PathElem> = Vec::new();
@@ -184,76 +182,65 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     // checks, to make sure we understand what happens with def paths, and
     // fail whenever we get something which is even slightly outside what
     // we expect.
-    loop {
-        // Retrieve the id key
-        let id_key = tcx.def_key(id);
-
+    for data in &id.path {
         // Match over the key data
-        let data = id_key.disambiguated_data;
-        match data.data {
-            DefPathData::TypeNs(symbol) => {
+        use hax::DefPathItem;
+        match &data.data {
+            DefPathItem::TypeNs(symbol) => {
                 assert!(data.disambiguator == 0); // Sanity check
-                name.push(PathElem::Ident(symbol.to_ident_string()));
+                name.push(PathElem::Ident(symbol.clone()));
             }
-            DefPathData::ValueNs(symbol) => {
+            DefPathItem::ValueNs(symbol) => {
                 if data.disambiguator != 0 {
                     // I don't like that
 
                     // I think this only happens with names introduced by macros
                     // (though not sure). For instance:
                     // `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
-                    let s = symbol.to_ident_string();
+                    let s = symbol;
                     assert!(s == "_");
-                    name.push(PathElem::Ident(s));
+                    name.push(PathElem::Ident(s.clone()));
                     name.push(PathElem::Disambiguator(Disambiguator::Id::new(
                         data.disambiguator as usize,
                     )));
                 } else {
-                    name.push(PathElem::Ident(symbol.to_ident_string()));
+                    name.push(PathElem::Ident(symbol.clone()));
                 }
             }
-            DefPathData::CrateRoot => {
+            DefPathItem::CrateRoot => {
                 // Sanity check
                 assert!(data.disambiguator == 0);
 
-                // This should be the end of the path
-                assert!(id_key.parent.is_none());
+                // This should be the beginning of the path
+                assert!(name.is_empty());
                 found_crate_name = true;
-
-                let crate_name = tcx.crate_name(id.krate).to_string();
                 name.push(PathElem::Ident(crate_name));
             }
-            DefPathData::Impl => {
-                // Push the disambiguator
-                name.push(PathElem::Disambiguator(Disambiguator::Id::new(
-                    data.disambiguator as usize,
-                )));
-
-                // "impl" blocks are defined for types.
-                // We retrieve its unqualified type name.
-                let ty = tcx.type_of(id).subst_identity();
-
+            DefPathItem::Impl(ty) => {
                 // Match over the type.
-                name.push(PathElem::Ident(match ty.kind() {
-                    rustc_middle::ty::TyKind::Adt(adt_def, _) => {
-                        let mut type_name = type_def_id_to_name(tcx, adt_def.did());
+                use hax::Ty;
+                name.push(PathElem::Ident(match ty {
+                    Ty::Adt { def_id: adt_id, .. } => {
+                        let mut type_name = def_id_to_name(adt_id);
                         type_name.name.pop().unwrap().to_string()
                     }
                     // Builtin cases.
-                    rustc_middle::ty::TyKind::Int(_)
-                    | rustc_middle::ty::TyKind::Uint(_)
-                    | rustc_middle::ty::TyKind::Array(..)
-                    | rustc_middle::ty::TyKind::Slice(_) => {
+                    Ty::Int(_) | Ty::Uint(_) | Ty::Array(..) | Ty::Slice(_) => {
                         format!("{ty:?}")
                     }
                     _ => unreachable!(),
                 }));
+
+                // Push the disambiguator
+                name.push(PathElem::Disambiguator(Disambiguator::Id::new(
+                    data.disambiguator as usize,
+                )));
             }
-            DefPathData::ImplTrait => {
+            DefPathItem::ImplTrait => {
                 // TODO: this should work the same as for `Impl`
                 unimplemented!();
             }
-            DefPathData::MacroNs(symbol) => {
+            DefPathItem::MacroNs(symbol) => {
                 assert!(data.disambiguator == 0); // Sanity check
 
                 // There may be namespace collisions between, say, function
@@ -261,27 +248,17 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                 // of an issue here, because for now we don't expose macros
                 // in the AST, and only use macro names in [register], for
                 // instance to filter opaque modules.
-                name.push(PathElem::Ident(symbol.to_ident_string()));
+                name.push(PathElem::Ident(symbol.clone()));
             }
             _ => {
-                error!("Unexpected DefPathData: {:?}", data);
-                unreachable!("Unexpected DefPathData: {:?}", data);
-            }
-        }
-
-        // Update the id to be the parent id
-        match id_key.parent {
-            Some(parent_index) => id.index = parent_index,
-            None => {
-                // We completely explored the path
-                break;
+                error!("Unexpected DefPathItem: {:?}", data);
+                unreachable!("Unexpected DefPathItem: {:?}", data);
             }
         }
     }
 
     // We always add the crate name
     if !found_crate_name {
-        let crate_name = tcx.crate_name(id.krate).to_string();
         name.push(PathElem::Ident(crate_name));
     }
 
@@ -289,11 +266,6 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     name.reverse();
     trace!("{:?}", name);
     Name { name }
-}
-
-// TODO: remove
-pub fn def_id_to_name(def_id: &hax::DefId) -> Name {
-    todo!()
 }
 
 /// Returns an optional name for an HIR item.
@@ -304,10 +276,15 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> Name {
 /// Rk.: this function is only used by [crate::register], and implemented with this
 /// context in mind.
 pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
-    let def_id = item.owner_id.to_def_id();
+    // TODO: factor this out
+    let state = hax::state::State::new(
+        tcx,
+        &hax::options::Options {
+            inline_macro_calls: Vec::new(),
+        },
+    );
+    let def_id = item.owner_id.to_def_id().sinto(&state);
 
-    // TODO: calling different functions to retrieve the name is not very
-    // satisfying below
     match &item.kind {
         ItemKind::OpaqueTy(_) => unimplemented!(),
         ItemKind::Union(_, _) => unimplemented!(),
@@ -328,9 +305,21 @@ pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
         | ItemKind::Mod(_)
         | ItemKind::Const(_, _)
         | ItemKind::Static(_, _, _)
-        | ItemKind::Macro(_, _) => Option::Some(item_def_id_to_name(tcx, def_id)),
+        | ItemKind::Macro(_, _) => Option::Some(def_id_to_name(&def_id)),
         _ => {
             unimplemented!("{:?}", item.kind);
         }
     }
+}
+
+// TODO: remove
+pub fn item_def_id_to_name(tcx: TyCtxt, def_id: rustc_span::def_id::DefId) -> ItemName {
+    // TODO: factor this out
+    let state = hax::state::State::new(
+        tcx,
+        &hax::options::Options {
+            inline_macro_calls: Vec::new(),
+        },
+    );
+    def_id_to_name(&def_id.sinto(&state))
 }

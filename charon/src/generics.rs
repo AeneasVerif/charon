@@ -4,6 +4,7 @@
 
 #![allow(dead_code)]
 use crate::assumed;
+use crate::names_utils::item_def_id_to_name;
 use hashlink::linked_hash_map::LinkedHashMap;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -56,7 +57,7 @@ where
 {
     // TODO: factor this out
     let state = hax::state::State::new(
-        self.tcx,
+        tcx,
         &hax::options::Options {
             inline_macro_calls: Vec::new(),
         },
@@ -113,7 +114,7 @@ fn check_generics(tcx: TyCtxt<'_>, def_id: DefId) {
                 assert!(trait_pred.polarity == ImplPolarity::Positive);
                 // Note sure what this is about
                 assert!(trait_pred.constness == BoundConstness::NotConst);
-                let trait_name = trait_def_id_to_name(tcx, trait_pred.trait_ref.def_id);
+                let trait_name = item_def_id_to_name(tcx, trait_pred.trait_ref.def_id);
                 trace!("{}", trait_name);
                 assert!(
                     trait_name.equals_ref_name(&assumed::MARKER_SIZED_NAME),

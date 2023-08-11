@@ -1,6 +1,7 @@
 use crate::assumed;
 use crate::common::*;
 use crate::generics;
+use crate::names_utils::def_id_to_name;
 use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::types as ty;
@@ -8,7 +9,6 @@ use crate::types::ConstGeneric;
 use core::convert::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
-use names_utils::def_id_to_name;
 use rustc_hir::def_id::DefId;
 
 pub fn translate_region_name(region: &hax::Region) -> Option<String> {
@@ -441,6 +441,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Retrieve the generics
 
+        // TODO: factor this out
         let state = hax::state::State::new(
             self.tcx,
             &hax::options::Options {
