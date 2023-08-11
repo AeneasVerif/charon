@@ -1,7 +1,7 @@
 use crate::assumed;
 use crate::common::*;
 use crate::generics;
-use crate::names_utils::def_id_to_name;
+use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
 use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::types as ty;
@@ -115,7 +115,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let used_params = if adt_did.is_local() {
                     Option::None
                 } else {
-                    let name = def_id_to_name(def_id);
+                    let name = def_id_to_name(self.t_ctx.tcx, def_id);
                     assumed::type_to_used_params(&name)
                 };
 
@@ -336,7 +336,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Non-local: check if the type has primitive support
 
             // Retrieve the type name
-            let name = def_id_to_name(def_id);
+            let name = def_id_to_name(self.t_ctx.tcx, def_id);
 
             match assumed::get_type_id_from_name(&name) {
                 Option::Some(id) => {
@@ -548,8 +548,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Register the type
-        let id = rust_id.sinto(&state);
-        let name = def_id_to_name(&id);
+        let name = extended_def_id_to_name(&rust_id.sinto(&state));
         let region_params = bt_ctx.region_vars.clone();
         let type_params = bt_ctx.type_vars.clone();
         let const_generic_params = bt_ctx.const_generic_vars.clone();

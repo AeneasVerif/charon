@@ -11,7 +11,7 @@ use crate::formatter::Formatter;
 use crate::generics;
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::id_vector;
-use crate::names_utils::def_id_to_name;
+use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
 use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::translate_types;
@@ -159,6 +159,7 @@ fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
 /// Translate a call to a function considered primitive and which is not:
 /// panic, begin_panic, box_free (those have a *very* special treatment).
 fn translate_primitive_function_call(
+    tcx: TyCtxt,
     def_id: &hax::DefId,
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
@@ -172,7 +173,7 @@ fn translate_primitive_function_call(
 
     // Translate the function name
     // TODO: replace
-    let name = def_id_to_name(def_id);
+    let name = def_id_to_name(tcx, def_id);
     trace!("name: {}", name);
 
     // We assume the function has primitive support, and look up
@@ -886,7 +887,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             // TODO: treat all external ADTs in a consistant manner.
                             // For instance, we can access the variants of any external
                             // enumeration marked as `public`.
-                            let name = def_id_to_name(adt_id);
+                            let name = def_id_to_name(self.t_ctx.tcx, adt_id);
                             if name.equals_ref_name(&assumed::OPTION_NAME) {
                                 // Sanity checks
                                 assert!(region_params.is_empty());
@@ -1209,7 +1210,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Translate the name to check if is is `core::panicking::panic`
         // TODO: replace
-        let name = def_id_to_name(def_id);
+        let name = def_id_to_name(self.t_ctx.tcx, def_id);
         let is_local = rust_id.is_local();
 
         // If the call is `panic!`, then the target is `None`.
@@ -1334,6 +1335,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // `box_deref<T>`
                     // (the type parameter is not `Box<T>` but `T`).
                     translate_primitive_function_call(
+                        self.t_ctx.tcx,
                         def_id,
                         region_args,
                         type_args,
@@ -1661,7 +1663,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         );
 
         // Translate the function name
-        let name = def_id_to_name(&rust_id.sinto(&state));
+        let name = extended_def_id_to_name(&rust_id.sinto(&state));
 
         // Translate the function signature and initialize the body translation context
         // at the same time (the signature gives us the region and type parameters,
@@ -1747,7 +1749,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         );
 
         // Translate the global name
-        let name = def_id_to_name(&rust_id.sinto(&state));
+        let name = extended_def_id_to_name(&rust_id.sinto(&state));
 
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);

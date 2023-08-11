@@ -117,7 +117,7 @@ impl Serialize for Name {
 }
 
 /// Retrieve an item name from a [DefId].
-pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
+pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
     trace!("{:?}", def_id);
 
     // We have to be a bit careful when retrieving names from def ids. For instance,
@@ -182,13 +182,13 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
     // we expect.
     for data in &def_id.path {
         // Match over the key data
-        use hax::DefPathItem;
+        use hax::ExtendedDefPathItem;
         match &data.data {
-            DefPathItem::TypeNs(symbol) => {
+            ExtendedDefPathItem::TypeNs(symbol) => {
                 assert!(data.disambiguator == 0); // Sanity check
                 name.push(PathElem::Ident(symbol.clone()));
             }
-            DefPathItem::ValueNs(symbol) => {
+            ExtendedDefPathItem::ValueNs(symbol) => {
                 if data.disambiguator != 0 {
                     // I don't like that
 
@@ -205,7 +205,7 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
                     name.push(PathElem::Ident(symbol.clone()));
                 }
             }
-            DefPathItem::CrateRoot => {
+            ExtendedDefPathItem::CrateRoot => {
                 // Sanity check
                 assert!(data.disambiguator == 0);
 
@@ -214,13 +214,17 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
                 found_crate_name = true;
                 name.push(PathElem::Ident(def_id.krate.clone()));
             }
-            DefPathItem::Impl { ty, .. } => {
+            ExtendedDefPathItem::Impl { ty, .. } => {
                 // Match over the type.
                 use hax::Ty;
                 name.push(PathElem::Ident(match ty {
                     Ty::Adt { def_id: adt_id, .. } => {
-                        let mut type_name = def_id_to_name(adt_id);
-                        type_name.name.pop().unwrap().to_string()
+                        let type_name = adt_id.path.last().unwrap();
+                        if let hax::DefPathItem::TypeNs(type_name) = &type_name.data {
+                            type_name.clone()
+                        } else {
+                            unreachable!()
+                        }
                     }
                     // Builtin cases.
                     Ty::Int(_) | Ty::Uint(_) | Ty::Array(..) | Ty::Slice(_) => {
@@ -234,11 +238,11 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
                     data.disambiguator as usize,
                 )));
             }
-            DefPathItem::ImplTrait => {
+            ExtendedDefPathItem::ImplTrait => {
                 // TODO: this should work the same as for `Impl`
                 unimplemented!();
             }
-            DefPathItem::MacroNs(symbol) => {
+            ExtendedDefPathItem::MacroNs(symbol) => {
                 assert!(data.disambiguator == 0); // Sanity check
 
                 // There may be namespace collisions between, say, function
@@ -249,8 +253,8 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
                 name.push(PathElem::Ident(symbol.clone()));
             }
             _ => {
-                error!("Unexpected DefPathItem: {:?}", data);
-                unreachable!("Unexpected DefPathItem: {:?}", data);
+                error!("Unexpected ExtendedDefPathItem: {:?}", data);
+                unreachable!("Unexpected ExtendedDefPathItem: {:?}", data);
             }
         }
     }
@@ -301,7 +305,7 @@ pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
         | ItemKind::Mod(_)
         | ItemKind::Const(_, _)
         | ItemKind::Static(_, _, _)
-        | ItemKind::Macro(_, _) => Option::Some(def_id_to_name(&def_id)),
+        | ItemKind::Macro(_, _) => Option::Some(extended_def_id_to_name(&def_id)),
         _ => {
             unimplemented!("{:?}", item.kind);
         }
@@ -317,5 +321,16 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: rustc_span::def_id::DefId) -> It
             inline_macro_calls: Vec::new(),
         },
     );
-    def_id_to_name(&def_id.sinto(&state))
+    extended_def_id_to_name(&def_id.sinto(&state))
+}
+
+pub fn def_id_to_name(tcx: TyCtxt, def_id: &hax::DefId) -> ItemName {
+    // TODO: factor this out
+    let state = hax::state::State::new(
+        tcx,
+        &hax::options::Options {
+            inline_macro_calls: Vec::new(),
+        },
+    );
+    extended_def_id_to_name(&def_id.rust_def_id.unwrap().sinto(&state))
 }
