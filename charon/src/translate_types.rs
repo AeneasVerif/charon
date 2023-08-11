@@ -1,7 +1,6 @@
 use crate::assumed;
 use crate::common::*;
 use crate::generics;
-use crate::names::type_def_id_to_name;
 use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::types as ty;
@@ -9,6 +8,7 @@ use crate::types::ConstGeneric;
 use core::convert::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
+use names_utils::def_id_to_name;
 use rustc_hir::def_id::DefId;
 
 pub fn translate_region_name(region: &hax::Region) -> Option<String> {
@@ -115,7 +115,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let used_params = if adt_did.is_local() {
                     Option::None
                 } else {
-                    let name = type_def_id_to_name(self.t_ctx.tcx, adt_did);
+                    let name = def_id_to_name(def_id);
                     assumed::type_to_used_params(&name)
                 };
 
@@ -124,7 +124,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     self.translate_substs(region_translator, used_params, substs)?;
 
                 // Retrieve the ADT identifier
-                let def_id = self.translate_type_id(adt_did);
+                let def_id = self.translate_type_id(&def_id);
 
                 // Return the instantiated ADT
                 Ok(ty::Ty::Adt(def_id, regions, params, cgs))
@@ -314,16 +314,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate a type def id
-    pub(crate) fn translate_type_id(&mut self, def_id: DefId) -> ty::TypeId {
+    pub(crate) fn translate_type_id(&mut self, def_id: &hax::DefId) -> ty::TypeId {
         trace!("{:?}", def_id);
 
-        if def_id.is_local() {
-            ty::TypeId::Adt(self.translate_type_decl_id(def_id))
+        let rust_id = def_id.rust_def_id.unwrap();
+        if rust_id.is_local() {
+            ty::TypeId::Adt(self.translate_type_decl_id(rust_id))
         } else {
             // Non-local: check if the type has primitive support
 
             // Retrieve the type name
-            let name = type_def_id_to_name(self.t_ctx.tcx, def_id);
+            let name = def_id_to_name(def_id);
 
             match assumed::get_type_id_from_name(&name) {
                 Option::Some(id) => {
@@ -332,7 +333,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
                 Option::None => {
                     // The type is external
-                    ty::TypeId::Adt(self.translate_type_decl_id(def_id))
+                    ty::TypeId::Adt(self.translate_type_decl_id(rust_id))
                 }
             }
         }
@@ -508,9 +509,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Note that we translate the types one by one: we don't need to take into
     /// account the fact that some types are mutually recursive at this point
     /// (we will need to take that into account when generating the code in a file).
-    pub(crate) fn translate_type(&mut self, id: DefId) {
-        let trans_id = self.translate_type_decl_id(id);
-        let is_transparent = self.id_is_transparent(id);
+    pub(crate) fn translate_type(&mut self, rust_id: DefId) {
+        let trans_id = self.translate_type_decl_id(rust_id);
+        let is_transparent = self.id_is_transparent(rust_id);
 
         // TODO: factor this out
         let state = hax::state::State::new(
@@ -519,32 +520,33 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 inline_macro_calls: Vec::new(),
             },
         );
-        let generics = self.tcx.generics_of(id).sinto(&state);
+        let generics = self.tcx.generics_of(rust_id).sinto(&state);
 
         // Check and translate the generics
         // TODO: use the body trans context as input, and don't return anything.
-        let (mut bt_ctx, substs) = self.translate_type_generics(id);
+        let (mut bt_ctx, substs) = self.translate_type_generics(rust_id);
 
         // Check if the type is opaque or external, and delegate the translation
         // of the "body" to the proper function
-        let kind = if !id.is_local() || !is_transparent {
+        let kind = if !rust_id.is_local() || !is_transparent {
             // Opaque types are:
             // - external types
             // - local types flagged as opaque
             ty::TypeDeclKind::Opaque
         } else {
-            let adt = bt_ctx.t_ctx.tcx.adt_def(id).sinto(&state);
+            let adt = bt_ctx.t_ctx.tcx.adt_def(rust_id).sinto(&state);
             bt_ctx.translate_transparent_type(trans_id, adt, &substs)
         };
 
         // Register the type
-        let name = type_def_id_to_name(bt_ctx.t_ctx.tcx, id);
+        let id = rust_id.sinto(&state);
+        let name = def_id_to_name(&id);
         let region_params = bt_ctx.region_vars.clone();
         let type_params = bt_ctx.type_vars.clone();
         let const_generic_params = bt_ctx.const_generic_vars.clone();
 
         // Translate the span information
-        let meta = bt_ctx.translate_meta_from_rid(id);
+        let meta = bt_ctx.translate_meta_from_rid(rust_id);
 
         let type_def = ty::TypeDecl {
             def_id: trans_id,
