@@ -11,8 +11,7 @@ use crate::formatter::Formatter;
 use crate::generics;
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::id_vector;
-use crate::names::global_def_id_to_name;
-use crate::names::{function_def_id_to_name, type_def_id_to_name};
+use crate::names_utils::def_id_to_name;
 use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::translate_types;
@@ -25,14 +24,10 @@ use core::convert::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use log::warn;
-use rustc_abi::FieldIdx;
 use rustc_hir::def_id::{DefId, LocalDefId};
-use rustc_middle::mir;
-use rustc_middle::mir::{BasicBlock, Body, START_BLOCK};
+use rustc_middle::mir::START_BLOCK;
 use rustc_middle::ty as mir_ty;
-use rustc_middle::ty::adjustment::PointerCast;
 use rustc_middle::ty::{TyCtxt, TyKind};
-use rustc_span::Span;
 use std::iter::FromIterator;
 use translate_types::{translate_erased_region, translate_region_name};
 
@@ -41,7 +36,8 @@ fn translate_variant_id(id: hax::VariantIdx) -> VariantId::Id {
 }
 
 fn translate_field_id(id: hax::FieldIdx) -> FieldId::Id {
-    FieldId::Id::new(id.as_usize())
+    use rustc_index::Idx;
+    FieldId::Id::new(id.index())
 }
 
 /// Translate a `BorrowKind`
@@ -164,7 +160,7 @@ fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
 /// panic, begin_panic, box_free (those have a *very* special treatment).
 fn translate_primitive_function_call(
     tcx: TyCtxt<'_>,
-    def_id: DefId,
+    def_id: &hax::DefId,
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
     const_generic_args: Vec<ty::ConstGeneric>,
@@ -172,11 +168,12 @@ fn translate_primitive_function_call(
     dest: e::Place,
     target: ast::BlockId::Id,
 ) -> Result<ast::RawTerminator> {
-    trace!("- def_id: {:?}", def_id);
+    let rust_id = def_id.rust_def_id.unwrap();
+    trace!("- def_id: {:?}", rust_id);
 
     // Translate the function name
     // TODO: replace
-    let name = function_def_id_to_name(tcx, def_id);
+    let name = def_id_to_name(def_id);
     trace!("name: {}", name);
 
     // We assume the function has primitive support, and look up
@@ -850,18 +847,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         assert!(user_annotation.is_none());
                         assert!(field_index.is_none());
 
-                        let rid = adt_id.rust_def_id.unwrap();
-
                         // Translate the substitution
                         let (region_params, mut type_params, cg_params) = self
                             .translate_subst_generic_args_in_body(None, substs)
                             .unwrap();
 
-                        if rid.is_local() {
-                            assert!(!self.t_ctx.id_is_opaque(rid));
+                        let rust_id = adt_id.rust_def_id.unwrap();
+                        if rust_id.is_local() {
+                            assert!(!self.t_ctx.id_is_opaque(rust_id));
 
                             // Local ADT: translate the id
-                            let id_t = self.translate_type_decl_id(rid);
+                            let id_t = self.translate_type_decl_id(rust_id);
 
                             use hax::AdtKind;
                             let variant_id = match kind {
@@ -890,7 +886,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             // TODO: treat all external ADTs in a consistant manner.
                             // For instance, we can access the variants of any external
                             // enumeration marked as `public`.
-                            let name = type_def_id_to_name(self.t_ctx.tcx, *adt_id);
+                            let name = def_id_to_name(adt_id);
                             if name.equals_ref_name(&assumed::OPTION_NAME) {
                                 // Sanity checks
                                 assert!(region_params.is_empty());
@@ -1205,25 +1201,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         target: &Option<hax::BasicBlock>,
     ) -> Result<ast::RawTerminator> {
         trace!();
-        // TODO: don't do this
-        let def_id = def_id.rust_def_id.unwrap();
+        let rust_id = def_id.rust_def_id.unwrap();
 
         // Translate the function operand - should be a constant: we don't
         // support closures for now
-        trace!("func: {:?}", def_id);
+        trace!("func: {:?}", rust_id);
 
         let tcx = self.t_ctx.tcx;
 
         // Translate the name to check if is is `core::panicking::panic`
         // TODO: replace
-        let name = function_def_id_to_name(tcx, def_id);
+        let name = def_id_to_name(def_id);
+        let is_local = rust_id.is_local();
 
         // If the call is `panic!`, then the target is `None`.
         // I don't know in which other cases it can be `None`.
         if name.equals_ref_name(&assumed::PANIC_NAME)
             || name.equals_ref_name(&assumed::BEGIN_PANIC_NAME)
         {
-            assert!(!def_id.is_local());
+            assert!(!is_local);
             assert!(target.is_none());
 
             // We ignore the arguments
@@ -1241,7 +1237,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // catch early - in particular, before we start translating types and
             // arguments, because we won't be able to translate some of them.
             if name.equals_ref_name(&assumed::BOX_FREE_NAME) {
-                assert!(!def_id.is_local());
+                assert!(!is_local);
 
                 // This deallocates a box.
                 // It should have two type parameters:
@@ -1284,7 +1280,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             } else {
                 // Retrieve the lists of used parameters, in case of non-local
                 // definitions
-                let (used_type_args, used_args) = if def_id.is_local() {
+                let (used_type_args, used_args) = if is_local {
                     (Option::None, Option::None)
                 } else {
                     match assumed::function_to_info(&name) {
@@ -1305,8 +1301,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Check if the function is considered primitive: primitive
                 // functions benefit from special treatment.
-                let name = function_def_id_to_name(tcx, def_id);
-                let is_prim = if def_id.is_local() {
+                let is_prim = if is_local {
                     false
                 } else {
                     assumed::get_fun_id_from_name(&name, &type_args).is_some()
@@ -1314,7 +1309,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 if !is_prim {
                     // Retrieve the def id
-                    let def_id = self.translate_fun_decl_id(def_id);
+                    let def_id = self.translate_fun_decl_id(rust_id);
 
                     let func = ast::FunId::Regular(def_id);
                     let call = ast::Call {
@@ -1558,31 +1553,31 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let substs = substs.sinto(&state);
 
         for param in substs {
-            use hax::GenericArgKind;
+            use hax::GenericArg;
             match param {
-                GenericArgKind::Type(param_ty) => {
+                GenericArg::Type(param_ty) => {
                     // This type should be a param type
-                    match param_ty.kind() {
-                        TyKind::Param(param_ty) => {
-                            bt_ctx.push_type_var(param_ty.index, param_ty.name.to_ident_string());
+                    match param_ty {
+                        hax::Ty::Param(param_ty) => {
+                            bt_ctx.push_type_var(param_ty.index, param_ty.name);
                         }
                         _ => {
                             unreachable!();
                         }
                     }
                 }
-                GenericArgKind::Lifetime(region) => {
+                GenericArg::Lifetime(region) => {
                     let name = translate_region_name(&region);
-                    bt_ctx.push_region(*region, name);
+                    bt_ctx.push_region(region, name);
                 }
-                GenericArgKind::Const(c) => {
+                GenericArg::Const(c) => {
                     // The type should be primitive, meaning it shouldn't contain
                     // variables, etc. (we could use an empty context).
-                    let ty = bt_ctx.translate_ety(&c.ty()).unwrap();
+                    let ty = bt_ctx.translate_ety(&c.ty).unwrap();
                     let ty = ty.to_literal();
-                    match c.kind() {
-                        rustc_middle::ty::ConstKind::Param(cp) => {
-                            bt_ctx.push_const_generic_var(cp.index, ty, cp.name.to_ident_string());
+                    match *c.contents {
+                        hax::ConstantExprKind::ConstRef { id: cp } => {
+                            bt_ctx.push_const_generic_var(cp.index, ty, cp.name);
                         }
                         _ => unreachable!(),
                     }
@@ -1659,8 +1654,16 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
 
+        // TODO: factor this out
+        let state = hax::state::State::new(
+            self.tcx,
+            &hax::options::Options {
+                inline_macro_calls: Vec::new(),
+            },
+        );
+
         // Translate the function name
-        let name = function_def_id_to_name(self.tcx, rust_id);
+        let name = def_id_to_name(&rust_id.sinto(&state));
 
         // Translate the function signature and initialize the body translation context
         // at the same time (the signature gives us the region and type parameters,
@@ -1669,7 +1672,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let (bt_ctx, signature) = self.translate_function_signature(rust_id);
 
         // Check if the type is opaque or transparent
-        let body = if !is_transparent || !rust_id.is_local() {
+        let is_local = rust_id.is_local();
+        let body = if !is_transparent || !is_local {
             Option::None
         } else {
             Option::Some(
@@ -1745,7 +1749,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         );
 
         // Translate the global name
-        let name = global_def_id_to_name(self.tcx, rust_id);
+        let name = def_id_to_name(&rust_id.sinto(&state));
 
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
@@ -1754,13 +1758,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         trace!("Translating global type");
-        let ty = bt_ctx
-            .t_ctx
-            .tcx
-            .type_of(rust_id)
-            .subst_identity()
-            .sinto(&state);
-        let ty = bt_ctx.translate_ety(&ty).unwrap();
+        let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
+        let ty = bt_ctx.translate_ety(&mir_ty.sinto(&state)).unwrap();
 
         let body = match (rust_id.is_local(), is_transparent) {
             // It's a local and opaque global: we do not give it a body.
@@ -1776,9 +1775,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             // If the evaluation succeeds, we generate a body.
             // If the evaluation fails, we warn about the failure and generate an
             // empty body.
-            // TODO: Perhaps the policy should depend on `static` (accept) VS
-            // `const` (reject) global ?  Or force a successful translation, but
-            // translate only if it's transparent ?
+            // TODO: we should keep the external globals opaque
             (false, _) => {
                 let unev = rid_as_unevaluated_constant(rust_id);
                 match bt_ctx.t_ctx.tcx.const_eval_resolve(
@@ -1789,13 +1786,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     std::result::Result::Ok(c) => {
                         // Evaluate the constant
                         let span = bt_ctx.t_ctx.tcx.def_span(rust_id);
-                        let (ty, val) =
-                            bt_ctx.translate_evaluated_operand_constant(mir_ty, &c, span);
-                        Option::Some(
-                            bt_ctx
-                                .t_ctx
-                                .global_generate_assignment_body(ty, rust_id, val),
-                        )
+                        let val = bt_ctx.translate_evaluated_operand_constant(mir_ty, &c, span);
+                        Option::Some(bt_ctx.t_ctx.global_generate_assignment_body(
+                            ty.clone(),
+                            rust_id,
+                            val,
+                        ))
                     }
                     std::result::Result::Err(e) => {
                         warn!("Did not evaluate {:?}: {:?}", rust_id, e);
@@ -1812,7 +1808,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 def_id,
                 meta,
                 name,
-                ty: g_ty,
+                ty,
                 body,
             },
         );

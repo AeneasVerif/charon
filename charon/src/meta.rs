@@ -3,7 +3,6 @@
 pub use crate::meta_utils::*;
 use macros::{generate_index_type, EnumAsGetters, EnumIsA};
 use serde::Serialize;
-use std::path::PathBuf;
 
 generate_index_type!(LocalFileId);
 generate_index_type!(VirtualFileId);
@@ -71,9 +70,9 @@ pub struct FileInfo {}
 #[derive(Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Serialize)]
 pub enum FileName {
     /// A remapped path (namely paths into stdlib)
-    Virtual(PathBuf),
+    Virtual(String),
     /// A local path (a file coming from the current crate for instance)
-    Local(PathBuf),
+    Local(String),
     /// A "not real" file name (macro, query, etc.)
     NotReal(String),
 }

@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 use crate::meta::*;
+use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
@@ -71,12 +72,13 @@ pub fn combine_meta_iter<'a, T: Iterator<Item = &'a Meta>>(mut ms: T) -> Meta {
     mc
 }
 
-pub fn convert_filename(name: &rustc_span::FileName) -> FileName {
+pub fn convert_filename(name: &hax::FileName) -> FileName {
     match name {
-        rustc_span::FileName::Real(name) => {
+        hax::FileName::Real(name) => {
+            use hax::RealFileName;
             match name {
-                rustc_span::RealFileName::LocalPath(path) => FileName::Local(path.clone()),
-                rustc_span::RealFileName::Remapped {
+                RealFileName::LocalPath(path) => FileName::Local(path.clone()),
+                RealFileName::Remapped {
                     local_path: _,
                     virtual_name,
                 } =>
@@ -86,15 +88,15 @@ pub fn convert_filename(name: &rustc_span::FileName) -> FileName {
                 }
             }
         }
-        rustc_span::FileName::QuoteExpansion(_)
-        | rustc_span::FileName::Anon(_)
-        | rustc_span::FileName::MacroExpansion(_)
-        | rustc_span::FileName::ProcMacroSourceCode(_)
-        | rustc_span::FileName::CfgSpec(_)
-        | rustc_span::FileName::CliCrateAttr(_)
-        | rustc_span::FileName::Custom(_)
-        | rustc_span::FileName::DocTest(_, _)
-        | rustc_span::FileName::InlineAsm(_) => {
+        hax::FileName::QuoteExpansion(_)
+        | hax::FileName::Anon(_)
+        | hax::FileName::MacroExpansion(_)
+        | hax::FileName::ProcMacroSourceCode(_)
+        | hax::FileName::CfgSpec(_)
+        | hax::FileName::CliCrateAttr(_)
+        | hax::FileName::Custom(_)
+        | hax::FileName::DocTest(..)
+        | hax::FileName::InlineAsm(_) => {
             // We use the debug formatter to generate a filename.
             // This is not ideal, but filenames are for debugging anyway.
             FileName::NotReal(format!("{name:?}"))
@@ -102,23 +104,10 @@ pub fn convert_filename(name: &rustc_span::FileName) -> FileName {
     }
 }
 
-/// Return the filename from a Rust span.
-pub fn get_filename_from_rspan(sess: &Session, span: rustc_span::Span) -> FileName {
-    // Retrieve the source map, which contains information about the source file:
-    // we need it to be able to interpret the span.
-    let source_map = sess.source_map();
-
-    // Retrieve the filename
-    let name = source_map.span_to_filename(span);
-
-    // Convert it
-    convert_filename(&name)
-}
-
-pub fn convert_loc(loc: rustc_span::Loc) -> Loc {
+pub fn convert_loc(loc: hax::Loc) -> Loc {
     Loc {
         line: loc.line,
-        col: loc.col.0,
+        col: loc.col,
     }
 }
 

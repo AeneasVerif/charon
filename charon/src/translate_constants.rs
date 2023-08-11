@@ -1,17 +1,11 @@
 //! Functions to translate constants to LLBC.
 #![allow(dead_code)]
-use crate::common::*;
 use crate::expressions as e;
-use crate::get_mir::extract_constants_at_top_level;
 use crate::translate_ctx::*;
 use crate::types as ty;
-use crate::values as v;
 use hax_frontend_exporter as hax;
-use rustc_hir::def_id::DefId;
 use rustc_middle::mir;
-use rustc_middle::ty as mir_ty;
-use rustc_middle::ty::{ConstKind, Ty, TyKind};
-use std::iter::zip;
+use rustc_middle::ty::Ty;
 
 /*
 /// Translate a typed constant value (either a bool, a char or an integer).
@@ -433,7 +427,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         unimplemented!()
     }
 
-    pub(crate) fn translate_const_kind_as_const_generic(
+    /*    pub(crate) fn translate_const_kind_as_const_generic(
         &mut self,
         constant: rustc_middle::ty::Const<'tcx>,
     ) -> ty::ConstGeneric {
@@ -446,9 +440,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             e::OperandConstantValue::StaticId(_) => unreachable!(),
             e::OperandConstantValue::Var(v) => ty::ConstGeneric::Var(v),
         }
-    }
+    }*/
 
-    /// Translate a constant which may not be yet evaluated.
+    /*    /// Translate a constant which may not be yet evaluated.
     pub(crate) fn translate_constant_kind(
         &mut self,
         constant: &rustc_middle::mir::ConstantKind<'tcx>,
@@ -471,7 +465,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 self.translate_const_kind_unevaluated(mir_ty, ucv)
             }
         }
-    }
+    }*/
 
     pub(crate) fn translate_constant_expr_kind_to_operand_constant_value(
         &mut self,
@@ -524,13 +518,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         unimplemented!()
     }
 
-    // TODO: rename
+    // TODO: remove once we make the external globals opaque
     pub(crate) fn translate_evaluated_operand_constant(
         &mut self,
         ty: Ty<'tcx>,
         val: &mir::interpret::ConstValue<'tcx>,
         span: rustc_span::Span,
-    ) -> (ty::ETy, e::OperandConstantValue) {
+    ) -> e::OperandConstantValue {
         // TODO: factor this out
         let state = hax::state::State::new(
             self.t_ctx.tcx,
@@ -539,11 +533,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             },
         );
 
-        let val = hax::const_value_to_constant_expr(&state, *ty, *val, span);
+        let val = hax::const_value_to_constant_expr(&state, ty, *val, span);
         self.translate_constant_expr_to_operand_constant_value(val)
+            .1
     }
 
-    /// Translate a constant which may not be yet evaluated.
+    /*    /// Translate a constant which may not be yet evaluated.
     pub(crate) fn translate_operand_constant(
         &mut self,
         constant: &mir::Constant<'tcx>,
@@ -553,5 +548,5 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let constant = &constant.deref();
 
         self.translate_constant_kind(&constant.literal)
-    }
+    }*/
 }

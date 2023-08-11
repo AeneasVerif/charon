@@ -4,13 +4,11 @@
 
 #![allow(dead_code)]
 use crate::assumed;
-use crate::names::trait_def_id_to_name;
 use hashlink::linked_hash_map::LinkedHashMap;
 use hax_frontend_exporter as hax;
+use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
-use rustc_middle::ty::{
-    BoundRegion, Clause, FreeRegion, PredicateKind, Region, RegionKind, TyCtxt,
-};
+use rustc_middle::ty::{Clause, FreeRegion, PredicateKind, Region, RegionKind, TyCtxt};
 
 /// Instantiate the bound region variables in a binder, by turning the bound
 /// regions variables into free region variables. Note that the indices used

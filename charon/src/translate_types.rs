@@ -297,14 +297,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         for (param, param_i) in substs.iter() {
             trace!("Adt: param {}: {:?}", param_i, param);
             match param {
-                hax::GenericArgKind::Type(param_ty) => {
+                hax::GenericArg::Type(param_ty) => {
                     let param_ty = self.translate_ty(region_translator, &param_ty)?;
                     params.push(param_ty);
                 }
-                hax::GenericArgKind::Lifetime(region) => {
+                hax::GenericArg::Lifetime(region) => {
                     regions.push(region_translator(&region));
                 }
-                hax::GenericArgKind::Const(_) => {
+                hax::GenericArg::Const(_) => {
                     unimplemented!();
                 }
             }

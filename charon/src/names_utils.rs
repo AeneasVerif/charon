@@ -291,6 +291,7 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
     Name { name }
 }
 
+// TODO: remove
 pub fn def_id_to_name(def_id: &hax::DefId) -> Name {
     todo!()
 }

@@ -12,12 +12,9 @@ use crate::types::LiteralTy;
 use crate::ullbc_ast as ast;
 use crate::values as v;
 use hax_frontend_exporter as hax;
+use hax_frontend_exporter::SInto;
 use linked_hash_set::LinkedHashSet;
 use rustc_hir::def_id::DefId;
-use rustc_index::IndexVec;
-use rustc_middle::mir;
-use rustc_middle::mir::BasicBlock;
-use rustc_middle::mir::{SourceInfo, SourceScope, SourceScopeData};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::collections::{HashMap, HashSet};
@@ -121,19 +118,6 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
-    /// Register the file containing a definition (rem.: we register the
-    /// file containing the definition itself, not its def ident).
-    fn translate_file_from_def_id(&mut self, def_id: DefId) -> FileId::Id {
-        let span = meta::get_rspan_from_def_id(self.tcx, def_id);
-        self.translate_file_from_span(span)
-    }
-
-    /// Register the file referenced by a span
-    fn translate_file_from_span(&mut self, span: rustc_span::Span) -> FileId::Id {
-        let filename = meta::get_filename_from_rspan(self.sess, span);
-        self.register_file(filename)
-    }
-
     /// Register a file if it is a "real" file and was not already registered
     fn register_file(&mut self, filename: FileName) -> FileId::Id {
         // Lookup the file if it was already registered
@@ -160,24 +144,19 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Retrieve the span from the def id
         let rspan = meta::get_rspan_from_def_id(self.tcx, def_id);
 
+        // TODO: factor this out
+        let state = hax::state::State::new(
+            self.tcx,
+            &hax::options::Options {
+                inline_macro_calls: Vec::new(),
+            },
+        );
+        let rspan = rspan.sinto(&state);
         self.translate_meta_from_rspan(rspan)
     }
 
-    pub fn translate_hax_span(&mut self, span: hax::Span) -> meta::Span {
-        unimplemented!()
-    }
-
-    // TODO: remove
-    pub fn translate_span(&mut self, rspan: rustc_span::Span) -> meta::Span {
-        // Retrieve the source map, which contains information about the source file:
-        // we need it to be able to interpret the span.
-        let source_map = self.sess.source_map();
-
-        // Find the source file and the span.
-        // It is very annoying: macros get expanded to statements whose spans refer
-        // to the file where the macro is defined, not the file where it is used.
-        let (beg, end) = source_map.is_valid_span(rspan).unwrap();
-        let filename = meta::convert_filename(&beg.file.name);
+    pub fn translate_span(&mut self, rspan: hax::Span) -> meta::Span {
+        let filename = meta::convert_filename(&rspan.filename);
         let file_id = match &filename {
             FileName::NotReal(_) => {
                 // For now we forbid not real filenames
@@ -186,8 +165,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename),
         };
 
-        let beg = meta::convert_loc(beg);
-        let end = meta::convert_loc(end);
+        let beg = meta::convert_loc(rspan.lo);
+        let end = meta::convert_loc(rspan.hi);
 
         // Put together
         meta::Span { file_id, beg, end }
@@ -234,7 +213,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: rustc_span::Span) -> Meta {
+    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
         // Translate the span
         let span = self.translate_span(rspan);
 
@@ -336,7 +315,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_meta_from_rid(def_id)
     }
 
-    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: rustc_span::Span) -> Meta {
+    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
         self.t_ctx.translate_meta_from_rspan(rspan)
     }
 
@@ -345,10 +324,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn get_local(&self, local: &hax::Local) -> Option<v::VarId::Id> {
-        self.vars_map.get(&local.as_u32()).copied()
+        use rustc_index::Idx;
+        self.vars_map.get(&local.index()).copied()
     }
 
-    pub(crate) fn get_block_id_from_rid(&self, rid: BasicBlock) -> Option<ast::BlockId::Id> {
+    pub(crate) fn get_block_id_from_rid(&self, rid: hax::BasicBlock) -> Option<ast::BlockId::Id> {
         self.blocks_map.get(&rid).copied()
     }
 
@@ -380,10 +360,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_global_decl_id(id)
     }
 
-    pub(crate) fn get_region_from_rust(
-        &self,
-        r: rustc_middle::ty::RegionKind<'tcx>,
-    ) -> Option<ty::RegionVarId::Id> {
+    pub(crate) fn get_region_from_rust(&self, r: hax::Region) -> Option<ty::RegionVarId::Id> {
         self.region_vars_map.get(&r).copied()
     }
 

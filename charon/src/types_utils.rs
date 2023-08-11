@@ -9,7 +9,6 @@ use crate::values::Literal;
 use hax_frontend_exporter as hax;
 use im::{HashMap, OrdSet};
 use macros::make_generic_in_borrows;
-use rustc_middle::ty::{IntTy, UintTy};
 use std::iter::FromIterator;
 use std::iter::Iterator;
 
