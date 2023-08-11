@@ -176,11 +176,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     pub fn translate_meta_from_source_info(
         &mut self,
         source_scopes: &hax::IndexVec<hax::SourceScope, hax::SourceScopeData>,
-        source_info: hax::SourceInfo,
+        source_info: &hax::SourceInfo,
     ) -> Meta {
         // Translate the span
         let mut scope_data = source_scopes.get(source_info.scope).unwrap();
-        let span = self.translate_span(scope_data.span);
+        let span = self.translate_span(scope_data.span.clone());
 
         // Lookup the top-most inlined parent scope.
         if scope_data.inlined_parent_scope.is_some() {
@@ -189,7 +189,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 scope_data = source_scopes.get(parent_scope).unwrap();
             }
 
-            let parent_span = self.translate_span(scope_data.span);
+            let parent_span = self.translate_span(scope_data.span.clone());
 
             Meta {
                 span: parent_span,
@@ -200,16 +200,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 span,
                 generated_from_span: None,
             }
-        }
-    }
-
-    pub(crate) fn translate_meta_from_hax_span(&mut self, span: hax::Span) -> Meta {
-        // Translate the span
-        let span = self.translate_span(span);
-
-        Meta {
-            span,
-            generated_from_span: None,
         }
     }
 
@@ -317,10 +307,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
         self.t_ctx.translate_meta_from_rspan(rspan)
-    }
-
-    pub fn translate_meta_from_hax_span(&mut self, span: hax::Span) -> Meta {
-        unimplemented!()
     }
 
     pub(crate) fn get_local(&self, local: &hax::Local) -> Option<v::VarId::Id> {

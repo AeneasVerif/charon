@@ -159,7 +159,6 @@ fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
 /// Translate a call to a function considered primitive and which is not:
 /// panic, begin_panic, box_free (those have a *very* special treatment).
 fn translate_primitive_function_call(
-    tcx: TyCtxt<'_>,
     def_id: &hax::DefId,
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
@@ -380,7 +379,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trace!("Translating local of index {} and type {:?}", index, var.ty);
 
             // Find the name of the variable
-            let span = var.source_info.span;
             let name: Option<String> = var.name.clone();
 
             // Translate the type
@@ -433,8 +431,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Translate the terminator
-        let terminator = block.terminator.unwrap();
-        let terminator = self.translate_terminator(body, &terminator)?;
+        let terminator = block.terminator.as_ref().unwrap();
+        let terminator = self.translate_terminator(body, terminator)?;
 
         // Insert the block in the translated blocks
         let block = ast::BlockData {
@@ -467,7 +465,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> (v::VarId::Id, e::Projection, ty::ETy) {
         use hax::PlaceKind;
         let current_ty = self.translate_ety(&place.ty).unwrap();
-        match place.kind {
+        match &place.kind {
             PlaceKind::Local(local) => {
                 let var_id = self.get_local(&local).unwrap();
                 (var_id, Vec::new(), current_ty)
@@ -479,7 +477,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     ProjectionElem::Deref => {
                         // We use the type to disambiguate
                         match current_ty {
-                            ty::Ty::Ref(_, ty, _) => {
+                            ty::Ty::Ref(_, _, _) => {
                                 projection.push(e::ProjectionElem::Deref);
                             }
                             ty::Ty::Adt(
@@ -495,7 +493,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 assert!(cgs.is_empty());
                                 projection.push(e::ProjectionElem::DerefBox);
                             }
-                            ty::Ty::RawPtr(ty, _) => {
+                            ty::Ty::RawPtr(_, _) => {
                                 projection.push(e::ProjectionElem::DerefRawPtr);
                             }
                             _ => {
@@ -511,16 +509,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let proj_elem = match field_kind {
                             Tuple(id) => {
                                 let (_, _, tys, _) = current_ty.as_adt();
-                                let field_id = translate_field_id(id);
+                                let field_id = translate_field_id(*id);
                                 let proj_kind = e::FieldProjKind::Tuple(tys.len());
                                 e::ProjectionElem::Field(proj_kind, field_id)
                             }
                             Adt {
-                                typ,
+                                typ: _,
                                 variant,
                                 index,
                             } => {
-                                let field_id = translate_field_id(index);
+                                let field_id = translate_field_id(*index);
                                 let variant_id = variant.map(|vid| translate_variant_id(vid));
                                 match current_ty {
                                     ty::Ty::Adt(ty::TypeId::Adt(type_id), ..) => {
@@ -1026,7 +1024,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             Some(t_statement) => {
                 let meta = self
                     .t_ctx
-                    .translate_meta_from_source_info(&body.source_scopes, statement.source_info);
+                    .translate_meta_from_source_info(&body.source_scopes, &statement.source_info);
 
                 Ok(Some(ast::Statement::new(meta, t_statement)))
             }
@@ -1045,7 +1043,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // intermediate statements - we desugar some terminators)
         let meta = self
             .t_ctx
-            .translate_meta_from_source_info(&body.source_scopes, terminator.source_info);
+            .translate_meta_from_source_info(&body.source_scopes, &terminator.source_info);
 
         // Translate the terminator
         use hax::TerminatorKind;
@@ -1207,8 +1205,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // support closures for now
         trace!("func: {:?}", rust_id);
 
-        let tcx = self.t_ctx.tcx;
-
         // Translate the name to check if is is `core::panicking::panic`
         // TODO: replace
         let name = def_id_to_name(def_id);
@@ -1336,7 +1332,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // `box_deref<T>`
                     // (the type parameter is not `Box<T>` but `T`).
                     translate_primitive_function_call(
-                        tcx,
                         def_id,
                         region_args,
                         type_args,
@@ -1382,7 +1377,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     t_args_tys.push(t_param_ty);
                 }
                 GenericArg::Lifetime(region) => {
-                    t_args_regions.push(translate_erased_region(*region));
+                    t_args_regions.push(translate_erased_region(region));
                 }
                 GenericArg::Const(c) => {
                     let t_cg = self.translate_constant_expr_to_const_generic(c);
@@ -1450,9 +1445,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Translate
         let body: hax::MirBody<()> = body.sinto(&state);
 
-        // Compute the meta information
-        let meta = self.translate_meta_from_hax_span(body.span);
-
         // Initialize the local variables
         trace!("Translating the body locals");
         self.translate_body_locals(&body)?;
@@ -1460,6 +1452,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Translate the expression body
         trace!("Translating the expression body");
         self.translate_transparent_expression_body(&body)?;
+
+        // Compute the meta information
+        let meta = self.translate_meta_from_rspan(body.span);
 
         // We need to convert the blocks map to an index vector
         // We clone things while we could move them...
@@ -1595,6 +1590,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // much to create this mapping ourselves.
         let (signature, late_bound_regions) =
             generics::replace_late_bound_regions(tcx, signature, def_id);
+        let num_early_bound_regions = late_bound_regions.len();
 
         // Introduce identifiers and translated regions for the late-bound regions
         for (_, region) in late_bound_regions.into_iter() {
@@ -1634,7 +1630,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let sig = ast::FunSig {
             region_params: bt_ctx.region_vars.clone(),
-            num_early_bound_regions: late_bound_regions.len(),
+            num_early_bound_regions,
             regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
             type_params: bt_ctx.type_vars.clone(),
             const_generic_params: bt_ctx.const_generic_vars.clone(),

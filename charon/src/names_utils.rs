@@ -173,7 +173,6 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
     // The names we will generate for `foo` and `bar` are:
     // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(0), Ident("foo")]`
     // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(1), Ident("bar")]`
-    let crate_name = def_id.krate.clone();
     let mut found_crate_name = false;
     let mut id = def_id;
     let mut name: Vec<PathElem> = Vec::new();
@@ -214,7 +213,7 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
                 // This should be the beginning of the path
                 assert!(name.is_empty());
                 found_crate_name = true;
-                name.push(PathElem::Ident(crate_name));
+                name.push(PathElem::Ident(def_id.krate.clone()));
             }
             DefPathItem::Impl(ty) => {
                 // Match over the type.
@@ -259,7 +258,7 @@ pub fn def_id_to_name(def_id: &hax::DefId) -> ItemName {
 
     // We always add the crate name
     if !found_crate_name {
-        name.push(PathElem::Ident(crate_name));
+        name.push(PathElem::Ident(def_id.krate.clone()));
     }
 
     // Reverse the name and return
