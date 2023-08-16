@@ -588,15 +588,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         val: &mir::interpret::ConstValue<'tcx>,
         span: rustc_span::Span,
     ) -> e::OperandConstantValue {
-        // TODO: factor this out
-        let state = hax::state::State::new(
-            self.t_ctx.tcx,
-            &hax::options::Options {
-                inline_macro_calls: Vec::new(),
-            },
-        );
-
-        let val = hax::const_value_to_constant_expr(&state, ty, *val, span);
+        let val = hax::const_value_to_constant_expr(&self.t_ctx.hax_state, ty, *val, span);
         self.translate_constant_expr_to_operand_constant_value(&val)
     }
 }

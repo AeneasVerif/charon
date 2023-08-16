@@ -58,7 +58,7 @@ where
     // TODO: factor this out
     let state = hax::state::State::new(
         tcx,
-        &hax::options::Options {
+        hax::options::Options {
             inline_macro_calls: Vec::new(),
         },
     );

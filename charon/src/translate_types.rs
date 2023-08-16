@@ -445,25 +445,18 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         def_id: DefId,
     ) -> (BodyTransCtx<'tcx, 'ctx1, 'ctx>, Vec<hax::GenericArg>) {
         let tcx = self.tcx;
+
         // Check the generics and the predicates - TODO: update
         generics::check_type_generics(tcx, def_id);
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(def_id, self);
 
-        // TODO: factor this out
-        let state = hax::state::State::new(
-            tcx,
-            &hax::options::Options {
-                inline_macro_calls: Vec::new(),
-            },
-        );
-
         // We could use: TyCtxt::generics_of(DefId)
         // But using the identity substitution is simpler. For instance, we can
         // easily retrieve the type for the const parameters.
-        let substs =
-            rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, def_id).sinto(&state);
+        let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, def_id)
+            .sinto(&bt_ctx.t_ctx.hax_state);
 
         for p in &substs {
             use hax::GenericArg::*;
@@ -523,14 +516,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let trans_id = self.translate_type_decl_id(rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
 
-        // TODO: factor this out
-        let state = hax::state::State::new(
-            self.tcx,
-            &hax::options::Options {
-                inline_macro_calls: Vec::new(),
-            },
-        );
-
         // Check and translate the generics
         // TODO: use the body trans context as input, and don't return anything.
         let (mut bt_ctx, _substs) = self.translate_type_generics(rust_id);
@@ -543,12 +528,16 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             // - local types flagged as opaque
             ty::TypeDeclKind::Opaque
         } else {
-            let adt = bt_ctx.t_ctx.tcx.adt_def(rust_id).sinto(&state);
+            let adt = bt_ctx
+                .t_ctx
+                .tcx
+                .adt_def(rust_id)
+                .sinto(&bt_ctx.t_ctx.hax_state);
             bt_ctx.translate_transparent_type(trans_id, adt)
         };
 
         // Register the type
-        let name = extended_def_id_to_name(&rust_id.sinto(&state));
+        let name = extended_def_id_to_name(&rust_id.sinto(&bt_ctx.t_ctx.hax_state));
         let region_params = bt_ctx.region_vars.clone();
         let type_params = bt_ctx.type_vars.clone();
         let const_generic_params = bt_ctx.const_generic_vars.clone();

@@ -1437,14 +1437,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Retrive the body
         let body = get_mir_for_def_id_and_level(tcx, local_id, self.t_ctx.mir_level);
 
-        // TODO: factor this out
+        // Here, we have to create a MIR state, which contains the body
+        // TODO: slightly annoying that we have to clone the body
+        let rc_body = std::rc::Rc::new(body.clone());
         let state = hax::state::State::new_from_mir(
             tcx,
-            &hax::options::Options {
+            hax::options::Options {
                 inline_macro_calls: Vec::new(),
             },
-            // TODO: do we really have to clone this?
-            body.clone(),
+            rc_body,
         );
         // Translate
         let body: hax::MirBody<()> = body.sinto(&state);
@@ -1489,14 +1490,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         def_id: DefId,
     ) -> (BodyTransCtx<'tcx, 'ctx1, 'ctx>, ast::FunSig) {
         let tcx = self.tcx;
-
-        // TODO: factor this out
-        let state = hax::state::State::new(
-            self.tcx,
-            &hax::options::Options {
-                inline_macro_calls: Vec::new(),
-            },
-        );
 
         // Retrieve the function signature, which includes the lifetimes
         let signature = tcx.fn_sig(def_id).subst_identity();
@@ -1549,7 +1542,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 unreachable!()
             }
         };
-        let substs = substs.sinto(&state);
+        let substs = substs.sinto(&bt_ctx.t_ctx.hax_state);
 
         for param in substs {
             use hax::GenericArg;
@@ -1616,14 +1609,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Now that we instantiated all the binders and introduced identifiers for
         // all the variables, we can translate the function's signature.
-        let inputs: Vec<ty::RTy> = Vec::from_iter(
-            signature
-                .inputs()
-                .iter()
-                .map(|ty| bt_ctx.translate_sig_ty(&(*ty).sinto(&state)).unwrap()),
-        );
+        let inputs: Vec<ty::RTy> = Vec::from_iter(signature.inputs().iter().map(|ty| {
+            bt_ctx
+                .translate_sig_ty(&(*ty).sinto(&bt_ctx.t_ctx.hax_state))
+                .unwrap()
+        }));
         let output = bt_ctx
-            .translate_sig_ty(&signature.output().sinto(&state))
+            .translate_sig_ty(&signature.output().sinto(&bt_ctx.t_ctx.hax_state))
             .unwrap();
 
         trace!(
@@ -1654,16 +1646,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
 
-        // TODO: factor this out
-        let state = hax::state::State::new(
-            self.tcx,
-            &hax::options::Options {
-                inline_macro_calls: Vec::new(),
-            },
-        );
-
         // Translate the function name
-        let name = extended_def_id_to_name(&rust_id.sinto(&state));
+        let name = extended_def_id_to_name(&rust_id.sinto(&self.hax_state));
 
         // Translate the function signature and initialize the body translation context
         // at the same time (the signature gives us the region and type parameters,
@@ -1740,26 +1724,19 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let def_id = self.translate_global_decl_id(rust_id);
 
-        // TODO: factor this out
-        let state = hax::state::State::new(
-            self.tcx,
-            &hax::options::Options {
-                inline_macro_calls: Vec::new(),
-            },
-        );
-
         // Translate the global name
-        let name = extended_def_id_to_name(&rust_id.sinto(&state));
+        let name = extended_def_id_to_name(&rust_id.sinto(&self.hax_state));
 
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
+        let hax_state = &bt_ctx.t_ctx.hax_state;
 
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
-        let ty = bt_ctx.translate_ety(&mir_ty.sinto(&state)).unwrap();
+        let ty = bt_ctx.translate_ety(&mir_ty.sinto(hax_state)).unwrap();
 
         let body = match (rust_id.is_local(), is_transparent) {
             // It's a local and opaque global: we do not give it a body.

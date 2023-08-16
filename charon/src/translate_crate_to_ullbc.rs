@@ -146,9 +146,17 @@ pub fn translate<'tcx, 'ctx>(
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
 ) -> TransCtx<'tcx, 'ctx> {
+    use hax_frontend_exporter as hax;
+    let hax_state = hax::state::State::new(
+        tcx,
+        hax::options::Options {
+            inline_macro_calls: Vec::new(),
+        },
+    );
     let mut ctx = TransCtx {
         sess,
         tcx,
+        hax_state,
         mir_level,
         crate_info,
         all_ids: LinkedHashSet::new(),

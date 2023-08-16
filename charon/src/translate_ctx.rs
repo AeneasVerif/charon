@@ -38,8 +38,10 @@ impl CrateInfo {
 pub struct TransCtx<'tcx, 'ctx> {
     /// The compiler session
     pub sess: &'ctx Session,
-    ///
+    /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
+    /// The Hax context
+    pub hax_state: hax::State<hax::Base<'tcx>, (), (), ()>,
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
     ///
@@ -143,15 +145,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
         // Retrieve the span from the def id
         let rspan = meta::get_rspan_from_def_id(self.tcx, def_id);
-
-        // TODO: factor this out
-        let state = hax::state::State::new(
-            self.tcx,
-            &hax::options::Options {
-                inline_macro_calls: Vec::new(),
-            },
-        );
-        let rspan = rspan.sinto(&state);
+        let rspan = rspan.sinto(&self.hax_state);
         self.translate_meta_from_rspan(rspan)
     }
 
