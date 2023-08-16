@@ -13,8 +13,6 @@ use serde::{Serialize, Serializer};
 use std::collections::HashSet;
 
 impl PathElem {
-    // TODO: we could make that an eq trait?
-    // On the other hand I'm not fond of overloading...
     fn equals_ident(&self, id: &str) -> bool {
         match self {
             PathElem::Ident(s) => s == id,
@@ -227,9 +225,15 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
                         }
                     }
                     // Builtin cases.
-                    Ty::Int(_) | Ty::Uint(_) | Ty::Array(..) | Ty::Slice(_) => {
+                    Ty::Int(ty) => ty.to_string(),
+                    Ty::Uint(ty) => ty.to_string(),
+                    Ty::Array(..) => {
                         format!("{ty:?}")
                     }
+                    Ty::Slice(ty) => match &**ty {
+                        Ty::Param(hax::ParamTy { index: 0, name: _ }) => "[T]".to_string(),
+                        _ => format!("{ty:?}"),
+                    },
                     _ => unreachable!(),
                 }));
 
