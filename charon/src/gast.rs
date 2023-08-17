@@ -40,18 +40,6 @@ pub struct Var {
 #[derive(Debug, Clone, Serialize)]
 pub struct FunSig {
     pub region_params: RegionVarId::Vector<RegionVar>,
-    /// The region parameters contain early bound and late bound parameters.
-    /// The early bound regions are those introduced by the `impl` block (if
-    /// this definition  is defined in an `impl` block), the late bound regions
-    /// are those introduced by the function itself.
-    ///  For example, in:
-    ///  ```text
-    ///  impl<'a> Foo<'a> {
-    ///      fn bar<'b>(...) -> ... { ... }
-    ///  }
-    ///  ```
-    ///  `'a` is early-bound while `'b` is late-bound.
-    pub num_early_bound_regions: usize,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
     pub inputs: Vec<RTy>,

@@ -662,7 +662,6 @@ let fun_sig_of_json (js : json) : (A.fun_sig, string) result =
     | `Assoc
         [
           ("region_params", region_params);
-          ("num_early_bound_regions", num_early_bound_regions);
           ("type_params", type_params);
           ("const_generic_params", const_generic_params);
           ("inputs", inputs);
@@ -670,7 +669,6 @@ let fun_sig_of_json (js : json) : (A.fun_sig, string) result =
           ("regions_hierarchy", regions_hierarchy);
         ] ->
         let* region_params = list_of_json region_var_of_json region_params in
-        let* num_early_bound_regions = int_of_json num_early_bound_regions in
         let* regions_hierarchy = region_var_groups_of_json regions_hierarchy in
         let* type_params = list_of_json type_var_of_json type_params in
         let* const_generic_params =
@@ -681,7 +679,6 @@ let fun_sig_of_json (js : json) : (A.fun_sig, string) result =
         Ok
           {
             A.region_params;
-            num_early_bound_regions;
             regions_hierarchy;
             type_params;
             const_generic_params;

@@ -72,9 +72,11 @@ pub struct TransCtx<'tcx, 'ctx> {
 /// A translation context for type/global/function bodies.
 /// Simply augments the [TransCtx] with local variables.
 ///
-/// TODO: use other collections than `im::OrdMap`? (we don't need a O(1) clone
-/// operation).
-/// TODO: remove the borrow for the TransCtx, or make it a mutable borrow.
+/// Remark: for now we don't really need to use collections from the [im] crate,
+/// because we don't need the O(1) clone operation, but we may need it once we
+/// implement support for universally quantified traits, where we might need
+/// to be able to dive in/out of universal quantifiers. Also, it doesn't cost
+/// us to use those collections.
 pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// This is used in very specific situations.
     pub def_id: DefId,
@@ -117,6 +119,38 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
     pub blocks_map: im::OrdMap<hax::BasicBlock, ast::BlockId::Id>,
+    /// The stack of late-bound parameters (can only be lifetimes for now), which
+    /// use DeBruijn indices (the other parameters use free variables).
+    /// For explanations about what early-bound and late-bound parameters are, see:
+    /// https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
+    /// https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+    ///
+    /// Remark: even though performance is not critical, the use of [im::Vec] allows
+    /// us to push/pop and access indexed elements with very good performance.
+    ///
+    /// **Important**:
+    /// ==============
+    /// The Rust compiler uses De Bruijn indices to identify the *group* of
+    /// universally quantified variables, and variable identifiers to identity
+    /// the variables inside the group.
+    ///
+    /// For instance, we have the following:
+    /// ```
+    ///                     we compute the De Bruijn indices from here
+    ///                            VVVVVVVVVVVVVVVVVVVVVVV
+    /// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+    ///      ^^^^^^         ^^       ^       ^        ^
+    ///        |      De Bruijn: 0   |       |        |
+    ///  De Bruijn: 1                |       |        |
+    ///                        De Bruijn: 1  |    De Bruijn: 0
+    ///                           Var id: 0  |       Var id: 0
+    ///                                      |
+    ///                                De Bruijn: 1
+    ///                                   Var id: 1
+    /// ```
+    ///
+    /// For this reason, we use a stack of vectors to store the bound variables.
+    pub bound_vars: im::Vector<im::Vector<ty::RegionVarId::Id>>,
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
@@ -292,6 +326,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             blocks_counter: ast::BlockId::Generator::new(),
             blocks: im::OrdMap::new(),
             blocks_map: im::OrdMap::new(),
+            bound_vars: im::Vector::new(),
         }
     }
 
@@ -356,6 +391,27 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.region_vars.insert(rid, var);
         self.region_vars_map.insert(r, rid);
         rid
+    }
+
+    /// Push a group of bound regions
+    pub(crate) fn push_bound_regions_group(&mut self, names: Vec<Option<String>>) {
+        use crate::id_vector::ToUsize;
+
+        // Register the variables
+        let var_ids: im::Vector<ty::RegionVarId::Id> = names
+            .into_iter()
+            .map(|name| {
+                let rid = self.regions_counter.fresh_id();
+                assert!(rid.to_usize() == self.region_vars.len());
+                let var = ty::RegionVar { index: rid, name };
+                self.region_vars.insert(rid, var);
+                rid
+            })
+            .collect();
+
+        // Push the group
+
+        self.bound_vars.push_front(var_ids);
     }
 
     pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> ty::TypeVarId::Id {

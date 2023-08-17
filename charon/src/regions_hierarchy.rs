@@ -645,8 +645,14 @@ fn compute_regions_constraints_for_sig(
     types_constraints: &TypesConstraintsMap,
     sig: &FunSig,
 ) -> SCCs<Region<RegionVarId::Id>> {
+    trace!("sig: {sig:?}");
+
     let mut constraints_graph = LifetimeConstraints::new();
+    // Add a node for every region
     constraints_graph.add_node(Region::Static);
+    for r in &sig.region_params {
+        constraints_graph.add_node(Region::Var(r.index));
+    }
 
     for input_ty in &sig.inputs {
         compute_regions_constraints_for_ty(types_constraints, &mut constraints_graph, input_ty);
@@ -799,7 +805,8 @@ pub fn compute(ctx: &mut TransCtx, ordered_decls: &DeclarationsGroups) {
     // Use the types constraints map to compute the regions hierarchies for the
     // function signatures
     for decl in &mut ctx.fun_defs.iter_mut() {
+        trace!("decl: {:?}", &decl.name);
         decl.signature.regions_hierarchy =
-            compute_regions_hierarchy_for_sig(&mut types_constraints, &decl.signature);
+            compute_regions_hierarchy_for_sig(&types_constraints, &decl.signature);
     }
 }

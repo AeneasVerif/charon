@@ -11,16 +11,31 @@ use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 
+/// Small helper: we ignore region names when they are equal to "'_"
+fn check_region_name(s: Option<String>) -> Option<String> {
+    if s.is_some() && s.as_ref().unwrap() == "'_" {
+        None
+    } else {
+        s
+    }
+}
+
+pub fn translate_bound_region_kind_name(kind: &hax::BoundRegionKind) -> Option<String> {
+    use hax::BoundRegionKind::*;
+    let s = match kind {
+        BrAnon(..) => None,
+        BrNamed(_, symbol) => Some(symbol.clone()),
+        BrEnv => Some("@env".to_owned()),
+    };
+    check_region_name(s)
+}
+
 pub fn translate_region_name(region: &hax::Region) -> Option<String> {
     // Compute the region name
     use hax::{BoundRegionKind::*, RegionKind::*};
     let s = match &region.kind {
         ReEarlyBound(r) => Some(r.name.clone()),
-        ReLateBound(_, br) => match &br.kind {
-            BrAnon(..) => None,
-            BrNamed(_, symbol) => Some(symbol.clone()),
-            BrEnv => Some("@env".to_owned()),
-        },
+        ReLateBound(_, br) => translate_bound_region_kind_name(&br.kind),
         ReFree(r) => match &r.bound_region {
             BrAnon(..) => None,
             BrNamed(_, symbol) => Some(symbol.clone()),
@@ -31,22 +46,27 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
         }
     };
 
-    // We ignore the name when it is equal to "'_"
-    if s.is_some() && s.as_ref().unwrap() == "'_" {
-        None
-    } else {
-        s
-    }
+    // We check twice in the case of late bound regions, but it is ok...
+    check_region_name(s)
 }
 
 pub fn translate_non_erased_region(
     region_params: &im::OrdMap<hax::Region, ty::RegionVarId::Id>,
+    bound_regions: &im::Vector<im::Vector<ty::RegionVarId::Id>>,
     region: &hax::Region,
 ) -> ty::Region<ty::RegionVarId::Id> {
     match &region.kind {
         hax::RegionKind::ReErased => unreachable!(),
         hax::RegionKind::ReStatic => ty::Region::Static,
+        hax::RegionKind::ReLateBound(id, br) => {
+            // See the comments in [BodyTransCtx.bound_vars]:
+            // - the De Bruijn index identifies the group of variables
+            // - the var id identifies the variable inside the group
+            let rid = bound_regions.get(*id).unwrap().get(br.var).unwrap();
+            ty::Region::Var(*rid)
+        }
         _ => {
+            // For the other regions, we use the regions map
             let rid = region_params.get(region).unwrap();
             ty::Region::Var(*rid)
         }
@@ -124,7 +144,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     self.translate_substs(region_translator, used_params, substs)?;
 
                 // Retrieve the ADT identifier
-                let def_id = self.translate_type_id(&def_id);
+                let def_id = self.translate_type_id(def_id);
 
                 // Return the instantiated ADT
                 Ok(ty::Ty::Adt(def_id, regions, params, cgs))
@@ -138,7 +158,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             Ty::Array(ty, const_param) => {
                 trace!("Array");
 
-                let c = self.translate_constant_expr_to_const_generic(&*const_param);
+                let c = self.translate_constant_expr_to_const_generic(const_param);
                 let tys = vec![self.translate_ty(region_translator, ty)?];
                 let cgs = vec![c];
                 let id = ty::TypeId::Assumed(ty::AssumedTy::Array);
@@ -178,7 +198,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 let mut params = vec![];
                 for param in substs.iter() {
-                    let param_ty = self.translate_ty(region_translator, &param)?;
+                    let param_ty = self.translate_ty(region_translator, param)?;
                     params.push(param_ty);
                 }
 
@@ -253,11 +273,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// variable ids.
     /// Simply calls [`translate_ty`](translate_ty)
     pub(crate) fn translate_sig_ty(&mut self, ty: &hax::Ty) -> Result<ty::RTy> {
-        // Borrowing issues: we have to clone the region vars map.
+        // Borrowing issues: we have to clone some values.
         // This shouldn't cost us too much. In case of performance issues,
         // we can turn the map into an im::map
-        let region_vars_map = self.region_vars_map.clone();
-        self.translate_ty(&|r| translate_non_erased_region(&region_vars_map, r), ty)
+        let region_vars_map = &self.region_vars_map.clone();
+        let bound_vars = &self.bound_vars.clone();
+        self.translate_ty(
+            &|r| translate_non_erased_region(region_vars_map, bound_vars, r),
+            ty,
+        )
     }
 
     /// Translate a type where the regions are erased

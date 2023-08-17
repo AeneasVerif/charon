@@ -29,7 +29,9 @@ use rustc_middle::mir::START_BLOCK;
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{TyCtxt, TyKind};
 use std::iter::FromIterator;
-use translate_types::{translate_erased_region, translate_region_name};
+use translate_types::{
+    translate_bound_region_kind_name, translate_erased_region, translate_region_name,
+};
 
 fn translate_variant_id(id: hax::VariantIdx) -> VariantId::Id {
     VariantId::Id::new(id)
@@ -1438,14 +1440,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let body = get_mir_for_def_id_and_level(tcx, local_id, self.t_ctx.mir_level);
 
         // Here, we have to create a MIR state, which contains the body
-        // TODO: slightly annoying that we have to clone the body
-        let rc_body = std::rc::Rc::new(body.clone());
         let state = hax::state::State::new_from_mir(
             tcx,
             hax::options::Options {
                 inline_macro_calls: Vec::new(),
             },
-            rc_body,
+            body.clone(),
         );
         // Translate
         let body: hax::MirBody<()> = body.sinto(&state);
@@ -1492,49 +1492,28 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let tcx = self.tcx;
 
         // Retrieve the function signature, which includes the lifetimes
-        let signature = tcx.fn_sig(def_id).subst_identity();
+        let signature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
+            tcx.fn_sig(def_id).subst_identity();
 
-        // Instantiate the signature's bound region variables (the signature
-        // is wrapped in a [`Binder`](rustc_middle::ty::Binder). This is inspired by
-        // [`liberate_late_bound_regions`](TyCtx::liberate_late_bound_regions).
-        // The rationale is as follows:
-        // - it seems liberate_late_bound_regions is a proper way of retrieving
-        //   a signature where all the bound variables have been replaced with
-        //   free variables, so that we can study it easily (without having, for
-        //   instance, to deal with DeBruijn indices)
-        // - my understanding of why it is enough to bind late-bound regions: the
-        //   early bound regions are not bound here (they are free), because
-        //   they reference regions introduced by the `impl` block (if this definition
-        //   is defined in an `impl` block - otherwise there are no early bound variables)
-        //   while the late bound regions are introduced by the function itself.
-        //   For example, in:
-        //   ```
-        //   impl<'a> Foo<'a> {
-        //       fn bar<'b>(...) -> ... { ... }
-        //   }
-        //   ```
-        //   `'a` is early-bound while `'b` is late-bound.
-        // - we can't just use `liberate_late_bound_regions`, because we want to know
-        //   in which *order* the regions were bound - it is mostly a matter of stability
-        //   of the translation: we will have to generate one backward function per
-        //   region, and we need to know in which order to introduce those backward
-        //   functions.
-        //   Actually, `liberate_late_bound_regions` returns a b-tree: maybe the
-        //   order between the bound regions is such that when iterating over the
-        //   keys of this tree, we iterator over the bound regions in the order in
-        //   which they are bound. As we are not too sure about that, we prefer
-        //   reimplementing our own function, which is quite simple.
+        // The parameters (and in particular the lifetimes) are split between
+        // early bound and late bound parameters. See those blog posts for explanations:
+        // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
+        // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+        // Note that only lifetimes can be late bound.
+        //
+        // [TyCtxt.generics_of] gives us the early-bound parameters
+        // The late-bounds parameters are bound in the [Binder] returned by
+        // [TyCtxt.type_of].
 
         // We need a body translation context to keep track of all the variables
         let mut bt_ctx = BodyTransCtx::new(def_id, self);
 
         // **Sanity checks on the HIR**
+        let generics = tcx.generics_of(def_id).sinto(&bt_ctx.t_ctx.hax_state);
+        let predicates = tcx.predicates_of(def_id).sinto(&bt_ctx.t_ctx.hax_state);
         generics::check_function_generics(tcx, def_id);
 
-        // Start by translating the "normal" substitution (which lists the function's
-        // parameters). As written above, this substitution contains all the type
-        // variables, and the early-bound regions, but not the late-bound ones.
-        // TODO: we do something similar in `translate_function`
+        // Start by translating the early-bound parameters (those are contained by `substs`).
         let fun_type = tcx.type_of(def_id).subst_identity();
         let substs = match fun_type.kind() {
             TyKind::FnDef(_def_id, substs_ref) => substs_ref,
@@ -1544,6 +1523,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
         let substs = substs.sinto(&bt_ctx.t_ctx.hax_state);
 
+        // Some debugging information:
+        trace!("Def id: {def_id:?}:\n\n- generics:\n{:?}\n\n- substs:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
+               tcx.generics_of(def_id), substs, signature.bound_vars(), signature);
+
+        // Add the early-bound parameters
+        // TODO: use the generics instead of the substs
         for param in substs {
             use hax::GenericArg;
             match param {
@@ -1577,46 +1562,35 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             }
         }
 
-        // Instantiate the regions bound in the signature, and generate a mapping
-        // while doing so (the mapping uses a linked hash map so that we remember
-        // in which order we introduced the regions).
-        // Note that replace_late_bound_regions` returns a map from bound regions to
-        // regions, but it is unclear whether this map preserves the order in which
-        // the regions were introduced (the map is a BTreeMap, so I guess it depends
-        // on how the the bound variables were numbered) and it doesn't cost us
-        // much to create this mapping ourselves.
-        let (signature, late_bound_regions) =
-            generics::replace_late_bound_regions(tcx, signature, def_id);
-        let num_early_bound_regions = late_bound_regions.len();
+        // Add the late bound parameters (bound in the signature, can only be lifetimes)
+        let signature: hax::MirPolyFnSig = signature.sinto(&bt_ctx.t_ctx.hax_state);
 
-        // Introduce identifiers and translated regions for the late-bound regions
-        for (_, region) in late_bound_regions.into_iter() {
-            let name = translate_region_name(&region);
-            bt_ctx.push_region(region, name);
-        }
+        let bvar_names = signature
+            .bound_vars
+            .into_iter()
+            .map(|bvar| {
+                // There should only be regions in the late-bound parameters
+                use hax::BoundVariableKind;
+                match bvar {
+                    BoundVariableKind::Region(br) => translate_bound_region_kind_name(&br),
+                    BoundVariableKind::Ty(_) | BoundVariableKind::Const => {
+                        unreachable!()
+                    }
+                }
+            })
+            .collect();
+        bt_ctx.push_bound_regions_group(bvar_names);
 
-        trace!(
-            "# Early and late bound regions:\n{}",
-            iterator_to_string(
-                &|x: &ty::RegionVar| x.to_string(),
-                bt_ctx.region_vars.iter()
-            )
+        // Translate the signature
+        let signature = signature.value;
+        trace!("signature of {def_id:?}:\n{:?}", signature);
+        let inputs: Vec<ty::RTy> = Vec::from_iter(
+            signature
+                .inputs
+                .iter()
+                .map(|ty| bt_ctx.translate_sig_ty(ty).unwrap()),
         );
-        trace!(
-            "# Type variables:\n{}",
-            iterator_to_string(&|x: &ty::TypeVar| x.to_string(), bt_ctx.type_vars.iter())
-        );
-
-        // Now that we instantiated all the binders and introduced identifiers for
-        // all the variables, we can translate the function's signature.
-        let inputs: Vec<ty::RTy> = Vec::from_iter(signature.inputs().iter().map(|ty| {
-            bt_ctx
-                .translate_sig_ty(&(*ty).sinto(&bt_ctx.t_ctx.hax_state))
-                .unwrap()
-        }));
-        let output = bt_ctx
-            .translate_sig_ty(&signature.output().sinto(&bt_ctx.t_ctx.hax_state))
-            .unwrap();
+        let output = bt_ctx.translate_sig_ty(&signature.output).unwrap();
 
         trace!(
             "# Input variables types:\n{}",
@@ -1626,7 +1600,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let sig = ast::FunSig {
             region_params: bt_ctx.region_vars.clone(),
-            num_early_bound_regions,
             regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
             type_params: bt_ctx.type_vars.clone(),
             const_generic_params: bt_ctx.const_generic_vars.clone(),

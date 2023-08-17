@@ -138,7 +138,6 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
      let signature : A.fun_sig =
        {
          region_params = [];
-         num_early_bound_regions = 0;
          regions_hierarchy = [];
          type_params = [];
          const_generic_params = [];

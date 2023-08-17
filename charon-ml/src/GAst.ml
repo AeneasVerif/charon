@@ -138,7 +138,6 @@ class ['self] map_statement_base =
 (** A function signature, as used when declaring functions *)
 type fun_sig = {
   region_params : region_var list;
-  num_early_bound_regions : int;
   regions_hierarchy : region_var_groups;
   type_params : type_var list;
       (** The type parameters can be indexed with {!Types.TypeVarId.id}.
