@@ -149,7 +149,7 @@ pub enum Operand {
     Copy(Place),
     Move(Place),
     /// Constant value (including constant and static variables)
-    Const(ETy, ConstantExpr),
+    Const(ConstantExpr),
 }
 
 /// A constant expression.
@@ -172,8 +172,8 @@ pub enum Operand {
 ///
 /// [Ref] case: reference to a constant value. We later desugar it to a separate
 /// statement.
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
-pub enum ConstantExpr {
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, VariantName, EnumIsA, EnumAsGetters)]
+pub enum RawConstantExpr {
     Literal(Literal),
     ///
     /// In most situations:
@@ -194,6 +194,12 @@ pub enum ConstantExpr {
     Ref(Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericVarId::Id),
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
+pub struct ConstantExpr {
+    pub value: RawConstantExpr,
+    pub ty: ETy,
 }
 
 /// TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).

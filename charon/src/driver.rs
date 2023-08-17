@@ -2,7 +2,6 @@
 
 use crate::cli_options;
 use crate::export;
-use crate::extract_constant_assignments;
 use crate::get_mir::MirLevel;
 use crate::index_to_function_calls;
 use crate::insert_assign_return_unit;
@@ -10,12 +9,12 @@ use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId};
 use crate::ops_to_function_calls;
 use crate::reconstruct_asserts;
 use crate::regions_hierarchy;
-use crate::regularize_constant_adts;
 use crate::remove_drop_never;
 use crate::remove_dynamic_checks;
 use crate::remove_read_discriminant;
 use crate::remove_unused_locals;
 use crate::reorder_decls;
+use crate::simplify_constants;
 use crate::translate_crate_to_ullbc;
 use crate::translate_ctx;
 use crate::ullbc_to_llbc;
@@ -193,15 +192,9 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         GlobalDeclId::Map::from_iter(ullbc_globals.iter().map(|d| (d.def_id, d.name.to_string())));
     let fmt_ctx = CtxNames::new(type_defs, &fun_names, &global_names);
 
-    // # Micro-pass: replace constant ([OperandConstantValue]) ADTs by regular
-    // (Aggregated) ADTs.
-    regularize_constant_adts::transform(&fmt_ctx, ullbc_funs, ullbc_globals);
-
-    // # Micro-pass: extract access to globals and the use of references from
-    // constant values (we put them in auxiliary let bindings). This pass relies on the
-    // absence of constant ADTs from the previous step: it does not inspect them (and
-    // would thus miss globals in constant ADTs).
-    extract_constant_assignments::transform(&fmt_ctx, ullbc_funs, ullbc_globals);
+    // # Micro-pass: desugar the constants to other values/operands as much
+    // as possible.
+    simplify_constants::transform(&fmt_ctx, ullbc_funs, ullbc_globals);
 
     // # There are two options:
     // - either the user wants the unstructured LLBC, in which case we stop there

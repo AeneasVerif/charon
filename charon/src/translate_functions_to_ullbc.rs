@@ -618,9 +618,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 (e::Operand::Move(p), ty)
             }
             Operand::Constant(constant) => {
-                let ty = self.translate_ety(&constant.literal.typ).unwrap();
                 let constant = self.translate_constant_to_constant_expr(constant);
-                (e::Operand::Const(ty.clone(), constant), ty)
+                let ty = constant.ty.clone();
+                (e::Operand::Const(constant), ty)
             }
         }
     }
@@ -1678,7 +1678,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 meta,
                 ast::RawStatement::Assign(
                     e::Place::new(var.index),
-                    e::Rvalue::Use(e::Operand::Const(ty, val)),
+                    e::Rvalue::Use(e::Operand::Const(val)),
                 ),
             )],
             terminator: ast::Terminator::new(meta, ast::RawTerminator::Return),

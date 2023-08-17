@@ -9,10 +9,10 @@ use rustc_middle::mir;
 use rustc_middle::ty::Ty;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn translate_constant_literal_to_constant_expr(
+    fn translate_constant_literal_to_raw_constant_expr(
         &mut self,
         v: &hax::ConstantLiteral,
-    ) -> e::ConstantExpr {
+    ) -> e::RawConstantExpr {
         use crate::values::*;
         use hax::ConstantLiteral;
         let lit = match v {
@@ -50,16 +50,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 v::Literal::Scalar(scalar)
             }
         };
-        e::ConstantExpr::Literal(lit)
+        e::RawConstantExpr::Literal(lit)
     }
 
     pub(crate) fn translate_constant_expr_kind_to_constant_expr(
         &mut self,
+        ty: &hax::Ty,
         v: &hax::ConstantExprKind,
     ) -> e::ConstantExpr {
         use hax::ConstantExprKind;
-        match v {
-            ConstantExprKind::Literal(lit) => self.translate_constant_literal_to_constant_expr(lit),
+        let value = match v {
+            ConstantExprKind::Literal(lit) => {
+                self.translate_constant_literal_to_raw_constant_expr(lit)
+            }
             ConstantExprKind::Adt {
                 info: _,
                 vid,
@@ -70,7 +73,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .map(|f| self.translate_constant_expr_to_constant_expr(&f.value))
                     .collect();
                 let vid = vid.map(ty::VariantId::Id::new);
-                e::ConstantExpr::Adt(vid, fields)
+                e::RawConstantExpr::Adt(vid, fields)
             }
             ConstantExprKind::Array { .. } => {
                 unimplemented!()
@@ -80,43 +83,46 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .iter()
                     .map(|f| self.translate_constant_expr_to_constant_expr(&f))
                     .collect();
-                e::ConstantExpr::Adt(Option::None, fields)
+                e::RawConstantExpr::Adt(Option::None, fields)
             }
             ConstantExprKind::GlobalName { id } => {
-                e::ConstantExpr::Global(self.translate_global_decl_id(id.rust_def_id.unwrap()))
+                e::RawConstantExpr::Global(self.translate_global_decl_id(id.rust_def_id.unwrap()))
             }
             ConstantExprKind::Borrow(be) => {
                 let be = self.translate_constant_expr_to_constant_expr(be);
-                e::ConstantExpr::Ref(Box::new(be))
+                e::RawConstantExpr::Ref(Box::new(be))
             }
             ConstantExprKind::ConstRef { id } => {
                 let var_id = self.const_generic_vars_map.get(&id.index).unwrap();
-                e::ConstantExpr::Var(var_id)
+                e::RawConstantExpr::Var(var_id)
             }
             ConstantExprKind::Todo(_) => {
                 // Case not yet handled by hax
                 unreachable!()
             }
-        }
+        };
+
+        let ty = self.translate_ety(ty).unwrap();
+        e::ConstantExpr { value, ty }
     }
 
     pub(crate) fn translate_constant_expr_to_constant_expr(
         &mut self,
         v: &hax::ConstantExpr,
     ) -> e::ConstantExpr {
-        self.translate_constant_expr_kind_to_constant_expr(&v.contents)
+        self.translate_constant_expr_kind_to_constant_expr(&v.ty, &v.contents)
     }
 
     pub(crate) fn translate_constant_expr_to_const_generic(
         &mut self,
         v: &hax::ConstantExpr,
     ) -> ty::ConstGeneric {
-        match self.translate_constant_expr_to_constant_expr(v) {
-            e::ConstantExpr::Literal(v) => ty::ConstGeneric::Value(v),
-            e::ConstantExpr::Adt(..) => unreachable!(),
-            e::ConstantExpr::Global(v) => ty::ConstGeneric::Global(v),
-            e::ConstantExpr::Ref(_) => unreachable!(),
-            e::ConstantExpr::Var(v) => ty::ConstGeneric::Var(v),
+        match self.translate_constant_expr_to_constant_expr(v).value {
+            e::RawConstantExpr::Literal(v) => ty::ConstGeneric::Value(v),
+            e::RawConstantExpr::Adt(..) => unreachable!(),
+            e::RawConstantExpr::Global(v) => ty::ConstGeneric::Global(v),
+            e::RawConstantExpr::Ref(_) => unreachable!(),
+            e::RawConstantExpr::Var(v) => ty::ConstGeneric::Var(v),
         }
     }
 

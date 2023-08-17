@@ -10,7 +10,6 @@ use crate::ullbc_ast::GlobalDeclId;
 use crate::values;
 use crate::values::*;
 use macros::make_generic_in_borrows;
-use serde::{Serialize, Serializer};
 use std::vec::Vec;
 
 impl Place {
@@ -136,9 +135,20 @@ impl ConstantExpr {
             + Formatter<GlobalDeclId::Id>
             + Formatter<ConstGenericVarId::Id>,
     {
+        self.value.fmt_with_ctx(ctx)
+    }
+}
+
+impl RawConstantExpr {
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    where
+        T: Formatter<TypeDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>,
+    {
         match self {
-            ConstantExpr::Literal(c) => c.to_string(),
-            ConstantExpr::Adt(variant_id, values) => {
+            RawConstantExpr::Literal(c) => c.to_string(),
+            RawConstantExpr::Adt(variant_id, values) => {
                 // It is a bit annoying: in order to properly format the value,
                 // we need the type (which contains the type def id).
                 // Anyway, the printing utilities are mostly for debugging.
@@ -149,11 +159,11 @@ impl ConstantExpr {
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
-            ConstantExpr::Global(id) => ctx.format_object(*id),
-            ConstantExpr::Ref(cv) => {
+            RawConstantExpr::Global(id) => ctx.format_object(*id),
+            RawConstantExpr::Ref(cv) => {
                 format!("&{}", cv.fmt_with_ctx(ctx))
             }
-            ConstantExpr::Var(id) => format!("const {}", ctx.format_object(*id)),
+            RawConstantExpr::Var(id) => format!("const {}", ctx.format_object(*id)),
         }
     }
 }
@@ -176,7 +186,7 @@ impl Operand {
         match self {
             Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)),
             Operand::Move(p) => format!("move ({})", p.fmt_with_ctx(ctx)),
-            Operand::Const(_, c) => format!("const ({})", c.fmt_with_ctx(ctx)),
+            Operand::Const(c) => format!("const ({})", c.fmt_with_ctx(ctx)),
         }
     }
 
@@ -278,21 +288,6 @@ impl std::fmt::Display for Rvalue {
     }
 }
 
-impl Serialize for ConstantExpr {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            // [ConstantExpr] exists only to handle temporary cases inherited from the MIR:
-            // for the final (U)LLBC format, we simply export the underlying constant value.
-            // TODO: actually we have the var case now
-            ConstantExpr::Literal(cv) => cv.serialize(serializer),
-            _ => unreachable!("unexpected `{:?}`: `ConstantExpr` fields other than `ConstantValue` are temporary and should not occur in serialized LLBC", self),
-        }
-    }
-}
-
 // Derive two implementations at once: one which uses shared borrows, and one
 // which uses mutable borrows.
 // Generates the traits: `SharedExprVisitor` and `MutExprVisitor`.
@@ -342,7 +337,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         match o {
             Operand::Copy(p) => self.visit_copy(p),
             Operand::Move(p) => self.visit_move(p),
-            Operand::Const(ety, cv) => self.visit_operand_const(ety, cv),
+            Operand::Const(cv) => self.visit_operand_const(cv),
         }
     }
 
@@ -358,14 +353,22 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         self.visit_place(p)
     }
 
-    fn visit_operand_const(&mut self, ty: &ETy, op: &ConstantExpr) {
-        self.visit_ty(ty);
+    fn visit_operand_const(&mut self, op: &ConstantExpr) {
         self.visit_constant_expr(op);
     }
 
-    fn visit_constant_expr(&mut self, op: &ConstantExpr) {
-        use ConstantExpr::*;
-        match op {
+    fn visit_constant_expr(&mut self, expr: &ConstantExpr) {
+        self.visit_ty(&expr.ty);
+        self.visit_raw_constant_expr(&expr.value);
+    }
+
+    fn visit_raw_constant_expr(&mut self, expr: &RawConstantExpr) {
+        self.default_visit_raw_constant_expr(expr)
+    }
+
+    fn default_visit_raw_constant_expr(&mut self, expr: &RawConstantExpr) {
+        use RawConstantExpr::*;
+        match expr {
             Literal(lit) => self.visit_literal(lit),
             Adt(oid, ops) => self.visit_constant_expr_adt(oid, ops),
             Global(id) => self.visit_global_decl_id(id),
@@ -374,11 +377,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         }
     }
 
-    fn visit_constant_expr_adt(
-        &mut self,
-        _oid: &Option<VariantId::Id>,
-        ops: &Vec<ConstantExpr>,
-    ) {
+    fn visit_constant_expr_adt(&mut self, _oid: &Option<VariantId::Id>, ops: &Vec<ConstantExpr>) {
         for op in ops {
             self.visit_constant_expr(op)
         }
