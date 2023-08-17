@@ -280,7 +280,7 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
 /// Rk.: this function is only used by [crate::register], and implemented with this
 /// context in mind.
 pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
-    // We have to create a state, which is annoying...
+    // We have to create a hax state, which is annoying...
     let state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -318,7 +318,7 @@ pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
 
 // TODO: remove
 pub fn item_def_id_to_name(tcx: TyCtxt, def_id: rustc_span::def_id::DefId) -> ItemName {
-    // We have to create a state, which is annoying...
+    // We have to create a hax state, which is annoying...
     let state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -329,7 +329,7 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: rustc_span::def_id::DefId) -> It
 }
 
 pub fn def_id_to_name(tcx: TyCtxt, def_id: &hax::DefId) -> ItemName {
-    // We have to create a state, which is annoying...
+    // We have to create a hax state, which is annoying...
     let state = hax::state::State::new(
         tcx,
         hax::options::Options {

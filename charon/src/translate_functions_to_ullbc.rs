@@ -1509,8 +1509,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(def_id, self);
 
         // **Sanity checks on the HIR**
-        let generics = tcx.generics_of(def_id).sinto(&bt_ctx.t_ctx.hax_state);
-        let predicates = tcx.predicates_of(def_id).sinto(&bt_ctx.t_ctx.hax_state);
         generics::check_function_generics(tcx, def_id);
 
         // Start by translating the early-bound parameters (those are contained by `substs`).
@@ -1527,8 +1525,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         trace!("Def id: {def_id:?}:\n\n- generics:\n{:?}\n\n- substs:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
                tcx.generics_of(def_id), substs, signature.bound_vars(), signature);
 
-        // Add the early-bound parameters
-        // TODO: use the generics instead of the substs
+        // Add the early-bound parameters.
+        // TODO: use the generics instead of the substs ([TyCtxt.generics_of])? In
+        // practice is easier to use the subst. For instance, in the subst, the
+        // constant generics are typed.
         for param in substs {
             use hax::GenericArg;
             match param {
