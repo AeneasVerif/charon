@@ -51,7 +51,7 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
 }
 
 pub fn translate_non_erased_region(
-    region_params: &im::OrdMap<hax::Region, ty::RegionVarId::Id>,
+    region_params: &ty::RegionVarId::MapGenerator<hax::Region>,
     bound_regions: &im::Vector<im::Vector<ty::RegionVarId::Id>>,
     region: &hax::Region,
 ) -> ty::Region<ty::RegionVarId::Id> {
@@ -68,7 +68,7 @@ pub fn translate_non_erased_region(
         _ => {
             // For the other regions, we use the regions map
             let rid = region_params.get(region).unwrap();
-            ty::Region::Var(*rid)
+            ty::Region::Var(rid)
         }
     }
 }
@@ -221,8 +221,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Param");
 
                 // Retrieve the translation of the substituted type:
-                let ty = self.type_vars_map.get(&param.index).unwrap();
-                let ty = ty::Ty::TypeVar(*ty);
+                let var_id = self.type_vars_map.get(&param.index).unwrap();
+                let ty = ty::Ty::TypeVar(var_id);
 
                 Ok(ty)
             }

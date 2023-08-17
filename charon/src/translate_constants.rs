@@ -93,7 +93,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             ConstantExprKind::ConstRef { id } => {
                 let var_id = self.const_generic_vars_map.get(&id.index).unwrap();
-                e::OperandConstantValue::Var(*var_id)
+                e::OperandConstantValue::Var(var_id)
             }
             ConstantExprKind::Todo(_) => {
                 // Case not yet handled by hax

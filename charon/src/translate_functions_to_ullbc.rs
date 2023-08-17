@@ -414,7 +414,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<ast::BlockId::Id> {
         // Check if the block has already been translated
         if let Some(id) = self.blocks_map.get(&block_id) {
-            return Ok(*id);
+            return Ok(id);
         }
         let nid = self.fresh_block_id(block_id);
 

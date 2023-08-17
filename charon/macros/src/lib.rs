@@ -116,6 +116,8 @@ pub mod {} {{
         }}
     }}
 
+    // TODO: factor this out in a specific file, make it an immutable map to have O(1) clone
+    #[derive(std::fmt::Debug, std::clone::Clone)]
     pub struct MapGenerator<K : std::cmp::Eq + std::hash::Hash + std::cmp::Ord> {{
       pub counter : Generator,
       // We use a btree map so that the bindings are sorted by key
@@ -138,8 +140,13 @@ pub mod {} {{
         }}
       }}
 
-      pub fn get(&self, k: K) -> Option<Id> {{
-        self.map.get(&k).map(|id| *id)
+      pub fn get(&self, k: &K) -> Option<Id> {{
+        self.map.get(k).map(|id| *id)
+      }}
+
+      // We may need to generate fresh ids without inserting a value in the map
+      pub fn fresh_id(&mut self) -> Id {{
+        self.counter.fresh_id()
       }}
     }}
 }}"

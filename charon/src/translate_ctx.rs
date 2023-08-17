@@ -82,35 +82,24 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub def_id: DefId,
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>,
-    /// Region counter
-    pub regions_counter: ty::RegionVarId::Generator,
     /// The regions - TODO: rename to region_vars
     pub region_vars: ty::RegionVarId::Vector<ty::RegionVar>,
-    // TODO: use the MapGenerator types
     /// The map from rust region to translated region indices
-    pub region_vars_map: im::OrdMap<hax::Region, ty::RegionVarId::Id>,
-    /// Id counter for the type variables
-    pub type_vars_counter: ty::TypeVarId::Generator,
+    pub region_vars_map: ty::RegionVarId::MapGenerator<hax::Region>,
     /// The type variables
     pub type_vars: ty::TypeVarId::Vector<ty::TypeVar>,
     /// The map from rust type variable indices to translated type variable
     /// indices.
-    pub type_vars_map: im::OrdMap<u32, ty::TypeVarId::Id>,
-    /// Id counter for the variables
-    pub vars_counter: v::VarId::Generator,
+    pub type_vars_map: ty::TypeVarId::MapGenerator<u32>,
     /// The "regular" variables
     pub vars: v::VarId::Vector<ast::Var>,
     /// The map from rust variable indices to translated variables indices.
-    pub vars_map: im::OrdMap<usize, v::VarId::Id>,
-    /// Id counter for the const generic variables
-    pub const_generic_counter: ty::ConstGenericVarId::Generator,
+    pub vars_map: v::VarId::MapGenerator<usize>,
     /// The const generic variables
     pub const_generic_vars: ty::ConstGenericVarId::Vector<ty::ConstGenericVar>,
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
-    pub const_generic_vars_map: im::OrdMap<u32, ty::ConstGenericVarId::Id>,
-    /// Block id counter
-    pub blocks_counter: ast::BlockId::Generator,
+    pub const_generic_vars_map: ty::ConstGenericVarId::MapGenerator<u32>,
     /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
@@ -118,7 +107,8 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The map from rust blocks to translated blocks.
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
-    pub blocks_map: im::OrdMap<hax::BasicBlock, ast::BlockId::Id>,
+    pub blocks_map: ast::BlockId::MapGenerator<hax::BasicBlock>,
+    ///
     /// The stack of late-bound parameters (can only be lifetimes for now), which
     /// use DeBruijn indices (the other parameters use free variables).
     /// For explanations about what early-bound and late-bound parameters are, see:
@@ -257,7 +247,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn register_type_decl_id(&mut self, id: DefId) -> ty::TypeDeclId::Id {
-        match self.type_id_map.get(id) {
+        match self.type_id_map.get(&id) {
             Option::Some(id) => id,
             Option::None => {
                 let rid = AnyRustId::Type(id);
@@ -273,7 +263,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn register_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
-        match self.fun_id_map.get(id) {
+        match self.fun_id_map.get(&id) {
             Option::Some(id) => id,
             Option::None => {
                 let rid = AnyRustId::Fun(id);
@@ -289,7 +279,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn register_global_decl_id(&mut self, id: DefId) -> ty::GlobalDeclId::Id {
-        match self.global_id_map.get(id) {
+        match self.global_id_map.get(&id) {
             Option::Some(id) => id,
             Option::None => {
                 let rid = AnyRustId::Global(id);
@@ -311,21 +301,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         BodyTransCtx {
             def_id,
             t_ctx,
-            regions_counter: ty::RegionVarId::Generator::new(),
             region_vars: ty::RegionVarId::Vector::new(),
-            region_vars_map: im::OrdMap::new(),
-            type_vars_counter: ty::TypeVarId::Generator::new(),
+            region_vars_map: ty::RegionVarId::MapGenerator::new(),
             type_vars: ty::TypeVarId::Vector::new(),
-            type_vars_map: im::OrdMap::new(),
-            vars_counter: v::VarId::Generator::new(),
+            type_vars_map: ty::TypeVarId::MapGenerator::new(),
             vars: v::VarId::Vector::new(),
-            vars_map: im::OrdMap::new(),
-            const_generic_counter: ty::ConstGenericVarId::Generator::new(),
+            vars_map: v::VarId::MapGenerator::new(),
             const_generic_vars: ty::ConstGenericVarId::Vector::new(),
-            const_generic_vars_map: im::OrdMap::new(),
-            blocks_counter: ast::BlockId::Generator::new(),
+            const_generic_vars_map: ty::ConstGenericVarId::MapGenerator::new(),
             blocks: im::OrdMap::new(),
-            blocks_map: im::OrdMap::new(),
+            blocks_map: ast::BlockId::MapGenerator::new(),
             bound_vars: im::Vector::new(),
         }
     }
@@ -340,11 +325,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn get_local(&self, local: &hax::Local) -> Option<v::VarId::Id> {
         use rustc_index::Idx;
-        self.vars_map.get(&local.index()).copied()
+        self.vars_map.get(&local.index())
     }
 
     pub(crate) fn get_block_id_from_rid(&self, rid: hax::BasicBlock) -> Option<ast::BlockId::Id> {
-        self.blocks_map.get(&rid).copied()
+        self.blocks_map.get(&rid)
     }
 
     pub(crate) fn get_var_from_id(&self, var_id: v::VarId::Id) -> Option<&ast::Var> {
@@ -376,7 +361,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn get_region_from_rust(&self, r: hax::Region) -> Option<ty::RegionVarId::Id> {
-        self.region_vars_map.get(&r).copied()
+        self.region_vars_map.get(&r)
     }
 
     pub(crate) fn push_region(
@@ -385,11 +370,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         name: Option<String>,
     ) -> ty::RegionVarId::Id {
         use crate::id_vector::ToUsize;
-        let rid = self.regions_counter.fresh_id();
+        let rid = self.region_vars_map.insert(r);
         assert!(rid.to_usize() == self.region_vars.len());
         let var = ty::RegionVar { index: rid, name };
         self.region_vars.insert(rid, var);
-        self.region_vars_map.insert(r, rid);
         rid
     }
 
@@ -401,7 +385,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let var_ids: im::Vector<ty::RegionVarId::Id> = names
             .into_iter()
             .map(|name| {
-                let rid = self.regions_counter.fresh_id();
+                // Note that we don't insert a binding in the region_vars_map
+                let rid = self.region_vars_map.fresh_id();
                 assert!(rid.to_usize() == self.region_vars.len());
                 let var = ty::RegionVar { index: rid, name };
                 self.region_vars.insert(rid, var);
@@ -410,26 +395,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .collect();
 
         // Push the group
-
         self.bound_vars.push_front(var_ids);
     }
 
     pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> ty::TypeVarId::Id {
         use crate::id_vector::ToUsize;
-        let var_id = self.type_vars_counter.fresh_id();
+        let var_id = self.type_vars_map.insert(rindex);
         assert!(var_id.to_usize() == self.type_vars.len());
         let var = ty::TypeVar {
             index: var_id,
             name,
         };
         self.type_vars.insert(var_id, var);
-        self.type_vars_map.insert(rindex, var_id);
         var_id
     }
 
     pub(crate) fn push_var(&mut self, rid: usize, ty: ty::ETy, name: Option<String>) {
         use crate::id_vector::ToUsize;
-        let var_id = self.vars_counter.fresh_id();
+        let var_id = self.vars_map.insert(rid);
         assert!(var_id.to_usize() == self.vars.len());
         let var = ast::Var {
             index: var_id,
@@ -437,12 +420,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ty,
         };
         self.vars.insert(var_id, var);
-        self.vars_map.insert(rid, var_id);
     }
 
     pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
         use crate::id_vector::ToUsize;
-        let var_id = self.const_generic_counter.fresh_id();
+        let var_id = self.const_generic_vars_map.insert(rid);
         assert!(var_id.to_usize() == self.vars.len());
         let var = ty::ConstGenericVar {
             index: var_id,
@@ -450,13 +432,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ty,
         };
         self.const_generic_vars.insert(var_id, var);
-        self.const_generic_vars_map.insert(rid, var_id);
     }
 
     pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId::Id {
-        let block_id = self.blocks_counter.fresh_id();
-        self.blocks_map.insert(rid, block_id);
-        block_id
+        self.blocks_map.insert(rid)
     }
 
     pub(crate) fn push_block(&mut self, id: ast::BlockId::Id, block: ast::BlockData) {
