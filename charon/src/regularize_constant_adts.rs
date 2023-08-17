@@ -1,7 +1,7 @@
 //! In MIR, compile-time constant ADTs are treated separately.
 //! We don't want to have this distinction / redundancy in (U)LLBC.
 //!
-//! This pass removes all occurrences of [OperandConstantValue::Adt],
+//! This pass removes all occurrences of [ConstantExpr::Adt],
 //! and builds regular ADTs ([Rvalue::Aggregate]) instead (as for static values).
 //!
 //! To do so, it recursively translates an operand of the form `const <ADT>`
@@ -46,12 +46,12 @@ fn transform_constant_adt<F: FnMut(ETy) -> VarId::Id>(
     meta: &Meta,
     nst: &mut Vec<Statement>,
     ty: &ETy,
-    val: &OperandConstantValue,
+    val: &ConstantExpr,
     make_new_var: &mut F,
 ) -> Option<VarId::Id> {
     // Return early if there is nothing to decompose
     let (variant, fields) = match val {
-        OperandConstantValue::Adt(v, f) => (v, f),
+        ConstantExpr::Adt(v, f) => (v, f),
         _ => return None,
     };
 

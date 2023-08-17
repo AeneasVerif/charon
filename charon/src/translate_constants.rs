@@ -9,10 +9,10 @@ use rustc_middle::mir;
 use rustc_middle::ty::Ty;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn translate_constant_literal_to_operand_constant_value(
+    fn translate_constant_literal_to_constant_expr(
         &mut self,
         v: &hax::ConstantLiteral,
-    ) -> e::OperandConstantValue {
+    ) -> e::ConstantExpr {
         use crate::values::*;
         use hax::ConstantLiteral;
         let lit = match v {
@@ -50,50 +50,48 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 v::Literal::Scalar(scalar)
             }
         };
-        e::OperandConstantValue::Literal(lit)
+        e::ConstantExpr::Literal(lit)
     }
 
-    pub(crate) fn translate_constant_expr_kind_to_operand_constant_value(
+    pub(crate) fn translate_constant_expr_kind_to_constant_expr(
         &mut self,
         v: &hax::ConstantExprKind,
-    ) -> e::OperandConstantValue {
+    ) -> e::ConstantExpr {
         use hax::ConstantExprKind;
         match v {
-            ConstantExprKind::Literal(lit) => {
-                self.translate_constant_literal_to_operand_constant_value(lit)
-            }
+            ConstantExprKind::Literal(lit) => self.translate_constant_literal_to_constant_expr(lit),
             ConstantExprKind::Adt {
                 info: _,
                 vid,
                 fields,
             } => {
-                let fields: Vec<e::OperandConstantValue> = fields
+                let fields: Vec<e::ConstantExpr> = fields
                     .iter()
-                    .map(|f| self.translate_constant_expr_to_operand_constant_value(&f.value))
+                    .map(|f| self.translate_constant_expr_to_constant_expr(&f.value))
                     .collect();
                 let vid = vid.map(ty::VariantId::Id::new);
-                e::OperandConstantValue::Adt(vid, fields)
+                e::ConstantExpr::Adt(vid, fields)
             }
             ConstantExprKind::Array { .. } => {
                 unimplemented!()
             }
             ConstantExprKind::Tuple { fields } => {
-                let fields: Vec<e::OperandConstantValue> = fields
+                let fields: Vec<e::ConstantExpr> = fields
                     .iter()
-                    .map(|f| self.translate_constant_expr_to_operand_constant_value(&f))
+                    .map(|f| self.translate_constant_expr_to_constant_expr(&f))
                     .collect();
-                e::OperandConstantValue::Adt(Option::None, fields)
+                e::ConstantExpr::Adt(Option::None, fields)
             }
-            ConstantExprKind::GlobalName { id } => e::OperandConstantValue::Global(
-                self.translate_global_decl_id(id.rust_def_id.unwrap()),
-            ),
+            ConstantExprKind::GlobalName { id } => {
+                e::ConstantExpr::Global(self.translate_global_decl_id(id.rust_def_id.unwrap()))
+            }
             ConstantExprKind::Borrow(be) => {
-                let be = self.translate_constant_expr_to_operand_constant_value(be);
-                e::OperandConstantValue::Ref(Box::new(be))
+                let be = self.translate_constant_expr_to_constant_expr(be);
+                e::ConstantExpr::Ref(Box::new(be))
             }
             ConstantExprKind::ConstRef { id } => {
                 let var_id = self.const_generic_vars_map.get(&id.index).unwrap();
-                e::OperandConstantValue::Var(var_id)
+                e::ConstantExpr::Var(var_id)
             }
             ConstantExprKind::Todo(_) => {
                 // Case not yet handled by hax
@@ -102,31 +100,31 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    pub(crate) fn translate_constant_expr_to_operand_constant_value(
+    pub(crate) fn translate_constant_expr_to_constant_expr(
         &mut self,
         v: &hax::ConstantExpr,
-    ) -> e::OperandConstantValue {
-        self.translate_constant_expr_kind_to_operand_constant_value(&v.contents)
+    ) -> e::ConstantExpr {
+        self.translate_constant_expr_kind_to_constant_expr(&v.contents)
     }
 
     pub(crate) fn translate_constant_expr_to_const_generic(
         &mut self,
         v: &hax::ConstantExpr,
     ) -> ty::ConstGeneric {
-        match self.translate_constant_expr_to_operand_constant_value(v) {
-            e::OperandConstantValue::Literal(v) => ty::ConstGeneric::Value(v),
-            e::OperandConstantValue::Adt(..) => unreachable!(),
-            e::OperandConstantValue::Global(v) => ty::ConstGeneric::Global(v),
-            e::OperandConstantValue::Ref(_) => unreachable!(),
-            e::OperandConstantValue::Var(v) => ty::ConstGeneric::Var(v),
+        match self.translate_constant_expr_to_constant_expr(v) {
+            e::ConstantExpr::Literal(v) => ty::ConstGeneric::Value(v),
+            e::ConstantExpr::Adt(..) => unreachable!(),
+            e::ConstantExpr::Global(v) => ty::ConstGeneric::Global(v),
+            e::ConstantExpr::Ref(_) => unreachable!(),
+            e::ConstantExpr::Var(v) => ty::ConstGeneric::Var(v),
         }
     }
 
-    pub(crate) fn translate_constant_to_operand_constant_value(
+    pub(crate) fn translate_constant_to_constant_expr(
         &mut self,
         v: &hax::Constant,
-    ) -> e::OperandConstantValue {
-        self.translate_constant_expr_to_operand_constant_value(&v.literal.constant_kind)
+    ) -> e::ConstantExpr {
+        self.translate_constant_expr_to_constant_expr(&v.literal.constant_kind)
     }
 
     // TODO: remove once we make the external globals opaque
@@ -135,8 +133,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         ty: Ty<'tcx>,
         val: &mir::interpret::ConstValue<'tcx>,
         span: rustc_span::Span,
-    ) -> e::OperandConstantValue {
+    ) -> e::ConstantExpr {
         let val = hax::const_value_to_constant_expr(&self.t_ctx.hax_state, ty, *val, span);
-        self.translate_constant_expr_to_operand_constant_value(&val)
+        self.translate_constant_expr_to_constant_expr(&val)
     }
 }

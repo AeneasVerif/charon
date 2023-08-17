@@ -129,7 +129,7 @@ impl std::fmt::Display for Place {
     }
 }
 
-impl OperandConstantValue {
+impl ConstantExpr {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
         T: Formatter<TypeDeclId::Id>
@@ -137,8 +137,8 @@ impl OperandConstantValue {
             + Formatter<ConstGenericVarId::Id>,
     {
         match self {
-            OperandConstantValue::Literal(c) => c.to_string(),
-            OperandConstantValue::Adt(variant_id, values) => {
+            ConstantExpr::Literal(c) => c.to_string(),
+            ConstantExpr::Adt(variant_id, values) => {
                 // It is a bit annoying: in order to properly format the value,
                 // we need the type (which contains the type def id).
                 // Anyway, the printing utilities are mostly for debugging.
@@ -149,16 +149,16 @@ impl OperandConstantValue {
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
-            OperandConstantValue::Global(id) => ctx.format_object(*id),
-            OperandConstantValue::Ref(cv) => {
+            ConstantExpr::Global(id) => ctx.format_object(*id),
+            ConstantExpr::Ref(cv) => {
                 format!("&{}", cv.fmt_with_ctx(ctx))
             }
-            OperandConstantValue::Var(id) => format!("const {}", ctx.format_object(*id)),
+            ConstantExpr::Var(id) => format!("const {}", ctx.format_object(*id)),
         }
     }
 }
 
-impl std::fmt::Display for OperandConstantValue {
+impl std::fmt::Display for ConstantExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
     }
@@ -278,16 +278,17 @@ impl std::fmt::Display for Rvalue {
     }
 }
 
-impl Serialize for OperandConstantValue {
+impl Serialize for ConstantExpr {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         match self {
-            // [OperandConstantValue] exists only to handle temporary cases inherited from the MIR:
+            // [ConstantExpr] exists only to handle temporary cases inherited from the MIR:
             // for the final (U)LLBC format, we simply export the underlying constant value.
-            OperandConstantValue::Literal(cv) => cv.serialize(serializer),
-            _ => unreachable!("unexpected `{:?}`: `OperandConstantValue` fields other than `ConstantValue` are temporary and should not occur in serialized LLBC", self),
+            // TODO: actually we have the var case now
+            ConstantExpr::Literal(cv) => cv.serialize(serializer),
+            _ => unreachable!("unexpected `{:?}`: `ConstantExpr` fields other than `ConstantValue` are temporary and should not occur in serialized LLBC", self),
         }
     }
 }
@@ -357,29 +358,29 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         self.visit_place(p)
     }
 
-    fn visit_operand_const(&mut self, ty: &ETy, op: &OperandConstantValue) {
+    fn visit_operand_const(&mut self, ty: &ETy, op: &ConstantExpr) {
         self.visit_ty(ty);
-        self.visit_operand_constant_value(op);
+        self.visit_constant_expr(op);
     }
 
-    fn visit_operand_constant_value(&mut self, op: &OperandConstantValue) {
-        use OperandConstantValue::*;
+    fn visit_constant_expr(&mut self, op: &ConstantExpr) {
+        use ConstantExpr::*;
         match op {
             Literal(lit) => self.visit_literal(lit),
-            Adt(oid, ops) => self.visit_operand_const_adt(oid, ops),
+            Adt(oid, ops) => self.visit_constant_expr_adt(oid, ops),
             Global(id) => self.visit_global_decl_id(id),
-            Ref(cv) => self.visit_operand_constant_value(cv),
+            Ref(cv) => self.visit_constant_expr(cv),
             Var(id) => self.visit_const_generic_var_id(id),
         }
     }
 
-    fn visit_operand_const_adt(
+    fn visit_constant_expr_adt(
         &mut self,
         _oid: &Option<VariantId::Id>,
-        ops: &Vec<OperandConstantValue>,
+        ops: &Vec<ConstantExpr>,
     ) {
         for op in ops {
-            self.visit_operand_constant_value(op)
+            self.visit_constant_expr(op)
         }
     }
 

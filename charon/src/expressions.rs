@@ -149,12 +149,12 @@ pub enum Operand {
     Copy(Place),
     Move(Place),
     /// Constant value (including constant and static variables)
-    Const(ETy, OperandConstantValue),
+    Const(ETy, ConstantExpr),
 }
 
-/// Constant value for an operand.
-/// TODO: rename
-/// Only the `ConstantValue` case is remaining in LLBC final form.
+/// A constant expression.
+///
+/// Only the [Literal] and [Var] cases are left in the final LLBC.
 ///
 /// The other cases come from a straight translation from the MIR:
 ///
@@ -167,13 +167,13 @@ pub enum Operand {
 ///   (if all the fields are constant) rather than as an aggregated value
 /// We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 ///
-/// [ConstantId] case: access to a global variable. We later desugar it to
+/// [Global] case: access to a global variable. We later desugar it to
 /// a separate statement.
 ///
 /// [Ref] case: reference to a constant value. We later desugar it to a separate
 /// statement.
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
-pub enum OperandConstantValue {
+pub enum ConstantExpr {
     Literal(Literal),
     ///
     /// In most situations:
@@ -181,17 +181,17 @@ pub enum OperandConstantValue {
     /// no fields, unit (encoded as a 0-tuple).
     ///
     /// Less frequently: arbitrary ADT values.
-    Adt(Option<VariantId::Id>, Vec<OperandConstantValue>),
+    Adt(Option<VariantId::Id>, Vec<ConstantExpr>),
     ///
     /// The value is a top-level value.
     ///
     /// Remark:
-    /// MIR seems to forbid more complex expressions like paths :
+    /// MIR seems to forbid more complex expressions like paths:
     /// Reading the constant a.b is translated to { _1 = const a; _2 = (_1.0) }.
     Global(GlobalDeclId::Id),
     ///
     /// A shared reference to a constant value
-    Ref(Box<OperandConstantValue>),
+    Ref(Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericVarId::Id),
 }

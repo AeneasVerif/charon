@@ -55,11 +55,11 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
     };
 
     let var = match c {
-        OperandConstantValue::Literal(_) | OperandConstantValue::Var(..) => return,
-        OperandConstantValue::Adt(_, _) => {
+        ConstantExpr::Literal(_) | ConstantExpr::Var(..) => return,
+        ConstantExpr::Adt(_, _) => {
             unreachable!("Constant ADTs should have been replaced by now")
         }
-        OperandConstantValue::Global(global_id) => {
+        ConstantExpr::Global(global_id) => {
             let var = make_new_var(ty.clone());
             nst.push(Statement::new(
                 *meta,
@@ -67,7 +67,7 @@ fn extract_operand_global_var<F: FnMut(ETy) -> VarId::Id>(
             ));
             var
         }
-        OperandConstantValue::Ref(global) => {
+        ConstantExpr::Ref(global) => {
             let global_id = *global.as_global();
             // TODO: we assume the constant value in the reference is a global.
             // We should generalize (probably by merging with regularize_constant_adts).

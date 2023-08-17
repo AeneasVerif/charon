@@ -619,7 +619,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             Operand::Constant(constant) => {
                 let ty = self.translate_ety(&constant.literal.typ).unwrap();
-                let constant = self.translate_constant_to_operand_constant_value(constant);
+                let constant = self.translate_constant_to_constant_expr(constant);
                 (e::Operand::Const(ty.clone(), constant), ty)
             }
         }
@@ -1658,7 +1658,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         ty: ty::ETy,
         def_rid: DefId,
-        val: e::OperandConstantValue,
+        val: e::ConstantExpr,
     ) -> ast::ExprBody {
         // Compute the meta information (we use the same everywhere)
         let meta = self.translate_meta_from_rid(def_rid);
