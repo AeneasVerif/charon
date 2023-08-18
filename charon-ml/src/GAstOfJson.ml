@@ -547,6 +547,27 @@ let literal_of_json (js : json) : (PV.literal, string) result =
         Ok (PV.Char v)
     | _ -> Error "")
 
+let rec constant_expr_of_json (js : json) : (E.constant_expr, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("value", value); ("ty", ty) ] ->
+        let* value = raw_constant_expr_of_json value in
+        let* ty = ety_of_json ty in
+        Ok { E.value; E.ty }
+    | _ -> Error "")
+
+and raw_constant_expr_of_json (js : json) : (E.raw_constant_expr, string) result
+    =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Literal", lit) ] ->
+        let* lit = literal_of_json lit in
+        Ok (E.CLiteral lit)
+    | `Assoc [ ("Var", vid) ] ->
+        let* vid = T.ConstGenericVarId.id_of_json vid in
+        Ok (E.CVar vid)
+    | _ -> Error "")
+
 let operand_of_json (js : json) : (E.operand, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -556,10 +577,9 @@ let operand_of_json (js : json) : (E.operand, string) result =
     | `Assoc [ ("Move", place) ] ->
         let* place = place_of_json place in
         Ok (E.Move place)
-    | `Assoc [ ("Const", `List [ ty; cv ]) ] ->
-        let* ty = ety_of_json ty in
-        let* cv = literal_of_json cv in
-        Ok (E.Constant (ty, cv))
+    | `Assoc [ ("Const", cv) ] ->
+        let* cv = constant_expr_of_json cv in
+        Ok (E.Constant cv)
     | _ -> Error "")
 
 let aggregate_kind_of_json (js : json) : (E.aggregate_kind, string) result =

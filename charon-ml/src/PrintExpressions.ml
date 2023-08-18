@@ -118,14 +118,20 @@ let binop_to_string (binop : E.binop) : string =
   | E.Shl -> "<<"
   | E.Shr -> ">>"
 
+let constant_expr_to_string (fmt : expr_formatter) (cv : E.constant_expr) :
+    string =
+  match cv.E.value with
+  | E.CLiteral lit ->
+      "(" ^ PPV.literal_to_string lit ^ " : "
+      ^ PT.ety_to_string (expr_to_etype_formatter fmt) cv.E.ty
+      ^ ")"
+  | E.CVar vid -> fmt.const_generic_var_id_to_string vid
+
 let operand_to_string (fmt : expr_formatter) (op : E.operand) : string =
   match op with
   | E.Copy p -> "copy " ^ place_to_string fmt p
   | E.Move p -> "move " ^ place_to_string fmt p
-  | E.Constant (ty, cv) ->
-      "(" ^ PPV.literal_to_string cv ^ " : "
-      ^ PT.ety_to_string (expr_to_etype_formatter fmt) ty
-      ^ ")"
+  | E.Constant cv -> constant_expr_to_string fmt cv
 
 let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
   match rv with

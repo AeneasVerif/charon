@@ -185,23 +185,57 @@ let all_binops =
     Shr;
   ]
 
-(** Ancestor the operand iter visitor *)
-class ['self] iter_operand_base =
+(** Ancestor the constant_expr iter visitor *)
+class ['self] iter_constant_expr_base =
   object (_self : 'self)
     inherit [_] iter_place
     inherit! [_] iter_const_generic
     method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
   end
 
-(** Ancestor the operand map visitor *)
-class ['self] map_operand_base =
+(** Ancestor the constant_expr map visitor *)
+class ['self] map_constant_expr_base =
   object (_self : 'self)
     inherit [_] map_place
     inherit! [_] map_const_generic
     method visit_ety : 'env -> ety -> ety = fun _ x -> x
   end
 
-type operand = Copy of place | Move of place | Constant of ety * literal
+type raw_constant_expr = CLiteral of literal | CVar of const_generic_var_id
+
+and constant_expr = { value : raw_constant_expr; ty : ety }
+[@@deriving
+  show,
+    visitors
+      {
+        name = "iter_constant_expr";
+        variety = "iter";
+        ancestors = [ "iter_constant_expr_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_constant_expr";
+        variety = "map";
+        ancestors = [ "map_constant_expr_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      }]
+
+(** Ancestor the operand iter visitor *)
+class ['self] iter_operand_base =
+  object (_self : 'self)
+    inherit [_] iter_constant_expr
+  end
+
+(** Ancestor the operand map visitor *)
+class ['self] map_operand_base =
+  object (_self : 'self)
+    inherit [_] map_constant_expr
+  end
+
+type operand = Copy of place | Move of place | Constant of constant_expr
 [@@deriving
   show,
     visitors
