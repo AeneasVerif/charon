@@ -12,7 +12,6 @@ use macros::EnumIsA;
 use macros::{VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
-use rustc_hir::def_id::DefId;
 use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
 use std::fmt::{Debug, Display, Error, Formatter};
