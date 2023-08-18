@@ -274,13 +274,12 @@ fn f4(x: &[u32; 32], y: usize, z: usize) -> &[u32] {
     &x[y..z]
 }
 
-/*
 const SZ: usize = 32;
 
+// There is something slightly annoying here: the SZ constant gets inlined
 fn f5(x: &[u32; SZ]) -> u32 {
     x[0]
 }
-*/
 
 // To avoid lifetime shortening
 fn ite() {

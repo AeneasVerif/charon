@@ -6,7 +6,7 @@ use crate::get_mir::MirLevel;
 use crate::meta;
 use crate::meta::{FileId, FileName, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
-use crate::reorder_decls::{AnyRustId, AnyTransId};
+use crate::reorder_decls::AnyTransId;
 use crate::types as ty;
 use crate::types::LiteralTy;
 use crate::ullbc_ast as ast;
@@ -14,10 +14,12 @@ use crate::values as v;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use linked_hash_set::LinkedHashSet;
+use macros::VariantIndexArity;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
-use std::collections::{HashMap, HashSet};
+use std::cmp::{Ord, Ordering, PartialOrd};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 pub struct CrateInfo {
     pub crate_name: String,
@@ -34,6 +36,49 @@ impl CrateInfo {
     }
 }
 
+/// We use a special type to store the Rust identifiers in the stack, to
+/// make sure we translate them in a specific order (top-level constants
+/// before constant functions before functions...). This allows us to
+/// avoid stealing issues when looking up the MIR bodies.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, VariantIndexArity)]
+pub enum OrdRustId {
+    Global(DefId),
+    ConstFun(DefId),
+    Fun(DefId),
+    Type(DefId),
+}
+
+impl OrdRustId {
+    fn get_id(&self) -> DefId {
+        match self {
+            OrdRustId::Global(id)
+            | OrdRustId::ConstFun(id)
+            | OrdRustId::Fun(id)
+            | OrdRustId::Type(id) => *id,
+        }
+    }
+}
+
+impl PartialOrd for OrdRustId {
+    fn partial_cmp(&self, other: &OrdRustId) -> Option<Ordering> {
+        let (vid0, _) = self.variant_index_arity();
+        let (vid1, _) = other.variant_index_arity();
+        if vid0 != vid1 {
+            Option::Some(vid0.cmp(&vid1))
+        } else {
+            let id0 = self.get_id();
+            let id1 = other.get_id();
+            Option::Some(id0.cmp(&id1))
+        }
+    }
+}
+
+impl Ord for OrdRustId {
+    fn cmp(&self, other: &OrdRustId) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+
 /// Translation context containing the top-level definitions.
 pub struct TransCtx<'tcx, 'ctx> {
     /// The compiler session
@@ -46,10 +91,12 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub mir_level: MirLevel,
     ///
     pub crate_info: CrateInfo,
-    /// All the ids
+    /// All the ids, in the order in which we encountered them
     pub all_ids: LinkedHashSet<AnyTransId>,
-    /// The declarations we came accross and which we haven't translated yet
-    pub stack: LinkedHashSet<AnyRustId>,
+    /// The declarations we came accross and which we haven't translated yet.
+    /// We use an ordered set to make sure we translate them in a specific
+    /// order (this avoids stealing issues when querying the MIR bodies).
+    pub stack: BTreeSet<OrdRustId>,
     /// File names to ids and vice-versa
     pub file_to_id: HashMap<FileName, FileId::Id>,
     pub id_to_file: HashMap<FileId::Id, FileName>,
@@ -240,7 +287,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         !self.id_is_opaque(id)
     }
 
-    pub(crate) fn push_id(&mut self, _rust_id: DefId, id: AnyRustId, trans_id: AnyTransId) {
+    pub(crate) fn push_id(&mut self, _rust_id: DefId, id: OrdRustId, trans_id: AnyTransId) {
         // Add the id to the stack of declarations to translate
         self.stack.insert(id);
         self.all_ids.insert(trans_id);
@@ -250,7 +297,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         match self.type_id_map.get(&id) {
             Option::Some(id) => id,
             Option::None => {
-                let rid = AnyRustId::Type(id);
+                let rid = OrdRustId::Type(id);
                 let trans_id = self.type_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::Type(trans_id));
                 trans_id
@@ -266,7 +313,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         match self.fun_id_map.get(&id) {
             Option::Some(id) => id,
             Option::None => {
-                let rid = AnyRustId::Fun(id);
+                let rid = if self.tcx.is_const_fn_raw(id) {
+                    OrdRustId::ConstFun(id)
+                } else {
+                    OrdRustId::Fun(id)
+                };
                 let trans_id = self.fun_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::Fun(trans_id));
                 trans_id
@@ -282,7 +333,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         match self.global_id_map.get(&id) {
             Option::Some(id) => id,
             Option::None => {
-                let rid = AnyRustId::Global(id);
+                let rid = OrdRustId::Global(id);
                 let trans_id = self.global_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::Global(trans_id));
                 trans_id

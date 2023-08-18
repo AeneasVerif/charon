@@ -396,8 +396,11 @@ impl<'ctx> Formatter<GlobalDeclId::Id> for GlobalDeclsFormatter<'ctx> {
 
 impl Formatter<GlobalDeclId::Id> for GlobalDecls {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        let d = self.get(id).unwrap();
-        d.name.to_string()
+        // The global decl may not have been translated yet
+        match self.get(id) {
+            Option::None => id.to_pretty_string(),
+            Option::Some(d) => d.name.to_string(),
+        }
     }
 }
 

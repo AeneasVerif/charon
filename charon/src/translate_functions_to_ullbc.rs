@@ -1445,6 +1445,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::options::Options {
                 inline_macro_calls: Vec::new(),
             },
+            // Yes, we have to clone, this is annoying: we end up cloning the body twice
             body.clone(),
         );
         // Translate
@@ -1713,10 +1714,16 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let body = match (rust_id.is_local(), is_transparent) {
             // It's a local and opaque global: we do not give it a body.
-            (true, false) => Option::None,
+            (true, false) => {
+                trace!("Opaque global");
+                Option::None
+            }
 
             // It's a local and transparent global: we extract its body as for functions.
-            (true, true) => Option::Some(bt_ctx.translate_body(rust_id.expect_local(), 0).unwrap()),
+            (true, true) => {
+                trace!("Transparent local global");
+                Option::Some(bt_ctx.translate_body(rust_id.expect_local(), 0).unwrap())
+            }
 
             // It is an external global.
             // The fact that it is listed among the declarations to extract means that
@@ -1727,6 +1734,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             // empty body.
             // TODO: we should keep the external globals opaque
             (false, _) => {
+                trace!("External global");
                 let unev = rid_as_unevaluated_constant(rust_id);
                 match bt_ctx.t_ctx.tcx.const_eval_resolve(
                     mir_ty::ParamEnv::empty(),

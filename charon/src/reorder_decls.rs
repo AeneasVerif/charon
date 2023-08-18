@@ -192,7 +192,6 @@ impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, GlobalId: Copy + Seriali
     }
 }
 
-pub type AnyRustId = AnyDeclId<DefId, DefId, DefId>;
 pub type AnyTransId = AnyDeclId<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id>;
 
 pub struct Deps {

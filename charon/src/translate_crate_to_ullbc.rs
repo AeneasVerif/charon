@@ -1,16 +1,17 @@
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
 use crate::meta;
 use crate::names::{hir_item_to_name, item_def_id_to_name};
-use crate::reorder_decls as rd;
 use crate::translate_ctx::*;
 use crate::translate_functions_to_ullbc;
 use crate::types as ty;
 use crate::ullbc_ast as ast;
+use hax_frontend_exporter as hax;
+use hax_frontend_exporter::SInto;
 use linked_hash_set::LinkedHashSet;
 use rustc_hir::{Defaultness, ImplItem, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn register_local_hir_impl_item(&mut self, _top_item: bool, impl_item: &ImplItem) {
@@ -81,10 +82,25 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 let _ = self.translate_fun_decl_id(def_id);
             }
             ItemKind::Const(_, _) | ItemKind::Static(_, _, _) => {
-                if extract_constants_at_top_level(self.mir_level) {
-                    let _ = self.translate_global_decl_id(def_id);
-                } else {
-                    // Avoid registering globals in optimized MIR (they will be inlined)
+                // We ignore the anonymous constants, which are introduced
+                // by the Rust compiler: those constants will be inlined in the
+                // function bodies.
+                //
+                // Important: if we try to retrieve the MIR of anonymous constants,
+                // it will steal the MIR of the bodies of the functions in which
+                // they appear.
+                //
+                // Also note that this is the only place where we need to check
+                // if an item is an anonymous constant: when translating the bodies,
+                // as the anonymous constants are inlined in those bodies, they
+                // disappear completely.
+                let trans_id: hax::DefId = def_id.sinto(&self.hax_state);
+                if !trans_id.is_anon_const() {
+                    if extract_constants_at_top_level(self.mir_level) {
+                        let _ = self.translate_global_decl_id(def_id);
+                    } else {
+                        // Avoid registering globals in optimized MIR (they will be inlined)
+                    }
                 }
             }
 
@@ -146,7 +162,6 @@ pub fn translate<'tcx, 'ctx>(
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
 ) -> TransCtx<'tcx, 'ctx> {
-    use hax_frontend_exporter as hax;
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -160,7 +175,7 @@ pub fn translate<'tcx, 'ctx>(
         mir_level,
         crate_info,
         all_ids: LinkedHashSet::new(),
-        stack: LinkedHashSet::new(),
+        stack: BTreeSet::new(),
         file_to_id: HashMap::new(),
         id_to_file: HashMap::new(),
         real_file_counter: meta::LocalFileId::Generator::new(),
@@ -191,6 +206,8 @@ pub fn translate<'tcx, 'ctx>(
         ctx.register_local_hir_item(true, item);
     }
 
+    trace!("Stack after we explored the crate:\n{:?}", &ctx.stack);
+
     // Translate.
     //
     // For as long as the stack of items to translate is not empty, we pop the top item
@@ -200,11 +217,11 @@ pub fn translate<'tcx, 'ctx>(
     // Note that the order in which we translate the definitions doesn't matter:
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
-    while let Some(id) = ctx.stack.pop_front() {
+    while let Some(id) = ctx.stack.pop_first() {
         match id {
-            rd::AnyDeclId::Type(id) => ctx.translate_type(id),
-            rd::AnyDeclId::Fun(id) => ctx.translate_function(id),
-            rd::AnyDeclId::Global(id) => ctx.translate_global(id),
+            OrdRustId::Type(id) => ctx.translate_type(id),
+            OrdRustId::Fun(id) | OrdRustId::ConstFun(id) => ctx.translate_function(id),
+            OrdRustId::Global(id) => ctx.translate_global(id),
         }
     }
 
