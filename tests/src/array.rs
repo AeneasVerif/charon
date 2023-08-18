@@ -111,6 +111,11 @@ fn update_update_slice(s: &mut [&mut [u32]], i: usize, j: usize) {
 }
 */
 
+// Using const generics as values
+fn const_gen_ret<const N: usize>() -> usize {
+    N
+}
+
 fn update_update_array(mut s: [[u32; 32]; 32], i: usize, j: usize) {
     s[i][j] = 0;
 }
@@ -265,12 +270,17 @@ fn f3() -> u32 {
     sum2(&a, f4(&b, 16, 18))
 }
 
-// TODO: this makes the compilation fail
-//const SZ: usize = 32;
-
 fn f4(x: &[u32; 32], y: usize, z: usize) -> &[u32] {
     &x[y..z]
 }
+
+/*
+const SZ: usize = 32;
+
+fn f5(x: &[u32; SZ]) -> u32 {
+    x[0]
+}
+*/
 
 // To avoid lifetime shortening
 fn ite() {
