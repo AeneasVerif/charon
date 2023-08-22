@@ -8,7 +8,7 @@
 use crate::expressions::{Rvalue, UnOp};
 use crate::llbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::llbc_ast::{
-    AssumedFunId, Call, CtxNames, FunDecls, FunIdOrTraitRef, GlobalDecls, RawStatement, Statement,
+    AssumedFunId, Call, CtxNames, FunDecls, FunIdOrTraitMethodRef, GlobalDecls, RawStatement, Statement,
 };
 use crate::types::ErasedRegion;
 use crate::types::RefKind;
@@ -23,7 +23,7 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
                 RefKind::Mut => AssumedFunId::ArrayToSliceMut,
                 RefKind::Shared => AssumedFunId::ArrayToSliceShared,
             };
-            let func = FunIdOrTraitRef::mk_assumed(id);
+            let func = FunIdOrTraitMethodRef::mk_assumed(id);
             let region_args = vec![ErasedRegion::Erased];
             let type_args = vec![ty.clone()];
             let const_generic_args = vec![cg.clone()];

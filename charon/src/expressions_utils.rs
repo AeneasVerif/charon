@@ -5,7 +5,8 @@ use crate::assumed;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::gast::{
-    AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitRef, TraitId, TraitOrClauseId, TraitRef,
+    AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitId, TraitMethodName,
+    TraitOrClauseId, TraitRef,
 };
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
@@ -494,21 +495,23 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         }
     }
 
-    fn visit_fun_id_or_trait_ref(&mut self, fun_id: &FunIdOrTraitRef) {
-        use FunIdOrTraitRef::*;
+    fn visit_fun_id_or_trait_ref(&mut self, fun_id: &FunIdOrTraitMethodRef) {
+        use FunIdOrTraitMethodRef::*;
         match fun_id {
             Fun(fun_id) => self.visit_fun_id(fun_id),
             Trait(trait_ref, method_id) => {
                 self.visit_trait_ref(trait_ref);
-                self.visit_fun_decl_id(method_id);
+                self.visit_trait_method_name(method_id);
             }
         }
     }
 
-    fn visit_fun_decl_id(&mut self, fid: &FunDeclId::Id) {}
-    fn visit_assumed_fun_id(&mut self, fid: &AssumedFunId) {}
-    fn visit_trait_id(&mut self, fid: &TraitId::Id) {}
-    fn visit_trait_clause_id(&mut self, fid: &TraitClauseId::Id) {}
+    fn visit_trait_method_name(&mut self, _: &TraitMethodName) {}
+
+    fn visit_fun_decl_id(&mut self, _: &FunDeclId::Id) {}
+    fn visit_assumed_fun_id(&mut self, _: &AssumedFunId) {}
+    fn visit_trait_id(&mut self, _: &TraitId::Id) {}
+    fn visit_trait_clause_id(&mut self, _: &TraitClauseId::Id) {}
 
     fn visit_trait_ref(&mut self, tr: &TraitRef) {
         let TraitRef {

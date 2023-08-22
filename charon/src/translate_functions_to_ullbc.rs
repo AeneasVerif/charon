@@ -41,6 +41,109 @@ fn translate_field_id(id: hax::FieldIdx) -> FieldId::Id {
     FieldId::Id::new(id.index())
 }
 
+/// Function information.
+///
+/// Example:
+/// ========
+/// ```text
+/// trait Foo {
+///   fn bar(x : u32) -> u32; // trait method: declaration
+///
+///   fn baz(x : bool) -> bool { x } // trait method: provided
+/// }
+///
+/// impl Foo for ... {
+///   fn bar(x : u32) -> u32 { x } // trait method: implementation
+/// }
+///
+/// fn test(...) { ... } // regular
+///
+/// impl Type {
+///   fn test(...) { ... } // regular
+/// }
+/// ```
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum FunctionKind {
+    /// A "normal" function
+    Regular,
+    /// Trait method implementation
+    TraitMethodImpl {
+        /// True if this function re-implements a provided method
+        provided: bool,
+    },
+    /// Trait method declaration
+    TraitMethodDecl,
+    /// Trait method provided function (method with default implementation)
+    TraitMethodProvided,
+}
+
+impl FunctionKind {
+    pub(crate) fn is_trait_method(&self) -> bool {
+        !(*self == FunctionKind::Regular)
+    }
+}
+
+pub(crate) fn get_function_kind(tcx: TyCtxt, rust_id: DefId) -> FunctionKind {
+    if let Some(assoc) = tcx.opt_associated_item(rust_id) {
+        match assoc.container {
+            mir_ty::AssocItemContainer::ImplContainer => {
+                // This method is an *implementation* of a trait method
+                // Ex.:
+                // ====
+                // ```
+                // impl Foo for Bar {
+                //   fn baz(...) { ... } // <- implementation of a trait method
+                // }
+                // ```
+
+                // Check if this implementation reimplements a provided method.
+                // We do so by retrieving the def id of the method which is
+                // reimplemented, and checking its kind.
+                let provided = match get_function_kind(tcx, assoc.trait_item_def_id.unwrap()) {
+                    FunctionKind::TraitMethodDecl => false,
+                    FunctionKind::TraitMethodProvided => true,
+                    FunctionKind::Regular | FunctionKind::TraitMethodImpl { .. } => {
+                        unreachable!()
+                    }
+                };
+
+                FunctionKind::TraitMethodImpl { provided }
+            }
+            mir_ty::AssocItemContainer::TraitContainer => {
+                // This method is the *declaration* of a trait method
+                // Ex.:
+                // ====
+                // ```
+                // trait Foo {
+                //   fn baz(...); // <- declaration of a trait method
+                // }
+                // ```
+
+                // Yet, this could be a default method implementation, in which
+                // case there is a body: we need to check that.
+                // First, lookup the trait the method belongs to.
+                let tr = tcx.trait_of_item(rust_id).unwrap();
+
+                // Then, retrieve the provided methods. The provided methods
+                // are the methods with a default implementation.
+                let provided_methods: Vec<DefId> = tcx
+                    .provided_trait_methods(tr)
+                    .map(|assoc| assoc.def_id)
+                    .collect();
+
+                // Check if the method is inside
+                if provided_methods.contains(&rust_id) {
+                    FunctionKind::TraitMethodProvided
+                } else {
+                    FunctionKind::TraitMethodDecl
+                }
+            }
+        }
+    } else {
+        FunctionKind::Regular
+    }
+}
+
 /// Translate a `BorrowKind`
 fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> e::BorrowKind {
     match borrow_kind {
@@ -146,7 +249,7 @@ fn translate_primitive_function_call(
         | ast::AssumedFunId::VecLen
         | ast::AssumedFunId::SliceLen => {
             let call = ast::Call {
-                func: ast::FunIdOrTraitRef::mk_assumed(aid),
+                func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
                 region_args,
                 type_args,
                 const_generic_args,
@@ -193,7 +296,7 @@ fn translate_primitive_function_call(
             assert!(const_generic_args.len() <= 1);
 
             let call = ast::Call {
-                func: ast::FunIdOrTraitRef::mk_assumed(aid),
+                func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
                 region_args,
                 type_args,
                 const_generic_args,
@@ -253,7 +356,7 @@ fn translate_box_deref(
     let type_args = vec![boxed_ty.clone()];
 
     let call = ast::Call {
-        func: ast::FunIdOrTraitRef::mk_assumed(aid),
+        func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
         region_args,
         type_args,
         const_generic_args,
@@ -296,7 +399,7 @@ fn translate_vec_index(
 
     let type_args = vec![arg_ty.clone()];
     let call = ast::Call {
-        func: ast::FunIdOrTraitRef::mk_assumed(aid),
+        func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
         region_args,
         type_args,
         const_generic_args,
@@ -1235,7 +1338,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Return
                 let call = ast::Call {
-                    func: ast::FunIdOrTraitRef::mk_assumed(ast::AssumedFunId::BoxFree),
+                    func: ast::FunIdOrTraitMethodRef::mk_assumed(ast::AssumedFunId::BoxFree),
                     region_args: vec![],
                     type_args: vec![t_ty],
                     const_generic_args: vec![],
@@ -1295,7 +1398,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     match trait_info {
                         Option::None => {
                             let def_id = self.translate_fun_decl_id(rust_id);
-                            let func = ast::FunIdOrTraitRef::Fun(ast::FunId::Regular(def_id));
+                            let func = ast::FunIdOrTraitMethodRef::Fun(ast::FunId::Regular(def_id));
                             let call = ast::Call {
                                 func,
                                 region_args,
@@ -1364,11 +1467,53 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         target: ast::BlockId::Id,
         trait_info: &hax::TraitInfo,
     ) -> Result<ast::RawTerminator> {
-        //
+        let rust_id = def_id.rust_def_id.unwrap();
         let trait_info = self.translate_trait_impl_source(trait_info);
-        let method_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
-        let func = ast::FunIdOrTraitRef::Trait(trait_info, method_id);
 
+        trace!("{:?}", rust_id);
+
+        /*
+        use ast::TraitOrClauseId;
+        let params_info = match &trait_info.trait_id {
+            TraitOrClauseId::Trait(trait_id) => {
+                let trait_rust_id = *self.t_ctx.trait_id_to_rust_map.get(trait_id).unwrap();
+                trace!("Trait: {:?}", trait_rust_id);
+                self.t_ctx.get_params_info(trait_rust_id)
+            }
+            TraitOrClauseId::Clause(_) => {
+                trace!("Clause");
+                todo!()
+            }
+        };
+        trace!("- id: {:?}\n- params_info:\n{:?}", rust_id, params_info);
+        */
+
+        let _ = self.translate_fun_decl_id(rust_id);
+        let method_name = self.t_ctx.translate_trait_method_name(rust_id);
+        let func = ast::FunIdOrTraitMethodRef::Trait(trait_info, method_name);
+
+        // Ignore some of the arguments which concern the trait and
+        // not the specific method we call.
+        //
+        // For instance:
+        // ```
+        // impl<T> Foo<T> for Bar {
+        //   fn baz<U>(...) { ... }
+        // }
+        //
+        // fn test(x: Bar) {
+        //   x.baz(...); // Gets desugared to: Foo::baz<Bar, T, U>(x, ...);
+        //   ...
+        // }
+        // ```
+        // Above, we want to drop the `Bar` and `T` arguments.
+        let params_info = self.t_ctx.get_parent_params_info(rust_id).unwrap();
+        trace!("- id: {:?}\n- params_info:\n{:?}", rust_id, params_info);
+        let region_args: Vec<ty::ErasedRegion> =
+            region_args[params_info.num_region_params..].to_vec();
+        let type_args = type_args[params_info.num_type_params..].to_vec();
+        let const_generic_args =
+            const_generic_args[params_info.num_const_generic_params..].to_vec();
         let call = ast::Call {
             func,
             region_args,
@@ -1629,12 +1774,19 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         );
         trace!("# Output variable type:\n{}", bt_ctx.format_object(&output));
 
+        let block_params_info = if get_function_kind(tcx, def_id).is_trait_method() {
+            bt_ctx.t_ctx.get_parent_params_info(def_id)
+        } else {
+            None
+        };
+
         let sig = ast::FunSig {
             region_params: bt_ctx.region_vars.clone(),
             regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
             type_params: bt_ctx.type_vars.clone(),
             const_generic_params: bt_ctx.const_generic_vars.clone(),
             trait_clauses: bt_ctx.trait_clauses.clone(),
+            block_params_info,
             inputs,
             output,
         };
@@ -1667,47 +1819,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // If this is the case, it shouldn't contain a body.
         // TODO: it might be a default implementation. The presence of a body is
         // given by TraitItemKind.
-        let is_trait_method_decl = if let Some(assoc) = tcx.opt_associated_item(rust_id) {
-            match assoc.container {
-                mir_ty::AssocItemContainer::ImplContainer => {
-                    // This method is an *implementation* of a trait method
-                    // Ex.:
-                    // ====
-                    // ```
-                    // impl Foo for Bar {
-                    //   fn baz(...) { ... } // <- implementation of a trait method
-                    // }
-                    // ```
-                    false
-                }
-                mir_ty::AssocItemContainer::TraitContainer => {
-                    // This method is the *declaration* of a trait method
-                    // Ex.:
-                    // ====
-                    // ```
-                    // trait Foo {
-                    //   fn baz(...); // <- declaration of a trait method
-                    // }
-                    // ```
-
-                    // Yet, this could be a default method implementation, in which
-                    // case there is a body: we need to check that.
-                    // First, lookup the trait the method belongs to.
-                    let tr = tcx.trait_of_item(rust_id).unwrap();
-
-                    // Then, retrieve the provided methods. The provided methods
-                    // are the methods with a default implementation.
-                    let provided_methods: Vec<DefId> = tcx
-                        .provided_trait_methods(tr)
-                        .map(|assoc| assoc.def_id)
-                        .collect();
-
-                    // Check if the method is inside
-                    !provided_methods.contains(&rust_id)
-                }
-            }
-        } else {
-            false
+        let is_trait_method_decl = match get_function_kind(tcx, rust_id) {
+            FunctionKind::Regular
+            | FunctionKind::TraitMethodImpl { .. }
+            | FunctionKind::TraitMethodProvided => false,
+            FunctionKind::TraitMethodDecl => true,
         };
         let body = if !is_transparent || !is_local || is_trait_method_decl {
             Option::None

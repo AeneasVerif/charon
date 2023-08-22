@@ -192,6 +192,7 @@ pub fn translate<'tcx, 'ctx>(
         global_id_map: ast::GlobalDeclId::MapGenerator::new(),
         global_defs: ast::GlobalDeclId::Map::new(),
         trait_id_map: ast::TraitId::MapGenerator::new(),
+        trait_id_to_rust_map: HashMap::new(),
         trait_defs: ast::TraitId::Map::new(),
     };
 

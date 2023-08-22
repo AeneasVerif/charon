@@ -119,6 +119,8 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub global_defs: ast::GlobalDecls,
     /// The map from Rust trait ids to translated trait ids
     pub trait_id_map: ast::TraitId::MapGenerator<DefId>,
+    /// The map from translated trait ids trait ids to Rust trait ids - TODO: remove?
+    pub trait_id_to_rust_map: HashMap<ast::TraitId::Id, DefId>,
     /// The translated trait definitions
     pub trait_defs: ast::TraitDecls,
 }
@@ -344,6 +346,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 let rid = OrdRustId::Trait(id);
                 let trans_id = self.trait_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::Trait(trans_id));
+                self.trait_id_to_rust_map.insert(trans_id, id);
                 trans_id
             }
         }
@@ -572,6 +575,30 @@ impl<'tcx, 'ctx> Formatter<ty::ConstGenericVarId::Id> for TransCtx<'tcx, 'ctx> {
     }
 }
 
+impl<'tcx, 'ctx> Formatter<ast::FunDeclId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ast::FunDeclId::Id) -> String {
+        match self.fun_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.to_string(),
+        }
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<ast::TraitId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ast::TraitId::Id) -> String {
+        match self.trait_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.to_string(),
+        }
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<ast::TraitClauseId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ast::TraitClauseId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
 impl<'tcx, 'ctx, 'ctx1> Formatter<ty::TypeVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: ty::TypeVarId::Id) -> String {
         let v = self.type_vars.get(id).unwrap();
@@ -747,6 +774,10 @@ impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
                     &self.trait_defs
                 )
             )?
+        }
+
+        for (_, d) in &self.trait_defs {
+            writeln!(f, "{}\n", d.fmt_with_ctx(self))?
         }
 
         for (_, d) in &self.fun_defs {

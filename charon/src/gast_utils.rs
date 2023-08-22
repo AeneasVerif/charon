@@ -50,6 +50,12 @@ pub fn make_locals_generator(locals: &mut VarId::Vector<Var>) -> impl FnMut(ETy)
     }
 }
 
+impl FunDeclId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Fun{self}")
+    }
+}
+
 impl std::string::ToString for Var {
     fn to_string(&self) -> String {
         let id = self.index.to_pretty_string();
@@ -158,6 +164,62 @@ where
     fmt_args_raw(ctx, region_args, type_args, const_generic_args, traits_s)
 }
 
+impl TraitDecl {
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: Formatter<TypeVarId::Id>
+            + Formatter<&'a Region<RegionVarId::Id>>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitId::Id>
+            + Formatter<TraitClauseId::Id>,
+    {
+        let def_id = ctx.format_object(self.def_id);
+        let params = crate::types::TypeDecl::fmt_params(
+            &self.region_params,
+            &self.type_params,
+            &self.const_generic_params,
+        );
+        let trait_clauses: Vec<String> = self
+            .trait_clauses
+            .iter()
+            .map(|clause| format!("{TAB_INCR}{}", clause.fmt_with_ctx(ctx)))
+            .collect();
+        let trait_clauses = if !trait_clauses.is_empty() {
+            format!("\nwhere\n{}", trait_clauses.join(",\n"))
+        } else {
+            "".to_string()
+        };
+        format!("trait {def_id}{params}{trait_clauses}")
+    }
+}
+
+impl TraitClause {
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: Formatter<TypeVarId::Id>
+            + Formatter<&'a Region<RegionVarId::Id>>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitId::Id>
+            + Formatter<TraitClauseId::Id>,
+    {
+        let clause_id = ctx.format_object(self.clause_id);
+        let trait_id = ctx.format_object(self.trait_id);
+        let args = fmt_args_no_traits(
+            ctx,
+            &self.region_params,
+            &self.type_params,
+            &self.const_generic_params,
+        );
+        format!("[{clause_id}]: {trait_id}{args}")
+    }
+}
+
 impl TraitRef {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
@@ -187,7 +249,7 @@ impl TraitRef {
 
 pub fn fmt_call<'a, 'b, T>(
     ctx: &'b T,
-    func: &'a FunIdOrTraitRef,
+    func: &'a FunIdOrTraitMethodRef,
     region_args: &'a Vec<ErasedRegion>,
     type_args: &'a Vec<ETy>,
     const_generic_args: &'a Vec<ConstGeneric>,
@@ -213,14 +275,19 @@ where
     let args = args.join(", ");
 
     let f = match func {
-        FunIdOrTraitRef::Fun(FunId::Regular(def_id)) => {
+        FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
             format!("{}{}", ctx.format_object(*def_id), rt_args)
         }
-        FunIdOrTraitRef::Fun(FunId::Assumed(assumed)) => {
+        FunIdOrTraitMethodRef::Fun(FunId::Assumed(assumed)) => {
             format!("@{}{rt_args}", assumed.variant_name())
         }
-        FunIdOrTraitRef::Trait(_trait_ref, method_id) => {
-            format!("{}{}", ctx.format_object(*method_id), rt_args)
+        FunIdOrTraitMethodRef::Trait(trait_ref, method_id) => {
+            format!(
+                "{}::{}{}",
+                trait_ref.fmt_with_ctx(ctx),
+                &method_id.0,
+                rt_args
+            )
         }
     };
 
@@ -455,30 +522,6 @@ impl FunSig {
     }
 }
 
-impl TraitClause {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
-    where
-        C: Formatter<TypeVarId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<TraitId::Id>
-            + Formatter<TraitClauseId::Id>,
-    {
-        let clause_id = ctx.format_object(self.clause_id);
-        let trait_id = ctx.format_object(self.trait_id);
-        let args = fmt_args_no_traits(
-            ctx,
-            &self.region_params,
-            &self.type_params,
-            &self.const_generic_params,
-        );
-        format!("({clause_id}){trait_id}<{args}>")
-    }
-}
-
 impl<T: Debug + Clone + Serialize> GFunDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
@@ -581,9 +624,9 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
             .map(|clause| format!("{tab}{TAB_INCR}{}", clause.fmt_with_ctx(sig_ctx)))
             .collect();
         let trait_clauses = if !trait_clauses.is_empty() {
-            format!("\n{tab}where\n{}", trait_clauses.join(",\n"))
+            format!("\n{tab}where\n{}\n{tab}", trait_clauses.join(",\n"))
         } else {
-            "".to_string()
+            " ".to_string()
         };
 
         // Case disjunction on the presence of a body (transparent/opaque definition)
@@ -598,7 +641,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
                 let body = body.fmt_with_ctx(&body_tab, body_ctx);
 
                 // Put everything together
-                format!("{tab}fn {name}{params}({args}){ret_ty}{trait_clauses} {{\n{body}\n{tab}}}",)
+                format!("{tab}fn {name}{params}({args}){ret_ty}{trait_clauses}{{\n{body}\n{tab}}}",)
             }
         }
     }
@@ -959,7 +1002,7 @@ impl<'ctx> Formatter<TraitId::Id> for TraitNamesFormatter<'ctx> {
     }
 }
 
-impl FunIdOrTraitRef {
+impl FunIdOrTraitMethodRef {
     pub(crate) fn mk_assumed(aid: AssumedFunId) -> Self {
         Self::Fun(FunId::Assumed(aid))
     }

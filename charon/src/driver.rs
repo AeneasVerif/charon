@@ -157,7 +157,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // the mutually recursive groups - we do this in the next step.
     let mut ctx = translate_crate_to_ullbc::translate(crate_info, sess, tcx, mir_level);
 
-    trace!("# After translation from MIR:\n{}\n", ctx);
+    trace!("# After translation from MIR:\n\n{}\n", ctx);
 
     // # Reorder the graph of dependencies and compute the strictly
     // connex components to:

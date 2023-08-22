@@ -1,12 +1,46 @@
 #![allow(dead_code)]
 use crate::common::Result;
-use crate::gast::TraitRef;
-use crate::translate_ctx::BodyTransCtx;
+use crate::gast::{ParamsInfo, TraitRef};
+use crate::translate_ctx::{BodyTransCtx, TransCtx};
 use crate::translate_types;
 use crate::types::{ConstGeneric, RTy, Region, RegionVarId, TraitClause};
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
+
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+    pub(crate) fn get_params_info(&mut self, def_id: DefId) -> ParamsInfo {
+        let tcx = self.tcx;
+
+        // Compute the number of generics
+        let mut num_region_params = 0;
+        let mut num_type_params = 0;
+        let mut num_const_generic_params = 0;
+
+        let generics = tcx.generics_of(def_id);
+        use rustc_middle::ty::GenericParamDefKind;
+        for param in &generics.params {
+            match param.kind {
+                GenericParamDefKind::Lifetime => num_region_params += 1,
+                GenericParamDefKind::Type { .. } => num_type_params += 1,
+                GenericParamDefKind::Const { .. } => num_const_generic_params += 1,
+            }
+        }
+
+        ParamsInfo {
+            num_region_params,
+            num_type_params,
+            num_const_generic_params,
+        }
+    }
+
+    pub(crate) fn get_parent_params_info(&mut self, def_id: DefId) -> Option<ParamsInfo> {
+        self.tcx
+            .generics_of(def_id)
+            .parent
+            .map(|parent_id| self.get_params_info(parent_id))
+    }
+}
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     // TODO: there are too many variants of this, we should merge them
@@ -48,7 +82,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Get the predicates
         // TODO: use predicates_defined_on?
         let preds = tcx.predicates_of(def_id).sinto(&self.t_ctx.hax_state);
-        let mut clauses = Vec::new();
 
         for (pred, span) in preds.predicates {
             // Skip the binder (which lists the quantified variables).
@@ -69,9 +102,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         .translate_substs_with_regions(&trait_ref.generic_args)
                         .unwrap();
 
-                    clauses.push(TraitClause {
-                        clause_id: self.trait_clauses_counter.fresh_id(),
-                        meta: self.translate_meta_from_rspan(span),
+                    let meta = self.translate_meta_from_rspan(span);
+                    let clause_id = self.trait_clauses_counter.fresh_id();
+                    self.trait_clauses.push_back(TraitClause {
+                        clause_id,
+                        meta,
                         trait_id,
                         region_params,
                         type_params,
@@ -112,7 +147,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ImplSource::UserDefined(data) => {
                 let def_id = data.impl_def_id.rust_def_id.unwrap();
                 let trait_id = self.translate_trait_id(def_id);
-                let trait_id = TraitOrClauseId::Trait(trait_id); // TODO: this doesn't work
+                let trait_id = TraitOrClauseId::Trait(trait_id);
 
                 let (region_args, type_args, const_generic_args) = self
                     .translate_subst_generic_args_in_body(None, &data.substs)

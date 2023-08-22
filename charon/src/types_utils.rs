@@ -224,7 +224,12 @@ impl TypeDecl {
             + Formatter<GlobalDeclId::Id>
             + Formatter<ConstGenericVarId::Id>,
     {
-        let params = TypeDecl::fmt_params(&self.region_params, &self.type_params);
+        let params = TypeDecl::fmt_params(
+            &self.region_params,
+            &self.type_params,
+            &self.const_generic_params,
+        );
+
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
                 if !fields.is_empty() {
@@ -250,17 +255,25 @@ impl TypeDecl {
         }
     }
 
-    fn fmt_params(
+    pub(crate) fn fmt_params(
         region_params: &RegionVarId::Vector<RegionVar>,
         type_params: &TypeVarId::Vector<TypeVar>,
+        const_generic_params: &ConstGenericVarId::Vector<ConstGenericVar>,
     ) -> String {
-        if region_params.len() + type_params.len() > 0 {
-            let regions = region_params.iter().map(|r| r.to_string());
-            let type_params = type_params.iter().map(|p| p.to_string());
-            let params: Vec<String> = regions.chain(type_params).collect();
-            format!("<{}>", params.join(", "))
-        } else {
+        let mut params = Vec::new();
+        for x in region_params {
+            params.push(x.to_string());
+        }
+        for x in type_params {
+            params.push(x.to_string());
+        }
+        for x in const_generic_params {
+            params.push(x.to_string());
+        }
+        if params.is_empty() {
             "".to_string()
+        } else {
+            format!("<{}>", params.join(", "))
         }
     }
 }

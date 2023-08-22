@@ -33,6 +33,55 @@ pub struct Var {
     pub ty: ETy,
 }
 
+/// We use this to store information about the parameters in parent blocks.
+/// This is necessary because in the definitions we store *all* the generics,
+/// including those coming from the outer impl block.
+///
+/// For instance:
+/// ```text
+/// impl Foo<T> {
+///         ^^^
+///       outer block generics
+///   fn bar<U>(...)  { ... }
+///         ^^^
+///       generics local to the function bar
+/// }
+/// ```
+///
+/// In `bar` we store the generics: `[T, U]`.
+///
+/// We however sometimes need to make a distinction between those two kinds
+/// of generics, in particular when manipulating traits. For instance:
+///
+/// ```text
+/// impl<T> Foo for Bar<T> {
+///   fn baz<U>(...)  { ... }
+/// }
+///
+/// fn test(...) {
+///    x.baz(...); // Here, we refer to the call as:
+///                // > Foo<T>::baz<U>(...)
+///                // If baz hadn't been a method implementation of a trait,
+///                // we would have refered to it as:
+///                // > baz<T, U>(...)
+///                // The reason is that with traits, we refer to the whole
+///                // trait implementation (as if it were a structure), then
+///                // pick a specific method inside (as if projecting a field
+///                // from a structure).
+/// }
+/// ```
+///
+/// **Remark**: Rust only allows refering to the generics of the immediately
+/// outer block. For this reason, when we need to store the information about
+/// the generics of the outer block(s), we need to do it only for one level
+/// (this definitely makes things simpler).
+#[derive(Debug, Clone, Serialize)]
+pub struct ParamsInfo {
+    pub num_region_params: usize,
+    pub num_type_params: usize,
+    pub num_const_generic_params: usize,
+}
+
 /// A function signature.
 /// Note that a signature uses unerased lifetimes, while function bodies (and
 /// execution) use erased lifetimes.
@@ -45,6 +94,8 @@ pub struct FunSig {
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
     pub trait_clauses: TraitClauseId::Vector<TraitClause>,
+    /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).
+    pub block_params_info: Option<ParamsInfo>,
     pub inputs: Vec<RTy>,
     pub output: RTy,
     /// The lifetime's hierarchy between the different regions.
@@ -100,9 +151,16 @@ pub struct GGlobalDecl<T: std::fmt::Debug + Clone + Serialize> {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct TraitMethodName(pub String);
+
+#[derive(Debug, Clone, Serialize)]
 pub struct TraitDecl {
     pub def_id: TraitId::Id,
     pub name: Name,
+    pub region_params: RegionVarId::Vector<RegionVar>,
+    pub type_params: TypeVarId::Vector<TypeVar>,
+    pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
+    pub trait_clauses: TraitClauseId::Vector<TraitClause>,
     // TODO: remaining fields
 }
 
@@ -232,15 +290,15 @@ pub struct TraitRef {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub enum FunIdOrTraitRef {
+pub enum FunIdOrTraitMethodRef {
     Fun(FunId),
     /// If a trait: the reference to the trait and the id of the trait method
-    Trait(TraitRef, FunDeclId::Id),
+    Trait(TraitRef, TraitMethodName),
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Call {
-    pub func: FunIdOrTraitRef,
+    pub func: FunIdOrTraitMethodRef,
     /// Technically this is useless, but we still keep it because we might
     /// want to introduce some information (and the way we encode from MIR
     /// is as simple as possible - and in MIR we also have a vector of erased

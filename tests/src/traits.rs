@@ -86,3 +86,30 @@ pub trait OfType {
 pub fn h3<T1: OfType, T2: ToType<T1>>(y: T2) -> T1 {
     T1::of_type(y)
 }
+
+pub struct TestType<T>(T);
+
+impl<T: ToU64> TestType<T> {
+    pub fn test(&self, x: T) -> bool {
+        struct TestType1(u64);
+        trait TestTrait {
+            fn test(&self) -> bool;
+        }
+
+        // Remark: we can't write: impl TestTrait for TestType<T>,
+        // we have to use a *local* parameter (can't use the outer T).
+        // In other words: the parameters used in the items inside
+        // an impl must be bound by the impl block (can't come from outer
+        // blocks).
+
+        impl TestTrait for TestType1 {
+            fn test(&self) -> bool {
+                self.0 > 1
+            }
+        }
+
+        let x = x.to_u64();
+        let y = TestType1(0);
+        x > 0 && y.test()
+    }
+}

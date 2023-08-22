@@ -463,7 +463,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     ///
     /// Rem.: this seems simpler in [crate::translate_functions_to_ullbc].
     /// TODO: compare and simplify/factorize?
-    fn translate_type_generics<'ctx1>(
+    pub(crate) fn translate_generics<'ctx1>(
         &'ctx1 mut self,
         def_id: DefId,
     ) -> (BodyTransCtx<'tcx, 'ctx1, 'ctx>, Vec<hax::GenericArg>) {
@@ -538,7 +538,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Check and translate the generics
         // TODO: use the body trans context as input, and don't return anything.
-        let (mut bt_ctx, _substs) = self.translate_type_generics(rust_id);
+        let (mut bt_ctx, _substs) = self.translate_generics(rust_id);
 
         // Translate the predicates
         bt_ctx.translate_predicates_of(rust_id);
