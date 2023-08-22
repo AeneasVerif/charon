@@ -181,7 +181,7 @@ impl TraitRef {
             &self.const_generic_args,
             &self.traits,
         );
-        format!("{trait_id}<{args}>")
+        format!("{trait_id}{args}")
     }
 }
 

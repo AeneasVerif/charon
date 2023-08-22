@@ -100,63 +100,6 @@ fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> rustc_middle::mir::Unevaluate
     rustc_middle::mir::UnevaluatedConst::new(id, p)
 }
 
-/// A function definition can be top-level, or can be defined in an `impl`
-/// block. In this case, we might want to retrieve the type for which the
-/// impl block was defined. This function returns this type's def id if
-/// the function def id given as input was defined in an impl block, and
-/// returns `None` otherwise.
-///
-/// For instance, when translating `bar` below:
-/// ```text
-/// impl Foo {
-///     fn bar(...) -> ... { ... }
-/// }
-/// ```
-/// we might want to know that `bar` is actually defined in one of `Foo`'s impl
-/// blocks (and retrieve `Foo`'s identifier).
-///
-/// TODO: this might gives us the same as TyCtxt::generics_of
-fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
-    // Retrieve the definition def id
-    let def_key = tcx.def_key(def_id);
-
-    // Reconstruct the parent def id: it's the same as the function's def id,
-    // at the exception of the index.
-    let parent_def_id = DefId {
-        index: def_key.parent.unwrap(),
-        ..def_id
-    };
-
-    // Retrieve the parent's key
-    let parent_def_key = tcx.def_key(parent_def_id);
-
-    // Match on the parent key
-    let parent = match parent_def_key.disambiguated_data.data {
-        rustc_hir::definitions::DefPathData::Impl => {
-            // Parent is an impl block! Retrieve the type definition (it
-            // seems that `type_of` is the only way of getting it)
-            let parent_type = tcx.type_of(parent_def_id).subst_identity();
-
-            // The parent type should be ADT
-            match parent_type.kind() {
-                rustc_middle::ty::TyKind::Adt(adt_def, _) => Some(adt_def.did()),
-                _ => {
-                    unreachable!();
-                }
-            }
-        }
-        _ => {
-            // Not an impl block
-            None
-        }
-    };
-
-    // TODO: checking
-    assert!(parent == tcx.generics_of(def_id).parent);
-
-    parent
-}
-
 /// Translate a call to a function considered primitive and which is not:
 /// panic, begin_panic, box_free (those have a *very* special treatment).
 fn translate_primitive_function_call(
@@ -165,6 +108,7 @@ fn translate_primitive_function_call(
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
     const_generic_args: Vec<ty::ConstGeneric>,
+    method_traits: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -206,7 +150,7 @@ fn translate_primitive_function_call(
                 region_args,
                 type_args,
                 const_generic_args,
-                traits: Vec::new(), // TODO
+                traits: Vec::new(),
                 args,
                 dest,
             };
@@ -217,6 +161,7 @@ fn translate_primitive_function_call(
             region_args,
             type_args,
             const_generic_args,
+            method_traits,
             args,
             dest,
             target,
@@ -226,6 +171,7 @@ fn translate_primitive_function_call(
             region_args,
             type_args,
             const_generic_args,
+            method_traits,
             args,
             dest,
             target,
@@ -251,7 +197,7 @@ fn translate_primitive_function_call(
                 region_args,
                 type_args,
                 const_generic_args,
-                traits: Vec::new(), // TODO
+                traits: method_traits,
                 args,
                 dest,
             };
@@ -283,6 +229,7 @@ fn translate_box_deref(
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
     const_generic_args: Vec<ty::ConstGeneric>,
+    method_traits: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -310,7 +257,7 @@ fn translate_box_deref(
         region_args,
         type_args,
         const_generic_args,
-        traits: Vec::new(), // TODO
+        traits: method_traits,
         args,
         dest,
     };
@@ -324,6 +271,7 @@ fn translate_vec_index(
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
     const_generic_args: Vec<ty::ConstGeneric>,
+    method_traits: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -352,7 +300,7 @@ fn translate_vec_index(
         region_args,
         type_args,
         const_generic_args,
-        traits: Vec::new(), // TODO
+        traits: method_traits,
         args,
         dest,
     };
@@ -1091,6 +1039,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 args,
                 destination,
                 target,
+                method_traits,
                 trait_info,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 from_hir_call: _,
@@ -1104,6 +1053,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     args,
                     destination,
                     target,
+                    method_traits,
                     trait_info,
                 )?
             }
@@ -1213,6 +1163,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         args: &Vec<hax::Operand>,
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
+        method_traits: &Vec<hax::ImplSource>,
         trait_info: &Option<hax::TraitInfo>,
     ) -> Result<ast::RawTerminator> {
         trace!();
@@ -1226,6 +1177,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // TODO: replace
         let name = def_id_to_name(self.t_ctx.tcx, def_id);
         let is_local = rust_id.is_local();
+
+        let method_traits = method_traits
+            .iter()
+            .map(|x| self.translate_trait_impl_source(x))
+            .collect();
 
         // If the call is `panic!`, then the target is `None`.
         // I don't know in which other cases it can be `None`.
@@ -1327,6 +1283,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     rust_id,
                     trait_info
                 );
+                trace!(
+                    "Method traits:\n- def_id: {:?}\n- traits:\n{:?}",
+                    rust_id,
+                    method_traits
+                );
 
                 if !is_prim {
                     // Two cases depending on whether we call a trait function
@@ -1335,13 +1296,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         Option::None => {
                             let def_id = self.translate_fun_decl_id(rust_id);
                             let func = ast::FunIdOrTraitRef::Fun(ast::FunId::Regular(def_id));
-                            // TODO: traits
                             let call = ast::Call {
                                 func,
                                 region_args,
                                 type_args,
                                 const_generic_args,
-                                traits: Vec::new(),
+                                traits: method_traits,
                                 args,
                                 dest: lval,
                             };
@@ -1356,6 +1316,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             region_args,
                             type_args,
                             const_generic_args,
+                            method_traits,
                             args,
                             lval,
                             next_block,
@@ -1381,6 +1342,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         region_args,
                         type_args,
                         const_generic_args,
+                        method_traits,
                         args,
                         lval,
                         next_block,
@@ -1396,6 +1358,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         region_args: Vec<ty::ErasedRegion>,
         type_args: Vec<ty::ETy>,
         const_generic_args: Vec<ty::ConstGeneric>,
+        method_traits: Vec<ast::TraitRef>,
         args: Vec<e::Operand>,
         dest: e::Place,
         target: ast::BlockId::Id,
@@ -1406,13 +1369,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let method_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
         let func = ast::FunIdOrTraitRef::Trait(trait_info, method_id);
 
-        // TODO: the traits!
         let call = ast::Call {
             func,
             region_args,
             type_args,
             const_generic_args,
-            traits: Vec::new(),
+            traits: method_traits,
             args,
             dest,
         };

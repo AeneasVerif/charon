@@ -28,7 +28,7 @@ pub fn test_bool_trait<T: BoolTrait>(x: T) -> bool {
     x.get_bool()
 }
 
-trait ToU64 {
+pub trait ToU64 {
     fn to_u64(self) -> u64;
 }
 
@@ -44,7 +44,7 @@ impl<A: ToU64> ToU64 for (A, A) {
     }
 }
 
-fn f<T: ToU64>(x: (T, T)) -> u64 {
+pub fn f<T: ToU64>(x: (T, T)) -> u64 {
     x.to_u64()
 }
 
@@ -55,7 +55,7 @@ where
     x.to_u64()
 }
 
-struct Wrapper<T> {
+pub struct Wrapper<T> {
     x: T,
 }
 
@@ -65,10 +65,24 @@ impl<T: ToU64> ToU64 for Wrapper<T> {
     }
 }
 
-fn h1(x: Wrapper<u64>) -> u64 {
+pub fn h1(x: Wrapper<u64>) -> u64 {
     x.to_u64()
 }
 
-fn h2<T: ToU64>(x: Wrapper<T>) -> u64 {
+pub fn h2<T: ToU64>(x: Wrapper<T>) -> u64 {
     x.to_u64()
+}
+
+pub trait ToType<T> {
+    fn to_type(self) -> T;
+}
+
+pub trait OfType {
+    fn of_type<T: ToType<Self>>(x: T) -> Self
+    where
+        Self: std::marker::Sized;
+}
+
+pub fn h3<T1: OfType, T2: ToType<T1>>(y: T2) -> T1 {
+    T1::of_type(y)
 }

@@ -9,6 +9,7 @@ use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::{Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
+use rustc_span::def_id::DefId;
 use serde::{Serialize, Serializer};
 use std::collections::HashSet;
 
@@ -342,4 +343,62 @@ pub fn def_id_to_name(tcx: TyCtxt, def_id: &hax::DefId) -> ItemName {
         },
     );
     extended_def_id_to_name(&def_id.rust_def_id.unwrap().sinto(&state))
+}
+
+/// A function definition can be top-level, or can be defined in an `impl`
+/// block. In this case, we might want to retrieve the type for which the
+/// impl block was defined. This function returns this type's def id if
+/// the function def id given as input was defined in an impl block, and
+/// returns `None` otherwise.
+///
+/// For instance, when translating `bar` below:
+/// ```text
+/// impl Foo {
+///     fn bar(...) -> ... { ... }
+/// }
+/// ```
+/// we might want to know that `bar` is actually defined in one of `Foo`'s impl
+/// blocks (and retrieve `Foo`'s identifier).
+///
+/// TODO: this might gives us the same as TyCtxt::generics_of
+/// TODO: simply use tcx.generic_of(def_id).parent?
+fn get_impl_parent_type_def_id(tcx: TyCtxt, def_id: DefId) -> Option<DefId> {
+    // Retrieve the definition def id
+    let def_key = tcx.def_key(def_id);
+
+    // Reconstruct the parent def id: it's the same as the function's def id,
+    // at the exception of the index.
+    let parent_def_id = DefId {
+        index: def_key.parent.unwrap(),
+        ..def_id
+    };
+
+    // Retrieve the parent's key
+    let parent_def_key = tcx.def_key(parent_def_id);
+
+    // Match on the parent key
+    let parent = match parent_def_key.disambiguated_data.data {
+        rustc_hir::definitions::DefPathData::Impl => {
+            // Parent is an impl block! Retrieve the type definition (it
+            // seems that `type_of` is the only way of getting it)
+            let parent_type = tcx.type_of(parent_def_id).subst_identity();
+
+            // The parent type should be ADT
+            match parent_type.kind() {
+                rustc_middle::ty::TyKind::Adt(adt_def, _) => Some(adt_def.did()),
+                _ => {
+                    unreachable!();
+                }
+            }
+        }
+        _ => {
+            // Not an impl block
+            None
+        }
+    };
+
+    // TODO: checking
+    assert!(parent == tcx.generics_of(def_id).parent);
+
+    parent
 }
