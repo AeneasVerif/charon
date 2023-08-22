@@ -1045,6 +1045,171 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
     }
 }
 
+pub struct TySubst<R> {
+    pub ignore_regions: bool,
+    /// This map is from regions to regions, not from region ids to regions.
+    /// In case the regions are not erased, we must be careful with the
+    /// static region.
+    pub regions_map: HashMap<R, R>,
+    pub type_vars_map: HashMap<TypeVarId::Id, Ty<R>>,
+    pub const_generics_map: HashMap<ConstGenericVarId::Id, ConstGeneric>,
+}
+
+macro_rules! check_ok_return {
+    ( $x:expr ) => {{
+        if $x {
+            return Ok(());
+        } else {
+            return Err(());
+        }
+    }};
+}
+
+macro_rules! check_ok {
+    ( $x:expr ) => {{
+        if !$x {
+            return Err(());
+        }
+    }};
+}
+
+impl<R: Clone + Eq + std::hash::Hash> TySubst<R> {
+    fn new() -> Self {
+        TySubst {
+            ignore_regions: false,
+            regions_map: HashMap::new(),
+            type_vars_map: HashMap::new(),
+            const_generics_map: HashMap::new(),
+        }
+    }
+
+    fn unify_regions(&mut self, src: &R, tgt: &R) -> Result<(), ()> {
+        use Result::*;
+        match self.regions_map.get(src) {
+            None => {
+                check_ok_return!(self.regions_map.insert(src.clone(), tgt.clone()).is_none());
+            }
+            Some(src) => {
+                check_ok_return!(src == tgt);
+            }
+        }
+    }
+
+    fn unify_const_generics(&mut self, src: &ConstGeneric, tgt: &ConstGeneric) -> Result<(), ()> {
+        use ConstGeneric::*;
+        use Result::*;
+        if let Var(v) = src {
+            check_ok_return!(self.const_generics_map.insert(*v, tgt.clone()).is_none());
+        }
+        match (src, tgt) {
+            (Global(src), Global(tgt)) => {
+                check_ok_return!(src == tgt);
+            }
+            (Value(src), Value(tgt)) => {
+                check_ok_return!(src == tgt);
+            }
+            _ => Err(()),
+        }
+    }
+
+    fn unify_types(&mut self, src: &Ty<R>, tgt: &Ty<R>) -> Result<(), ()> {
+        use Result::*;
+        use Ty::*;
+
+        if let TypeVar(v) = src {
+            check_ok_return!(self.type_vars_map.insert(*v, tgt.clone()).is_none());
+        }
+
+        match (src, tgt) {
+            (Adt(src_id, src_rgs, src_tys, src_cgs), Adt(tgt_id, tgt_rgs, tgt_tys, tgt_cgs)) => {
+                check_ok!(src_id == tgt_id);
+                if !self.ignore_regions {
+                    self.unify_regions_lists(src_rgs, tgt_rgs)?;
+                }
+                self.unify_types_lists(src_tys, tgt_tys)?;
+                self.unify_const_generics_lists(src_cgs, tgt_cgs)?;
+                Ok(())
+            }
+            (Literal(src), Literal(tgt)) => {
+                check_ok_return!(src == tgt);
+            }
+            (Never, Never) => Ok(()),
+            (Ref(src_r, box src_ty, src_kind), Ref(tgt_r, box tgt_ty, tgt_kind)) => {
+                if !self.ignore_regions {
+                    self.unify_regions(src_r, tgt_r)?;
+                }
+                self.unify_types(src_ty, tgt_ty)?;
+                check_ok_return!(src_kind == tgt_kind);
+            }
+            (RawPtr(box src_ty, src_kind), RawPtr(box tgt_ty, tgt_kind)) => {
+                self.unify_types(src_ty, tgt_ty)?;
+                check_ok_return!(src_kind == tgt_kind);
+            }
+            _ => Err(()),
+        }
+    }
+
+    fn unify_regions_lists(&mut self, src: &[R], tgt: &[R]) -> Result<(), ()> {
+        check_ok!(src.len() == tgt.len());
+        for (src, tgt) in src.iter().zip(tgt.iter()) {
+            self.unify_regions(src, tgt)?;
+        }
+        Ok(())
+    }
+
+    fn unify_const_generics_lists(
+        &mut self,
+        src: &[ConstGeneric],
+        tgt: &[ConstGeneric],
+    ) -> Result<(), ()> {
+        check_ok!(src.len() == tgt.len());
+        for (src, tgt) in src.iter().zip(tgt.iter()) {
+            self.unify_const_generics(src, tgt)?;
+        }
+        Ok(())
+    }
+
+    fn unify_types_lists(&mut self, src: &[Ty<R>], tgt: &[Ty<R>]) -> Result<(), ()> {
+        check_ok!(src.len() == tgt.len());
+        for (src, tgt) in src.iter().zip(tgt.iter()) {
+            self.unify_types(src, tgt)?;
+        }
+        Ok(())
+    }
+
+    fn unify_args(
+        &mut self,
+        src: &crate::gast::Args<R>,
+        tgt: &crate::gast::Args<R>,
+    ) -> Result<(), ()> {
+        self.unify_regions_lists(&src.region_args, &tgt.region_args)?;
+        self.unify_types_lists(&src.type_args, &tgt.type_args)?;
+        self.unify_const_generics_lists(&src.const_generic_args, &tgt.const_generic_args)?;
+        Ok(())
+    }
+}
+
+impl TySubst<ErasedRegion> {
+    pub fn unify_eargs(
+        fixed_type_vars: impl std::iter::Iterator<Item = TypeVarId::Id>,
+        fixed_const_generic_vars: impl std::iter::Iterator<Item = ConstGenericVarId::Id>,
+        src: &crate::gast::EArgs,
+        tgt: &crate::gast::EArgs,
+    ) -> Result<Self, ()> {
+        let mut s = TySubst::new();
+        for v in fixed_type_vars {
+            s.type_vars_map.insert(v, Ty::TypeVar(v));
+        }
+        for v in fixed_const_generic_vars {
+            s.const_generics_map.insert(v, ConstGeneric::Var(v));
+        }
+
+        s.ignore_regions = true;
+        s.unify_args(src, tgt)?;
+        Ok(s)
+    }
+}
+
 // Derive two implementations at once: one which uses shared borrows, and one
 // which uses mutable borrows.
 // Generates the traits: `SharedTypeVisitor` and `MutTypeVisitor`.

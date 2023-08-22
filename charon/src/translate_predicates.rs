@@ -3,7 +3,7 @@ use crate::common::Result;
 use crate::gast::{ParamsInfo, TraitRef};
 use crate::translate_ctx::{BodyTransCtx, TransCtx};
 use crate::translate_types;
-use crate::types::{ConstGeneric, RTy, Region, RegionVarId, TraitClause};
+use crate::types::{ConstGeneric, ETy, RTy, Region, RegionVarId, TraitClause, TraitClauseId};
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
@@ -169,23 +169,66 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 assert!(trait_ref.bound_vars.is_empty());
                 assert!(*constness == hax::BoundConstness::NotConst);
                 let trait_ref = &trait_ref.value;
-                let def_id = trait_ref.def_id.rust_def_id.unwrap();
-                // TODO: trait id: doesn't work
-                let trait_id = self.translate_trait_id(def_id);
-                let trait_id = TraitInstanceId::Trait(trait_id); // TODO: this doesn't work
 
-                let (region_args, type_args, const_generic_args) = self
+                let def_id = trait_ref.def_id.rust_def_id.unwrap();
+                let trait_id = self.translate_trait_id(def_id);
+
+                let (_region_args, type_args, const_generic_args) = self
                     .translate_subst_generic_args_in_body(None, &trait_ref.generic_args)
                     .unwrap();
-                let traits = traits
+                let traits: Vec<TraitRef> = traits
                     .iter()
                     .map(|x| self.translate_trait_impl_source(x))
                     .collect();
+
+                // We need to find the trait clause which corresponds to
+                // this obligation.
+                let clause_id = {
+                    let mut clause_id: Option<TraitClauseId::Id> = None;
+
+                    let tgt_type_args = type_args;
+                    let tgt_const_generic_args = const_generic_args;
+
+                    for trait_clause in &self.trait_clauses {
+                        // Check if the clause is about the same trait
+                        if trait_clause.trait_id != trait_id {
+                            continue;
+                        }
+
+                        let src_type_args: Vec<ETy> = trait_clause
+                            .type_params
+                            .iter()
+                            .map(|x| x.erase_regions())
+                            .collect();
+                        let src_const_generic_args = &trait_clause.const_generic_params;
+
+                        // We simply check the equality between the arguments:
+                        // there are no universally quantified variables to unify.
+                        // TODO: normalize the trait clauses (we actually
+                        // need to check equality **modulo** equality clauses)
+                        // TODO: if we need to unify (later, when allowing universal
+                        // quantification over clause parameters), use types_utils::TySubst.
+                        if src_type_args == tgt_type_args
+                            && src_const_generic_args == &tgt_const_generic_args
+                        {
+                            clause_id = Some(trait_clause.clause_id);
+                            break;
+                        }
+                    }
+                    // We should have found a clause
+                    clause_id.unwrap()
+                };
+
+                let trait_id = TraitInstanceId::Clause(clause_id);
+
+                assert!(traits.is_empty());
+                // Ignore the arguments: we forbid using universal quantifiers
+                // on the trait clauses for now.
                 TraitRef {
                     trait_id,
-                    region_args,
-                    type_args,
-                    const_generic_args,
+                    region_args: Vec::new(),
+                    type_args: Vec::new(),
+                    const_generic_args: Vec::new(),
                     traits,
                 }
             }

@@ -300,7 +300,7 @@ pub enum FunIdOrTraitMethodRef {
 // TODO: use this to factor out fields in all the definitions
 #[derive(Debug, Clone, Serialize)]
 pub struct Args<R> {
-    pub region_args: Vec<ErasedRegion>,
+    pub region_args: Vec<R>,
     pub type_args: Vec<Ty<R>>,
     pub const_generic_args: Vec<ConstGeneric>,
 }

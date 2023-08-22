@@ -72,7 +72,7 @@ pub enum Region<Rid> {
 
 /// The type of erased regions. See [`Ty`](Ty) for more explanations.
 /// We could use `()`, but having a dedicated type makes things more explicit.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Hash)]
 pub enum ErasedRegion {
     Erased,
 }
@@ -86,7 +86,7 @@ pub struct TraitClause {
     /// to a parameter.
     pub clause_id: TraitClauseId::Id,
     pub meta: Meta,
-    ///
+    // TODO: use the Args type
     pub trait_id: TraitDeclId::Id,
     pub region_params: Vec<Region<RegionVarId::Id>>,
     pub type_params: Vec<RTy>,
