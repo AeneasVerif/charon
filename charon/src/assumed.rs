@@ -52,7 +52,8 @@ pub static VEC_LEN_NAME: [&str; 4] = ["alloc", "vec", "Vec", "len"];
 pub static PTR_UNIQUE_NAME: [&str; 3] = ["core", "ptr", "Unique"];
 pub static PTR_NON_NULL_NAME: [&str; 3] = ["core", "ptr", "NonNull"];
 
-// We ignore this trait, which is implicitly given to all the type parameters
+// We ignore this trait, which is automatically added for some type parameters
+// when defining a new type.
 pub static MARKER_SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
 
 /// We redefine identifiers for assumed functions here, instead of reusing the

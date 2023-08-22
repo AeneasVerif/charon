@@ -5,7 +5,7 @@ use crate::export;
 use crate::get_mir::MirLevel;
 use crate::index_to_function_calls;
 use crate::insert_assign_return_unit;
-use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId};
+use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId, TraitId};
 use crate::ops_to_function_calls;
 use crate::reconstruct_asserts;
 use crate::regions_hierarchy;
@@ -157,6 +157,8 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // the mutually recursive groups - we do this in the next step.
     let mut ctx = translate_crate_to_ullbc::translate(crate_info, sess, tcx, mir_level);
 
+    trace!("# After translation from MIR:\n{}\n", ctx);
+
     // # Reorder the graph of dependencies and compute the strictly
     // connex components to:
     // - compute the order in which to extract the definitions
@@ -190,7 +192,12 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         FunDeclId::Map::from_iter(ullbc_funs.iter().map(|d| (d.def_id, d.name.to_string())));
     let global_names: GlobalDeclId::Map<String> =
         GlobalDeclId::Map::from_iter(ullbc_globals.iter().map(|d| (d.def_id, d.name.to_string())));
-    let fmt_ctx = CtxNames::new(type_defs, &fun_names, &global_names);
+    let trait_names: TraitId::Map<String> = TraitId::Map::from_iter(
+        ctx.trait_defs
+            .iter()
+            .map(|d| (d.def_id, d.name.to_string())),
+    );
+    let fmt_ctx = CtxNames::new(type_defs, &fun_names, &global_names, &trait_names);
 
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
@@ -218,6 +225,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         let (mut llbc_funs, mut llbc_globals) = ullbc_to_llbc::translate_functions(
             options.no_code_duplication,
             type_defs,
+            &ctx.trait_defs,
             ullbc_funs,
             ullbc_globals,
         );
@@ -237,7 +245,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         for (_, def) in &llbc_funs {
             trace!(
                 "# After asserts reconstruction:\n{}\n",
-                def.fmt_with_decls(type_defs, &llbc_funs, &llbc_globals)
+                def.fmt_with_ctx_names(&fmt_ctx)
             );
         }
 
@@ -273,10 +281,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
 
         trace!("# Final LLBC:\n");
         for (_, def) in &llbc_funs {
-            trace!(
-                "#{}\n",
-                def.fmt_with_decls(type_defs, &llbc_funs, &llbc_globals)
-            );
+            trace!("#{}\n", def.fmt_with_ctx_names(&fmt_ctx));
         }
 
         // # Final step: generate the files.

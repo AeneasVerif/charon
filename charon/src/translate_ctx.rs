@@ -20,6 +20,7 @@ use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::{BTreeSet, HashMap, HashSet};
+use std::fmt;
 
 pub struct CrateInfo {
     pub crate_name: String,
@@ -44,6 +45,7 @@ impl CrateInfo {
 pub enum OrdRustId {
     Global(DefId),
     ConstFun(DefId),
+    Trait(DefId),
     Fun(DefId),
     Type(DefId),
 }
@@ -53,6 +55,7 @@ impl OrdRustId {
         match self {
             OrdRustId::Global(id)
             | OrdRustId::ConstFun(id)
+            | OrdRustId::Trait(id)
             | OrdRustId::Fun(id)
             | OrdRustId::Type(id) => *id,
         }
@@ -114,6 +117,10 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub global_id_map: ast::GlobalDeclId::MapGenerator<DefId>,
     /// The translated global definitions
     pub global_defs: ast::GlobalDecls,
+    /// The map from Rust trait ids to translated trait ids
+    pub trait_id_map: ast::TraitId::MapGenerator<DefId>,
+    /// The translated trait definitions
+    pub trait_defs: ast::TraitDecls,
 }
 
 /// A translation context for type/global/function bodies.
@@ -147,6 +154,10 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
     pub const_generic_vars_map: ty::ConstGenericVarId::MapGenerator<u32>,
+    ///
+    pub trait_clauses_counter: ty::TraitClauseId::Generator,
+    ///
+    pub trait_clauses: ty::TraitClauseId::Vector<ty::TraitClause>,
     /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
@@ -268,6 +279,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
+    // TODO: rename
     pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
         // Translate the span
         let span = self.translate_span(rspan);
@@ -325,8 +337,24 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
+    pub(crate) fn register_trait_id(&mut self, id: DefId) -> ast::TraitId::Id {
+        match self.trait_id_map.get(&id) {
+            Option::Some(id) => id,
+            Option::None => {
+                let rid = OrdRustId::Trait(id);
+                let trans_id = self.trait_id_map.insert(id);
+                self.push_id(id, rid, AnyTransId::Trait(trans_id));
+                trans_id
+            }
+        }
+    }
+
     pub(crate) fn translate_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
         self.register_fun_decl_id(id)
+    }
+
+    pub(crate) fn translate_trait_id(&mut self, id: DefId) -> ast::TraitId::Id {
+        self.register_trait_id(id)
     }
 
     pub(crate) fn register_global_decl_id(&mut self, id: DefId) -> ty::GlobalDeclId::Id {
@@ -360,6 +388,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             vars_map: v::VarId::MapGenerator::new(),
             const_generic_vars: ty::ConstGenericVarId::Vector::new(),
             const_generic_vars_map: ty::ConstGenericVarId::MapGenerator::new(),
+            trait_clauses_counter: ty::TraitClauseId::Generator::new(),
+            trait_clauses: ty::TraitClauseId::Vector::new(),
             blocks: im::OrdMap::new(),
             blocks_map: ast::BlockId::MapGenerator::new(),
             bound_vars: im::Vector::new(),
@@ -409,6 +439,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn translate_global_decl_id(&mut self, id: DefId) -> ast::GlobalDeclId::Id {
         self.t_ctx.translate_global_decl_id(id)
+    }
+
+    pub(crate) fn translate_trait_id(&mut self, id: DefId) -> ast::TraitId::Id {
+        self.t_ctx.translate_trait_id(id)
     }
 
     pub(crate) fn get_region_from_rust(&self, r: hax::Region) -> Option<ty::RegionVarId::Id> {
@@ -496,6 +530,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn get_type_defs(&self) -> &ty::TypeDecls {
         &self.t_ctx.type_defs
     }
+
+    pub(crate) fn fresh_trait_clause_id(&mut self) -> ty::TraitClauseId::Id {
+        self.trait_clauses_counter.fresh_id()
+    }
 }
 
 impl<'tcx, 'ctx> Formatter<ty::TypeDeclId::Id> for TransCtx<'tcx, 'ctx> {
@@ -504,9 +542,46 @@ impl<'tcx, 'ctx> Formatter<ty::TypeDeclId::Id> for TransCtx<'tcx, 'ctx> {
     }
 }
 
+impl<'tcx, 'ctx> Formatter<ty::GlobalDeclId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ty::GlobalDeclId::Id) -> String {
+        self.global_defs.format_object(id)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<ty::RegionVarId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ty::RegionVarId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<ty::TypeVarId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ty::TypeVarId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&ty::Region<ty::RegionVarId::Id>> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, r: &ty::Region<ty::RegionVarId::Id>) -> String {
+        r.fmt_with_ctx(self)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<ty::ConstGenericVarId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ty::ConstGenericVarId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
 impl<'tcx, 'ctx, 'ctx1> Formatter<ty::TypeVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: ty::TypeVarId::Id) -> String {
         let v = self.type_vars.get(id).unwrap();
+        v.to_string()
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<ty::ConstGenericVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ty::ConstGenericVarId::Id) -> String {
+        let v = self.const_generic_vars.get(id).unwrap();
         v.to_string()
     }
 }
@@ -530,13 +605,6 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Region<ty::RegionVarId::Id>>
 {
     fn format_object(&self, r: &ty::Region<ty::RegionVarId::Id>) -> String {
         r.fmt_with_ctx(self)
-    }
-}
-
-impl<'tcx, 'ctx, 'ctx1> Formatter<ty::ConstGenericVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: ty::ConstGenericVarId::Id) -> String {
-        let v = self.const_generic_vars.get(id).unwrap();
-        v.to_string()
     }
 }
 
@@ -656,5 +724,44 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::TypeDecl> for BodyTransCtx<'tcx, 'ctx, 'c
             const_generic_params: &def.const_generic_params,
         };
         formatter.format_object(def)
+    }
+}
+
+impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // We do simple: types, globals, functions
+        for (_, d) in &self.type_defs {
+            // TODO: update to also use the type declaration (gives access
+            // to the type variables and const generics...)
+            writeln!(f, "{}\n", d.fmt_with_ctx(self))?
+        }
+
+        for (_, d) in &self.global_defs {
+            writeln!(
+                f,
+                "{}\n",
+                d.fmt_with_decls(
+                    &self.type_defs,
+                    &self.fun_defs,
+                    &self.global_defs,
+                    &self.trait_defs
+                )
+            )?
+        }
+
+        for (_, d) in &self.fun_defs {
+            writeln!(
+                f,
+                "{}\n",
+                d.fmt_with_decls(
+                    &self.type_defs,
+                    &self.fun_defs,
+                    &self.global_defs,
+                    &self.trait_defs
+                )
+            )?
+        }
+
+        fmt::Result::Ok(())
     }
 }

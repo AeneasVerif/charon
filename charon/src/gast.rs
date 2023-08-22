@@ -4,10 +4,11 @@
 pub use crate::expressions::{Operand, Place};
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
-use crate::names::FunName;
 use crate::names::GlobalName;
+use crate::names::{FunName, Name};
 use crate::regions_hierarchy::RegionGroups;
 pub use crate::types::GlobalDeclId;
+pub use crate::types::TraitClauseId;
 use crate::types::*;
 use crate::values::*;
 use macros::generate_index_type;
@@ -18,6 +19,7 @@ use serde::Serialize;
 pub static TAB_INCR: &str = "    ";
 
 generate_index_type!(FunDeclId);
+generate_index_type!(TraitId); // TODO: rename to TraitDeclId?
 
 /// A variable
 #[derive(Debug, Clone, Serialize)]
@@ -42,6 +44,7 @@ pub struct FunSig {
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
+    pub trait_clauses: TraitClauseId::Vector<TraitClause>,
     pub inputs: Vec<RTy>,
     pub output: RTy,
     /// The lifetime's hierarchy between the different regions.
@@ -94,6 +97,13 @@ pub struct GGlobalDecl<T: std::fmt::Debug + Clone + Serialize> {
     pub name: GlobalName,
     pub ty: ETy,
     pub body: Option<GExprBody<T>>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TraitDecl {
+    pub def_id: TraitId::Id,
+    pub name: Name,
+    // TODO: remaining fields
 }
 
 /// A function identifier. See [crate::ullbc_ast::Terminator]
@@ -205,10 +215,32 @@ pub enum AssumedFunId {
     SliceSubsliceMut,
 }
 
-/// TODO: factor out with [Rvalue]
+#[derive(Debug, Clone, Serialize)]
+pub enum TraitOrClauseId {
+    Trait(TraitId::Id),
+    Clause(TraitClauseId::Id),
+}
+
+/// A reference to a trait
+#[derive(Debug, Clone, Serialize)]
+pub struct TraitRef {
+    pub trait_id: TraitOrClauseId,
+    pub region_args: Vec<ErasedRegion>,
+    pub type_args: Vec<ETy>,
+    pub const_generic_args: Vec<ConstGeneric>,
+    pub traits: Vec<TraitRef>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub enum FunIdOrTraitRef {
+    Fun(FunId),
+    /// If a trait: the reference to the trait and the id of the trait method
+    Trait(TraitRef, FunDeclId::Id),
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Call {
-    pub func: FunId,
+    pub func: FunIdOrTraitRef,
     /// Technically this is useless, but we still keep it because we might
     /// want to introduce some information (and the way we encode from MIR
     /// is as simple as possible - and in MIR we also have a vector of erased
@@ -216,6 +248,7 @@ pub struct Call {
     pub region_args: Vec<ErasedRegion>,
     pub type_args: Vec<ETy>,
     pub const_generic_args: Vec<ConstGeneric>,
+    pub traits: Vec<TraitRef>,
     pub args: Vec<Operand>,
     pub dest: Place,
 }

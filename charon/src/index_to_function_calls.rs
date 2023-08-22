@@ -5,8 +5,8 @@
 use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
 use crate::gast::{Call, Var};
 use crate::llbc_ast::{
-    iter_function_bodies, iter_global_bodies, AssumedFunId, CtxNames, FunDecls, FunId, GlobalDecls,
-    MutAstVisitor, RawStatement, Statement, Switch,
+    iter_function_bodies, iter_global_bodies, AssumedFunId, CtxNames, FunDecls, FunIdOrTraitRef,
+    GlobalDecls, MutAstVisitor, RawStatement, Statement, Switch,
 };
 use crate::meta::Meta;
 use crate::types::{AssumedTy, ConstGeneric, ErasedRegion, MutTypeVisitor, RefKind, Ty};
@@ -95,12 +95,13 @@ impl<'a> Transform<'a> {
                 let arg_buf = Operand::Move(Place::new(buf_borrow_var));
                 let arg_index = Operand::Copy(Place::new(index_var_id));
                 let index_dest = Place::new(elem_borrow_var);
-                let index_id = FunId::Assumed(index_id);
+                let index_id = FunIdOrTraitRef::mk_assumed(index_id);
                 let index_call = Call {
                     func: index_id,
                     region_args: vec![ErasedRegion::Erased],
                     type_args: vec![elem_ty],
                     const_generic_args: cgs,
+                    traits: Vec::new(),
                     args: vec![arg_buf, arg_index],
                     dest: index_dest,
                 };

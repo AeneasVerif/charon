@@ -1,6 +1,5 @@
 use crate::assumed;
 use crate::common::*;
-use crate::generics;
 use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
 use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
@@ -329,7 +328,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let mut regions: Vec<R> = vec![];
         let mut params = vec![];
-        let cgs = vec![];
+        let mut cgs = vec![];
         for (param, param_i) in substs.iter() {
             trace!("Adt: param {}: {:?}", param_i, param);
             match param {
@@ -340,8 +339,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 hax::GenericArg::Lifetime(region) => {
                     regions.push(region_translator(&region));
                 }
-                hax::GenericArg::Const(_) => {
-                    unimplemented!();
+                hax::GenericArg::Const(c) => {
+                    cgs.push(self.translate_constant_expr_to_const_generic(c));
                 }
             }
         }
@@ -470,9 +469,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     ) -> (BodyTransCtx<'tcx, 'ctx1, 'ctx>, Vec<hax::GenericArg>) {
         let tcx = self.tcx;
 
-        // Check the generics and the predicates - TODO: update
-        generics::check_type_generics(tcx, def_id);
-
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(def_id, self);
 
@@ -544,6 +540,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // TODO: use the body trans context as input, and don't return anything.
         let (mut bt_ctx, _substs) = self.translate_type_generics(rust_id);
 
+        // Translate the predicates
+        bt_ctx.translate_predicates_of(rust_id);
+
         // Check if the type is opaque or external, and delegate the translation
         // of the "body" to the proper function
         let kind = if !rust_id.is_local() || !is_transparent {
@@ -576,7 +575,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             region_params,
             type_params,
             const_generic_params,
+            trait_clauses: bt_ctx.trait_clauses.clone(),
             kind,
+            // Dummy value for now: we compute this later
             regions_hierarchy: RegionGroups::new(),
         };
 

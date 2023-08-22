@@ -1,6 +1,6 @@
 use crate::common::*;
 use crate::expressions::SharedExprVisitor;
-use crate::gast::{FunDeclId, GlobalDeclId};
+use crate::gast::{FunDeclId, GlobalDeclId, TraitId};
 use crate::graphs::*;
 use crate::translate_ctx::TransCtx;
 use crate::types::{SharedTypeVisitor, TypeDeclId, TypeDeclKind};
@@ -84,10 +84,11 @@ impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationGroup<TypeId, FunId, 
     PartialOrd,
     Ord,
 )]
-pub enum AnyDeclId<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
+pub enum AnyDeclId<TypeId: Copy, FunId: Copy, GlobalId: Copy, TraitId: Copy> {
     Type(TypeId),
     Fun(FunId),
     Global(GlobalId),
+    Trait(TraitId),
 }
 
 #[derive(Clone, Copy)]
@@ -191,7 +192,7 @@ impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, GlobalId: Copy + Seriali
     }
 }
 
-pub type AnyTransId = AnyDeclId<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id>;
+pub type AnyTransId = AnyDeclId<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id, TraitId::Id>;
 
 pub struct Deps {
     dgraph: DiGraphMap<AnyTransId, ()>,
@@ -320,6 +321,9 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 // Explore the body
                 graph.visit_body(&d.body);
             }
+            AnyTransId::Trait(_) => {
+                todo!()
+            }
         }
         graph.unset_current_id();
     }
@@ -385,6 +389,9 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 is_rec,
                 scc.iter().map(AnyDeclId::as_global).copied(),
             ),
+            AnyDeclId::Trait(_) => {
+                todo!()
+            }
         };
 
         reordered_decls.push(group);

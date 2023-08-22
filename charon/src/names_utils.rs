@@ -214,6 +214,7 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
             }
             ExtendedDefPathItem::Impl { ty, .. } => {
                 // Match over the type.
+                // TODO: we need to improve this...
                 use hax::Ty;
                 name.push(PathElem::Ident(match ty {
                     Ty::Adt { def_id: adt_id, .. } => {
@@ -234,7 +235,11 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
                         Ty::Param(hax::ParamTy { index: 0, name: _ }) => "[T]".to_string(),
                         _ => format!("{ty:?}"),
                     },
-                    _ => unreachable!(),
+                    Ty::Tuple(_) => {
+                        // TODO
+                        format!("{ty:?}")
+                    }
+                    _ => unreachable!("Unexpected type: {:?}", ty),
                 }));
 
                 // Push the disambiguator
@@ -243,8 +248,7 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
                 )));
             }
             ExtendedDefPathItem::ImplTrait => {
-                // TODO: this should work the same as for `Impl`
-                unimplemented!();
+                // TODO: do nothing for now
             }
             ExtendedDefPathItem::MacroNs(symbol) => {
                 assert!(data.disambiguator == 0); // Sanity check
@@ -309,7 +313,8 @@ pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
         | ItemKind::Mod(_)
         | ItemKind::Const(_, _)
         | ItemKind::Static(_, _, _)
-        | ItemKind::Macro(_, _) => Option::Some(extended_def_id_to_name(&def_id)),
+        | ItemKind::Macro(_, _)
+        | ItemKind::Trait(..) => Option::Some(extended_def_id_to_name(&def_id)),
         _ => {
             unimplemented!("{:?}", item.kind);
         }

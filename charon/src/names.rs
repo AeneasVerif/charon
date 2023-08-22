@@ -55,6 +55,7 @@ pub struct Name {
     pub name: Vec<PathElem>,
 }
 
+// TODO: remove those
 pub type ModuleName = Name;
 pub type TypeName = Name;
 pub type ItemName = Name;

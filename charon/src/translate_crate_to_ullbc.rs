@@ -74,14 +74,19 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 // We ignore the type aliases - it seems they are inlined
             }
             ItemKind::OpaqueTy(_) => unimplemented!(),
-            ItemKind::Union(_, _) => unimplemented!(),
-            ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
+            ItemKind::Union(..) => unimplemented!(),
+            ItemKind::Enum(..) | ItemKind::Struct(_, _) => {
                 let _ = self.translate_type_decl_id(def_id);
             }
             ItemKind::Fn(_, _, _) => {
                 let _ = self.translate_fun_decl_id(def_id);
             }
-            ItemKind::Const(_, _) | ItemKind::Static(_, _, _) => {
+            ItemKind::Trait(..) => {
+                let _ = self.translate_trait_id(def_id);
+                // We don't need to explore the associated items: we will
+                // explore them when translating the trait
+            }
+            ItemKind::Const(..) | ItemKind::Static(..) => {
                 // We ignore the anonymous constants, which are introduced
                 // by the Rust compiler: those constants will be inlined in the
                 // function bodies.
@@ -186,6 +191,8 @@ pub fn translate<'tcx, 'ctx>(
         fun_defs: ast::FunDeclId::Map::new(),
         global_id_map: ast::GlobalDeclId::MapGenerator::new(),
         global_defs: ast::GlobalDeclId::Map::new(),
+        trait_id_map: ast::TraitId::MapGenerator::new(),
+        trait_defs: ast::TraitId::Map::new(),
     };
 
     // First push all the items in the stack of items to translate.
@@ -222,6 +229,7 @@ pub fn translate<'tcx, 'ctx>(
             OrdRustId::Type(id) => ctx.translate_type(id),
             OrdRustId::Fun(id) | OrdRustId::ConstFun(id) => ctx.translate_function(id),
             OrdRustId::Global(id) => ctx.translate_global(id),
+            OrdRustId::Trait(id) => ctx.translate_trait(id),
         }
     }
 

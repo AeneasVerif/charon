@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use crate::gast::TraitId;
 use crate::meta::Meta;
 use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
@@ -59,6 +60,7 @@ pub struct ConstGenericVar {
 /// Region as used in a function's signatures (in which case we use region variable
 /// ids) and in symbolic variables and projections (in which case we use region
 /// ids).
+/// TODO: remove the constraints on Rid
 #[derive(
     Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord, EnumIsA, EnumAsGetters, Serialize,
 )]
@@ -74,6 +76,22 @@ pub enum Region<Rid: Copy + Eq> {
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize)]
 pub enum ErasedRegion {
     Erased,
+}
+
+generate_index_type!(TraitClauseId);
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TraitClause {
+    /// We use this id when solving trait constraints, to be able to refer
+    /// to specific where clauses when the selected trait actually is linked
+    /// to a parameter.
+    pub clause_id: TraitClauseId::Id,
+    pub meta: Meta,
+    ///
+    pub trait_id: TraitId::Id,
+    pub region_params: Vec<Region<RegionVarId::Id>>,
+    pub type_params: Vec<RTy>,
+    pub const_generic_params: Vec<ConstGeneric>,
 }
 
 /// A type declaration.
@@ -98,6 +116,7 @@ pub struct TypeDecl {
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
     pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
+    pub trait_clauses: TraitClauseId::Vector<TraitClause>,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
     /// The lifetime's hierarchy between the different regions.

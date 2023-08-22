@@ -4,7 +4,9 @@
 use crate::assumed;
 use crate::expressions::*;
 use crate::formatter::Formatter;
-use crate::gast::{AssumedFunId, Call, FunDeclId, FunId};
+use crate::gast::{
+    AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitRef, TraitId, TraitOrClauseId, TraitRef,
+};
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use crate::values;
@@ -459,18 +461,30 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
     }
 
     fn visit_call(&mut self, c: &Call) {
-        self.visit_fun_id(&c.func);
+        let Call {
+            func,
+            region_args: _,
+            type_args,
+            const_generic_args,
+            traits,
+            args,
+            dest,
+        } = c;
+        self.visit_fun_id_or_trait_ref(func);
         // We ignore the regions which are erased
-        for t in &c.type_args {
+        for t in type_args {
             self.visit_ty(t);
         }
-        for cg in &c.const_generic_args {
+        for cg in const_generic_args {
             self.visit_const_generic(cg);
         }
-        for o in &c.args {
+        for o in args {
             self.visit_operand(o);
         }
-        self.visit_place(&c.dest);
+        for t in traits {
+            self.visit_trait_ref(t);
+        }
+        self.visit_place(dest);
     }
 
     fn visit_fun_id(&mut self, fun_id: &FunId) {
@@ -480,8 +494,48 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         }
     }
 
+    fn visit_fun_id_or_trait_ref(&mut self, fun_id: &FunIdOrTraitRef) {
+        use FunIdOrTraitRef::*;
+        match fun_id {
+            Fun(fun_id) => self.visit_fun_id(fun_id),
+            Trait(trait_ref, method_id) => {
+                self.visit_trait_ref(trait_ref);
+                self.visit_fun_decl_id(method_id);
+            }
+        }
+    }
+
     fn visit_fun_decl_id(&mut self, fid: &FunDeclId::Id) {}
     fn visit_assumed_fun_id(&mut self, fid: &AssumedFunId) {}
+    fn visit_trait_id(&mut self, fid: &TraitId::Id) {}
+    fn visit_trait_clause_id(&mut self, fid: &TraitClauseId::Id) {}
+
+    fn visit_trait_ref(&mut self, tr: &TraitRef) {
+        let TraitRef {
+            trait_id,
+            region_args: _,
+            type_args,
+            const_generic_args,
+            traits,
+        } = tr;
+        self.visit_trait_or_clause_id(trait_id);
+        for t in type_args {
+            self.visit_ty(t);
+        }
+        for cg in const_generic_args {
+            self.visit_const_generic(cg);
+        }
+        for t in traits {
+            self.visit_trait_ref(t);
+        }
+    }
+
+    fn visit_trait_or_clause_id(&mut self, id: &TraitOrClauseId) {
+        match id {
+            TraitOrClauseId::Trait(id) => self.visit_trait_id(id),
+            TraitOrClauseId::Clause(id) => self.visit_trait_clause_id(id),
+        }
+    }
 }
 
 } // make_generic_in_borrows

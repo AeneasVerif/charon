@@ -1821,19 +1821,21 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
 }
 
 /// `type_defs`, `global_defs`: those parameters are used for pretty-printing purposes
+/// TODO: we should use a translation context instead
 fn translate_function(
     no_code_duplication: bool,
     type_defs: &TypeDecls,
     src_defs: &src::FunDecls,
     src_def_id: FunDeclId::Id,
     global_defs: &src::GlobalDecls,
+    trait_defs: &src::TraitDecls,
 ) -> tgt::FunDecl {
     // Retrieve the function definition
     let src_def = src_defs.get(src_def_id).unwrap();
     trace!(
         "# Reconstructing: {}\n\n{}",
         src_def.name,
-        src_def.fmt_with_decls(type_defs, src_defs, global_defs)
+        src_def.fmt_with_decls(type_defs, src_defs, global_defs, trait_defs)
     );
 
     // Return the translated definition
@@ -1855,13 +1857,14 @@ fn translate_global(
     global_defs: &src::GlobalDecls,
     global_id: GlobalDeclId::Id,
     fun_defs: &src::FunDecls,
+    trait_defs: &src::TraitDecls,
 ) -> tgt::GlobalDecl {
     // Retrieve the global definition
     let src_def = global_defs.get(global_id).unwrap();
     trace!(
         "# Reconstructing: {}\n\n{}",
         src_def.name,
-        src_def.fmt_with_decls(type_defs, fun_defs, global_defs)
+        src_def.fmt_with_decls(type_defs, fun_defs, global_defs, trait_defs)
     );
 
     tgt::GlobalDecl {
@@ -1885,6 +1888,7 @@ fn translate_global(
 pub fn translate_functions(
     no_code_duplication: bool,
     type_defs: &TypeDecls,
+    traits: &src::TraitDecls,
     src_funs: &src::FunDecls,
     src_globals: &src::GlobalDecls,
 ) -> Defs {
@@ -1901,6 +1905,7 @@ pub fn translate_functions(
                 src_funs,
                 *fun_id,
                 src_globals,
+                traits,
             ),
         );
     }
@@ -1913,6 +1918,7 @@ pub fn translate_functions(
                 src_globals,
                 *global_id,
                 src_funs,
+                traits,
             ),
         );
     }
@@ -1921,8 +1927,8 @@ pub fn translate_functions(
     for (_, fun) in &tgt_funs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            fun.signature.fmt_with_decls(type_defs, src_globals),
-            fun.fmt_with_decls(type_defs, &tgt_funs, &tgt_globals)
+            fun.signature.fmt_with_decls(type_defs, src_globals, traits),
+            fun.fmt_with_decls(type_defs, &tgt_funs, &tgt_globals, traits)
         );
     }
     // Print the global variables
@@ -1930,7 +1936,7 @@ pub fn translate_functions(
         trace!(
             "# Type:\n{:?}\n\n# Global definition:\n{}\n",
             global.ty,
-            global.fmt_with_decls(type_defs, &tgt_funs, &tgt_globals)
+            global.fmt_with_decls(type_defs, &tgt_funs, &tgt_globals, traits)
         );
     }
 

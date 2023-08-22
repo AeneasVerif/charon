@@ -8,7 +8,6 @@ use crate::assumed;
 use crate::common::*;
 use crate::expressions as e;
 use crate::formatter::Formatter;
-use crate::generics;
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::id_vector;
 use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
@@ -203,10 +202,11 @@ fn translate_primitive_function_call(
         | ast::AssumedFunId::VecLen
         | ast::AssumedFunId::SliceLen => {
             let call = ast::Call {
-                func: ast::FunId::Assumed(aid),
+                func: ast::FunIdOrTraitRef::mk_assumed(aid),
                 region_args,
                 type_args,
                 const_generic_args,
+                traits: Vec::new(), // TODO
                 args,
                 dest,
             };
@@ -247,10 +247,11 @@ fn translate_primitive_function_call(
             assert!(const_generic_args.len() <= 1);
 
             let call = ast::Call {
-                func: ast::FunId::Assumed(aid),
+                func: ast::FunIdOrTraitRef::mk_assumed(aid),
                 region_args,
                 type_args,
                 const_generic_args,
+                traits: Vec::new(), // TODO
                 args,
                 dest,
             };
@@ -305,10 +306,11 @@ fn translate_box_deref(
     let type_args = vec![boxed_ty.clone()];
 
     let call = ast::Call {
-        func: ast::FunId::Assumed(aid),
+        func: ast::FunIdOrTraitRef::mk_assumed(aid),
         region_args,
         type_args,
         const_generic_args,
+        traits: Vec::new(), // TODO
         args,
         dest,
     };
@@ -346,10 +348,11 @@ fn translate_vec_index(
 
     let type_args = vec![arg_ty.clone()];
     let call = ast::Call {
-        func: ast::FunId::Assumed(aid),
+        func: ast::FunIdOrTraitRef::mk_assumed(aid),
         region_args,
         type_args,
         const_generic_args,
+        traits: Vec::new(), // TODO
         args,
         dest,
     };
@@ -371,7 +374,6 @@ pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
     assert!(impl_item.defaultness == Defaultness::Final);
     // Note sure what this is about
     assert!(impl_item.constness == Constness::NotConst);
-    assert!(impl_item.of_trait.is_none()); // We don't support traits for now
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
@@ -1089,12 +1091,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 args,
                 destination,
                 target,
+                trait_info,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 from_hir_call: _,
                 fn_span: _,
             } => {
                 trace!("Call: func: {:?}", fun_id.rust_def_id);
-                self.translate_function_call(body, fun_id, substs, args, destination, target)?
+                self.translate_function_call(
+                    body,
+                    fun_id,
+                    substs,
+                    args,
+                    destination,
+                    target,
+                    trait_info,
+                )?
             }
             TerminatorKind::Assert {
                 cond,
@@ -1202,6 +1213,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         args: &Vec<hax::Operand>,
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
+        trait_info: &Option<hax::TraitInfo>,
     ) -> Result<ast::RawTerminator> {
         trace!();
         let rust_id = def_id.rust_def_id.unwrap();
@@ -1267,10 +1279,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Return
                 let call = ast::Call {
-                    func: ast::FunId::Assumed(ast::AssumedFunId::BoxFree),
+                    func: ast::FunIdOrTraitRef::mk_assumed(ast::AssumedFunId::BoxFree),
                     region_args: vec![],
                     type_args: vec![t_ty],
                     const_generic_args: vec![],
+                    traits: vec![],
                     args: vec![t_arg],
                     dest: lval,
                 };
@@ -1308,24 +1321,47 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     assumed::get_fun_id_from_name(&name, &type_args).is_some()
                 };
 
+                // Trait information
+                trace!(
+                    "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
+                    rust_id,
+                    trait_info
+                );
+
                 if !is_prim {
-                    // Retrieve the def id
-                    let def_id = self.translate_fun_decl_id(rust_id);
+                    // Two cases depending on whether we call a trait function
+                    // or not.
+                    match trait_info {
+                        Option::None => {
+                            let def_id = self.translate_fun_decl_id(rust_id);
+                            let func = ast::FunIdOrTraitRef::Fun(ast::FunId::Regular(def_id));
+                            // TODO: traits
+                            let call = ast::Call {
+                                func,
+                                region_args,
+                                type_args,
+                                const_generic_args,
+                                traits: Vec::new(),
+                                args,
+                                dest: lval,
+                            };
 
-                    let func = ast::FunId::Regular(def_id);
-                    let call = ast::Call {
-                        func,
-                        region_args,
-                        type_args,
-                        const_generic_args,
-                        args,
-                        dest: lval,
-                    };
-
-                    Ok(ast::RawTerminator::Call {
-                        call,
-                        target: next_block,
-                    })
+                            Ok(ast::RawTerminator::Call {
+                                call,
+                                target: next_block,
+                            })
+                        }
+                        Option::Some(trait_info) => self.translate_trait_method_call(
+                            def_id,
+                            region_args,
+                            type_args,
+                            const_generic_args,
+                            args,
+                            lval,
+                            next_block,
+                            trait_info,
+                        ),
+                    }
                 } else {
                     // Primitive function.
                     //
@@ -1336,6 +1372,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // is translated to:
                     // `box_deref<T>`
                     // (the type parameter is not `Box<T>` but `T`).
+
+                    // TODO: remove the cases for vector index, box deref, etc.
+                    // assert!(trait_info.is_none());
                     translate_primitive_function_call(
                         self.t_ctx.tcx,
                         def_id,
@@ -1351,20 +1390,49 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    fn translate_trait_method_call(
+        &mut self,
+        def_id: &hax::DefId,
+        region_args: Vec<ty::ErasedRegion>,
+        type_args: Vec<ty::ETy>,
+        const_generic_args: Vec<ty::ConstGeneric>,
+        args: Vec<e::Operand>,
+        dest: e::Place,
+        target: ast::BlockId::Id,
+        trait_info: &hax::TraitInfo,
+    ) -> Result<ast::RawTerminator> {
+        //
+        let trait_info = self.translate_trait_impl_source(trait_info);
+        let method_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
+        let func = ast::FunIdOrTraitRef::Trait(trait_info, method_id);
+
+        // TODO: the traits!
+        let call = ast::Call {
+            func,
+            region_args,
+            type_args,
+            const_generic_args,
+            traits: Vec::new(),
+            args,
+            dest,
+        };
+        Ok(ast::RawTerminator::Call { call, target })
+    }
+
     /// Translate a parameter substitution used inside a function body.
     ///
     /// Note that the regions parameters are expected to have been erased.
-    fn translate_subst_generic_args_in_body(
+    pub(crate) fn translate_subst_generic_args_in_body(
         &mut self,
         used_args: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
     ) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>, Vec<ty::ConstGeneric>)> {
         let substs: Vec<&hax::GenericArg> = match used_args {
-            Option::None => substs.into_iter().collect(),
+            Option::None => substs.iter().collect(),
             Option::Some(used_args) => {
                 assert!(substs.len() == used_args.len());
                 substs
-                    .into_iter()
+                    .iter()
                     .zip(used_args.into_iter())
                     .filter_map(|(param, used)| if used { Some(param) } else { None })
                     .collect()
@@ -1447,6 +1515,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             },
             // Yes, we have to clone, this is annoying: we end up cloning the body twice
             body.clone(),
+            // Owner id
+            rustc_hir::hir_id::OwnerId { def_id: local_id },
         );
         // Translate
         let body: hax::MirBody<()> = body.sinto(&state);
@@ -1509,9 +1579,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // We need a body translation context to keep track of all the variables
         let mut bt_ctx = BodyTransCtx::new(def_id, self);
 
-        // **Sanity checks on the HIR**
-        generics::check_function_generics(tcx, def_id);
-
         // Start by translating the early-bound parameters (those are contained by `substs`).
         let fun_type = tcx.type_of(def_id).subst_identity();
         let substs = match fun_type.kind() {
@@ -1549,8 +1616,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     bt_ctx.push_region(region, name);
                 }
                 GenericArg::Const(c) => {
-                    // The type should be primitive, meaning it shouldn't contain
-                    // variables, etc. (we could use an empty context).
                     let ty = bt_ctx.translate_ety(&c.ty).unwrap();
                     let ty = ty.to_literal();
                     match *c.contents {
@@ -1582,6 +1647,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             .collect();
         bt_ctx.push_bound_regions_group(bvar_names);
 
+        // Translate the predicates (in particular, the trait clauses)
+        bt_ctx.translate_predicates_of(def_id);
+
         // Translate the signature
         let signature = signature.value;
         trace!("signature of {def_id:?}:\n{:?}", signature);
@@ -1604,6 +1672,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
             type_params: bt_ctx.type_vars.clone(),
             const_generic_params: bt_ctx.const_generic_vars.clone(),
+            trait_clauses: bt_ctx.trait_clauses.clone(),
             inputs,
             output,
         };
@@ -1628,10 +1697,57 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // that we put in the translation context).
         trace!("Translating function signature");
         let (bt_ctx, signature) = self.translate_function_signature(rust_id);
+        let tcx = bt_ctx.t_ctx.tcx;
 
         // Check if the type is opaque or transparent
         let is_local = rust_id.is_local();
-        let body = if !is_transparent || !is_local {
+        // Check whether this function is a method declaration for a trait definition.
+        // If this is the case, it shouldn't contain a body.
+        // TODO: it might be a default implementation. The presence of a body is
+        // given by TraitItemKind.
+        let is_trait_method_decl = if let Some(assoc) = tcx.opt_associated_item(rust_id) {
+            match assoc.container {
+                mir_ty::AssocItemContainer::ImplContainer => {
+                    // This method is an *implementation* of a trait method
+                    // Ex.:
+                    // ====
+                    // ```
+                    // impl Foo for Bar {
+                    //   fn baz(...) { ... } // <- implementation of a trait method
+                    // }
+                    // ```
+                    false
+                }
+                mir_ty::AssocItemContainer::TraitContainer => {
+                    // This method is the *declaration* of a trait method
+                    // Ex.:
+                    // ====
+                    // ```
+                    // trait Foo {
+                    //   fn baz(...); // <- declaration of a trait method
+                    // }
+                    // ```
+
+                    // Yet, this could be a default method implementation, in which
+                    // case there is a body: we need to check that.
+                    // First, lookup the trait the method belongs to.
+                    let tr = tcx.trait_of_item(rust_id).unwrap();
+
+                    // Then, retrieve the provided methods. The provided methods
+                    // are the methods with a default implementation.
+                    let provided_methods: Vec<DefId> = tcx
+                        .provided_trait_methods(tr)
+                        .map(|assoc| assoc.def_id)
+                        .collect();
+
+                    // Check if the method is inside
+                    !provided_methods.contains(&rust_id)
+                }
+            }
+        } else {
+            false
+        };
+        let body = if !is_transparent || !is_local || is_trait_method_decl {
             Option::None
         } else {
             Option::Some(
