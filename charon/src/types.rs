@@ -60,11 +60,10 @@ pub struct ConstGenericVar {
 /// Region as used in a function's signatures (in which case we use region variable
 /// ids) and in symbolic variables and projections (in which case we use region
 /// ids).
-/// TODO: remove the constraints on Rid
 #[derive(
     Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord, EnumIsA, EnumAsGetters, Serialize,
 )]
-pub enum Region<Rid: Copy + Eq> {
+pub enum Region<Rid> {
     /// Static region
     Static,
     /// Non-static region.
@@ -248,10 +247,7 @@ pub enum ConstGeneric {
     VariantIndexArity,
     Serialize,
 )]
-pub enum Ty<R>
-where
-    R: Clone + std::cmp::Eq, // TODO: do we really need to put those here?
-{
+pub enum Ty<R> {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:
     /// - user-defined ADTs

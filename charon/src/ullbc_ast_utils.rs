@@ -478,6 +478,7 @@ impl FunDecl {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,
+            fun_ctx,
             global_ctx,
             trait_ctx,
             sig: &self.signature,
@@ -698,6 +699,12 @@ pub fn body_transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand
 ) {
     for block in blocks.iter_mut() {
         take(block, |b| b.transform_operands(f));
+    }
+}
+
+impl Formatter<FunDeclId::Id> for FunDecls {
+    fn format_object(&self, id: FunDeclId::Id) -> String {
+        self.get(id).unwrap().name.to_string()
     }
 }
 

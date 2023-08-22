@@ -386,6 +386,12 @@ where
     }
 }
 
+impl Formatter<FunDeclId::Id> for FunDecls {
+    fn format_object(&self, id: FunDeclId::Id) -> String {
+        self.get(id).unwrap().name.to_string()
+    }
+}
+
 impl ExprBody {
     pub fn fmt_with_decls<'ctx>(
         &self,
@@ -462,6 +468,7 @@ impl FunDecl {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,
+            fun_ctx,
             global_ctx,
             trait_ctx,
             sig: &self.signature,

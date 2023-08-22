@@ -49,26 +49,23 @@ impl RegionVarId::Id {
     }
 }
 
-impl<Rid: Copy + Eq> Region<Rid> {
+impl<Rid: Clone> Region<Rid> {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
         T: Formatter<Rid>,
     {
         match self {
             Region::Static => "'static".to_string(),
-            Region::Var(id) => ctx.format_object(*id),
+            Region::Var(id) => ctx.format_object(id.clone()),
         }
     }
 }
 
-impl<Rid1: Copy + Eq + Ord + std::hash::Hash> Region<Rid1> {
-    pub fn substitute<Rid2: Copy + Eq>(
-        &self,
-        rsubst: &HashMap<Rid1, Region<Rid2>>,
-    ) -> Region<Rid2> {
+impl<Rid1: Clone + Ord + std::hash::Hash> Region<Rid1> {
+    pub fn substitute<Rid2: Clone>(&self, rsubst: &HashMap<Rid1, Region<Rid2>>) -> Region<Rid2> {
         match self {
             Region::Static => Region::Static,
-            Region::Var(id) => *rsubst.get(id).unwrap(),
+            Region::Var(id) => rsubst.get(id).unwrap().clone(),
         }
     }
 
@@ -515,10 +512,7 @@ impl ConstGeneric {
     }
 }
 
-impl<R> Ty<R>
-where
-    R: Clone + Eq,
-{
+impl<R> Ty<R> {
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
         match self {
@@ -664,7 +658,7 @@ where
     }
 }
 
-impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
+impl<Rid: Clone + Ord + std::hash::Hash> Ty<Region<Rid>> {
     /// Returns `true` if the type contains one of the regions listed
     /// in the set
     pub fn contains_region_var(&self, rset: &OrdSet<Rid>) -> bool {
@@ -680,7 +674,7 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
     }
 }
 
-impl<Rid: Copy + Eq> std::fmt::Display for Region<Rid>
+impl<Rid> std::fmt::Display for Region<Rid>
 where
     Rid: std::fmt::Display,
 {
@@ -714,7 +708,7 @@ impl<'a> Formatter<GlobalDeclId::Id> for IncompleteFormatter<'a> {
     }
 }
 
-impl<'a, 'b, Rid: Copy + Eq> Formatter<&'b Region<Rid>> for IncompleteFormatter<'a>
+impl<'a, 'b, Rid> Formatter<&'b Region<Rid>> for IncompleteFormatter<'a>
 where
     TypeDecl: Formatter<&'b Region<Rid>>,
 {
@@ -757,7 +751,7 @@ impl Formatter<TypeVarId::Id> for DummyFormatter {
     }
 }
 
-impl<Rid: Copy + Eq> Formatter<&Region<Rid>> for DummyFormatter
+impl<Rid: Clone> Formatter<&Region<Rid>> for DummyFormatter
 where
     DummyFormatter: Formatter<Rid>,
 {
@@ -803,19 +797,13 @@ impl std::string::ToString for Ty<ErasedRegion> {
 }
 
 // TODO: mixing Copy and Clone in the trait requirements below. Update to only use Copy.
-impl<R> Ty<R>
-where
-    R: Copy + Clone + Eq,
-{
-    pub fn substitute<R1>(
+impl<R: Eq + Clone> Ty<R> {
+    pub fn substitute<R1: Eq>(
         &self,
         rsubst: &dyn Fn(&R) -> R1,
         tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
         cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> Ty<R1>
-    where
-        R1: Clone + Eq,
-    {
+    ) -> Ty<R1> {
         match self {
             Ty::Adt(id, regions, tys, cgs) => {
                 let nregions = Ty::substitute_regions(regions, rsubst);
@@ -840,19 +828,18 @@ where
         }
     }
 
-    fn substitute_regions<R1>(regions: &Vec<R>, rsubst: &dyn Fn(&R) -> R1) -> Vec<R1>
-    where
-        R1: Clone + Eq,
-    {
+    fn substitute_regions<R1: Eq>(regions: &Vec<R>, rsubst: &dyn Fn(&R) -> R1) -> Vec<R1> {
         Vec::from_iter(regions.iter().map(|rid| rsubst(rid)))
     }
 
     /// Substitute the type parameters
     // TODO: tsubst and cgsubst should be closures instead of hashmaps
     pub fn substitute_types(&self, subst: &TypeSubst<R>, cgsubst: &ConstGenericSubst) -> Self {
-        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone(), &|cgid| {
-            cgsubst.get(cgid).unwrap().clone()
-        })
+        self.substitute(
+            &|r| r.clone(),
+            &|tid| subst.get(tid).unwrap().clone(),
+            &|cgid| cgsubst.get(cgid).unwrap().clone(),
+        )
     }
 
     /// Erase the regions
@@ -904,7 +891,6 @@ where
     }
 }
 
-// TODO: mixing Copy and Clone in the trait requirements below. Update to only use Copy.
 impl RTy {
     /// Substitute the regions and type parameters
     pub fn substitute_regions_types(
@@ -1009,7 +995,7 @@ impl Formatter<ConstGenericVarId::Id> for TypeDecl {
     }
 }
 
-impl<Rid: Copy + Eq> Formatter<&Region<Rid>> for TypeDecl
+impl<Rid: Clone> Formatter<&Region<Rid>> for TypeDecl
 where
     TypeDecl: Formatter<Rid>,
 {
