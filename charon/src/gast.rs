@@ -80,6 +80,7 @@ pub struct ParamsInfo {
     pub num_region_params: usize,
     pub num_type_params: usize,
     pub num_const_generic_params: usize,
+    pub num_trait_clauses: usize,
 }
 
 /// A function signature.
@@ -322,6 +323,9 @@ pub struct Call {
     /// which apply to the method (i.e., remove those which apply to
     /// the trait instance).
     pub trait_method_args: Option<EArgs>,
+    /// TODO: something confusing here with regards to the way the other arguments are
+    /// handled. The traits listed here always correspond to the method traits (the trait
+    /// instance traits are stored in the [FunIdOrTraitMethodRef].
     pub traits: Vec<TraitRef>,
     pub args: Vec<Operand>,
     pub dest: Place,

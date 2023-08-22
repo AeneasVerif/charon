@@ -27,10 +27,21 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             }
         }
 
+        // Compute the number of trait clauses
+        let mut num_trait_clauses = 0;
+        let preds = tcx.predicates_of(def_id).sinto(&self.hax_state);
+        for (pred, _) in preds.predicates {
+            use hax::{Clause, PredicateKind};
+            if let PredicateKind::Clause(Clause::Trait(_)) = &pred.value {
+                num_trait_clauses += 1;
+            }
+        }
+
         ParamsInfo {
             num_region_params,
             num_type_params,
             num_const_generic_params,
+            num_trait_clauses,
         }
     }
 
@@ -80,9 +91,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let tcx = self.t_ctx.tcx;
 
         // Get the predicates
+        // Note that we need to know *all* the predicates: we start
+        // with the parent.
         // TODO: use predicates_defined_on?
-        let preds = tcx.predicates_of(def_id).sinto(&self.t_ctx.hax_state);
+        match tcx.generics_of(def_id).parent {
+            None => (),
+            Some(parent_id) => {
+                let preds = tcx.predicates_of(parent_id).sinto(&self.t_ctx.hax_state);
+                self.translate_predicates(preds);
+            }
+        }
 
+        // The predicates of the current definition
+        let preds = tcx.predicates_of(def_id).sinto(&self.t_ctx.hax_state);
+        self.translate_predicates(preds);
+    }
+
+    fn translate_predicates(&mut self, preds: hax::GenericPredicates) {
         for (pred, span) in preds.predicates {
             // Skip the binder (which lists the quantified variables).
             // By doing so, we allow the predicates to contain DeBruijn indices,
