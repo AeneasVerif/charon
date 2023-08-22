@@ -118,9 +118,7 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// The translated global definitions
     pub global_defs: ast::GlobalDecls,
     /// The map from Rust trait ids to translated trait ids
-    pub trait_id_map: ast::TraitId::MapGenerator<DefId>,
-    /// The map from translated trait ids trait ids to Rust trait ids - TODO: remove?
-    pub trait_id_to_rust_map: HashMap<ast::TraitId::Id, DefId>,
+    pub trait_id_map: ast::TraitDeclId::MapGenerator<DefId>,
     /// The translated trait definitions
     pub trait_defs: ast::TraitDecls,
 }
@@ -339,14 +337,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn register_trait_id(&mut self, id: DefId) -> ast::TraitId::Id {
+    pub(crate) fn register_trait_id(&mut self, id: DefId) -> ast::TraitDeclId::Id {
         match self.trait_id_map.get(&id) {
             Option::Some(id) => id,
             Option::None => {
                 let rid = OrdRustId::Trait(id);
                 let trans_id = self.trait_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::Trait(trans_id));
-                self.trait_id_to_rust_map.insert(trans_id, id);
                 trans_id
             }
         }
@@ -356,7 +353,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.register_fun_decl_id(id)
     }
 
-    pub(crate) fn translate_trait_id(&mut self, id: DefId) -> ast::TraitId::Id {
+    pub(crate) fn translate_trait_id(&mut self, id: DefId) -> ast::TraitDeclId::Id {
         self.register_trait_id(id)
     }
 
@@ -444,7 +441,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_global_decl_id(id)
     }
 
-    pub(crate) fn translate_trait_id(&mut self, id: DefId) -> ast::TraitId::Id {
+    pub(crate) fn translate_trait_id(&mut self, id: DefId) -> ast::TraitDeclId::Id {
         self.t_ctx.translate_trait_id(id)
     }
 
@@ -584,8 +581,8 @@ impl<'tcx, 'ctx> Formatter<ast::FunDeclId::Id> for TransCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx> Formatter<ast::TraitId::Id> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, id: ast::TraitId::Id) -> String {
+impl<'tcx, 'ctx> Formatter<ast::TraitDeclId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ast::TraitDeclId::Id) -> String {
         match self.trait_defs.get(id) {
             None => id.to_pretty_string(),
             Some(d) => d.name.to_string(),

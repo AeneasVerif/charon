@@ -5,8 +5,8 @@ use crate::assumed;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::gast::{
-    AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitId, TraitMethodName,
-    TraitOrClauseId, TraitRef,
+    Args, AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitDeclId,
+    TraitInstanceId, TraitMethodName, TraitRef,
 };
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
@@ -469,6 +469,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             const_generic_args,
             traits,
             args,
+            trait_method_args,
             dest,
         } = c;
         self.visit_fun_id_or_trait_ref(func);
@@ -484,6 +485,17 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         }
         for t in traits {
             self.visit_trait_ref(t);
+        }
+        match trait_method_args {
+            None => (),
+            Some(Args {region_args: _, type_args, const_generic_args}) => {
+                for t in type_args {
+                    self.visit_ty(t);
+                }
+                for cg in const_generic_args {
+                    self.visit_const_generic(cg);
+                }
+            }
         }
         self.visit_place(dest);
     }
@@ -510,7 +522,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
 
     fn visit_fun_decl_id(&mut self, _: &FunDeclId::Id) {}
     fn visit_assumed_fun_id(&mut self, _: &AssumedFunId) {}
-    fn visit_trait_id(&mut self, _: &TraitId::Id) {}
+    fn visit_trait_decl_id(&mut self, _: &TraitDeclId::Id) {}
     fn visit_trait_clause_id(&mut self, _: &TraitClauseId::Id) {}
 
     fn visit_trait_ref(&mut self, tr: &TraitRef) {
@@ -521,7 +533,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             const_generic_args,
             traits,
         } = tr;
-        self.visit_trait_or_clause_id(trait_id);
+        self.visit_trait_instance_id(trait_id);
         for t in type_args {
             self.visit_ty(t);
         }
@@ -533,10 +545,11 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         }
     }
 
-    fn visit_trait_or_clause_id(&mut self, id: &TraitOrClauseId) {
+    fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
         match id {
-            TraitOrClauseId::Trait(id) => self.visit_trait_id(id),
-            TraitOrClauseId::Clause(id) => self.visit_trait_clause_id(id),
+            TraitInstanceId::Trait(id) => self.visit_trait_decl_id(id),
+            TraitInstanceId::Clause(id) => self.visit_trait_clause_id(id),
+            TraitInstanceId::Builtin(id) => self.visit_trait_decl_id(id),
         }
     }
 }

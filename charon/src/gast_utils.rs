@@ -102,7 +102,7 @@ where
         + Formatter<ConstGenericVarId::Id>
         + Formatter<FunDeclId::Id>
         + Formatter<GlobalDeclId::Id>
-        + Formatter<TraitId::Id>
+        + Formatter<TraitDeclId::Id>
         + Formatter<TraitClauseId::Id>,
 {
     let regions_s: Vec<String> = region_args.iter().map(|x| ctx.format_object(x)).collect();
@@ -136,7 +136,7 @@ where
         + Formatter<ConstGenericVarId::Id>
         + Formatter<FunDeclId::Id>
         + Formatter<GlobalDeclId::Id>
-        + Formatter<TraitId::Id>
+        + Formatter<TraitDeclId::Id>
         + Formatter<TraitClauseId::Id>,
 {
     fmt_args_raw(ctx, region_args, type_args, const_generic_args, Vec::new())
@@ -157,7 +157,7 @@ where
         + Formatter<ConstGenericVarId::Id>
         + Formatter<FunDeclId::Id>
         + Formatter<GlobalDeclId::Id>
-        + Formatter<TraitId::Id>
+        + Formatter<TraitDeclId::Id>
         + Formatter<TraitClauseId::Id>,
 {
     let traits_s: Vec<String> = traits.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
@@ -173,7 +173,7 @@ impl TraitDecl {
             + Formatter<ConstGenericVarId::Id>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
-            + Formatter<TraitId::Id>
+            + Formatter<TraitDeclId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         let def_id = ctx.format_object(self.def_id);
@@ -205,7 +205,7 @@ impl TraitClause {
             + Formatter<ConstGenericVarId::Id>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
-            + Formatter<TraitId::Id>
+            + Formatter<TraitDeclId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         let clause_id = ctx.format_object(self.clause_id);
@@ -229,12 +229,13 @@ impl TraitRef {
             + Formatter<ConstGenericVarId::Id>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
-            + Formatter<TraitId::Id>
+            + Formatter<TraitDeclId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         let trait_id = match &self.trait_id {
-            TraitOrClauseId::Trait(id) => ctx.format_object(*id),
-            TraitOrClauseId::Clause(id) => ctx.format_object(*id),
+            TraitInstanceId::Trait(id) => ctx.format_object(*id),
+            TraitInstanceId::Clause(id) => ctx.format_object(*id),
+            TraitInstanceId::Builtin(id) => ctx.format_object(*id),
         };
         let args = fmt_args(
             ctx,
@@ -247,15 +248,7 @@ impl TraitRef {
     }
 }
 
-pub fn fmt_call<'a, 'b, T>(
-    ctx: &'b T,
-    func: &'a FunIdOrTraitMethodRef,
-    region_args: &'a Vec<ErasedRegion>,
-    type_args: &'a Vec<ETy>,
-    const_generic_args: &'a Vec<ConstGeneric>,
-    traits: &'a Vec<TraitRef>,
-    args: &'a [Operand],
-) -> String
+pub fn fmt_call<'a, 'b, T>(ctx: &'b T, call: &'a Call) -> String
 where
     T: Formatter<VarId::Id>
         + Formatter<TypeVarId::Id>
@@ -266,15 +259,34 @@ where
         + Formatter<GlobalDeclId::Id>
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
         + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-        + Formatter<TraitId::Id>
+        + Formatter<TraitDeclId::Id>
         + Formatter<TraitClauseId::Id>,
 {
-    let rt_args = fmt_args(ctx, region_args, type_args, const_generic_args, traits);
+    let rt_args = match &call.trait_method_args {
+        None => fmt_args(
+            ctx,
+            &call.region_args,
+            &call.type_args,
+            &call.const_generic_args,
+            &call.traits,
+        ),
+        Some(Args {
+            region_args,
+            type_args,
+            const_generic_args,
+        }) => fmt_args(
+            ctx,
+            region_args,
+            type_args,
+            const_generic_args,
+            &call.traits,
+        ),
+    };
 
-    let args: Vec<String> = args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
+    let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
     let args = args.join(", ");
 
-    let f = match func {
+    let f = match &call.func {
         FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
             format!("{}{}", ctx.format_object(*def_id), rt_args)
         }
@@ -469,11 +481,11 @@ where
     }
 }
 
-impl<'a, FD, GD, TD> Formatter<TraitId::Id> for FunSigFormatter<'a, FD, GD, TD>
+impl<'a, FD, GD, TD> Formatter<TraitDeclId::Id> for FunSigFormatter<'a, FD, GD, TD>
 where
-    TD: Formatter<TraitId::Id>,
+    TD: Formatter<TraitDeclId::Id>,
 {
-    fn format_object(&self, id: TraitId::Id) -> String {
+    fn format_object(&self, id: TraitDeclId::Id) -> String {
         self.trait_ctx.format_object(id)
     }
 }
@@ -500,7 +512,7 @@ impl FunSig {
     pub fn fmt_with_decls<
         FD: Formatter<FunDeclId::Id>,
         GD: Formatter<GlobalDeclId::Id>,
-        TD: Formatter<TraitId::Id>,
+        TD: Formatter<TraitDeclId::Id>,
     >(
         &self,
         ty_ctx: &TypeDecls,
@@ -542,7 +554,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
             + Formatter<&'a Region<RegionVarId::Id>>
             + Formatter<ConstGenericVarId::Id>
             + Formatter<GlobalDeclId::Id>
-            + Formatter<TraitId::Id>
+            + Formatter<TraitDeclId::Id>
             + Formatter<TraitClauseId::Id>
             + Formatter<FunDeclId::Id>,
         T2: Formatter<VarId::Id>
@@ -555,7 +567,7 @@ impl<T: Debug + Clone + Serialize> GFunDecl<T> {
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<&'a T>
-            + Formatter<TraitId::Id>
+            + Formatter<TraitDeclId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         // Function name
@@ -716,7 +728,7 @@ pub struct CtxNames<'ctx> {
     pub type_context: &'ctx TypeDecls,
     pub fun_context: &'ctx FunDeclId::Map<String>,
     pub global_context: &'ctx GlobalDeclId::Map<String>,
-    pub trait_context: &'ctx TraitId::Map<String>,
+    pub trait_context: &'ctx TraitDeclId::Map<String>,
 }
 
 impl<'ctx> CtxNames<'ctx> {
@@ -724,7 +736,7 @@ impl<'ctx> CtxNames<'ctx> {
         type_context: &'ctx TypeDecls,
         fun_context: &'ctx FunDeclId::Map<String>,
         global_context: &'ctx GlobalDeclId::Map<String>,
-        trait_context: &'ctx TraitId::Map<String>,
+        trait_context: &'ctx TraitDeclId::Map<String>,
     ) -> Self {
         CtxNames {
             type_context,
@@ -936,11 +948,11 @@ where
     }
 }
 
-impl<'ctx, FD, GD, TD> Formatter<TraitId::Id> for GAstFormatter<'ctx, FD, GD, TD>
+impl<'ctx, FD, GD, TD> Formatter<TraitDeclId::Id> for GAstFormatter<'ctx, FD, GD, TD>
 where
-    TD: Formatter<TraitId::Id>,
+    TD: Formatter<TraitDeclId::Id>,
 {
-    fn format_object(&self, id: TraitId::Id) -> String {
+    fn format_object(&self, id: TraitDeclId::Id) -> String {
         self.trait_context.format_object(id)
     }
 }
@@ -963,7 +975,7 @@ pub(crate) struct GlobalNamesFormatter<'ctx> {
 }
 
 pub(crate) struct TraitNamesFormatter<'ctx> {
-    decls: &'ctx TraitId::Map<String>,
+    decls: &'ctx TraitDeclId::Map<String>,
 }
 
 impl<'ctx> FunNamesFormatter<'ctx> {
@@ -991,13 +1003,13 @@ impl<'ctx> Formatter<GlobalDeclId::Id> for GlobalNamesFormatter<'ctx> {
 }
 
 impl<'ctx> TraitNamesFormatter<'ctx> {
-    pub fn new(decls: &'ctx TraitId::Map<String>) -> Self {
+    pub fn new(decls: &'ctx TraitDeclId::Map<String>) -> Self {
         TraitNamesFormatter { decls }
     }
 }
 
-impl<'ctx> Formatter<TraitId::Id> for TraitNamesFormatter<'ctx> {
-    fn format_object(&self, id: TraitId::Id) -> String {
+impl<'ctx> Formatter<TraitDeclId::Id> for TraitNamesFormatter<'ctx> {
+    fn format_object(&self, id: TraitDeclId::Id) -> String {
         self.decls.get(id).unwrap().clone()
     }
 }
@@ -1008,8 +1020,8 @@ impl FunIdOrTraitMethodRef {
     }
 }
 
-impl Formatter<TraitId::Id> for TraitId::Map<TraitDecl> {
-    fn format_object(&self, id: TraitId::Id) -> String {
+impl Formatter<TraitDeclId::Id> for TraitDeclId::Map<TraitDecl> {
+    fn format_object(&self, id: TraitDeclId::Id) -> String {
         self.get(id).unwrap().name.to_string()
     }
 }

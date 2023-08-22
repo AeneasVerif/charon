@@ -254,6 +254,7 @@ fn translate_primitive_function_call(
                 type_args,
                 const_generic_args,
                 traits: Vec::new(),
+                trait_method_args: None,
                 args,
                 dest,
             };
@@ -301,6 +302,7 @@ fn translate_primitive_function_call(
                 type_args,
                 const_generic_args,
                 traits: method_traits,
+                trait_method_args: None,
                 args,
                 dest,
             };
@@ -361,6 +363,7 @@ fn translate_box_deref(
         type_args,
         const_generic_args,
         traits: method_traits,
+        trait_method_args: None,
         args,
         dest,
     };
@@ -404,6 +407,7 @@ fn translate_vec_index(
         type_args,
         const_generic_args,
         traits: method_traits,
+        trait_method_args: None,
         args,
         dest,
     };
@@ -1343,6 +1347,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     type_args: vec![t_ty],
                     const_generic_args: vec![],
                     traits: vec![],
+                    trait_method_args: None,
                     args: vec![t_arg],
                     dest: lval,
                 };
@@ -1405,6 +1410,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 type_args,
                                 const_generic_args,
                                 traits: method_traits,
+                                trait_method_args: None,
                                 args,
                                 dest: lval,
                             };
@@ -1472,22 +1478,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         trace!("{:?}", rust_id);
 
-        /*
-        use ast::TraitOrClauseId;
-        let params_info = match &trait_info.trait_id {
-            TraitOrClauseId::Trait(trait_id) => {
-                let trait_rust_id = *self.t_ctx.trait_id_to_rust_map.get(trait_id).unwrap();
-                trace!("Trait: {:?}", trait_rust_id);
-                self.t_ctx.get_params_info(trait_rust_id)
-            }
-            TraitOrClauseId::Clause(_) => {
-                trace!("Clause");
-                todo!()
-            }
-        };
-        trace!("- id: {:?}\n- params_info:\n{:?}", rust_id, params_info);
-        */
-
         let _ = self.translate_fun_decl_id(rust_id);
         let method_name = self.t_ctx.translate_trait_method_name(rust_id);
         let func = ast::FunIdOrTraitMethodRef::Trait(trait_info, method_name);
@@ -1509,17 +1499,27 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Above, we want to drop the `Bar` and `T` arguments.
         let params_info = self.t_ctx.get_parent_params_info(rust_id).unwrap();
         trace!("- id: {:?}\n- params_info:\n{:?}", rust_id, params_info);
-        let region_args: Vec<ty::ErasedRegion> =
-            region_args[params_info.num_region_params..].to_vec();
-        let type_args = type_args[params_info.num_type_params..].to_vec();
-        let const_generic_args =
-            const_generic_args[params_info.num_const_generic_params..].to_vec();
+
+        let trait_method_args = {
+            let region_args: Vec<ty::ErasedRegion> =
+                region_args[params_info.num_region_params..].to_vec();
+            let type_args = type_args[params_info.num_type_params..].to_vec();
+            let const_generic_args =
+                const_generic_args[params_info.num_const_generic_params..].to_vec();
+            Some(ast::Args {
+                region_args,
+                type_args,
+                const_generic_args,
+            })
+        };
+
         let call = ast::Call {
             func,
             region_args,
             type_args,
             const_generic_args,
             traits: method_traits,
+            trait_method_args,
             args,
             dest,
         };

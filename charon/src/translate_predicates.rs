@@ -43,7 +43,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    // TODO: there are too many variants of this, we should merge them
+    // TODO: there are too many variants of this function, we should merge them
     pub(crate) fn translate_substs_with_regions(
         &mut self,
         substs: &Vec<hax::GenericArg>,
@@ -141,13 +141,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> TraitRef {
         use hax::ImplSource;
 
-        use crate::gast::TraitOrClauseId;
+        use crate::gast::TraitInstanceId;
 
         match impl_source {
             ImplSource::UserDefined(data) => {
                 let def_id = data.impl_def_id.rust_def_id.unwrap();
                 let trait_id = self.translate_trait_id(def_id);
-                let trait_id = TraitOrClauseId::Trait(trait_id);
+                let trait_id = TraitInstanceId::Trait(trait_id);
 
                 let (region_args, type_args, const_generic_args) = self
                     .translate_subst_generic_args_in_body(None, &data.substs)
@@ -172,7 +172,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
                 // TODO: trait id: doesn't work
                 let trait_id = self.translate_trait_id(def_id);
-                let trait_id = TraitOrClauseId::Trait(trait_id); // TODO: this doesn't work
+                let trait_id = TraitInstanceId::Trait(trait_id); // TODO: this doesn't work
 
                 let (region_args, type_args, const_generic_args) = self
                     .translate_subst_generic_args_in_body(None, &trait_ref.generic_args)
@@ -191,13 +191,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             ImplSource::Object(_) => unimplemented!(),
             ImplSource::Builtin(trait_ref, traits) => {
+                assert!(traits.is_empty());
+
                 assert!(trait_ref.bound_vars.is_empty());
                 let trait_ref = &trait_ref.value;
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
-                // TODO: trait id: doesn't work
                 let trait_id = self.translate_trait_id(def_id);
-                let trait_id = TraitOrClauseId::Trait(trait_id); // TODO: this doesn't work
-
+                let trait_id = TraitInstanceId::Builtin(trait_id);
                 let (region_args, type_args, const_generic_args) = self
                     .translate_subst_generic_args_in_body(None, &trait_ref.generic_args)
                     .unwrap();
@@ -205,6 +205,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .iter()
                     .map(|x| self.translate_trait_impl_source(x))
                     .collect();
+
                 TraitRef {
                     trait_id,
                     region_args,

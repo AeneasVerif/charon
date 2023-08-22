@@ -186,7 +186,7 @@ impl Terminator {
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<TraitId::Id>
+            + Formatter<TraitDeclId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         match &self.content {
@@ -216,26 +216,13 @@ impl Terminator {
                 format!("drop {} -> bb{}", place.fmt_with_ctx(ctx), target)
             }
             RawTerminator::Call { call, target } => {
-                let Call {
-                    func,
-                    region_args,
-                    type_args,
-                    const_generic_args,
-                    traits,
-                    args,
-                    dest,
-                } = call;
-                let call = fmt_call(
-                    ctx,
-                    func,
-                    region_args,
-                    type_args,
-                    const_generic_args,
-                    traits,
-                    args,
-                );
-
-                format!("{} := {} -> bb{}", dest.fmt_with_ctx(ctx), call, target,)
+                let call_s = fmt_call(ctx, call);
+                format!(
+                    "{} := {} -> bb{}",
+                    call.dest.fmt_with_ctx(ctx),
+                    call_s,
+                    target,
+                )
             }
             RawTerminator::Assert {
                 cond,
@@ -263,7 +250,7 @@ impl BlockData {
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<TraitId::Id>
+            + Formatter<TraitDeclId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         let mut out: Vec<String> = Vec::new();
@@ -296,7 +283,7 @@ where
         + Formatter<GlobalDeclId::Id>
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
         + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-        + Formatter<TraitId::Id>
+        + Formatter<TraitDeclId::Id>
         + Formatter<TraitClauseId::Id>,
 {
     let block_tab = format!("{tab}{TAB_INCR}");
@@ -345,7 +332,7 @@ impl ExprBody {
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDeclId::Map<String>,
         global_ctx: &'ctx GlobalDeclId::Map<String>,
-        trait_ctx: &'ctx TraitId::Map<String>,
+        trait_ctx: &'ctx TraitDeclId::Map<String>,
     ) -> String {
         let locals = Some(&self.locals);
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
@@ -397,7 +384,7 @@ where
 
 impl<'ctx, FD, GD, TD> Formatter<&BlockId::Vector<BlockData>> for GAstFormatter<'ctx, FD, GD, TD>
 where
-    Self: Formatter<FunDeclId::Id> + Formatter<GlobalDeclId::Id> + Formatter<TraitId::Id>,
+    Self: Formatter<FunDeclId::Id> + Formatter<GlobalDeclId::Id> + Formatter<TraitDeclId::Id>,
 {
     fn format_object(&self, body: &BlockId::Vector<BlockData>) -> String {
         fmt_body_blocks_with_ctx(body, TAB_INCR, self)
@@ -406,7 +393,7 @@ where
 
 impl<'ctx, FD, GD, TD> Formatter<&Terminator> for GAstFormatter<'ctx, FD, GD, TD>
 where
-    Self: Formatter<FunDeclId::Id> + Formatter<GlobalDeclId::Id> + Formatter<TraitId::Id>,
+    Self: Formatter<FunDeclId::Id> + Formatter<GlobalDeclId::Id> + Formatter<TraitDeclId::Id>,
 {
     fn format_object(&self, terminator: &Terminator) -> String {
         terminator.fmt_with_ctx(self)
@@ -455,8 +442,8 @@ impl<'ctx> TraitDeclsFormatter<'ctx> {
     }
 }
 
-impl<'ctx> Formatter<TraitId::Id> for TraitDeclsFormatter<'ctx> {
-    fn format_object(&self, id: TraitId::Id) -> String {
+impl<'ctx> Formatter<TraitDeclId::Id> for TraitDeclsFormatter<'ctx> {
+    fn format_object(&self, id: TraitDeclId::Id) -> String {
         let d = self.decls.get(id).unwrap();
         d.name.to_string()
     }
@@ -473,7 +460,7 @@ impl FunDecl {
     where
         FD: Formatter<FunDeclId::Id>,
         GD: Formatter<GlobalDeclId::Id>,
-        TD: Formatter<TraitId::Id>,
+        TD: Formatter<TraitDeclId::Id>,
     {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
@@ -518,7 +505,7 @@ impl FunDecl {
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDeclId::Map<String>,
         global_ctx: &'ctx GlobalDeclId::Map<String>,
-        trait_ctx: &'ctx TraitId::Map<String>,
+        trait_ctx: &'ctx TraitDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
@@ -547,7 +534,7 @@ impl GlobalDecl {
     where
         FD: Formatter<FunDeclId::Id>,
         GD: Formatter<GlobalDeclId::Id>,
-        TD: Formatter<TraitId::Id>,
+        TD: Formatter<TraitDeclId::Id>,
     {
         let locals = self.body.as_ref().map(|body| &body.locals);
         let ctx = GAstFormatter::new(
@@ -576,7 +563,7 @@ impl GlobalDecl {
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDeclId::Map<String>,
         global_ctx: &'ctx GlobalDeclId::Map<String>,
-        trait_ctx: &'ctx TraitId::Map<String>,
+        trait_ctx: &'ctx TraitDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);

@@ -5,8 +5,8 @@
 use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
 use crate::gast::{Call, Var};
 use crate::llbc_ast::{
-    iter_function_bodies, iter_global_bodies, AssumedFunId, CtxNames, FunDecls, FunIdOrTraitMethodRef,
-    GlobalDecls, MutAstVisitor, RawStatement, Statement, Switch,
+    iter_function_bodies, iter_global_bodies, AssumedFunId, CtxNames, FunDecls,
+    FunIdOrTraitMethodRef, GlobalDecls, MutAstVisitor, RawStatement, Statement, Switch,
 };
 use crate::meta::Meta;
 use crate::types::{AssumedTy, ConstGeneric, ErasedRegion, MutTypeVisitor, RefKind, Ty};
@@ -102,6 +102,7 @@ impl<'a> Transform<'a> {
                     type_args: vec![elem_ty],
                     const_generic_args: cgs,
                     traits: Vec::new(),
+                    trait_method_args: None,
                     args: vec![arg_buf, arg_index],
                     dest: index_dest,
                 };

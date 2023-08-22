@@ -5,7 +5,7 @@ use crate::export;
 use crate::get_mir::MirLevel;
 use crate::index_to_function_calls;
 use crate::insert_assign_return_unit;
-use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId, TraitId};
+use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId, TraitDeclId};
 use crate::ops_to_function_calls;
 use crate::reconstruct_asserts;
 use crate::regions_hierarchy;
@@ -192,7 +192,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         FunDeclId::Map::from_iter(ullbc_funs.iter().map(|d| (d.def_id, d.name.to_string())));
     let global_names: GlobalDeclId::Map<String> =
         GlobalDeclId::Map::from_iter(ullbc_globals.iter().map(|d| (d.def_id, d.name.to_string())));
-    let trait_names: TraitId::Map<String> = TraitId::Map::from_iter(
+    let trait_names: TraitDeclId::Map<String> = TraitDeclId::Map::from_iter(
         ctx.trait_defs
             .iter()
             .map(|d| (d.def_id, d.name.to_string())),

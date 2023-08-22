@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::gast::TraitId;
+use crate::gast::TraitDeclId;
 use crate::meta::Meta;
 use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
@@ -87,7 +87,7 @@ pub struct TraitClause {
     pub clause_id: TraitClauseId::Id,
     pub meta: Meta,
     ///
-    pub trait_id: TraitId::Id,
+    pub trait_id: TraitDeclId::Id,
     pub region_params: Vec<Region<RegionVarId::Id>>,
     pub type_params: Vec<RTy>,
     pub const_generic_params: Vec<ConstGeneric>,

@@ -4,7 +4,7 @@
 use crate::assumed::get_name_from_type_id;
 use crate::formatter::Formatter;
 use crate::types::*;
-use crate::ullbc_ast::{GlobalDeclId, TraitId};
+use crate::ullbc_ast::{GlobalDeclId, TraitDeclId};
 use crate::values::Literal;
 use hax_frontend_exporter as hax;
 use im::{HashMap, OrdSet};
@@ -438,7 +438,7 @@ impl TraitClauseId::Id {
     }
 }
 
-impl TraitId::Id {
+impl TraitDeclId::Id {
     pub fn to_pretty_string(&self) -> String {
         format!("@Trait{self}")
     }

@@ -19,7 +19,7 @@ use serde::Serialize;
 pub static TAB_INCR: &str = "    ";
 
 generate_index_type!(FunDeclId);
-generate_index_type!(TraitId); // TODO: rename to TraitDeclId?
+generate_index_type!(TraitDeclId); // TODO: rename to TraitDeclId?
 
 /// A variable
 #[derive(Debug, Clone, Serialize)]
@@ -155,7 +155,7 @@ pub struct TraitMethodName(pub String);
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitDecl {
-    pub def_id: TraitId::Id,
+    pub def_id: TraitDeclId::Id,
     pub name: Name,
     pub region_params: RegionVarId::Vector<RegionVar>,
     pub type_params: TypeVarId::Vector<TypeVar>,
@@ -274,15 +274,16 @@ pub enum AssumedFunId {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub enum TraitOrClauseId {
-    Trait(TraitId::Id),
+pub enum TraitInstanceId {
+    Trait(TraitDeclId::Id),
     Clause(TraitClauseId::Id),
+    Builtin(TraitDeclId::Id),
 }
 
 /// A reference to a trait
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitRef {
-    pub trait_id: TraitOrClauseId,
+    pub trait_id: TraitInstanceId,
     pub region_args: Vec<ErasedRegion>,
     pub type_args: Vec<ETy>,
     pub const_generic_args: Vec<ConstGeneric>,
@@ -296,6 +297,17 @@ pub enum FunIdOrTraitMethodRef {
     Trait(TraitRef, TraitMethodName),
 }
 
+// TODO: use this to factor out fields in all the definitions
+#[derive(Debug, Clone, Serialize)]
+pub struct Args<R> {
+    pub region_args: Vec<ErasedRegion>,
+    pub type_args: Vec<Ty<R>>,
+    pub const_generic_args: Vec<ConstGeneric>,
+}
+
+pub type EArgs = Args<ErasedRegion>;
+pub type RArgs = Args<Region<RegionVarId::Id>>;
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Call {
     pub func: FunIdOrTraitMethodRef,
@@ -306,6 +318,10 @@ pub struct Call {
     pub region_args: Vec<ErasedRegion>,
     pub type_args: Vec<ETy>,
     pub const_generic_args: Vec<ConstGeneric>,
+    /// If this is a call to a trait method: stores only the arguments
+    /// which apply to the method (i.e., remove those which apply to
+    /// the trait instance).
+    pub trait_method_args: Option<EArgs>,
     pub traits: Vec<TraitRef>,
     pub args: Vec<Operand>,
     pub dest: Place,

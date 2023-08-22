@@ -7,8 +7,8 @@ use crate::common::*;
 use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
 use crate::formatter::Formatter;
 use crate::llbc_ast::{
-    Assert, Call, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
-    Switch, TraitClauseId, TraitDecls, TraitId,
+    Assert, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement, Switch,
+    TraitClauseId, TraitDeclId, TraitDecls,
 };
 use crate::meta;
 use crate::meta::Meta;
@@ -173,7 +173,7 @@ impl Statement {
             + Formatter<GlobalDeclId::Id>
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<TraitId::Id>
+            + Formatter<TraitDeclId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         match &self.content {
@@ -202,25 +202,8 @@ impl Statement {
                 assert.expected,
             ),
             RawStatement::Call(call) => {
-                let Call {
-                    func,
-                    region_args,
-                    type_args,
-                    const_generic_args,
-                    traits,
-                    args,
-                    dest,
-                } = call;
-                let call = fmt_call(
-                    ctx,
-                    func,
-                    region_args,
-                    type_args,
-                    const_generic_args,
-                    traits,
-                    args,
-                );
-                format!("{}{} := {}", tab, dest.fmt_with_ctx(ctx), call)
+                let call_s = fmt_call(ctx, call);
+                format!("{}{} := {}", tab, call.dest.fmt_with_ctx(ctx), call_s)
             }
             RawStatement::Panic => format!("{tab}panic"),
             RawStatement::Return => format!("{tab}return"),
@@ -370,8 +353,8 @@ impl<'ctx> TraitDeclsFormatter<'ctx> {
     }
 }
 
-impl<'ctx> Formatter<TraitId::Id> for TraitDeclsFormatter<'ctx> {
-    fn format_object(&self, id: TraitId::Id) -> String {
+impl<'ctx> Formatter<TraitDeclId::Id> for TraitDeclsFormatter<'ctx> {
+    fn format_object(&self, id: TraitDeclId::Id) -> String {
         let d = self.decls.get(id).unwrap();
         d.name.to_string()
     }
@@ -379,7 +362,7 @@ impl<'ctx> Formatter<TraitId::Id> for TraitDeclsFormatter<'ctx> {
 
 impl<'ctx, FD, GD, TD> Formatter<&Statement> for GAstFormatter<'ctx, FD, GD, TD>
 where
-    Self: Formatter<FunDeclId::Id> + Formatter<GlobalDeclId::Id> + Formatter<TraitId::Id>,
+    Self: Formatter<FunDeclId::Id> + Formatter<GlobalDeclId::Id> + Formatter<TraitDeclId::Id>,
 {
     fn format_object(&self, st: &Statement) -> String {
         st.fmt_with_ctx(TAB_INCR, self)
@@ -423,7 +406,7 @@ impl ExprBody {
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDeclId::Map<String>,
         global_ctx: &'ctx GlobalDeclId::Map<String>,
-        trait_ctx: &'ctx TraitId::Map<String>,
+        trait_ctx: &'ctx TraitDeclId::Map<String>,
     ) -> String {
         let locals = Some(&self.locals);
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
@@ -463,7 +446,7 @@ impl FunDecl {
     where
         FD: Formatter<FunDeclId::Id>,
         GD: Formatter<GlobalDeclId::Id>,
-        TD: Formatter<TraitId::Id>,
+        TD: Formatter<TraitDeclId::Id>,
     {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
@@ -508,7 +491,7 @@ impl FunDecl {
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDeclId::Map<String>,
         global_ctx: &'ctx GlobalDeclId::Map<String>,
-        trait_ctx: &'ctx TraitId::Map<String>,
+        trait_ctx: &'ctx TraitDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
@@ -537,7 +520,7 @@ impl GlobalDecl {
     where
         FD: Formatter<FunDeclId::Id>,
         GD: Formatter<GlobalDeclId::Id>,
-        TD: Formatter<TraitId::Id>,
+        TD: Formatter<TraitDeclId::Id>,
     {
         let locals = self.body.as_ref().map(|body| &body.locals);
         let fmt_ctx = GAstFormatter::new(
@@ -566,7 +549,7 @@ impl GlobalDecl {
         ty_ctx: &'ctx TypeDecls,
         fun_ctx: &'ctx FunDeclId::Map<String>,
         global_ctx: &'ctx GlobalDeclId::Map<String>,
-        trait_ctx: &'ctx TraitId::Map<String>,
+        trait_ctx: &'ctx TraitDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);

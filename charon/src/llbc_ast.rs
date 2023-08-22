@@ -108,4 +108,4 @@ pub type FunDecls = FunDeclId::Map<FunDecl>;
 pub type GlobalDecl = GGlobalDecl<Statement>;
 pub type GlobalDecls = GlobalDeclId::Map<GlobalDecl>;
 
-pub type TraitDecls = TraitId::Map<TraitDecl>;
+pub type TraitDecls = TraitDeclId::Map<TraitDecl>;

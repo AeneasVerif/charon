@@ -27,7 +27,7 @@ pub type FunDecls = FunDeclId::Map<FunDecl>;
 pub type GlobalDecl = GGlobalDecl<BlockId::Vector<BlockData>>;
 pub type GlobalDecls = GlobalDeclId::Map<GlobalDecl>;
 
-pub type TraitDecls = TraitId::Map<TraitDecl>;
+pub type TraitDecls = TraitDeclId::Map<TraitDecl>;
 
 /// A raw statement: a statement without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
