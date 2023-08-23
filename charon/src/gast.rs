@@ -319,13 +319,14 @@ pub struct Call {
     pub region_args: Vec<ErasedRegion>,
     pub type_args: Vec<ETy>,
     pub const_generic_args: Vec<ConstGeneric>,
-    /// If this is a call to a trait method: stores only the arguments
-    /// which apply to the method (i.e., remove those which apply to
-    /// the trait instance).
-    pub trait_method_args: Option<EArgs>,
-    /// TODO: something confusing here with regards to the way the other arguments are
-    /// handled. The traits listed here always correspond to the method traits (the trait
-    /// instance traits are stored in the [FunIdOrTraitMethodRef].
+    /// If this is a call to a trait method: stores *all* the generic arguments
+    /// which apply to the trait + the method. The fields [region_args], [type_args]
+    /// [const_generic_args] only store the arguments which concern the method call.
+    /// See the comments for [ParamsInfo].
+    pub trait_and_method_generic_args: Option<EArgs>,
+    /// The traits listed here always correspond to the method traits, in case this call
+    /// is a call to a trait method (the trait instance traits are stored in the
+    /// [FunIdOrTraitMethodRef].
     pub traits: Vec<TraitRef>,
     pub args: Vec<Operand>,
     pub dest: Place,

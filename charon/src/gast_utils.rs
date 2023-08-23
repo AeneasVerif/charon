@@ -262,26 +262,13 @@ where
         + Formatter<TraitDeclId::Id>
         + Formatter<TraitClauseId::Id>,
 {
-    let rt_args = match &call.trait_method_args {
-        None => fmt_args(
-            ctx,
-            &call.region_args,
-            &call.type_args,
-            &call.const_generic_args,
-            &call.traits,
-        ),
-        Some(Args {
-            region_args,
-            type_args,
-            const_generic_args,
-        }) => fmt_args(
-            ctx,
-            region_args,
-            type_args,
-            const_generic_args,
-            &call.traits,
-        ),
-    };
+    let rt_args = fmt_args(
+        ctx,
+        &call.region_args,
+        &call.type_args,
+        &call.const_generic_args,
+        &call.traits,
+    );
 
     let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
     let args = args.join(", ");

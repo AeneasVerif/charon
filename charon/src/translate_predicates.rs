@@ -10,47 +10,21 @@ use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
-    pub(crate) fn get_params_info(&mut self, def_id: DefId) -> ParamsInfo {
-        let tcx = self.tcx;
-
-        // Compute the number of generics
-        let mut num_region_params = 0;
-        let mut num_type_params = 0;
-        let mut num_const_generic_params = 0;
-
-        let generics = tcx.generics_of(def_id);
-        use rustc_middle::ty::GenericParamDefKind;
-        for param in &generics.params {
-            match param.kind {
-                GenericParamDefKind::Lifetime => num_region_params += 1,
-                GenericParamDefKind::Type { .. } => num_type_params += 1,
-                GenericParamDefKind::Const { .. } => num_const_generic_params += 1,
-            }
-        }
-
-        // Compute the number of trait clauses
-        let mut num_trait_clauses = 0;
-        let preds = tcx.predicates_of(def_id).sinto(&self.hax_state);
-        for (pred, _) in preds.predicates {
-            use hax::{Clause, PredicateKind};
-            if let PredicateKind::Clause(Clause::Trait(_)) = &pred.value {
-                num_trait_clauses += 1;
-            }
-        }
-
+    fn convert_params_info(info: hax::ParamsInfo) -> ParamsInfo {
         ParamsInfo {
-            num_region_params,
-            num_type_params,
-            num_const_generic_params,
-            num_trait_clauses,
+            num_region_params: info.num_region_params,
+            num_type_params: info.num_type_params,
+            num_const_generic_params: info.num_const_generic_params,
+            num_trait_clauses: info.num_trait_clauses,
         }
     }
 
+    pub(crate) fn get_params_info(&mut self, def_id: DefId) -> ParamsInfo {
+        Self::convert_params_info(hax::get_params_info(&self.hax_state, def_id))
+    }
+
     pub(crate) fn get_parent_params_info(&mut self, def_id: DefId) -> Option<ParamsInfo> {
-        self.tcx
-            .generics_of(def_id)
-            .parent
-            .map(|parent_id| self.get_params_info(parent_id))
+        hax::get_parent_params_info(&self.hax_state, def_id).map(Self::convert_params_info)
     }
 }
 

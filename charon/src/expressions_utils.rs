@@ -464,16 +464,15 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
     fn visit_call(&mut self, c: &Call) {
         let Call {
             func,
-            region_args: _,
+            region_args: _, // We ignore the regions which are erased
             type_args,
             const_generic_args,
             traits,
             args,
-            trait_method_args,
+            trait_and_method_generic_args,
             dest,
         } = c;
         self.visit_fun_id_or_trait_ref(func);
-        // We ignore the regions which are erased
         for t in type_args {
             self.visit_ty(t);
         }
@@ -486,8 +485,9 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         for t in traits {
             self.visit_trait_ref(t);
         }
-        match trait_method_args {
+        match trait_and_method_generic_args {
             None => (),
+            // We ignore the regions which are erased
             Some(Args {region_args: _, type_args, const_generic_args}) => {
                 for t in type_args {
                     self.visit_ty(t);

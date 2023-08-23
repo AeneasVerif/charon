@@ -254,7 +254,7 @@ fn translate_primitive_function_call(
                 type_args,
                 const_generic_args,
                 traits: Vec::new(),
-                trait_method_args: None,
+                trait_and_method_generic_args: None,
                 args,
                 dest,
             };
@@ -302,7 +302,7 @@ fn translate_primitive_function_call(
                 type_args,
                 const_generic_args,
                 traits: method_traits,
-                trait_method_args: None,
+                trait_and_method_generic_args: None,
                 args,
                 dest,
             };
@@ -363,7 +363,7 @@ fn translate_box_deref(
         type_args,
         const_generic_args,
         traits: method_traits,
-        trait_method_args: None,
+        trait_and_method_generic_args: None,
         args,
         dest,
     };
@@ -407,7 +407,7 @@ fn translate_vec_index(
         type_args,
         const_generic_args,
         traits: method_traits,
-        trait_method_args: None,
+        trait_and_method_generic_args: None,
         args,
         dest,
     };
@@ -1347,7 +1347,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     type_args: vec![t_ty],
                     const_generic_args: vec![],
                     traits: vec![],
-                    trait_method_args: None,
+                    trait_and_method_generic_args: None,
                     args: vec![t_arg],
                     dest: lval,
                 };
@@ -1410,7 +1410,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 type_args,
                                 const_generic_args,
                                 traits: method_traits,
-                                trait_method_args: None,
+                                trait_and_method_generic_args: None,
                                 args,
                                 dest: lval,
                             };
@@ -1474,38 +1474,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_info: &hax::TraitInfo,
     ) -> Result<ast::RawTerminator> {
         let rust_id = def_id.rust_def_id.unwrap();
-        let trait_info = self.translate_trait_impl_source(trait_info);
+        let impl_source = self.translate_trait_impl_source(&trait_info.impl_source);
 
         trace!("{:?}", rust_id);
 
         let _ = self.translate_fun_decl_id(rust_id);
         let method_name = self.t_ctx.translate_trait_method_name(rust_id);
-        let func = ast::FunIdOrTraitMethodRef::Trait(trait_info, method_name);
+        let func = ast::FunIdOrTraitMethodRef::Trait(impl_source, method_name);
 
-        // Ignore some of the arguments which concern the trait and
-        // not the specific method we call.
-        //
-        // For instance:
-        // ```
-        // impl<T> Foo<T> for Bar {
-        //   fn baz<U>(...) { ... }
-        // }
-        //
-        // fn test(x: Bar) {
-        //   x.baz(...); // Gets desugared to: Foo::baz<Bar, T, U>(x, ...);
-        //   ...
-        // }
-        // ```
-        // Above, we want to drop the `Bar` and `T` arguments.
-        let params_info = self.t_ctx.get_parent_params_info(rust_id).unwrap();
-        trace!("- id: {:?}\n- params_info:\n{:?}", rust_id, params_info);
+        // Compute the concatenation of all the generic arguments which were given to
+        // the function (trait arguments + method arguments).
+        let trait_and_method_generic_args = {
+            let (region_args, type_args, const_generic_args) = self
+                .translate_subst_generic_args_in_body(None, &trait_info.all_generics)
+                .unwrap();
 
-        let trait_method_args = {
-            let region_args: Vec<ty::ErasedRegion> =
-                region_args[params_info.num_region_params..].to_vec();
-            let type_args = type_args[params_info.num_type_params..].to_vec();
-            let const_generic_args =
-                const_generic_args[params_info.num_const_generic_params..].to_vec();
             Some(ast::Args {
                 region_args,
                 type_args,
@@ -1519,7 +1502,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             type_args,
             const_generic_args,
             traits: method_traits,
-            trait_method_args,
+            trait_and_method_generic_args,
             args,
             dest,
         };
