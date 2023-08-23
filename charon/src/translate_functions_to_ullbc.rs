@@ -84,30 +84,44 @@ impl FunctionKind {
 }
 
 pub(crate) fn get_function_kind(tcx: TyCtxt, rust_id: DefId) -> FunctionKind {
+    trace!("rust_id: {:?}", rust_id);
     if let Some(assoc) = tcx.opt_associated_item(rust_id) {
         match assoc.container {
             mir_ty::AssocItemContainer::ImplContainer => {
-                // This method is an *implementation* of a trait method
+                // This method is defined in an impl block.
+                // It can be a regular function in an impl block or an implementation
+                // a trait method.
                 // Ex.:
                 // ====
                 // ```
+                // impl<T> List<T> {
+                //   fn new() -> Self { ... } <- implementation
+                // }
+                //
                 // impl Foo for Bar {
                 //   fn baz(...) { ... } // <- implementation of a trait method
                 // }
                 // ```
 
-                // Check if this implementation reimplements a provided method.
-                // We do so by retrieving the def id of the method which is
-                // reimplemented, and checking its kind.
-                let provided = match get_function_kind(tcx, assoc.trait_item_def_id.unwrap()) {
-                    FunctionKind::TraitMethodDecl => false,
-                    FunctionKind::TraitMethodProvided => true,
-                    FunctionKind::Regular | FunctionKind::TraitMethodImpl { .. } => {
-                        unreachable!()
-                    }
-                };
+                // Check if there is a trait item (if yes, it is a trait method
+                // implementation, if no it is a regular function)
+                match assoc.trait_item_def_id {
+                    None => FunctionKind::Regular,
+                    Some(trait_id) => {
+                        // Check if this implementation reimplements a provided method.
+                        // We do so by retrieving the def id of the method which is
+                        // reimplemented, and checking its kind.
+                        let provided = match get_function_kind(tcx, trait_id) {
+                            FunctionKind::TraitMethodDecl => false,
+                            FunctionKind::TraitMethodProvided => true,
+                            FunctionKind::Regular | FunctionKind::TraitMethodImpl { .. } => {
+                                unreachable!()
+                            }
+                        };
 
-                FunctionKind::TraitMethodImpl { provided }
+                        FunctionKind::TraitMethodImpl { provided }
+                    }
+                }
             }
             mir_ty::AssocItemContainer::TraitContainer => {
                 // This method is the *declaration* of a trait method
