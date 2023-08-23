@@ -15,6 +15,7 @@ use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::translate_types;
 use crate::types as ty;
+use crate::types::{EGenericArgs, GenericArgs};
 use crate::types::{FieldId, VariantId};
 use crate::ullbc_ast as ast;
 use crate::values as v;
@@ -222,9 +223,7 @@ fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> rustc_middle::mir::Unevaluate
 fn translate_primitive_function_call(
     tcx: TyCtxt,
     def_id: &hax::DefId,
-    region_args: Vec<ty::ErasedRegion>,
-    type_args: Vec<ty::ETy>,
-    const_generic_args: Vec<ty::ConstGeneric>,
+    generics: EGenericArgs,
     trait_refs: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
@@ -240,7 +239,7 @@ fn translate_primitive_function_call(
 
     // We assume the function has primitive support, and look up
     // its primitive identifier
-    let aid = assumed::get_fun_id_from_name(&name, &type_args).unwrap();
+    let aid = assumed::get_fun_id_from_name(&name, &generics.types).unwrap();
 
     // Translate the function call
     // Note that some functions are actually traits (deref, index, etc.):
@@ -264,9 +263,7 @@ fn translate_primitive_function_call(
         | ast::AssumedFunId::SliceLen => {
             let call = ast::Call {
                 func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
-                region_args,
-                type_args,
-                const_generic_args,
+                generics,
                 trait_refs: Vec::new(),
                 trait_and_method_generic_args: None,
                 args,
@@ -274,26 +271,12 @@ fn translate_primitive_function_call(
             };
             Ok(ast::RawTerminator::Call { call, target })
         }
-        ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => translate_box_deref(
-            aid,
-            region_args,
-            type_args,
-            const_generic_args,
-            trait_refs,
-            args,
-            dest,
-            target,
-        ),
-        ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => translate_vec_index(
-            aid,
-            region_args,
-            type_args,
-            const_generic_args,
-            trait_refs,
-            args,
-            dest,
-            target,
-        ),
+        ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => {
+            translate_box_deref(aid, generics, trait_refs, args, dest, target)
+        }
+        ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
+            translate_vec_index(aid, generics, trait_refs, args, dest, target)
+        }
         ast::AssumedFunId::ArraySubsliceShared
         | ast::AssumedFunId::ArraySubsliceMut
         | ast::AssumedFunId::SliceSubsliceShared
@@ -301,20 +284,18 @@ fn translate_primitive_function_call(
             // Take a subslice from an array/slice.
             // Note that this isn't any different from a regular function call. Ideally,
             // we'd have a generic assumed function mechanism.
-            assert!(type_args.len() == 1);
+            assert!(generics.types.len() == 1);
             assert!(args.len() == 2);
-            assert!(const_generic_args.is_empty());
+            assert!(generics.const_generics.is_empty());
             // We need to unwrap the type to retrieve the `T` inside the `Slice<T>`
             // or the `Array<T, N>`
-            let (_, _, type_args, const_generic_args) = type_args[0].clone().to_adt();
-            assert!(type_args.len() == 1);
-            assert!(const_generic_args.len() <= 1);
+            let (_, generics) = generics.types[0].clone().to_adt();
+            assert!(generics.types.len() == 1);
+            assert!(generics.const_generics.len() <= 1);
 
             let call = ast::Call {
                 func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
-                region_args,
-                type_args,
-                const_generic_args,
+                generics,
                 trait_refs,
                 trait_and_method_generic_args: None,
                 args,
@@ -345,22 +326,20 @@ fn translate_primitive_function_call(
 /// on boxes. We need a custom function because it is a trait.
 fn translate_box_deref(
     aid: ast::AssumedFunId,
-    region_args: Vec<ty::ErasedRegion>,
-    type_args: Vec<ty::ETy>,
-    const_generic_args: Vec<ty::ConstGeneric>,
+    mut generics: EGenericArgs,
     trait_refs: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
 ) -> Result<ast::RawTerminator> {
     // Check the arguments
-    assert!(region_args.is_empty());
-    assert!(type_args.len() == 1);
+    assert!(generics.regions.is_empty());
+    assert!(generics.types.len() == 1);
     assert!(args.len() == 1);
 
     // For now we only support deref on boxes
     // Retrieve the boxed value
-    let arg_ty = type_args.get(0).unwrap(); // should be `Box<...>`
+    let arg_ty = generics.types.get(0).unwrap(); // should be `Box<...>`
     let boxed_ty = arg_ty.as_box();
     if boxed_ty.is_none() {
         panic!(
@@ -369,13 +348,11 @@ fn translate_box_deref(
         );
     }
     let boxed_ty = boxed_ty.unwrap();
-    let type_args = vec![boxed_ty.clone()];
+    generics.types = vec![boxed_ty.clone()];
 
     let call = ast::Call {
         func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
-        region_args,
-        type_args,
-        const_generic_args,
+        generics,
         trait_refs,
         trait_and_method_generic_args: None,
         args,
@@ -388,22 +365,20 @@ fn translate_box_deref(
 /// applied on `Vec`. We need a custom function because it is a trait.
 fn translate_vec_index(
     aid: ast::AssumedFunId,
-    region_args: Vec<ty::ErasedRegion>,
-    type_args: Vec<ty::ETy>,
-    const_generic_args: Vec<ty::ConstGeneric>,
+    mut generics: EGenericArgs,
     trait_refs: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
 ) -> Result<ast::RawTerminator> {
     // Check the arguments
-    assert!(region_args.is_empty());
-    assert!(type_args.len() == 1);
+    assert!(generics.regions.is_empty());
+    assert!(generics.types.len() == 1);
     assert!(args.len() == 2);
 
     // For now we only support index on vectors
     // Retrieve the boxed value
-    let arg_ty = type_args.get(0).unwrap(); // should be `Vec<...>`
+    let arg_ty = generics.types.get(0).unwrap(); // should be `Vec<...>`
     let arg_ty = match arg_ty.as_vec() {
         Option::Some(ty) => ty,
         Option::None => {
@@ -413,13 +388,11 @@ fn translate_vec_index(
         );
         }
     };
+    generics.types = vec![arg_ty.clone()];
 
-    let type_args = vec![arg_ty.clone()];
     let call = ast::Call {
         func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
-        region_args,
-        type_args,
-        const_generic_args,
+        generics,
         trait_refs,
         trait_and_method_generic_args: None,
         args,
@@ -556,17 +529,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             ty::Ty::Ref(_, _, _) => {
                                 projection.push(e::ProjectionElem::Deref);
                             }
-                            ty::Ty::Adt(
-                                ty::TypeId::Assumed(ty::AssumedTy::Box),
-                                regions,
-                                tys,
-                                cgs,
-                            ) => {
+                            ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Box), generics) => {
                                 // This case only happens in some MIR levels
                                 assert!(!boxes_are_desugared(self.t_ctx.mir_level));
-                                assert!(regions.is_empty());
-                                assert!(tys.len() == 1);
-                                assert!(cgs.is_empty());
+                                assert!(generics.regions.is_empty());
+                                assert!(generics.types.len() == 1);
+                                assert!(generics.const_generics.is_empty());
                                 projection.push(e::ProjectionElem::DerefBox);
                             }
                             ty::Ty::RawPtr(_, _) => {
@@ -584,9 +552,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         use hax::ProjectionElemFieldKind::*;
                         let proj_elem = match field_kind {
                             Tuple(id) => {
-                                let (_, _, tys, _) = current_ty.as_adt();
+                                let (_, generics) = current_ty.as_adt();
                                 let field_id = translate_field_id(*id);
-                                let proj_kind = e::FieldProjKind::Tuple(tys.len());
+                                let proj_kind = e::FieldProjKind::Tuple(generics.types.len());
                                 e::ProjectionElem::Field(proj_kind, field_id)
                             }
                             Adt {
@@ -601,23 +569,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                         let proj_kind = e::FieldProjKind::Adt(type_id, variant_id);
                                         e::ProjectionElem::Field(proj_kind, field_id)
                                     }
-                                    ty::Ty::Adt(ty::TypeId::Tuple, regions, tys, cgs) => {
-                                        assert!(regions.is_empty());
+                                    ty::Ty::Adt(ty::TypeId::Tuple, generics) => {
+                                        assert!(generics.regions.is_empty());
                                         assert!(variant.is_none());
-                                        assert!(cgs.is_empty());
-                                        let proj_kind = e::FieldProjKind::Tuple(tys.len());
+                                        assert!(generics.const_generics.is_empty());
+                                        let proj_kind =
+                                            e::FieldProjKind::Tuple(generics.types.len());
 
                                         e::ProjectionElem::Field(proj_kind, field_id)
                                     }
                                     ty::Ty::Adt(
                                         ty::TypeId::Assumed(ty::AssumedTy::Option),
-                                        regions,
-                                        tys,
-                                        cgs,
+                                        generics,
                                     ) => {
-                                        assert!(regions.is_empty());
-                                        assert!(tys.len() == 1);
-                                        assert!(cgs.is_empty());
+                                        assert!(generics.regions.is_empty());
+                                        assert!(generics.types.len() == 1);
+                                        assert!(generics.const_generics.is_empty());
                                         assert!(field_id == ty::FieldId::ZERO);
 
                                         let variant_id = variant_id.unwrap();
@@ -627,16 +594,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                     }
                                     ty::Ty::Adt(
                                         ty::TypeId::Assumed(ty::AssumedTy::Box),
-                                        regions,
-                                        tys,
-                                        cgs,
+                                        generics,
                                     ) => {
                                         assert!(!boxes_are_desugared(self.t_ctx.mir_level));
 
                                         // Some more sanity checks
-                                        assert!(regions.is_empty());
-                                        assert!(tys.len() == 1);
-                                        assert!(cgs.is_empty());
+                                        assert!(generics.regions.is_empty());
+                                        assert!(generics.types.len() == 1);
+                                        assert!(generics.const_generics.is_empty());
                                         assert!(variant_id.is_none());
                                         assert!(field_id == ty::FieldId::ZERO);
 
@@ -774,12 +739,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let cg = match &ty {
                     ty::Ty::Adt(
                         ty::TypeId::Assumed(aty @ (ty::AssumedTy::Array | ty::AssumedTy::Slice)),
-                        _,
-                        _,
-                        cgs,
+                        generics,
                     ) => {
                         if aty.is_array() {
-                            Option::Some(cgs[0].clone())
+                            Option::Some(generics.const_generics[0].clone())
                         } else {
                             Option::None
                         }
@@ -819,14 +782,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // materializes into the fat pointer.
                         match (&**t1, &**t2) {
                             (
-                                ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Array), _, tys, cgs),
-                                ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Slice), _, tys1, _),
+                                ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Array), generics),
+                                ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Slice), generics1),
                             ) => {
-                                assert!(tys.len() == 1 && cgs.len() == 1);
-                                assert!(tys[0] == tys1[0]);
+                                assert!(
+                                    generics.types.len() == 1 && generics.const_generics.len() == 1
+                                );
+                                assert!(generics.types[0] == generics1.types[0]);
                                 assert!(kind1 == kind2);
                                 e::Rvalue::UnaryOp(
-                                    e::UnOp::ArrayToSlice(*kind1, tys[0].clone(), cgs[0].clone()),
+                                    e::UnOp::ArrayToSlice(
+                                        *kind1,
+                                        generics.types[0].clone(),
+                                        generics.const_generics[0].clone(),
+                                    ),
                                     op,
                                 )
                             }
@@ -922,7 +891,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         assert!(field_index.is_none());
 
                         // Translate the substitution
-                        let (region_params, mut type_params, cg_params) = self
+                        let mut generics = self
                             .translate_subst_generic_args_in_body(None, substs)
                             .unwrap();
 
@@ -945,13 +914,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 }
                             };
 
-                            let akind = e::AggregateKind::Adt(
-                                id_t,
-                                variant_id,
-                                region_params,
-                                type_params,
-                                cg_params,
-                            );
+                            let akind = e::AggregateKind::Adt(id_t, variant_id, generics);
 
                             e::Rvalue::Aggregate(akind, operands_t)
                         } else {
@@ -963,8 +926,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             let name = def_id_to_name(self.t_ctx.tcx, adt_id);
                             if name.equals_ref_name(&assumed::OPTION_NAME) {
                                 // Sanity checks
-                                assert!(region_params.is_empty());
-                                assert!(type_params.len() == 1);
+                                assert!(generics.regions.is_empty());
+                                assert!(generics.types.len() == 1);
 
                                 // Find the variant
                                 let variant_id = translate_variant_id(*variant_idx);
@@ -978,17 +941,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                                 let akind = e::AggregateKind::Option(
                                     variant_id,
-                                    type_params.pop().unwrap(),
+                                    generics.types.pop().unwrap(),
                                 );
 
                                 e::Rvalue::Aggregate(akind, operands_t)
                             } else if name.equals_ref_name(&assumed::RANGE_NAME) {
                                 // Sanity checks
-                                assert!(region_params.is_empty());
+                                assert!(generics.regions.is_empty());
                                 // Ranges are parametric over the type of indices
-                                assert!(type_params.len() == 1);
+                                assert!(generics.types.len() == 1);
                                 e::Rvalue::Aggregate(
-                                    e::AggregateKind::Range(type_params.pop().unwrap()),
+                                    e::AggregateKind::Range(generics.types.pop().unwrap()),
                                     operands_t,
                                 )
                             } else {
@@ -1357,9 +1320,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // Return
                 let call = ast::Call {
                     func: ast::FunIdOrTraitMethodRef::mk_assumed(ast::AssumedFunId::BoxFree),
-                    region_args: vec![],
-                    type_args: vec![t_ty],
-                    const_generic_args: vec![],
+                    generics: GenericArgs::new_from_types(vec![t_ty]),
                     trait_refs: vec![],
                     trait_and_method_generic_args: None,
                     args: vec![t_arg],
@@ -1385,8 +1346,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
 
                 // Translate the type parameters
-                let (region_args, type_args, const_generic_args) =
-                    self.translate_subst_generic_args_in_body(used_type_args, substs)?;
+                let generics = self.translate_subst_generic_args_in_body(used_type_args, substs)?;
 
                 // Translate the arguments
                 let args = self.translate_arguments(used_args, args);
@@ -1396,7 +1356,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let is_prim = if is_local {
                     false
                 } else {
-                    assumed::get_fun_id_from_name(&name, &type_args).is_some()
+                    assumed::get_fun_id_from_name(&name, &generics.types).is_some()
                 };
 
                 // Trait information
@@ -1420,9 +1380,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             let func = ast::FunIdOrTraitMethodRef::Fun(ast::FunId::Regular(def_id));
                             let call = ast::Call {
                                 func,
-                                region_args,
-                                type_args,
-                                const_generic_args,
+                                generics,
                                 trait_refs,
                                 trait_and_method_generic_args: None,
                                 args,
@@ -1435,15 +1393,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             })
                         }
                         Option::Some(trait_info) => self.translate_trait_method_call(
-                            def_id,
-                            region_args,
-                            type_args,
-                            const_generic_args,
-                            trait_refs,
-                            args,
-                            lval,
-                            next_block,
-                            trait_info,
+                            def_id, generics, trait_refs, args, lval, next_block, trait_info,
                         ),
                     }
                 } else {
@@ -1462,9 +1412,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     translate_primitive_function_call(
                         self.t_ctx.tcx,
                         def_id,
-                        region_args,
-                        type_args,
-                        const_generic_args,
+                        generics,
                         trait_refs,
                         args,
                         lval,
@@ -1478,9 +1426,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_trait_method_call(
         &mut self,
         def_id: &hax::DefId,
-        region_args: Vec<ty::ErasedRegion>,
-        type_args: Vec<ty::ETy>,
-        const_generic_args: Vec<ty::ConstGeneric>,
+        generics: EGenericArgs,
         trait_refs: Vec<ast::TraitRef>,
         args: Vec<e::Operand>,
         dest: e::Place,
@@ -1499,22 +1445,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Compute the concatenation of all the generic arguments which were given to
         // the function (trait arguments + method arguments).
         let trait_and_method_generic_args = {
-            let (region_args, type_args, const_generic_args) = self
+            let generics = self
                 .translate_subst_generic_args_in_body(None, &trait_info.all_generics)
                 .unwrap();
-
-            Some(ast::Args {
-                region_args,
-                type_args,
-                const_generic_args,
-            })
+            Some(generics)
         };
 
         let call = ast::Call {
             func,
-            region_args,
-            type_args,
-            const_generic_args,
+            generics,
             trait_refs,
             trait_and_method_generic_args,
             args,
@@ -1530,7 +1469,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         used_args: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
-    ) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>, Vec<ty::ConstGeneric>)> {
+    ) -> Result<EGenericArgs> {
         trace!("{:?}", substs);
         let substs: Vec<&hax::GenericArg> = match used_args {
             Option::None => substs.iter().collect(),
@@ -1565,7 +1504,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         }
 
-        Ok((t_args_regions, t_args_tys, t_args_cgs))
+        Ok(GenericArgs::new(t_args_regions, t_args_tys, t_args_cgs))
     }
 
     /// Evaluate function arguments in a context, and return the list of computed
@@ -1779,11 +1718,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         let sig = ast::FunSig {
-            region_params: bt_ctx.region_vars.clone(),
+            generics: bt_ctx.get_generics(),
             regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
-            type_params: bt_ctx.type_vars.clone(),
-            const_generic_params: bt_ctx.const_generic_vars.clone(),
-            trait_clauses: bt_ctx.trait_clauses.clone(),
+            preds: bt_ctx.get_predicates(),
             block_params_info,
             inputs,
             output,

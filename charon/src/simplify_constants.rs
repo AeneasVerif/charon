@@ -22,18 +22,13 @@ use crate::ullbc_ast_utils::body_transform_operands;
 use crate::values::VarId;
 
 fn make_aggregate_kind(ty: &ETy, var_index: Option<VariantId::Id>) -> AggregateKind {
-    let (id, regions, tys, cgs) = ty.as_adt();
+    let (id, generics) = ty.as_adt();
     match id {
         TypeId::Tuple => {
             assert!(var_index.is_none());
             AggregateKind::Tuple
         }
-        TypeId::Adt(decl_id) => {
-            let regions = regions.iter().cloned().collect();
-            let tys = tys.iter().cloned().collect();
-            let cgs = cgs.iter().cloned().collect();
-            AggregateKind::Adt(*decl_id, var_index, regions, tys, cgs)
-        }
+        TypeId::Adt(decl_id) => AggregateKind::Adt(*decl_id, var_index, generics.clone()),
         TypeId::Assumed(_) => unreachable!(),
     }
 }

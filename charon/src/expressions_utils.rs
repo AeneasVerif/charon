@@ -5,7 +5,7 @@ use crate::assumed;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::gast::{
-    Args, AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitDeclId,
+    AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, GenericArgs, TraitDeclId,
     TraitInstanceId, TraitMethodName, TraitRef,
 };
 use crate::types::*;
@@ -251,7 +251,7 @@ impl Rvalue {
                             unreachable!();
                         }
                     }
-                    AggregateKind::Adt(def_id, variant_id, _, _, _) => {
+                    AggregateKind::Adt(def_id, variant_id, _) => {
                         // Format every field
                         let mut fields = vec![];
                         for (i, op) in ops.iter().enumerate() {
@@ -439,12 +439,13 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Tuple => (),
             Option(_, ty) => self.visit_ty(ty),
             Range(ty) => self.visit_ty(ty),
-            Adt(adt_id, _, _, tys, cgs) => {
+            Adt(adt_id, _, generics) => {
                 self.visit_type_decl_id(adt_id);
-                for ty in tys {
+                // We ignore the regions, which are erased
+                for ty in &generics.types {
                     self.visit_ty(ty);
                 }
-                for cg in cgs {
+                for cg in &generics.const_generics {
                     self.visit_const_generic(cg);
                 }
             }
@@ -464,19 +465,18 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
     fn visit_call(&mut self, c: &Call) {
         let Call {
             func,
-            region_args: _, // We ignore the regions which are erased
-            type_args,
-            const_generic_args,
+            generics,
             trait_refs,
             args,
             trait_and_method_generic_args,
             dest,
         } = c;
         self.visit_fun_id_or_trait_ref(func);
-        for t in type_args {
+        // We ignore the regions which are erased
+        for t in &generics.types {
             self.visit_ty(t);
         }
-        for cg in const_generic_args {
+        for cg in &generics.const_generics {
             self.visit_const_generic(cg);
         }
         for o in args {
@@ -488,11 +488,11 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         match trait_and_method_generic_args {
             None => (),
             // We ignore the regions which are erased
-            Some(Args {region_args: _, type_args, const_generic_args}) => {
-                for t in type_args {
+            Some(GenericArgs {regions: _, types, const_generics}) => {
+                for t in types {
                     self.visit_ty(t);
                 }
-                for cg in const_generic_args {
+                for cg in const_generics {
                     self.visit_const_generic(cg);
                 }
             }
@@ -528,16 +528,15 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
     fn visit_trait_ref(&mut self, tr: &TraitRef) {
         let TraitRef {
             trait_id,
-            region_args: _,
-            type_args,
-            const_generic_args,
+            generics,
             trait_refs,
         } = tr;
         self.visit_trait_instance_id(trait_id);
-        for t in type_args {
+        // We ignore the regions, which are erased
+        for t in &generics.types {
             self.visit_ty(t);
         }
-        for cg in const_generic_args {
+        for cg in &generics.const_generics {
             self.visit_const_generic(cg);
         }
         for t in trait_refs {

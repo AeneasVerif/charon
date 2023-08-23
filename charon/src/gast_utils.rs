@@ -86,70 +86,9 @@ impl Var {
     }
 }
 
-pub fn fmt_args_raw<'a, 'b, T, R>(
-    ctx: &'b T,
-    region_args: &'a Vec<R>,
-    type_args: &'a Vec<Ty<R>>,
-    const_generic_args: &'a Vec<ConstGeneric>,
-    mut trait_refs: Vec<String>,
-) -> String
+pub fn fmt_trait_refs<'a, T>(ctx: &T, traits: &'a Vec<TraitRef>) -> String
 where
     T: Formatter<TypeVarId::Id>
-        + Formatter<&'a R>
-        + Formatter<TypeDeclId::Id>
-        + Formatter<ConstGenericVarId::Id>
-        + Formatter<FunDeclId::Id>
-        + Formatter<GlobalDeclId::Id>
-        + Formatter<TraitDeclId::Id>
-        + Formatter<TraitClauseId::Id>,
-{
-    let regions_s: Vec<String> = region_args.iter().map(|x| ctx.format_object(x)).collect();
-    let mut types_s: Vec<String> = type_args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
-    let mut cgs_s: Vec<String> = const_generic_args
-        .iter()
-        .map(|x| x.fmt_with_ctx(ctx))
-        .collect();
-    let mut args_s = regions_s;
-    args_s.append(&mut types_s);
-    args_s.append(&mut cgs_s);
-    args_s.append(&mut trait_refs);
-
-    if args_s.is_empty() {
-        "".to_string()
-    } else {
-        format!("<{}>", args_s.join(", "))
-    }
-}
-
-pub fn fmt_args_no_traits<'a, 'b, T, R>(
-    ctx: &'b T,
-    region_args: &'a Vec<R>,
-    type_args: &'a Vec<Ty<R>>,
-    const_generic_args: &'a Vec<ConstGeneric>,
-) -> String
-where
-    T: Formatter<TypeVarId::Id>
-        + Formatter<&'a R>
-        + Formatter<TypeDeclId::Id>
-        + Formatter<ConstGenericVarId::Id>
-        + Formatter<FunDeclId::Id>
-        + Formatter<GlobalDeclId::Id>
-        + Formatter<TraitDeclId::Id>
-        + Formatter<TraitClauseId::Id>,
-{
-    fmt_args_raw(ctx, region_args, type_args, const_generic_args, Vec::new())
-}
-
-pub fn fmt_args<'a, 'b, T, R>(
-    ctx: &'b T,
-    region_args: &'a Vec<R>,
-    type_args: &'a Vec<Ty<R>>,
-    const_generic_args: &'a Vec<ConstGeneric>,
-    traits: &'a Vec<TraitRef>,
-) -> String
-where
-    T: Formatter<TypeVarId::Id>
-        + Formatter<&'a R>
         + Formatter<&'a ErasedRegion>
         + Formatter<TypeDeclId::Id>
         + Formatter<ConstGenericVarId::Id>
@@ -159,7 +98,11 @@ where
         + Formatter<TraitClauseId::Id>,
 {
     let traits_s: Vec<String> = traits.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
-    fmt_args_raw(ctx, region_args, type_args, const_generic_args, traits_s)
+    if traits_s.is_empty() {
+        "".to_string()
+    } else {
+        format!("[{}]", traits_s.join(", "))
+    }
 }
 
 impl TraitDecl {
@@ -175,12 +118,9 @@ impl TraitDecl {
             + Formatter<TraitClauseId::Id>,
     {
         let def_id = ctx.format_object(self.def_id);
-        let params = crate::types::TypeDecl::fmt_params(
-            &self.region_params,
-            &self.type_params,
-            &self.const_generic_params,
-        );
+        let generics = self.generics.format();
         let trait_clauses: Vec<String> = self
+            .preds
             .trait_clauses
             .iter()
             .map(|clause| format!("{TAB_INCR}{}", clause.fmt_with_ctx(ctx)))
@@ -190,7 +130,7 @@ impl TraitDecl {
         } else {
             "".to_string()
         };
-        format!("trait {def_id}{params}{trait_clauses}")
+        format!("trait {def_id}{generics}{trait_clauses}")
     }
 }
 
@@ -208,13 +148,8 @@ impl TraitClause {
     {
         let clause_id = ctx.format_object(self.clause_id);
         let trait_id = ctx.format_object(self.trait_id);
-        let args = fmt_args_no_traits(
-            ctx,
-            &self.region_params,
-            &self.type_params,
-            &self.const_generic_params,
-        );
-        format!("[{clause_id}]: {trait_id}{args}")
+        let generics = self.generics.fmt_with_ctx(ctx);
+        format!("[{clause_id}]: {trait_id}{generics}")
     }
 }
 
@@ -235,14 +170,9 @@ impl TraitRef {
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
             TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
         };
-        let args = fmt_args(
-            ctx,
-            &self.region_args,
-            &self.type_args,
-            &self.const_generic_args,
-            &self.trait_refs,
-        );
-        format!("{trait_id}{args}")
+        let generics = self.generics.fmt_with_ctx(ctx);
+        let trait_refs = fmt_trait_refs(ctx, &self.trait_refs);
+        format!("{trait_id}{generics}{trait_refs}")
     }
 }
 
@@ -260,33 +190,28 @@ where
         + Formatter<TraitDeclId::Id>
         + Formatter<TraitClauseId::Id>,
 {
-    let rt_args = fmt_args(
-        ctx,
-        &call.region_args,
-        &call.type_args,
-        &call.const_generic_args,
-        &call.trait_refs,
-    );
-
-    let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
-    let args = args.join(", ");
+    let generics = call.generics.fmt_with_ctx(ctx);
+    let trait_refs = fmt_trait_refs(ctx, &call.trait_refs);
 
     let f = match &call.func {
         FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
-            format!("{}{}", ctx.format_object(*def_id), rt_args)
+            format!("{}{generics}{trait_refs}", ctx.format_object(*def_id),)
         }
         FunIdOrTraitMethodRef::Fun(FunId::Assumed(assumed)) => {
-            format!("@{}{rt_args}", assumed.variant_name())
+            format!("@{}{generics}{trait_refs}", assumed.variant_name())
         }
         FunIdOrTraitMethodRef::Trait(trait_ref, method_id) => {
             format!(
                 "{}::{}{}",
                 trait_ref.fmt_with_ctx(ctx),
                 &method_id.0,
-                rt_args
+                generics
             )
         }
     };
+
+    let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
+    let args = args.join(", ");
 
     format!("{f}({args})")
 }
@@ -367,24 +292,8 @@ impl FunSig {
             + Formatter<GlobalDeclId::Id>
             + Formatter<ConstGenericVarId::Id>,
     {
-        // Type parameters
-        let params = {
-            let regions: Vec<String> = self.region_params.iter().map(|x| x.to_string()).collect();
-            let mut types: Vec<String> = self.type_params.iter().map(|x| x.to_string()).collect();
-            let mut cgs: Vec<String> = self
-                .const_generic_params
-                .iter()
-                .map(|x| x.to_string())
-                .collect();
-            let mut params = regions;
-            params.append(&mut types);
-            params.append(&mut cgs);
-            if params.is_empty() {
-                "".to_string()
-            } else {
-                format!("<{}>", params.join(", "))
-            }
-        };
+        // Generic parameters
+        let params = self.generics.format();
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
@@ -443,35 +352,8 @@ impl<T> GFunDecl<T> {
         // Function name
         let name = self.name.to_string();
 
-        // Type parameters
-        let params = {
-            let regions: Vec<String> = self
-                .signature
-                .region_params
-                .iter()
-                .map(|x| x.to_string())
-                .collect();
-            let mut types: Vec<String> = self
-                .signature
-                .type_params
-                .iter()
-                .map(|x| x.to_string())
-                .collect();
-            let mut cgs: Vec<String> = self
-                .signature
-                .const_generic_params
-                .iter()
-                .map(|x| x.to_string())
-                .collect();
-            let mut params = regions;
-            params.append(&mut types);
-            params.append(&mut cgs);
-            if params.is_empty() {
-                "".to_string()
-            } else {
-                format!("<{}>", params.join(", "))
-            }
-        };
+        // Generic parameters
+        let params = self.signature.generics.format();
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
@@ -493,9 +375,10 @@ impl<T> GFunDecl<T> {
             format!(" -> {}", ret_ty.fmt_with_ctx(ctx))
         };
 
-        // Where clauses
+        // Predicates (where clauses)
         let trait_clauses: Vec<String> = self
             .signature
+            .preds
             .trait_clauses
             .iter()
             .map(|clause| format!("{tab}{TAB_INCR}{}", clause.fmt_with_ctx(ctx)))

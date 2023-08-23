@@ -4,7 +4,7 @@
 
 use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
 use crate::formatter::Formatter;
-use crate::gast::{Call, Var};
+use crate::gast::{Call, GenericArgs, Var};
 use crate::llbc_ast::{
     iter_function_bodies, iter_global_bodies, AssumedFunId, FunDecls, FunIdOrTraitMethodRef,
     GlobalDecls, MutAstVisitor, RawStatement, Statement, Switch,
@@ -39,8 +39,8 @@ impl<'a> Transform<'a> {
             if pe.is_index() {
                 let (index_var_id, buf_ty) = pe.to_index();
 
-                let (id, _, tys, cgs) = buf_ty.as_adt();
-                let cgs: Vec<ConstGeneric> = cgs.iter().cloned().collect();
+                let (id, generics) = buf_ty.as_adt();
+                let cgs: Vec<ConstGeneric> = generics.const_generics.iter().cloned().collect();
                 let index_id = match id.as_assumed() {
                     AssumedTy::Array => {
                         if mut_access {
@@ -59,7 +59,7 @@ impl<'a> Transform<'a> {
                     _ => unreachable!(),
                 };
 
-                let elem_ty = tys[0].clone();
+                let elem_ty = generics.types[0].clone();
 
                 // We need to introduce intermediate statements (and
                 // temporary variables)
@@ -98,11 +98,10 @@ impl<'a> Transform<'a> {
                 let arg_index = Operand::Copy(Place::new(index_var_id));
                 let index_dest = Place::new(elem_borrow_var);
                 let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
+                let generics = GenericArgs::new(vec![ErasedRegion::Erased], vec![elem_ty], cgs);
                 let index_call = Call {
                     func: index_id,
-                    region_args: vec![ErasedRegion::Erased],
-                    type_args: vec![elem_ty],
-                    const_generic_args: cgs,
+                    generics,
                     trait_refs: Vec::new(),
                     trait_and_method_generic_args: None,
                     args: vec![arg_buf, arg_index],

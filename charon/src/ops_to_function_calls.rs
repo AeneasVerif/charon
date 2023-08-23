@@ -12,8 +12,7 @@ use crate::llbc_ast::{
     AssumedFunId, Call, FunDecls, FunIdOrTraitMethodRef, GlobalDecls, RawStatement, Statement,
 };
 use crate::translate_ctx::TransCtx;
-use crate::types::ErasedRegion;
-use crate::types::RefKind;
+use crate::types::{ErasedRegion, GenericArgs, RefKind};
 
 fn transform_st(s: &mut Statement) -> Vec<Statement> {
     match &s.content {
@@ -26,14 +25,14 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
                 RefKind::Shared => AssumedFunId::ArrayToSliceShared,
             };
             let func = FunIdOrTraitMethodRef::mk_assumed(id);
-            let region_args = vec![ErasedRegion::Erased];
-            let type_args = vec![ty.clone()];
-            let const_generic_args = vec![cg.clone()];
+            let generics = GenericArgs::new(
+                vec![ErasedRegion::Erased],
+                vec![ty.clone()],
+                vec![cg.clone()],
+            );
             s.content = RawStatement::Call(Call {
                 func,
-                region_args,
-                type_args,
-                const_generic_args,
+                generics,
                 trait_refs: Vec::new(),
                 trait_and_method_generic_args: None,
                 args: vec![op.clone()],

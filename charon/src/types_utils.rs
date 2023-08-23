@@ -4,7 +4,7 @@
 use crate::assumed::get_name_from_type_id;
 use crate::formatter::Formatter;
 use crate::types::*;
-use crate::ullbc_ast::{GlobalDeclId, TraitDeclId};
+use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDeclId};
 use crate::values::{DummyFormatter, Literal};
 use hax_frontend_exporter as hax;
 use im::{HashMap, OrdSet};
@@ -112,6 +112,125 @@ impl std::string::ToString for ConstGenericVar {
     }
 }
 
+impl GenericParams {
+    pub fn len(&self) -> usize {
+        let GenericParams {
+            regions,
+            types,
+            const_generics,
+        } = self;
+        regions.len() + types.len() + const_generics.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn empty() -> Self {
+        GenericParams {
+            regions: RegionVarId::Vector::new(),
+            types: TypeVarId::Vector::new(),
+            const_generics: ConstGenericVarId::Vector::new(),
+        }
+    }
+
+    /// Not naming this "to_string" on purpose: this can be confusing.
+    pub fn format(&self) -> String {
+        if self.is_empty() {
+            "".to_string()
+        } else {
+            let mut params = Vec::new();
+            let GenericParams {
+                regions,
+                types,
+                const_generics,
+            } = self;
+            for x in regions {
+                params.push(x.to_string());
+            }
+            for x in types {
+                params.push(x.to_string());
+            }
+            for x in const_generics {
+                params.push(x.to_string());
+            }
+            format!("<{}>", params.join(", "))
+        }
+    }
+}
+
+impl<R> GenericArgs<R> {
+    pub fn len(&self) -> usize {
+        let GenericArgs {
+            regions,
+            types,
+            const_generics,
+        } = self;
+        regions.len() + types.len() + const_generics.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn empty() -> Self {
+        GenericArgs {
+            regions: Vec::new(),
+            types: Vec::new(),
+            const_generics: Vec::new(),
+        }
+    }
+
+    pub fn new_from_types(types: Vec<Ty<R>>) -> Self {
+        GenericArgs {
+            regions: Vec::new(),
+            types,
+            const_generics: Vec::new(),
+        }
+    }
+
+    pub fn new(regions: Vec<R>, types: Vec<Ty<R>>, const_generics: Vec<ConstGeneric>) -> Self {
+        GenericArgs {
+            regions,
+            types,
+            const_generics,
+        }
+    }
+
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: Formatter<TypeVarId::Id>
+            + Formatter<&'a R>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitDeclId::Id>
+            + Formatter<TraitClauseId::Id>,
+    {
+        if self.is_empty() {
+            "".to_string()
+        } else {
+            let mut params = Vec::new();
+            let GenericArgs {
+                regions,
+                types,
+                const_generics,
+            } = self;
+            for x in regions {
+                params.push(ctx.format_object(x));
+            }
+            for x in types {
+                params.push(x.fmt_with_ctx(ctx));
+            }
+            for x in const_generics {
+                params.push(x.fmt_with_ctx(ctx));
+            }
+            format!("<{}>", params.join(", "))
+        }
+    }
+}
+
 impl TypeDecl {
     /// The variant id should be `None` if it is a structure and `Some` if it
     /// is an enumeration.
@@ -139,10 +258,13 @@ impl TypeDecl {
     ) -> Option<VariantId::Vector<FieldId::Vector<RTy>>> {
         // Introduce the substitutions
         let r_subst = make_region_subst(
-            self.region_params.iter().map(|x| x.index),
+            self.generics.regions.iter().map(|x| x.index),
             inst_regions.iter(),
         );
-        let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
+        let ty_subst = make_type_subst(
+            self.generics.types.iter().map(|x| x.index),
+            inst_types.iter(),
+        );
 
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
@@ -174,9 +296,12 @@ impl TypeDecl {
         cgs: &Vec<ConstGeneric>,
     ) -> Vec<ETy> {
         // Introduce the substitution
-        let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
+        let ty_subst = make_type_subst(
+            self.generics.types.iter().map(|x| x.index),
+            inst_types.iter(),
+        );
         let cg_subst = make_cg_subst(
-            self.const_generic_params.iter().map(|x| x.index),
+            self.generics.const_generics.iter().map(|x| x.index),
             cgs.iter(),
         );
 
@@ -199,9 +324,12 @@ impl TypeDecl {
         field_id: FieldId::Id,
     ) -> ETy {
         // Introduce the substitution
-        let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
+        let ty_subst = make_type_subst(
+            self.generics.types.iter().map(|x| x.index),
+            inst_types.iter(),
+        );
         let cg_subst = make_cg_subst(
-            self.const_generic_params.iter().map(|x| x.index),
+            self.generics.const_generics.iter().map(|x| x.index),
             cgs.iter(),
         );
 
@@ -224,11 +352,7 @@ impl TypeDecl {
             + Formatter<GlobalDeclId::Id>
             + Formatter<ConstGenericVarId::Id>,
     {
-        let params = TypeDecl::fmt_params(
-            &self.region_params,
-            &self.type_params,
-            &self.const_generic_params,
-        );
+        let params = self.generics.format();
 
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
@@ -252,28 +376,6 @@ impl TypeDecl {
                 format!("enum {}{} =\n{}\n", self.name, params, variants)
             }
             TypeDeclKind::Opaque => format!("opaque type {}{}", self.name, params),
-        }
-    }
-
-    pub(crate) fn fmt_params(
-        region_params: &RegionVarId::Vector<RegionVar>,
-        type_params: &TypeVarId::Vector<TypeVar>,
-        const_generic_params: &ConstGenericVarId::Vector<ConstGenericVar>,
-    ) -> String {
-        let mut params = Vec::new();
-        for x in region_params {
-            params.push(x.to_string());
-        }
-        for x in type_params {
-            params.push(x.to_string());
-        }
-        for x in const_generic_params {
-            params.push(x.to_string());
-        }
-        if params.is_empty() {
-            "".to_string()
-        } else {
-            format!("<{}>", params.join(", "))
         }
     }
 }
@@ -529,10 +631,10 @@ impl<R> Ty<R> {
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
         match self {
-            Ty::Adt(TypeId::Tuple, regions, tys, cgs) => {
-                assert!(regions.is_empty());
-                assert!(cgs.is_empty());
-                tys.is_empty()
+            Ty::Adt(TypeId::Tuple, args) => {
+                assert!(args.regions.is_empty());
+                assert!(args.const_generics.is_empty());
+                args.types.is_empty()
             }
             _ => false,
         }
@@ -540,7 +642,7 @@ impl<R> Ty<R> {
 
     /// Return the unit type
     pub fn mk_unit() -> Ty<R> {
-        Ty::Adt(TypeId::Tuple, Vec::new(), Vec::new(), Vec::new())
+        Ty::Adt(TypeId::Tuple, GenericArgs::empty())
     }
 
     /// Return true if this is a scalar type
@@ -580,15 +682,22 @@ impl<R> Ty<R> {
             + Formatter<&'a R>,
     {
         match self {
-            Ty::Adt(id, regions, inst_types, cgs) => {
+            Ty::Adt(id, args) => {
                 let adt_ident = id.fmt_with_ctx(ctx);
 
-                let num_params = regions.len() + inst_types.len();
+                let num_args = args.len();
 
+                let GenericArgs {
+                    regions,
+                    types,
+                    const_generics,
+                } = args;
                 let regions: Vec<String> = regions.iter().map(|r| ctx.format_object(r)).collect();
-                let mut types: Vec<String> =
-                    inst_types.iter().map(|ty| ty.fmt_with_ctx(ctx)).collect();
-                let mut cgs: Vec<String> = cgs.iter().map(|cg| cg.fmt_with_ctx(ctx)).collect();
+                let mut types: Vec<String> = types.iter().map(|ty| ty.fmt_with_ctx(ctx)).collect();
+                let mut cgs: Vec<String> = const_generics
+                    .iter()
+                    .map(|cg| cg.fmt_with_ctx(ctx))
+                    .collect();
                 let mut all_params = regions;
                 all_params.append(&mut types);
                 all_params.append(&mut cgs);
@@ -596,7 +705,7 @@ impl<R> Ty<R> {
 
                 if id.is_tuple() {
                     format!("({all_params})")
-                } else if num_params > 0 {
+                } else if num_args > 0 {
                     format!("{adt_ident}<{all_params}>")
                 } else {
                     adt_ident
@@ -623,10 +732,10 @@ impl<R> Ty<R> {
     /// Return true if the type is Box
     pub fn is_box(&self) -> bool {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys, cgs) => {
-                assert!(regions.is_empty());
-                assert!(tys.len() == 1);
-                assert!(cgs.is_empty());
+            Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
+                assert!(generics.regions.is_empty());
+                assert!(generics.types.len() == 1);
+                assert!(generics.const_generics.is_empty());
                 true
             }
             _ => false,
@@ -635,11 +744,11 @@ impl<R> Ty<R> {
 
     pub fn as_box(&self) -> Option<&Ty<R>> {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys, cgs) => {
-                assert!(regions.is_empty());
-                assert!(tys.len() == 1);
-                assert!(cgs.is_empty());
-                Some(tys.get(0).unwrap())
+            Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
+                assert!(generics.regions.is_empty());
+                assert!(generics.types.len() == 1);
+                assert!(generics.const_generics.is_empty());
+                Some(generics.types.get(0).unwrap())
             }
             _ => None,
         }
@@ -648,10 +757,10 @@ impl<R> Ty<R> {
     /// Return true if the type is Vec
     pub fn is_vec(&self) -> bool {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys, cgs) => {
-                assert!(regions.is_empty());
-                assert!(tys.len() == 1);
-                assert!(cgs.is_empty());
+            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), generics) => {
+                assert!(generics.regions.is_empty());
+                assert!(generics.types.len() == 1);
+                assert!(generics.const_generics.is_empty());
                 true
             }
             _ => false,
@@ -660,11 +769,11 @@ impl<R> Ty<R> {
 
     pub fn as_vec(&self) -> Option<&Ty<R>> {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys, cgs) => {
-                assert!(regions.is_empty());
-                assert!(tys.len() == 1);
-                assert!(cgs.is_empty());
-                Some(tys.get(0).unwrap())
+            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), generics) => {
+                assert!(generics.regions.is_empty());
+                assert!(generics.types.len() == 1);
+                assert!(generics.const_generics.is_empty());
+                Some(generics.types.get(0).unwrap())
             }
             _ => None,
         }
@@ -680,9 +789,9 @@ impl<Rid: Clone + Ord + std::hash::Hash> Ty<Region<Rid>> {
             Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(r, ty, _) => r.contains_var(rset) || ty.contains_region_var(rset),
             Ty::RawPtr(ty, _) => ty.contains_region_var(rset),
-            Ty::Adt(_, regions, tys, _) => regions
-                .iter()
-                .any(|r| r.contains_var(rset) || tys.iter().any(|x| x.contains_region_var(rset))),
+            Ty::Adt(_, generics) => generics.regions.iter().any(|r| {
+                r.contains_var(rset) || generics.types.iter().any(|x| x.contains_region_var(rset))
+            }),
         }
     }
 }
@@ -711,6 +820,35 @@ impl std::string::ToString for Ty<ErasedRegion> {
     }
 }
 
+impl<R: Eq + Clone> GenericArgs<R> {
+    pub fn substitute<R1: Eq>(
+        &self,
+        rsubst: &dyn Fn(&R) -> R1,
+        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
+        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
+    ) -> GenericArgs<R1> {
+        let GenericArgs {
+            regions,
+            types,
+            const_generics,
+        } = self;
+        let regions = Ty::substitute_regions(regions, rsubst);
+        let types = types
+            .iter()
+            .map(|ty| ty.substitute(rsubst, tsubst, cgsubst))
+            .collect();
+        let const_generics = const_generics
+            .iter()
+            .map(|cg| cg.substitute(cgsubst))
+            .collect();
+        GenericArgs {
+            regions,
+            types,
+            const_generics,
+        }
+    }
+}
+
 // TODO: mixing Copy and Clone in the trait requirements below. Update to only use Copy.
 impl<R: Eq + Clone> Ty<R> {
     pub fn substitute<R1: Eq>(
@@ -720,14 +858,9 @@ impl<R: Eq + Clone> Ty<R> {
         cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
     ) -> Ty<R1> {
         match self {
-            Ty::Adt(id, regions, tys, cgs) => {
-                let nregions = Ty::substitute_regions(regions, rsubst);
-                let ntys = tys
-                    .iter()
-                    .map(|ty| ty.substitute(rsubst, tsubst, cgsubst))
-                    .collect();
-                let ncgs = cgs.iter().map(|cg| cg.substitute(cgsubst)).collect();
-                Ty::Adt(id.clone(), nregions, ntys, ncgs)
+            Ty::Adt(id, args) => {
+                let args = args.substitute(rsubst, tsubst, cgsubst);
+                Ty::Adt(id.clone(), args)
             }
             Ty::TypeVar(id) => tsubst(id),
             Ty::Literal(pty) => Ty::Literal(*pty),
@@ -786,8 +919,8 @@ impl<R: Eq + Clone> Ty<R> {
             Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(_, _, _) => true, // Always contains a region identifier
             Ty::RawPtr(ty, _) => ty.contains_variables(),
-            Ty::Adt(_, regions, tys, _) => {
-                !regions.is_empty() || tys.iter().any(|x| x.contains_variables())
+            Ty::Adt(_, args) => {
+                !args.regions.is_empty() || args.types.iter().any(|x| x.contains_variables())
             }
         }
     }
@@ -799,8 +932,8 @@ impl<R: Eq + Clone> Ty<R> {
             Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(_, _, _) => true,
             Ty::RawPtr(ty, _) => ty.contains_regions(),
-            Ty::Adt(_, regions, tys, _) => {
-                !regions.is_empty() || tys.iter().any(|x| x.contains_regions())
+            Ty::Adt(_, args) => {
+                !args.regions.is_empty() || args.types.iter().any(|x| x.contains_regions())
             }
         }
     }
@@ -891,21 +1024,21 @@ pub fn make_cg_subst<
 
 impl Formatter<TypeVarId::Id> for TypeDecl {
     fn format_object(&self, id: TypeVarId::Id) -> String {
-        let var = self.type_params.get(id).unwrap();
+        let var = self.generics.types.get(id).unwrap();
         var.to_string()
     }
 }
 
 impl Formatter<RegionVarId::Id> for TypeDecl {
     fn format_object(&self, id: RegionVarId::Id) -> String {
-        let var = self.region_params.get(id).unwrap();
+        let var = self.generics.regions.get(id).unwrap();
         var.to_string()
     }
 }
 
 impl Formatter<ConstGenericVarId::Id> for TypeDecl {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
-        let var = self.const_generic_params.get(id).unwrap();
+        let var = self.generics.const_generics.get(id).unwrap();
         var.to_string()
     }
 }
@@ -940,7 +1073,7 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
     pub fn contains_never(&self) -> bool {
         match self {
             Ty::Never => true,
-            Ty::Adt(_, _, tys, _) => tys.iter().any(|ty| ty.contains_never()),
+            Ty::Adt(_, args) => args.types.iter().any(|ty| ty.contains_never()),
             Ty::TypeVar(_) | Ty::Literal(_) => false,
             Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => ty.contains_never(),
         }
@@ -1023,14 +1156,9 @@ impl<R: Clone + Eq + std::hash::Hash> TySubst<R> {
         }
 
         match (src, tgt) {
-            (Adt(src_id, src_rgs, src_tys, src_cgs), Adt(tgt_id, tgt_rgs, tgt_tys, tgt_cgs)) => {
+            (Adt(src_id, src_args), Adt(tgt_id, tgt_args)) => {
                 check_ok!(src_id == tgt_id);
-                if !self.ignore_regions {
-                    self.unify_regions_lists(src_rgs, tgt_rgs)?;
-                }
-                self.unify_types_lists(src_tys, tgt_tys)?;
-                self.unify_const_generics_lists(src_cgs, tgt_cgs)?;
-                Ok(())
+                self.unify_args(src_args, tgt_args)
             }
             (Literal(src), Literal(tgt)) => {
                 check_ok_return!(src == tgt);
@@ -1081,12 +1209,14 @@ impl<R: Clone + Eq + std::hash::Hash> TySubst<R> {
 
     fn unify_args(
         &mut self,
-        src: &crate::gast::Args<R>,
-        tgt: &crate::gast::Args<R>,
+        src: &crate::gast::GenericArgs<R>,
+        tgt: &crate::gast::GenericArgs<R>,
     ) -> Result<(), ()> {
-        self.unify_regions_lists(&src.region_args, &tgt.region_args)?;
-        self.unify_types_lists(&src.type_args, &tgt.type_args)?;
-        self.unify_const_generics_lists(&src.const_generic_args, &tgt.const_generic_args)?;
+        if !self.ignore_regions {
+            self.unify_regions_lists(&src.regions, &tgt.regions)?;
+        }
+        self.unify_types_lists(&src.types, &tgt.types)?;
+        self.unify_const_generics_lists(&src.const_generics, &tgt.const_generics)?;
         Ok(())
     }
 }
@@ -1095,8 +1225,8 @@ impl TySubst<ErasedRegion> {
     pub fn unify_eargs(
         fixed_type_vars: impl std::iter::Iterator<Item = TypeVarId::Id>,
         fixed_const_generic_vars: impl std::iter::Iterator<Item = ConstGenericVarId::Id>,
-        src: &crate::gast::EArgs,
-        tgt: &crate::gast::EArgs,
+        src: &crate::gast::EGenericArgs,
+        tgt: &crate::gast::EGenericArgs,
     ) -> Result<Self, ()> {
         let mut s = TySubst::new();
         for v in fixed_type_vars {
@@ -1120,14 +1250,14 @@ make_generic_in_borrows! {
 // TODO: we should use traits with default implementations to allow overriding
 // the default behavior (that would also prevent problems with naming collisions)
 pub trait TypeVisitor {
-    fn visit_ty<R: Clone + std::cmp::Eq>(&mut self, ty: &Ty<R>) {
+    fn visit_ty<R>(&mut self, ty: &Ty<R>) {
         self.default_visit_ty(ty)
     }
 
-    fn default_visit_ty<R: Clone + std::cmp::Eq>(&mut self, ty: &Ty<R>) {
+    fn default_visit_ty<R>(&mut self, ty: &Ty<R>) {
         use Ty::*;
         match ty {
-            Adt(id, rl, tys, cgs) => self.visit_ty_adt(id, rl, tys, cgs),
+            Adt(id, args) => self.visit_ty_adt(id, args),
             TypeVar(vid) => self.visit_ty_type_var(vid),
             Literal(lit) => self.visit_ty_literal(lit),
             Never => self.visit_ty_never(),
@@ -1136,19 +1266,24 @@ pub trait TypeVisitor {
         }
     }
 
-    fn visit_ty_adt<R: Clone + std::cmp::Eq>(
+    fn visit_ty_adt<R>(
         &mut self,
         id: &TypeId,
-        rl: &Vec<R>,
-        tys: &Vec<Ty<R>>,
-        cgs: &Vec<ConstGeneric>,
+        args: &GenericArgs<R>,
     ) {
         self.visit_type_id(id);
+        self.visit_args(args);
+    }
+
+    fn visit_args<R>(
+        &mut self,
+        args: &GenericArgs<R>,
+    ) {
         // We ignore the regions
-        for ty in tys {
+        for ty in &args.types {
             self.visit_ty(ty)
         }
-        for cg in cgs {
+        for cg in &args.const_generics {
             self.visit_const_generic(cg);
         }
     }
@@ -1161,12 +1296,12 @@ pub trait TypeVisitor {
 
     fn visit_ty_never(&mut self) {}
 
-    fn visit_ty_ref<R: Clone + std::cmp::Eq>(&mut self, _r: &R, ty: &Box<Ty<R>>, _rk: &RefKind) {
+    fn visit_ty_ref<R>(&mut self, _r: &R, ty: &Box<Ty<R>>, _rk: &RefKind) {
         // We ignore the region
         self.visit_ty(ty);
     }
 
-    fn visit_ty_raw_ptr<R: Clone + std::cmp::Eq>(&mut self, ty: &Box<Ty<R>>, _rk: &RefKind) {
+    fn visit_ty_raw_ptr<R>(&mut self, ty: &Box<Ty<R>>, _rk: &RefKind) {
         // We ignore the region
         self.visit_ty(ty);
     }

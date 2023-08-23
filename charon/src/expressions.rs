@@ -260,13 +260,7 @@ pub enum AggregateKind {
     Option(VariantId::Id, ETy),
     // TODO: do we really need this?
     Range(ETy),
-    Adt(
-        TypeDeclId::Id,
-        Option<VariantId::Id>,
-        Vec<ErasedRegion>,
-        Vec<ETy>,
-        Vec<ConstGeneric>,
-    ),
+    Adt(TypeDeclId::Id, Option<VariantId::Id>, EGenericArgs),
     // We don't put this with the ADT cas because this is the only assumed type
     // with aggregates.
     Array(ETy, ConstGeneric),

@@ -4,7 +4,7 @@ use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
 use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::types as ty;
-use crate::types::ConstGeneric;
+use crate::types::GenericArgs;
 use core::convert::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -142,20 +142,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
 
                 // Translate the type parameters instantiation
-                let (regions, params, cgs) =
-                    self.translate_substs(region_translator, used_params, substs)?;
+                let generics = self.translate_substs(region_translator, used_params, substs)?;
 
                 // Retrieve the ADT identifier
                 let def_id = self.translate_type_id(def_id);
 
                 // Return the instantiated ADT
-                Ok(ty::Ty::Adt(def_id, regions, params, cgs))
+                Ok(ty::Ty::Adt(def_id, generics))
             }
             Ty::Str => {
                 trace!("Str");
 
                 let id = ty::TypeId::Assumed(ty::AssumedTy::Str);
-                Ok(ty::Ty::Adt(id, Vec::new(), Vec::new(), Vec::new()))
+                Ok(ty::Ty::Adt(id, GenericArgs::empty()))
             }
             Ty::Array(ty, const_param) => {
                 trace!("Array");
@@ -164,14 +163,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let tys = vec![self.translate_ty(region_translator, ty)?];
                 let cgs = vec![c];
                 let id = ty::TypeId::Assumed(ty::AssumedTy::Array);
-                Ok(ty::Ty::Adt(id, Vec::new(), tys, cgs))
+                Ok(ty::Ty::Adt(id, GenericArgs::new(Vec::new(), tys, cgs)))
             }
             Ty::Slice(ty) => {
                 trace!("Slice");
 
                 let tys = vec![self.translate_ty(region_translator, ty)?];
                 let id = ty::TypeId::Assumed(ty::AssumedTy::Slice);
-                Ok(ty::Ty::Adt(id, Vec::new(), tys, Vec::new()))
+                Ok(ty::Ty::Adt(id, GenericArgs::new_from_types(tys)))
             }
             Ty::Ref(region, ty, mutability) => {
                 trace!("Ref");
@@ -206,9 +205,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 Ok(ty::Ty::Adt(
                     ty::TypeId::Tuple,
-                    Vec::new(),
-                    params,
-                    Vec::new(),
+                    GenericArgs::new_from_types(params),
                 ))
             }
 
@@ -297,7 +294,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         region_translator: &dyn Fn(&hax::Region) -> R,
         used_params: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
-    ) -> Result<(Vec<R>, Vec<ty::Ty<R>>, Vec<ConstGeneric>)>
+    ) -> Result<GenericArgs<R>>
     where
         R: Clone + Eq,
     {
@@ -348,7 +345,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         }
 
-        Result::Ok((regions, params, cgs))
+        Result::Ok(GenericArgs::new(regions, params, cgs))
     }
 
     /// Translate a type def id
@@ -564,9 +561,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Register the type
         let name = extended_def_id_to_name(&rust_id.sinto(&bt_ctx.t_ctx.hax_state));
-        let region_params = bt_ctx.region_vars.clone();
-        let type_params = bt_ctx.type_vars.clone();
-        let const_generic_params = bt_ctx.const_generic_vars.clone();
+        let generics = bt_ctx.get_generics();
+        let preds = bt_ctx.get_predicates();
 
         // Translate the span information
         let meta = bt_ctx.translate_meta_from_rid(rust_id);
@@ -575,10 +571,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             def_id: trans_id,
             meta,
             name,
-            region_params,
-            type_params,
-            const_generic_params,
-            trait_clauses: bt_ctx.trait_clauses.clone(),
+            generics,
+            preds,
             kind,
             // Dummy value for now: we compute this later
             regions_hierarchy: RegionGroups::new(),

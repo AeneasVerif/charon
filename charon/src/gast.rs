@@ -10,6 +10,7 @@ use crate::regions_hierarchy::RegionGroups;
 pub use crate::types::GlobalDeclId;
 pub use crate::types::TraitClauseId;
 use crate::types::*;
+pub use crate::types::{EGenericArgs, GenericArgs, GenericParams, Predicates, RGenericArgs};
 use crate::values::*;
 use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, VariantName};
@@ -91,10 +92,8 @@ pub struct ParamsInfo {
 /// functions) - we only use regions for this purpose.
 #[derive(Debug, Clone, Serialize)]
 pub struct FunSig {
-    pub region_params: RegionVarId::Vector<RegionVar>,
-    pub type_params: TypeVarId::Vector<TypeVar>,
-    pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
-    pub trait_clauses: TraitClauseId::Vector<TraitClause>,
+    pub generics: GenericParams,
+    pub preds: Predicates,
     /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).
     pub block_params_info: Option<ParamsInfo>,
     pub inputs: Vec<RTy>,
@@ -158,10 +157,8 @@ pub struct TraitMethodName(pub String);
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
     pub name: Name,
-    pub region_params: RegionVarId::Vector<RegionVar>,
-    pub type_params: TypeVarId::Vector<TypeVar>,
-    pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
-    pub trait_clauses: TraitClauseId::Vector<TraitClause>,
+    pub generics: GenericParams,
+    pub preds: Predicates,
     // TODO: remaining fields
 }
 
@@ -287,9 +284,7 @@ pub enum TraitInstanceId {
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitRef {
     pub trait_id: TraitInstanceId,
-    pub region_args: Vec<ErasedRegion>,
-    pub type_args: Vec<ETy>,
-    pub const_generic_args: Vec<ConstGeneric>,
+    pub generics: EGenericArgs,
     pub trait_refs: Vec<TraitRef>,
 }
 
@@ -300,32 +295,15 @@ pub enum FunIdOrTraitMethodRef {
     Trait(TraitRef, TraitMethodName),
 }
 
-// TODO: use this to factor out fields in all the definitions
-#[derive(Debug, Clone, Serialize)]
-pub struct Args<R> {
-    pub region_args: Vec<R>,
-    pub type_args: Vec<Ty<R>>,
-    pub const_generic_args: Vec<ConstGeneric>,
-}
-
-pub type EArgs = Args<ErasedRegion>;
-pub type RArgs = Args<Region<RegionVarId::Id>>;
-
 #[derive(Debug, Clone, Serialize)]
 pub struct Call {
     pub func: FunIdOrTraitMethodRef,
-    /// Technically this is useless, but we still keep it because we might
-    /// want to introduce some information (and the way we encode from MIR
-    /// is as simple as possible - and in MIR we also have a vector of erased
-    /// regions).
-    pub region_args: Vec<ErasedRegion>,
-    pub type_args: Vec<ETy>,
-    pub const_generic_args: Vec<ConstGeneric>,
+    pub generics: EGenericArgs,
     /// If this is a call to a trait method: stores *all* the generic arguments
     /// which apply to the trait + the method. The fields [region_args], [type_args]
     /// [const_generic_args] only store the arguments which concern the method call.
     /// See the comments for [ParamsInfo].
-    pub trait_and_method_generic_args: Option<EArgs>,
+    pub trait_and_method_generic_args: Option<EGenericArgs>,
     /// The traits instances listed here always correspond to the *method* traits, in case
     /// this call is a call to a trait method (the trait instances for the *trait* itself
     /// are stored in the [FunIdOrTraitMethodRef].

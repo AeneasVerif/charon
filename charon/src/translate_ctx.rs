@@ -11,6 +11,7 @@ use crate::names::Name;
 use crate::reorder_decls::AnyTransId;
 use crate::types as ty;
 use crate::types::LiteralTy;
+use crate::types::{GenericParams, Predicates};
 use crate::ullbc_ast;
 use crate::ullbc_ast as ast;
 use crate::values as v;
@@ -215,13 +216,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 pub(crate) struct BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx TransCtx<'tcx, 'ctx1>,
-    pub region_vars: &'ctx ty::RegionVarId::Vector<ty::RegionVar>,
-    /// The type variables
-    pub type_vars: &'ctx ty::TypeVarId::Vector<ty::TypeVar>,
+    pub generics: &'ctx ty::GenericParams,
     /// The "regular" variables
     pub vars: &'ctx v::VarId::Vector<ast::Var>,
-    /// The const generic variables
-    pub const_generic_vars: &'ctx ty::ConstGenericVarId::Vector<ty::ConstGenericVar>,
     ///
     pub trait_clauses: &'ctx ty::TraitClauseId::Vector<ty::TraitClause>,
 }
@@ -559,6 +556,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn fresh_trait_clause_id(&mut self) -> ty::TraitClauseId::Id {
         self.trait_clauses_counter.fresh_id()
     }
+
+    pub(crate) fn get_generics(&mut self) -> GenericParams {
+        GenericParams {
+            regions: self.region_vars.clone(),
+            types: self.type_vars.clone(),
+            const_generics: self.const_generic_vars.clone(),
+        }
+    }
+
+    pub(crate) fn get_predicates(&mut self) -> Predicates {
+        Predicates {
+            trait_clauses: self.trait_clauses.clone(),
+        }
+    }
 }
 
 impl<'tcx, 'ctx> Formatter<ty::TypeDeclId::Id> for TransCtx<'tcx, 'ctx> {
@@ -798,7 +809,7 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<ast::FunDeclId::Id> for BodyTransCtx<'tcx, 'ct
 
 impl<'tcx, 'ctx, 'ctx1> Formatter<ty::TypeVarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: ty::TypeVarId::Id) -> String {
-        match self.type_vars.get(id) {
+        match self.generics.types.get(id) {
             None => id.to_pretty_string(),
             Some(v) => v.to_string(),
         }
@@ -807,7 +818,7 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<ty::TypeVarId::Id> for BodyFormatCtx<'tcx, 'ct
 
 impl<'tcx, 'ctx, 'ctx1> Formatter<ty::ConstGenericVarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: ty::ConstGenericVarId::Id) -> String {
-        match self.const_generic_vars.get(id) {
+        match self.generics.const_generics.get(id) {
             None => id.to_pretty_string(),
             Some(v) => v.to_string(),
         }
@@ -825,7 +836,7 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<v::VarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'c
 
 impl<'tcx, 'ctx, 'ctx1> Formatter<ty::RegionVarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: ty::RegionVarId::Id) -> String {
-        match self.region_vars.get(id) {
+        match self.generics.regions.get(id) {
             None => id.to_pretty_string(),
             Some(v) => v.to_string(),
         }
@@ -955,9 +966,7 @@ impl<'tcx, 'ctx> Formatter<&ty::TypeDecl> for TransCtx<'tcx, 'ctx> {
         // Create a body format context
         let formatter = BodyFormatCtx {
             t_ctx: self,
-            region_vars: &def.region_params,
-            type_vars: &def.type_params,
-            const_generic_vars: &def.const_generic_params,
+            generics: &def.generics,
             vars: &v::VarId::Vector::new(),
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };
@@ -990,9 +999,7 @@ impl<'tcx, 'ctx> Formatter<&ullbc_ast::ExprBody> for TransCtx<'tcx, 'ctx> {
         // Create a body format context
         let formatter = BodyFormatCtx {
             t_ctx: self,
-            region_vars: &ty::RegionVarId::Vector::new(),
-            type_vars: &ty::TypeVarId::Vector::new(),
-            const_generic_vars: &ty::ConstGenericVarId::Vector::new(),
+            generics: &GenericParams::empty(),
             vars: &body.locals,
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };
@@ -1011,9 +1018,7 @@ impl<'tcx, 'ctx> Formatter<&llbc_ast::ExprBody> for TransCtx<'tcx, 'ctx> {
         // Create a body format context
         let formatter = BodyFormatCtx {
             t_ctx: self,
-            region_vars: &ty::RegionVarId::Vector::new(),
-            type_vars: &ty::TypeVarId::Vector::new(),
-            const_generic_vars: &ty::ConstGenericVarId::Vector::new(),
+            generics: &GenericParams::empty(),
             vars: &body.locals,
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };
@@ -1037,9 +1042,7 @@ impl<'tcx, 'ctx> Formatter<&ullbc_ast::GlobalDecl> for TransCtx<'tcx, 'ctx> {
         };
         let formatter = BodyFormatCtx {
             t_ctx: self,
-            region_vars: &ty::RegionVarId::Vector::new(),
-            type_vars: &ty::TypeVarId::Vector::new(),
-            const_generic_vars: &ty::ConstGenericVarId::Vector::new(),
+            generics: &GenericParams::empty(),
             vars,
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };
@@ -1063,9 +1066,7 @@ impl<'tcx, 'ctx> Formatter<&llbc_ast::GlobalDecl> for TransCtx<'tcx, 'ctx> {
         };
         let formatter = BodyFormatCtx {
             t_ctx: self,
-            region_vars: &ty::RegionVarId::Vector::new(),
-            type_vars: &ty::TypeVarId::Vector::new(),
-            const_generic_vars: &ty::ConstGenericVarId::Vector::new(),
+            generics: &GenericParams::empty(),
             vars,
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };
@@ -1084,9 +1085,7 @@ impl<'tcx, 'ctx> Formatter<&gast::FunSig> for TransCtx<'tcx, 'ctx> {
         // Create a body format context
         let formatter = BodyFormatCtx {
             t_ctx: self,
-            region_vars: &sig.region_params,
-            type_vars: &sig.type_params,
-            const_generic_vars: &sig.const_generic_params,
+            generics: &sig.generics,
             vars: &v::VarId::Vector::new(),
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };
@@ -1123,9 +1122,7 @@ impl<'tcx, 'ctx> Formatter<&ullbc_ast::FunDecl> for TransCtx<'tcx, 'ctx> {
         let sig = &def.signature;
         let formatter = BodyFormatCtx {
             t_ctx: self,
-            region_vars: &sig.region_params,
-            type_vars: &sig.type_params,
-            const_generic_vars: &sig.const_generic_params,
+            generics: &sig.generics,
             vars,
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };
@@ -1150,9 +1147,7 @@ impl<'tcx, 'ctx> Formatter<&llbc_ast::FunDecl> for TransCtx<'tcx, 'ctx> {
         let sig = &def.signature;
         let formatter = BodyFormatCtx {
             t_ctx: self,
-            region_vars: &sig.region_params,
-            type_vars: &sig.type_params,
-            const_generic_vars: &sig.const_generic_params,
+            generics: &sig.generics,
             vars,
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };
@@ -1177,9 +1172,7 @@ impl<'tcx, 'ctx> Formatter<&gast::TraitDecl> for TransCtx<'tcx, 'ctx> {
         // TOOD: update once the trait declaration is complete
         let formatter = BodyFormatCtx {
             t_ctx: self,
-            region_vars: &ty::RegionVarId::Vector::new(),
-            type_vars: &ty::TypeVarId::Vector::new(),
-            const_generic_vars: &ty::ConstGenericVarId::Vector::new(),
+            generics: &GenericParams::empty(),
             vars: &v::VarId::Vector::new(),
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };

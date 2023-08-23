@@ -32,10 +32,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let trait_decl = ast::TraitDecl {
             def_id,
             name,
-            region_params: bt_ctx.region_vars.clone(),
-            type_params: bt_ctx.type_vars.clone(),
-            const_generic_params: bt_ctx.const_generic_vars.clone(),
-            trait_clauses: bt_ctx.trait_clauses.clone(),
+            generics: bt_ctx.get_generics(),
+            preds: bt_ctx.get_predicates(),
         };
 
         self.trait_defs.insert(def_id, trait_decl)

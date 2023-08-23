@@ -77,6 +77,28 @@ pub enum ErasedRegion {
     Erased,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Serialize)]
+pub struct GenericArgs<R> {
+    pub regions: Vec<R>,
+    pub types: Vec<Ty<R>>,
+    pub const_generics: Vec<ConstGeneric>,
+}
+
+pub type EGenericArgs = GenericArgs<ErasedRegion>;
+pub type RGenericArgs = GenericArgs<Region<RegionVarId::Id>>;
+
+#[derive(Debug, Clone, Serialize)]
+pub struct GenericParams {
+    pub regions: RegionVarId::Vector<RegionVar>,
+    pub types: TypeVarId::Vector<TypeVar>,
+    pub const_generics: ConstGenericVarId::Vector<ConstGenericVar>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Predicates {
+    pub trait_clauses: TraitClauseId::Vector<TraitClause>,
+}
+
 generate_index_type!(TraitClauseId);
 
 #[derive(Debug, Clone, Serialize)]
@@ -86,11 +108,8 @@ pub struct TraitClause {
     /// to a parameter.
     pub clause_id: TraitClauseId::Id,
     pub meta: Meta,
-    // TODO: use the Args type
     pub trait_id: TraitDeclId::Id,
-    pub region_params: Vec<Region<RegionVarId::Id>>,
-    pub type_params: Vec<RTy>,
-    pub const_generic_params: Vec<ConstGeneric>,
+    pub generics: RGenericArgs,
 }
 
 /// A type declaration.
@@ -112,10 +131,8 @@ pub struct TypeDecl {
     /// Meta information associated with the type.
     pub meta: Meta,
     pub name: TypeName,
-    pub region_params: RegionVarId::Vector<RegionVar>,
-    pub type_params: TypeVarId::Vector<TypeVar>,
-    pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
-    pub trait_clauses: TraitClauseId::Vector<TraitClause>,
+    pub generics: GenericParams,
+    pub preds: Predicates,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
     /// The lifetime's hierarchy between the different regions.
@@ -255,7 +272,7 @@ pub enum Ty<R> {
     /// - assumed types (includes some primitive types, e.g., arrays or slices)
     /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
     /// The last list is used encode const generics, e.g., the size of an array
-    Adt(TypeId, Vec<R>, Vec<Ty<R>>, Vec<ConstGeneric>),
+    Adt(TypeId, GenericArgs<R>),
     TypeVar(TypeVarId::Id),
     Literal(LiteralTy),
     /// The never type, for computations which don't return. It is sometimes

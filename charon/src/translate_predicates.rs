@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 use crate::common::Result;
-use crate::gast;
 use crate::gast::{ParamsInfo, TraitRef};
 use crate::translate_ctx::{BodyTransCtx, TransCtx};
 use crate::translate_types;
-use crate::types::{ConstGeneric, ETy, RTy, Region, RegionVarId, TraitClause, TraitClauseId};
+use crate::types::GenericArgs;
+use crate::types::{ETy, RGenericArgs, TraitClause, TraitClauseId};
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
@@ -33,7 +33,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn translate_substs_with_regions(
         &mut self,
         substs: &Vec<hax::GenericArg>,
-    ) -> Result<(Vec<Region<RegionVarId::Id>>, Vec<RTy>, Vec<ConstGeneric>)> {
+    ) -> Result<RGenericArgs> {
         let region_vars_map = &self.region_vars_map.clone();
         let bound_vars = &self.bound_vars.clone();
         let region_translator =
@@ -57,7 +57,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         }
 
-        Result::Ok((regions, params, cgs))
+        Result::Ok(GenericArgs::new(regions, params, cgs))
     }
 
     /// This function should be called **after** we translated the generics
@@ -99,7 +99,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                     let trait_ref = &trait_pred.trait_ref;
                     let trait_id = self.translate_trait_id(trait_ref.def_id.rust_def_id.unwrap());
-                    let (region_params, type_params, const_generic_params) = self
+                    let generics = self
                         .translate_substs_with_regions(&trait_ref.generic_args)
                         .unwrap();
 
@@ -109,9 +109,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         clause_id,
                         meta,
                         trait_id,
-                        region_params,
-                        type_params,
-                        const_generic_params,
+                        generics,
                     });
                 }
                 PredicateKind::Clause(Clause::RegionOutlives(_)) => unimplemented!(),
@@ -150,7 +148,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_id = self.translate_trait_id(def_id);
                 let trait_id = TraitInstanceId::Trait(trait_id);
 
-                let (region_args, type_args, const_generic_args) = self
+                let generics = self
                     .translate_subst_generic_args_in_body(None, &data.substs)
                     .unwrap();
                 let trait_refs = data
@@ -160,9 +158,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .collect();
                 TraitRef {
                     trait_id,
-                    region_args,
-                    type_args,
-                    const_generic_args,
+                    generics,
                     trait_refs,
                 }
             }
@@ -175,7 +171,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_id = self.translate_trait_id(def_id);
 
                 // Retrieve the arguments
-                let (region_args, type_args, const_generic_args) = self
+                let generics = self
                     .translate_subst_generic_args_in_body(None, &trait_ref.generic_args)
                     .unwrap();
                 let trait_refs: Vec<TraitRef> = traits
@@ -188,8 +184,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let clause_id = {
                     let mut clause_id: Option<TraitClauseId::Id> = None;
 
-                    let tgt_type_args = type_args;
-                    let tgt_const_generic_args = const_generic_args;
+                    let tgt_types = &generics.types;
+                    let tgt_const_generics = &generics.const_generics;
 
                     for trait_clause in &self.trait_clauses {
                         // Check if the clause is about the same trait
@@ -197,12 +193,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             continue;
                         }
 
-                        let src_type_args: Vec<ETy> = trait_clause
-                            .type_params
+                        let src_types: Vec<ETy> = trait_clause
+                            .generics
+                            .types
                             .iter()
                             .map(|x| x.erase_regions())
                             .collect();
-                        let src_const_generic_args = &trait_clause.const_generic_params;
+                        let src_const_generics = &trait_clause.generics.const_generics;
 
                         // We simply check the equality between the arguments:
                         // there are no universally quantified variables to unify.
@@ -210,9 +207,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // need to check equality **modulo** equality clauses)
                         // TODO: if we need to unify (later, when allowing universal
                         // quantification over clause parameters), use types_utils::TySubst.
-                        if src_type_args == tgt_type_args
-                            && src_const_generic_args == &tgt_const_generic_args
-                        {
+                        if &src_types == tgt_types && src_const_generics == tgt_const_generics {
                             clause_id = Some(trait_clause.clause_id);
                             break;
                         }
@@ -225,12 +220,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             let trait_ref = format!(
                                 "{}{}",
                                 self.format_object(trait_id),
-                                gast::fmt_args_no_traits(
-                                    self,
-                                    &region_args,
-                                    &tgt_type_args,
-                                    &tgt_const_generic_args
-                                )
+                                generics.fmt_with_ctx(self)
                             );
                             let clauses: Vec<String> = self
                                 .trait_clauses
@@ -253,9 +243,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // on the trait clauses for now.
                 TraitRef {
                     trait_id,
-                    region_args: Vec::new(),
-                    type_args: Vec::new(),
-                    const_generic_args: Vec::new(),
+                    generics: GenericArgs::empty(),
                     trait_refs,
                 }
             }
@@ -268,7 +256,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
                 let trait_id = self.translate_trait_id(def_id);
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
-                let (region_args, type_args, const_generic_args) = self
+                let generics = self
                     .translate_subst_generic_args_in_body(None, &trait_ref.generic_args)
                     .unwrap();
                 let trait_refs = traits
@@ -278,9 +266,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 TraitRef {
                     trait_id,
-                    region_args,
-                    type_args,
-                    const_generic_args,
+                    generics,
                     trait_refs,
                 }
             }
@@ -291,9 +277,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 TraitRef {
                     trait_id,
-                    region_args: Vec::new(),
-                    type_args: Vec::new(),
-                    const_generic_args: Vec::new(),
+                    generics: GenericArgs::empty(),
                     trait_refs: Vec::new(),
                 }
             }
