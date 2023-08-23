@@ -240,7 +240,10 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
                         // TODO
                         format!("{ty:?}")
                     }
-                    _ => unreachable!("Unexpected type: {:?}", ty),
+                    _ => {
+                        log::warn!("Unexpected type: {:?}", ty);
+                        format!("{ty:?}")
+                    }
                 }));
 
                 // Push the disambiguator

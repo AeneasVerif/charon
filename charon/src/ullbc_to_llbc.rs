@@ -20,9 +20,8 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
-use crate::formatter::Formatter;
-
 use crate::expressions::Place;
+use crate::formatter::Formatter;
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_meta, Meta};
 use crate::translate_ctx::TransCtx;

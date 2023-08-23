@@ -63,6 +63,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// This function should be called **after** we translated the generics
     /// (type parameters, regions...).
     pub(crate) fn translate_predicates_of(&mut self, def_id: DefId) {
+        trace!("def_id: {:?}", def_id);
         let tcx = self.t_ctx.tcx;
 
         // Get the predicates
@@ -139,9 +140,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         impl_source: &hax::ImplSource,
     ) -> TraitRef {
-        use hax::ImplSource;
-
+        trace!("impl_source: {:?}", impl_source);
         use crate::gast::TraitInstanceId;
+        use hax::ImplSource;
 
         match impl_source {
             ImplSource::UserDefined(data) => {
@@ -152,7 +153,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let (region_args, type_args, const_generic_args) = self
                     .translate_subst_generic_args_in_body(None, &data.substs)
                     .unwrap();
-                let traits = data
+                let trait_refs = data
                     .nested
                     .iter()
                     .map(|x| self.translate_trait_impl_source(x))
@@ -162,7 +163,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     region_args,
                     type_args,
                     const_generic_args,
-                    traits,
+                    trait_refs,
                 }
             }
             ImplSource::Param(trait_ref, traits, constness) => {
@@ -177,7 +178,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let (region_args, type_args, const_generic_args) = self
                     .translate_subst_generic_args_in_body(None, &trait_ref.generic_args)
                     .unwrap();
-                let traits: Vec<TraitRef> = traits
+                let trait_refs: Vec<TraitRef> = traits
                     .iter()
                     .map(|x| self.translate_trait_impl_source(x))
                     .collect();
@@ -247,7 +248,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 let trait_id = TraitInstanceId::Clause(clause_id);
 
-                assert!(traits.is_empty());
+                assert!(trait_refs.is_empty());
                 // Ignore the arguments: we forbid using universal quantifiers
                 // on the trait clauses for now.
                 TraitRef {
@@ -255,7 +256,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     region_args: Vec::new(),
                     type_args: Vec::new(),
                     const_generic_args: Vec::new(),
-                    traits,
+                    trait_refs,
                 }
             }
             ImplSource::Object(_) => unimplemented!(),
@@ -266,11 +267,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_ref = &trait_ref.value;
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
                 let trait_id = self.translate_trait_id(def_id);
-                let trait_id = TraitInstanceId::Builtin(trait_id);
+                let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
                 let (region_args, type_args, const_generic_args) = self
                     .translate_subst_generic_args_in_body(None, &trait_ref.generic_args)
                     .unwrap();
-                let traits = traits
+                let trait_refs = traits
                     .iter()
                     .map(|x| self.translate_trait_impl_source(x))
                     .collect();
@@ -280,7 +281,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     region_args,
                     type_args,
                     const_generic_args,
-                    traits,
+                    trait_refs,
+                }
+            }
+            ImplSource::AutoImpl(data) => {
+                let def_id = data.trait_def_id.rust_def_id.unwrap();
+                let trait_id = self.translate_trait_id(def_id);
+                let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
+
+                TraitRef {
+                    trait_id,
+                    region_args: Vec::new(),
+                    type_args: Vec::new(),
+                    const_generic_args: Vec::new(),
+                    trait_refs: Vec::new(),
                 }
             }
             ImplSource::TraitUpcasting(_) => unimplemented!(),

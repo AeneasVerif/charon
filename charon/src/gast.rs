@@ -278,17 +278,19 @@ pub enum AssumedFunId {
 pub enum TraitInstanceId {
     Trait(TraitDeclId::Id),
     Clause(TraitClauseId::Id),
-    Builtin(TraitDeclId::Id),
+    /// Builtin traits like [core::marker::Sized] and auto traits like
+    /// [core::marker::Syn].
+    BuiltinOrAuto(TraitDeclId::Id),
 }
 
-/// A reference to a trait
+/// A reference to a trait - TODO: rename to TraitInstance
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitRef {
     pub trait_id: TraitInstanceId,
     pub region_args: Vec<ErasedRegion>,
     pub type_args: Vec<ETy>,
     pub const_generic_args: Vec<ConstGeneric>,
-    pub traits: Vec<TraitRef>,
+    pub trait_refs: Vec<TraitRef>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -324,10 +326,10 @@ pub struct Call {
     /// [const_generic_args] only store the arguments which concern the method call.
     /// See the comments for [ParamsInfo].
     pub trait_and_method_generic_args: Option<EArgs>,
-    /// The traits listed here always correspond to the method traits, in case this call
-    /// is a call to a trait method (the trait instance traits are stored in the
-    /// [FunIdOrTraitMethodRef].
-    pub traits: Vec<TraitRef>,
+    /// The traits instances listed here always correspond to the *method* traits, in case
+    /// this call is a call to a trait method (the trait instances for the *trait* itself
+    /// are stored in the [FunIdOrTraitMethodRef].
+    pub trait_refs: Vec<TraitRef>,
     pub args: Vec<Operand>,
     pub dest: Place,
 }

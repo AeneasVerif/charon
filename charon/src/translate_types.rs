@@ -80,7 +80,10 @@ pub fn translate_erased_region(region: &hax::Region) -> ty::ErasedRegion {
     match region.kind {
         hax::RegionKind::ReErased => ty::ErasedRegion::Erased,
         _ => {
-            unreachable!();
+            // Actually, not all regions are erased. My understanding is that the early
+            // bound regions are erased, but when a region appears in a type it is
+            // not. We need to update that.
+            unreachable!()
         }
     }
 }

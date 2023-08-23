@@ -103,7 +103,7 @@ impl<'a> Transform<'a> {
                     region_args: vec![ErasedRegion::Erased],
                     type_args: vec![elem_ty],
                     const_generic_args: cgs,
-                    traits: Vec::new(),
+                    trait_refs: Vec::new(),
                     trait_and_method_generic_args: None,
                     args: vec![arg_buf, arg_index],
                     dest: index_dest,

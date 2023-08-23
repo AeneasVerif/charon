@@ -467,7 +467,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             region_args: _, // We ignore the regions which are erased
             type_args,
             const_generic_args,
-            traits,
+            trait_refs,
             args,
             trait_and_method_generic_args,
             dest,
@@ -482,7 +482,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         for o in args {
             self.visit_operand(o);
         }
-        for t in traits {
+        for t in trait_refs {
             self.visit_trait_ref(t);
         }
         match trait_and_method_generic_args {
@@ -531,7 +531,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             region_args: _,
             type_args,
             const_generic_args,
-            traits,
+            trait_refs,
         } = tr;
         self.visit_trait_instance_id(trait_id);
         for t in type_args {
@@ -540,7 +540,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         for cg in const_generic_args {
             self.visit_const_generic(cg);
         }
-        for t in traits {
+        for t in trait_refs {
             self.visit_trait_ref(t);
         }
     }
@@ -549,7 +549,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         match id {
             TraitInstanceId::Trait(id) => self.visit_trait_decl_id(id),
             TraitInstanceId::Clause(id) => self.visit_trait_clause_id(id),
-            TraitInstanceId::Builtin(id) => self.visit_trait_decl_id(id),
+            TraitInstanceId::BuiltinOrAuto(id) => self.visit_trait_decl_id(id),
         }
     }
 }

@@ -34,7 +34,7 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
                 region_args,
                 type_args,
                 const_generic_args,
-                traits: Vec::new(),
+                trait_refs: Vec::new(),
                 trait_and_method_generic_args: None,
                 args: vec![op.clone()],
                 dest: p.clone(),

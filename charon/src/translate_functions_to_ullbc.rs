@@ -225,7 +225,7 @@ fn translate_primitive_function_call(
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
     const_generic_args: Vec<ty::ConstGeneric>,
-    method_traits: Vec<ast::TraitRef>,
+    trait_refs: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -267,7 +267,7 @@ fn translate_primitive_function_call(
                 region_args,
                 type_args,
                 const_generic_args,
-                traits: Vec::new(),
+                trait_refs: Vec::new(),
                 trait_and_method_generic_args: None,
                 args,
                 dest,
@@ -279,7 +279,7 @@ fn translate_primitive_function_call(
             region_args,
             type_args,
             const_generic_args,
-            method_traits,
+            trait_refs,
             args,
             dest,
             target,
@@ -289,7 +289,7 @@ fn translate_primitive_function_call(
             region_args,
             type_args,
             const_generic_args,
-            method_traits,
+            trait_refs,
             args,
             dest,
             target,
@@ -315,7 +315,7 @@ fn translate_primitive_function_call(
                 region_args,
                 type_args,
                 const_generic_args,
-                traits: method_traits,
+                trait_refs,
                 trait_and_method_generic_args: None,
                 args,
                 dest,
@@ -348,7 +348,7 @@ fn translate_box_deref(
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
     const_generic_args: Vec<ty::ConstGeneric>,
-    method_traits: Vec<ast::TraitRef>,
+    trait_refs: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -376,7 +376,7 @@ fn translate_box_deref(
         region_args,
         type_args,
         const_generic_args,
-        traits: method_traits,
+        trait_refs,
         trait_and_method_generic_args: None,
         args,
         dest,
@@ -391,7 +391,7 @@ fn translate_vec_index(
     region_args: Vec<ty::ErasedRegion>,
     type_args: Vec<ty::ETy>,
     const_generic_args: Vec<ty::ConstGeneric>,
-    method_traits: Vec<ast::TraitRef>,
+    trait_refs: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -420,7 +420,7 @@ fn translate_vec_index(
         region_args,
         type_args,
         const_generic_args,
-        traits: method_traits,
+        trait_refs,
         trait_and_method_generic_args: None,
         args,
         dest,
@@ -1160,7 +1160,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 args,
                 destination,
                 target,
-                method_traits,
+                trait_refs,
                 trait_info,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 from_hir_call: _,
@@ -1174,7 +1174,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     args,
                     destination,
                     target,
-                    method_traits,
+                    trait_refs,
                     trait_info,
                 )?
             }
@@ -1284,7 +1284,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         args: &Vec<hax::Operand>,
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
-        method_traits: &Vec<hax::ImplSource>,
+        trait_refs: &Vec<hax::ImplSource>,
         trait_info: &Option<hax::TraitInfo>,
     ) -> Result<ast::RawTerminator> {
         trace!();
@@ -1299,11 +1299,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let name = def_id_to_name(self.t_ctx.tcx, def_id);
         let is_local = rust_id.is_local();
 
-        let method_traits = method_traits
-            .iter()
-            .map(|x| self.translate_trait_impl_source(x))
-            .collect();
-
         // If the call is `panic!`, then the target is `None`.
         // I don't know in which other cases it can be `None`.
         if name.equals_ref_name(&assumed::PANIC_NAME)
@@ -1315,6 +1310,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // We ignore the arguments
             Ok(ast::RawTerminator::Panic)
         } else {
+            let trait_refs = trait_refs
+                .iter()
+                .map(|x| self.translate_trait_impl_source(x))
+                .collect();
+
             assert!(target.is_some());
             let next_block = target.unwrap();
 
@@ -1360,7 +1360,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     region_args: vec![],
                     type_args: vec![t_ty],
                     const_generic_args: vec![],
-                    traits: vec![],
+                    trait_refs: vec![],
                     trait_and_method_generic_args: None,
                     args: vec![t_arg],
                     dest: lval,
@@ -1408,7 +1408,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!(
                     "Method traits:\n- def_id: {:?}\n- traits:\n{:?}",
                     rust_id,
-                    method_traits
+                    trait_refs
                 );
 
                 if !is_prim {
@@ -1423,7 +1423,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 region_args,
                                 type_args,
                                 const_generic_args,
-                                traits: method_traits,
+                                trait_refs,
                                 trait_and_method_generic_args: None,
                                 args,
                                 dest: lval,
@@ -1439,7 +1439,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             region_args,
                             type_args,
                             const_generic_args,
-                            method_traits,
+                            trait_refs,
                             args,
                             lval,
                             next_block,
@@ -1465,7 +1465,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         region_args,
                         type_args,
                         const_generic_args,
-                        method_traits,
+                        trait_refs,
                         args,
                         lval,
                         next_block,
@@ -1481,7 +1481,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         region_args: Vec<ty::ErasedRegion>,
         type_args: Vec<ty::ETy>,
         const_generic_args: Vec<ty::ConstGeneric>,
-        method_traits: Vec<ast::TraitRef>,
+        trait_refs: Vec<ast::TraitRef>,
         args: Vec<e::Operand>,
         dest: e::Place,
         target: ast::BlockId::Id,
@@ -1515,7 +1515,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             region_args,
             type_args,
             const_generic_args,
-            traits: method_traits,
+            trait_refs,
             trait_and_method_generic_args,
             args,
             dest,
@@ -1531,6 +1531,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         used_args: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
     ) -> Result<(Vec<ty::ErasedRegion>, Vec<ty::ETy>, Vec<ty::ConstGeneric>)> {
+        trace!("{:?}", substs);
         let substs: Vec<&hax::GenericArg> = match used_args {
             Option::None => substs.iter().collect(),
             Option::Some(used_args) => {
@@ -1551,7 +1552,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             match param {
                 GenericArg::Type(param_ty) => {
                     // Simply translate the type
-                    let t_param_ty = self.translate_ety(&param_ty)?;
+                    let t_param_ty = self.translate_ety(param_ty)?;
                     t_args_tys.push(t_param_ty);
                 }
                 GenericArg::Lifetime(region) => {

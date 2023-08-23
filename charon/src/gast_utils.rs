@@ -91,7 +91,7 @@ pub fn fmt_args_raw<'a, 'b, T, R>(
     region_args: &'a Vec<R>,
     type_args: &'a Vec<Ty<R>>,
     const_generic_args: &'a Vec<ConstGeneric>,
-    mut traits: Vec<String>,
+    mut trait_refs: Vec<String>,
 ) -> String
 where
     T: Formatter<TypeVarId::Id>
@@ -112,7 +112,7 @@ where
     let mut args_s = regions_s;
     args_s.append(&mut types_s);
     args_s.append(&mut cgs_s);
-    args_s.append(&mut traits);
+    args_s.append(&mut trait_refs);
 
     if args_s.is_empty() {
         "".to_string()
@@ -233,14 +233,14 @@ impl TraitRef {
         let trait_id = match &self.trait_id {
             TraitInstanceId::Trait(id) => ctx.format_object(*id),
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
-            TraitInstanceId::Builtin(id) => ctx.format_object(*id),
+            TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
         };
         let args = fmt_args(
             ctx,
             &self.region_args,
             &self.type_args,
             &self.const_generic_args,
-            &self.traits,
+            &self.trait_refs,
         );
         format!("{trait_id}{args}")
     }
@@ -265,7 +265,7 @@ where
         &call.region_args,
         &call.type_args,
         &call.const_generic_args,
-        &call.traits,
+        &call.trait_refs,
     );
 
     let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
