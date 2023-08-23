@@ -140,7 +140,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         val: &mir::interpret::ConstValue<'tcx>,
         span: rustc_span::Span,
     ) -> e::ConstantExpr {
-        let val = hax::const_value_to_constant_expr(&self.t_ctx.hax_state, ty, *val, span);
+        let val = hax::const_value_to_constant_expr(&self.hax_state, ty, *val, span);
         self.translate_constant_expr_to_constant_expr(&val)
     }
 }

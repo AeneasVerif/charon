@@ -280,6 +280,23 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
     Name { name }
 }
 
+pub(crate) fn make_hax_state_with_id<'tcx>(
+    tcx: TyCtxt<'tcx>,
+    def_id: DefId,
+) -> hax::State<hax::Base<'tcx>, (), (), DefId> {
+    hax::state::State {
+        thir: (),
+        mir: (),
+        owner_id: def_id,
+        base: hax::Base::new(
+            tcx,
+            hax::options::Options {
+                inline_macro_calls: Vec::new(),
+            },
+        ),
+    }
+}
+
 /// Returns an optional name for an HIR item.
 ///
 /// If the option is `None`, it means the item is to be ignored (example: it
@@ -289,12 +306,7 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
 /// context in mind.
 pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
     // We have to create a hax state, which is annoying...
-    let state = hax::state::State::new(
-        tcx,
-        hax::options::Options {
-            inline_macro_calls: Vec::new(),
-        },
-    );
+    let state = make_hax_state_with_id(tcx, item.owner_id.to_def_id());
     let def_id = item.owner_id.to_def_id().sinto(&state);
 
     match &item.kind {
@@ -327,24 +339,13 @@ pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
 
 // TODO: remove
 pub fn item_def_id_to_name(tcx: TyCtxt, def_id: rustc_span::def_id::DefId) -> ItemName {
-    // We have to create a hax state, which is annoying...
-    let state = hax::state::State::new(
-        tcx,
-        hax::options::Options {
-            inline_macro_calls: Vec::new(),
-        },
-    );
+    let state = make_hax_state_with_id(tcx, def_id);
     extended_def_id_to_name(&def_id.sinto(&state))
 }
 
 pub fn def_id_to_name(tcx: TyCtxt, def_id: &hax::DefId) -> ItemName {
     // We have to create a hax state, which is annoying...
-    let state = hax::state::State::new(
-        tcx,
-        hax::options::Options {
-            inline_macro_calls: Vec::new(),
-        },
-    );
+    let state = make_hax_state_with_id(tcx, def_id.rust_def_id.unwrap());
     extended_def_id_to_name(&def_id.rust_def_id.unwrap().sinto(&state))
 }
 

@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 use crate::common::Result;
 use crate::gast::{ParamsInfo, TraitRef};
-use crate::translate_ctx::{BodyTransCtx, TransCtx};
+use crate::translate_ctx::BodyTransCtx;
 use crate::translate_types;
 use crate::types::GenericArgs;
 use crate::types::{ETy, RGenericArgs, TraitClause, TraitClauseId};
@@ -9,7 +9,7 @@ use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn convert_params_info(info: hax::ParamsInfo) -> ParamsInfo {
         ParamsInfo {
             num_region_params: info.num_region_params,
@@ -26,9 +26,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     pub(crate) fn get_parent_params_info(&mut self, def_id: DefId) -> Option<ParamsInfo> {
         hax::get_parent_params_info(&self.hax_state, def_id).map(Self::convert_params_info)
     }
-}
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     // TODO: there are too many variants of this function, we should merge them
     pub(crate) fn translate_substs_with_regions(
         &mut self,
@@ -73,13 +71,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         match tcx.generics_of(def_id).parent {
             None => (),
             Some(parent_id) => {
-                let preds = tcx.predicates_of(parent_id).sinto(&self.t_ctx.hax_state);
+                let preds = tcx.predicates_of(parent_id).sinto(&self.hax_state);
                 self.translate_predicates(preds);
             }
         }
 
         // The predicates of the current definition
-        let preds = tcx.predicates_of(def_id).sinto(&self.t_ctx.hax_state);
+        let preds = tcx.predicates_of(def_id).sinto(&self.hax_state);
         self.translate_predicates(preds);
     }
 

@@ -1560,7 +1560,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Yes, we have to clone, this is annoying: we end up cloning the body twice
             body.clone(),
             // Owner id
-            rustc_hir::hir_id::OwnerId { def_id: local_id },
+            local_id.to_def_id(),
         );
         // Translate
         let body: hax::MirBody<()> = body.sinto(&state);
@@ -1594,17 +1594,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             body: blocks,
         })
     }
-}
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Translate a function's signature, and initialize a body translation context
     /// at the same time - the function signature gives us the list of region and
     /// type parameters, that we put in the translation context.
-    fn translate_function_signature<'ctx1>(
-        &'ctx1 mut self,
-        def_id: DefId,
-    ) -> (BodyTransCtx<'tcx, 'ctx1, 'ctx>, ast::FunSig) {
-        let tcx = self.tcx;
+    fn translate_function_signature(&mut self, def_id: DefId) -> ast::FunSig {
+        let tcx = self.t_ctx.tcx;
 
         // Retrieve the function signature, which includes the lifetimes
         let signature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
@@ -1620,9 +1615,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // The late-bounds parameters are bound in the [Binder] returned by
         // [TyCtxt.type_of].
 
-        // We need a body translation context to keep track of all the variables
-        let mut bt_ctx = BodyTransCtx::new(def_id, self);
-
         // Start by translating the early-bound parameters (those are contained by `substs`).
         let fun_type = tcx.type_of(def_id).subst_identity();
         let substs = match fun_type.kind() {
@@ -1631,7 +1623,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 unreachable!()
             }
         };
-        let substs = substs.sinto(&bt_ctx.t_ctx.hax_state);
+        let substs = substs.sinto(&self.hax_state);
 
         // Some debugging information:
         trace!("Def id: {def_id:?}:\n\n- generics:\n{:?}\n\n- substs:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
@@ -1648,7 +1640,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // This type should be a param type
                     match param_ty {
                         hax::Ty::Param(param_ty) => {
-                            bt_ctx.push_type_var(param_ty.index, param_ty.name);
+                            self.push_type_var(param_ty.index, param_ty.name);
                         }
                         _ => {
                             unreachable!();
@@ -1657,14 +1649,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 }
                 GenericArg::Lifetime(region) => {
                     let name = translate_region_name(&region);
-                    bt_ctx.push_region(region, name);
+                    self.push_region(region, name);
                 }
                 GenericArg::Const(c) => {
-                    let ty = bt_ctx.translate_ety(&c.ty).unwrap();
+                    let ty = self.translate_ety(&c.ty).unwrap();
                     let ty = ty.to_literal();
                     match *c.contents {
                         hax::ConstantExprKind::ConstRef { id: cp } => {
-                            bt_ctx.push_const_generic_var(cp.index, ty, cp.name);
+                            self.push_const_generic_var(cp.index, ty, cp.name);
                         }
                         _ => unreachable!(),
                     }
@@ -1673,7 +1665,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
 
         // Add the late bound parameters (bound in the signature, can only be lifetimes)
-        let signature: hax::MirPolyFnSig = signature.sinto(&bt_ctx.t_ctx.hax_state);
+        let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
 
         let bvar_names = signature
             .bound_vars
@@ -1689,10 +1681,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 }
             })
             .collect();
-        bt_ctx.push_bound_regions_group(bvar_names);
+        self.push_bound_regions_group(bvar_names);
 
         // Translate the predicates (in particular, the trait clauses)
-        bt_ctx.translate_predicates_of(def_id);
+        self.translate_predicates_of(def_id);
 
         // Translate the signature
         let signature = signature.value;
@@ -1701,34 +1693,36 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             signature
                 .inputs
                 .iter()
-                .map(|ty| bt_ctx.translate_sig_ty(ty).unwrap()),
+                .map(|ty| self.translate_sig_ty(ty).unwrap()),
         );
-        let output = bt_ctx.translate_sig_ty(&signature.output).unwrap();
+        let output = self.translate_sig_ty(&signature.output).unwrap();
 
         trace!(
             "# Input variables types:\n{}",
-            iterator_to_string(&|x| bt_ctx.format_object(x), inputs.iter())
+            iterator_to_string(&|x| self.format_object(x), inputs.iter())
         );
-        trace!("# Output variable type:\n{}", bt_ctx.format_object(&output));
+        trace!("# Output variable type:\n{}", self.format_object(&output));
 
         let block_params_info = if get_function_kind(tcx, def_id).is_trait_method() {
-            bt_ctx.t_ctx.get_parent_params_info(def_id)
+            self.get_parent_params_info(def_id)
         } else {
             None
         };
 
         let sig = ast::FunSig {
-            generics: bt_ctx.get_generics(),
+            generics: self.get_generics(),
             regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
-            preds: bt_ctx.get_predicates(),
+            preds: self.get_predicates(),
             block_params_info,
             inputs,
             output,
         };
 
-        (bt_ctx, sig)
+        sig
     }
+}
 
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Translate one function.
     pub(crate) fn translate_function(&mut self, rust_id: DefId) {
         trace!("About to translate function:\n{:?}", rust_id);
@@ -1738,14 +1732,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
 
+        // Initialize the body translation context
+        let mut bt_ctx = BodyTransCtx::new(rust_id, self);
+
         // Translate the function name
-        let name = extended_def_id_to_name(&rust_id.sinto(&self.hax_state));
+        let name = extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
         // Translate the function signature and initialize the body translation context
         // at the same time (the signature gives us the region and type parameters,
         // that we put in the translation context).
         trace!("Translating function signature");
-        let (bt_ctx, signature) = self.translate_function_signature(rust_id);
+        let signature = bt_ctx.translate_function_signature(rust_id);
         let tcx = bt_ctx.t_ctx.tcx;
 
         // Check if the type is opaque or transparent
@@ -1827,15 +1824,16 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let def_id = self.translate_global_decl_id(rust_id);
 
-        // Translate the global name
-        let name = extended_def_id_to_name(&rust_id.sinto(&self.hax_state));
-
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
 
+        // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
-        let hax_state = &bt_ctx.t_ctx.hax_state;
+        let hax_state = &bt_ctx.hax_state;
+
+        // Translate the global name
+        let name = extended_def_id_to_name(&rust_id.sinto(hax_state));
 
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();

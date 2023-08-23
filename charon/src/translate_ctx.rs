@@ -140,6 +140,8 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub def_id: DefId,
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>,
+    /// A hax state with an owner id
+    pub hax_state: hax::State<hax::Base<'tcx>, (), (), rustc_hir::def_id::DefId>,
     /// The regions
     pub region_vars: ty::RegionVarId::Vector<ty::RegionVar>,
     /// The map from rust region to translated region indices
@@ -399,9 +401,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>) -> Self {
+        let hax_state = crate::names_utils::make_hax_state_with_id(t_ctx.tcx, def_id);
         BodyTransCtx {
             def_id,
             t_ctx,
+            hax_state,
             region_vars: ty::RegionVarId::Vector::new(),
             region_vars_map: ty::RegionVarId::MapGenerator::new(),
             type_vars: ty::TypeVarId::Vector::new(),

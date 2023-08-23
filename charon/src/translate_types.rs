@@ -128,6 +128,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             Ty::Adt {
                 generic_args: substs,
+                trait_refs,
                 def_id,
             } => {
                 let adt_did = def_id.rust_def_id.unwrap();
@@ -451,9 +452,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         type_def_kind
     }
-}
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Auxiliary helper.
     ///
     /// Translate the generics of a type definition.
@@ -463,20 +462,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     ///
     /// Rem.: this seems simpler in [crate::translate_functions_to_ullbc].
     /// TODO: compare and simplify/factorize?
-    pub(crate) fn translate_generics<'ctx1>(
-        &'ctx1 mut self,
-        def_id: DefId,
-    ) -> (BodyTransCtx<'tcx, 'ctx1, 'ctx>, Vec<hax::GenericArg>) {
-        let tcx = self.tcx;
-
-        // Initialize the body translation context
-        let mut bt_ctx = BodyTransCtx::new(def_id, self);
+    pub(crate) fn translate_generics(&mut self, def_id: DefId) -> Vec<hax::GenericArg> {
+        let tcx = self.t_ctx.tcx;
 
         // We could use: TyCtxt::generics_of(DefId)
         // But using the identity substitution is simpler. For instance, we can
         // easily retrieve the type for the const parameters.
         let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, def_id)
-            .sinto(&bt_ctx.t_ctx.hax_state);
+            .sinto(&self.hax_state);
 
         for p in &substs {
             use hax::GenericArg::*;
@@ -484,22 +477,22 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 Type(p) => {
                     // The type should be a Param
                     if let hax::Ty::Param(p) = p {
-                        let _ = bt_ctx.push_type_var(p.index, p.name.clone());
+                        let _ = self.push_type_var(p.index, p.name.clone());
                     } else {
                         unreachable!("unexpected");
                     }
                 }
                 Lifetime(region) => {
                     let name = translate_region_name(&region);
-                    let _ = bt_ctx.push_region(region.clone(), name);
+                    let _ = self.push_region(region.clone(), name);
                 }
                 Const(c) => {
                     // The type should be primitive, meaning it shouldn't contain variables,
                     // non-primitive adts, etc. As a result, we can use an empty context.
-                    let ty = bt_ctx.translate_ety(&c.ty).unwrap();
+                    let ty = self.translate_ety(&c.ty).unwrap();
                     let ty = ty.to_literal();
                     if let hax::ConstantExprKind::ConstRef { id: cp } = &*c.contents {
-                        let _ = bt_ctx.push_const_generic_var(cp.index, ty, cp.name.clone());
+                        let _ = self.push_const_generic_var(cp.index, ty, cp.name.clone());
                     } else {
                         unreachable!();
                     }
@@ -514,7 +507,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // and ignore names equal to "'_").
         {
             let mut s = std::collections::HashSet::new();
-            for r in &bt_ctx.region_vars {
+            for r in &self.region_vars {
                 let name = &r.name;
                 if name.is_some() {
                     let name = name.as_ref().unwrap();
@@ -524,9 +517,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             }
         }
 
-        (bt_ctx, substs)
+        substs
     }
+}
 
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Translate a type definition.
     ///
     /// Note that we translate the types one by one: we don't need to take into
@@ -536,9 +531,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let trans_id = self.translate_type_decl_id(rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
 
+        let mut bt_ctx = BodyTransCtx::new(rust_id, self);
+
         // Check and translate the generics
         // TODO: use the body trans context as input, and don't return anything.
-        let (mut bt_ctx, _substs) = self.translate_generics(rust_id);
+        let _substs = bt_ctx.translate_generics(rust_id);
 
         // Translate the predicates
         bt_ctx.translate_predicates_of(rust_id);
@@ -551,16 +548,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             // - local types flagged as opaque
             ty::TypeDeclKind::Opaque
         } else {
-            let adt = bt_ctx
-                .t_ctx
-                .tcx
-                .adt_def(rust_id)
-                .sinto(&bt_ctx.t_ctx.hax_state);
+            let adt = bt_ctx.t_ctx.tcx.adt_def(rust_id).sinto(&bt_ctx.hax_state);
             bt_ctx.translate_transparent_type(trans_id, adt)
         };
 
         // Register the type
-        let name = extended_def_id_to_name(&rust_id.sinto(&bt_ctx.t_ctx.hax_state));
+        let name = extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
         let generics = bt_ctx.get_generics();
         let preds = bt_ctx.get_predicates();
 

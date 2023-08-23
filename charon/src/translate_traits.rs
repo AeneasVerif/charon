@@ -19,10 +19,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_trait(&mut self, rust_id: DefId) {
         // TODO: finish
         let def_id = self.translate_trait_id(rust_id);
-        let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&self.hax_state));
+
+        let mut bt_ctx = BodyTransCtx::new(rust_id, self);
+
+        let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
         // Translate the generics
-        let (mut bt_ctx, _substs) = self.translate_generics(rust_id);
+        let _substs = bt_ctx.translate_generics(rust_id);
 
         // Translate the predicates
         bt_ctx.translate_predicates_of(rust_id);
