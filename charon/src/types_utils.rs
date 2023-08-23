@@ -5,7 +5,7 @@ use crate::assumed::get_name_from_type_id;
 use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::{GlobalDeclId, TraitDeclId};
-use crate::values::Literal;
+use crate::values::{DummyFormatter, Literal};
 use hax_frontend_exporter as hax;
 use im::{HashMap, OrdSet};
 use macros::make_generic_in_borrows;
@@ -280,7 +280,7 @@ impl TypeDecl {
 
 impl std::string::ToString for TypeDecl {
     fn to_string(&self) -> String {
-        self.fmt_with_ctx(&IncompleteFormatter { def: self })
+        self.fmt_with_ctx(&DummyFormatter {})
     }
 }
 
@@ -702,104 +702,6 @@ where
 impl std::fmt::Display for ErasedRegion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(f, "'_")
-    }
-}
-
-pub struct IncompleteFormatter<'a> {
-    def: &'a TypeDecl,
-}
-
-impl<'a> Formatter<TypeVarId::Id> for IncompleteFormatter<'a> {
-    fn format_object(&self, id: TypeVarId::Id) -> String {
-        self.def.format_object(id)
-    }
-}
-
-impl<'a> Formatter<GlobalDeclId::Id> for IncompleteFormatter<'a> {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl<'a, 'b, Rid> Formatter<&'b Region<Rid>> for IncompleteFormatter<'a>
-where
-    TypeDecl: Formatter<&'b Region<Rid>>,
-{
-    fn format_object(&self, r: &'b Region<Rid>) -> String {
-        self.def.format_object(r)
-    }
-}
-
-impl<'a, 'b> Formatter<&'b ErasedRegion> for IncompleteFormatter<'a> {
-    fn format_object(&self, r: &'b ErasedRegion) -> String {
-        self.def.format_object(r)
-    }
-}
-
-impl<'a> Formatter<RegionVarId::Id> for IncompleteFormatter<'a> {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
-        self.def.format_object(id)
-    }
-}
-
-impl<'a> Formatter<TypeDeclId::Id> for IncompleteFormatter<'a> {
-    fn format_object(&self, id: TypeDeclId::Id) -> String {
-        // For type def ids, we simply print the def id because
-        // we lack context
-        id.to_pretty_string()
-    }
-}
-
-impl<'a> Formatter<ConstGenericVarId::Id> for IncompleteFormatter<'a> {
-    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
-        self.def.format_object(id)
-    }
-}
-
-pub struct DummyFormatter {}
-
-impl Formatter<TypeVarId::Id> for DummyFormatter {
-    fn format_object(&self, id: TypeVarId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl<Rid: Clone> Formatter<&Region<Rid>> for DummyFormatter
-where
-    DummyFormatter: Formatter<Rid>,
-{
-    fn format_object(&self, r: &Region<Rid>) -> String {
-        r.fmt_with_ctx(self)
-    }
-}
-
-impl Formatter<&ErasedRegion> for DummyFormatter {
-    fn format_object(&self, _: &ErasedRegion) -> String {
-        "'_".to_string()
-    }
-}
-
-impl Formatter<RegionVarId::Id> for DummyFormatter {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<TypeDeclId::Id> for DummyFormatter {
-    fn format_object(&self, id: TypeDeclId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<ConstGenericVarId::Id> for DummyFormatter {
-    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<GlobalDeclId::Id> for DummyFormatter {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        id.to_pretty_string()
     }
 }
 

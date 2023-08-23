@@ -5,7 +5,6 @@ use crate::export;
 use crate::get_mir::MirLevel;
 use crate::index_to_function_calls;
 use crate::insert_assign_return_unit;
-use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId, TraitDeclId};
 use crate::ops_to_function_calls;
 use crate::reconstruct_asserts;
 use crate::regions_hierarchy;
@@ -178,30 +177,9 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // we simply apply some micro-passes to make the code cleaner, before
     // serializing the result.
 
-    let type_defs = &mut ctx.type_defs;
-    let ullbc_funs = &mut ctx.fun_defs;
-    let ullbc_globals = &mut ctx.global_defs;
-
-    // Compute the list of function and global names in the context.
-    // We need this for pretty-printing (i.e., debugging) purposes.
-    // We could use the [FunDecls] and [GlobalDecls] contexts, but we often
-    // mutably borrow them to modify them in place, which prevents us from
-    // using them for pretty-printing purposes (we would need to create shared
-    // borrows over already mutably borrowed values).
-    let fun_names: FunDeclId::Map<String> =
-        FunDeclId::Map::from_iter(ullbc_funs.iter().map(|d| (d.def_id, d.name.to_string())));
-    let global_names: GlobalDeclId::Map<String> =
-        GlobalDeclId::Map::from_iter(ullbc_globals.iter().map(|d| (d.def_id, d.name.to_string())));
-    let trait_names: TraitDeclId::Map<String> = TraitDeclId::Map::from_iter(
-        ctx.trait_defs
-            .iter()
-            .map(|d| (d.def_id, d.name.to_string())),
-    );
-    let fmt_ctx = CtxNames::new(type_defs, &fun_names, &global_names, &trait_names);
-
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
-    simplify_constants::transform(&fmt_ctx, ullbc_funs, ullbc_globals);
+    simplify_constants::transform(&mut ctx);
 
     // # There are two options:
     // - either the user wants the unstructured LLBC, in which case we stop there
@@ -214,21 +192,16 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             crate_name,
             &ctx.id_to_file,
             &ordered_decls,
-            type_defs,
-            ullbc_funs,
-            ullbc_globals,
+            &ctx.type_defs,
+            &ctx.fun_defs,
+            &ctx.global_defs,
             &options.dest_dir,
         )?;
     } else {
         // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing
         // the control flow.
-        let (mut llbc_funs, mut llbc_globals) = ullbc_to_llbc::translate_functions(
-            options.no_code_duplication,
-            type_defs,
-            &ctx.trait_defs,
-            ullbc_funs,
-            ullbc_globals,
-        );
+        let (mut llbc_funs, mut llbc_globals) =
+            ullbc_to_llbc::translate_functions(options.no_code_duplication, &ctx);
 
         // # Micro-pass: remove the dynamic checks for array/slice bounds
         // and division by zero.
@@ -236,30 +209,31 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // introduced by Rustc use a special "assert" construct. Because of
         // this, it must happen *before* the [reconstruct_asserts] pass.
         // See the comments in [crate::remove_dynamic_checks].
-        remove_dynamic_checks::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_dynamic_checks::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: reconstruct the asserts
-        reconstruct_asserts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+        reconstruct_asserts::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // TODO: we should mostly use the TransCtx to format declarations
+        use crate::formatter::Formatter;
         for (_, def) in &llbc_funs {
             trace!(
                 "# After asserts reconstruction:\n{}\n",
-                def.fmt_with_ctx_names(&fmt_ctx)
+                ctx.format_object(def)
             );
         }
 
         // # Micro-pass: replace some unops/binops with function calls
         // (introduces: ArrayToSlice, etc.)
-        ops_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+        ops_to_function_calls::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: replace the arrays/slices index operations with function
         // calls.
         // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
-        index_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+        index_to_function_calls::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: Remove the discriminant reads (merge them with the switches)
-        remove_read_discriminant::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_read_discriminant::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: add the missing assignments to the return value.
         // When the function return type is unit, the generated MIR doesn't
@@ -269,19 +243,19 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // an extra assignment just before returning.
         // This also applies to globals (for checking or executing code before
         // the main or at compile-time).
-        insert_assign_return_unit::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+        insert_assign_return_unit::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
         // is in preparation of the next transformation.
-        remove_drop_never::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_drop_never::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: remove the locals which are never used. After doing so, we
         // check that there are no remaining locals with type `Never`.
-        remove_unused_locals::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_unused_locals::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         trace!("# Final LLBC:\n");
         for (_, def) in &llbc_funs {
-            trace!("#{}\n", def.fmt_with_ctx_names(&fmt_ctx));
+            trace!("#{}\n", ctx.format_object(def));
         }
 
         // # Final step: generate the files.
@@ -289,7 +263,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             crate_name,
             &ctx.id_to_file,
             &ordered_decls,
-            type_defs,
+            &ctx.type_defs,
             &llbc_funs,
             &llbc_globals,
             &options.dest_dir,

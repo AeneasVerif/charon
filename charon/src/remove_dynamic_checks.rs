@@ -7,8 +7,10 @@
 #![allow(dead_code)]
 
 use crate::expressions::MutExprVisitor;
+use crate::formatter::Formatter;
 use crate::llbc_ast::{iter_function_bodies, iter_global_bodies};
-use crate::llbc_ast::{CtxNames, FunDecls, GlobalDecls, MutAstVisitor, Statement};
+use crate::llbc_ast::{FunDecls, GlobalDecls, MutAstVisitor, Statement};
+use crate::translate_ctx::TransCtx;
 use crate::types::MutTypeVisitor;
 use take_mut::take;
 
@@ -120,17 +122,17 @@ impl MutAstVisitor for RemoveDynChecks {
     }
 }
 
-pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to remove the dynamic checks: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
         let mut visitor = RemoveDynChecks {};
         visitor.visit_statement(&mut b.body);
         trace!(
             "# After we removed the dynamic checks: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
     }
 }

@@ -20,10 +20,12 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
+use crate::formatter::Formatter;
+
 use crate::expressions::Place;
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_meta, Meta};
-use crate::types::TypeDecls;
+use crate::translate_ctx::TransCtx;
 use crate::ullbc_ast::FunDeclId;
 use crate::ullbc_ast::{self as src, GlobalDeclId};
 use crate::values as v;
@@ -1820,22 +1822,18 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     }
 }
 
-/// `type_defs`, `global_defs`: those parameters are used for pretty-printing purposes
 /// TODO: we should use a translation context instead
 fn translate_function(
     no_code_duplication: bool,
-    type_defs: &TypeDecls,
-    src_defs: &src::FunDecls,
+    ctx: &TransCtx,
     src_def_id: FunDeclId::Id,
-    global_defs: &src::GlobalDecls,
-    trait_defs: &src::TraitDecls,
 ) -> tgt::FunDecl {
     // Retrieve the function definition
-    let src_def = src_defs.get(src_def_id).unwrap();
+    let src_def = ctx.fun_defs.get(src_def_id).unwrap();
     trace!(
         "# Reconstructing: {}\n\n{}",
         src_def.name,
-        src_def.fmt_with_decls(type_defs, src_defs, global_defs, trait_defs)
+        ctx.format_object(src_def)
     );
 
     // Return the translated definition
@@ -1853,18 +1851,15 @@ fn translate_function(
 
 fn translate_global(
     no_code_duplication: bool,
-    type_defs: &TypeDecls,
-    global_defs: &src::GlobalDecls,
+    ctx: &TransCtx,
     global_id: GlobalDeclId::Id,
-    fun_defs: &src::FunDecls,
-    trait_defs: &src::TraitDecls,
 ) -> tgt::GlobalDecl {
     // Retrieve the global definition
-    let src_def = global_defs.get(global_id).unwrap();
+    let src_def = ctx.global_defs.get(global_id).unwrap();
     trace!(
         "# Reconstructing: {}\n\n{}",
         src_def.name,
-        src_def.fmt_with_decls(type_defs, fun_defs, global_defs, trait_defs)
+        ctx.format_object(src_def)
     );
 
     tgt::GlobalDecl {
@@ -1885,41 +1880,21 @@ fn translate_global(
 /// can be a sign that the reconstruction is of poor quality, but sometimes
 /// code duplication is necessary, in the presence of "fused" match branches for
 /// instance).
-pub fn translate_functions(
-    no_code_duplication: bool,
-    type_defs: &TypeDecls,
-    traits: &src::TraitDecls,
-    src_funs: &src::FunDecls,
-    src_globals: &src::GlobalDecls,
-) -> Defs {
+pub fn translate_functions(no_code_duplication: bool, ctx: &TransCtx) -> Defs {
     let mut tgt_funs = FunDeclId::Map::new();
     let mut tgt_globals = GlobalDeclId::Map::new();
 
     // Translate the bodies one at a time
-    for (fun_id, _) in src_funs.iter_indexed() {
+    for (fun_id, _) in ctx.fun_defs.iter_indexed() {
         tgt_funs.insert(
             *fun_id,
-            translate_function(
-                no_code_duplication,
-                type_defs,
-                src_funs,
-                *fun_id,
-                src_globals,
-                traits,
-            ),
+            translate_function(no_code_duplication, ctx, *fun_id),
         );
     }
-    for (global_id, _) in src_globals.iter_indexed() {
+    for (global_id, _) in ctx.global_defs.iter_indexed() {
         tgt_globals.insert(
             *global_id,
-            translate_global(
-                no_code_duplication,
-                type_defs,
-                src_globals,
-                *global_id,
-                src_funs,
-                traits,
-            ),
+            translate_global(no_code_duplication, ctx, *global_id),
         );
     }
 
@@ -1927,17 +1902,16 @@ pub fn translate_functions(
     for (_, fun) in &tgt_funs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            fun.signature
-                .fmt_with_decls(type_defs, src_funs, src_globals, traits),
-            fun.fmt_with_decls(type_defs, &tgt_funs, &tgt_globals, traits)
+            ctx.format_object(&fun.signature),
+            ctx.format_object(fun),
         );
     }
     // Print the global variables
     for (_, global) in &tgt_globals {
         trace!(
-            "# Type:\n{:?}\n\n# Global definition:\n{}\n",
-            global.ty,
-            global.fmt_with_decls(type_defs, &tgt_funs, &tgt_globals, traits)
+            "# Type:\n{}\n\n# Global definition:\n{}\n",
+            ctx.format_object(&global.ty),
+            ctx.format_object(global)
         );
     }
 

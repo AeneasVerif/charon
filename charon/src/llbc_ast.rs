@@ -12,7 +12,7 @@ pub use crate::gast::*;
 pub use crate::llbc_ast_utils::*;
 use crate::meta::Meta;
 use crate::types::*;
-pub use crate::ullbc_ast::{Call, CtxNames, FunDeclId, GlobalDeclId, Var};
+pub use crate::ullbc_ast::{Call, FunDeclId, GlobalDeclId, Var};
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;

@@ -6,11 +6,12 @@
 #![allow(dead_code)]
 
 use crate::expressions::{Rvalue, UnOp};
+use crate::formatter::Formatter;
 use crate::llbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::llbc_ast::{
-    AssumedFunId, Call, CtxNames, FunDecls, FunIdOrTraitMethodRef, GlobalDecls, RawStatement,
-    Statement,
+    AssumedFunId, Call, FunDecls, FunIdOrTraitMethodRef, GlobalDecls, RawStatement, Statement,
 };
+use crate::translate_ctx::TransCtx;
 use crate::types::ErasedRegion;
 use crate::types::RefKind;
 
@@ -45,16 +46,16 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
     }
 }
 
-pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to transform some operations to function calls: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
         b.body.transform(&mut transform_st);
         trace!(
             "# After transforming some operations to function calls: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
     }
 }

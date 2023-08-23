@@ -6,6 +6,7 @@
 #![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
+#![feature(trait_alias)]
 
 extern crate hashlink;
 extern crate im;

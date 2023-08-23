@@ -6,10 +6,12 @@
 use take_mut::take;
 
 use crate::expressions::*;
+use crate::formatter::Formatter;
 use crate::llbc_ast::{
-    CtxNames, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement, Switch,
+    ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement, Switch,
 };
 use crate::names::Name;
+use crate::translate_ctx::TransCtx;
 use crate::values::*;
 use std::iter::FromIterator;
 
@@ -65,30 +67,28 @@ fn transform_st(mut st: Statement) -> Statement {
     st
 }
 
-fn transform_body(fmt_ctx: &CtxNames<'_>, name: &Name, body: &mut Option<ExprBody>) {
+fn transform_body(ctx: &TransCtx, name: &Name, body: &mut Option<ExprBody>) {
     if let Some(b) = body.as_mut() {
         trace!(
             "About to insert assign and return unit in decl: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
         take(&mut b.body, transform_st);
     }
 }
 
-fn transform_function(fmt_ctx: &CtxNames<'_>, def: &mut FunDecl) {
+fn transform_function(ctx: &TransCtx, def: &mut FunDecl) {
     if def.signature.output.is_unit() {
-        transform_body(fmt_ctx, &def.name, &mut def.body);
+        transform_body(ctx, &def.name, &mut def.body);
     }
 }
-fn transform_global(fmt_ctx: &CtxNames<'_>, def: &mut GlobalDecl) {
+fn transform_global(ctx: &TransCtx, def: &mut GlobalDecl) {
     if def.ty.is_unit() {
-        transform_body(fmt_ctx, &def.name, &mut def.body);
+        transform_body(ctx, &def.name, &mut def.body);
     }
 }
 
-pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    funs.iter_mut().for_each(|d| transform_function(fmt_ctx, d));
-    globals
-        .iter_mut()
-        .for_each(|d| transform_global(fmt_ctx, d));
+pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    funs.iter_mut().for_each(|d| transform_function(ctx, d));
+    globals.iter_mut().for_each(|d| transform_global(ctx, d));
 }

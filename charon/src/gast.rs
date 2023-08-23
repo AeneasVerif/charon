@@ -111,7 +111,7 @@ pub struct FunSig {
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
 #[derive(Debug, Clone, Serialize)]
-pub struct GExprBody<T: std::fmt::Debug + Clone + Serialize> {
+pub struct GExprBody<T> {
     pub meta: Meta,
     /// The number of local variables used for the input arguments.
     pub arg_count: usize,
@@ -126,7 +126,7 @@ pub struct GExprBody<T: std::fmt::Debug + Clone + Serialize> {
 
 /// A function definition
 #[derive(Debug, Clone, Serialize)]
-pub struct GFunDecl<T: std::fmt::Debug + Clone + Serialize> {
+pub struct GFunDecl<T> {
     pub def_id: FunDeclId::Id,
     /// The meta data associated with the declaration.
     pub meta: Meta,
@@ -142,7 +142,7 @@ pub struct GFunDecl<T: std::fmt::Debug + Clone + Serialize> {
 
 /// A global variable definition, either opaque or transparent.
 #[derive(Debug, Clone, Serialize)]
-pub struct GGlobalDecl<T: std::fmt::Debug + Clone + Serialize> {
+pub struct GGlobalDecl<T> {
     pub def_id: GlobalDeclId::Id,
     /// The meta data associated with the declaration.
     pub meta: Meta,

@@ -5,8 +5,10 @@
 
 use take_mut::take;
 
+use crate::formatter::Formatter;
+use crate::translate_ctx::TransCtx;
 use crate::{
-    llbc_ast::{Assert, CtxNames, FunDecls, GlobalDecls, RawStatement, Statement, Switch},
+    llbc_ast::{Assert, FunDecls, GlobalDecls, RawStatement, Statement, Switch},
     ullbc_ast::{iter_function_bodies, iter_global_bodies},
 };
 use std::iter::FromIterator;
@@ -69,11 +71,11 @@ fn transform_st(mut st: Statement) -> Statement {
     st
 }
 
-pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to reconstruct asserts in decl: {name}\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
         take(&mut b.body, transform_st);
     }

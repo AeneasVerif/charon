@@ -3,12 +3,14 @@
 #![allow(dead_code)]
 
 use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
+use crate::formatter::Formatter;
 use crate::gast::{Call, Var};
 use crate::llbc_ast::{
-    iter_function_bodies, iter_global_bodies, AssumedFunId, CtxNames, FunDecls,
-    FunIdOrTraitMethodRef, GlobalDecls, MutAstVisitor, RawStatement, Statement, Switch,
+    iter_function_bodies, iter_global_bodies, AssumedFunId, FunDecls, FunIdOrTraitMethodRef,
+    GlobalDecls, MutAstVisitor, RawStatement, Statement, Switch,
 };
 use crate::meta::Meta;
+use crate::translate_ctx::TransCtx;
 use crate::types::{AssumedTy, ConstGeneric, ErasedRegion, MutTypeVisitor, RefKind, Ty};
 use crate::values::VarId;
 use std::mem::replace;
@@ -292,11 +294,11 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Vec<State
 ///   tmp1 : &mut T = ArrayIndexMut(move y, i)
 ///   *tmp1 = x
 /// ```
-pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to transform array/slice index operations to function calls: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
         let body = &mut b.body;
         let locals = &mut b.locals;
@@ -305,7 +307,7 @@ pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut Glob
         body.transform(&mut tr);
         trace!(
             "# After transforming array/slice index operations to function calls: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
     }
 }

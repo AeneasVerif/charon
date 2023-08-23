@@ -11,11 +11,12 @@
 //! handle the globals like function calls.
 
 use crate::expressions::*;
+use crate::formatter::Formatter;
 use crate::meta::Meta;
+use crate::translate_ctx::TransCtx;
 use crate::types::*;
 use crate::ullbc_ast::{
-    iter_function_bodies, iter_global_bodies, make_locals_generator, CtxNames, FunDecls,
-    GlobalDecls, RawStatement, Statement,
+    iter_function_bodies, iter_global_bodies, make_locals_generator, RawStatement, Statement,
 };
 use crate::ullbc_ast_utils::body_transform_operands;
 use crate::values::VarId;
@@ -123,11 +124,16 @@ fn transform_operand<F: FnMut(ETy) -> VarId::Id>(
     })
 }
 
-pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+pub fn transform(ctx: &mut TransCtx) {
+    // Slightly annoying: we have to clone because of borrowing issues
+    let mut fun_defs = ctx.fun_defs.clone();
+    let mut global_defs = ctx.global_defs.clone();
+
+    for (name, b) in iter_function_bodies(&mut fun_defs).chain(iter_global_bodies(&mut global_defs))
+    {
         trace!(
             "# About to simplify constants in function: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
 
         let mut f = make_locals_generator(&mut b.locals);
@@ -135,4 +141,7 @@ pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut Glob
             transform_operand(meta, nst, op, &mut f)
         });
     }
+
+    ctx.fun_defs = fun_defs;
+    ctx.global_defs = global_defs;
 }

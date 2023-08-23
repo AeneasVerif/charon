@@ -61,81 +61,6 @@ impl Terminator {
     pub fn new(meta: Meta, content: RawTerminator) -> Self {
         Terminator { meta, content }
     }
-
-    /*    /// Substitute the type variables and return the resulting terminator
-    pub fn substitute(&self, subst: &ETypeSubst, cgsubst: &ConstGenericSubst) -> Terminator {
-        let terminator = match &self.content {
-            RawTerminator::Goto { target } => RawTerminator::Goto { target: *target },
-            RawTerminator::Switch { discr, targets } => RawTerminator::Switch {
-                discr: discr.substitute(subst),
-                targets: targets.substitute(subst),
-            },
-            RawTerminator::Panic => RawTerminator::Panic,
-            RawTerminator::Return => RawTerminator::Return,
-            RawTerminator::Unreachable => RawTerminator::Unreachable,
-            RawTerminator::Drop { place, target } => RawTerminator::Drop {
-                place: place.substitute(subst),
-                target: *target,
-            },
-            RawTerminator::Call { call, target } => {
-                let Call {
-                    func,
-                    region_args,
-                    type_args,
-                    const_generic_args,
-                    traits,
-                    args,
-                    dest,
-                } = call;
-                let call = Call {
-                    func: func.clone(),
-                    region_args: region_args.clone(),
-                    type_args: type_args
-                        .iter()
-                        .map(|ty| ty.substitute_types(subst, cgsubst))
-                        .collect(),
-                    const_generic_args: const_generic_args
-                        .iter()
-                        .map(|cg| cg.substitute(&|var| cgsubst.get(var).unwrap().clone()))
-                        .collect(),
-                    traits: traits.clone(),
-                    args: Vec::from_iter(args.iter().map(|arg| arg.substitute(subst))),
-                    dest: dest.substitute(subst),
-                };
-                RawTerminator::Call {
-                    call,
-                    target: *target,
-                }
-            }
-            RawTerminator::Assert {
-                cond,
-                expected,
-                target,
-            } => RawTerminator::Assert {
-                cond: cond.substitute(subst),
-                expected: *expected,
-                target: *target,
-            },
-        };
-
-        Terminator::new(self.meta, terminator)
-    }*/
-}
-
-impl BlockData {
-    /*    /// Substitute the type variables and return the resulting `BlockData`
-    pub fn substitute(&self, subst: &ETypeSubst, cgsubst: &ConstGenericSubst) -> BlockData {
-        let statements = self
-            .statements
-            .iter()
-            .map(|x| x.substitute(subst))
-            .collect();
-        let terminator = self.terminator.substitute(subst, cgsubst);
-        BlockData {
-            statements,
-            terminator,
-        }
-    }*/
 }
 
 impl Statement {
@@ -268,7 +193,7 @@ impl BlockData {
     }
 }
 
-fn fmt_body_blocks_with_ctx<'a, 'b, 'c, C>(
+pub(crate) fn fmt_body_blocks_with_ctx<'a, 'b, 'c, C>(
     body: &'a BlockId::Vector<BlockData>,
     tab: &'b str,
     ctx: &'c C,
@@ -302,282 +227,21 @@ where
     blocks.join("\n")
 }
 
-impl ExprBody {
-    pub fn fmt_with_decls<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDecls,
-        global_ctx: &'ctx GlobalDecls,
-        trait_ctx: &'ctx TraitDecls,
-    ) -> String {
-        let locals = Some(&self.locals);
-        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
-        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        let trait_ctx = TraitDeclsFormatter::new(trait_ctx);
-        let ctx = GAstFormatter::new(
-            ty_ctx,
-            &fun_ctx,
-            &global_ctx,
-            &trait_ctx,
-            None,
-            locals,
-            None,
-            None,
-        );
-        self.fmt_with_ctx(TAB_INCR, &ctx)
-    }
-
-    pub fn fmt_with_names<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Map<String>,
-        global_ctx: &'ctx GlobalDeclId::Map<String>,
-        trait_ctx: &'ctx TraitDeclId::Map<String>,
-    ) -> String {
-        let locals = Some(&self.locals);
-        let fun_ctx = FunNamesFormatter::new(fun_ctx);
-        let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        let trait_ctx = TraitNamesFormatter::new(trait_ctx);
-        let ctx = GAstFormatter::new(
-            ty_ctx,
-            &fun_ctx,
-            &global_ctx,
-            &trait_ctx,
-            None,
-            locals,
-            None,
-            None,
-        );
-        self.fmt_with_ctx(TAB_INCR, &ctx)
-    }
-
-    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
-        self.fmt_with_names(
-            ctx.type_context,
-            ctx.fun_context,
-            ctx.global_context,
-            ctx.trait_context,
-        )
-    }
-}
-
-pub(crate) struct FunDeclsFormatter<'ctx> {
-    decls: &'ctx FunDecls,
-}
-
-pub(crate) struct GlobalDeclsFormatter<'ctx> {
-    decls: &'ctx GlobalDecls,
-}
-
-pub(crate) struct TraitDeclsFormatter<'ctx> {
-    decls: &'ctx TraitDecls,
-}
-
-impl<'ctx, FD, GD, TD> Formatter<&Statement> for GAstFormatter<'ctx, FD, GD, TD>
-where
-    Self: Formatter<GlobalDeclId::Id>,
-{
-    fn format_object(&self, statement: &Statement) -> String {
-        statement.fmt_with_ctx(self)
-    }
-}
-
-impl<'ctx, FD, GD, TD> Formatter<&BlockId::Vector<BlockData>> for GAstFormatter<'ctx, FD, GD, TD>
-where
-    Self: Formatter<FunDeclId::Id> + Formatter<GlobalDeclId::Id> + Formatter<TraitDeclId::Id>,
-{
-    fn format_object(&self, body: &BlockId::Vector<BlockData>) -> String {
-        fmt_body_blocks_with_ctx(body, TAB_INCR, self)
-    }
-}
-
-impl<'ctx, FD, GD, TD> Formatter<&Terminator> for GAstFormatter<'ctx, FD, GD, TD>
-where
-    Self: Formatter<FunDeclId::Id> + Formatter<GlobalDeclId::Id> + Formatter<TraitDeclId::Id>,
-{
-    fn format_object(&self, terminator: &Terminator) -> String {
-        terminator.fmt_with_ctx(self)
-    }
-}
-
-impl<'ctx> FunDeclsFormatter<'ctx> {
-    pub fn new(decls: &'ctx FunDecls) -> Self {
-        FunDeclsFormatter { decls }
-    }
-}
-
-impl<'ctx> Formatter<FunDeclId::Id> for FunDeclsFormatter<'ctx> {
-    fn format_object(&self, id: FunDeclId::Id) -> String {
-        let d = self.decls.get(id).unwrap();
-        d.name.to_string()
-    }
-}
-
-impl<'ctx> GlobalDeclsFormatter<'ctx> {
-    pub fn new(decls: &'ctx GlobalDecls) -> Self {
-        GlobalDeclsFormatter { decls }
-    }
-}
-
-impl<'ctx> Formatter<GlobalDeclId::Id> for GlobalDeclsFormatter<'ctx> {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        let d = self.decls.get(id).unwrap();
-        d.name.to_string()
-    }
-}
-
-impl Formatter<GlobalDeclId::Id> for GlobalDecls {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        // The global decl may not have been translated yet
-        match self.get(id) {
-            Option::None => id.to_pretty_string(),
-            Option::Some(d) => d.name.to_string(),
-        }
-    }
-}
-
-impl<'ctx> TraitDeclsFormatter<'ctx> {
-    pub fn new(decls: &'ctx TraitDecls) -> Self {
-        TraitDeclsFormatter { decls }
-    }
-}
-
-impl<'ctx> Formatter<TraitDeclId::Id> for TraitDeclsFormatter<'ctx> {
-    fn format_object(&self, id: TraitDeclId::Id) -> String {
-        let d = self.decls.get(id).unwrap();
-        d.name.to_string()
-    }
-}
-
 impl FunDecl {
-    pub fn fmt_with_ctx<'ctx, FD, GD, TD>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FD,
-        global_ctx: &'ctx GD,
-        trait_ctx: &'ctx TD,
-    ) -> String
+    pub fn fmt_with_ctx<'ctx, C>(&'ctx self, ctx: &'ctx C) -> String
     where
-        FD: Formatter<FunDeclId::Id>,
-        GD: Formatter<GlobalDeclId::Id>,
-        TD: Formatter<TraitDeclId::Id>,
+        C: GFunDeclFormatter<'ctx, BlockId::Vector<BlockData>>,
     {
-        // Initialize the contexts
-        let fun_sig_ctx = FunSigFormatter {
-            ty_ctx,
-            fun_ctx,
-            global_ctx,
-            trait_ctx,
-            sig: &self.signature,
-        };
-
-        let locals = self.body.as_ref().map(|body| &body.locals);
-        let ctx = GAstFormatter::new(
-            ty_ctx,
-            fun_ctx,
-            global_ctx,
-            trait_ctx,
-            Some(&self.signature.type_params),
-            locals,
-            Some(&self.signature.const_generic_params),
-            Some(&self.signature.trait_clauses),
-        );
-
-        // Use the contexts for printing
-        self.gfmt_with_ctx("", &fun_sig_ctx, &ctx)
-    }
-
-    pub fn fmt_with_decls<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDecls,
-        global_ctx: &'ctx GlobalDecls,
-        trait_ctx: &'ctx TraitDecls,
-    ) -> String {
-        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
-        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        let trait_ctx = TraitDeclsFormatter::new(trait_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx, &trait_ctx)
-    }
-
-    pub fn fmt_with_names<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Map<String>,
-        global_ctx: &'ctx GlobalDeclId::Map<String>,
-        trait_ctx: &'ctx TraitDeclId::Map<String>,
-    ) -> String {
-        let fun_ctx = FunNamesFormatter::new(fun_ctx);
-        let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        let trait_ctx = TraitNamesFormatter::new(trait_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx, &trait_ctx)
-    }
-
-    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
-        self.fmt_with_names(
-            ctx.type_context,
-            ctx.fun_context,
-            ctx.global_context,
-            ctx.trait_context,
-        )
+        self.gfmt_with_ctx("", ctx)
     }
 }
 
 impl GlobalDecl {
-    pub fn fmt_with_ctx<'ctx, FD, GD, TD>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FD,
-        global_ctx: &'ctx GD,
-        trait_ctx: &'ctx TD,
-    ) -> String
+    pub fn fmt_with_ctx<'ctx, C>(&'ctx self, ctx: &'ctx C) -> String
     where
-        FD: Formatter<FunDeclId::Id>,
-        GD: Formatter<GlobalDeclId::Id>,
-        TD: Formatter<TraitDeclId::Id>,
+        C: GGlobalDeclFormatter<'ctx, BlockId::Vector<BlockData>>,
     {
-        let locals = self.body.as_ref().map(|body| &body.locals);
-        let ctx = GAstFormatter::new(
-            ty_ctx, fun_ctx, global_ctx, trait_ctx, None, locals, None, None,
-        );
-
-        // Use the contexts for printing
-        self.gfmt_with_ctx("", &ctx)
-    }
-
-    pub fn fmt_with_decls<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDecls,
-        global_ctx: &'ctx GlobalDecls,
-        trait_ctx: &'ctx TraitDecls,
-    ) -> String {
-        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
-        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        let trait_ctx = TraitDeclsFormatter::new(trait_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx, &trait_ctx)
-    }
-
-    pub fn fmt_with_names<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Map<String>,
-        global_ctx: &'ctx GlobalDeclId::Map<String>,
-        trait_ctx: &'ctx TraitDeclId::Map<String>,
-    ) -> String {
-        let fun_ctx = FunNamesFormatter::new(fun_ctx);
-        let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        let trait_ctx = TraitNamesFormatter::new(trait_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx, &trait_ctx)
-    }
-
-    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
-        self.fmt_with_names(
-            ctx.type_context,
-            ctx.fun_context,
-            ctx.global_context,
-            ctx.trait_context,
-        )
+        self.gfmt_with_ctx("", ctx)
     }
 }
 
@@ -691,6 +355,12 @@ pub fn body_transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand
 
 impl Formatter<FunDeclId::Id> for FunDecls {
     fn format_object(&self, id: FunDeclId::Id) -> String {
+        self.get(id).unwrap().name.to_string()
+    }
+}
+
+impl Formatter<GlobalDeclId::Id> for GlobalDecls {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
         self.get(id).unwrap().name.to_string()
     }
 }
