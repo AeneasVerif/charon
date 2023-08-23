@@ -1673,7 +1673,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let signature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
             tcx.fn_sig(def_id).subst_identity();
 
-        // The parameters (and in particular the lifetimes) are split between
+        // The parameters (and in particular the lifetimegs) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
         // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
         // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
@@ -1863,7 +1863,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let var = ast::Var {
             index: v::VarId::ZERO,
             name: None,
-            ty: ty.clone(),
+            ty,
         };
         // # Instructions
         // ret := const (ty, val)

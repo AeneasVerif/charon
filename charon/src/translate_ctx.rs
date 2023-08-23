@@ -581,18 +581,18 @@ impl<'tcx, 'ctx> Formatter<ast::FunDeclId::Id> for TransCtx<'tcx, 'ctx> {
     }
 }
 
+impl<'tcx, 'ctx> Formatter<ast::TraitClauseId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ast::TraitClauseId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
 impl<'tcx, 'ctx> Formatter<ast::TraitDeclId::Id> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, id: ast::TraitDeclId::Id) -> String {
         match self.trait_defs.get(id) {
             None => id.to_pretty_string(),
             Some(d) => d.name.to_string(),
         }
-    }
-}
-
-impl<'tcx, 'ctx> Formatter<ast::TraitClauseId::Id> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, id: ast::TraitClauseId::Id) -> String {
-        id.to_pretty_string()
     }
 }
 
@@ -661,6 +661,24 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::Region<ty::RegionVarId::Id>>>
 impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, ty: &ty::Ty<ty::ErasedRegion>) -> String {
         ty.fmt_with_ctx(self)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::TraitClauseId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::TraitClauseId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::TraitDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::TraitDeclId::Id) -> String {
+        self.t_ctx.format_object(id)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::FunDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::FunDeclId::Id) -> String {
+        self.t_ctx.format_object(id)
     }
 }
 

@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 use crate::common::Result;
+use crate::gast;
 use crate::gast::{ParamsInfo, TraitRef};
 use crate::translate_ctx::{BodyTransCtx, TransCtx};
 use crate::translate_types;
@@ -198,7 +199,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
                 let trait_id = self.translate_trait_id(def_id);
 
-                let (_region_args, type_args, const_generic_args) = self
+                // Retrieve the arguments
+                let (region_args, type_args, const_generic_args) = self
                     .translate_subst_generic_args_in_body(None, &trait_ref.generic_args)
                     .unwrap();
                 let traits: Vec<TraitRef> = traits
@@ -241,7 +243,32 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         }
                     }
                     // We should have found a clause
-                    clause_id.unwrap()
+                    match clause_id {
+                        Some(id) => id,
+                        None => {
+                            use crate::formatter::Formatter;
+                            let trait_ref = format!(
+                                "{}{}",
+                                self.format_object(trait_id),
+                                gast::fmt_args_no_traits(
+                                    self,
+                                    &region_args,
+                                    &tgt_type_args,
+                                    &tgt_const_generic_args
+                                )
+                            );
+                            let clauses: Vec<String> = self
+                                .trait_clauses
+                                .iter()
+                                .map(|x| x.fmt_with_ctx(self))
+                                .collect();
+                            let clauses = clauses.join("\n");
+                            unreachable!(
+                                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
+                                trait_ref, clauses
+                            );
+                        }
+                    }
                 };
 
                 let trait_id = TraitInstanceId::Clause(clause_id);
