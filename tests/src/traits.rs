@@ -1,6 +1,8 @@
 pub trait BoolTrait {
+    // Declared method
     fn get_bool(&self) -> bool;
 
+    // Provided methods
     fn ret_true(&self) -> bool {
         true
     }
@@ -97,6 +99,7 @@ pub fn h3<T1: OfType, T2: ToType<T1>>(y: T2) -> T1 {
     T1::of_type(y)
 }
 
+// Checking what happens if we move trait clauses from a method to its enclosing block
 pub trait OfTypeBis<T: ToType<Self>>
 where
     Self: std::marker::Sized,
@@ -112,6 +115,7 @@ pub fn h4<T1: OfTypeBis<T2>, T2: ToType<T1>>(y: T2) -> T1 {
 
 pub struct TestType<T>(T);
 
+// Checking what happens with nested blocks
 impl<T: ToU64> TestType<T> {
     pub fn test(&self, x: T) -> bool {
         struct TestType1(u64);
