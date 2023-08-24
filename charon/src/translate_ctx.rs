@@ -1,6 +1,7 @@
 //! The translation contexts.
 
 #![allow(dead_code)]
+use crate::common::TAB_INCR;
 use crate::formatter::Formatter;
 use crate::gast;
 use crate::get_mir::MirLevel;
@@ -975,7 +976,7 @@ impl<'tcx, 'ctx> Formatter<&ty::TypeDecl> for TransCtx<'tcx, 'ctx> {
 
 impl<'tcx, 'ctx, 'ctx1> Formatter<&llbc_ast::Statement> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, x: &llbc_ast::Statement) -> String {
-        x.fmt_with_ctx("", self)
+        x.fmt_with_ctx(TAB_INCR, self)
     }
 }
 
@@ -983,7 +984,7 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&ullbc_ast::BlockId::Vector<ullbc_ast::BlockDa
     for BodyFormatCtx<'tcx, 'ctx, 'ctx1>
 {
     fn format_object(&self, x: &ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>) -> String {
-        ullbc_ast::fmt_body_blocks_with_ctx(x, "", self)
+        ullbc_ast::fmt_body_blocks_with_ctx(x, TAB_INCR, self)
     }
 }
 
@@ -1002,7 +1003,7 @@ impl<'tcx, 'ctx> Formatter<&ullbc_ast::ExprBody> for TransCtx<'tcx, 'ctx> {
             vars: &body.locals,
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };
-        body.fmt_with_ctx("", &formatter)
+        body.fmt_with_ctx(TAB_INCR, &formatter)
     }
 }
 
@@ -1021,7 +1022,7 @@ impl<'tcx, 'ctx> Formatter<&llbc_ast::ExprBody> for TransCtx<'tcx, 'ctx> {
             vars: &body.locals,
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };
-        body.fmt_with_ctx("", &formatter)
+        body.fmt_with_ctx(TAB_INCR, &formatter)
     }
 }
 

@@ -1,6 +1,7 @@
 //! Implementations for [crate::gast]
 #![allow(dead_code)]
 
+use crate::common::TAB_INCR;
 use crate::formatter::Formatter;
 use crate::gast::*;
 use crate::names::Name;
@@ -100,8 +101,21 @@ impl TraitDecl {
             + Formatter<TraitDeclId::Id>,
     {
         let def_id = ctx.format_object(self.def_id);
-        let generics = self.generics.fmt_with_ctx(ctx);
-        format!("trait {def_id}{generics}")
+        let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        let trait_clauses = fmt_where_clauses("", trait_clauses);
+        let items = if self.functions.is_empty() {
+            "".to_string()
+        } else {
+            let functions = self
+                .functions
+                .iter()
+                .map(|(name, f)| format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*f)))
+                .collect::<Vec<String>>()
+                .join("");
+            format!("\n{{\n{functions}}}")
+        };
+
+        format!("trait {def_id}{generics}{trait_clauses}{items}")
     }
 }
 
@@ -119,8 +133,7 @@ where
         + Formatter<TraitDeclId::Id>
         + Formatter<TraitClauseId::Id>,
 {
-    let generics = call.generics.fmt_with_ctx(ctx);
-
+    let generics = call.generics.fmt_with_ctx_split_trait_refs(ctx);
     let f = match &call.func {
         FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
             format!("{}{generics}", ctx.format_object(*def_id),)
@@ -226,7 +239,7 @@ impl FunSig {
             + Formatter<TraitClauseId::Id>,
     {
         // Generic parameters
-        let params = self.generics.fmt_with_ctx(ctx);
+        let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
@@ -243,6 +256,9 @@ impl FunSig {
             format!(" -> {}", ret_ty.fmt_with_ctx(ctx))
         };
 
+        // Trait clauses
+        let trait_clauses = fmt_where_clauses("", trait_clauses);
+
         // Regions hierarchy
         let regions_hierarchy: Vec<String> = self
             .regions_hierarchy
@@ -252,7 +268,9 @@ impl FunSig {
         let regions_hierarchy = regions_hierarchy.join("\n");
 
         // Put everything together
-        format!("fn{params}({args}){ret_ty}\n\nRegions hierarchy:\n{regions_hierarchy}",)
+        format!(
+            "fn{params}({args}){ret_ty}{trait_clauses}\n\nRegions hierarchy:\n{regions_hierarchy}",
+        )
     }
 }
 
@@ -286,7 +304,7 @@ impl<T> GFunDecl<T> {
         let name = self.name.to_string();
 
         // Generic parameters
-        let params = self.signature.generics.fmt_with_ctx(ctx);
+        let (params, trait_clauses) = self.signature.generics.fmt_with_ctx_with_trait_clauses(ctx);
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
@@ -308,11 +326,14 @@ impl<T> GFunDecl<T> {
             format!(" -> {}", ret_ty.fmt_with_ctx(ctx))
         };
 
+        // Trait clauses
+        let trait_clauses = fmt_where_clauses(tab, trait_clauses);
+
         // Case disjunction on the presence of a body (transparent/opaque definition)
         match &self.body {
             Option::None => {
                 // Put everything together
-                format!("{tab}fn {name}{params}({args}){ret_ty}")
+                format!("{tab}fn {name}{params}({args}){ret_ty}{trait_clauses}")
             }
             Option::Some(body) => {
                 // Body
@@ -320,7 +341,7 @@ impl<T> GFunDecl<T> {
                 let body = body.fmt_with_ctx(&body_tab, ctx);
 
                 // Put everything together
-                format!("{tab}fn {name}{params}({args}){ret_ty}{{\n{body}\n{tab}}}",)
+                format!("{tab}fn {name}{params}({args}){ret_ty}{trait_clauses}{{\n{body}\n{tab}}}",)
             }
         }
     }
@@ -381,5 +402,11 @@ impl<T: std::fmt::Debug + Clone + Serialize> GGlobalDecl<T> {
 impl FunIdOrTraitMethodRef {
     pub(crate) fn mk_assumed(aid: AssumedFunId) -> Self {
         Self::Fun(FunId::Assumed(aid))
+    }
+}
+
+impl std::fmt::Display for TraitMethodName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.0)
     }
 }

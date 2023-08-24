@@ -19,9 +19,6 @@ use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, VariantName};
 use serde::Serialize;
 
-// TODO: move this definition
-pub static TAB_INCR: &str = "    ";
-
 generate_index_type!(FunDeclId);
 
 /// A variable
@@ -154,12 +151,35 @@ pub struct GGlobalDecl<T> {
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitMethodName(pub String);
 
+/// A trait declaration.
+///
+/// For instance:
+/// ```text
+/// trait Foo {
+///   type Bar;
+///
+///   fn baz(...);
+/// }
+/// ```
+///
+/// We don't include the provided methods in the trait declaration -
+/// they will be translated on a per-need basis. This is important
+/// for two reasons:
+/// - this makes the trait definitions a lot smaller (the Iterator trait
+///   has *one* declared function and a ton of provided functions)
+/// - this is important for the external traits, whose provided methods
+///   often use features we don't support yet
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
     pub name: Name,
     pub generics: GenericParams,
-    // TODO: remaining fields
+    // The associated types declared in the trait
+    //pub types:
+    // The associated constants declared in the trait
+    //
+    /// The associated functions declared in the trait
+    pub functions: Vec<(TraitMethodName, FunDeclId::Id)>,
 }
 
 /// A function identifier. See [crate::ullbc_ast::Terminator]

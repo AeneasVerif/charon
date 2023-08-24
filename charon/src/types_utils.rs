@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 use crate::assumed::get_name_from_type_id;
+use crate::common::TAB_INCR;
 use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDeclId};
@@ -136,7 +137,6 @@ impl GenericParams {
         }
     }
 
-    /// Not naming this "to_string" on purpose: this can be confusing.
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
         C: Formatter<TypeVarId::Id>
@@ -172,6 +172,59 @@ impl GenericParams {
             }
             format!("<{}>", params.join(", "))
         }
+    }
+
+    pub fn fmt_with_ctx_with_trait_clauses<'a, C>(&'a self, ctx: &C) -> (String, Vec<String>)
+    where
+        C: Formatter<TypeVarId::Id>
+            + Formatter<&'a Region<RegionVarId::Id>>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitDeclId::Id>
+            + Formatter<TraitClauseId::Id>,
+    {
+        let mut params = Vec::new();
+        let GenericParams {
+            regions,
+            types,
+            const_generics,
+            trait_clauses,
+        } = self;
+        for x in regions {
+            params.push(x.to_string());
+        }
+        for x in types {
+            params.push(x.to_string());
+        }
+        for x in const_generics {
+            params.push(x.to_string());
+        }
+        let params = if params.is_empty() {
+            "".to_string()
+        } else {
+            format!("<{}>", params.join(", "))
+        };
+
+        let mut clauses = Vec::new();
+        for x in trait_clauses {
+            clauses.push(x.fmt_with_ctx(ctx));
+        }
+        (params, clauses)
+    }
+}
+
+pub fn fmt_where_clauses(tab: &str, clauses: Vec<String>) -> String {
+    if clauses.is_empty() {
+        "".to_string()
+    } else {
+        let clauses = clauses
+            .iter()
+            .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
+            .collect::<Vec<String>>()
+            .join("");
+        format!("\nwhere{clauses}\n")
     }
 }
 
@@ -272,6 +325,51 @@ impl<R> GenericArgs<R> {
             format!("<{}>", self.fmt_with_ctx_no_brackets(ctx),)
         }
     }
+
+    pub fn fmt_with_ctx_split_trait_refs<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: Formatter<TypeVarId::Id>
+            + Formatter<&'a R>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitDeclId::Id>
+            + Formatter<TraitClauseId::Id>,
+    {
+        let mut params = Vec::new();
+        let GenericArgs {
+            regions,
+            types,
+            const_generics,
+            trait_refs,
+        } = self;
+        for x in regions {
+            params.push(ctx.format_object(x));
+        }
+        for x in types {
+            params.push(x.fmt_with_ctx(ctx));
+        }
+        for x in const_generics {
+            params.push(x.fmt_with_ctx(ctx));
+        }
+        let params = if params.is_empty() {
+            "".to_string()
+        } else {
+            format!("<{}>", params.join(", "))
+        };
+
+        let mut clauses = Vec::new();
+        for x in trait_refs {
+            clauses.push(x.fmt_with_ctx(ctx));
+        }
+        let clauses = if clauses.is_empty() {
+            "".to_string()
+        } else {
+            format!("[{}]", clauses.join(", "))
+        };
+        format!("{params}{clauses}")
+    }
 }
 
 impl TraitClause {
@@ -310,7 +408,7 @@ impl<R> TraitRef<R> {
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
             TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
         };
-        let generics = self.generics.fmt_with_ctx(ctx);
+        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         format!("{trait_id}{generics}")
     }
 }
@@ -439,7 +537,14 @@ impl TypeDecl {
             + Formatter<TraitClauseId::Id>
             + Formatter<TraitDeclId::Id>,
     {
-        let params = self.generics.fmt_with_ctx(ctx);
+        let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        // Trait clauses
+        let eq_space = if trait_clauses.is_empty() {
+            "".to_string()
+        } else {
+            TAB_INCR.to_string()
+        };
+        let trait_clauses = fmt_where_clauses("", trait_clauses);
 
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
@@ -449,9 +554,15 @@ impl TypeDecl {
                         .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)))
                         .collect();
                     let fields = fields.join(",");
-                    format!("struct {}{} = {{{}\n}}", self.name, params, fields)
+                    format!(
+                        "struct {}{params}{trait_clauses}{eq_space}= {{{fields}\n}}",
+                        self.name
+                    )
                 } else {
-                    format!("struct {}{} = {{}}", self.name, params)
+                    format!(
+                        "struct {}{params}{trait_clauses}{eq_space}= {{}}",
+                        self.name
+                    )
                 }
             }
             TypeDeclKind::Enum(variants) => {
@@ -460,9 +571,12 @@ impl TypeDecl {
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
                     .collect();
                 let variants = variants.join("\n");
-                format!("enum {}{} =\n{}\n", self.name, params, variants)
+                format!(
+                    "enum {}{params}{trait_clauses}{eq_space}=\n{variants}\n",
+                    self.name
+                )
             }
-            TypeDeclKind::Opaque => format!("opaque type {}{}", self.name, params),
+            TypeDeclKind::Opaque => format!("opaque type {}{params}{trait_clauses}", self.name),
         }
     }
 }

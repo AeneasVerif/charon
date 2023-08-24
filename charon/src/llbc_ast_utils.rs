@@ -14,7 +14,7 @@ use crate::llbc_ast::{
 use crate::meta;
 use crate::meta::Meta;
 use crate::types::*;
-use crate::ullbc_ast::{fmt_call, FunDeclId, GlobalDeclId, TAB_INCR};
+use crate::ullbc_ast::{fmt_call, FunDeclId, GlobalDeclId};
 use crate::values::*;
 use macros::make_generic_in_borrows;
 use serde::ser::SerializeTupleVariant;

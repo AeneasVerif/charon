@@ -1,4 +1,4 @@
-/*pub trait BoolTrait {
+pub trait BoolTrait {
     fn get_bool(&self) -> bool;
 
     fn ret_true(&self) -> bool {
@@ -26,7 +26,7 @@ pub fn test_bool_trait_option<T>(x: Option<T>) -> bool {
 
 pub fn test_bool_trait<T: BoolTrait>(x: T) -> bool {
     x.get_bool()
-}*/
+}
 
 pub trait ToU64 {
     fn to_u64(self) -> u64;
@@ -38,7 +38,6 @@ impl ToU64 for u64 {
     }
 }
 
-/*
 impl<A: ToU64> ToU64 for (A, A) {
     fn to_u64(self) -> u64 {
         self.0.to_u64() + self.1.to_u64()
@@ -49,12 +48,12 @@ pub fn f<T: ToU64>(x: (T, T)) -> u64 {
     x.to_u64()
 }
 
-fn g<T>(x: (T, T)) -> u64
+pub fn g<T>(x: (T, T)) -> u64
 where
     (T, T): ToU64,
 {
     x.to_u64()
-}*/
+}
 
 pub fn h0(x: u64) -> u64 {
     x.to_u64()
@@ -70,15 +69,14 @@ impl<T: ToU64> ToU64 for Wrapper<T> {
     }
 }
 
-/*pub fn h1(x: Wrapper<u64>) -> u64 {
+pub fn h1(x: Wrapper<u64>) -> u64 {
     x.to_u64()
-}*/
+}
 
 pub fn h2<T: ToU64>(x: Wrapper<T>) -> u64 {
     x.to_u64()
 }
 
-/*
 pub trait ToType<T> {
     fn to_type(self) -> T;
 }
@@ -105,9 +103,7 @@ where
 pub fn h4<T1: OfTypeBis<T2>, T2: ToType<T1>>(y: T2) -> T1 {
     T1::of_type(y)
 }
-*/
 
-/*
 pub struct TestType<T>(T);
 
 impl<T: ToU64> TestType<T> {
@@ -145,4 +141,3 @@ where
         self.0.to_type()
     }
 }
-*/

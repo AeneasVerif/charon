@@ -8,6 +8,8 @@ use rustc_session::Session;
 use serde::{Serialize, Serializer};
 use std::iter::FromIterator;
 
+pub static TAB_INCR: &str = "    ";
+
 /// Our redefinition of Result - we don't care much about the I/O part.
 pub type Result<T> = std::result::Result<T, ()>;
 
