@@ -18,7 +18,7 @@ use crate::types as ty;
 use crate::types::{EGenericArgs, GenericArgs};
 use crate::types::{FieldId, VariantId};
 use crate::ullbc_ast as ast;
-use crate::ullbc_ast::FunKind;
+use crate::ullbc_ast::{FunKind, ParamsInfo};
 use crate::values as v;
 use crate::values::{Literal, ScalarValue};
 use core::convert::*;
@@ -1656,21 +1656,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
         trace!("# Output variable type:\n{}", self.format_object(&output));
 
-        let block_params_info = if self.t_ctx.get_fun_kind(def_id).is_trait_method() {
+        let parent_params_info = self.get_function_parent_params_info(def_id);
+
+        ast::FunSig {
+            generics: self.get_generics(),
+            regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
+            parent_params_info,
+            inputs,
+            output,
+        }
+    }
+
+    fn get_function_parent_params_info(&mut self, def_id: DefId) -> Option<ParamsInfo> {
+        let kind = self.t_ctx.get_fun_kind(def_id);
+        if kind.is_trait_method() {
             self.get_parent_params_info(def_id)
         } else {
             None
-        };
-
-        let sig = ast::FunSig {
-            generics: self.get_generics(),
-            regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
-            block_params_info,
-            inputs,
-            output,
-        };
-
-        sig
+        }
     }
 }
 

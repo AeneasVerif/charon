@@ -108,7 +108,7 @@ impl TraitDecl {
     {
         let def_id = ctx.format_object(self.def_id);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        let trait_clauses = fmt_where_clauses("", trait_clauses);
+        let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
         let items = if self.functions.is_empty() {
             "".to_string()
         } else {
@@ -121,7 +121,13 @@ impl TraitDecl {
             format!("\n{{\n{functions}}}")
         };
 
-        format!("trait {def_id}{generics}{trait_clauses}{items}")
+        match &self.of_trait_id {
+            None => format!("trait {def_id}{generics}{trait_clauses}{items}"),
+            Some(of_trait_id) => {
+                let of_trait_id = ctx.format_object(*of_trait_id);
+                format!("impl{generics} {of_trait_id} for {def_id}{generics}{trait_clauses}{items}")
+            }
+        }
     }
 }
 
@@ -263,7 +269,14 @@ impl FunSig {
         };
 
         // Trait clauses
-        let trait_clauses = fmt_where_clauses("", trait_clauses);
+        let trait_clauses = {
+            let num_parent_clauses = if let Some(info) = &self.parent_params_info {
+                info.num_trait_clauses
+            } else {
+                0
+            };
+            fmt_where_clauses("", num_parent_clauses, trait_clauses)
+        };
 
         // Regions hierarchy
         let regions_hierarchy: Vec<String> = self
@@ -333,7 +346,14 @@ impl<T> GFunDecl<T> {
         };
 
         // Trait clauses
-        let trait_clauses = fmt_where_clauses(tab, trait_clauses);
+        let trait_clauses = {
+            let num_parent_clauses = if let Some(info) = &self.signature.parent_params_info {
+                info.num_trait_clauses
+            } else {
+                0
+            };
+            fmt_where_clauses(tab, num_parent_clauses, trait_clauses)
+        };
 
         // Case disjunction on the presence of a body (transparent/opaque definition)
         match &self.body {
@@ -347,7 +367,9 @@ impl<T> GFunDecl<T> {
                 let body = body.fmt_with_ctx(&body_tab, ctx);
 
                 // Put everything together
-                format!("{tab}fn {name}{params}({args}){ret_ty}{trait_clauses}{{\n{body}\n{tab}}}",)
+                format!(
+                    "{tab}fn {name}{params}({args}){ret_ty}{trait_clauses}\n{tab}{{\n{body}\n{tab}}}",
+                )
             }
         }
     }

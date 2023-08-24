@@ -93,7 +93,7 @@ pub struct ParamsInfo {
 pub struct FunSig {
     pub generics: GenericParams,
     /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).
-    pub block_params_info: Option<ParamsInfo>,
+    pub parent_params_info: Option<ParamsInfo>,
     pub inputs: Vec<RTy>,
     pub output: RTy,
     /// The lifetime's hierarchy between the different regions.
@@ -193,27 +193,40 @@ pub struct GGlobalDecl<T> {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct TraitMethodName(pub String);
 
-/// A trait declaration.
+/// A trait declaration or a trait implementation.
 ///
 /// For instance:
 /// ```text
+/// // Trait declaration
 /// trait Foo {
 ///   type Bar;
 ///
 ///   fn baz(...);
+///
+///   fn test() -> bool { true } // provided method (see below)
+/// }
+///
+/// // Trait implementation
+/// impl Foo for List {
+///   type Bar = ...
+///
+///   fn baz(...) { ... }
 /// }
 /// ```
 ///
-/// We don't include the provided methods in the trait declaration -
-/// they will be translated on a per-need basis. This is important
-/// for two reasons:
+/// In case of a trait declaration, we don't include the provided methods (the methods
+/// with a default implementation): they will be translated on a per-need basis. This is
+/// important for two reasons:
 /// - this makes the trait definitions a lot smaller (the Iterator trait
-///   has *one* declared function and a ton of provided functions)
+///   has *one* declared function and more than 70 provided functions)
 /// - this is important for the external traits, whose provided methods
 ///   often use features we don't support yet
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
+    /// If this is a trait implementation, contains the id of the trait
+    /// declaration is implements.
+    pub of_trait_id: Option<TraitDeclId::Id>,
     pub name: Name,
     pub generics: GenericParams,
     // The associated types declared in the trait

@@ -27,6 +27,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         hax::get_parent_params_info(&self.hax_state, def_id).map(Self::convert_params_info)
     }
 
+    pub(crate) fn get_predicates_of(&mut self, def_id: DefId) -> hax::GenericPredicates {
+        // **IMPORTANT**:
+        // There are two functions which allow to retrieve the predicates of
+        // a definition:
+        // -
+        //self.tcx.predicates_of(def_id).sinto(&self.hax_state)
+        self.t_ctx
+            .tcx
+            .predicates_defined_on(def_id)
+            .sinto(&self.hax_state)
+    }
+
     /// This function should be called **after** we translated the generics
     /// (type parameters, regions...).
     pub(crate) fn translate_predicates_of(&mut self, def_id: DefId) {
@@ -36,17 +48,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Get the predicates
         // Note that we need to know *all* the predicates: we start
         // with the parent.
-        // TODO: use predicates_defined_on?
         match tcx.generics_of(def_id).parent {
             None => (),
             Some(parent_id) => {
-                let preds = tcx.predicates_of(parent_id).sinto(&self.hax_state);
+                let preds = self.get_predicates_of(parent_id);
                 self.translate_predicates(preds);
             }
         }
 
         // The predicates of the current definition
-        let preds = tcx.predicates_of(def_id).sinto(&self.hax_state);
+        let preds = self.get_predicates_of(def_id);
         self.translate_predicates(preds);
     }
 

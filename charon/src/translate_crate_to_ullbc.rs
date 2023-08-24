@@ -114,6 +114,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 // Sanity checks - TODO: remove?
                 translate_functions_to_ullbc::check_impl_item(impl_block);
 
+                // If this is a trait implementation, register it
+                if self.tcx.trait_id_of_impl(def_id).is_some() {
+                    let _ = self.translate_trait_decl_id(def_id);
+                }
+
                 // Explore the items
                 let hir_map = self.tcx.hir();
                 for impl_item_ref in impl_block.items {

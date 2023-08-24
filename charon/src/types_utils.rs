@@ -215,16 +215,28 @@ impl GenericParams {
     }
 }
 
-pub fn fmt_where_clauses(tab: &str, clauses: Vec<String>) -> String {
+/// [num_parent_clauses]: we store in the definitions all the clauses
+/// they have access to, which includes the clauses inherited from the parent.
+/// This can be confusing: we insert a delimiter between the inherited clauses
+/// and the local clauses.
+pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<String>) -> String {
     if clauses.is_empty() {
         "".to_string()
     } else {
-        let clauses = clauses
+        let mut clauses = clauses
             .iter()
             .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
-            .collect::<Vec<String>>()
-            .join("");
-        format!("\nwhere{clauses}\n")
+            .collect::<Vec<String>>();
+        if num_parent_clauses > 0 {
+            let delim0 = format!("\n{tab}{TAB_INCR}// Inherited clauses:");
+            let delim1 = format!("\n{tab}{TAB_INCR}// Local clauses:");
+            let local_clauses = clauses.split_off(num_parent_clauses).join("");
+            let clauses = clauses.join("");
+            format!("\nwhere{delim0}{clauses}{delim1}{local_clauses}")
+        } else {
+            let clauses = clauses.join("");
+            format!("\nwhere{clauses}")
+        }
     }
 }
 
@@ -544,7 +556,7 @@ impl TypeDecl {
         } else {
             TAB_INCR.to_string()
         };
-        let trait_clauses = fmt_where_clauses("", trait_clauses);
+        let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
 
         match &self.kind {
             TypeDeclKind::Struct(fields) => {

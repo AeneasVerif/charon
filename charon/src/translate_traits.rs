@@ -19,7 +19,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     pub(crate) fn translate_trait(&mut self, rust_id: DefId) {
         let def_id = self.translate_trait_decl_id(rust_id);
-
+        let tcx = self.tcx;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
@@ -32,17 +32,35 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         trace!("- trait id: {:?}\n- trait name: {:?}", rust_id, name);
 
+        // Check if it is a trait decl or a trait impl, and retrieve the id
+        // of the relevant trait.
+        let of_trait_rust_id = if let rustc_hir::def::DefKind::Impl { .. } = tcx.def_kind(rust_id) {
+            Some(tcx.trait_id_of_impl(rust_id).unwrap())
+        } else {
+            None
+        };
+        let of_trait_id = of_trait_rust_id.map(|x| bt_ctx.translate_trait_decl_id(x));
+
         // Explore the associated items
         let tcx = bt_ctx.t_ctx.tcx;
 
-        // Retrieve the provided methods. The provided methods
-        // are the methods with a default implementation.
-        // We do this to filter the provided methods from the associated
-        // items - see the documentation of [TraitDecl] for the full details.
-        let provided_methods: HashSet<DefId> = tcx
-            .provided_trait_methods(rust_id)
-            .map(|assoc| assoc.def_id)
-            .collect();
+        // Retrieve the provided methods of the trait *declaration* (i.e.,
+        // the provided methods of the current item, if it is a trait declaration,
+        // otherwise the provided methods of the trait associated to the current
+        // trait implementation).
+        // The provided methods are the methods with a default implementation.  We do this
+        // to filter the provided methods from the associated items - see the
+        // documentation of [TraitDecl] for the full details.
+        let provided_methods: HashSet<DefId> = {
+            let trait_id = if let Some(id) = of_trait_rust_id {
+                id
+            } else {
+                rust_id
+            };
+            tcx.provided_trait_methods(trait_id)
+                .map(|assoc| assoc.def_id)
+                .collect()
+        };
 
         // Retrieve the associated items
         let associated_items = tcx.associated_items(rust_id);
@@ -73,6 +91,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let trait_decl = ast::TraitDecl {
             def_id,
             name,
+            of_trait_id,
             generics: bt_ctx.get_generics(),
             functions,
         };
