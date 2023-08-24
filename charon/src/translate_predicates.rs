@@ -65,7 +65,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     assert!(!trait_pred.is_const);
 
                     let trait_ref = &trait_pred.trait_ref;
-                    let trait_id = self.translate_trait_id(trait_ref.def_id.rust_def_id.unwrap());
+                    let trait_id =
+                        self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
                     let (regions, types, const_generics) = self
                         .translate_substs(None, &trait_ref.generic_args)
                         .unwrap();
@@ -134,7 +135,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         match impl_source {
             ImplSource::UserDefined(data) => {
                 let def_id = data.impl_def_id.rust_def_id.unwrap();
-                let trait_id = self.translate_trait_id(def_id);
+                let trait_id = self.translate_trait_decl_id(def_id);
                 let trait_id = TraitInstanceId::Trait(trait_id);
 
                 let generics = self
@@ -148,7 +149,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_ref = &trait_ref.value;
 
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
-                let trait_id = self.translate_trait_id(def_id);
+                let trait_id = self.translate_trait_decl_id(def_id);
 
                 // Retrieve the arguments
                 let generics = self
@@ -229,7 +230,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 assert!(trait_ref.bound_vars.is_empty());
                 let trait_ref = &trait_ref.value;
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
-                let trait_id = self.translate_trait_id(def_id);
+                let trait_id = self.translate_trait_decl_id(def_id);
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
                 let generics = self
                     .translate_substs_and_trait_refs(None, &trait_ref.generic_args, traits)
@@ -238,7 +239,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             ImplSource::AutoImpl(data) => {
                 let def_id = data.trait_def_id.rust_def_id.unwrap();
-                let trait_id = self.translate_trait_id(def_id);
+                let trait_id = self.translate_trait_decl_id(def_id);
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
 
                 TraitRef {

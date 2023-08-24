@@ -82,7 +82,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 let _ = self.translate_fun_decl_id(def_id);
             }
             ItemKind::Trait(..) => {
-                let _ = self.translate_trait_id(def_id);
+                let _ = self.translate_trait_decl_id(def_id);
                 // We don't need to explore the associated items: we will
                 // explore them when translating the trait
             }

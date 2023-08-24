@@ -18,6 +18,7 @@ use crate::types as ty;
 use crate::types::{EGenericArgs, GenericArgs};
 use crate::types::{FieldId, VariantId};
 use crate::ullbc_ast as ast;
+use crate::ullbc_ast::FunKind;
 use crate::values as v;
 use crate::values::{Literal, ScalarValue};
 use core::convert::*;
@@ -38,123 +39,6 @@ fn translate_variant_id(id: hax::VariantIdx) -> VariantId::Id {
 fn translate_field_id(id: hax::FieldIdx) -> FieldId::Id {
     use rustc_index::Idx;
     FieldId::Id::new(id.index())
-}
-
-/// Function information.
-///
-/// Example:
-/// ========
-/// ```text
-/// trait Foo {
-///   fn bar(x : u32) -> u32; // trait method: declaration
-///
-///   fn baz(x : bool) -> bool { x } // trait method: provided
-/// }
-///
-/// impl Foo for ... {
-///   fn bar(x : u32) -> u32 { x } // trait method: implementation
-/// }
-///
-/// fn test(...) { ... } // regular
-///
-/// impl Type {
-///   fn test(...) { ... } // regular
-/// }
-/// ```
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(crate) enum FunctionKind {
-    /// A "normal" function
-    Regular,
-    /// Trait method implementation
-    TraitMethodImpl {
-        /// True if this function re-implements a provided method
-        provided: bool,
-    },
-    /// Trait method declaration
-    TraitMethodDecl,
-    /// Trait method provided function (method with default implementation)
-    TraitMethodProvided,
-}
-
-impl FunctionKind {
-    pub(crate) fn is_trait_method(&self) -> bool {
-        !(*self == FunctionKind::Regular)
-    }
-}
-
-pub(crate) fn get_function_kind(tcx: TyCtxt, rust_id: DefId) -> FunctionKind {
-    trace!("rust_id: {:?}", rust_id);
-    if let Some(assoc) = tcx.opt_associated_item(rust_id) {
-        match assoc.container {
-            mir_ty::AssocItemContainer::ImplContainer => {
-                // This method is defined in an impl block.
-                // It can be a regular function in an impl block or an implementation
-                // a trait method.
-                // Ex.:
-                // ====
-                // ```
-                // impl<T> List<T> {
-                //   fn new() -> Self { ... } <- implementation
-                // }
-                //
-                // impl Foo for Bar {
-                //   fn baz(...) { ... } // <- implementation of a trait method
-                // }
-                // ```
-
-                // Check if there is a trait item (if yes, it is a trait method
-                // implementation, if no it is a regular function)
-                match assoc.trait_item_def_id {
-                    None => FunctionKind::Regular,
-                    Some(trait_id) => {
-                        // Check if this implementation reimplements a provided method.
-                        // We do so by retrieving the def id of the method which is
-                        // reimplemented, and checking its kind.
-                        let provided = match get_function_kind(tcx, trait_id) {
-                            FunctionKind::TraitMethodDecl => false,
-                            FunctionKind::TraitMethodProvided => true,
-                            FunctionKind::Regular | FunctionKind::TraitMethodImpl { .. } => {
-                                unreachable!()
-                            }
-                        };
-
-                        FunctionKind::TraitMethodImpl { provided }
-                    }
-                }
-            }
-            mir_ty::AssocItemContainer::TraitContainer => {
-                // This method is the *declaration* of a trait method
-                // Ex.:
-                // ====
-                // ```
-                // trait Foo {
-                //   fn baz(...); // <- declaration of a trait method
-                // }
-                // ```
-
-                // Yet, this could be a default method implementation, in which
-                // case there is a body: we need to check that.
-                // First, lookup the trait the method belongs to.
-                let tr = tcx.trait_of_item(rust_id).unwrap();
-
-                // Then, retrieve the provided methods. The provided methods
-                // are the methods with a default implementation.
-                let provided_methods: Vec<DefId> = tcx
-                    .provided_trait_methods(tr)
-                    .map(|assoc| assoc.def_id)
-                    .collect();
-
-                // Check if the method is inside
-                if provided_methods.contains(&rust_id) {
-                    FunctionKind::TraitMethodProvided
-                } else {
-                    FunctionKind::TraitMethodDecl
-                }
-            }
-        }
-    } else {
-        FunctionKind::Regular
-    }
 }
 
 /// Translate a `BorrowKind`
@@ -407,6 +291,107 @@ pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
     assert!(impl_item.defaultness == Defaultness::Final);
     // Note sure what this is about
     assert!(impl_item.constness == Constness::NotConst);
+}
+
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+    pub(crate) fn get_fun_kind(&mut self, rust_id: DefId) -> FunKind {
+        trace!("rust_id: {:?}", rust_id);
+        let tcx = self.tcx;
+        if let Some(assoc) = tcx.opt_associated_item(rust_id) {
+            match assoc.container {
+                mir_ty::AssocItemContainer::ImplContainer => {
+                    // This method is defined in an impl block.
+                    // It can be a regular function in an impl block or a trait
+                    // method implementation.
+                    //
+                    // Ex.:
+                    // ====
+                    // ```
+                    // impl<T> List<T> {
+                    //   fn new() -> Self { ... } <- implementation
+                    // }
+                    //
+                    // impl Foo for Bar {
+                    //   fn baz(...) { ... } // <- implementation of a trait method
+                    // }
+                    // ```
+
+                    // Check if there is a trait item (if yes, it is a trait method
+                    // implementation, if no it is a regular function).
+                    // Remark: this trait item is the id of the item associated
+                    // in the trait. For instance:
+                    // ```
+                    // trait Foo {
+                    //   fn bar(); // Id: Foo_bar
+                    // }
+                    // ```
+                    //
+                    // impl Foo for List {
+                    //   fn bar() { ... } // trait_item_def_id: Some(Foo_bar)
+                    // }
+                    match assoc.trait_item_def_id {
+                        None => FunKind::Regular,
+                        Some(trait_method_id) => {
+                            let trait_id = tcx.trait_of_item(trait_method_id).unwrap();
+                            let trait_id = self.translate_trait_decl_id(trait_id);
+                            let method_name = self.translate_trait_method_name(trait_method_id);
+
+                            // Check if the current function implements a provided method.
+                            // We do so by retrieving the def id of the method which is
+                            // implemented, and checking its kind.
+                            let provided = match self.get_fun_kind(trait_method_id) {
+                                FunKind::TraitMethodDecl(..) => false,
+                                FunKind::TraitMethodProvided(..) => true,
+                                FunKind::Regular | FunKind::TraitMethodImpl { .. } => {
+                                    unreachable!()
+                                }
+                            };
+
+                            FunKind::TraitMethodImpl {
+                                trait_id,
+                                method_name,
+                                provided,
+                            }
+                        }
+                    }
+                }
+                mir_ty::AssocItemContainer::TraitContainer => {
+                    // This method is the *declaration* of a trait method
+                    // Ex.:
+                    // ====
+                    // ```
+                    // trait Foo {
+                    //   fn baz(...); // <- declaration of a trait method
+                    // }
+                    // ```
+
+                    // Yet, this could be a default method implementation, in which
+                    // case there is a body: we need to check that.
+                    // First, lookup the trait the method belongs to.
+                    let trait_id = tcx.trait_of_item(rust_id).unwrap();
+
+                    // Then, retrieve the provided methods. The provided methods
+                    // are the methods with a default implementation.
+                    let provided_methods: Vec<DefId> = tcx
+                        .provided_trait_methods(trait_id)
+                        .map(|assoc| assoc.def_id)
+                        .collect();
+
+                    let trait_id = self.translate_trait_decl_id(trait_id);
+                    let method_name = self.translate_trait_method_name(rust_id);
+
+                    // Check if the method is inside
+                    if provided_methods.contains(&rust_id) {
+                        FunKind::TraitMethodProvided(trait_id, method_name)
+                    } else {
+                        FunKind::TraitMethodDecl(trait_id, method_name)
+                    }
+                }
+            }
+        } else {
+            FunKind::Regular
+        }
+    }
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
@@ -1671,7 +1656,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
         trace!("# Output variable type:\n{}", self.format_object(&output));
 
-        let block_params_info = if get_function_kind(tcx, def_id).is_trait_method() {
+        let block_params_info = if self.t_ctx.get_fun_kind(def_id).is_trait_method() {
             self.get_parent_params_info(def_id)
         } else {
             None
@@ -1710,19 +1695,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // that we put in the translation context).
         trace!("Translating function signature");
         let signature = bt_ctx.translate_function_signature(rust_id);
-        let tcx = bt_ctx.t_ctx.tcx;
 
         // Check if the type is opaque or transparent
         let is_local = rust_id.is_local();
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
-        // TODO: it might be a default implementation. The presence of a body is
-        // given by TraitItemKind.
-        let is_trait_method_decl = match get_function_kind(tcx, rust_id) {
-            FunctionKind::Regular
-            | FunctionKind::TraitMethodImpl { .. }
-            | FunctionKind::TraitMethodProvided => false,
-            FunctionKind::TraitMethodDecl => true,
+        let kind = bt_ctx.t_ctx.get_fun_kind(rust_id);
+        let is_trait_method_decl = match &kind {
+            FunKind::Regular
+            | FunKind::TraitMethodImpl { .. }
+            | FunKind::TraitMethodProvided(..) => false,
+            FunKind::TraitMethodDecl(..) => true,
         };
         let body = if !is_transparent || !is_local || is_trait_method_decl {
             Option::None
@@ -1742,6 +1725,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 def_id,
                 name,
                 signature,
+                kind,
                 body,
             },
         );

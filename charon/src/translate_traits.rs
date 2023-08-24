@@ -18,7 +18,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_trait(&mut self, rust_id: DefId) {
-        let def_id = self.translate_trait_id(rust_id);
+        let def_id = self.translate_trait_decl_id(rust_id);
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 

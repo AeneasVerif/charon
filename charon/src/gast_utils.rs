@@ -87,6 +87,12 @@ impl Var {
     }
 }
 
+impl FunKind {
+    pub(crate) fn is_trait_method(&self) -> bool {
+        matches!(self, FunKind::Regular)
+    }
+}
+
 impl TraitDecl {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where

@@ -378,7 +378,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.register_fun_decl_id(id)
     }
 
-    pub(crate) fn translate_trait_id(&mut self, id: DefId) -> ast::TraitDeclId::Id {
+    pub(crate) fn translate_trait_decl_id(&mut self, id: DefId) -> ast::TraitDeclId::Id {
         self.register_trait_id(id)
     }
 
@@ -468,8 +468,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_global_decl_id(id)
     }
 
-    pub(crate) fn translate_trait_id(&mut self, id: DefId) -> ast::TraitDeclId::Id {
-        self.t_ctx.translate_trait_id(id)
+    pub(crate) fn translate_trait_decl_id(&mut self, id: DefId) -> ast::TraitDeclId::Id {
+        self.t_ctx.translate_trait_decl_id(id)
     }
 
     pub(crate) fn get_region_from_rust(&self, r: hax::Region) -> Option<ty::RegionVarId::Id> {

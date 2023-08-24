@@ -1841,6 +1841,7 @@ fn translate_function(
         meta: src_def.meta,
         name: src_def.name.clone(),
         signature: src_def.signature.clone(),
+        kind: src_def.kind.clone(),
         body: src_def
             .body
             .as_ref()

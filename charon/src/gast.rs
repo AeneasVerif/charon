@@ -121,6 +121,46 @@ pub struct GExprBody<T> {
     pub body: T,
 }
 
+/// Function kind: "regular" function, trait method declaration, etc.
+///
+/// Example:
+/// ========
+/// ```text
+/// trait Foo {
+///   fn bar(x : u32) -> u32; // trait method: declaration
+///
+///   fn baz(x : bool) -> bool { x } // trait method: provided
+/// }
+///
+/// impl Foo for ... {
+///   fn bar(x : u32) -> u32 { x } // trait method: implementation
+/// }
+///
+/// fn test(...) { ... } // regular
+///
+/// impl Type {
+///   fn test(...) { ... } // regular
+/// }
+/// ```
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub enum FunKind {
+    /// A "normal" function
+    Regular,
+    /// Trait method implementation
+    TraitMethodImpl {
+        /// The id of the trait decl/impl the method belongs to
+        trait_id: TraitDeclId::Id,
+        method_name: TraitMethodName,
+        /// True if this function re-implements a provided method
+        provided: bool,
+    },
+    /// Trait method declaration
+    TraitMethodDecl(TraitDeclId::Id, TraitMethodName),
+    /// Trait method provided function (method in a trait declaration with a
+    /// default implementation)
+    TraitMethodProvided(TraitDeclId::Id, TraitMethodName),
+}
+
 /// A function definition
 #[derive(Debug, Clone, Serialize)]
 pub struct GFunDecl<T> {
@@ -131,6 +171,8 @@ pub struct GFunDecl<T> {
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,
+    /// The function kind: "regular" function, trait method declaration, etc.
+    pub kind: FunKind,
     /// The function body, in case the function is not opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.
@@ -148,7 +190,7 @@ pub struct GGlobalDecl<T> {
     pub body: Option<GExprBody<T>>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct TraitMethodName(pub String);
 
 /// A trait declaration.
