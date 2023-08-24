@@ -224,9 +224,18 @@ pub struct TraitMethodName(pub String);
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
-    /// If this is a trait implementation, contains the id of the trait
-    /// declaration is implements.
-    pub of_trait_id: Option<TraitDeclId::Id>,
+    /// If this is a trait implementation, the information about the implemented trait.
+    /// Note that:
+    /// - the id is necessarily of kind [TraitInstanceId::Trait]
+    /// - the trait refs in the generics are necessarily empty
+    ///
+    /// About the generics, if we write:
+    /// ```text
+    /// impl Foo<bool> for String { ... }
+    /// ```
+    ///
+    /// The substitution is: `[String, bool]`.
+    pub impl_trait: Option<RTraitRef>,
     pub name: Name,
     pub generics: GenericParams,
     // The associated types declared in the trait

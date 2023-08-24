@@ -1172,7 +1172,7 @@ impl<'tcx, 'ctx> Formatter<&gast::TraitDecl> for TransCtx<'tcx, 'ctx> {
         // TOOD: update once the trait declaration is complete
         let formatter = BodyFormatCtx {
             t_ctx: self,
-            generics: &GenericParams::empty(),
+            generics: &def.generics,
             vars: &v::VarId::Vector::new(),
             trait_clauses: &ty::TraitClauseId::Vector::new(),
         };

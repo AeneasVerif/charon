@@ -121,11 +121,11 @@ impl TraitDecl {
             format!("\n{{\n{functions}}}")
         };
 
-        match &self.of_trait_id {
+        match &self.impl_trait {
             None => format!("trait {def_id}{generics}{trait_clauses}{items}"),
-            Some(of_trait_id) => {
-                let of_trait_id = ctx.format_object(*of_trait_id);
-                format!("impl{generics} {of_trait_id} for {def_id}{generics}{trait_clauses}{items}")
+            Some(impl_trait) => {
+                let impl_trait = impl_trait.fmt_with_ctx(ctx);
+                format!("impl{generics} {def_id}{generics} : {impl_trait}{trait_clauses}{items}")
             }
         }
     }

@@ -81,6 +81,12 @@ pub trait ToType<T> {
     fn to_type(self) -> T;
 }
 
+impl ToType<bool> for u64 {
+    fn to_type(self) -> bool {
+        self > 0
+    }
+}
+
 pub trait OfType {
     fn of_type<T: ToType<Self>>(x: T) -> Self
     where

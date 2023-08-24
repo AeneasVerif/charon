@@ -426,6 +426,19 @@ impl TraitClause {
     }
 }
 
+impl TraitInstanceId {
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: Formatter<TraitDeclId::Id> + Formatter<TraitClauseId::Id>,
+    {
+        match self {
+            TraitInstanceId::Trait(id) => ctx.format_object(*id),
+            TraitInstanceId::Clause(id) => ctx.format_object(*id),
+            TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
+        }
+    }
+}
+
 impl<R> TraitRef<R> {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
@@ -438,11 +451,7 @@ impl<R> TraitRef<R> {
             + Formatter<TraitDeclId::Id>
             + Formatter<TraitClauseId::Id>,
     {
-        let trait_id = match &self.trait_id {
-            TraitInstanceId::Trait(id) => ctx.format_object(*id),
-            TraitInstanceId::Clause(id) => ctx.format_object(*id),
-            TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
-        };
+        let trait_id = self.trait_id.fmt_with_ctx(ctx);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         format!("{trait_id}{generics}")
     }

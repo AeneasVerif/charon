@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::gast::TraitMethodName;
+use crate::gast::{GenericArgs, TraitInstanceId, TraitMethodName, TraitRef};
 use crate::names_utils;
 use crate::translate_ctx::*;
 use crate::ullbc_ast as ast;
@@ -31,15 +31,32 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.translate_predicates_of(rust_id);
 
         trace!("- trait id: {:?}\n- trait name: {:?}", rust_id, name);
+        trace!("Trait predicates: {:?}", tcx.predicates_of(rust_id));
 
-        // Check if it is a trait decl or a trait impl, and retrieve the id
-        // of the relevant trait.
-        let of_trait_rust_id = if let rustc_hir::def::DefKind::Impl { .. } = tcx.def_kind(rust_id) {
-            Some(tcx.trait_id_of_impl(rust_id).unwrap())
-        } else {
-            None
-        };
-        let of_trait_id = of_trait_rust_id.map(|x| bt_ctx.translate_trait_decl_id(x));
+        // Check if it is a trait decl or a trait impl, and if it is a trait
+        // impl retrieve the information about the implemented trait.
+        let (impl_trait_rust_id, impl_trait) =
+            if let rustc_hir::def::DefKind::Impl { .. } = tcx.def_kind(rust_id) {
+                let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
+                let trait_id = bt_ctx.translate_trait_decl_id(trait_rust_id);
+                let trait_id = TraitInstanceId::Trait(trait_id);
+                let rustc_middle::ty::ImplSubject::Trait(trait_ref) =
+                    tcx.impl_subject(rust_id).subst_identity() else { unreachable!() };
+                let trait_ref = trait_ref.sinto(&bt_ctx.hax_state);
+                let (regions, types, const_generics) = bt_ctx
+                    .translate_substs(None, &trait_ref.generic_args)
+                    .unwrap();
+                let generics = GenericArgs {
+                    regions,
+                    types,
+                    const_generics,
+                    trait_refs: Vec::new(),
+                };
+                let trait_ref = TraitRef { trait_id, generics };
+                (Some(trait_rust_id), Some(trait_ref))
+            } else {
+                (None, None)
+            };
 
         // Explore the associated items
         let tcx = bt_ctx.t_ctx.tcx;
@@ -52,7 +69,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // to filter the provided methods from the associated items - see the
         // documentation of [TraitDecl] for the full details.
         let provided_methods: HashSet<DefId> = {
-            let trait_id = if let Some(id) = of_trait_rust_id {
+            let trait_id = if let Some(id) = impl_trait_rust_id {
                 id
             } else {
                 rust_id
@@ -91,7 +108,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let trait_decl = ast::TraitDecl {
             def_id,
             name,
-            of_trait_id,
+            impl_trait,
             generics: bt_ctx.get_generics(),
             functions,
         };
