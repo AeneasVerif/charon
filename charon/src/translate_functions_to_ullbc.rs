@@ -1669,10 +1669,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     fn get_function_parent_params_info(&mut self, def_id: DefId) -> Option<ParamsInfo> {
         let kind = self.t_ctx.get_fun_kind(def_id);
-        if kind.is_trait_method() {
-            self.get_parent_params_info(def_id)
-        } else {
-            None
+        match kind {
+            FunKind::Regular => None,
+            FunKind::TraitMethodImpl { .. }
+            | FunKind::TraitMethodDecl { .. }
+            | FunKind::TraitMethodProvided { .. } => {
+                Some(self.get_parent_params_info(def_id).unwrap())
+            }
         }
     }
 }

@@ -5,7 +5,7 @@ use crate::assumed::get_name_from_type_id;
 use crate::common::TAB_INCR;
 use crate::formatter::Formatter;
 use crate::types::*;
-use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDeclId};
+use crate::ullbc_ast::{FunDeclId, GlobalDeclId, ParamsInfo, TraitDeclId};
 use crate::values::{DummyFormatter, Literal};
 use hax_frontend_exporter as hax;
 use im::{HashMap, OrdSet};
@@ -228,15 +228,38 @@ pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<Stri
             .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
             .collect::<Vec<String>>();
         if num_parent_clauses > 0 {
-            let delim0 = format!("\n{tab}{TAB_INCR}// Inherited clauses:");
-            let delim1 = format!("\n{tab}{TAB_INCR}// Local clauses:");
-            let local_clauses = clauses.split_off(num_parent_clauses).join("");
+            let local_clauses = clauses.split_off(num_parent_clauses);
+
+            let delim1 = if local_clauses.is_empty() {
+                "".to_string()
+            } else {
+                format!("\n{tab}{TAB_INCR}// Local clauses:")
+            };
+
+            let delim0 = if clauses.is_empty() {
+                "".to_string()
+            } else {
+                format!("\n{tab}{TAB_INCR}// Inherited clauses:")
+            };
+
             let clauses = clauses.join("");
+            let local_clauses = local_clauses.join("");
             format!("\nwhere{delim0}{clauses}{delim1}{local_clauses}")
         } else {
             let clauses = clauses.join("");
             format!("\nwhere{clauses}")
         }
+    }
+}
+
+pub fn fmt_where_clauses_with_params_info(
+    tab: &str,
+    info: &Option<ParamsInfo>,
+    clauses: Vec<String>,
+) -> String {
+    match info {
+        None => fmt_where_clauses(tab, 0, clauses),
+        Some(info) => fmt_where_clauses(tab, info.num_trait_clauses, clauses),
     }
 }
 

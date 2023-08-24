@@ -31,8 +31,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // **IMPORTANT**:
         // There are two functions which allow to retrieve the predicates of
         // a definition:
-        // -
-        //self.tcx.predicates_of(def_id).sinto(&self.hax_state)
+        // - [TyCtxt::predicates_of]
+        // - [TyCtxt::predicates_defined_on]
+        // If we use [TyCtxt::predicates_of] on a trait `Foo`, we get an
+        // additional predicate `Self : Foo` (i.e., the trait requires itself),
+        // which is not what we want.
         self.t_ctx
             .tcx
             .predicates_defined_on(def_id)

@@ -269,14 +269,8 @@ impl FunSig {
         };
 
         // Trait clauses
-        let trait_clauses = {
-            let num_parent_clauses = if let Some(info) = &self.parent_params_info {
-                info.num_trait_clauses
-            } else {
-                0
-            };
-            fmt_where_clauses("", num_parent_clauses, trait_clauses)
-        };
+        let trait_clauses =
+            fmt_where_clauses_with_params_info("", &self.parent_params_info, trait_clauses);
 
         // Regions hierarchy
         let regions_hierarchy: Vec<String> = self
@@ -346,14 +340,11 @@ impl<T> GFunDecl<T> {
         };
 
         // Trait clauses
-        let trait_clauses = {
-            let num_parent_clauses = if let Some(info) = &self.signature.parent_params_info {
-                info.num_trait_clauses
-            } else {
-                0
-            };
-            fmt_where_clauses(tab, num_parent_clauses, trait_clauses)
-        };
+        let trait_clauses = fmt_where_clauses_with_params_info(
+            tab,
+            &self.signature.parent_params_info,
+            trait_clauses,
+        );
 
         // Case disjunction on the presence of a body (transparent/opaque definition)
         match &self.body {
