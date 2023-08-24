@@ -118,8 +118,9 @@ impl GenericParams {
             regions,
             types,
             const_generics,
+            trait_clauses,
         } = self;
-        regions.len() + types.len() + const_generics.len()
+        regions.len() + types.len() + const_generics.len() + trait_clauses.len()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -131,11 +132,22 @@ impl GenericParams {
             regions: RegionVarId::Vector::new(),
             types: TypeVarId::Vector::new(),
             const_generics: ConstGenericVarId::Vector::new(),
+            trait_clauses: TraitClauseId::Vector::new(),
         }
     }
 
     /// Not naming this "to_string" on purpose: this can be confusing.
-    pub fn format(&self) -> String {
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: Formatter<TypeVarId::Id>
+            + Formatter<&'a Region<RegionVarId::Id>>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitDeclId::Id>
+            + Formatter<TraitClauseId::Id>,
+    {
         if self.is_empty() {
             "".to_string()
         } else {
@@ -144,6 +156,7 @@ impl GenericParams {
                 regions,
                 types,
                 const_generics,
+                trait_clauses,
             } = self;
             for x in regions {
                 params.push(x.to_string());
@@ -153,6 +166,9 @@ impl GenericParams {
             }
             for x in const_generics {
                 params.push(x.to_string());
+            }
+            for x in trait_clauses {
+                params.push(x.fmt_with_ctx(ctx));
             }
             format!("<{}>", params.join(", "))
         }
@@ -165,8 +181,9 @@ impl<R> GenericArgs<R> {
             regions,
             types,
             const_generics,
+            trait_refs,
         } = self;
-        regions.len() + types.len() + const_generics.len()
+        regions.len() + types.len() + const_generics.len() + trait_refs.len()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -178,6 +195,7 @@ impl<R> GenericArgs<R> {
             regions: Vec::new(),
             types: Vec::new(),
             const_generics: Vec::new(),
+            trait_refs: Vec::new(),
         }
     }
 
@@ -186,15 +204,55 @@ impl<R> GenericArgs<R> {
             regions: Vec::new(),
             types,
             const_generics: Vec::new(),
+            trait_refs: Vec::new(),
         }
     }
 
-    pub fn new(regions: Vec<R>, types: Vec<Ty<R>>, const_generics: Vec<ConstGeneric>) -> Self {
+    pub fn new(
+        regions: Vec<R>,
+        types: Vec<Ty<R>>,
+        const_generics: Vec<ConstGeneric>,
+        trait_refs: Vec<TraitRef<R>>,
+    ) -> Self {
         GenericArgs {
             regions,
             types,
             const_generics,
+            trait_refs,
         }
+    }
+
+    pub(crate) fn fmt_with_ctx_no_brackets<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: Formatter<TypeVarId::Id>
+            + Formatter<&'a R>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitDeclId::Id>
+            + Formatter<TraitClauseId::Id>,
+    {
+        let mut params = Vec::new();
+        let GenericArgs {
+            regions,
+            types,
+            const_generics,
+            trait_refs,
+        } = self;
+        for x in regions {
+            params.push(ctx.format_object(x));
+        }
+        for x in types {
+            params.push(x.fmt_with_ctx(ctx));
+        }
+        for x in const_generics {
+            params.push(x.fmt_with_ctx(ctx));
+        }
+        for x in trait_refs {
+            params.push(x.fmt_with_ctx(ctx))
+        }
+        params.join(", ")
     }
 
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
@@ -211,23 +269,49 @@ impl<R> GenericArgs<R> {
         if self.is_empty() {
             "".to_string()
         } else {
-            let mut params = Vec::new();
-            let GenericArgs {
-                regions,
-                types,
-                const_generics,
-            } = self;
-            for x in regions {
-                params.push(ctx.format_object(x));
-            }
-            for x in types {
-                params.push(x.fmt_with_ctx(ctx));
-            }
-            for x in const_generics {
-                params.push(x.fmt_with_ctx(ctx));
-            }
-            format!("<{}>", params.join(", "))
+            format!("<{}>", self.fmt_with_ctx_no_brackets(ctx),)
         }
+    }
+}
+
+impl TraitClause {
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: Formatter<TypeVarId::Id>
+            + Formatter<&'a Region<RegionVarId::Id>>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitDeclId::Id>
+            + Formatter<TraitClauseId::Id>,
+    {
+        let clause_id = ctx.format_object(self.clause_id);
+        let trait_id = ctx.format_object(self.trait_id);
+        let generics = self.generics.fmt_with_ctx(ctx);
+        format!("[{clause_id}]: {trait_id}{generics}")
+    }
+}
+
+impl<R> TraitRef<R> {
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: Formatter<TypeVarId::Id>
+            + Formatter<&'a R>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitDeclId::Id>
+            + Formatter<TraitClauseId::Id>,
+    {
+        let trait_id = match &self.trait_id {
+            TraitInstanceId::Trait(id) => ctx.format_object(*id),
+            TraitInstanceId::Clause(id) => ctx.format_object(*id),
+            TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
+        };
+        let generics = self.generics.fmt_with_ctx(ctx);
+        format!("{trait_id}{generics}")
     }
 }
 
@@ -349,10 +433,13 @@ impl TypeDecl {
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>,
+            + Formatter<TraitClauseId::Id>
+            + Formatter<TraitDeclId::Id>,
     {
-        let params = self.generics.format();
+        let params = self.generics.fmt_with_ctx(ctx);
 
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
@@ -394,7 +481,10 @@ impl Variant {
             + Formatter<&'a Region<RegionVarId::Id>>
             + Formatter<TypeDeclId::Id>
             + Formatter<ConstGenericVarId::Id>
-            + Formatter<GlobalDeclId::Id>,
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitClauseId::Id>
+            + Formatter<TraitDeclId::Id>,
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
@@ -410,7 +500,10 @@ impl Field {
             + Formatter<&'a Region<RegionVarId::Id>>
             + Formatter<TypeDeclId::Id>
             + Formatter<ConstGenericVarId::Id>
-            + Formatter<GlobalDeclId::Id>,
+            + Formatter<FunDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<TraitClauseId::Id>
+            + Formatter<TraitDeclId::Id>,
     {
         match &self.name {
             Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
@@ -678,37 +771,23 @@ impl<R> Ty<R> {
         T: Formatter<ConstGenericVarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
+            + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
-            + Formatter<&'a R>,
+            + Formatter<&'a R>
+            + Formatter<TraitClauseId::Id>
+            + Formatter<TraitDeclId::Id>,
     {
         match self {
-            Ty::Adt(id, args) => {
+            Ty::Adt(id, generics) => {
                 let adt_ident = id.fmt_with_ctx(ctx);
 
-                let num_args = args.len();
-
-                let GenericArgs {
-                    regions,
-                    types,
-                    const_generics,
-                } = args;
-                let regions: Vec<String> = regions.iter().map(|r| ctx.format_object(r)).collect();
-                let mut types: Vec<String> = types.iter().map(|ty| ty.fmt_with_ctx(ctx)).collect();
-                let mut cgs: Vec<String> = const_generics
-                    .iter()
-                    .map(|cg| cg.fmt_with_ctx(ctx))
-                    .collect();
-                let mut all_params = regions;
-                all_params.append(&mut types);
-                all_params.append(&mut cgs);
-                let all_params = all_params.join(", ");
-
                 if id.is_tuple() {
-                    format!("({all_params})")
-                } else if num_args > 0 {
-                    format!("{adt_ident}<{all_params}>")
+                    assert!(generics.trait_refs.is_empty());
+                    let generics = generics.fmt_with_ctx_no_brackets(ctx);
+                    format!("({generics})")
                 } else {
-                    adt_ident
+                    let generics = generics.fmt_with_ctx(ctx);
+                    format!("{adt_ident}{generics}")
                 }
             }
             Ty::TypeVar(id) => ctx.format_object(*id),
@@ -820,6 +899,21 @@ impl std::string::ToString for Ty<ErasedRegion> {
     }
 }
 
+impl<R: Eq + Clone> TraitRef<R> {
+    pub fn substitute<R1: Eq>(
+        &self,
+        rsubst: &dyn Fn(&R) -> R1,
+        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
+        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
+    ) -> TraitRef<R1> {
+        let generics = self.generics.substitute(rsubst, tsubst, cgsubst);
+        TraitRef {
+            trait_id: self.trait_id.clone(),
+            generics,
+        }
+    }
+}
+
 impl<R: Eq + Clone> GenericArgs<R> {
     pub fn substitute<R1: Eq>(
         &self,
@@ -831,6 +925,7 @@ impl<R: Eq + Clone> GenericArgs<R> {
             regions,
             types,
             const_generics,
+            trait_refs,
         } = self;
         let regions = Ty::substitute_regions(regions, rsubst);
         let types = types
@@ -841,10 +936,15 @@ impl<R: Eq + Clone> GenericArgs<R> {
             .iter()
             .map(|cg| cg.substitute(cgsubst))
             .collect();
+        let trait_refs = trait_refs
+            .iter()
+            .map(|x| x.substitute(rsubst, tsubst, cgsubst))
+            .collect();
         GenericArgs {
             regions,
             types,
             const_generics,
+            trait_refs,
         }
     }
 }
@@ -1333,6 +1433,35 @@ pub trait TypeVisitor {
     fn visit_const_generic_var_id(&mut self, _: &ConstGenericVarId::Id) {}
 
     fn visit_literal(&mut self, _: &Literal) {}
+
+    fn visit_trait_ref<R>(&mut self, tr: &TraitRef<R>) {
+        let TraitRef {
+            trait_id,
+            generics,
+        } = tr;
+        self.visit_trait_instance_id(trait_id);
+        // We ignore the regions, which are erased
+        for t in &generics.types {
+            self.visit_ty(t);
+        }
+        for cg in &generics.const_generics {
+            self.visit_const_generic(cg);
+        }
+        for t in &generics.trait_refs {
+            self.visit_trait_ref(t);
+        }
+    }
+
+    fn visit_trait_decl_id(&mut self, _: &TraitDeclId::Id) {}
+    fn visit_trait_clause_id(&mut self, _: &TraitClauseId::Id) {}
+
+    fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
+        match id {
+            TraitInstanceId::Trait(id) => self.visit_trait_decl_id(id),
+            TraitInstanceId::Clause(id) => self.visit_trait_clause_id(id),
+            TraitInstanceId::BuiltinOrAuto(id) => self.visit_trait_decl_id(id),
+        }
+    }
 }
 
 } // make_generic_in_borrows

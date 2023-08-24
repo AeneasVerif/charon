@@ -29,9 +29,7 @@ use rustc_middle::mir::START_BLOCK;
 use rustc_middle::ty as mir_ty;
 use rustc_middle::ty::{TyCtxt, TyKind};
 use std::iter::FromIterator;
-use translate_types::{
-    translate_bound_region_kind_name, translate_erased_region, translate_region_name,
-};
+use translate_types::{translate_bound_region_kind_name, translate_region_name};
 
 fn translate_variant_id(id: hax::VariantIdx) -> VariantId::Id {
     VariantId::Id::new(id)
@@ -224,7 +222,6 @@ fn translate_primitive_function_call(
     tcx: TyCtxt,
     def_id: &hax::DefId,
     generics: EGenericArgs,
-    trait_refs: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -264,7 +261,6 @@ fn translate_primitive_function_call(
             let call = ast::Call {
                 func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
                 generics,
-                trait_refs: Vec::new(),
                 trait_and_method_generic_args: None,
                 args,
                 dest,
@@ -272,10 +268,10 @@ fn translate_primitive_function_call(
             Ok(ast::RawTerminator::Call { call, target })
         }
         ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => {
-            translate_box_deref(aid, generics, trait_refs, args, dest, target)
+            translate_box_deref(aid, generics, args, dest, target)
         }
         ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
-            translate_vec_index(aid, generics, trait_refs, args, dest, target)
+            translate_vec_index(aid, generics, args, dest, target)
         }
         ast::AssumedFunId::ArraySubsliceShared
         | ast::AssumedFunId::ArraySubsliceMut
@@ -296,7 +292,6 @@ fn translate_primitive_function_call(
             let call = ast::Call {
                 func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
                 generics,
-                trait_refs,
                 trait_and_method_generic_args: None,
                 args,
                 dest,
@@ -327,7 +322,6 @@ fn translate_primitive_function_call(
 fn translate_box_deref(
     aid: ast::AssumedFunId,
     mut generics: EGenericArgs,
-    trait_refs: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -353,7 +347,6 @@ fn translate_box_deref(
     let call = ast::Call {
         func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
         generics,
-        trait_refs,
         trait_and_method_generic_args: None,
         args,
         dest,
@@ -366,7 +359,6 @@ fn translate_box_deref(
 fn translate_vec_index(
     aid: ast::AssumedFunId,
     mut generics: EGenericArgs,
-    trait_refs: Vec<ast::TraitRef>,
     args: Vec<e::Operand>,
     dest: e::Place,
     target: ast::BlockId::Id,
@@ -393,7 +385,6 @@ fn translate_vec_index(
     let call = ast::Call {
         func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
         generics,
-        trait_refs,
         trait_and_method_generic_args: None,
         args,
         dest,
@@ -848,9 +839,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // p.x = x;
                 // p.y = yv;
                 // ```
-                //
-                // Our semantics is designed to handle both cases (aggregated and
-                // non-aggregated initialization).
 
                 // First translate the operands
                 let operands_t: Vec<e::Operand> = operands
@@ -876,6 +864,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         variant_idx,
                         kind,
                         substs,
+                        trait_refs,
                         user_annotation,
                         field_index,
                     ) => {
@@ -892,7 +881,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         // Translate the substitution
                         let mut generics = self
-                            .translate_subst_generic_args_in_body(None, substs)
+                            .translate_substs_and_trait_refs_in_body(None, substs, trait_refs)
                             .unwrap();
 
                         let rust_id = adt_id.rust_def_id.unwrap();
@@ -1273,11 +1262,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // We ignore the arguments
             Ok(ast::RawTerminator::Panic)
         } else {
-            let trait_refs = trait_refs
-                .iter()
-                .map(|x| self.translate_trait_impl_source(x))
-                .collect();
-
             assert!(target.is_some());
             let next_block = target.unwrap();
 
@@ -1303,6 +1287,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // We replace that with: `move b`
                 assert!(substs.len() == 2);
                 assert!(args.len() == 2);
+                assert!(trait_refs.is_empty());
 
                 // Translate the type parameter
                 let t_ty = if let hax::GenericArg::Type(ty) = substs.get(0).unwrap() {
@@ -1321,7 +1306,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let call = ast::Call {
                     func: ast::FunIdOrTraitMethodRef::mk_assumed(ast::AssumedFunId::BoxFree),
                     generics: GenericArgs::new_from_types(vec![t_ty]),
-                    trait_refs: vec![],
                     trait_and_method_generic_args: None,
                     args: vec![t_arg],
                     dest: lval,
@@ -1346,7 +1330,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
 
                 // Translate the type parameters
-                let generics = self.translate_subst_generic_args_in_body(used_type_args, substs)?;
+                let generics = self.translate_substs_and_trait_refs_in_body(
+                    used_type_args,
+                    substs,
+                    trait_refs,
+                )?;
 
                 // Translate the arguments
                 let args = self.translate_arguments(used_args, args);
@@ -1381,7 +1369,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             let call = ast::Call {
                                 func,
                                 generics,
-                                trait_refs,
                                 trait_and_method_generic_args: None,
                                 args,
                                 dest: lval,
@@ -1393,7 +1380,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             })
                         }
                         Option::Some(trait_info) => self.translate_trait_method_call(
-                            def_id, generics, trait_refs, args, lval, next_block, trait_info,
+                            def_id, generics, args, lval, next_block, trait_info,
                         ),
                     }
                 } else {
@@ -1413,7 +1400,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         self.t_ctx.tcx,
                         def_id,
                         generics,
-                        trait_refs,
                         args,
                         lval,
                         next_block,
@@ -1427,34 +1413,44 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         def_id: &hax::DefId,
         generics: EGenericArgs,
-        trait_refs: Vec<ast::TraitRef>,
         args: Vec<e::Operand>,
         dest: e::Place,
         target: ast::BlockId::Id,
         trait_info: &hax::TraitInfo,
     ) -> Result<ast::RawTerminator> {
         let rust_id = def_id.rust_def_id.unwrap();
-        let impl_source = self.translate_trait_impl_source(&trait_info.impl_source);
+        let impl_source = self.translate_trait_impl_source_erased_regions(&trait_info.impl_source);
 
         trace!("{:?}", rust_id);
 
         let _ = self.translate_fun_decl_id(rust_id);
         let method_name = self.t_ctx.translate_trait_method_name(rust_id);
-        let func = ast::FunIdOrTraitMethodRef::Trait(impl_source, method_name);
 
         // Compute the concatenation of all the generic arguments which were given to
         // the function (trait arguments + method arguments).
         let trait_and_method_generic_args = {
-            let generics = self
-                .translate_subst_generic_args_in_body(None, &trait_info.all_generics)
-                .unwrap();
-            Some(generics)
+            let (regions, types, const_generics) =
+                self.translate_substs(None, &trait_info.all_generics)?;
+            // Not sure it is useful to have *all* the trait refs put here
+            let trait_refs = impl_source
+                .generics
+                .trait_refs
+                .iter()
+                .chain(generics.trait_refs.iter())
+                .cloned()
+                .collect();
+            Some(GenericArgs {
+                regions,
+                types,
+                const_generics,
+                trait_refs,
+            })
         };
 
+        let func = ast::FunIdOrTraitMethodRef::Trait(impl_source, method_name);
         let call = ast::Call {
             func,
             generics,
-            trait_refs,
             trait_and_method_generic_args,
             args,
             dest,
@@ -1462,49 +1458,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(ast::RawTerminator::Call { call, target })
     }
 
-    /// Translate a parameter substitution used inside a function body.
-    ///
-    /// Note that the regions parameters are expected to have been erased.
-    pub(crate) fn translate_subst_generic_args_in_body(
+    pub(crate) fn translate_substs_and_trait_refs_in_body(
         &mut self,
         used_args: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
+        trait_refs: &Vec<hax::ImplSource>,
     ) -> Result<EGenericArgs> {
         trace!("{:?}", substs);
-        let substs: Vec<&hax::GenericArg> = match used_args {
-            Option::None => substs.iter().collect(),
-            Option::Some(used_args) => {
-                assert!(substs.len() == used_args.len());
-                substs
-                    .iter()
-                    .zip(used_args.into_iter())
-                    .filter_map(|(param, used)| if used { Some(param) } else { None })
-                    .collect()
-            }
-        };
-
-        let mut t_args_regions = Vec::new();
-        let mut t_args_tys = Vec::new();
-        let mut t_args_cgs = Vec::new();
-        for param in substs.into_iter() {
-            use hax::GenericArg;
-            match param {
-                GenericArg::Type(param_ty) => {
-                    // Simply translate the type
-                    let t_param_ty = self.translate_ety(param_ty)?;
-                    t_args_tys.push(t_param_ty);
-                }
-                GenericArg::Lifetime(region) => {
-                    t_args_regions.push(translate_erased_region(region));
-                }
-                GenericArg::Const(c) => {
-                    let t_cg = self.translate_constant_expr_to_const_generic(c);
-                    t_args_cgs.push(t_cg);
-                }
-            }
-        }
-
-        Ok(GenericArgs::new(t_args_regions, t_args_tys, t_args_cgs))
+        let (regions, types, const_generics) = self.translate_substs(used_args, substs)?;
+        let trait_refs = self.translate_trait_impl_sources_erased_regions(trait_refs);
+        Ok(GenericArgs {
+            regions,
+            types,
+            const_generics,
+            trait_refs,
+        })
     }
 
     /// Evaluate function arguments in a context, and return the list of computed
@@ -1712,7 +1680,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let sig = ast::FunSig {
             generics: self.get_generics(),
             regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
-            preds: self.get_predicates(),
             block_params_info,
             inputs,
             output,

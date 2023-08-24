@@ -4,7 +4,7 @@
 
 use crate::formatter::Formatter;
 use crate::types::*;
-use crate::ullbc_ast::GlobalDeclId;
+use crate::ullbc_ast::{FunDeclId, GlobalDeclId};
 use crate::values::*;
 use serde::{Serialize, Serializer};
 
@@ -68,6 +68,24 @@ impl Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)> for DummyFo
     fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
         let (_def_id, _opt_variant_id, field_id) = id;
         format!("@field{field_id}")
+    }
+}
+
+impl Formatter<TraitClauseId::Id> for DummyFormatter {
+    fn format_object(&self, id: TraitClauseId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl Formatter<FunDeclId::Id> for DummyFormatter {
+    fn format_object(&self, id: FunDeclId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl Formatter<TraitDeclId::Id> for DummyFormatter {
+    fn format_object(&self, id: TraitDeclId::Id) -> String {
+        id.to_pretty_string()
     }
 }
 

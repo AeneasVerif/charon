@@ -29,11 +29,11 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
                 vec![ErasedRegion::Erased],
                 vec![ty.clone()],
                 vec![cg.clone()],
+                vec![],
             );
             s.content = RawStatement::Call(Call {
                 func,
                 generics,
-                trait_refs: Vec::new(),
                 trait_and_method_generic_args: None,
                 args: vec![op.clone()],
                 dest: p.clone(),

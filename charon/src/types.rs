@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-use crate::gast::TraitDeclId;
 use crate::meta::Meta;
 use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
@@ -77,29 +76,55 @@ pub enum ErasedRegion {
     Erased,
 }
 
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub enum TraitInstanceId {
+    Trait(TraitDeclId::Id),
+    Clause(TraitClauseId::Id),
+    /// Builtin traits like [core::marker::Sized] and auto traits like
+    /// [core::marker::Syn].
+    BuiltinOrAuto(TraitDeclId::Id),
+}
+
+/// A reference to a trait
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct TraitRef<R> {
+    pub trait_id: TraitInstanceId,
+    pub generics: GenericArgs<R>,
+}
+
+pub type ETraitRef = TraitRef<ErasedRegion>;
+pub type RTraitRef = TraitRef<Region<RegionVarId::Id>>;
+
 #[derive(Debug, Clone, Eq, PartialEq, Serialize)]
 pub struct GenericArgs<R> {
     pub regions: Vec<R>,
     pub types: Vec<Ty<R>>,
     pub const_generics: Vec<ConstGeneric>,
+    // TODO: rename to match [GenericParams]?
+    pub trait_refs: Vec<TraitRef<R>>,
 }
 
 pub type EGenericArgs = GenericArgs<ErasedRegion>;
 pub type RGenericArgs = GenericArgs<Region<RegionVarId::Id>>;
 
+/// Generic parameters for a declaration.
+/// We group the generics which come from the Rust compiler substitutions
+/// (the regions, types and const generics) as well as the trait clauses.
+/// The reason is that we consider that those are parameters that need to
+/// be filled. We group in a different place the predicates which are not
+/// trait clauses, because those enforce constraints but do not need to
+/// be filled with witnesses/instances.
 #[derive(Debug, Clone, Serialize)]
 pub struct GenericParams {
     pub regions: RegionVarId::Vector<RegionVar>,
     pub types: TypeVarId::Vector<TypeVar>,
     pub const_generics: ConstGenericVarId::Vector<ConstGenericVar>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct Predicates {
+    // TODO: rename to match [GenericArgs]?
     pub trait_clauses: TraitClauseId::Vector<TraitClause>,
 }
 
 generate_index_type!(TraitClauseId);
+generate_index_type!(TraitDeclId);
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitClause {
@@ -109,6 +134,7 @@ pub struct TraitClause {
     pub clause_id: TraitClauseId::Id,
     pub meta: Meta,
     pub trait_id: TraitDeclId::Id,
+    /// Remark: the trait refs list in the [generics] field should be empty.
     pub generics: RGenericArgs,
 }
 
@@ -132,7 +158,6 @@ pub struct TypeDecl {
     pub meta: Meta,
     pub name: TypeName,
     pub generics: GenericParams,
-    pub preds: Predicates,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
     /// The lifetime's hierarchy between the different regions.

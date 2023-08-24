@@ -1,10 +1,10 @@
 #![allow(dead_code)]
-use crate::common::Result;
-use crate::gast::{ParamsInfo, TraitRef};
+use crate::formatter::Formatter;
+use crate::gast::ParamsInfo;
 use crate::translate_ctx::BodyTransCtx;
-use crate::translate_types;
-use crate::types::GenericArgs;
-use crate::types::{ETy, RGenericArgs, TraitClause, TraitClauseId};
+use crate::translate_types::TyTranslator;
+use crate::types::{ETraitRef, GenericArgs, RTraitRef, TraitRef};
+use crate::types::{TraitClause, TraitClauseId, TraitDeclId, Ty};
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
@@ -25,37 +25,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn get_parent_params_info(&mut self, def_id: DefId) -> Option<ParamsInfo> {
         hax::get_parent_params_info(&self.hax_state, def_id).map(Self::convert_params_info)
-    }
-
-    // TODO: there are too many variants of this function, we should merge them
-    pub(crate) fn translate_substs_with_regions(
-        &mut self,
-        substs: &Vec<hax::GenericArg>,
-    ) -> Result<RGenericArgs> {
-        let region_vars_map = &self.region_vars_map.clone();
-        let bound_vars = &self.bound_vars.clone();
-        let region_translator =
-            &|r: &_| translate_types::translate_non_erased_region(region_vars_map, bound_vars, r);
-
-        let mut regions = vec![];
-        let mut params = vec![];
-        let mut cgs = vec![];
-        for param in substs {
-            match param {
-                hax::GenericArg::Type(param_ty) => {
-                    let param_ty = self.translate_ty(region_translator, param_ty)?;
-                    params.push(param_ty);
-                }
-                hax::GenericArg::Lifetime(region) => {
-                    regions.push(region_translator(region));
-                }
-                hax::GenericArg::Const(c) => {
-                    cgs.push(self.translate_constant_expr_to_const_generic(c));
-                }
-            }
-        }
-
-        Result::Ok(GenericArgs::new(regions, params, cgs))
     }
 
     /// This function should be called **after** we translated the generics
@@ -97,9 +66,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                     let trait_ref = &trait_pred.trait_ref;
                     let trait_id = self.translate_trait_id(trait_ref.def_id.rust_def_id.unwrap());
-                    let generics = self
-                        .translate_substs_with_regions(&trait_ref.generic_args)
+                    let (regions, types, const_generics) = self
+                        .translate_substs(None, &trait_ref.generic_args)
                         .unwrap();
+                    // There are no trait refs
+                    let generics = GenericArgs::new(regions, types, const_generics, Vec::new());
 
                     let meta = self.translate_meta_from_rspan(span);
                     let clause_id = self.trait_clauses_counter.fresh_id();
@@ -132,10 +103,30 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    pub(crate) fn translate_trait_impl_source(
+    pub(crate) fn translate_trait_impl_sources<R>(
+        &mut self,
+        impl_sources: &Vec<hax::ImplSource>,
+    ) -> Vec<TraitRef<R>>
+    where
+        R: Eq + Clone,
+        Self: TyTranslator<R>,
+        Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
+    {
+        impl_sources
+            .iter()
+            .map(|x| self.translate_trait_impl_source(x))
+            .collect()
+    }
+
+    pub(crate) fn translate_trait_impl_source<R>(
         &mut self,
         impl_source: &hax::ImplSource,
-    ) -> TraitRef {
+    ) -> TraitRef<R>
+    where
+        R: Eq + Clone,
+        Self: TyTranslator<R>,
+        Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
+    {
         trace!("impl_source: {:?}", impl_source);
         use crate::gast::TraitInstanceId;
         use hax::ImplSource;
@@ -147,20 +138,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_id = TraitInstanceId::Trait(trait_id);
 
                 let generics = self
-                    .translate_subst_generic_args_in_body(None, &data.substs)
+                    .translate_substs_and_trait_refs(None, &data.substs, &data.nested)
                     .unwrap();
-                let trait_refs = data
-                    .nested
-                    .iter()
-                    .map(|x| self.translate_trait_impl_source(x))
-                    .collect();
-                TraitRef {
-                    trait_id,
-                    generics,
-                    trait_refs,
-                }
+                TraitRef { trait_id, generics }
             }
-            ImplSource::Param(trait_ref, traits, constness) => {
+            ImplSource::Param(trait_ref, trait_refs, constness) => {
                 assert!(trait_ref.bound_vars.is_empty());
                 assert!(*constness == hax::BoundConstness::NotConst);
                 let trait_ref = &trait_ref.value;
@@ -170,12 +152,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Retrieve the arguments
                 let generics = self
-                    .translate_subst_generic_args_in_body(None, &trait_ref.generic_args)
+                    .translate_substs_and_trait_refs(None, &trait_ref.generic_args, trait_refs)
                     .unwrap();
-                let trait_refs: Vec<TraitRef> = traits
-                    .iter()
-                    .map(|x| self.translate_trait_impl_source(x))
-                    .collect();
+                assert!(generics.trait_refs.is_empty());
 
                 // We need to find the trait clause which corresponds to
                 // this obligation.
@@ -191,11 +170,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             continue;
                         }
 
-                        let src_types: Vec<ETy> = trait_clause
+                        let src_types: Vec<Ty<R>> = trait_clause
                             .generics
                             .types
                             .iter()
-                            .map(|x| x.erase_regions())
+                            .map(|x| self.convert_rty(x))
                             .collect();
                         let src_const_generics = &trait_clause.generics.const_generics;
 
@@ -214,7 +193,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     match clause_id {
                         Some(id) => id,
                         None => {
-                            use crate::formatter::Formatter;
                             let trait_ref = format!(
                                 "{}{}",
                                 self.format_object(trait_id),
@@ -236,13 +214,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 let trait_id = TraitInstanceId::Clause(clause_id);
 
-                assert!(trait_refs.is_empty());
+                assert!(generics.trait_refs.is_empty());
                 // Ignore the arguments: we forbid using universal quantifiers
                 // on the trait clauses for now.
                 TraitRef {
                     trait_id,
                     generics: GenericArgs::empty(),
-                    trait_refs,
                 }
             }
             ImplSource::Object(_) => unimplemented!(),
@@ -255,18 +232,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_id = self.translate_trait_id(def_id);
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
                 let generics = self
-                    .translate_subst_generic_args_in_body(None, &trait_ref.generic_args)
+                    .translate_substs_and_trait_refs(None, &trait_ref.generic_args, traits)
                     .unwrap();
-                let trait_refs = traits
-                    .iter()
-                    .map(|x| self.translate_trait_impl_source(x))
-                    .collect();
-
-                TraitRef {
-                    trait_id,
-                    generics,
-                    trait_refs,
-                }
+                TraitRef { trait_id, generics }
             }
             ImplSource::AutoImpl(data) => {
                 let def_id = data.trait_def_id.rust_def_id.unwrap();
@@ -276,10 +244,37 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 TraitRef {
                     trait_id,
                     generics: GenericArgs::empty(),
-                    trait_refs: Vec::new(),
                 }
             }
             ImplSource::TraitUpcasting(_) => unimplemented!(),
         }
+    }
+
+    pub(crate) fn translate_trait_impl_sources_erased_regions(
+        &mut self,
+        impl_sources: &Vec<hax::ImplSource>,
+    ) -> Vec<ETraitRef> {
+        self.translate_trait_impl_sources(impl_sources)
+    }
+
+    pub(crate) fn translate_trait_impl_source_erased_regions(
+        &mut self,
+        impl_source: &hax::ImplSource,
+    ) -> ETraitRef {
+        self.translate_trait_impl_source(impl_source)
+    }
+
+    pub(crate) fn translate_trait_impl_sources_with_regions(
+        &mut self,
+        impl_sources: &Vec<hax::ImplSource>,
+    ) -> Vec<RTraitRef> {
+        self.translate_trait_impl_sources(impl_sources)
+    }
+
+    pub(crate) fn translate_trait_impl_source_with_regions(
+        &mut self,
+        impl_source: &hax::ImplSource,
+    ) -> RTraitRef {
+        self.translate_trait_impl_source(impl_source)
     }
 }

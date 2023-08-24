@@ -36,7 +36,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             def_id,
             name,
             generics: bt_ctx.get_generics(),
-            preds: bt_ctx.get_predicates(),
         };
 
         self.trait_defs.insert(def_id, trait_decl)

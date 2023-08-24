@@ -5,8 +5,7 @@ use crate::assumed;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::gast::{
-    AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, GenericArgs, TraitDeclId,
-    TraitInstanceId, TraitMethodName, TraitRef,
+    AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, GenericArgs, TraitMethodName,
 };
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
@@ -466,7 +465,6 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         let Call {
             func,
             generics,
-            trait_refs,
             args,
             trait_and_method_generic_args,
             dest,
@@ -479,21 +477,24 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         for cg in &generics.const_generics {
             self.visit_const_generic(cg);
         }
+        for t in &generics.trait_refs {
+            self.visit_trait_ref(t);
+        }
         for o in args {
             self.visit_operand(o);
-        }
-        for t in trait_refs {
-            self.visit_trait_ref(t);
         }
         match trait_and_method_generic_args {
             None => (),
             // We ignore the regions which are erased
-            Some(GenericArgs {regions: _, types, const_generics}) => {
+            Some(GenericArgs {regions: _, types, const_generics, trait_refs}) => {
                 for t in types {
                     self.visit_ty(t);
                 }
                 for cg in const_generics {
                     self.visit_const_generic(cg);
+                }
+                for x in trait_refs {
+                    self.visit_trait_ref(x);
                 }
             }
         }
@@ -522,35 +523,6 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
 
     fn visit_fun_decl_id(&mut self, _: &FunDeclId::Id) {}
     fn visit_assumed_fun_id(&mut self, _: &AssumedFunId) {}
-    fn visit_trait_decl_id(&mut self, _: &TraitDeclId::Id) {}
-    fn visit_trait_clause_id(&mut self, _: &TraitClauseId::Id) {}
-
-    fn visit_trait_ref(&mut self, tr: &TraitRef) {
-        let TraitRef {
-            trait_id,
-            generics,
-            trait_refs,
-        } = tr;
-        self.visit_trait_instance_id(trait_id);
-        // We ignore the regions, which are erased
-        for t in &generics.types {
-            self.visit_ty(t);
-        }
-        for cg in &generics.const_generics {
-            self.visit_const_generic(cg);
-        }
-        for t in trait_refs {
-            self.visit_trait_ref(t);
-        }
-    }
-
-    fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
-        match id {
-            TraitInstanceId::Trait(id) => self.visit_trait_decl_id(id),
-            TraitInstanceId::Clause(id) => self.visit_trait_clause_id(id),
-            TraitInstanceId::BuiltinOrAuto(id) => self.visit_trait_decl_id(id),
-        }
-    }
 }
 
 } // make_generic_in_borrows

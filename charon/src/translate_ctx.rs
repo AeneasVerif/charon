@@ -10,8 +10,8 @@ use crate::meta::{FileId, FileName, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::AnyTransId;
 use crate::types as ty;
+use crate::types::GenericParams;
 use crate::types::LiteralTy;
-use crate::types::{GenericParams, Predicates};
 use crate::ullbc_ast;
 use crate::ullbc_ast as ast;
 use crate::values as v;
@@ -566,11 +566,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             regions: self.region_vars.clone(),
             types: self.type_vars.clone(),
             const_generics: self.const_generic_vars.clone(),
-        }
-    }
-
-    pub(crate) fn get_predicates(&mut self) -> Predicates {
-        Predicates {
             trait_clauses: self.trait_clauses.clone(),
         }
     }

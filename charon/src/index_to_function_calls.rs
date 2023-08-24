@@ -98,11 +98,11 @@ impl<'a> Transform<'a> {
                 let arg_index = Operand::Copy(Place::new(index_var_id));
                 let index_dest = Place::new(elem_borrow_var);
                 let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
-                let generics = GenericArgs::new(vec![ErasedRegion::Erased], vec![elem_ty], cgs);
+                let generics =
+                    GenericArgs::new(vec![ErasedRegion::Erased], vec![elem_ty], cgs, vec![]);
                 let index_call = Call {
                     func: index_id,
                     generics,
-                    trait_refs: Vec::new(),
                     trait_and_method_generic_args: None,
                     args: vec![arg_buf, arg_index],
                     dest: index_dest,
