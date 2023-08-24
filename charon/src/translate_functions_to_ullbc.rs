@@ -367,21 +367,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
                     // Yet, this could be a default method implementation, in which
                     // case there is a body: we need to check that.
-                    // First, lookup the trait the method belongs to.
-                    let trait_id = tcx.trait_of_item(rust_id).unwrap();
 
-                    // Then, retrieve the provided methods. The provided methods
-                    // are the methods with a default implementation.
-                    let provided_methods: Vec<DefId> = tcx
-                        .provided_trait_methods(trait_id)
-                        .map(|assoc| assoc.def_id)
-                        .collect();
+                    // In order to check if this is a provided method, we check
+                    // the defaultness (i.e., whether the method has a default value):
+                    let is_provided = tcx.impl_defaultness(rust_id).has_value();
 
-                    let trait_id = self.translate_trait_decl_id(trait_id);
+                    // Compute additional information
                     let method_name = self.translate_trait_method_name(rust_id);
+                    let trait_id = tcx.trait_of_item(rust_id).unwrap();
+                    let trait_id = self.translate_trait_decl_id(trait_id);
 
-                    // Check if the method is inside
-                    if provided_methods.contains(&rust_id) {
+                    if is_provided {
                         FunKind::TraitMethodProvided(trait_id, method_name)
                     } else {
                         FunKind::TraitMethodDecl(trait_id, method_name)

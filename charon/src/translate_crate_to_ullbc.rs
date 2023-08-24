@@ -18,16 +18,29 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // TODO: make a proper error message
         assert!(impl_item.defaultness == Defaultness::Final);
 
+        let def_id = impl_item.owner_id.to_def_id();
+
         // Match on the impl item kind
         match &impl_item.kind {
-            ImplItemKind::Const(_, _) => unimplemented!(),
+            ImplItemKind::Const(_, _) => {
+                // Can happen in traits:
+                // ```
+                // trait Foo {
+                //   const C : usize;
+                // }
+                //
+                // impl Foo for Bar {
+                //   const C = 32; // HERE
+                // }
+                // ```
+                let _ = self.translate_global_decl_id(def_id);
+            }
             ImplItemKind::Type(_) => {
                 // Note sure what to do with associated types yet
                 unimplemented!();
             }
             ImplItemKind::Fn(_, _) => {
-                let local_id = impl_item.owner_id.to_def_id().as_local().unwrap();
-                let _ = self.translate_fun_decl_id(local_id.to_def_id());
+                let _ = self.translate_fun_decl_id(def_id);
             }
         }
     }

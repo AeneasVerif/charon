@@ -8,10 +8,8 @@ use rustc_hir::def_id::DefId;
 use std::collections::HashSet;
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+    /// Remark: this **doesn't** register the def id (on purpose)
     pub(crate) fn translate_trait_method_name(&mut self, rust_id: DefId) -> TraitMethodName {
-        // Just making sure we register the def id
-        let _ = self.translate_fun_decl_id(rust_id);
-
         // Translate the name
         let name = names_utils::item_def_id_to_name(self.tcx, rust_id);
         TraitMethodName(name.name.last().unwrap().as_ident().clone())
@@ -58,6 +56,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 (None, None)
             };
 
+        // [is_trait_decl]: true if this is a trait declaration (vs trait implementation)
+        let is_trait_decl = impl_trait.is_none();
+
         // Explore the associated items
         let tcx = bt_ctx.t_ctx.tcx;
 
@@ -65,10 +66,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // the provided methods of the current item, if it is a trait declaration,
         // otherwise the provided methods of the trait associated to the current
         // trait implementation).
-        // The provided methods are the methods with a default implementation.  We do this
+        // The provided methods are the methods with a default implementation. We do this
         // to filter the provided methods from the associated items - see the
         // documentation of [TraitDecl] for the full details.
-        let provided_methods: HashSet<DefId> = {
+        /*        let provided_methods_set: HashSet<DefId> = {
             let trait_id = if let Some(id) = impl_trait_rust_id {
                 id
             } else {
@@ -77,16 +78,24 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             tcx.provided_trait_methods(trait_id)
                 .map(|assoc| assoc.def_id)
                 .collect()
-        };
+        };*/
 
         // Retrieve the associated items
         let associated_items = tcx.associated_items(rust_id);
 
+        // We do something subtle here.
+        let mut provided_methods = Vec::new();
         let mut functions = Vec::new();
         for item in associated_items.in_definition_order() {
             use rustc_middle::ty::AssocKind;
-            // Filter the provided methods
-            if provided_methods.contains(&item.def_id) {
+
+            let has_default_value = item.defaultness(tcx).has_value();
+            // Skip the provided methods for the trait declarations
+            if item.kind == AssocKind::Fn && is_trait_decl && has_default_value {
+                // We don't call [translate_trait_method_name] because it will
+                // register the method.
+                let name = bt_ctx.t_ctx.translate_trait_method_name(item.def_id);
+                provided_methods.push(name);
                 continue;
             }
 
@@ -97,13 +106,46 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     functions.push((method_name, fun_id));
                 }
                 AssocKind::Const => {
-                    unimplemented!("Const trait item: {:?}", item)
+                    // Check if the constant has a value (i.e., a body).
+                    // There are two situations:
+                    // - if the current trait is an *implementation*, then
+                    //   it *must* have a value
+                    // - otherwise, we check the defaultness
+                    trace!("id: {:?}\n- item: {:?}", rust_id, item);
+                    let const_id = if is_trait_decl {
+                        // Declaration
+                        if has_default_value {
+                            Some(bt_ctx.translate_global_decl_id(item.def_id))
+                        } else {
+                            None
+                        }
+                    } else {
+                        // Implementation
+                        Some(bt_ctx.translate_global_decl_id(item.def_id))
+                    };
+                    let ty = bt_ctx.translate_ety(
+                        &tcx.type_of(item.def_id)
+                            .subst_identity()
+                            .sinto(&bt_ctx.hax_state),
+                    );
+
+                    //let const_id = bt_ctx.translate_global_decl_id(item.def_id);
+                    /*                    let item_id = tcx
+                        .hir()
+                        .local_def_id_to_hir_id(item.def_id.as_local().unwrap());
+                    let item = tcx.hir().find(item_id).unwrap();
+                    trace!("Const trait item:\n{:?}", item);
+                    unimplemented!("Const trait item: {:?}", item)*/
                 }
                 AssocKind::Type => {
                     unimplemented!("Type trait item: {:?}", item)
                 }
             }
         }
+
+        // In case of a trait implementation, some values may not have been
+        // provided, in case the declaration provided default values. We
+        // check those, and lookup the relevant values.
 
         let trait_decl = ast::TraitDecl {
             def_id,

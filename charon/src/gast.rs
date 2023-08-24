@@ -221,6 +221,18 @@ pub struct TraitMethodName(pub String);
 ///   has *one* declared function and more than 70 provided functions)
 /// - this is important for the external traits, whose provided methods
 ///   often use features we don't support yet
+///
+/// Remark:
+/// In Aeneas, we still translate the provided methods on an individual basis,
+/// and in such a way thay they take as input a trait instance. This means that
+/// we can use default methods *but*:
+/// - implementations of required methods shoudln't call default methods
+/// - trait implementations shouldn't redefine required methods
+/// The use case we have in mind is [std::iter::Iterator]: it declares one required
+/// method (`next`) that should be implemented for every iterator, and defines many
+/// helpers like `all`, `map`, etc. that shouldn't be re-implemented.
+/// Of course, this forbids other useful use cases such as visitors implemented
+/// by means of traits.
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
@@ -242,7 +254,6 @@ pub struct TraitDecl {
     //pub types:
     // The associated constants declared in the trait
     //
-    /// The associated functions declared in the trait
     pub functions: Vec<(TraitMethodName, FunDeclId::Id)>,
 }
 

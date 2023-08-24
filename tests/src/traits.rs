@@ -151,3 +151,31 @@ where
         self.0.to_type()
     }
 }
+
+trait Hash<const LEN: usize> {
+    const LEN1: usize;
+    // Testing default values
+    const LEN2: usize = 32;
+    // TODO: LEN2 with default value
+
+    // TODO: what happens if we put a default value here?
+    //    type State;
+
+    // TODO: State2 with default value
+
+    //    fn new() -> Self::State;
+
+    // Below: we can't use [Self::Len1] in the type of the array.
+    // Probably because of dyn traits...
+    //    fn hash_block(state: &mut Self::State, h: &[u8; LEN]);
+}
+
+impl Hash<32> for bool {
+    //
+    const LEN1: usize = 12;
+}
+
+// TODO: implem of Hash
+
+// TODO: where clauses
+// TODO: super traits
