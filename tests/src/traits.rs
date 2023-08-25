@@ -152,30 +152,37 @@ where
     }
 }
 
-trait Hash<const LEN: usize> {
+pub trait WithConstTy<const LEN: usize> {
     const LEN1: usize;
     // Testing default values
     const LEN2: usize = 32;
-    // TODO: LEN2 with default value
 
-    // TODO: what happens if we put a default value here?
-    //    type State;
-
-    // TODO: State2 with default value
-
-    //    fn new() -> Self::State;
+    type V;
+    type W: ToU64;
 
     // Below: we can't use [Self::Len1] in the type of the array.
     // Probably because of dyn traits...
-    //    fn hash_block(state: &mut Self::State, h: &[u8; LEN]);
+    fn f(x: &mut Self::W, y: &[u8; LEN]);
 }
 
-impl Hash<32> for bool {
-    //
+impl WithConstTy<32> for bool {
     const LEN1: usize = 12;
+
+    type V = u8;
+    type W = u64;
+
+    fn f(_: &mut Self::W, _: &[u8; 32]) {}
 }
 
-// TODO: implem of Hash
+pub fn use_with_const_ty1<const LEN: usize, H: WithConstTy<LEN>>() -> usize {
+    H::LEN1
+}
+
+pub fn use_with_const_ty2<const LEN: usize, H: WithConstTy<LEN>>(_: H::W) {}
+
+pub fn use_with_const_ty3<const LEN: usize, H: WithConstTy<LEN>>(x: H::W) -> u64 {
+    x.to_u64()
+}
 
 // TODO: where clauses
 // TODO: super traits
