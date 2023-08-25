@@ -146,6 +146,7 @@ impl GenericParams {
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         if self.is_empty() {
@@ -183,6 +184,7 @@ impl GenericParams {
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         let mut params = Vec::new();
@@ -319,6 +321,7 @@ impl<R> GenericArgs<R> {
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         let mut params = Vec::new();
@@ -352,6 +355,7 @@ impl<R> GenericArgs<R> {
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         if self.is_empty() {
@@ -370,6 +374,7 @@ impl<R> GenericArgs<R> {
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         let mut params = Vec::new();
@@ -417,6 +422,7 @@ impl TraitClause {
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         let clause_id = ctx.format_object(self.clause_id);
@@ -429,7 +435,7 @@ impl TraitClause {
 impl TraitInstanceId {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: Formatter<TraitDeclId::Id> + Formatter<TraitClauseId::Id>,
+        C: Formatter<TraitDeclId::Id> + Formatter<TraitImplId::Id> + Formatter<TraitClauseId::Id>,
     {
         match self {
             TraitInstanceId::Trait(id) => ctx.format_object(*id),
@@ -449,6 +455,7 @@ impl<R> TraitRef<R> {
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         let trait_id = self.trait_id.fmt_with_ctx(ctx);
@@ -579,6 +586,7 @@ impl TypeDecl {
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<TraitClauseId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitDeclId::Id>,
     {
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -642,6 +650,7 @@ impl Variant {
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<TraitClauseId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitDeclId::Id>,
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
@@ -661,6 +670,7 @@ impl Field {
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
             + Formatter<TraitClauseId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitDeclId::Id>,
     {
         match &self.name {
@@ -793,7 +803,13 @@ impl TraitClauseId::Id {
 
 impl TraitDeclId::Id {
     pub fn to_pretty_string(&self) -> String {
-        format!("@Trait{self}")
+        format!("@TraitDecl{self}")
+    }
+}
+
+impl TraitImplId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@TraitImpl{self}")
     }
 }
 
@@ -933,7 +949,8 @@ impl<R> Ty<R> {
             + Formatter<GlobalDeclId::Id>
             + Formatter<&'a R>
             + Formatter<TraitClauseId::Id>
-            + Formatter<TraitDeclId::Id>,
+            + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>,
     {
         match self {
             Ty::Adt(id, generics) => {
@@ -1611,11 +1628,12 @@ pub trait TypeVisitor {
     }
 
     fn visit_trait_decl_id(&mut self, _: &TraitDeclId::Id) {}
+    fn visit_trait_impl_id(&mut self, _: &TraitImplId::Id) {}
     fn visit_trait_clause_id(&mut self, _: &TraitClauseId::Id) {}
 
     fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
         match id {
-            TraitInstanceId::Trait(id) => self.visit_trait_decl_id(id),
+            TraitInstanceId::Trait(id) => self.visit_trait_impl_id(id),
             TraitInstanceId::Clause(id) => self.visit_trait_clause_id(id),
             TraitInstanceId::BuiltinOrAuto(id) => self.visit_trait_decl_id(id),
         }

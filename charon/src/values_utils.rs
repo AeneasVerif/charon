@@ -89,6 +89,12 @@ impl Formatter<TraitDeclId::Id> for DummyFormatter {
     }
 }
 
+impl Formatter<TraitImplId::Id> for DummyFormatter {
+    fn format_object(&self, id: TraitImplId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
 impl<Rid: Clone> Formatter<&Region<Rid>> for DummyFormatter
 where
     DummyFormatter: Formatter<Rid>,

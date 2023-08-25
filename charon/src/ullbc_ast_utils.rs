@@ -113,6 +113,7 @@ impl Terminator {
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         match &self.content {
@@ -177,6 +178,7 @@ impl BlockData {
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         let mut out: Vec<String> = Vec::new();
@@ -210,6 +212,7 @@ where
         + Formatter<(TypeDeclId::Id, VariantId::Id)>
         + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
         + Formatter<TraitDeclId::Id>
+        + Formatter<TraitImplId::Id>
         + Formatter<TraitClauseId::Id>,
 {
     let block_tab = format!("{tab}{TAB_INCR}");

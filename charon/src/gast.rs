@@ -12,7 +12,7 @@ pub use crate::types::TraitClauseId;
 use crate::types::*;
 pub use crate::types::{
     EGenericArgs, ETraitRef, GenericArgs, GenericParams, RGenericArgs, RTraitRef, TraitDeclId,
-    TraitInstanceId, TraitRef,
+    TraitImplId, TraitInstanceId, TraitRef,
 };
 use crate::values::*;
 use macros::generate_index_type;
@@ -148,8 +148,9 @@ pub enum FunKind {
     Regular,
     /// Trait method implementation
     TraitMethodImpl {
-        /// The id of the trait decl/impl the method belongs to
+        /// The id of the trait decl the method belongs to
         trait_id: TraitDeclId::Id,
+        /// The name of the method
         method_name: TraitMethodName,
         /// True if this function re-implements a provided method
         provided: bool,
@@ -193,24 +194,16 @@ pub struct GGlobalDecl<T> {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct TraitMethodName(pub String);
 
-/// A trait declaration or a trait implementation.
+/// A trait **declaration**.
 ///
 /// For instance:
 /// ```text
-/// // Trait declaration
 /// trait Foo {
 ///   type Bar;
 ///
-///   fn baz(...);
+///   fn baz(...); // required method (see below)
 ///
 ///   fn test() -> bool { true } // provided method (see below)
-/// }
-///
-/// // Trait implementation
-/// impl Foo for List {
-///   type Bar = ...
-///
-///   fn baz(...) { ... }
 /// }
 /// ```
 ///
@@ -236,25 +229,70 @@ pub struct TraitMethodName(pub String);
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
-    /// If this is a trait implementation, the information about the implemented trait.
-    /// Note that:
-    /// - the id is necessarily of kind [TraitInstanceId::Trait]
-    /// - the trait refs in the generics are necessarily empty
-    ///
-    /// About the generics, if we write:
-    /// ```text
-    /// impl Foo<bool> for String { ... }
-    /// ```
-    ///
-    /// The substitution is: `[String, bool]`.
-    pub impl_trait: Option<RTraitRef>,
     pub name: Name,
     pub generics: GenericParams,
     // The associated types declared in the trait
     //pub types:
     // The associated constants declared in the trait
     //
-    pub functions: Vec<(TraitMethodName, FunDeclId::Id)>,
+    /// The *required* methods.
+    ///
+    /// The required methods are the methods declared by the trait but with
+    /// no default implementation.
+    pub required_methods: Vec<(TraitMethodName, FunDeclId::Id)>,
+    /// The *provided* methods.
+    ///
+    /// The provided methods are the methods with a default implementation.
+    ///
+    /// Wwe don't include an [FunDeclId::Id] identifier because it
+    /// would mean we extract *all* the provided methods, which is not
+    /// something we want to do *yet* for the external traits.
+    /// TODO: allow to optionnaly extract information. For instance: attempt
+    /// to extract, and fail nicely if we don't succeed (definition not in
+    /// the supported subset, etc.).
+    pub provided_methods: Vec<TraitMethodName>,
+}
+
+/// Information about an implemented trait.
+/// Note that the trait refs in the generics are necessarily empty
+///
+/// About the generics, if we write:
+/// ```text
+/// impl Foo<bool> for String { ... }
+/// ```
+///
+/// The substitution is: `[String, bool]`.
+#[derive(Debug, Clone, Serialize)]
+pub struct ImplTraitRef {
+    pub trait_id: TraitDeclId::Id,
+    pub generics: RGenericArgs,
+}
+
+/// A trait **implementation**.
+///
+/// For instance:
+/// ```text
+/// impl Foo for List {
+///   type Bar = ...
+///
+///   fn baz(...) { ... }
+/// }
+/// ```
+#[derive(Debug, Clone, Serialize)]
+pub struct TraitImpl {
+    pub def_id: TraitImplId::Id,
+    /// The information about the implemented trait.
+    pub impl_trait: ImplTraitRef,
+    pub name: Name,
+    pub generics: GenericParams,
+    // The associated types declared in the trait
+    //pub types:
+    // The associated constants declared in the trait
+    //
+    /// The implemented required methods
+    pub required_methods: Vec<(TraitMethodName, FunDeclId::Id)>,
+    /// The re-implemented provided methods
+    pub provided_methods: Vec<(TraitMethodName, FunDeclId::Id)>,
 }
 
 /// A function identifier. See [crate::ullbc_ast::Terminator]

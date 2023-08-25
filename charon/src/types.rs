@@ -76,9 +76,13 @@ pub enum ErasedRegion {
     Erased,
 }
 
+/// Identifier of a trait instance.
+/// This is derived from the trait resolution.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub enum TraitInstanceId {
-    Trait(TraitDeclId::Id),
+    /// A specific implementation
+    Trait(TraitImplId::Id),
+    /// A clause bound in the function signature
     Clause(TraitClauseId::Id),
     /// Builtin traits like [core::marker::Sized] and auto traits like
     /// [core::marker::Syn].
@@ -125,6 +129,7 @@ pub struct GenericParams {
 
 generate_index_type!(TraitClauseId);
 generate_index_type!(TraitDeclId);
+generate_index_type!(TraitImplId);
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitClause {

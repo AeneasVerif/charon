@@ -172,6 +172,7 @@ impl Statement {
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<TraitDeclId::Id>
+            + Formatter<TraitImplId::Id>
             + Formatter<TraitClauseId::Id>,
     {
         match &self.content {

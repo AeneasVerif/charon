@@ -209,8 +209,10 @@ pub fn translate<'tcx, 'ctx>(
         fun_defs: ast::FunDeclId::Map::new(),
         global_id_map: ast::GlobalDeclId::MapGenerator::new(),
         global_defs: ast::GlobalDeclId::Map::new(),
-        trait_id_map: ast::TraitDeclId::MapGenerator::new(),
-        trait_defs: ast::TraitDeclId::Map::new(),
+        trait_decl_id_map: ast::TraitDeclId::MapGenerator::new(),
+        trait_decls: ast::TraitDeclId::Map::new(),
+        trait_impl_id_map: ast::TraitImplId::MapGenerator::new(),
+        trait_impls: ast::TraitImplId::Map::new(),
     };
 
     // First push all the items in the stack of items to translate.
@@ -247,7 +249,8 @@ pub fn translate<'tcx, 'ctx>(
             OrdRustId::Type(id) => ctx.translate_type(id),
             OrdRustId::Fun(id) | OrdRustId::ConstFun(id) => ctx.translate_function(id),
             OrdRustId::Global(id) => ctx.translate_global(id),
-            OrdRustId::Trait(id) => ctx.translate_trait(id),
+            OrdRustId::TraitDecl(id) => ctx.translate_trait_decl(id),
+            OrdRustId::TraitImpl(id) => ctx.translate_trait_impl(id),
         }
     }
 
