@@ -9,7 +9,6 @@ use crate::formatter::Formatter;
 use crate::gast_utils::{ExprFormatter, GFunDeclFormatter, GGlobalDeclFormatter};
 use crate::llbc_ast::{
     Assert, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement, Switch,
-    TraitClauseId, TraitDeclId,
 };
 use crate::meta;
 use crate::meta::Meta;

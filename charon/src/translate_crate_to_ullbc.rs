@@ -129,7 +129,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
                 // If this is a trait implementation, register it
                 if self.tcx.trait_id_of_impl(def_id).is_some() {
-                    let _ = self.translate_trait_decl_id(def_id);
+                    let _ = self.translate_trait_impl_id(def_id);
                 }
 
                 // Explore the items

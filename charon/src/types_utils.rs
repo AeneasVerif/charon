@@ -539,7 +539,7 @@ impl TypeDecl {
         let eq_space = if trait_clauses.is_empty() {
             "".to_string()
         } else {
-            TAB_INCR.to_string()
+            format!("\n{TAB_INCR}")
         };
         let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
 
