@@ -81,9 +81,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<e::ConstantExpr> = fields
                     .iter()
-                    .map(|f| self.translate_constant_expr_to_constant_expr(&f))
+                    .map(|f| self.translate_constant_expr_to_constant_expr(f))
                     .collect();
                 e::RawConstantExpr::Adt(Option::None, fields)
+            }
+            ConstantExprKind::TraitConst {
+                impl_source,
+                substs,
+                name,
+            } => {
+                let trait_ref = self.translate_trait_impl_source(impl_source);
+                let (regions, types, const_generics) = self.translate_substs(None, substs).unwrap();
+                let generics = ty::GenericArgs {
+                    regions,
+                    types,
+                    const_generics,
+                    trait_refs: Vec::new(),
+                };
+                e::RawConstantExpr::TraitConst(trait_ref, generics, name.clone())
             }
             ConstantExprKind::GlobalName { id } => {
                 e::RawConstantExpr::Global(self.translate_global_decl_id(id.rust_def_id.unwrap()))
@@ -121,7 +136,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             e::RawConstantExpr::Literal(v) => ty::ConstGeneric::Value(v),
             e::RawConstantExpr::Adt(..) => unreachable!(),
             e::RawConstantExpr::Global(v) => ty::ConstGeneric::Global(v),
-            e::RawConstantExpr::Ref(_) => unreachable!(),
+            e::RawConstantExpr::TraitConst { .. } | e::RawConstantExpr::Ref(_) => unreachable!(),
             e::RawConstantExpr::Var(v) => ty::ConstGeneric::Var(v),
         }
     }

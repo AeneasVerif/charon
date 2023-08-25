@@ -190,6 +190,21 @@ pub enum RawConstantExpr {
     /// Reading the constant a.b is translated to { _1 = const a; _2 = (_1.0) }.
     Global(GlobalDeclId::Id),
     ///
+    /// A trait constant.
+    ///
+    /// Ex.:
+    /// ```text
+    /// impl Foo for Bar {
+    ///   const C : usize = 32; // <-
+    /// }
+    /// ```
+    ///
+    /// Remark: in the generic args, the trait refs are necessarily empty.
+    ///
+    /// Remark: trait constants can not be used in types, they are necessarily
+    /// values. For this reason, we can always erase the regions.
+    TraitConst(ETraitRef, EGenericArgs, String),
+    ///
     /// A shared reference to a constant value
     Ref(Box<ConstantExpr>),
     /// A const generic var

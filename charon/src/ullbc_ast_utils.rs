@@ -67,14 +67,7 @@ impl Terminator {
 impl Statement {
     pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<TypeVarId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<&'a ErasedRegion>,
+        T: ExprFormatter<'a>,
     {
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(

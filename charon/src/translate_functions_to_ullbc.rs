@@ -24,7 +24,6 @@ use crate::values::{Literal, ScalarValue};
 use core::convert::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
-use log::warn;
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir::START_BLOCK;
 use rustc_middle::ty as mir_ty;
@@ -1792,51 +1791,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
         let ty = bt_ctx.translate_ety(&mir_ty.sinto(hax_state)).unwrap();
 
-        let body = match (rust_id.is_local(), is_transparent) {
-            // It's a local and opaque global: we do not give it a body.
-            (true, false) => {
-                trace!("Opaque global");
-                Option::None
-            }
-
+        let body = if rust_id.is_local() && is_transparent {
             // It's a local and transparent global: we extract its body as for functions.
-            (true, true) => {
-                trace!("Transparent local global");
-                Option::Some(bt_ctx.translate_body(rust_id.expect_local(), 0).unwrap())
-            }
-
-            // It is an external global.
-            // The fact that it is listed among the declarations to extract means that
-            // some local declaration depends on it.
-            // Consequently, we try to evaluate its value.
-            // If the evaluation succeeds, we generate a body.
-            // If the evaluation fails, we warn about the failure and generate an
-            // empty body.
-            // TODO: we should keep the external globals opaque
-            (false, _) => {
-                trace!("External global");
-                let unev = rid_as_unevaluated_constant(rust_id);
-                match bt_ctx.t_ctx.tcx.const_eval_resolve(
-                    mir_ty::ParamEnv::empty(),
-                    unev,
-                    Option::None,
-                ) {
-                    std::result::Result::Ok(c) => {
-                        // Evaluate the constant
-                        let span = bt_ctx.t_ctx.tcx.def_span(rust_id);
-                        let val = bt_ctx.translate_evaluated_operand_constant(mir_ty, &c, span);
-                        Option::Some(bt_ctx.t_ctx.global_generate_assignment_body(
-                            ty.clone(),
-                            rust_id,
-                            val,
-                        ))
-                    }
-                    std::result::Result::Err(e) => {
-                        warn!("Did not evaluate {:?}: {:?}", rust_id, e);
-                        Option::None
-                    }
-                }
-            }
+            Some(bt_ctx.translate_body(rust_id.expect_local(), 0).unwrap())
+        } else {
+            // Otherwise do nothing
+            None
         };
 
         // Save the new global

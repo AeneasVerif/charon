@@ -14,6 +14,11 @@ use crate::values::*;
 use macros::make_generic_in_borrows;
 use std::vec::Vec;
 
+pub trait ExprFormatter<'a> = TypeFormatter<'a, ErasedRegion>
+    + Formatter<VarId::Id>
+    + Formatter<(TypeDeclId::Id, VariantId::Id)>
+    + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>;
+
 impl Place {
     pub fn new(var_id: VarId::Id) -> Place {
         Place {
@@ -131,22 +136,18 @@ impl std::fmt::Display for Place {
 }
 
 impl ConstantExpr {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
-        T: Formatter<TypeDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>,
+        T: TypeFormatter<'a, ErasedRegion>,
     {
         self.value.fmt_with_ctx(ctx)
     }
 }
 
 impl RawConstantExpr {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
-        T: Formatter<TypeDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>,
+        T: TypeFormatter<'a, ErasedRegion>,
     {
         match self {
             RawConstantExpr::Literal(c) => c.to_string(),
@@ -162,6 +163,13 @@ impl RawConstantExpr {
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
             RawConstantExpr::Global(id) => ctx.format_object(*id),
+            RawConstantExpr::TraitConst(trait_ref, substs, name) => {
+                format!(
+                    "{}{}::{name}",
+                    trait_ref.fmt_with_ctx(ctx),
+                    substs.fmt_with_ctx_split_trait_refs(ctx)
+                )
+            }
             RawConstantExpr::Ref(cv) => {
                 format!("&{}", cv.fmt_with_ctx(ctx))
             }
@@ -177,13 +185,9 @@ impl std::fmt::Display for ConstantExpr {
 }
 
 impl Operand {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
+        T: ExprFormatter<'a>,
     {
         match self {
             Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)),
@@ -207,14 +211,7 @@ impl std::fmt::Display for Operand {
 impl Rvalue {
     pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<TypeVarId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<&'a ErasedRegion>,
+        T: ExprFormatter<'a>,
     {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),
@@ -374,6 +371,20 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Literal(lit) => self.visit_literal(lit),
             Adt(oid, ops) => self.visit_constant_expr_adt(oid, ops),
             Global(id) => self.visit_global_decl_id(id),
+            TraitConst(trait_ref, generics, _name) => {
+                self.visit_trait_ref(trait_ref);
+
+                // Ignoring the regions (which are erased)
+                for ty in &generics.types {
+                    self.visit_ty(ty);
+                }
+                for cg in &generics.const_generics {
+                    self.visit_const_generic(cg);
+                }
+                for tr in &generics.trait_refs {
+                    self.visit_trait_ref(tr);
+                }
+            }
             Ref(cv) => self.visit_constant_expr(cv),
             Var(id) => self.visit_const_generic_var_id(id),
         }

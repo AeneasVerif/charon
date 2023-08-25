@@ -46,8 +46,11 @@ fn transform_constant_expr<F: FnMut(ETy) -> VarId::Id>(
     make_new_var: &mut F,
 ) -> Operand {
     match val.value {
-        RawConstantExpr::Literal(_) | RawConstantExpr::Var(_) => {
+        RawConstantExpr::Literal(_) | RawConstantExpr::Var(_) | RawConstantExpr::TraitConst(..) => {
             // Nothing to do
+            // TODO: for trait const: might come from a top-level impl, so we might
+            // want to introduce an intermediate statement to be able to evaluate
+            // it as a function call, like for globals.
             Operand::Const(val)
         }
         RawConstantExpr::Global(global_id) => {

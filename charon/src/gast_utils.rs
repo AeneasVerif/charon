@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 use crate::common::TAB_INCR;
+pub use crate::expressions_utils::ExprFormatter;
 use crate::formatter::Formatter;
 use crate::gast::*;
 use crate::names::Name;
@@ -9,11 +10,6 @@ use crate::types::*;
 use crate::values::*;
 use serde::Serialize;
 use std::cmp::max;
-
-pub trait ExprFormatter<'a> = TypeFormatter<'a, ErasedRegion>
-    + Formatter<VarId::Id>
-    + Formatter<(TypeDeclId::Id, VariantId::Id)>
-    + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>;
 
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
 /// TODO: generalize this with visitors
