@@ -36,8 +36,22 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 let _ = self.translate_global_decl_id(def_id);
             }
             ImplItemKind::Type(_) => {
-                // Note sure what to do with associated types yet
-                unimplemented!();
+                // Trait type:
+                // ```
+                // trait Foo {
+                //   type T;
+                // }
+                //
+                // impl Foo for Bar {
+                //   type T = bool; // HERE
+                // }
+                // ```
+                //
+                // Do nothing for now: we won't generate a top-level definition
+                // for this, and handle it when translating the trait implementation
+                // this item belongs to.
+                let tcx = self.tcx;
+                assert!(tcx.associated_item(def_id).trait_item_def_id.is_some());
             }
             ImplItemKind::Fn(_, _) => {
                 let _ = self.translate_fun_decl_id(def_id);

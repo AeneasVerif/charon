@@ -101,28 +101,34 @@ impl FunKind {
 impl TraitDecl {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter<'a, Region<RegionVarId::Id>> + Formatter<&'a ErasedRegion>,
     {
         let def_id = ctx.format_object(self.def_id);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
         let items = {
-            let items =
-                self.consts
-                    .iter()
-                    .map(|(name, (_, opt_id))| match opt_id {
-                        None => format!("{TAB_INCR}{name}\n"),
-                        Some(id) => format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*id)),
-                    })
-                    .chain(self.required_methods.iter().map(|(name, f)| {
-                        format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*f))
-                    }))
-                    .chain(
-                        self.provided_methods
-                            .iter()
-                            .map(|name| format!("{TAB_INCR}{name}\n")),
-                    )
-                    .collect::<Vec<String>>();
+            let items = self
+                .consts
+                .iter()
+                .map(|(name, (_, opt_id))| match opt_id {
+                    None => format!("{TAB_INCR}const {name}\n"),
+                    Some(id) => format!("{TAB_INCR}const {name} = {}\n", ctx.format_object(*id)),
+                })
+                .chain(self.types.iter().map(|(name, opt_ty)| match opt_ty {
+                    None => format!("{TAB_INCR}type {name}\n"),
+                    Some(ty) => format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx)),
+                }))
+                .chain(
+                    self.required_methods.iter().map(|(name, f)| {
+                        format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
+                    }),
+                )
+                .chain(
+                    self.provided_methods
+                        .iter()
+                        .map(|name| format!("{TAB_INCR}fn {name}\n")),
+                )
+                .collect::<Vec<String>>();
             if items.is_empty() {
                 "".to_string()
             } else {
@@ -137,7 +143,7 @@ impl TraitDecl {
 impl TraitImpl {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter<'a, Region<RegionVarId::Id>> + Formatter<&'a ErasedRegion>,
     {
         let def_id = ctx.format_object(self.def_id);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -146,13 +152,18 @@ impl TraitImpl {
             let items = self
                 .consts
                 .iter()
-                .map(|(name, (_, id))| format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*id)))
+                .map(|(name, (_, id))| {
+                    format!("{TAB_INCR}const {name} = {}\n", ctx.format_object(*id))
+                })
+                .chain(self.types.iter().map(|(name, ty)| {
+                    format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx))
+                }))
                 .chain(
                     self.required_methods
                         .iter()
                         .chain(self.provided_methods.iter())
                         .map(|(name, f)| {
-                            format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*f))
+                            format!("{TAB_INCR}fn {name} = {}\n", ctx.format_object(*f))
                         }),
                 )
                 .collect::<Vec<String>>();
