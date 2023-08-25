@@ -1,6 +1,7 @@
 use crate::assumed;
 use crate::common::*;
 use crate::formatter::Formatter;
+use crate::gast::TraitItemName;
 use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
 use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
@@ -144,9 +145,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             Ty::Never => Ok(ty::Ty::Never),
 
-            Ty::Alias(_, _) => {
-                unimplemented!();
-            }
+            Ty::Alias(alias_kind) => match alias_kind {
+                hax::AliasKind::Projection {
+                    impl_source,
+                    substs,
+                    name,
+                } => {
+                    let trait_ref = self.translate_trait_impl_source(impl_source);
+                    let (regions, types, const_generics) =
+                        self.translate_substs(None, substs).unwrap();
+                    let generics = ty::GenericArgs {
+                        regions,
+                        types,
+                        const_generics,
+                        trait_refs: Vec::new(),
+                    };
+                    let name = TraitItemName(name.clone());
+                    Ok(ty::Ty::TraitType(trait_ref, generics, name))
+                }
+                _ => {
+                    unimplemented!("{:?}", ty)
+                }
+            },
 
             Ty::Adt {
                 generic_args: substs,

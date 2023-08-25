@@ -411,6 +411,20 @@ fn compute_full_regions_constraints_for_ty(
                 }
             }
         }
+        Ty::TraitType(_trait_ref, generics, _name) => {
+            // TODO: A bit unclear what we should do here
+
+            // Introduce constraints for all the regions given as parameters
+            for r in &generics.regions {
+                add_region_constraints(
+                    updated,
+                    acc_constraints,
+                    type_def_constraints,
+                    *r,
+                    &parent_regions,
+                );
+            }
+        }
     }
 }
 

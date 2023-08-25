@@ -899,6 +899,13 @@ impl<R> Ty<R> {
                 RefKind::Mut => format!("*const {}", ty.fmt_with_ctx(ctx)),
                 RefKind::Shared => format!("*mut {}", ty.fmt_with_ctx(ctx)),
             },
+            Ty::TraitType(trait_ref, substs, name) => {
+                format!(
+                    "{}{}::{name}",
+                    trait_ref.fmt_with_ctx(ctx),
+                    substs.fmt_with_ctx_split_trait_refs(ctx)
+                )
+            }
         }
     }
 
@@ -962,9 +969,14 @@ impl<Rid: Clone + Ord + std::hash::Hash> Ty<Region<Rid>> {
             Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(r, ty, _) => r.contains_var(rset) || ty.contains_region_var(rset),
             Ty::RawPtr(ty, _) => ty.contains_region_var(rset),
-            Ty::Adt(_, generics) => generics.regions.iter().any(|r| {
-                r.contains_var(rset) || generics.types.iter().any(|x| x.contains_region_var(rset))
-            }),
+            Ty::TraitType(_, generics, _) | Ty::Adt(_, generics) => {
+                // For the trait type case: we are checking the projected type,
+                // so we don't need to explore the trait ref
+                generics.regions.iter().any(|r| {
+                    r.contains_var(rset)
+                        || generics.types.iter().any(|x| x.contains_region_var(rset))
+                })
+            }
         }
     }
 }
@@ -1067,6 +1079,11 @@ impl<R: Eq + Clone> Ty<R> {
             Ty::RawPtr(ty, kind) => {
                 Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst, cgsubst)), *kind)
             }
+            Ty::TraitType(trait_ref, args, name) => {
+                let trait_ref = trait_ref.substitute(rsubst, tsubst, cgsubst);
+                let args = args.substitute(rsubst, tsubst, cgsubst);
+                Ty::TraitType(trait_ref, args, name.clone())
+            }
         }
     }
 
@@ -1113,7 +1130,9 @@ impl<R: Eq + Clone> Ty<R> {
             Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(_, _, _) => true, // Always contains a region identifier
             Ty::RawPtr(ty, _) => ty.contains_variables(),
-            Ty::Adt(_, args) => {
+            Ty::TraitType(_, args, _) | Ty::Adt(_, args) => {
+                // For the trait type case: we are checking the projected type,
+                // so we don't need to explore the trait ref
                 !args.regions.is_empty() || args.types.iter().any(|x| x.contains_variables())
             }
         }
@@ -1126,7 +1145,9 @@ impl<R: Eq + Clone> Ty<R> {
             Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(_, _, _) => true,
             Ty::RawPtr(ty, _) => ty.contains_regions(),
-            Ty::Adt(_, args) => {
+            Ty::TraitType(_, args, _) | Ty::Adt(_, args) => {
+                // For the trait type case: we are checking the projected type,
+                // so we don't need to explore the trait ref
                 !args.regions.is_empty() || args.types.iter().any(|x| x.contains_regions())
             }
         }
@@ -1267,7 +1288,11 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
     pub fn contains_never(&self) -> bool {
         match self {
             Ty::Never => true,
-            Ty::Adt(_, args) => args.types.iter().any(|ty| ty.contains_never()),
+            Ty::TraitType(_, args, _) | Ty::Adt(_, args) => {
+                // For the trait type case: we are checking the projected type,
+                // so we don't need to explore the trait ref
+                args.types.iter().any(|ty| ty.contains_never())
+            }
             Ty::TypeVar(_) | Ty::Literal(_) => false,
             Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => ty.contains_never(),
         }
@@ -1457,6 +1482,20 @@ pub trait TypeVisitor {
             Never => self.visit_ty_never(),
             Ref(r, ty, rk) => self.visit_ty_ref(r, ty, rk),
             RawPtr(ty, rk) => self.visit_ty_raw_ptr(ty, rk),
+            TraitType(trait_ref, generics, _name) => {
+                self.visit_trait_ref(trait_ref);
+
+                // Ignoring the regions (which are erased)
+                for ty in &generics.types {
+                    self.visit_ty(ty);
+                }
+                for cg in &generics.const_generics {
+                    self.visit_const_generic(cg);
+                }
+                for tr in &generics.trait_refs {
+                    self.visit_trait_ref(tr);
+                }
+            }
         }
     }
 

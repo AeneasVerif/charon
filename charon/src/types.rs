@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use crate::gast::TraitItemName;
 use crate::meta::Meta;
 use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
@@ -346,6 +347,8 @@ pub enum Ty<R> {
     /// TODO: maybe we should simply deactivate support for optimized code: who
     /// wants to verify this?
     RawPtr(Box<Ty<R>>, RefKind),
+    /// A trait type
+    TraitType(TraitRef<R>, GenericArgs<R>, TraitItemName),
 }
 
 /// Type with *R*egions.

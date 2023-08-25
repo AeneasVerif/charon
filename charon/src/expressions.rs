@@ -1,6 +1,7 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
 pub use crate::expressions_utils::*;
+use crate::gast::TraitItemName;
 use crate::types::*;
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
@@ -203,7 +204,7 @@ pub enum RawConstantExpr {
     ///
     /// Remark: trait constants can not be used in types, they are necessarily
     /// values. For this reason, we can always erase the regions.
-    TraitConst(ETraitRef, EGenericArgs, String),
+    TraitConst(ETraitRef, EGenericArgs, TraitItemName),
     ///
     /// A shared reference to a constant value
     Ref(Box<ConstantExpr>),

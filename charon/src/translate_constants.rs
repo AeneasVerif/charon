@@ -1,6 +1,7 @@
 //! Functions to translate constants to LLBC.
 #![allow(dead_code)]
 use crate::expressions as e;
+use crate::gast::TraitItemName;
 use crate::translate_ctx::*;
 use crate::types as ty;
 use crate::values as v;
@@ -98,7 +99,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     const_generics,
                     trait_refs: Vec::new(),
                 };
-                e::RawConstantExpr::TraitConst(trait_ref, generics, name.clone())
+                let name = TraitItemName(name.clone());
+                e::RawConstantExpr::TraitConst(trait_ref, generics, name)
             }
             ConstantExprKind::GlobalName { id } => {
                 e::RawConstantExpr::Global(self.translate_global_decl_id(id.rust_def_id.unwrap()))
