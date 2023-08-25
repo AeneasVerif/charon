@@ -539,7 +539,7 @@ impl TypeDecl {
         let eq_space = if trait_clauses.is_empty() {
             "".to_string()
         } else {
-            format!("\n{TAB_INCR}")
+            format!("\n ")
         };
         let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
 
@@ -552,7 +552,7 @@ impl TypeDecl {
                         .collect();
                     let fields = fields.join(",");
                     format!(
-                        "struct {}{params}{trait_clauses}{eq_space}= {{{fields}\n}}",
+                        "struct {}{params}{trait_clauses}{eq_space}=\n{{{fields}\n}}",
                         self.name
                     )
                 } else {
