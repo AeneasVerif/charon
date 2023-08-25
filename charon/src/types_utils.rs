@@ -401,6 +401,14 @@ impl TraitInstanceId {
     {
         match self {
             TraitInstanceId::SelfId => "Self".to_string(),
+            TraitInstanceId::TraitTypeClause(id, type_name, clause_id) => {
+                let id = id.fmt_with_ctx(ctx);
+                // Using on purpose [to_pretty_string] instead of [format_object]:
+                // the clause is local to the associated type, so it should not
+                // be referenced in the current context.
+                let clause = clause_id.to_pretty_string();
+                format!("({id}::{type_name}::[{clause}])")
+            }
             TraitInstanceId::Trait(id) => ctx.format_object(*id),
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
             TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
@@ -1462,6 +1470,31 @@ impl TySubst<ErasedRegion> {
     }
 }
 
+/// Visitor to replace the [TraitInstanceId::SelfId] inside a type
+struct TraitInstanceIdSelfReplacer {
+    new_id: TraitInstanceId,
+}
+
+impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
+    fn visit_trait_instance_id(&mut self, id: &mut TraitInstanceId) {
+        match id {
+            TraitInstanceId::SelfId => *id = self.new_id.clone(),
+            TraitInstanceId::TraitTypeClause(box id, _, _) => self.visit_trait_instance_id(id),
+            TraitInstanceId::Trait(_)
+            | TraitInstanceId::Clause(_)
+            | TraitInstanceId::BuiltinOrAuto(_) => (),
+        }
+    }
+}
+
+impl<R> Ty<R> {
+    pub(crate) fn replace_self_trait_instance_id(mut self, new_id: TraitInstanceId) -> Self {
+        let mut visitor = TraitInstanceIdSelfReplacer { new_id };
+        visitor.visit_ty(&mut self);
+        self
+    }
+}
+
 // Derive two implementations at once: one which uses shared borrows, and one
 // which uses mutable borrows.
 // Generates the traits: `SharedTypeVisitor` and `MutTypeVisitor`.
@@ -1593,6 +1626,10 @@ pub trait TypeVisitor {
     fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
         match id {
             TraitInstanceId::SelfId => (),
+            TraitInstanceId::TraitTypeClause(box id, _name, clause_id) => {
+                self.visit_trait_instance_id(id);
+                self.visit_trait_clause_id(clause_id)
+            },
             TraitInstanceId::Trait(id) => self.visit_trait_impl_id(id),
             TraitInstanceId::Clause(id) => self.visit_trait_clause_id(id),
             TraitInstanceId::BuiltinOrAuto(id) => self.visit_trait_decl_id(id),

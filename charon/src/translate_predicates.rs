@@ -3,8 +3,10 @@ use crate::formatter::Formatter;
 use crate::gast::ParamsInfo;
 use crate::translate_ctx::BodyTransCtx;
 use crate::translate_types::TyTranslator;
-use crate::types::{ETraitRef, GenericArgs, RTraitRef, TraitRef};
-use crate::types::{TraitClause, TraitClauseId, TraitDeclId, Ty};
+use crate::types::{
+    ConstGeneric, ETraitRef, GenericArgs, RTraitRef, TraitClause, TraitDeclId, TraitInstanceId,
+    TraitRef, Ty, TypeVarId,
+};
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
@@ -158,7 +160,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
     {
         trace!("impl_source: {:?}", impl_source);
-        use crate::gast::TraitInstanceId;
         use hax::ImplSource;
 
         match impl_source {
@@ -188,70 +189,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // We need to find the trait clause which corresponds to
                 // this obligation.
-                let trait_id = {
-                    let mut clause_id: Option<TraitClauseId::Id> = None;
-
-                    let tgt_types = &generics.types;
-                    let tgt_const_generics = &generics.const_generics;
-
-                    let match_trait_clauses = &|trait_clause: &TraitClause| {
-                        // Check if the clause is about the same trait
-                        if trait_clause.trait_id != trait_id {
-                            false
-                        } else {
-                            let src_types: Vec<Ty<R>> = trait_clause
-                                .generics
-                                .types
-                                .iter()
-                                .map(|x| self.convert_rty(x))
-                                .collect();
-                            let src_const_generics = &trait_clause.generics.const_generics;
-
-                            // We simply check the equality between the arguments:
-                            // there are no universally quantified variables to unify.
-                            // TODO: normalize the trait clauses (we actually
-                            // need to check equality **modulo** equality clauses)
-                            // TODO: if we need to unify (later, when allowing universal
-                            // quantification over clause parameters), use types_utils::TySubst.
-                            &src_types == tgt_types && src_const_generics == tgt_const_generics
-                        }
-                    };
-
-                    // Try to match the self trait clause
-                    if let Some(self_clause) = &self.self_trait_clause && match_trait_clauses(self_clause) {
-                        TraitInstanceId::SelfId
-                    }
-                    else {
-                        // Otherwise match the parameter clauses
-                        for trait_clause in &self.trait_clauses {
-                            if match_trait_clauses(trait_clause) {
-                                clause_id = Some(trait_clause.clause_id);
-                            }
-                        }
-                        // We should have found a clause
-                        match clause_id {
-                            Some(id) => TraitInstanceId::Clause(id),
-                            None => {
-                                let trait_ref = format!(
-                                    "{}{}",
-                                    self.format_object(trait_id),
-                                    generics.fmt_with_ctx(self)
-                                );
-                                let clauses: Vec<String> =
-                                    self.self_trait_clause.iter().chain(
-                                        self.trait_clauses
-                                            .iter())
-                                            .map(|x| x.fmt_with_ctx(self))
-                                    .collect();
-                                let clauses = clauses.join("\n");
-                                unreachable!(
-                                    "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
-                                    trait_ref, clauses
-                                );
-                            }
-                        }
-                    }
-                };
+                let trait_id = self.find_trait_clause_for_param(trait_id, &generics);
 
                 assert!(generics.trait_refs.is_empty());
                 // Ignore the arguments: we forbid using universal quantifiers
@@ -287,6 +225,209 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             ImplSource::TraitUpcasting(_) => unimplemented!(),
         }
+    }
+
+    /// Find the trait instance fullfilling a trait obligation.
+    /// TODO: having to do this is very annoying. Isn't there a better way?
+    fn find_trait_clause_for_param<R>(
+        &mut self,
+        trait_id: TraitDeclId::Id,
+        generics: &GenericArgs<R>,
+    ) -> TraitInstanceId
+    where
+        R: Eq + Clone,
+        Self: TyTranslator<R>,
+        Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
+    {
+        let tgt_types = &generics.types;
+        let tgt_const_generics = &generics.const_generics;
+
+        let match_trait_clauses = &|trait_clause: &TraitClause| {
+            // Check if the clause is about the same trait
+            if trait_clause.trait_id != trait_id {
+                false
+            } else {
+                let src_types: Vec<Ty<R>> = trait_clause
+                    .generics
+                    .types
+                    .iter()
+                    .map(|x| self.convert_rty(x))
+                    .collect();
+                let src_const_generics = &trait_clause.generics.const_generics;
+
+                // We simply check the equality between the arguments:
+                // there are no universally quantified variables to unify.
+                // TODO: normalize the trait clauses (we actually
+                // need to check equality **modulo** equality clauses)
+                // TODO: if we need to unify (later, when allowing universal
+                // quantification over clause parameters), use types_utils::TySubst.
+                &src_types == tgt_types && src_const_generics == tgt_const_generics
+            }
+        };
+
+        // Try to match the self trait clause
+        if let Some(self_clause) = &self.self_trait_clause && match_trait_clauses(self_clause) {
+            return TraitInstanceId::SelfId;
+        }
+
+        // Otherwise match the parameter clauses
+        for trait_clause in &self.trait_clauses {
+            // Match with the clause
+            if match_trait_clauses(trait_clause) {
+                return TraitInstanceId::Clause(trait_clause.clause_id);
+            }
+
+            // Very annoying, but we have to do the following because of this
+            // kind of situations:
+            // ```
+            // trait Foo {
+            //   type W: Bar // Bar contains a method bar
+            // }
+            //
+            // fn f<T : Foo>(x : T::W) {
+            //   x.bar(); // We need to refer to the trait clause declared for Foo::W
+            // }
+            // ```
+            //
+            // Match with the trait clauses of the associated types present
+            // in the trait.
+            // With the example above: we may have (unsuccessfully) matched
+            // with the clause `T : Foo`, now we dive inside `Foo` and look
+            // at its associated types.
+
+            // **IMPORTANT**: we attempt to lookup the trait declaration.
+            // If we succeed, we match. Otherwise, we skip.
+            // Note that we translate traits before functions (and before
+            // trait methods), and in most situations we should need to
+            // dive into trait declarations to find clauses to match with
+            // for methods, so it should be ok.
+            // We could also force the translation of the trait we want
+            // to lookup at this point, but I'm afraid of loops.
+            if let Some(trait_decl) = self.t_ctx.trait_decls.get(trait_clause.trait_id) {
+                trace!(
+                    "Looked up trait declaration: {}",
+                    trait_decl.name.to_string()
+                );
+
+                // Create the substitutions - TODO: very heavy...
+                // TODO: dealing with the regions is a mess...
+                // We check there are none for now.
+                assert!(trait_decl.generics.regions.is_empty());
+                let ty_subst = crate::types_utils::make_type_subst(
+                    trait_decl.generics.types.iter().map(|x| x.index),
+                    trait_clause.generics.types.iter(),
+                );
+                use std::iter::FromIterator;
+                let ty_subst: std::collections::HashMap<TypeVarId::Id, Ty<R>> =
+                    std::collections::HashMap::from_iter(
+                        ty_subst.into_iter().map(|(k, v)| (k, self.convert_rty(&v))),
+                    );
+
+                let cg_subst = crate::types_utils::make_cg_subst(
+                    trait_decl.generics.const_generics.iter().map(|x| x.index),
+                    trait_clause.generics.const_generics.iter(),
+                );
+
+                // Explore the associated types
+                for (name, (clauses, _)) in &trait_decl.types {
+                    for clause in clauses {
+                        trace!("Matching with: {name}");
+                        trace!(
+                            "Trait id: {:?}, Clause trait id: {:?}",
+                            trait_id,
+                            clause.trait_id
+                        );
+                        trace!("Clause: {:?}", clause);
+
+                        if clause.trait_id != trait_id {
+                            trace!("Not the same trait id");
+                            continue;
+                        }
+                        trace!("Same trait id");
+
+                        // TODO: dealing with the regions is a mess...
+                        // Checking there are none for now
+                        assert!(clause.generics.regions.is_empty());
+
+                        // Substitute
+                        let src_types: Vec<Ty<R>> = clause
+                            .generics
+                            .types
+                            .iter()
+                            .map(|x| {
+                                self.convert_rty(x)
+                                    .substitute(
+                                        &|r| r.clone(),
+                                        &|tid| ty_subst.get(tid).unwrap().clone(),
+                                        &|cgid| cg_subst.get(cgid).unwrap().clone(),
+                                    )
+                                    .replace_self_trait_instance_id(TraitInstanceId::Clause(
+                                        clause.clause_id,
+                                    ))
+                            })
+                            .collect();
+
+                        let src_const_generics: Vec<ConstGeneric> = clause
+                            .generics
+                            .const_generics
+                            .iter()
+                            .map(|x| x.substitute(&|cgid| cg_subst.get(cgid).unwrap().clone()))
+                            .collect();
+
+                        trace!(
+                            "- tgt_types: {}\n- tgt_const_generics: {}\n- src_types: {}\n- src_const_generics: {}",
+                            tgt_types
+                                .iter()
+                                .map(|x| x.fmt_with_ctx(self))
+                                .collect::<Vec<_>>()
+                                .join(", "),
+                            tgt_const_generics
+                                .iter()
+                                .map(|x| x.fmt_with_ctx(self))
+                                .collect::<Vec<_>>()
+                                .join(", "),
+                            src_types
+                                .iter()
+                                .map(|x| x.fmt_with_ctx(self))
+                                .collect::<Vec<_>>()
+                                .join(", "),
+                            src_const_generics
+                                .iter()
+                                .map(|x| x.fmt_with_ctx(self))
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        );
+
+                        // See [match_trait_clauses]
+                        if &src_types == tgt_types && &src_const_generics == tgt_const_generics {
+                            return TraitInstanceId::TraitTypeClause(
+                                Box::new(TraitInstanceId::Clause(trait_clause.clause_id)),
+                                name.clone(),
+                                clause.clause_id,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        // We couldn't find a clause
+        let trait_ref = format!(
+            "{}{}",
+            self.format_object(trait_id),
+            generics.fmt_with_ctx(self)
+        );
+        let clauses: Vec<String> = self
+            .self_trait_clause
+            .iter()
+            .chain(self.trait_clauses.iter())
+            .map(|x| x.fmt_with_ctx(self))
+            .collect();
+        let clauses = clauses.join("\n");
+        unreachable!(
+            "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
+            trait_ref, clauses
+        );
     }
 
     pub(crate) fn translate_trait_impl_sources_erased_regions(

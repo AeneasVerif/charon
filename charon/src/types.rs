@@ -87,6 +87,19 @@ pub enum TraitInstanceId {
     Trait(TraitImplId::Id),
     /// A clause bound in the function signature
     Clause(TraitClauseId::Id),
+    /// A clause bound in an associated type of a trait instance.
+    ///
+    /// Example:
+    /// ```
+    /// trait Foo {
+    ///   type W: Bar // Bar contains a method bar
+    /// }
+    ///
+    /// fn f<T : Foo>(x : T::W) {
+    ///   x.bar(); // We need to refer to the trait instance satisfying: `Foo::W : Bar`
+    /// }
+    /// ```
+    TraitTypeClause(Box<TraitInstanceId>, TraitItemName, TraitClauseId::Id),
     /// Builtin traits like [core::marker::Sized] and auto traits like
     /// [core::marker::Syn].
     BuiltinOrAuto(TraitDeclId::Id),
