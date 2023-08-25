@@ -240,10 +240,10 @@ pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<Stri
 
             let clauses = clauses.join("");
             let local_clauses = local_clauses.join("");
-            format!("\nwhere{delim0}{clauses}{delim1}{local_clauses}")
+            format!("\n{tab}where{delim0}{clauses}{delim1}{local_clauses}")
         } else {
             let clauses = clauses.join("");
-            format!("\nwhere{clauses}")
+            format!("\n{tab}where{clauses}")
         }
     }
 }

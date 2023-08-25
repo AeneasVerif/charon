@@ -230,15 +230,22 @@ pub struct TraitItemName(pub String);
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
     pub name: Name,
+    /// **ATTENTION***:
+    /// The generics contain:
+    /// - an additional clause for `Self : Trait` that should be ignored
+    /// - the clauses for the trait
+    /// - the clauses for the associated types
+    /// TODO: that's quite ugly. Maybe we should include the first clause
+    /// for all the definitions.
     pub generics: GenericParams,
+    /// The clauses relevant for the trait
+    pub trait_clauses: Vec<TraitClause>,
     /// The associated constants declared in the trait.
     ///
     /// The optional id is for the default value.
     pub consts: Vec<(TraitItemName, (ETy, Option<GlobalDeclId::Id>))>,
     /// The associated types declared in the trait.
-    ///
-    /// TODO: bounds
-    pub types: Vec<(TraitItemName, Option<ETy>)>,
+    pub types: Vec<(TraitItemName, (Vec<TraitClause>, Option<ETy>))>,
     /// The *required* methods.
     ///
     /// The required methods are the methods declared by the trait but with

@@ -35,7 +35,7 @@ where
     I: ToUsize,
     T: Clone,
 {
-    vector: im::Vector<T>,
+    pub vector: im::Vector<T>,
     /// This is a bit annoying, but we need to use `I` somewhere.
     phantom: std::marker::PhantomData<I>,
 }

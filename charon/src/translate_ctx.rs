@@ -597,6 +597,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trait_clauses: self.trait_clauses.clone(),
         }
     }
+
+    /// Clear the predicates (trait clauses, etc.).
+    /// This is used only in very specific situations.
+    /// TODO: find a better way
+    pub(crate) fn clear_predicates(&mut self) -> ty::TraitClauseId::Vector<ty::TraitClause> {
+        self.trait_clauses_counter = ty::TraitClauseId::Generator::new();
+        std::mem::replace(&mut self.trait_clauses, ty::TraitClauseId::Vector::new())
+    }
 }
 
 impl<'tcx, 'ctx> Formatter<ty::TypeDeclId::Id> for TransCtx<'tcx, 'ctx> {

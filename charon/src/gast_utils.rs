@@ -103,28 +103,39 @@ impl TraitDecl {
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
         let items = {
-            let items = self
-                .consts
-                .iter()
-                .map(|(name, (_, opt_id))| match opt_id {
-                    None => format!("{TAB_INCR}const {name}\n"),
-                    Some(id) => format!("{TAB_INCR}const {name} = {}\n", ctx.format_object(*id)),
-                })
-                .chain(self.types.iter().map(|(name, opt_ty)| match opt_ty {
-                    None => format!("{TAB_INCR}type {name}\n"),
-                    Some(ty) => format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx)),
-                }))
-                .chain(
-                    self.required_methods.iter().map(|(name, f)| {
+            let items =
+                self.consts
+                    .iter()
+                    .map(|(name, (_, opt_id))| match opt_id {
+                        None => format!("{TAB_INCR}const {name}\n"),
+                        Some(id) => {
+                            format!("{TAB_INCR}const {name} = {}\n", ctx.format_object(*id))
+                        }
+                    })
+                    .chain(self.types.iter().map(|(name, (trait_clauses, opt_ty))| {
+                        let trait_clauses: Vec<_> =
+                            trait_clauses.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
+                        let clauses =
+                            fmt_where_clauses(&format!("{TAB_INCR}{TAB_INCR}"), 0, trait_clauses);
+                        match opt_ty {
+                            None => format!("{TAB_INCR}type {name}{clauses}\n"),
+                            Some(ty) => {
+                                format!(
+                                    "{TAB_INCR}type {name} = {}{clauses}\n",
+                                    ty.fmt_with_ctx(ctx)
+                                )
+                            }
+                        }
+                    }))
+                    .chain(self.required_methods.iter().map(|(name, f)| {
                         format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
-                    }),
-                )
-                .chain(
-                    self.provided_methods
-                        .iter()
-                        .map(|name| format!("{TAB_INCR}fn {name}\n")),
-                )
-                .collect::<Vec<String>>();
+                    }))
+                    .chain(
+                        self.provided_methods
+                            .iter()
+                            .map(|name| format!("{TAB_INCR}fn {name}\n")),
+                    )
+                    .collect::<Vec<String>>();
             if items.is_empty() {
                 "".to_string()
             } else {

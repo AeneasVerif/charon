@@ -55,8 +55,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Translate the generic
         let _substs = bt_ctx.translate_generics(rust_id);
 
-        // Translate the predicates
-        bt_ctx.translate_predicates_of(rust_id);
+        // Translate the predicates - Remark: this time we use [predicates_of]
+        // in order to add an additional bound `Self : Trait`, because we
+        // need it to solve the bounds for the associated types (they often
+        // require a reference to self).
+        let predicates = tcx.predicates_of(rust_id).sinto(&bt_ctx.hax_state);
+        bt_ctx.translate_predicates(predicates);
+        let trait_clauses: Vec<_> = bt_ctx.trait_clauses.iter().skip(1).cloned().collect();
+        let mut trait_clauses_start_index = bt_ctx.trait_clauses.len();
 
         trace!("- trait id: {:?}\n- trait name: {:?}", rust_id, name);
         trace!("Trait predicates: {:?}", tcx.predicates_of(rust_id));
@@ -103,13 +109,30 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 }
                 AssocKind::Type => {
                     let name = TraitItemName(item.name.to_string());
+
+                    // Translating the predicates
+                    // TODO: this is an ugly manip
+                    let bounds = tcx.item_bounds(item.def_id).subst_identity();
+                    use crate::rustc_middle::query::Key;
+                    let span = bounds.default_span(tcx);
+                    let bounds: Vec<_> = bounds.into_iter().map(|x| (x, span)).collect();
+                    let bounds = bounds.sinto(&bt_ctx.hax_state);
+                    bt_ctx.translate_predicates_vec(bounds);
+
+                    // Retreive the trait clauses
+                    let mut trait_clauses = Vec::new();
+                    for i in trait_clauses_start_index..bt_ctx.trait_clauses.len() {
+                        trait_clauses.push(bt_ctx.trait_clauses.vector.get(i).unwrap().clone());
+                    }
+                    trait_clauses_start_index = bt_ctx.trait_clauses.len();
+
                     let ty = if has_default_value {
                         Some(bt_ctx.translate_ty_from_trait_item(item))
                     } else {
                         None
                     };
 
-                    types.push((name, ty));
+                    types.push((name, (trait_clauses, ty)));
                 }
             }
         }
@@ -122,6 +145,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             def_id,
             name,
             generics: bt_ctx.get_generics(),
+            trait_clauses,
             consts,
             types,
             required_methods,

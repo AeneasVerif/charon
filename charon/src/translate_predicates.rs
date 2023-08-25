@@ -64,8 +64,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.translate_predicates(preds);
     }
 
-    fn translate_predicates(&mut self, preds: hax::GenericPredicates) {
-        for (pred, span) in preds.predicates {
+    pub(crate) fn translate_predicates(&mut self, preds: hax::GenericPredicates) {
+        self.translate_predicates_vec(preds.predicates);
+    }
+
+    pub(crate) fn translate_predicates_vec(&mut self, preds: Vec<(hax::Predicate, hax::Span)>) {
+        for (pred, span) in preds {
             // Skip the binder (which lists the quantified variables).
             // By doing so, we allow the predicates to contain DeBruijn indices,
             // but it is ok because we only do a simple check.
