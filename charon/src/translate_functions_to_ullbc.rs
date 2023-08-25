@@ -1693,7 +1693,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_id = self.translate_fun_decl_id(rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
-        let tcx = self.tcx;
 
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
