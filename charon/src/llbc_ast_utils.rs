@@ -6,7 +6,7 @@ use std::ops::DerefMut;
 use crate::common::*;
 use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
 use crate::formatter::Formatter;
-use crate::gast_utils::{GFunDeclFormatter, GGlobalDeclFormatter};
+use crate::gast_utils::{ExprFormatter, GFunDeclFormatter, GGlobalDeclFormatter};
 use crate::llbc_ast::{
     Assert, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement, Switch,
     TraitClauseId, TraitDeclId,
@@ -162,18 +162,7 @@ impl Statement {
 
     pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
     where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<TraitDeclId::Id>
-            + Formatter<TraitImplId::Id>
-            + Formatter<TraitClauseId::Id>,
+        T: ExprFormatter<'a>,
     {
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(

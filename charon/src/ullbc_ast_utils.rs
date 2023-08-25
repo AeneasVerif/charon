@@ -103,18 +103,7 @@ impl Statement {
 impl Terminator {
     pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
     where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<TraitDeclId::Id>
-            + Formatter<TraitImplId::Id>
-            + Formatter<TraitClauseId::Id>,
+        T: ExprFormatter<'a>,
     {
         match &self.content {
             RawTerminator::Goto { target } => format!("goto bb{target}"),
@@ -168,18 +157,7 @@ impl Terminator {
 impl BlockData {
     pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
     where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<TraitDeclId::Id>
-            + Formatter<TraitImplId::Id>
-            + Formatter<TraitClauseId::Id>,
+        T: ExprFormatter<'a>,
     {
         let mut out: Vec<String> = Vec::new();
 
@@ -202,18 +180,7 @@ pub(crate) fn fmt_body_blocks_with_ctx<'a, 'b, 'c, C>(
     ctx: &'c C,
 ) -> String
 where
-    C: Formatter<VarId::Id>
-        + Formatter<TypeVarId::Id>
-        + Formatter<&'a ErasedRegion>
-        + Formatter<TypeDeclId::Id>
-        + Formatter<ConstGenericVarId::Id>
-        + Formatter<FunDeclId::Id>
-        + Formatter<GlobalDeclId::Id>
-        + Formatter<(TypeDeclId::Id, VariantId::Id)>
-        + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-        + Formatter<TraitDeclId::Id>
-        + Formatter<TraitImplId::Id>
-        + Formatter<TraitClauseId::Id>,
+    C: ExprFormatter<'a>,
 {
     let block_tab = format!("{tab}{TAB_INCR}");
     let mut blocks: Vec<String> = Vec::new();

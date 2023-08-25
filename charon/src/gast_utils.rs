@@ -10,6 +10,11 @@ use crate::values::*;
 use serde::Serialize;
 use std::cmp::max;
 
+pub trait ExprFormatter<'a> = TypeFormatter<'a, ErasedRegion>
+    + Formatter<VarId::Id>
+    + Formatter<(TypeDeclId::Id, VariantId::Id)>
+    + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>;
+
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
 /// TODO: generalize this with visitors
 pub fn iter_function_bodies<T>(
@@ -96,16 +101,7 @@ impl FunKind {
 impl TraitDecl {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: Formatter<TypeVarId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<TraitDeclId::Id>
-            + Formatter<TraitClauseId::Id>
-            + Formatter<TraitImplId::Id>
-            + Formatter<TraitDeclId::Id>,
+        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
     {
         let def_id = ctx.format_object(self.def_id);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -135,17 +131,7 @@ impl TraitDecl {
 impl TraitImpl {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: Formatter<TypeVarId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<TraitDeclId::Id>
-            + Formatter<TraitImplId::Id>
-            + Formatter<TraitClauseId::Id>
-            + Formatter<TraitImplId::Id>
-            + Formatter<TraitDeclId::Id>,
+        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
     {
         let def_id = ctx.format_object(self.def_id);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -172,15 +158,7 @@ impl TraitImpl {
 impl ImplTraitRef {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: Formatter<TypeVarId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<TraitDeclId::Id>
-            + Formatter<TraitImplId::Id>
-            + Formatter<TraitClauseId::Id>,
+        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
     {
         let trait_id = ctx.format_object(self.trait_id);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
@@ -190,18 +168,7 @@ impl ImplTraitRef {
 
 pub fn fmt_call<'a, 'b, T>(ctx: &'b T, call: &'a Call) -> String
 where
-    T: Formatter<VarId::Id>
-        + Formatter<TypeVarId::Id>
-        + Formatter<&'a ErasedRegion>
-        + Formatter<TypeDeclId::Id>
-        + Formatter<ConstGenericVarId::Id>
-        + Formatter<FunDeclId::Id>
-        + Formatter<GlobalDeclId::Id>
-        + Formatter<(TypeDeclId::Id, VariantId::Id)>
-        + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-        + Formatter<TraitDeclId::Id>
-        + Formatter<TraitImplId::Id>
-        + Formatter<TraitClauseId::Id>,
+    T: ExprFormatter<'a>,
 {
     let generics = call.generics.fmt_with_ctx_split_trait_refs(ctx);
     let f = match &call.func {
@@ -237,19 +204,7 @@ impl<T> GExprBody<T> {
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
     pub fn fmt_with_ctx<'a, 'b, 'c, C>(&'a self, tab: &'b str, ctx: &'c C) -> String
     where
-        C: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<&'a T>
-            + Formatter<TraitDeclId::Id>
-            + Formatter<TraitImplId::Id>
-            + Formatter<TraitClauseId::Id>,
+        C: ExprFormatter<'a> + Formatter<&'a T>,
     {
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
@@ -299,16 +254,7 @@ impl<T> GExprBody<T> {
 impl FunSig {
     pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &'a T) -> String
     where
-        T: Formatter<TypeVarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<RegionVarId::Id>
-            + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<TraitDeclId::Id>
-            + Formatter<TraitImplId::Id>
-            + Formatter<TraitClauseId::Id>,
+        T: Formatter<RegionVarId::Id> + TypeFormatter<'a, Region<RegionVarId::Id>>,
     {
         // Generic parameters
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -347,20 +293,8 @@ impl FunSig {
     }
 }
 
-pub trait GFunDeclFormatter<'a, Body: 'a> = Formatter<VarId::Id>
-    + Formatter<TypeVarId::Id>
-    + Formatter<TypeDeclId::Id>
-    + Formatter<ConstGenericVarId::Id>
-    + Formatter<&'a Region<RegionVarId::Id>>
-    + Formatter<&'a ErasedRegion>
-    + Formatter<FunDeclId::Id>
-    + Formatter<GlobalDeclId::Id>
-    + Formatter<(TypeDeclId::Id, VariantId::Id)>
-    + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-    + Formatter<&'a Body>
-    + Formatter<TraitDeclId::Id>
-    + Formatter<TraitImplId::Id>
-    + Formatter<TraitClauseId::Id>;
+pub trait GFunDeclFormatter<'a, Body: 'a> =
+    ExprFormatter<'a> + Formatter<&'a Body> + Formatter<&'a Region<RegionVarId::Id>>;
 
 impl<T> GFunDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
@@ -427,19 +361,7 @@ impl<T> GFunDecl<T> {
     }
 }
 
-pub trait GGlobalDeclFormatter<'a, Body: 'a> = Formatter<VarId::Id>
-    + Formatter<TypeVarId::Id>
-    + Formatter<TypeDeclId::Id>
-    + Formatter<&'a ErasedRegion>
-    + Formatter<ConstGenericVarId::Id>
-    + Formatter<FunDeclId::Id>
-    + Formatter<GlobalDeclId::Id>
-    + Formatter<(TypeDeclId::Id, VariantId::Id)>
-    + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-    + Formatter<&'a Body>
-    + Formatter<TraitDeclId::Id>
-    + Formatter<TraitImplId::Id>
-    + Formatter<TraitClauseId::Id>;
+pub trait GGlobalDeclFormatter<'a, Body: 'a> = ExprFormatter<'a> + Formatter<&'a Body>;
 
 impl<T> GGlobalDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
