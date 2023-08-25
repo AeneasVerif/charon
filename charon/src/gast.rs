@@ -151,15 +151,15 @@ pub enum FunKind {
         /// The id of the trait decl the method belongs to
         trait_id: TraitDeclId::Id,
         /// The name of the method
-        method_name: TraitMethodName,
+        method_name: TraitItemName,
         /// True if this function re-implements a provided method
         provided: bool,
     },
     /// Trait method declaration
-    TraitMethodDecl(TraitDeclId::Id, TraitMethodName),
+    TraitMethodDecl(TraitDeclId::Id, TraitItemName),
     /// Trait method provided function (method in a trait declaration with a
     /// default implementation)
-    TraitMethodProvided(TraitDeclId::Id, TraitMethodName),
+    TraitMethodProvided(TraitDeclId::Id, TraitItemName),
 }
 
 /// A function definition
@@ -191,8 +191,8 @@ pub struct GGlobalDecl<T> {
     pub body: Option<GExprBody<T>>,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct TraitMethodName(pub String);
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
+pub struct TraitItemName(pub String);
 
 /// A trait **declaration**.
 ///
@@ -231,15 +231,19 @@ pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
     pub name: Name,
     pub generics: GenericParams,
-    // The associated types declared in the trait
-    //pub types:
-    // The associated constants declared in the trait
-    //
+    /// The associated constants declared in the trait.
+    ///
+    /// The optional id is for the default value.
+    pub consts: Vec<(TraitItemName, (ETy, Option<GlobalDeclId::Id>))>,
+    /// The associated types declared in the trait.
+    ///
+    /// TODO: bounds
+    pub types: Vec<(TraitItemName, Option<ETy>)>,
     /// The *required* methods.
     ///
     /// The required methods are the methods declared by the trait but with
     /// no default implementation.
-    pub required_methods: Vec<(TraitMethodName, FunDeclId::Id)>,
+    pub required_methods: Vec<(TraitItemName, FunDeclId::Id)>,
     /// The *provided* methods.
     ///
     /// The provided methods are the methods with a default implementation.
@@ -250,7 +254,7 @@ pub struct TraitDecl {
     /// TODO: allow to optionnaly extract information. For instance: attempt
     /// to extract, and fail nicely if we don't succeed (definition not in
     /// the supported subset, etc.).
-    pub provided_methods: Vec<TraitMethodName>,
+    pub provided_methods: Vec<TraitItemName>,
 }
 
 /// Information about an implemented trait.
@@ -285,14 +289,16 @@ pub struct TraitImpl {
     pub impl_trait: ImplTraitRef,
     pub name: Name,
     pub generics: GenericParams,
-    // The associated types declared in the trait
-    //pub types:
-    // The associated constants declared in the trait
-    //
+    /// The associated constants declared in the trait.
+    pub consts: Vec<(TraitItemName, (ETy, GlobalDeclId::Id))>,
+    /// The associated types declared in the trait.
+    ///
+    /// TODO: bounds
+    pub types: Vec<(TraitItemName, ETy)>,
     /// The implemented required methods
-    pub required_methods: Vec<(TraitMethodName, FunDeclId::Id)>,
+    pub required_methods: Vec<(TraitItemName, FunDeclId::Id)>,
     /// The re-implemented provided methods
-    pub provided_methods: Vec<(TraitMethodName, FunDeclId::Id)>,
+    pub provided_methods: Vec<(TraitItemName, FunDeclId::Id)>,
 }
 
 /// A function identifier. See [crate::ullbc_ast::Terminator]
@@ -408,7 +414,7 @@ pub enum AssumedFunId {
 pub enum FunIdOrTraitMethodRef {
     Fun(FunId),
     /// If a trait: the reference to the trait and the id of the trait method
-    Trait(ETraitRef, TraitMethodName),
+    Trait(ETraitRef, TraitItemName),
 }
 
 #[derive(Debug, Clone, Serialize)]

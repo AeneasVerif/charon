@@ -107,20 +107,26 @@ impl TraitDecl {
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
         let items = {
-            let items = self
-                .required_methods
-                .iter()
-                .map(|(name, f)| format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*f)))
-                .chain(
-                    self.provided_methods
-                        .iter()
-                        .map(|name| format!("{TAB_INCR}{name}\n")),
-                )
-                .collect::<Vec<String>>();
+            let items =
+                self.consts
+                    .iter()
+                    .map(|(name, (_, opt_id))| match opt_id {
+                        None => format!("{TAB_INCR}{name}\n"),
+                        Some(id) => format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*id)),
+                    })
+                    .chain(self.required_methods.iter().map(|(name, f)| {
+                        format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*f))
+                    }))
+                    .chain(
+                        self.provided_methods
+                            .iter()
+                            .map(|name| format!("{TAB_INCR}{name}\n")),
+                    )
+                    .collect::<Vec<String>>();
             if items.is_empty() {
                 "".to_string()
             } else {
-                format!("\n{{\n{}}}", items.join(","))
+                format!("\n{{\n{}}}", items.join(""))
             }
         };
 
@@ -138,10 +144,17 @@ impl TraitImpl {
         let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
         let items = {
             let items = self
-                .required_methods
+                .consts
                 .iter()
-                .chain(self.provided_methods.iter())
-                .map(|(name, f)| format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*f)))
+                .map(|(name, (_, id))| format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*id)))
+                .chain(
+                    self.required_methods
+                        .iter()
+                        .chain(self.provided_methods.iter())
+                        .map(|(name, f)| {
+                            format!("{TAB_INCR}{name} -> {}\n", ctx.format_object(*f))
+                        }),
+                )
                 .collect::<Vec<String>>();
             if items.is_empty() {
                 "".to_string()
@@ -408,7 +421,7 @@ impl FunIdOrTraitMethodRef {
     }
 }
 
-impl std::fmt::Display for TraitMethodName {
+impl std::fmt::Display for TraitItemName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(f, "{}", self.0)
     }

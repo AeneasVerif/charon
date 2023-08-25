@@ -5,7 +5,7 @@ use crate::assumed;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::gast::{
-    AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, GenericArgs, TraitMethodName,
+    AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, GenericArgs, TraitItemName,
 };
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
@@ -519,7 +519,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         }
     }
 
-    fn visit_trait_method_name(&mut self, _: &TraitMethodName) {}
+    fn visit_trait_method_name(&mut self, _: &TraitItemName) {}
 
     fn visit_fun_decl_id(&mut self, _: &FunDeclId::Id) {}
     fn visit_assumed_fun_id(&mut self, _: &AssumedFunId) {}

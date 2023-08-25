@@ -334,7 +334,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         Some(trait_method_id) => {
                             let trait_id = tcx.trait_of_item(trait_method_id).unwrap();
                             let trait_id = self.translate_trait_decl_id(trait_id);
-                            let method_name = self.translate_trait_method_name(trait_method_id);
+                            let method_name = self.translate_trait_item_name(trait_method_id);
 
                             // Check if the current function implements a provided method.
                             // We do so by retrieving the def id of the method which is
@@ -373,7 +373,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let is_provided = tcx.impl_defaultness(rust_id).has_value();
 
                     // Compute additional information
-                    let method_name = self.translate_trait_method_name(rust_id);
+                    let method_name = self.translate_trait_item_name(rust_id);
                     let trait_id = tcx.trait_of_item(rust_id).unwrap();
                     let trait_id = self.translate_trait_decl_id(trait_id);
 
@@ -1405,7 +1405,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("{:?}", rust_id);
 
         let _ = self.translate_fun_decl_id(rust_id);
-        let method_name = self.t_ctx.translate_trait_method_name(rust_id);
+        let method_name = self.t_ctx.translate_trait_item_name(rust_id);
 
         // Compute the concatenation of all the generic arguments which were given to
         // the function (trait arguments + method arguments).
