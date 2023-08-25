@@ -1631,6 +1631,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .collect();
         self.push_bound_regions_group(bvar_names);
 
+        // Add the self trait clause if it is a trait decl item - we take care
+        // of adding it before translating the predicates.
+        match self.t_ctx.get_fun_kind(def_id) {
+            FunKind::Regular => (),
+            FunKind::TraitMethodImpl { .. } => (),
+            FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..) => {
+                // This is a trait decl item
+                let trait_id = tcx.trait_of_item(def_id).unwrap();
+                self.add_self_trait_clause(trait_id);
+            }
+        }
+
         // Translate the predicates (in particular, the trait clauses)
         self.translate_predicates_of(def_id);
 
@@ -1681,6 +1693,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_id = self.translate_fun_decl_id(rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
+        let tcx = self.tcx;
 
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
@@ -1691,14 +1704,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Translate the function name
         let name = extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
-        // Translate the function signature and initialize the body translation context
-        // at the same time (the signature gives us the region and type parameters,
-        // that we put in the translation context).
-        trace!("Translating function signature");
-        let signature = bt_ctx.translate_function_signature(rust_id);
-
-        // Check if the type is opaque or transparent
-        let is_local = rust_id.is_local();
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
         let kind = bt_ctx.t_ctx.get_fun_kind(rust_id);
@@ -1708,6 +1713,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             | FunKind::TraitMethodProvided(..) => false,
             FunKind::TraitMethodDecl(..) => true,
         };
+
+        // Translate the function signature
+        trace!("Translating function signature");
+        let signature = bt_ctx.translate_function_signature(rust_id);
+
+        // Check if the type is opaque or transparent
+        let is_local = rust_id.is_local();
+
         let body = if !is_transparent || !is_local || is_trait_method_decl {
             Option::None
         } else {

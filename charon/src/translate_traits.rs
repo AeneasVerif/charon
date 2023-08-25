@@ -36,7 +36,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         (name, (ty, id))
     }
 
-    fn add_self_trait_clause(&mut self) {
+    /// Add the self trait clause, for itself (if it is a trait declaration) or
+    /// for its parent (if it is a trait item).
+    ///
+    /// We take a def id parameter because the clause may be retrieved from
+    /// an id which is not the id in the current context (if the current
+    /// id is for an item trait, we need to lookup the trait itself and give
+    /// its id).
+    ///
+    /// **IMPORTANT**: this function must be called *before* any generic is
+    /// translated.
+    pub(crate) fn add_self_trait_clause(&mut self, def_id: DefId) {
         // The self trait clause is actually the first trait predicate given by
         // [TyCtxt::predicates_of].
         // **ATTENTION**: this doesn't return the same thing as [TyCtxt::predicates_defined_on],
@@ -46,11 +56,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // translating the clauses.
         assert!(self.trait_clauses.is_empty());
 
-        let predicates = self
-            .t_ctx
-            .tcx
-            .predicates_of(self.def_id)
-            .sinto(&self.hax_state);
+        let predicates = self.t_ctx.tcx.predicates_of(def_id).sinto(&self.hax_state);
         trace!("predicates: {:?}", predicates);
         let clause = predicates
             .predicates
@@ -83,7 +89,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let _substs = bt_ctx.translate_generics(rust_id);
 
         // Add the self trait clause
-        bt_ctx.add_self_trait_clause();
+        bt_ctx.add_self_trait_clause(rust_id);
 
         // Translate the predicates.
         bt_ctx.translate_predicates_of(rust_id);
