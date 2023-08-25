@@ -167,6 +167,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
     pub const_generic_vars_map: ty::ConstGenericVarId::MapGenerator<u32>,
+    /// When translating a trait `Trait`, we sometimes need to manipulate a clause
+    /// `Self: Trait`. This is the clause. Note that its should be ignored.
+    pub self_trait_clause: Option<ty::TraitClause>,
     ///
     pub trait_clauses_counter: ty::TraitClauseId::Generator,
     ///
@@ -438,6 +441,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             vars_map: v::VarId::MapGenerator::new(),
             const_generic_vars: ty::ConstGenericVarId::Vector::new(),
             const_generic_vars_map: ty::ConstGenericVarId::MapGenerator::new(),
+            self_trait_clause: None,
             trait_clauses_counter: ty::TraitClauseId::Generator::new(),
             trait_clauses: ty::TraitClauseId::Vector::new(),
             blocks: im::OrdMap::new(),

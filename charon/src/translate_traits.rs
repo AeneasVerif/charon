@@ -35,6 +35,33 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let id = self.translate_global_decl_id(item.def_id);
         (name, (ty, id))
     }
+
+    fn add_self_trait_clause(&mut self) {
+        // The self trait clause is actually the first trait predicate given by
+        // [TyCtxt::predicates_of].
+        // **ATTENTION**: this doesn't return the same thing as [TyCtxt::predicates_defined_on],
+        // which we use elsewhere.
+
+        // Sanity check: we should add the self trait clause before we start
+        // translating the clauses.
+        assert!(self.trait_clauses.is_empty());
+
+        let predicates = self
+            .t_ctx
+            .tcx
+            .predicates_of(self.def_id)
+            .sinto(&self.hax_state);
+        trace!("predicates: {:?}", predicates);
+        let clause = predicates
+            .predicates
+            .into_iter()
+            .find_map(|(pred, span)| self.translate_predicate(pred, span))
+            .unwrap();
+        self.self_trait_clause = Some(clause);
+
+        // Do not forget to reinitialize
+        let _ = self.clear_predicates();
+    }
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
@@ -55,13 +82,15 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Translate the generic
         let _substs = bt_ctx.translate_generics(rust_id);
 
-        // Translate the predicates - Remark: this time we use [predicates_of]
-        // in order to add an additional bound `Self : Trait`, because we
-        // need it to solve the bounds for the associated types (they often
-        // require a reference to self).
-        let predicates = tcx.predicates_of(rust_id).sinto(&bt_ctx.hax_state);
-        bt_ctx.translate_predicates(predicates);
-        let trait_clauses: Vec<_> = bt_ctx.trait_clauses.iter().skip(1).cloned().collect();
+        // Add the self trait clause
+        bt_ctx.add_self_trait_clause();
+
+        // Translate the predicates.
+        bt_ctx.translate_predicates_of(rust_id);
+        // Retrieve the current trait clauses, which apply to the trait decl
+        // itself (we will continue appending the ones from the associated items
+        // in bt_ctx).
+        let mut trait_clauses = bt_ctx.trait_clauses.clone();
         let mut trait_clauses_start_index = bt_ctx.trait_clauses.len();
 
         trace!("- trait id: {:?}\n- trait name: {:?}", rust_id, name);
@@ -137,15 +166,20 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             }
         }
 
+        // We need to make a small manipulation: the generics stored in the bt_ctx contain
+        // the trait clauses for the trait decl itself but also for its associated types.
+        // We need to exchange those with the trait clauses we computed above.
+        let mut generics = bt_ctx.get_generics();
+        std::mem::swap(&mut generics.trait_clauses, &mut trait_clauses);
+
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
         // check those, and lookup the relevant values.
-
         let trait_decl = ast::TraitDecl {
             def_id,
             name,
-            generics: bt_ctx.get_generics(),
-            trait_clauses,
+            generics,
+            all_trait_clauses: trait_clauses,
             consts,
             types,
             required_methods,

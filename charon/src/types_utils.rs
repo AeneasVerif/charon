@@ -395,11 +395,12 @@ impl TraitClause {
 }
 
 impl TraitInstanceId {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
         C: Formatter<TraitDeclId::Id> + Formatter<TraitImplId::Id> + Formatter<TraitClauseId::Id>,
     {
         match self {
+            TraitInstanceId::SelfId => "Self".to_string(),
             TraitInstanceId::Trait(id) => ctx.format_object(*id),
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
             TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
@@ -1591,6 +1592,7 @@ pub trait TypeVisitor {
 
     fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
         match id {
+            TraitInstanceId::SelfId => (),
             TraitInstanceId::Trait(id) => self.visit_trait_impl_id(id),
             TraitInstanceId::Clause(id) => self.visit_trait_clause_id(id),
             TraitInstanceId::BuiltinOrAuto(id) => self.visit_trait_decl_id(id),

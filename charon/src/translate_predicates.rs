@@ -70,55 +70,66 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn translate_predicates_vec(&mut self, preds: Vec<(hax::Predicate, hax::Span)>) {
         for (pred, span) in preds {
-            // Skip the binder (which lists the quantified variables).
-            // By doing so, we allow the predicates to contain DeBruijn indices,
-            // but it is ok because we only do a simple check.
-            let pred_kind = &pred.value;
-            use hax::{Clause, PredicateKind};
-            match pred_kind {
-                PredicateKind::Clause(Clause::Trait(trait_pred)) => {
-                    // Note sure what this is about
-                    assert!(trait_pred.is_positive);
-                    // Note sure what this is about
-                    assert!(!trait_pred.is_const);
-
-                    let trait_ref = &trait_pred.trait_ref;
-                    let trait_id =
-                        self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
-                    let (regions, types, const_generics) = self
-                        .translate_substs(None, &trait_ref.generic_args)
-                        .unwrap();
-                    // There are no trait refs
-                    let generics = GenericArgs::new(regions, types, const_generics, Vec::new());
-
-                    let meta = self.translate_meta_from_rspan(span);
-                    let clause_id = self.trait_clauses_counter.fresh_id();
-                    self.trait_clauses.push_back(TraitClause {
-                        clause_id,
-                        meta,
-                        trait_id,
-                        generics,
-                    });
-                }
-                PredicateKind::Clause(Clause::RegionOutlives(_)) => unimplemented!(),
-                PredicateKind::Clause(Clause::TypeOutlives(_)) => unimplemented!(),
-                PredicateKind::Clause(Clause::Projection(_)) => unimplemented!(),
-                PredicateKind::Clause(Clause::ConstArgHasType(..)) => {
-                    // I don't really understand that one. Why don't they put
-                    // the type information in the const generic parameters
-                    // directly? For now we just ignore it.
-                }
-                PredicateKind::WellFormed(_) => unimplemented!(),
-                PredicateKind::ObjectSafe(_) => unimplemented!(),
-                PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
-                PredicateKind::Subtype(_) => unimplemented!(),
-                PredicateKind::Coerce(_) => unimplemented!(),
-                PredicateKind::ConstEvaluatable(_) => unimplemented!(),
-                PredicateKind::ConstEquate(_, _) => unimplemented!(),
-                PredicateKind::TypeWellFormedFromEnv(_) => unimplemented!(),
-                PredicateKind::Ambiguous => unimplemented!(),
-                PredicateKind::AliasRelate(..) => unimplemented!(),
+            match self.translate_predicate(pred, span) {
+                None => (),
+                Some(trait_clause) => self.trait_clauses.push_back(trait_clause),
             }
+        }
+    }
+
+    pub(crate) fn translate_predicate(
+        &mut self,
+        pred: hax::Predicate,
+        span: hax::Span,
+    ) -> Option<TraitClause> {
+        // Skip the binder (which lists the quantified variables).
+        // By doing so, we allow the predicates to contain DeBruijn indices,
+        // but it is ok because we only do a simple check.
+        let pred_kind = &pred.value;
+        use hax::{Clause, PredicateKind};
+        match pred_kind {
+            PredicateKind::Clause(Clause::Trait(trait_pred)) => {
+                // Note sure what this is about
+                assert!(trait_pred.is_positive);
+                // Note sure what this is about
+                assert!(!trait_pred.is_const);
+
+                let trait_ref = &trait_pred.trait_ref;
+                let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
+                let (regions, types, const_generics) = self
+                    .translate_substs(None, &trait_ref.generic_args)
+                    .unwrap();
+                // There are no trait refs
+                let generics = GenericArgs::new(regions, types, const_generics, Vec::new());
+
+                let meta = self.translate_meta_from_rspan(span);
+                let clause_id = self.trait_clauses_counter.fresh_id();
+                Some(TraitClause {
+                    clause_id,
+                    meta,
+                    trait_id,
+                    generics,
+                })
+            }
+            PredicateKind::Clause(Clause::RegionOutlives(_)) => unimplemented!(),
+            PredicateKind::Clause(Clause::TypeOutlives(_)) => unimplemented!(),
+            PredicateKind::Clause(Clause::Projection(_)) => unimplemented!(),
+            PredicateKind::Clause(Clause::ConstArgHasType(..)) => {
+                // I don't really understand that one. Why don't they put
+                // the type information in the const generic parameters
+                // directly? For now we just ignore it.
+                None
+            }
+            PredicateKind::WellFormed(_) => unimplemented!(),
+            PredicateKind::ObjectSafe(_) => unimplemented!(),
+            PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
+            PredicateKind::Subtype(_) => unimplemented!(),
+            PredicateKind::Coerce(_) => unimplemented!(),
+            PredicateKind::ConstEvaluatable(_) => unimplemented!(),
+            PredicateKind::ConstEquate(_, _) => unimplemented!(),
+            PredicateKind::TypeWellFormedFromEnv(_) => unimplemented!(),
+            PredicateKind::Ambiguous => unimplemented!(),
+            PredicateKind::AliasRelate(..) => unimplemented!(),
         }
     }
 
@@ -177,61 +188,70 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // We need to find the trait clause which corresponds to
                 // this obligation.
-                let clause_id = {
+                let trait_id = {
                     let mut clause_id: Option<TraitClauseId::Id> = None;
 
                     let tgt_types = &generics.types;
                     let tgt_const_generics = &generics.const_generics;
 
-                    for trait_clause in &self.trait_clauses {
+                    let match_trait_clauses = &|trait_clause: &TraitClause| {
                         // Check if the clause is about the same trait
                         if trait_clause.trait_id != trait_id {
-                            continue;
-                        }
-
-                        let src_types: Vec<Ty<R>> = trait_clause
-                            .generics
-                            .types
-                            .iter()
-                            .map(|x| self.convert_rty(x))
-                            .collect();
-                        let src_const_generics = &trait_clause.generics.const_generics;
-
-                        // We simply check the equality between the arguments:
-                        // there are no universally quantified variables to unify.
-                        // TODO: normalize the trait clauses (we actually
-                        // need to check equality **modulo** equality clauses)
-                        // TODO: if we need to unify (later, when allowing universal
-                        // quantification over clause parameters), use types_utils::TySubst.
-                        if &src_types == tgt_types && src_const_generics == tgt_const_generics {
-                            clause_id = Some(trait_clause.clause_id);
-                            break;
-                        }
-                    }
-                    // We should have found a clause
-                    match clause_id {
-                        Some(id) => id,
-                        None => {
-                            let trait_ref = format!(
-                                "{}{}",
-                                self.format_object(trait_id),
-                                generics.fmt_with_ctx(self)
-                            );
-                            let clauses: Vec<String> = self
-                                .trait_clauses
+                            false
+                        } else {
+                            let src_types: Vec<Ty<R>> = trait_clause
+                                .generics
+                                .types
                                 .iter()
-                                .map(|x| x.fmt_with_ctx(self))
+                                .map(|x| self.convert_rty(x))
                                 .collect();
-                            let clauses = clauses.join("\n");
-                            unreachable!(
-                                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
-                                trait_ref, clauses
-                            );
+                            let src_const_generics = &trait_clause.generics.const_generics;
+
+                            // We simply check the equality between the arguments:
+                            // there are no universally quantified variables to unify.
+                            // TODO: normalize the trait clauses (we actually
+                            // need to check equality **modulo** equality clauses)
+                            // TODO: if we need to unify (later, when allowing universal
+                            // quantification over clause parameters), use types_utils::TySubst.
+                            &src_types == tgt_types && src_const_generics == tgt_const_generics
+                        }
+                    };
+
+                    // Try to match the self trait clause
+                    if let Some(self_clause) = &self.self_trait_clause && match_trait_clauses(self_clause) {
+                        TraitInstanceId::SelfId
+                    }
+                    else {
+                        // Otherwise match the parameter clauses
+                        for trait_clause in &self.trait_clauses {
+                            if match_trait_clauses(trait_clause) {
+                                clause_id = Some(trait_clause.clause_id);
+                            }
+                        }
+                        // We should have found a clause
+                        match clause_id {
+                            Some(id) => TraitInstanceId::Clause(id),
+                            None => {
+                                let trait_ref = format!(
+                                    "{}{}",
+                                    self.format_object(trait_id),
+                                    generics.fmt_with_ctx(self)
+                                );
+                                let clauses: Vec<String> =
+                                    self.self_trait_clause.iter().chain(
+                                        self.trait_clauses
+                                            .iter())
+                                            .map(|x| x.fmt_with_ctx(self))
+                                    .collect();
+                                let clauses = clauses.join("\n");
+                                unreachable!(
+                                    "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
+                                    trait_ref, clauses
+                                );
+                            }
                         }
                     }
                 };
-
-                let trait_id = TraitInstanceId::Clause(clause_id);
 
                 assert!(generics.trait_refs.is_empty());
                 // Ignore the arguments: we forbid using universal quantifiers

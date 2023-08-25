@@ -81,6 +81,8 @@ pub enum ErasedRegion {
 /// This is derived from the trait resolution.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub enum TraitInstanceId {
+    /// Trait declarations sometimes need to refer to `Self`
+    SelfId,
     /// A specific implementation
     Trait(TraitImplId::Id),
     /// A clause bound in the function signature

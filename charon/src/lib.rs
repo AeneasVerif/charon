@@ -17,6 +17,7 @@
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
 #![feature(trait_alias)]
+#![feature(let_chains)]
 
 extern crate hashlink;
 extern crate im;
