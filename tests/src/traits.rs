@@ -184,5 +184,16 @@ pub fn use_with_const_ty3<const LEN: usize, H: WithConstTy<LEN>>(x: H::W) -> u64
     x.to_u64()
 }
 
+pub fn test_where1<'a, T: 'a>(_x: &'a T) {}
+pub fn test_where2<T: WithConstTy<32, V = u32>>(_x: T::V) {}
+
+// Below: testing super traits.
+//
+// Actually, this comes for free: ChildTrait : ParentTrait just adds a trait
+// clause for Self: `Self : ParentTrait`.
+pub trait ParentTrait1 {}
+pub trait ParentTrait2 {}
+pub trait ChildTrait: ParentTrait1 + ParentTrait2 {}
+
 // TODO: where clauses
 // TODO: super traits
