@@ -249,6 +249,18 @@ pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<Stri
     }
 }
 
+impl TraitTypeConstraint {
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: TypeFormatter<'a, Region<RegionVarId::Id>> + Formatter<RegionVarId::Id>,
+    {
+        let trait_ref = self.trait_ref.fmt_with_ctx(ctx);
+        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
+        let ty = self.ty.fmt_with_ctx(ctx);
+        format!("{}{}::{} = {}", trait_ref, generics, self.type_name, ty)
+    }
+}
+
 pub fn fmt_where_clauses_with_ctx<'a, C>(
     ctx: &C,
     tab: &str,
@@ -262,12 +274,17 @@ where
     let mut types_outlive: Vec<_> = preds
         .types_outlive
         .iter()
-        .map(|OutlivesPred(x, y)| format!("{}{}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
+        .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
         .collect();
     let mut regions_outlive: Vec<_> = preds
         .regions_outlive
         .iter()
-        .map(|OutlivesPred(x, y)| format!("{}{}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
+        .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
+        .collect();
+    let mut type_constraints: Vec<_> = preds
+        .trait_type_constraints
+        .iter()
+        .map(|x| x.fmt_with_ctx(ctx))
         .collect();
     match info {
         None => {
@@ -275,6 +292,7 @@ where
                 .into_iter()
                 .chain(types_outlive.into_iter())
                 .chain(regions_outlive.into_iter())
+                .chain(type_constraints.into_iter())
                 .collect();
             fmt_where_clauses(tab, 0, clauses)
         }
@@ -286,11 +304,17 @@ where
                 .into_iter()
                 .chain(regions_outlive.split_off(info.num_regions_outlive))
                 .chain(types_outlive.split_off(info.num_types_outlive).into_iter())
+                .chain(
+                    type_constraints
+                        .split_off(info.num_trait_type_constraints)
+                        .into_iter(),
+                )
                 .collect();
             let inherited_clauses: Vec<_> = trait_clauses
                 .into_iter()
                 .chain(regions_outlive.into_iter())
                 .chain(types_outlive.into_iter())
+                .chain(type_constraints.into_iter())
                 .collect();
             let num_inherited = inherited_clauses.len();
             let all_clauses: Vec<_> = inherited_clauses
@@ -467,21 +491,6 @@ impl<R> TraitRef<R> {
         let trait_id = self.trait_id.fmt_with_ctx(ctx);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         format!("{trait_id}{generics}")
-    }
-}
-
-impl Predicates {
-    pub fn fmt_with_ctx_as_vec<'a, C>(&'a self, ctx: &C) -> Vec<String>
-    where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>> + Formatter<RegionVarId::Id>,
-    {
-        self.regions_outlive
-            .iter()
-            .map(|OutlivesPred(x, y)| format!("{}{}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
-            .chain(self.types_outlive.iter().map(|OutlivesPred(x, y)| {
-                format!("{}{}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx))
-            }))
-            .collect()
     }
 }
 

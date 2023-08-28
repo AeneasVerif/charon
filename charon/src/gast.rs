@@ -83,6 +83,7 @@ pub struct ParamsInfo {
     pub num_trait_clauses: usize,
     pub num_regions_outlive: usize,
     pub num_types_outlive: usize,
+    pub num_trait_type_constraints: usize,
 }
 
 /// A function signature.

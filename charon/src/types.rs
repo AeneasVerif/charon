@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::gast::TraitItemName;
+pub use crate::gast::TraitItemName;
 use crate::meta::Meta;
 use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
@@ -122,6 +122,21 @@ pub struct OutlivesPred<T, U>(pub T, pub U);
 pub type RegionOutlives = OutlivesPred<Region<RegionVarId::Id>, Region<RegionVarId::Id>>;
 pub type TypeOutlives = OutlivesPred<RTy, Region<RegionVarId::Id>>;
 
+/// A constraint over a trait associated type.
+///
+/// Example:
+/// ```text
+/// T : Foo<S = String>
+///         ^^^^^^^^^^
+/// ```
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct TraitTypeConstraint {
+    pub trait_ref: RTraitRef,
+    pub generics: RGenericArgs,
+    pub type_name: TraitItemName,
+    pub ty: RTy,
+}
+
 /// The predicates which apply to a definition
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct Predicates {
@@ -129,6 +144,8 @@ pub struct Predicates {
     pub regions_outlive: Vec<RegionOutlives>,
     /// The type outlives the region
     pub types_outlive: Vec<TypeOutlives>,
+    /// Constraints over trait associated types
+    pub trait_type_constraints: Vec<TraitTypeConstraint>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize)]

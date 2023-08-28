@@ -5,7 +5,8 @@ use crate::translate_ctx::BodyTransCtx;
 use crate::translate_types::TyTranslator;
 use crate::types::{
     ConstGeneric, ETraitRef, GenericArgs, OutlivesPred, RTraitRef, RegionOutlives, TraitClause,
-    TraitDeclId, TraitInstanceId, TraitRef, Ty, TypeOutlives, TypeVarId,
+    TraitDeclId, TraitInstanceId, TraitItemName, TraitRef, TraitTypeConstraint, Ty, TypeOutlives,
+    TypeVarId,
 };
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -17,6 +18,7 @@ pub(crate) enum Predicate {
     Trait(TraitClause),
     TypeOutlives(TypeOutlives),
     RegionOutlives(RegionOutlives),
+    TraitType(TraitTypeConstraint),
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
@@ -28,6 +30,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             num_trait_clauses: info.num_trait_clauses,
             num_regions_outlive: info.num_regions_outlive,
             num_types_outlive: info.num_types_outlive,
+            num_trait_type_constraints: info.num_trait_type_constraints,
         }
     }
 
@@ -88,6 +91,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     Predicate::Trait(p) => self.trait_clauses.push_back(p),
                     Predicate::TypeOutlives(p) => self.types_outlive.push(p),
                     Predicate::RegionOutlives(p) => self.regions_outlive.push(p),
+                    Predicate::TraitType(p) => self.trait_type_constraints.push(p),
                 },
             }
         }
@@ -137,7 +141,37 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let r = self.translate_region(&p.1);
                 Some(Predicate::TypeOutlives(OutlivesPred(ty, r)))
             }
-            PredicateKind::Clause(Clause::Projection(_)) => unimplemented!(),
+            PredicateKind::Clause(Clause::Projection(p)) => {
+                // This is used to express constraints over associated types.
+                // For instance:
+                // ```
+                // T : Foo<S = String>
+                //         ^^^^^^^^^^
+                // ```
+                let hax::ProjectionPredicate {
+                    impl_source,
+                    substs,
+                    type_name,
+                    ty,
+                } = p;
+
+                let trait_ref = self.translate_trait_impl_source(impl_source);
+                let (regions, types, const_generics) = self.translate_substs(None, substs).unwrap();
+                let generics = GenericArgs {
+                    regions,
+                    types,
+                    const_generics,
+                    trait_refs: Vec::new(),
+                };
+                let ty = self.translate_ty(ty).unwrap();
+                let type_name = TraitItemName(type_name.clone());
+                Some(Predicate::TraitType(TraitTypeConstraint {
+                    trait_ref,
+                    generics,
+                    type_name,
+                    ty,
+                }))
+            }
             PredicateKind::Clause(Clause::ConstArgHasType(..)) => {
                 // I don't really understand that one. Why don't they put
                 // the type information in the const generic parameters

@@ -311,8 +311,8 @@ impl FunSig {
             format!(" -> {}", ret_ty.fmt_with_ctx(ctx))
         };
 
-        // Trait clauses
-        let trait_clauses = fmt_where_clauses_with_ctx(
+        // Clauses
+        let clauses = fmt_where_clauses_with_ctx(
             ctx,
             "",
             &self.parent_params_info,
@@ -329,9 +329,7 @@ impl FunSig {
         let regions_hierarchy = regions_hierarchy.join("\n");
 
         // Put everything together
-        format!(
-            "fn{params}({args}){ret_ty}{trait_clauses}\n\nRegions hierarchy:\n{regions_hierarchy}",
-        )
+        format!("fn{params}({args}){ret_ty}{clauses}\n\nRegions hierarchy:\n{regions_hierarchy}",)
     }
 }
 

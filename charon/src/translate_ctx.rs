@@ -179,6 +179,8 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub types_outlive: Vec<ty::TypeOutlives>,
     ///
     pub regions_outlive: Vec<ty::RegionOutlives>,
+    ///
+    pub trait_type_constraints: Vec<ty::TraitTypeConstraint>,
     /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
@@ -451,6 +453,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trait_clauses: ty::TraitClauseId::Vector::new(),
             regions_outlive: Vec::new(),
             types_outlive: Vec::new(),
+            trait_type_constraints: Vec::new(),
             blocks: im::OrdMap::new(),
             blocks_map: ast::BlockId::MapGenerator::new(),
             bound_vars: im::Vector::new(),
@@ -613,6 +616,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         ty::Predicates {
             regions_outlive: self.regions_outlive.clone(),
             types_outlive: self.types_outlive.clone(),
+            trait_type_constraints: self.trait_type_constraints.clone(),
         }
     }
 
@@ -623,6 +627,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.trait_clauses_counter = ty::TraitClauseId::Generator::new();
         self.regions_outlive = Vec::new();
         self.types_outlive = Vec::new();
+        self.trait_type_constraints = Vec::new();
         std::mem::replace(&mut self.trait_clauses, ty::TraitClauseId::Vector::new())
     }
 }
