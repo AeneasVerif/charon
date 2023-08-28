@@ -175,6 +175,10 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub trait_clauses_counter: ty::TraitClauseId::Generator,
     ///
     pub trait_clauses: ty::TraitClauseId::Vector<ty::TraitClause>,
+    ///
+    pub types_outlive: Vec<ty::TypeOutlives>,
+    ///
+    pub regions_outlive: Vec<ty::RegionOutlives>,
     /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
@@ -445,6 +449,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             self_trait_clause: None,
             trait_clauses_counter: ty::TraitClauseId::Generator::new(),
             trait_clauses: ty::TraitClauseId::Vector::new(),
+            regions_outlive: Vec::new(),
+            types_outlive: Vec::new(),
             blocks: im::OrdMap::new(),
             blocks_map: ast::BlockId::MapGenerator::new(),
             bound_vars: im::Vector::new(),
@@ -603,11 +609,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    pub(crate) fn get_predicates(&mut self) -> ty::Predicates {
+        ty::Predicates {
+            regions_outlive: self.regions_outlive.clone(),
+            types_outlive: self.types_outlive.clone(),
+        }
+    }
+
     /// Clear the predicates (trait clauses, etc.).
     /// This is used only in very specific situations.
     /// TODO: find a better way
     pub(crate) fn clear_predicates(&mut self) -> ty::TraitClauseId::Vector<ty::TraitClause> {
         self.trait_clauses_counter = ty::TraitClauseId::Generator::new();
+        self.regions_outlive = Vec::new();
+        self.types_outlive = Vec::new();
         std::mem::replace(&mut self.trait_clauses, ty::TraitClauseId::Vector::new())
     }
 }

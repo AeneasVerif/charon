@@ -81,6 +81,8 @@ pub struct ParamsInfo {
     pub num_type_params: usize,
     pub num_const_generic_params: usize,
     pub num_trait_clauses: usize,
+    pub num_regions_outlive: usize,
+    pub num_types_outlive: usize,
 }
 
 /// A function signature.
@@ -92,6 +94,7 @@ pub struct ParamsInfo {
 #[derive(Debug, Clone, Serialize)]
 pub struct FunSig {
     pub generics: GenericParams,
+    pub preds: Predicates,
     /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).
     pub parent_params_info: Option<ParamsInfo>,
     pub inputs: Vec<RTy>,
@@ -231,6 +234,7 @@ pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
     pub name: Name,
     pub generics: GenericParams,
+    pub preds: Predicates,
     /// This vector is the concatenation of:
     /// - the clauses for the trait
     /// - the clauses for its associated types
@@ -291,6 +295,7 @@ pub struct TraitImpl {
     pub impl_trait: ImplTraitRef,
     pub name: Name,
     pub generics: GenericParams,
+    pub preds: Predicates,
     /// The associated constants declared in the trait.
     pub consts: Vec<(TraitItemName, (ETy, GlobalDeclId::Id))>,
     /// The associated types declared in the trait.

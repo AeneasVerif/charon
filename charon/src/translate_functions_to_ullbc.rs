@@ -1667,6 +1667,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         ast::FunSig {
             generics: self.get_generics(),
+            preds: self.get_predicates(),
             regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
             parent_params_info,
             inputs,

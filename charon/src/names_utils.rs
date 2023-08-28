@@ -241,7 +241,7 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
                         format!("{ty:?}")
                     }
                     _ => {
-                        log::warn!("Unexpected type: {:?}", ty);
+                        // TODO
                         format!("{ty:?}")
                     }
                 }));

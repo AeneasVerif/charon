@@ -606,6 +606,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             meta,
             name,
             generics,
+            preds: bt_ctx.get_predicates(),
             kind,
             // Dummy value for now: we compute this later
             regions_hierarchy: RegionGroups::new(),

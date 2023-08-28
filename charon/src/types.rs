@@ -115,6 +115,22 @@ pub struct TraitRef<R> {
 pub type ETraitRef = TraitRef<ErasedRegion>;
 pub type RTraitRef = TraitRef<Region<RegionVarId::Id>>;
 
+/// .0 outlives .1
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct OutlivesPred<T, U>(pub T, pub U);
+
+pub type RegionOutlives = OutlivesPred<Region<RegionVarId::Id>, Region<RegionVarId::Id>>;
+pub type TypeOutlives = OutlivesPred<RTy, Region<RegionVarId::Id>>;
+
+/// The predicates which apply to a definition
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct Predicates {
+    /// The first region in the pair outlives the second region
+    pub regions_outlive: Vec<RegionOutlives>,
+    /// The type outlives the region
+    pub types_outlive: Vec<TypeOutlives>,
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Serialize)]
 pub struct GenericArgs<R> {
     pub regions: Vec<R>,
@@ -179,6 +195,7 @@ pub struct TypeDecl {
     pub meta: Meta,
     pub name: TypeName,
     pub generics: GenericParams,
+    pub preds: Predicates,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
     /// The lifetime's hierarchy between the different regions.

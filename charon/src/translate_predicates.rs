@@ -4,12 +4,20 @@ use crate::gast::ParamsInfo;
 use crate::translate_ctx::BodyTransCtx;
 use crate::translate_types::TyTranslator;
 use crate::types::{
-    ConstGeneric, ETraitRef, GenericArgs, RTraitRef, TraitClause, TraitDeclId, TraitInstanceId,
-    TraitRef, Ty, TypeVarId,
+    ConstGeneric, ETraitRef, GenericArgs, OutlivesPred, RTraitRef, RegionOutlives, TraitClause,
+    TraitDeclId, TraitInstanceId, TraitRef, Ty, TypeOutlives, TypeVarId,
 };
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
+use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use rustc_hir::def_id::DefId;
+
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, EnumToGetters)]
+pub(crate) enum Predicate {
+    Trait(TraitClause),
+    TypeOutlives(TypeOutlives),
+    RegionOutlives(RegionOutlives),
+}
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn convert_params_info(info: hax::ParamsInfo) -> ParamsInfo {
@@ -18,6 +26,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             num_type_params: info.num_type_params,
             num_const_generic_params: info.num_const_generic_params,
             num_trait_clauses: info.num_trait_clauses,
+            num_regions_outlive: info.num_regions_outlive,
+            num_types_outlive: info.num_types_outlive,
         }
     }
 
@@ -74,7 +84,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         for (pred, span) in preds {
             match self.translate_predicate(pred, span) {
                 None => (),
-                Some(trait_clause) => self.trait_clauses.push_back(trait_clause),
+                Some(pred) => match pred {
+                    Predicate::Trait(p) => self.trait_clauses.push_back(p),
+                    Predicate::TypeOutlives(p) => self.types_outlive.push(p),
+                    Predicate::RegionOutlives(p) => self.regions_outlive.push(p),
+                },
             }
         }
     }
@@ -83,7 +97,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         pred: hax::Predicate,
         span: hax::Span,
-    ) -> Option<TraitClause> {
+    ) -> Option<Predicate> {
         // Skip the binder (which lists the quantified variables).
         // By doing so, we allow the predicates to contain DeBruijn indices,
         // but it is ok because we only do a simple check.
@@ -106,15 +120,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 let meta = self.translate_meta_from_rspan(span);
                 let clause_id = self.trait_clauses_counter.fresh_id();
-                Some(TraitClause {
+                Some(Predicate::Trait(TraitClause {
                     clause_id,
                     meta,
                     trait_id,
                     generics,
-                })
+                }))
             }
-            PredicateKind::Clause(Clause::RegionOutlives(_)) => unimplemented!(),
-            PredicateKind::Clause(Clause::TypeOutlives(_)) => unimplemented!(),
+            PredicateKind::Clause(Clause::RegionOutlives(p)) => {
+                let r0 = self.translate_region(&p.0);
+                let r1 = self.translate_region(&p.1);
+                Some(Predicate::RegionOutlives(OutlivesPred(r0, r1)))
+            }
+            PredicateKind::Clause(Clause::TypeOutlives(p)) => {
+                let ty = self.translate_ty(&p.0).unwrap();
+                let r = self.translate_region(&p.1);
+                Some(Predicate::TypeOutlives(OutlivesPred(ty, r)))
+            }
             PredicateKind::Clause(Clause::Projection(_)) => unimplemented!(),
             PredicateKind::Clause(Clause::ConstArgHasType(..)) => {
                 // I don't really understand that one. Why don't they put

@@ -61,7 +61,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let clause = predicates
             .predicates
             .into_iter()
-            .find_map(|(pred, span)| self.translate_predicate(pred, span))
+            .find_map(|(pred, span)| match self.translate_predicate(pred, span) {
+                Some(crate::translate_predicates::Predicate::Trait(c)) => Some(c),
+                _ => None,
+            })
             .unwrap();
         self.self_trait_clause = Some(clause);
 
@@ -93,11 +96,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Translate the predicates.
         bt_ctx.translate_predicates_of(rust_id);
-        // Retrieve the current trait clauses, which apply to the trait decl
+        // Retrieve the trait clauses, which apply to the trait decl
         // itself (we will continue appending the ones from the associated items
-        // in bt_ctx).
+        // in bt_ctx), as well as the other predicates.
         let mut trait_clauses = bt_ctx.trait_clauses.clone();
         let mut trait_clauses_start_index = bt_ctx.trait_clauses.len();
+        let preds = bt_ctx.get_predicates();
 
         trace!("- trait id: {:?}\n- trait name: {:?}", rust_id, name);
         trace!("Trait predicates: {:?}", tcx.predicates_of(rust_id));
@@ -177,6 +181,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // We need to exchange those with the trait clauses we computed above.
         let mut generics = bt_ctx.get_generics();
         std::mem::swap(&mut generics.trait_clauses, &mut trait_clauses);
+        // TODO: maybe we should do something about the predicates?
 
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
@@ -185,6 +190,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             def_id,
             name,
             generics,
+            preds,
             all_trait_clauses: trait_clauses,
             consts,
             types,
@@ -315,6 +321,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             name,
             impl_trait,
             generics: bt_ctx.get_generics(),
+            preds: bt_ctx.get_predicates(),
             consts,
             types,
             required_methods,

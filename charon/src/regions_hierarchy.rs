@@ -461,6 +461,8 @@ fn compute_regions_constraints_for_type_decl_group(
         TypeDeclarationGroup::Rec(ids) => HashSet::from_iter(ids.iter().copied()),
     };
 
+    // TODO: take into account the where clauses
+
     // Initialize the constraints map - TODO: this will be different once we
     // support constraints over the generics in the definitions
     for id in type_ids.iter() {

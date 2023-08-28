@@ -97,11 +97,14 @@ impl FunKind {
 impl TraitDecl {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>> + Formatter<&'a ErasedRegion>,
+        C: TypeFormatter<'a, Region<RegionVarId::Id>>
+            + Formatter<&'a ErasedRegion>
+            + Formatter<RegionVarId::Id>,
     {
         let def_id = ctx.format_object(self.def_id);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
+        let trait_clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
+
         let items = {
             let items =
                 self.consts
@@ -150,11 +153,14 @@ impl TraitDecl {
 impl TraitImpl {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>> + Formatter<&'a ErasedRegion>,
+        C: TypeFormatter<'a, Region<RegionVarId::Id>>
+            + Formatter<&'a ErasedRegion>
+            + Formatter<RegionVarId::Id>,
     {
         let def_id = ctx.format_object(self.def_id);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
+        let trait_clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
+
         let items = {
             let items = self
                 .consts
@@ -306,8 +312,13 @@ impl FunSig {
         };
 
         // Trait clauses
-        let trait_clauses =
-            fmt_where_clauses_with_params_info("", &self.parent_params_info, trait_clauses);
+        let trait_clauses = fmt_where_clauses_with_ctx(
+            ctx,
+            "",
+            &self.parent_params_info,
+            trait_clauses,
+            &self.preds,
+        );
 
         // Regions hierarchy
         let regions_hierarchy: Vec<String> = self
@@ -324,8 +335,10 @@ impl FunSig {
     }
 }
 
-pub trait GFunDeclFormatter<'a, Body: 'a> =
-    ExprFormatter<'a> + Formatter<&'a Body> + Formatter<&'a Region<RegionVarId::Id>>;
+pub trait GFunDeclFormatter<'a, Body: 'a> = ExprFormatter<'a>
+    + Formatter<&'a Body>
+    + Formatter<&'a Region<RegionVarId::Id>>
+    + Formatter<RegionVarId::Id>;
 
 impl<T> GFunDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
@@ -365,11 +378,13 @@ impl<T> GFunDecl<T> {
             format!(" -> {}", ret_ty.fmt_with_ctx(ctx))
         };
 
-        // Trait clauses
-        let trait_clauses = fmt_where_clauses_with_params_info(
+        // Clauses
+        let trait_clauses = fmt_where_clauses_with_ctx(
+            ctx,
             tab,
             &self.signature.parent_params_info,
             trait_clauses,
+            &self.signature.preds,
         );
 
         // Case disjunction on the presence of a body (transparent/opaque definition)
