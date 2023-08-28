@@ -191,9 +191,19 @@ pub fn test_where2<T: WithConstTy<32, V = u32>>(_x: T::V) {}
 //
 // Actually, this comes for free: ChildTrait : ParentTrait just adds a trait
 // clause for Self: `Self : ParentTrait`.
+pub trait ParentTrait0 {
+    type W;
+    fn get_name(&self) -> String;
+    fn get_w(&self) -> Self::W;
+}
 pub trait ParentTrait1 {}
-pub trait ParentTrait2 {}
-pub trait ChildTrait: ParentTrait1 + ParentTrait2 {}
+pub trait ChildTrait: ParentTrait0 + ParentTrait1 {}
 
-// TODO: where clauses
-// TODO: super traits
+// But we still need to correctly reference the traits
+pub fn test_child_trait1<T: ChildTrait>(x: &T) -> String {
+    x.get_name()
+}
+
+pub fn test_child_trait2<T: ChildTrait>(x: &T) -> T::W {
+    x.get_w()
+}

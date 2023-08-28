@@ -79,30 +79,72 @@ pub enum ErasedRegion {
 
 /// Identifier of a trait instance.
 /// This is derived from the trait resolution.
+///
+/// Should be read as a path inside the trait clauses which apply to the current
+/// definition. Note that every path designated by [TraitInstanceId] refers
+/// to a *trait instance*, which is why the [Clause] variant may seem redundant
+/// with some of the other variants.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub enum TraitInstanceId {
-    /// Trait declarations sometimes need to refer to `Self`
+    ///
+    /// Self, in case of trait declarations/implementations.
     SelfId,
+    ///
     /// A specific implementation
     Trait(TraitImplId::Id),
-    /// A clause bound in the function signature
-    Clause(TraitClauseId::Id),
-    /// A clause bound in an associated type of a trait instance.
+    ///
+    /// A specific builtin trait implementation like [core::marker::Sized] or
+    /// auto trait implementation like [core::marker::Syn].
+    BuiltinOrAuto(TraitDeclId::Id),
+    ///
+    /// One of the local clauses.
     ///
     /// Example:
+    /// ```text
+    /// fn f<T>(...) where T : Foo
+    ///                    ^^^^^^^
+    ///                    Clause(0)
     /// ```
+    Clause(TraitClauseId::Id),
+    ///
+    /// A parent clause
+    ///
+    /// Example:
+    /// ```text
+    /// trait Foo1 {}
+    /// trait Foo2 { fn f(); }
+    ///
+    /// trait Bar : Foo1 + Foo2 {}
+    ///             ^^^^   ^^^^
+    ///                    parent clause 1
+    ///     parent clause 0
+    ///
+    /// fn g<T : Bar>(x : T) {
+    ///   x.f()
+    ///   ^^^^^
+    ///   Parent(Clause(0), 1)::f(x)
+    /// }
+    /// ```
+    ParentClause(Box<TraitInstanceId>, TraitClauseId::Id),
+    ///
+    /// A clause bound in a trait item (typically a trait clause in an
+    /// associated type).
+    ///
+    /// Example:
+    /// ```text
     /// trait Foo {
     ///   type W: Bar // Bar contains a method bar
+    ///           ^^^
+    ///      this is the clause 0 applying to W
     /// }
     ///
     /// fn f<T : Foo>(x : T::W) {
-    ///   x.bar(); // We need to refer to the trait instance satisfying: `Foo::W : Bar`
+    ///   x.bar();
+    ///   ^^^^^^^
+    ///   ItemClause(Clause(0), W, 0)
     /// }
     /// ```
-    TraitTypeClause(Box<TraitInstanceId>, TraitItemName, TraitClauseId::Id),
-    /// Builtin traits like [core::marker::Sized] and auto traits like
-    /// [core::marker::Syn].
-    BuiltinOrAuto(TraitDeclId::Id),
+    ItemClause(Box<TraitInstanceId>, TraitItemName, TraitClauseId::Id),
 }
 
 /// A reference to a trait

@@ -1,9 +1,10 @@
 #![allow(dead_code)]
-use crate::gast::{GenericArgs, ImplTraitRef, TraitItemName};
+use crate::gast::{GenericArgs, ImplTraitRef, TraitClauseId, TraitItemName};
 use crate::names_utils;
 use crate::translate_ctx::*;
 use crate::types::{ETy, GlobalDeclId};
 use crate::ullbc_ast as ast;
+use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
@@ -43,9 +44,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// an id which is not the id in the current context (if the current
     /// id is for an item trait, we need to lookup the trait itself and give
     /// its id).
-    ///
-    /// **IMPORTANT**: this function must be called *before* any generic is
-    /// translated.
     pub(crate) fn add_self_trait_clause(&mut self, def_id: DefId) {
         // The self trait clause is actually the first trait predicate given by
         // [TyCtxt::predicates_of].
@@ -58,12 +56,30 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let predicates = self.t_ctx.tcx.predicates_of(def_id).sinto(&self.hax_state);
         trace!("predicates: {:?}", predicates);
+        // Find the first trait clause
         let clause = predicates
             .predicates
             .into_iter()
-            .find_map(|(pred, span)| match self.translate_predicate(pred, span) {
-                Some(crate::translate_predicates::Predicate::Trait(c)) => Some(c),
-                _ => None,
+            .find_map(|(pred, _span)| {
+                assert!(pred.bound_vars.is_empty());
+                if let hax::PredicateKind::Clause(hax::Clause::Trait(pred)) = pred.value {
+                    let trait_id =
+                        self.translate_trait_decl_id(pred.trait_ref.def_id.rust_def_id.unwrap());
+                    let (regions, types, const_generics) = self
+                        .translate_substs(None, &pred.trait_ref.generic_args)
+                        .unwrap();
+                    Some((
+                        trait_id,
+                        GenericArgs {
+                            regions,
+                            types,
+                            const_generics,
+                            trait_refs: Vec::new(),
+                        },
+                    ))
+                } else {
+                    None
+                }
             })
             .unwrap();
         self.self_trait_clause = Some(clause);
@@ -99,7 +115,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Retrieve the trait clauses, which apply to the trait decl
         // itself (we will continue appending the ones from the associated items
         // in bt_ctx), as well as the other predicates.
-        let mut trait_clauses = bt_ctx.trait_clauses.clone();
+        let mut trait_clauses: TraitClauseId::Vector<_> = bt_ctx.get_trait_clauses();
         let mut trait_clauses_start_index = bt_ctx.trait_clauses.len();
         let preds = bt_ctx.get_predicates();
 
@@ -156,12 +172,20 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let span = bounds.default_span(tcx);
                     let bounds: Vec<_> = bounds.into_iter().map(|x| (x, span)).collect();
                     let bounds = bounds.sinto(&bt_ctx.hax_state);
-                    bt_ctx.translate_predicates_vec(bounds);
+                    bt_ctx.translate_predicates_vec(&bounds);
 
                     // Retreive the trait clauses
                     let mut trait_clauses = Vec::new();
                     for i in trait_clauses_start_index..bt_ctx.trait_clauses.len() {
-                        trait_clauses.push(bt_ctx.trait_clauses.vector.get(i).unwrap().clone());
+                        trait_clauses.push(
+                            bt_ctx
+                                .trait_clauses
+                                .vector
+                                .get(i)
+                                .unwrap()
+                                .to_trait_clause()
+                                .clone(),
+                        );
                     }
                     trait_clauses_start_index = bt_ctx.trait_clauses.len();
 

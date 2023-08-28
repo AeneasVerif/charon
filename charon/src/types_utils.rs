@@ -468,7 +468,15 @@ impl TraitInstanceId {
     {
         match self {
             TraitInstanceId::SelfId => "Self".to_string(),
-            TraitInstanceId::TraitTypeClause(id, type_name, clause_id) => {
+            TraitInstanceId::ParentClause(id, clause_id) => {
+                let id = id.fmt_with_ctx(ctx);
+                // Using on purpose [to_pretty_string] instead of [format_object]:
+                // the clause is local to the associated type, so it should not
+                // be referenced in the current context.
+                let clause = clause_id.to_pretty_string();
+                format!("(parents({id})::[{clause}])")
+            }
+            TraitInstanceId::ItemClause(id, type_name, clause_id) => {
                 let id = id.fmt_with_ctx(ctx);
                 // Using on purpose [to_pretty_string] instead of [format_object]:
                 // the clause is local to the associated type, so it should not
@@ -1546,7 +1554,8 @@ impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
     fn visit_trait_instance_id(&mut self, id: &mut TraitInstanceId) {
         match id {
             TraitInstanceId::SelfId => *id = self.new_id.clone(),
-            TraitInstanceId::TraitTypeClause(box id, _, _) => self.visit_trait_instance_id(id),
+            TraitInstanceId::ParentClause(box id, _)
+            | TraitInstanceId::ItemClause(box id, _, _) => self.visit_trait_instance_id(id),
             TraitInstanceId::Trait(_)
             | TraitInstanceId::Clause(_)
             | TraitInstanceId::BuiltinOrAuto(_) => (),
@@ -1693,13 +1702,17 @@ pub trait TypeVisitor {
     fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
         match id {
             TraitInstanceId::SelfId => (),
-            TraitInstanceId::TraitTypeClause(box id, _name, clause_id) => {
+            TraitInstanceId::Trait(id) => self.visit_trait_impl_id(id),
+            TraitInstanceId::BuiltinOrAuto(id) => self.visit_trait_decl_id(id),
+            TraitInstanceId::Clause(id) => self.visit_trait_clause_id(id),
+            TraitInstanceId::ParentClause(box id, clause_id) => {
                 self.visit_trait_instance_id(id);
                 self.visit_trait_clause_id(clause_id)
             },
-            TraitInstanceId::Trait(id) => self.visit_trait_impl_id(id),
-            TraitInstanceId::Clause(id) => self.visit_trait_clause_id(id),
-            TraitInstanceId::BuiltinOrAuto(id) => self.visit_trait_decl_id(id),
+            TraitInstanceId::ItemClause(box id, _name, clause_id) => {
+                self.visit_trait_instance_id(id);
+                self.visit_trait_clause_id(clause_id)
+            },
         }
     }
 }

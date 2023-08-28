@@ -10,6 +10,7 @@ use crate::meta;
 use crate::meta::{FileId, FileName, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::AnyTransId;
+use crate::translate_predicates::FullTraitClause;
 use crate::types as ty;
 use crate::types::GenericParams;
 use crate::types::LiteralTy;
@@ -170,11 +171,11 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// When translating a trait `Trait` (or rather one of its items), we sometimes need
     /// to manipulate a clause `Self: Trait`. This is the clause. Note that its should be
     /// ignored.
-    pub self_trait_clause: Option<ty::TraitClause>,
+    pub self_trait_clause: Option<(ty::TraitDeclId::Id, ty::RGenericArgs)>,
     ///
     pub trait_clauses_counter: ty::TraitClauseId::Generator,
     ///
-    pub trait_clauses: ty::TraitClauseId::Vector<ty::TraitClause>,
+    pub trait_clauses: ty::TraitClauseId::Vector<FullTraitClause>,
     ///
     pub types_outlive: Vec<ty::TypeOutlives>,
     ///
@@ -603,16 +604,27 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.trait_clauses_counter.fresh_id()
     }
 
-    pub(crate) fn get_generics(&mut self) -> GenericParams {
+    pub(crate) fn get_generics(&self) -> GenericParams {
         GenericParams {
             regions: self.region_vars.clone(),
             types: self.type_vars.clone(),
             const_generics: self.const_generic_vars.clone(),
-            trait_clauses: self.trait_clauses.clone(),
+            trait_clauses: self
+                .trait_clauses
+                .iter()
+                .map(|x| x.to_trait_clause())
+                .collect(),
         }
     }
 
-    pub(crate) fn get_predicates(&mut self) -> ty::Predicates {
+    pub(crate) fn get_trait_clauses(&self) -> ty::TraitClauseId::Vector<ty::TraitClause> {
+        self.trait_clauses
+            .iter()
+            .map(|x| x.to_trait_clause())
+            .collect()
+    }
+
+    pub(crate) fn get_predicates(&self) -> ty::Predicates {
         ty::Predicates {
             regions_outlive: self.regions_outlive.clone(),
             types_outlive: self.types_outlive.clone(),
@@ -628,7 +640,33 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.regions_outlive = Vec::new();
         self.types_outlive = Vec::new();
         self.trait_type_constraints = Vec::new();
-        std::mem::replace(&mut self.trait_clauses, ty::TraitClauseId::Vector::new())
+        let trait_clauses =
+            std::mem::replace(&mut self.trait_clauses, ty::TraitClauseId::Vector::new());
+        trait_clauses.iter().map(|x| x.to_trait_clause()).collect()
+    }
+
+    /// TODO: explanations
+    pub(crate) fn with_local_trait_clauses<T>(&mut self, f: &mut dyn FnMut(&mut Self) -> T) -> T {
+        use std::mem::replace;
+
+        // Save the state
+        let trait_clauses_counter = replace(
+            &mut self.trait_clauses_counter,
+            ty::TraitClauseId::Generator::new(),
+        );
+        let self_trait_clause = replace(&mut self.self_trait_clause, None);
+        let trait_clauses = replace(&mut self.trait_clauses, ty::TraitClauseId::Vector::new());
+
+        // Apply the continuation
+        let out = f(self);
+
+        // Restore
+        self.trait_clauses_counter = trait_clauses_counter;
+        self.self_trait_clause = self_trait_clause;
+        self.trait_clauses = trait_clauses;
+
+        // Return
+        out
     }
 }
 

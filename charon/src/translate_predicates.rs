@@ -1,21 +1,80 @@
 #![allow(dead_code)]
 use crate::formatter::Formatter;
 use crate::gast::ParamsInfo;
+use crate::meta::Meta;
 use crate::translate_ctx::BodyTransCtx;
 use crate::translate_types::TyTranslator;
 use crate::types::{
-    ConstGeneric, ETraitRef, GenericArgs, OutlivesPred, RTraitRef, RegionOutlives, TraitClause,
-    TraitDeclId, TraitInstanceId, TraitItemName, TraitRef, TraitTypeConstraint, Ty, TypeOutlives,
-    TypeVarId,
+    ETraitRef, GenericArgs, OutlivesPred, RGenericArgs, RTraitRef, Region, RegionOutlives,
+    RegionVarId, TraitClause, TraitClauseId, TraitDeclId, TraitInstanceId, TraitItemName, TraitRef,
+    TraitTypeConstraint, Ty, TypeFormatter, TypeOutlives,
 };
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use rustc_hir::def_id::DefId;
 
+/// Same as [TraitClause] but enriched with information about the parent
+/// predicates and the predicates which apply to the associated types.
+/// We need this information to solve the provenance of traits coming from
+/// where clauses.
+///
+/// Note that this type is recursive.
+///
+/// We have to do this because of this kind of situations
+///```text
+/// trait Foo {
+///   type W: Bar // Bar contains a method bar
+/// }
+///
+/// fn f<T : Foo>(x : T::W) {
+///   x.bar(); // We need to refer to the trait clause declared for Foo::W
+///            // and this clause is not immediately accessible.
+/// }
+///
+/// trait FooChild : Foo {}
+///
+/// fn g<T : FooChild>(x: <T as Foo>::W) { ... }
+///                       ^^^^^^^^^^^^^
+/// //     We need to have access to a clause `FooChild : Foo` to solve this
+/// ```
+#[derive(Debug, Clone)]
+pub(crate) struct FullTraitClause {
+    /// Note that this is local to the
+    pub clause_id: TraitClauseId::Id,
+    /// [Some] if this is the top clause, [None] if this is about a parent/
+    /// associated type clause.
+    pub meta: Option<Meta>,
+    pub trait_id: TraitDeclId::Id,
+    pub generics: RGenericArgs,
+    /// Parent clauses
+    pub parent_clauses: Vec<FullTraitClause>,
+    /// Clauses coming from the trait items (should be the types)
+    pub items_clauses: Vec<(TraitItemName, Vec<FullTraitClause>)>,
+}
+
+impl FullTraitClause {
+    pub(crate) fn to_trait_clause(&self) -> TraitClause {
+        TraitClause {
+            clause_id: self.clause_id,
+            meta: self.meta.unwrap().clone(),
+            trait_id: self.trait_id,
+            generics: self.generics.clone(),
+        }
+    }
+
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
+    where
+        C: for<'a> TypeFormatter<'a, Region<RegionVarId::Id>>,
+    {
+        let clause = self.to_trait_clause();
+        clause.fmt_with_ctx(ctx)
+    }
+}
+
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, EnumToGetters)]
 pub(crate) enum Predicate {
-    Trait(TraitClause),
+    Trait(FullTraitClause),
     TypeOutlives(TypeOutlives),
     RegionOutlives(RegionOutlives),
     TraitType(TraitTypeConstraint),
@@ -70,20 +129,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             None => (),
             Some(parent_id) => {
                 let preds = self.get_predicates_of(parent_id);
-                self.translate_predicates(preds);
+                self.translate_predicates(&preds);
             }
         }
 
         // The predicates of the current definition
         let preds = self.get_predicates_of(def_id);
-        self.translate_predicates(preds);
+        self.translate_predicates(&preds);
     }
 
-    pub(crate) fn translate_predicates(&mut self, preds: hax::GenericPredicates) {
-        self.translate_predicates_vec(preds.predicates);
+    pub(crate) fn translate_predicates(&mut self, preds: &hax::GenericPredicates) {
+        self.translate_predicates_vec(&preds.predicates);
     }
 
-    pub(crate) fn translate_predicates_vec(&mut self, preds: Vec<(hax::Predicate, hax::Span)>) {
+    pub(crate) fn translate_predicates_vec(&mut self, preds: &Vec<(hax::Predicate, hax::Span)>) {
         for (pred, span) in preds {
             match self.translate_predicate(pred, span) {
                 None => (),
@@ -97,10 +156,74 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    pub(crate) fn translate_trait_clause(
+        &mut self,
+        clause_id: TraitClauseId::Id,
+        trait_pred: &hax::TraitPredicate,
+        span: Option<&hax::Span>,
+    ) -> FullTraitClause {
+        // Note sure what this is about
+        assert!(trait_pred.is_positive);
+        // Note sure what this is about
+        assert!(!trait_pred.is_const);
+
+        let trait_ref = &trait_pred.trait_ref;
+        let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
+        let (regions, types, const_generics) = self
+            .translate_substs(None, &trait_ref.generic_args)
+            .unwrap();
+        // There are no trait refs
+        let generics = GenericArgs::new(regions, types, const_generics, Vec::new());
+
+        let parent_clauses = self.with_local_trait_clauses(&mut |ctx: &mut Self| {
+            trait_pred
+                .parent_preds
+                .iter()
+                .map(|x| {
+                    let clause_id = ctx.trait_clauses_counter.fresh_id();
+                    ctx.translate_trait_clause(clause_id, x, None)
+                })
+                .collect()
+        });
+
+        let items_clauses = trait_pred
+            .items_preds
+            .iter()
+            .map(|(name, clauses)| {
+                let clauses: Vec<_> = self.with_local_trait_clauses(&mut |ctx: &mut Self| {
+                    // We need to add a self clause refering the current trait decl
+                    ctx.self_trait_clause = Some((trait_id, generics.clone()));
+
+                    // We can translate the clause
+                    clauses
+                        .iter()
+                        .map(|clause| {
+                            // The clause is inside a binder
+                            assert!(clause.bound_vars.is_empty());
+                            let clause_id = ctx.trait_clauses_counter.fresh_id();
+                            ctx.translate_trait_clause(clause_id, &clause.value, None)
+                        })
+                        .collect()
+                });
+                (TraitItemName(name.to_string()), clauses)
+            })
+            .collect();
+
+        let meta = span.map(|x| self.translate_meta_from_rspan(x.clone()));
+        FullTraitClause {
+            clause_id,
+            meta,
+            trait_id,
+            generics,
+            parent_clauses,
+            items_clauses,
+        }
+    }
+
     pub(crate) fn translate_predicate(
         &mut self,
-        pred: hax::Predicate,
-        span: hax::Span,
+        pred: &hax::Predicate,
+        span: &hax::Span,
     ) -> Option<Predicate> {
         // Skip the binder (which lists the quantified variables).
         // By doing so, we allow the predicates to contain DeBruijn indices,
@@ -109,27 +232,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         use hax::{Clause, PredicateKind};
         match pred_kind {
             PredicateKind::Clause(Clause::Trait(trait_pred)) => {
-                // Note sure what this is about
-                assert!(trait_pred.is_positive);
-                // Note sure what this is about
-                assert!(!trait_pred.is_const);
-
-                let trait_ref = &trait_pred.trait_ref;
-                let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
-                let (regions, types, const_generics) = self
-                    .translate_substs(None, &trait_ref.generic_args)
-                    .unwrap();
-                // There are no trait refs
-                let generics = GenericArgs::new(regions, types, const_generics, Vec::new());
-
-                let meta = self.translate_meta_from_rspan(span);
-                let clause_id = self.trait_clauses_counter.fresh_id();
-                Some(Predicate::Trait(TraitClause {
-                    clause_id,
-                    meta,
-                    trait_id,
-                    generics,
-                }))
+                let id = self.trait_clauses_counter.fresh_id();
+                let clause = self.translate_trait_clause(id, trait_pred, Some(span));
+                Some(Predicate::Trait(clause))
             }
             PredicateKind::Clause(Clause::RegionOutlives(p)) => {
                 let r0 = self.translate_region(&p.0);
@@ -155,15 +260,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     ty,
                 } = p;
 
-                let trait_ref = self.translate_trait_impl_source(impl_source);
-                let (regions, types, const_generics) = self.translate_substs(None, substs).unwrap();
+                let trait_ref = self.translate_trait_impl_source(&impl_source);
+                let (regions, types, const_generics) =
+                    self.translate_substs(None, &substs).unwrap();
                 let generics = GenericArgs {
                     regions,
                     types,
                     const_generics,
                     trait_refs: Vec::new(),
                 };
-                let ty = self.translate_ty(ty).unwrap();
+                let ty = self.translate_ty(&ty).unwrap();
                 let type_name = TraitItemName(type_name.clone());
                 Some(Predicate::TraitType(TraitTypeConstraint {
                     trait_ref,
@@ -283,10 +389,62 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    fn match_trait_clauses<R>(
+        &self,
+        trait_id: TraitDeclId::Id,
+        generics: &GenericArgs<R>,
+        current_group_id: &TraitInstanceId,
+        current_id: &TraitInstanceId,
+        clause_trait_id: TraitDeclId::Id,
+        clause_generics: &RGenericArgs,
+    ) -> bool
+    where
+        R: Eq + Clone,
+        Self: TyTranslator<R>,
+        Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
+    {
+        // Check if the clause is about the same trait
+        if clause_trait_id != trait_id {
+            false
+        } else {
+            // Ignoring the regions for now
+            let tgt_types = &generics.types;
+            let tgt_const_generics = &generics.const_generics;
+
+            let src_types: Vec<Ty<R>> = clause_generics
+                .types
+                .iter()
+                .map(|x| {
+                    self.convert_rty(x)
+                        .replace_self_trait_instance_id(current_group_id.clone())
+                })
+                .collect();
+            let src_const_generics = &clause_generics.const_generics;
+
+            trace!(
+                "Matching with {}:\n- target_param: {}{}\n- current clause: {}{}\n- current clause types after subst : {}",
+                current_id.fmt_with_ctx(self),
+                self.format_object(trait_id),
+                generics.fmt_with_ctx(self),
+                self.format_object(clause_trait_id),
+                clause_generics.fmt_with_ctx(self),
+                src_types.iter().map(|x| x.fmt_with_ctx(self)).collect::<Vec<_>>().join(", ")
+            );
+
+            // We simply check the equality between the arguments:
+            // there are no universally quantified variables to unify.
+            // TODO: normalize the trait clauses (we actually
+            // need to check equality **modulo** equality clauses)
+            // TODO: if we need to unify (later, when allowing universal
+            // quantification over clause parameters), use types_utils::TySubst.
+            &src_types == tgt_types && src_const_generics == tgt_const_generics
+        }
+    }
+
     /// Find the trait instance fullfilling a trait obligation.
     /// TODO: having to do this is very annoying. Isn't there a better way?
     fn find_trait_clause_for_param<R>(
-        &mut self,
+        &self,
         trait_id: TraitDeclId::Id,
         generics: &GenericArgs<R>,
     ) -> TraitInstanceId
@@ -295,179 +453,29 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Self: TyTranslator<R>,
         Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
     {
-        let tgt_types = &generics.types;
-        let tgt_const_generics = &generics.const_generics;
-
-        let match_trait_clauses = &|trait_clause: &TraitClause| {
-            // Check if the clause is about the same trait
-            if trait_clause.trait_id != trait_id {
-                false
-            } else {
-                let src_types: Vec<Ty<R>> = trait_clause
-                    .generics
-                    .types
-                    .iter()
-                    .map(|x| self.convert_rty(x))
-                    .collect();
-                let src_const_generics = &trait_clause.generics.const_generics;
-
-                // We simply check the equality between the arguments:
-                // there are no universally quantified variables to unify.
-                // TODO: normalize the trait clauses (we actually
-                // need to check equality **modulo** equality clauses)
-                // TODO: if we need to unify (later, when allowing universal
-                // quantification over clause parameters), use types_utils::TySubst.
-                &src_types == tgt_types && src_const_generics == tgt_const_generics
-            }
-        };
-
-        // Try to match the self trait clause
-        if let Some(self_clause) = &self.self_trait_clause && match_trait_clauses(self_clause) {
+        // Try to match with Self
+        if let Some((clause_trait_id, clause_generics)) = &self.self_trait_clause &&
+            self.match_trait_clauses(trait_id, generics, &TraitInstanceId::SelfId, &TraitInstanceId::SelfId, *clause_trait_id, clause_generics)
+        {
             return TraitInstanceId::SelfId;
         }
 
-        // Otherwise match the parameter clauses
+        // Try to match with the local clauses
         for trait_clause in &self.trait_clauses {
-            // Match with the clause
-            if match_trait_clauses(trait_clause) {
-                return TraitInstanceId::Clause(trait_clause.clause_id);
-            }
-
-            // Very annoying, but we have to do the following because of this
-            // kind of situations:
-            // ```
-            // trait Foo {
-            //   type W: Bar // Bar contains a method bar
-            // }
-            //
-            // fn f<T : Foo>(x : T::W) {
-            //   x.bar(); // We need to refer to the trait clause declared for Foo::W
-            // }
-            // ```
-            //
-            // Match with the trait clauses of the associated types present
-            // in the trait.
-            // With the example above: we may have (unsuccessfully) matched
-            // with the clause `T : Foo`, now we dive inside `Foo` and look
-            // at its associated types.
-
-            // **IMPORTANT**: we attempt to lookup the trait declaration.
-            // If we succeed, we match. Otherwise, we skip.
-            // Note that we translate traits before functions (and before
-            // trait methods), and in most situations we should need to
-            // dive into trait declarations to find clauses to match with
-            // for methods, so it should be ok.
-            // We could also force the translation of the trait we want
-            // to lookup at this point, but I'm afraid of loops.
-            if let Some(trait_decl) = self.t_ctx.trait_decls.get(trait_clause.trait_id) {
-                trace!(
-                    "Looked up trait declaration: {}",
-                    trait_decl.name.to_string()
-                );
-
-                // Create the substitutions - TODO: very heavy...
-                // TODO: dealing with the regions is a mess...
-                // We check there are none for now.
-                assert!(trait_decl.generics.regions.is_empty());
-                let ty_subst = crate::types_utils::make_type_subst(
-                    trait_decl.generics.types.iter().map(|x| x.index),
-                    trait_clause.generics.types.iter(),
-                );
-                use std::iter::FromIterator;
-                let ty_subst: std::collections::HashMap<TypeVarId::Id, Ty<R>> =
-                    std::collections::HashMap::from_iter(
-                        ty_subst.into_iter().map(|(k, v)| (k, self.convert_rty(&v))),
-                    );
-
-                let cg_subst = crate::types_utils::make_cg_subst(
-                    trait_decl.generics.const_generics.iter().map(|x| x.index),
-                    trait_clause.generics.const_generics.iter(),
-                );
-
-                // Explore the associated types
-                for (name, (clauses, _)) in &trait_decl.types {
-                    for clause in clauses {
-                        trace!("Matching with: {name}");
-                        trace!(
-                            "Trait id: {:?}, Clause trait id: {:?}",
-                            trait_id,
-                            clause.trait_id
-                        );
-                        trace!("Clause: {:?}", clause);
-
-                        if clause.trait_id != trait_id {
-                            trace!("Not the same trait id");
-                            continue;
-                        }
-                        trace!("Same trait id");
-
-                        // TODO: dealing with the regions is a mess...
-                        // Checking there are none for now
-                        assert!(clause.generics.regions.is_empty());
-
-                        // Substitute
-                        let src_types: Vec<Ty<R>> = clause
-                            .generics
-                            .types
-                            .iter()
-                            .map(|x| {
-                                self.convert_rty(x)
-                                    .substitute(
-                                        &|r| r.clone(),
-                                        &|tid| ty_subst.get(tid).unwrap().clone(),
-                                        &|cgid| cg_subst.get(cgid).unwrap().clone(),
-                                    )
-                                    .replace_self_trait_instance_id(TraitInstanceId::Clause(
-                                        clause.clause_id,
-                                    ))
-                            })
-                            .collect();
-
-                        let src_const_generics: Vec<ConstGeneric> = clause
-                            .generics
-                            .const_generics
-                            .iter()
-                            .map(|x| x.substitute(&|cgid| cg_subst.get(cgid).unwrap().clone()))
-                            .collect();
-
-                        trace!(
-                            "- tgt_types: {}\n- tgt_const_generics: {}\n- src_types: {}\n- src_const_generics: {}",
-                            tgt_types
-                                .iter()
-                                .map(|x| x.fmt_with_ctx(self))
-                                .collect::<Vec<_>>()
-                                .join(", "),
-                            tgt_const_generics
-                                .iter()
-                                .map(|x| x.fmt_with_ctx(self))
-                                .collect::<Vec<_>>()
-                                .join(", "),
-                            src_types
-                                .iter()
-                                .map(|x| x.fmt_with_ctx(self))
-                                .collect::<Vec<_>>()
-                                .join(", "),
-                            src_const_generics
-                                .iter()
-                                .map(|x| x.fmt_with_ctx(self))
-                                .collect::<Vec<_>>()
-                                .join(", ")
-                        );
-
-                        // See [match_trait_clauses]
-                        if &src_types == tgt_types && &src_const_generics == tgt_const_generics {
-                            return TraitInstanceId::TraitTypeClause(
-                                Box::new(TraitInstanceId::Clause(trait_clause.clause_id)),
-                                name.clone(),
-                                clause.clause_id,
-                            );
-                        }
-                    }
-                }
+            let current_id = TraitInstanceId::Clause(trait_clause.clause_id);
+            let clause = self.find_trait_clause_for_param_in_clause(
+                trait_id,
+                generics,
+                &TraitInstanceId::SelfId,
+                &current_id,
+                trait_clause,
+            );
+            if let Some(id) = clause {
+                return id;
             }
         }
 
-        // We couldn't find a clause
+        // Could not find a clause
         let trait_ref = format!(
             "{}{}",
             self.format_object(trait_id),
@@ -475,15 +483,89 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
         let clauses: Vec<String> = self
             .self_trait_clause
-            .iter()
-            .chain(self.trait_clauses.iter())
-            .map(|x| x.fmt_with_ctx(self))
+            .clone()
+            .into_iter()
+            .chain(
+                self.trait_clauses
+                    .clone()
+                    .into_iter()
+                    .map(|x| (x.trait_id, x.generics)),
+            )
+            .map(|(id, gens)| format!("{}{}", self.format_object(id), gens.fmt_with_ctx(self),))
             .collect();
         let clauses = clauses.join("\n");
         unreachable!(
             "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
             trait_ref, clauses
         );
+    }
+
+    fn find_trait_clause_for_param_in_clause<R>(
+        &self,
+        trait_id: TraitDeclId::Id,
+        generics: &GenericArgs<R>,
+        current_group_id: &TraitInstanceId,
+        current_id: &TraitInstanceId,
+        trait_clause: &FullTraitClause,
+    ) -> Option<TraitInstanceId>
+    where
+        R: Eq + Clone,
+        Self: TyTranslator<R>,
+        Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
+    {
+        // Match with the current clause
+        if self.match_trait_clauses(
+            trait_id,
+            generics,
+            current_group_id,
+            current_id,
+            trait_clause.trait_id,
+            &trait_clause.generics,
+        ) {
+            return Some(current_id.clone());
+        } else {
+            // Explore the parents
+            for parent_clause in &trait_clause.parent_clauses {
+                let parent_id = TraitInstanceId::ParentClause(
+                    Box::new(current_id.clone()),
+                    parent_clause.clause_id,
+                );
+
+                if let Some(id) = self.find_trait_clause_for_param_in_clause(
+                    trait_id,
+                    generics,
+                    &parent_id,
+                    &parent_id,
+                    parent_clause,
+                ) {
+                    return Some(id);
+                }
+            }
+
+            // Explore the items
+            for (item_name, item_clauses) in &trait_clause.items_clauses {
+                for item_clause in item_clauses {
+                    let item_clause_id = TraitInstanceId::ItemClause(
+                        Box::new(current_id.clone()),
+                        item_name.clone(),
+                        item_clause.clause_id,
+                    );
+
+                    if let Some(id) = self.find_trait_clause_for_param_in_clause(
+                        trait_id,
+                        generics,
+                        current_id,
+                        &item_clause_id,
+                        item_clause,
+                    ) {
+                        return Some(id);
+                    }
+                }
+            }
+        }
+
+        // Could not find any clause
+        None
     }
 
     pub(crate) fn translate_trait_impl_sources_erased_regions(
