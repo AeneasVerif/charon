@@ -207,3 +207,7 @@ pub fn test_child_trait1<T: ChildTrait>(x: &T) -> String {
 pub fn test_child_trait2<T: ChildTrait>(x: &T) -> T::W {
     x.get_w()
 }
+
+// Checking if the order has an importance (we use U::W before we declare that
+// U:ParentTrait0)
+pub fn order1<T: ParentTrait0<W = U::W>, U: ParentTrait0>() {}

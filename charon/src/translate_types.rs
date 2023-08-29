@@ -337,6 +337,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         R: Clone + Eq,
         Self: TyTranslator<R> + for<'a> Formatter<&'a R>,
     {
+        trace!("{:?}", substs);
         // Filter the parameters
         let substs: Vec<&hax::GenericArg> = match used_params {
             Option::None => substs.iter().collect(),

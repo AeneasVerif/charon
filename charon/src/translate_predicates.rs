@@ -110,10 +110,38 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // If we use [TyCtxt::predicates_of] on a trait `Foo`, we get an
         // additional predicate `Self : Foo` (i.e., the trait requires itself),
         // which is not what we want.
-        self.t_ctx
+        let predicates: hax::GenericPredicates = self
+            .t_ctx
             .tcx
             .predicates_defined_on(def_id)
-            .sinto(&self.hax_state)
+            .sinto(&self.hax_state);
+
+        // We reorder the predicates to make sure that the trait clauses come
+        // *before* the other clauses. This way we are sure that, when translating,
+        // all the trait clauses are in the context if we need them.
+        //
+        // Example:
+        // ```
+        // f<T : Foo<S = U::S>, U : Foo>(...)
+        //               ^^^^
+        //        must make sure we have U : Foo in the contextx
+        //                before translating this
+        // ```
+        let (trait_clauses, preds): (
+            Vec<(hax::Predicate, hax::Span)>,
+            Vec<(hax::Predicate, hax::Span)>,
+        ) = predicates.predicates.into_iter().partition(|x| {
+            matches!(
+                &x.0.value,
+                hax::PredicateKind::Clause(hax::Clause::Trait(_))
+            )
+        });
+        let preds: Vec<(hax::Predicate, hax::Span)> =
+            trait_clauses.into_iter().chain(preds.into_iter()).collect();
+        hax::GenericPredicates {
+            parent: predicates.parent,
+            predicates: preds,
+        }
     }
 
     /// This function should be called **after** we translated the generics
@@ -129,12 +157,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             None => (),
             Some(parent_id) => {
                 let preds = self.get_predicates_of(parent_id);
+                trace!("Predicates of parent: {:?}", preds);
                 self.translate_predicates(&preds);
             }
         }
 
         // The predicates of the current definition
         let preds = self.get_predicates_of(def_id);
+        trace!("Local predicates: {:?}", preds);
         self.translate_predicates(&preds);
     }
 
@@ -225,6 +255,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         pred: &hax::Predicate,
         span: &hax::Span,
     ) -> Option<Predicate> {
+        trace!("{:?}", pred);
         // Skip the binder (which lists the quantified variables).
         // By doing so, we allow the predicates to contain DeBruijn indices,
         // but it is ok because we only do a simple check.

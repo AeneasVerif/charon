@@ -99,7 +99,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) {
         let def_id = self.translate_trait_decl_id(rust_id);
-        let tcx = self.tcx;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
@@ -118,9 +117,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut trait_clauses: TraitClauseId::Vector<_> = bt_ctx.get_trait_clauses();
         let mut trait_clauses_start_index = bt_ctx.trait_clauses.len();
         let preds = bt_ctx.get_predicates();
-
-        trace!("- trait id: {:?}\n- trait name: {:?}", rust_id, name);
-        trace!("Trait predicates: {:?}", tcx.predicates_of(rust_id));
 
         // Explore the associated items
         // We do something subtle here: TODO
@@ -236,9 +232,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Translate the predicates
         bt_ctx.translate_predicates_of(rust_id);
-
-        trace!("- trait id: {:?}\n- trait name: {:?}", rust_id, name);
-        trace!("Trait predicates: {:?}", tcx.predicates_of(rust_id));
 
         // Retrieve the information about the implemented trait.
         let (impl_trait_rust_id, impl_trait) =
