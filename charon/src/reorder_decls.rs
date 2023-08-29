@@ -1,26 +1,23 @@
 use crate::common::*;
-use crate::expressions::SharedExprVisitor;
-use crate::gast::{FunDeclId, GlobalDeclId, TraitDeclId, TraitImplId};
+use crate::expressions::*;
+use crate::gast::*;
 use crate::graphs::*;
 use crate::translate_ctx::TransCtx;
-use crate::types::{SharedTypeVisitor, TypeDeclId, TypeDeclKind};
-use crate::ullbc_ast::{ExprBody, SharedAstVisitor};
+use crate::types::*;
+use crate::ullbc_ast::*;
 use hashlink::linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
-use macros::EnumAsGetters;
-use macros::EnumIsA;
-use macros::{VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
-use serde::ser::SerializeTupleVariant;
-use serde::{Serialize, Serializer};
+use serde::Serialize;
 use std::fmt::{Debug, Display, Error, Formatter};
 use std::vec::Vec;
 
 /// A (group of) top-level declaration(s), properly reordered.
 /// "G" stands for "generic"
-#[derive(Debug, VariantIndexArity, VariantName)]
-pub enum GDeclarationGroup<Id: Copy> {
+#[derive(Debug, VariantIndexArity, VariantName, Serialize)]
+pub enum GDeclarationGroup<Id> {
     /// A non-recursive declaration
     NonRec(Id),
     /// A (group of mutually) recursive declaration(s)
@@ -28,19 +25,23 @@ pub enum GDeclarationGroup<Id: Copy> {
 }
 
 /// A (group of) top-level declaration(s), properly reordered.
-#[derive(Debug, VariantIndexArity, VariantName)]
-pub enum DeclarationGroup<TypeId: Copy, FunId: Copy, GlobalId: Copy> {
+#[derive(Debug, VariantIndexArity, VariantName, Serialize)]
+pub enum DeclarationGroup {
     /// A type declaration group
-    Type(GDeclarationGroup<TypeId>),
+    Type(GDeclarationGroup<TypeDeclId::Id>),
     /// A function declaration group
-    Fun(GDeclarationGroup<FunId>),
+    Fun(GDeclarationGroup<FunDeclId::Id>),
     /// A global declaration group
-    Global(GDeclarationGroup<GlobalId>),
+    Global(GDeclarationGroup<GlobalDeclId::Id>),
+    ///
+    TraitDecl(GDeclarationGroup<TraitDeclId::Id>),
+    ///
+    TraitImpl(GDeclarationGroup<TraitImplId::Id>),
 }
 
-impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationGroup<TypeId, FunId, GlobalId> {
-    fn make_type_group<'a>(is_rec: bool, gr: impl Iterator<Item = TypeId>) -> Self {
-        let gr: Vec<TypeId> = gr.collect();
+impl DeclarationGroup {
+    fn make_type_group(is_rec: bool, gr: impl Iterator<Item = TypeDeclId::Id>) -> Self {
+        let gr: Vec<_> = gr.collect();
         if is_rec {
             DeclarationGroup::Type(GDeclarationGroup::Rec(gr))
         } else {
@@ -49,8 +50,8 @@ impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationGroup<TypeId, FunId, 
         }
     }
 
-    fn make_fun_group<'a>(is_rec: bool, gr: impl Iterator<Item = FunId>) -> Self {
-        let gr: Vec<FunId> = gr.collect();
+    fn make_fun_group(is_rec: bool, gr: impl Iterator<Item = FunDeclId::Id>) -> Self {
+        let gr: Vec<_> = gr.collect();
         if is_rec {
             DeclarationGroup::Fun(GDeclarationGroup::Rec(gr))
         } else {
@@ -59,14 +60,26 @@ impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationGroup<TypeId, FunId, 
         }
     }
 
-    fn make_global_group<'a>(is_rec: bool, gr: impl Iterator<Item = GlobalId>) -> Self {
-        let gr: Vec<GlobalId> = gr.collect();
+    fn make_global_group(is_rec: bool, gr: impl Iterator<Item = GlobalDeclId::Id>) -> Self {
+        let gr: Vec<_> = gr.collect();
         if is_rec {
             DeclarationGroup::Global(GDeclarationGroup::Rec(gr))
         } else {
             assert!(gr.len() == 1);
             DeclarationGroup::Global(GDeclarationGroup::NonRec(gr[0]))
         }
+    }
+
+    fn make_trait_decl_group(is_rec: bool, gr: impl Iterator<Item = TraitDeclId::Id>) -> Self {
+        let gr: Vec<_> = gr.collect();
+        assert!(!is_rec && gr.len() == 1);
+        DeclarationGroup::TraitDecl(GDeclarationGroup::NonRec(gr[0]))
+    }
+
+    fn make_trait_impl_group(is_rec: bool, gr: impl Iterator<Item = TraitImplId::Id>) -> Self {
+        let gr: Vec<_> = gr.collect();
+        assert!(!is_rec && gr.len() == 1);
+        DeclarationGroup::TraitImpl(GDeclarationGroup::NonRec(gr[0]))
     }
 }
 
@@ -84,8 +97,7 @@ impl<TypeId: Copy, FunId: Copy, GlobalId: Copy> DeclarationGroup<TypeId, FunId, 
     PartialOrd,
     Ord,
 )]
-pub enum AnyDeclId<TypeId: Copy, FunId: Copy, GlobalId: Copy, TraitDeclId: Copy, TraitImplId: Copy>
-{
+pub enum AnyDeclId<TypeId, FunId, GlobalId, TraitDeclId, TraitImplId> {
     Type(TypeId),
     Fun(FunId),
     Global(GlobalId),
@@ -98,12 +110,11 @@ pub struct DeclInfo {
     pub is_transparent: bool,
 }
 
-pub type DeclarationsGroups =
-    Vec<DeclarationGroup<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id>>;
+pub type DeclarationsGroups = Vec<DeclarationGroup>;
 
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
-impl<Id: Copy + Debug> Display for GDeclarationGroup<Id> {
+impl<Id: Debug> Display for GDeclarationGroup<Id> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
             GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {id:?}"),
@@ -116,81 +127,17 @@ impl<Id: Copy + Debug> Display for GDeclarationGroup<Id> {
     }
 }
 
-/// This is a bit annoying: because [DefId] and [Vec] doe't implement the
-/// [Serialize] trait, we can't automatically derive the serializing trait...
-impl<Id: Copy + Serialize> Serialize for GDeclarationGroup<Id> {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let enum_name = "GDeclarationGroup";
-        let variant_name = self.variant_name();
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        assert!(variant_arity > 0);
-        let mut vs = serializer.serialize_tuple_variant(
-            enum_name,
-            variant_index,
-            variant_name,
-            variant_arity,
-        )?;
-        match self {
-            GDeclarationGroup::NonRec(id) => {
-                vs.serialize_field(id)?;
-            }
-            GDeclarationGroup::Rec(ids) => {
-                let ids = VecSerializer::new(ids);
-                vs.serialize_field(&ids)?;
-            }
-        }
-        vs.end()
-    }
-}
-
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
-impl<TypeId: Copy + Debug, FunId: Copy + Debug, GlobalId: Copy + Debug> Display
-    for DeclarationGroup<TypeId, FunId, GlobalId>
-{
+impl Display for DeclarationGroup {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
             DeclarationGroup::Type(decl) => write!(f, "{{ Type(s): {decl} }}"),
             DeclarationGroup::Fun(decl) => write!(f, "{{ Fun(s): {decl} }}"),
             DeclarationGroup::Global(decl) => write!(f, "{{ Global(s): {decl} }}"),
+            DeclarationGroup::TraitDecl(decl) => write!(f, "{{ Trait decls(s): {decl} }}"),
+            DeclarationGroup::TraitImpl(decl) => write!(f, "{{ Trait impl(s): {decl} }}"),
         }
-    }
-}
-
-/// This is a bit annoying: because [DefId] and [Vec] doe't implement the
-/// [Serialize] trait, we can't automatically derive the serializing trait...
-impl<TypeId: Copy + Serialize, FunId: Copy + Serialize, GlobalId: Copy + Serialize> Serialize
-    for DeclarationGroup<TypeId, FunId, GlobalId>
-{
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let enum_name = "DeclarationGroup";
-        let variant_name = self.variant_name();
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        assert!(variant_arity > 0);
-        let mut vs = serializer.serialize_tuple_variant(
-            enum_name,
-            variant_index,
-            variant_name,
-            variant_arity,
-        )?;
-        match self {
-            DeclarationGroup::Type(decl) => {
-                vs.serialize_field(decl)?;
-            }
-            DeclarationGroup::Fun(decl) => {
-                vs.serialize_field(decl)?;
-            }
-            DeclarationGroup::Global(decl) => {
-                vs.serialize_field(decl)?;
-            }
-        }
-        vs.end()
     }
 }
 
@@ -277,6 +224,16 @@ impl Deps {
             }
         }
     }
+
+    fn visit_generics_and_preds(&mut self, generics: &GenericParams, preds: &Predicates) {
+        // Visit the traits referenced in the generics
+        for clause in &generics.trait_clauses {
+            self.visit_trait_clause(clause);
+        }
+
+        // Visit the predicates
+        self.visit_predicates(preds);
+    }
 }
 
 pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
@@ -290,6 +247,11 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
             AnyTransId::Type(id) => {
                 let d = ctx.type_defs.get(*id).unwrap();
                 use TypeDeclKind::*;
+
+                // Visit the generics and the predicates
+                graph.visit_generics_and_preds(&d.generics, &d.preds);
+
+                // Visit the body
                 match &d.kind {
                     Struct(fields) => {
                         for f in fields {
@@ -310,10 +272,12 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 let d = ctx.fun_defs.get(*id).unwrap();
 
                 // Explore the signature
-                for ty in &d.signature.inputs {
+                let sig = &d.signature;
+                graph.visit_generics_and_preds(&sig.generics, &sig.preds);
+                for ty in &sig.inputs {
                     graph.visit_ty(ty);
                 }
-                graph.visit_ty(&d.signature.output);
+                graph.visit_ty(&sig.output);
 
                 // Explore the body
                 graph.visit_body(&d.body);
@@ -324,8 +288,56 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 // Explore the body
                 graph.visit_body(&d.body);
             }
-            AnyTransId::TraitDecl(_) | AnyTransId::TraitImpl(_) => {
-                todo!()
+            AnyTransId::TraitDecl(id) => {
+                let d = ctx.trait_decls.get(*id).unwrap();
+
+                // Visit the generics and the predicates
+                graph.visit_generics_and_preds(&d.generics, &d.preds);
+
+                // Visit the items
+                for (_, (ty, c)) in &d.consts {
+                    graph.visit_ty(ty);
+                    if let Some(id) = c {
+                        graph.visit_global_decl_id(id);
+                    }
+                }
+
+                for (_, (clauses, ty)) in &d.types {
+                    for c in clauses {
+                        graph.visit_trait_clause(c);
+                    }
+                    if let Some(ty) = ty {
+                        graph.visit_ty(ty);
+                    }
+                }
+
+                for (_, id) in &d.required_methods {
+                    graph.visit_fun_decl_id(id);
+                }
+            }
+            AnyTransId::TraitImpl(id) => {
+                let d = ctx.trait_impls.get(*id).unwrap();
+
+                // Visit the generics and the predicates
+                graph.visit_generics_and_preds(&d.generics, &d.preds);
+
+                // Visit the implemented trait
+                graph.visit_trait_decl_id(&d.impl_trait.trait_id);
+                graph.visit_generic_args(&d.impl_trait.generics);
+
+                // Visit the items
+                for (_, (ty, id)) in &d.consts {
+                    graph.visit_ty(ty);
+                    graph.visit_global_decl_id(id);
+                }
+
+                for (_, ty) in &d.types {
+                    graph.visit_ty(ty);
+                }
+
+                for (_, id) in d.required_methods.iter().chain(d.provided_methods.iter()) {
+                    graph.visit_fun_decl_id(id);
+                }
             }
         }
         graph.unset_current_id();
@@ -380,7 +392,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
         // Note that we clone the vectors: it is not optimal, but they should
         // be pretty small.
         let is_rec = is_mutually_recursive || is_simply_recursive;
-        let group: DeclarationGroup<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id> = match id0 {
+        let group: DeclarationGroup = match id0 {
             AnyDeclId::Type(_) => DeclarationGroup::make_type_group(
                 is_rec,
                 scc.iter().map(AnyDeclId::as_type).copied(),
@@ -392,9 +404,14 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 is_rec,
                 scc.iter().map(AnyDeclId::as_global).copied(),
             ),
-            AnyDeclId::TraitDecl(_) | AnyDeclId::TraitImpl(_) => {
-                todo!()
-            }
+            AnyDeclId::TraitDecl(_) => DeclarationGroup::make_trait_decl_group(
+                is_rec,
+                scc.iter().map(AnyDeclId::as_trait_decl).copied(),
+            ),
+            AnyDeclId::TraitImpl(_) => DeclarationGroup::make_trait_impl_group(
+                is_rec,
+                scc.iter().map(AnyDeclId::as_trait_impl).copied(),
+            ),
         };
 
         reordered_decls.push(group);

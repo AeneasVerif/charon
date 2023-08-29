@@ -1,7 +1,7 @@
 use crate::common::*;
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
-use crate::reorder_decls::DeclarationsGroups;
+use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups};
 use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId};
@@ -29,10 +29,6 @@ impl<'a, T: Serialize> Serialize for VecSW<'a, T> {
         serialize_vec(self.vector, serializer)
     }
 }
-
-// TODO: there is an equivalent definition somewhere
-type DeclarationGroup =
-    crate::reorder_decls::DeclarationGroup<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id>;
 
 /// An auxiliary type used for serialization of declaration groups
 type DeclarationsSerializer<'a> = VecSW<'a, DeclarationGroup>;

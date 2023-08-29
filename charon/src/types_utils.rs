@@ -1594,17 +1594,7 @@ pub trait TypeVisitor {
             RawPtr(ty, rk) => self.visit_ty_raw_ptr(ty, rk),
             TraitType(trait_ref, generics, _name) => {
                 self.visit_trait_ref(trait_ref);
-
-                // Ignoring the regions (which are erased)
-                for ty in &generics.types {
-                    self.visit_ty(ty);
-                }
-                for cg in &generics.const_generics {
-                    self.visit_const_generic(cg);
-                }
-                for tr in &generics.trait_refs {
-                    self.visit_trait_ref(tr);
-                }
+                self.visit_generic_args(generics);
             }
         }
     }
@@ -1615,20 +1605,7 @@ pub trait TypeVisitor {
         args: &GenericArgs<R>,
     ) {
         self.visit_type_id(id);
-        self.visit_args(args);
-    }
-
-    fn visit_args<R>(
-        &mut self,
-        args: &GenericArgs<R>,
-    ) {
-        // We ignore the regions
-        for ty in &args.types {
-            self.visit_ty(ty)
-        }
-        for cg in &args.const_generics {
-            self.visit_const_generic(cg);
-        }
+        self.visit_generic_args(args);
     }
 
     fn visit_ty_type_var(&mut self, vid: &TypeVarId::Id) {
@@ -1683,16 +1660,7 @@ pub trait TypeVisitor {
             generics,
         } = tr;
         self.visit_trait_instance_id(trait_id);
-        // We ignore the regions, which are erased
-        for t in &generics.types {
-            self.visit_ty(t);
-        }
-        for cg in &generics.const_generics {
-            self.visit_const_generic(cg);
-        }
-        for t in &generics.trait_refs {
-            self.visit_trait_ref(t);
-        }
+        self.visit_generic_args(generics);
     }
 
     fn visit_trait_decl_id(&mut self, _: &TraitDeclId::Id) {}
@@ -1713,6 +1681,50 @@ pub trait TypeVisitor {
                 self.visit_trait_instance_id(id);
                 self.visit_trait_clause_id(clause_id)
             },
+        }
+    }
+
+    // TODO: use more
+    fn visit_generic_args<R>(&mut self, g: &GenericArgs<R>) {
+        // We ignore the regions - TODO: we shouldn't
+        for t in &g.types {
+            self.visit_ty(t);
+        }
+        for cg in &g.const_generics {
+            self.visit_const_generic(cg);
+        }
+        for t in &g.trait_refs {
+            self.visit_trait_ref(t);
+        }
+    }
+
+    fn visit_trait_clause(&mut self, c: &TraitClause) {
+        let TraitClause { clause_id, meta: _, trait_id, generics } = c;
+        self.visit_trait_clause_id(clause_id);
+        self.visit_trait_decl_id(trait_id);
+        self.visit_generic_args(generics);
+    }
+
+    fn visit_predicates(&mut self, preds: &Predicates) {
+        // We don't need to visit the regions - TODO: we should
+        let Predicates {
+            regions_outlive: _,
+            types_outlive,
+            trait_type_constraints,
+        } = preds;
+        for p in types_outlive {
+            self.visit_ty(&p.0);
+        }
+        for TraitTypeConstraint {
+            trait_ref,
+            generics,
+            type_name: _,
+            ty,
+        } in trait_type_constraints
+        {
+            self.visit_trait_ref(trait_ref);
+            self.visit_generic_args(generics);
+            self.visit_ty(ty);
         }
     }
 }

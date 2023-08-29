@@ -817,8 +817,11 @@ pub fn compute(ctx: &mut TransCtx, ordered_decls: &DeclarationsGroups) {
                     decl,
                 );
             }
-            DeclarationGroup::Fun(_) | DeclarationGroup::Global(_) => {
-                // Ignore the functions and constants
+            DeclarationGroup::Fun(_)
+            | DeclarationGroup::Global(_)
+            | DeclarationGroup::TraitDecl(_)
+            | DeclarationGroup::TraitImpl(_) => {
+                // Ignore the functions, constants and traits
             }
         }
     }

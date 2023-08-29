@@ -4,9 +4,7 @@
 use crate::assumed;
 use crate::expressions::*;
 use crate::formatter::Formatter;
-use crate::gast::{
-    AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, GenericArgs, TraitItemName,
-};
+use crate::gast::{AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitItemName};
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use crate::values;
@@ -373,17 +371,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Global(id) => self.visit_global_decl_id(id),
             TraitConst(trait_ref, generics, _name) => {
                 self.visit_trait_ref(trait_ref);
-
-                // Ignoring the regions (which are erased)
-                for ty in &generics.types {
-                    self.visit_ty(ty);
-                }
-                for cg in &generics.const_generics {
-                    self.visit_const_generic(cg);
-                }
-                for tr in &generics.trait_refs {
-                    self.visit_trait_ref(tr);
-                }
+                self.visit_generic_args(generics);
             }
             Ref(cv) => self.visit_constant_expr(cv),
             Var(id) => self.visit_const_generic_var_id(id),
@@ -451,13 +439,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Range(ty) => self.visit_ty(ty),
             Adt(adt_id, _, generics) => {
                 self.visit_type_decl_id(adt_id);
-                // We ignore the regions, which are erased
-                for ty in &generics.types {
-                    self.visit_ty(ty);
-                }
-                for cg in &generics.const_generics {
-                    self.visit_const_generic(cg);
-                }
+                self.visit_generic_args(generics);
             }
             Array(ty, cg) => {
                 self.visit_ty(ty);
@@ -481,32 +463,14 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             dest,
         } = c;
         self.visit_fun_id_or_trait_ref(func);
-        // We ignore the regions which are erased
-        for t in &generics.types {
-            self.visit_ty(t);
-        }
-        for cg in &generics.const_generics {
-            self.visit_const_generic(cg);
-        }
-        for t in &generics.trait_refs {
-            self.visit_trait_ref(t);
-        }
+        self.visit_generic_args(generics);
         for o in args {
             self.visit_operand(o);
         }
         match trait_and_method_generic_args {
             None => (),
-            // We ignore the regions which are erased
-            Some(GenericArgs {regions: _, types, const_generics, trait_refs}) => {
-                for t in types {
-                    self.visit_ty(t);
-                }
-                for cg in const_generics {
-                    self.visit_const_generic(cg);
-                }
-                for x in trait_refs {
-                    self.visit_trait_ref(x);
-                }
+            Some(generics) => {
+                self.visit_generic_args(generics);
             }
         }
         self.visit_place(dest);
