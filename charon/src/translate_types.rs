@@ -1,12 +1,11 @@
 use crate::assumed;
 use crate::common::*;
-use crate::formatter::Formatter;
-use crate::gast::TraitItemName;
+use crate::formatter::*;
+use crate::gast::*;
 use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
 use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
-use crate::types as ty;
-use crate::types::{ConstGeneric, ETy, ErasedRegion, GenericArgs, RTy, Region, RegionVarId, Ty};
+use crate::types::*;
 use core::convert::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -78,7 +77,7 @@ impl<'tcx, 'ctx, 'ctx1> TyTranslator<ErasedRegion> for BodyTransCtx<'tcx, 'ctx, 
     /// we believe MIR uses regions only in the function signatures).
     fn translate_region(&self, region: &hax::Region) -> ErasedRegion {
         match region.kind {
-            hax::RegionKind::ReErased => ty::ErasedRegion::Erased,
+            hax::RegionKind::ReErased => ErasedRegion::Erased,
             _ => {
                 // Actually, not all regions are erased. My understanding is that the early
                 // bound regions are erased, but when a region appears in a type it is
@@ -97,18 +96,18 @@ impl<'tcx, 'ctx, 'ctx1> TyTranslator<Region<RegionVarId::Id>> for BodyTransCtx<'
     fn translate_region(&self, region: &hax::Region) -> Region<RegionVarId::Id> {
         match &region.kind {
             hax::RegionKind::ReErased => unreachable!(),
-            hax::RegionKind::ReStatic => ty::Region::Static,
+            hax::RegionKind::ReStatic => Region::Static,
             hax::RegionKind::ReLateBound(id, br) => {
                 // See the comments in [BodyTransCtx.bound_vars]:
                 // - the De Bruijn index identifies the group of variables
                 // - the var id identifies the variable inside the group
                 let rid = self.bound_vars.get(*id).unwrap().get(br.var).unwrap();
-                ty::Region::Var(*rid)
+                Region::Var(*rid)
             }
             _ => {
                 // For the other regions, we use the regions map
                 let rid = self.region_vars_map.get(region).unwrap();
-                ty::Region::Var(rid)
+                Region::Var(rid)
             }
         }
     }
@@ -123,29 +122,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that we take as parameter a function to translate regions, because
     /// regions can be translated in several manners (non-erased region or erased
     /// regions), in which case the return type is different.
-    pub(crate) fn translate_ty<R>(&mut self, ty: &hax::Ty) -> Result<ty::Ty<R>>
+    pub(crate) fn translate_ty<R>(&mut self, ty: &hax::Ty) -> Result<Ty<R>>
     where
         R: Clone + Eq,
         Self: TyTranslator<R> + for<'a> Formatter<&'a R>,
     {
         trace!("{:?}", ty);
-        use hax::Ty;
         match ty {
-            Ty::Bool => Ok(ty::Ty::Literal(ty::LiteralTy::Bool)),
-            Ty::Char => Ok(ty::Ty::Literal(ty::LiteralTy::Char)),
-            Ty::Int(int_ty) => Ok(ty::Ty::Literal(ty::LiteralTy::Integer(
-                ty::IntegerTy::rust_int_ty_to_integer_ty(*int_ty),
+            hax::Ty::Bool => Ok(Ty::Literal(LiteralTy::Bool)),
+            hax::Ty::Char => Ok(Ty::Literal(LiteralTy::Char)),
+            hax::Ty::Int(int_ty) => Ok(Ty::Literal(LiteralTy::Integer(
+                IntegerTy::rust_int_ty_to_integer_ty(*int_ty),
             ))),
-            Ty::Uint(int_ty) => Ok(ty::Ty::Literal(ty::LiteralTy::Integer(
-                ty::IntegerTy::rust_uint_ty_to_integer_ty(*int_ty),
+            hax::Ty::Uint(int_ty) => Ok(Ty::Literal(LiteralTy::Integer(
+                IntegerTy::rust_uint_ty_to_integer_ty(*int_ty),
             ))),
-            Ty::Float(_) => {
+            hax::Ty::Float(_) => {
                 trace!("Float");
                 unimplemented!();
             }
-            Ty::Never => Ok(ty::Ty::Never),
+            hax::Ty::Never => Ok(Ty::Never),
 
-            Ty::Alias(alias_kind) => match alias_kind {
+            hax::Ty::Alias(alias_kind) => match alias_kind {
                 hax::AliasKind::Projection {
                     impl_source,
                     substs,
@@ -154,21 +152,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     let trait_ref = self.translate_trait_impl_source(impl_source);
                     let (regions, types, const_generics) =
                         self.translate_substs(None, substs).unwrap();
-                    let generics = ty::GenericArgs {
+                    let generics = GenericArgs {
                         regions,
                         types,
                         const_generics,
                         trait_refs: Vec::new(),
                     };
                     let name = TraitItemName(name.clone());
-                    Ok(ty::Ty::TraitType(trait_ref, generics, name))
+                    Ok(Ty::TraitType(trait_ref, generics, name))
                 }
                 _ => {
                     unimplemented!("{:?}", ty)
                 }
             },
 
-            Ty::Adt {
+            hax::Ty::Adt {
                 generic_args: substs,
                 trait_refs,
                 def_id,
@@ -192,56 +190,56 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = self.translate_type_id(def_id);
 
                 // Return the instantiated ADT
-                Ok(ty::Ty::Adt(def_id, generics))
+                Ok(Ty::Adt(def_id, generics))
             }
-            Ty::Str => {
+            hax::Ty::Str => {
                 trace!("Str");
 
-                let id = ty::TypeId::Assumed(ty::AssumedTy::Str);
-                Ok(ty::Ty::Adt(id, GenericArgs::empty()))
+                let id = TypeId::Assumed(AssumedTy::Str);
+                Ok(Ty::Adt(id, GenericArgs::empty()))
             }
-            Ty::Array(ty, const_param) => {
+            hax::Ty::Array(ty, const_param) => {
                 trace!("Array");
 
                 let c = self.translate_constant_expr_to_const_generic(const_param);
                 let tys = vec![self.translate_ty(ty)?];
                 let cgs = vec![c];
-                let id = ty::TypeId::Assumed(ty::AssumedTy::Array);
-                Ok(ty::Ty::Adt(
+                let id = TypeId::Assumed(AssumedTy::Array);
+                Ok(Ty::Adt(
                     id,
                     GenericArgs::new(Vec::new(), tys, cgs, Vec::new()),
                 ))
             }
-            Ty::Slice(ty) => {
+            hax::Ty::Slice(ty) => {
                 trace!("Slice");
 
                 let tys = vec![self.translate_ty(ty)?];
-                let id = ty::TypeId::Assumed(ty::AssumedTy::Slice);
-                Ok(ty::Ty::Adt(id, GenericArgs::new_from_types(tys)))
+                let id = TypeId::Assumed(AssumedTy::Slice);
+                Ok(Ty::Adt(id, GenericArgs::new_from_types(tys)))
             }
-            Ty::Ref(region, ty, mutability) => {
+            hax::Ty::Ref(region, ty, mutability) => {
                 trace!("Ref");
 
                 let region = self.translate_region(region);
                 let ty = self.translate_ty(ty)?;
                 let kind = if *mutability {
-                    ty::RefKind::Mut
+                    RefKind::Mut
                 } else {
-                    ty::RefKind::Shared
+                    RefKind::Shared
                 };
-                Ok(ty::Ty::Ref(region, Box::new(ty), kind))
+                Ok(Ty::Ref(region, Box::new(ty), kind))
             }
-            Ty::RawPtr(ty_and_mut) => {
+            hax::Ty::RawPtr(ty_and_mut) => {
                 trace!("RawPtr: {:?}", ty_and_mut);
                 let ty = self.translate_ty(&ty_and_mut.ty)?;
                 let kind = if ty_and_mut.mutbl {
-                    ty::RefKind::Mut
+                    RefKind::Mut
                 } else {
-                    ty::RefKind::Shared
+                    RefKind::Shared
                 };
-                Ok(ty::Ty::RawPtr(Box::new(ty), kind))
+                Ok(Ty::RawPtr(Box::new(ty), kind))
             }
-            Ty::Tuple(substs) => {
+            hax::Ty::Tuple(substs) => {
                 trace!("Tuple");
 
                 let mut params = vec![];
@@ -250,13 +248,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     params.push(param_ty);
                 }
 
-                Ok(ty::Ty::Adt(
-                    ty::TypeId::Tuple,
-                    GenericArgs::new_from_types(params),
-                ))
+                Ok(Ty::Adt(TypeId::Tuple, GenericArgs::new_from_types(params)))
             }
 
-            Ty::Param(param) => {
+            hax::Ty::Param(param) => {
                 // A type parameter, for example `T` in `fn f<T>(x : T) {}`.
                 // Note that this type parameter may actually have been
                 // instantiated (in our environment, we may map it to another
@@ -268,47 +263,47 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Retrieve the translation of the substituted type:
                 let var_id = self.type_vars_map.get(&param.index).unwrap();
-                let ty = ty::Ty::TypeVar(var_id);
+                let ty = Ty::TypeVar(var_id);
 
                 Ok(ty)
             }
 
-            Ty::Foreign(_) => {
+            hax::Ty::Foreign(_) => {
                 trace!("Foreign");
                 unimplemented!();
             }
-            Ty::Infer(_) => {
+            hax::Ty::Infer(_) => {
                 trace!("Infer");
                 unimplemented!();
             }
 
-            Ty::Dynamic(_, _, _) => {
+            hax::Ty::Dynamic(_, _, _) => {
                 trace!("Dynamic");
                 unimplemented!();
             }
 
-            Ty::Generator(_, _, _) => {
+            hax::Ty::Generator(_, _, _) => {
                 trace!("Generator");
                 unimplemented!();
             }
 
-            Ty::Bound(_, _) => {
+            hax::Ty::Bound(_, _) => {
                 trace!("Bound");
                 unimplemented!();
             }
-            Ty::Placeholder(_) => {
+            hax::Ty::Placeholder(_) => {
                 trace!("PlaceHolder");
                 unimplemented!();
             }
-            Ty::Arrow { .. } => {
+            hax::Ty::Arrow { .. } => {
                 trace!("Arrow");
                 unimplemented!();
             }
-            Ty::Error => {
+            hax::Ty::Error => {
                 trace!("Error");
                 unimplemented!();
             }
-            Ty::Todo(s) => {
+            hax::Ty::Todo(s) => {
                 trace!("Todo: {s}");
                 unimplemented!();
             }
@@ -318,13 +313,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a signature type, where the regions are not erased and use region
     /// variable ids.
     /// Simply calls [`translate_ty`](translate_ty)
-    pub(crate) fn translate_sig_ty(&mut self, ty: &hax::Ty) -> Result<ty::RTy> {
+    pub(crate) fn translate_sig_ty(&mut self, ty: &hax::Ty) -> Result<RTy> {
         self.translate_ty(ty)
     }
 
     /// Translate a type where the regions are erased
     /// Simply calls [translate_ty]
-    pub(crate) fn translate_ety(&mut self, ty: &hax::Ty) -> Result<ty::ETy> {
+    pub(crate) fn translate_ety(&mut self, ty: &hax::Ty) -> Result<ETy> {
         self.translate_ty(ty)
     }
 
@@ -393,12 +388,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate a type def id
-    pub(crate) fn translate_type_id(&mut self, def_id: &hax::DefId) -> ty::TypeId {
+    pub(crate) fn translate_type_id(&mut self, def_id: &hax::DefId) -> TypeId {
         trace!("{:?}", def_id);
 
         let rust_id = def_id.rust_def_id.unwrap();
         if rust_id.is_local() {
-            ty::TypeId::Adt(self.translate_type_decl_id(rust_id))
+            TypeId::Adt(self.translate_type_decl_id(rust_id))
         } else {
             // Non-local: check if the type has primitive support
 
@@ -408,11 +403,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             match assumed::get_type_id_from_name(&name) {
                 Option::Some(id) => {
                     // The type has primitive support
-                    ty::TypeId::Assumed(id)
+                    TypeId::Assumed(id)
                 }
                 Option::None => {
                     // The type is external
-                    ty::TypeId::Adt(self.translate_type_decl_id(rust_id))
+                    TypeId::Adt(self.translate_type_decl_id(rust_id))
                 }
             }
         }
@@ -421,19 +416,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate one local type definition which has not been flagged as opaque.
     fn translate_transparent_type(
         &mut self,
-        trans_id: ty::TypeDeclId::Id,
+        trans_id: TypeDeclId::Id,
         adt: hax::AdtDef,
-    ) -> ty::TypeDeclKind {
+    ) -> TypeDeclKind {
         trace!("{}", trans_id);
 
         // Explore the variants
-        let mut var_id = ty::VariantId::Id::new(0); // Variant index
-        let mut variants: Vec<ty::Variant> = vec![];
+        let mut var_id = VariantId::Id::new(0); // Variant index
+        let mut variants: Vec<Variant> = vec![];
         for var_def in adt.variants.raw {
             trace!("variant {}: {:?}", var_id, var_def);
 
-            let mut fields: Vec<ty::Field> = vec![];
-            let mut field_id = ty::FieldId::Id::new(0);
+            let mut fields: Vec<Field> = vec![];
+            let mut field_id = FieldId::Id::new(0);
             /* This is for sanity: check that either all the fields have names, or
              * none of them has */
             let mut have_names: Option<bool> = Option::None;
@@ -462,7 +457,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let meta = self.translate_meta_from_rspan(field_def.span);
 
                 // Store the field
-                let field = ty::Field {
+                let field = Field {
                     meta,
                     name: field_name.clone(),
                     ty,
@@ -474,10 +469,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             let meta = self.translate_meta_from_rspan(var_def.span);
             let variant_name = var_def.name;
-            variants.push(ty::Variant {
+            variants.push(Variant {
                 meta,
                 name: variant_name,
-                fields: ty::FieldId::Vector::from(fields),
+                fields: FieldId::Vector::from(fields),
             });
 
             var_id.incr();
@@ -485,9 +480,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Register the type
         use hax::AdtKind;
-        let type_def_kind: ty::TypeDeclKind = match adt.adt_kind {
-            AdtKind::Struct => ty::TypeDeclKind::Struct(variants[0].fields.clone()),
-            AdtKind::Enum => ty::TypeDeclKind::Enum(ty::VariantId::Vector::from(variants)),
+        let type_def_kind: TypeDeclKind = match adt.adt_kind {
+            AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
+            AdtKind::Enum => TypeDeclKind::Enum(VariantId::Vector::from(variants)),
             AdtKind::Union => {
                 unimplemented!();
             }
@@ -589,7 +584,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             // Opaque types are:
             // - external types
             // - local types flagged as opaque
-            ty::TypeDeclKind::Opaque
+            TypeDeclKind::Opaque
         } else {
             let adt = bt_ctx.t_ctx.tcx.adt_def(rust_id).sinto(&bt_ctx.hax_state);
             bt_ctx.translate_transparent_type(trans_id, adt)
@@ -602,7 +597,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Translate the span information
         let meta = bt_ctx.translate_meta_from_rid(rust_id);
 
-        let type_def = ty::TypeDecl {
+        let type_def = TypeDecl {
             def_id: trans_id,
             meta,
             name,

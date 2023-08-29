@@ -6,7 +6,7 @@
 #![allow(dead_code)]
 use crate::assumed;
 use crate::common::*;
-use crate::expressions as e;
+use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::id_vector;
@@ -14,20 +14,16 @@ use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
 use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::translate_types;
-use crate::types as ty;
-use crate::types::{EGenericArgs, GenericArgs};
-use crate::types::{FieldId, VariantId};
-use crate::ullbc_ast as ast;
-use crate::ullbc_ast::{FunKind, ParamsInfo};
-use crate::values as v;
-use crate::values::{Literal, ScalarValue};
+use crate::types::*;
+use crate::ullbc_ast::*;
+use crate::values::*;
 use core::convert::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir::START_BLOCK;
-use rustc_middle::ty as mir_ty;
-use rustc_middle::ty::{TyCtxt, TyKind};
+use rustc_middle::ty;
+use rustc_middle::ty::TyCtxt;
 use std::iter::FromIterator;
 use translate_types::{translate_bound_region_kind_name, translate_region_name};
 
@@ -41,61 +37,59 @@ fn translate_field_id(id: hax::FieldIdx) -> FieldId::Id {
 }
 
 /// Translate a `BorrowKind`
-fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> e::BorrowKind {
+fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
     match borrow_kind {
-        hax::BorrowKind::Shared => e::BorrowKind::Shared,
+        hax::BorrowKind::Shared => BorrowKind::Shared,
         hax::BorrowKind::Mut {
             allow_two_phase_borrow,
         } => {
             if allow_two_phase_borrow {
-                e::BorrowKind::TwoPhaseMut
+                BorrowKind::TwoPhaseMut
             } else {
-                e::BorrowKind::Mut
+                BorrowKind::Mut
             }
         }
         hax::BorrowKind::Unique => {
             unimplemented!();
         }
-        hax::BorrowKind::Shallow => e::BorrowKind::Shallow,
+        hax::BorrowKind::Shallow => BorrowKind::Shallow,
     }
 }
 
-fn translate_binaryop_kind(binop: hax::BinOp) -> e::BinOp {
-    use hax::BinOp;
+fn translate_binaryop_kind(binop: hax::BinOp) -> BinOp {
     match binop {
-        BinOp::BitXor => e::BinOp::BitXor,
-        BinOp::BitAnd => e::BinOp::BitAnd,
-        BinOp::BitOr => e::BinOp::BitOr,
-        BinOp::Eq => e::BinOp::Eq,
-        BinOp::Lt => e::BinOp::Lt,
-        BinOp::Le => e::BinOp::Le,
-        BinOp::Ne => e::BinOp::Ne,
-        BinOp::Ge => e::BinOp::Ge,
-        BinOp::Gt => e::BinOp::Gt,
-        BinOp::Div => e::BinOp::Div,
-        BinOp::Rem => e::BinOp::Rem,
-        BinOp::Add => e::BinOp::Add,
-        BinOp::Sub => e::BinOp::Sub,
-        BinOp::Mul => e::BinOp::Mul,
-        BinOp::Shl => e::BinOp::Shl,
-        BinOp::Shr => e::BinOp::Shr,
+        hax::BinOp::BitXor => BinOp::BitXor,
+        hax::BinOp::BitAnd => BinOp::BitAnd,
+        hax::BinOp::BitOr => BinOp::BitOr,
+        hax::BinOp::Eq => BinOp::Eq,
+        hax::BinOp::Lt => BinOp::Lt,
+        hax::BinOp::Le => BinOp::Le,
+        hax::BinOp::Ne => BinOp::Ne,
+        hax::BinOp::Ge => BinOp::Ge,
+        hax::BinOp::Gt => BinOp::Gt,
+        hax::BinOp::Div => BinOp::Div,
+        hax::BinOp::Rem => BinOp::Rem,
+        hax::BinOp::Add => BinOp::Add,
+        hax::BinOp::Sub => BinOp::Sub,
+        hax::BinOp::Mul => BinOp::Mul,
+        hax::BinOp::Shl => BinOp::Shl,
+        hax::BinOp::Shr => BinOp::Shr,
         _ => {
             unreachable!();
         }
     }
 }
 
-fn translate_unaryop_kind(binop: hax::UnOp) -> e::UnOp {
-    use hax::UnOp;
+fn translate_unaryop_kind(binop: hax::UnOp) -> UnOp {
     match binop {
-        UnOp::Not => e::UnOp::Not,
-        UnOp::Neg => e::UnOp::Neg,
+        hax::UnOp::Not => UnOp::Not,
+        hax::UnOp::Neg => UnOp::Neg,
     }
 }
 
 /// Build an uninterpreted constant from a MIR constant identifier.
 fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> rustc_middle::mir::UnevaluatedConst<'tcx> {
-    let p = mir_ty::List::empty();
+    let p = ty::List::empty();
     rustc_middle::mir::UnevaluatedConst::new(id, p)
 }
 
@@ -105,10 +99,10 @@ fn translate_primitive_function_call(
     tcx: TyCtxt,
     def_id: &hax::DefId,
     generics: EGenericArgs,
-    args: Vec<e::Operand>,
-    dest: e::Place,
-    target: ast::BlockId::Id,
-) -> Result<ast::RawTerminator> {
+    args: Vec<Operand>,
+    dest: Place,
+    target: BlockId::Id,
+) -> Result<RawTerminator> {
     let rust_id = def_id.rust_def_id.unwrap();
     trace!("- def_id: {:?}", rust_id);
 
@@ -134,32 +128,32 @@ fn translate_primitive_function_call(
     // We have to retrieve the type `Box<u32>` and check that it is of the
     // form `Box<T>` (and we generate `box_deref<u32>`).
     match aid {
-        ast::AssumedFunId::Replace
-        | ast::AssumedFunId::BoxNew
-        | ast::AssumedFunId::VecNew
-        | ast::AssumedFunId::VecPush
-        | ast::AssumedFunId::VecInsert
-        | ast::AssumedFunId::VecLen
-        | ast::AssumedFunId::SliceLen => {
-            let call = ast::Call {
-                func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
+        AssumedFunId::Replace
+        | AssumedFunId::BoxNew
+        | AssumedFunId::VecNew
+        | AssumedFunId::VecPush
+        | AssumedFunId::VecInsert
+        | AssumedFunId::VecLen
+        | AssumedFunId::SliceLen => {
+            let call = Call {
+                func: FunIdOrTraitMethodRef::mk_assumed(aid),
                 generics,
                 trait_and_method_generic_args: None,
                 args,
                 dest,
             };
-            Ok(ast::RawTerminator::Call { call, target })
+            Ok(RawTerminator::Call { call, target })
         }
-        ast::AssumedFunId::BoxDeref | ast::AssumedFunId::BoxDerefMut => {
+        AssumedFunId::BoxDeref | AssumedFunId::BoxDerefMut => {
             translate_box_deref(aid, generics, args, dest, target)
         }
-        ast::AssumedFunId::VecIndex | ast::AssumedFunId::VecIndexMut => {
+        AssumedFunId::VecIndex | AssumedFunId::VecIndexMut => {
             translate_vec_index(aid, generics, args, dest, target)
         }
-        ast::AssumedFunId::ArraySubsliceShared
-        | ast::AssumedFunId::ArraySubsliceMut
-        | ast::AssumedFunId::SliceSubsliceShared
-        | ast::AssumedFunId::SliceSubsliceMut => {
+        AssumedFunId::ArraySubsliceShared
+        | AssumedFunId::ArraySubsliceMut
+        | AssumedFunId::SliceSubsliceShared
+        | AssumedFunId::SliceSubsliceMut => {
             // Take a subslice from an array/slice.
             // Note that this isn't any different from a regular function call. Ideally,
             // we'd have a generic assumed function mechanism.
@@ -172,26 +166,26 @@ fn translate_primitive_function_call(
             assert!(generics.types.len() == 1);
             assert!(generics.const_generics.len() <= 1);
 
-            let call = ast::Call {
-                func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
+            let call = Call {
+                func: FunIdOrTraitMethodRef::mk_assumed(aid),
                 generics,
                 trait_and_method_generic_args: None,
                 args,
                 dest,
             };
 
-            Ok(ast::RawTerminator::Call { call, target })
+            Ok(RawTerminator::Call { call, target })
         }
-        ast::AssumedFunId::BoxFree => {
+        AssumedFunId::BoxFree => {
             // Special case handled elsewhere
             unreachable!();
         }
-        ast::AssumedFunId::ArrayIndexShared
-        | ast::AssumedFunId::ArrayIndexMut
-        | ast::AssumedFunId::ArrayToSliceShared
-        | ast::AssumedFunId::ArrayToSliceMut
-        | ast::AssumedFunId::SliceIndexShared
-        | ast::AssumedFunId::SliceIndexMut => {
+        AssumedFunId::ArrayIndexShared
+        | AssumedFunId::ArrayIndexMut
+        | AssumedFunId::ArrayToSliceShared
+        | AssumedFunId::ArrayToSliceMut
+        | AssumedFunId::SliceIndexShared
+        | AssumedFunId::SliceIndexMut => {
             // Those cases are introduced later, in micro-passes, by desugaring
             // projections (for ArrayIndex and ArrayIndexMut for instnace) and=
             // operations (for ArrayToSlice for instance) to function calls.
@@ -203,12 +197,12 @@ fn translate_primitive_function_call(
 /// Translate `std::Deref::deref` or `std::DerefMut::deref_mut` applied
 /// on boxes. We need a custom function because it is a trait.
 fn translate_box_deref(
-    aid: ast::AssumedFunId,
+    aid: AssumedFunId,
     mut generics: EGenericArgs,
-    args: Vec<e::Operand>,
-    dest: e::Place,
-    target: ast::BlockId::Id,
-) -> Result<ast::RawTerminator> {
+    args: Vec<Operand>,
+    dest: Place,
+    target: BlockId::Id,
+) -> Result<RawTerminator> {
     // Check the arguments
     assert!(generics.regions.is_empty());
     assert!(generics.types.len() == 1);
@@ -227,25 +221,25 @@ fn translate_box_deref(
     let boxed_ty = boxed_ty.unwrap();
     generics.types = vec![boxed_ty.clone()];
 
-    let call = ast::Call {
-        func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
+    let call = Call {
+        func: FunIdOrTraitMethodRef::mk_assumed(aid),
         generics,
         trait_and_method_generic_args: None,
         args,
         dest,
     };
-    Ok(ast::RawTerminator::Call { call, target })
+    Ok(RawTerminator::Call { call, target })
 }
 
 /// Translate `core::ops::index::{Index,IndexMut}::{index,index_mut}`
 /// applied on `Vec`. We need a custom function because it is a trait.
 fn translate_vec_index(
-    aid: ast::AssumedFunId,
+    aid: AssumedFunId,
     mut generics: EGenericArgs,
-    args: Vec<e::Operand>,
-    dest: e::Place,
-    target: ast::BlockId::Id,
-) -> Result<ast::RawTerminator> {
+    args: Vec<Operand>,
+    dest: Place,
+    target: BlockId::Id,
+) -> Result<RawTerminator> {
     // Check the arguments
     assert!(generics.regions.is_empty());
     assert!(generics.types.len() == 1);
@@ -265,14 +259,14 @@ fn translate_vec_index(
     };
     generics.types = vec![arg_ty.clone()];
 
-    let call = ast::Call {
-        func: ast::FunIdOrTraitMethodRef::mk_assumed(aid),
+    let call = Call {
+        func: FunIdOrTraitMethodRef::mk_assumed(aid),
         generics,
         trait_and_method_generic_args: None,
         args,
         dest,
     };
-    Ok(ast::RawTerminator::Call { call, target })
+    Ok(RawTerminator::Call { call, target })
 }
 
 /// Small utility
@@ -298,7 +292,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let tcx = self.tcx;
         if let Some(assoc) = tcx.opt_associated_item(rust_id) {
             match assoc.container {
-                mir_ty::AssocItemContainer::ImplContainer => {
+                ty::AssocItemContainer::ImplContainer => {
                     // This method is defined in an impl block.
                     // It can be a regular function in an impl block or a trait
                     // method implementation.
@@ -354,7 +348,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         }
                     }
                 }
-                mir_ty::AssocItemContainer::TraitContainer => {
+                ty::AssocItemContainer::TraitContainer => {
                     // This method is the *declaration* of a trait method
                     // Ex.:
                     // ====
@@ -417,7 +411,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!();
 
         let id = self.translate_basic_block(body, rustc_index::Idx::new(START_BLOCK.as_usize()))?;
-        assert!(id == ast::START_BLOCK_ID);
+        assert!(id == START_BLOCK_ID);
 
         Ok(())
     }
@@ -426,7 +420,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         body: &hax::MirBody<()>,
         block_id: hax::BasicBlock,
-    ) -> Result<ast::BlockId::Id> {
+    ) -> Result<BlockId::Id> {
         // Check if the block has already been translated
         if let Some(id) = self.blocks_map.get(&block_id) {
             return Ok(id);
@@ -453,7 +447,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let terminator = self.translate_terminator(body, terminator)?;
 
         // Insert the block in the translated blocks
-        let block = ast::BlockData {
+        let block = BlockData {
             statements,
             terminator,
         };
@@ -464,14 +458,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate a place and return its type
-    fn translate_place_with_type(&mut self, place: &hax::Place) -> (e::Place, ty::ETy) {
+    fn translate_place_with_type(&mut self, place: &hax::Place) -> (Place, ETy) {
         let ty = self.translate_ety(&place.ty).unwrap();
         let (var_id, projection) = self.translate_projection(place);
-        (e::Place { var_id, projection }, ty)
+        (Place { var_id, projection }, ty)
     }
 
     /// Translate a place
-    fn translate_place(&mut self, place: &hax::Place) -> e::Place {
+    fn translate_place(&mut self, place: &hax::Place) -> Place {
         self.translate_place_with_type(place).0
     }
 
@@ -480,36 +474,34 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// update our representation of places to match the Hax representation.
     /// TODO: we don't need to return the projected type, it is directly
     /// given by the place.
-    fn translate_projection(&mut self, place: &hax::Place) -> (v::VarId::Id, e::Projection) {
-        use hax::PlaceKind;
+    fn translate_projection(&mut self, place: &hax::Place) -> (VarId::Id, Projection) {
         match &place.kind {
-            PlaceKind::Local(local) => {
+            hax::PlaceKind::Local(local) => {
                 let var_id = self.get_local(&local).unwrap();
                 (var_id, Vec::new())
             }
-            PlaceKind::Projection { place, kind } => {
+            hax::PlaceKind::Projection { place, kind } => {
                 let (var_id, mut projection) = self.translate_projection(&*place);
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
                 let current_ty = self.translate_ety(&place.ty).unwrap();
-                use hax::ProjectionElem;
                 match kind {
-                    ProjectionElem::Deref => {
+                    hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
                         match current_ty {
-                            ty::Ty::Ref(_, _, _) => {
-                                projection.push(e::ProjectionElem::Deref);
+                            Ty::Ref(_, _, _) => {
+                                projection.push(ProjectionElem::Deref);
                             }
-                            ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Box), generics) => {
+                            Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
                                 // This case only happens in some MIR levels
                                 assert!(!boxes_are_desugared(self.t_ctx.mir_level));
                                 assert!(generics.regions.is_empty());
                                 assert!(generics.types.len() == 1);
                                 assert!(generics.const_generics.is_empty());
-                                projection.push(e::ProjectionElem::DerefBox);
+                                projection.push(ProjectionElem::DerefBox);
                             }
-                            ty::Ty::RawPtr(_, _) => {
-                                projection.push(e::ProjectionElem::DerefRawPtr);
+                            Ty::RawPtr(_, _) => {
+                                projection.push(ProjectionElem::DerefRawPtr);
                             }
                             _ => {
                                 unreachable!(
@@ -519,14 +511,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             }
                         }
                     }
-                    ProjectionElem::Field(field_kind) => {
+                    hax::ProjectionElem::Field(field_kind) => {
                         use hax::ProjectionElemFieldKind::*;
                         let proj_elem = match field_kind {
                             Tuple(id) => {
                                 let (_, generics) = current_ty.as_adt();
                                 let field_id = translate_field_id(*id);
-                                let proj_kind = e::FieldProjKind::Tuple(generics.types.len());
-                                e::ProjectionElem::Field(proj_kind, field_id)
+                                let proj_kind = FieldProjKind::Tuple(generics.types.len());
+                                ProjectionElem::Field(proj_kind, field_id)
                             }
                             Adt {
                                 typ: _,
@@ -536,37 +528,30 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 let field_id = translate_field_id(*index);
                                 let variant_id = variant.map(|vid| translate_variant_id(vid));
                                 match current_ty {
-                                    ty::Ty::Adt(ty::TypeId::Adt(type_id), ..) => {
-                                        let proj_kind = e::FieldProjKind::Adt(type_id, variant_id);
-                                        e::ProjectionElem::Field(proj_kind, field_id)
+                                    Ty::Adt(TypeId::Adt(type_id), ..) => {
+                                        let proj_kind = FieldProjKind::Adt(type_id, variant_id);
+                                        ProjectionElem::Field(proj_kind, field_id)
                                     }
-                                    ty::Ty::Adt(ty::TypeId::Tuple, generics) => {
+                                    Ty::Adt(TypeId::Tuple, generics) => {
                                         assert!(generics.regions.is_empty());
                                         assert!(variant.is_none());
                                         assert!(generics.const_generics.is_empty());
-                                        let proj_kind =
-                                            e::FieldProjKind::Tuple(generics.types.len());
+                                        let proj_kind = FieldProjKind::Tuple(generics.types.len());
 
-                                        e::ProjectionElem::Field(proj_kind, field_id)
+                                        ProjectionElem::Field(proj_kind, field_id)
                                     }
-                                    ty::Ty::Adt(
-                                        ty::TypeId::Assumed(ty::AssumedTy::Option),
-                                        generics,
-                                    ) => {
+                                    Ty::Adt(TypeId::Assumed(AssumedTy::Option), generics) => {
                                         assert!(generics.regions.is_empty());
                                         assert!(generics.types.len() == 1);
                                         assert!(generics.const_generics.is_empty());
-                                        assert!(field_id == ty::FieldId::ZERO);
+                                        assert!(field_id == FieldId::ZERO);
 
                                         let variant_id = variant_id.unwrap();
                                         assert!(variant_id == assumed::OPTION_SOME_VARIANT_ID);
-                                        let proj_kind = e::FieldProjKind::Option(variant_id);
-                                        e::ProjectionElem::Field(proj_kind, field_id)
+                                        let proj_kind = FieldProjKind::Option(variant_id);
+                                        ProjectionElem::Field(proj_kind, field_id)
                                     }
-                                    ty::Ty::Adt(
-                                        ty::TypeId::Assumed(ty::AssumedTy::Box),
-                                        generics,
-                                    ) => {
+                                    Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
                                         assert!(!boxes_are_desugared(self.t_ctx.mir_level));
 
                                         // Some more sanity checks
@@ -574,9 +559,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                         assert!(generics.types.len() == 1);
                                         assert!(generics.const_generics.is_empty());
                                         assert!(variant_id.is_none());
-                                        assert!(field_id == ty::FieldId::ZERO);
+                                        assert!(field_id == FieldId::ZERO);
 
-                                        e::ProjectionElem::DerefBox
+                                        ProjectionElem::DerefBox
                                     }
                                     _ => {
                                         unreachable!();
@@ -586,20 +571,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         };
                         projection.push(proj_elem);
                     }
-                    ProjectionElem::Index(local) => {
+                    hax::ProjectionElem::Index(local) => {
                         let local = self.get_local(&local).unwrap();
-                        projection.push(e::ProjectionElem::Index(local, current_ty));
+                        projection.push(ProjectionElem::Index(local, current_ty));
                     }
-                    ProjectionElem::Downcast(..) => {
+                    hax::ProjectionElem::Downcast(..) => {
                         // We view it as a nop (the information from the
                         // downcast has been propagated to the other
                         // projection elements by Hax)
                     }
-                    ProjectionElem::ConstantIndex { .. } | ProjectionElem::Subslice { .. } => {
+                    hax::ProjectionElem::ConstantIndex { .. }
+                    | hax::ProjectionElem::Subslice { .. } => {
                         // Those don't seem to occur in MIR built
                         unimplemented!()
                     }
-                    ProjectionElem::OpaqueCast => {
+                    hax::ProjectionElem::OpaqueCast => {
                         // Don't know what that is
                         unimplemented!()
                     }
@@ -612,28 +598,27 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate an operand with its type
-    fn translate_operand_with_type(&mut self, operand: &hax::Operand) -> (e::Operand, ty::ETy) {
+    fn translate_operand_with_type(&mut self, operand: &hax::Operand) -> (Operand, ETy) {
         trace!();
-        use hax::Operand;
         match operand {
-            Operand::Copy(place) => {
+            hax::Operand::Copy(place) => {
                 let (p, ty) = self.translate_place_with_type(place);
-                (e::Operand::Copy(p), ty)
+                (Operand::Copy(p), ty)
             }
-            Operand::Move(place) => {
+            hax::Operand::Move(place) => {
                 let (p, ty) = self.translate_place_with_type(place);
-                (e::Operand::Move(p), ty)
+                (Operand::Move(p), ty)
             }
-            Operand::Constant(constant) => {
+            hax::Operand::Constant(constant) => {
                 let constant = self.translate_constant_to_constant_expr(constant);
                 let ty = constant.ty.clone();
-                (e::Operand::Const(constant), ty)
+                (Operand::Const(constant), ty)
             }
         }
     }
 
     /// Translate an operand
-    fn translate_operand(&mut self, operand: &hax::Operand) -> e::Operand {
+    fn translate_operand(&mut self, operand: &hax::Operand) -> Operand {
         trace!();
         self.translate_operand_with_type(operand).0
     }
@@ -648,7 +633,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// ad-hoc behaviour (which comes from the fact that we abstract boxes, while
     /// the rust compiler is too precise when manipulating those boxes, which
     /// reveals implementation details).
-    fn translate_move_box_first_projector_operand(&mut self, operand: &hax::Operand) -> e::Operand {
+    fn translate_move_box_first_projector_operand(&mut self, operand: &hax::Operand) -> Operand {
         trace!();
         match operand {
             hax::Operand::Move(place) => {
@@ -658,7 +643,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let var = self.get_var_from_id(place.var_id).unwrap();
                 assert!(var.ty.is_box());
 
-                e::Operand::Move(place)
+                Operand::Move(place)
             }
             _ => {
                 unreachable!();
@@ -667,18 +652,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate an rvalue
-    fn translate_rvalue(&mut self, rvalue: &hax::Rvalue) -> e::Rvalue {
-        use hax::Rvalue;
+    fn translate_rvalue(&mut self, rvalue: &hax::Rvalue) -> Rvalue {
         use std::ops::Deref;
         match rvalue {
-            Rvalue::Use(operand) => e::Rvalue::Use(self.translate_operand(operand)),
-            Rvalue::CopyForDeref(place) => {
+            hax::Rvalue::Use(operand) => Rvalue::Use(self.translate_operand(operand)),
+            hax::Rvalue::CopyForDeref(place) => {
                 // According to the documentation, it seems to be an optimisation
                 // for drop elaboration. We treat it as a regular copy.
                 let place = self.translate_place(place);
-                e::Rvalue::Use(e::Operand::Copy(place))
+                Rvalue::Use(Operand::Copy(place))
             }
-            Rvalue::Repeat(operand, cnst) => {
+            hax::Rvalue::Repeat(operand, cnst) => {
                 let c = self.translate_constant_expr_to_const_generic(cnst);
                 // We are effectively desugaring the repeat in Charon, turning it into an array literal
                 // where the operand is repeated `cnst` times.
@@ -692,24 +676,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // We *have* to desugar here; we don't have enough context (the destination place, the
                 // lifetime variable) to translate this into a built-in function call. This is why we
                 // don't have a ArrayRepeat AssumedFunId.
-                e::Rvalue::Aggregate(e::AggregateKind::Array(t, c), operands)
+                Rvalue::Aggregate(AggregateKind::Array(t, c), operands)
             }
-            Rvalue::Ref(_region, borrow_kind, place) => {
+            hax::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(place);
                 let borrow_kind = translate_borrow_kind(*borrow_kind);
-                e::Rvalue::Ref(place, borrow_kind)
+                Rvalue::Ref(place, borrow_kind)
             }
-            Rvalue::ThreadLocalRef(_) => {
+            hax::Rvalue::ThreadLocalRef(_) => {
                 unreachable!();
             }
-            Rvalue::AddressOf(_, _) => {
+            hax::Rvalue::AddressOf(_, _) => {
                 unreachable!();
             }
-            Rvalue::Len(place) => {
+            hax::Rvalue::Len(place) => {
                 let (place, ty) = self.translate_place_with_type(place);
                 let cg = match &ty {
-                    ty::Ty::Adt(
-                        ty::TypeId::Assumed(aty @ (ty::AssumedTy::Array | ty::AssumedTy::Slice)),
+                    Ty::Adt(
+                        TypeId::Assumed(aty @ (AssumedTy::Array | AssumedTy::Slice)),
                         generics,
                     ) => {
                         if aty.is_array() {
@@ -720,9 +704,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                     _ => unreachable!(),
                 };
-                e::Rvalue::Len(place, ty, cg)
+                Rvalue::Len(place, ty, cg)
             }
-            Rvalue::Cast(cast_kind, operand, tgt_ty) => {
+            hax::Rvalue::Cast(cast_kind, operand, tgt_ty) => {
                 trace!("Rvalue::Cast: {:?}", rvalue);
                 // Put aside the pointer casts (which we don't support), I think
                 // casts should only be from integers/booleans to integer/booleans.
@@ -740,12 +724,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let tgt_ty = *tgt_ty.as_literal().as_integer();
                         let src_ty = *src_ty.as_literal().as_integer();
 
-                        e::Rvalue::UnaryOp(e::UnOp::Cast(src_ty, tgt_ty), op)
+                        Rvalue::UnaryOp(UnOp::Cast(src_ty, tgt_ty), op)
                     }
                     (
                         CastKind::Pointer(hax::PointerCast::Unsize),
-                        ty::Ty::Ref(_, t1, kind1),
-                        ty::Ty::Ref(_, t2, kind2),
+                        Ty::Ref(_, t1, kind1),
+                        Ty::Ref(_, t2, kind2),
                     ) => {
                         // In MIR terminology, we go from &[T; l] to &[T] which means we
                         // effectively "unsize" the type, as `l` no longer appears in the
@@ -753,16 +737,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // materializes into the fat pointer.
                         match (&**t1, &**t2) {
                             (
-                                ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Array), generics),
-                                ty::Ty::Adt(ty::TypeId::Assumed(ty::AssumedTy::Slice), generics1),
+                                Ty::Adt(TypeId::Assumed(AssumedTy::Array), generics),
+                                Ty::Adt(TypeId::Assumed(AssumedTy::Slice), generics1),
                             ) => {
                                 assert!(
                                     generics.types.len() == 1 && generics.const_generics.len() == 1
                                 );
                                 assert!(generics.types[0] == generics1.types[0]);
                                 assert!(kind1 == kind2);
-                                e::Rvalue::UnaryOp(
-                                    e::UnOp::ArrayToSlice(
+                                Rvalue::UnaryOp(
+                                    UnOp::ArrayToSlice(
                                         *kind1,
                                         generics.types[0].clone(),
                                         generics.const_generics[0].clone(),
@@ -786,27 +770,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 }
             }
-            Rvalue::BinaryOp(binop, operands) | Rvalue::CheckedBinaryOp(binop, operands) => {
+            hax::Rvalue::BinaryOp(binop, operands)
+            | hax::Rvalue::CheckedBinaryOp(binop, operands) => {
                 // We merge checked and unchecked binary operations
                 let (left, right) = operands.deref();
-                e::Rvalue::BinaryOp(
+                Rvalue::BinaryOp(
                     translate_binaryop_kind(*binop),
                     self.translate_operand(left),
                     self.translate_operand(right),
                 )
             }
-            Rvalue::NullaryOp(nullop, _ty) => {
+            hax::Rvalue::NullaryOp(nullop, _ty) => {
                 trace!("NullOp: {:?}", nullop);
                 // Nullary operations are very low-level and shouldn't be necessary
                 // unless one needs to write unsafe code.
                 unreachable!();
             }
-            Rvalue::UnaryOp(unop, operand) => e::Rvalue::UnaryOp(
+            hax::Rvalue::UnaryOp(unop, operand) => Rvalue::UnaryOp(
                 translate_unaryop_kind(*unop),
                 self.translate_operand(operand),
             ),
-            Rvalue::Discriminant(place) => e::Rvalue::Discriminant(self.translate_place(place)),
-            Rvalue::Aggregate(aggregate_kind, operands) => {
+            hax::Rvalue::Discriminant(place) => Rvalue::Discriminant(self.translate_place(place)),
+            hax::Rvalue::Aggregate(aggregate_kind, operands) => {
                 // It seems this instruction is not present in certain passes:
                 // for example, it seems it is not used in optimized MIR, where
                 // ADT initialization is split into several instructions, for
@@ -821,25 +806,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // ```
 
                 // First translate the operands
-                let operands_t: Vec<e::Operand> = operands
+                let operands_t: Vec<Operand> = operands
                     .raw
                     .iter()
                     .map(|op| self.translate_operand(op))
                     .collect();
 
-                use hax::AggregateKind;
                 match aggregate_kind.deref() {
-                    AggregateKind::Array(ty) => {
+                    hax::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_ety(&ty).unwrap();
-                        let cg = ty::ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
+                        let cg = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
                             operands_t.len() as u64,
                         )));
-                        e::Rvalue::Aggregate(e::AggregateKind::Array(t_ty, cg), operands_t)
+                        Rvalue::Aggregate(AggregateKind::Array(t_ty, cg), operands_t)
                     }
-                    AggregateKind::Tuple => {
-                        e::Rvalue::Aggregate(e::AggregateKind::Tuple, operands_t)
+                    hax::AggregateKind::Tuple => {
+                        Rvalue::Aggregate(AggregateKind::Tuple, operands_t)
                     }
-                    AggregateKind::Adt(
+                    hax::AggregateKind::Adt(
                         adt_id,
                         variant_idx,
                         kind,
@@ -883,9 +867,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 }
                             };
 
-                            let akind = e::AggregateKind::Adt(id_t, variant_id, generics);
+                            let akind = AggregateKind::Adt(id_t, variant_id, generics);
 
-                            e::Rvalue::Aggregate(akind, operands_t)
+                            Rvalue::Aggregate(akind, operands_t)
                         } else {
                             // External ADT.
                             // Can be `Option`
@@ -908,19 +892,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                     unreachable!();
                                 }
 
-                                let akind = e::AggregateKind::Option(
+                                let akind = AggregateKind::Option(
                                     variant_id,
                                     generics.types.pop().unwrap(),
                                 );
 
-                                e::Rvalue::Aggregate(akind, operands_t)
+                                Rvalue::Aggregate(akind, operands_t)
                             } else if name.equals_ref_name(&assumed::RANGE_NAME) {
                                 // Sanity checks
                                 assert!(generics.regions.is_empty());
                                 // Ranges are parametric over the type of indices
                                 assert!(generics.types.len() == 1);
-                                e::Rvalue::Aggregate(
-                                    e::AggregateKind::Range(generics.types.pop().unwrap()),
+                                Rvalue::Aggregate(
+                                    AggregateKind::Range(generics.types.pop().unwrap()),
                                     operands_t,
                                 )
                             } else {
@@ -928,15 +912,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             }
                         }
                     }
-                    AggregateKind::Closure(_def_id, _subst) => {
+                    hax::AggregateKind::Closure(_def_id, _subst) => {
                         unimplemented!();
                     }
-                    AggregateKind::Generator(_def_id, _subst, _movability) => {
+                    hax::AggregateKind::Generator(_def_id, _subst, _movability) => {
                         unimplemented!();
                     }
                 }
             }
-            Rvalue::ShallowInitBox(_, _) => {
+            hax::Rvalue::ShallowInitBox(_, _) => {
                 unimplemented!();
             }
         }
@@ -949,32 +933,32 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         body: &hax::MirBody<()>,
         statement: &hax::Statement,
-    ) -> Result<Option<ast::Statement>> {
+    ) -> Result<Option<Statement>> {
         trace!("About to translate statement (MIR) {:?}", statement);
 
         use std::ops::Deref;
 
         use hax::StatementKind;
-        let t_statement: Option<ast::RawStatement> = match &*statement.kind {
+        let t_statement: Option<RawStatement> = match &*statement.kind {
             StatementKind::Assign(assign) => {
                 let (place, rvalue) = assign.deref();
                 let t_place = self.translate_place(place);
                 let t_rvalue = self.translate_rvalue(rvalue);
 
-                Some(ast::RawStatement::Assign(t_place, t_rvalue))
+                Some(RawStatement::Assign(t_place, t_rvalue))
             }
             StatementKind::FakeRead(info) => {
                 let (_read_cause, place) = info.deref();
                 let t_place = self.translate_place(place);
 
-                Some(ast::RawStatement::FakeRead(t_place))
+                Some(RawStatement::FakeRead(t_place))
             }
             StatementKind::PlaceMention(place) => {
                 // Simply accesses a place. Introduced for instance in place
                 // of `let _ = ...`. We desugar it to a fake read.
                 let t_place = self.translate_place(place);
 
-                Some(ast::RawStatement::FakeRead(t_place))
+                Some(RawStatement::FakeRead(t_place))
             }
             StatementKind::SetDiscriminant {
                 place,
@@ -982,7 +966,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             } => {
                 let t_place = self.translate_place(place);
                 let variant_id = translate_variant_id(*variant_index);
-                Some(ast::RawStatement::SetDiscriminant(t_place, variant_id))
+                Some(RawStatement::SetDiscriminant(t_place, variant_id))
             }
             StatementKind::StorageLive(_) => {
                 // We ignore StorageLive
@@ -990,7 +974,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             StatementKind::StorageDead(local) => {
                 let var_id = self.get_local(local).unwrap();
-                Some(ast::RawStatement::StorageDead(var_id))
+                Some(RawStatement::StorageDead(var_id))
             }
             StatementKind::Retag(_, _) => {
                 // This is for the stacked borrows
@@ -1013,7 +997,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             StatementKind::Deinit(place) => {
                 let t_place = self.translate_place(place);
-                Some(ast::RawStatement::Deinit(t_place))
+                Some(RawStatement::Deinit(t_place))
             }
             StatementKind::Intrinsic(_) => {
                 unimplemented!();
@@ -1034,7 +1018,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .t_ctx
                     .translate_meta_from_source_info(&body.source_scopes, &statement.source_info);
 
-                Ok(Some(ast::Statement::new(meta, t_statement)))
+                Ok(Some(Statement::new(meta, t_statement)))
             }
         }
     }
@@ -1044,7 +1028,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         body: &hax::MirBody<()>,
         terminator: &hax::Terminator,
-    ) -> Result<ast::Terminator> {
+    ) -> Result<Terminator> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
 
         // Compute the meta information beforehand (we might need it to introduce
@@ -1055,10 +1039,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Translate the terminator
         use hax::TerminatorKind;
-        let t_terminator: ast::RawTerminator = match &terminator.kind {
+        let t_terminator: RawTerminator = match &terminator.kind {
             TerminatorKind::Goto { target } => {
                 let target = self.translate_basic_block(body, *target)?;
-                ast::RawTerminator::Goto { target }
+                RawTerminator::Goto { target }
             }
             TerminatorKind::SwitchInt { discr, targets } => {
                 // Translate the operand which gives the discriminant
@@ -1067,22 +1051,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // Translate the switch targets
                 let targets = self.translate_switch_targets(body, &discr_ty, targets);
 
-                ast::RawTerminator::Switch { discr, targets }
+                RawTerminator::Switch { discr, targets }
             }
             TerminatorKind::Resume => {
                 // This is used to correctly unwind. We shouldn't get there: if
                 // we panic, the state gets stuck.
                 unreachable!();
             }
-            TerminatorKind::Return => ast::RawTerminator::Return,
-            TerminatorKind::Unreachable => ast::RawTerminator::Unreachable,
+            TerminatorKind::Return => RawTerminator::Return,
+            TerminatorKind::Unreachable => RawTerminator::Unreachable,
             TerminatorKind::Terminate => unimplemented!(),
             TerminatorKind::Drop {
                 place,
                 target,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 replace: _,
-            } => ast::RawTerminator::Drop {
+            } => RawTerminator::Drop {
                 place: self.translate_place(place),
                 target: self.translate_basic_block(body, *target)?,
             },
@@ -1119,7 +1103,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             } => {
                 let cond = self.translate_operand(cond);
                 let target = self.translate_basic_block(body, *target)?;
-                ast::RawTerminator::Assert {
+                RawTerminator::Assert {
                     cond,
                     expected: *expected,
                     target,
@@ -1153,7 +1137,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // Also note that they are used in some passes, and not in some others
                 // (they are present in mir_promoted, but not mir_optimized).
                 let target = self.translate_basic_block(body, *real_target)?;
-                ast::RawTerminator::Goto { target }
+                RawTerminator::Goto { target }
             }
             TerminatorKind::FalseUnwind {
                 real_target,
@@ -1161,7 +1145,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             } => {
                 // We consider this to be a goto
                 let target = self.translate_basic_block(body, *real_target)?;
-                ast::RawTerminator::Goto { target }
+                RawTerminator::Goto { target }
             }
             TerminatorKind::InlineAsm { .. } => {
                 // This case should have been eliminated during the registration phase
@@ -1170,36 +1154,35 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         };
 
         // Add the meta information
-        Ok(ast::Terminator::new(meta, t_terminator))
+        Ok(Terminator::new(meta, t_terminator))
     }
 
     /// Translate switch targets
     fn translate_switch_targets(
         &mut self,
         body: &hax::MirBody<()>,
-        switch_ty: &ty::ETy,
+        switch_ty: &ETy,
         targets: &hax::SwitchTargets,
-    ) -> ast::SwitchTargets {
+    ) -> SwitchTargets {
         trace!("targets: {:?}", targets);
-        use hax::SwitchTargets;
         match targets {
-            SwitchTargets::If(if_block, then_block) => {
+            hax::SwitchTargets::If(if_block, then_block) => {
                 let if_block = self.translate_basic_block(body, *if_block).unwrap();
                 let then_block = self.translate_basic_block(body, *then_block).unwrap();
-                ast::SwitchTargets::If(if_block, then_block)
+                SwitchTargets::If(if_block, then_block)
             }
-            SwitchTargets::SwitchInt(_, targets_map, otherwise) => {
+            hax::SwitchTargets::SwitchInt(_, targets_map, otherwise) => {
                 let int_ty = *switch_ty.as_literal().as_integer();
                 let targets_map = targets_map
                     .iter()
                     .map(|(v, tgt)| {
-                        let v = v::ScalarValue::from_le_bytes(int_ty, v.data_le_bytes);
+                        let v = ScalarValue::from_le_bytes(int_ty, v.data_le_bytes);
                         let tgt = self.translate_basic_block(body, *tgt).unwrap();
                         (v, tgt)
                     })
                     .collect();
                 let otherwise = self.translate_basic_block(body, *otherwise).unwrap();
-                ast::SwitchTargets::SwitchInt(int_ty, targets_map, otherwise)
+                SwitchTargets::SwitchInt(int_ty, targets_map, otherwise)
             }
         }
     }
@@ -1218,7 +1201,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         target: &Option<hax::BasicBlock>,
         trait_refs: &Vec<hax::ImplSource>,
         trait_info: &Option<hax::TraitInfo>,
-    ) -> Result<ast::RawTerminator> {
+    ) -> Result<RawTerminator> {
         trace!();
         let rust_id = def_id.rust_def_id.unwrap();
 
@@ -1240,7 +1223,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             assert!(target.is_none());
 
             // We ignore the arguments
-            Ok(ast::RawTerminator::Panic)
+            Ok(RawTerminator::Panic)
         } else {
             assert!(target.is_some());
             let next_block = target.unwrap();
@@ -1283,14 +1266,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let t_arg = self.translate_move_box_first_projector_operand(arg);
 
                 // Return
-                let call = ast::Call {
-                    func: ast::FunIdOrTraitMethodRef::mk_assumed(ast::AssumedFunId::BoxFree),
+                let call = Call {
+                    func: FunIdOrTraitMethodRef::mk_assumed(AssumedFunId::BoxFree),
                     generics: GenericArgs::new_from_types(vec![t_ty]),
                     trait_and_method_generic_args: None,
                     args: vec![t_arg],
                     dest: lval,
                 };
-                Ok(ast::RawTerminator::Call {
+                Ok(RawTerminator::Call {
                     call,
                     target: next_block,
                 })
@@ -1345,8 +1328,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     match trait_info {
                         Option::None => {
                             let def_id = self.translate_fun_decl_id(rust_id);
-                            let func = ast::FunIdOrTraitMethodRef::Fun(ast::FunId::Regular(def_id));
-                            let call = ast::Call {
+                            let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
+                            let call = Call {
                                 func,
                                 generics,
                                 trait_and_method_generic_args: None,
@@ -1354,7 +1337,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 dest: lval,
                             };
 
-                            Ok(ast::RawTerminator::Call {
+                            Ok(RawTerminator::Call {
                                 call,
                                 target: next_block,
                             })
@@ -1393,11 +1376,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         def_id: &hax::DefId,
         generics: EGenericArgs,
-        args: Vec<e::Operand>,
-        dest: e::Place,
-        target: ast::BlockId::Id,
+        args: Vec<Operand>,
+        dest: Place,
+        target: BlockId::Id,
         trait_info: &hax::TraitInfo,
-    ) -> Result<ast::RawTerminator> {
+    ) -> Result<RawTerminator> {
         let rust_id = def_id.rust_def_id.unwrap();
         let impl_source = self.translate_trait_impl_source_erased_regions(&trait_info.impl_source);
 
@@ -1427,15 +1410,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             })
         };
 
-        let func = ast::FunIdOrTraitMethodRef::Trait(impl_source, method_name);
-        let call = ast::Call {
+        let func = FunIdOrTraitMethodRef::Trait(impl_source, method_name);
+        let call = Call {
             func,
             generics,
             trait_and_method_generic_args,
             args,
             dest,
         };
-        Ok(ast::RawTerminator::Call { call, target })
+        Ok(RawTerminator::Call { call, target })
     }
 
     pub(crate) fn translate_substs_and_trait_refs_in_body(
@@ -1461,7 +1444,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         used_args: Option<Vec<bool>>,
         args: &Vec<hax::Operand>,
-    ) -> Vec<e::Operand> {
+    ) -> Vec<Operand> {
         let args: Vec<&hax::Operand> = match used_args {
             Option::None => args.iter().collect(),
             Option::Some(used_args) => {
@@ -1473,7 +1456,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         };
 
-        let mut t_args: Vec<e::Operand> = Vec::new();
+        let mut t_args: Vec<Operand> = Vec::new();
         for arg in args {
             // There should only be moved arguments, or constants
             match arg {
@@ -1493,7 +1476,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         t_args
     }
 
-    fn translate_body(mut self, local_id: LocalDefId, arg_count: usize) -> Result<ast::ExprBody> {
+    fn translate_body(mut self, local_id: LocalDefId, arg_count: usize) -> Result<ExprBody> {
         let tcx = self.t_ctx.tcx;
 
         // Retrive the body
@@ -1526,7 +1509,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // We need to convert the blocks map to an index vector
         // We clone things while we could move them...
-        let mut blocks = ast::BlockId::Vector::new();
+        let mut blocks = BlockId::Vector::new();
         for (id, block) in self.blocks {
             use crate::id_vector::ToUsize;
             // Sanity check to make sure we don't mess with the indices
@@ -1535,7 +1518,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Create the body
-        Ok(ast::ExprBody {
+        Ok(ExprBody {
             meta,
             arg_count,
             locals: self.vars,
@@ -1546,7 +1529,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a function's signature, and initialize a body translation context
     /// at the same time - the function signature gives us the list of region and
     /// type parameters, that we put in the translation context.
-    fn translate_function_signature(&mut self, def_id: DefId) -> ast::FunSig {
+    fn translate_function_signature(&mut self, def_id: DefId) -> FunSig {
         let tcx = self.t_ctx.tcx;
 
         // Retrieve the function signature, which includes the lifetimes
@@ -1566,7 +1549,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Start by translating the early-bound parameters (those are contained by `substs`).
         let fun_type = tcx.type_of(def_id).subst_identity();
         let substs = match fun_type.kind() {
-            TyKind::FnDef(_def_id, substs_ref) => substs_ref,
+            ty::TyKind::FnDef(_def_id, substs_ref) => substs_ref,
             _ => {
                 unreachable!()
             }
@@ -1649,7 +1632,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Translate the signature
         let signature = signature.value;
         trace!("signature of {def_id:?}:\n{:?}", signature);
-        let inputs: Vec<ty::RTy> = Vec::from_iter(
+        let inputs: Vec<RTy> = Vec::from_iter(
             signature
                 .inputs
                 .iter()
@@ -1665,7 +1648,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let parent_params_info = self.get_function_parent_params_info(def_id);
 
-        ast::FunSig {
+        FunSig {
             generics: self.get_generics(),
             preds: self.get_predicates(),
             regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
@@ -1734,7 +1717,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Save the new function
         self.fun_defs.insert(
             def_id,
-            ast::FunDecl {
+            FunDecl {
                 meta,
                 def_id,
                 name,
@@ -1748,34 +1731,31 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Generate an expression body from a typed constant value.
     fn global_generate_assignment_body(
         &mut self,
-        ty: ty::ETy,
+        ty: ETy,
         def_rid: DefId,
-        val: e::ConstantExpr,
-    ) -> ast::ExprBody {
+        val: ConstantExpr,
+    ) -> ExprBody {
         // Compute the meta information (we use the same everywhere)
         let meta = self.translate_meta_from_rid(def_rid);
 
         // # Variables
         // ret : ty
-        let var = ast::Var {
-            index: v::VarId::ZERO,
+        let var = Var {
+            index: VarId::ZERO,
             name: None,
             ty,
         };
         // # Instructions
         // ret := const (ty, val)
         // return
-        let block = ast::BlockData {
-            statements: vec![ast::Statement::new(
+        let block = BlockData {
+            statements: vec![Statement::new(
                 meta,
-                ast::RawStatement::Assign(
-                    e::Place::new(var.index),
-                    e::Rvalue::Use(e::Operand::Const(val)),
-                ),
+                RawStatement::Assign(Place::new(var.index), Rvalue::Use(Operand::Const(val))),
             )],
-            terminator: ast::Terminator::new(meta, ast::RawTerminator::Return),
+            terminator: Terminator::new(meta, RawTerminator::Return),
         };
-        ast::ExprBody {
+        ExprBody {
             meta,
             arg_count: 0,
             locals: id_vector::Vector::from(vec![var]),
@@ -1815,7 +1795,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Save the new global
         self.global_defs.insert(
             def_id,
-            ast::GlobalDecl {
+            GlobalDecl {
                 def_id,
                 meta,
                 name,

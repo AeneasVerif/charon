@@ -1,14 +1,10 @@
 #![allow(dead_code)]
 use crate::formatter::Formatter;
-use crate::gast::ParamsInfo;
+use crate::gast::*;
 use crate::meta::Meta;
-use crate::translate_ctx::BodyTransCtx;
-use crate::translate_types::TyTranslator;
-use crate::types::{
-    ETraitRef, GenericArgs, OutlivesPred, RGenericArgs, RTraitRef, Region, RegionOutlives,
-    RegionVarId, TraitClause, TraitClauseId, TraitDeclId, TraitInstanceId, TraitItemName, TraitRef,
-    TraitTypeConstraint, Ty, TypeFormatter, TypeOutlives,
-};
+use crate::translate_ctx::*;
+use crate::translate_types::*;
+use crate::types::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};

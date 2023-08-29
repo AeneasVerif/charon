@@ -1,8 +1,8 @@
 #![allow(dead_code)]
-use crate::gast::{GenericArgs, ImplTraitRef, TraitClauseId, TraitItemName};
+use crate::gast::*;
 use crate::names_utils;
 use crate::translate_ctx::*;
-use crate::types::{ETy, GlobalDeclId};
+use crate::types::*;
 use crate::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
