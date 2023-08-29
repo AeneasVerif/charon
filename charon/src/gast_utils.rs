@@ -101,18 +101,24 @@ impl TraitDecl {
             + Formatter<&'a ErasedRegion>
             + Formatter<RegionVarId::Id>,
     {
-        let def_id = ctx.format_object(self.def_id);
+        let name = self.name.to_string();
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        let trait_clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
+        let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
 
         let items = {
             let items =
                 self.consts
                     .iter()
-                    .map(|(name, (_, opt_id))| match opt_id {
-                        None => format!("{TAB_INCR}const {name}\n"),
-                        Some(id) => {
-                            format!("{TAB_INCR}const {name} = {}\n", ctx.format_object(*id))
+                    .map(|(name, (ty, opt_id))| {
+                        let ty = ty.fmt_with_ctx(ctx);
+                        match opt_id {
+                            None => format!("{TAB_INCR}const {name} : {ty}\n"),
+                            Some(id) => {
+                                format!(
+                                    "{TAB_INCR}const {name} : {ty} = {}\n",
+                                    ctx.format_object(*id)
+                                )
+                            }
                         }
                     })
                     .chain(self.types.iter().map(|(name, (trait_clauses, opt_ty))| {
@@ -146,7 +152,7 @@ impl TraitDecl {
             }
         };
 
-        format!("trait {def_id}{generics}{trait_clauses}{items}")
+        format!("trait {name}{generics}{clauses}{items}")
     }
 }
 
@@ -157,16 +163,20 @@ impl TraitImpl {
             + Formatter<&'a ErasedRegion>
             + Formatter<RegionVarId::Id>,
     {
-        let def_id = ctx.format_object(self.def_id);
+        let name = self.name.to_string();
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        let trait_clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
+        let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
 
         let items = {
             let items = self
                 .consts
                 .iter()
-                .map(|(name, (_, id))| {
-                    format!("{TAB_INCR}const {name} = {}\n", ctx.format_object(*id))
+                .map(|(name, (ty, id))| {
+                    format!(
+                        "{TAB_INCR}const {name} : {} = {}\n",
+                        ty.fmt_with_ctx(ctx),
+                        ctx.format_object(*id)
+                    )
                 })
                 .chain(self.types.iter().map(|(name, ty)| {
                     format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx))
@@ -188,7 +198,7 @@ impl TraitImpl {
         };
 
         let impl_trait = self.impl_trait.fmt_with_ctx(ctx);
-        format!("impl{generics} {def_id}{generics} : {impl_trait}{trait_clauses}{items}")
+        format!("impl{generics} {name}{generics} : {impl_trait}{clauses}{items}")
     }
 }
 
