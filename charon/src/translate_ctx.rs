@@ -822,6 +822,12 @@ impl<'tcx, 'ctx>
     }
 }
 
+impl<'tcx, 'ctx> Formatter<v::VarId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, v: v::VarId::Id) -> String {
+        v.to_pretty_string()
+    }
+}
+
 impl<'tcx, 'ctx> Formatter<&ty::ErasedRegion> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, _: &ty::ErasedRegion) -> String {
         "'_".to_owned()
