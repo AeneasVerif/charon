@@ -195,6 +195,8 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             &ctx.type_defs,
             &ctx.fun_defs,
             &ctx.global_defs,
+            &ctx.trait_decls,
+            &ctx.trait_impls,
             &options.dest_dir,
         )?;
     } else {
@@ -266,6 +268,8 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             &ctx.type_defs,
             &llbc_funs,
             &llbc_globals,
+            &ctx.trait_decls,
+            &ctx.trait_impls,
             &options.dest_dir,
         )?;
     }

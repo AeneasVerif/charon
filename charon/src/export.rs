@@ -4,7 +4,7 @@ use crate::meta::{FileId, FileName};
 use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups};
 use crate::types::*;
 use crate::ullbc_ast;
-use crate::ullbc_ast::{FunDeclId, GlobalDeclId};
+use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDecl, TraitDecls, TraitImpl, TraitImpls};
 use serde::{Serialize, Serializer};
 use std::collections::HashMap;
 use std::fs::File;
@@ -36,16 +36,18 @@ type DeclarationsSerializer<'a> = VecSW<'a, DeclarationGroup>;
 /// A generic crate, which implements the [Serialize] trait
 #[derive(Serialize)]
 #[serde(rename = "Crate")]
-struct GCrateSerializer<'a, FD: Serialize + Clone, GD: Serialize + Clone> {
+struct GCrateSerializer<'a, FD, GD> {
     name: String,
     /// The `id_to_file` map is serialized as a vector.
     /// We use this map for the spans: the spans only store the file ids, not
     /// the file names, in order to save space.
     id_to_file: VecSW<'a, (FileId::Id, FileName)>,
     declarations: DeclarationsSerializer<'a>,
-    types: VecSW<'a, TypeDecl>,
-    functions: VecSW<'a, FD>,
-    globals: VecSW<'a, GD>,
+    types: Vec<TypeDecl>,
+    functions: Vec<FD>,
+    globals: Vec<GD>,
+    trait_decls: Vec<TraitDecl>,
+    trait_impls: Vec<TraitImpl>,
 }
 
 /// Export the translated definitions to a JSON file.
@@ -58,6 +60,8 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     type_defs: &TypeDecls,
     fun_defs: &FunDeclId::Map<FD>,
     global_defs: &GlobalDeclId::Map<GD>,
+    trait_decls: &TraitDeclId::Map<TraitDecl>,
+    trait_impls: &TraitImplId::Map<TraitImpl>,
     dest_dir: &Option<PathBuf>,
     extension: &str,
 ) -> Result<()> {
@@ -83,15 +87,19 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     // Note that we replace the maps with vectors (the declarations contain
     // their ids, so it is easy to reconstruct the maps from there).
     let types = type_defs.iter().cloned().collect();
-    let funs = fun_defs.iter().cloned().collect();
+    let functions = fun_defs.iter().cloned().collect();
     let globals = global_defs.iter().cloned().collect();
+    let trait_decls = trait_decls.iter().cloned().collect();
+    let trait_impls = trait_impls.iter().cloned().collect();
     let crate_serializer = GCrateSerializer {
         name: crate_name,
         id_to_file,
         declarations: VecSW::new(ordered_decls),
-        types: VecSW::new(&types),
-        functions: VecSW::new(&funs),
-        globals: VecSW::new(&globals),
+        types,
+        functions,
+        globals,
+        trait_decls,
+        trait_impls,
     };
 
     // Create the directory, if necessary (note that if the target directory
@@ -138,6 +146,8 @@ pub fn export_ullbc(
     type_defs: &TypeDecls,
     fun_defs: &ullbc_ast::FunDecls,
     global_defs: &ullbc_ast::GlobalDecls,
+    trait_decls: &TraitDecls,
+    trait_impls: &TraitImpls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<()> {
     gexport(
@@ -147,6 +157,8 @@ pub fn export_ullbc(
         type_defs,
         fun_defs,
         global_defs,
+        trait_decls,
+        trait_impls,
         dest_dir,
         "ullbc",
     )
@@ -160,6 +172,8 @@ pub fn export_llbc(
     type_defs: &TypeDecls,
     fun_defs: &llbc_ast::FunDecls,
     global_defs: &llbc_ast::GlobalDecls,
+    trait_decls: &TraitDecls,
+    trait_impls: &TraitImpls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<()> {
     gexport(
@@ -169,6 +183,8 @@ pub fn export_llbc(
         type_defs,
         fun_defs,
         global_defs,
+        trait_decls,
+        trait_impls,
         dest_dir,
         "llbc",
     )

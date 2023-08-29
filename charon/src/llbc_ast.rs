@@ -109,3 +109,4 @@ pub type GlobalDecl = GGlobalDecl<Statement>;
 pub type GlobalDecls = GlobalDeclId::Map<GlobalDecl>;
 
 pub type TraitDecls = TraitDeclId::Map<TraitDecl>;
+pub type TraitImpls = TraitImplId::Map<TraitImpl>;
