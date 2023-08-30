@@ -165,8 +165,28 @@ and egeneric_args_no_regions_to_gr_generic_args (g : egeneric_args) :
 and etrait_ref_no_regions_to_gr_trait_ref (tr : etrait_ref) :
     'a region trait_ref =
   let ({ trait_id; generics } : etrait_ref) = tr in
+  let trait_id =
+    etrait_instance_id_no_regions_to_gr_trait_instance_id trait_id
+  in
   let generics = egeneric_args_no_regions_to_gr_generic_args generics in
   { trait_id; generics }
+
+and etrait_instance_id_no_regions_to_gr_trait_instance_id
+    (id : etrait_instance_id) : 'a region trait_instance_id =
+  match id with
+  | Self -> Self
+  | TraitImpl id -> TraitImpl id
+  | BuiltinOrAuto id -> BuiltinOrAuto id
+  | Clause id -> Clause id
+  | ParentClause (id, cid) ->
+      let id = etrait_instance_id_no_regions_to_gr_trait_instance_id id in
+      ParentClause (id, cid)
+  | ItemClause (id, name, cid) ->
+      let id = etrait_instance_id_no_regions_to_gr_trait_instance_id id in
+      ItemClause (id, name, cid)
+  | TraitRef tr ->
+      let tr = etrait_ref_no_regions_to_gr_trait_ref tr in
+      TraitRef tr
 
 let ety_no_regions_to_rty (ty : ety) : rty = ety_no_regions_to_gr_ty ty
 let ety_no_regions_to_sty (ty : ety) : sty = ety_no_regions_to_gr_ty ty

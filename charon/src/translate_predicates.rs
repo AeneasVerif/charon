@@ -355,7 +355,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ImplSource::UserDefined(data) => {
                 let def_id = data.impl_def_id.rust_def_id.unwrap();
                 let trait_id = self.translate_trait_impl_id(def_id);
-                let trait_id = TraitInstanceId::Trait(trait_id);
+                let trait_id = TraitInstanceId::TraitImpl(trait_id);
 
                 let generics = self
                     .translate_substs_and_trait_refs(None, &data.substs, &data.nested)

@@ -79,22 +79,6 @@ let const_generic_to_string (fmt : 'r type_formatter) (cg : T.const_generic) :
   | ConstGenericVar id -> fmt.const_generic_var_id_to_string id
   | ConstGenericValue lit -> literal_to_string lit
 
-let rec trait_instance_id_to_string (fmt : 'r type_formatter)
-    (id : T.trait_instance_id) : string =
-  match id with
-  | Self -> "Self"
-  | Trait id -> fmt.trait_impl_id_to_string id
-  | BuiltinOrAuto id -> fmt.trait_decl_id_to_string id
-  | Clause id -> fmt.trait_clause_id_to_string id
-  | ParentClause (inst_id, clause_id) ->
-      let inst_id = trait_instance_id_to_string fmt inst_id in
-      let clause_id = fmt.trait_clause_id_to_string clause_id in
-      "parent(" ^ inst_id ^ ")::" ^ clause_id
-  | ItemClause (inst_id, item_name, clause_id) ->
-      let inst_id = trait_instance_id_to_string fmt inst_id in
-      let clause_id = fmt.trait_clause_id_to_string clause_id in
-      "(" ^ inst_id ^ ")::" ^ item_name ^ "::[" ^ clause_id ^ "]"
-
 let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
   match ty with
   | T.Adt (id, generics) ->
@@ -157,6 +141,23 @@ and trait_ref_to_string (fmt : 'r type_formatter) (tr : 'r T.trait_ref) : string
   let generics = generic_args_to_string fmt tr.T.generics in
   trait_id ^ generics
 
+and trait_instance_id_to_string (fmt : 'r type_formatter)
+    (id : 'r T.trait_instance_id) : string =
+  match id with
+  | Self -> "Self"
+  | TraitImpl id -> fmt.trait_impl_id_to_string id
+  | BuiltinOrAuto id -> fmt.trait_decl_id_to_string id
+  | Clause id -> fmt.trait_clause_id_to_string id
+  | ParentClause (inst_id, clause_id) ->
+      let inst_id = trait_instance_id_to_string fmt inst_id in
+      let clause_id = fmt.trait_clause_id_to_string clause_id in
+      "parent(" ^ inst_id ^ ")::" ^ clause_id
+  | ItemClause (inst_id, item_name, clause_id) ->
+      let inst_id = trait_instance_id_to_string fmt inst_id in
+      let clause_id = fmt.trait_clause_id_to_string clause_id in
+      "(" ^ inst_id ^ ")::" ^ item_name ^ "::[" ^ clause_id ^ "]"
+  | TraitRef tr -> trait_ref_to_string fmt tr
+
 let sty_to_string (fmt : stype_formatter) (ty : T.sty) : string =
   ty_to_string fmt ty
 
@@ -189,6 +190,18 @@ let rgeneric_args_to_string (fmt : rtype_formatter)
 let egeneric_args_to_string (fmt : etype_formatter)
     (generic_args : T.egeneric_args) : string =
   generic_args_to_string fmt generic_args
+
+let strait_instance_id_to_string (fmt : stype_formatter)
+    (trait_instance_id : T.strait_instance_id) : string =
+  trait_instance_id_to_string fmt trait_instance_id
+
+let rtrait_instance_id_to_string (fmt : rtype_formatter)
+    (trait_instance_id : T.rtrait_instance_id) : string =
+  trait_instance_id_to_string fmt trait_instance_id
+
+let etrait_instance_id_to_string (fmt : etype_formatter)
+    (trait_instance_id : T.etrait_instance_id) : string =
+  trait_instance_id_to_string fmt trait_instance_id
 
 let trait_clause_to_string (fmt : stype_formatter) (clause : T.trait_clause) :
     string =

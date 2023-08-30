@@ -91,7 +91,7 @@ pub enum TraitInstanceId {
     SelfId,
     ///
     /// A specific implementation
-    Trait(TraitImplId::Id),
+    TraitImpl(TraitImplId::Id),
     ///
     /// A specific builtin trait implementation like [core::marker::Sized] or
     /// auto trait implementation like [core::marker::Syn].

@@ -327,31 +327,6 @@ let const_generic_of_json (js : json) : (T.const_generic, string) result =
         Ok (T.ConstGenericValue lit)
     | _ -> Error "")
 
-let rec trait_instance_id_of_json (js : json) :
-    (T.trait_instance_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "SelfId" -> Ok T.Self
-    | `Assoc [ ("Trait", id) ] ->
-        let* id = T.TraitImplId.id_of_json id in
-        Ok (T.Trait id)
-    | `Assoc [ ("BuiltinOrAuto", id) ] ->
-        let* id = T.TraitDeclId.id_of_json id in
-        Ok (T.BuiltinOrAuto id)
-    | `Assoc [ ("Clause", id) ] ->
-        let* id = T.TraitClauseId.id_of_json id in
-        Ok (T.Clause id)
-    | `Assoc [ ("ParentClause", `List [ inst_id; clause_id ]) ] ->
-        let* inst_id = trait_instance_id_of_json inst_id in
-        let* clause_id = T.TraitClauseId.id_of_json clause_id in
-        Ok (T.ParentClause (inst_id, clause_id))
-    | `Assoc [ ("ItemClause", `List [ inst_id; item_name; clause_id ]) ] ->
-        let* inst_id = trait_instance_id_of_json inst_id in
-        let* item_name = string_of_json item_name in
-        let* clause_id = T.TraitClauseId.id_of_json clause_id in
-        Ok (T.ItemClause (inst_id, item_name, clause_id))
-    | _ -> Error "")
-
 let rec ty_of_json (r_of_json : json -> ('r, string) result) (js : json) :
     ('r T.ty, string) result =
   combine_error_msgs js __FUNCTION__
@@ -388,7 +363,7 @@ and trait_ref_of_json (r_of_json : json -> ('r, string) result) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("trait_id", trait_id); ("generics", generics) ] ->
-        let* trait_id = trait_instance_id_of_json trait_id in
+        let* trait_id = trait_instance_id_of_json r_of_json trait_id in
         let* generics = generic_args_of_json r_of_json generics in
         Ok ({ trait_id; generics } : 'r T.trait_ref)
     | _ -> Error "")
@@ -413,6 +388,31 @@ and generic_args_of_json (r_of_json : json -> ('r, string) result) (js : json) :
           list_of_json (trait_ref_of_json r_of_json) trait_refs
         in
         Ok { T.regions; types; const_generics; trait_refs }
+    | _ -> Error "")
+
+and trait_instance_id_of_json (r_of_json : json -> ('r, string) result)
+    (js : json) : ('r T.trait_instance_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "SelfId" -> Ok T.Self
+    | `Assoc [ ("TraitImpl", id) ] ->
+        let* id = T.TraitImplId.id_of_json id in
+        Ok (T.TraitImpl id)
+    | `Assoc [ ("BuiltinOrAuto", id) ] ->
+        let* id = T.TraitDeclId.id_of_json id in
+        Ok (T.BuiltinOrAuto id)
+    | `Assoc [ ("Clause", id) ] ->
+        let* id = T.TraitClauseId.id_of_json id in
+        Ok (T.Clause id)
+    | `Assoc [ ("ParentClause", `List [ inst_id; clause_id ]) ] ->
+        let* inst_id = trait_instance_id_of_json r_of_json inst_id in
+        let* clause_id = T.TraitClauseId.id_of_json clause_id in
+        Ok (T.ParentClause (inst_id, clause_id))
+    | `Assoc [ ("ItemClause", `List [ inst_id; item_name; clause_id ]) ] ->
+        let* inst_id = trait_instance_id_of_json r_of_json inst_id in
+        let* item_name = string_of_json item_name in
+        let* clause_id = T.TraitClauseId.id_of_json clause_id in
+        Ok (T.ItemClause (inst_id, item_name, clause_id))
     | _ -> Error "")
 
 let sty_of_json (js : json) : (T.sty, string) result =
@@ -778,7 +778,7 @@ let rvalue_of_json (js : json) : (E.rvalue, string) result =
     | `Assoc [ ("Ref", `List [ place; borrow_kind ]) ] ->
         let* place = place_of_json place in
         let* borrow_kind = borrow_kind_of_json borrow_kind in
-        Ok (E.Ref (place, borrow_kind))
+        Ok (E.RvRef (place, borrow_kind))
     | `Assoc [ ("UnaryOp", `List [ unop; op ]) ] ->
         let* unop = unop_of_json unop in
         let* op = operand_of_json op in

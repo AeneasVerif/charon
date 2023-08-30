@@ -245,10 +245,15 @@ type const_generic =
 
 type trait_item_name = string [@@deriving show, ord]
 
-(** Ancestor for iter visitor for {!type: Types.trait_instance_id} *)
-class ['self] iter_trait_instance_id_base =
+(** Ancestor for iter visitor for {!type: Types.ty} *)
+class ['self] iter_ty_base =
   object (_self : 'self)
-    inherit [_] VisitorsRuntime.iter
+    inherit [_] iter_const_generic
+    method visit_'r : 'env -> 'r -> unit = fun _ _ -> ()
+    method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
+    method visit_type_id : 'env -> type_id -> unit = fun _ _ -> ()
+    method visit_ref_kind : 'env -> ref_kind -> unit = fun _ _ -> ()
+    method visit_literal_type : 'env -> literal_type -> unit = fun _ _ -> ()
 
     method visit_trait_item_name : 'env -> trait_item_name -> unit =
       fun _ _ -> ()
@@ -261,9 +266,19 @@ class ['self] iter_trait_instance_id_base =
   end
 
 (** Ancestor for map visitor for {!type: Types.ty} *)
-class virtual ['self] map_trait_instance_id_base =
+class virtual ['self] map_ty_base =
   object (_self : 'self)
-    inherit [_] VisitorsRuntime.map
+    inherit [_] map_const_generic
+    method virtual visit_'r : 'env -> 'r -> 's
+
+    method visit_type_var_id : 'env -> type_var_id -> type_var_id =
+      fun _ id -> id
+
+    method visit_type_id : 'env -> type_id -> type_id = fun _ id -> id
+    method visit_ref_kind : 'env -> ref_kind -> ref_kind = fun _ rk -> rk
+
+    method visit_literal_type : 'env -> literal_type -> literal_type =
+      fun _ x -> x
 
     method visit_trait_item_name : 'env -> trait_item_name -> trait_item_name =
       fun _ x -> x
@@ -278,66 +293,7 @@ class virtual ['self] map_trait_instance_id_base =
       fun _ x -> x
   end
 
-(** Identifier of a trait instance *)
-type trait_instance_id =
-  | Self
-      (** Reference to *self*, in case of trait declarations/implementations *)
-  | Trait of trait_impl_id  (** A specific implementation *)
-  | BuiltinOrAuto of trait_decl_id
-  | Clause of trait_clause_id
-  | ParentClause of trait_instance_id * trait_clause_id
-  | ItemClause of trait_instance_id * trait_item_name * trait_clause_id
-[@@deriving
-  show,
-    ord,
-    visitors
-      {
-        name = "iter_trait_instance_id";
-        variety = "iter";
-        ancestors = [ "iter_trait_instance_id_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-        polymorphic = false;
-      },
-    visitors
-      {
-        name = "map_trait_instance_id";
-        variety = "map";
-        ancestors = [ "map_trait_instance_id_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
-        concrete = false;
-        polymorphic = false;
-      }]
-
-(** Ancestor for iter visitor for {!type: Types.ty} *)
-class ['self] iter_ty_base =
-  object (_self : 'self)
-    inherit [_] iter_const_generic
-    inherit! [_] iter_trait_instance_id
-    method visit_'r : 'env -> 'r -> unit = fun _ _ -> ()
-    method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
-    method visit_type_id : 'env -> type_id -> unit = fun _ _ -> ()
-    method visit_ref_kind : 'env -> ref_kind -> unit = fun _ _ -> ()
-    method visit_literal_type : 'env -> literal_type -> unit = fun _ _ -> ()
-  end
-
-(** Ancestor for map visitor for {!type: Types.ty} *)
-class virtual ['self] map_ty_base =
-  object (_self : 'self)
-    inherit [_] map_const_generic
-    inherit! [_] map_trait_instance_id
-    method virtual visit_'r : 'env -> 'r -> 's
-
-    method visit_type_var_id : 'env -> type_var_id -> type_var_id =
-      fun _ id -> id
-
-    method visit_type_id : 'env -> type_id -> type_id = fun _ id -> id
-    method visit_ref_kind : 'env -> ref_kind -> ref_kind = fun _ rk -> rk
-
-    method visit_literal_type : 'env -> literal_type -> literal_type =
-      fun _ x -> x
-  end
-
+(* TODO: we should prefix the type variants with "T", this would avoid collisions *)
 type 'r ty =
   | Adt of type_id * 'r generic_args
       (** {!Types.ty.Adt} encodes ADTs, tuples and assumed types *)
@@ -348,7 +304,10 @@ type 'r ty =
   | TraitType of 'r trait_ref * 'r generic_args * string
       (** The string is for the name of the associated type *)
 
-and 'r trait_ref = { trait_id : trait_instance_id; generics : 'r generic_args }
+and 'r trait_ref = {
+  trait_id : 'r trait_instance_id;
+  generics : 'r generic_args;
+}
 
 and 'r generic_args = {
   regions : 'r list;
@@ -356,6 +315,26 @@ and 'r generic_args = {
   const_generics : const_generic list;
   trait_refs : 'r trait_ref list;
 }
+
+(** Identifier of a trait instance. *)
+and 'r trait_instance_id =
+  | Self
+      (** Reference to *self*, in case of trait declarations/implementations *)
+  | TraitImpl of trait_impl_id  (** A specific implementation *)
+  | BuiltinOrAuto of trait_decl_id
+  | Clause of trait_clause_id
+  | ParentClause of 'r trait_instance_id * trait_clause_id
+  | ItemClause of 'r trait_instance_id * trait_item_name * trait_clause_id
+  | TraitRef of 'r trait_ref
+      (** Not present in the Rust version of Charon. We need this case for instantiations:
+          when callling a function which has trait clauses, for instance, we substitute
+          the clauses refernced in the [Clause] and [Self] case with trait references.
+
+          Remark: something potentially confusing is that [trait_clause_id] is used for
+          different purposes. In the [Clause] case, a trait clause id identifies a local
+          trait clause (which can thus be substituted). In the other cases, it references
+          a sub-clause relative to a trait instance id.
+       *)
 [@@deriving
   show,
     ord,
@@ -406,6 +385,12 @@ type rgeneric_args = RegionId.id region generic_args [@@deriving show]
 type strait_ref = RegionVarId.id region trait_ref [@@deriving show]
 type etrait_ref = erased_region trait_ref [@@deriving show]
 type rtrait_ref = RegionId.id region trait_ref [@@deriving show]
+
+type strait_instance_id = RegionVarId.id region trait_instance_id
+[@@deriving show]
+
+type etrait_instance_id = erased_region trait_instance_id [@@deriving show]
+type rtrait_instance_id = RegionId.id region trait_instance_id [@@deriving show]
 
 type field = { meta : meta; field_name : string option; field_ty : sty }
 [@@deriving show]

@@ -484,7 +484,7 @@ impl TraitInstanceId {
                 let clause = clause_id.to_pretty_string();
                 format!("({id}::{type_name}::[{clause}])")
             }
-            TraitInstanceId::Trait(id) => ctx.format_object(*id),
+            TraitInstanceId::TraitImpl(id) => ctx.format_object(*id),
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
             TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
         }
@@ -1556,7 +1556,7 @@ impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
             TraitInstanceId::SelfId => *id = self.new_id.clone(),
             TraitInstanceId::ParentClause(box id, _)
             | TraitInstanceId::ItemClause(box id, _, _) => self.visit_trait_instance_id(id),
-            TraitInstanceId::Trait(_)
+            TraitInstanceId::TraitImpl(_)
             | TraitInstanceId::Clause(_)
             | TraitInstanceId::BuiltinOrAuto(_) => (),
         }
@@ -1670,7 +1670,7 @@ pub trait TypeVisitor {
     fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
         match id {
             TraitInstanceId::SelfId => (),
-            TraitInstanceId::Trait(id) => self.visit_trait_impl_id(id),
+            TraitInstanceId::TraitImpl(id) => self.visit_trait_impl_id(id),
             TraitInstanceId::BuiltinOrAuto(id) => self.visit_trait_decl_id(id),
             TraitInstanceId::Clause(id) => self.visit_trait_clause_id(id),
             TraitInstanceId::ParentClause(box id, clause_id) => {

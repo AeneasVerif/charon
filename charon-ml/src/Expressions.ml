@@ -185,58 +185,40 @@ let all_binops =
     Shr;
   ]
 
-(** Ancestor the constant_expr iter visitor *)
+(** Ancestor for the constant_expr iter visitor *)
 class ['self] iter_constant_expr_base =
   object (self : 'self)
     inherit [_] iter_place
-    inherit! [_] iter_const_generic
-    inherit! [_] iter_trait_instance_id
-    method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
+    inherit! [_] iter_ty
+    method! visit_'r : 'env -> erased_region -> unit = self#visit_erased_region
+    method visit_ety : 'env -> ety -> unit = self#visit_ty
     method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
 
     method visit_egeneric_args : 'env -> egeneric_args -> unit =
-      fun e x ->
-        let { regions; types; const_generics; trait_refs } = x in
-        self#visit_list self#visit_erased_region e regions;
-        self#visit_list self#visit_ety e types;
-        self#visit_list self#visit_const_generic e const_generics;
-        self#visit_list self#visit_etrait_ref e trait_refs
+      self#visit_generic_args
 
-    method visit_etrait_ref : 'env -> etrait_ref -> unit =
-      fun e x ->
-        let ({ trait_id; generics } : etrait_ref) = x in
-        self#visit_trait_instance_id e trait_id;
-        self#visit_egeneric_args e generics
+    method visit_etrait_ref : 'env -> etrait_ref -> unit = self#visit_trait_ref
   end
 
 (** Ancestor the constant_expr map visitor *)
 class ['self] map_constant_expr_base =
   object (self : 'self)
     inherit [_] map_place
-    inherit! [_] map_const_generic
-    inherit! [_] map_trait_instance_id
+    inherit! [_] map_ty
+
+    method visit_'r : 'env -> erased_region -> erased_region =
+      self#visit_erased_region
+
     method visit_ety : 'env -> ety -> ety = fun _ x -> x
 
     method visit_erased_region : 'env -> erased_region -> erased_region =
       fun _ x -> x
 
     method visit_egeneric_args : 'env -> egeneric_args -> egeneric_args =
-      fun e x ->
-        let { regions; types; const_generics; trait_refs } = x in
-        let regions = self#visit_list self#visit_erased_region e regions in
-        let types = self#visit_list self#visit_ety e types in
-        let const_generics =
-          self#visit_list self#visit_const_generic e const_generics
-        in
-        let trait_refs = self#visit_list self#visit_etrait_ref e trait_refs in
-        { regions; types; const_generics; trait_refs }
+      self#visit_generic_args
 
     method visit_etrait_ref : 'env -> etrait_ref -> etrait_ref =
-      fun e x ->
-        let ({ trait_id; generics } : etrait_ref) = x in
-        let trait_id = self#visit_trait_instance_id e trait_id in
-        let generics = self#visit_egeneric_args e generics in
-        { trait_id; generics }
+      self#visit_trait_ref
   end
 
 type raw_constant_expr =
@@ -374,9 +356,10 @@ class ['self] map_rvalue_base =
   end
 
 (* TODO: move the aggregate kind to operands *)
+(* TODO: we should prefix the type variants with "T", this would avoid collisions *)
 type rvalue =
   | Use of operand
-  | Ref of place * borrow_kind
+  | RvRef of place * borrow_kind
   | UnaryOp of unop * operand
   | BinaryOp of binop * operand * operand
   | Discriminant of place
