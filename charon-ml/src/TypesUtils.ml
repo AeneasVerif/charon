@@ -29,15 +29,19 @@ let type_decl_is_enum (def : type_decl) : bool =
 
 (** Return [true] if a {!type: Types.ty} is actually [unit] *)
 let ty_is_unit (ty : 'r ty) : bool =
-  match ty with Adt (Tuple, [], [], []) -> true | _ -> false
+  match ty with
+  | Adt
+      (Tuple, { regions = []; types = []; const_generics = []; trait_refs = _ })
+    ->
+      true
+  | _ -> false
 
 let ty_is_adt (ty : 'r ty) : bool =
-  match ty with Adt (_, _, _, _) -> true | _ -> false
+  match ty with Adt (_, _) -> true | _ -> false
 
-let ty_as_adt (ty : 'r ty) : type_id * 'r list * 'r ty list * const_generic list
-    =
+let ty_as_adt (ty : 'r ty) : type_id * 'r generic_args =
   match ty with
-  | Adt (id, regions, tys, cgs) -> (id, regions, tys, cgs)
+  | Adt (id, generics) -> (id, generics)
   | _ -> raise (Failure "Unreachable")
 
 let ty_as_ref (ty : 'r ty) : 'r * 'r ty * ref_kind =
@@ -46,12 +50,11 @@ let ty_as_ref (ty : 'r ty) : 'r * 'r ty * ref_kind =
   | _ -> raise (Failure "Unreachable")
 
 let ty_is_custom_adt (ty : 'r ty) : bool =
-  match ty with Adt (AdtId _, _, _, _) -> true | _ -> false
+  match ty with Adt (AdtId _, _) -> true | _ -> false
 
-let ty_as_custom_adt (ty : 'r ty) :
-    TypeDeclId.id * 'r list * 'r ty list * const_generic list =
+let ty_as_custom_adt (ty : 'r ty) : TypeDeclId.id * 'r generic_args =
   match ty with
-  | Adt (AdtId id, regions, tys, cgs) -> (id, regions, tys, cgs)
+  | Adt (AdtId id, generics) -> (id, generics)
   | _ -> raise (Failure "Unreachable")
 
 let ty_as_literal (ty : 'r ty) : literal_type =
@@ -60,8 +63,20 @@ let ty_as_literal (ty : 'r ty) : literal_type =
 let const_generic_as_literal (cg : const_generic) : PrimitiveValues.literal =
   match cg with ConstGenericValue v -> v | _ -> raise (Failure "Unreachable")
 
+let mk_empty_generic_args : 'r generic_args =
+  { regions = []; types = []; const_generics = []; trait_refs = [] }
+
+let mk_generic_args_from_types (types : 'r ty list) : 'r generic_args =
+  { regions = []; types; const_generics = []; trait_refs = [] }
+
+let mk_empty_generic_params : generic_params =
+  { regions = []; types = []; const_generics = []; trait_clauses = [] }
+
+let mk_empty_predicates : predicates =
+  { regions_outlive = []; types_outlive = []; trait_type_constraints = [] }
+
 (** The unit type *)
-let mk_unit_ty : 'r ty = Adt (Tuple, [], [], [])
+let mk_unit_ty : 'r ty = Adt (Tuple, mk_empty_generic_args)
 
 (** The usize type *)
 let mk_usize_ty : 'r ty = Literal (Integer Usize)
@@ -69,7 +84,7 @@ let mk_usize_ty : 'r ty = Literal (Integer Usize)
 (** Deconstruct a type of the form [Box<T>] to retrieve the [T] inside *)
 let ty_get_box (box_ty : ety) : ety =
   match box_ty with
-  | Adt (Assumed Box, [], [ boxed_ty ], []) -> boxed_ty
+  | Adt (Assumed Box, { types = [ boxed_ty ]; _ }) -> boxed_ty
   | _ -> raise (Failure "Not a boxed type")
 
 (** Deconstruct a type of the form [&T] or [&mut T] to retrieve the [T] (and
@@ -84,10 +99,12 @@ let mk_ref_ty (r : 'r) (ty : 'r ty) (ref_kind : ref_kind) : 'r ty =
   Ref (r, ty, ref_kind)
 
 (** Make a box type *)
-let mk_box_ty (ty : 'r ty) : 'r ty = Adt (Assumed Box, [], [ ty ], [])
+let mk_box_ty (ty : 'r ty) : 'r ty =
+  Adt (Assumed Box, mk_generic_args_from_types [ ty ])
 
 (** Make a vec type *)
-let mk_vec_ty (ty : 'r ty) : 'r ty = Adt (Assumed Vec, [], [ ty ], [])
+let mk_vec_ty (ty : 'r ty) : 'r ty =
+  Adt (Assumed Vec, mk_generic_args_from_types [ ty ])
 
 (** Check if a region is in a set of regions *)
 let region_in_set (r : RegionId.id region) (rset : RegionId.Set.t) : bool =
@@ -121,17 +138,35 @@ let rty_regions_intersect (ty : rty) (regions : RegionId.Set.t) : bool =
  *)
 let rec ety_no_regions_to_gr_ty (ty : ety) : 'a gr_ty =
   match ty with
-  | Adt (type_id, regions, tys, cgs) ->
-      assert (regions = []);
-      Adt (type_id, [], List.map ety_no_regions_to_gr_ty tys, cgs)
+  | Adt (type_id, generics) ->
+      let generics = egeneric_args_no_regions_to_gr_generic_args generics in
+      Adt (type_id, generics)
   | TypeVar v -> TypeVar v
   | Literal ty -> Literal ty
   | Never -> Never
+  | TraitType (trait_ref, generics, type_name) ->
+      let trait_ref = etrait_ref_no_regions_to_gr_trait_ref trait_ref in
+      let generics = egeneric_args_no_regions_to_gr_generic_args generics in
+      TraitType (trait_ref, generics, type_name)
   | Ref (_, _, _) ->
       raise
         (Failure
            "Can't convert a ref with erased regions to a ref with non-erased \
             regions")
+
+and egeneric_args_no_regions_to_gr_generic_args (g : egeneric_args) :
+    'a region generic_args =
+  let { regions; types; const_generics; trait_refs } = g in
+  assert (regions = []);
+  let types = List.map ety_no_regions_to_gr_ty types in
+  let trait_refs = List.map etrait_ref_no_regions_to_gr_trait_ref trait_refs in
+  { regions = []; types; const_generics; trait_refs }
+
+and etrait_ref_no_regions_to_gr_trait_ref (tr : etrait_ref) :
+    'a region trait_ref =
+  let ({ trait_id; generics } : etrait_ref) = tr in
+  let generics = egeneric_args_no_regions_to_gr_generic_args generics in
+  { trait_id; generics }
 
 let ety_no_regions_to_rty (ty : ety) : rty = ety_no_regions_to_gr_ty ty
 let ety_no_regions_to_sty (ty : ety) : sty = ety_no_regions_to_gr_ty ty
@@ -140,15 +175,8 @@ let ety_no_regions_to_sty (ty : ety) : sty = ety_no_regions_to_gr_ty ty
 let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : rty) : bool =
   let obj =
     object
-      inherit [_] iter_ty as super
-
-      method! visit_Adt env type_id regions tys =
-        List.iter (fun r -> if region_in_set r rset then raise Found) regions;
-        super#visit_Adt env type_id regions tys
-
-      method! visit_Ref env r ty rkind =
-        if region_in_set r rset then raise Found
-        else super#visit_Ref env r ty rkind
+      inherit [_] iter_ty
+      method! visit_'r _ r = if region_in_set r rset then raise Found
     end
   in
   try
@@ -167,13 +195,13 @@ let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : rty) : bool =
   *)
 let rec ty_is_primitively_copyable (ty : 'r ty) : bool =
   match ty with
-  | Adt (Assumed Option, _, tys, _) ->
-      List.for_all ty_is_primitively_copyable tys
-  | Adt ((AdtId _ | Assumed (Box | Vec | Str | Slice | Range)), _, _, _) ->
-      false
-  | Adt ((Tuple | Assumed Array), _, tys, _) ->
-      List.for_all ty_is_primitively_copyable tys
+  | Adt (Assumed Option, generics) ->
+      List.for_all ty_is_primitively_copyable generics.types
+  | Adt ((AdtId _ | Assumed (Box | Vec | Str | Slice | Range)), _) -> false
+  | Adt ((Tuple | Assumed Array), generics) ->
+      List.for_all ty_is_primitively_copyable generics.types
   | TypeVar _ | Never -> false
   | Literal (Bool | Char | Integer _) -> true
+  | TraitType _ -> false
   | Ref (_, _, Mut) -> false
   | Ref (_, _, Shared) -> true

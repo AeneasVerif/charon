@@ -45,16 +45,22 @@ let fun_body_get_input_vars (fbody : 'body gexpr_body) : var list =
 let split_declarations (decls : declaration_group list) :
     type_declaration_group list
     * fun_declaration_group list
-    * GlobalDeclId.id list =
+    * GlobalDeclId.id list
+    * TraitDeclId.id list
+    * TraitImplId.id list =
   let rec split decls =
     match decls with
-    | [] -> ([], [], [])
+    | [] -> ([], [], [], [], [])
     | d :: decls' -> (
-        let types, funs, globals = split decls' in
+        let types, funs, globals, trait_decls, trait_impls = split decls' in
         match d with
-        | Type decl -> (decl :: types, funs, globals)
-        | Fun decl -> (types, decl :: funs, globals)
-        | Global decl -> (types, funs, decl :: globals))
+        | Type decl -> (decl :: types, funs, globals, trait_decls, trait_impls)
+        | Fun decl -> (types, decl :: funs, globals, trait_decls, trait_impls)
+        | Global decl -> (types, funs, decl :: globals, trait_decls, trait_impls)
+        | TraitDecl decl ->
+            (types, funs, globals, decl :: trait_decls, trait_impls)
+        | TraitImpl decl ->
+            (types, funs, globals, trait_decls, decl :: trait_impls))
   in
   split decls
 
@@ -64,7 +70,9 @@ let split_declarations (decls : declaration_group list) :
 let split_declarations_to_group_maps (decls : declaration_group list) :
     type_declaration_group T.TypeDeclId.Map.t
     * fun_declaration_group FunDeclId.Map.t
-    * GlobalDeclId.Set.t =
+    * GlobalDeclId.Set.t
+    * TraitDeclId.Set.t
+    * TraitImplId.Set.t =
   let module G (M : Map.S) = struct
     let add_group (map : M.key g_declaration_group M.t)
         (group : M.key g_declaration_group) : M.key g_declaration_group M.t =
@@ -76,10 +84,14 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
         M.key g_declaration_group M.t =
       List.fold_left add_group M.empty groups
   end in
-  let types, funs, globals = split_declarations decls in
+  let types, funs, globals, trait_decls, trait_impls =
+    split_declarations decls
+  in
   let module TG = G (T.TypeDeclId.Map) in
   let types = TG.create_map types in
   let module FG = G (FunDeclId.Map) in
   let funs = FG.create_map funs in
   let globals = GlobalDeclId.Set.of_list globals in
-  (types, funs, globals)
+  let trait_decls = TraitDeclId.Set.of_list trait_decls in
+  let trait_impls = TraitImplId.Set.of_list trait_impls in
+  (types, funs, globals, trait_decls, trait_impls)

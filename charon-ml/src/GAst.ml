@@ -8,6 +8,11 @@ open Expressions
 open Meta
 module FunDeclId = IdGen ()
 module GlobalDeclId = Expressions.GlobalDeclId
+module TraitDeclId = Types.TraitDeclId
+module TraitImplId = Types.TraitImplId
+module TraitClauseId = Types.TraitClauseId
+
+type fun_decl_id = FunDeclId.id [@@deriving show, ord]
 
 (** A variable, as used in a function definition *)
 type var = {
@@ -55,6 +60,7 @@ class ['self] iter_ast_base =
   object (_self : 'self)
     inherit [_] iter_rvalue
     inherit! [_] iter_literal
+
     (* Remark: can't inherit iter_literal_type because of a name collision (`Bool`) *)
 
     method visit_fun_id : 'env -> fun_id -> unit = fun _ _ -> ()
@@ -67,6 +73,7 @@ class ['self] map_ast_base =
   object (_self : 'self)
     inherit [_] map_rvalue
     inherit! [_] map_literal
+
     (* Remark: can't inherit map_literal_type because of a name collision (`Bool`) *)
 
     method visit_fun_id : 'env -> fun_id -> fun_id = fun _ x -> x
@@ -76,7 +83,13 @@ class ['self] map_ast_base =
       fun _ x -> x
   end
 
+(* Below: the types need not be mutually recursive, but it makes it easier
+   to derive the visitors *)
 type assertion = { cond : operand; expected : bool }
+
+and fun_id_or_trait_method_ref =
+  | FunId of fun_id
+  | TraitMethod of etrait_ref * string
 [@@deriving
   show,
     visitors
@@ -97,10 +110,9 @@ type assertion = { cond : operand; expected : bool }
       }]
 
 type call = {
-  func : fun_id;
-  region_args : erased_region list;
-  type_args : ety list;
-  const_generic_args : const_generic list;
+  func : fun_id_or_trait_method_ref;
+  generics : egeneric_args;
+  trait_and_method_generic_args : egeneric_args option;
   args : operand list;
   dest : place;
 }
@@ -135,23 +147,42 @@ class ['self] map_statement_base =
     inherit [_] map_call
   end
 
-(** A function signature, as used when declaring functions *)
+type params_info = {
+  num_region_params : int;
+  num_type_params : int;
+  num_const_generic_params : int;
+  num_trait_clauses : int;
+  num_regions_outlive : int;
+  num_types_outlive : int;
+  num_trait_type_constraints : int;
+}
+[@@deriving show]
+
+(** A function signature for function declarations *)
 type fun_sig = {
-  region_params : region_var list;
-  regions_hierarchy : region_var_groups;
-  type_params : type_var list;
-      (** The type parameters can be indexed with {!Types.TypeVarId.id}.
-
-          See {!Identifiers.Id.mapi} for instance.
-       *)
-  const_generic_params : const_generic_var list;
-      (** The const generic parameters can be indexed with {!Types.ConstGenericVarId.id}.
-
-          See {!Identifiers.Id.mapi} for instance.
-       *)
+  generics : generic_params;
+  preds : predicates;
+  parent_params_info : params_info option;
   inputs : sty list;
   output : sty;
+  regions_hierarchy : region_var_groups;
 }
+[@@deriving show]
+
+type fun_kind =
+  | RegularKind  (** A "normal" function *)
+  | TraitMethodImpl of trait_decl_id * string * bool
+      (** Trait method implementation.
+
+          Fields:
+          - [trait_id]
+          - [method_name]
+          - [provided]: true if this function re-implements a provided method
+        *)
+  | TraitMethodDecl of trait_decl_id * string  (** A trait method declaration *)
+  | TraitMethodProvided of trait_decl_id * string
+      (** Trait method provided function (trait method declaration which defines a
+          default implementation at the same time *)
 [@@deriving show]
 
 type 'body gexpr_body = {
@@ -171,8 +202,38 @@ type 'body gfun_decl = {
   meta : meta;
   name : fun_name;
   signature : fun_sig;
+  kind : fun_kind;
   body : 'body gexpr_body option;
   is_global_decl_body : bool;
+}
+[@@deriving show]
+
+type trait_decl = {
+  def_id : trait_decl_id;
+  name : name;
+  generics : generic_params;
+  preds : predicates;
+  all_trait_clauses : trait_clause list;
+  consts : (trait_item_name * (ety * global_decl_id option)) list;
+  types : (trait_item_name * (trait_clause list * ety option)) list;
+  required_methods : (trait_item_name * fun_decl_id) list;
+  provided_methods : trait_item_name list;
+}
+[@@deriving show]
+
+type impl_trait_ref = { trait_id : trait_decl_id; generics : sgeneric_args }
+[@@deriving show]
+
+type trait_impl = {
+  def_id : trait_impl_id;
+  name : name;
+  impl_trait : impl_trait_ref;
+  generics : generic_params;
+  preds : predicates;
+  consts : (trait_item_name * (ety * global_decl_id)) list;
+  types : (trait_item_name * ety) list;
+  required_methods : (trait_item_name * fun_decl_id) list;
+  provided_methods : (trait_item_name * fun_decl_id) list;
 }
 [@@deriving show]
 
@@ -189,6 +250,8 @@ type declaration_group =
   | Type of type_declaration_group
   | Fun of fun_declaration_group
   | Global of GlobalDeclId.id
+  | TraitDecl of TraitDeclId.id
+  | TraitImpl of TraitImplId.id
 [@@deriving show]
 
 (** A crate *)
@@ -198,5 +261,7 @@ type ('fun_decl, 'global_decl) gcrate = {
   types : type_decl TypeDeclId.Map.t;
   functions : 'fun_decl FunDeclId.Map.t;
   globals : 'global_decl GlobalDeclId.Map.t;
+  trait_decls : trait_decl TraitDeclId.Map.t;
+  trait_impls : trait_impl TraitImplId.Map.t;
 }
 [@@deriving show]

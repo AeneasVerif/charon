@@ -150,6 +150,8 @@ let crate_of_json (js : json) : (A.crate, string) result =
           ("types", types);
           ("functions", functions);
           ("globals", globals);
+          ("trait_decls", trait_decls);
+          ("trait_impls", trait_impls);
         ] ->
         let* name = string_of_json name in
         let* id_to_file = id_to_file_of_json id_to_file in
@@ -159,6 +161,12 @@ let crate_of_json (js : json) : (A.crate, string) result =
         let* types = list_of_json (type_decl_of_json id_to_file) types in
         let* functions = list_of_json (fun_decl_of_json id_to_file) functions in
         let* globals = list_of_json (global_decl_of_json id_to_file) globals in
+        let* trait_decls =
+          list_of_json (trait_decl_of_json id_to_file) trait_decls
+        in
+        let* trait_impls =
+          list_of_json (trait_impl_of_json id_to_file) trait_impls
+        in
         let types =
           T.TypeDeclId.Map.of_list
             (List.map (fun (d : T.type_decl) -> (d.def_id, d)) types)
@@ -171,5 +179,22 @@ let crate_of_json (js : json) : (A.crate, string) result =
           A.GlobalDeclId.Map.of_list
             (List.map (fun (d : A.global_decl) -> (d.def_id, d)) globals)
         in
-        Ok { A.name; declarations; types; functions; globals }
+        let trait_decls =
+          A.TraitDeclId.Map.of_list
+            (List.map (fun (d : A.trait_decl) -> (d.def_id, d)) trait_decls)
+        in
+        let trait_impls =
+          A.TraitImplId.Map.of_list
+            (List.map (fun (d : A.trait_impl) -> (d.def_id, d)) trait_impls)
+        in
+        Ok
+          {
+            A.name;
+            declarations;
+            types;
+            functions;
+            globals;
+            trait_decls;
+            trait_impls;
+          }
     | _ -> Error "")

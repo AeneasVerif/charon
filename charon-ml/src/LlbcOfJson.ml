@@ -137,10 +137,10 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
      let fun_id = global_to_fun_id gid_conv global.def_id in
      let signature : A.fun_sig =
        {
-         region_params = [];
+         generics = TypesUtils.mk_empty_generic_params;
+         preds = TypesUtils.mk_empty_predicates;
+         parent_params_info = None;
          regions_hierarchy = [];
-         type_params = [];
-         const_generic_params = [];
          inputs = [];
          output = TU.ety_no_regions_to_sty ty;
        }
@@ -152,6 +152,7 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
            meta;
            name;
            signature;
+           kind = A.RegularKind;
            body;
            is_global_decl_body = true;
          } ))
@@ -167,6 +168,8 @@ let crate_of_json (js : json) : (A.crate, string) result =
           ("types", types);
           ("functions", functions);
           ("globals", globals);
+          ("trait_decls", trait_decls);
+          ("trait_impls", trait_impls);
         ] ->
         (* We first deserialize the declaration groups (which simply contain ids)
          * and all the declarations *butù* the globals *)
@@ -204,5 +207,29 @@ let crate_of_json (js : json) : (A.crate, string) result =
           A.GlobalDeclId.Map.of_list
             (List.map (fun (d : A.global_decl) -> (d.def_id, d)) globals)
         in
-        Ok { A.name; declarations; types; functions; globals }
+        (* Traits *)
+        let* trait_decls =
+          list_of_json (trait_decl_of_json id_to_file) trait_decls
+        in
+        let* trait_impls =
+          list_of_json (trait_impl_of_json id_to_file) trait_impls
+        in
+        let trait_decls =
+          A.TraitDeclId.Map.of_list
+            (List.map (fun (d : A.trait_decl) -> (d.def_id, d)) trait_decls)
+        in
+        let trait_impls =
+          A.TraitImplId.Map.of_list
+            (List.map (fun (d : A.trait_impl) -> (d.def_id, d)) trait_impls)
+        in
+        Ok
+          {
+            A.name;
+            declarations;
+            types;
+            functions;
+            globals;
+            trait_decls;
+            trait_impls;
+          }
     | _ -> Error "")

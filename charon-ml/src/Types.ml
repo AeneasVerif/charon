@@ -8,6 +8,18 @@ module VariantId = IdGen ()
 module FieldId = IdGen ()
 module GlobalDeclId = IdGen ()
 module ConstGenericVarId = IdGen ()
+module TraitDeclId = IdGen ()
+module TraitImplId = IdGen ()
+module TraitClauseId = IdGen ()
+
+(** Region variable ids. Used in function signatures. *)
+module RegionVarId =
+IdGen ()
+
+(** Region ids. Used for symbolic executions. *)
+module RegionId = IdGen ()
+
+module RegionGroupId = IdGen ()
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!Types.iter_ty_base} and {!Types.TypeVar}).
@@ -31,14 +43,23 @@ type field_id = FieldId.id [@@deriving show, ord]
 (** Same remark as for {!type_var_id} *)
 type type_decl_id = TypeDeclId.id [@@deriving show, ord]
 
-(** Region variable ids. Used in function signatures. *)
-module RegionVarId =
-IdGen ()
+(** Same remark as for {!type_var_id} *)
+type trait_decl_id = TraitDeclId.id [@@deriving show, ord]
 
-(** Region ids. Used for symbolic executions. *)
-module RegionId = IdGen ()
+(** Same remark as for {!type_var_id} *)
+type trait_impl_id = TraitImplId.id [@@deriving show, ord]
 
-module RegionGroupId = IdGen ()
+(** Same remark as for {!type_var_id} *)
+type trait_clause_id = TraitClauseId.id [@@deriving show, ord]
+
+(** Same remark as for {!type_var_id} *)
+type region_var_id = RegionVarId.id [@@deriving show, ord]
+
+(** Same remark as for {!type_var_id} *)
+type region_id = RegionId.id [@@deriving show, ord]
+
+(** Same remark as for {!type_var_id} *)
+type region_group_id = RegionGroupId.id [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
   index : 'id;  (** Unique index identifying the variable *)
@@ -222,10 +243,77 @@ type const_generic =
         polymorphic = false;
       }]
 
+type trait_item_name = string [@@deriving show, ord]
+
+(** Ancestor for iter visitor for {!type: Types.trait_instance_id} *)
+class ['self] iter_trait_instance_id_base =
+  object (_self : 'self)
+    inherit [_] VisitorsRuntime.iter
+
+    method visit_trait_item_name : 'env -> trait_item_name -> unit =
+      fun _ _ -> ()
+
+    method visit_trait_decl_id : 'env -> trait_decl_id -> unit = fun _ _ -> ()
+    method visit_trait_impl_id : 'env -> trait_impl_id -> unit = fun _ _ -> ()
+
+    method visit_trait_clause_id : 'env -> trait_clause_id -> unit =
+      fun _ _ -> ()
+  end
+
+(** Ancestor for map visitor for {!type: Types.ty} *)
+class virtual ['self] map_trait_instance_id_base =
+  object (_self : 'self)
+    inherit [_] VisitorsRuntime.map
+
+    method visit_trait_item_name : 'env -> trait_item_name -> trait_item_name =
+      fun _ x -> x
+
+    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id =
+      fun _ x -> x
+
+    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id =
+      fun _ x -> x
+
+    method visit_trait_clause_id : 'env -> trait_clause_id -> trait_clause_id =
+      fun _ x -> x
+  end
+
+(** Identifier of a trait instance *)
+type trait_instance_id =
+  | Self
+      (** Reference to *self*, in case of trait declarations/implementations *)
+  | Trait of trait_impl_id  (** A specific implementation *)
+  | BuiltinOrAuto of trait_decl_id
+  | Clause of trait_clause_id
+  | ParentClause of trait_instance_id * trait_clause_id
+  | ItemClause of trait_instance_id * trait_item_name * trait_clause_id
+[@@deriving
+  show,
+    ord,
+    visitors
+      {
+        name = "iter_trait_instance_id";
+        variety = "iter";
+        ancestors = [ "iter_trait_instance_id_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+        polymorphic = false;
+      },
+    visitors
+      {
+        name = "map_trait_instance_id";
+        variety = "map";
+        ancestors = [ "map_trait_instance_id_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
+        concrete = false;
+        polymorphic = false;
+      }]
+
 (** Ancestor for iter visitor for {!type: Types.ty} *)
 class ['self] iter_ty_base =
   object (_self : 'self)
     inherit [_] iter_const_generic
+    inherit! [_] iter_trait_instance_id
     method visit_'r : 'env -> 'r -> unit = fun _ _ -> ()
     method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
     method visit_type_id : 'env -> type_id -> unit = fun _ _ -> ()
@@ -237,6 +325,7 @@ class ['self] iter_ty_base =
 class virtual ['self] map_ty_base =
   object (_self : 'self)
     inherit [_] map_const_generic
+    inherit! [_] map_trait_instance_id
     method virtual visit_'r : 'env -> 'r -> 's
 
     method visit_type_var_id : 'env -> type_var_id -> type_var_id =
@@ -250,12 +339,23 @@ class virtual ['self] map_ty_base =
   end
 
 type 'r ty =
-  | Adt of type_id * 'r list * 'r ty list * const_generic list
+  | Adt of type_id * 'r generic_args
       (** {!Types.ty.Adt} encodes ADTs, tuples and assumed types *)
   | TypeVar of type_var_id
   | Literal of literal_type
   | Never
   | Ref of 'r * 'r ty * ref_kind
+  | TraitType of 'r trait_ref * 'r generic_args * string
+      (** The string is for the name of the associated type *)
+
+and 'r trait_ref = { trait_id : trait_instance_id; generics : 'r generic_args }
+
+and 'r generic_args = {
+  regions : 'r list;
+  types : 'r ty list;
+  const_generics : const_generic list;
+  trait_refs : 'r trait_ref list;
+}
 [@@deriving
   show,
     ord,
@@ -277,7 +377,6 @@ type 'r ty =
         concrete = false;
         polymorphic = false;
       }]
-(* TODO: group Bool, Char, etc. in Primitive *)
 
 (** Generic type with regions *)
 type 'r gr_ty = 'r region ty [@@deriving show, ord]
@@ -301,7 +400,58 @@ type rty = RegionId.id gr_ty [@@deriving show, ord]
  *)
 type ety = erased_region ty [@@deriving show, ord]
 
+type sgeneric_args = RegionVarId.id region generic_args [@@deriving show]
+type egeneric_args = erased_region generic_args [@@deriving show]
+type rgeneric_args = RegionId.id region generic_args [@@deriving show]
+type strait_ref = RegionVarId.id region trait_ref [@@deriving show]
+type etrait_ref = erased_region trait_ref [@@deriving show]
+type rtrait_ref = RegionId.id region trait_ref [@@deriving show]
+
 type field = { meta : meta; field_name : string option; field_ty : sty }
+[@@deriving show]
+
+type trait_clause = {
+  clause_id : trait_clause_id;
+  meta : meta;
+  trait_id : trait_decl_id;
+  generics : sgeneric_args;
+}
+[@@deriving show]
+
+type generic_params = {
+  regions : region_var list;
+  types : type_var list;
+      (** The type parameters can be indexed with {!Types.TypeVarId.id}.
+
+          See {!Identifiers.Id.mapi} for instance.
+       *)
+  const_generics : const_generic_var list;
+      (** The const generic parameters can be indexed with {!Types.ConstGenericVarId.id}.
+
+          See {!Identifiers.Id.mapi} for instance.
+       *)
+  trait_clauses : trait_clause list;
+}
+[@@deriving show]
+
+type region_outlives = region_var_id region * region_var_id region
+[@@deriving show]
+
+type type_outlives = sty * region_var_id region [@@deriving show]
+
+type trait_type_constraint = {
+  trait_ref : strait_ref;
+  generics : sgeneric_args;
+  type_name : trait_item_name;
+  ty : sty;
+}
+[@@deriving show]
+
+type predicates = {
+  regions_outlive : region_outlives list;
+  types_outlive : type_outlives list;
+  trait_type_constraints : trait_type_constraint list;
+}
 [@@deriving show]
 
 type variant = {
@@ -334,9 +484,8 @@ type type_decl = {
   def_id : TypeDeclId.id;
   meta : meta;
   name : type_name;
-  region_params : region_var list;
-  type_params : type_var list;
-  const_generic_params : const_generic_var list;
+  generics : generic_params;
+  preds : predicates;
   kind : type_decl_kind;
   regions_hierarchy : region_var_groups;
       (** Stores the hierarchy between the regions (which regions have the

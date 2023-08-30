@@ -24,6 +24,9 @@ type expr_formatter = {
     T.TypeDeclId.id -> T.VariantId.id option -> string list option;
   fun_decl_id_to_string : A.FunDeclId.id -> string;
   global_decl_id_to_string : A.GlobalDeclId.id -> string;
+  trait_decl_id_to_string : T.TraitDeclId.id -> string;
+  trait_impl_id_to_string : T.TraitImplId.id -> string;
+  trait_clause_id_to_string : T.TraitClauseId.id -> string;
 }
 
 let expr_to_etype_formatter (fmt : expr_formatter) : PT.etype_formatter =
@@ -33,6 +36,9 @@ let expr_to_etype_formatter (fmt : expr_formatter) : PT.etype_formatter =
     PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
     PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
     PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
+    PT.trait_decl_id_to_string = fmt.trait_decl_id_to_string;
+    PT.trait_impl_id_to_string = fmt.trait_impl_id_to_string;
+    PT.trait_clause_id_to_string = fmt.trait_clause_id_to_string;
   }
 
 let expr_to_rtype_formatter (fmt : expr_formatter) : PT.rtype_formatter =
@@ -42,6 +48,9 @@ let expr_to_rtype_formatter (fmt : expr_formatter) : PT.rtype_formatter =
     PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
     PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
     PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
+    PT.trait_decl_id_to_string = fmt.trait_decl_id_to_string;
+    PT.trait_impl_id_to_string = fmt.trait_impl_id_to_string;
+    PT.trait_clause_id_to_string = fmt.trait_clause_id_to_string;
   }
 
 let expr_to_stype_formatter (fmt : expr_formatter) : PT.stype_formatter =
@@ -51,6 +60,9 @@ let expr_to_stype_formatter (fmt : expr_formatter) : PT.stype_formatter =
     PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
     PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
     PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
+    PT.trait_decl_id_to_string = fmt.trait_decl_id_to_string;
+    PT.trait_impl_id_to_string = fmt.trait_impl_id_to_string;
+    PT.trait_clause_id_to_string = fmt.trait_clause_id_to_string;
   }
 
 let rec projection_to_string (fmt : expr_formatter) (s : string)
@@ -126,6 +138,11 @@ let constant_expr_to_string (fmt : expr_formatter) (cv : E.constant_expr) :
       ^ PT.ety_to_string (expr_to_etype_formatter fmt) cv.E.ty
       ^ ")"
   | E.CVar vid -> fmt.const_generic_var_id_to_string vid
+  | E.TraitConst (trait_ref, generics, const_name) ->
+      let fmt = expr_to_etype_formatter fmt in
+      let trait_ref = PT.etrait_ref_to_string fmt trait_ref in
+      let generics = PT.egeneric_args_to_string fmt generics in
+      trait_ref ^ generics ^ const_name
 
 let operand_to_string (fmt : expr_formatter) (op : E.operand) : string =
   match op with
@@ -162,7 +179,7 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
             let op = List.hd ops in
             "@Option::Some(" ^ op ^ ")")
           else raise (Failure "Unreachable")
-      | E.AggregatedAdt (def_id, opt_variant_id, _regions, _types, _cgs) ->
+      | E.AggregatedAdt (def_id, opt_variant_id, _generics) ->
           let adt_name = fmt.type_decl_id_to_string def_id in
           let variant_name =
             match opt_variant_id with

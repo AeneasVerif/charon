@@ -187,21 +187,62 @@ let all_binops =
 
 (** Ancestor the constant_expr iter visitor *)
 class ['self] iter_constant_expr_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] iter_place
     inherit! [_] iter_const_generic
+    inherit! [_] iter_trait_instance_id
     method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
+    method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
+
+    method visit_egeneric_args : 'env -> egeneric_args -> unit =
+      fun e x ->
+        let { regions; types; const_generics; trait_refs } = x in
+        self#visit_list self#visit_erased_region e regions;
+        self#visit_list self#visit_ety e types;
+        self#visit_list self#visit_const_generic e const_generics;
+        self#visit_list self#visit_etrait_ref e trait_refs
+
+    method visit_etrait_ref : 'env -> etrait_ref -> unit =
+      fun e x ->
+        let ({ trait_id; generics } : etrait_ref) = x in
+        self#visit_trait_instance_id e trait_id;
+        self#visit_egeneric_args e generics
   end
 
 (** Ancestor the constant_expr map visitor *)
 class ['self] map_constant_expr_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] map_place
     inherit! [_] map_const_generic
+    inherit! [_] map_trait_instance_id
     method visit_ety : 'env -> ety -> ety = fun _ x -> x
+
+    method visit_erased_region : 'env -> erased_region -> erased_region =
+      fun _ x -> x
+
+    method visit_egeneric_args : 'env -> egeneric_args -> egeneric_args =
+      fun e x ->
+        let { regions; types; const_generics; trait_refs } = x in
+        let regions = self#visit_list self#visit_erased_region e regions in
+        let types = self#visit_list self#visit_ety e types in
+        let const_generics =
+          self#visit_list self#visit_const_generic e const_generics
+        in
+        let trait_refs = self#visit_list self#visit_etrait_ref e trait_refs in
+        { regions; types; const_generics; trait_refs }
+
+    method visit_etrait_ref : 'env -> etrait_ref -> etrait_ref =
+      fun e x ->
+        let ({ trait_id; generics } : etrait_ref) = x in
+        let trait_id = self#visit_trait_instance_id e trait_id in
+        let generics = self#visit_egeneric_args e generics in
+        { trait_id; generics }
   end
 
-type raw_constant_expr = CLiteral of literal | CVar of const_generic_var_id
+type raw_constant_expr =
+  | CLiteral of literal
+  | CVar of const_generic_var_id
+  | TraitConst of etrait_ref * egeneric_args * string
 
 and constant_expr = { value : raw_constant_expr; ty : ety }
 [@@deriving
@@ -259,16 +300,12 @@ type operand = Copy of place | Move of place | Constant of constant_expr
 class ['self] iter_aggregate_kind_base =
   object (_self : 'self)
     inherit [_] iter_operand
-    method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the operand map visitor *)
 class ['self] map_aggregate_kind_base =
   object (_self : 'self)
     inherit [_] map_operand
-
-    method visit_erased_region : 'env -> erased_region -> erased_region =
-      fun _ x -> x
   end
 
 (** An aggregated ADT.
@@ -296,13 +333,8 @@ type aggregate_kind =
   | AggregatedTuple
   | AggregatedOption of variant_id * ety
   (* TODO: AggregatedOption should be merged with AggregatedAdt *)
-  | AggregatedAdt of
-      type_decl_id
-      * variant_id option
-      * erased_region list
-      * ety list
-      * const_generic list
-  | AggregatedRange of ety (* TODO: merge with the Rust *)
+  | AggregatedAdt of type_decl_id * variant_id option * egeneric_args
+  | AggregatedRange of ety (* TODO: merge with the others *)
   | AggregatedArray of ety * const_generic
 [@@deriving
   show,

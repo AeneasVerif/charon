@@ -75,5 +75,5 @@ let compute_fun_decl_groups_map (c : crate) : FunDeclId.Set.t FunDeclId.Map.t =
             | Fun (Rec ids) ->
                 let idset = FunDeclId.Set.of_list ids in
                 Some (List.map (fun id -> (id, idset)) ids)
-            | Type _ | Global _ -> None)
+            | Type _ | Global _ | TraitDecl _ | TraitImpl _ -> None)
           c.declarations))

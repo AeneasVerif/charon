@@ -14,9 +14,12 @@ module Ast = struct
   let decls_and_fun_decl_to_ast_formatter
       (type_decls : T.type_decl T.TypeDeclId.Map.t)
       (fun_decls : A.fun_decl A.FunDeclId.Map.t)
-      (global_decls : A.global_decl A.GlobalDeclId.Map.t) (fdef : A.fun_decl) :
+      (global_decls : A.global_decl A.GlobalDeclId.Map.t)
+      (trait_decls : A.trait_decl A.TraitDeclId.Map.t)
+      (trait_impls : A.trait_impl A.TraitImplId.Map.t) (fdef : A.fun_decl) :
       ast_formatter =
     gdecls_and_gfun_decl_to_ast_formatter type_decls fun_decls global_decls
+      trait_decls trait_impls
       (fun decl -> global_name_to_string decl.name)
       fdef
 
@@ -130,14 +133,44 @@ module PA = Ast (* local module *)
 (** Pretty-printing for ASTs (functions based on a declaration context) *)
 module Crate = struct
   (** Generate an [ast_formatter] by using a declaration context in combination
-      with the variables local to a function's declaration *)
+      with the variables local to a function declaration *)
   let decl_ctx_and_fun_decl_to_ast_formatter
       (type_context : T.type_decl T.TypeDeclId.Map.t)
       (fun_context : A.fun_decl A.FunDeclId.Map.t)
-      (global_context : A.global_decl A.GlobalDeclId.Map.t) (def : A.fun_decl) :
+      (global_context : A.global_decl A.GlobalDeclId.Map.t)
+      (trait_decls : A.trait_decl A.TraitDeclId.Map.t)
+      (trait_impls : A.trait_impl A.TraitImplId.Map.t) (def : A.fun_decl) :
       PA.ast_formatter =
     PrintGAst.decl_ctx_and_fun_decl_to_ast_formatter type_context fun_context
-      global_context
+      global_context trait_decls trait_impls
+      (fun decl -> global_name_to_string decl.name)
+      def
+
+  (** Generate an [ast_formatter] by using a declaration context in combination
+      with the variables local to a trait declaration *)
+  let decl_ctx_and_trait_decl_to_ast_formatter
+      (type_context : T.type_decl T.TypeDeclId.Map.t)
+      (fun_context : A.fun_decl A.FunDeclId.Map.t)
+      (global_context : A.global_decl A.GlobalDeclId.Map.t)
+      (trait_decls : A.trait_decl A.TraitDeclId.Map.t)
+      (trait_impls : A.trait_impl A.TraitImplId.Map.t) (def : A.trait_decl) :
+      PA.ast_formatter =
+    PrintGAst.decl_ctx_and_trait_decl_to_ast_formatter type_context fun_context
+      global_context trait_decls trait_impls
+      (fun decl -> global_name_to_string decl.name)
+      def
+
+  (** Generate an [ast_formatter] by using a declaration context in combination
+      with the variables local to a trait implementation *)
+  let decl_ctx_and_trait_impl_to_ast_formatter
+      (type_context : T.type_decl T.TypeDeclId.Map.t)
+      (fun_context : A.fun_decl A.FunDeclId.Map.t)
+      (global_context : A.global_decl A.GlobalDeclId.Map.t)
+      (trait_decls : A.trait_decl A.TraitDeclId.Map.t)
+      (trait_impls : A.trait_impl A.TraitImplId.Map.t) (def : A.trait_impl) :
+      PA.ast_formatter =
+    PrintGAst.decl_ctx_and_trait_impl_to_ast_formatter type_context fun_context
+      global_context trait_decls trait_impls
       (fun decl -> global_name_to_string decl.name)
       def
 
@@ -146,37 +179,41 @@ module Crate = struct
       (type_context : T.type_decl T.TypeDeclId.Map.t)
       (fun_context : 'body A.gfun_decl A.FunDeclId.Map.t)
       (global_context : 'global_decl A.GlobalDeclId.Map.t)
-      (decl : A.global_decl) : PA.ast_formatter =
-    let region_vars = [] in
-    let type_params = [] in
-    let cg_params = [] in
+      (trait_decls : A.trait_decl A.TraitDeclId.Map.t)
+      (trait_impls : A.trait_impl A.TraitImplId.Map.t) (decl : A.global_decl) :
+      PA.ast_formatter =
+    let generics = TypesUtils.mk_empty_generic_params in
     let locals = match decl.body with None -> [] | Some body -> body.locals in
     let get_global_decl_name_as_string decl =
       global_name_to_string decl.A.name
     in
     PrintGAst.decl_ctx_to_ast_formatter type_context fun_context global_context
-      region_vars type_params cg_params locals get_global_decl_name_as_string
+      trait_decls trait_impls generics locals get_global_decl_name_as_string
 
   (** This function pretty-prints a type declaration by using a declaration
       context *)
   let type_decl_to_string (type_context : T.type_decl T.TypeDeclId.Map.t)
-      (global_context : A.global_decl A.GlobalDeclId.Map.t) (decl : T.type_decl)
-      : string =
+      (global_context : A.global_decl A.GlobalDeclId.Map.t)
+      (trait_decls : A.trait_decl A.TraitDeclId.Map.t)
+      (trait_impls : A.trait_impl A.TraitImplId.Map.t) (decl : T.type_decl) :
+      string =
     let get_global_decl_name_as_string decl =
       global_name_to_string decl.A.name
     in
     PrintGAst.ctx_and_type_decl_to_string type_context global_context
-      get_global_decl_name_as_string decl
+      trait_decls trait_impls get_global_decl_name_as_string decl
 
   (** This function pretty-prints a global declaration by using a declaration
       context *)
   let global_decl_to_string (type_context : T.type_decl T.TypeDeclId.Map.t)
       (fun_context : A.fun_decl A.FunDeclId.Map.t)
       (global_context : A.global_decl A.GlobalDeclId.Map.t)
-      (decl : A.global_decl) : string =
+      (trait_decls : A.trait_decl A.TraitDeclId.Map.t)
+      (trait_impls : A.trait_impl A.TraitImplId.Map.t) (decl : A.global_decl) :
+      string =
     let fmt =
       decl_ctx_and_global_decl_to_ast_formatter type_context fun_context
-        global_context decl
+        global_context trait_decls trait_impls decl
     in
     PA.global_decl_to_string fmt "" "  " decl
 
@@ -184,37 +221,93 @@ module Crate = struct
       context *)
   let fun_decl_to_string (type_context : T.type_decl T.TypeDeclId.Map.t)
       (fun_context : A.fun_decl A.FunDeclId.Map.t)
-      (global_context : A.global_decl A.GlobalDeclId.Map.t) (def : A.fun_decl) :
+      (global_context : A.global_decl A.GlobalDeclId.Map.t)
+      (trait_decls : A.trait_decl A.TraitDeclId.Map.t)
+      (trait_impls : A.trait_impl A.TraitImplId.Map.t) (def : A.fun_decl) :
       string =
     let fmt =
       decl_ctx_and_fun_decl_to_ast_formatter type_context fun_context
-        global_context def
+        global_context trait_decls trait_impls def
     in
     PA.fun_decl_to_string fmt "" "  " def
+
+  (** This function pretty-prints a trait declaration by using a declaration
+      context *)
+  let trait_decl_to_string (type_context : T.type_decl T.TypeDeclId.Map.t)
+      (fun_context : A.fun_decl A.FunDeclId.Map.t)
+      (global_context : A.global_decl A.GlobalDeclId.Map.t)
+      (trait_decls : A.trait_decl A.TraitDeclId.Map.t)
+      (trait_impls : A.trait_impl A.TraitImplId.Map.t) (def : A.trait_decl) :
+      string =
+    let fmt =
+      decl_ctx_and_trait_decl_to_ast_formatter type_context fun_context
+        global_context trait_decls trait_impls def
+    in
+    PA.trait_decl_to_string fmt "" "  " def
+
+  (** This function pretty-prints a trait declaration by using a declaration
+      context *)
+  let trait_impl_to_string (type_context : T.type_decl T.TypeDeclId.Map.t)
+      (fun_context : A.fun_decl A.FunDeclId.Map.t)
+      (global_context : A.global_decl A.GlobalDeclId.Map.t)
+      (trait_decls : A.trait_decl A.TraitDeclId.Map.t)
+      (trait_impls : A.trait_impl A.TraitImplId.Map.t) (def : A.trait_impl) :
+      string =
+    let fmt =
+      decl_ctx_and_trait_impl_to_ast_formatter type_context fun_context
+        global_context trait_decls trait_impls def
+    in
+    PA.trait_impl_to_string fmt "" "  " def
 
   let crate_to_string (m : A.crate) : string =
     (* The types *)
     let type_decls =
       List.map
-        (fun (_, d) -> type_decl_to_string m.types m.globals d)
+        (fun (_, d) ->
+          type_decl_to_string m.types m.globals m.trait_decls m.trait_impls d)
         (T.TypeDeclId.Map.bindings m.A.types)
     in
 
     (* The globals *)
     let global_decls =
       List.map
-        (fun (_, d) -> global_decl_to_string m.types m.functions m.globals d)
+        (fun (_, d) ->
+          global_decl_to_string m.types m.functions m.globals m.trait_decls
+            m.trait_impls d)
         (A.GlobalDeclId.Map.bindings m.A.globals)
     in
 
     (* The functions *)
     let fun_decls =
       List.map
-        (fun (_, d) -> fun_decl_to_string m.types m.functions m.globals d)
+        (fun (_, d) ->
+          fun_decl_to_string m.types m.functions m.globals m.trait_decls
+            m.trait_impls d)
         (A.FunDeclId.Map.bindings m.A.functions)
     in
 
+    (* The trait declarations *)
+    let trait_decls =
+      List.map
+        (fun (_, d) ->
+          trait_decl_to_string m.types m.functions m.globals m.trait_decls
+            m.trait_impls d)
+        (A.TraitDeclId.Map.bindings m.A.trait_decls)
+    in
+
+    (* The trait implementations *)
+    let trait_impls =
+      List.map
+        (fun (_, d) ->
+          trait_impl_to_string m.types m.functions m.globals m.trait_decls
+            m.trait_impls d)
+        (A.TraitImplId.Map.bindings m.A.trait_impls)
+    in
+
     (* Put everything together *)
-    let all_defs = List.concat [ type_decls; global_decls; fun_decls ] in
+    let all_defs =
+      List.concat
+        [ type_decls; global_decls; trait_decls; trait_impls; fun_decls ]
+    in
     String.concat "\n\n" all_defs
 end
