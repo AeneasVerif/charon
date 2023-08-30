@@ -173,6 +173,10 @@ pub enum Operand {
 ///
 /// [Ref] case: reference to a constant value. We later desugar it to a separate
 /// statement.
+///
+/// Remark:
+/// MIR seems to forbid more complex expressions like paths. For instance,
+/// reading the constant `a.b` is translated to `{ _1 = const a; _2 = (_1.0) }`.
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, VariantName, EnumIsA, EnumAsGetters)]
 pub enum RawConstantExpr {
     Literal(Literal),
@@ -182,13 +186,13 @@ pub enum RawConstantExpr {
     /// no fields, unit (encoded as a 0-tuple).
     ///
     /// Less frequently: arbitrary ADT values.
+    ///
+    /// We eliminate this case in a micro-pass.
     Adt(Option<VariantId::Id>, Vec<ConstantExpr>),
     ///
     /// The value is a top-level value.
     ///
-    /// Remark:
-    /// MIR seems to forbid more complex expressions like paths:
-    /// Reading the constant a.b is translated to { _1 = const a; _2 = (_1.0) }.
+    /// We eliminate this case in a micro-pass.
     Global(GlobalDeclId::Id),
     ///
     /// A trait constant.
@@ -207,6 +211,8 @@ pub enum RawConstantExpr {
     TraitConst(ETraitRef, EGenericArgs, TraitItemName),
     ///
     /// A shared reference to a constant value
+    ///
+    /// We eliminate this case in a micro-pass.
     Ref(Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericVarId::Id),

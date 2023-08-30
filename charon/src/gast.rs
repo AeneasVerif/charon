@@ -161,8 +161,8 @@ pub enum FunKind {
     },
     /// Trait method declaration
     TraitMethodDecl(TraitDeclId::Id, TraitItemName),
-    /// Trait method provided function (method in a trait declaration with a
-    /// default implementation)
+    /// Trait method provided function (trait method declaration which defines
+    /// a default implementation at the same time)
     TraitMethodProvided(TraitDeclId::Id, TraitItemName),
 }
 
@@ -292,9 +292,9 @@ pub struct ImplTraitRef {
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitImpl {
     pub def_id: TraitImplId::Id,
+    pub name: Name,
     /// The information about the implemented trait.
     pub impl_trait: ImplTraitRef,
-    pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// The associated constants declared in the trait.

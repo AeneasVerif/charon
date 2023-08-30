@@ -390,8 +390,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             ImplSource::Object(_) => unimplemented!(),
             ImplSource::Builtin(trait_ref, traits) => {
-                assert!(traits.is_empty());
-
                 assert!(trait_ref.bound_vars.is_empty());
                 let trait_ref = &trait_ref.value;
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
