@@ -221,13 +221,10 @@ type trait_decl = {
 }
 [@@deriving show]
 
-type impl_trait_ref = { trait_id : trait_decl_id; generics : sgeneric_args }
-[@@deriving show]
-
 type trait_impl = {
   def_id : trait_impl_id;
   name : name;
-  impl_trait : impl_trait_ref;
+  impl_trait : strait_decl_ref;
   generics : generic_params;
   preds : predicates;
   consts : (trait_item_name * (ety * global_decl_id)) list;

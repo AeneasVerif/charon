@@ -502,6 +502,17 @@ impl<R> TraitRef<R> {
     }
 }
 
+impl<R> TraitDeclRef<R> {
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: TypeFormatter<'a, R>,
+    {
+        let trait_id = ctx.format_object(self.trait_id);
+        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
+        format!("{trait_id}{generics}")
+    }
+}
+
 impl TypeDecl {
     /// The variant id should be `None` if it is a structure and `Some` if it
     /// is an enumeration.
@@ -1097,8 +1108,25 @@ impl<R: Eq + Clone> TraitRef<R> {
         cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
     ) -> TraitRef<R1> {
         let generics = self.generics.substitute(rsubst, tsubst, cgsubst);
+        let trait_decl_ref = self.trait_decl_ref.substitute(rsubst, tsubst, cgsubst);
         TraitRef {
             trait_id: self.trait_id.clone(),
+            generics,
+            trait_decl_ref,
+        }
+    }
+}
+
+impl<R: Eq + Clone> TraitDeclRef<R> {
+    pub fn substitute<R1: Eq>(
+        &self,
+        rsubst: &dyn Fn(&R) -> R1,
+        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
+        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
+    ) -> TraitDeclRef<R1> {
+        let generics = self.generics.substitute(rsubst, tsubst, cgsubst);
+        TraitDeclRef {
+            trait_id: self.trait_id,
             generics,
         }
     }
@@ -1658,8 +1686,19 @@ pub trait TypeVisitor {
         let TraitRef {
             trait_id,
             generics,
+            trait_decl_ref,
         } = tr;
         self.visit_trait_instance_id(trait_id);
+        self.visit_generic_args(generics);
+        self.visit_trait_decl_ref(trait_decl_ref);
+    }
+
+    fn visit_trait_decl_ref<R>(&mut self, tr: &TraitDeclRef<R>) {
+        let TraitDeclRef {
+            trait_id,
+            generics,
+        } = tr;
+        self.visit_trait_decl_id(trait_id);
         self.visit_generic_args(generics);
     }
 

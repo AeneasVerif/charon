@@ -349,10 +349,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
     {
         trace!("impl_source: {:?}", impl_source);
-        use hax::ImplSource;
+        use hax::ImplSourceKind;
 
-        match impl_source {
-            ImplSource::UserDefined(data) => {
+        let trait_decl_ref = {
+            let trait_ref = &impl_source.trait_ref;
+            assert!(trait_ref.bound_vars.is_empty());
+            let trait_ref = &trait_ref.value;
+            let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
+            let generics = self
+                .translate_substs_and_trait_refs(
+                    None,
+                    &trait_ref.generic_args,
+                    &Vec::new(), // TODO: missing information
+                )
+                .unwrap();
+            TraitDeclRef { trait_id, generics }
+        };
+
+        match &impl_source.kind {
+            ImplSourceKind::UserDefined(data) => {
                 let def_id = data.impl_def_id.rust_def_id.unwrap();
                 let trait_id = self.translate_trait_impl_id(def_id);
                 let trait_id = TraitInstanceId::TraitImpl(trait_id);
@@ -360,9 +375,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let generics = self
                     .translate_substs_and_trait_refs(None, &data.substs, &data.nested)
                     .unwrap();
-                TraitRef { trait_id, generics }
+                TraitRef {
+                    trait_id,
+                    generics,
+                    trait_decl_ref,
+                }
             }
-            ImplSource::Param(trait_ref, trait_refs, constness) => {
+            ImplSourceKind::Param(trait_ref, trait_refs, constness) => {
                 assert!(trait_ref.bound_vars.is_empty());
                 assert!(*constness == hax::BoundConstness::NotConst);
                 let trait_ref = &trait_ref.value;
@@ -386,10 +405,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 TraitRef {
                     trait_id,
                     generics: GenericArgs::empty(),
+                    trait_decl_ref,
                 }
             }
-            ImplSource::Object(_) => unimplemented!(),
-            ImplSource::Builtin(trait_ref, traits) => {
+            ImplSourceKind::Object(_) => unimplemented!(),
+            ImplSourceKind::Builtin(trait_ref, traits) => {
                 assert!(trait_ref.bound_vars.is_empty());
                 let trait_ref = &trait_ref.value;
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
@@ -398,9 +418,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let generics = self
                     .translate_substs_and_trait_refs(None, &trait_ref.generic_args, traits)
                     .unwrap();
-                TraitRef { trait_id, generics }
+                TraitRef {
+                    trait_id,
+                    generics,
+                    trait_decl_ref,
+                }
             }
-            ImplSource::AutoImpl(data) => {
+            ImplSourceKind::AutoImpl(data) => {
                 let def_id = data.trait_def_id.rust_def_id.unwrap();
                 let trait_id = self.translate_trait_decl_id(def_id);
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
@@ -408,9 +432,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 TraitRef {
                     trait_id,
                     generics: GenericArgs::empty(),
+                    trait_decl_ref,
                 }
             }
-            ImplSource::TraitUpcasting(_) => unimplemented!(),
+            ImplSourceKind::TraitUpcasting(_) => unimplemented!(),
         }
     }
 

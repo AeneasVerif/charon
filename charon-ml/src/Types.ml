@@ -307,6 +307,12 @@ type 'r ty =
 and 'r trait_ref = {
   trait_id : 'r trait_instance_id;
   generics : 'r generic_args;
+  trait_decl_ref : 'r trait_decl_ref;
+}
+
+and 'r trait_decl_ref = {
+  trait_decl_id : trait_decl_id;
+  decl_generics : 'r generic_args; (* The name: annoying field collisions... *)
 }
 
 and 'r generic_args = {
@@ -394,6 +400,9 @@ type rgeneric_args = RegionId.id region generic_args [@@deriving show]
 type strait_ref = RegionVarId.id region trait_ref [@@deriving show]
 type etrait_ref = erased_region trait_ref [@@deriving show]
 type rtrait_ref = RegionId.id region trait_ref [@@deriving show]
+type strait_decl_ref = RegionVarId.id region trait_decl_ref [@@deriving show]
+type etrait_decl_ref = erased_region trait_decl_ref [@@deriving show]
+type rtrait_decl_ref = RegionId.id region trait_decl_ref [@@deriving show]
 
 type strait_instance_id = RegionVarId.id region trait_instance_id
 [@@deriving show]

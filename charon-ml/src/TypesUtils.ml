@@ -169,12 +169,23 @@ and egeneric_args_no_regions_to_gr_generic_args (g : egeneric_args) :
 
 and etrait_ref_no_regions_to_gr_trait_ref (tr : etrait_ref) :
     'a region trait_ref =
-  let ({ trait_id; generics } : etrait_ref) = tr in
+  let ({ trait_id; generics; trait_decl_ref } : etrait_ref) = tr in
   let trait_id =
     etrait_instance_id_no_regions_to_gr_trait_instance_id trait_id
   in
   let generics = egeneric_args_no_regions_to_gr_generic_args generics in
-  { trait_id; generics }
+  let trait_decl_ref =
+    etrait_decl_ref_no_regions_to_gr_trait_decl_ref trait_decl_ref
+  in
+  { trait_id; generics; trait_decl_ref }
+
+and etrait_decl_ref_no_regions_to_gr_trait_decl_ref (tr : etrait_decl_ref) :
+    'a region trait_decl_ref =
+  let ({ trait_decl_id; decl_generics } : etrait_decl_ref) = tr in
+  let decl_generics =
+    egeneric_args_no_regions_to_gr_generic_args decl_generics
+  in
+  { trait_decl_id; decl_generics }
 
 and etrait_instance_id_no_regions_to_gr_trait_instance_id
     (id : etrait_instance_id) : 'a region trait_instance_id =

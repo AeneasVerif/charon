@@ -264,21 +264,6 @@ pub struct TraitDecl {
     pub provided_methods: Vec<TraitItemName>,
 }
 
-/// Information about an implemented trait.
-/// Note that the trait refs in the generics are necessarily empty
-///
-/// About the generics, if we write:
-/// ```text
-/// impl Foo<bool> for String { ... }
-/// ```
-///
-/// The substitution is: `[String, bool]`.
-#[derive(Debug, Clone, Serialize)]
-pub struct ImplTraitRef {
-    pub trait_id: TraitDeclId::Id,
-    pub generics: RGenericArgs,
-}
-
 /// A trait **implementation**.
 ///
 /// For instance:
@@ -294,7 +279,7 @@ pub struct TraitImpl {
     pub def_id: TraitImplId::Id,
     pub name: Name,
     /// The information about the implemented trait.
-    pub impl_trait: ImplTraitRef,
+    pub impl_trait: RTraitDeclRef,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// The associated constants declared in the trait.

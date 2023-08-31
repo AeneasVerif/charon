@@ -141,6 +141,12 @@ and trait_ref_to_string (fmt : 'r type_formatter) (tr : 'r T.trait_ref) : string
   let generics = generic_args_to_string fmt tr.T.generics in
   trait_id ^ generics
 
+and trait_decl_ref_to_string (fmt : 'r type_formatter)
+    (tr : 'r T.trait_decl_ref) : string =
+  let trait_id = fmt.trait_decl_id_to_string tr.T.trait_decl_id in
+  let generics = generic_args_to_string fmt tr.T.decl_generics in
+  trait_id ^ generics
+
 and trait_instance_id_to_string (fmt : 'r type_formatter)
     (id : 'r T.trait_instance_id) : string =
   match id with
@@ -179,6 +185,18 @@ let rtrait_ref_to_string (fmt : rtype_formatter) (trait_ref : T.rtrait_ref) :
 let etrait_ref_to_string (fmt : etype_formatter) (trait_ref : T.etrait_ref) :
     string =
   trait_ref_to_string fmt trait_ref
+
+let strait_decl_ref_to_string (fmt : stype_formatter)
+    (trait_decl_ref : T.strait_decl_ref) : string =
+  trait_decl_ref_to_string fmt trait_decl_ref
+
+let rtrait_decl_ref_to_string (fmt : rtype_formatter)
+    (trait_decl_ref : T.rtrait_decl_ref) : string =
+  trait_decl_ref_to_string fmt trait_decl_ref
+
+let etrait_decl_ref_to_string (fmt : etype_formatter)
+    (trait_decl_ref : T.etrait_decl_ref) : string =
+  trait_decl_ref_to_string fmt trait_decl_ref
 
 let sgeneric_args_to_string (fmt : stype_formatter)
     (generic_args : T.sgeneric_args) : string =

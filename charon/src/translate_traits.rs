@@ -250,7 +250,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     const_generics,
                     trait_refs: Vec::new(),
                 };
-                let trait_ref = ImplTraitRef { trait_id, generics };
+                let trait_ref = TraitDeclRef { trait_id, generics };
                 (trait_rust_id, trait_ref)
             } else {
                 unreachable!()

@@ -202,17 +202,6 @@ impl TraitImpl {
     }
 }
 
-impl ImplTraitRef {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
-    where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
-    {
-        let trait_id = ctx.format_object(self.trait_id);
-        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
-        format!("{trait_id}{generics}")
-    }
-}
-
 pub fn fmt_call<'a, 'b, T>(ctx: &'b T, call: &'a Call) -> String
 where
     T: ExprFormatter<'a>,

@@ -292,13 +292,6 @@ let trait_decl_to_string (fmt : ast_formatter) (indent : string)
 
   "trait " ^ name ^ params ^ clauses ^ items
 
-let impl_trait_ref_to_string (fmt : ast_formatter)
-    (impl_trait : GA.impl_trait_ref) : string =
-  let sty_fmt = ast_to_stype_formatter fmt in
-  let trait_id = fmt.trait_decl_id_to_string impl_trait.GA.trait_id in
-  let generics = PT.generic_args_to_string sty_fmt impl_trait.GA.generics in
-  trait_id ^ generics
-
 let trait_impl_to_string (fmt : ast_formatter) (indent : string)
     (indent_incr : string) (def : GA.trait_impl) : string =
   let sty_fmt = ast_to_stype_formatter fmt in
@@ -345,7 +338,7 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
     if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"
   in
 
-  let impl_trait = impl_trait_ref_to_string fmt def.impl_trait in
+  let impl_trait = PT.strait_decl_ref_to_string sty_fmt def.impl_trait in
   "impl" ^ params ^ " " ^ name ^ params ^ " : " ^ impl_trait ^ clauses ^ items
 
 (** This function pretty-prints a type definition by using a definition context *)

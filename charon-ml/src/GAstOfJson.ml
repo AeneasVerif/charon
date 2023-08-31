@@ -362,10 +362,26 @@ and trait_ref_of_json (r_of_json : json -> ('r, string) result) (js : json) :
     ('r T.trait_ref, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("trait_id", trait_id); ("generics", generics) ] ->
+    | `Assoc
+        [
+          ("trait_id", trait_id);
+          ("generics", generics);
+          ("trait_decl_ref", trait_decl_ref);
+        ] ->
         let* trait_id = trait_instance_id_of_json r_of_json trait_id in
         let* generics = generic_args_of_json r_of_json generics in
-        Ok ({ trait_id; generics } : 'r T.trait_ref)
+        let* trait_decl_ref = trait_decl_ref_of_json r_of_json trait_decl_ref in
+        Ok ({ trait_id; generics; trait_decl_ref } : 'r T.trait_ref)
+    | _ -> Error "")
+
+and trait_decl_ref_of_json (r_of_json : json -> ('r, string) result) (js : json)
+    : ('r T.trait_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("trait_id", trait_id); ("generics", generics) ] ->
+        let* trait_decl_id = T.TraitDeclId.id_of_json trait_id in
+        let* decl_generics = generic_args_of_json r_of_json generics in
+        Ok ({ trait_decl_id; decl_generics } : 'r T.trait_decl_ref)
     | _ -> Error "")
 
 and generic_args_of_json (r_of_json : json -> ('r, string) result) (js : json) :
@@ -434,6 +450,13 @@ let strait_ref_of_json (js : json) : (T.strait_ref, string) result =
 let etrait_ref_of_json (js : json) : (T.etrait_ref, string) result =
   combine_error_msgs js __FUNCTION__
     (trait_ref_of_json erased_region_of_json js)
+
+let strait_decl_ref_of_json (js : json) : (T.strait_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__ (trait_decl_ref_of_json region_of_json js)
+
+let etrait_decl_ref_of_json (js : json) : (T.etrait_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (trait_decl_ref_of_json erased_region_of_json js)
 
 let field_of_json (id_to_file : id_to_file_map) (js : json) :
     (T.field, string) result =
@@ -1051,15 +1074,6 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
         Ok { def_id = global_id; meta; body; name; ty }
     | _ -> Error "")
 
-let impl_trait_ref_of_json (js : json) : (A.impl_trait_ref, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("trait_id", trait_id); ("generics", generics) ] ->
-        let* trait_id = A.TraitDeclId.id_of_json trait_id in
-        let* generics = sgeneric_args_of_json generics in
-        Ok { A.trait_id; generics }
-    | _ -> Error "")
-
 let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
     (A.trait_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1136,7 +1150,7 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
         ] ->
         let* def_id = A.TraitImplId.id_of_json def_id in
         let* name = name_of_json name in
-        let* impl_trait = impl_trait_ref_of_json impl_trait in
+        let* impl_trait = strait_decl_ref_of_json impl_trait in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* consts =

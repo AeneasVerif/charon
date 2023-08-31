@@ -152,10 +152,29 @@ pub enum TraitInstanceId {
 pub struct TraitRef<R> {
     pub trait_id: TraitInstanceId,
     pub generics: GenericArgs<R>,
+    /// Not necessary, but useful
+    pub trait_decl_ref: TraitDeclRef<R>,
 }
 
 pub type ETraitRef = TraitRef<ErasedRegion>;
 pub type RTraitRef = TraitRef<Region<RegionVarId::Id>>;
+
+/// Reference to a trait declaration.
+///
+/// About the generics, if we write:
+/// ```text
+/// impl Foo<bool> for String { ... }
+/// ```
+///
+/// The substitution is: `[String, bool]`.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct TraitDeclRef<R> {
+    pub trait_id: TraitDeclId::Id,
+    pub generics: GenericArgs<R>,
+}
+
+pub type ETraitDeclRef = TraitDeclRef<ErasedRegion>;
+pub type RTraitDeclRef = TraitDeclRef<Region<RegionVarId::Id>>;
 
 /// .0 outlives .1
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
