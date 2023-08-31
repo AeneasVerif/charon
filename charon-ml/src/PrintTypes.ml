@@ -157,6 +157,7 @@ and trait_instance_id_to_string (fmt : 'r type_formatter)
       let clause_id = fmt.trait_clause_id_to_string clause_id in
       "(" ^ inst_id ^ ")::" ^ item_name ^ "::[" ^ clause_id ^ "]"
   | TraitRef tr -> trait_ref_to_string fmt tr
+  | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
 let sty_to_string (fmt : stype_formatter) (ty : T.sty) : string =
   ty_to_string fmt ty

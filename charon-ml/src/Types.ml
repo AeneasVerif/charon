@@ -326,15 +326,24 @@ and 'r trait_instance_id =
   | ParentClause of 'r trait_instance_id * trait_clause_id
   | ItemClause of 'r trait_instance_id * trait_item_name * trait_clause_id
   | TraitRef of 'r trait_ref
-      (** Not present in the Rust version of Charon. We need this case for instantiations:
-          when callling a function which has trait clauses, for instance, we substitute
-          the clauses refernced in the [Clause] and [Self] case with trait references.
+      (** Not present in the Rust version of Charon.
+
+          We need this case for instantiations: when callling a function which has
+          trait clauses, for instance, we substitute the clauses refernced in the
+          [Clause] and [Self] case with trait references.
 
           Remark: something potentially confusing is that [trait_clause_id] is used for
           different purposes. In the [Clause] case, a trait clause id identifies a local
           trait clause (which can thus be substituted). In the other cases, it references
           a sub-clause relative to a trait instance id.
        *)
+  | UnknownTrait of string
+      (** Not present in the Rust version of Charon.
+
+        We use this in the substitutions, to substitute [Self] when [Self] shouldn't
+        appear: this allows us to track errors by making sure [Self] indeed did not
+        appear.
+      *)
 [@@deriving
   show,
     ord,

@@ -66,6 +66,11 @@ let const_generic_as_literal (cg : const_generic) : PrimitiveValues.literal =
 let mk_empty_generic_args : 'r generic_args =
   { regions = []; types = []; const_generics = []; trait_refs = [] }
 
+let mk_generic_args (regions : 'r list) (types : 'r ty list)
+    (const_generics : const_generic list) (trait_refs : 'r trait_ref list) :
+    'r generic_args =
+  { regions; types; const_generics; trait_refs }
+
 let mk_generic_args_from_types (types : 'r ty list) : 'r generic_args =
   { regions = []; types; const_generics = []; trait_refs = [] }
 
@@ -187,6 +192,7 @@ and etrait_instance_id_no_regions_to_gr_trait_instance_id
   | TraitRef tr ->
       let tr = etrait_ref_no_regions_to_gr_trait_ref tr in
       TraitRef tr
+  | UnknownTrait msg -> UnknownTrait msg
 
 let ety_no_regions_to_rty (ty : ety) : rty = ety_no_regions_to_gr_ty ty
 let ety_no_regions_to_sty (ty : ety) : sty = ety_no_regions_to_gr_ty ty
