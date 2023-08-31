@@ -19,28 +19,30 @@ let ast_to_rtype_formatter : ast_formatter -> PT.rtype_formatter =
 let ast_to_stype_formatter : ast_formatter -> PT.stype_formatter =
   PE.expr_to_stype_formatter
 
-let gdecls_and_gfun_decl_to_ast_formatter
-    (type_decls : T.type_decl T.TypeDeclId.Map.t)
+(** Generate an [ast_formatter] by using a declaration context and some additional
+    parameters *)
+let gdecls_to_ast_formatter (type_decls : T.type_decl T.TypeDeclId.Map.t)
     (fun_decls : 'body GA.gfun_decl GA.FunDeclId.Map.t)
     (global_decls : 'gdecl GA.GlobalDeclId.Map.t)
     (trait_decls : GA.trait_decl GA.TraitDeclId.Map.t)
     (trait_impls : GA.trait_impl GA.TraitImplId.Map.t)
-    (get_global_decl_name_as_string : 'gdecl -> string)
-    (fdef : 'body GA.gfun_decl) : ast_formatter =
+    (generics : T.generic_params) (locals : GA.var list option)
+    (get_global_decl_name_as_string : 'gdecl -> string) : ast_formatter =
   let rvar_to_string r =
-    let rvar = T.RegionVarId.nth fdef.signature.generics.regions r in
+    let rvar = T.RegionVarId.nth generics.regions r in
     PT.region_var_to_string rvar
   in
-  let r_to_string r = PT.region_id_to_string r in
+  let r_to_string r =
+    (* TODO: we might want something more informative *)
+    PT.region_id_to_string r
+  in
 
   let type_var_id_to_string vid =
-    let var = T.TypeVarId.nth fdef.signature.generics.types vid in
+    let var = T.TypeVarId.nth generics.types vid in
     PT.type_var_to_string var
   in
   let const_generic_var_id_to_string vid =
-    let var =
-      T.ConstGenericVarId.nth fdef.signature.generics.const_generics vid
-    in
+    let var = T.ConstGenericVarId.nth generics.const_generics vid in
     PT.const_generic_var_to_string var
   in
   let type_decl_id_to_string def_id =
@@ -51,7 +53,7 @@ let gdecls_and_gfun_decl_to_ast_formatter
     PT.type_ctx_to_adt_variant_to_string_fun type_decls
   in
   let var_id_to_string vid =
-    let var = E.VarId.nth (Option.get fdef.body).locals vid in
+    let var = E.VarId.nth (Option.get locals) vid in
     var_to_string var
   in
   let adt_field_names = PT.type_ctx_to_adt_field_names_fun type_decls in
@@ -88,6 +90,20 @@ let gdecls_and_gfun_decl_to_ast_formatter
     trait_impl_id_to_string;
     trait_clause_id_to_string = PT.trait_clause_id_to_pretty_string;
   }
+
+let gdecls_and_gfun_decl_to_ast_formatter
+    (type_decls : T.type_decl T.TypeDeclId.Map.t)
+    (fun_decls : 'body GA.gfun_decl GA.FunDeclId.Map.t)
+    (global_decls : 'gdecl GA.GlobalDeclId.Map.t)
+    (trait_decls : GA.trait_decl GA.TraitDeclId.Map.t)
+    (trait_impls : GA.trait_impl GA.TraitImplId.Map.t)
+    (get_global_decl_name_as_string : 'gdecl -> string)
+    (fdef : 'body GA.gfun_decl) : ast_formatter =
+  let locals =
+    match fdef.body with None -> None | Some body -> Some body.locals
+  in
+  gdecls_to_ast_formatter type_decls fun_decls global_decls trait_decls
+    trait_impls fdef.signature.generics locals get_global_decl_name_as_string
 
 let call_to_string (fmt : ast_formatter) (indent : string) (call : GA.call) :
     string =
@@ -358,79 +374,6 @@ let ctx_and_type_decl_to_string (type_context : T.type_decl T.TypeDeclId.Map.t)
   PT.type_decl_to_string type_decl_id_to_string global_decl_id_to_string
     trait_decl_id_to_string trait_impl_id_to_string decl
 
-(** Generate an [ast_formatter] by using a declaration context and some additional
-    parameters *)
-let decl_ctx_to_ast_formatter (type_context : T.type_decl T.TypeDeclId.Map.t)
-    (fun_context : 'body GA.gfun_decl GA.FunDeclId.Map.t)
-    (global_context : 'global_decl GA.GlobalDeclId.Map.t)
-    (trait_decls_context : GA.trait_decl GA.TraitDeclId.Map.t)
-    (trait_impls_context : GA.trait_impl GA.TraitImplId.Map.t)
-    (generics : T.generic_params) (locals : GA.var list)
-    (get_global_decl_name_as_string : 'gdecl -> string) : ast_formatter =
-  let rvar_to_string vid =
-    let var = T.RegionVarId.nth generics.regions vid in
-    PT.region_var_to_string var
-  in
-  let r_to_string vid =
-    (* TODO: we might want something more informative *)
-    PT.region_id_to_string vid
-  in
-  let type_var_id_to_string vid =
-    let var = T.TypeVarId.nth generics.types vid in
-    PT.type_var_to_string var
-  in
-  let const_generic_var_id_to_string vid =
-    let var = T.ConstGenericVarId.nth generics.const_generics vid in
-    PT.const_generic_var_to_string var
-  in
-  let type_decl_id_to_string def_id =
-    let def = T.TypeDeclId.Map.find def_id type_context in
-    name_to_string def.name
-  in
-  let fun_decl_id_to_string def_id =
-    let def = GA.FunDeclId.Map.find def_id fun_context in
-    fun_name_to_string def.name
-  in
-  let global_decl_id_to_string def_id =
-    let def = GA.GlobalDeclId.Map.find def_id global_context in
-    get_global_decl_name_as_string def
-  in
-  let trait_decl_id_to_string def_id =
-    let def = GA.TraitDeclId.Map.find def_id trait_decls_context in
-    name_to_string def.name
-  in
-  let trait_impl_id_to_string def_id =
-    let def = GA.TraitImplId.Map.find def_id trait_impls_context in
-    name_to_string def.name
-  in
-  let var_id_to_string vid =
-    let var = E.VarId.nth locals vid in
-    var_to_string var
-  in
-  let adt_variant_to_string =
-    PT.type_ctx_to_adt_variant_to_string_fun type_context
-  in
-  let adt_field_to_string =
-    PT.type_ctx_to_adt_field_to_string_fun type_context
-  in
-  let adt_field_names = PT.type_ctx_to_adt_field_names_fun type_context in
-  {
-    rvar_to_string;
-    r_to_string;
-    type_var_id_to_string;
-    type_decl_id_to_string;
-    const_generic_var_id_to_string;
-    adt_variant_to_string;
-    adt_field_to_string;
-    var_id_to_string;
-    adt_field_names;
-    fun_decl_id_to_string;
-    global_decl_id_to_string;
-    trait_decl_id_to_string;
-    trait_impl_id_to_string;
-    trait_clause_id_to_string = PT.trait_clause_id_to_pretty_string;
-  }
-
 (** Generate an [ast_formatter] by using a declaration context in combination
     with the variables local to a function declaration *)
 let decl_ctx_and_fun_decl_to_ast_formatter
@@ -441,8 +384,10 @@ let decl_ctx_and_fun_decl_to_ast_formatter
     (trait_impls_context : GA.trait_impl GA.TraitImplId.Map.t)
     (get_global_decl_name_as_string : 'gdecl -> string)
     (def : 'body GA.gfun_decl) : ast_formatter =
-  let locals = match def.body with None -> [] | Some body -> body.locals in
-  decl_ctx_to_ast_formatter type_context fun_context global_context
+  let locals =
+    match def.body with None -> None | Some body -> Some body.locals
+  in
+  gdecls_to_ast_formatter type_context fun_context global_context
     trait_decls_context trait_impls_context def.signature.generics locals
     get_global_decl_name_as_string
 
@@ -456,8 +401,8 @@ let decl_ctx_and_trait_decl_to_ast_formatter
     (trait_impls_context : GA.trait_impl GA.TraitImplId.Map.t)
     (get_global_decl_name_as_string : 'gdecl -> string) (def : GA.trait_decl) :
     ast_formatter =
-  let locals = [] in
-  decl_ctx_to_ast_formatter type_context fun_context global_context
+  let locals = None in
+  gdecls_to_ast_formatter type_context fun_context global_context
     trait_decls_context trait_impls_context def.generics locals
     get_global_decl_name_as_string
 
@@ -471,7 +416,7 @@ let decl_ctx_and_trait_impl_to_ast_formatter
     (trait_impls_context : GA.trait_impl GA.TraitImplId.Map.t)
     (get_global_decl_name_as_string : 'gdecl -> string) (def : GA.trait_impl) :
     ast_formatter =
-  let locals = [] in
-  decl_ctx_to_ast_formatter type_context fun_context global_context
+  let locals = None in
+  gdecls_to_ast_formatter type_context fun_context global_context
     trait_decls_context trait_impls_context def.generics locals
     get_global_decl_name_as_string

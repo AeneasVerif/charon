@@ -163,11 +163,11 @@ module Crate = struct
       (trait_impls : A.trait_impl A.TraitImplId.Map.t) (_decl : A.global_decl) :
       PA.ast_formatter =
     let generics = TypesUtils.mk_empty_generic_params in
-    let locals = [] in
+    let locals = None in
     let get_global_decl_name_as_string decl =
       global_name_to_string decl.A.name
     in
-    PrintGAst.decl_ctx_to_ast_formatter type_context fun_context global_context
+    PrintGAst.gdecls_to_ast_formatter type_context fun_context global_context
       trait_decls trait_impls generics locals get_global_decl_name_as_string
 
   (** Generate an [ast_formatter] by using a declaration context in combination
