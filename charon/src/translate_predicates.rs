@@ -353,15 +353,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let trait_decl_ref = {
             let trait_ref = &impl_source.trait_ref;
-            assert!(trait_ref.bound_vars.is_empty());
-            let trait_ref = &trait_ref.value;
             let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
             let generics = self
-                .translate_substs_and_trait_refs(
-                    None,
-                    &trait_ref.generic_args,
-                    &Vec::new(), // TODO: missing information
-                )
+                .translate_substs_and_trait_refs(None, &trait_ref.generic_args, &trait_ref.traits)
                 .unwrap();
             TraitDeclRef { trait_id, generics }
         };
