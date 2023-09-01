@@ -89,12 +89,40 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    pub(crate) fn get_params_info(&mut self, def_id: DefId) -> ParamsInfo {
-        Self::convert_params_info(hax::get_params_info(&self.hax_state, def_id))
-    }
-
     pub(crate) fn get_parent_params_info(&mut self, def_id: DefId) -> Option<ParamsInfo> {
-        hax::get_parent_params_info(&self.hax_state, def_id).map(Self::convert_params_info)
+        let params_info =
+            hax::get_parent_params_info(&self.hax_state, def_id).map(Self::convert_params_info);
+
+        // Very annoying: because we may filter some marker traits (like [core::marker::Sized])
+        // we have to recompute the number of trait clauses!
+        match params_info {
+            None => None,
+            Some(mut params_info) => {
+                let tcx = self.t_ctx.tcx;
+                let parent_id = tcx.generics_of(def_id).parent.unwrap();
+
+                let mut num_trait_clauses = 0;
+                // **IMPORTANT**: we do NOT want to use [TyCtxt::predicates_of].
+                let preds = tcx.predicates_defined_on(parent_id).sinto(&self.hax_state);
+                for (pred, _) in preds.predicates {
+                    match &pred.value {
+                        hax::PredicateKind::Clause(hax::Clause::Trait(clause)) => {
+                            if self
+                                .translate_trait_decl_id(
+                                    clause.trait_ref.def_id.rust_def_id.unwrap(),
+                                )
+                                .is_some()
+                            {
+                                num_trait_clauses += 1;
+                            }
+                        }
+                        _ => (),
+                    }
+                }
+                params_info.num_trait_clauses = num_trait_clauses;
+                Some(params_info)
+            }
+        }
     }
 
     pub(crate) fn get_predicates_of(&mut self, def_id: DefId) -> hax::GenericPredicates {
@@ -182,12 +210,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    /// Returns an [Option] because we may filter clauses about builtin or
+    /// auto traits like [core::marker::Sized] and [core::marker::Sync].
     pub(crate) fn translate_trait_clause(
         &mut self,
         clause_id: TraitClauseId::Id,
         trait_pred: &hax::TraitPredicate,
         span: Option<&hax::Span>,
-    ) -> FullTraitClause {
+    ) -> Option<FullTraitClause> {
         // Note sure what this is about
         assert!(trait_pred.is_positive);
         // Note sure what this is about
@@ -195,6 +225,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let trait_ref = &trait_pred.trait_ref;
         let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
+        if trait_id.is_none() {
+            // This trait is to be ignored
+            return None;
+        }
+        let trait_id = trait_id.unwrap();
+
         let (regions, types, const_generics) = self
             .translate_substs(None, &trait_ref.generic_args)
             .unwrap();
@@ -205,7 +241,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trait_pred
                 .parent_preds
                 .iter()
-                .map(|x| {
+                .filter_map(|x| {
                     let clause_id = ctx.trait_clauses_counter.fresh_id();
                     ctx.translate_trait_clause(clause_id, x, None)
                 })
@@ -223,7 +259,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // We can translate the clause
                     clauses
                         .iter()
-                        .map(|clause| {
+                        .filter_map(|clause| {
                             // The clause is inside a binder
                             assert!(clause.bound_vars.is_empty());
                             let clause_id = ctx.trait_clauses_counter.fresh_id();
@@ -236,14 +272,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .collect();
 
         let meta = span.map(|x| self.translate_meta_from_rspan(x.clone()));
-        FullTraitClause {
+        Some(FullTraitClause {
             clause_id,
             meta,
             trait_id,
             generics,
             parent_clauses,
             items_clauses,
-        }
+        })
     }
 
     pub(crate) fn translate_predicate(
@@ -260,8 +296,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         match pred_kind {
             PredicateKind::Clause(Clause::Trait(trait_pred)) => {
                 let id = self.trait_clauses_counter.fresh_id();
-                let clause = self.translate_trait_clause(id, trait_pred, Some(span));
-                Some(Predicate::Trait(clause))
+                self.translate_trait_clause(id, trait_pred, Some(span))
+                    .map(|clause| Predicate::Trait(clause))
             }
             PredicateKind::Clause(Clause::RegionOutlives(p)) => {
                 let r0 = self.translate_region(&p.0);
@@ -288,6 +324,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 } = p;
 
                 let trait_ref = self.translate_trait_impl_source(&impl_source);
+                // The trait ref should be Some(...): the marker traits (that
+                // we may filter) don't have associated types.
+                let trait_ref = trait_ref.unwrap();
+
                 let (regions, types, const_generics) =
                     self.translate_substs(None, &substs).unwrap();
                 let generics = GenericArgs {
@@ -335,14 +375,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     {
         impl_sources
             .iter()
-            .map(|x| self.translate_trait_impl_source(x))
+            .filter_map(|x| self.translate_trait_impl_source(x))
             .collect()
     }
 
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn translate_trait_impl_source<R>(
         &mut self,
         impl_source: &hax::ImplSource,
-    ) -> TraitRef<R>
+    ) -> Option<TraitRef<R>>
     where
         R: Eq + Clone,
         Self: TyTranslator<R>,
@@ -354,16 +396,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let trait_decl_ref = {
             let trait_ref = &impl_source.trait_ref;
             let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
+            if trait_id.is_none() {
+                // This trait is to be ignored
+                return None;
+            }
+            let trait_id = trait_id.unwrap();
             let generics = self
                 .translate_substs_and_trait_refs(None, &trait_ref.generic_args, &trait_ref.traits)
                 .unwrap();
             TraitDeclRef { trait_id, generics }
         };
 
-        match &impl_source.kind {
+        let trait_ref = match &impl_source.kind {
             ImplSourceKind::UserDefined(data) => {
                 let def_id = data.impl_def_id.rust_def_id.unwrap();
                 let trait_id = self.translate_trait_impl_id(def_id);
+                // We already tested above whether the trait should be filtered
+                let trait_id = trait_id.unwrap();
                 let trait_id = TraitInstanceId::TraitImpl(trait_id);
 
                 let generics = self
@@ -381,7 +430,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_ref = &trait_ref.value;
 
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
-                let trait_id = self.translate_trait_decl_id(def_id);
+                // Remark: we already filtered the marker traits when translating
+                // the trait decl ref: the trait id should be Some(...).
+                let trait_id = self.translate_trait_decl_id(def_id).unwrap();
 
                 // Retrieve the arguments
                 let generics = self
@@ -407,7 +458,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 assert!(trait_ref.bound_vars.is_empty());
                 let trait_ref = &trait_ref.value;
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
-                let trait_id = self.translate_trait_decl_id(def_id);
+                // Remark: we already filtered the marker traits when translating
+                // the trait decl ref: the trait id should be Some(...).
+                let trait_id = self.translate_trait_decl_id(def_id).unwrap();
+
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
                 let generics = self
                     .translate_substs_and_trait_refs(None, &trait_ref.generic_args, traits)
@@ -420,7 +474,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             ImplSourceKind::AutoImpl(data) => {
                 let def_id = data.trait_def_id.rust_def_id.unwrap();
-                let trait_id = self.translate_trait_decl_id(def_id);
+                // Remark: we already filtered the marker traits when translating
+                // the trait decl ref: the trait id should be Some(...).
+                let trait_id = self.translate_trait_decl_id(def_id).unwrap();
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
 
                 TraitRef {
@@ -430,7 +486,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
             ImplSourceKind::TraitUpcasting(_) => unimplemented!(),
-        }
+        };
+        Some(trait_ref)
     }
 
     fn match_trait_clauses<R>(
@@ -622,7 +679,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn translate_trait_impl_source_erased_regions(
         &mut self,
         impl_source: &hax::ImplSource,
-    ) -> ETraitRef {
+    ) -> Option<ETraitRef> {
         self.translate_trait_impl_source(impl_source)
     }
 
@@ -636,7 +693,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn translate_trait_impl_source_with_regions(
         &mut self,
         impl_source: &hax::ImplSource,
-    ) -> RTraitRef {
+    ) -> Option<RTraitRef> {
         self.translate_trait_impl_source(impl_source)
     }
 }

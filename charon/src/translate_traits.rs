@@ -55,7 +55,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_ref = rustc_middle::ty::Binder::dummy(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
                 let trait_ref = self.translate_trait_impl_source_erased_regions(&trait_ref);
-                trait_refs.push(trait_ref);
+                if let Some(trait_ref) = trait_ref {
+                    trait_refs.push(trait_ref);
+                }
             }
         }
 
@@ -99,20 +101,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .find_map(|(pred, _span)| {
                 assert!(pred.bound_vars.is_empty());
                 if let hax::PredicateKind::Clause(hax::Clause::Trait(pred)) = pred.value {
-                    let trait_id =
-                        self.translate_trait_decl_id(pred.trait_ref.def_id.rust_def_id.unwrap());
-                    let (regions, types, const_generics) = self
-                        .translate_substs(None, &pred.trait_ref.generic_args)
-                        .unwrap();
-                    Some((
-                        trait_id,
-                        GenericArgs {
-                            regions,
-                            types,
-                            const_generics,
-                            trait_refs: Vec::new(),
-                        },
-                    ))
+                    if let Some(trait_id) =
+                        self.translate_trait_decl_id(pred.trait_ref.def_id.rust_def_id.unwrap())
+                    {
+                        let (regions, types, const_generics) = self
+                            .translate_substs(None, &pred.trait_ref.generic_args)
+                            .unwrap();
+                        Some((
+                            trait_id,
+                            GenericArgs {
+                                regions,
+                                types,
+                                const_generics,
+                                trait_refs: Vec::new(),
+                            },
+                        ))
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
@@ -135,6 +141,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) {
         let def_id = self.translate_trait_decl_id(rust_id);
+        // We may need to ignore the trait (happens if the trait is a marker
+        // trait like [core::marker::Sized]
+        if def_id.is_none() {
+            return;
+        }
+        let def_id = def_id.unwrap();
+
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
@@ -258,6 +271,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     pub(crate) fn translate_trait_impl(&mut self, rust_id: DefId) {
         let def_id = self.translate_trait_impl_id(rust_id);
+        // We may need to ignore the trait
+        if def_id.is_none() {
+            return;
+        }
+        let def_id = def_id.unwrap();
+
         let tcx = self.tcx;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
@@ -270,27 +289,27 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.translate_predicates_of(rust_id);
 
         // Retrieve the information about the implemented trait.
-        let (impl_trait_rust_id, impl_trait, rust_impl_trait_ref) =
-            if let rustc_hir::def::DefKind::Impl { .. } = tcx.def_kind(rust_id) {
-                let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
-                let trait_id = bt_ctx.translate_trait_decl_id(trait_rust_id);
-                let rustc_middle::ty::ImplSubject::Trait(rust_trait_ref) =
+        let (impl_trait_rust_id, impl_trait, rust_impl_trait_ref) = {
+            let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
+            let trait_id = bt_ctx.translate_trait_decl_id(trait_rust_id);
+            // We already tested above whether the trait should be filtered
+            let trait_id = trait_id.unwrap();
+
+            let rustc_middle::ty::ImplSubject::Trait(rust_trait_ref) =
                     tcx.impl_subject(rust_id).subst_identity() else { unreachable!() };
-                let trait_ref = rust_trait_ref.sinto(&bt_ctx.hax_state);
-                let (regions, types, const_generics) = bt_ctx
-                    .translate_substs(None, &trait_ref.generic_args)
-                    .unwrap();
-                let generics = GenericArgs {
-                    regions,
-                    types,
-                    const_generics,
-                    trait_refs: Vec::new(),
-                };
-                let trait_ref = TraitDeclRef { trait_id, generics };
-                (trait_rust_id, trait_ref, rust_trait_ref)
-            } else {
-                unreachable!()
+            let trait_ref = rust_trait_ref.sinto(&bt_ctx.hax_state);
+            let (regions, types, const_generics) = bt_ctx
+                .translate_substs(None, &trait_ref.generic_args)
+                .unwrap();
+            let generics = GenericArgs {
+                regions,
+                types,
+                const_generics,
+                trait_refs: Vec::new(),
             };
+            let trait_ref = TraitDeclRef { trait_id, generics };
+            (trait_rust_id, trait_ref, rust_trait_ref)
+        };
 
         // Explore the associated items
         // We do something subtle here: TODO

@@ -150,6 +150,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     name,
                 } => {
                     let trait_ref = self.translate_trait_impl_source(impl_source);
+                    // This should succeed because no marker trait (that we may
+                    // ignore) has associated types.
+                    let trait_ref = trait_ref.unwrap();
                     let (regions, types, const_generics) =
                         self.translate_substs(None, substs).unwrap();
                     let generics = GenericArgs {

@@ -90,6 +90,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 name,
             } => {
                 let trait_ref = self.translate_trait_impl_source(impl_source);
+                // The trait ref should be Some(...): trait markers (that we
+                // may eliminate) don't have constants.
+                let trait_ref = trait_ref.unwrap();
+
                 let (regions, types, const_generics) = self.translate_substs(None, substs).unwrap();
                 let generics = GenericArgs {
                     regions,

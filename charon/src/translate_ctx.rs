@@ -380,26 +380,47 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn register_trait_decl_id(&mut self, id: DefId) -> ast::TraitDeclId::Id {
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn register_trait_decl_id(&mut self, id: DefId) -> Option<ast::TraitDeclId::Id> {
+        use crate::assumed;
+        if assumed::IGNORE_BUILTIN_MARKER_TRAITS {
+            let name = crate::names::item_def_id_to_name(self.tcx, id);
+            if assumed::is_marker_trait(&name) {
+                return None;
+            }
+        }
+
         match self.trait_decl_id_map.get(&id) {
-            Option::Some(id) => id,
+            Option::Some(id) => Some(id),
             Option::None => {
                 let rid = OrdRustId::TraitDecl(id);
                 let trans_id = self.trait_decl_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::TraitDecl(trans_id));
-                trans_id
+                Some(trans_id)
             }
         }
     }
 
-    pub(crate) fn register_trait_impl_id(&mut self, id: DefId) -> ast::TraitImplId::Id {
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn register_trait_impl_id(&mut self, id: DefId) -> Option<ast::TraitImplId::Id> {
+        // Check if we need to filter
+        {
+            // Retrieve the id of the implemented trait decl
+            let id = self.tcx.trait_id_of_impl(id).unwrap();
+            if self.register_trait_decl_id(id).is_none() {
+                return None;
+            }
+        }
+
         match self.trait_impl_id_map.get(&id) {
-            Option::Some(id) => id,
+            Option::Some(id) => Some(id),
             Option::None => {
                 let rid = OrdRustId::TraitImpl(id);
                 let trans_id = self.trait_impl_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::TraitImpl(trans_id));
-                trans_id
+                Some(trans_id)
             }
         }
     }
@@ -408,11 +429,15 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.register_fun_decl_id(id)
     }
 
-    pub(crate) fn translate_trait_decl_id(&mut self, id: DefId) -> ast::TraitDeclId::Id {
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn translate_trait_decl_id(&mut self, id: DefId) -> Option<ast::TraitDeclId::Id> {
         self.register_trait_decl_id(id)
     }
 
-    pub(crate) fn translate_trait_impl_id(&mut self, id: DefId) -> ast::TraitImplId::Id {
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn translate_trait_impl_id(&mut self, id: DefId) -> Option<ast::TraitImplId::Id> {
         self.register_trait_impl_id(id)
     }
 
@@ -506,11 +531,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_global_decl_id(id)
     }
 
-    pub(crate) fn translate_trait_decl_id(&mut self, id: DefId) -> ast::TraitDeclId::Id {
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn translate_trait_decl_id(&mut self, id: DefId) -> Option<ast::TraitDeclId::Id> {
         self.t_ctx.translate_trait_decl_id(id)
     }
 
-    pub(crate) fn translate_trait_impl_id(&mut self, id: DefId) -> ast::TraitImplId::Id {
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn translate_trait_impl_id(&mut self, id: DefId) -> Option<ast::TraitImplId::Id> {
         self.t_ctx.translate_trait_impl_id(id)
     }
 

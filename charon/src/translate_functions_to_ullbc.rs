@@ -327,6 +327,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         Some(trait_method_id) => {
                             let trait_id = tcx.trait_of_item(trait_method_id).unwrap();
                             let trait_id = self.translate_trait_decl_id(trait_id);
+                            // The trait id should be Some(...): trait markers (that we
+                            // may eliminate) don't have methods.
+                            let trait_id = trait_id.unwrap();
+
                             let method_name = self.translate_trait_item_name(trait_method_id);
 
                             // Check if the current function implements a provided method.
@@ -369,6 +373,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let method_name = self.translate_trait_item_name(rust_id);
                     let trait_id = tcx.trait_of_item(rust_id).unwrap();
                     let trait_id = self.translate_trait_decl_id(trait_id);
+                    // The trait id should be Some(...): trait markers (that we
+                    // may eliminate) don't have methods.
+                    let trait_id = trait_id.unwrap();
 
                     if is_provided {
                         FunKind::TraitMethodProvided(trait_id, method_name)
@@ -1383,6 +1390,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<RawTerminator> {
         let rust_id = def_id.rust_def_id.unwrap();
         let impl_source = self.translate_trait_impl_source_erased_regions(&trait_info.impl_source);
+        // The impl source should be Some(...): trait markers (that we may
+        // eliminate) don't have methods.
+        let impl_source = impl_source.unwrap();
 
         trace!("{:?}", rust_id);
 
