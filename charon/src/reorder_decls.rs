@@ -331,8 +331,11 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                     graph.visit_global_decl_id(id);
                 }
 
-                for (_, ty) in &d.types {
+                for (_, (trait_refs, ty)) in &d.types {
                     graph.visit_ty(ty);
+                    for trait_ref in trait_refs {
+                        graph.visit_trait_ref(trait_ref);
+                    }
                 }
 
                 for (_, id) in d.required_methods.iter().chain(d.provided_methods.iter()) {

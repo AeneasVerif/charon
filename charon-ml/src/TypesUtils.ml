@@ -63,6 +63,10 @@ let ty_as_literal (ty : 'r ty) : literal_type =
 let const_generic_as_literal (cg : const_generic) : PrimitiveValues.literal =
   match cg with ConstGenericValue v -> v | _ -> raise (Failure "Unreachable")
 
+let trait_instance_id_as_trait_impl (id : 'r trait_instance_id) : trait_impl_id
+    =
+  match id with TraitImpl id -> id | _ -> raise (Failure "Unreachable")
+
 let mk_empty_generic_args : 'r generic_args =
   { regions = []; types = []; const_generics = []; trait_refs = [] }
 

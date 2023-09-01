@@ -27,6 +27,42 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         )
         .unwrap()
     }
+
+    fn translate_trait_refs_from_impl_trait_item(
+        &mut self,
+        trait_impl_def_id: DefId,
+        rust_impl_trait_ref: &rustc_middle::ty::TraitRef<'tcx>,
+        item: &rustc_middle::ty::AssocItem,
+    ) -> Vec<ETraitRef> {
+        // Lookup the information about the type *declaration* in the trait decl
+        let tcx = self.t_ctx.tcx;
+        let assoc = tcx.associated_item(item.def_id);
+        let item_decl_def_id = assoc.trait_item_def_id.unwrap();
+
+        // Lookup the trait clauses and substitute - TODO: not sure about the substitution
+        let subst = rust_impl_trait_ref.substs;
+        let bounds = tcx.item_bounds(item_decl_def_id);
+        let param_env = tcx.param_env(trait_impl_def_id);
+        let bounds = tcx.subst_and_normalize_erasing_regions(subst, param_env, bounds);
+
+        // Solve the predicate bounds
+        let mut trait_refs = Vec::new();
+        for bound in bounds {
+            if let rustc_middle::ty::PredicateKind::Clause(rustc_middle::ty::Clause::Trait(
+                trait_pred,
+            )) = bound.kind().skip_binder()
+            {
+                let trait_ref = rustc_middle::ty::Binder::dummy(trait_pred.trait_ref);
+                let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
+                let trait_ref = self.translate_trait_impl_source_erased_regions(&trait_ref);
+                trait_refs.push(trait_ref);
+            }
+        }
+
+        // Return
+        trait_refs
+    }
+
     fn translate_const_from_trait_item(
         &mut self,
         item: &rustc_middle::ty::AssocItem,
@@ -170,7 +206,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let bounds = bounds.sinto(&bt_ctx.hax_state);
                     bt_ctx.translate_predicates_vec(&bounds);
 
-                    // Retreive the trait clauses
+                    // Retrieve the trait clauses
                     let mut trait_clauses = Vec::new();
                     for i in trait_clauses_start_index..bt_ctx.trait_clauses.len() {
                         trait_clauses.push(
@@ -234,13 +270,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.translate_predicates_of(rust_id);
 
         // Retrieve the information about the implemented trait.
-        let (impl_trait_rust_id, impl_trait) =
+        let (impl_trait_rust_id, impl_trait, rust_impl_trait_ref) =
             if let rustc_hir::def::DefKind::Impl { .. } = tcx.def_kind(rust_id) {
                 let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
                 let trait_id = bt_ctx.translate_trait_decl_id(trait_rust_id);
-                let rustc_middle::ty::ImplSubject::Trait(trait_ref) =
+                let rustc_middle::ty::ImplSubject::Trait(rust_trait_ref) =
                     tcx.impl_subject(rust_id).subst_identity() else { unreachable!() };
-                let trait_ref = trait_ref.sinto(&bt_ctx.hax_state);
+                let trait_ref = rust_trait_ref.sinto(&bt_ctx.hax_state);
                 let (regions, types, const_generics) = bt_ctx
                     .translate_substs(None, &trait_ref.generic_args)
                     .unwrap();
@@ -251,7 +287,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     trait_refs: Vec::new(),
                 };
                 let trait_ref = TraitDeclRef { trait_id, generics };
-                (trait_rust_id, trait_ref)
+                (trait_rust_id, trait_ref, rust_trait_ref)
             } else {
                 unreachable!()
             };
@@ -328,7 +364,15 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                             bt_ctx.translate_ty_from_trait_item(item)
                         }
                     };
-                    types.push((name, ty));
+
+                    // Retrieve the trait refs
+                    let trait_refs = bt_ctx.translate_trait_refs_from_impl_trait_item(
+                        rust_id,
+                        &rust_impl_trait_ref,
+                        item,
+                    );
+
+                    types.push((name, (trait_refs, ty)));
                 }
             }
         }

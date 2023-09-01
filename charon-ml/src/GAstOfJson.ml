@@ -1160,7 +1160,10 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
             consts
         in
         let* types =
-          list_of_json (pair_of_json string_of_json ety_of_json) types
+          list_of_json
+            (pair_of_json string_of_json
+               (pair_of_json (list_of_json etrait_ref_of_json) ety_of_json))
+            types
         in
         let methods_of_json =
           list_of_json (pair_of_json string_of_json A.FunDeclId.id_of_json)

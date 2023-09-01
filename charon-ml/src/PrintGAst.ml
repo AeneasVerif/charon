@@ -324,8 +324,13 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
     in
     let types =
       List.map
-        (fun (name, ty) ->
-          indent ^ "type " ^ name ^ " = " ^ ety_to_string ty ^ "\n")
+        (fun (name, (trait_refs, ty)) ->
+          let trait_refs =
+            String.concat ", "
+              (List.map (PT.trait_ref_to_string ety_fmt) trait_refs)
+          in
+          indent ^ "type " ^ name ^ " = " ^ ety_to_string ty ^ "where ["
+          ^ trait_refs ^ "]\n")
         def.types
     in
     let methods =

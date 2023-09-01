@@ -178,8 +178,17 @@ impl TraitImpl {
                         ctx.format_object(*id)
                     )
                 })
-                .chain(self.types.iter().map(|(name, ty)| {
-                    format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx))
+                .chain(self.types.iter().map(|(name, (trait_refs, ty))| {
+                    let trait_refs = trait_refs
+                        .iter()
+                        .map(|x| x.fmt_with_ctx(ctx))
+                        .collect::<Vec<_>>()
+                        .join(", ");
+                    format!(
+                        "{TAB_INCR}type {name} = {} with [{}]\n",
+                        ty.fmt_with_ctx(ctx),
+                        trait_refs
+                    )
                 }))
                 .chain(
                     self.required_methods

@@ -285,9 +285,7 @@ pub struct TraitImpl {
     /// The associated constants declared in the trait.
     pub consts: Vec<(TraitItemName, (ETy, GlobalDeclId::Id))>,
     /// The associated types declared in the trait.
-    ///
-    /// TODO: bounds
-    pub types: Vec<(TraitItemName, ETy)>,
+    pub types: Vec<(TraitItemName, (Vec<ETraitRef>, ETy))>,
     /// The implemented required methods
     pub required_methods: Vec<(TraitItemName, FunDeclId::Id)>,
     /// The re-implemented provided methods
