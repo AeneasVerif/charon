@@ -249,8 +249,8 @@ let variant_to_string fmt (v : T.variant) : string =
   ^ String.concat ", " (List.map (field_to_string fmt) v.fields)
   ^ ")"
 
-let trait_type_constraint_to_string (fmt : stype_formatter)
-    (ttc : T.trait_type_constraint) : string =
+let trait_type_constraint_to_string (fmt : 'r type_formatter)
+    (ttc : 'r T.trait_type_constraint) : string =
   let trait_ref = trait_ref_to_string fmt ttc.T.trait_ref in
   let generics = generic_args_to_string fmt ttc.T.generics in
   let ty = sty_to_string fmt ttc.T.ty in

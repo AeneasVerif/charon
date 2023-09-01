@@ -191,12 +191,14 @@ pub type TypeOutlives = OutlivesPred<RTy, Region<RegionVarId::Id>>;
 ///         ^^^^^^^^^^
 /// ```
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct TraitTypeConstraint {
-    pub trait_ref: RTraitRef,
-    pub generics: RGenericArgs,
+pub struct TraitTypeConstraint<R> {
+    pub trait_ref: TraitRef<R>,
+    pub generics: GenericArgs<R>,
     pub type_name: TraitItemName,
-    pub ty: RTy,
+    pub ty: Ty<R>,
 }
+
+pub type RTraitTypeConstraint = TraitTypeConstraint<Region<RegionVarId::Id>>;
 
 /// The predicates which apply to a definition
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -206,7 +208,7 @@ pub struct Predicates {
     /// The type outlives the region
     pub types_outlive: Vec<TypeOutlives>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: Vec<TraitTypeConstraint>,
+    pub trait_type_constraints: Vec<RTraitTypeConstraint>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize)]

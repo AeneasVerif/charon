@@ -249,10 +249,10 @@ pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<Stri
     }
 }
 
-impl TraitTypeConstraint {
+impl<R> TraitTypeConstraint<R> {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>> + Formatter<RegionVarId::Id>,
+        C: TypeFormatter<'a, R> + Formatter<RegionVarId::Id>,
     {
         let trait_ref = self.trait_ref.fmt_with_ctx(ctx);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);

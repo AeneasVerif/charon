@@ -181,7 +181,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     pub regions_outlive: Vec<ty::RegionOutlives>,
     ///
-    pub trait_type_constraints: Vec<ty::TraitTypeConstraint>,
+    pub trait_type_constraints: Vec<ty::RTraitTypeConstraint>,
     /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.

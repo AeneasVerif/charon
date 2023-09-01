@@ -565,8 +565,8 @@ let type_outlives_of_json (js : json) : (T.type_outlives, string) result =
         Ok (ty, r)
     | _ -> Error "")
 
-let trait_type_constraint_of_json (js : json) :
-    (T.trait_type_constraint, string) result =
+let trait_type_constraint_of_json (r_of_json : json -> ('r, string) result)
+    (js : json) : ('r T.trait_type_constraint, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
@@ -576,11 +576,13 @@ let trait_type_constraint_of_json (js : json) :
           ("type_name", type_name);
           ("ty", ty);
         ] ->
-        let* trait_ref = strait_ref_of_json trait_ref in
-        let* generics = sgeneric_args_of_json generics in
+        let* trait_ref = trait_ref_of_json r_of_json trait_ref in
+        let* generics = generic_args_of_json r_of_json generics in
         let* type_name = string_of_json type_name in
-        let* ty = sty_of_json ty in
-        Ok ({ T.trait_ref; generics; type_name; ty } : T.trait_type_constraint)
+        let* ty = ty_of_json r_of_json ty in
+        Ok
+          ({ T.trait_ref; generics; type_name; ty }
+            : 'r T.trait_type_constraint)
     | _ -> Error "")
 
 let predicates_of_json (js : json) : (T.predicates, string) result =
@@ -597,7 +599,9 @@ let predicates_of_json (js : json) : (T.predicates, string) result =
         in
         let* types_outlive = list_of_json type_outlives_of_json types_outlive in
         let* trait_type_constraints =
-          list_of_json trait_type_constraint_of_json trait_type_constraints
+          list_of_json
+            (trait_type_constraint_of_json region_of_json)
+            trait_type_constraints
         in
         Ok { T.regions_outlive; types_outlive; trait_type_constraints }
     | _ -> Error "")

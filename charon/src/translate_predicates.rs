@@ -73,7 +73,7 @@ pub(crate) enum Predicate {
     Trait(FullTraitClause),
     TypeOutlives(TypeOutlives),
     RegionOutlives(RegionOutlives),
-    TraitType(TraitTypeConstraint),
+    TraitType(RTraitTypeConstraint),
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {

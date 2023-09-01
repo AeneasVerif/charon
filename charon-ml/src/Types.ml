@@ -442,18 +442,27 @@ type region_outlives = region_var_id region * region_var_id region
 
 type type_outlives = sty * region_var_id region [@@deriving show]
 
-type trait_type_constraint = {
-  trait_ref : strait_ref;
-  generics : sgeneric_args;
+type 'r trait_type_constraint = {
+  trait_ref : 'r trait_ref;
+  generics : 'r generic_args;
   type_name : trait_item_name;
-  ty : sty;
+  ty : 'r ty;
 }
+[@@deriving show]
+
+type strait_type_constraint = RegionVarId.id region trait_type_constraint
+[@@deriving show]
+
+type etrait_type_constraint = erased_region trait_type_constraint
+[@@deriving show]
+
+type rtrait_type_constraint = RegionId.id region trait_type_constraint
 [@@deriving show]
 
 type predicates = {
   regions_outlive : region_outlives list;
   types_outlive : type_outlives list;
-  trait_type_constraints : trait_type_constraint list;
+  trait_type_constraints : strait_type_constraint list;
 }
 [@@deriving show]
 
