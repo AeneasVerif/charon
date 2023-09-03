@@ -47,8 +47,14 @@ module List = struct
         let ls, last = pop_last ls in
         (x :: ls, last)
 
+  (** Return the last element *)
+  let last (ls : 'a list) : 'a = snd (pop_last ls)
+
   (** Return the n first elements of the list *)
   let prefix (n : int) (ls : 'a list) : 'a list = fst (split_at ls n)
+
+  (** Drop the n first elements of the list *)
+  let drop (n : int) (ls : 'a list) : 'a list = snd (split_at ls n)
 
   (** Iter and link the iterations.
 
