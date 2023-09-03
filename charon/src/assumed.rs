@@ -14,12 +14,19 @@ use macros::EnumIsA;
 /// Ignore the builtin/auto traits like [core::marker::Sized] or [core::marker::Sync].
 pub const IGNORE_BUILTIN_MARKER_TRAITS: bool = true;
 
-// Marker traits
+// Ignored traits (includes marker traits, and others)
 pub static SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
 pub static SYNC_NAME: [&str; 3] = ["core", "marker", "SYNC"];
 pub static SEND_NAME: [&str; 3] = ["core", "marker", "SEND"];
 pub static UNPIN_NAME: [&str; 3] = ["core", "marker", "UNPIN"];
-pub static MARKER_TRAITS_NAMES: [&[&str]; 4] = [&SIZED_NAME, &SYNC_NAME, &SEND_NAME, &UNPIN_NAME];
+pub static ALLOC_ALLOCATOR: [&str; 3] = ["core", "alloc", "Allocator"];
+pub static IGNORED_TRAITS_NAMES: [&[&str]; 5] = [
+    &SIZED_NAME,
+    &SYNC_NAME,
+    &SEND_NAME,
+    &UNPIN_NAME,
+    &ALLOC_ALLOCATOR,
+];
 
 // Assumed types
 pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
@@ -95,7 +102,7 @@ enum FunId {
 }
 
 pub fn is_marker_trait(name: &Name) -> bool {
-    for n in MARKER_TRAITS_NAMES {
+    for n in IGNORED_TRAITS_NAMES {
         if name.equals_ref_name(n) {
             return true;
         }
