@@ -329,8 +329,9 @@ and 'r trait_instance_id =
   | TraitImpl of trait_impl_id  (** A specific implementation *)
   | BuiltinOrAuto of trait_decl_id
   | Clause of trait_clause_id
-  | ParentClause of 'r trait_instance_id * trait_clause_id
-  | ItemClause of 'r trait_instance_id * trait_item_name * trait_clause_id
+  | ParentClause of 'r trait_instance_id * trait_decl_id * trait_clause_id
+  | ItemClause of
+      'r trait_instance_id * trait_decl_id * trait_item_name * trait_clause_id
   | TraitRef of 'r trait_ref
       (** Not present in the Rust version of Charon.
 

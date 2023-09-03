@@ -109,6 +109,10 @@ pub enum TraitInstanceId {
     ///
     /// A parent clause
     ///
+    /// Remark: the [TraitDeclId::Id] gives the trait declaration which is
+    /// implemented by the instance id from which we take the parent clause
+    /// (see example below). It is not necessary and included for convenience.
+    ///
     /// Example:
     /// ```text
     /// trait Foo1 {}
@@ -122,29 +126,48 @@ pub enum TraitInstanceId {
     /// fn g<T : Bar>(x : T) {
     ///   x.f()
     ///   ^^^^^
-    ///   Parent(Clause(0), 1)::f(x)
+    ///   Parent(Clause(0), Bar, 1)::f(x)
+    ///                          ^
+    ///                          parent clause 1 of clause 0
+    ///                     ^^^
+    ///              clause 0 implements Bar
     /// }
     /// ```
-    ParentClause(Box<TraitInstanceId>, TraitClauseId::Id),
+    ParentClause(Box<TraitInstanceId>, TraitDeclId::Id, TraitClauseId::Id),
     ///
     /// A clause bound in a trait item (typically a trait clause in an
     /// associated type).
     ///
+    /// Remark: the [TraitDeclId::Id] gives the trait declaration which is
+    /// implemented by the trait implementation from which we take the item
+    /// (see below). It is not necessary and provided for convenience.
+    ///
     /// Example:
     /// ```text
     /// trait Foo {
-    ///   type W: Bar // Bar contains a method bar
-    ///           ^^^
-    ///      this is the clause 0 applying to W
+    ///   type W: Bar0 + Bar1 // Bar1 contains a method bar1
+    ///                  ^^^^
+    ///               this is the clause 1 applying to W
     /// }
     ///
     /// fn f<T : Foo>(x : T::W) {
-    ///   x.bar();
+    ///   x.bar1();
     ///   ^^^^^^^
-    ///   ItemClause(Clause(0), W, 0)
+    ///   ItemClause(Clause(0), Foo, W, 1)
+    ///                              ^^^^
+    ///                              clause 1 from item W (from local clause 0)
+    ///                         ^^^
+    ///                local clause 0 implements Foo
     /// }
     /// ```
-    ItemClause(Box<TraitInstanceId>, TraitItemName, TraitClauseId::Id),
+    ///
+    ///
+    ItemClause(
+        Box<TraitInstanceId>,
+        TraitDeclId::Id,
+        TraitItemName,
+        TraitClauseId::Id,
+    ),
 }
 
 /// A reference to a trait

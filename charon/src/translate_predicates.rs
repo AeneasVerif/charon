@@ -53,7 +53,7 @@ impl FullTraitClause {
     pub(crate) fn to_trait_clause(&self) -> TraitClause {
         TraitClause {
             clause_id: self.clause_id,
-            meta: self.meta.unwrap().clone(),
+            meta: self.meta.unwrap(),
             trait_id: self.trait_id,
             generics: self.generics.clone(),
         }
@@ -629,6 +629,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             for parent_clause in &trait_clause.parent_clauses {
                 let parent_id = TraitInstanceId::ParentClause(
                     Box::new(current_id.clone()),
+                    trait_clause.trait_id,
                     parent_clause.clause_id,
                 );
 
@@ -648,6 +649,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 for item_clause in item_clauses {
                     let item_clause_id = TraitInstanceId::ItemClause(
                         Box::new(current_id.clone()),
+                        trait_clause.trait_id,
                         item_name.clone(),
                         item_clause.clause_id,
                     );

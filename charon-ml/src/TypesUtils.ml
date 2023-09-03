@@ -198,12 +198,12 @@ and etrait_instance_id_no_regions_to_gr_trait_instance_id
   | TraitImpl id -> TraitImpl id
   | BuiltinOrAuto id -> BuiltinOrAuto id
   | Clause id -> Clause id
-  | ParentClause (id, cid) ->
+  | ParentClause (id, decl_id, cid) ->
       let id = etrait_instance_id_no_regions_to_gr_trait_instance_id id in
-      ParentClause (id, cid)
-  | ItemClause (id, name, cid) ->
+      ParentClause (id, decl_id, cid)
+  | ItemClause (id, decl_id, name, cid) ->
       let id = etrait_instance_id_no_regions_to_gr_trait_instance_id id in
-      ItemClause (id, name, cid)
+      ItemClause (id, decl_id, name, cid)
   | TraitRef tr ->
       let tr = etrait_ref_no_regions_to_gr_trait_ref tr in
       TraitRef tr

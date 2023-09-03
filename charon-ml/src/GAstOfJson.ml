@@ -420,15 +420,18 @@ and trait_instance_id_of_json (r_of_json : json -> ('r, string) result)
     | `Assoc [ ("Clause", id) ] ->
         let* id = T.TraitClauseId.id_of_json id in
         Ok (T.Clause id)
-    | `Assoc [ ("ParentClause", `List [ inst_id; clause_id ]) ] ->
+    | `Assoc [ ("ParentClause", `List [ inst_id; decl_id; clause_id ]) ] ->
         let* inst_id = trait_instance_id_of_json r_of_json inst_id in
+        let* decl_id = T.TraitDeclId.id_of_json decl_id in
         let* clause_id = T.TraitClauseId.id_of_json clause_id in
-        Ok (T.ParentClause (inst_id, clause_id))
-    | `Assoc [ ("ItemClause", `List [ inst_id; item_name; clause_id ]) ] ->
+        Ok (T.ParentClause (inst_id, decl_id, clause_id))
+    | `Assoc
+        [ ("ItemClause", `List [ inst_id; decl_id; item_name; clause_id ]) ] ->
         let* inst_id = trait_instance_id_of_json r_of_json inst_id in
+        let* decl_id = T.TraitDeclId.id_of_json decl_id in
         let* item_name = string_of_json item_name in
         let* clause_id = T.TraitClauseId.id_of_json clause_id in
-        Ok (T.ItemClause (inst_id, item_name, clause_id))
+        Ok (T.ItemClause (inst_id, decl_id, item_name, clause_id))
     | _ -> Error "")
 
 let sty_of_json (js : json) : (T.sty, string) result =
