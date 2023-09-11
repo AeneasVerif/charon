@@ -395,9 +395,9 @@ type rty = RegionId.id gr_ty [@@deriving show, ord]
  *)
 type ety = erased_region ty [@@deriving show, ord]
 
-type sgeneric_args = RegionVarId.id region generic_args [@@deriving show]
-type egeneric_args = erased_region generic_args [@@deriving show]
-type rgeneric_args = RegionId.id region generic_args [@@deriving show]
+type sgeneric_args = RegionVarId.id region generic_args [@@deriving show, ord]
+type egeneric_args = erased_region generic_args [@@deriving show, ord]
+type rgeneric_args = RegionId.id region generic_args [@@deriving show, ord]
 type strait_ref = RegionVarId.id region trait_ref [@@deriving show, ord]
 type etrait_ref = erased_region trait_ref [@@deriving show, ord]
 type rtrait_ref = RegionId.id region trait_ref [@@deriving show, ord]

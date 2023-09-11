@@ -57,26 +57,44 @@ type fun_id = Regular of FunDeclId.id | Assumed of assumed_fun_id
 
 (** Ancestor the AST iter visitors *)
 class ['self] iter_ast_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] iter_rvalue
     inherit! [_] iter_literal
 
     (* Remark: can't inherit iter_literal_type because of a name collision (`Bool`) *)
 
-    method visit_fun_id : 'env -> fun_id -> unit = fun _ _ -> ()
+    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
+    method visit_assumed_fun_id : 'env -> assumed_fun_id -> unit = fun _ _ -> ()
+
+    method visit_fun_id : 'env -> fun_id -> unit =
+      fun e x ->
+        match x with
+        | Regular id -> self#visit_fun_decl_id e id
+        | Assumed id -> self#visit_assumed_fun_id e id
+
     method visit_meta : 'env -> meta -> unit = fun _ _ -> ()
     method visit_integer_type : 'env -> integer_type -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the AST map visitors *)
 class ['self] map_ast_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] map_rvalue
     inherit! [_] map_literal
 
     (* Remark: can't inherit map_literal_type because of a name collision (`Bool`) *)
 
-    method visit_fun_id : 'env -> fun_id -> fun_id = fun _ x -> x
+    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
+
+    method visit_assumed_fun_id : 'env -> assumed_fun_id -> assumed_fun_id =
+      fun _ x -> x
+
+    method visit_fun_id : 'env -> fun_id -> fun_id =
+      fun e x ->
+        match x with
+        | Regular id -> Regular (self#visit_fun_decl_id e id)
+        | Assumed id -> Assumed (self#visit_assumed_fun_id e id)
+
     method visit_meta : 'env -> meta -> meta = fun _ x -> x
 
     method visit_integer_type : 'env -> integer_type -> integer_type =
@@ -89,9 +107,11 @@ type assertion = { cond : operand; expected : bool }
 
 and fun_id_or_trait_method_ref =
   | FunId of fun_id
-  | TraitMethod of etrait_ref * string
+  | TraitMethod of etrait_ref * string * fun_decl_id
+      (** The fun decl id is not really needed and here for convenience purposes *)
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_assertion";
@@ -217,7 +237,7 @@ type trait_decl = {
   consts : (trait_item_name * (ety * global_decl_id option)) list;
   types : (trait_item_name * (trait_clause list * ety option)) list;
   required_methods : (trait_item_name * fun_decl_id) list;
-  provided_methods : trait_item_name list;
+  provided_methods : (trait_item_name * fun_decl_id option) list;
 }
 [@@deriving show]
 

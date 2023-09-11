@@ -139,11 +139,10 @@ impl TraitDecl {
                     .chain(self.required_methods.iter().map(|(name, f)| {
                         format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
                     }))
-                    .chain(
-                        self.provided_methods
-                            .iter()
-                            .map(|name| format!("{TAB_INCR}fn {name}\n")),
-                    )
+                    .chain(self.provided_methods.iter().map(|(name, f)| match f {
+                        None => format!("{TAB_INCR}fn {name}\n"),
+                        Some(f) => format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f)),
+                    }))
                     .collect::<Vec<String>>();
             if items.is_empty() {
                 "".to_string()
@@ -223,7 +222,7 @@ where
         FunIdOrTraitMethodRef::Fun(FunId::Assumed(assumed)) => {
             format!("@{}{generics}", assumed.variant_name())
         }
-        FunIdOrTraitMethodRef::Trait(trait_ref, method_id) => {
+        FunIdOrTraitMethodRef::Trait(trait_ref, method_id, _) => {
             format!(
                 "{}::{}{}",
                 trait_ref.fmt_with_ctx(ctx),

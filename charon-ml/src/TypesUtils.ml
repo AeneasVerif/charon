@@ -84,6 +84,21 @@ let mk_empty_generic_params : generic_params =
 let mk_empty_predicates : predicates =
   { regions_outlive = []; types_outlive = []; trait_type_constraints = [] }
 
+let merge_generic_args (g1 : 'r generic_args) (g2 : 'r generic_args) :
+    'r generic_args =
+  let { regions = r1; types = tys1; const_generics = cgs1; trait_refs = tr1 } =
+    g1
+  in
+  let { regions = r2; types = tys2; const_generics = cgs2; trait_refs = tr2 } =
+    g2
+  in
+  {
+    regions = r1 @ r2;
+    types = tys1 @ tys2;
+    const_generics = cgs1 @ cgs2;
+    trait_refs = tr1 @ tr2;
+  }
+
 (** The unit type *)
 let mk_unit_ty : 'r ty = Adt (Tuple, mk_empty_generic_args)
 

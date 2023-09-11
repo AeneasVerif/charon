@@ -1396,7 +1396,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         trace!("{:?}", rust_id);
 
-        let _ = self.translate_fun_decl_id(rust_id);
+        let trait_method_fun_id = self.translate_fun_decl_id(rust_id);
         let method_name = self.t_ctx.translate_trait_item_name(rust_id);
 
         // Compute the concatenation of all the generic arguments which were given to
@@ -1420,7 +1420,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             })
         };
 
-        let func = FunIdOrTraitMethodRef::Trait(impl_source, method_name);
+        let func = FunIdOrTraitMethodRef::Trait(impl_source, method_name, trait_method_fun_id);
         let call = Call {
             func,
             generics,

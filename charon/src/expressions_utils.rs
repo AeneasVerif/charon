@@ -487,9 +487,10 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         use FunIdOrTraitMethodRef::*;
         match fun_id {
             Fun(fun_id) => self.visit_fun_id(fun_id),
-            Trait(trait_ref, method_id) => {
+            Trait(trait_ref, method_id, fun_decl_id) => {
                 self.visit_trait_ref(trait_ref);
                 self.visit_trait_method_name(method_id);
+                self.visit_fun_decl_id(fun_decl_id);
             }
         }
     }

@@ -113,7 +113,7 @@ let call_to_string (fmt : ast_formatter) (indent : string) (call : GA.call) :
   let args = "(" ^ String.concat ", " args ^ ")" in
   let name_args =
     match call.GA.func with
-    | GA.TraitMethod (trait_ref, method_name) ->
+    | GA.TraitMethod (trait_ref, method_name, _) ->
         let fmt = ast_to_etype_formatter fmt in
         PT.trait_ref_to_string fmt trait_ref ^ "::" ^ method_name ^ generics
     | GA.FunId (GA.Regular fid) -> fmt.fun_decl_id_to_string fid ^ generics
@@ -282,10 +282,24 @@ let trait_decl_to_string (fmt : ast_formatter) (indent : string)
         def.required_methods
     in
     let provided_methods =
-      List.map (fun name -> indent ^ "fn " ^ name ^ "\n") def.provided_methods
+      List.map
+        (fun (name, f) ->
+          match f with
+          | None -> indent ^ "fn " ^ name ^ "\n"
+          | Some f ->
+              indent ^ "fn " ^ name ^ " : " ^ fmt.fun_decl_id_to_string f ^ "\n")
+        def.provided_methods
     in
     let items =
-      List.concat [ consts; types; required_methods; provided_methods ]
+      List.concat
+        [
+          consts;
+          types;
+          [ indent ^ "// Required methods\n" ];
+          required_methods;
+          [ indent ^ "// Provided methods\n" ];
+          provided_methods;
+        ]
     in
     if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"
   in
@@ -333,11 +347,19 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
           ^ trait_refs ^ "]\n")
         def.types
     in
+    let fmt_method (name, f) =
+      indent ^ "fn " ^ name ^ " : " ^ fmt.fun_decl_id_to_string f ^ "\n"
+    in
+    let required_methods = List.map fmt_method def.required_methods in
+    let provided_methods = List.map fmt_method def.provided_methods in
     let methods =
-      List.map
-        (fun (name, f) ->
-          indent ^ "fn " ^ name ^ " : " ^ fmt.fun_decl_id_to_string f ^ "\n")
-        (List.append def.required_methods def.provided_methods)
+      List.concat
+        [
+          [ indent ^ "// Required methods\n" ];
+          required_methods;
+          [ indent ^ "// Provided methods\n" ];
+          provided_methods;
+        ]
     in
     let items = List.concat [ consts; types; methods ] in
     if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"

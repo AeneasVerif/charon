@@ -2,7 +2,7 @@ pub trait BoolTrait {
     // Declared method
     fn get_bool(&self) -> bool;
 
-    // Provided methods
+    // Provided method
     fn ret_true(&self) -> bool {
         true
     }
@@ -11,6 +11,16 @@ pub trait BoolTrait {
 pub enum Option<T> {
     Some(T),
     None,
+}
+
+impl BoolTrait for bool {
+    fn get_bool(&self) -> bool {
+        *self
+    }
+}
+
+pub fn test_bool_trait_bool(x: bool) -> bool {
+    x.get_bool() && x.ret_true()
 }
 
 impl<T> BoolTrait for Option<T> {

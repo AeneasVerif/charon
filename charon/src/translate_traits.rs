@@ -178,19 +178,24 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             use rustc_middle::ty::AssocKind;
 
             let has_default_value = item.defaultness(tcx).has_value();
-            // Skip the provided methods for the trait declarations, but still
-            // remember their name.
-            if item.kind == AssocKind::Fn && has_default_value {
-                let name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id);
-                provided_methods.push(name);
-                continue;
-            }
-
             match &item.kind {
                 AssocKind::Fn => {
                     let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id);
-                    let fun_id = bt_ctx.translate_fun_decl_id(item.def_id);
-                    required_methods.push((method_name, fun_id));
+                    // Skip the provided methods for the *external* trait declarations,
+                    // but still remember their name.
+                    if has_default_value {
+                        // This is a *provided* method
+                        if rust_id.is_local() {
+                            let fun_id = bt_ctx.translate_fun_decl_id(item.def_id);
+                            provided_methods.push((method_name, Some(fun_id)));
+                        } else {
+                            provided_methods.push((method_name, None));
+                        }
+                    } else {
+                        // This is a required method (no default implementation)
+                        let fun_id = bt_ctx.translate_fun_decl_id(item.def_id);
+                        required_methods.push((method_name, fun_id));
+                    }
                 }
                 AssocKind::Const => {
                     // Check if the constant has a value (i.e., a body).
@@ -311,6 +316,18 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             (trait_rust_id, trait_ref, rust_trait_ref)
         };
 
+        // Explore the trait decl method items to retrieve the list of required methods
+        use std::collections::HashSet;
+        let mut decl_required_methods: HashSet<String> = HashSet::new();
+        for item in tcx
+            .associated_items(impl_trait_rust_id)
+            .in_definition_order()
+        {
+            if let AssocKind::Fn = &item.kind && !item.defaultness(tcx).has_value() {
+                decl_required_methods.insert(item.name.to_string());
+            }
+        }
+
         // Explore the associated items
         // We do something subtle here: TODO
         let tcx = bt_ctx.t_ctx.tcx;
@@ -321,7 +338,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         use rustc_middle::ty::AssocKind;
         for item in tcx.associated_items(rust_id).in_definition_order() {
-            let has_default_value = item.defaultness(tcx).has_value();
             match &item.kind {
                 AssocKind::Fn => {
                     let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id);
@@ -329,10 +345,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
                     // Check if we implement a required method or reimplement
                     // a provided method
-                    if has_default_value {
-                        provided_methods.push((method_name, fun_id));
-                    } else {
+                    let is_required = decl_required_methods.contains(&method_name.0);
+                    if is_required {
                         required_methods.push((method_name, fun_id));
+                    } else {
+                        provided_methods.push((method_name, fun_id));
                     }
                 }
                 AssocKind::Const => {
@@ -354,7 +371,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let partial_types = types;
         let mut consts = Vec::new();
         let mut types = Vec::new();
-        // TODO: types
         for item in tcx
             .associated_items(impl_trait_rust_id)
             .in_definition_order()

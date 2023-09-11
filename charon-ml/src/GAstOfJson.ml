@@ -940,10 +940,11 @@ let fun_id_or_trait_method_ref_of_json (js : json) :
     | `Assoc [ ("Fun", id) ] ->
         let* id = fun_id_of_json id in
         Ok (A.FunId id)
-    | `Assoc [ ("Trait", `List [ trait_ref; method_name ]) ] ->
+    | `Assoc [ ("Trait", `List [ trait_ref; method_name; fun_decl_id ]) ] ->
         let* trait_ref = etrait_ref_of_json trait_ref in
         let* method_name = string_of_json method_name in
-        Ok (A.TraitMethod (trait_ref, method_name))
+        let* fun_decl_id = A.FunDeclId.id_of_json fun_decl_id in
+        Ok (A.TraitMethod (trait_ref, method_name, fun_decl_id))
     | _ -> Error "")
 
 let call_of_json (js : json) : (A.call, string) result =
@@ -1124,7 +1125,12 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
             (pair_of_json string_of_json A.FunDeclId.id_of_json)
             required_methods
         in
-        let* provided_methods = list_of_json string_of_json provided_methods in
+        let* provided_methods =
+          list_of_json
+            (pair_of_json string_of_json
+               (option_of_json A.FunDeclId.id_of_json))
+            provided_methods
+        in
         Ok
           {
             A.def_id;

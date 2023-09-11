@@ -39,6 +39,7 @@ type field_proj_kind =
   | ProjTuple of int  (** The integer gives the arity of the tuple *)
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_field_proj_kind";
@@ -60,6 +61,7 @@ type field_proj_kind =
 type projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_projection_elem";
@@ -80,6 +82,7 @@ type projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
 type projection = projection_elem list
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_projection";
@@ -112,6 +115,7 @@ class ['self] map_place_base =
 type place = { var_id : var_id; projection : projection }
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_place";
@@ -229,6 +233,7 @@ type raw_constant_expr =
 and constant_expr = { value : raw_constant_expr; ty : ety }
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_constant_expr";
@@ -261,6 +266,7 @@ class ['self] map_operand_base =
 type operand = Copy of place | Move of place | Constant of constant_expr
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_operand";

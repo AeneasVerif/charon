@@ -255,13 +255,15 @@ pub struct TraitDecl {
     ///
     /// The provided methods are the methods with a default implementation.
     ///
-    /// Wwe don't include an [FunDeclId::Id] identifier because it
-    /// would mean we extract *all* the provided methods, which is not
-    /// something we want to do *yet* for the external traits.
+    /// We include the [FunDeclId::Id] identifiers *only* for the local
+    /// trait declarations. Otherwise, it would mean we extract *all* the
+    /// provided methods, which is not something we want to do *yet* for
+    /// the external traits.
+    ///
     /// TODO: allow to optionnaly extract information. For instance: attempt
     /// to extract, and fail nicely if we don't succeed (definition not in
     /// the supported subset, etc.).
-    pub provided_methods: Vec<TraitItemName>,
+    pub provided_methods: Vec<(TraitItemName, Option<FunDeclId::Id>)>,
 }
 
 /// A trait **implementation**.
@@ -404,8 +406,10 @@ pub enum AssumedFunId {
 #[derive(Debug, Clone, Serialize)]
 pub enum FunIdOrTraitMethodRef {
     Fun(FunId),
-    /// If a trait: the reference to the trait and the id of the trait method
-    Trait(ETraitRef, TraitItemName),
+    /// If a trait: the reference to the trait and the id of the trait method.
+    /// The fun decl id is not really necessary - we put it here for convenience
+    /// purposes.
+    Trait(ETraitRef, TraitItemName, FunDeclId::Id),
 }
 
 #[derive(Debug, Clone, Serialize)]
