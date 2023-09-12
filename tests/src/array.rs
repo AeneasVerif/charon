@@ -30,6 +30,11 @@ fn index_mut_slice(x: &mut [u32]) -> u32 { x[0] }
 
 fn index_all() -> u32 {
     let mut x: [u32; 2] = [0, 0];
+    if true {
+        let mut y: [u32; 2] = [0, 0];
+    } else {
+        let mut z: [u32; 2] = [0, 0];
+    }
     index_array(x) +
     index_array(x) +
     index_array_borrow(&x) +
