@@ -32,8 +32,7 @@ type field_id = FieldId.id [@@deriving show, ord]
 type type_decl_id = TypeDeclId.id [@@deriving show, ord]
 
 (** Region variable ids. Used in function signatures. *)
-module RegionVarId =
-IdGen ()
+module RegionVarId = IdGen ()
 
 (** Region ids. Used for symbolic executions. *)
 module RegionId = IdGen ()
