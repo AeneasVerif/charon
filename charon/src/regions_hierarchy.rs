@@ -6,7 +6,9 @@ use crate::common::*;
 use crate::formatter::Formatter;
 use crate::graphs::*;
 use crate::llbc_ast::FunDecls;
-use crate::rust_to_local_ids::TypeDeclarationGroup;
+use crate::reorder_decls as rd;
+use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups};
+use crate::translate_ctx::TransCtx;
 use crate::types as ty;
 use crate::types::*;
 use crate::ullbc_ast::{FunDeclId, FunSig};
@@ -20,6 +22,8 @@ use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 generate_index_type!(RegionGroupId);
+
+pub type TypeDeclarationGroup = rd::GDeclarationGroup<ty::TypeDeclId::Id>;
 
 pub fn region_group_id_to_pretty_string(rid: RegionGroupId::Id) -> String {
     format!("rg@{rid}")
@@ -249,7 +253,7 @@ fn compute_full_regions_constraints_for_ty(
     ty: &RTy,
 ) {
     match ty {
-        Ty::Adt(type_id, regions, types) => {
+        Ty::Adt(type_id, regions, types, _) => {
             // Introduce constraints for all the regions given as parameters
             for r in regions {
                 add_region_constraints(
@@ -332,7 +336,11 @@ fn compute_full_regions_constraints_for_ty(
                     | AssumedTy::Vec
                     | AssumedTy::Option
                     | AssumedTy::PtrUnique
-                    | AssumedTy::PtrNonNull,
+                    | AssumedTy::Str
+                    | AssumedTy::PtrNonNull
+                    | AssumedTy::Array
+                    | AssumedTy::Slice
+                    | AssumedTy::Range,
                 ) => {
                     // Explore the types given as parameters
                     for fty in types {
@@ -348,7 +356,7 @@ fn compute_full_regions_constraints_for_ty(
                 }
             }
         }
-        Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => {
+        Ty::Literal(_) | Ty::Never => {
             // Nothing to do
         }
         Ty::Ref(region, ref_ty, _mutability) => {
@@ -373,8 +381,6 @@ fn compute_full_regions_constraints_for_ty(
                 ref_ty,
             );
         }
-        Ty::Array(ptr_ty, _) |
-        Ty::Slice(ptr_ty) |
         Ty::RawPtr(ptr_ty, _) => {
             // Dive in
             compute_full_regions_constraints_for_ty(
@@ -443,7 +449,7 @@ fn compute_regions_constraints_for_type_decl_group(
     // Initialize the constraints map - TODO: this will be different once we
     // support constraints over the generics in the definitions
     for id in type_ids.iter() {
-        let type_def = types.get_type_def(*id).unwrap();
+        let type_def = types.get(*id).unwrap();
         let region_vars_constraints = RegionVarsConstraintsMap::from_iter(
             type_def
                 .region_params
@@ -478,7 +484,7 @@ fn compute_regions_constraints_for_type_decl_group(
 
         // Accumulate constraints for every variant of every type
         for id in type_ids.iter() {
-            let type_def = types.get_type_def(*id).unwrap();
+            let type_def = types.get(*id).unwrap();
 
             // If the type is transparent, we explore the ADT variants.
             // If the type is opaque, there is nothing to do.
@@ -486,13 +492,13 @@ fn compute_regions_constraints_for_type_decl_group(
             // over the generics in the type declarations
 
             // Instantiate the type definition variants
-            let region_params = im::Vector::from_iter(
+            let region_params = Vec::from_iter(
                 type_def
                     .region_params
                     .iter()
                     .map(|rvar| Region::Var(rvar.index)),
             );
-            let type_params = im::Vector::from_iter(
+            let type_params = Vec::from_iter(
                 type_def
                     .type_params
                     .iter()
@@ -564,7 +570,7 @@ fn compute_regions_constraints_for_type_decl_group(
     // Compute the SCCs
     let mut sccs_vec: Vec<SCCs<Region<RegionVarId::Id>>> = Vec::new();
     for id in type_ids.iter() {
-        let type_def = types.get_type_def(*id).unwrap();
+        let type_def = types.get(*id).unwrap();
         let sccs = compute_sccs_from_lifetime_constraints(
             acc_constraints_map.get(id).unwrap(),
             &type_def.region_params,
@@ -600,7 +606,7 @@ pub fn compute_regions_hierarchy_for_type_decl_group(
     for (id, sccs) in type_ids.into_iter().zip(constraints.into_iter()) {
         let regions_group = compute_regions_hierarchy_from_constraints(sccs);
 
-        let type_def = types.types.get_mut(id).unwrap();
+        let type_def = types.get_mut(id).unwrap();
         type_def.regions_hierarchy = regions_group;
     }
 }
@@ -751,7 +757,6 @@ pub fn types_constraints_map_fmt_with_ctx(
     // We iterate over the type definitions, not the types constraints map,
     // in order to make sure we preserve the type definitions order
     let types_constraints: Vec<String> = types
-        .types
         .iter()
         .map(|type_def| {
             let cmap = cs.get(&type_def.def_id).unwrap();
@@ -768,4 +773,33 @@ pub fn types_constraints_map_fmt_with_ctx(
         })
         .collect();
     types_constraints.join("\n")
+}
+
+pub fn compute(ctx: &mut TransCtx, ordered_decls: &DeclarationsGroups) {
+    // First, compute the regions hierarchy for the types, and compute the types
+    // constraints map while doing so. We compute by working on a whole type
+    // declaration group at a time.
+    let mut types_constraints = TypesConstraintsMap::new();
+    let type_defs = &mut ctx.type_defs;
+    for dgroup in ordered_decls {
+        match dgroup {
+            DeclarationGroup::Type(decl) => {
+                compute_regions_hierarchy_for_type_decl_group(
+                    &mut types_constraints,
+                    type_defs,
+                    decl,
+                );
+            }
+            DeclarationGroup::Fun(_) | DeclarationGroup::Global(_) => {
+                // Ignore the functions and constants
+            }
+        }
+    }
+
+    // Use the types constraints map to compute the regions hierarchies for the
+    // function signatures
+    for decl in &mut ctx.fun_defs.iter_mut() {
+        decl.signature.regions_hierarchy =
+            compute_regions_hierarchy_for_sig(&mut types_constraints, &decl.signature);
+    }
 }

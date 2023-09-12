@@ -3,21 +3,17 @@
 pub use crate::expressions_utils::*;
 use crate::types::*;
 use crate::values::*;
-use im::Vector; // TODO: im::Vector is not necessary anymore
-use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
 use std::vec::Vec;
 
-generate_index_type!(GlobalDeclId);
-
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct Place {
     pub var_id: VarId::Id,
     pub projection: Projection,
 }
 
-pub type Projection = Vector<ProjectionElem>;
+pub type Projection = Vec<ProjectionElem>;
 
 /// Note that we don't have the equivalent of "downcasts".
 /// Downcasts are actually necessary, for instance when initializing enumeration
@@ -27,7 +23,9 @@ pub type Projection = Vector<ProjectionElem>;
 /// `((_0 as Right).0: T2) = move _1;`
 /// In MIR, downcasts always happen before field projections: in our internal
 /// language, we thus merge downcasts and field projections.
-#[derive(Debug, PartialEq, Eq, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, EnumIsA, EnumAsGetters, EnumToGetters, VariantName, Serialize,
+)]
 pub enum ProjectionElem {
     /// Dereference a shared/mutable reference.
     Deref,
@@ -39,6 +37,7 @@ pub enum ProjectionElem {
     /// In rust, this comes from the `*` operator applied on boxes.
     DerefBox,
     /// Dereference a raw pointer. See the comments for [crate::types::Ty::RawPtr].
+    /// TODO: remove those? Or if we keep them, change to: `Deref(DerefKind)`?
     DerefRawPtr,
     /// Dereference a unique pointer. See the comments for [crate::types::Ty::RawPtr].
     DerefPtrUnique,
@@ -53,12 +52,12 @@ pub enum ProjectionElem {
     /// (for pretty printing for instance). We retrieve it through
     /// type-checking.
     Field(FieldProjKind, FieldId::Id),
-    /// NOTE: this is named, confusingly, as Index in MIR -- we rectify the naming
-    /// MIR imposes that the argument to an offset projection be a local variable, meaning that
-    /// even constant indices into arrays are let-bound as separate variables. We relax the
-    /// criterion here, so as to allow further optimizations of the code being handing it over to
-    /// clients.
-    Offset(VarId::Id),
+    /// MIR imposes that the argument to an index projection be a local variable, meaning
+    /// that even constant indices into arrays are let-bound as separate variables.
+    /// We also keep the type of the array/slice that we index for convenience purposes
+    /// (this is not necessary).
+    /// We **eliminate** this variant in a micro-pass.
+    Index(VarId::Id, ETy),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
@@ -89,7 +88,7 @@ pub enum BorrowKind {
 }
 
 /// Unary operation
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize)]
 pub enum UnOp {
     Not,
     /// This can overflow. In practice, rust introduces an assert before
@@ -103,8 +102,14 @@ pub enum UnOp {
     /// The first integer type gives the source type, the second one gives
     /// the destination type.
     Cast(IntegerTy, IntegerTy),
-    // Coercion from array (i.e., [T; N]) to slice.
-    SliceNew(ScalarValue),
+    /// Coercion from array (i.e., [T; N]) to slice.
+    ///
+    /// **Remark:** We introduce this unop when translating from MIR, **then transform**
+    /// it to a function call in a micro pass. The type and the scalar value are not
+    /// *necessary* as we can retrieve them from the context, but storing them here is
+    /// very useful. The [RefKind] argument states whethere we operate on a mutable
+    /// or a shared borrow to an array.
+    ArrayToSlice(RefKind, ETy, ConstGeneric),
 }
 
 /// Binary operations.
@@ -165,7 +170,7 @@ pub enum Operand {
 /// see [extract_global_assignments.rs].
 #[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
 pub enum OperandConstantValue {
-    PrimitiveValue(PrimitiveValue),
+    Literal(Literal),
     ///
     /// In most situations:
     /// Enumeration with one variant with no fields, structure with
@@ -181,11 +186,13 @@ pub enum OperandConstantValue {
     ///
     /// Same as for constants, except that statics are accessed through references.
     StaticId(GlobalDeclId::Id),
+    /// A const generic var
+    Var(ConstGenericVarId::Id),
 }
 
 /// TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
 /// We can also factor out the unops, binops with the function calls.
-#[derive(Debug, Clone, Serialize, EnumToGetters, EnumIsA)]
+#[derive(Debug, Clone, Serialize, EnumToGetters, EnumAsGetters, EnumIsA)]
 pub enum Rvalue {
     Use(Operand),
     Ref(Place, BorrowKind),
@@ -217,25 +224,38 @@ pub enum Rvalue {
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
     Global(GlobalDeclId::Id),
-    // Length of a memory location, right now only used as Len(Deref(VarId)), when the variable is
-    // an array. As such, this should *always* be resolve-able at compile-time. The run-time length
-    // of e.g. a vector or a slice is represented differently (but pretty-prints the same, FIXME).
-    Len(Place),
+    /// Length of a memory location. The run-time length of e.g. a vector or a slice is
+    /// represented differently (but pretty-prints the same, FIXME).
+    /// Should be seen as a function of signature:
+    /// - `fn<T;N>(&[T;N]) -> usize`
+    /// - `fn<T>(&[T]) -> usize`
+    ///
+    /// We store the type argument and the const generic (the latter only for arrays).
+    ///
+    /// [Len] is introduced by rustc for the bound checks: we **eliminate it
+    /// together with the bounds checks**. Whenever the user writes `x.len()`
+    /// where `x` is a slice or an array, they actually call a non-primitive
+    /// function.
+    Len(Place, ETy, Option<ConstGeneric>),
 }
 
-#[derive(Debug, Clone, VariantIndexArity)]
+#[derive(Debug, Clone, VariantIndexArity, Serialize)]
 pub enum AggregateKind {
     Tuple,
-    // TODO: treat Option in a general manner (we should extract the definitions
-    // of the external enumerations - because as they are public, their variants are
-    // public)
+    // TODO: treat Option in a general manner by merging it with the Adt case (we should
+    // extract the definitions of the external enumerations - because as they are public,
+    // their variants are public)
     Option(VariantId::Id, ETy),
+    // TODO: do we really need this?
     Range(ETy),
     Adt(
         TypeDeclId::Id,
         Option<VariantId::Id>,
         Vec<ErasedRegion>,
         Vec<ETy>,
+        Vec<ConstGeneric>,
     ),
-    Array(ETy),
+    // We don't put this with the ADT cas because this is the only assumed type
+    // with aggregates.
+    Array(ETy, ConstGeneric),
 }

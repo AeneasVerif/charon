@@ -2,8 +2,7 @@
 //! crate to LLBC.
 
 #![feature(rustc_private, register_tool)]
-#![feature(box_syntax, box_patterns)]
-#![feature(is_some_and)]
+#![feature(box_patterns)]
 #![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
@@ -12,6 +11,7 @@ extern crate hashlink;
 extern crate im;
 extern crate linked_hash_set;
 extern crate log;
+extern crate rustc_abi;
 extern crate rustc_ast;
 extern crate rustc_borrowck;
 extern crate rustc_const_eval;
@@ -35,7 +35,6 @@ extern crate take_mut;
 mod common;
 mod assumed;
 mod cli_options;
-mod divergent;
 mod driver;
 mod export;
 mod expressions;
@@ -47,7 +46,9 @@ mod gast_utils;
 mod generics;
 mod get_mir;
 mod graphs;
+mod id_map;
 mod id_vector;
+mod index_to_function_calls;
 mod insert_assign_return_unit;
 mod llbc_ast;
 mod llbc_ast_utils;
@@ -56,15 +57,18 @@ mod meta;
 mod meta_utils;
 mod names;
 mod names_utils;
+mod ops_to_function_calls;
 mod reconstruct_asserts;
 mod regions_hierarchy;
-mod register;
 mod regularize_constant_adts;
 mod remove_drop_never;
+mod remove_dynamic_checks;
 mod remove_read_discriminant;
 mod remove_unused_locals;
 mod reorder_decls;
-mod rust_to_local_ids;
+mod translate_constants;
+mod translate_crate_to_ullbc;
+mod translate_ctx;
 mod translate_functions_to_ullbc;
 mod translate_types;
 mod types;
@@ -125,7 +129,7 @@ fn main() {
     let mut compiler_args: Vec<String> = origin_args[1..].to_vec();
 
     // The first argument should be "rustc": replace it with the current executable
-    assert!(compiler_args[0] == "rustc");
+    assert!(compiler_args[0].ends_with("rustc"));
     compiler_args[0] = exec_path;
 
     if !has_sysroot_arg {

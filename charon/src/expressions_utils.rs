@@ -2,37 +2,23 @@
 #![allow(dead_code)]
 
 use crate::assumed;
-use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
+use crate::gast::{AssumedFunId, Call, FunDeclId, FunId};
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use crate::values;
 use crate::values::*;
 use macros::make_generic_in_borrows;
-use serde::ser::SerializeStruct;
-use serde::ser::SerializeTupleVariant;
 use serde::{Serialize, Serializer};
+use std::vec::Vec;
 
 impl Place {
     pub fn new(var_id: VarId::Id) -> Place {
         Place {
             var_id,
-            projection: im::Vector::new(),
+            projection: Vec::new(),
         }
-    }
-}
-
-impl Serialize for Place {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut s = serializer.serialize_struct("Place", 2)?;
-        s.serialize_field("var_id", &self.var_id)?;
-        let projection = VectorSerializer::new(&self.projection);
-        s.serialize_field("projection", &projection)?;
-        s.end()
     }
 }
 
@@ -53,7 +39,7 @@ impl std::fmt::Display for UnOp {
             UnOp::Not => write!(f, "~"),
             UnOp::Neg => write!(f, "-"),
             UnOp::Cast(src, tgt) => write!(f, "cast<{src},{tgt}>"),
-            UnOp::SliceNew(l) => write!(f, "mk_slice<{:?}>", l),
+            UnOp::ArrayToSlice(..) => write!(f, "array_to_slice"),
         }
     }
 }
@@ -124,7 +110,7 @@ impl Place {
                         out = format!("({out}).{field_id}");
                     }
                 },
-                ProjectionElem::Offset(i) => out = format!("{out}[{}]", i),
+                ProjectionElem::Index(i, _) => out = format!("({out})[{}]", ctx.format_object(*i)),
             }
         }
 
@@ -146,10 +132,12 @@ impl std::fmt::Display for Place {
 impl OperandConstantValue {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<TypeDeclId::Id> + Formatter<GlobalDeclId::Id>,
+        T: Formatter<TypeDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>,
     {
         match self {
-            OperandConstantValue::PrimitiveValue(c) => c.to_string(),
+            OperandConstantValue::Literal(c) => c.to_string(),
             OperandConstantValue::Adt(variant_id, values) => {
                 // It is a bit annoying: in order to properly format the value,
                 // we need the type (which contains the type def id).
@@ -163,6 +151,7 @@ impl OperandConstantValue {
             }
             OperandConstantValue::ConstantId(id) => ctx.format_object(*id),
             OperandConstantValue::StaticId(id) => format!("alloc: &{}", ctx.format_object(*id)),
+            OperandConstantValue::Var(id) => format!("const {}", ctx.format_object(*id)),
         }
     }
 }
@@ -179,6 +168,7 @@ impl Operand {
         T: Formatter<VarId::Id>
             + Formatter<TypeDeclId::Id>
             + Formatter<GlobalDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
     {
         match self {
@@ -209,6 +199,7 @@ impl Rvalue {
             + Formatter<(TypeDeclId::Id, VariantId::Id)>
             + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
             + Formatter<TypeVarId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<&'a ErasedRegion>,
     {
         match self {
@@ -245,7 +236,7 @@ impl Rvalue {
                             unreachable!();
                         }
                     }
-                    AggregateKind::Adt(def_id, variant_id, _, _) => {
+                    AggregateKind::Adt(def_id, variant_id, _, _, _) => {
                         // Format every field
                         let mut fields = vec![];
                         for (i, op) in ops.iter().enumerate() {
@@ -260,16 +251,16 @@ impl Rvalue {
                         };
                         format!("{} {{ {} }}", variant, fields.join(", "))
                     }
-                    AggregateKind::Array(_) => {
+                    AggregateKind::Array(_, _) => {
                         format!("[{}]", ops_s.join(", "))
                     }
                     AggregateKind::Range(_) => {
-                        format!("@Range")
+                        format!("@Range[{}]", ops_s.join(", "))
                     }
                 }
             }
             Rvalue::Global(gid) => ctx.format_object(*gid),
-            Rvalue::Len(place) => format!("len({})", place.fmt_with_ctx(ctx)),
+            Rvalue::Len(place, ..) => format!("len({})", place.fmt_with_ctx(ctx)),
         }
     }
 
@@ -285,79 +276,6 @@ impl std::fmt::Display for Rvalue {
     }
 }
 
-impl Serialize for AggregateKind {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        // Note that we rename the variant names
-        // Also, it seems the "standard" way of doing is the following (this is
-        // consistent with what the automatically generated serializer does):
-        // - if the arity is > 0, use `serialize_tuple_variant`
-        // - otherwise simply serialize a string with the variant name
-        //
-        // Remark: we change the names of the variants, which is why we don't
-        // use the [variant_name] function.
-        let enum_name = "AggregateKind";
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        match self {
-            AggregateKind::Tuple => "AggregatedTuple".serialize(serializer),
-            AggregateKind::Option(variant_id, ty) => {
-                let mut vs = serializer.serialize_tuple_variant(
-                    enum_name,
-                    variant_index,
-                    "AggregatedOption",
-                    variant_arity,
-                )?;
-
-                vs.serialize_field(variant_id)?;
-                vs.serialize_field(ty)?;
-
-                vs.end()
-            }
-            AggregateKind::Adt(def_id, opt_variant_id, regions, tys) => {
-                let mut vs = serializer.serialize_tuple_variant(
-                    enum_name,
-                    variant_index,
-                    "AggregatedAdt",
-                    variant_arity,
-                )?;
-
-                vs.serialize_field(def_id)?;
-                vs.serialize_field(opt_variant_id)?;
-                let regions = VecSerializer::new(regions);
-                vs.serialize_field(&regions)?;
-                let tys = VecSerializer::new(tys);
-                vs.serialize_field(&tys)?;
-
-                vs.end()
-            }
-            AggregateKind::Range(ty) => {
-                let mut vs = serializer.serialize_tuple_variant(
-                    enum_name,
-                    variant_index,
-                    "AggregatedRange",
-                    variant_arity,
-                )?;
-
-                vs.serialize_field(ty)?;
-
-                vs.end()
-            },
-            AggregateKind::Array(ty) => {
-                let mut vs = serializer.serialize_tuple_variant(
-                    enum_name,
-                    variant_index,
-                    "AggregatedArray",
-                    variant_arity,
-                )?;
-                vs.serialize_field(ty)?;
-                vs.end()
-            }
-        }
-    }
-}
-
 impl Serialize for OperandConstantValue {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -366,7 +284,7 @@ impl Serialize for OperandConstantValue {
         match self {
             // [OperandConstantValue] exists only to handle temporary cases inherited from the MIR:
             // for the final (U)LLBC format, we simply export the underlying constant value.
-            OperandConstantValue::PrimitiveValue(cv) => cv.serialize(serializer),
+            OperandConstantValue::Literal(cv) => cv.serialize(serializer),
             _ => unreachable!("unexpected `{:?}`: `OperandConstantValue` fields other than `ConstantValue` are temporary and should not occur in serialized LLBC", self),
         }
     }
@@ -380,7 +298,7 @@ make_generic_in_borrows! {
 /// A visitor for expressions.
 ///
 /// TODO: implement macros to automatically derive visitors.
-pub trait ExprVisitor {
+pub trait ExprVisitor: crate::types::TypeVisitor {
     fn visit_place(&mut self, p: &Place) {
         self.visit_var_id(&p.var_id);
         self.visit_projection(&p.projection);
@@ -402,7 +320,7 @@ pub trait ExprVisitor {
             ProjectionElem::DerefPtrUnique => self.visit_deref_ptr_unique(),
             ProjectionElem::DerefPtrNonNull => self.visit_deref_ptr_non_null(),
             ProjectionElem::Field(proj_kind, fid) => self.visit_projection_field(proj_kind, fid),
-            ProjectionElem::Offset(o) => self.visit_var_id(o),
+            ProjectionElem::Index(i, _) => self.visit_var_id(i),
         }
     }
 
@@ -437,7 +355,31 @@ pub trait ExprVisitor {
         self.visit_place(p)
     }
 
-    fn visit_operand_const(&mut self, _: &ETy, _: &OperandConstantValue) {}
+    fn visit_operand_const(&mut self, ty: &ETy, op: &OperandConstantValue) {
+        self.visit_ty(ty);
+        self.visit_operand_constant_value(op);
+    }
+
+    fn visit_operand_constant_value(&mut self, op: &OperandConstantValue) {
+        use OperandConstantValue::*;
+        match op {
+            Literal(lit) => self.visit_literal(lit),
+            Adt(oid, ops) => self.visit_operand_const_adt(oid, ops),
+            ConstantId(id) => self.visit_global_decl_id(id),
+            StaticId(id) => self.visit_global_decl_id(id),
+            Var(id) => self.visit_const_generic_var_id(id),
+        }
+    }
+
+    fn visit_operand_const_adt(
+        &mut self,
+        _oid: &Option<VariantId::Id>,
+        ops: &Vec<OperandConstantValue>,
+    ) {
+        for op in ops {
+            self.visit_operand_constant_value(op)
+        }
+    }
 
     fn default_visit_rvalue(&mut self, rv: &Rvalue) {
         match rv {
@@ -448,7 +390,7 @@ pub trait ExprVisitor {
             Rvalue::Discriminant(p) => self.visit_discriminant(p),
             Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
             Rvalue::Global(gid) => self.visit_global(gid),
-            Rvalue::Len(p) => self.visit_len(p),
+            Rvalue::Len(p, ty, cg) => self.visit_len(p, ty, cg),
         }
     }
 
@@ -477,17 +419,67 @@ pub trait ExprVisitor {
         self.visit_place(p)
     }
 
-    fn visit_aggregate(&mut self, _: &AggregateKind, ops: &Vec<Operand>) {
+    fn visit_aggregate(&mut self, ak: &AggregateKind, ops: &Vec<Operand>) {
+        self.visit_aggregate_kind(ak);
         for o in ops {
             self.visit_operand(o)
         }
     }
 
+    fn visit_aggregate_kind(&mut self, ak: &AggregateKind) {
+        use AggregateKind::*;
+        // We could generalize and introduce auxiliary functions for
+        // the various cases - this is not necessary for now
+        match ak {
+            Tuple => (),
+            Option(_, ty) => self.visit_ty(ty),
+            Range(ty) => self.visit_ty(ty),
+            Adt(adt_id, _, _, tys, cgs) => {
+                self.visit_type_decl_id(adt_id);
+                for ty in tys {
+                    self.visit_ty(ty);
+                }
+                for cg in cgs {
+                    self.visit_const_generic(cg);
+                }
+            }
+            Array(ty, cg) => {
+                self.visit_ty(ty);
+                self.visit_const_generic(cg);
+            }
+        }
+    }
+
     fn visit_global(&mut self, _: &GlobalDeclId::Id) {}
 
-    fn visit_len(&mut self, p: &Place) {
+    fn visit_len(&mut self, p: &Place, _ty: &ETy, _cg: &Option<ConstGeneric>) {
         self.visit_place(p)
     }
+
+    fn visit_call(&mut self, c: &Call) {
+        self.visit_fun_id(&c.func);
+        // We ignore the regions which are erased
+        for t in &c.type_args {
+            self.visit_ty(t);
+        }
+        for cg in &c.const_generic_args {
+            self.visit_const_generic(cg);
+        }
+        for o in &c.args {
+            self.visit_operand(o);
+        }
+        self.visit_place(&c.dest);
+    }
+
+    fn visit_fun_id(&mut self, fun_id: &FunId) {
+        match fun_id {
+            FunId::Regular(fid) => self.visit_fun_decl_id(fid),
+            FunId::Assumed(aid) => self.visit_assumed_fun_id(aid),
+        }
+    }
+
+    fn visit_fun_decl_id(&mut self, fid: &FunDeclId::Id) {}
+    fn visit_assumed_fun_id(&mut self, fid: &AssumedFunId) {}
 }
 
 } // make_generic_in_borrows

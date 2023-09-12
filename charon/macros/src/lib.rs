@@ -14,7 +14,7 @@ use syn::punctuated::Punctuated;
 use syn::token::{Add, Comma};
 use syn::{
     parse, parse_macro_input, Binding, Block, Constraint, Data, DataEnum, DeriveInput, Expr,
-    Fields, FnArg, GenericArgument, GenericParam, Ident, ItemTrait, Lifetime, Lit, Pat, Path,
+    Fields, FnArg, GenericArgument, GenericParam, Ident, Item, ItemTrait, Lifetime, Lit, Pat, Path,
     PathArguments, PathSegment, ReturnType, Stmt, TraitBound, TraitBoundModifier, TraitItem, Type,
     TypeParamBound, TypePath, WhereClause, WherePredicate,
 };
@@ -25,6 +25,7 @@ const THREE_TABS: &'static str = "            ";
 
 /// This is very annoying, but we can't use a global constant string in `format`:
 /// we need to define a macro to return a string literal.
+/// TODO: turn [generic_index_type] into a simpl macro rule.
 macro_rules! index_generic_code {
     () => {
         "
@@ -42,6 +43,7 @@ pub mod {} {{
     }}
 
     pub type Vector<T> = crate::id_vector::Vector<Id,T>;
+    pub type Map<T> = crate::id_map::Map<Id,T>;
 
     impl Id {{
         pub fn new(init: usize) -> Id {{
@@ -112,6 +114,33 @@ pub mod {} {{
             self.counter = self.counter.checked_add(1).unwrap();
             index
         }}
+    }}
+
+    pub struct MapGenerator<K : std::cmp::Eq + std::hash::Hash + std::cmp::Ord> {{
+      pub counter : Generator,
+      // We use a btree map so that the bindings are sorted by key
+      pub map : std::collections::BTreeMap<K, Id>,
+    }}
+
+    impl<K : std::cmp::Eq + std::hash::Hash + std::cmp::Ord> MapGenerator<K> {{
+      pub fn new() -> Self {{
+        MapGenerator {{ counter: Generator::new(), map: std::collections::BTreeMap::new() }}
+      }}
+
+      pub fn insert(&mut self, k: K) -> Id {{
+        match self.map.get(&k) {{
+          Option::Some(id) => *id,
+          Option::None => {{
+            let id = self.counter.fresh_id();
+            self.map.insert(k, id);
+            id
+          }}
+        }}
+      }}
+
+      pub fn get(&self, k: K) -> Option<Id> {{
+        self.map.get(&k).map(|id| *id)
+      }}
     }}
 }}"
     };
@@ -1040,7 +1069,7 @@ fn generic_stmt_to_mut(s: &mut Stmt) {
             .init
             .iter_mut()
             .for_each(|e| generic_expr_to_mut(&mut e.1)),
-        Stmt::Item(_) => unimplemented!("Stmt::Item"),
+        Stmt::Item(item) => generic_item_to_mut(item),
         Stmt::Expr(e) => generic_expr_to_mut(e),
         Stmt::Semi(e, _) => generic_expr_to_mut(e),
     }
@@ -1049,6 +1078,33 @@ fn generic_stmt_to_mut(s: &mut Stmt) {
 fn generic_stmts_to_mut(stmts: &mut Vec<Stmt>) {
     for stmt in stmts {
         generic_stmt_to_mut(stmt)
+    }
+}
+
+fn generic_item_to_mut(item: &mut Item) {
+    use Item::*;
+    match item {
+        Const(_) => unimplemented!("Item::Const"),
+        Enum(_) => unimplemented!("Item::Enum"),
+        ExternCrate(_) => unimplemented!("Item::ExternCrate"),
+        Fn(_) => unimplemented!("Item::Fn"),
+        ForeignMod(_) => unimplemented!("Item::ForeignMod"),
+        Impl(_) => unimplemented!("Item::Impl"),
+        Macro(_) => unimplemented!("Item::Macro"),
+        Macro2(_) => unimplemented!("Item::Macro2"),
+        Mod(_) => unimplemented!("Item::Mod"),
+        Static(_) => unimplemented!("Item::Static"),
+        Struct(_) => unimplemented!("Item::Struct"),
+        Trait(_) => unimplemented!("Item::Trait"),
+        TraitAlias(_) => unimplemented!("Item::TraitAlias"),
+        Type(_) => unimplemented!("Item::Type"),
+        Union(_) => unimplemented!("Item::Union"),
+        Use(_) => (), // Nothing to do
+        Verbatim(_) => unimplemented!("Item::Verbatim"),
+        #[cfg_attr(test, deny(non_exhaustive_omitted_patterns))]
+        _ => {
+            unimplemented!();
+        }
     }
 }
 

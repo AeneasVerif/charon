@@ -2,15 +2,13 @@
 #![allow(dead_code)]
 
 use crate::assumed::get_name_from_type_id;
-use crate::common::*;
 use crate::formatter::Formatter;
-use crate::id_vector;
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
-use im::{HashMap, OrdSet, Vector};
+use crate::values::Literal;
+use im::{HashMap, OrdSet};
+use macros::make_generic_in_borrows;
 use rustc_middle::ty::{IntTy, UintTy};
-use serde::ser::SerializeTupleVariant;
-use serde::{Serialize, Serializer};
 use std::iter::FromIterator;
 use std::iter::Iterator;
 
@@ -18,6 +16,29 @@ pub type RegionSubst<R> = HashMap<RegionVarId::Id, R>;
 pub type TypeSubst<R> = HashMap<TypeVarId::Id, Ty<R>>;
 /// Type substitution where the regions are erased
 pub type ETypeSubst = TypeSubst<ErasedRegion>;
+pub type ConstGenericSubst = HashMap<ConstGenericVarId::Id, ConstGeneric>;
+
+impl ConstGenericVarId::Id {
+    pub fn substitute(
+        &self,
+        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
+    ) -> ConstGeneric {
+        cgsubst(self)
+    }
+}
+
+impl ConstGeneric {
+    pub fn substitute(
+        &self,
+        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
+    ) -> ConstGeneric {
+        match self {
+            ConstGeneric::Var(id) => id.substitute(cgsubst),
+            ConstGeneric::Value(v) => ConstGeneric::Value(v.clone()),
+            ConstGeneric::Global(id) => ConstGeneric::Global(*id),
+        }
+    }
+}
 
 impl RegionVarId::Id {
     pub fn substitute<R>(&self, rsubst: &RegionSubst<R>) -> R
@@ -80,11 +101,17 @@ impl std::string::ToString for TypeVar {
 
 impl std::string::ToString for RegionVar {
     fn to_string(&self) -> String {
-        let id = region_var_id_to_pretty_string(self.index);
+        let id = self.index.to_pretty_string();
         match &self.name {
             Some(name) => name.to_string(),
             None => id,
         }
+    }
+}
+
+impl std::string::ToString for ConstGenericVar {
+    fn to_string(&self) -> String {
+        format!("const {} : {}", self.name, self.ty.to_string())
     }
 }
 
@@ -110,8 +137,8 @@ impl TypeDecl {
     /// `None` if the type is opaque.
     pub fn get_instantiated_variants(
         &self,
-        inst_regions: &Vector<Region<RegionVarId::Id>>,
-        inst_types: &Vector<RTy>,
+        inst_regions: &Vec<Region<RegionVarId::Id>>,
+        inst_types: &Vec<RTy>,
     ) -> Option<VariantId::Vector<FieldId::Vector<RTy>>> {
         // Introduce the substitutions
         let r_subst = make_region_subst(
@@ -146,18 +173,23 @@ impl TypeDecl {
     pub fn get_erased_regions_instantiated_field_types(
         &self,
         variant_id: Option<VariantId::Id>,
-        inst_types: &Vector<ETy>,
-    ) -> Vector<ETy> {
+        inst_types: &Vec<ETy>,
+        cgs: &Vec<ConstGeneric>,
+    ) -> Vec<ETy> {
         // Introduce the substitution
         let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
+        let cg_subst = make_cg_subst(
+            self.const_generic_params.iter().map(|x| x.index),
+            cgs.iter(),
+        );
 
         let fields = self.get_fields(variant_id);
         let field_types: Vec<ETy> = fields
             .iter()
-            .map(|f| f.ty.erase_regions_substitute_types(&ty_subst))
+            .map(|f| f.ty.erase_regions_substitute_types(&ty_subst, &cg_subst))
             .collect();
 
-        Vector::from(field_types)
+        Vec::from(field_types)
     }
 
     /// The variant id should be `None` if it is a structure and `Some` if it
@@ -165,11 +197,16 @@ impl TypeDecl {
     pub fn get_erased_regions_instantiated_field_type(
         &self,
         variant_id: Option<VariantId::Id>,
-        inst_types: &Vector<ETy>,
+        inst_types: &Vec<ETy>,
+        cgs: &Vec<ConstGeneric>,
         field_id: FieldId::Id,
     ) -> ETy {
         // Introduce the substitution
         let ty_subst = make_type_subst(self.type_params.iter().map(|x| x.index), inst_types.iter());
+        let cg_subst = make_cg_subst(
+            self.const_generic_params.iter().map(|x| x.index),
+            cgs.iter(),
+        );
 
         let fields = self.get_fields(variant_id);
         let field_type = fields
@@ -177,7 +214,7 @@ impl TypeDecl {
             .unwrap()
             .ty
             .erase_regions()
-            .substitute_types(&ty_subst);
+            .substitute_types(&ty_subst, &cg_subst);
         field_type
     }
 
@@ -186,15 +223,10 @@ impl TypeDecl {
         T: Formatter<TypeVarId::Id>
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDeclId::Id>,
+            + Formatter<TypeDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>,
     {
-        let regions_hierarchy: Vec<String> = self
-            .regions_hierarchy
-            .iter()
-            .map(|rg| rg.fmt_with_ctx(ctx))
-            .collect();
-        let regions_hierarchy = regions_hierarchy.join("\n");
-
         let params = TypeDecl::fmt_params(&self.region_params, &self.type_params);
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
@@ -204,10 +236,7 @@ impl TypeDecl {
                         .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)))
                         .collect();
                     let fields = fields.join(",");
-                    format!(
-                        "struct {}{} = {{{}\n}}\n{}",
-                        self.name, params, fields, regions_hierarchy
-                    )
+                    format!("struct {}{} = {{{}\n}}", self.name, params, fields)
                 } else {
                     format!("struct {}{} = {{}}", self.name, params)
                 }
@@ -218,15 +247,9 @@ impl TypeDecl {
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
                     .collect();
                 let variants = variants.join("\n");
-                format!(
-                    "enum {}{} =\n{}\n\nRegions hierarchy:\n{}",
-                    self.name, params, variants, regions_hierarchy
-                )
+                format!("enum {}{} =\n{}\n", self.name, params, variants)
             }
-            TypeDeclKind::Opaque => format!(
-                "opaque type {}{}\nRegions hierarchy:\n{}",
-                self.name, params, regions_hierarchy
-            ),
+            TypeDeclKind::Opaque => format!("opaque type {}{}", self.name, params),
         }
     }
 
@@ -257,7 +280,9 @@ impl Variant {
         T: Formatter<TypeVarId::Id>
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDeclId::Id>,
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<GlobalDeclId::Id>,
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
@@ -271,7 +296,9 @@ impl Field {
         T: Formatter<TypeVarId::Id>
             + Formatter<RegionVarId::Id>
             + Formatter<&'a Region<RegionVarId::Id>>
-            + Formatter<TypeDeclId::Id>,
+            + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
+            + Formatter<GlobalDeclId::Id>,
     {
         match &self.name {
             Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
@@ -351,40 +378,78 @@ impl IntegerTy {
     }
 }
 
-pub fn type_def_id_to_pretty_string(id: TypeDeclId::Id) -> String {
-    format!("@Adt{id}")
-}
-pub fn const_def_id_to_pretty_string(id: GlobalDeclId::Id) -> String {
-    format!("@Const{id}")
-}
-
-pub fn region_var_id_to_pretty_string(id: RegionVarId::Id) -> String {
-    format!("@R{id}")
+impl TypeVarId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@T{self}")
+    }
 }
 
-pub fn integer_ty_to_string(ty: IntegerTy) -> String {
-    match ty {
-        IntegerTy::Isize => "isize".to_string(),
-        IntegerTy::I8 => "i8".to_string(),
-        IntegerTy::I16 => "i16".to_string(),
-        IntegerTy::I32 => "i32".to_string(),
-        IntegerTy::I64 => "i64".to_string(),
-        IntegerTy::I128 => "i128".to_string(),
-        IntegerTy::Usize => "usize".to_string(),
-        IntegerTy::U8 => "u8".to_string(),
-        IntegerTy::U16 => "u16".to_string(),
-        IntegerTy::U32 => "u32".to_string(),
-        IntegerTy::U64 => "u64".to_string(),
-        IntegerTy::U128 => "u128".to_string(),
+impl TypeDeclId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Adt{self}")
+    }
+}
+
+impl VariantId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Variant{self}")
+    }
+}
+
+impl FieldId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Field{self}")
+    }
+}
+
+impl RegionVarId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@R{self}")
+    }
+}
+
+impl ConstGenericVarId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Const{self}")
+    }
+}
+
+impl GlobalDeclId::Id {
+    pub fn to_pretty_string(&self) -> String {
+        format!("@Global{self}")
+    }
+}
+
+impl std::string::ToString for LiteralTy {
+    fn to_string(&self) -> String {
+        match self {
+            LiteralTy::Integer(ty) => ty.to_string(),
+            LiteralTy::Bool => "bool".to_string(),
+            LiteralTy::Char => "char".to_string(),
+        }
     }
 }
 
 impl std::fmt::Display for IntegerTy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", integer_ty_to_string(*self))
+        match self {
+            IntegerTy::Isize => write!(f, "isize"),
+            IntegerTy::I8 => write!(f, "i8"),
+            IntegerTy::I16 => write!(f, "i16"),
+            IntegerTy::I32 => write!(f, "i32"),
+            IntegerTy::I64 => write!(f, "i64"),
+            IntegerTy::I128 => write!(f, "i128"),
+            IntegerTy::Usize => write!(f, "usize"),
+            IntegerTy::U8 => write!(f, "u8"),
+            IntegerTy::U16 => write!(f, "u16"),
+            IntegerTy::U32 => write!(f, "u32"),
+            IntegerTy::U64 => write!(f, "u64"),
+            IntegerTy::U128 => write!(f, "u128"),
+        }
     }
 }
 
+// IntTy is not defined in the current crate
 pub fn intty_to_string(ty: IntTy) -> String {
     match ty {
         IntTy::Isize => "isize".to_string(),
@@ -396,6 +461,7 @@ pub fn intty_to_string(ty: IntTy) -> String {
     }
 }
 
+// UintTy is not defined in the current crate
 fn uintty_to_string(ty: UintTy) -> String {
     match ty {
         UintTy::Usize => "usize".to_string(),
@@ -420,6 +486,19 @@ impl TypeId {
     }
 }
 
+impl ConstGeneric {
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    where
+        T: Formatter<ConstGenericVarId::Id> + Formatter<GlobalDeclId::Id>,
+    {
+        match self {
+            ConstGeneric::Var(id) => ctx.format_object(*id),
+            ConstGeneric::Value(v) => v.to_string(),
+            ConstGeneric::Global(id) => ctx.format_object(*id),
+        }
+    }
+}
+
 impl<R> Ty<R>
 where
     R: Clone + Eq,
@@ -427,8 +506,9 @@ where
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
         match self {
-            Ty::Adt(TypeId::Tuple, regions, tys) => {
+            Ty::Adt(TypeId::Tuple, regions, tys, cgs) => {
                 assert!(regions.is_empty());
+                assert!(cgs.is_empty());
                 tys.is_empty()
             }
             _ => false,
@@ -437,39 +517,28 @@ where
 
     /// Return the unit type
     pub fn mk_unit() -> Ty<R> {
-        Ty::Adt(TypeId::Tuple, Vector::new(), Vector::new())
+        Ty::Adt(TypeId::Tuple, Vec::new(), Vec::new(), Vec::new())
     }
 
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
-        self.is_integer()
+        match self {
+            Ty::Literal(kind) => kind.is_integer(),
+            _ => false,
+        }
     }
 
     pub fn is_unsigned_scalar(&self) -> bool {
         match self {
-            Ty::Integer(kind) => kind.is_unsigned(),
+            Ty::Literal(LiteralTy::Integer(kind)) => kind.is_unsigned(),
             _ => false,
         }
     }
 
     pub fn is_signed_scalar(&self) -> bool {
         match self {
-            Ty::Integer(kind) => kind.is_signed(),
+            Ty::Literal(LiteralTy::Integer(kind)) => kind.is_signed(),
             _ => false,
-        }
-    }
-
-    /// Is the type a leaf type (without children)?
-    /// - true if bool, char, var...
-    /// - false if adt, array...
-    pub fn is_leaf(&self) -> bool {
-        match self {
-            Ty::Adt(_, _, _)
-            | Ty::Array(_, _)
-            | Ty::Slice(_)
-            | Ty::Ref(_, _, _)
-            | Ty::RawPtr(_, _) => false,
-            Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => true,
         }
     }
 
@@ -481,10 +550,14 @@ where
     pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
     where
         R: 'a,
-        T: Formatter<TypeVarId::Id> + Formatter<TypeDeclId::Id> + Formatter<&'a R>,
+        T: Formatter<ConstGenericVarId::Id>
+            + Formatter<TypeVarId::Id>
+            + Formatter<TypeDeclId::Id>
+            + Formatter<GlobalDeclId::Id>
+            + Formatter<&'a R>,
     {
         match self {
-            Ty::Adt(id, regions, inst_types) => {
+            Ty::Adt(id, regions, inst_types, cgs) => {
                 let adt_ident = id.fmt_with_ctx(ctx);
 
                 let num_params = regions.len() + inst_types.len();
@@ -492,8 +565,10 @@ where
                 let regions: Vec<String> = regions.iter().map(|r| ctx.format_object(r)).collect();
                 let mut types: Vec<String> =
                     inst_types.iter().map(|ty| ty.fmt_with_ctx(ctx)).collect();
+                let mut cgs: Vec<String> = cgs.iter().map(|cg| cg.fmt_with_ctx(ctx)).collect();
                 let mut all_params = regions;
                 all_params.append(&mut types);
+                all_params.append(&mut cgs);
                 let all_params = all_params.join(", ");
 
                 if id.is_tuple() {
@@ -505,13 +580,8 @@ where
                 }
             }
             Ty::TypeVar(id) => ctx.format_object(*id),
-            Ty::Bool => "bool".to_string(),
-            Ty::Char => "char".to_string(),
+            Ty::Literal(kind) => kind.to_string(),
             Ty::Never => "!".to_string(),
-            Ty::Integer(int_ty) => integer_ty_to_string(*int_ty),
-            Ty::Str => "str".to_string(),
-            Ty::Array(ty, l) => format!("[{}; {l:?}]", ty.fmt_with_ctx(ctx)),
-            Ty::Slice(ty) => format!("[{}]", ty.fmt_with_ctx(ctx)),
             Ty::Ref(r, ty, kind) => match kind {
                 RefKind::Mut => {
                     format!("&{} mut ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx))
@@ -530,9 +600,10 @@ where
     /// Return true if the type is Box
     pub fn is_box(&self) -> bool {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys) => {
+            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys, cgs) => {
                 assert!(regions.is_empty());
                 assert!(tys.len() == 1);
+                assert!(cgs.is_empty());
                 true
             }
             _ => false,
@@ -541,9 +612,10 @@ where
 
     pub fn as_box(&self) -> Option<&Ty<R>> {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys) => {
+            Ty::Adt(TypeId::Assumed(AssumedTy::Box), regions, tys, cgs) => {
                 assert!(regions.is_empty());
                 assert!(tys.len() == 1);
+                assert!(cgs.is_empty());
                 Some(tys.get(0).unwrap())
             }
             _ => None,
@@ -553,9 +625,10 @@ where
     /// Return true if the type is Vec
     pub fn is_vec(&self) -> bool {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys) => {
+            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys, cgs) => {
                 assert!(regions.is_empty());
                 assert!(tys.len() == 1);
+                assert!(cgs.is_empty());
                 true
             }
             _ => false,
@@ -564,9 +637,10 @@ where
 
     pub fn as_vec(&self) -> Option<&Ty<R>> {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys) => {
+            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), regions, tys, cgs) => {
                 assert!(regions.is_empty());
                 assert!(tys.len() == 1);
+                assert!(cgs.is_empty());
                 Some(tys.get(0).unwrap())
             }
             _ => None,
@@ -580,19 +654,14 @@ impl<Rid: Copy + Eq + Ord + std::hash::Hash> Ty<Region<Rid>> {
     pub fn contains_region_var(&self, rset: &OrdSet<Rid>) -> bool {
         match self {
             Ty::TypeVar(_) => false,
-            Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
-            Ty::Array(ty, _) | Ty::Slice(ty) => ty.contains_region_var(rset),
+            Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(r, ty, _) => r.contains_var(rset) || ty.contains_region_var(rset),
             Ty::RawPtr(ty, _) => ty.contains_region_var(rset),
-            Ty::Adt(_, regions, tys) => regions
+            Ty::Adt(_, regions, tys, _) => regions
                 .iter()
                 .any(|r| r.contains_var(rset) || tys.iter().any(|x| x.contains_region_var(rset))),
         }
     }
-}
-
-pub fn type_var_id_to_pretty_string(id: TypeVarId::Id) -> String {
-    format!("@T{id}")
 }
 
 impl<Rid: Copy + Eq> std::fmt::Display for Region<Rid>
@@ -623,6 +692,12 @@ impl<'a> Formatter<TypeVarId::Id> for IncompleteFormatter<'a> {
     }
 }
 
+impl<'a> Formatter<GlobalDeclId::Id> for IncompleteFormatter<'a> {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
 impl<'a, 'b, Rid: Copy + Eq> Formatter<&'b Region<Rid>> for IncompleteFormatter<'a>
 where
     TypeDecl: Formatter<&'b Region<Rid>>,
@@ -648,7 +723,13 @@ impl<'a> Formatter<TypeDeclId::Id> for IncompleteFormatter<'a> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
         // For type def ids, we simply print the def id because
         // we lack context
-        type_def_id_to_pretty_string(id)
+        id.to_pretty_string()
+    }
+}
+
+impl<'a> Formatter<ConstGenericVarId::Id> for IncompleteFormatter<'a> {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        self.def.format_object(id)
     }
 }
 
@@ -656,7 +737,7 @@ pub struct DummyFormatter {}
 
 impl Formatter<TypeVarId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeVarId::Id) -> String {
-        type_var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
@@ -677,13 +758,25 @@ impl Formatter<&ErasedRegion> for DummyFormatter {
 
 impl Formatter<RegionVarId::Id> for DummyFormatter {
     fn format_object(&self, id: RegionVarId::Id) -> String {
-        region_var_id_to_pretty_string(id)
+        id.to_pretty_string()
     }
 }
 
 impl Formatter<TypeDeclId::Id> for DummyFormatter {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        type_def_id_to_pretty_string(id)
+        id.to_pretty_string()
+    }
+}
+
+impl Formatter<ConstGenericVarId::Id> for DummyFormatter {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl Formatter<GlobalDeclId::Id> for DummyFormatter {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        id.to_pretty_string()
     }
 }
 
@@ -702,64 +795,80 @@ where
         &self,
         rsubst: &dyn Fn(&R) -> R1,
         tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
+        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
     ) -> Ty<R1>
     where
         R1: Clone + Eq,
     {
         match self {
-            Ty::Adt(id, regions, tys) => {
+            Ty::Adt(id, regions, tys, cgs) => {
                 let nregions = Ty::substitute_regions(regions, rsubst);
-                let ntys = tys.iter().map(|ty| ty.substitute(rsubst, tsubst)).collect();
-                Ty::Adt(id.clone(), nregions, ntys)
+                let ntys = tys
+                    .iter()
+                    .map(|ty| ty.substitute(rsubst, tsubst, cgsubst))
+                    .collect();
+                let ncgs = cgs.iter().map(|cg| cg.substitute(cgsubst)).collect();
+                Ty::Adt(id.clone(), nregions, ntys, ncgs)
             }
             Ty::TypeVar(id) => tsubst(id),
-            Ty::Bool => Ty::Bool,
-            Ty::Char => Ty::Char,
+            Ty::Literal(pty) => Ty::Literal(*pty),
             Ty::Never => Ty::Never,
-            Ty::Integer(k) => Ty::Integer(*k),
-            Ty::Str => Ty::Str,
-            Ty::Array(ty, l) => Ty::Array(Box::new(ty.substitute(rsubst, tsubst)), *l),
-            Ty::Slice(ty) => Ty::Slice(Box::new(ty.substitute(rsubst, tsubst))),
-            Ty::Ref(rid, ty, kind) => {
-                Ty::Ref(rsubst(rid), Box::new(ty.substitute(rsubst, tsubst)), *kind)
+            Ty::Ref(rid, ty, kind) => Ty::Ref(
+                rsubst(rid),
+                Box::new(ty.substitute(rsubst, tsubst, cgsubst)),
+                *kind,
+            ),
+            Ty::RawPtr(ty, kind) => {
+                Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst, cgsubst)), *kind)
             }
-            Ty::RawPtr(ty, kind) => Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst)), *kind),
         }
     }
 
-    fn substitute_regions<R1>(regions: &Vector<R>, rsubst: &dyn Fn(&R) -> R1) -> Vector<R1>
+    fn substitute_regions<R1>(regions: &Vec<R>, rsubst: &dyn Fn(&R) -> R1) -> Vec<R1>
     where
         R1: Clone + Eq,
     {
-        Vector::from_iter(regions.iter().map(|rid| rsubst(rid)))
+        Vec::from_iter(regions.iter().map(|rid| rsubst(rid)))
     }
 
     /// Substitute the type parameters
-    pub fn substitute_types(&self, subst: &TypeSubst<R>) -> Self {
-        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone())
+    // TODO: tsubst and cgsubst should be closures instead of hashmaps
+    pub fn substitute_types(&self, subst: &TypeSubst<R>, cgsubst: &ConstGenericSubst) -> Self {
+        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone(), &|cgid| {
+            cgsubst.get(cgid).unwrap().clone()
+        })
     }
 
     /// Erase the regions
     pub fn erase_regions(&self) -> ETy {
-        self.substitute(&|_| ErasedRegion::Erased, &|tid| Ty::TypeVar(*tid))
+        self.substitute(
+            &|_| ErasedRegion::Erased,
+            &|tid| Ty::TypeVar(*tid),
+            &|cgid| ConstGeneric::Var(*cgid),
+        )
     }
 
     /// Erase the regions and substitute the types at the same time
-    pub fn erase_regions_substitute_types(&self, subst: &TypeSubst<ErasedRegion>) -> ETy {
-        self.substitute(&|_| ErasedRegion::Erased, &|tid| {
-            subst.get(tid).unwrap().clone()
-        })
+    pub fn erase_regions_substitute_types(
+        &self,
+        subst: &TypeSubst<ErasedRegion>,
+        cgsubst: &ConstGenericSubst,
+    ) -> ETy {
+        self.substitute(
+            &|_| ErasedRegion::Erased,
+            &|tid| subst.get(tid).unwrap().clone(),
+            &|cgid| cgsubst.get(cgid).unwrap().clone(),
+        )
     }
 
     /// Returns `true` if the type contains some region or type variables
     pub fn contains_variables(&self) -> bool {
         match self {
             Ty::TypeVar(_) => true,
-            Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
-            Ty::Array(ty, _) | Ty::Slice(ty) => ty.contains_variables(),
+            Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(_, _, _) => true, // Always contains a region identifier
             Ty::RawPtr(ty, _) => ty.contains_variables(),
-            Ty::Adt(_, regions, tys) => {
+            Ty::Adt(_, regions, tys, _) => {
                 !regions.is_empty() || tys.iter().any(|x| x.contains_variables())
             }
         }
@@ -769,11 +878,10 @@ where
     pub fn contains_regions(&self) -> bool {
         match self {
             Ty::TypeVar(_) => false,
-            Ty::Bool | Ty::Char | Ty::Never | Ty::Integer(_) | Ty::Str => false,
-            Ty::Array(ty, _) | Ty::Slice(ty) => ty.contains_regions(),
+            Ty::Literal(_) | Ty::Never => false,
             Ty::Ref(_, _, _) => true,
             Ty::RawPtr(ty, _) => ty.contains_regions(),
-            Ty::Adt(_, regions, tys) => {
+            Ty::Adt(_, regions, tys, _) => {
                 !regions.is_empty() || tys.iter().any(|x| x.contains_regions())
             }
         }
@@ -794,6 +902,7 @@ impl RTy {
                 Region::Var(rid) => *rsubst.get(rid).unwrap(),
             },
             &|tid| tsubst.get(tid).unwrap().clone(),
+            &|cgid| ConstGeneric::Var(*cgid),
         )
     }
 }
@@ -807,8 +916,8 @@ where
     T2: Clone,
 {
     // We don't need to do this, but we want to check the lengths
-    let keys: Vector<T1> = keys.collect();
-    let values: Vector<T2> = values.cloned().collect();
+    let keys: Vec<T1> = keys.collect();
+    let values: Vec<T2> = values.cloned().collect();
     assert!(
         keys.len() == values.len(),
         "keys and values don't have the same length"
@@ -852,17 +961,15 @@ where
     make_subst(keys, values)
 }
 
-impl TypeDecls {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> TypeDecls {
-        TypeDecls {
-            types: id_vector::Vector::new(),
-        }
-    }
-
-    pub fn get_type_def(&self, type_id: TypeDeclId::Id) -> Option<&TypeDecl> {
-        self.types.get(type_id)
-    }
+pub fn make_cg_subst<
+    'a,
+    I1: Iterator<Item = ConstGenericVarId::Id>,
+    I2: Iterator<Item = &'a ConstGeneric>,
+>(
+    keys: I1,
+    values: I2,
+) -> ConstGenericSubst {
+    make_subst(keys, values)
 }
 
 impl Formatter<TypeVarId::Id> for TypeDecl {
@@ -875,6 +982,13 @@ impl Formatter<TypeVarId::Id> for TypeDecl {
 impl Formatter<RegionVarId::Id> for TypeDecl {
     fn format_object(&self, id: RegionVarId::Id) -> String {
         let var = self.region_params.get(id).unwrap();
+        var.to_string()
+    }
+}
+
+impl Formatter<ConstGenericVarId::Id> for TypeDecl {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        let var = self.const_generic_params.get(id).unwrap();
         var.to_string()
     }
 }
@@ -896,67 +1010,11 @@ impl Formatter<&ErasedRegion> for TypeDecl {
 
 impl Formatter<TypeDeclId::Id> for TypeDecls {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        let def = self.get_type_def(id).unwrap();
-        def.name.to_string()
-    }
-}
-
-impl<R: Clone + std::cmp::Eq + Serialize> Serialize for Ty<R> {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let enum_name = "Ty";
-        let variant_name = self.variant_name();
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        // It seems the "standard" way of doing is the following (this is
-        // consistent with what the automatically generated serializer does):
-        // - if the arity is > 0, use `serialize_tuple_variant`
-        // - otherwise simply serialize a string with the variant name
-        if variant_arity > 0 {
-            let mut vs = serializer.serialize_tuple_variant(
-                enum_name,
-                variant_index,
-                variant_name,
-                variant_arity,
-            )?;
-            match self {
-                Ty::Adt(id, regions, tys) => {
-                    vs.serialize_field(id)?;
-                    let regions = VectorSerializer::new(regions);
-                    vs.serialize_field(&regions)?;
-                    let tys = VectorSerializer::new(tys);
-                    vs.serialize_field(&tys)?;
-                }
-                Ty::TypeVar(var_id) => {
-                    vs.serialize_field(var_id)?;
-                }
-                Ty::Bool | Ty::Char | Ty::Never | Ty::Str => {
-                    unreachable!();
-                }
-                Ty::Integer(int_ty) => {
-                    vs.serialize_field(int_ty)?;
-                }
-                Ty::Array(ty, l) => {
-                    vs.serialize_field(ty)?;
-                    vs.serialize_field(l)?;
-                }
-                Ty::Slice(ty) => {
-                    vs.serialize_field(ty)?;
-                }
-                Ty::Ref(region, ty, ref_kind) => {
-                    vs.serialize_field(region)?;
-                    vs.serialize_field(ty)?;
-                    vs.serialize_field(ref_kind)?;
-                }
-                Ty::RawPtr(ty, ref_kind) => {
-                    vs.serialize_field(ty)?;
-                    vs.serialize_field(ref_kind)?;
-                }
-            }
-            vs.end()
-        } else {
-            variant_name.serialize(serializer)
+        // The definition may not be available yet, especially if we print-debug
+        // while translating the crate
+        match self.get(id) {
+            Option::None => id.to_pretty_string(),
+            Option::Some(def) => def.name.to_string(),
         }
     }
 }
@@ -965,11 +1023,99 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
     pub fn contains_never(&self) -> bool {
         match self {
             Ty::Never => true,
-            Ty::Adt(_, _, tys) => tys.iter().any(|ty| ty.contains_never()),
-            Ty::TypeVar(_) | Ty::Bool | Ty::Char | Ty::Str | Ty::Integer(_) => false,
-            Ty::Array(ty, _) | Ty::Slice(ty) | Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => {
-                ty.contains_never()
-            }
+            Ty::Adt(_, _, tys, _) => tys.iter().any(|ty| ty.contains_never()),
+            Ty::TypeVar(_) | Ty::Literal(_) => false,
+            Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => ty.contains_never(),
         }
     }
 }
+
+// Derive two implementations at once: one which uses shared borrows, and one
+// which uses mutable borrows.
+// Generates the traits: `SharedTypeVisitor` and `MutTypeVisitor`.
+make_generic_in_borrows! {
+
+// TODO: we should use traits with default implementations to allow overriding
+// the default behavior (that would also prevent problems with naming collisions)
+pub trait TypeVisitor {
+    fn visit_ty<R: Clone + std::cmp::Eq>(&mut self, ty: &Ty<R>) {
+        self.default_visit_ty(ty)
+    }
+
+    fn default_visit_ty<R: Clone + std::cmp::Eq>(&mut self, ty: &Ty<R>) {
+        use Ty::*;
+        match ty {
+            Adt(id, rl, tys, cgs) => self.visit_ty_adt(id, rl, tys, cgs),
+            TypeVar(vid) => self.visit_ty_type_var(vid),
+            Literal(lit) => self.visit_ty_literal(lit),
+            Never => self.visit_ty_never(),
+            Ref(r, ty, rk) => self.visit_ty_ref(r, ty, rk),
+            RawPtr(ty, rk) => self.visit_ty_raw_ptr(ty, rk),
+        }
+    }
+
+    fn visit_ty_adt<R: Clone + std::cmp::Eq>(
+        &mut self,
+        id: &TypeId,
+        rl: &Vec<R>,
+        tys: &Vec<Ty<R>>,
+        cgs: &Vec<ConstGeneric>,
+    ) {
+        self.visit_type_id(id);
+        // We ignore the regions
+        for ty in tys {
+            self.visit_ty(ty)
+        }
+        for cg in cgs {
+            self.visit_const_generic(cg);
+        }
+    }
+
+    fn visit_ty_type_var(&mut self, vid: &TypeVarId::Id) {
+        self.visit_type_var_id(vid);
+    }
+
+    fn visit_ty_literal(&mut self, ty: &LiteralTy) {}
+
+    fn visit_ty_never(&mut self) {}
+
+    fn visit_ty_ref<R: Clone + std::cmp::Eq>(&mut self, _r: &R, ty: &Box<Ty<R>>, _rk: &RefKind) {
+        // We ignore the region
+        self.visit_ty(ty);
+    }
+
+    fn visit_ty_raw_ptr<R: Clone + std::cmp::Eq>(&mut self, ty: &Box<Ty<R>>, _rk: &RefKind) {
+        // We ignore the region
+        self.visit_ty(ty);
+    }
+
+    fn visit_type_id(&mut self, id: &TypeId) {
+        use TypeId::*;
+        match id {
+            Adt(id) => self.visit_type_decl_id(id),
+            Tuple => (),
+            Assumed(aty) => self.visit_assumed_ty(aty),
+        }
+    }
+
+    fn visit_type_decl_id(&mut self, _: &TypeDeclId::Id) {}
+
+    fn visit_assumed_ty(&mut self, _: &AssumedTy) {}
+
+    fn visit_const_generic(&mut self, cg: &ConstGeneric) {
+        use ConstGeneric::*;
+        match cg {
+            Global(id) => self.visit_global_decl_id(id),
+            Var(id) => self.visit_const_generic_var_id(id),
+            Value(lit) => self.visit_literal(lit),
+        }
+    }
+
+    fn visit_global_decl_id(&mut self, _: &GlobalDeclId::Id) {}
+    fn visit_type_var_id(&mut self, _: &TypeVarId::Id) {}
+    fn visit_const_generic_var_id(&mut self, _: &ConstGenericVarId::Id) {}
+
+    fn visit_literal(&mut self, _: &Literal) {}
+}
+
+} // make_generic_in_borrows

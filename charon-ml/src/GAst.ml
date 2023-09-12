@@ -34,8 +34,17 @@ type assumed_fun_id =
   | VecIndex  (** [core::ops::index::Index::index<alloc::vec::Vec<T>, usize>] *)
   | VecIndexMut
       (** [core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>] *)
-  | ArraySlice
-  | ArraySliceMut
+  | ArrayIndexShared
+  | ArrayIndexMut
+  | ArrayToSliceShared
+  | ArrayToSliceMut
+  | ArraySubsliceShared
+  | ArraySubsliceMut
+  | SliceLen
+  | SliceIndexShared
+  | SliceIndexMut
+  | SliceSubsliceShared
+  | SliceSubsliceMut
 [@@deriving show, ord]
 
 type fun_id = Regular of FunDeclId.id | Assumed of assumed_fun_id
@@ -45,23 +54,25 @@ type fun_id = Regular of FunDeclId.id | Assumed of assumed_fun_id
 class ['self] iter_ast_base =
   object (_self : 'self)
     inherit [_] iter_rvalue
+    inherit! [_] iter_literal
+    (* Remark: can't inherit iter_literal_type because of a name collision (`Bool`) *)
+
     method visit_fun_id : 'env -> fun_id -> unit = fun _ _ -> ()
     method visit_meta : 'env -> meta -> unit = fun _ _ -> ()
     method visit_integer_type : 'env -> integer_type -> unit = fun _ _ -> ()
-    method visit_scalar_value : 'env -> scalar_value -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the AST map visitors *)
 class ['self] map_ast_base =
   object (_self : 'self)
     inherit [_] map_rvalue
+    inherit! [_] map_literal
+    (* Remark: can't inherit map_literal_type because of a name collision (`Bool`) *)
+
     method visit_fun_id : 'env -> fun_id -> fun_id = fun _ x -> x
     method visit_meta : 'env -> meta -> meta = fun _ x -> x
 
     method visit_integer_type : 'env -> integer_type -> integer_type =
-      fun _ x -> x
-
-    method visit_scalar_value : 'env -> scalar_value -> scalar_value =
       fun _ x -> x
   end
 
@@ -89,6 +100,7 @@ type call = {
   func : fun_id;
   region_args : erased_region list;
   type_args : ety list;
+  const_generic_args : const_generic list;
   args : operand list;
   dest : place;
 }
@@ -130,6 +142,11 @@ type fun_sig = {
   regions_hierarchy : region_var_groups;
   type_params : type_var list;
       (** The type parameters can be indexed with {!Types.TypeVarId.id}.
+
+          See {!Identifiers.Id.mapi} for instance.
+       *)
+  const_generic_params : const_generic_var list;
+      (** The const generic parameters can be indexed with {!Types.ConstGenericVarId.id}.
 
           See {!Identifiers.Id.mapi} for instance.
        *)
@@ -179,8 +196,8 @@ type declaration_group =
 type ('fun_decl, 'global_decl) gcrate = {
   name : string;
   declarations : declaration_group list;
-  types : type_decl list;
-  functions : 'fun_decl list;
-  globals : 'global_decl list;
+  types : type_decl TypeDeclId.Map.t;
+  functions : 'fun_decl FunDeclId.Map.t;
+  globals : 'global_decl GlobalDeclId.Map.t;
 }
 [@@deriving show]

@@ -1,12 +1,13 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 #![allow(dead_code)]
 
-pub use crate::expressions::GlobalDeclId;
+pub use crate::expressions::{Operand, Place};
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
 use crate::names::FunName;
 use crate::names::GlobalName;
 use crate::regions_hierarchy::RegionGroups;
+pub use crate::types::GlobalDeclId;
 use crate::types::*;
 use crate::values::*;
 use macros::generate_index_type;
@@ -51,11 +52,16 @@ pub struct FunSig {
     ///  ```
     ///  `'a` is early-bound while `'b` is late-bound.
     pub num_early_bound_regions: usize,
-    /// The lifetime's hierarchy between the different regions.
-    pub regions_hierarchy: RegionGroups,
     pub type_params: TypeVarId::Vector<TypeVar>,
+    pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
     pub inputs: Vec<RTy>,
     pub output: RTy,
+    /// The lifetime's hierarchy between the different regions.
+    /// We initialize it to a dummy value, and compute it once the whole
+    /// crate has been translated from MIR.
+    ///
+    /// TODO: move to Aeneas.
+    pub regions_hierarchy: RegionGroups,
 }
 
 /// An expression body.
@@ -116,7 +122,7 @@ pub enum FunId {
 
 /// An assumed function identifier, identifying a function coming from a
 /// standard library.
-#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, Serialize)]
+#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum AssumedFunId {
     /// `core::mem::replace`
     Replace,
@@ -156,11 +162,72 @@ pub enum AssumedFunId {
     VecIndex,
     /// `core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>`
     VecIndexMut,
-    /// Array functions
-    ArrayIndex,
-    ArrayUpdate,
-    // Converts a [T;N] into an &[T], but taking a range as an argument (unlike the SliceNew
-    // UnaryOp, which takes no argument).
-    ArraySlice,
-    ArraySliceMut,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T,N>(&[T;N], usize) -> &T`
+    ArrayIndexShared,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T,N>(&mut [T;N], usize) -> &mut T`
+    ArrayIndexMut,
+    /// Cast an array as a slice.
+    ///
+    /// Converted from [UnOp::ArrayToSlice]
+    ArrayToSliceShared,
+    /// Cast an array as a slice.
+    ///
+    /// Converted from [UnOp::ArrayToSlice]
+    ArrayToSliceMut,
+    /// Take a subslice from an array.
+    ///
+    /// Introduced by disambiguating the `Index::index` trait (takes a range
+    /// as argument).
+    ///
+    /// TODO: there are a lot of shared/mut version. Parameterize them with
+    /// a mutability attribute?
+    ArraySubsliceShared,
+    /// Take a subslice from an array.
+    ///
+    /// Introduced by disambiguating the `Index::index` trait (takes a range
+    /// as argument).
+    ArraySubsliceMut,
+    /// Remark: when we write `a.len()` in Rust, where `a` is an array, the
+    /// statement is desugared to a conversion from array to slice, followed
+    /// by a call to the `len` function for slices.
+    ///
+    /// Signature: `fn<T>(&[T]) -> usize`
+    SliceLen,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T>(&[T], usize) -> &T`
+    SliceIndexShared,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T>(&mut [T], usize) -> &mut T`
+    SliceIndexMut,
+    /// Take a subslice from a slice.
+    ///
+    /// Introduced by disambiguating the `Index::index` trait (takes a range
+    /// as argument).
+    SliceSubsliceShared,
+    /// Take a subslice from a slice.
+    ///
+    /// Introduced by disambiguating the `Index::index` trait (takes a range
+    /// as argument).
+    SliceSubsliceMut,
+}
+
+/// TODO: factor out with [Rvalue]
+#[derive(Debug, Clone, Serialize)]
+pub struct Call {
+    pub func: FunId,
+    /// Technically this is useless, but we still keep it because we might
+    /// want to introduce some information (and the way we encode from MIR
+    /// is as simple as possible - and in MIR we also have a vector of erased
+    /// regions).
+    pub region_args: Vec<ErasedRegion>,
+    pub type_args: Vec<ETy>,
+    pub const_generic_args: Vec<ConstGeneric>,
+    pub args: Vec<Operand>,
+    pub dest: Place,
 }

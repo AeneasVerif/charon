@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use crate::meta;
-use hashlink::linked_hash_map::LinkedHashMap;
 use im::Vector;
 use rustc_error_messages::MultiSpan;
 use rustc_errors::DiagnosticId;
@@ -34,32 +33,32 @@ where
 /// We use both `ErrorEmitter` and the logger to report errors and warnings.
 /// Those two ways of reporting information don't target the same usage and
 /// the same users.
-/// - `ErrorEmitter` allows us to report a limited number clean messages to
+/// - `ErrorEmitter` allows us to report a limited number of messages to
 ///   the user, with the same formatting as the compiler messages.
 /// - On the other hand, the logger allows us to report and filter a big number
 ///   of detailed messages, for debugging purposes.
 pub trait ErrorEmitter {
-    fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &str);
+    fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &'static str);
 
-    fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &str);
+    fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &'static str);
 }
 
 impl ErrorEmitter for Session {
-    fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &str) {
+    fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &'static str) {
         self.span_err_with_code(s, msg, DiagnosticId::Error(String::from("Aeneas")));
     }
 
-    fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &str) {
+    fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &'static str) {
         self.span_warn_with_code(s, msg, DiagnosticId::Error(String::from("Aeneas")));
     }
 }
 
-pub fn span_err(sess: &Session, span: rustc_span::Span, msg: &str) {
+pub fn span_err(sess: &Session, span: rustc_span::Span, msg: &'static str) {
     log::error!("{}:\n{}", meta::span_to_string(sess, span), msg);
     sess.span_err(span, msg);
 }
 
-pub fn span_warn(sess: &Session, span: rustc_span::Span, msg: &str) {
+pub fn span_warn(sess: &Session, span: rustc_span::Span, msg: &'static str) {
     log::warn!("{}:\n{}", meta::span_to_string(sess, span), msg);
     sess.span_warn(span, msg);
 }
@@ -262,28 +261,6 @@ impl<'a, T: Clone + Serialize> Serialize for VectorSerializer<'a, T> {
         S: Serializer,
     {
         serialize_vector(self.vector, serializer)
-    }
-}
-
-/// Wrapper to serialize linked hash maps.
-///
-/// We need this because serialization is implemented via the trait system.
-pub struct LinkedHashMapSerializer<'a, K, V> {
-    pub map: &'a LinkedHashMap<K, V>,
-}
-
-impl<'a, K, V> LinkedHashMapSerializer<'a, K, V> {
-    pub fn new(map: &'a LinkedHashMap<K, V>) -> Self {
-        LinkedHashMapSerializer { map }
-    }
-}
-
-impl<'a, K: Serialize, V: Serialize> Serialize for LinkedHashMapSerializer<'a, K, V> {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serialize_collection(self.map.iter(), serializer)
     }
 }
 

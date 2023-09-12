@@ -60,22 +60,10 @@ let switch_of_json (js : json) : (A.switch, string) result =
 let call_of_json (js : json) : (A.raw_terminator, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc
-        [
-          ("func", func);
-          ("region_args", region_args);
-          ("type_args", type_args);
-          ("args", args);
-          ("dest", dest);
-          ("target", target);
-        ] ->
-        let* func = fun_id_of_json func in
-        let* region_args = list_of_json erased_region_of_json region_args in
-        let* type_args = list_of_json ety_of_json type_args in
-        let* args = list_of_json operand_of_json args in
-        let* dest = place_of_json dest in
+    | `Assoc [ ("call", call); ("target", target) ] ->
+        let* call = call_of_json call in
         let* target = A.BlockId.id_of_json target in
-        let call = { A.func; region_args; type_args; args; dest } in
+
         Ok (A.Call (call, target))
     | _ -> Error "")
 
@@ -171,5 +159,17 @@ let crate_of_json (js : json) : (A.crate, string) result =
         let* types = list_of_json (type_decl_of_json id_to_file) types in
         let* functions = list_of_json (fun_decl_of_json id_to_file) functions in
         let* globals = list_of_json (global_decl_of_json id_to_file) globals in
+        let types =
+          T.TypeDeclId.Map.of_list
+            (List.map (fun (d : T.type_decl) -> (d.def_id, d)) types)
+        in
+        let functions =
+          A.FunDeclId.Map.of_list
+            (List.map (fun (d : A.fun_decl) -> (d.def_id, d)) functions)
+        in
+        let globals =
+          A.GlobalDeclId.Map.of_list
+            (List.map (fun (d : A.global_decl) -> (d.def_id, d)) globals)
+        in
         Ok { A.name; declarations; types; functions; globals }
     | _ -> Error "")

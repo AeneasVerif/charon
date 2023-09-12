@@ -1,9 +1,7 @@
 module E = Expressions
 
 let unop_can_fail (unop : E.unop) : bool =
-  match unop with
-  | Neg | Cast _ -> true
-  | Not | SliceNew _ -> false
+  match unop with Neg | Cast _ -> true | Not -> false
 
 let binop_can_fail (binop : E.binop) : bool =
   match binop with

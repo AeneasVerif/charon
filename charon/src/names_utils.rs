@@ -230,7 +230,7 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
 
                 // "impl" blocks are defined for types.
                 // We retrieve its unqualified type name.
-                let ty = tcx.type_of(id);
+                let ty = tcx.type_of(id).subst_identity();
 
                 // Match over the type.
                 name.push(PathElem::Ident(match ty.kind() {
@@ -239,8 +239,10 @@ pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
                         type_name.name.pop().unwrap().to_string()
                     }
                     // Builtin cases.
-                    rustc_middle::ty::TyKind::Int(_) | rustc_middle::ty::TyKind::Uint(_) |
-                    rustc_middle::ty::TyKind::Array(..) | rustc_middle::ty::TyKind::Slice(_) => {
+                    rustc_middle::ty::TyKind::Int(_)
+                    | rustc_middle::ty::TyKind::Uint(_)
+                    | rustc_middle::ty::TyKind::Array(..)
+                    | rustc_middle::ty::TyKind::Slice(_) => {
                         format!("{ty:?}")
                     }
                     _ => unreachable!(),

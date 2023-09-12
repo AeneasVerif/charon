@@ -4,7 +4,7 @@
 use std::ops::DerefMut;
 
 use crate::common::*;
-use crate::expressions::{Operand, Place, Rvalue};
+use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
 use crate::formatter::Formatter;
 use crate::llbc_ast::{
     Assert, Call, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
@@ -83,68 +83,6 @@ pub fn combine_switch_targets_meta(targets: &Switch) -> Meta {
             meta::combine_meta(&mbranches, &otherwise.meta)
         }
     }
-}
-
-/// Apply a map transformer on statements, in a bottom-up manner.
-/// Useful to implement a pass on operands (e.g., [crate::remove_drop_never]).
-///
-/// TODO: remove: we should use the visitors instead
-pub fn transform_statements<F: FnMut(Statement) -> Statement>(
-    f: &mut F,
-    mut st: Statement,
-) -> Statement {
-    // Apply the transformer bottom-up
-    st.content = match st.content {
-        RawStatement::Switch(switch) => {
-            let switch = match switch {
-                Switch::If(op, mut st1, mut st2) => {
-                    *st1 = transform_statements(f, *st1);
-                    *st2 = transform_statements(f, *st2);
-                    Switch::If(op, st1, st2)
-                }
-                Switch::SwitchInt(op, int_ty, branches, mut otherwise) => {
-                    let branches: Vec<(Vec<ScalarValue>, Statement)> = branches
-                        .into_iter()
-                        .map(|x| (x.0, transform_statements(f, x.1)))
-                        .collect();
-                    *otherwise = transform_statements(f, *otherwise);
-                    Switch::SwitchInt(op, int_ty, branches, otherwise)
-                }
-                Switch::Match(op, branches, mut otherwise) => {
-                    let branches: Vec<(Vec<VariantId::Id>, Statement)> = branches
-                        .into_iter()
-                        .map(|x| (x.0, transform_statements(f, x.1)))
-                        .collect();
-                    *otherwise = transform_statements(f, *otherwise);
-                    Switch::Match(op, branches, otherwise)
-                }
-            };
-            RawStatement::Switch(switch)
-        }
-        RawStatement::Assign(p, r) => RawStatement::Assign(p, r),
-        RawStatement::Call(c) => RawStatement::Call(c),
-        RawStatement::Assert(a) => RawStatement::Assert(a),
-        RawStatement::FakeRead(p) => RawStatement::FakeRead(p),
-        RawStatement::SetDiscriminant(p, vid) => RawStatement::SetDiscriminant(p, vid),
-        RawStatement::Drop(p) => RawStatement::Drop(p),
-        RawStatement::Panic => RawStatement::Panic,
-        RawStatement::Return => RawStatement::Return,
-        RawStatement::Break(i) => RawStatement::Break(i),
-        RawStatement::Continue(i) => RawStatement::Continue(i),
-        RawStatement::Nop => RawStatement::Nop,
-        RawStatement::Sequence(st1, st2) => {
-            let st1 = transform_statements(f, *st1);
-            let st2 = transform_statements(f, *st2);
-            new_sequence(st1, st2).content
-        }
-        RawStatement::Loop(mut st) => {
-            *st = transform_statements(f, *st);
-            RawStatement::Loop(st)
-        }
-    };
-
-    // Apply on the current statement
-    f(st)
 }
 
 impl Switch {
@@ -229,6 +167,7 @@ impl Statement {
         T: Formatter<VarId::Id>
             + Formatter<TypeVarId::Id>
             + Formatter<TypeDeclId::Id>
+            + Formatter<ConstGenericVarId::Id>
             + Formatter<&'a ErasedRegion>
             + Formatter<FunDeclId::Id>
             + Formatter<GlobalDeclId::Id>
@@ -265,10 +204,11 @@ impl Statement {
                     func,
                     region_args,
                     type_args,
+                    const_generic_args,
                     args,
                     dest,
                 } = call;
-                let call = fmt_call(ctx, func, region_args, type_args, args);
+                let call = fmt_call(ctx, func, region_args, type_args, const_generic_args, args);
                 format!("{}{} := {}", tab, dest.fmt_with_ctx(ctx), call)
             }
             RawStatement::Panic => format!("{tab}panic"),
@@ -429,20 +369,21 @@ impl ExprBody {
         let locals = Some(&self.locals);
         let fun_ctx = FunDeclsFormatter::new(fun_ctx);
         let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
+        // No local types or const generics, both are set to None
+        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
         self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let locals = Some(&self.locals);
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals);
+        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
         self.fmt_with_ctx(TAB_INCR, &ctx)
     }
 
@@ -465,6 +406,7 @@ impl FunDecl {
         // Initialize the contexts
         let fun_sig_ctx = FunSigFormatter {
             ty_ctx,
+            global_ctx,
             sig: &self.signature,
         };
 
@@ -475,6 +417,7 @@ impl FunDecl {
             global_ctx,
             Some(&self.signature.type_params),
             locals,
+            Some(&self.signature.const_generic_params),
         );
 
         // Use the contexts for printing
@@ -495,8 +438,8 @@ impl FunDecl {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
@@ -520,7 +463,7 @@ impl GlobalDecl {
         GD: Formatter<GlobalDeclId::Id>,
     {
         let locals = self.body.as_ref().map(|body| &body.locals);
-        let fmt_ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals);
+        let fmt_ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals, None);
 
         // Use the contexts for printing
         self.gfmt_with_ctx("", &fmt_ctx)
@@ -540,8 +483,8 @@ impl GlobalDecl {
     pub fn fmt_with_names<'ctx>(
         &self,
         ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Vector<String>,
-        global_ctx: &'ctx GlobalDeclId::Vector<String>,
+        fun_ctx: &'ctx FunDeclId::Map<String>,
+        global_ctx: &'ctx GlobalDeclId::Map<String>,
     ) -> String {
         let fun_ctx = FunNamesFormatter::new(fun_ctx);
         let global_ctx = GlobalNamesFormatter::new(global_ctx);
@@ -567,6 +510,7 @@ make_generic_in_borrows! {
 /// not be overriden and gives access to the "super" method.
 ///
 /// TODO: implement macros to automatically derive visitors.
+/// TODO: explore all the types
 pub trait AstVisitor: crate::expressions::ExprVisitor {
     /// Spawn the visitor (used for the branchings)
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self));
@@ -576,8 +520,11 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     fn merge(&mut self);
 
     fn visit_statement(&mut self, st: &Statement) {
+        self.visit_meta(&st.meta);
         self.visit_raw_statement(&st.content)
     }
+
+    fn visit_meta(&mut self, st: &Meta) {}
 
     fn default_visit_raw_statement(&mut self, st: &RawStatement) {
         match st {
@@ -639,13 +586,6 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
 
     fn visit_assert(&mut self, a: &Assert) {
         self.visit_operand(&a.cond);
-    }
-
-    fn visit_call(&mut self, c: &Call) {
-        for o in &c.args {
-            self.visit_operand(o);
-        }
-        self.visit_place(&c.dest);
     }
 
     fn visit_panic(&mut self) {}
@@ -719,3 +659,62 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
 }
 
 } // make_generic_in_borrows
+
+/// Helper for [transform_statements]
+struct TransformStatements<'a, F: FnMut(&mut Statement) -> Vec<Statement>> {
+    tr: &'a mut F,
+}
+
+impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutTypeVisitor for TransformStatements<'a, F> {}
+impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutExprVisitor for TransformStatements<'a, F> {}
+impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutAstVisitor for TransformStatements<'a, F> {
+    fn visit_statement(&mut self, st: &mut Statement) {
+        match &mut st.content {
+            RawStatement::Sequence(st1, st2) => {
+                // Bottom-up
+                self.visit_statement(st2);
+                self.default_visit_raw_statement(&mut st1.content);
+
+                // Transform the current statement
+                let st_seq = (self.tr)(st1);
+                if !st_seq.is_empty() {
+                    take(st, |st| chain_statements(st_seq, st))
+                }
+            }
+            _ => {
+                // Bottom-up
+                self.default_visit_raw_statement(&mut st.content);
+
+                // Transform the current statement
+                let st_seq = (self.tr)(st);
+                if !st_seq.is_empty() {
+                    take(st, |st| chain_statements(st_seq, st))
+                }
+            }
+        }
+    }
+
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
+    fn merge(&mut self) {}
+}
+
+impl Statement {
+    /// Apply a transformer to all the statements, in a bottom-up manner.
+    ///
+    /// The transformer should:
+    /// - mutate the current statement in place
+    /// - return the sequence of statements to introduce before the current statement
+    ///
+    /// We do the transformation in such a way that the
+    /// sequences of statements are properly chained. In particuliar,
+    /// if in `s1; s2` we transform `s1` to the sequence `s1_1; s1_2`,
+    /// then the resulting statement is `s1_1; s1_2; s2` and **not**
+    /// `{ s1_1; s1_2 }; s2`.
+    pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, f: &mut F) {
+        let mut visitor = TransformStatements { tr: f };
+        visitor.visit_statement(self);
+    }
+}

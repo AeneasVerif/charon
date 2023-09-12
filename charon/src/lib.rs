@@ -11,9 +11,8 @@
 //! we reconstructed the control-flow to have `if ... then ... else ...`,
 //! loops, etc. instead of `GOTO`s).
 
-#![feature(is_some_and)]
 #![feature(rustc_private, register_tool)]
-#![feature(box_syntax, box_patterns)]
+#![feature(box_patterns)]
 #![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
@@ -22,6 +21,7 @@ extern crate hashlink;
 extern crate im;
 extern crate linked_hash_set;
 extern crate log;
+extern crate rustc_abi;
 extern crate rustc_ast;
 extern crate rustc_borrowck;
 extern crate rustc_const_eval;
@@ -45,7 +45,6 @@ extern crate take_mut;
 pub mod common;
 pub mod assumed;
 pub mod cli_options;
-pub mod divergent;
 pub mod driver;
 pub mod export;
 pub mod expressions;
@@ -57,7 +56,9 @@ pub mod gast_utils;
 pub mod generics;
 pub mod get_mir;
 pub mod graphs;
+pub mod id_map;
 pub mod id_vector;
+pub mod index_to_function_calls;
 pub mod insert_assign_return_unit;
 pub mod llbc_ast;
 pub mod llbc_ast_utils;
@@ -66,15 +67,18 @@ pub mod meta;
 pub mod meta_utils;
 pub mod names;
 pub mod names_utils;
+pub mod ops_to_function_calls;
 pub mod reconstruct_asserts;
 pub mod regions_hierarchy;
-pub mod register;
 pub mod regularize_constant_adts;
 pub mod remove_drop_never;
+pub mod remove_dynamic_checks;
 pub mod remove_read_discriminant;
 pub mod remove_unused_locals;
 pub mod reorder_decls;
-pub mod rust_to_local_ids;
+pub mod translate_constants;
+pub mod translate_crate_to_ullbc;
+pub mod translate_ctx;
 pub mod translate_functions_to_ullbc;
 pub mod translate_types;
 pub mod types;

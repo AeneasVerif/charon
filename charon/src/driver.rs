@@ -1,22 +1,23 @@
 #![allow(dead_code)]
 
 use crate::cli_options;
-use crate::divergent;
 use crate::export;
 use crate::extract_global_assignments;
 use crate::get_mir::MirLevel;
+use crate::index_to_function_calls;
 use crate::insert_assign_return_unit;
 use crate::llbc_ast::{CtxNames, FunDeclId, GlobalDeclId};
+use crate::ops_to_function_calls;
 use crate::reconstruct_asserts;
-use crate::register;
+use crate::regions_hierarchy;
 use crate::regularize_constant_adts;
 use crate::remove_drop_never;
+use crate::remove_dynamic_checks;
 use crate::remove_read_discriminant;
 use crate::remove_unused_locals;
 use crate::reorder_decls;
-use crate::rust_to_local_ids;
-use crate::translate_functions_to_ullbc;
-use crate::translate_types;
+use crate::translate_crate_to_ullbc;
+use crate::translate_ctx;
 use crate::ullbc_to_llbc;
 use regex::Regex;
 use rustc_driver::{Callbacks, Compilation};
@@ -47,7 +48,7 @@ impl Callbacks for CharonCallbacks {
         queries
             .global_ctxt()
             .unwrap()
-            .peek_mut()
+            .get_mut()
             .enter(|tcx| {
                 let session = c.session();
                 translate(session, tcx, self)
@@ -147,54 +148,26 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // - whenever there is a `mod MODULE` in a file (for instance, in the
     //   "main.rs" file), it becomes a Module HIR item
 
-    // # Step 1: check and register all the definitions, to build the graph
-    // of dependencies between them (we need to know in which
-    // order to extract the definitions, and which ones are mutually
-    // recursive). While building this graph, we perform as many checks as
-    // we can to make sure the code is in the proper rust subset. Those very
-    // early steps mostly involve checking whether some features are used or
-    // not (ex.: raw pointers, inline ASM, etc.). More complex checks are
-    // performed later. In general, whenever there is ambiguity on the potential
-    // step in which a step could be performed, we perform it as soon as possible.
-    // Building the graph of dependencies allows us to translate the definitions
-    // in the proper order, and to figure out which definitions are mutually
-    // recursive.
-    // We iterate over the HIR items, and explore their MIR bodies/ADTs/etc.
-    // (when those exist - for instance, type aliases don't have MIR translations
-    // so we just ignore them).
-    let crate_info = register::CrateInfo {
+    let crate_info = translate_ctx::CrateInfo {
         crate_name: crate_name.clone(),
         opaque_mods: HashSet::from_iter(options.opaque_modules.clone().into_iter()),
     };
-    let (files, registered_decls) = register::explore_crate(&crate_info, sess, tcx, mir_level)?;
 
-    // # Step 2: reorder the graph of dependencies and compute the strictly
+    // # Translate the declarations in the crate.
+    // We translate the declarations in an ad-hoc order, and do not group
+    // the mutually recursive groups - we do this in the next step.
+    let mut ctx = translate_crate_to_ullbc::translate(crate_info, sess, tcx, mir_level);
+
+    // # Reorder the graph of dependencies and compute the strictly
     // connex components to:
     // - compute the order in which to extract the definitions
     // - find the recursive definitions
     // - group the mutually recursive definitions
-    let ordered_decls = reorder_decls::reorder_declarations(&registered_decls)?;
+    let ordered_decls = reorder_decls::reorder_declarations(&ctx)?;
 
-    // # Step 3: generate identifiers for the types and functions, and compute
-    // the mappings from rustc identifiers to our own identifiers.
-    // Also compute identifiers for the files (we use them for the spans).
-    let ordered_decls = rust_to_local_ids::rust_to_local_ids(&files, &ordered_decls);
-
-    // # Step 4: translate the types
-    let (types_constraints, type_defs) =
-        translate_types::translate_types(sess, tcx, &ordered_decls)?;
-
-    // # Step 5: translate the functions to ULLBC (Unstructured LLBC).
-    // Note that from now onwards, both type and function definitions have been
-    // translated to our internal ASTs: we don't interact with rustc anymore.
-    let (mut ullbc_funs, mut ullbc_globals) = translate_functions_to_ullbc::translate_functions(
-        sess,
-        tcx,
-        &ordered_decls,
-        &types_constraints,
-        &type_defs,
-        mir_level,
-    )?;
+    // # Compute the regions hierarchies for the types and the function signatures
+    // TODO: move to Aeneas
+    regions_hierarchy::compute(&mut ctx, &ordered_decls);
 
     //
     // =================
@@ -203,7 +176,10 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // At this point, the bulk of the translation is done. From now onwards,
     // we simply apply some micro-passes to make the code cleaner, before
     // serializing the result.
-    //
+
+    let type_defs = &mut ctx.type_defs;
+    let mut ullbc_funs = &mut ctx.fun_defs;
+    let mut ullbc_globals = &mut ctx.global_defs;
 
     // Compute the list of function and global names in the context.
     // We need this for pretty-printing (i.e., debugging) purposes.
@@ -211,24 +187,23 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // mutably borrow them to modify them in place, which prevents us from
     // using them for pretty-printing purposes (we would need to create shared
     // borrows over already mutably borrowed values).
-    let fun_names: FunDeclId::Vector<String> =
-        FunDeclId::Vector::from_iter(ullbc_funs.iter().map(|d| d.name.to_string()));
-    let global_names: GlobalDeclId::Vector<String> =
-        GlobalDeclId::Vector::from_iter(ullbc_globals.iter().map(|d| d.name.to_string()));
+    let fun_names: FunDeclId::Map<String> =
+        FunDeclId::Map::from_iter(ullbc_funs.iter().map(|d| (d.def_id, d.name.to_string())));
+    let global_names: GlobalDeclId::Map<String> =
+        GlobalDeclId::Map::from_iter(ullbc_globals.iter().map(|d| (d.def_id, d.name.to_string())));
     let fmt_ctx = CtxNames::new(&type_defs, &fun_names, &global_names);
 
-    // # Step 6: replace constant ([OperandConstantValue]) ADTs by regular
+    // # Micro-pass: replace constant ([OperandConstantValue]) ADTs by regular
     // (Aggregated) ADTs.
     regularize_constant_adts::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
 
-    // # Step 7: extract statics and constant globals from operands (put them in
+    // # Micro-pass: extract statics and constant globals from operands (put them in
     // a let binding). This pass relies on the absence of constant ADTs from
     // the previous step: it does not inspect them (and would thus miss globals
     // in constant ADTs).
     extract_global_assignments::transform(&fmt_ctx, &mut ullbc_funs, &mut ullbc_globals);
 
-    // # Step 8:
-    // There are two options:
+    // # There are two options:
     // - either the user wants the unstructured LLBC, in which case we stop there
     // - or they want the structured LLBC, in which case we reconstruct the
     //   control-flow and apply micro-passes
@@ -237,6 +212,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // # Extract the files
         export::export_ullbc(
             crate_name,
+            &ctx.id_to_file,
             &ordered_decls,
             &type_defs,
             &ullbc_funs,
@@ -253,20 +229,38 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             &ullbc_globals,
         );
 
-        // # Step 9: reconstruct the asserts
+        // # Micro-pass: remove the dynamic checks for array/slice bounds
+        // and division by zero.
+        // **WARNING**: this pass uses the fact that the dynamic checks
+        // introduced by Rustc use a special "assert" construct. Because of
+        // this, it must happen *before* the [reconstruct_asserts] pass.
+        // See the comments in [crate::remove_dynamic_checks].
+        remove_dynamic_checks::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Micro-pass: reconstruct the asserts
         reconstruct_asserts::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        for def in &llbc_funs {
+        // TODO: we should mostly use the TransCtx to format declarations
+        for (_, def) in &llbc_funs {
             trace!(
                 "# After asserts reconstruction:\n{}\n",
                 def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
             );
         }
 
-        // # Step 10: Remove the discriminant reads (merge them with the switches)
+        // # Micro-pass: replace some unops/binops with function calls
+        // (introduces: ArrayToSlice, etc.)
+        ops_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Micro-pass: replace the arrays/slices index operations with function
+        // calls.
+        // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
+        index_to_function_calls::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Micro-pass: Remove the discriminant reads (merge them with the switches)
         remove_read_discriminant::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 11: add the missing assignments to the return value.
+        // # Micro-pass: add the missing assignments to the return value.
         // When the function return type is unit, the generated MIR doesn't
         // set the return value to `()`. This can be a concern: in the case
         // of Aeneas, it means the return variable contains ⊥ upon returning.
@@ -276,34 +270,26 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // the main or at compile-time).
         insert_assign_return_unit::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 12: remove the drops of locals whose type is `Never` (`!`). This
+        // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
         // is in preparation of the next transformation.
         remove_drop_never::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 13: remove the locals which are never used. After doing so, we
+        // # Micro-pass: remove the locals which are never used. After doing so, we
         // check that there are no remaining locals with type `Never`.
         remove_unused_locals::transform(&fmt_ctx, &mut llbc_funs, &mut llbc_globals);
 
-        // # Step 14: compute which functions are potentially divergent. A function
-        // is potentially divergent if it is recursive, contains a loop or transitively
-        // calls a potentially divergent function.
-        // Note that in the future, we may complement this basic analysis with a
-        // finer analysis to detect recursive functions which are actually total
-        // by construction.
-        // Because we don't have loops, constants are not yet touched.
-        let _divergent = divergent::compute_divergent_functions(&ordered_decls, &llbc_funs);
-
         trace!("# Final LLBC:\n");
-        for def in &llbc_funs {
+        for (_, def) in &llbc_funs {
             trace!(
                 "#{}\n",
                 def.fmt_with_decls(&type_defs, &llbc_funs, &llbc_globals)
             );
         }
 
-        // # Step 15: generate the files.
+        // # Final step: generate the files.
         export::export_llbc(
             crate_name,
+            &ctx.id_to_file,
             &ordered_decls,
             &type_defs,
             &llbc_funs,

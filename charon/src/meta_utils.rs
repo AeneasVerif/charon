@@ -3,12 +3,9 @@
 
 use crate::meta::*;
 use rustc_hir::def_id::DefId;
-use rustc_index::vec::IndexVec;
-use rustc_middle::mir::{SourceInfo, SourceScope, SourceScopeData};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::cmp::Ordering;
-use std::collections::HashMap;
 use std::iter::Iterator;
 
 /// Retrieve the Rust span from a def id.
@@ -123,103 +120,6 @@ pub fn convert_loc(loc: rustc_span::Loc) -> Loc {
         line: loc.line,
         col: loc.col.0,
     }
-}
-
-pub fn translate_span(
-    sess: &Session,
-    filename_to_id: &HashMap<FileName, FileId::Id>,
-    rspan: rustc_span::Span,
-) -> Span {
-    // Retrieve the source map, which contains information about the source file:
-    // we need it to be able to interpret the span.
-    let source_map = sess.source_map();
-
-    // Find the source file and the span.
-    // It is very annoying: macros get expanded to statements whose spans refer
-    // to the file where the macro is defined, not the file where it is used.
-    let (beg, end) = source_map.is_valid_span(rspan).unwrap();
-    let filename = convert_filename(&beg.file.name);
-    let file_id = match &filename {
-        FileName::NotReal(_) => {
-            // For now we forbid not real filenames
-            unimplemented!();
-        }
-        FileName::Virtual(_) | FileName::Local(_) => {
-            let id = filename_to_id.get(&filename);
-            assert!(id.is_some(), "File not found: {:?}", filename);
-            id.unwrap()
-        }
-    };
-
-    let beg = convert_loc(beg);
-    let end = convert_loc(end);
-
-    // Put together
-    Span {
-        file_id: *file_id,
-        beg,
-        end,
-    }
-}
-
-/// Compute meta data from a Rust span
-pub fn get_meta_from_rspan(
-    sess: &Session,
-    filename_to_id: &HashMap<FileName, FileId::Id>,
-    rspan: rustc_span::Span,
-) -> Meta {
-    // Translate the span
-    let span = translate_span(sess, filename_to_id, rspan);
-
-    Meta {
-        span,
-        generated_from_span: None,
-    }
-}
-
-/// Compute meta data from a Rust source scope
-pub fn get_meta_from_source_info(
-    sess: &Session,
-    filename_to_id: &HashMap<FileName, FileId::Id>,
-    source_scopes: &IndexVec<SourceScope, SourceScopeData<'_>>,
-    source_info: SourceInfo,
-) -> Meta {
-    // Translate the span
-    let mut scope_data = source_scopes.get(source_info.scope).unwrap();
-    let span = translate_span(sess, filename_to_id, scope_data.span);
-
-    // Lookup the top-most inlined parent scope.
-    if scope_data.inlined_parent_scope.is_some() {
-        while scope_data.inlined_parent_scope.is_some() {
-            let parent_scope = scope_data.inlined_parent_scope.unwrap();
-            scope_data = source_scopes.get(parent_scope).unwrap();
-        }
-
-        let parent_span = translate_span(sess, filename_to_id, scope_data.span);
-
-        Meta {
-            span: parent_span,
-            generated_from_span: Some(span),
-        }
-    } else {
-        Meta {
-            span,
-            generated_from_span: None,
-        }
-    }
-}
-
-/// Compute the meta information for a Rust definition identified by its id.
-pub fn get_meta_from_rid(
-    sess: &Session,
-    tcx: TyCtxt,
-    filename_to_id: &HashMap<FileName, FileId::Id>,
-    def_id: DefId,
-) -> Meta {
-    // Retrieve the span from the def id
-    let rspan = get_rspan_from_def_id(tcx, def_id);
-
-    get_meta_from_rspan(sess, filename_to_id, rspan)
 }
 
 // TODO: remove?

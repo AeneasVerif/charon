@@ -2,17 +2,12 @@ open Identifiers
 open Types
 open PrimitiveValues
 module VarId = IdGen ()
-module GlobalDeclId = IdGen ()
+module GlobalDeclId = Types.GlobalDeclId
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!Charon.UllbcAst.iter_statement_base}).
   *)
 type var_id = VarId.id [@@deriving show, ord]
-
-(** We define this type to control the name of the visitor functions
-    (see e.g., {!Charon.GAst.iter_ast_base} and {!rvalue}).
-  *)
-type global_decl_id = GlobalDeclId.id [@@deriving show]
 
 (** Ancestor the field_proj_kind iter visitor *)
 class ['self] iter_field_proj_kind_base =
@@ -61,11 +56,8 @@ type field_proj_kind =
         concrete = true;
       }]
 
-type projection_elem =
-  | Deref
-  | DerefBox
-  | Field of field_proj_kind * field_id
-  | Offset of var_id
+(* Remark: no `Index` variant, as it is eliminated by a micro-pass *)
+type projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
 [@@deriving
   show,
     visitors
@@ -139,14 +131,12 @@ type place = { var_id : var_id; projection : projection }
 
 type borrow_kind = Shared | Mut | TwoPhaseMut | Shallow [@@deriving show]
 
+(* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass *)
 type unop =
   | Not
   | Neg
   | Cast of integer_type * integer_type
       (** Cast an integer from a source type to a target type *)
-  | SliceNew of scalar_value
-      (** Cast an array into the corresponding slice, which involves the
-          construction of a fat pointer at run-time. *)
 [@@deriving show, ord]
 
 (** A binary operation
@@ -199,26 +189,19 @@ let all_binops =
 class ['self] iter_operand_base =
   object (_self : 'self)
     inherit [_] iter_place
+    inherit! [_] iter_const_generic
     method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
-
-    method visit_primitive_value : 'env -> primitive_value -> unit =
-      fun _ _ -> ()
   end
 
 (** Ancestor the operand map visitor *)
 class ['self] map_operand_base =
   object (_self : 'self)
     inherit [_] map_place
+    inherit! [_] map_const_generic
     method visit_ety : 'env -> ety -> ety = fun _ x -> x
-
-    method visit_primitive_value : 'env -> primitive_value -> primitive_value =
-      fun _ x -> x
   end
 
-type operand =
-  | Copy of place
-  | Move of place
-  | Constant of ety * primitive_value
+type operand = Copy of place | Move of place | Constant of ety * literal
 [@@deriving
   show,
     visitors
@@ -280,9 +263,13 @@ type aggregate_kind =
   | AggregatedOption of variant_id * ety
   (* TODO: AggregatedOption should be merged with AggregatedAdt *)
   | AggregatedAdt of
-      type_decl_id * variant_id option * erased_region list * ety list
-  | AggregatedRange of ety
-  | AggregatedArray of ety
+      type_decl_id
+      * variant_id option
+      * erased_region list
+      * ety list
+      * const_generic list
+  | AggregatedRange of ety (* TODO: merge with the Rust *)
+  | AggregatedArray of ety * const_generic
 [@@deriving
   show,
     visitors
@@ -309,7 +296,6 @@ class ['self] iter_rvalue_base =
     method visit_unop : 'env -> unop -> unit = fun _ _ -> ()
     method visit_binop : 'env -> binop -> unit = fun _ _ -> ()
     method visit_borrow_kind : 'env -> borrow_kind -> unit = fun _ _ -> ()
-    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the rvalue map visitor *)
@@ -319,9 +305,6 @@ class ['self] map_rvalue_base =
     method visit_unop : 'env -> unop -> unop = fun _ x -> x
     method visit_binop : 'env -> binop -> binop = fun _ x -> x
     method visit_borrow_kind : 'env -> borrow_kind -> borrow_kind = fun _ x -> x
-
-    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
-      fun _ x -> x
   end
 
 (* TODO: move the aggregate kind to operands *)
@@ -333,7 +316,6 @@ type rvalue =
   | Discriminant of place
   | Aggregate of aggregate_kind * operand list
   | Global of global_decl_id
-  | Len of place
 [@@deriving
   show,
     visitors

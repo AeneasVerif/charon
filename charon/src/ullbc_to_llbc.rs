@@ -57,14 +57,7 @@ fn get_block_targets(body: &src::ExprBody, block_id: src::BlockId::Id) -> Vec<sr
     match &block.terminator.content {
         src::RawTerminator::Goto { target }
         | src::RawTerminator::Drop { place: _, target }
-        | src::RawTerminator::Call {
-            func: _,
-            region_args: _,
-            type_args: _,
-            args: _,
-            dest: _,
-            target,
-        }
+        | src::RawTerminator::Call { call: _, target }
         | src::RawTerminator::Assert {
             cond: _,
             expected: _,
@@ -1468,14 +1461,7 @@ fn translate_terminator(
             let st = tgt::Statement::new(src_meta, tgt::RawStatement::Drop(place.clone()));
             Some(combine_statement_and_statement(st, opt_child))
         }
-        src::RawTerminator::Call {
-            func,
-            region_args,
-            type_args,
-            args,
-            dest,
-            target,
-        } => {
+        src::RawTerminator::Call { call, target } => {
             let opt_child = translate_child_block(
                 info,
                 parent_loops,
@@ -1483,13 +1469,7 @@ fn translate_terminator(
                 terminator.meta,
                 *target,
             );
-            let st = tgt::RawStatement::Call(tgt::Call {
-                func: func.clone(),
-                region_args: region_args.clone(),
-                type_args: type_args.clone(),
-                args: args.clone(),
-                dest: dest.clone(),
-            });
+            let st = tgt::RawStatement::Call(call.clone());
             let st = tgt::Statement::new(src_meta, st);
             Some(combine_statement_and_statement(st, opt_child))
         }
@@ -1908,39 +1888,45 @@ pub fn translate_functions(
     src_funs: &src::FunDecls,
     src_globals: &src::GlobalDecls,
 ) -> Defs {
-    let mut tgt_funs = FunDeclId::Vector::new();
-    let mut tgt_globals = GlobalDeclId::Vector::new();
+    let mut tgt_funs = FunDeclId::Map::new();
+    let mut tgt_globals = GlobalDeclId::Map::new();
 
     // Translate the bodies one at a time
-    for fun_id in src_funs.iter_indices() {
-        tgt_funs.push_back(translate_function(
-            no_code_duplication,
-            type_defs,
-            src_funs,
-            fun_id,
-            src_globals,
-        ));
+    for (fun_id, _) in src_funs.iter_indexed() {
+        tgt_funs.insert(
+            *fun_id,
+            translate_function(
+                no_code_duplication,
+                type_defs,
+                src_funs,
+                *fun_id,
+                src_globals,
+            ),
+        );
     }
-    for global_id in src_globals.iter_indices() {
-        tgt_globals.push_back(translate_global(
-            no_code_duplication,
-            type_defs,
-            src_globals,
-            global_id,
-            src_funs,
-        ));
+    for (global_id, _) in src_globals.iter_indexed() {
+        tgt_globals.insert(
+            *global_id,
+            translate_global(
+                no_code_duplication,
+                type_defs,
+                src_globals,
+                *global_id,
+                src_funs,
+            ),
+        );
     }
 
     // Print the functions
-    for fun in &tgt_funs {
+    for (_, fun) in &tgt_funs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            fun.signature.fmt_with_decls(type_defs),
+            fun.signature.fmt_with_decls(type_defs, src_globals),
             fun.fmt_with_decls(type_defs, &tgt_funs, &tgt_globals)
         );
     }
     // Print the global variables
-    for global in &tgt_globals {
+    for (_, global) in &tgt_globals {
         trace!(
             "# Type:\n{:?}\n\n# Global definition:\n{}\n",
             global.ty,

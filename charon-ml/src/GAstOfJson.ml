@@ -161,7 +161,7 @@ let region_of_json (js : json) : (T.RegionVarId.id T.region, string) result =
     | `String "Static" -> Ok T.Static
     | `Assoc [ ("Var", rid) ] ->
         let* rid = T.RegionVarId.id_of_json rid in
-        Ok (T.Var rid)
+        Ok (T.Var rid : T.RegionVarId.id T.region)
     | _ -> Error "")
 
 let erased_region_of_json (js : json) : (T.erased_region, string) result =
@@ -184,6 +184,27 @@ let integer_type_of_json (js : json) : (PV.integer_type, string) result =
   | `String "U128" -> Ok PV.U128
   | _ -> Error ("integer_type_of_json failed on: " ^ show js)
 
+let literal_type_of_json (js : json) : (PV.literal_type, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Integer", int_ty) ] ->
+        let* int_ty = integer_type_of_json int_ty in
+        Ok (PV.Integer int_ty)
+    | `String "Bool" -> Ok PV.Bool
+    | `String "Char" -> Ok PV.Char
+    | _ -> Error "")
+
+let const_generic_var_of_json (js : json) : (T.const_generic_var, string) result
+    =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("index", index); ("name", name); ("ty", ty) ] ->
+        let* index = T.ConstGenericVarId.id_of_json index in
+        let* name = string_of_json name in
+        let* ty = literal_type_of_json ty in
+        Ok { T.index; name; ty }
+    | _ -> Error "")
+
 let ref_kind_of_json (js : json) : (T.ref_kind, string) result =
   match js with
   | `String "Mut" -> Ok T.Mut
@@ -196,6 +217,10 @@ let assumed_ty_of_json (js : json) : (T.assumed_ty, string) result =
     | `String "Box" -> Ok T.Box
     | `String "Vec" -> Ok T.Vec
     | `String "Option" -> Ok T.Option
+    | `String "Array" -> Ok T.Array
+    | `String "Slice" -> Ok T.Slice
+    | `String "Str" -> Ok T.Str
+    | `String "Range" -> Ok T.Range
     | _ -> Error "")
 
 let type_id_of_json (js : json) : (T.type_id, string) result =
@@ -227,40 +252,40 @@ let scalar_value_of_json (js : json) : (PV.scalar_value, string) result =
   let res =
     combine_error_msgs js __FUNCTION__
       (match js with
-      | `Assoc [ ("Isize", `List [ bi ]) ] ->
+      | `Assoc [ ("Isize", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = Isize }
-      | `Assoc [ ("I8", `List [ bi ]) ] ->
+      | `Assoc [ ("I8", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = I8 }
-      | `Assoc [ ("I16", `List [ bi ]) ] ->
+      | `Assoc [ ("I16", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = I16 }
-      | `Assoc [ ("I32", `List [ bi ]) ] ->
+      | `Assoc [ ("I32", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = I32 }
-      | `Assoc [ ("I64", `List [ bi ]) ] ->
+      | `Assoc [ ("I64", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = I64 }
-      | `Assoc [ ("I128", `List [ bi ]) ] ->
+      | `Assoc [ ("I128", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = I128 }
-      | `Assoc [ ("Usize", `List [ bi ]) ] ->
+      | `Assoc [ ("Usize", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = Usize }
-      | `Assoc [ ("U8", `List [ bi ]) ] ->
+      | `Assoc [ ("U8", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = U8 }
-      | `Assoc [ ("U16", `List [ bi ]) ] ->
+      | `Assoc [ ("U16", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = U16 }
-      | `Assoc [ ("U32", `List [ bi ]) ] ->
+      | `Assoc [ ("U32", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = U32 }
-      | `Assoc [ ("U64", `List [ bi ]) ] ->
+      | `Assoc [ ("U64", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = U64 }
-      | `Assoc [ ("U128", `List [ bi ]) ] ->
+      | `Assoc [ ("U128", bi) ] ->
           let* bi = big_int_of_json bi in
           Ok { PV.value = bi; int_ty = U128 }
       | _ -> Error "")
@@ -274,34 +299,52 @@ let scalar_value_of_json (js : json) : (PV.scalar_value, string) result =
           (Failure ("Scalar value not in range: " ^ PV.show_scalar_value sv)));
       res
 
+let literal_of_json (js : json) : (PV.literal, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Scalar", v) ] ->
+        let* v = scalar_value_of_json v in
+        Ok (PV.Scalar v)
+    | `Assoc [ ("Bool", v) ] ->
+        let* v = bool_of_json v in
+        Ok (PV.Bool v)
+    | `Assoc [ ("Char", v) ] ->
+        let* v = char_of_json v in
+        Ok (PV.Char v)
+    | _ -> Error "")
+
+let const_generic_of_json (js : json) : (T.const_generic, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Global", id) ] ->
+        let* id = E.GlobalDeclId.id_of_json id in
+        Ok (T.ConstGenericGlobal id)
+    | `Assoc [ ("Var", id) ] ->
+        let* id = T.ConstGenericVarId.id_of_json id in
+        Ok (T.ConstGenericVar id)
+    | `Assoc [ ("Value", lit) ] ->
+        let* lit = literal_of_json lit in
+        Ok (T.ConstGenericValue lit)
+    | _ -> Error "")
+
 let rec ty_of_json (r_of_json : json -> ('r, string) result) (js : json) :
     ('r T.ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Adt", `List [ id; regions; types ]) ] ->
+    | `Assoc [ ("Adt", `List [ id; regions; types; cgs ]) ] ->
         let* id = type_id_of_json id in
         let* regions = list_of_json r_of_json regions in
         let* types = list_of_json (ty_of_json r_of_json) types in
+        let* cgs = list_of_json const_generic_of_json cgs in
         (* Sanity check *)
         (match id with T.Tuple -> assert (List.length regions = 0) | _ -> ());
-        Ok (T.Adt (id, regions, types))
-    | `Assoc [ ("TypeVar", `List [ id ]) ] ->
+        Ok (T.Adt (id, regions, types, cgs))
+    | `Assoc [ ("TypeVar", id) ] ->
         let* id = T.TypeVarId.id_of_json id in
         Ok (T.TypeVar id)
-    | `String "Bool" -> Ok Bool
-    | `String "Char" -> Ok Char
-    | `String "Never" -> Ok Never
-    | `Assoc [ ("Integer", `List [ int_ty ]) ] ->
-        let* int_ty = integer_type_of_json int_ty in
-        Ok (T.Integer int_ty)
-    | `String "Str" -> Ok Str
-    | `Assoc [ ("Array", `List [ ty; len ]) ] ->
-        let* len = scalar_value_of_json len in
-        let* ty = ty_of_json r_of_json ty in
-        Ok (T.Array (ty, len))
-    | `Assoc [ ("Slice", `List [ ty ]) ] ->
-        let* ty = ty_of_json r_of_json ty in
-        Ok (T.Slice ty)
+    | `Assoc [ ("Literal", ty) ] ->
+        let* ty = literal_type_of_json ty in
+        Ok (T.Literal ty)
     | `Assoc [ ("Ref", `List [ region; ty; ref_kind ]) ] ->
         let* region = r_of_json region in
         let* ty = ty_of_json r_of_json ty in
@@ -375,14 +418,18 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("name", name);
           ("region_params", region_params);
           ("type_params", type_params);
-          ("regions_hierarchy", regions_hierarchy);
+          ("const_generic_params", const_generic_params);
           ("kind", kind);
+          ("regions_hierarchy", regions_hierarchy);
         ] ->
         let* def_id = T.TypeDeclId.id_of_json def_id in
         let* meta = meta_of_json id_to_file meta in
         let* name = name_of_json name in
         let* region_params = list_of_json region_var_of_json region_params in
         let* type_params = list_of_json type_var_of_json type_params in
+        let* const_generic_params =
+          list_of_json const_generic_var_of_json const_generic_params
+        in
         let* kind = type_decl_kind_of_json id_to_file kind in
         let* regions_hierarchy = region_var_groups_of_json regions_hierarchy in
         Ok
@@ -392,6 +439,7 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
             name;
             region_params;
             type_params;
+            const_generic_params;
             kind;
             regions_hierarchy;
           }
@@ -433,9 +481,6 @@ let projection_elem_of_json (js : json) : (E.projection_elem, string) result =
         let* proj_kind = field_proj_kind_of_json proj_kind in
         let* field_id = T.FieldId.id_of_json field_id in
         Ok (E.Field (proj_kind, field_id))
-    | `Assoc [ "Offset", var_id ] ->
-        let* var_id = E.VarId.id_of_json var_id in
-        Ok (E.Offset var_id)
     | _ -> Error ("projection_elem_of_json failed on:" ^ show js))
 
 let projection_of_json (js : json) : (E.projection, string) result =
@@ -466,9 +511,6 @@ let unop_of_json (js : json) : (E.unop, string) result =
       let* src_ty = integer_type_of_json src_ty in
       let* tgt_ty = integer_type_of_json tgt_ty in
       Ok (E.Cast (src_ty, tgt_ty))
-  | `Assoc [ "SliceNew", sv ] ->
-      let* sv = scalar_value_of_json sv in
-      Ok (E.SliceNew sv)
   | _ -> Error ("unop_of_json failed on:" ^ show js)
 
 let binop_of_json (js : json) : (E.binop, string) result =
@@ -491,7 +533,7 @@ let binop_of_json (js : json) : (E.binop, string) result =
   | `String "Shr" -> Ok E.Shr
   | _ -> Error ("binop_of_json failed on:" ^ show js)
 
-let primitive_value_of_json (js : json) : (PV.primitive_value, string) result =
+let literal_of_json (js : json) : (PV.literal, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Scalar", scalar_value) ] ->
@@ -503,9 +545,6 @@ let primitive_value_of_json (js : json) : (PV.primitive_value, string) result =
     | `Assoc [ ("Char", v) ] ->
         let* v = char_of_json v in
         Ok (PV.Char v)
-    | `Assoc [ ("String", v) ] ->
-        let* v = string_of_json v in
-        Ok (PV.String v)
     | _ -> Error "")
 
 let operand_of_json (js : json) : (E.operand, string) result =
@@ -519,33 +558,34 @@ let operand_of_json (js : json) : (E.operand, string) result =
         Ok (E.Move place)
     | `Assoc [ ("Const", `List [ ty; cv ]) ] ->
         let* ty = ety_of_json ty in
-        let* cv = primitive_value_of_json cv in
+        let* cv = literal_of_json cv in
         Ok (E.Constant (ty, cv))
     | _ -> Error "")
 
 let aggregate_kind_of_json (js : json) : (E.aggregate_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "AggregatedTuple" -> Ok E.AggregatedTuple
-    | `Assoc [ ("AggregatedOption", `List [ variant_id; ty ]) ] ->
+    | `String "Tuple" -> Ok E.AggregatedTuple
+    | `Assoc [ ("Option", `List [ variant_id; ty ]) ] ->
         let* variant_id = T.VariantId.id_of_json variant_id in
         let* ty = ety_of_json ty in
         Ok (E.AggregatedOption (variant_id, ty))
-    | `Assoc [ ("AggregatedAdt", `List [ id; opt_variant_id; regions; tys ]) ]
-      ->
+    | `Assoc [ ("Adt", `List [ id; opt_variant_id; regions; tys; cgs ]) ] ->
         let* id = T.TypeDeclId.id_of_json id in
         let* opt_variant_id =
           option_of_json T.VariantId.id_of_json opt_variant_id
         in
         let* regions = list_of_json erased_region_of_json regions in
         let* tys = list_of_json ety_of_json tys in
-        Ok (E.AggregatedAdt (id, opt_variant_id, regions, tys))
-    | `Assoc [ ("AggregatedRange", `List [ ty ]) ] ->
+        let* cgs = list_of_json const_generic_of_json cgs in
+        Ok (E.AggregatedAdt (id, opt_variant_id, regions, tys, cgs))
+    | `Assoc [ ("Range", ty) ] ->
         let* ty = ety_of_json ty in
         Ok (E.AggregatedRange ty)
-    | `Assoc [ ("AggregatedArray", `List [ ty ]) ] ->
+    | `Assoc [ ("Array", `List [ ty; cg ]) ] ->
         let* ty = ety_of_json ty in
-        Ok (E.AggregatedArray ty)
+        let* cg = const_generic_of_json cg in
+        Ok (E.AggregatedArray (ty, cg))
     | _ -> Error "")
 
 let rvalue_of_json (js : json) : (E.rvalue, string) result =
@@ -577,9 +617,6 @@ let rvalue_of_json (js : json) : (E.rvalue, string) result =
         let* aggregate_kind = aggregate_kind_of_json aggregate_kind in
         let* ops = list_of_json operand_of_json ops in
         Ok (E.Aggregate (aggregate_kind, ops))
-    | `Assoc [ ("Len", place) ] ->
-        let* place = place_of_json place in
-        Ok (E.Len place)
     | _ -> Error "")
 
 let assumed_fun_id_of_json (js : json) : (A.assumed_fun_id, string) result =
@@ -595,8 +632,17 @@ let assumed_fun_id_of_json (js : json) : (A.assumed_fun_id, string) result =
   | `String "VecLen" -> Ok A.VecLen
   | `String "VecIndex" -> Ok A.VecIndex
   | `String "VecIndexMut" -> Ok A.VecIndexMut
-  | `String "ArraySlice" -> Ok A.ArraySlice
-  | `String "ArraySliceMut" -> Ok A.ArraySliceMut
+  | `String "ArrayIndexShared" -> Ok A.ArrayIndexShared
+  | `String "ArrayIndexMut" -> Ok A.ArrayIndexMut
+  | `String "ArrayToSliceShared" -> Ok A.ArrayToSliceShared
+  | `String "ArrayToSliceMut" -> Ok A.ArrayToSliceMut
+  | `String "ArraySubsliceShared" -> Ok A.ArraySubsliceShared
+  | `String "ArraySubsliceMut" -> Ok A.ArraySubsliceMut
+  | `String "SliceLen" -> Ok A.SliceLen
+  | `String "SliceIndexShared" -> Ok A.SliceIndexShared
+  | `String "SliceIndexMut" -> Ok A.SliceIndexMut
+  | `String "SliceSubsliceShared" -> Ok A.SliceSubsliceShared
+  | `String "SliceSubsliceMut" -> Ok A.SliceSubsliceMut
   | _ -> Error ("assumed_fun_id_of_json failed on:" ^ show js)
 
 let fun_id_of_json (js : json) : (A.fun_id, string) result =
@@ -617,15 +663,19 @@ let fun_sig_of_json (js : json) : (A.fun_sig, string) result =
         [
           ("region_params", region_params);
           ("num_early_bound_regions", num_early_bound_regions);
-          ("regions_hierarchy", regions_hierarchy);
           ("type_params", type_params);
+          ("const_generic_params", const_generic_params);
           ("inputs", inputs);
           ("output", output);
+          ("regions_hierarchy", regions_hierarchy);
         ] ->
         let* region_params = list_of_json region_var_of_json region_params in
         let* num_early_bound_regions = int_of_json num_early_bound_regions in
         let* regions_hierarchy = region_var_groups_of_json regions_hierarchy in
         let* type_params = list_of_json type_var_of_json type_params in
+        let* const_generic_params =
+          list_of_json const_generic_var_of_json const_generic_params
+        in
         let* inputs = list_of_json sty_of_json inputs in
         let* output = sty_of_json output in
         Ok
@@ -634,9 +684,33 @@ let fun_sig_of_json (js : json) : (A.fun_sig, string) result =
             num_early_bound_regions;
             regions_hierarchy;
             type_params;
+            const_generic_params;
             inputs;
             output;
           }
+    | _ -> Error "")
+
+let call_of_json (js : json) : (A.call, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("func", func);
+          ("region_args", region_args);
+          ("type_args", type_args);
+          ("const_generic_args", const_generic_args);
+          ("args", args);
+          ("dest", dest);
+        ] ->
+        let* func = fun_id_of_json func in
+        let* region_args = list_of_json erased_region_of_json region_args in
+        let* type_args = list_of_json ety_of_json type_args in
+        let* const_generic_args =
+          list_of_json const_generic_of_json const_generic_args
+        in
+        let* args = list_of_json operand_of_json args in
+        let* dest = place_of_json dest in
+        Ok { A.func; region_args; type_args; const_generic_args; args; dest }
     | _ -> Error "")
 
 let gexpr_body_of_json (body_of_json : json -> ('body, string) result)

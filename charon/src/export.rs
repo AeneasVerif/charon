@@ -1,11 +1,12 @@
 use crate::common::*;
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
-use crate::rust_to_local_ids::*;
+use crate::reorder_decls::DeclarationsGroups;
 use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId};
 use serde::{Serialize, Serializer};
+use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
 
@@ -29,6 +30,10 @@ impl<'a, T: Serialize> Serialize for VecSW<'a, T> {
     }
 }
 
+// TODO: there is an equivalent definition somewhere
+type DeclarationGroup =
+    crate::reorder_decls::DeclarationGroup<TypeDeclId::Id, FunDeclId::Id, GlobalDeclId::Id>;
+
 /// An auxiliary type used for serialization of declaration groups
 type DeclarationsSerializer<'a> = VecSW<'a, DeclarationGroup>;
 
@@ -42,9 +47,9 @@ struct GCrateSerializer<'a, FD: Serialize + Clone, GD: Serialize + Clone> {
     /// the file names, in order to save space.
     id_to_file: VecSW<'a, (FileId::Id, FileName)>,
     declarations: DeclarationsSerializer<'a>,
-    types: &'a TypeDeclId::Vector<TypeDecl>,
-    functions: &'a FunDeclId::Vector<FD>,
-    globals: &'a GlobalDeclId::Vector<GD>,
+    types: VecSW<'a, TypeDecl>,
+    functions: VecSW<'a, FD>,
+    globals: VecSW<'a, GD>,
 }
 
 /// Export the translated definitions to a JSON file.
@@ -52,10 +57,11 @@ struct GCrateSerializer<'a, FD: Serialize + Clone, GD: Serialize + Clone> {
 /// This is a generic function, used both for LLBC and ULLBC.
 pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     crate_name: String,
-    ordered_decls: &OrderedDecls,
+    id_to_file: &HashMap<FileId::Id, FileName>,
+    ordered_decls: &DeclarationsGroups,
     type_defs: &TypeDecls,
-    fun_defs: &FunDeclId::Vector<FD>,
-    global_defs: &GlobalDeclId::Vector<GD>,
+    fun_defs: &FunDeclId::Map<FD>,
+    global_defs: &GlobalDeclId::Map<GD>,
     dest_dir: &Option<PathBuf>,
     extension: &str,
 ) -> Result<()> {
@@ -69,22 +75,27 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
 
     // Transform the map file id -> file into a vector.
     // Sort the vector to make the serialized file as stable as possible.
-    let mut file_ids: Vec<FileId::Id> = ordered_decls.id_to_file.keys().copied().collect();
+    let mut file_ids: Vec<FileId::Id> = id_to_file.keys().copied().collect();
     file_ids.sort();
     let id_to_file: Vec<(FileId::Id, FileName)> = file_ids
         .into_iter()
-        .map(|id| (id, ordered_decls.id_to_file.get(&id).unwrap().clone()))
+        .map(|id| (id, id_to_file.get(&id).unwrap().clone()))
         .collect();
     let id_to_file = VecSW::new(&id_to_file);
 
     // Serialize
+    // Note that we replace the maps with vectors (the declarations contain
+    // their ids, so it is easy to reconstruct the maps from there).
+    let types = type_defs.iter().cloned().collect();
+    let funs = fun_defs.iter().cloned().collect();
+    let globals = global_defs.iter().cloned().collect();
     let crate_serializer = GCrateSerializer {
         name: crate_name,
         id_to_file,
-        declarations: VecSW::new(&ordered_decls.decls),
-        types: &type_defs.types,
-        functions: fun_defs,
-        globals: global_defs,
+        declarations: VecSW::new(ordered_decls),
+        types: VecSW::new(&types),
+        functions: VecSW::new(&funs),
+        globals: VecSW::new(&globals),
     };
 
     // Create the directory, if necessary (note that if the target directory
@@ -126,14 +137,16 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
 /// Export the translated ULLBC definitions to a JSON file.
 pub fn export_ullbc(
     crate_name: String,
-    ordered_decls: &OrderedDecls,
+    id_to_file: &HashMap<FileId::Id, FileName>,
+    ordered_decls: &DeclarationsGroups,
     type_defs: &TypeDecls,
-    fun_defs: &FunDeclId::Vector<ullbc_ast::FunDecl>,
-    global_defs: &GlobalDeclId::Vector<ullbc_ast::GlobalDecl>,
+    fun_defs: &ullbc_ast::FunDecls,
+    global_defs: &ullbc_ast::GlobalDecls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<()> {
     gexport(
         crate_name,
+        id_to_file,
         ordered_decls,
         type_defs,
         fun_defs,
@@ -146,14 +159,16 @@ pub fn export_ullbc(
 /// Export the translated LLBC definitions to a JSON file.
 pub fn export_llbc(
     crate_name: String,
-    ordered_decls: &OrderedDecls,
+    id_to_file: &HashMap<FileId::Id, FileName>,
+    ordered_decls: &DeclarationsGroups,
     type_defs: &TypeDecls,
-    fun_defs: &FunDeclId::Vector<llbc_ast::FunDecl>,
-    global_defs: &GlobalDeclId::Vector<llbc_ast::GlobalDecl>,
+    fun_defs: &llbc_ast::FunDecls,
+    global_defs: &llbc_ast::GlobalDecls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<()> {
     gexport(
         crate_name,
+        id_to_file,
         ordered_decls,
         type_defs,
         fun_defs,
