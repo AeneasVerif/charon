@@ -308,17 +308,14 @@ pub fn list_nth_shared<'a, T>(l: &'a List<T>, i: u32) -> &'a T {
 }
 
 pub fn list_nth_mut<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
-    // (i)
     match l {
         List::Nil => {
             panic!()
         }
         List::Cons(x, tl) => {
-            // (ii)
             if i == 0 {
-                return x; // (iii)
+                return x;
             } else {
-                // (iv)
                 return list_nth_mut(tl, i - 1);
             }
         }
