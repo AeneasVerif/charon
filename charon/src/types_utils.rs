@@ -487,6 +487,7 @@ impl TraitInstanceId {
             TraitInstanceId::TraitImpl(id) => ctx.format_object(*id),
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
             TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
+            TraitInstanceId::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
     }
 }
@@ -1586,7 +1587,8 @@ impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
             | TraitInstanceId::ItemClause(box id, _, _, _) => self.visit_trait_instance_id(id),
             TraitInstanceId::TraitImpl(_)
             | TraitInstanceId::Clause(_)
-            | TraitInstanceId::BuiltinOrAuto(_) => (),
+            | TraitInstanceId::BuiltinOrAuto(_)
+            | TraitInstanceId::Unknown(_) => (),
         }
     }
 }
@@ -1722,6 +1724,7 @@ pub trait TypeVisitor {
                 self.visit_trait_decl_id(decl_id);
                 self.visit_trait_clause_id(clause_id)
             },
+            TraitInstanceId::Unknown(_) => (),
         }
     }
 

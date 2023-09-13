@@ -1,5 +1,5 @@
 pub trait BoolTrait {
-    // Declared method
+    // Required method
     fn get_bool(&self) -> bool;
 
     // Provided method

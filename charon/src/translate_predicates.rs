@@ -10,6 +10,10 @@ use hax_frontend_exporter::SInto;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use rustc_hir::def_id::DefId;
 
+/// Do we fail hard if we don't find the clause implementing a trait ref when
+/// resolving trait parameters?
+const PANIC_IF_NO_TRAIT_CLAUSE_FOUND: bool = true;
+
 /// Same as [TraitClause] but enriched with information about the parent
 /// predicates and the predicates which apply to the associated types.
 /// We need this information to solve the provenance of traits coming from
@@ -212,6 +216,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Returns an [Option] because we may filter clauses about builtin or
     /// auto traits like [core::marker::Sized] and [core::marker::Sync].
+    ///
+    /// TODO: don't take a clause id as parameter (because we might ignore
+    /// the current clause, and it messes up the order - not a big issue,
+    /// but not very clean).
     pub(crate) fn translate_trait_clause(
         &mut self,
         clause_id: TraitClauseId::Id,
@@ -225,11 +233,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let trait_ref = &trait_pred.trait_ref;
         let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
-        if trait_id.is_none() {
-            // This trait is to be ignored
-            return None;
-        }
-        let trait_id = trait_id.unwrap();
+        // We might have to ignore the trait
+        let trait_id = trait_id?;
 
         let (regions, types, const_generics) = self
             .translate_substs(None, &trait_ref.generic_args)
@@ -595,10 +600,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .map(|(id, gens)| format!("{}{}", self.format_object(id), gens.fmt_with_ctx(self),))
             .collect();
         let clauses = clauses.join("\n");
-        unreachable!(
+        if PANIC_IF_NO_TRAIT_CLAUSE_FOUND {
+            unreachable!(
             "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
-            trait_ref, clauses
-        );
+                trait_ref, clauses
+            );
+        } else {
+            // Return the UNKNOWN clause
+            log::warn!(
+                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
+                trait_ref, clauses
+            );
+            TraitInstanceId::Unknown(trait_ref)
+        }
     }
 
     fn find_trait_clause_for_param_in_clause<R>(

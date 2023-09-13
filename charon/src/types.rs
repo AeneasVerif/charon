@@ -168,6 +168,8 @@ pub enum TraitInstanceId {
         TraitItemName,
         TraitClauseId::Id,
     ),
+    /// For error reporting
+    Unknown(String),
 }
 
 /// A reference to a trait
