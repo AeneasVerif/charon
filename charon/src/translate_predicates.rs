@@ -400,12 +400,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let trait_decl_ref = {
             let trait_ref = &impl_source.trait_ref;
-            let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
-            if trait_id.is_none() {
-                // This trait is to be ignored
-                return None;
-            }
-            let trait_id = trait_id.unwrap();
+            let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap())?;
             let generics = self
                 .translate_substs_and_trait_refs(None, &trait_ref.generic_args, &trait_ref.traits)
                 .unwrap();

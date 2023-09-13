@@ -125,12 +125,15 @@ impl Terminator {
                 format!("drop {} -> bb{}", place.fmt_with_ctx(ctx), target)
             }
             RawTerminator::Call { call, target } => {
-                let call_s = fmt_call(ctx, call);
+                let (call_s, comment) = fmt_call(ctx, call);
+                let comment = if let Some(comment) = comment {
+                    format!(" // all args: {comment}")
+                } else {
+                    "".to_string()
+                };
                 format!(
-                    "{} := {} -> bb{}",
+                    "{} := {call_s} -> bb{target}{comment}",
                     call.dest.fmt_with_ctx(ctx),
-                    call_s,
-                    target,
                 )
             }
             RawTerminator::Assert {

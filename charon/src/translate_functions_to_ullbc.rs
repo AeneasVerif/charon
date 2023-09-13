@@ -1404,14 +1404,29 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let trait_and_method_generic_args = {
             let (regions, types, const_generics) =
                 self.translate_substs(None, &trait_info.all_generics)?;
-            // Not sure it is useful to have *all* the trait refs put here
-            let trait_refs = impl_source
-                .generics
-                .trait_refs
-                .iter()
-                .chain(generics.trait_refs.iter())
-                .cloned()
-                .collect();
+
+            // When concatenating the trait refs we have to be careful:
+            // - if we refer to an implementation, we must concatenate the
+            //   trait references given to the impl source
+            // - if we refer to a clause, we must retrieve the
+            //   parent trait clauses.
+            let trait_refs = match &impl_source.trait_id {
+                TraitInstanceId::TraitImpl(_) => impl_source
+                    .generics
+                    .trait_refs
+                    .iter()
+                    .chain(generics.trait_refs.iter())
+                    .cloned()
+                    .collect(),
+                _ => impl_source
+                    .trait_decl_ref
+                    .generics
+                    .trait_refs
+                    .iter()
+                    .chain(generics.trait_refs.iter())
+                    .cloned()
+                    .collect(),
+            };
             Some(GenericArgs {
                 regions,
                 types,

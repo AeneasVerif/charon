@@ -210,10 +210,19 @@ impl TraitImpl {
     }
 }
 
-pub fn fmt_call<'a, 'b, T>(ctx: &'b T, call: &'a Call) -> String
+/// Format a function call.
+/// We return the pair: (function call, comment)
+pub fn fmt_call<'a, 'b, T>(ctx: &'b T, call: &'a Call) -> (String, Option<String>)
 where
     T: ExprFormatter<'a>,
 {
+    let trait_and_method_generic_args = if let Some(generics) = &call.trait_and_method_generic_args
+    {
+        Option::Some(generics.fmt_with_ctx_split_trait_refs(ctx))
+    } else {
+        None
+    };
+
     let generics = call.generics.fmt_with_ctx_split_trait_refs(ctx);
     let f = match &call.func {
         FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
@@ -235,7 +244,7 @@ where
     let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
     let args = args.join(", ");
 
-    format!("{f}({args})")
+    (format!("{f}({args})"), trait_and_method_generic_args)
 }
 
 impl<T> GExprBody<T> {
