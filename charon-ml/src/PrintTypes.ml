@@ -313,8 +313,10 @@ let predicates_and_trait_clauses_to_string (fmt : stype_formatter)
       let inherited, local =
         List.split [ trait_clauses; regions_outlive; types_outlive; ttc ]
       in
+      let inherited = List.concat inherited in
+      let local = List.concat local in
       let num_inherited = List.length inherited in
-      let clauses = List.concat (List.append inherited local) in
+      let clauses = List.append inherited local in
       clauses_to_string indent indent_incr num_inherited clauses
 
 let type_decl_to_string (type_decl_id_to_string : T.TypeDeclId.id -> string)
