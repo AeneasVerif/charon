@@ -117,6 +117,10 @@ module Ast = struct
         ^ statement_to_string fmt (indent ^ indent_incr) indent_incr loop_st
         ^ "\n" ^ indent ^ "}"
 
+  let fun_sig_to_string (fmt : ast_formatter) (indent : string)
+      (indent_incr : string) (sg : A.fun_sig) : string =
+    fun_sig_to_string fmt indent indent_incr sg
+
   let fun_decl_to_string (fmt : ast_formatter) (indent : string)
       (indent_incr : string) (def : A.fun_decl) : string =
     gfun_decl_to_string fmt indent indent_incr statement_to_string def

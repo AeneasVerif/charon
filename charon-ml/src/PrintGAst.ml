@@ -155,18 +155,12 @@ let assertion_to_string (fmt : ast_formatter) (indent : string)
   if a.GA.expected then indent ^ "assert(" ^ cond ^ ")"
   else indent ^ "assert(¬" ^ cond ^ ")"
 
-let gfun_decl_to_string (fmt : ast_formatter) (indent : string)
-    (indent_incr : string)
-    (body_to_string : ast_formatter -> string -> string -> 'body -> string)
-    (def : 'body GA.gfun_decl) : string =
+(** Small helper *)
+let fun_sig_with_name_to_string (fmt : ast_formatter) (indent : string)
+    (indent_incr : string) (attribute : string option) (name : string option)
+    (args : GA.var list option) (sg : GA.fun_sig) : string =
   let sty_fmt = ast_to_stype_formatter fmt in
   let sty_to_string = PT.sty_to_string sty_fmt in
-  let ety_fmt = ast_to_etype_formatter fmt in
-  let ety_to_string = PT.ety_to_string ety_fmt in
-  let sg = def.signature in
-
-  (* Function name *)
-  let name = fun_name_to_string def.GA.name in
 
   (* Generics and predicates *)
   let params, trait_clauses =
@@ -186,31 +180,55 @@ let gfun_decl_to_string (fmt : ast_formatter) (indent : string)
     if TU.ty_is_unit ret_ty then "" else " -> " ^ sty_to_string ret_ty
   in
 
+  (* Arguments *)
+  let args =
+    match args with
+    | None ->
+        let args = List.map sty_to_string sg.inputs in
+        String.concat ", " args
+    | Some args ->
+        let args = List.combine args sg.inputs in
+        let args =
+          List.map
+            (fun (var, rty) -> var_to_string var ^ " : " ^ sty_to_string rty)
+            args
+        in
+        String.concat ", " args
+  in
+
+  (* Put everything together *)
+  let attribute = match attribute with None -> "" | Some attr -> attr ^ " " in
+  let name = match name with None -> "" | Some name -> " " ^ name in
+  indent ^ attribute ^ "fn" ^ name ^ params ^ "(" ^ args ^ ")" ^ ret_ty
+  ^ clauses
+
+let fun_sig_to_string (fmt : ast_formatter) (indent : string)
+    (indent_incr : string) (sg : GA.fun_sig) : string =
+  fun_sig_with_name_to_string fmt indent indent_incr None None None sg
+
+let gfun_decl_to_string (fmt : ast_formatter) (indent : string)
+    (indent_incr : string)
+    (body_to_string : ast_formatter -> string -> string -> 'body -> string)
+    (def : 'body GA.gfun_decl) : string =
+  let ety_fmt = ast_to_etype_formatter fmt in
+  let ety_to_string = PT.ety_to_string ety_fmt in
+  let sg = def.signature in
+
+  (* Function name *)
+  let name = fun_name_to_string def.GA.name in
+
   (* We print the declaration differently if it is opaque (no body) or transparent
    * (we have access to a body) *)
   match def.body with
   | None ->
-      (* Arguments *)
-      let input_tys = sg.inputs in
-      let args = List.map sty_to_string input_tys in
-      let args = String.concat ", " args in
-
-      (* Put everything together *)
-      indent ^ "opaque fn " ^ name ^ params ^ "(" ^ args ^ ")" ^ ret_ty
-      ^ clauses
+      fun_sig_with_name_to_string fmt indent indent_incr (Some "opaque")
+        (Some name) None sg
   | Some body ->
       (* Arguments *)
       let inputs = List.tl body.locals in
       let inputs, _aux_locals =
         Collections.List.split_at inputs body.arg_count
       in
-      let args = List.combine inputs sg.inputs in
-      let args =
-        List.map
-          (fun (var, rty) -> var_to_string var ^ " : " ^ sty_to_string rty)
-          args
-      in
-      let args = String.concat ", " args in
 
       (* All the locals (with erased regions) *)
       let locals =
@@ -228,8 +246,9 @@ let gfun_decl_to_string (fmt : ast_formatter) (indent : string)
       in
 
       (* Put everything together *)
-      indent ^ "fn " ^ name ^ params ^ "(" ^ args ^ ")" ^ ret_ty ^ clauses
-      ^ "\n{\n" ^ locals ^ "\n\n" ^ body ^ "\n" ^ indent ^ "}"
+      fun_sig_with_name_to_string fmt indent indent_incr (Some "opaque")
+        (Some name) (Some inputs) sg
+      ^ indent ^ "\n{\n" ^ locals ^ "\n\n" ^ body ^ "\n" ^ indent ^ "}"
 
 let trait_decl_to_string (fmt : ast_formatter) (indent : string)
     (indent_incr : string) (def : GA.trait_decl) : string =
