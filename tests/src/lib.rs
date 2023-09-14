@@ -1,3 +1,5 @@
+mod array;
+mod array2;
 mod constants;
 mod external;
 mod hashmap;
@@ -7,4 +9,3 @@ mod matches;
 mod nested_borrows;
 mod no_nested_borrows;
 mod paper;
-mod array;
