@@ -40,6 +40,7 @@ test-matches:
 test-external: OPTIONS += --no-code-duplication
 test-matches_duplicate:
 test-array:
+test-array2:
 
 # =============================================================================
 # The tests.
