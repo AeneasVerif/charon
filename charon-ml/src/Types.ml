@@ -46,6 +46,9 @@ type type_decl_id = TypeDeclId.id [@@deriving show, ord]
 (** Same remark as for {!type_var_id} *)
 type trait_decl_id = TraitDeclId.id [@@deriving show, ord]
 
+(** Region variable ids. Used in function signatures. *)
+module RegionVarId = IdGen ()
+
 (** Same remark as for {!type_var_id} *)
 type trait_impl_id = TraitImplId.id [@@deriving show, ord]
 

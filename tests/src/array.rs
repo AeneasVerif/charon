@@ -1,4 +1,4 @@
-//! Exercise the translation of arrays
+//! Exercise the translation of arrays, with features supported by Eurydice
 #![allow(dead_code)]
 
 // Nano-tests
@@ -35,14 +35,6 @@ fn index_array_shared<T>(s: &[T; 32], i: usize) -> &T {
 
 fn index_array_u32(s: [u32; 32], i: usize) -> u32 {
     s[i]
-}
-
-fn index_array_generic<const N: usize>(s: [u32; N], i: usize) -> u32 {
-    s[i]
-}
-
-fn index_array_generic_call<const N: usize>(s: [u32; N], i: usize) -> u32 {
-    index_array_generic(s, i)
 }
 
 fn index_array_copy(x: &[u32; 32]) -> u32 {
@@ -160,6 +152,11 @@ fn index_mut_slice_u32_0(x: &mut [u32]) -> u32 {
 
 fn index_all() -> u32 {
     let mut x: [u32; 2] = [0, 0];
+    if true {
+        let mut y: [u32; 2] = [0, 0];
+    } else {
+        let mut z: [u32; 2] = [0, 0];
+    }
     index_array(x)
         + index_array(x)
         + index_array_borrow(&x)
