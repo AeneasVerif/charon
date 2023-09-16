@@ -271,12 +271,14 @@ let trait_decl_to_string (fmt : ast_formatter) (indent : string)
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
   in
 
+  let indent1 = indent ^ indent_incr in
+
   let items =
     let consts =
       List.map
         (fun (name, (ty, opt_id)) ->
           let ty = ety_to_string ty in
-          let lhs = indent ^ "const " ^ name ^ " : " ^ ty in
+          let lhs = indent1 ^ "const " ^ name ^ " : " ^ ty in
           match opt_id with
           | None -> lhs ^ "\n"
           | Some id -> lhs ^ " = " ^ fmt.global_decl_id_to_string id ^ "\n")
@@ -286,27 +288,29 @@ let trait_decl_to_string (fmt : ast_formatter) (indent : string)
       List.map
         (fun (name, (clauses, opt_ty)) ->
           let clauses = List.map (PT.trait_clause_to_string sty_fmt) clauses in
-          let clauses = PT.clauses_to_string indent indent_incr 0 clauses in
+          let clauses = PT.clauses_to_string indent1 indent_incr 0 clauses in
           match opt_ty with
-          | None -> indent ^ "type " ^ name ^ clauses ^ "\n"
+          | None -> indent1 ^ "type " ^ name ^ clauses ^ "\n"
           | Some ty ->
-              indent ^ "type " ^ name ^ " = " ^ ety_to_string ty ^ clauses
+              indent1 ^ "type " ^ name ^ " = " ^ ety_to_string ty ^ clauses
               ^ "\n")
         def.types
     in
     let required_methods =
       List.map
         (fun (name, f) ->
-          indent ^ "fn " ^ name ^ " : " ^ fmt.fun_decl_id_to_string f ^ "\n")
+          indent1 ^ "fn " ^ name ^ " : " ^ fmt.fun_decl_id_to_string f ^ "\n")
         def.required_methods
     in
     let provided_methods =
       List.map
         (fun (name, f) ->
           match f with
-          | None -> indent ^ "fn " ^ name ^ "\n"
+          | None -> indent1 ^ "fn " ^ name ^ "\n"
           | Some f ->
-              indent ^ "fn " ^ name ^ " : " ^ fmt.fun_decl_id_to_string f ^ "\n")
+              indent1 ^ "fn " ^ name ^ " : "
+              ^ fmt.fun_decl_id_to_string f
+              ^ "\n")
         def.provided_methods
     in
     let items =
@@ -314,9 +318,9 @@ let trait_decl_to_string (fmt : ast_formatter) (indent : string)
         [
           consts;
           types;
-          [ indent ^ "// Required methods\n" ];
+          [ indent1 ^ "// Required methods\n" ];
           required_methods;
-          [ indent ^ "// Provided methods\n" ];
+          [ indent1 ^ "// Provided methods\n" ];
           provided_methods;
         ]
     in
@@ -346,13 +350,15 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
   in
 
+  let indent1 = indent ^ indent_incr in
+
   let items =
     let consts =
       List.map
         (fun (name, (ty, id)) ->
           let ty = ety_to_string ty in
           let id = fmt.global_decl_id_to_string id in
-          indent ^ "const " ^ name ^ " : " ^ ty ^ " = " ^ id ^ "\n")
+          indent1 ^ "const " ^ name ^ " : " ^ ty ^ " = " ^ id ^ "\n")
         def.consts
     in
     let types =
@@ -362,21 +368,21 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
             String.concat ", "
               (List.map (PT.trait_ref_to_string ety_fmt) trait_refs)
           in
-          indent ^ "type " ^ name ^ " = " ^ ety_to_string ty ^ "where ["
+          indent1 ^ "type " ^ name ^ " = " ^ ety_to_string ty ^ "where ["
           ^ trait_refs ^ "]\n")
         def.types
     in
     let fmt_method (name, f) =
-      indent ^ "fn " ^ name ^ " : " ^ fmt.fun_decl_id_to_string f ^ "\n"
+      indent1 ^ "fn " ^ name ^ " : " ^ fmt.fun_decl_id_to_string f ^ "\n"
     in
     let required_methods = List.map fmt_method def.required_methods in
     let provided_methods = List.map fmt_method def.provided_methods in
     let methods =
       List.concat
         [
-          [ indent ^ "// Required methods\n" ];
+          [ indent1 ^ "// Required methods\n" ];
           required_methods;
-          [ indent ^ "// Provided methods\n" ];
+          [ indent1 ^ "// Provided methods\n" ];
           provided_methods;
         ]
     in

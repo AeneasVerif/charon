@@ -259,22 +259,24 @@ let trait_type_constraint_to_string (fmt : 'r type_formatter)
 (** Helper to format "where" clauses *)
 let clauses_to_string (indent : string) (indent_incr : string)
     (num_inherited_clauses : int) (clauses : string list) : string =
-  let fmt_clause s = indent ^ indent_incr ^ s ^ "," in
-  let clauses = List.map fmt_clause clauses in
-  let inherited, local =
-    Collections.List.split_at clauses num_inherited_clauses
-  in
-  let delim1 =
-    if inherited <> [] then [ indent ^ "  // Inherited clauses" ] else []
-  in
-  let delim2 =
-    if inherited <> [] && local <> [] then [ indent ^ "  // Local clauses" ]
-    else []
-  in
-  let clauses =
-    List.concat [ [ indent ^ "where" ]; delim1; inherited; delim2; local ]
-  in
-  "\n" ^ String.concat "\n" clauses
+  if clauses = [] then ""
+  else
+    let fmt_clause s = indent ^ indent_incr ^ s ^ "," in
+    let clauses = List.map fmt_clause clauses in
+    let inherited, local =
+      Collections.List.split_at clauses num_inherited_clauses
+    in
+    let delim1 =
+      if inherited <> [] then [ indent ^ "  // Inherited clauses" ] else []
+    in
+    let delim2 =
+      if inherited <> [] && local <> [] then [ indent ^ "  // Local clauses" ]
+      else []
+    in
+    let clauses =
+      List.concat [ [ indent ^ "where" ]; delim1; inherited; delim2; local ]
+    in
+    "\n" ^ String.concat "\n" clauses
 
 (** Helper to format "where" clauses *)
 let predicates_and_trait_clauses_to_string (fmt : stype_formatter)
@@ -370,12 +372,12 @@ let type_decl_to_string (type_decl_id_to_string : T.TypeDeclId.id -> string)
   in
   match def.kind with
   | T.Struct fields ->
-      if List.length fields > 0 then
+      if fields <> [] then
         let fields =
           String.concat ","
             (List.map (fun f -> "\n  " ^ field_to_string fmt f) fields)
         in
-        "struct " ^ name ^ params ^ clauses ^ "\n{" ^ fields ^ "}"
+        "struct " ^ name ^ params ^ clauses ^ "\n{" ^ fields ^ "\n}"
       else "struct " ^ name ^ params ^ clauses ^ "{}"
   | T.Enum variants ->
       let variants =

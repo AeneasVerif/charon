@@ -8,11 +8,6 @@ pub trait BoolTrait {
     }
 }
 
-pub enum Option<T> {
-    Some(T),
-    None,
-}
-
 impl BoolTrait for bool {
     fn get_bool(&self) -> bool {
         *self
