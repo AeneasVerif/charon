@@ -148,7 +148,7 @@ pub struct Deps {
     dgraph: DiGraphMap<AnyTransId, ()>,
     /// Want to make sure we remember the order of insertion
     graph: LinkedHashMap<AnyTransId, LinkedHashSet<AnyTransId>>,
-    /// We use this when exploring the graph
+    /// We use this when computing the graph
     current_id: Option<AnyTransId>,
 }
 
@@ -199,6 +199,16 @@ impl SharedTypeVisitor for Deps {
         let id = AnyDeclId::Global(*id);
         self.insert_edge(id);
     }
+
+    fn visit_trait_impl_id(&mut self, id: &TraitImplId::Id) {
+        let id = AnyDeclId::TraitImpl(*id);
+        self.insert_edge(id);
+    }
+
+    fn visit_trait_decl_id(&mut self, id: &TraitDeclId::Id) {
+        let id = AnyDeclId::TraitDecl(*id);
+        self.insert_edge(id);
+    }
 }
 
 impl SharedExprVisitor for Deps {
@@ -233,6 +243,38 @@ impl Deps {
 
         // Visit the predicates
         self.visit_predicates(preds);
+    }
+}
+
+impl AnyTransId {
+    fn fmt_with_ctx(&self, ctx: &TransCtx) -> String {
+        use AnyDeclId::*;
+        match self {
+            Type(id) => ctx.format_object(*id),
+            Fun(id) => ctx.format_object(*id),
+            Global(id) => ctx.format_object(*id),
+            TraitDecl(id) => ctx.format_object(*id),
+            TraitImpl(id) => ctx.format_object(*id),
+        }
+    }
+}
+
+impl Deps {
+    fn fmt_with_ctx(&self, ctx: &TransCtx) -> String {
+        self.dgraph
+            .nodes()
+            .map(|node| {
+                let edges = self
+                    .dgraph
+                    .edges(node)
+                    .map(|e| format!("\n  {}", e.1.fmt_with_ctx(ctx)))
+                    .collect::<Vec<String>>()
+                    .join(",");
+
+                format!("{} -> [{}\n]", node.fmt_with_ctx(ctx), edges)
+            })
+            .collect::<Vec<String>>()
+            .join(",\n")
     }
 }
 
@@ -314,6 +356,11 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 for (_, id) in &d.required_methods {
                     graph.visit_fun_decl_id(id);
                 }
+                for (_, id) in &d.provided_methods {
+                    if id.is_some() {
+                        graph.visit_fun_decl_id(&id.unwrap());
+                    }
+                }
             }
             AnyTransId::TraitImpl(id) => {
                 let d = ctx.trait_impls.get(*id).unwrap();
@@ -346,7 +393,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
         graph.unset_current_id();
     }
 
-    trace!("Graph: {:?}", &graph.dgraph);
+    trace!("Graph:\n{}\n", graph.fmt_with_ctx(ctx));
 
     // Step 2: Apply Tarjan's SCC (Strongly Connected Components) algorithm
     let sccs = tarjan_scc(&graph.dgraph);
