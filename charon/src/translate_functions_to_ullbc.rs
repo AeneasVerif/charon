@@ -331,6 +331,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                             // may eliminate) don't have methods.
                             let trait_id = trait_id.unwrap();
 
+                            // Retrieve the id of the impl block
+                            let impl_id = self
+                                .translate_trait_impl_id(tcx.predicates_of(rust_id).parent.unwrap())
+                                .unwrap();
+
                             let method_name = self.translate_trait_item_name(trait_method_id);
 
                             // Check if the current function implements a provided method.
@@ -345,6 +350,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                             };
 
                             FunKind::TraitMethodImpl {
+                                impl_id,
                                 trait_id,
                                 method_name,
                                 provided,

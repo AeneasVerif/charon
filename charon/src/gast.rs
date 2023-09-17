@@ -152,6 +152,8 @@ pub enum FunKind {
     Regular,
     /// Trait method implementation
     TraitMethodImpl {
+        /// The trait implementation block the method belongs to
+        impl_id: TraitImplId::Id,
         /// The id of the trait decl the method belongs to
         trait_id: TraitDeclId::Id,
         /// The name of the method

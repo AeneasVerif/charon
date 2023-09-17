@@ -70,15 +70,37 @@ impl DeclarationGroup {
         }
     }
 
-    fn make_trait_decl_group(is_rec: bool, gr: impl Iterator<Item = TraitDeclId::Id>) -> Self {
+    fn make_trait_decl_group(
+        ctx: &TransCtx,
+        is_rec: bool,
+        gr: impl Iterator<Item = TraitDeclId::Id>,
+    ) -> Self {
         let gr: Vec<_> = gr.collect();
-        assert!(!is_rec && gr.len() == 1);
+        assert!(
+            !is_rec && gr.len() == 1,
+            "Invalid trait decl group:\n{}",
+            gr.iter()
+                .map(|id| ctx.format_object(*id))
+                .collect::<Vec<String>>()
+                .join("\n")
+        );
         DeclarationGroup::TraitDecl(GDeclarationGroup::NonRec(gr[0]))
     }
 
-    fn make_trait_impl_group(is_rec: bool, gr: impl Iterator<Item = TraitImplId::Id>) -> Self {
+    fn make_trait_impl_group(
+        ctx: &TransCtx,
+        is_rec: bool,
+        gr: impl Iterator<Item = TraitImplId::Id>,
+    ) -> Self {
         let gr: Vec<_> = gr.collect();
-        assert!(!is_rec && gr.len() == 1);
+        assert!(
+            !is_rec && gr.len() == 1,
+            "Invalid trait decl group:\n{}",
+            gr.iter()
+                .map(|id| ctx.format_object(*id))
+                .collect::<Vec<String>>()
+                .join("\n")
+        );
         DeclarationGroup::TraitImpl(GDeclarationGroup::NonRec(gr[0]))
     }
 }
@@ -150,6 +172,48 @@ pub struct Deps {
     graph: LinkedHashMap<AnyTransId, LinkedHashSet<AnyTransId>>,
     /// We use this when computing the graph
     current_id: Option<AnyTransId>,
+    /// We use this to track the trait impl block the current item belongs to
+    /// (if relevant).
+    ///
+    /// We use this to ignore the references to the parent impl block.
+    ///
+    /// If we don't do so, when computing our dependency graph we end up with
+    /// mutually recursive trait impl blocks/trait method impls in the presence
+    /// of associated types (the deepest reason is that we don't normalize the
+    /// types we query from rustc when translating the types from function
+    /// signatures - we avoid doing so because as of now it makes resolving
+    /// the trait params harder: if we get normalized types, we have to
+    /// implement a normalizer on our side to make sure we correctly match
+    /// types...).
+    ///
+    ///
+    /// For instance, the problem happens if in Rust we have:
+    /// ```
+    /// pub trait WithConstTy {
+    ///     type W;
+    ///     fn f(x: &mut Self::W);
+    /// }
+    ///
+    /// impl WithConstTy for bool {
+    ///     type W = u64;
+    ///     fn f(_: &mut Self::W) {}
+    /// }
+    /// ```
+    ///
+    /// In LLBC we get:
+    ///
+    /// ```
+    /// impl traits::Bool::0 : traits::WithConstTy<bool>
+    /// {
+    ///     type W = u64 with []
+    ///     fn f = traits::Bool::0::f
+    /// }
+    ///
+    /// fn traits::Bool::0::f<@R0>(@1: &@R0 mut (traits::Bool::0::W)) { .. }
+    /// //                                       ^^^^^^^^^^^^^^^
+    /// //                                    refers to the trait impl
+    /// ```
+    impl_trait_id: Option<TraitImplId::Id>,
 }
 
 impl Deps {
@@ -157,17 +221,44 @@ impl Deps {
         Deps {
             dgraph: DiGraphMap::new(),
             graph: LinkedHashMap::new(),
-            current_id: Option::None,
+            current_id: None,
+            impl_trait_id: None,
         }
     }
 
-    fn set_current_id(&mut self, id: AnyTransId) {
+    fn set_current_id(&mut self, ctx: &TransCtx, id: AnyTransId) {
         self.insert_node(id);
         self.current_id = Option::Some(id);
+
+        // Add the id of the trait impl trait this item belongs to, if necessary
+        use AnyDeclId::*;
+        match id {
+            TraitDecl(_) | TraitImpl(_) => (),
+            Type(_) | Global(_) => {
+                // TODO
+            }
+            Fun(id) => {
+                // Lookup the function declaration
+                let decl = ctx.fun_defs.get(id).unwrap();
+                match &decl.kind {
+                    FunKind::TraitMethodImpl {
+                        impl_id,
+                        trait_id: _,
+                        method_name: _,
+                        provided: _,
+                    } => {
+                        // Register the trait decl id
+                        self.impl_trait_id = Some(*impl_id)
+                    }
+                    _ => (),
+                }
+            }
+        }
     }
 
     fn unset_current_id(&mut self) {
-        self.current_id = Option::None;
+        self.current_id = None;
+        self.impl_trait_id = None;
     }
 
     fn insert_node(&mut self, id: AnyTransId) {
@@ -201,13 +292,36 @@ impl SharedTypeVisitor for Deps {
     }
 
     fn visit_trait_impl_id(&mut self, id: &TraitImplId::Id) {
-        let id = AnyDeclId::TraitImpl(*id);
-        self.insert_edge(id);
+        // If the impl is the impl this item belongs to, we ignore it
+        // TODO: this is not very satisfying but this is the only way
+        // we have of preventing mutually recursive groups between
+        // method impls and trait impls in the presence of associated types...
+        if let Some(impl_id) = &self.impl_trait_id && impl_id == id {
+            // Ignore
+        }
+        else {
+            let id = AnyDeclId::TraitImpl(*id);
+            self.insert_edge(id);
+        }
     }
 
     fn visit_trait_decl_id(&mut self, id: &TraitDeclId::Id) {
         let id = AnyDeclId::TraitDecl(*id);
         self.insert_edge(id);
+    }
+
+    /// We override this method to not visit the trait decl.
+    ///
+    /// This is sound because the trait ref itself will either have a dependency
+    /// on the trait decl it implements, or it will refer to a clause which
+    /// will imply a dependency on the trait decl.
+    ///
+    /// The reason why we do this is that otherwise if a trait decl declares
+    /// a method which uses one of its associated types we will conclude that
+    /// the trait decl is recursive, while it isn't.
+    fn visit_trait_ref<R>(&mut self, tr: &TraitRef<R>) {
+        self.visit_trait_instance_id(&tr.trait_id);
+        self.visit_generic_args(&tr.generics);
     }
 }
 
@@ -243,6 +357,12 @@ impl Deps {
 
         // Visit the predicates
         self.visit_predicates(preds);
+    }
+
+    /// Lookup a function and visit its signature
+    fn visit_fun_signature_from_trait(&mut self, ctx: &TransCtx, fid: FunDeclId::Id) {
+        let decl = ctx.fun_defs.get(fid).unwrap();
+        self.visit_fun_sig(&decl.signature);
     }
 }
 
@@ -284,7 +404,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
     // Step 1: explore the declarations to build the graph
     let mut graph = Deps::new();
     for id in &ctx.all_ids {
-        graph.set_current_id(*id);
+        graph.set_current_id(ctx, *id);
         match id {
             AnyTransId::Type(id) => {
                 let d = ctx.type_defs.get(*id).unwrap();
@@ -353,13 +473,25 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                     }
                 }
 
-                for (_, id) in &d.required_methods {
-                    graph.visit_fun_decl_id(id);
-                }
-                for (_, id) in &d.provided_methods {
-                    if id.is_some() {
-                        graph.visit_fun_decl_id(&id.unwrap());
-                    }
+                let method_ids = d.required_methods.iter().map(|(_, id)| *id).chain(
+                    d.provided_methods.iter().filter_map(|(_, id)| match id {
+                        None => None,
+                        Some(id) => Some(*id),
+                    }),
+                );
+                for id in method_ids {
+                    // Important: we must ignore the function id, because
+                    // otherwise in the presence of associated types we may
+                    // get a mutual recursion between the function and the
+                    // trait.
+                    // Ex:
+                    // ```
+                    // trait Trait {
+                    //   type X;
+                    //   fn f(x : Trait::X);
+                    // }
+                    // ```
+                    graph.visit_fun_signature_from_trait(ctx, id)
                 }
             }
             AnyTransId::TraitImpl(id) => {
@@ -386,7 +518,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 }
 
                 for (_, id) in d.required_methods.iter().chain(d.provided_methods.iter()) {
-                    graph.visit_fun_decl_id(id);
+                    graph.visit_fun_decl_id(id)
                 }
             }
         }
@@ -426,7 +558,14 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
 
         // The group should consist of only functions, only types or only one global.
         for id in scc {
-            assert!(id0.variant_index_arity() == id.variant_index_arity());
+            assert!(
+                id0.variant_index_arity() == id.variant_index_arity(),
+                "Invalid scc:\n{}",
+                scc.iter()
+                    .map(|x| x.fmt_with_ctx(ctx))
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            );
         }
         if let AnyDeclId::Global(_) = id0 {
             assert!(scc.len() == 1);
@@ -455,10 +594,12 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 scc.iter().map(AnyDeclId::as_global).copied(),
             ),
             AnyDeclId::TraitDecl(_) => DeclarationGroup::make_trait_decl_group(
+                ctx,
                 is_rec,
                 scc.iter().map(AnyDeclId::as_trait_decl).copied(),
             ),
             AnyDeclId::TraitImpl(_) => DeclarationGroup::make_trait_impl_group(
+                ctx,
                 is_rec,
                 scc.iter().map(AnyDeclId::as_trait_impl).copied(),
             ),

@@ -996,15 +996,17 @@ let fun_kind_of_json (js : json) : (A.fun_kind, string) result =
           ( "TraitMethodImpl",
             `Assoc
               [
+                ("impl_id", impl_id);
                 ("trait_id", trait_id);
                 ("method_name", method_name);
                 ("provided", provided);
               ] );
         ] ->
+        let* impl_id = A.TraitImplId.id_of_json impl_id in
         let* trait_id = A.TraitDeclId.id_of_json trait_id in
         let* method_name = string_of_json method_name in
         let* provided = bool_of_json provided in
-        Ok (A.TraitMethodImpl (trait_id, method_name, provided))
+        Ok (A.TraitMethodImpl (impl_id, trait_id, method_name, provided))
     | `Assoc [ ("TraitMethodDecl", `List [ trait_id; item_name ]) ] ->
         let* trait_id = A.TraitDeclId.id_of_json trait_id in
         let* item_name = string_of_json item_name in

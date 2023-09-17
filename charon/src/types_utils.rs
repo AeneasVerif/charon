@@ -1678,6 +1678,16 @@ pub trait TypeVisitor {
         }
     }
 
+    fn visit_type_var(&mut self, ty: &TypeVar) {
+        self.visit_type_var_id(&ty.index);
+        // Ignoring the name
+    }
+
+    fn visit_const_generic_var(&mut self, cg: &ConstGenericVar) {
+        self.visit_const_generic_var_id(&cg.index);
+        // Ignoring the name and type
+    }
+
     fn visit_global_decl_id(&mut self, _: &GlobalDeclId::Id) {}
     fn visit_type_var_id(&mut self, _: &TypeVarId::Id) {}
     fn visit_const_generic_var_id(&mut self, _: &ConstGenericVarId::Id) {}
@@ -1728,7 +1738,6 @@ pub trait TypeVisitor {
         }
     }
 
-    // TODO: use more
     fn visit_generic_args<R>(&mut self, g: &GenericArgs<R>) {
         // We ignore the regions - TODO: we shouldn't
         for t in &g.types {
@@ -1739,6 +1748,19 @@ pub trait TypeVisitor {
         }
         for t in &g.trait_refs {
             self.visit_trait_ref(t);
+        }
+    }
+
+    fn visit_generic_params(&mut self, g: &GenericParams) {
+        // We ignore the regions - TODO: we shouldn't
+        for t in g.types.iter() {
+            self.visit_type_var(t);
+        }
+        for cg in g.const_generics.iter() {
+            self.visit_const_generic_var(cg);
+        }
+        for t in g.trait_clauses.iter() {
+            self.visit_trait_clause(t);
         }
     }
 
@@ -1770,6 +1792,22 @@ pub trait TypeVisitor {
             self.visit_generic_args(generics);
             self.visit_ty(ty);
         }
+    }
+
+    fn visit_fun_sig(&mut self, sig: &FunSig) {
+        let FunSig {
+            generics,
+            preds,
+            parent_params_info: _,
+            inputs,
+            output,
+            regions_hierarchy: _,
+        } = sig;
+
+        self.visit_generic_params(generics);
+        self.visit_predicates(preds);
+        for ty in inputs { self.visit_ty(ty); }
+        self.visit_ty(output);
     }
 }
 

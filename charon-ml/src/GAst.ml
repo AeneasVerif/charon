@@ -191,10 +191,11 @@ type fun_sig = {
 
 type fun_kind =
   | RegularKind  (** A "normal" function *)
-  | TraitMethodImpl of trait_decl_id * string * bool
+  | TraitMethodImpl of trait_impl_id * trait_decl_id * string * bool
       (** Trait method implementation.
 
           Fields:
+          - [trait impl id]
           - [trait_id]
           - [method_name]
           - [provided]: true if this function re-implements a provided method
