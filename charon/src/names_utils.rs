@@ -215,7 +215,9 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
             }
             ExtendedDefPathItem::Impl { ty, .. } => {
                 // Match over the type.
-                // TODO: we need to improve this...
+                // TODO: we need to improve this... A better way would be to
+                // move the name to strings conversion to Aeneas, and not do
+                // it in Charon.
                 use hax::Ty;
                 name.push(PathElem::Ident(match ty {
                     Ty::Adt { def_id: adt_id, .. } => {
@@ -236,9 +238,8 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
                         Ty::Param(hax::ParamTy { index: 0, name: _ }) => "[T]".to_string(),
                         _ => format!("{ty:?}"),
                     },
-                    Ty::Tuple(_) => {
-                        // TODO
-                        format!("{ty:?}")
+                    Ty::Tuple(tys) => {
+                        format!("Tuple{}", tys.len())
                     }
                     _ => {
                         // TODO
