@@ -216,13 +216,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Returns an [Option] because we may filter clauses about builtin or
     /// auto traits like [core::marker::Sized] and [core::marker::Sync].
-    ///
-    /// TODO: don't take a clause id as parameter (because we might ignore
-    /// the current clause, and it messes up the order - not a big issue,
-    /// but not very clean).
     pub(crate) fn translate_trait_clause(
         &mut self,
-        clause_id: TraitClauseId::Id,
         trait_pred: &hax::TraitPredicate,
         span: Option<&hax::Span>,
     ) -> Option<FullTraitClause> {
@@ -246,10 +241,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trait_pred
                 .parent_preds
                 .iter()
-                .filter_map(|x| {
-                    let clause_id = ctx.trait_clauses_counter.fresh_id();
-                    ctx.translate_trait_clause(clause_id, x, None)
-                })
+                .filter_map(|x| ctx.translate_trait_clause(x, None))
                 .collect()
         });
 
@@ -267,8 +259,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         .filter_map(|clause| {
                             // The clause is inside a binder
                             assert!(clause.bound_vars.is_empty());
-                            let clause_id = ctx.trait_clauses_counter.fresh_id();
-                            ctx.translate_trait_clause(clause_id, &clause.value, None)
+                            ctx.translate_trait_clause(&clause.value, None)
                         })
                         .collect()
                 });
@@ -276,6 +267,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             })
             .collect();
 
+        let clause_id = self.trait_clauses_counter.fresh_id();
         let meta = span.map(|x| self.translate_meta_from_rspan(x.clone()));
         Some(FullTraitClause {
             clause_id,
@@ -299,11 +291,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let pred_kind = &pred.value;
         use hax::{Clause, PredicateKind};
         match pred_kind {
-            PredicateKind::Clause(Clause::Trait(trait_pred)) => {
-                let id = self.trait_clauses_counter.fresh_id();
-                self.translate_trait_clause(id, trait_pred, Some(span))
-                    .map(|clause| Predicate::Trait(clause))
-            }
+            PredicateKind::Clause(Clause::Trait(trait_pred)) => self
+                .translate_trait_clause(trait_pred, Some(span))
+                .map(Predicate::Trait),
             PredicateKind::Clause(Clause::RegionOutlives(p)) => {
                 let r0 = self.translate_region(&p.0);
                 let r1 = self.translate_region(&p.1);
