@@ -103,11 +103,6 @@ fn update_update_slice(s: &mut [&mut [u32]], i: usize, j: usize) {
 }
 */
 
-// Using const generics as values
-fn const_gen_ret<const N: usize>() -> usize {
-    N
-}
-
 fn update_update_array(mut s: [[u32; 32]; 32], i: usize, j: usize) {
     s[i][j] = 0;
 }
