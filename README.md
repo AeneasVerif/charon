@@ -20,7 +20,7 @@ present context, Charon allows us to go from the world of Rust programs to the w
 formal verification.
 
 We are **open to contributions**! Please contact us so that we can coordinate ourselves,
-if you are willing to contribute.
+if you are willing to contribute. For this purpose you can join the [Zulip](https://aeneas-verif.zulipchat.com/).
 
 ## LLBC
 Charon converts MIR code to ULLBC (Unstructured Low-Level Borrow Calculus) then
