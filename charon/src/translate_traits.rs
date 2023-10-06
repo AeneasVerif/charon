@@ -140,6 +140,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) {
+        trace!("About to translate trait decl:\n{:?}", rust_id);
+
         let def_id = self.translate_trait_decl_id(rust_id);
         // We may need to ignore the trait (happens if the trait is a marker
         // trait like [core::marker::Sized]
@@ -147,6 +149,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             return;
         }
         let def_id = def_id.unwrap();
+
+        trace!("Trait decl id:\n{:?}", def_id);
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
@@ -275,12 +279,15 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_trait_impl(&mut self, rust_id: DefId) {
+        trace!("About to translate trait impl:\n{:?}", rust_id);
+
         let def_id = self.translate_trait_impl_id(rust_id);
         // We may need to ignore the trait
         if def_id.is_none() {
             return;
         }
         let def_id = def_id.unwrap();
+        trace!("Trait impl id:\n{:?}", def_id);
 
         let tcx = self.tcx;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);

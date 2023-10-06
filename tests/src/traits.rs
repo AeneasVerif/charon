@@ -216,3 +216,17 @@ pub fn test_child_trait2<T: ChildTrait>(x: &T) -> T::W {
 // Checking if the order has an importance (we use U::W before we declare that
 // U:ParentTrait0)
 pub fn order1<T: ParentTrait0<W = U::W>, U: ParentTrait0>() {}
+
+/* [IntoIterator] is interesting because of the condition [Item = Self::Item]
+for the [IntoIter] associated type. */
+pub trait Iterator {
+    type Item;
+}
+
+pub trait IntoIterator {
+    type Item;
+    type IntoIter: Iterator<Item = Self::Item>;
+
+    // Required method
+    fn into_iter(self) -> Self::IntoIter;
+}

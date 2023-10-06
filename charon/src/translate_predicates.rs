@@ -201,6 +201,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn translate_predicates_vec(&mut self, preds: &Vec<(hax::Predicate, hax::Span)>) {
+        trace!("Predicates:\n{:?}", preds);
+        // We reorder the trait predicates so that we translate the predicates
+        // which introduce trait clauses *before* translating the other predicates
+        // (because in order to translate the latters we might need to solve
+        // trait parameters which need the formers).
+        use hax::{Clause, PredicateKind};
+        let (preds_traits, preds): (Vec<_>, Vec<_>) = preds
+            .iter()
+            .partition(|(pred, _)| matches!(&pred.value, PredicateKind::Clause(Clause::Trait(_))));
+        let preds = preds_traits.into_iter().chain(preds.into_iter());
+
         for (pred, span) in preds {
             match self.translate_predicate(pred, span) {
                 None => (),
@@ -318,20 +329,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     ty,
                 } = p;
 
-                let trait_ref = self.translate_trait_impl_source(&impl_source);
+                let trait_ref = self.translate_trait_impl_source(impl_source);
                 // The trait ref should be Some(...): the marker traits (that
                 // we may filter) don't have associated types.
                 let trait_ref = trait_ref.unwrap();
 
-                let (regions, types, const_generics) =
-                    self.translate_substs(None, &substs).unwrap();
+                let (regions, types, const_generics) = self.translate_substs(None, substs).unwrap();
                 let generics = GenericArgs {
                     regions,
                     types,
                     const_generics,
                     trait_refs: Vec::new(),
                 };
-                let ty = self.translate_ty(&ty).unwrap();
+                let ty = self.translate_ty(ty).unwrap();
                 let type_name = TraitItemName(type_name.clone());
                 Some(Predicate::TraitType(TraitTypeConstraint {
                     trait_ref,
@@ -494,8 +504,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Self: TyTranslator<R>,
         Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
     {
+        trace!("Matching trait clauses");
         // Check if the clause is about the same trait
         if clause_trait_id != trait_id {
+            trace!("Not the same trait id");
             false
         } else {
             // Ignoring the regions for now
@@ -528,7 +540,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // need to check equality **modulo** equality clauses)
             // TODO: if we need to unify (later, when allowing universal
             // quantification over clause parameters), use types_utils::TySubst.
-            &src_types == tgt_types && src_const_generics == tgt_const_generics
+            let matched = &src_types == tgt_types && src_const_generics == tgt_const_generics;
+            trace!("Match successful: {}", matched);
+            matched
         }
     }
 
