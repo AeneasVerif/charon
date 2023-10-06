@@ -28,20 +28,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         .unwrap()
     }
 
+    /** Remark: the [decl_item] is the item from the trait declaration. */
     fn translate_trait_refs_from_impl_trait_item(
         &mut self,
         trait_impl_def_id: DefId,
         rust_impl_trait_ref: &rustc_middle::ty::TraitRef<'tcx>,
-        item: &rustc_middle::ty::AssocItem,
+        decl_item: &rustc_middle::ty::AssocItem,
     ) -> Vec<ETraitRef> {
-        // Lookup the information about the type *declaration* in the trait decl
+        trace!(
+            "- trait_impl_def_id: {:?}\n- rust_impl_trait_ref: {:?}\n- decl_item: {:?}",
+            trait_impl_def_id,
+            rust_impl_trait_ref,
+            decl_item
+        );
+
         let tcx = self.t_ctx.tcx;
-        let assoc = tcx.associated_item(item.def_id);
-        let item_decl_def_id = assoc.trait_item_def_id.unwrap();
 
         // Lookup the trait clauses and substitute - TODO: not sure about the substitution
         let subst = rust_impl_trait_ref.substs;
-        let bounds = tcx.item_bounds(item_decl_def_id);
+        let bounds = tcx.item_bounds(decl_item.def_id);
         let param_env = tcx.param_env(trait_impl_def_id);
         let bounds = tcx.subst_and_normalize_erasing_regions(subst, param_env, bounds);
 
@@ -301,7 +306,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.translate_predicates_of(rust_id);
 
         // Retrieve the information about the implemented trait.
-        let (impl_trait_rust_id, impl_trait, rust_impl_trait_ref) = {
+        let (implemented_trait_rust_id, implemented_trait, rust_implemented_trait_ref) = {
             let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
             let trait_id = bt_ctx.translate_trait_decl_id(trait_rust_id);
             // We already tested above whether the trait should be filtered
@@ -327,7 +332,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         use std::collections::HashSet;
         let mut decl_required_methods: HashSet<String> = HashSet::new();
         for item in tcx
-            .associated_items(impl_trait_rust_id)
+            .associated_items(implemented_trait_rust_id)
             .in_definition_order()
         {
             if let AssocKind::Fn = &item.kind && !item.defaultness(tcx).has_value() {
@@ -379,13 +384,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut consts = Vec::new();
         let mut types = Vec::new();
         for item in tcx
-            .associated_items(impl_trait_rust_id)
+            .associated_items(implemented_trait_rust_id)
             .in_definition_order()
         {
             match &item.kind {
                 AssocKind::Fn => (),
                 AssocKind::Const => {
                     let name = TraitItemName(item.name.to_string());
+                    // Does the trait impl provide an implementation for this const?
                     let c = match partial_consts.get(&name) {
                         Some(c) => c.clone(),
                         None => {
@@ -398,6 +404,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 }
                 AssocKind::Type => {
                     let name = TraitItemName(item.name.to_string());
+                    // Does the trait impl provide an implementation for this type?
                     let ty = match partial_types.get(&name) {
                         Some(ty) => ty.clone(),
                         None => {
@@ -410,7 +417,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // Retrieve the trait refs
                     let trait_refs = bt_ctx.translate_trait_refs_from_impl_trait_item(
                         rust_id,
-                        &rust_impl_trait_ref,
+                        &rust_implemented_trait_ref,
                         item,
                     );
 
@@ -422,7 +429,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let trait_impl = ast::TraitImpl {
             def_id,
             name,
-            impl_trait,
+            impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),
             preds: bt_ctx.get_predicates(),
             consts,
