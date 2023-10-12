@@ -260,8 +260,8 @@ impl Rvalue {
                         };
                         format!("{} {{ {} }}", variant, fields.join(", "))
                     }
-                    AggregateKind::Array(_, _) => {
-                        format!("[{}]", ops_s.join(", "))
+                    AggregateKind::Array(_, len) => {
+                        format!("[{}; {}]", ops_s.join(", "), len.fmt_with_ctx(ctx))
                     }
                     AggregateKind::Range(_) => {
                         format!("@Range[{}]", ops_s.join(", "))

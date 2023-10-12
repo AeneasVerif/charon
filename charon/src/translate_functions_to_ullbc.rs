@@ -677,18 +677,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::Rvalue::Repeat(operand, cnst) => {
                 let c = self.translate_constant_expr_to_const_generic(cnst);
-                // We are effectively desugaring the repeat in Charon, turning it into an array literal
-                // where the operand is repeated `cnst` times.
-                // TODO: allow having other kinds of const generics, and desugar later to a function call
-                let cv = *c.as_value().as_scalar().as_usize();
                 let (operand, t) = self.translate_operand_with_type(operand);
-                let mut operands = Vec::with_capacity(cv as usize);
-                for _ in 0..cv {
-                    operands.push(operand.clone());
-                }
-                // We *have* to desugar here; we don't have enough context (the destination place, the
-                // lifetime variable) to translate this into a built-in function call. This is why we
-                // don't have a ArrayRepeat AssumedFunId.
+                let operands = vec![operand];
+                // Remark: we could desugar this into a function call later.
                 Rvalue::Aggregate(AggregateKind::Array(t, c), operands)
             }
             hax::Rvalue::Ref(_region, borrow_kind, place) => {

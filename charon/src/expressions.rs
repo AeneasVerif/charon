@@ -254,6 +254,11 @@ pub enum Rvalue {
     /// our semantics. Aggregate value initialization is easy, you might want
     /// to have a look at expansion of `Bottom` values for explanations about the
     /// other case.
+    ///
+    /// IMPORTANT: for array aggregates, there is only one operand, which is
+    /// a value that we will copy in all the cases of the array (it must be
+    /// copiable).
+    /// TODO: desugar this to a function call at some point?
     Aggregate(AggregateKind, Vec<Operand>),
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
@@ -276,14 +281,14 @@ pub enum Rvalue {
 #[derive(Debug, Clone, VariantIndexArity, Serialize)]
 pub enum AggregateKind {
     Tuple,
-    // TODO: treat Option in a general manner by merging it with the Adt case (we should
-    // extract the definitions of the external enumerations - because as they are public,
-    // their variants are public)
+    /// TODO: treat Option in a general manner by merging it with the Adt case (we should
+    /// extract the definitions of the external enumerations - because as they are public,
+    /// their variants are public)
     Option(VariantId::Id, ETy),
-    // TODO: do we really need this?
+    /// TODO: do we really need this?
     Range(ETy),
     Adt(TypeDeclId::Id, Option<VariantId::Id>, EGenericArgs),
-    // We don't put this with the ADT cas because this is the only assumed type
-    // with aggregates.
+    /// We don't put this with the ADT cas because this is the only assumed type
+    /// with aggregates.
     Array(ETy, ConstGeneric),
 }
