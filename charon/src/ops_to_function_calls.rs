@@ -1,4 +1,4 @@
-//! Desugar some unary/binary operations to function calls.
+//! Desugar some unary/binary operations and the array repeats to function calls.
 //! For instance, we desugar ArrayToSlice from an unop to a function call.
 //! This allows a more uniform treatment later on.
 //! TODO: actually transform all the unops and binops to function calls?
@@ -24,6 +24,28 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
                 RefKind::Mut => AssumedFunId::ArrayToSliceMut,
                 RefKind::Shared => AssumedFunId::ArrayToSliceShared,
             };
+            let func = FunIdOrTraitMethodRef::mk_assumed(id);
+            let generics = GenericArgs::new(
+                vec![ErasedRegion::Erased],
+                vec![ty.clone()],
+                vec![cg.clone()],
+                vec![],
+            );
+            s.content = RawStatement::Call(Call {
+                func,
+                generics,
+                trait_and_method_generic_args: None,
+                args: vec![op.clone()],
+                dest: p.clone(),
+            });
+
+            vec![]
+        }
+        // Transform the array aggregates to function calls
+        RawStatement::Assign(p, Rvalue::Repeat(op, ty, cg)) => {
+            // We could avoid the clone operations below if we take the content of
+            // the statement. In practice, this shouldn't have much impact.
+            let id = AssumedFunId::ArrayRepeat;
             let func = FunIdOrTraitMethodRef::mk_assumed(id);
             let generics = GenericArgs::new(
                 vec![ErasedRegion::Erased],

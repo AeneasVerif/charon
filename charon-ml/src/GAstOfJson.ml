@@ -849,6 +849,7 @@ let assumed_fun_id_of_json (js : json) : (A.assumed_fun_id, string) result =
   | `String "ArrayToSliceMut" -> Ok A.ArrayToSliceMut
   | `String "ArraySubsliceShared" -> Ok A.ArraySubsliceShared
   | `String "ArraySubsliceMut" -> Ok A.ArraySubsliceMut
+  | `String "ArrayRepeat" -> Ok A.ArrayRepeat
   | `String "SliceLen" -> Ok A.SliceLen
   | `String "SliceIndexShared" -> Ok A.SliceIndexShared
   | `String "SliceIndexMut" -> Ok A.SliceIndexMut

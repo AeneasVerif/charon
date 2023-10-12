@@ -225,8 +225,8 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             );
         }
 
-        // # Micro-pass: replace some unops/binops with function calls
-        // (introduces: ArrayToSlice, etc.)
+        // # Micro-pass: replace some unops/binops and the array aggregates with
+        // function calls (introduces: ArrayToSlice, etc.)
         ops_to_function_calls::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: replace the arrays/slices index operations with function

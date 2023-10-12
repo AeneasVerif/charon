@@ -151,7 +151,7 @@ impl<'a> MutExprVisitor for Transform<'a> {
     fn visit_rvalue(&mut self, rv: &mut Rvalue) {
         use Rvalue::*;
         match rv {
-            Use(_) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..) => {
+            Use(_) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..) | Repeat(..) => {
                 // We don't access places here, only operands
                 self.default_visit_rvalue(rv)
             }

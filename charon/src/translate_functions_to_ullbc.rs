@@ -184,6 +184,7 @@ fn translate_primitive_function_call(
         | AssumedFunId::ArrayIndexMut
         | AssumedFunId::ArrayToSliceShared
         | AssumedFunId::ArrayToSliceMut
+        | AssumedFunId::ArrayRepeat
         | AssumedFunId::SliceIndexShared
         | AssumedFunId::SliceIndexMut => {
             // Those cases are introduced later, in micro-passes, by desugaring
@@ -678,9 +679,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Rvalue::Repeat(operand, cnst) => {
                 let c = self.translate_constant_expr_to_const_generic(cnst);
                 let (operand, t) = self.translate_operand_with_type(operand);
-                let operands = vec![operand];
                 // Remark: we could desugar this into a function call later.
-                Rvalue::Aggregate(AggregateKind::Array(t, c), operands)
+                Rvalue::Repeat(operand, t, c)
             }
             hax::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(place);
@@ -818,7 +818,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 match aggregate_kind.deref() {
                     hax::AggregateKind::Array(ty) => {
-                        let t_ty = self.translate_ety(&ty).unwrap();
+                        let t_ty = self.translate_ety(ty).unwrap();
                         let cg = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
                             operands_t.len() as u64,
                         )));

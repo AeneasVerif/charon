@@ -270,6 +270,9 @@ impl Rvalue {
             }
             Rvalue::Global(gid) => ctx.format_object(*gid),
             Rvalue::Len(place, ..) => format!("len({})", place.fmt_with_ctx(ctx)),
+            Rvalue::Repeat(op, _ty, cg) => {
+                format!("[{}; {}]", op.fmt_with_ctx(ctx), cg.fmt_with_ctx(ctx))
+            }
         }
     }
 
@@ -394,6 +397,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
             Rvalue::Global(gid) => self.visit_global(gid),
             Rvalue::Len(p, ty, cg) => self.visit_len(p, ty, cg),
+            Rvalue::Repeat(op, ty, cg) => self.visit_repeat(op, ty, cg),
         }
     }
 
@@ -450,8 +454,19 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
 
     fn visit_global(&mut self, _: &GlobalDeclId::Id) {}
 
-    fn visit_len(&mut self, p: &Place, _ty: &ETy, _cg: &Option<ConstGeneric>) {
-        self.visit_place(p)
+    fn visit_len(&mut self, p: &Place, ty: &ETy, cg: &Option<ConstGeneric>) {
+        self.visit_place(p);
+        self.visit_ty(ty);
+        match cg {
+            Some(cg) => self.visit_const_generic(cg),
+            None => (),
+        }
+    }
+
+    fn visit_repeat(&mut self, op: &Operand, ty: &ETy, cg: &ConstGeneric) {
+        self.visit_operand(op);
+        self.visit_ty(ty);
+        self.visit_const_generic(cg);
     }
 
     fn visit_call(&mut self, c: &Call) {

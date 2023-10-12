@@ -140,6 +140,7 @@ let call_to_string (fmt : ast_formatter) (indent : string) (call : GA.call) :
         | GA.ArrayToSliceMut -> "@ArrayToSliceMut" ^ generics
         | GA.ArraySubsliceShared -> "@ArraySubsliceShared" ^ generics
         | GA.ArraySubsliceMut -> "@ArraySubsliceMut" ^ generics
+        | GA.ArrayRepeat -> "@ArrayRepeat" ^ generics
         | GA.SliceLen -> "@SliceLen" ^ generics
         | GA.SliceIndexShared -> "@SliceIndexShared" ^ generics
         | GA.SliceIndexMut -> "@SliceIndexMut" ^ generics

@@ -254,11 +254,6 @@ pub enum Rvalue {
     /// our semantics. Aggregate value initialization is easy, you might want
     /// to have a look at expansion of `Bottom` values for explanations about the
     /// other case.
-    ///
-    /// IMPORTANT: for array aggregates, there is only one operand, which is
-    /// a value that we will copy in all the cases of the array (it must be
-    /// copiable).
-    /// TODO: desugar this to a function call at some point?
     Aggregate(AggregateKind, Vec<Operand>),
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
@@ -276,6 +271,10 @@ pub enum Rvalue {
     /// where `x` is a slice or an array, they actually call a non-primitive
     /// function.
     Len(Place, ETy, Option<ConstGeneric>),
+    /// [Repeat(x, n)] creates an array where [x] is copied [n] times.
+    ///
+    /// We desugar this to a function call.
+    Repeat(Operand, ETy, ConstGeneric),
 }
 
 #[derive(Debug, Clone, VariantIndexArity, Serialize)]

@@ -379,6 +379,10 @@ pub enum AssumedFunId {
     /// Introduced by disambiguating the `Index::index` trait (takes a range
     /// as argument).
     ArraySubsliceMut,
+    /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
+    ///
+    /// We introduce this when desugaring the [ArrayRepeat] rvalue.
+    ArrayRepeat,
     /// Remark: when we write `a.len()` in Rust, where `a` is an array, the
     /// statement is desugared to a conversion from array to slice, followed
     /// by a call to the `len` function for slices.
