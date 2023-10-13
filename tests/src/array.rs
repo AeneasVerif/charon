@@ -177,6 +177,12 @@ fn update_all() {
     update_mut_slice(&mut x);
 }
 
+// Comes from https://github.com/AeneasVerif/charon/issues/45
+// We initialize an array with a variable length (this uses the `repeat` instruction).
+pub fn init_array_variable_len<const LEN: usize>() -> [u8; LEN] {
+    [0u8; LEN]
+}
+
 // Nano-tests, with ranges
 // -----------------------
 
@@ -281,9 +287,4 @@ fn ite() {
         index_mut_slice_u32_0(&mut x);
         index_mut_slice_u32_0(&mut y);
     }
-}
-
-// Comes from https://github.com/AeneasVerif/charon/issues/45
-pub fn array<const LEN: usize>() -> [u8; LEN] {
-    [0u8; LEN]
 }
