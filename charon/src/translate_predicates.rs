@@ -485,6 +485,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
+            ImplSourceKind::FnPointer(data) => {
+                let ty = self.translate_ety(&data.fn_ty).unwrap();
+                let trait_id = TraitInstanceId::FnPointer(Box::new(ty));
+                let trait_refs = self.translate_trait_impl_sources(&data.nested);
+                let generics = GenericArgs {
+                    regions: vec![],
+                    types: vec![],
+                    const_generics: vec![],
+                    trait_refs,
+                };
+                TraitRef {
+                    trait_id,
+                    generics,
+                    trait_decl_ref,
+                }
+            }
             ImplSourceKind::TraitUpcasting(_) => unimplemented!(),
         };
         Some(trait_ref)

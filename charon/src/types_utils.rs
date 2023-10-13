@@ -22,6 +22,7 @@ pub type ConstGenericSubst = HashMap<ConstGenericVarId::Id, ConstGeneric>;
 // TODO: should we just put all the potential constraints we need in there?
 pub trait TypeFormatter<'a, R: 'a> = Formatter<TypeVarId::Id>
     + Formatter<&'a R>
+    + Formatter<&'a ErasedRegion>
     + Formatter<TypeDeclId::Id>
     + Formatter<ConstGenericVarId::Id>
     + Formatter<FunDeclId::Id>
@@ -462,9 +463,9 @@ impl TraitClause {
 }
 
 impl TraitInstanceId {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: Formatter<TraitDeclId::Id> + Formatter<TraitImplId::Id> + Formatter<TraitClauseId::Id>,
+        C: TypeFormatter<'a, ErasedRegion>,
     {
         match self {
             TraitInstanceId::SelfId => "Self".to_string(),
@@ -487,6 +488,9 @@ impl TraitInstanceId {
             TraitInstanceId::TraitImpl(id) => ctx.format_object(*id),
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
             TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
+            TraitInstanceId::FnPointer(box ty) => {
+                format!("(fn_ptr:{})", ty.fmt_with_ctx(ctx))
+            }
             TraitInstanceId::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
     }
@@ -683,7 +687,7 @@ impl std::string::ToString for TypeDecl {
 impl Variant {
     pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &'a T) -> String
     where
-        T: Formatter<RegionVarId::Id> + TypeFormatter<'a, Region<RegionVarId::Id>>,
+        T: TypeFormatter<'a, Region<RegionVarId::Id>> + Formatter<RegionVarId::Id>,
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
@@ -694,7 +698,7 @@ impl Variant {
 impl Field {
     pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &'a T) -> String
     where
-        T: Formatter<RegionVarId::Id> + TypeFormatter<'a, Region<RegionVarId::Id>>,
+        T: TypeFormatter<'a, Region<RegionVarId::Id>> + Formatter<RegionVarId::Id>,
     {
         match &self.name {
             Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
@@ -1588,6 +1592,7 @@ impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
             TraitInstanceId::TraitImpl(_)
             | TraitInstanceId::Clause(_)
             | TraitInstanceId::BuiltinOrAuto(_)
+            | TraitInstanceId::FnPointer(_)
             | TraitInstanceId::Unknown(_) => (),
         }
     }
@@ -1734,6 +1739,9 @@ pub trait TypeVisitor {
                 self.visit_trait_decl_id(decl_id);
                 self.visit_trait_clause_id(clause_id)
             },
+            TraitInstanceId::FnPointer(box ty) => {
+                self.visit_ty(ty);
+            }
             TraitInstanceId::Unknown(_) => (),
         }
     }

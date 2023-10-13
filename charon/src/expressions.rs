@@ -284,7 +284,7 @@ pub enum AggregateKind {
     /// extract the definitions of the external enumerations - because as they are public,
     /// their variants are public)
     Option(VariantId::Id, ETy),
-    /// TODO: do we really need this?
+    /// TODO: merge it with the Adt case (see [Option] case)
     Range(ETy),
     Adt(TypeDeclId::Id, Option<VariantId::Id>, EGenericArgs),
     /// We don't put this with the ADT cas because this is the only assumed type

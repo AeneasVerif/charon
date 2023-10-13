@@ -168,6 +168,18 @@ pub enum TraitInstanceId {
         TraitItemName,
         TraitClauseId::Id,
     ),
+    /// Happens when we use a function pointer as an object implementing a
+    /// trait like `Fn` or `FnMut`.
+    ///
+    /// ```text
+    /// fn incr(x : u32) -> u32 { ... }
+    ///
+    /// Example:
+    /// fn f(a: [u32; 32]) -> [u32; 32] {
+    ///   a.map(incr)
+    /// }
+    /// ```
+    FnPointer(Box<ETy>),
     /// For error reporting
     Unknown(String),
 }
@@ -486,6 +498,8 @@ pub enum Ty<R> {
     RawPtr(Box<Ty<R>>, RefKind),
     /// A trait type
     TraitType(TraitRef<R>, GenericArgs<R>, TraitItemName),
+    ///
+    Arrow,
 }
 
 /// Type with *R*egions.
