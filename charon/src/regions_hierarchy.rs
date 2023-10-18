@@ -425,7 +425,18 @@ fn compute_full_regions_constraints_for_ty(
                 );
             }
         }
-        Ty::Arrow(_) => todo!(),
+        Ty::Arrow(inputs, box output) => {
+            for ty in inputs.iter().chain(std::iter::once(output)) {
+                compute_full_regions_constraints_for_ty(
+                    updated,
+                    constraints_map,
+                    acc_constraints,
+                    type_def_constraints,
+                    parent_regions.clone(),
+                    ty,
+                );
+            }
+        }
     }
 }
 

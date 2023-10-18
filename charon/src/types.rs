@@ -504,7 +504,7 @@ pub enum Ty<R> {
     /// A trait type
     TraitType(TraitRef<R>, GenericArgs<R>, TraitItemName),
     /// Arrow type
-    Arrow(Box<FunSig>),
+    Arrow(Vec<Ty<R>>, Box<Ty<R>>),
 }
 
 /// Type with *R*egions.

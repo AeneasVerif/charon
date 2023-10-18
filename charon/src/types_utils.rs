@@ -1008,7 +1008,19 @@ impl<R> Ty<R> {
                     substs.fmt_with_ctx_split_trait_refs(ctx)
                 )
             }
-            Ty::Arrow(box sig) => sig.fmt_with_ctx(ctx),
+            Ty::Arrow(inputs, box output) => {
+                let inputs = inputs
+                    .iter()
+                    .map(|x| x.fmt_with_ctx(ctx))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+                if output.is_unit() {
+                    format!("fn({inputs})")
+                } else {
+                    let output = output.fmt_with_ctx(ctx);
+                    format!("fn({inputs}) -> {output}")
+                }
+            }
         }
     }
 
@@ -1081,8 +1093,9 @@ impl<Rid: Clone + Ord + std::hash::Hash> Ty<Region<Rid>> {
                         || generics.types.iter().any(|x| x.contains_region_var(rset))
                 })
             }
-            Ty::Arrow(_) => {
-                todo!()
+            Ty::Arrow(inputs, box output) => {
+                inputs.iter().any(|x| x.contains_region_var(rset))
+                    || output.contains_region_var(rset)
             }
         }
     }
@@ -1207,9 +1220,13 @@ impl<R: Eq + Clone> Ty<R> {
                 let args = args.substitute(rsubst, tsubst, cgsubst);
                 Ty::TraitType(trait_ref, args, name.clone())
             }
-            Ty::Arrow(_) => {
-                // TODO: not sure how to handle the generics
-                todo!()
+            Ty::Arrow(inputs, box output) => {
+                let inputs = inputs
+                    .iter()
+                    .map(|ty| ty.substitute(rsubst, tsubst, cgsubst))
+                    .collect();
+                let output = output.substitute(rsubst, tsubst, cgsubst);
+                Ty::Arrow(inputs, Box::new(output))
             }
         }
     }
@@ -1263,9 +1280,8 @@ impl<R: Eq + Clone> Ty<R> {
                 // so we don't need to explore the trait ref
                 !args.regions.is_empty() || args.types.iter().any(|x| x.contains_variables())
             }
-            Ty::Arrow(box sig) => {
-                sig.inputs.iter().any(|ty| ty.contains_variables())
-                    || sig.output.contains_variables()
+            Ty::Arrow(inputs, box output) => {
+                inputs.iter().any(|ty| ty.contains_variables()) || output.contains_variables()
             }
         }
     }
@@ -1283,8 +1299,8 @@ impl<R: Eq + Clone> Ty<R> {
                 // so we don't need to explore the trait ref
                 !args.regions.is_empty() || args.types.iter().any(|x| x.contains_regions())
             }
-            Ty::Arrow(box sig) => {
-                sig.inputs.iter().any(|ty| ty.contains_regions()) || sig.output.contains_regions()
+            Ty::Arrow(inputs, box output) => {
+                inputs.iter().any(|ty| ty.contains_regions()) || output.contains_regions()
             }
         }
     }
@@ -1432,8 +1448,8 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
             }
             Ty::TypeVar(_) | Ty::Literal(_) => false,
             Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => ty.contains_never(),
-            Ty::Arrow(box sig) => {
-                sig.inputs.iter().any(|ty| ty.contains_never()) || sig.output.contains_never()
+            Ty::Arrow(inputs, box output) => {
+                inputs.iter().any(|ty| ty.contains_never()) || output.contains_never()
             }
         }
     }
@@ -1654,8 +1670,15 @@ pub trait TypeVisitor {
                 self.visit_trait_ref(trait_ref);
                 self.visit_generic_args(generics);
             }
-            Arrow(box sig) => self.visit_fun_sig(sig),
+            Arrow(inputs, box output) => self.visit_arrow(inputs, output),
         }
+    }
+
+    fn visit_arrow<R>(&mut self, inputs: &Vec<Ty<R>>, output: &Ty<R>) {
+        for ty in inputs {
+            self.visit_ty(ty);
+        }
+        self.visit_ty(output);
     }
 
     fn visit_ty_adt<R>(
