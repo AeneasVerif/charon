@@ -1234,8 +1234,8 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&llbc_ast::GlobalDecl> for BodyTransCtx<'tcx, 
     }
 }
 
-impl<'tcx, 'ctx> Formatter<&gast::FunSig> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, sig: &gast::FunSig) -> String {
+impl<'tcx, 'ctx> Formatter<&ty::FunSig> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, sig: &ty::FunSig) -> String {
         // Create a body format context
         let formatter = BodyFormatCtx {
             t_ctx: self,
@@ -1247,8 +1247,8 @@ impl<'tcx, 'ctx> Formatter<&gast::FunSig> for TransCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&gast::FunSig> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, sig: &gast::FunSig) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::FunSig> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, sig: &ty::FunSig) -> String {
         self.t_ctx.format_object(sig)
     }
 }

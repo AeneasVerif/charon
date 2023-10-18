@@ -6,6 +6,7 @@ use crate::names::TypeName;
 use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
 use crate::values::Literal;
+use derivative::Derivative;
 use macros::{
     generate_index_type, EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName,
 };
@@ -29,7 +30,7 @@ generate_index_type!(GlobalDeclId);
 /// Type variable.
 /// We make sure not to mix variables and type variables by having two distinct
 /// definitions.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct TypeVar {
     /// Unique index identifying the variable
     pub index: TypeVarId::Id,
@@ -38,7 +39,7 @@ pub struct TypeVar {
 }
 
 /// Region variable.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct RegionVar {
     /// Unique index identifying the variable
     pub index: RegionVarId::Id,
@@ -47,7 +48,7 @@ pub struct RegionVar {
 }
 
 /// Const Generic Variable
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ConstGenericVar {
     /// Unique index identifying the variable
     pub index: ConstGenericVarId::Id,
@@ -267,7 +268,7 @@ pub type RGenericArgs = GenericArgs<Region<RegionVarId::Id>>;
 /// be filled. We group in a different place the predicates which are not
 /// trait clauses, because those enforce constraints but do not need to
 /// be filled with witnesses/instances.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct GenericParams {
     pub regions: RegionVarId::Vector<RegionVar>,
     pub types: TypeVarId::Vector<TypeVar>,
@@ -280,17 +281,21 @@ generate_index_type!(TraitClauseId);
 generate_index_type!(TraitDeclId);
 generate_index_type!(TraitImplId);
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Derivative)]
+#[derivative(PartialEq)]
 pub struct TraitClause {
     /// We use this id when solving trait constraints, to be able to refer
     /// to specific where clauses when the selected trait actually is linked
     /// to a parameter.
     pub clause_id: TraitClauseId::Id,
+    #[derivative(PartialEq = "ignore")]
     pub meta: Meta,
     pub trait_id: TraitDeclId::Id,
     /// Remark: the trait refs list in the [generics] field should be empty.
     pub generics: RGenericArgs,
 }
+
+impl Eq for TraitClause {}
 
 /// A type declaration.
 ///
@@ -498,6 +503,8 @@ pub enum Ty<R> {
     RawPtr(Box<Ty<R>>, RefKind),
     /// A trait type
     TraitType(TraitRef<R>, GenericArgs<R>, TraitItemName),
+    /// Arrow type
+    Arrow(Box<FunSig>),
 }
 
 /// Type with *R*egions.
@@ -543,4 +550,79 @@ pub enum AssumedTy {
     Slice,
     /// Primitive type
     Str,
+}
+
+/// We use this to store information about the parameters in parent blocks.
+/// This is necessary because in the definitions we store *all* the generics,
+/// including those coming from the outer impl block.
+///
+/// For instance:
+/// ```text
+/// impl Foo<T> {
+///         ^^^
+///       outer block generics
+///   fn bar<U>(...)  { ... }
+///         ^^^
+///       generics local to the function bar
+/// }
+/// ```
+///
+/// In `bar` we store the generics: `[T, U]`.
+///
+/// We however sometimes need to make a distinction between those two kinds
+/// of generics, in particular when manipulating traits. For instance:
+///
+/// ```text
+/// impl<T> Foo for Bar<T> {
+///   fn baz<U>(...)  { ... }
+/// }
+///
+/// fn test(...) {
+///    x.baz(...); // Here, we refer to the call as:
+///                // > Foo<T>::baz<U>(...)
+///                // If baz hadn't been a method implementation of a trait,
+///                // we would have refered to it as:
+///                // > baz<T, U>(...)
+///                // The reason is that with traits, we refer to the whole
+///                // trait implementation (as if it were a structure), then
+///                // pick a specific method inside (as if projecting a field
+///                // from a structure).
+/// }
+/// ```
+///
+/// **Remark**: Rust only allows refering to the generics of the immediately
+/// outer block. For this reason, when we need to store the information about
+/// the generics of the outer block(s), we need to do it only for one level
+/// (this definitely makes things simpler).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ParamsInfo {
+    pub num_region_params: usize,
+    pub num_type_params: usize,
+    pub num_const_generic_params: usize,
+    pub num_trait_clauses: usize,
+    pub num_regions_outlive: usize,
+    pub num_types_outlive: usize,
+    pub num_trait_type_constraints: usize,
+}
+
+/// A function signature.
+/// Note that a signature uses unerased lifetimes, while function bodies (and
+/// execution) use erased lifetimes.
+/// We need the functions' signatures *with* the region parameters in order
+/// to correctly abstract those functions (number and signature of the backward
+/// functions) - we only use regions for this purpose.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct FunSig {
+    pub generics: GenericParams,
+    pub preds: Predicates,
+    /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).
+    pub parent_params_info: Option<ParamsInfo>,
+    pub inputs: Vec<RTy>,
+    pub output: RTy,
+    /// The lifetime's hierarchy between the different regions.
+    /// We initialize it to a dummy value, and compute it once the whole
+    /// crate has been translated from MIR.
+    ///
+    /// TODO: move to Aeneas.
+    pub regions_hierarchy: RegionGroups,
 }

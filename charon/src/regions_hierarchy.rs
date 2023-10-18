@@ -11,7 +11,7 @@ use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups};
 use crate::translate_ctx::TransCtx;
 use crate::types as ty;
 use crate::types::*;
-use crate::ullbc_ast::{FunDeclId, FunSig};
+use crate::ullbc_ast::FunDeclId;
 use hashlink::linked_hash_map::LinkedHashMap;
 use macros::generate_index_type;
 use petgraph::algo::tarjan_scc;
@@ -43,7 +43,7 @@ type LifetimeConstraints = DiGraphMap<Region<RegionVarId::Id>, ()>;
 ///
 /// Is used to group regions with the same lifetime together, and express
 /// the lifetime hierarchy between different groups of regions.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct RegionGroup {
     /// The region group identifier
     pub id: RegionGroupId::Id,
@@ -425,6 +425,7 @@ fn compute_full_regions_constraints_for_ty(
                 );
             }
         }
+        Ty::Arrow(_) => todo!(),
     }
 }
 

@@ -304,51 +304,6 @@ impl<T> GExprBody<T> {
     }
 }
 
-impl FunSig {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &'a T) -> String
-    where
-        T: Formatter<RegionVarId::Id> + TypeFormatter<'a, Region<RegionVarId::Id>>,
-    {
-        // Generic parameters
-        let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-
-        // Arguments
-        let mut args: Vec<String> = Vec::new();
-        for ty in &self.inputs {
-            args.push(ty.fmt_with_ctx(ctx).to_string());
-        }
-        let args = args.join(", ");
-
-        // Return type
-        let ret_ty = &self.output;
-        let ret_ty = if ret_ty.is_unit() {
-            "".to_string()
-        } else {
-            format!(" -> {}", ret_ty.fmt_with_ctx(ctx))
-        };
-
-        // Clauses
-        let clauses = fmt_where_clauses_with_ctx(
-            ctx,
-            "",
-            &self.parent_params_info,
-            trait_clauses,
-            &self.preds,
-        );
-
-        // Regions hierarchy
-        let regions_hierarchy: Vec<String> = self
-            .regions_hierarchy
-            .iter()
-            .map(|rg| rg.fmt_with_ctx(ctx))
-            .collect();
-        let regions_hierarchy = regions_hierarchy.join("\n");
-
-        // Put everything together
-        format!("fn{params}({args}){ret_ty}{clauses}\n\nRegions hierarchy:\n{regions_hierarchy}",)
-    }
-}
-
 pub trait GFunDeclFormatter<'a, Body: 'a> = ExprFormatter<'a>
     + Formatter<&'a Body>
     + Formatter<&'a Region<RegionVarId::Id>>
