@@ -204,11 +204,4 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
       | E.AggregatedRange ty ->
           let fmt = expr_to_etype_formatter fmt in
           "@Range " ^ PT.ety_to_string fmt ty
-      | E.AggregatedArray (_ty, cg) ->
-          let fmt = expr_to_etype_formatter fmt in
-          (* There should be exactly one operand, actually *)
-          "["
-          ^ Collections.List.to_cons_nil ops
-          ^ "; "
-          ^ PT.const_generic_to_string fmt cg
-          ^ "]")
+      | E.AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " ops ^ "]")
