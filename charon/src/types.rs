@@ -498,8 +498,6 @@ pub enum Ty<R> {
     RawPtr(Box<Ty<R>>, RefKind),
     /// A trait type
     TraitType(TraitRef<R>, GenericArgs<R>, TraitItemName),
-    ///
-    Arrow,
 }
 
 /// Type with *R*egions.
