@@ -37,13 +37,19 @@ impl std::fmt::Display for BorrowKind {
     }
 }
 
-impl std::fmt::Display for UnOp {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+impl UnOp {
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    where
+        T: TypeFormatter<'a, ErasedRegion>,
+    {
         match self {
-            UnOp::Not => write!(f, "~"),
-            UnOp::Neg => write!(f, "-"),
-            UnOp::Cast(src, tgt) => write!(f, "cast<{src},{tgt}>"),
-            UnOp::ArrayToSlice(..) => write!(f, "array_to_slice"),
+            UnOp::Not => "~".to_string(),
+            UnOp::Neg => "-".to_string(),
+            UnOp::Cast(CastKind::Integer(src, tgt)) => format!("cast<{src},{tgt}>"),
+            UnOp::Cast(CastKind::FnPtr(src, tgt)) => {
+                format!("cast<{},{}>", src.fmt_with_ctx(ctx), tgt.fmt_with_ctx(ctx))
+            }
+            UnOp::ArrayToSlice(..) => "array_to_slice".to_string(),
         }
     }
 }
@@ -229,7 +235,7 @@ impl Rvalue {
                 BorrowKind::Shallow => format!("&shallow {}", place.fmt_with_ctx(ctx)),
             },
             Rvalue::UnaryOp(unop, x) => {
-                format!("{}({})", unop, x.fmt_with_ctx(ctx))
+                format!("{}({})", unop.fmt_with_ctx(ctx), x.fmt_with_ctx(ctx))
             }
             Rvalue::BinaryOp(binop, x, y) => {
                 format!("{} {} {}", x.fmt_with_ctx(ctx), binop, y.fmt_with_ctx(ctx))
@@ -272,6 +278,9 @@ impl Rvalue {
                     }
                     AggregateKind::Range(_) => {
                         format!("@Range[{}]", ops_s.join(", "))
+                    }
+                    AggregateKind::Closure(fn_id) => {
+                        format!("{}", ctx.format_object(*fn_id))
                     }
                 }
             }
@@ -424,7 +433,18 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         self.visit_place(p)
     }
 
-    fn visit_unary_op(&mut self, _: &UnOp, o1: &Operand) {
+    fn visit_unary_op(&mut self, unop: &UnOp, o1: &Operand) {
+        match unop {
+            UnOp::Not | UnOp::Neg | UnOp::Cast(CastKind::Integer(_, _)) => (),
+            UnOp::Cast(CastKind::FnPtr(src, tgt)) => {
+                self.visit_ty(src);
+                self.visit_ty(tgt);
+            }
+            UnOp::ArrayToSlice(_, ty, cg) => {
+                self.visit_ty(ty);
+                self.visit_const_generic(cg);
+            }
+        }
         self.visit_operand(o1)
     }
 
@@ -460,6 +480,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
                 self.visit_ty(ty);
                 self.visit_const_generic(cg);
             }
+            Closure(fn_id) => self.visit_fun_decl_id(fn_id),
         }
     }
 

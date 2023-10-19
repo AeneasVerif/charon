@@ -233,9 +233,9 @@ pub trait IntoIterator {
 
 /* Testing function pointers and closures */
 #[allow(clippy::manual_map)]
-pub fn map_option<F>(x: Option<u32>, f: F) -> Option<u32>
+pub fn map_option<T, F>(x: Option<T>, f: F) -> Option<T>
 where
-    F: Fn(u32) -> u32,
+    F: Fn(T) -> T,
 {
     match x {
         None => None,
@@ -247,14 +247,29 @@ fn incr_u32(x: u32) -> u32 {
     x + 1
 }
 
+// With a pointer to a top level function
 pub fn test_map_option1(x: Option<u32>) -> Option<u32> {
     map_option(x, incr_u32)
 }
 
 /*
-// With a dyn
+// With a local function
 pub fn test_map_option2(x: Option<u32>) -> Option<u32> {
-    let f: &dyn Fn(u32) -> u32 = &|x| x + 1;
+    let f: fn(u32) -> u32 = |x| x + 1;
     map_option(x, f)
 }
 */
+
+/*
+// With a local function which uses local type variables
+pub fn test_map_option3<T, U>(_: T, x: Option<U>) -> Option<U> {
+    let f: fn(U) -> U = |x| x;
+    map_option(x, f)
+}
+*/
+
+/*// With a `dyn`
+pub fn test_map_option3(x: Option<u32>) -> Option<u32> {
+    let f: fn(u32) -> u32 = |x| x + 1;
+    map_option(x, f)
+}*/

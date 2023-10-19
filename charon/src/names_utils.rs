@@ -265,6 +265,12 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
                 // instance to filter opaque modules.
                 name.push(PathElem::Ident(symbol.clone()));
             }
+            ExtendedDefPathItem::ClosureExpr => {
+                // TODO: this is not very satisfactory, but on the other hand
+                // we should be able to extract closures in local let-bindings
+                // (i.e., we shouldn't have to introduce top-level let-bindings).
+                name.push(PathElem::Ident(format!("closure{}", data.disambiguator)))
+            }
             _ => {
                 error!("Unexpected ExtendedDefPathItem: {:?}", data);
                 unreachable!("Unexpected ExtendedDefPathItem: {:?}", data);

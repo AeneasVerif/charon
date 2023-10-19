@@ -1231,7 +1231,7 @@ impl<R: Eq + Clone> Ty<R> {
         }
     }
 
-    fn substitute_regions<R1: Eq>(regions: &Vec<R>, rsubst: &dyn Fn(&R) -> R1) -> Vec<R1> {
+    fn substitute_regions<R1>(regions: &Vec<R>, rsubst: &dyn Fn(&R) -> R1) -> Vec<R1> {
         Vec::from_iter(regions.iter().map(|rid| rsubst(rid)))
     }
 
@@ -1319,6 +1319,18 @@ impl RTy {
                 Region::Var(rid) => *rsubst.get(rid).unwrap(),
             },
             &|tid| tsubst.get(tid).unwrap().clone(),
+            &|cgid| ConstGeneric::Var(*cgid),
+        )
+    }
+}
+
+impl ETy {
+    /// Convert an `ETy` to an `Ty<R>` provided there are no (erased) regions
+    /// in the type.
+    pub fn to_rty<R: Eq>(&self) -> Ty<R> {
+        self.substitute(
+            &|_| panic!("Unexpected region"),
+            &|tid| Ty::TypeVar(*tid),
             &|cgid| ConstGeneric::Var(*cgid),
         )
     }

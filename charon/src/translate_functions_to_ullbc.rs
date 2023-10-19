@@ -721,17 +721,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // Translate the operand
                 let (op, src_ty) = self.translate_operand_with_type(operand);
 
-                use hax::CastKind;
                 match (cast_kind, &src_ty, &tgt_ty) {
-                    (CastKind::IntToInt, _, _) => {
+                    (hax::CastKind::IntToInt, _, _) => {
                         // We only support source and target types for integers
                         let tgt_ty = *tgt_ty.as_literal().as_integer();
                         let src_ty = *src_ty.as_literal().as_integer();
 
-                        Rvalue::UnaryOp(UnOp::Cast(src_ty, tgt_ty), op)
+                        Rvalue::UnaryOp(UnOp::Cast(CastKind::Integer(src_ty, tgt_ty)), op)
                     }
                     (
-                        CastKind::Pointer(hax::PointerCast::Unsize),
+                        hax::CastKind::Pointer(hax::PointerCast::Unsize),
                         Ty::Ref(_, t1, kind1),
                         Ty::Ref(_, t2, kind2),
                     ) => {
@@ -766,9 +765,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             }
                         }
                     }
+                    (
+                        hax::CastKind::Pointer(hax::PointerCast::ClosureFnPointer(unsafety)),
+                        Ty::Arrow(inputs1, output1),
+                        Ty::Arrow(inputs2, output2),
+                    ) => {
+                        assert!(*unsafety == hax::Unsafety::Normal);
+                        let src_ty = Ty::Arrow(inputs1.clone(), output1.clone()).to_rty();
+                        let tgt_ty = Ty::Arrow(inputs2.clone(), output2.clone()).to_rty();
+                        Rvalue::UnaryOp(UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)), op)
+                    }
                     _ => {
                         panic!(
-                            "Unsupported cast: {:?}, src={:?}, dst={:?}",
+                            "Unsupported cast:\n- rvalue: {:?}\n- src={:?}\n- dst={:?}",
                             rvalue, src_ty, tgt_ty
                         )
                     }
@@ -916,8 +925,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             }
                         }
                     }
-                    hax::AggregateKind::Closure(_def_id, _subst) => {
-                        unimplemented!();
+                    hax::AggregateKind::Closure(def_id, sig) => {
+                        trace!("Closure:\n- def_id: {:?}\n- sig: {:?}", def_id, sig);
+                        // We need to register the signature for def_id, so that
+                        // we can later translate the closure the same way as top-level
+                        // functions.
+                        todo!();
+                        /*let def_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
+                        let akind = AggregateKind::Closure(def_id);
+                        Rvalue::Aggregate(akind, Vec::new()) */
                     }
                     hax::AggregateKind::Generator(_def_id, _subst, _movability) => {
                         unimplemented!();
@@ -1556,7 +1572,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Retrieve the function signature, which includes the lifetimes
         let signature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
-            tcx.fn_sig(def_id).subst_identity();
+            if tcx.is_closure(def_id) {
+                // TODO:
+                // ```
+                // error: internal compiler error: compiler/rustc_hir_analysis/src/collect.rs:1118:13:
+                // to get the signature of a closure, use `substs.as_closure().sig()` not `fn_sig()`
+                // ```
+                //
+                // We need to have a map from def ids to signatures, for the
+                // closures. We also need to replace the vectors of type variables,
+                // regions, etc. with maps, because the indices will not always
+                // start at 0.
+                todo!("{:?}", tcx.type_of(def_id))
+            } else {
+                tcx.fn_sig(def_id).subst_identity()
+            };
 
         // The parameters (and in particular the lifetimegs) are split between
         // early bound and late bound parameters. See those blog posts for explanations:

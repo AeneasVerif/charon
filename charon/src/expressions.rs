@@ -97,13 +97,8 @@ pub enum UnOp {
     /// (in debug mode) to check that it is not equal to the minimum integer
     /// value (for the proper type).
     Neg,
-    /// Casts are rvalues in MIR, but we treat them as unops. For now, we
-    /// only support for integer to integer, but we can also do from integers/booleans
-    /// to integers/booleans. For now, we don't handle pointer casts.
-    ///
-    /// The first integer type gives the source type, the second one gives
-    /// the destination type.
-    Cast(IntegerTy, IntegerTy),
+    /// Casts are rvalues in MIR, but we treat them as unops.
+    Cast(CastKind),
     /// Coercion from array (i.e., [T; N]) to slice.
     ///
     /// **Remark:** We introduce this unop when translating from MIR, **then transform**
@@ -112,6 +107,14 @@ pub enum UnOp {
     /// very useful. The [RefKind] argument states whethere we operate on a mutable
     /// or a shared borrow to an array.
     ArrayToSlice(RefKind, ETy, ConstGeneric),
+}
+
+/// For all the variants: the first type gives the source type, the second one gives
+/// the destination type.
+#[derive(Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize)]
+pub enum CastKind {
+    Integer(IntegerTy, IntegerTy),
+    FnPtr(RTy, RTy),
 }
 
 /// Binary operations.
@@ -294,4 +297,6 @@ pub enum AggregateKind {
     /// We don't put this with the ADT cas because this is the only assumed type
     /// with aggregates.
     Array(ETy, ConstGeneric),
+    ///
+    Closure(FunDeclId::Id),
 }
