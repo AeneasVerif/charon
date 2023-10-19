@@ -172,6 +172,13 @@ impl RawConstantExpr {
                 format!("&{}", cv.fmt_with_ctx(ctx))
             }
             RawConstantExpr::Var(id) => format!("const {}", ctx.format_object(*id)),
+            RawConstantExpr::FnPtr(fn_id, generics) => {
+                format!(
+                    "{}{}",
+                    ctx.format_object(*fn_id),
+                    generics.fmt_with_ctx(ctx)
+                )
+            }
         }
     }
 }
@@ -378,6 +385,10 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             }
             Ref(cv) => self.visit_constant_expr(cv),
             Var(id) => self.visit_const_generic_var_id(id),
+            FnPtr(fn_id, generics) => {
+                self.visit_fun_decl_id(fn_id);
+                self.visit_generic_args(generics);
+            }
         }
     }
 

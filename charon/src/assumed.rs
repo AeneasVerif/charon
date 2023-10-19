@@ -16,12 +16,14 @@ pub const IGNORE_BUILTIN_MARKER_TRAITS: bool = true;
 
 // Ignored traits (includes marker traits, and others)
 pub static SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
+pub static MARKER_TUPLE_NAME: [&str; 3] = ["core", "marker", "Tuple"];
 pub static SYNC_NAME: [&str; 3] = ["core", "marker", "SYNC"];
 pub static SEND_NAME: [&str; 3] = ["core", "marker", "SEND"];
 pub static UNPIN_NAME: [&str; 3] = ["core", "marker", "UNPIN"];
 pub static ALLOC_ALLOCATOR: [&str; 3] = ["core", "alloc", "Allocator"];
-pub static IGNORED_TRAITS_NAMES: [&[&str]; 5] = [
+pub static IGNORED_TRAITS_NAMES: [&[&str]; 6] = [
     &SIZED_NAME,
+    &MARKER_TUPLE_NAME,
     &SYNC_NAME,
     &SEND_NAME,
     &UNPIN_NAME,

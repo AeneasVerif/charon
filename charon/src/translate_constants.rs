@@ -115,6 +115,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let var_id = self.const_generic_vars_map.get(&id.index).unwrap();
                 RawConstantExpr::Var(var_id)
             }
+            ConstantExprKind::FnPtr(fn_id, substs, trait_refs) => {
+                let fn_id = self.translate_fun_decl_id(fn_id.rust_def_id.unwrap());
+
+                let generics = self
+                    .translate_substs_and_trait_refs(None, substs, trait_refs)
+                    .unwrap();
+                RawConstantExpr::FnPtr(fn_id, generics)
+            }
             ConstantExprKind::Todo(_) => {
                 // Case not yet handled by hax
                 unreachable!()
@@ -140,7 +148,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             RawConstantExpr::Literal(v) => ConstGeneric::Value(v),
             RawConstantExpr::Adt(..) => unreachable!(),
             RawConstantExpr::Global(v) => ConstGeneric::Global(v),
-            RawConstantExpr::TraitConst { .. } | RawConstantExpr::Ref(_) => unreachable!(),
+            RawConstantExpr::TraitConst { .. }
+            | RawConstantExpr::Ref(_)
+            | RawConstantExpr::FnPtr { .. } => unreachable!(),
             RawConstantExpr::Var(v) => ConstGeneric::Var(v),
         }
     }

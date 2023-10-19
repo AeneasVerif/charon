@@ -425,8 +425,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
             ImplSourceKind::Param(trait_ref, trait_refs, constness) => {
+                // Explanations about constness: https://stackoverflow.com/questions/70441495/what-is-impl-const-in-rust
+                trace!(
+                    "impl_source: param:\n- trait_ref: {:?}\n- trait_refs: {:?}\n- constness: {:?}",
+                    trait_ref,
+                    trait_refs,
+                    constness
+                );
                 assert!(trait_ref.bound_vars.is_empty());
-                assert!(*constness == hax::BoundConstness::NotConst);
                 let trait_ref = &trait_ref.value;
 
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
@@ -520,7 +526,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Self: TyTranslator<R>,
         Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
     {
-        trace!("Matching trait clauses");
+        trace!("Matching trait clauses:\n- trait_id: {:?}\n- generics: {:?}\n- clause_trait_id: {:?}\n- clause_generics: {:?}",
+               self.format_object(trait_id), generics.fmt_with_ctx(self),
+               self.format_object(clause_trait_id), clause_generics.fmt_with_ctx(self)
+        );
         // Check if the clause is about the same trait
         if clause_trait_id != trait_id {
             trace!("Not the same trait id");
@@ -575,6 +584,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
     {
         // Try to match with Self
+        trace!(
+            "Matching with the Self clause ({})",
+            self.self_trait_clause
+                .as_ref()
+                .map_or("None".to_string(), |(id, gens)| {
+                    format!(
+                        "Some({}<{}>)",
+                        self.format_object(*id),
+                        gens.fmt_with_ctx(self)
+                    )
+                })
+        );
         if let Some((clause_trait_id, clause_generics)) = &self.self_trait_clause &&
             self.match_trait_clauses(trait_id, generics, &TraitInstanceId::SelfId, &TraitInstanceId::SelfId, *clause_trait_id, clause_generics)
         {

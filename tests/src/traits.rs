@@ -230,3 +230,31 @@ pub trait IntoIterator {
     // Required method
     fn into_iter(self) -> Self::IntoIter;
 }
+
+/* Testing function pointers and closures */
+#[allow(clippy::manual_map)]
+pub fn map_option<F>(x: Option<u32>, f: F) -> Option<u32>
+where
+    F: Fn(u32) -> u32,
+{
+    match x {
+        None => None,
+        Some(x) => Some(f(x)),
+    }
+}
+
+fn incr_u32(x: u32) -> u32 {
+    x + 1
+}
+
+pub fn test_map_option1(x: Option<u32>) -> Option<u32> {
+    map_option(x, incr_u32)
+}
+
+/*
+// With a dyn
+pub fn test_map_option2(x: Option<u32>) -> Option<u32> {
+    let f: &dyn Fn(u32) -> u32 = &|x| x + 1;
+    map_option(x, f)
+}
+*/

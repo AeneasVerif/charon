@@ -1,7 +1,7 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
 pub use crate::expressions_utils::*;
-use crate::gast::TraitItemName;
+use crate::gast::{FunDeclId, TraitItemName};
 use crate::types::*;
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
@@ -174,6 +174,8 @@ pub enum Operand {
 /// [Ref] case: reference to a constant value. We later desugar it to a separate
 /// statement.
 ///
+/// [FnPtr] case: a function pointer (to a top-level function).
+///
 /// Remark:
 /// MIR seems to forbid more complex expressions like paths. For instance,
 /// reading the constant `a.b` is translated to `{ _1 = const a; _2 = (_1.0) }`.
@@ -216,6 +218,8 @@ pub enum RawConstantExpr {
     Ref(Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericVarId::Id),
+    /// Function pointer
+    FnPtr(FunDeclId::Id, GenericArgs<ErasedRegion>),
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize)]

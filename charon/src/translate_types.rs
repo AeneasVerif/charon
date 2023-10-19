@@ -298,9 +298,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("PlaceHolder");
                 unimplemented!();
             }
-            hax::Ty::Arrow { .. } => {
+            hax::Ty::Arrow(box sig) => {
                 trace!("Arrow");
-                unimplemented!();
+                assert!(sig.bound_vars.is_empty());
+                let inputs = sig
+                    .value
+                    .inputs
+                    .iter()
+                    .map(|x| self.translate_ty(x).unwrap())
+                    .collect();
+                let output = self.translate_ty(&sig.value.output).unwrap();
+                Ok(Ty::Arrow(inputs, Box::new(output)))
             }
             hax::Ty::Error => {
                 trace!("Error");
