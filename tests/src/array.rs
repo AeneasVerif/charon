@@ -1,6 +1,10 @@
 //! Exercise the translation of arrays, with features supported by Eurydice
 #![allow(dead_code)]
 
+fn incr(x: &mut u32) {
+    *x += 1;
+}
+
 // Nano-tests
 // ----------
 
@@ -175,12 +179,6 @@ fn update_all() {
     update_array(x);
     update_array_mut_borrow(&mut x);
     update_mut_slice(&mut x);
-}
-
-// Comes from https://github.com/AeneasVerif/charon/issues/45
-// We initialize an array with a variable length (this uses the `repeat` instruction).
-pub fn init_array_variable_len<const LEN: usize>() -> [u8; LEN] {
-    [0u8; LEN]
 }
 
 // Nano-tests, with ranges
