@@ -243,6 +243,7 @@ where
     }
 }
 
+/*
 fn incr_u32(x: u32) -> u32 {
     x + 1
 }
@@ -251,6 +252,7 @@ fn incr_u32(x: u32) -> u32 {
 pub fn test_map_option1(x: Option<u32>) -> Option<u32> {
     map_option(x, incr_u32)
 }
+*/
 
 /*
 // With a local function
