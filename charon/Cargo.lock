@@ -5,7 +5,7 @@ version = 3
 [[package]]
 name = "adt-into"
 version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits2#a3fc2299c696a6b3c3f44c8335b06e69ccff8f09"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits3#05f7246f8a20b32715808733dab02ae70095e525"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -130,6 +130,7 @@ dependencies = [
  "assert_cmd",
  "bumpalo",
  "colored",
+ "derivative",
  "env_logger",
  "hashlink",
  "hax-frontend-exporter",
@@ -179,6 +180,17 @@ dependencies = [
  "is-terminal",
  "lazy_static",
  "windows-sys",
+]
+
+[[package]]
+name = "derivative"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fcc3dd5e9e9c0b295d6e1e4d811fb6f157d5ffd784b8d202fc62eac8035a770b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -278,7 +290,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits2#a3fc2299c696a6b3c3f44c8335b06e69ccff8f09"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits3#05f7246f8a20b32715808733dab02ae70095e525"
 dependencies = [
  "adt-into",
  "hax-frontend-exporter-options",
@@ -293,7 +305,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits2#a3fc2299c696a6b3c3f44c8335b06e69ccff8f09"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits3#05f7246f8a20b32715808733dab02ae70095e525"
 dependencies = [
  "schemars",
  "serde",
