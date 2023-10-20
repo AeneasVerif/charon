@@ -2,7 +2,6 @@
 #![allow(dead_code)]
 
 use crate::common::TAB_INCR;
-use crate::expressions::*;
 use crate::formatter::Formatter;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;

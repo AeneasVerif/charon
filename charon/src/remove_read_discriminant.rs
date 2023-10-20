@@ -3,7 +3,6 @@
 //! `drop(v)` where `v` has type `Never` (it can happen - this module does the
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
 
-use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::llbc_ast::*;
 use crate::meta::combine_meta;

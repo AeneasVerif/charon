@@ -5,10 +5,7 @@
 use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
 use crate::formatter::Formatter;
 use crate::gast::{Call, GenericArgs, Var};
-use crate::llbc_ast::{
-    iter_function_bodies, iter_global_bodies, AssumedFunId, FunDecls, FunIdOrTraitMethodRef,
-    GlobalDecls, MutAstVisitor, RawStatement, Statement, Switch,
-};
+use crate::llbc_ast::*;
 use crate::meta::Meta;
 use crate::translate_ctx::TransCtx;
 use crate::types::{AssumedTy, ConstGeneric, ErasedRegion, MutTypeVisitor, RefKind, Ty};
@@ -100,10 +97,13 @@ impl<'a> Transform<'a> {
                 let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
                 let generics =
                     GenericArgs::new(vec![ErasedRegion::Erased], vec![elem_ty], cgs, vec![]);
-                let index_call = Call {
+                let func = FnPtr {
                     func: index_id,
                     generics,
                     trait_and_method_generic_args: None,
+                };
+                let index_call = Call {
+                    func,
                     args: vec![arg_buf, arg_index],
                     dest: index_dest,
                 };

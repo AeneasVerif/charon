@@ -7,10 +7,7 @@
 
 use crate::expressions::{Rvalue, UnOp};
 use crate::formatter::Formatter;
-use crate::llbc_ast::{iter_function_bodies, iter_global_bodies};
-use crate::llbc_ast::{
-    AssumedFunId, Call, FunDecls, FunIdOrTraitMethodRef, GlobalDecls, RawStatement, Statement,
-};
+use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
 use crate::types::{ErasedRegion, GenericArgs, RefKind};
 
@@ -31,10 +28,13 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
                 vec![cg.clone()],
                 vec![],
             );
-            s.content = RawStatement::Call(Call {
+            let func = FnPtr {
                 func,
                 generics,
                 trait_and_method_generic_args: None,
+            };
+            s.content = RawStatement::Call(Call {
+                func,
                 args: vec![op.clone()],
                 dest: p.clone(),
             });
@@ -53,10 +53,13 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
                 vec![cg.clone()],
                 vec![],
             );
-            s.content = RawStatement::Call(Call {
+            let func = FnPtr {
                 func,
                 generics,
                 trait_and_method_generic_args: None,
+            };
+            s.content = RawStatement::Call(Call {
+                func,
                 args: vec![op.clone()],
                 dest: p.clone(),
             });

@@ -2,7 +2,6 @@
 //! reconstruction. In effect, this is a cleaned up version of MIR.
 #![allow(dead_code)]
 
-use crate::expressions::*;
 pub use crate::gast::*;
 use crate::meta::Meta;
 pub use crate::types::GlobalDeclId;

@@ -178,14 +178,37 @@ impl RawConstantExpr {
                 format!("&{}", cv.fmt_with_ctx(ctx))
             }
             RawConstantExpr::Var(id) => format!("const {}", ctx.format_object(*id)),
-            RawConstantExpr::FnPtr(fn_id, generics) => {
-                format!(
-                    "{}{}",
-                    ctx.format_object(*fn_id),
-                    generics.fmt_with_ctx(ctx)
-                )
+            RawConstantExpr::FnPtr(f) => {
+                format!("{}", f.fmt_with_ctx(ctx),)
             }
         }
+    }
+}
+
+impl FnPtr {
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    where
+        T: TypeFormatter<'a, ErasedRegion>,
+    {
+        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
+        let f = match &self.func {
+            FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
+                format!("{}{generics}", ctx.format_object(*def_id),)
+            }
+            FunIdOrTraitMethodRef::Fun(FunId::Assumed(assumed)) => {
+                format!("@{}{generics}", assumed.variant_name())
+            }
+            FunIdOrTraitMethodRef::Trait(trait_ref, method_id, _) => {
+                format!(
+                    "{}::{}{}",
+                    trait_ref.fmt_with_ctx(ctx),
+                    &method_id.0,
+                    generics
+                )
+            }
+        };
+
+        format!("{}{}", f, generics)
     }
 }
 
@@ -394,9 +417,8 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             }
             Ref(cv) => self.visit_constant_expr(cv),
             Var(id) => self.visit_const_generic_var_id(id),
-            FnPtr(fn_id, generics) => {
-                self.visit_fun_decl_id(fn_id);
-                self.visit_generic_args(generics);
+            FnPtr(f) => {
+                self.visit_fn_ptr(f);
             }
         }
     }
@@ -504,23 +526,26 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
     fn visit_call(&mut self, c: &Call) {
         let Call {
             func,
-            generics,
             args,
-            trait_and_method_generic_args,
             dest,
         } = c;
-        self.visit_fun_id_or_trait_ref(func);
-        self.visit_generic_args(generics);
+        self.visit_fn_ptr(func);
         for o in args {
             self.visit_operand(o);
         }
+        self.visit_place(dest);
+    }
+
+    fn visit_fn_ptr(&mut self, fn_ptr: &FnPtr) {
+        let FnPtr { func, generics, trait_and_method_generic_args } = fn_ptr;
+        self.visit_fun_id_or_trait_ref(func);
+        self.visit_generic_args(generics);
         match trait_and_method_generic_args {
             None => (),
             Some(generics) => {
                 self.visit_generic_args(generics);
             }
         }
-        self.visit_place(dest);
     }
 
     fn visit_fun_id(&mut self, fun_id: &FunId) {

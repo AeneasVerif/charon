@@ -1,7 +1,7 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 #![allow(dead_code)]
 
-pub use crate::expressions::{Operand, Place};
+pub use crate::expressions::*;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
 use crate::names::GlobalName;
@@ -15,7 +15,6 @@ pub use crate::types::{
 };
 use crate::values::*;
 use macros::generate_index_type;
-use macros::{EnumAsGetters, EnumIsA, VariantName};
 use serde::Serialize;
 
 generate_index_type!(FunDeclId);
@@ -220,137 +219,9 @@ pub struct TraitImpl {
     pub provided_methods: Vec<(TraitItemName, FunDeclId::Id)>,
 }
 
-/// A function identifier. See [crate::ullbc_ast::Terminator]
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
-pub enum FunId {
-    /// A "regular" function (function local to the crate, external function
-    /// not treated as a primitive one).
-    Regular(FunDeclId::Id),
-    /// A primitive function, coming from a standard library (for instance:
-    /// `alloc::boxed::Box::new`).
-    /// TODO: rename to "Primitive"
-    Assumed(AssumedFunId),
-}
-
-/// An assumed function identifier, identifying a function coming from a
-/// standard library.
-#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
-pub enum AssumedFunId {
-    /// `core::mem::replace`
-    Replace,
-    /// `alloc::boxed::Box::new`
-    BoxNew,
-    /// `core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref`
-    BoxDeref,
-    /// `core::ops::deref::DerefMut::<alloc::boxed::Box<T>>::deref_mut`
-    BoxDerefMut,
-    /// `alloc::alloc::box_free`
-    /// This is actually an unsafe function, but the rust compiler sometimes
-    /// introduces it when going to MIR.
-    ///
-    /// Also, in practice, deallocation is performed as follows in MIR:
-    /// ```text
-    /// alloc::alloc::box_free::<T, std::alloc::Global>(
-    ///     move (b.0: std::ptr::Unique<T>),
-    ///     move (b.1: std::alloc::Global))
-    /// ```
-    /// When translating from MIR to ULLBC, we do as if the MIR was actually the
-    /// following (this is hardcoded - see [crate::register] and [crate::translate_functions_to_ullbc]):
-    /// ```text
-    /// alloc::alloc::box_free::<T>(move b)
-    /// ```
-    ///
-    /// Also see the comments in [crate::assumed::type_to_used_params].
-    BoxFree,
-    /// `alloc::vec::Vec::new`
-    VecNew,
-    /// `alloc::vec::Vec::push`
-    VecPush,
-    /// `alloc::vec::Vec::insert`
-    VecInsert,
-    /// `alloc::vec::Vec::len`
-    VecLen,
-    /// `core::ops::index::Index::index<alloc::vec::Vec<T>, usize>`
-    VecIndex,
-    /// `core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>`
-    VecIndexMut,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T,N>(&[T;N], usize) -> &T`
-    ArrayIndexShared,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T,N>(&mut [T;N], usize) -> &mut T`
-    ArrayIndexMut,
-    /// Cast an array as a slice.
-    ///
-    /// Converted from [UnOp::ArrayToSlice]
-    ArrayToSliceShared,
-    /// Cast an array as a slice.
-    ///
-    /// Converted from [UnOp::ArrayToSlice]
-    ArrayToSliceMut,
-    /// Take a subslice from an array.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    ///
-    /// TODO: there are a lot of shared/mut version. Parameterize them with
-    /// a mutability attribute?
-    ArraySubsliceShared,
-    /// Take a subslice from an array.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    ArraySubsliceMut,
-    /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
-    ///
-    /// We introduce this when desugaring the [ArrayRepeat] rvalue.
-    ArrayRepeat,
-    /// Remark: when we write `a.len()` in Rust, where `a` is an array, the
-    /// statement is desugared to a conversion from array to slice, followed
-    /// by a call to the `len` function for slices.
-    ///
-    /// Signature: `fn<T>(&[T]) -> usize`
-    SliceLen,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T>(&[T], usize) -> &T`
-    SliceIndexShared,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T>(&mut [T], usize) -> &mut T`
-    SliceIndexMut,
-    /// Take a subslice from a slice.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    SliceSubsliceShared,
-    /// Take a subslice from a slice.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    SliceSubsliceMut,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub enum FunIdOrTraitMethodRef {
-    Fun(FunId),
-    /// If a trait: the reference to the trait and the id of the trait method.
-    /// The fun decl id is not really necessary - we put it here for convenience
-    /// purposes.
-    Trait(ETraitRef, TraitItemName, FunDeclId::Id),
-}
-
 #[derive(Debug, Clone, Serialize)]
 pub struct Call {
-    pub func: FunIdOrTraitMethodRef,
-    pub generics: EGenericArgs,
-    /// If this is a call to a trait method: stores *all* the generic arguments
-    /// which apply to the trait + the method. The fields [region_args], [type_args]
-    /// [const_generic_args] only store the arguments which concern the method call.
-    /// See the comments for [ParamsInfo].
-    pub trait_and_method_generic_args: Option<EGenericArgs>,
+    pub func: FnPtr,
     pub args: Vec<Operand>,
     pub dest: Place,
 }

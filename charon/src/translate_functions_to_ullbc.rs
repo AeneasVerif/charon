@@ -23,9 +23,18 @@ use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir::START_BLOCK;
 use rustc_middle::ty;
-use rustc_middle::ty::TyCtxt;
 use std::iter::FromIterator;
 use translate_types::{translate_bound_region_kind_name, translate_region_name};
+
+pub(crate) struct SubstFunId {
+    pub func: FnPtr,
+    pub args: Option<Vec<Operand>>,
+}
+
+pub(crate) enum SubstFunIdOrPanic {
+    Panic,
+    Fun(SubstFunId),
+}
 
 fn translate_variant_id(id: hax::VariantIdx) -> VariantId::Id {
     VariantId::Id::new(id)
@@ -91,183 +100,6 @@ fn translate_unaryop_kind(binop: hax::UnOp) -> UnOp {
 fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> rustc_middle::mir::UnevaluatedConst<'tcx> {
     let p = ty::List::empty();
     rustc_middle::mir::UnevaluatedConst::new(id, p)
-}
-
-/// Translate a call to a function considered primitive and which is not:
-/// panic, begin_panic, box_free (those have a *very* special treatment).
-fn translate_primitive_function_call(
-    tcx: TyCtxt,
-    def_id: &hax::DefId,
-    generics: EGenericArgs,
-    args: Vec<Operand>,
-    dest: Place,
-    target: BlockId::Id,
-) -> Result<RawTerminator> {
-    let rust_id = def_id.rust_def_id.unwrap();
-    trace!("- def_id: {:?}", rust_id);
-
-    // Translate the function name
-    // TODO: replace
-    let name = def_id_to_name(tcx, def_id);
-    trace!("name: {}", name);
-
-    // We assume the function has primitive support, and look up
-    // its primitive identifier
-    let aid = assumed::get_fun_id_from_name(&name, &generics.types).unwrap();
-
-    // Translate the function call
-    // Note that some functions are actually traits (deref, index, etc.):
-    // we assume that they are called only on a limited set of types
-    // (ex.: box, vec...).
-    // For those trait functions, we need a custom treatment to retrieve
-    // and check the type information.
-    // For instance, derefencing boxes generates MIR of the following form:
-    // ```
-    // _2 = <Box<u32> as Deref>::deref(move _3)
-    // ```
-    // We have to retrieve the type `Box<u32>` and check that it is of the
-    // form `Box<T>` (and we generate `box_deref<u32>`).
-    match aid {
-        AssumedFunId::Replace
-        | AssumedFunId::BoxNew
-        | AssumedFunId::VecNew
-        | AssumedFunId::VecPush
-        | AssumedFunId::VecInsert
-        | AssumedFunId::VecLen
-        | AssumedFunId::SliceLen => {
-            let call = Call {
-                func: FunIdOrTraitMethodRef::mk_assumed(aid),
-                generics,
-                trait_and_method_generic_args: None,
-                args,
-                dest,
-            };
-            Ok(RawTerminator::Call { call, target })
-        }
-        AssumedFunId::BoxDeref | AssumedFunId::BoxDerefMut => {
-            translate_box_deref(aid, generics, args, dest, target)
-        }
-        AssumedFunId::VecIndex | AssumedFunId::VecIndexMut => {
-            translate_vec_index(aid, generics, args, dest, target)
-        }
-        AssumedFunId::ArraySubsliceShared
-        | AssumedFunId::ArraySubsliceMut
-        | AssumedFunId::SliceSubsliceShared
-        | AssumedFunId::SliceSubsliceMut => {
-            // Take a subslice from an array/slice.
-            // Note that this isn't any different from a regular function call. Ideally,
-            // we'd have a generic assumed function mechanism.
-            assert!(generics.types.len() == 1);
-            assert!(args.len() == 2);
-            assert!(generics.const_generics.is_empty());
-            // We need to unwrap the type to retrieve the `T` inside the `Slice<T>`
-            // or the `Array<T, N>`
-            let (_, generics) = generics.types[0].clone().to_adt();
-            assert!(generics.types.len() == 1);
-            assert!(generics.const_generics.len() <= 1);
-
-            let call = Call {
-                func: FunIdOrTraitMethodRef::mk_assumed(aid),
-                generics,
-                trait_and_method_generic_args: None,
-                args,
-                dest,
-            };
-
-            Ok(RawTerminator::Call { call, target })
-        }
-        AssumedFunId::BoxFree => {
-            // Special case handled elsewhere
-            unreachable!();
-        }
-        AssumedFunId::ArrayIndexShared
-        | AssumedFunId::ArrayIndexMut
-        | AssumedFunId::ArrayToSliceShared
-        | AssumedFunId::ArrayToSliceMut
-        | AssumedFunId::ArrayRepeat
-        | AssumedFunId::SliceIndexShared
-        | AssumedFunId::SliceIndexMut => {
-            // Those cases are introduced later, in micro-passes, by desugaring
-            // projections (for ArrayIndex and ArrayIndexMut for instnace) and=
-            // operations (for ArrayToSlice for instance) to function calls.
-            unreachable!()
-        }
-    }
-}
-
-/// Translate `std::Deref::deref` or `std::DerefMut::deref_mut` applied
-/// on boxes. We need a custom function because it is a trait.
-fn translate_box_deref(
-    aid: AssumedFunId,
-    mut generics: EGenericArgs,
-    args: Vec<Operand>,
-    dest: Place,
-    target: BlockId::Id,
-) -> Result<RawTerminator> {
-    // Check the arguments
-    assert!(generics.regions.is_empty());
-    assert!(generics.types.len() == 1);
-    assert!(args.len() == 1);
-
-    // For now we only support deref on boxes
-    // Retrieve the boxed value
-    let arg_ty = generics.types.get(0).unwrap(); // should be `Box<...>`
-    let boxed_ty = arg_ty.as_box();
-    if boxed_ty.is_none() {
-        panic!(
-            "Deref/DerefMut trait applied with parameter {:?} while it is only supported on Box<T> values",
-            arg_ty
-        );
-    }
-    let boxed_ty = boxed_ty.unwrap();
-    generics.types = vec![boxed_ty.clone()];
-
-    let call = Call {
-        func: FunIdOrTraitMethodRef::mk_assumed(aid),
-        generics,
-        trait_and_method_generic_args: None,
-        args,
-        dest,
-    };
-    Ok(RawTerminator::Call { call, target })
-}
-
-/// Translate `core::ops::index::{Index,IndexMut}::{index,index_mut}`
-/// applied on `Vec`. We need a custom function because it is a trait.
-fn translate_vec_index(
-    aid: AssumedFunId,
-    mut generics: EGenericArgs,
-    args: Vec<Operand>,
-    dest: Place,
-    target: BlockId::Id,
-) -> Result<RawTerminator> {
-    // Check the arguments
-    assert!(generics.regions.is_empty());
-    assert!(generics.types.len() == 1);
-    assert!(args.len() == 2);
-
-    // For now we only support index on vectors
-    // Retrieve the boxed value
-    let arg_ty = generics.types.get(0).unwrap(); // should be `Vec<...>`
-    let arg_ty = match arg_ty.as_vec() {
-        Option::Some(ty) => ty,
-        Option::None => {
-            panic!(
-            "Index/IndexMut trait applied with parameter {:?} while it is only supported on Vec<T> values",
-            arg_ty
-        );
-        }
-    };
-    generics.types = vec![arg_ty.clone()];
-
-    let call = Call {
-        func: FunIdOrTraitMethodRef::mk_assumed(aid),
-        generics,
-        trait_and_method_generic_args: None,
-        args,
-        dest,
-    };
-    Ok(RawTerminator::Call { call, target })
 }
 
 /// Small utility
@@ -946,6 +778,320 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    /// Auxiliary function to translate function calls and references to functions.
+    /// Translate a function id applied with some substitutions and some optional
+    /// arguments.
+    ///
+    /// We use a special function because the function might be assumed, and
+    /// some parameters/arguments might need to be filtered.
+    /// We return the fun id, its generics, and filtering information for the
+    /// arguments.
+    pub(crate) fn translate_fun_decl_id_with_args(
+        &mut self,
+        def_id: &hax::DefId,
+        substs: &Vec<hax::GenericArg>,
+        args: Option<&Vec<hax::Operand>>,
+        trait_refs: &Vec<hax::ImplSource>,
+        trait_info: &Option<hax::TraitInfo>,
+    ) -> SubstFunIdOrPanic {
+        let rust_id = def_id.rust_def_id.unwrap();
+        let name = def_id_to_name(self.t_ctx.tcx, def_id);
+        let is_local = rust_id.is_local();
+
+        // Check if this function is a actually `panic`
+        if name.equals_ref_name(&assumed::PANIC_NAME)
+            || name.equals_ref_name(&assumed::BEGIN_PANIC_NAME)
+        {
+            return SubstFunIdOrPanic::Panic;
+        }
+
+        // There is something annoying: when going to MIR, the rust compiler
+        // sometimes introduces very low-level functions, which we need to
+        // catch early - in particular, before we start translating types and
+        // arguments, because we won't be able to translate some of them.
+        if name.equals_ref_name(&assumed::BOX_FREE_NAME) {
+            assert!(!is_local);
+
+            // This deallocates a box.
+            // It should have two type parameters:
+            // - the type of the boxed value
+            // - the type of a global allocator (which we ignore)
+            assert!(substs.len() == 2);
+            assert!(trait_refs.is_empty());
+
+            // Translate the type parameter
+            let t_ty = if let hax::GenericArg::Type(ty) = substs.get(0).unwrap() {
+                self.translate_ety(ty).unwrap()
+            } else {
+                unreachable!()
+            };
+
+            let args = args.map(|args| {
+                assert!(args.len() == 2);
+                // Translate the first argument - note that we use a special
+                // function to translate it: the operand should be of the form:
+                // `move b.0`, and if it is the case it will return `move b`
+                let arg = &args[0];
+                let t_arg = self.translate_move_box_first_projector_operand(arg);
+                vec![t_arg]
+            });
+
+            // Return
+            let func = FnPtr {
+                func: FunIdOrTraitMethodRef::mk_assumed(AssumedFunId::BoxFree),
+                generics: GenericArgs::new_from_types(vec![t_ty]),
+                trait_and_method_generic_args: None,
+            };
+            let sfid = SubstFunId { func, args };
+            SubstFunIdOrPanic::Fun(sfid)
+        } else {
+            // Retrieve the lists of used parameters, in case of non-local
+            // definitions
+            let (used_type_args, used_args) = if is_local {
+                (Option::None, Option::None)
+            } else {
+                match assumed::function_to_info(&name) {
+                    Option::None => (Option::None, Option::None),
+                    Option::Some(used) => (
+                        Option::Some(used.used_type_params),
+                        Option::Some(used.used_args),
+                    ),
+                }
+            };
+
+            // Translate the type parameters
+            let generics = self
+                .translate_substs_and_trait_refs_in_body(used_type_args, substs, trait_refs)
+                .unwrap();
+
+            // Translate the arguments
+            let args = args.map(|args| self.translate_arguments(used_args, args));
+
+            // Check if the function is considered primitive: primitive
+            // functions benefit from special treatment.
+            let is_prim = if is_local {
+                false
+            } else {
+                assumed::get_fun_id_from_name(&name, &generics.types).is_some()
+            };
+
+            // Trait information
+            trace!(
+                "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
+                rust_id,
+                trait_info
+            );
+            trace!(
+                "Method traits:\n- def_id: {:?}\n- traits:\n{:?}",
+                rust_id,
+                trait_refs
+            );
+
+            if !is_prim {
+                // Two cases depending on whether we call a trait function
+                // or not.
+                match trait_info {
+                    Option::None => {
+                        let def_id = self.translate_fun_decl_id(rust_id);
+                        let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
+                        let func = FnPtr {
+                            func,
+                            generics,
+                            trait_and_method_generic_args: None,
+                        };
+                        let sfid = SubstFunId { func, args };
+                        SubstFunIdOrPanic::Fun(sfid)
+                    }
+                    Option::Some(trait_info) => {
+                        let rust_id = def_id.rust_def_id.unwrap();
+                        let impl_source = self
+                            .translate_trait_impl_source_erased_regions(&trait_info.impl_source);
+                        // The impl source should be Some(...): trait markers (that we may
+                        // eliminate) don't have methods.
+                        let impl_source = impl_source.unwrap();
+
+                        trace!("{:?}", rust_id);
+
+                        let trait_method_fun_id = self.translate_fun_decl_id(rust_id);
+                        let method_name = self.t_ctx.translate_trait_item_name(rust_id);
+
+                        // Compute the concatenation of all the generic arguments which were given to
+                        // the function (trait arguments + method arguments).
+                        let trait_and_method_generic_args = {
+                            let (regions, types, const_generics) = self
+                                .translate_substs(None, &trait_info.all_generics)
+                                .unwrap();
+
+                            // When concatenating the trait refs we have to be careful:
+                            // - if we refer to an implementation, we must concatenate the
+                            //   trait references given to the impl source
+                            // - if we refer to a clause, we must retrieve the
+                            //   parent trait clauses.
+                            let trait_refs = match &impl_source.trait_id {
+                                TraitInstanceId::TraitImpl(_) => impl_source
+                                    .generics
+                                    .trait_refs
+                                    .iter()
+                                    .chain(generics.trait_refs.iter())
+                                    .cloned()
+                                    .collect(),
+                                _ => impl_source
+                                    .trait_decl_ref
+                                    .generics
+                                    .trait_refs
+                                    .iter()
+                                    .chain(generics.trait_refs.iter())
+                                    .cloned()
+                                    .collect(),
+                            };
+                            Some(GenericArgs {
+                                regions,
+                                types,
+                                const_generics,
+                                trait_refs,
+                            })
+                        };
+
+                        let func = FunIdOrTraitMethodRef::Trait(
+                            impl_source,
+                            method_name,
+                            trait_method_fun_id,
+                        );
+                        let func = FnPtr {
+                            func,
+                            generics,
+                            trait_and_method_generic_args,
+                        };
+                        let sfid = SubstFunId { func, args };
+                        SubstFunIdOrPanic::Fun(sfid)
+                    }
+                }
+            } else {
+                // Primitive function.
+                //
+                // Note that there are subtleties with regards to the way types parameters
+                // are translated, because some functions are actually traits, where the
+                // types are used for the resolution. For instance, the following:
+                // `core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref`
+                // is translated to:
+                // `box_deref<T>`
+                // (the type parameter is not `Box<T>` but `T`).
+
+                // TODO: remove the cases for vector index, box deref, etc.
+                // assert!(trait_info.is_none());
+
+                let aid = assumed::get_fun_id_from_name(&name, &generics.types).unwrap();
+                let mut generics = generics;
+
+                // Note that some functions are actually traits (deref, index, etc.):
+                // we assume that they are called only on a limited set of types
+                // (ex.: box, vec...).
+                // For those trait functions, we need a custom treatment to retrieve
+                // and check the type information.
+                // For instance, derefencing boxes generates MIR of the following form:
+                // ```
+                // _2 = <Box<u32> as Deref>::deref(move _3)
+                // ```
+                // We have to retrieve the type `Box<u32>` and check that it is of the
+                // form `Box<T>` (and we generate `box_deref<u32>`).
+                match aid {
+                    AssumedFunId::Replace
+                    | AssumedFunId::BoxNew
+                    | AssumedFunId::VecNew
+                    | AssumedFunId::VecPush
+                    | AssumedFunId::VecInsert
+                    | AssumedFunId::VecLen
+                    | AssumedFunId::SliceLen => {
+                        // Nothing to do
+                    }
+                    AssumedFunId::BoxDeref | AssumedFunId::BoxDerefMut => {
+                        // Translate `std::Deref::deref` or `std::DerefMut::deref_mut` applied
+                        // on boxes. We need a custom function because it is a trait.
+                        // TODO: treat in a general manner
+
+                        // Check the arguments
+                        assert!(generics.regions.is_empty());
+                        assert!(generics.types.len() == 1);
+
+                        // For now we only support deref on boxes
+                        // Retrieve the boxed value
+                        let arg_ty = generics.types.get(0).unwrap(); // should be `Box<...>`
+                        let boxed_ty = arg_ty.as_box();
+                        if boxed_ty.is_none() {
+                            panic!(
+                                "Deref/DerefMut trait applied with parameter {:?} while it is only supported on Box<T> values",
+                                arg_ty
+                            );
+                        }
+                        let boxed_ty = boxed_ty.unwrap();
+                        generics.types = vec![boxed_ty.clone()];
+                    }
+                    AssumedFunId::VecIndex | AssumedFunId::VecIndexMut => {
+                        // This is actually a trait
+                        // TODO: treat it in a general manner
+
+                        // Check the arguments
+                        assert!(generics.regions.is_empty());
+                        assert!(generics.types.len() == 1);
+
+                        // For now we only support index on vectors
+                        // Retrieve the boxed value
+                        let arg_ty = generics.types.get(0).unwrap(); // should be `Vec<...>`
+                        let arg_ty = match arg_ty.as_vec() {
+                            Option::Some(ty) => ty,
+                            Option::None => {
+                                panic!(
+                                    "Index/IndexMut trait applied with parameter {:?} while it is only supported on Vec<T> values",
+                                    arg_ty
+                                );
+                            }
+                        };
+                        generics.types = vec![arg_ty.clone()];
+                    }
+                    AssumedFunId::ArraySubsliceShared
+                    | AssumedFunId::ArraySubsliceMut
+                    | AssumedFunId::SliceSubsliceShared
+                    | AssumedFunId::SliceSubsliceMut => {
+                        // Take a subslice from an array/slice.
+                        // Note that this isn't any different from a regular function call. Ideally,
+                        // we'd have a generic assumed function mechanism.
+                        assert!(generics.types.len() == 1);
+                        assert!(generics.const_generics.is_empty());
+                        // We need to unwrap the type to retrieve the `T` inside the `Slice<T>`
+                        // or the `Array<T, N>`
+                        let (_, generics) = generics.types[0].clone().to_adt();
+                        assert!(generics.types.len() == 1);
+                        assert!(generics.const_generics.len() <= 1);
+                    }
+                    AssumedFunId::BoxFree => {
+                        // Special case handled elsewhere
+                        unreachable!();
+                    }
+                    AssumedFunId::ArrayIndexShared
+                    | AssumedFunId::ArrayIndexMut
+                    | AssumedFunId::ArrayToSliceShared
+                    | AssumedFunId::ArrayToSliceMut
+                    | AssumedFunId::ArrayRepeat
+                    | AssumedFunId::SliceIndexShared
+                    | AssumedFunId::SliceIndexMut => {
+                        // Those cases are introduced later, in micro-passes, by desugaring
+                        // projections (for ArrayIndex and ArrayIndexMut for instnace) and=
+                        // operations (for ArrayToSlice for instance) to function calls.
+                        unreachable!()
+                    }
+                };
+
+                let func = FnPtr {
+                    func: FunIdOrTraitMethodRef::Fun(FunId::Assumed(aid)),
+                    generics,
+                    trait_and_method_generic_args: None,
+                };
+                let sfid = SubstFunId { func, args };
+                SubstFunIdOrPanic::Fun(sfid)
+            }
+        }
+    }
+
     /// Translate a statement
     ///
     /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
@@ -1229,234 +1375,43 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // support closures for now
         trace!("func: {:?}", rust_id);
 
-        // Translate the name to check if is is `core::panicking::panic`
-        // TODO: replace
-        let name = def_id_to_name(self.t_ctx.tcx, def_id);
-        let is_local = rust_id.is_local();
+        // Translate the function id, with its parameters
+        let fid = self.translate_fun_decl_id_with_args(
+            def_id,
+            substs,
+            Some(args),
+            trait_refs,
+            trait_info,
+        );
 
-        // If the call is `panic!`, then the target is `None`.
-        // I don't know in which other cases it can be `None`.
-        if name.equals_ref_name(&assumed::PANIC_NAME)
-            || name.equals_ref_name(&assumed::BEGIN_PANIC_NAME)
-        {
-            assert!(!is_local);
-            assert!(target.is_none());
+        match fid {
+            SubstFunIdOrPanic::Panic => {
+                // If the call is `panic!`, then the target is `None`.
+                // I don't know in which other cases it can be `None`.
+                assert!(target.is_none());
 
-            // We ignore the arguments
-            Ok(RawTerminator::Panic)
-        } else {
-            assert!(target.is_some());
-            let next_block = target.unwrap();
+                // We ignore the arguments
+                Ok(RawTerminator::Panic)
+            }
+            SubstFunIdOrPanic::Fun(fid) => {
+                let next_block = target.unwrap();
 
-            // Translate the target
-            let lval = self.translate_place(destination);
-            let next_block = self.translate_basic_block(body, next_block)?;
+                // Translate the target
+                let lval = self.translate_place(destination);
+                let next_block = self.translate_basic_block(body, next_block)?;
 
-            // There is something annoying: when going to MIR, the rust compiler
-            // sometimes introduces very low-level functions, which we need to
-            // catch early - in particular, before we start translating types and
-            // arguments, because we won't be able to translate some of them.
-            if name.equals_ref_name(&assumed::BOX_FREE_NAME) {
-                assert!(!is_local);
-
-                // This deallocates a box.
-                // It should have two type parameters:
-                // - the type of the boxed value
-                // - the type of a global allocator (which we ignore)
-                // The arguments should be of the form:
-                // - `move b.0` (the allocated value)
-                // - `move b.1` (the global allocated)
-                // where b is of type `Box` (boxes are pairs actually)
-                // We replace that with: `move b`
-                assert!(substs.len() == 2);
-                assert!(args.len() == 2);
-                assert!(trait_refs.is_empty());
-
-                // Translate the type parameter
-                let t_ty = if let hax::GenericArg::Type(ty) = substs.get(0).unwrap() {
-                    self.translate_ety(ty)?
-                } else {
-                    unreachable!()
-                };
-
-                // Translate the first argument - note that we use a special
-                // function to translate it: the operand should be of the form:
-                // `move b.0`, and if it is the case it will return `move b`
-                let arg = &args[0];
-                let t_arg = self.translate_move_box_first_projector_operand(arg);
-
-                // Return
                 let call = Call {
-                    func: FunIdOrTraitMethodRef::mk_assumed(AssumedFunId::BoxFree),
-                    generics: GenericArgs::new_from_types(vec![t_ty]),
-                    trait_and_method_generic_args: None,
-                    args: vec![t_arg],
+                    func: fid.func,
+                    args: fid.args.unwrap(),
                     dest: lval,
                 };
+
                 Ok(RawTerminator::Call {
                     call,
                     target: next_block,
                 })
-            } else {
-                // Retrieve the lists of used parameters, in case of non-local
-                // definitions
-                let (used_type_args, used_args) = if is_local {
-                    (Option::None, Option::None)
-                } else {
-                    match assumed::function_to_info(&name) {
-                        Option::None => (Option::None, Option::None),
-                        Option::Some(used) => (
-                            Option::Some(used.used_type_params),
-                            Option::Some(used.used_args),
-                        ),
-                    }
-                };
-
-                // Translate the type parameters
-                let generics = self.translate_substs_and_trait_refs_in_body(
-                    used_type_args,
-                    substs,
-                    trait_refs,
-                )?;
-
-                // Translate the arguments
-                let args = self.translate_arguments(used_args, args);
-
-                // Check if the function is considered primitive: primitive
-                // functions benefit from special treatment.
-                let is_prim = if is_local {
-                    false
-                } else {
-                    assumed::get_fun_id_from_name(&name, &generics.types).is_some()
-                };
-
-                // Trait information
-                trace!(
-                    "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
-                    rust_id,
-                    trait_info
-                );
-                trace!(
-                    "Method traits:\n- def_id: {:?}\n- traits:\n{:?}",
-                    rust_id,
-                    trait_refs
-                );
-
-                if !is_prim {
-                    // Two cases depending on whether we call a trait function
-                    // or not.
-                    match trait_info {
-                        Option::None => {
-                            let def_id = self.translate_fun_decl_id(rust_id);
-                            let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
-                            let call = Call {
-                                func,
-                                generics,
-                                trait_and_method_generic_args: None,
-                                args,
-                                dest: lval,
-                            };
-
-                            Ok(RawTerminator::Call {
-                                call,
-                                target: next_block,
-                            })
-                        }
-                        Option::Some(trait_info) => self.translate_trait_method_call(
-                            def_id, generics, args, lval, next_block, trait_info,
-                        ),
-                    }
-                } else {
-                    // Primitive function.
-                    //
-                    // Note that there are subtleties with regards to the way types parameters
-                    // are translated, because some functions are actually traits, where the
-                    // types are used for the resolution. For instance, the following:
-                    // `core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref`
-                    // is translated to:
-                    // `box_deref<T>`
-                    // (the type parameter is not `Box<T>` but `T`).
-
-                    // TODO: remove the cases for vector index, box deref, etc.
-                    // assert!(trait_info.is_none());
-                    translate_primitive_function_call(
-                        self.t_ctx.tcx,
-                        def_id,
-                        generics,
-                        args,
-                        lval,
-                        next_block,
-                    )
-                }
             }
         }
-    }
-
-    fn translate_trait_method_call(
-        &mut self,
-        def_id: &hax::DefId,
-        generics: EGenericArgs,
-        args: Vec<Operand>,
-        dest: Place,
-        target: BlockId::Id,
-        trait_info: &hax::TraitInfo,
-    ) -> Result<RawTerminator> {
-        let rust_id = def_id.rust_def_id.unwrap();
-        let impl_source = self.translate_trait_impl_source_erased_regions(&trait_info.impl_source);
-        // The impl source should be Some(...): trait markers (that we may
-        // eliminate) don't have methods.
-        let impl_source = impl_source.unwrap();
-
-        trace!("{:?}", rust_id);
-
-        let trait_method_fun_id = self.translate_fun_decl_id(rust_id);
-        let method_name = self.t_ctx.translate_trait_item_name(rust_id);
-
-        // Compute the concatenation of all the generic arguments which were given to
-        // the function (trait arguments + method arguments).
-        let trait_and_method_generic_args = {
-            let (regions, types, const_generics) =
-                self.translate_substs(None, &trait_info.all_generics)?;
-
-            // When concatenating the trait refs we have to be careful:
-            // - if we refer to an implementation, we must concatenate the
-            //   trait references given to the impl source
-            // - if we refer to a clause, we must retrieve the
-            //   parent trait clauses.
-            let trait_refs = match &impl_source.trait_id {
-                TraitInstanceId::TraitImpl(_) => impl_source
-                    .generics
-                    .trait_refs
-                    .iter()
-                    .chain(generics.trait_refs.iter())
-                    .cloned()
-                    .collect(),
-                _ => impl_source
-                    .trait_decl_ref
-                    .generics
-                    .trait_refs
-                    .iter()
-                    .chain(generics.trait_refs.iter())
-                    .cloned()
-                    .collect(),
-            };
-            Some(GenericArgs {
-                regions,
-                types,
-                const_generics,
-                trait_refs,
-            })
-        };
-
-        let func = FunIdOrTraitMethodRef::Trait(impl_source, method_name, trait_method_fun_id);
-        let call = Call {
-            func,
-            generics,
-            trait_and_method_generic_args,
-            args,
-            dest,
-        };
-        Ok(RawTerminator::Call { call, target })
     }
 
     pub(crate) fn translate_substs_and_trait_refs_in_body(

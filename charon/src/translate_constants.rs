@@ -1,6 +1,5 @@
 //! Functions to translate constants to LLBC.
 #![allow(dead_code)]
-use crate::expressions::*;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -115,13 +114,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let var_id = self.const_generic_vars_map.get(&id.index).unwrap();
                 RawConstantExpr::Var(var_id)
             }
-            ConstantExprKind::FnPtr(fn_id, substs, trait_refs) => {
-                let fn_id = self.translate_fun_decl_id(fn_id.rust_def_id.unwrap());
-
-                let generics = self
-                    .translate_substs_and_trait_refs(None, substs, trait_refs)
-                    .unwrap();
-                RawConstantExpr::FnPtr(fn_id, generics)
+            ConstantExprKind::FnPtr(fn_id, substs, trait_refs, trait_info) => {
+                use crate::translate_functions_to_ullbc::SubstFunIdOrPanic;
+                let fn_id = self
+                    .translate_fun_decl_id_with_args(fn_id, substs, None, trait_refs, trait_info);
+                let SubstFunIdOrPanic::Fun(fn_id) = fn_id else  { unreachable!() };
+                RawConstantExpr::FnPtr(fn_id.func)
             }
             ConstantExprKind::Todo(_) => {
                 // Case not yet handled by hax

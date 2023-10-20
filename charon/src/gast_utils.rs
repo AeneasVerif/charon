@@ -216,30 +216,14 @@ pub fn fmt_call<'a, 'b, T>(ctx: &'b T, call: &'a Call) -> (String, Option<String
 where
     T: ExprFormatter<'a>,
 {
-    let trait_and_method_generic_args = if let Some(generics) = &call.trait_and_method_generic_args
-    {
-        Option::Some(generics.fmt_with_ctx_split_trait_refs(ctx))
-    } else {
-        None
-    };
+    let trait_and_method_generic_args =
+        if let Some(generics) = &call.func.trait_and_method_generic_args {
+            Option::Some(generics.fmt_with_ctx_split_trait_refs(ctx))
+        } else {
+            None
+        };
 
-    let generics = call.generics.fmt_with_ctx_split_trait_refs(ctx);
-    let f = match &call.func {
-        FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
-            format!("{}{generics}", ctx.format_object(*def_id),)
-        }
-        FunIdOrTraitMethodRef::Fun(FunId::Assumed(assumed)) => {
-            format!("@{}{generics}", assumed.variant_name())
-        }
-        FunIdOrTraitMethodRef::Trait(trait_ref, method_id, _) => {
-            format!(
-                "{}::{}{}",
-                trait_ref.fmt_with_ctx(ctx),
-                &method_id.0,
-                generics
-            )
-        }
-    };
+    let f = call.func.fmt_with_ctx(ctx);
 
     let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
     let args = args.join(", ");

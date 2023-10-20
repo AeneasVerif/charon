@@ -7,7 +7,6 @@
 //! from MIR to use Statement only.
 
 #![allow(dead_code)]
-use crate::expressions::*;
 pub use crate::gast::*;
 pub use crate::llbc_ast_utils::*;
 use crate::meta::Meta;
