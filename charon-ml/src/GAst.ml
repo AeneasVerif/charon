@@ -1,18 +1,22 @@
 (** Definitions shared between the ULLBC and the LLBC ASTs. *)
 
-open Identifiers
 open Names
 open Types
 open PrimitiveValues
-open Expressions
 open Meta
-module FunDeclId = IdGen ()
+open Expressions
+module FunDeclId = Expressions.FunDeclId
 module GlobalDeclId = Expressions.GlobalDeclId
 module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
 type fun_decl_id = FunDeclId.id [@@deriving show, ord]
+type assumed_fun_id = Expressions.assumed_fun_id [@@deriving show, ord]
+type fun_id = Expressions.fun_id [@@deriving show, ord]
+
+type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
+[@@deriving show, ord]
 
 (** A variable, as used in a function definition *)
 type var = {
@@ -25,53 +29,13 @@ type var = {
 }
 [@@deriving show]
 
-type assumed_fun_id =
-  | Replace  (** [core::mem::replace] *)
-  | BoxNew
-  | BoxDeref  (** [core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref] *)
-  | BoxDerefMut
-      (** [core::ops::deref::DerefMut::<alloc::boxed::Box<T>>::deref_mut] *)
-  | BoxFree
-  | VecNew
-  | VecPush
-  | VecInsert
-  | VecLen
-  | VecIndex  (** [core::ops::index::Index::index<alloc::vec::Vec<T>, usize>] *)
-  | VecIndexMut
-      (** [core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>] *)
-  | ArrayIndexShared
-  | ArrayIndexMut
-  | ArrayToSliceShared
-  | ArrayToSliceMut
-  | ArraySubsliceShared
-  | ArraySubsliceMut
-  | ArrayRepeat
-  | SliceLen
-  | SliceIndexShared
-  | SliceIndexMut
-  | SliceSubsliceShared
-  | SliceSubsliceMut
-[@@deriving show, ord]
-
-type fun_id = Regular of FunDeclId.id | Assumed of assumed_fun_id
-[@@deriving show, ord]
-
 (** Ancestor the AST iter visitors *)
 class ['self] iter_ast_base =
-  object (self : 'self)
+  object (_self : 'self)
     inherit [_] iter_rvalue
     inherit! [_] iter_literal
 
     (* Remark: can't inherit iter_literal_type because of a name collision (`Bool`) *)
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
-    method visit_assumed_fun_id : 'env -> assumed_fun_id -> unit = fun _ _ -> ()
-
-    method visit_fun_id : 'env -> fun_id -> unit =
-      fun e x ->
-        match x with
-        | Regular id -> self#visit_fun_decl_id e id
-        | Assumed id -> self#visit_assumed_fun_id e id
 
     method visit_meta : 'env -> meta -> unit = fun _ _ -> ()
     method visit_integer_type : 'env -> integer_type -> unit = fun _ _ -> ()
@@ -79,22 +43,11 @@ class ['self] iter_ast_base =
 
 (** Ancestor the AST map visitors *)
 class ['self] map_ast_base =
-  object (self : 'self)
+  object (_self : 'self)
     inherit [_] map_rvalue
     inherit! [_] map_literal
 
     (* Remark: can't inherit map_literal_type because of a name collision (`Bool`) *)
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
-
-    method visit_assumed_fun_id : 'env -> assumed_fun_id -> assumed_fun_id =
-      fun _ x -> x
-
-    method visit_fun_id : 'env -> fun_id -> fun_id =
-      fun e x ->
-        match x with
-        | Regular id -> Regular (self#visit_fun_decl_id e id)
-        | Assumed id -> Assumed (self#visit_assumed_fun_id e id)
 
     method visit_meta : 'env -> meta -> meta = fun _ x -> x
 
@@ -106,16 +59,12 @@ class ['self] map_ast_base =
    to derive the visitors *)
 type assertion = { cond : operand; expected : bool }
 
-and fun_id_or_trait_method_ref =
-  | FunId of fun_id
-  | TraitMethod of etrait_ref * string * fun_decl_id
-      (** The fun decl id is not really needed and here for convenience purposes *)
+and call = { func : fn_ptr; args : operand list; dest : place }
 [@@deriving
   show,
-    ord,
     visitors
       {
-        name = "iter_assertion";
+        name = "iter_call";
         variety = "iter";
         ancestors = [ "iter_ast_base" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
@@ -123,35 +72,9 @@ and fun_id_or_trait_method_ref =
       },
     visitors
       {
-        name = "map_assertion";
-        variety = "map";
-        ancestors = [ "map_ast_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      }]
-
-type call = {
-  func : fun_id_or_trait_method_ref;
-  generics : egeneric_args;
-  trait_and_method_generic_args : egeneric_args option;
-  args : operand list;
-  dest : place;
-}
-[@@deriving
-  show,
-    visitors
-      {
-        name = "iter_call";
-        variety = "iter";
-        ancestors = [ "iter_assertion" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      },
-    visitors
-      {
         name = "map_call";
         variety = "map";
-        ancestors = [ "map_assertion" ];
+        ancestors = [ "map_ast_base" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
         concrete = true;
       }]

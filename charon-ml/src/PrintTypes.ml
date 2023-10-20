@@ -96,6 +96,11 @@ let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
       match ref_kind with
       | T.Mut -> "&" ^ fmt.r_to_string r ^ " mut (" ^ ty_to_string fmt rty ^ ")"
       | T.Shared -> "&" ^ fmt.r_to_string r ^ " (" ^ ty_to_string fmt rty ^ ")")
+  | T.Arrow (inputs, output) ->
+      let inputs =
+        "(" ^ String.concat ", " (List.map (ty_to_string fmt) inputs) ^ ") -> "
+      in
+      inputs ^ ty_to_string fmt output
 
 and params_to_string (fmt : 'r type_formatter) (is_tuple : bool)
     (generics : 'r T.generic_args) : string =
@@ -163,6 +168,7 @@ and trait_instance_id_to_string (fmt : 'r type_formatter)
       let clause_id = fmt.trait_clause_id_to_string clause_id in
       "(" ^ inst_id ^ ")::" ^ item_name ^ "::[" ^ clause_id ^ "]"
   | TraitRef tr -> trait_ref_to_string fmt tr
+  | FnPointer ty -> "fn_ptr(" ^ ty_to_string fmt ty ^ ")"
   | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
 let sty_to_string (fmt : stype_formatter) (ty : T.sty) : string =

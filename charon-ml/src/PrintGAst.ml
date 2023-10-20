@@ -107,48 +107,11 @@ let gdecls_and_gfun_decl_to_ast_formatter
 
 let call_to_string (fmt : ast_formatter) (indent : string) (call : GA.call) :
     string =
-  let ty_fmt = ast_to_etype_formatter fmt in
-  let generics = PT.generic_args_to_string ty_fmt call.GA.generics in
+  let func = PE.fn_ptr_to_string fmt call.func in
   let args = List.map (PE.operand_to_string fmt) call.GA.args in
   let args = "(" ^ String.concat ", " args ^ ")" in
-  let name_args =
-    match call.GA.func with
-    | GA.TraitMethod (trait_ref, method_name, _) ->
-        let fmt = ast_to_etype_formatter fmt in
-        PT.trait_ref_to_string fmt trait_ref ^ "::" ^ method_name ^ generics
-    | GA.FunId (GA.Regular fid) -> fmt.fun_decl_id_to_string fid ^ generics
-    | GA.FunId (GA.Assumed fid) -> (
-        match fid with
-        | GA.Replace -> "core::mem::replace" ^ generics
-        | GA.BoxNew -> "alloc::boxed::Box" ^ generics ^ "::new"
-        | GA.BoxDeref -> "core::ops::deref::Deref<Box" ^ generics ^ ">::deref"
-        | GA.BoxDerefMut ->
-            "core::ops::deref::DerefMut" ^ generics ^ "::deref_mut"
-        | GA.BoxFree -> "alloc::alloc::box_free" ^ generics
-        | GA.VecNew -> "alloc::vec::Vec" ^ generics ^ "::new"
-        | GA.VecPush -> "alloc::vec::Vec" ^ generics ^ "::push"
-        | GA.VecInsert -> "alloc::vec::Vec" ^ generics ^ "::insert"
-        | GA.VecLen -> "alloc::vec::Vec" ^ generics ^ "::len"
-        | GA.VecIndex ->
-            "core::ops::index::Index<alloc::vec::Vec" ^ generics ^ ">::index"
-        | GA.VecIndexMut ->
-            "core::ops::index::IndexMut<alloc::vec::Vec" ^ generics
-            ^ ">::index_mut"
-        | GA.ArrayIndexShared -> "@ArrayIndexShared" ^ generics
-        | GA.ArrayIndexMut -> "@ArrayIndexMut" ^ generics
-        | GA.ArrayToSliceShared -> "@ArrayToSliceShared" ^ generics
-        | GA.ArrayToSliceMut -> "@ArrayToSliceMut" ^ generics
-        | GA.ArraySubsliceShared -> "@ArraySubsliceShared" ^ generics
-        | GA.ArraySubsliceMut -> "@ArraySubsliceMut" ^ generics
-        | GA.ArrayRepeat -> "@ArrayRepeat" ^ generics
-        | GA.SliceLen -> "@SliceLen" ^ generics
-        | GA.SliceIndexShared -> "@SliceIndexShared" ^ generics
-        | GA.SliceIndexMut -> "@SliceIndexMut" ^ generics
-        | GA.SliceSubsliceShared -> "@SliceSubsliceShared" ^ generics
-        | GA.SliceSubsliceMut -> "@SliceSubsliceMut" ^ generics)
-  in
   let dest = PE.place_to_string fmt call.GA.dest in
-  indent ^ dest ^ " := move " ^ name_args ^ args
+  indent ^ dest ^ " := move " ^ func ^ args
 
 let assertion_to_string (fmt : ast_formatter) (indent : string)
     (a : GA.assertion) : string =

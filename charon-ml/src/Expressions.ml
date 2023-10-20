@@ -3,11 +3,42 @@ open Types
 open PrimitiveValues
 module VarId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
+module FunDeclId = IdGen ()
+
+type fun_decl_id = FunDeclId.id [@@deriving show, ord]
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!Charon.UllbcAst.iter_statement_base}).
   *)
 type var_id = VarId.id [@@deriving show, ord]
+
+type assumed_fun_id =
+  | Replace  (** [core::mem::replace] *)
+  | BoxNew
+  | BoxDeref  (** [core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref] *)
+  | BoxDerefMut
+      (** [core::ops::deref::DerefMut::<alloc::boxed::Box<T>>::deref_mut] *)
+  | BoxFree
+  | VecNew
+  | VecPush
+  | VecInsert
+  | VecLen
+  | VecIndex  (** [core::ops::index::Index::index<alloc::vec::Vec<T>, usize>] *)
+  | VecIndexMut
+      (** [core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>] *)
+  | ArrayIndexShared
+  | ArrayIndexMut
+  | ArrayToSliceShared
+  | ArrayToSliceMut
+  | ArraySubsliceShared
+  | ArraySubsliceMut
+  | ArrayRepeat
+  | SliceLen
+  | SliceIndexShared
+  | SliceIndexMut
+  | SliceSubsliceShared
+  | SliceSubsliceMut
+[@@deriving show, ord]
 
 (** Ancestor the field_proj_kind iter visitor *)
 class ['self] iter_field_proj_kind_base =
@@ -135,11 +166,15 @@ type place = { var_id : var_id; projection : projection }
 
 type borrow_kind = Shared | Mut | TwoPhaseMut | Shallow [@@deriving show]
 
-(* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass *)
+(* TODO: FnPtr *)
+type cast_kind = CastInteger of integer_type * integer_type
+[@@deriving show, ord]
+
+(* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass. *)
 type unop =
   | Not
   | Neg
-  | Cast of integer_type * integer_type
+  | Cast of cast_kind
       (** Cast an integer from a source type to a target type *)
 [@@deriving show, ord]
 
@@ -202,6 +237,8 @@ class ['self] iter_constant_expr_base =
       self#visit_generic_args
 
     method visit_etrait_ref : 'env -> etrait_ref -> unit = self#visit_trait_ref
+    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
+    method visit_assumed_fun_id : 'env -> assumed_fun_id -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the constant_expr map visitor *)
@@ -223,14 +260,33 @@ class ['self] map_constant_expr_base =
 
     method visit_etrait_ref : 'env -> etrait_ref -> etrait_ref =
       self#visit_trait_ref
+
+    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
+
+    method visit_assumed_fun_id : 'env -> assumed_fun_id -> assumed_fun_id =
+      fun _ x -> x
   end
 
 type raw_constant_expr =
   | CLiteral of literal
   | CVar of const_generic_var_id
   | TraitConst of etrait_ref * egeneric_args * string
+  | FnPtr of fn_ptr
 
 and constant_expr = { value : raw_constant_expr; ty : ety }
+
+and fn_ptr = {
+  func : fun_id_or_trait_method_ref;
+  generics : egeneric_args;
+  trait_and_method_generic_args : egeneric_args option;
+}
+
+and fun_id_or_trait_method_ref =
+  | FunId of fun_id
+  | TraitMethod of etrait_ref * string * fun_decl_id
+      (** The fun decl id is not really needed and here for convenience purposes *)
+
+and fun_id = Regular of fun_decl_id | Assumed of assumed_fun_id
 [@@deriving
   show,
     ord,

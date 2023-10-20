@@ -172,6 +172,10 @@ let rec ety_no_regions_to_gr_ty (ty : ety) : 'a gr_ty =
       let trait_ref = etrait_ref_no_regions_to_gr_trait_ref trait_ref in
       let generics = egeneric_args_no_regions_to_gr_generic_args generics in
       TraitType (trait_ref, generics, type_name)
+  | Arrow (inputs, output) ->
+      let inputs = List.map ety_no_regions_to_gr_ty inputs in
+      let output = ety_no_regions_to_gr_ty output in
+      Arrow (inputs, output)
   | Ref (_, _, _) ->
       raise
         (Failure
@@ -222,6 +226,9 @@ and etrait_instance_id_no_regions_to_gr_trait_instance_id
   | TraitRef tr ->
       let tr = etrait_ref_no_regions_to_gr_trait_ref tr in
       TraitRef tr
+  | FnPointer ty ->
+      let ty = ety_no_regions_to_gr_ty ty in
+      FnPointer ty
   | UnknownTrait msg -> UnknownTrait msg
 
 let ety_no_regions_to_rty (ty : ety) : rty = ety_no_regions_to_gr_ty ty
@@ -258,6 +265,6 @@ let rec ty_is_primitively_copyable (ty : 'r ty) : bool =
       List.for_all ty_is_primitively_copyable generics.types
   | TypeVar _ | Never -> false
   | Literal (Bool | Char | Integer _) -> true
-  | TraitType _ -> false
+  | TraitType _ | Arrow (_, _) -> false
   | Ref (_, _, Mut) -> false
   | Ref (_, _, Shared) -> true

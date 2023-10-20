@@ -13,7 +13,8 @@ module TraitImplId = IdGen ()
 module TraitClauseId = IdGen ()
 
 (** Region variable ids. Used in function signatures. *)
-module RegionVarId = IdGen ()
+module RegionVarId =
+IdGen ()
 
 (** Region ids. Used for symbolic executions. *)
 module RegionId = IdGen ()
@@ -302,6 +303,7 @@ type 'r ty =
   | Ref of 'r * 'r ty * ref_kind
   | TraitType of 'r trait_ref * 'r generic_args * string
       (** The string is for the name of the associated type *)
+  | Arrow of 'r ty list * 'r ty
 
 and 'r trait_ref = {
   trait_id : 'r trait_instance_id;
@@ -343,6 +345,7 @@ and 'r trait_instance_id =
           trait clause (which can thus be substituted). In the other cases, it references
           a sub-clause relative to a trait instance id.
        *)
+  | FnPointer of 'r ty
   | UnknownTrait of string
       (** Not present in the Rust version of Charon.
 

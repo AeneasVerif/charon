@@ -100,16 +100,20 @@ let place_to_string (fmt : expr_formatter) (p : E.place) : string =
   let var = fmt.var_id_to_string p.E.var_id in
   projection_to_string fmt var p.E.projection
 
-let unop_to_string (unop : E.unop) : string =
-  match unop with
-  | E.Not -> "¬"
-  | E.Neg -> "-"
-  | E.Cast (src, tgt) ->
+let cast_kind_to_string (_fmt : expr_formatter) (cast : E.cast_kind) : string =
+  match cast with
+  | CastInteger (src, tgt) ->
       "cast<"
       ^ PPV.integer_type_to_string src
       ^ ","
       ^ PPV.integer_type_to_string tgt
       ^ ">"
+
+let unop_to_string (fmt : expr_formatter) (unop : E.unop) : string =
+  match unop with
+  | E.Not -> "¬"
+  | E.Neg -> "-"
+  | E.Cast cast_kind -> cast_kind_to_string fmt cast_kind
 
 let binop_to_string (binop : E.binop) : string =
   match binop with
@@ -130,6 +134,49 @@ let binop_to_string (binop : E.binop) : string =
   | E.Shl -> "<<"
   | E.Shr -> ">>"
 
+let assumed_fun_id_to_string (aid : E.assumed_fun_id) (generics : string) :
+    string =
+  match aid with
+  | Replace -> "core::mem::replace" ^ generics
+  | BoxNew -> "alloc::boxed::Box" ^ generics ^ "::new"
+  | BoxDeref -> "core::ops::deref::Deref<Box" ^ generics ^ ">::deref"
+  | BoxDerefMut -> "core::ops::deref::DerefMut" ^ generics ^ "::deref_mut"
+  | BoxFree -> "alloc::alloc::box_free" ^ generics
+  | VecNew -> "alloc::vec::Vec" ^ generics ^ "::new"
+  | VecPush -> "alloc::vec::Vec" ^ generics ^ "::push"
+  | VecInsert -> "alloc::vec::Vec" ^ generics ^ "::insert"
+  | VecLen -> "alloc::vec::Vec" ^ generics ^ "::len"
+  | VecIndex ->
+      "core::ops::index::Index<alloc::vec::Vec" ^ generics ^ ">::index"
+  | VecIndexMut ->
+      "core::ops::index::IndexMut<alloc::vec::Vec" ^ generics ^ ">::index_mut"
+  | ArrayIndexShared -> "@ArrayIndexShared" ^ generics
+  | ArrayIndexMut -> "@ArrayIndexMut" ^ generics
+  | ArrayToSliceShared -> "@ArrayToSliceShared" ^ generics
+  | ArrayToSliceMut -> "@ArrayToSliceMut" ^ generics
+  | ArraySubsliceShared -> "@ArraySubsliceShared" ^ generics
+  | ArraySubsliceMut -> "@ArraySubsliceMut" ^ generics
+  | ArrayRepeat -> "@ArrayRepeat" ^ generics
+  | SliceLen -> "@SliceLen" ^ generics
+  | SliceIndexShared -> "@SliceIndexShared" ^ generics
+  | SliceIndexMut -> "@SliceIndexMut" ^ generics
+  | SliceSubsliceShared -> "@SliceSubsliceShared" ^ generics
+  | SliceSubsliceMut -> "@SliceSubsliceMut" ^ generics
+
+let fun_id_or_trait_method_ref_to_string (fmt : expr_formatter)
+    (r : E.fun_id_or_trait_method_ref) (generics : string) : string =
+  let ty_fmt = expr_to_etype_formatter fmt in
+  match r with
+  | TraitMethod (trait_ref, method_name, _) ->
+      PT.trait_ref_to_string ty_fmt trait_ref ^ "::" ^ method_name ^ generics
+  | FunId (Regular fid) -> fmt.fun_decl_id_to_string fid ^ generics
+  | FunId (Assumed aid) -> assumed_fun_id_to_string aid generics
+
+let fn_ptr_to_string (fmt : expr_formatter) (ptr : E.fn_ptr) : string =
+  let ty_fmt = expr_to_etype_formatter fmt in
+  let generics = PT.generic_args_to_string ty_fmt ptr.generics in
+  fun_id_or_trait_method_ref_to_string fmt ptr.func generics
+
 let constant_expr_to_string (fmt : expr_formatter) (cv : E.constant_expr) :
     string =
   match cv.E.value with
@@ -143,6 +190,7 @@ let constant_expr_to_string (fmt : expr_formatter) (cv : E.constant_expr) :
       let trait_ref = PT.etrait_ref_to_string fmt trait_ref in
       let generics = PT.egeneric_args_to_string fmt generics in
       trait_ref ^ generics ^ const_name
+  | E.FnPtr fn_ptr -> fn_ptr_to_string fmt fn_ptr
 
 let operand_to_string (fmt : expr_formatter) (op : E.operand) : string =
   match op with
@@ -160,7 +208,8 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
       | E.Mut -> "&mut " ^ p
       | E.TwoPhaseMut -> "&two-phase " ^ p
       | E.Shallow -> "&shallow " ^ p)
-  | E.UnaryOp (unop, op) -> unop_to_string unop ^ " " ^ operand_to_string fmt op
+  | E.UnaryOp (unop, op) ->
+      unop_to_string fmt unop ^ " " ^ operand_to_string fmt op
   | E.BinaryOp (binop, op1, op2) ->
       operand_to_string fmt op1 ^ " " ^ binop_to_string binop ^ " "
       ^ operand_to_string fmt op2

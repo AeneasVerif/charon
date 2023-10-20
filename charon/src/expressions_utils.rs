@@ -37,6 +37,20 @@ impl std::fmt::Display for BorrowKind {
     }
 }
 
+impl CastKind {
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    where
+        T: TypeFormatter<'a, ErasedRegion>,
+    {
+        match self {
+            CastKind::Integer(src, tgt) => format!("cast<{src},{tgt}>"),
+            CastKind::FnPtr(src, tgt) => {
+                format!("cast<{},{}>", src.fmt_with_ctx(ctx), tgt.fmt_with_ctx(ctx))
+            }
+        }
+    }
+}
+
 impl UnOp {
     pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
@@ -45,10 +59,7 @@ impl UnOp {
         match self {
             UnOp::Not => "~".to_string(),
             UnOp::Neg => "-".to_string(),
-            UnOp::Cast(CastKind::Integer(src, tgt)) => format!("cast<{src},{tgt}>"),
-            UnOp::Cast(CastKind::FnPtr(src, tgt)) => {
-                format!("cast<{},{}>", src.fmt_with_ctx(ctx), tgt.fmt_with_ctx(ctx))
-            }
+            UnOp::Cast(kind) => kind.fmt_with_ctx(ctx),
             UnOp::ArrayToSlice(..) => "array_to_slice".to_string(),
         }
     }
