@@ -1059,9 +1059,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         assert!(generics.const_generics.is_empty());
                         // We need to unwrap the type to retrieve the `T` inside the `Slice<T>`
                         // or the `Array<T, N>`
-                        let (_, generics) = generics.types[0].clone().to_adt();
-                        assert!(generics.types.len() == 1);
-                        assert!(generics.const_generics.len() <= 1);
+                        let (_, n_generics) = generics.types[0].clone().to_adt();
+                        assert!(n_generics.types.len() == 1);
+                        assert!(n_generics.const_generics.len() <= 1);
+                        generics = n_generics;
                     }
                     AssumedFunId::BoxFree => {
                         // Special case handled elsewhere
