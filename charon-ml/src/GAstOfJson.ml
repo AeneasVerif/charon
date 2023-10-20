@@ -843,10 +843,10 @@ and raw_constant_expr_of_json (js : json) : (E.raw_constant_expr, string) result
         let* trait_ref = etrait_ref_of_json trait_ref in
         let* generics = egeneric_args_of_json generics in
         let* const_name = string_of_json const_name in
-        Ok (E.TraitConst (trait_ref, generics, const_name))
+        Ok (E.CTraitConst (trait_ref, generics, const_name))
     | `Assoc [ ("FnPtr", fn_ptr) ] ->
         let* fn_ptr = fn_ptr_of_json fn_ptr in
-        Ok (E.FnPtr fn_ptr)
+        Ok (E.CFnPtr fn_ptr)
     | _ -> Error "")
 
 let operand_of_json (js : json) : (E.operand, string) result =

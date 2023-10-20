@@ -185,12 +185,12 @@ let constant_expr_to_string (fmt : expr_formatter) (cv : E.constant_expr) :
       ^ PT.ety_to_string (expr_to_etype_formatter fmt) cv.E.ty
       ^ ")"
   | E.CVar vid -> fmt.const_generic_var_id_to_string vid
-  | E.TraitConst (trait_ref, generics, const_name) ->
+  | E.CTraitConst (trait_ref, generics, const_name) ->
       let fmt = expr_to_etype_formatter fmt in
       let trait_ref = PT.etrait_ref_to_string fmt trait_ref in
       let generics = PT.egeneric_args_to_string fmt generics in
       trait_ref ^ generics ^ const_name
-  | E.FnPtr fn_ptr -> fn_ptr_to_string fmt fn_ptr
+  | E.CFnPtr fn_ptr -> fn_ptr_to_string fmt fn_ptr
 
 let operand_to_string (fmt : expr_formatter) (op : E.operand) : string =
   match op with

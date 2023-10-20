@@ -270,8 +270,8 @@ class ['self] map_constant_expr_base =
 type raw_constant_expr =
   | CLiteral of literal
   | CVar of const_generic_var_id
-  | TraitConst of etrait_ref * egeneric_args * string
-  | FnPtr of fn_ptr
+  | CTraitConst of etrait_ref * egeneric_args * string
+  | CFnPtr of fn_ptr
 
 and constant_expr = { value : raw_constant_expr; ty : ety }
 
