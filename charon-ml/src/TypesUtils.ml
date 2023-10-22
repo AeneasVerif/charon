@@ -126,10 +126,6 @@ let mk_ref_ty (r : 'r) (ty : 'r ty) (ref_kind : ref_kind) : 'r ty =
 let mk_box_ty (ty : 'r ty) : 'r ty =
   Adt (Assumed Box, mk_generic_args_from_types [ ty ])
 
-(** Make a vec type *)
-let mk_vec_ty (ty : 'r ty) : 'r ty =
-  Adt (Assumed Vec, mk_generic_args_from_types [ ty ])
-
 (** Check if a region is in a set of regions *)
 let region_in_set (r : RegionId.id region) (rset : RegionId.Set.t) : bool =
   match r with Static -> false | Var id -> RegionId.Set.mem id rset
@@ -260,7 +256,7 @@ let rec ty_is_primitively_copyable (ty : 'r ty) : bool =
   match ty with
   | Adt (Assumed Option, generics) ->
       List.for_all ty_is_primitively_copyable generics.types
-  | Adt ((AdtId _ | Assumed (Box | Vec | Str | Slice | Range)), _) -> false
+  | Adt ((AdtId _ | Assumed (Box | Str | Slice | Range)), _) -> false
   | Adt ((Tuple | Assumed Array), generics) ->
       List.for_all ty_is_primitively_copyable generics.types
   | TypeVar _ | Never -> false

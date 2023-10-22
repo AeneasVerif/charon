@@ -65,7 +65,6 @@ let type_id_to_string (fmt : 'r type_formatter) (id : T.type_id) : string =
   | T.Assumed aty -> (
       match aty with
       | Box -> "alloc::boxed::Box"
-      | Vec -> "alloc::vec::Vec"
       | Option -> "core::option::Option"
       | Str -> "str"
       | Array -> "@Array"

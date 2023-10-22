@@ -13,31 +13,16 @@ type fun_decl_id = FunDeclId.id [@@deriving show, ord]
 type var_id = VarId.id [@@deriving show, ord]
 
 type assumed_fun_id =
-  | Replace  (** [core::mem::replace] *)
   | BoxNew
-  | BoxDeref  (** [core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref] *)
-  | BoxDerefMut
-      (** [core::ops::deref::DerefMut::<alloc::boxed::Box<T>>::deref_mut] *)
   | BoxFree
-  | VecNew
-  | VecPush
-  | VecInsert
-  | VecLen
-  | VecIndex  (** [core::ops::index::Index::index<alloc::vec::Vec<T>, usize>] *)
-  | VecIndexMut
-      (** [core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>] *)
   | ArrayIndexShared
   | ArrayIndexMut
   | ArrayToSliceShared
   | ArrayToSliceMut
-  | ArraySubsliceShared
-  | ArraySubsliceMut
   | ArrayRepeat
   | SliceLen
   | SliceIndexShared
   | SliceIndexMut
-  | SliceSubsliceShared
-  | SliceSubsliceMut
 [@@deriving show, ord]
 
 (** Ancestor the field_proj_kind iter visitor *)

@@ -334,7 +334,6 @@ fn compute_full_regions_constraints_for_ty(
                 TypeId::Tuple
                 | TypeId::Assumed(
                     AssumedTy::Box
-                    | AssumedTy::Vec
                     | AssumedTy::Option
                     | AssumedTy::PtrUnique
                     | AssumedTy::Str

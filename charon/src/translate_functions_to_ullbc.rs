@@ -872,7 +872,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let is_prim = if is_local {
                 false
             } else {
-                assumed::get_fun_id_from_name(&name, &generics.types).is_some()
+                assumed::get_fun_id_from_name(&name).is_some()
             };
 
             // Trait information
@@ -980,8 +980,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // TODO: remove the cases for vector index, box deref, etc.
                 // assert!(trait_info.is_none());
 
-                let aid = assumed::get_fun_id_from_name(&name, &generics.types).unwrap();
-                let mut generics = generics;
+                let aid = assumed::get_fun_id_from_name(&name).unwrap();
 
                 // Note that some functions are actually traits (deref, index, etc.):
                 // we assume that they are called only on a limited set of types
@@ -995,74 +994,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // We have to retrieve the type `Box<u32>` and check that it is of the
                 // form `Box<T>` (and we generate `box_deref<u32>`).
                 match aid {
-                    AssumedFunId::Replace
-                    | AssumedFunId::BoxNew
-                    | AssumedFunId::VecNew
-                    | AssumedFunId::VecPush
-                    | AssumedFunId::VecInsert
-                    | AssumedFunId::VecLen
-                    | AssumedFunId::SliceLen => {
+                    AssumedFunId::BoxNew | AssumedFunId::SliceLen => {
                         // Nothing to do
-                    }
-                    AssumedFunId::BoxDeref | AssumedFunId::BoxDerefMut => {
-                        // Translate `std::Deref::deref` or `std::DerefMut::deref_mut` applied
-                        // on boxes. We need a custom function because it is a trait.
-                        // TODO: treat in a general manner
-
-                        // Check the arguments
-                        assert!(generics.regions.is_empty());
-                        assert!(generics.types.len() == 1);
-
-                        // For now we only support deref on boxes
-                        // Retrieve the boxed value
-                        let arg_ty = generics.types.get(0).unwrap(); // should be `Box<...>`
-                        let boxed_ty = arg_ty.as_box();
-                        if boxed_ty.is_none() {
-                            panic!(
-                                "Deref/DerefMut trait applied with parameter {:?} while it is only supported on Box<T> values",
-                                arg_ty
-                            );
-                        }
-                        let boxed_ty = boxed_ty.unwrap();
-                        generics.types = vec![boxed_ty.clone()];
-                    }
-                    AssumedFunId::VecIndex | AssumedFunId::VecIndexMut => {
-                        // This is actually a trait
-                        // TODO: treat it in a general manner
-
-                        // Check the arguments
-                        assert!(generics.regions.is_empty());
-                        assert!(generics.types.len() == 1);
-
-                        // For now we only support index on vectors
-                        // Retrieve the boxed value
-                        let arg_ty = generics.types.get(0).unwrap(); // should be `Vec<...>`
-                        let arg_ty = match arg_ty.as_vec() {
-                            Option::Some(ty) => ty,
-                            Option::None => {
-                                panic!(
-                                    "Index/IndexMut trait applied with parameter {:?} while it is only supported on Vec<T> values",
-                                    arg_ty
-                                );
-                            }
-                        };
-                        generics.types = vec![arg_ty.clone()];
-                    }
-                    AssumedFunId::ArraySubsliceShared
-                    | AssumedFunId::ArraySubsliceMut
-                    | AssumedFunId::SliceSubsliceShared
-                    | AssumedFunId::SliceSubsliceMut => {
-                        // Take a subslice from an array/slice.
-                        // Note that this isn't any different from a regular function call. Ideally,
-                        // we'd have a generic assumed function mechanism.
-                        assert!(generics.types.len() == 1);
-                        assert!(generics.const_generics.is_empty());
-                        // We need to unwrap the type to retrieve the `T` inside the `Slice<T>`
-                        // or the `Array<T, N>`
-                        let (_, n_generics) = generics.types[0].clone().to_adt();
-                        assert!(n_generics.types.len() == 1);
-                        assert!(n_generics.const_generics.len() <= 1);
-                        generics = n_generics;
                     }
                     AssumedFunId::BoxFree => {
                         // Special case handled elsewhere

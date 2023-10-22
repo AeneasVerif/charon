@@ -137,31 +137,16 @@ let binop_to_string (binop : E.binop) : string =
 let assumed_fun_id_to_string (aid : E.assumed_fun_id) (generics : string) :
     string =
   match aid with
-  | Replace -> "core::mem::replace" ^ generics
   | BoxNew -> "alloc::boxed::Box" ^ generics ^ "::new"
-  | BoxDeref -> "core::ops::deref::Deref<Box" ^ generics ^ ">::deref"
-  | BoxDerefMut -> "core::ops::deref::DerefMut" ^ generics ^ "::deref_mut"
   | BoxFree -> "alloc::alloc::box_free" ^ generics
-  | VecNew -> "alloc::vec::Vec" ^ generics ^ "::new"
-  | VecPush -> "alloc::vec::Vec" ^ generics ^ "::push"
-  | VecInsert -> "alloc::vec::Vec" ^ generics ^ "::insert"
-  | VecLen -> "alloc::vec::Vec" ^ generics ^ "::len"
-  | VecIndex ->
-      "core::ops::index::Index<alloc::vec::Vec" ^ generics ^ ">::index"
-  | VecIndexMut ->
-      "core::ops::index::IndexMut<alloc::vec::Vec" ^ generics ^ ">::index_mut"
   | ArrayIndexShared -> "@ArrayIndexShared" ^ generics
   | ArrayIndexMut -> "@ArrayIndexMut" ^ generics
   | ArrayToSliceShared -> "@ArrayToSliceShared" ^ generics
   | ArrayToSliceMut -> "@ArrayToSliceMut" ^ generics
-  | ArraySubsliceShared -> "@ArraySubsliceShared" ^ generics
-  | ArraySubsliceMut -> "@ArraySubsliceMut" ^ generics
   | ArrayRepeat -> "@ArrayRepeat" ^ generics
   | SliceLen -> "@SliceLen" ^ generics
   | SliceIndexShared -> "@SliceIndexShared" ^ generics
   | SliceIndexMut -> "@SliceIndexMut" ^ generics
-  | SliceSubsliceShared -> "@SliceSubsliceShared" ^ generics
-  | SliceSubsliceMut -> "@SliceSubsliceMut" ^ generics
 
 let fun_id_or_trait_method_ref_to_string (fmt : expr_formatter)
     (r : E.fun_id_or_trait_method_ref) (generics : string) : string =

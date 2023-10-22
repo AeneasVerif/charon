@@ -534,8 +534,6 @@ pub enum AssumedTy {
     /// Boxes have a special treatment: we translate them as identity.
     Box,
     /// Comes from the standard library
-    Vec,
-    /// Comes from the standard library
     Option,
     /// Comes from the standard library
     Range,

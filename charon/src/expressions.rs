@@ -172,14 +172,8 @@ pub enum FunId {
 /// standard library.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIsA, EnumAsGetters, VariantName, Serialize)]
 pub enum AssumedFunId {
-    /// `core::mem::replace`
-    Replace,
     /// `alloc::boxed::Box::new`
     BoxNew,
-    /// `core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref`
-    BoxDeref,
-    /// `core::ops::deref::DerefMut::<alloc::boxed::Box<T>>::deref_mut`
-    BoxDerefMut,
     /// `alloc::alloc::box_free`
     /// This is actually an unsafe function, but the rust compiler sometimes
     /// introduces it when going to MIR.
@@ -198,18 +192,6 @@ pub enum AssumedFunId {
     ///
     /// Also see the comments in [crate::assumed::type_to_used_params].
     BoxFree,
-    /// `alloc::vec::Vec::new`
-    VecNew,
-    /// `alloc::vec::Vec::push`
-    VecPush,
-    /// `alloc::vec::Vec::insert`
-    VecInsert,
-    /// `alloc::vec::Vec::len`
-    VecLen,
-    /// `core::ops::index::Index::index<alloc::vec::Vec<T>, usize>`
-    VecIndex,
-    /// `core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>`
-    VecIndexMut,
     /// Converted from [ProjectionElem::Index].
     ///
     /// Signature: `fn<T,N>(&[T;N], usize) -> &T`
@@ -226,19 +208,6 @@ pub enum AssumedFunId {
     ///
     /// Converted from [UnOp::ArrayToSlice]
     ArrayToSliceMut,
-    /// Take a subslice from an array.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    ///
-    /// TODO: there are a lot of shared/mut version. Parameterize them with
-    /// a mutability attribute?
-    ArraySubsliceShared,
-    /// Take a subslice from an array.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    ArraySubsliceMut,
     /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
     ///
     /// We introduce this when desugaring the [ArrayRepeat] rvalue.
@@ -257,16 +226,6 @@ pub enum AssumedFunId {
     ///
     /// Signature: `fn<T>(&mut [T], usize) -> &mut T`
     SliceIndexMut,
-    /// Take a subslice from a slice.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    SliceSubsliceShared,
-    /// Take a subslice from a slice.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    SliceSubsliceMut,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, EnumAsGetters)]

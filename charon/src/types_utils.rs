@@ -1048,31 +1048,6 @@ impl<R> Ty<R> {
             _ => None,
         }
     }
-
-    /// Return true if the type is Vec
-    pub fn is_vec(&self) -> bool {
-        match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), generics) => {
-                assert!(generics.regions.is_empty());
-                assert!(generics.types.len() == 1);
-                assert!(generics.const_generics.is_empty());
-                true
-            }
-            _ => false,
-        }
-    }
-
-    pub fn as_vec(&self) -> Option<&Ty<R>> {
-        match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Vec), generics) => {
-                assert!(generics.regions.is_empty());
-                assert!(generics.types.len() == 1);
-                assert!(generics.const_generics.is_empty());
-                Some(generics.types.get(0).unwrap())
-            }
-            _ => None,
-        }
-    }
 }
 
 impl<Rid: Clone + Ord + std::hash::Hash> Ty<Region<Rid>> {

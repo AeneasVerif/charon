@@ -215,7 +215,6 @@ let assumed_ty_of_json (js : json) : (T.assumed_ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Box" -> Ok T.Box
-    | `String "Vec" -> Ok T.Vec
     | `String "Option" -> Ok T.Option
     | `String "Array" -> Ok T.Array
     | `String "Slice" -> Ok T.Slice
@@ -753,29 +752,16 @@ let literal_of_json (js : json) : (PV.literal, string) result =
 
 let assumed_fun_id_of_json (js : json) : (A.assumed_fun_id, string) result =
   match js with
-  | `String "Replace" -> Ok Replace
   | `String "BoxNew" -> Ok BoxNew
-  | `String "BoxDeref" -> Ok BoxDeref
-  | `String "BoxDerefMut" -> Ok BoxDerefMut
   | `String "BoxFree" -> Ok BoxFree
-  | `String "VecNew" -> Ok VecNew
-  | `String "VecPush" -> Ok VecPush
-  | `String "VecInsert" -> Ok VecInsert
-  | `String "VecLen" -> Ok VecLen
-  | `String "VecIndex" -> Ok VecIndex
-  | `String "VecIndexMut" -> Ok VecIndexMut
   | `String "ArrayIndexShared" -> Ok ArrayIndexShared
   | `String "ArrayIndexMut" -> Ok ArrayIndexMut
   | `String "ArrayToSliceShared" -> Ok ArrayToSliceShared
   | `String "ArrayToSliceMut" -> Ok ArrayToSliceMut
-  | `String "ArraySubsliceShared" -> Ok ArraySubsliceShared
-  | `String "ArraySubsliceMut" -> Ok ArraySubsliceMut
   | `String "ArrayRepeat" -> Ok ArrayRepeat
   | `String "SliceLen" -> Ok SliceLen
   | `String "SliceIndexShared" -> Ok SliceIndexShared
   | `String "SliceIndexMut" -> Ok SliceIndexMut
-  | `String "SliceSubsliceShared" -> Ok SliceSubsliceShared
-  | `String "SliceSubsliceMut" -> Ok SliceSubsliceMut
   | _ -> Error ("assumed_fun_id_of_json failed on:" ^ show js)
 
 let fun_id_of_json (js : json) : (A.fun_id, string) result =
