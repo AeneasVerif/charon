@@ -864,21 +864,13 @@ let operand_of_json (js : json) : (E.operand, string) result =
 let aggregate_kind_of_json (js : json) : (E.aggregate_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "Tuple" -> Ok E.AggregatedTuple
-    | `Assoc [ ("Option", `List [ variant_id; ty ]) ] ->
-        let* variant_id = T.VariantId.id_of_json variant_id in
-        let* ty = ety_of_json ty in
-        Ok (E.AggregatedOption (variant_id, ty))
     | `Assoc [ ("Adt", `List [ id; opt_variant_id; generics ]) ] ->
-        let* id = T.TypeDeclId.id_of_json id in
+        let* id = type_id_of_json id in
         let* opt_variant_id =
           option_of_json T.VariantId.id_of_json opt_variant_id
         in
         let* generics = egeneric_args_of_json generics in
         Ok (E.AggregatedAdt (id, opt_variant_id, generics))
-    | `Assoc [ ("Range", ty) ] ->
-        let* ty = ety_of_json ty in
-        Ok (E.AggregatedRange ty)
     | `Assoc [ ("Array", `List [ ty; cg ]) ] ->
         let* ty = ety_of_json ty in
         let* cg = const_generic_of_json cg in

@@ -359,11 +359,7 @@ class ['self] map_aggregate_kind_base =
     the field 0, etc.).
  *)
 type aggregate_kind =
-  | AggregatedTuple
-  | AggregatedOption of variant_id * ety
-  (* TODO: AggregatedOption should be merged with AggregatedAdt *)
-  | AggregatedAdt of type_decl_id * variant_id option * egeneric_args
-  | AggregatedRange of ety (* TODO: merge with the others *)
+  | AggregatedAdt of type_id * variant_id option * egeneric_args
   | AggregatedArray of ety * const_generic
 [@@deriving
   show,

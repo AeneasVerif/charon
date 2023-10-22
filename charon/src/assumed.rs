@@ -32,14 +32,12 @@ pub static IGNORED_TRAITS_NAMES: [&[&str]; 6] = [
 
 // Assumed types
 pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
-pub static OPTION_NAME: [&str; 3] = ["core", "option", "Option"];
-pub static RANGE_NAME: [&str; 4] = ["core", "ops", "range", "Range"];
 
 pub static OPTION_NONE_VARIANT_ID: types::VariantId::Id = types::VariantId::ZERO;
 pub static OPTION_SOME_VARIANT_ID: types::VariantId::Id = types::VariantId::ONE;
 
 //
-// Assumed functions/traits
+// Assumed functions
 //
 pub static PANIC_NAME: [&str; 3] = ["core", "panicking", "panic"];
 pub static BEGIN_PANIC_NAME: [&str; 3] = ["std", "panicking", "begin_panic"];
@@ -86,10 +84,6 @@ pub fn is_marker_trait(name: &Name) -> bool {
 pub fn get_type_id_from_name(name: &TypeName) -> Option<types::AssumedTy> {
     if name.equals_ref_name(&BOX_NAME) {
         Option::Some(types::AssumedTy::Box)
-    } else if name.equals_ref_name(&RANGE_NAME) {
-        Option::Some(types::AssumedTy::Range)
-    } else if name.equals_ref_name(&OPTION_NAME) {
-        Option::Some(types::AssumedTy::Option)
     } else if name.equals_ref_name(&PTR_UNIQUE_NAME) {
         Option::Some(types::AssumedTy::PtrUnique)
     } else if name.equals_ref_name(&PTR_NON_NULL_NAME) {
@@ -103,8 +97,6 @@ pub fn get_name_from_type_id(id: types::AssumedTy) -> Vec<String> {
     use types::AssumedTy;
     match id {
         AssumedTy::Box => BOX_NAME.iter().map(|s| s.to_string()).collect(),
-        AssumedTy::Range => RANGE_NAME.iter().map(|s| s.to_string()).collect(),
-        AssumedTy::Option => OPTION_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::PtrUnique => PTR_UNIQUE_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::PtrNonNull => PTR_NON_NULL_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::Str => vec!["Str".to_string()],
@@ -155,17 +147,11 @@ pub fn type_to_used_params(name: &TypeName) -> Option<Vec<bool>> {
                 AssumedTy::Box => {
                     vec![true, false]
                 }
-                AssumedTy::Option => {
-                    vec![true]
-                }
                 AssumedTy::PtrUnique | AssumedTy::PtrNonNull => {
                     vec![true]
                 }
                 AssumedTy::Str => {
                     vec![]
-                }
-                AssumedTy::Range => {
-                    vec![true]
                 }
                 AssumedTy::Array | AssumedTy::Slice => vec![true],
             };

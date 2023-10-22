@@ -1,7 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::expressions]
 #![allow(dead_code)]
 
-use crate::assumed;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::gast::{AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitItemName};
@@ -280,38 +279,34 @@ impl Rvalue {
             Rvalue::Aggregate(kind, ops) => {
                 let ops_s: Vec<String> = ops.iter().map(|op| op.fmt_with_ctx(ctx)).collect();
                 match kind {
-                    AggregateKind::Tuple => format!("({})", ops_s.join(", ")),
-                    AggregateKind::Option(variant_id, _) => {
-                        if *variant_id == assumed::OPTION_NONE_VARIANT_ID {
-                            assert!(ops.is_empty());
-                            "@Option::None".to_string()
-                        } else if *variant_id == assumed::OPTION_SOME_VARIANT_ID {
-                            assert!(ops.len() == 1);
-                            format!("@Option::Some({})", ops[0].fmt_with_ctx(ctx))
-                        } else {
-                            unreachable!();
-                        }
-                    }
                     AggregateKind::Adt(def_id, variant_id, _) => {
-                        // Format every field
-                        let mut fields = vec![];
-                        for (i, op) in ops.iter().enumerate() {
-                            let field_id = FieldId::Id::new(i);
-                            let field_name = ctx.format_object((*def_id, *variant_id, field_id));
-                            fields.push(format!("{}: {}", field_name, op.fmt_with_ctx(ctx)));
-                        }
+                        match def_id {
+                            TypeId::Tuple => format!("({})", ops_s.join(", ")),
+                            TypeId::Assumed(_) => unreachable!(),
+                            TypeId::Adt(def_id) => {
+                                // Format every field
+                                let mut fields = vec![];
+                                for (i, op) in ops.iter().enumerate() {
+                                    let field_id = FieldId::Id::new(i);
+                                    let field_name =
+                                        ctx.format_object((*def_id, *variant_id, field_id));
+                                    fields.push(format!(
+                                        "{}: {}",
+                                        field_name,
+                                        op.fmt_with_ctx(ctx)
+                                    ));
+                                }
 
-                        let variant = match variant_id {
-                            None => ctx.format_object(*def_id),
-                            Some(variant_id) => ctx.format_object((*def_id, *variant_id)),
-                        };
-                        format!("{} {{ {} }}", variant, fields.join(", "))
+                                let variant = match variant_id {
+                                    None => ctx.format_object(*def_id),
+                                    Some(variant_id) => ctx.format_object((*def_id, *variant_id)),
+                                };
+                                format!("{} {{ {} }}", variant, fields.join(", "))
+                            }
+                        }
                     }
                     AggregateKind::Array(_, len) => {
                         format!("[{}; {}]", ops_s.join(", "), len.fmt_with_ctx(ctx))
-                    }
-                    AggregateKind::Range(_) => {
-                        format!("@Range[{}]", ops_s.join(", "))
                     }
                     AggregateKind::Closure(fn_id) => {
                         format!("{}", ctx.format_object(*fn_id))
@@ -502,11 +497,8 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         // We could generalize and introduce auxiliary functions for
         // the various cases - this is not necessary for now
         match ak {
-            Tuple => (),
-            Option(_, ty) => self.visit_ty(ty),
-            Range(ty) => self.visit_ty(ty),
             Adt(adt_id, _, generics) => {
-                self.visit_type_decl_id(adt_id);
+                self.visit_type_id(adt_id);
                 self.visit_generic_args(generics);
             }
             Array(ty, cg) => {

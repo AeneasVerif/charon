@@ -11,6 +11,7 @@ use crate::llbc_ast::{
 };
 use crate::names::Name;
 use crate::translate_ctx::TransCtx;
+use crate::types::*;
 use crate::values::*;
 
 fn transform_st(st: &mut Statement) -> Vec<Statement> {
@@ -19,7 +20,10 @@ fn transform_st(st: &mut Statement) -> Vec<Statement> {
             var_id: VarId::Id::new(0),
             projection: Projection::new(),
         };
-        let unit_value = Rvalue::Aggregate(AggregateKind::Tuple, Vec::new());
+        let unit_value = Rvalue::Aggregate(
+            AggregateKind::Adt(TypeId::Tuple, None, GenericArgs::empty()),
+            Vec::new(),
+        );
         let assign_st = Statement::new(st.meta, RawStatement::Assign(ret_place, unit_value));
         let ret_st = Statement::new(st.meta, RawStatement::Return);
         st.content = RawStatement::Sequence(Box::new(assign_st), Box::new(ret_st));

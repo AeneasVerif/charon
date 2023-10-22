@@ -380,7 +380,7 @@ pub enum RefKind {
 /// Type identifier.
 ///
 /// Allows us to factorize the code for assumed types, adts and tuples
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumAsGetters, EnumIsA, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumAsGetters, EnumIsA, Serialize)]
 pub enum TypeId {
     /// A "regular" ADT type.
     ///
@@ -536,10 +536,6 @@ pub type ETy = Ty<ErasedRegion>;
 pub enum AssumedTy {
     /// Boxes have a special treatment: we translate them as identity.
     Box,
-    /// Comes from the standard library
-    Option,
-    /// Comes from the standard library
-    Range,
     /// Comes from the standard library. See the comments for [Ty::RawPtr]
     /// as to why we have this here.
     PtrUnique,

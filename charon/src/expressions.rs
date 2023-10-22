@@ -378,16 +378,10 @@ pub enum Rvalue {
 
 #[derive(Debug, Clone, VariantIndexArity, Serialize)]
 pub enum AggregateKind {
-    Tuple,
-    /// TODO: treat Option in a general manner by merging it with the Adt case (we should
-    /// extract the definitions of the external enumerations - because as they are public,
-    /// their variants are public)
-    Option(VariantId::Id, ETy),
-    /// TODO: merge it with the Adt case (see [Option] case)
-    Range(ETy),
-    Adt(TypeDeclId::Id, Option<VariantId::Id>, EGenericArgs),
+    Adt(TypeId, Option<VariantId::Id>, EGenericArgs),
     /// We don't put this with the ADT cas because this is the only assumed type
-    /// with aggregates.
+    /// with aggregates, and it is a primitive type. In particular, it makes
+    /// sense to treat it differently because it has a variable number of fields.
     Array(ETy, ConstGeneric),
     ///
     Closure(FunDeclId::Id),

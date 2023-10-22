@@ -334,13 +334,11 @@ fn compute_full_regions_constraints_for_ty(
                 TypeId::Tuple
                 | TypeId::Assumed(
                     AssumedTy::Box
-                    | AssumedTy::Option
                     | AssumedTy::PtrUnique
                     | AssumedTy::Str
                     | AssumedTy::PtrNonNull
                     | AssumedTy::Array
-                    | AssumedTy::Slice
-                    | AssumedTy::Range,
+                    | AssumedTy::Slice,
                 ) => {
                     // Explore the types given as parameters
                     for fty in &generics.types {

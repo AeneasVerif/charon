@@ -386,17 +386,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
-                                    Ty::Adt(TypeId::Assumed(AssumedTy::Option), generics) => {
-                                        assert!(generics.regions.is_empty());
-                                        assert!(generics.types.len() == 1);
-                                        assert!(generics.const_generics.is_empty());
-                                        assert!(field_id == FieldId::ZERO);
-
-                                        let variant_id = variant_id.unwrap();
-                                        assert!(variant_id == assumed::OPTION_SOME_VARIANT_ID);
-                                        let proj_kind = FieldProjKind::Option(variant_id);
-                                        ProjectionElem::Field(proj_kind, field_id)
-                                    }
                                     Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
                                         assert!(!boxes_are_desugared(self.t_ctx.mir_level));
 
@@ -665,9 +654,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         )));
                         Rvalue::Aggregate(AggregateKind::Array(t_ty, cg), operands_t)
                     }
-                    hax::AggregateKind::Tuple => {
-                        Rvalue::Aggregate(AggregateKind::Tuple, operands_t)
-                    }
+                    hax::AggregateKind::Tuple => Rvalue::Aggregate(
+                        AggregateKind::Adt(TypeId::Tuple, None, GenericArgs::empty()),
+                        operands_t,
+                    ),
                     hax::AggregateKind::Adt(
                         adt_id,
                         variant_idx,
@@ -689,73 +679,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         assert!(field_index.is_none());
 
                         // Translate the substitution
-                        let mut generics = self
+                        let generics = self
                             .translate_substs_and_trait_refs_in_body(None, substs, trait_refs)
                             .unwrap();
 
-                        let rust_id = adt_id.rust_def_id.unwrap();
-                        if rust_id.is_local() {
-                            assert!(!self.t_ctx.id_is_opaque(rust_id));
+                        let type_id = self.translate_type_id(adt_id);
+                        // Sanity check
+                        matches!(&type_id, TypeId::Adt(_));
 
-                            // Local ADT: translate the id
-                            let id_t = self.translate_type_decl_id(rust_id);
-
-                            use hax::AdtKind;
-                            let variant_id = match kind {
-                                AdtKind::Struct => Option::None,
-                                AdtKind::Enum => {
-                                    let variant_id = translate_variant_id(*variant_idx);
-                                    Some(variant_id)
-                                }
-                                AdtKind::Union => {
-                                    unimplemented!();
-                                }
-                            };
-
-                            let akind = AggregateKind::Adt(id_t, variant_id, generics);
-
-                            Rvalue::Aggregate(akind, operands_t)
-                        } else {
-                            // External ADT.
-                            // Can be `Option`
-                            // TODO: treat all external ADTs in a consistant manner.
-                            // For instance, we can access the variants of any external
-                            // enumeration marked as `public`.
-                            let name = def_id_to_name(self.t_ctx.tcx, adt_id);
-                            if name.equals_ref_name(&assumed::OPTION_NAME) {
-                                // Sanity checks
-                                assert!(generics.regions.is_empty());
-                                assert!(generics.types.len() == 1);
-
-                                // Find the variant
+                        use hax::AdtKind;
+                        let variant_id = match kind {
+                            AdtKind::Struct => Option::None,
+                            AdtKind::Enum => {
                                 let variant_id = translate_variant_id(*variant_idx);
-                                if variant_id == assumed::OPTION_NONE_VARIANT_ID {
-                                    assert!(operands_t.is_empty());
-                                } else if variant_id == assumed::OPTION_SOME_VARIANT_ID {
-                                    assert!(operands_t.len() == 1);
-                                } else {
-                                    unreachable!();
-                                }
-
-                                let akind = AggregateKind::Option(
-                                    variant_id,
-                                    generics.types.pop().unwrap(),
-                                );
-
-                                Rvalue::Aggregate(akind, operands_t)
-                            } else if name.equals_ref_name(&assumed::RANGE_NAME) {
-                                // Sanity checks
-                                assert!(generics.regions.is_empty());
-                                // Ranges are parametric over the type of indices
-                                assert!(generics.types.len() == 1);
-                                Rvalue::Aggregate(
-                                    AggregateKind::Range(generics.types.pop().unwrap()),
-                                    operands_t,
-                                )
-                            } else {
-                                panic!("Unsupported ADT: {}", name);
+                                Some(variant_id)
                             }
-                        }
+                            AdtKind::Union => {
+                                unimplemented!();
+                            }
+                        };
+
+                        let akind = AggregateKind::Adt(type_id, variant_id, generics);
+                        Rvalue::Aggregate(akind, operands_t)
                     }
                     hax::AggregateKind::Closure(def_id, sig) => {
                         trace!("Closure:\n- def_id: {:?}\n- sig: {:?}", def_id, sig);

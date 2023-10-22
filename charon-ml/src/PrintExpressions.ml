@@ -203,39 +203,31 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
   | E.Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string fmt) ops in
       match akind with
-      | E.AggregatedTuple -> "(" ^ String.concat ", " ops ^ ")"
-      | E.AggregatedOption (variant_id, _ty) ->
-          if variant_id = T.option_none_id then (
-            assert (ops = []);
-            "@Option::None")
-          else if variant_id = T.option_some_id then (
-            assert (List.length ops = 1);
-            let op = List.hd ops in
-            "@Option::Some(" ^ op ^ ")")
-          else raise (Failure "Unreachable")
-      | E.AggregatedAdt (def_id, opt_variant_id, _generics) ->
-          let adt_name = fmt.type_decl_id_to_string def_id in
-          let variant_name =
-            match opt_variant_id with
-            | None -> adt_name
-            | Some variant_id ->
-                adt_name ^ "::" ^ fmt.adt_variant_to_string def_id variant_id
-          in
-          let fields =
-            match fmt.adt_field_names def_id opt_variant_id with
-            | None -> "(" ^ String.concat ", " ops ^ ")"
-            | Some field_names ->
-                let fields = List.combine field_names ops in
-                let fields =
-                  List.map
-                    (fun (field, value) -> field ^ " = " ^ value ^ ";")
-                    fields
-                in
-                let fields = String.concat " " fields in
-                "{ " ^ fields ^ " }"
-          in
-          variant_name ^ " " ^ fields
-      | E.AggregatedRange ty ->
-          let fmt = expr_to_etype_formatter fmt in
-          "@Range " ^ PT.ety_to_string fmt ty
+      | E.AggregatedAdt (type_id, opt_variant_id, _generics) -> (
+          match type_id with
+          | Tuple -> "(" ^ String.concat ", " ops ^ ")"
+          | AdtId def_id ->
+              let adt_name = fmt.type_decl_id_to_string def_id in
+              let variant_name =
+                match opt_variant_id with
+                | None -> adt_name
+                | Some variant_id ->
+                    adt_name ^ "::"
+                    ^ fmt.adt_variant_to_string def_id variant_id
+              in
+              let fields =
+                match fmt.adt_field_names def_id opt_variant_id with
+                | None -> "(" ^ String.concat ", " ops ^ ")"
+                | Some field_names ->
+                    let fields = List.combine field_names ops in
+                    let fields =
+                      List.map
+                        (fun (field, value) -> field ^ " = " ^ value ^ ";")
+                        fields
+                    in
+                    let fields = String.concat " " fields in
+                    "{ " ^ fields ^ " }"
+              in
+              variant_name ^ " " ^ fields
+          | Assumed _ -> raise (Failure "Unreachable"))
       | E.AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " ops ^ "]")

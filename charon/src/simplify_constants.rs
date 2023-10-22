@@ -23,14 +23,7 @@ use crate::values::VarId;
 
 fn make_aggregate_kind(ty: &ETy, var_index: Option<VariantId::Id>) -> AggregateKind {
     let (id, generics) = ty.as_adt();
-    match id {
-        TypeId::Tuple => {
-            assert!(var_index.is_none());
-            AggregateKind::Tuple
-        }
-        TypeId::Adt(decl_id) => AggregateKind::Adt(*decl_id, var_index, generics.clone()),
-        TypeId::Assumed(_) => unreachable!(),
-    }
+    AggregateKind::Adt(*id, var_index, generics.clone())
 }
 
 /// If the constant value is a constant ADT, push `Assign::Aggregate` statements
