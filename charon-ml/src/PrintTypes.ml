@@ -65,11 +65,9 @@ let type_id_to_string (fmt : 'r type_formatter) (id : T.type_id) : string =
   | T.Assumed aty -> (
       match aty with
       | Box -> "alloc::boxed::Box"
-      | Option -> "core::option::Option"
       | Str -> "str"
       | Array -> "@Array"
-      | Slice -> "@Slice"
-      | Range -> "@Range")
+      | Slice -> "@Slice")
 
 let const_generic_to_string (fmt : 'r type_formatter) (cg : T.const_generic) :
     string =

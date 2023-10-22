@@ -124,8 +124,7 @@ let all_int_types = List.append all_signed_int_types all_unsigned_int_types
 type ref_kind = Mut | Shared [@@deriving show, ord]
 
 (* TODO: Str should be a literal *)
-type assumed_ty = Box | Option | Array | Slice | Str | Range
-[@@deriving show, ord]
+type assumed_ty = Box | Array | Slice | Str [@@deriving show, ord]
 
 (** The variant id for [Option::None] *)
 let option_none_id = VariantId.of_int 0

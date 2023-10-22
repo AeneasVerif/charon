@@ -249,14 +249,16 @@ let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : rty) : bool =
   * require calling dedicated functions defined through the [Copy] trait. It
   * is the case for types like integers, shared borrows, etc.
   *
-  * Generally, ADTs are not primitively copyable. However, some of the primitive
-  * ADTs are (e.g., [Option]).
+  * Generally, ADTs are not primitively copyable. But some ADTs from the standard
+  * library like [Option] are. As it is not easy to check which external ADTs
+  * are primitively copyable (we would need to perform a lookup of the ADT
+  * definition and check its name, for instance) we don't fully check it.
   *)
 let rec ty_is_primitively_copyable (ty : 'r ty) : bool =
   match ty with
-  | Adt (Assumed Option, generics) ->
+  | Adt (AdtId _, generics) ->
       List.for_all ty_is_primitively_copyable generics.types
-  | Adt ((AdtId _ | Assumed (Box | Str | Slice | Range)), _) -> false
+  | Adt (Assumed (Box | Str | Slice), _) -> false
   | Adt ((Tuple | Assumed Array), generics) ->
       List.for_all ty_is_primitively_copyable generics.types
   | TypeVar _ | Never -> false

@@ -215,11 +215,9 @@ let assumed_ty_of_json (js : json) : (T.assumed_ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Box" -> Ok T.Box
-    | `String "Option" -> Ok T.Option
     | `String "Array" -> Ok T.Array
     | `String "Slice" -> Ok T.Slice
     | `String "Str" -> Ok T.Str
-    | `String "Range" -> Ok T.Range
     | _ -> Error "")
 
 let type_id_of_json (js : json) : (T.type_id, string) result =
