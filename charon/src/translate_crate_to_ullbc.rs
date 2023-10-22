@@ -185,6 +185,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     }
                 }
             }
+            ItemKind::Macro(..) => {
+                // We ignore macro definitions. Note that when a macro is applied,
+                // we directly see the result of its expansion by the Rustc compiler,
+                // which is why we don't have to care about them.
+            }
             _ => {
                 unimplemented!("{:?}", item.kind);
             }
