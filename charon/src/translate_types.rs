@@ -424,15 +424,42 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    /// Translate one local type definition which has not been flagged as opaque.
-    fn translate_transparent_type(
+    /// Translate the body of a type declaration.
+    ///
+    /// Note that the type may be external, in which case we translate the body
+    /// only if it is public (i.e., it is a public enumeration, or it is a
+    /// struct with only public fields).
+    fn translate_type_body(
         &mut self,
+        is_local: bool,
         trans_id: TypeDeclId::Id,
         adt: hax::AdtDef,
     ) -> TypeDeclKind {
         trace!("{}", trans_id);
 
-        // Explore the variants
+        // In case the type is external, check if we should consider the type as
+        // transparent (i.e., extract its body). If it is an enumeration, then yes
+        // (because the variants of public enumerations are public, together with their
+        // fields). If it is a structure, we check if all the fields are public.
+        let is_transparent = is_local
+            || match &adt.adt_kind {
+                hax::AdtKind::Enum => true,
+                hax::AdtKind::Struct => {
+                    // Check the unique variant
+                    assert!(adt.variants.raw.len() == 1);
+                    adt.variants.raw[0]
+                        .fields
+                        .iter()
+                        .all(|f| matches!(f.vis, hax::Visibility::Public))
+                }
+                hax::AdtKind::Union => unimplemented!(),
+            };
+
+        if !is_transparent {
+            return TypeDeclKind::Opaque;
+        }
+
+        // The type is transparent: explore the variants
         let mut var_id = VariantId::Id::new(0); // Variant index
         let mut variants: Vec<Variant> = vec![];
         for var_def in adt.variants.raw {
@@ -589,16 +616,16 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Translate the predicates
         bt_ctx.translate_predicates_of(rust_id);
 
-        // Check if the type is opaque or external, and delegate the translation
-        // of the "body" to the proper function
-        let kind = if !rust_id.is_local() || !is_transparent {
-            // Opaque types are:
-            // - external types
-            // - local types flagged as opaque
+        // Check if the type has been explicitely marked as opaque.
+        // If yes, ignore it, otherwise, dive into the body. Note that for
+        // external types we have to check the body: if the body is
+        // public, we translate it, otherwise we consider the type as opaque.
+        let is_local = rust_id.is_local();
+        let kind = if !is_transparent {
             TypeDeclKind::Opaque
         } else {
             let adt = bt_ctx.t_ctx.tcx.adt_def(rust_id).sinto(&bt_ctx.hax_state);
-            bt_ctx.translate_transparent_type(trans_id, adt)
+            bt_ctx.translate_type_body(is_local, trans_id, adt)
         };
 
         // Register the type
@@ -611,6 +638,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let type_def = TypeDecl {
             def_id: trans_id,
             meta,
+            is_local,
             name,
             generics,
             preds: bt_ctx.get_predicates(),

@@ -623,6 +623,7 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         [
           ("def_id", def_id);
           ("meta", meta);
+          ("is_local", is_local);
           ("name", name);
           ("generics", generics);
           ("preds", preds);
@@ -631,12 +632,23 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         ] ->
         let* def_id = T.TypeDeclId.id_of_json def_id in
         let* meta = meta_of_json id_to_file meta in
+        let* is_local = bool_of_json is_local in
         let* name = name_of_json name in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* kind = type_decl_kind_of_json id_to_file kind in
         let* regions_hierarchy = region_var_groups_of_json regions_hierarchy in
-        Ok { T.def_id; meta; name; generics; preds; kind; regions_hierarchy }
+        Ok
+          {
+            T.def_id;
+            meta;
+            is_local;
+            name;
+            generics;
+            preds;
+            kind;
+            regions_hierarchy;
+          }
     | _ -> Error "")
 
 let var_of_json (js : json) : (A.var, string) result =
