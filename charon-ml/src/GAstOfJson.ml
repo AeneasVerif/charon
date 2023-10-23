@@ -671,9 +671,6 @@ let field_proj_kind_of_json (js : json) : (E.field_proj_kind, string) result =
     | `Assoc [ ("ProjTuple", i) ] ->
         let* i = int_of_json i in
         Ok (E.ProjTuple i)
-    | `Assoc [ ("ProjOption", variant_id) ] ->
-        let* variant_id = T.VariantId.id_of_json variant_id in
-        Ok (E.ProjOption variant_id)
     | _ -> Error "")
 
 let projection_elem_of_json (js : json) : (E.projection_elem, string) result =

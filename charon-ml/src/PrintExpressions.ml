@@ -74,10 +74,6 @@ let rec projection_to_string (fmt : expr_formatter) (s : string)
         match pe with
         | E.Deref -> "*(" ^ s ^ ")"
         | E.DerefBox -> "deref_box(" ^ s ^ ")"
-        | E.Field (E.ProjOption variant_id, fid) ->
-            assert (variant_id = T.option_some_id);
-            assert (fid = T.FieldId.zero);
-            "(" ^ s ^ " as Option::Some)." ^ T.FieldId.to_string fid
         | E.Field (E.ProjTuple _, fid) ->
             "(" ^ s ^ ")." ^ T.FieldId.to_string fid
         | E.Field (E.ProjAdt (adt_id, opt_variant_id), fid) -> (

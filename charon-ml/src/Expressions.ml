@@ -50,8 +50,6 @@ class ['self] map_field_proj_kind_base =
 
 type field_proj_kind =
   | ProjAdt of type_decl_id * variant_id option
-  | ProjOption of variant_id
-      (** Option is an assumed type, coming from the standard library *)
   | ProjTuple of int  (** The integer gives the arity of the tuple *)
 [@@deriving
   show,
