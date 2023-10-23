@@ -1,0 +1,18 @@
+on:
+  push:
+    branches-ignore: [ '_**' ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  nix:
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      #- uses: cachix/install-nix-action@v22
+      - uses: actions/checkout@v4
+      - run: nix build -L .#charon
+      - run: nix build -L .#checks.x86_64-linux.tests
+      - run: nix build -L .#checks.x86_64-linux.tests-polonius
+      - run: nix build -L .#charon-ml
+      - run: nix build -L .#checks.x86_64-linux.charon-ml-tests

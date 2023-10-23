@@ -133,8 +133,5 @@
           default = charon;
         };
         checks = { inherit tests tests-polonius charon-ml-tests; };
-        hydraJobs = {
-          inherit charon tests tests-polonius charon-ml charon-ml-tests;
-        };
       });
 }
