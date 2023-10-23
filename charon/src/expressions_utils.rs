@@ -203,18 +203,13 @@ impl FnPtr {
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         let f = match &self.func {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
-                format!("{}{generics}", ctx.format_object(*def_id),)
+                format!("{}", ctx.format_object(*def_id),)
             }
             FunIdOrTraitMethodRef::Fun(FunId::Assumed(assumed)) => {
-                format!("@{}{generics}", assumed.variant_name())
+                format!("@{}", assumed.variant_name())
             }
             FunIdOrTraitMethodRef::Trait(trait_ref, method_id, _) => {
-                format!(
-                    "{}::{}{}",
-                    trait_ref.fmt_with_ctx(ctx),
-                    &method_id.0,
-                    generics
-                )
+                format!("{}::{}", trait_ref.fmt_with_ctx(ctx), &method_id.0)
             }
         };
 
