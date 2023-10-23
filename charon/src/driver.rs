@@ -260,6 +260,13 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             trace!("#{}\n", ctx.format_object(def));
         }
 
+        let llbc_ctx = crate::translate_ctx::LlbcTransCtx {
+            ctx: &ctx,
+            llbc_globals: &llbc_globals,
+            llbc_funs: &llbc_funs,
+        };
+        trace!("# About to export:\n\n{}\n", llbc_ctx);
+
         // # Final step: generate the files.
         export::export_llbc(
             crate_name,

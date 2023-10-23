@@ -1389,3 +1389,48 @@ impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
         fmt::Result::Ok(())
     }
 }
+
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+    fn fmt_with_llbc_defs(
+        &self,
+        f: &mut fmt::Formatter,
+        llbc_globals: &llbc_ast::GlobalDecls,
+        llbc_funs: &llbc_ast::FunDecls,
+    ) -> fmt::Result {
+        // We do simple: types, globals, traits, functions
+        for (_, d) in &self.type_defs {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in llbc_globals {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in &self.trait_decls {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in &self.trait_impls {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in llbc_funs {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        fmt::Result::Ok(())
+    }
+}
+
+pub(crate) struct LlbcTransCtx<'a, 'tcx, 'ctx> {
+    pub ctx: &'a TransCtx<'tcx, 'ctx>,
+    pub llbc_globals: &'a llbc_ast::GlobalDecls,
+    pub llbc_funs: &'a llbc_ast::FunDecls,
+}
+
+impl<'a, 'tcx, 'ctx> fmt::Display for LlbcTransCtx<'a, 'tcx, 'ctx> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.ctx
+            .fmt_with_llbc_defs(f, self.llbc_globals, self.llbc_funs)
+    }
+}
