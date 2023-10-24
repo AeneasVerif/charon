@@ -78,3 +78,6 @@ let path_elem_to_string (pe : path_elem) : string =
 
 let name_to_string (name : name) : string =
   String.concat "::" (List.map path_elem_to_string name)
+
+let name_no_disambiguators_to_string (name : name) : string =
+  name_to_string (filter_disambiguators name)
