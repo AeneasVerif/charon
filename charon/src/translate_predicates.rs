@@ -508,6 +508,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
             ImplSourceKind::TraitUpcasting(_) => unimplemented!(),
+            ImplSourceKind::Error(msg) => {
+                if PANIC_IF_NO_TRAIT_CLAUSE_FOUND {
+                    panic!("Error during trait resolution: {}", msg)
+                } else {
+                    let trait_id = TraitInstanceId::Unknown(msg.clone());
+                    TraitRef {
+                        trait_id,
+                        generics: GenericArgs::empty(),
+                        trait_decl_ref,
+                    }
+                }
+            }
         };
         Some(trait_ref)
     }
@@ -647,7 +659,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
                 trait_ref, clauses
             );
-            TraitInstanceId::Unknown(trait_ref)
+            TraitInstanceId::Unknown(format!(
+                "Could not find a clause for parameter: {:?}",
+                trait_ref
+            ))
         }
     }
 

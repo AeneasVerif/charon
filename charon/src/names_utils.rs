@@ -231,11 +231,20 @@ pub fn extended_def_id_to_name(def_id: &hax::ExtendedDefId) -> ItemName {
                     // Builtin cases.
                     Ty::Int(ty) => ty.to_string(),
                     Ty::Uint(ty) => ty.to_string(),
-                    Ty::Array(..) => {
-                        format!("{ty:?}")
-                    }
+                    Ty::Array(ty, c) => match (&**ty, &*c.contents) {
+                        (
+                            Ty::Param(hax::ParamTy {
+                                index: 0,
+                                name: ty_name,
+                            }),
+                            hax::ConstantExprKind::ConstRef {
+                                id: hax::ParamConst { name: c_name, .. },
+                            },
+                        ) => format!("[{ty_name}; {c_name}]"),
+                        _ => format!("{ty:?}"),
+                    },
                     Ty::Slice(ty) => match &**ty {
-                        Ty::Param(hax::ParamTy { index: 0, name: _ }) => "[T]".to_string(),
+                        Ty::Param(hax::ParamTy { index: 0, name }) => format!("[{name}]"),
                         _ => format!("{ty:?}"),
                     },
                     Ty::Tuple(tys) => {

@@ -88,7 +88,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// id is for an item trait, we need to lookup the trait itself and give
     /// its id).
     pub(crate) fn add_self_trait_clause(&mut self, def_id: DefId) {
-        // The self trait clause is actually the first trait predicate given by
+        // The self trait clause is actually the *last* trait predicate given by
         // [TyCtxt::predicates_of].
         // **ATTENTION**: this doesn't return the same thing as [TyCtxt::predicates_defined_on],
         // which we use elsewhere.
@@ -99,36 +99,34 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let predicates = self.t_ctx.tcx.predicates_of(def_id).sinto(&self.hax_state);
         trace!("predicates: {:?}", predicates);
-        // Find the first trait clause
-        let clause = predicates
-            .predicates
-            .into_iter()
-            .find_map(|(pred, _span)| {
-                assert!(pred.bound_vars.is_empty());
-                if let hax::PredicateKind::Clause(hax::Clause::Trait(pred)) = pred.value {
-                    if let Some(trait_id) =
-                        self.translate_trait_decl_id(pred.trait_ref.def_id.rust_def_id.unwrap())
-                    {
-                        let (regions, types, const_generics) = self
-                            .translate_substs(None, &pred.trait_ref.generic_args)
-                            .unwrap();
-                        Some((
-                            trait_id,
-                            GenericArgs {
-                                regions,
-                                types,
-                                const_generics,
-                                trait_refs: Vec::new(),
-                            },
-                        ))
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            })
-            .unwrap();
+
+        // Get the last predicate
+        let (pred, _span) = predicates.predicates.into_iter().next_back().unwrap();
+
+        // Convert to a clause
+        assert!(pred.bound_vars.is_empty());
+        let clause = if let hax::PredicateKind::Clause(hax::Clause::Trait(pred)) = pred.value {
+            if let Some(trait_id) =
+                self.translate_trait_decl_id(pred.trait_ref.def_id.rust_def_id.unwrap())
+            {
+                let (regions, types, const_generics) = self
+                    .translate_substs(None, &pred.trait_ref.generic_args)
+                    .unwrap();
+                (
+                    trait_id,
+                    GenericArgs {
+                        regions,
+                        types,
+                        const_generics,
+                        trait_refs: Vec::new(),
+                    },
+                )
+            } else {
+                panic!();
+            }
+        } else {
+            panic!();
+        };
         self.self_trait_clause = Some(clause);
 
         // Do not forget to reinitialize
