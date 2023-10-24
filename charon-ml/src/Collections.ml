@@ -521,3 +521,6 @@ module MakeInjMap (Key : OrderedType) (Elem : OrderedType) :
     let find_opt k = find_opt k !m in
     (m, add, mem, find, find_opt)
 end
+
+module StringSet = MakeSet (OrderedString)
+module StringMap = MakeMap (OrderedString)
