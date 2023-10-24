@@ -5,7 +5,7 @@ version = 3
 [[package]]
 name = "adt-into"
 version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits3#05f7246f8a20b32715808733dab02ae70095e525"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits3#f7ab529b731a4c517e559c6cfff3546949d06da6"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -15,9 +15,9 @@ dependencies = [
 
 [[package]]
 name = "ahash"
-version = "0.7.6"
+version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcb51a0695d8f838b1ee009b3fbf66bda078cd64590202a864a8f3e8c4315c47"
+checksum = "5a824f2aa7e75a0c98c5a504fceb80649e9c35265d44525b5f94de4771a395cd"
 dependencies = [
  "getrandom",
  "once_cell",
@@ -274,9 +274,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dfda62a12f55daeae5015f81b0baea145391cb4520f86c248fc615d72640d12"
+checksum = "f93e7192158dbcda357bdec5fb5788eebf8bbac027f3f33e719d29135ae84156"
 
 [[package]]
 name = "hashlink"
@@ -290,7 +290,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits3#05f7246f8a20b32715808733dab02ae70095e525"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits3#f7ab529b731a4c517e559c6cfff3546949d06da6"
 dependencies = [
  "adt-into",
  "hax-frontend-exporter-options",
@@ -305,7 +305,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits3#05f7246f8a20b32715808733dab02ae70095e525"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=son_traits3#f7ab529b731a4c517e559c6cfff3546949d06da6"
 dependencies = [
  "schemars",
  "serde",
@@ -363,7 +363,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8adf3ddd720272c6ea8bf59463c04e0f93d0bbf7c5439b691bca2987e0270897"
 dependencies = [
  "equivalent",
- "hashbrown 0.14.1",
+ "hashbrown 0.14.2",
 ]
 
 [[package]]
@@ -683,9 +683,9 @@ checksum = "598f48ce2a421542b3e64828aa742b687cc1b91d2f96591cfdb7ac5988cd6366"
 
 [[package]]
 name = "rustix"
-version = "0.38.19"
+version = "0.38.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "745ecfa778e66b2b63c88a61cb36e0eea109e803b0b86bf9879fbc77c70e86ed"
+checksum = "67ce50cb2e16c2903e30d1cbccfd8387a74b9d4c938b6a4c5ec6cc7556f7a8a0"
 dependencies = [
  "bitflags 2.4.1",
  "errno",
@@ -912,9 +912,9 @@ dependencies = [
 
 [[package]]
 name = "tracing"
-version = "0.1.39"
+version = "0.1.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee2ef2af84856a50c1d430afce2fdded0a4ec7eda868db86409b4543df0797f9"
+checksum = "c3523ab5a71916ccf420eebdf5521fcef02141234bbc0b8a49f2fdc4544364ef"
 dependencies = [
  "pin-project-lite",
  "tracing-attributes",
