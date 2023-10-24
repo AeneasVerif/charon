@@ -43,6 +43,7 @@ pub static PANIC_NAME: [&str; 3] = ["core", "panicking", "panic"];
 pub static BEGIN_PANIC_NAME: [&str; 3] = ["std", "panicking", "begin_panic"];
 
 // Boxes
+pub static BOX_NEW_NAME: [&str; 4] = ["alloc", "boxed", "Box", "new"];
 pub static BOX_FREE_NAME: [&str; 3] = ["alloc", "alloc", "box_free"];
 
 // Slices
@@ -68,6 +69,7 @@ enum FunId {
     Panic,
     /// `std::panicking::begin_panic` - TODO: remove?
     BeginPanic,
+    BoxNew,
     BoxFree,
     SliceLen,
 }
@@ -110,6 +112,8 @@ fn get_fun_id_from_name_full(name: &FunName) -> Option<FunId> {
         Option::Some(FunId::Panic)
     } else if name.equals_ref_name(&BEGIN_PANIC_NAME) {
         Option::Some(FunId::BeginPanic)
+    } else if name.equals_ref_name(&BOX_NEW_NAME) {
+        Option::Some(FunId::BoxNew)
     } else if name.equals_ref_name(&BOX_FREE_NAME) {
         Option::Some(FunId::BoxFree)
     } else if name.equals_ref_name(&SLICE_LEN_NAME) {
@@ -124,6 +128,7 @@ pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
         Option::Some(id) => {
             let id = match id {
                 FunId::Panic | FunId::BeginPanic => unreachable!(),
+                FunId::BoxNew => ullbc_ast::AssumedFunId::BoxNew,
                 FunId::BoxFree => ullbc_ast::AssumedFunId::BoxFree,
                 FunId::SliceLen => ullbc_ast::AssumedFunId::SliceLen,
             };
@@ -178,6 +183,10 @@ pub fn function_to_info(name: &FunName) -> Option<FunInfo> {
                     used_args: vec![true],
                 },
                 FunId::BeginPanic => FunInfo {
+                    used_type_params: vec![true],
+                    used_args: vec![true],
+                },
+                FunId::BoxNew => FunInfo {
                     used_type_params: vec![true],
                     used_args: vec![true],
                 },
