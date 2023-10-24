@@ -317,6 +317,15 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
   let indent1 = indent ^ indent_incr in
 
   let items =
+    (* The parent clauses are given by the trait refs of the implemented trait *)
+    let parent_clauses =
+      Collections.List.mapi
+        (fun i trait_ref ->
+          indent1 ^ "parent_clause" ^ string_of_int i ^ " = "
+          ^ PT.trait_ref_to_string sty_fmt trait_ref
+          ^ "\n")
+        def.impl_trait.decl_generics.trait_refs
+    in
     let consts =
       List.map
         (fun (name, (ty, id)) ->
@@ -329,11 +338,15 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
       List.map
         (fun (name, (trait_refs, ty)) ->
           let trait_refs =
-            String.concat ", "
-              (List.map (PT.trait_ref_to_string ety_fmt) trait_refs)
+            if trait_refs <> [] then
+              " where ["
+              ^ String.concat ", "
+                  (List.map (PT.trait_ref_to_string ety_fmt) trait_refs)
+              ^ "]"
+            else ""
           in
-          indent1 ^ "type " ^ name ^ " = " ^ ety_to_string ty ^ "where ["
-          ^ trait_refs ^ "]\n")
+          indent1 ^ "type " ^ name ^ " = " ^ ety_to_string ty ^ trait_refs
+          ^ "\n")
         def.types
     in
     let fmt_method (name, f) =
@@ -342,15 +355,17 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
     let required_methods = List.map fmt_method def.required_methods in
     let provided_methods = List.map fmt_method def.provided_methods in
     let methods =
-      List.concat
-        [
-          [ indent1 ^ "// Required methods\n" ];
-          required_methods;
-          [ indent1 ^ "// Provided methods\n" ];
-          provided_methods;
-        ]
+      if required_methods <> [] || provided_methods <> [] then
+        List.concat
+          [
+            [ indent1 ^ "// Required methods\n" ];
+            required_methods;
+            [ indent1 ^ "// Provided methods\n" ];
+            provided_methods;
+          ]
+      else []
     in
-    let items = List.concat [ consts; types; methods ] in
+    let items = List.concat [ parent_clauses; consts; types; methods ] in
     if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"
   in
 

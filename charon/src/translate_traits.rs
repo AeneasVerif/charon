@@ -318,11 +318,16 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             let (regions, types, const_generics) = bt_ctx
                 .translate_substs(None, &trait_ref.generic_args)
                 .unwrap();
+
+            // The trait references of the implemented trait (they give
+            // us the parent clauses)
+            let parent_trait_refs = bt_ctx.translate_trait_impl_sources(&trait_ref.trait_refs);
+
             let generics = GenericArgs {
                 regions,
                 types,
                 const_generics,
-                trait_refs: Vec::new(),
+                trait_refs: parent_trait_refs,
             };
             let trait_ref = TraitDeclRef { trait_id, generics };
             (trait_rust_id, trait_ref, rust_trait_ref)

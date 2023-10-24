@@ -206,6 +206,8 @@ pub struct TraitImpl {
     pub def_id: TraitImplId::Id,
     pub name: Name,
     /// The information about the implemented trait.
+    /// Note that this contains the instantiation of the "parent"
+    /// clauses.
     pub impl_trait: RTraitDeclRef,
     pub generics: GenericParams,
     pub preds: Predicates,

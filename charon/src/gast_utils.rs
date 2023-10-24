@@ -166,17 +166,27 @@ impl TraitImpl {
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
 
+        // Retrieve the parent clauses
+        let parent_clauses = &self.impl_trait.generics.trait_refs;
+
         let items = {
-            let items = self
-                .consts
+            let items = parent_clauses
                 .iter()
-                .map(|(name, (ty, id))| {
+                .enumerate()
+                .map(|(i, clause)| {
+                    let i = TraitClauseId::Id::new(i);
+                    format!(
+                        "{TAB_INCR}parent_clause{i} = {}\n",
+                        clause.fmt_with_ctx(ctx)
+                    )
+                })
+                .chain(self.consts.iter().map(|(name, (ty, id))| {
                     format!(
                         "{TAB_INCR}const {name} : {} = {}\n",
                         ty.fmt_with_ctx(ctx),
                         ctx.format_object(*id)
                     )
-                })
+                }))
                 .chain(self.types.iter().map(|(name, (trait_refs, ty))| {
                     let trait_refs = trait_refs
                         .iter()
