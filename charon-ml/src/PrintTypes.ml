@@ -93,6 +93,10 @@ let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
       match ref_kind with
       | T.Mut -> "&" ^ fmt.r_to_string r ^ " mut (" ^ ty_to_string fmt rty ^ ")"
       | T.Shared -> "&" ^ fmt.r_to_string r ^ " (" ^ ty_to_string fmt rty ^ ")")
+  | T.RawPtr (rty, ref_kind) -> (
+      match ref_kind with
+      | T.Mut -> "*mut " ^ ty_to_string fmt rty
+      | T.Shared -> "*const " ^ ty_to_string fmt rty)
   | T.Arrow (inputs, output) ->
       let inputs =
         "(" ^ String.concat ", " (List.map (ty_to_string fmt) inputs) ^ ") -> "

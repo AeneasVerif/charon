@@ -1484,6 +1484,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Add the late bound parameters (bound in the signature, can only be lifetimes)
         let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
 
+        let is_unsafe = match signature.value.unsafety {
+            hax::Unsafety::Unsafe => true,
+            hax::Unsafety::Normal => false,
+        };
+
         let bvar_names = signature
             .bound_vars
             .into_iter()
@@ -1537,6 +1542,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         FunSig {
             generics: self.get_generics(),
             preds: self.get_predicates(),
+            is_unsafe,
             regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
             parent_params_info,
             inputs,

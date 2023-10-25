@@ -126,6 +126,9 @@ let fun_sig_with_name_to_string (fmt : ast_formatter) (indent : string)
   let sty_fmt = ast_to_stype_formatter fmt in
   let sty_to_string = PT.sty_to_string sty_fmt in
 
+  (* Unsafe keyword *)
+  let unsafe = if sg.is_unsafe then "unsafe " else "" in
+
   (* Generics and predicates *)
   let params, trait_clauses =
     PT.generic_params_to_strings sty_fmt sg.generics
@@ -163,7 +166,7 @@ let fun_sig_with_name_to_string (fmt : ast_formatter) (indent : string)
   (* Put everything together *)
   let attribute = match attribute with None -> "" | Some attr -> attr ^ " " in
   let name = match name with None -> "" | Some name -> " " ^ name in
-  indent ^ attribute ^ "fn" ^ name ^ params ^ "(" ^ args ^ ")" ^ ret_ty
+  indent ^ attribute ^ unsafe ^ "fn" ^ name ^ params ^ "(" ^ args ^ ")" ^ ret_ty
   ^ clauses
 
 let fun_sig_to_string (fmt : ast_formatter) (indent : string)

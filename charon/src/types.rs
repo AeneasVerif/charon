@@ -476,33 +476,10 @@ pub enum Ty<R> {
     /// can be coerced to any type.
     /// TODO: but do we really use this type for variables?...
     Never,
-    // We don't support floating point numbers on purpose
+    // We don't support floating point numbers on purpose (for now)
     /// A borrow
     Ref(R, Box<Ty<R>>, RefKind),
     /// A raw pointer.
-    ///
-    /// We need this not only for unsafe code, but also to extract optimized
-    /// MIR: in optimized MIR, boxe dereferences and moves out of boxes is
-    /// desugared to very low-level code, which manipulates raw pointers
-    /// but also `std::ptr::Unique` and `std::ptr::NonNull`. In particular,
-    /// if `b` is a `Box<T>`, `x := move *b` is compiled to something like this:
-    /// ```text
-    /// tmp = (((b.0: std::ptr::Unique<T>).0: std::ptr::NonNull<T>).0: *const T);
-    /// x = move (*tmp);
-    /// ```
-    ///
-    /// Also, deallocation leads to the following code (this is independent of the
-    /// level of MIR):
-    /// ```text
-    /// alloc::alloc::box_free::<T, std::alloc::Global>(
-    ///     move (b.0: std::ptr::Unique<T>),
-    ///     move (b.1: std::alloc::Global))
-    /// ```
-    /// For now, we detect this case (this is hardcoded in [crate::register] and
-    /// [crate::translate_functions_to_ullbc]) to rewrite it to `free(move b)`.
-    ///
-    /// TODO: maybe we should simply deactivate support for optimized code: who
-    /// wants to verify this?
     RawPtr(Box<Ty<R>>, RefKind),
     /// A trait type
     TraitType(TraitRef<R>, GenericArgs<R>, TraitItemName),
@@ -610,6 +587,8 @@ pub struct ParamsInfo {
 /// functions) - we only use regions for this purpose.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct FunSig {
+    /// Is the function unsafe or not
+    pub is_unsafe: bool,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).

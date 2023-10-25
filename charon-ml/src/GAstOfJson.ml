@@ -348,6 +348,10 @@ let rec ty_of_json (r_of_json : json -> ('r, string) result) (js : json) :
         let* ty = ty_of_json r_of_json ty in
         let* ref_kind = ref_kind_of_json ref_kind in
         Ok (T.Ref (region, ty, ref_kind))
+    | `Assoc [ ("RawPtr", `List [ ty; ref_kind ]) ] ->
+        let* ty = ty_of_json r_of_json ty in
+        let* ref_kind = ref_kind_of_json ref_kind in
+        Ok (T.RawPtr (ty, ref_kind))
     | `Assoc [ ("TraitType", `List [ trait_ref; generics; item_name ]) ] ->
         let* trait_ref = trait_ref_of_json r_of_json trait_ref in
         let* generics = generic_args_of_json r_of_json generics in
@@ -943,6 +947,7 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | `Assoc
         [
+          ("is_unsafe", is_unsafe);
           ("generics", generics);
           ("preds", preds);
           ("parent_params_info", parent_params_info);
@@ -950,6 +955,7 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
           ("output", output);
           ("regions_hierarchy", regions_hierarchy);
         ] ->
+        let* is_unsafe = bool_of_json is_unsafe in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* parent_params_info =
@@ -960,7 +966,8 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
         let* regions_hierarchy = region_var_groups_of_json regions_hierarchy in
         Ok
           {
-            A.generics;
+            A.is_unsafe;
+            generics;
             preds;
             parent_params_info;
             inputs;

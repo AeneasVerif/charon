@@ -137,6 +137,8 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
      let fun_id = global_to_fun_id gid_conv global.def_id in
      let signature : A.fun_sig =
        {
+         (* Not sure about `is_unsafe` actually *)
+         is_unsafe = false;
          generics = TypesUtils.mk_empty_generic_params;
          preds = TypesUtils.mk_empty_predicates;
          parent_params_info = None;

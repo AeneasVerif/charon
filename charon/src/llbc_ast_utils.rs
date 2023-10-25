@@ -189,13 +189,8 @@ impl Statement {
                 assert.expected,
             ),
             RawStatement::Call(call) => {
-                let (call_s, comment) = fmt_call(ctx, call);
-                let comment = if let Some(comment) = comment {
-                    format!(" // all args: {comment}")
-                } else {
-                    "".to_string()
-                };
-                format!("{tab}{} := {call_s}{comment}", call.dest.fmt_with_ctx(ctx),)
+                let (call_s, _) = fmt_call(ctx, call);
+                format!("{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx),)
             }
             RawStatement::Panic => format!("{tab}panic"),
             RawStatement::Return => format!("{tab}return"),

@@ -104,6 +104,7 @@ type params_info = {
 
 (** A function signature for function declarations *)
 type fun_sig = {
+  is_unsafe : bool;
   generics : generic_params;
   preds : predicates;
   parent_params_info : params_info option;

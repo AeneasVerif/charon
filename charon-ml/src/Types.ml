@@ -300,6 +300,7 @@ type 'r ty =
   | Literal of literal_type
   | Never
   | Ref of 'r * 'r ty * ref_kind
+  | RawPtr of 'r ty * ref_kind
   | TraitType of 'r trait_ref * 'r generic_args * string
       (** The string is for the name of the associated type *)
   | Arrow of 'r ty list * 'r ty

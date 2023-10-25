@@ -315,6 +315,13 @@ impl<T> GFunDecl<T> {
     where
         C: GFunDeclFormatter<'a, T>,
     {
+        // Unsafe keyword
+        let unsafe_kw = if self.signature.is_unsafe {
+            "unsafe ".to_string()
+        } else {
+            "".to_string()
+        };
+
         // Function name
         let name = self.name.to_string();
 
@@ -354,7 +361,7 @@ impl<T> GFunDecl<T> {
         match &self.body {
             Option::None => {
                 // Put everything together
-                format!("{tab}fn {name}{params}({args}){ret_ty}{trait_clauses}")
+                format!("{tab}{unsafe_kw}fn {name}{params}({args}){ret_ty}{trait_clauses}")
             }
             Option::Some(body) => {
                 // Body
@@ -363,7 +370,7 @@ impl<T> GFunDecl<T> {
 
                 // Put everything together
                 format!(
-                    "{tab}fn {name}{params}({args}){ret_ty}{trait_clauses}\n{tab}{{\n{body}\n{tab}}}",
+                    "{tab}{unsafe_kw}fn {name}{params}({args}){ret_ty}{trait_clauses}\n{tab}{{\n{body}\n{tab}}}",
                 )
             }
         }

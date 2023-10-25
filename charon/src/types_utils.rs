@@ -1838,6 +1838,7 @@ pub trait TypeVisitor {
 
     fn visit_fun_sig(&mut self, sig: &FunSig) {
         let FunSig {
+            is_unsafe : _,
             generics,
             preds,
             parent_params_info: _,
@@ -1860,6 +1861,13 @@ impl FunSig {
     where
         T: TypeFormatter<'a, Region<RegionVarId::Id>>,
     {
+        // Unsafe keyword
+        let unsafe_kw = if self.is_unsafe {
+            "unsafe ".to_string()
+        } else {
+            "".to_string()
+        };
+
         // Generic parameters
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
 
@@ -1888,6 +1896,6 @@ impl FunSig {
         );
 
         // Put everything together
-        format!("fn{params}({args}){ret_ty}{clauses}",)
+        format!("{unsafe_kw}fn{params}({args}){ret_ty}{clauses}",)
     }
 }

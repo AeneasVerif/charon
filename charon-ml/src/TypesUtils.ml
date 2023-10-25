@@ -172,6 +172,7 @@ let rec ety_no_regions_to_gr_ty (ty : ety) : 'a gr_ty =
       let inputs = List.map ety_no_regions_to_gr_ty inputs in
       let output = ety_no_regions_to_gr_ty output in
       Arrow (inputs, output)
+  | RawPtr (ty, rkind) -> RawPtr (ety_no_regions_to_gr_ty ty, rkind)
   | Ref (_, _, _) ->
       raise
         (Failure
@@ -266,3 +267,6 @@ let rec ty_is_primitively_copyable (ty : 'r ty) : bool =
   | TraitType _ | Arrow (_, _) -> false
   | Ref (_, _, Mut) -> false
   | Ref (_, _, Shared) -> true
+  | RawPtr (_, _) ->
+      (* Not sure what to do here, so being conservative *)
+      false

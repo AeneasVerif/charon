@@ -29,7 +29,7 @@ impl std::fmt::Display for PathElem {
                 write!(f, "{s}")
             }
             PathElem::Disambiguator(d) => {
-                write!(f, "{d}")
+                write!(f, "{{{d}}}")
             }
         }
     }
