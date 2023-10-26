@@ -1,6 +1,11 @@
 //! Exercise the translation of arrays, with features supported by Eurydice
 #![allow(dead_code)]
 
+enum AB {
+    A,
+    B,
+}
+
 fn incr(x: &mut u32) {
     *x += 1;
 }
@@ -206,15 +211,10 @@ fn deref_array_mut_borrow(x: &mut [u32; 2]) -> u32 {
 // Non-copiable arrays
 // -------------------
 
-enum T {
-    A,
-    B,
-}
-
-fn take_array_t(_: [T; 2]) {}
+fn take_array_t(_: [AB; 2]) {}
 
 fn non_copyable_array() {
-    let x: [T; 2] = [T::A, T::B];
+    let x: [AB; 2] = [AB::A, AB::B];
     // x is moved (not deep copied!)
     // TODO: determine whether the translation needs to be aware of that and pass by ref instead of by copy
     take_array_t(x);
