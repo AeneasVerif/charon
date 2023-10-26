@@ -41,18 +41,18 @@ pub struct Pair<T1, T2> {
 const Y: Wrap<i32> = Wrap::new(2);
 
 const fn unwrap_y() -> i32 {
-    Y.val
+    Y.value
 }
 
 const YVAL: i32 = unwrap_y();
 
 struct Wrap<T> {
-    val: T,
+    value: T,
 }
 
 impl<T> Wrap<T> {
-    const fn new(val: T) -> Wrap<T> {
-        Wrap { val }
+    const fn new(value: T) -> Wrap<T> {
+        Wrap { value }
     }
 }
 
