@@ -120,7 +120,7 @@ pub struct GGlobalDecl<T> {
     pub body: Option<GExprBody<T>>,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TraitItemName(pub String);
 
 /// A trait **declaration**.
@@ -161,10 +161,6 @@ pub struct TraitDecl {
     pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,
-    /// This vector is the concatenation of:
-    /// - the clauses for the trait
-    /// - the clauses for its associated types
-    pub all_trait_clauses: TraitClauseId::Vector<TraitClause>,
     /// The associated constants declared in the trait.
     ///
     /// The optional id is for the default value.

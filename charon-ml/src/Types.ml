@@ -418,7 +418,7 @@ type field = { meta : meta; field_name : string option; field_ty : sty }
 
 type trait_clause = {
   clause_id : trait_clause_id;
-  meta : meta;
+  meta : meta option;
   trait_id : trait_decl_id;
   generics : sgeneric_args;
 }

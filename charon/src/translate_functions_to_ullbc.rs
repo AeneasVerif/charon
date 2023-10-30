@@ -1505,8 +1505,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .collect();
         self.push_bound_regions_group(bvar_names);
 
-        // Add the self trait clause if it is a trait decl item - we take care
-        // of adding it before translating the predicates.
+        // Add the self trait clause if it is a trait decl item
         match self.t_ctx.get_fun_kind(def_id) {
             FunKind::Regular => (),
             FunKind::TraitMethodImpl { impl_id, .. } => {

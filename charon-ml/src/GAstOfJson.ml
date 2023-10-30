@@ -530,7 +530,7 @@ let trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
           ("generics", generics);
         ] ->
         let* clause_id = T.TraitClauseId.id_of_json clause_id in
-        let* meta = meta_of_json id_to_file meta in
+        let* meta = option_of_json (meta_of_json id_to_file) meta in
         let* trait_id = T.TraitDeclId.id_of_json trait_id in
         let* generics = sgeneric_args_of_json generics in
         Ok ({ clause_id; meta; trait_id; generics } : T.trait_clause)
@@ -1112,7 +1112,6 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("name", name);
           ("generics", generics);
           ("preds", preds);
-          ("all_trait_clauses", all_trait_clauses);
           ("consts", consts);
           ("types", types);
           ("required_methods", required_methods);
@@ -1122,9 +1121,6 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* name = name_of_json name in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
-        let* all_trait_clauses =
-          list_of_json (trait_clause_of_json id_to_file) all_trait_clauses
-        in
         let* consts =
           list_of_json
             (pair_of_json string_of_json
@@ -1157,7 +1153,6 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
             name;
             generics;
             preds;
-            all_trait_clauses;
             consts;
             types;
             required_methods;

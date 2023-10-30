@@ -73,7 +73,7 @@ pub enum Region<Rid> {
 
 /// The type of erased regions. See [`Ty`](Ty) for more explanations.
 /// We could use `()`, but having a dedicated type makes things more explicit.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Hash, Ord, PartialOrd)]
 pub enum ErasedRegion {
     Erased,
 }
@@ -85,7 +85,7 @@ pub enum ErasedRegion {
 /// definition. Note that every path designated by [TraitInstanceId] refers
 /// to a *trait instance*, which is why the [Clause] variant may seem redundant
 /// with some of the other variants.
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub enum TraitInstanceId {
     ///
     /// Self, in case of trait declarations/implementations.
@@ -186,7 +186,7 @@ pub enum TraitInstanceId {
 }
 
 /// A reference to a trait
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct TraitRef<R> {
     pub trait_id: TraitInstanceId,
     pub generics: GenericArgs<R>,
@@ -205,7 +205,7 @@ pub type RTraitRef = TraitRef<Region<RegionVarId::Id>>;
 /// ```
 ///
 /// The substitution is: `[String, bool]`.
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct TraitDeclRef<R> {
     pub trait_id: TraitDeclId::Id,
     pub generics: GenericArgs<R>,
@@ -249,7 +249,7 @@ pub struct Predicates {
     pub trait_type_constraints: Vec<RTraitTypeConstraint>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Hash, Ord, PartialOrd)]
 pub struct GenericArgs<R> {
     pub regions: Vec<R>,
     pub types: Vec<Ty<R>>,
@@ -289,7 +289,7 @@ pub struct TraitClause {
     /// to a parameter.
     pub clause_id: TraitClauseId::Id,
     #[derivative(PartialEq = "ignore")]
-    pub meta: Meta,
+    pub meta: Option<Meta>,
     pub trait_id: TraitDeclId::Id,
     /// Remark: the trait refs list in the [generics] field should be empty.
     pub generics: RGenericArgs,
@@ -355,7 +355,9 @@ pub struct Field {
     pub ty: RTy,
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize)]
+#[derive(
+    Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize, Hash, Ord, PartialOrd,
+)]
 pub enum IntegerTy {
     Isize,
     I8,
@@ -371,7 +373,9 @@ pub enum IntegerTy {
     U128,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumIsA, Serialize)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, Copy, Hash, VariantName, EnumIsA, Serialize, Ord, PartialOrd,
+)]
 pub enum RefKind {
     Mut,
     Shared,
@@ -380,7 +384,20 @@ pub enum RefKind {
 /// Type identifier.
 ///
 /// Allows us to factorize the code for assumed types, adts and tuples
-#[derive(Debug, PartialEq, Eq, Clone, Copy, VariantName, EnumAsGetters, EnumIsA, Serialize)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Copy,
+    VariantName,
+    EnumAsGetters,
+    EnumIsA,
+    Serialize,
+    Hash,
+    Ord,
+    PartialOrd,
+)]
 pub enum TypeId {
     /// A "regular" ADT type.
     ///
@@ -412,6 +429,9 @@ pub type TypeDecls = TypeDeclId::Map<TypeDecl>;
     EnumAsGetters,
     VariantIndexArity,
     Serialize,
+    Hash,
+    Ord,
+    PartialOrd,
 )]
 pub enum LiteralTy {
     Integer(IntegerTy),
@@ -421,7 +441,18 @@ pub enum LiteralTy {
 
 /// Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value
 #[derive(
-    Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity, Serialize,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    VariantName,
+    EnumIsA,
+    EnumAsGetters,
+    VariantIndexArity,
+    Serialize,
+    Hash,
+    Ord,
+    PartialOrd,
 )]
 pub enum ConstGeneric {
     /// A global constant
@@ -442,15 +473,18 @@ pub enum ConstGeneric {
 /// one variant.
 #[derive(
     Debug,
+    Clone,
     PartialEq,
     Eq,
-    Clone,
+    Hash,
     VariantName,
     EnumIsA,
     EnumAsGetters,
     EnumToGetters,
     VariantIndexArity,
     Serialize,
+    Ord,
+    PartialOrd,
 )]
 pub enum Ty<R> {
     /// An ADT.
@@ -509,7 +543,20 @@ pub type ETy = Ty<ErasedRegion>;
 /// TODO: update to not hardcode the types (except `Box` maybe) and be more
 /// modular.
 /// TODO: move to assumed.rs?
-#[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Copy,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    Serialize,
+    Hash,
+    Ord,
+    PartialOrd,
+)]
 pub enum AssumedTy {
     /// Boxes have a special treatment: we translate them as identity.
     Box,
