@@ -140,7 +140,32 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let def_id = *self.t_ctx.trait_impl_id_to_def_id.get(&impl_id).unwrap();
         trace!("id: {:?}", def_id);
 
-        // TODO:
+        // Retrieve the trait ref representing "self"
+        let tcx = self.t_ctx.tcx;
+        let rustc_middle::ty::ImplSubject::Trait(trait_ref) =
+            tcx.impl_subject(def_id).subst_identity() else { unreachable!() };
+
+        // Wrap it in a [TraitPredicate] so that when calling [sinto] we retrieve
+        // the parent and item predicates.
+        let trait_pred = rustc_middle::ty::TraitPredicate {
+            trait_ref,
+            // Not really necessary (dummy value)
+            constness: rustc_middle::ty::BoundConstness::NotConst,
+            // Not really necessary
+            polarity: rustc_middle::ty::ImplPolarity::Positive,
+        };
+        let trait_pred = trait_pred.sinto(&self.hax_state);
+
+        // Save the self clause (and its parent/item clauses)
+        let mut initialized = false;
+        let _ = self.with_local_trait_clauses(
+            Box::new(move || {
+                assert!(!initialized);
+                initialized = true;
+                TraitInstanceId::SelfId
+            }),
+            &mut |s| s.translate_trait_clause(&trait_pred, None),
+        );
     }
 }
 
@@ -322,6 +347,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Retrieve the information about the implemented trait.
         let (implemented_trait_rust_id, implemented_trait, rust_implemented_trait_ref) = {
+            // TODO: what is below duplicates a bit [add_trait_impl_self_trait_clause]
             let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
             let trait_id = bt_ctx.translate_trait_decl_id(trait_rust_id);
             // We already tested above whether the trait should be filtered
