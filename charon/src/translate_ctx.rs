@@ -131,6 +131,7 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub trait_decls: ast::TraitDecls,
     /// The map from Rust trait impls ids to translated trait impls ids
     pub trait_impl_id_map: ast::TraitImplId::MapGenerator<DefId>,
+    pub trait_impl_id_to_def_id: HashMap<ast::TraitImplId::Id, DefId>,
     /// The translated trait declarations
     pub trait_impls: ast::TraitImpls,
 }
@@ -169,8 +170,8 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// variable indices.
     pub const_generic_vars_map: ty::ConstGenericVarId::MapGenerator<u32>,
     /// When translating a trait `Trait` (or rather one of its items), we sometimes need
-    /// to manipulate a clause `Self: Trait`. This is the clause. Note that its should be
-    /// ignored.
+    /// to manipulate a clause `Self: Trait`. This is the clause.
+    /// TODO: this should be a `FullTraitClause`
     pub self_trait_clause: Option<(ty::TraitDeclId::Id, ty::RGenericArgs)>,
     ///
     pub trait_clauses_counter: ty::TraitClauseId::Generator,
@@ -404,22 +405,26 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
-    pub(crate) fn register_trait_impl_id(&mut self, id: DefId) -> Option<ast::TraitImplId::Id> {
+    pub(crate) fn register_trait_impl_id(
+        &mut self,
+        rust_id: DefId,
+    ) -> Option<ast::TraitImplId::Id> {
         // Check if we need to filter
         {
             // Retrieve the id of the implemented trait decl
-            let id = self.tcx.trait_id_of_impl(id).unwrap();
+            let id = self.tcx.trait_id_of_impl(rust_id).unwrap();
             if self.register_trait_decl_id(id).is_none() {
                 return None;
             }
         }
 
-        match self.trait_impl_id_map.get(&id) {
+        match self.trait_impl_id_map.get(&rust_id) {
             Option::Some(id) => Some(id),
             Option::None => {
-                let rid = OrdRustId::TraitImpl(id);
-                let trans_id = self.trait_impl_id_map.insert(id);
-                self.push_id(id, rid, AnyTransId::TraitImpl(trans_id));
+                let rid = OrdRustId::TraitImpl(rust_id);
+                let trans_id = self.trait_impl_id_map.insert(rust_id);
+                self.trait_impl_id_to_def_id.insert(trans_id, rust_id);
+                self.push_id(rust_id, rid, AnyTransId::TraitImpl(trans_id));
                 Some(trans_id)
             }
         }

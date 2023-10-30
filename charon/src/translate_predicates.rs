@@ -145,6 +145,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let predicates = tcx.predicates_defined_on(def_id);
         let parent: Option<hax::DefId> = predicates.parent.sinto(&self.hax_state);
         let predicates: Vec<_> = predicates.predicates.iter().collect();
+        trace!("Predicates of {:?}:\n{:?}", def_id, predicates);
 
         // We reorder the predicates to make sure that the trait clauses come
         // *before* the other clauses. This way we are sure that, when translating,
@@ -219,18 +220,44 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Note that we need to know *all* the predicates: we start
         // with the parent.
         match tcx.generics_of(def_id).parent {
-            None => (),
+            None => {
+                trace!("No parents for {:?}", def_id);
+            }
             Some(parent_id) => {
                 let preds = self.get_predicates_of(parent_id);
-                trace!("Predicates of parent: {:?}", preds);
+                trace!("Predicates of parent ({:?}): {:?}", parent_id, preds);
                 self.translate_predicates(&preds);
             }
         }
 
+        let clauses = self
+            .trait_clauses
+            .iter()
+            .map(|c| c.fmt_with_ctx(self))
+            .collect::<Vec<String>>()
+            .join(",\n");
+        trace!(
+            "Local trait clauses of {:?} after translating the predicates of the parent:\n{}",
+            def_id,
+            clauses
+        );
+
         // The predicates of the current definition
         let preds = self.get_predicates_of(def_id);
-        trace!("Local predicates: {:?}", preds);
+        trace!("Local predicates of {:?}:\n{:?}", def_id, preds);
         self.translate_predicates(&preds);
+
+        let clauses = self
+            .trait_clauses
+            .iter()
+            .map(|c| c.fmt_with_ctx(self))
+            .collect::<Vec<String>>()
+            .join(",\n");
+        trace!(
+            "All trait clauses of {:?} (parents + locals):\n{}",
+            def_id,
+            clauses
+        );
     }
 
     pub(crate) fn translate_predicates(&mut self, preds: &hax::GenericPredicates) {
@@ -247,7 +274,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let (preds_traits, preds): (Vec<_>, Vec<_>) = preds
             .iter()
             .partition(|(pred, _)| matches!(&pred.value, PredicateKind::Clause(Clause::Trait(_))));
-        let preds = preds_traits.into_iter().chain(preds.into_iter());
+        let preds: Vec<_> = preds_traits.into_iter().chain(preds.into_iter()).collect();
 
         for (pred, span) in preds {
             match self.translate_predicate(pred, span) {
@@ -632,6 +659,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Self: TyTranslator<R>,
         Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
     {
+        trace!("Inside context of: {:?}", self.def_id);
+
         // Try to match with Self
         trace!(
             "Matching with the Self clause ({})",
@@ -684,21 +713,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             )
             .map(|(id, gens)| format!("{}{}", self.format_object(id), gens.fmt_with_ctx(self),))
             .collect();
-        let clauses = clauses.join("\n");
         if PANIC_IF_NO_TRAIT_CLAUSE_FOUND {
+            let clauses = clauses.join("\n");
             unreachable!(
-            "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
-                trait_ref, clauses
+                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
+                trait_ref, clauses, self.def_id
             );
         } else {
             // Return the UNKNOWN clause
             log::warn!(
-                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}",
-                trait_ref, clauses
+                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
+                trait_ref, clauses.join("\n"), self.def_id
             );
             TraitInstanceId::Unknown(format!(
-                "Could not find a clause for parameter: {:?}",
-                trait_ref
+                "Could not find a clause for parameter: {} (available clauses: {}) (context: {:?})",
+                trait_ref,
+                clauses.join("; "),
+                self.def_id
             ))
         }
     }

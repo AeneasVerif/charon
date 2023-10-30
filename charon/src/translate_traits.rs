@@ -88,6 +88,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// id is for an item trait, we need to lookup the trait itself and give
     /// its id).
     pub(crate) fn add_self_trait_clause(&mut self, def_id: DefId) {
+        trace!("id: {:?}", def_id);
         // The self trait clause is actually the *last* trait predicate given by
         // [TyCtxt::predicates_of].
         // **ATTENTION**: this doesn't return the same thing as [TyCtxt::predicates_defined_on],
@@ -127,10 +128,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         } else {
             panic!();
         };
+        trace!(
+            "self clause: {}{}",
+            self.format_object(clause.0),
+            clause.1.fmt_with_ctx(self)
+        );
         self.self_trait_clause = Some(clause);
 
         // Do not forget to reinitialize
         let _ = self.clear_predicates();
+    }
+
+    /// Similar to [add_self_trait_clause] but for trait implementations.
+    ///
+    /// We call this when translating trait impls and trait impl items.
+    pub(crate) fn add_trait_impl_self_trait_clause(&mut self, impl_id: TraitImplId::Id) {
+        let def_id = *self.t_ctx.trait_impl_id_to_def_id.get(&impl_id).unwrap();
+        trace!("id: {:?}", def_id);
+
+        // TODO:
     }
 }
 
@@ -302,6 +318,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Translate the predicates
         bt_ctx.translate_predicates_of(rust_id);
+
+        // Add the self trait clause
+        bt_ctx.add_trait_impl_self_trait_clause(def_id);
 
         // Retrieve the information about the implemented trait.
         let (implemented_trait_rust_id, implemented_trait, rust_implemented_trait_ref) = {

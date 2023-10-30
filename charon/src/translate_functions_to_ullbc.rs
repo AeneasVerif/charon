@@ -1509,7 +1509,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // of adding it before translating the predicates.
         match self.t_ctx.get_fun_kind(def_id) {
             FunKind::Regular => (),
-            FunKind::TraitMethodImpl { .. } => (),
+            FunKind::TraitMethodImpl { impl_id, .. } => {
+                self.add_trait_impl_self_trait_clause(impl_id);
+            }
             FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..) => {
                 // This is a trait decl item
                 let trait_id = tcx.trait_of_item(def_id).unwrap();

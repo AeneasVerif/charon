@@ -231,6 +231,7 @@ pub fn translate<'tcx, 'ctx>(
         trait_decl_id_map: ast::TraitDeclId::MapGenerator::new(),
         trait_decls: ast::TraitDeclId::Map::new(),
         trait_impl_id_map: ast::TraitImplId::MapGenerator::new(),
+        trait_impl_id_to_def_id: HashMap::new(),
         trait_impls: ast::TraitImplId::Map::new(),
     };
 
@@ -264,6 +265,7 @@ pub fn translate<'tcx, 'ctx>(
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
     while let Some(id) = ctx.stack.pop_first() {
+        trace!("About to translate id: {:?}", id);
         match id {
             OrdRustId::Type(id) => ctx.translate_type(id),
             OrdRustId::Fun(id) | OrdRustId::ConstFun(id) => ctx.translate_function(id),
