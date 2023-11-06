@@ -614,7 +614,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let _substs = bt_ctx.translate_generics(rust_id);
 
         // Translate the predicates
-        bt_ctx.translate_predicates_of(rust_id);
+        bt_ctx.translate_predicates_of(None, rust_id);
 
         // Check if the type has been explicitely marked as opaque.
         // If yes, ignore it, otherwise, dive into the body. Note that for

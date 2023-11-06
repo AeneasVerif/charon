@@ -241,6 +241,16 @@ let trait_decl_to_string (fmt : ast_formatter) (indent : string)
   let indent1 = indent ^ indent_incr in
 
   let items =
+    let parent_clauses =
+      List.map
+        (fun clause ->
+          indent1 ^ "parent_clause_"
+          ^ T.TraitClauseId.to_string clause.T.clause_id
+          ^ " : "
+          ^ PT.trait_clause_to_string sty_fmt clause
+          ^ "\n")
+        def.parent_clauses
+    in
     let consts =
       List.map
         (fun (name, (ty, opt_id)) ->
@@ -283,6 +293,7 @@ let trait_decl_to_string (fmt : ast_formatter) (indent : string)
     let items =
       List.concat
         [
+          parent_clauses;
           consts;
           types;
           [ indent1 ^ "// Required methods\n" ];

@@ -231,6 +231,17 @@ pub trait IntoIterator {
     fn into_iter(self) -> Self::IntoIter;
 }
 
+/* The traits below are inspired by [Try] and [FromResidual].
+
+   The reference to `Self as Try` in the `FromResidual` clause used to
+   cause a bug.
+*/
+trait Try: FromResidual<<Self as Try>::Residual> {
+    type Residual;
+}
+
+trait FromResidual<T> {}
+
 /* Testing function pointers and closures */
 #[allow(clippy::manual_map)]
 pub fn map_option<T, F>(x: Option<T>, f: F) -> Option<T>

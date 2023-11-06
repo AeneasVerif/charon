@@ -1112,6 +1112,7 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("name", name);
           ("generics", generics);
           ("preds", preds);
+          ("parent_clauses", parent_clauses);
           ("consts", consts);
           ("types", types);
           ("required_methods", required_methods);
@@ -1121,6 +1122,9 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* name = name_of_json name in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
+        let* parent_clauses =
+          list_of_json (trait_clause_of_json id_to_file) parent_clauses
+        in
         let* consts =
           list_of_json
             (pair_of_json string_of_json
@@ -1153,6 +1157,7 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
             name;
             generics;
             preds;
+            parent_clauses;
             consts;
             types;
             required_methods;

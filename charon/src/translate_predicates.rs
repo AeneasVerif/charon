@@ -47,7 +47,7 @@ pub(crate) struct NonLocalTraitClause {
 }
 
 impl NonLocalTraitClause {
-    pub(crate) fn to_trait_clause(&self) -> Option<TraitClause> {
+    pub(crate) fn to_local_trait_clause(&self) -> Option<TraitClause> {
         if let TraitInstanceId::Clause(id) = &self.clause_id {
             Some(TraitClause {
                 clause_id: *id,
@@ -227,7 +227,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// This function should be called **after** we translated the generics
     /// (type parameters, regions...).
-    pub(crate) fn translate_predicates_of(&mut self, def_id: DefId) {
+    ///
+    /// [parent_predicates_as_parent_clauses]: if [Some], the predicates
+    /// of the parent must be registered as parent clauses.
+    pub(crate) fn translate_predicates_of(
+        &mut self,
+        parent_trait_id: Option<TraitDeclId::Id>,
+        def_id: DefId,
+    ) {
         trace!("def_id: {:?}", def_id);
         let tcx = self.t_ctx.tcx;
 
@@ -241,7 +248,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             Some(parent_id) => {
                 let preds = self.get_predicates_of(parent_id);
                 trace!("Predicates of parent ({:?}): {:?}", parent_id, preds);
-                self.translate_predicates(&preds);
+
+                if let Some(trait_id) = parent_trait_id {
+                    let mut parent_clause_id_gen = TraitClauseId::Generator::new();
+                    let parent_trait_instance_id_gen = Box::new(move || {
+                        let fresh_id = parent_clause_id_gen.fresh_id();
+                        TraitInstanceId::ParentClause(
+                            Box::new(TraitInstanceId::SelfId),
+                            trait_id,
+                            fresh_id,
+                        )
+                    });
+
+                    self.with_local_trait_clauses(
+                        parent_trait_instance_id_gen,
+                        &mut |ctx: &mut Self| ctx.translate_predicates(&preds),
+                    );
+                } else {
+                    self.translate_predicates(&preds);
+                }
             }
         }
 

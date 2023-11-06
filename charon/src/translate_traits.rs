@@ -98,11 +98,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // translating the clauses.
         assert!(self.trait_clauses.is_empty());
 
-        let predicates = self.t_ctx.tcx.predicates_of(def_id).sinto(&self.hax_state);
+        let predicates = self.t_ctx.tcx.predicates_of(def_id);
         trace!("predicates: {:?}", predicates);
 
         // Get the last predicate
-        let (pred, span) = predicates.predicates.into_iter().next_back().unwrap();
+        let (pred, span) = predicates.predicates.iter().next_back().unwrap();
+        let pred = pred.sinto(&self.hax_state);
+        let span = span.sinto(&self.hax_state);
 
         // Convert to a clause
         assert!(pred.bound_vars.is_empty());
@@ -201,7 +203,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.add_self_trait_clause(rust_id);
 
         // Translate the predicates.
-        bt_ctx.translate_predicates_of(rust_id);
+        {
+            let mut parent_clause_id_gen = TraitClauseId::Generator::new();
+            let parent_trait_instance_id_gen = Box::new(move || {
+                let fresh_id = parent_clause_id_gen.fresh_id();
+                TraitInstanceId::ParentClause(Box::new(TraitInstanceId::SelfId), def_id, fresh_id)
+            });
+
+            bt_ctx.with_local_trait_clauses(parent_trait_instance_id_gen, &mut |s| {
+                s.translate_predicates_of(None, rust_id)
+            });
+        }
         // Retrieve the local predicates, which apply to the trait decl itself (we will
         // continue appending the ones from the associated items in bt_ctx).
         // TODO: we shouldn't need to do that
@@ -256,13 +268,31 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let name = TraitItemName(item.name.to_string());
 
                     // Translating the predicates
-                    // TODO: this is an ugly manip
-                    let bounds = tcx.item_bounds(item.def_id).subst_identity();
-                    use crate::rustc_middle::query::Key;
-                    let span = bounds.default_span(tcx);
-                    let bounds: Vec<_> = bounds.into_iter().map(|x| (x, span)).collect();
-                    let bounds = bounds.sinto(&bt_ctx.hax_state);
-                    bt_ctx.translate_predicates_vec(&bounds);
+                    {
+                        // TODO: this is an ugly manip
+                        let bounds = tcx.item_bounds(item.def_id).subst_identity();
+                        use crate::rustc_middle::query::Key;
+                        let span = bounds.default_span(tcx);
+                        let bounds: Vec<_> = bounds.into_iter().map(|x| (x, span)).collect();
+                        let bounds = bounds.sinto(&bt_ctx.hax_state);
+
+                        // Register the trait clauses as item trait clauses
+                        let mut type_clause_id_gen = TraitClauseId::Generator::new();
+                        let cname = name.clone();
+                        let type_clause_id_gen = Box::new(move || {
+                            let fresh_id = type_clause_id_gen.fresh_id();
+                            TraitInstanceId::ItemClause(
+                                Box::new(TraitInstanceId::SelfId),
+                                def_id,
+                                cname.clone(),
+                                fresh_id,
+                            )
+                        });
+
+                        bt_ctx.with_local_trait_clauses(type_clause_id_gen, &mut |s| {
+                            s.translate_predicates_vec(&bounds)
+                        });
+                    }
 
                     // Retrieve the trait clauses which are specific to this item
                     // - we simply need to filter the trait clauses by using their id.
@@ -278,7 +308,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                                     clause_id,
                                 ) => {
                                     if item_name == &name {
-                                        Some(clause_id.clone())
+                                        Some(*clause_id)
                                     } else {
                                         None
                                     }
@@ -304,6 +334,30 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let generics = bt_ctx.get_generics();
         // TODO: maybe we should do something about the predicates?
 
+        let parent_clauses = bt_ctx.get_parent_trait_clauses();
+
+        // Debugging:
+        {
+            let clauses = bt_ctx
+                .trait_clauses
+                .values()
+                .map(|c| c.fmt_with_ctx(&bt_ctx))
+                .collect::<Vec<String>>()
+                .join("\n");
+            let generic_clauses = generics
+                .trait_clauses
+                .iter()
+                .map(|c| c.fmt_with_ctx(&bt_ctx))
+                .collect::<Vec<String>>()
+                .join("\n");
+            trace!(
+                "Trait decl: {:?}:\n- all clauses:\n{}\n- generic.trait_clauses:\n{}\n",
+                def_id,
+                clauses,
+                generic_clauses
+            );
+        }
+
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
         // check those, and lookup the relevant values.
@@ -312,6 +366,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             name,
             generics,
             preds,
+            parent_clauses,
             consts,
             types,
             required_methods,
@@ -340,7 +395,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let _substs = bt_ctx.translate_generics(rust_id);
 
         // Translate the predicates
-        bt_ctx.translate_predicates_of(rust_id);
+        bt_ctx.translate_predicates_of(None, rust_id);
 
         // Add the self trait clause
         bt_ctx.add_trait_impl_self_trait_clause(def_id);
@@ -360,10 +415,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 .translate_substs(None, &trait_ref.generic_args)
                 .unwrap();
 
-            // The trait references of the implemented trait (they give
-            // us the parent clauses)
-            let parent_trait_refs = bt_ctx.translate_trait_impl_sources(&trait_ref.trait_refs);
-
+            let parent_trait_refs = Vec::new();
             let generics = GenericArgs {
                 regions,
                 types,
@@ -456,6 +508,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         None => {
                             // The item is not defined in the trait impl:
                             // the trait decl *must* define a default value.
+                            // TODO: should we normalize the type?
                             bt_ctx.translate_ty_from_trait_item(item)
                         }
                     };

@@ -646,10 +646,30 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Retrieve the *local* trait clauses available in the current environment
     /// (we filter the parent of those clauses, etc.).
     pub(crate) fn get_local_trait_clauses(&self) -> TraitClauseId::Vector<TraitClause> {
-        self.trait_clauses
+        let clauses: TraitClauseId::Vector<TraitClause> = self
+            .trait_clauses
             .iter()
-            .filter_map(|(_, x)| x.to_trait_clause())
-            .collect()
+            .filter_map(|(_, x)| x.to_local_trait_clause())
+            .collect();
+        // Sanity check
+        assert!(clauses.iter_indexed_values().all(|(i, c)| c.clause_id == i));
+        clauses
+    }
+
+    pub(crate) fn get_parent_trait_clauses(&self) -> TraitClauseId::Vector<TraitClause> {
+        let clauses: TraitClauseId::Vector<TraitClause> = self
+            .trait_clauses
+            .iter()
+            .filter_map(|(_, x)| {
+                x.to_trait_clause_with_id(&|id| match id {
+                    TraitInstanceId::ParentClause(box TraitInstanceId::SelfId, _, id) => Some(*id),
+                    _ => None,
+                })
+            })
+            .collect();
+        // Sanity check
+        assert!(clauses.iter_indexed_values().all(|(i, c)| c.clause_id == i));
+        clauses
     }
 
     pub(crate) fn get_predicates(&self) -> Predicates {

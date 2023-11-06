@@ -833,10 +833,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             );
 
             if !is_prim {
-                // Two cases depending on whether we call a trait function
-                // or not.
+                // Two cases depending on whether we call a trait method or not
                 match trait_info {
                     Option::None => {
+                        // "Regular" function call
                         let def_id = self.translate_fun_decl_id(rust_id);
                         let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
                         let func = FnPtr {
@@ -848,6 +848,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         SubstFunIdOrPanic::Fun(sfid)
                     }
                     Option::Some(trait_info) => {
+                        // Trait method
                         let rust_id = def_id.rust_def_id.unwrap();
                         let impl_source = self
                             .translate_trait_impl_source_erased_regions(&trait_info.impl_source);
@@ -1506,10 +1507,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.push_bound_regions_group(bvar_names);
 
         // Add the self trait clause if it is a trait decl item
-        match self.t_ctx.get_fun_kind(def_id) {
+        let fun_kind = self.t_ctx.get_fun_kind(def_id);
+        match &fun_kind {
             FunKind::Regular => (),
             FunKind::TraitMethodImpl { impl_id, .. } => {
-                self.add_trait_impl_self_trait_clause(impl_id);
+                self.add_trait_impl_self_trait_clause(*impl_id);
             }
             FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..) => {
                 // This is a trait decl item
@@ -1519,7 +1521,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Translate the predicates (in particular, the trait clauses)
-        self.translate_predicates_of(def_id);
+        match &fun_kind {
+            FunKind::Regular | FunKind::TraitMethodImpl { .. } => {
+                self.translate_predicates_of(None, def_id);
+            }
+            FunKind::TraitMethodProvided(trait_decl_id, ..)
+            | FunKind::TraitMethodDecl(trait_decl_id, ..) => {
+                self.translate_predicates_of(Some(*trait_decl_id), def_id);
+            }
+        }
 
         // Translate the signature
         let signature = signature.value;
@@ -1538,7 +1548,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
         trace!("# Output variable type:\n{}", self.format_object(&output));
 
-        let parent_params_info = self.get_function_parent_params_info(def_id);
+        let mut parent_params_info = self.get_function_parent_params_info(def_id);
+        // If this is a trait decl method, we need to adjust the number of parent clauses
+        if matches!(
+            &fun_kind,
+            FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..)
+        ) {
+            if let Some(info) = &mut parent_params_info {
+                // All the trait clauses are registered as parent (of Self)
+                // trait clauses, not as local trait clauses.
+                info.num_trait_clauses = 0;
+            }
+        }
 
         FunSig {
             generics: self.get_generics(),

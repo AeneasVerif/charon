@@ -72,12 +72,18 @@ impl DeclarationGroup {
 
     fn make_trait_decl_group(
         ctx: &TransCtx,
-        is_rec: bool,
+        _is_rec: bool,
         gr: impl Iterator<Item = TraitDeclId::Id>,
     ) -> Self {
         let gr: Vec<_> = gr.collect();
+        // Trait declarations often refer to `Self`, like below,
+        // which means they are often considered as recursive by our
+        // analysis. TODO: do something more precise. What is important
+        // is that we never use the "whole" self clause as argument,
+        // but rather projections over the self clause (like `<Self as Foo>::u`,
+        // in the declaration for `Foo`).
         assert!(
-            !is_rec && gr.len() == 1,
+            gr.len() == 1,
             "Invalid trait decl group:\n{}",
             gr.iter()
                 .map(|id| ctx.format_object(*id))
@@ -95,7 +101,7 @@ impl DeclarationGroup {
         let gr: Vec<_> = gr.collect();
         assert!(
             !is_rec && gr.len() == 1,
-            "Invalid trait decl group:\n{}",
+            "Invalid trait impl group:\n{}",
             gr.iter()
                 .map(|id| ctx.format_object(*id))
                 .collect::<Vec<String>>()

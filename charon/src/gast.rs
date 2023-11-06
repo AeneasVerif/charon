@@ -161,6 +161,19 @@ pub struct TraitDecl {
     pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,
+    /// The "parent" clauses: the supertraits.
+    ///
+    /// Supertraits are actually regular where clauses, but we decided to have
+    /// a custom treatment.
+    /// ```text
+    /// trait Foo : Bar {
+    ///             ^^^
+    ///         supertrait, that we treat as a parent predicate
+    /// }
+    /// ```
+    /// TODO: actually, as of today, we consider that all trait clauses of
+    /// trait declarations are parent clauses.
+    pub parent_clauses: TraitClauseId::Vector<TraitClause>,
     /// The associated constants declared in the trait.
     ///
     /// The optional id is for the default value.
