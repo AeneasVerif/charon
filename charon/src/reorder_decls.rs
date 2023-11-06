@@ -462,6 +462,11 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 // Visit the generics and the predicates
                 graph.visit_generics_and_preds(&d.generics, &d.preds);
 
+                // Visit the parent clauses
+                for clause in &d.parent_clauses {
+                    graph.visit_trait_clause(clause);
+                }
+
                 // Visit the items
                 for (_, (ty, c)) in &d.consts {
                     graph.visit_ty(ty);
@@ -480,10 +485,9 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 }
 
                 let method_ids = d.required_methods.iter().map(|(_, id)| *id).chain(
-                    d.provided_methods.iter().filter_map(|(_, id)| match id {
-                        None => None,
-                        Some(id) => Some(*id),
-                    }),
+                    d.provided_methods
+                        .iter()
+                        .filter_map(|(_, id)| id.as_ref().copied()),
                 );
                 for id in method_ids {
                     // Important: we must ignore the function id, because
