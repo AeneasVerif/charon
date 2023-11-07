@@ -80,6 +80,18 @@ fn rem_test(x: u32, y: u32) -> u32 {
     x % y
 }
 
+fn mul_test(x: u32, y: u32) -> u32 {
+    x * 12
+}
+
+/* Checking the simplification of binop operations *inside* global constants.
+
+   In release mode, the Rust compiler inserts additional checks inside constant
+   bodies.
+*/
+pub(crate) const CONST0: usize = 1 + 1;
+pub(crate) const CONST1: usize = 2 * 2;
+
 fn cast_test(x: u32) -> i32 {
     x as i32
 }

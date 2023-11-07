@@ -3,6 +3,7 @@
 pub use crate::expressions_utils::*;
 use crate::gast::{FunDeclId, TraitItemName};
 use crate::types::*;
+pub use crate::values::VarId;
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
