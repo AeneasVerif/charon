@@ -6,7 +6,6 @@
 
 #![allow(dead_code)]
 
-use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
@@ -18,22 +17,20 @@ struct RemoveDynChecks {}
 impl MutTypeVisitor for RemoveDynChecks {}
 impl MutExprVisitor for RemoveDynChecks {}
 
-impl RemoveDynChecks {
-    /// Check that a statement is exactly:
-    /// ```text
-    /// assert(move b == false)
-    /// ```
-    fn is_assert_move_is_false(var: VarId::Id, s: &Statement) -> bool {
-        if let RawStatement::Assert(Assert {
-            cond: Operand::Move(p),
-            expected: false,
-        }) = &s.content
-        {
-            return p.var_id == var && p.projection.is_empty();
-        }
-        // Default
-        false
+/// Check that a statement is exactly:
+/// ```text
+/// assert(move p == expected)
+/// ```
+fn is_assert_move(p: &Place, s: &Statement, expected: bool) -> bool {
+    if let RawStatement::Assert(Assert {
+        cond: Operand::Move(ap),
+        expected: aexpected,
+    }) = &s.content
+    {
+        return ap == p && *aexpected == expected;
     }
+    // Default
+    false
 }
 
 impl MutAstVisitor for RemoveDynChecks {
@@ -89,21 +86,17 @@ impl MutAstVisitor for RemoveDynChecks {
                 ) = (&s0.content, &s1.content, &s2.content)
                 {
                     // s2 should be: `assert(move b == true)`
-                    if let RawStatement::Assert(a) = &s2.content && a.expected {
-                        if let Operand::Move(move_p) = &a.cond {
-                            if dest_l_p == l_op_place && move_p == dest_b_p {
-                                // Eliminate the first three statements
-                                take(s, |s| {
-                                    let (_, s1) = s.content.to_sequence();
-                                    let (_, s2) = s1.content.to_sequence();
-                                    let (_, s3) = s2.content.to_sequence();
-                                    *s3
-                                });
-                                self.visit_statement(s);
-                                // Return so as not to take the default branch
-                                return;
-                            }
-                        }
+                    if dest_l_p == l_op_place && is_assert_move(dest_b_p, s2, true) {
+                        // Eliminate the first three statements
+                        take(s, |s| {
+                            let (_, s1) = s.content.to_sequence();
+                            let (_, s2) = s1.content.to_sequence();
+                            let (_, s3) = s2.content.to_sequence();
+                            *s3
+                        });
+                        self.visit_statement(s);
+                        // Return so as not to take the default branch
+                        return;
                     }
                 }
                 // Shift left
@@ -119,99 +112,95 @@ impl MutAstVisitor for RemoveDynChecks {
                 ) = (&s0.content, &s1.content, &s2.content)
                 {
                     // s2 should be: `assert(move b == true)`
-                    if let RawStatement::Assert(a) = &s2.content && a.expected {
-                        if let Operand::Move(move_p) = &a.cond {
-                            if dest_x_p == x_place && move_p == dest_b_p {
-                                // Eliminate the first three statements
-                                take(s, |s| {
-                                    let (_, s1) = s.content.to_sequence();
-                                    let (_, s2) = s1.content.to_sequence();
-                                    let (_, s3) = s2.content.to_sequence();
-                                    *s3
-                                });
-                                self.visit_statement(s);
-                                // Return so as not to take the default branch
-                                return;
-                            }
-                        }
+                    if dest_x_p == x_place && is_assert_move(dest_b_p, s2, true) {
+                        // Eliminate the first three statements
+                        take(s, |s| {
+                            let (_, s1) = s.content.to_sequence();
+                            let (_, s2) = s1.content.to_sequence();
+                            let (_, s3) = s2.content.to_sequence();
+                            *s3
+                        });
+                        self.visit_statement(s);
+                        // Return so as not to take the default branch
+                        return;
                     }
                 }
                 // Division/remainder/addition/etc.
-                else if let (RawStatement::Assign(dest_p, rv), RawStatement::Assert(a)) =
-                    (&s0.content, &s1.content)
+                else if let RawStatement::Assign(dest_p, Rvalue::BinaryOp(binop, _, _)) =
+                    &s0.content
                 {
-                    if let Rvalue::BinaryOp(binop, _, _) = rv {
-                        // We don't check that the second operand is 0 in
-                        // case we are in the division/remainder case
-                        if matches!(binop, BinOp::Eq) && !a.expected {
-                            if let Operand::Move(move_p) = &a.cond {
-                                if move_p == dest_p {
-                                    // Eliminate the first two statements
-                                    take(s, |s| {
-                                        let (_, s1) = s.content.to_sequence();
-                                        let (_, s2) = s1.content.to_sequence();
-                                        *s2
-                                    });
-                                    self.visit_statement(s);
-                                    // Return so as not to take the default branch
-                                    return;
-                                }
-                            }
-                        } else if let (Operand::Move(move_p), RawStatement::Sequence(s2, _)) =
-                            (&a.cond, &s2.content)
-                        {
-                            // TODO: the last statement is not necessarily a sequence
-                            // This should be the addition/subtraction/etc. case
-                            assert!(
-                                matches!(binop, BinOp::Add | BinOp::Sub | BinOp::Mul),
-                                "{:?}",
-                                binop
-                            );
+                    // We don't check that the second operand is 0 in
+                    // case we are in the division/remainder case
+                    if matches!(binop, BinOp::Eq) && is_assert_move(dest_p, s1, false) {
+                        // This should be the division/remainder case
+                        // Eliminate the first two statements
+                        take(s, |s| {
+                            let (_, s1) = s.content.to_sequence();
+                            let (_, s2) = s1.content.to_sequence();
+                            *s2
+                        });
+                        self.visit_statement(s);
+                        // Return so as not to take the default branch
+                        return;
+                    } else if let (
+                        RawStatement::Assert(Assert {
+                            cond: Operand::Move(move_p),
+                            ..
+                        }),
+                        RawStatement::Sequence(s2, _),
+                    ) = (&s1.content, &s2.content)
+                    {
+                        // TODO: the last statement is not necessarily a sequence
+                        // This should be the addition/subtraction/etc. case
+                        assert!(
+                            matches!(binop, BinOp::Add | BinOp::Sub | BinOp::Mul),
+                            "{:?}",
+                            binop
+                        );
 
-                            if let RawStatement::Assign(_, Rvalue::Use(Operand::Move(move_p1))) =
-                                &s2.content
+                        if let RawStatement::Assign(_, Rvalue::Use(Operand::Move(move_p1))) =
+                            &s2.content
+                        {
+                            // move_p should be: r.1
+                            // move_p1 should be: r.0
+                            if move_p.var_id == move_p1.var_id
+                                && move_p.projection.len() == 1
+                                && move_p1.projection.len() == 1
                             {
-                                // move_p should be: r.1
-                                // move_p1 should be: r.0
-                                if move_p.var_id == move_p1.var_id
-                                    && move_p.projection.len() == 1
-                                    && move_p1.projection.len() == 1
-                                {
-                                    match (&move_p.projection[0], &move_p1.projection[0]) {
-                                        (
-                                            ProjectionElem::Field(FieldProjKind::Tuple(..), fid0),
-                                            ProjectionElem::Field(FieldProjKind::Tuple(..), fid1),
-                                        ) => {
-                                            use crate::id_vector::ToUsize;
-                                            if fid0.to_usize() == 1 && fid1.to_usize() == 0 {
-                                                // Collapse into one assignment
-                                                take(s, |s| {
-                                                    let (s0, s1) = s.content.to_sequence();
-                                                    let (_, s2) = s1.content.to_sequence();
-                                                    let (s2, s3) = s2.content.to_sequence();
-                                                    let (_, op) = s0.content.to_assign();
-                                                    let (dest, _) = s2.content.to_assign();
-                                                    let meta0 = s0.meta;
-                                                    let s0 = RawStatement::Assign(dest, op);
-                                                    let s0 = Statement {
-                                                        meta: meta0,
-                                                        content: s0,
-                                                    };
-                                                    Statement {
-                                                        meta: s2.meta,
-                                                        content: RawStatement::Sequence(
-                                                            Box::new(s0),
-                                                            s3,
-                                                        ),
-                                                    }
-                                                });
-                                                self.visit_statement(s);
-                                                // Return so as not to take the default branch
-                                                return;
-                                            }
+                                match (&move_p.projection[0], &move_p1.projection[0]) {
+                                    (
+                                        ProjectionElem::Field(FieldProjKind::Tuple(..), fid0),
+                                        ProjectionElem::Field(FieldProjKind::Tuple(..), fid1),
+                                    ) => {
+                                        use crate::id_vector::ToUsize;
+                                        if fid0.to_usize() == 1 && fid1.to_usize() == 0 {
+                                            // Collapse into one assignment
+                                            take(s, |s| {
+                                                let (s0, s1) = s.content.to_sequence();
+                                                let (_, s2) = s1.content.to_sequence();
+                                                let (s2, s3) = s2.content.to_sequence();
+                                                let (_, op) = s0.content.to_assign();
+                                                let (dest, _) = s2.content.to_assign();
+                                                let meta0 = s0.meta;
+                                                let s0 = RawStatement::Assign(dest, op);
+                                                let s0 = Statement {
+                                                    meta: meta0,
+                                                    content: s0,
+                                                };
+                                                Statement {
+                                                    meta: s2.meta,
+                                                    content: RawStatement::Sequence(
+                                                        Box::new(s0),
+                                                        s3,
+                                                    ),
+                                                }
+                                            });
+                                            self.visit_statement(s);
+                                            // Return so as not to take the default branch
+                                            return;
                                         }
-                                        _ => (),
                                     }
+                                    _ => (),
                                 }
                             }
                         }

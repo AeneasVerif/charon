@@ -13,7 +13,6 @@ pub use crate::types::{
     EGenericArgs, ETraitRef, GenericArgs, GenericParams, RGenericArgs, RTraitRef, TraitDeclId,
     TraitImplId, TraitInstanceId, TraitRef,
 };
-use crate::values::*;
 use macros::generate_index_type;
 use serde::Serialize;
 
