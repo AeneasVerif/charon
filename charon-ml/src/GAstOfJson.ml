@@ -1176,6 +1176,7 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("impl_trait", impl_trait);
           ("generics", generics);
           ("preds", preds);
+          ("parent_trait_refs", parent_trait_refs);
           ("consts", consts);
           ("types", types);
           ("required_methods", required_methods);
@@ -1186,6 +1187,9 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* impl_trait = strait_decl_ref_of_json impl_trait in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
+        let* parent_trait_refs =
+          list_of_json strait_ref_of_json parent_trait_refs
+        in
         let* consts =
           list_of_json
             (pair_of_json string_of_json
@@ -1210,6 +1214,7 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
              impl_trait;
              generics;
              preds;
+             parent_trait_refs;
              consts;
              types;
              required_methods;

@@ -173,6 +173,7 @@ type trait_impl = {
   impl_trait : strait_decl_ref;
   generics : generic_params;
   preds : predicates;
+  parent_trait_refs : strait_ref list;
   consts : (trait_item_name * (ety * global_decl_id)) list;
   types : (trait_item_name * (etrait_ref list * ety)) list;
   required_methods : (trait_item_name * fun_decl_id) list;

@@ -180,11 +180,9 @@ impl TraitImpl {
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
 
-        // Retrieve the parent clauses
-        let parent_clauses = &self.impl_trait.generics.trait_refs;
-
         let items = {
-            let items = parent_clauses
+            let items = self
+                .parent_trait_refs
                 .iter()
                 .enumerate()
                 .map(|(i, clause)| {

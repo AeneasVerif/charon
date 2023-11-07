@@ -338,7 +338,7 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
           indent1 ^ "parent_clause" ^ string_of_int i ^ " = "
           ^ PT.trait_ref_to_string sty_fmt trait_ref
           ^ "\n")
-        def.impl_trait.decl_generics.trait_refs
+        def.parent_trait_refs
     in
     let consts =
       List.map

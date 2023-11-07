@@ -169,6 +169,42 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             &mut |s| s.translate_trait_clause(&trait_pred, None),
         );
     }
+
+    pub(crate) fn with_parent_trait_clauses<T>(
+        &mut self,
+        clause_id: TraitInstanceId,
+        trait_decl_id: TraitDeclId::Id,
+        f: &mut dyn FnMut(&mut Self) -> T,
+    ) -> T {
+        let mut parent_clause_id_gen = TraitClauseId::Generator::new();
+        let parent_trait_instance_id_gen = Box::new(move || {
+            let fresh_id = parent_clause_id_gen.fresh_id();
+            TraitInstanceId::ParentClause(Box::new(clause_id.clone()), trait_decl_id, fresh_id)
+        });
+
+        self.with_local_trait_clauses(parent_trait_instance_id_gen, f)
+    }
+
+    pub(crate) fn with_item_trait_clauses<T>(
+        &mut self,
+        clause_id: TraitInstanceId,
+        trait_decl_id: TraitDeclId::Id,
+        item_name: String,
+        f: &mut dyn FnMut(&mut Self) -> T,
+    ) -> T {
+        let mut item_clause_id_gen = TraitClauseId::Generator::new();
+        let item_clause_id_gen = Box::new(move || {
+            let fresh_id = item_clause_id_gen.fresh_id();
+            TraitInstanceId::ItemClause(
+                Box::new(clause_id.clone()),
+                trait_decl_id,
+                TraitItemName(item_name.clone()),
+                fresh_id,
+            )
+        });
+
+        self.with_local_trait_clauses(item_clause_id_gen, f)
+    }
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
@@ -203,20 +239,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.add_self_trait_clause(rust_id);
 
         // Translate the predicates.
-        {
-            let mut parent_clause_id_gen = TraitClauseId::Generator::new();
-            let parent_trait_instance_id_gen = Box::new(move || {
-                let fresh_id = parent_clause_id_gen.fresh_id();
-                TraitInstanceId::ParentClause(Box::new(TraitInstanceId::SelfId), def_id, fresh_id)
-            });
+        bt_ctx.with_parent_trait_clauses(TraitInstanceId::SelfId, def_id, &mut |s| {
+            s.translate_predicates_of(None, rust_id)
+        });
 
-            bt_ctx.with_local_trait_clauses(parent_trait_instance_id_gen, &mut |s| {
-                s.translate_predicates_of(None, rust_id)
-            });
-        }
-        // Retrieve the local predicates, which apply to the trait decl itself (we will
-        // continue appending the ones from the associated items in bt_ctx).
-        // TODO: we shouldn't need to do that
+        // TODO: move this below (we don't need to perform this function call exactly here)
         let preds = bt_ctx.get_predicates();
 
         // Explore the associated items
@@ -265,7 +292,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     consts.push(c);
                 }
                 AssocKind::Type => {
-                    let name = TraitItemName(item.name.to_string());
+                    let name = item.name.to_string();
 
                     // Translating the predicates
                     {
@@ -277,21 +304,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         let bounds = bounds.sinto(&bt_ctx.hax_state);
 
                         // Register the trait clauses as item trait clauses
-                        let mut type_clause_id_gen = TraitClauseId::Generator::new();
-                        let cname = name.clone();
-                        let type_clause_id_gen = Box::new(move || {
-                            let fresh_id = type_clause_id_gen.fresh_id();
-                            TraitInstanceId::ItemClause(
-                                Box::new(TraitInstanceId::SelfId),
-                                def_id,
-                                cname.clone(),
-                                fresh_id,
-                            )
-                        });
-
-                        bt_ctx.with_local_trait_clauses(type_clause_id_gen, &mut |s| {
-                            s.translate_predicates_vec(&bounds)
-                        });
+                        bt_ctx.with_item_trait_clauses(
+                            TraitInstanceId::SelfId,
+                            def_id,
+                            name.clone(),
+                            &mut |s| s.translate_predicates_vec(&bounds),
+                        );
                     }
 
                     // Retrieve the trait clauses which are specific to this item
@@ -304,7 +322,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                                 TraitInstanceId::ItemClause(
                                     box TraitInstanceId::SelfId,
                                     _,
-                                    item_name,
+                                    TraitItemName(item_name),
                                     clause_id,
                                 ) => {
                                     if item_name == &name {
@@ -324,7 +342,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         None
                     };
 
-                    types.push((name, (item_trait_clauses, ty)));
+                    types.push((TraitItemName(name), (item_trait_clauses, ty)));
                 }
             }
         }
@@ -401,7 +419,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.add_trait_impl_self_trait_clause(def_id);
 
         // Retrieve the information about the implemented trait.
-        let (implemented_trait_rust_id, implemented_trait, rust_implemented_trait_ref) = {
+        let (
+            implemented_trait_rust_id,
+            implemented_trait,
+            rust_implemented_trait_ref,
+            // [parent_trait_refs]: the trait refs which implement the parent
+            // clauses of the implemented trait decl.
+            parent_trait_refs,
+        ) = {
             // TODO: what is below duplicates a bit [add_trait_impl_self_trait_clause]
             let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
             let trait_id = bt_ctx.translate_trait_decl_id(trait_rust_id);
@@ -415,16 +440,36 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 .translate_substs(None, &trait_ref.generic_args)
                 .unwrap();
 
-            let parent_trait_refs = Vec::new();
+            let parent_trait_refs = hax::solve_item_traits(
+                &bt_ctx.hax_state,
+                tcx.param_env(rust_id),
+                rust_trait_ref.def_id,
+                rust_trait_ref.substs,
+            );
+            let parent_trait_refs: Vec<RTraitRef> =
+                bt_ctx.translate_trait_impl_sources(&parent_trait_refs);
+            let parent_trait_refs: TraitClauseId::Vector<RTraitRef> =
+                TraitClauseId::Vector::from(parent_trait_refs);
+
             let generics = GenericArgs {
                 regions,
                 types,
                 const_generics,
-                trait_refs: parent_trait_refs,
+                trait_refs: Vec::new(),
             };
             let trait_ref = TraitDeclRef { trait_id, generics };
-            (trait_rust_id, trait_ref, rust_trait_ref)
+            (trait_rust_id, trait_ref, rust_trait_ref, parent_trait_refs)
         };
+
+        {
+            // Debugging
+            let refs = parent_trait_refs
+                .iter()
+                .map(|c| c.fmt_with_ctx(&bt_ctx))
+                .collect::<Vec<String>>()
+                .join("\n");
+            trace!("Trait impl: {:?}\n- parent_trait_refs:\n{}", rust_id, refs);
+        }
 
         // Explore the trait decl method items to retrieve the list of required methods
         use std::collections::HashSet;
@@ -437,6 +482,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 decl_required_methods.insert(item.name.to_string());
             }
         }
+
+        // Explore the clauses of the
 
         // Explore the associated items
         // We do something subtle here: TODO
@@ -531,6 +578,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),
             preds: bt_ctx.get_predicates(),
+            parent_trait_refs,
             consts,
             types,
             required_methods,

@@ -220,6 +220,8 @@ pub struct TraitImpl {
     pub impl_trait: RTraitDeclRef,
     pub generics: GenericParams,
     pub preds: Predicates,
+    /// The trait references for the parent clauses (see [TraitDecl]).
+    pub parent_trait_refs: TraitClauseId::Vector<RTraitRef>,
     /// The associated constants declared in the trait.
     pub consts: Vec<(TraitItemName, (ETy, GlobalDeclId::Id))>,
     /// The associated types declared in the trait.

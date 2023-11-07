@@ -250,18 +250,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Predicates of parent ({:?}): {:?}", parent_id, preds);
 
                 if let Some(trait_id) = parent_trait_id {
-                    let mut parent_clause_id_gen = TraitClauseId::Generator::new();
-                    let parent_trait_instance_id_gen = Box::new(move || {
-                        let fresh_id = parent_clause_id_gen.fresh_id();
-                        TraitInstanceId::ParentClause(
-                            Box::new(TraitInstanceId::SelfId),
-                            trait_id,
-                            fresh_id,
-                        )
-                    });
-
-                    self.with_local_trait_clauses(
-                        parent_trait_instance_id_gen,
+                    self.with_parent_trait_clauses(
+                        TraitInstanceId::SelfId,
+                        trait_id,
                         &mut |ctx: &mut Self| ctx.translate_predicates(&preds),
                     );
                 } else {
@@ -368,15 +359,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.trait_clauses
             .insert(trait_clause.clause_id.clone(), trait_clause.clone());
 
-        let mut parent_clause_id_gen = TraitClauseId::Generator::new();
-        let nclause_id = clause_id.clone();
-        let parent_trait_instance_id_gen = Box::new(move || {
-            let fresh_id = parent_clause_id_gen.fresh_id();
-            TraitInstanceId::ParentClause(Box::new(nclause_id.clone()), trait_id, fresh_id)
-        });
         // [translate_trait_clause] takes care of registering the clause
         let _parent_clauses: Vec<_> =
-            self.with_local_trait_clauses(parent_trait_instance_id_gen, &mut |ctx: &mut Self| {
+            self.with_parent_trait_clauses(clause_id.clone(), trait_id, &mut |ctx: &mut Self| {
                 trait_pred
                     .parent_preds
                     .iter()
@@ -389,21 +374,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .items_preds
             .iter()
             .map(|(name, clauses)| {
-                let mut item_clause_id_gen = TraitClauseId::Generator::new();
-                let nclause_id = clause_id.clone();
-                let nname = name.clone();
-                let item_trait_instance_id_gen = Box::new(move || {
-                    let fresh_id = item_clause_id_gen.fresh_id();
-                    TraitInstanceId::ItemClause(
-                        Box::new(nclause_id.clone()),
-                        trait_id,
-                        TraitItemName(nname.clone()),
-                        fresh_id,
-                    )
-                });
-
-                let clauses: Vec<_> = self.with_local_trait_clauses(
-                    item_trait_instance_id_gen,
+                let clauses: Vec<_> = self.with_item_trait_clauses(
+                    clause_id.clone(),
+                    trait_id,
+                    name.clone(),
                     &mut |ctx: &mut Self| {
                         clauses
                             .iter()
@@ -534,8 +508,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let trait_decl_ref = {
             let trait_ref = &impl_source.trait_ref;
             let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap())?;
+            let parent_trait_refs = Vec::new();
             let generics = self
-                .translate_substs_and_trait_refs(None, &trait_ref.generic_args, &trait_ref.traits)
+                .translate_substs_and_trait_refs(None, &trait_ref.generic_args, &parent_trait_refs)
                 .unwrap();
             TraitDeclRef { trait_id, generics }
         };

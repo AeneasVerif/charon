@@ -18,6 +18,7 @@ pub fn test_bool_trait_bool(x: bool) -> bool {
     x.get_bool() && x.ret_true()
 }
 
+#[allow(clippy::redundant_pattern_matching)]
 impl<T> BoolTrait for Option<T> {
     fn get_bool(&self) -> bool {
         match self {
@@ -216,6 +217,12 @@ pub fn test_child_trait2<T: ChildTrait>(x: &T) -> T::W {
 // Checking if the order has an importance (we use U::W before we declare that
 // U:ParentTrait0)
 pub fn order1<T: ParentTrait0<W = U::W>, U: ParentTrait0>() {}
+
+/* */
+pub trait ChildTrait1: ParentTrait1 {}
+
+impl ParentTrait1 for usize {}
+impl ChildTrait1 for usize {}
 
 /* [IntoIterator] is interesting because of the condition [Item = Self::Item]
 for the [IntoIter] associated type. */

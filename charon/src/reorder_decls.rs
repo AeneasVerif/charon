@@ -514,6 +514,11 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
                 graph.visit_trait_decl_id(&d.impl_trait.trait_id);
                 graph.visit_generic_args(&d.impl_trait.generics);
 
+                // Visit the parent trait refs
+                for tr in &d.parent_trait_refs {
+                    graph.visit_trait_ref(tr)
+                }
+
                 // Visit the items
                 for (_, (ty, id)) in &d.consts {
                     graph.visit_ty(ty);
