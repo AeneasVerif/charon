@@ -10,10 +10,6 @@ use hax_frontend_exporter::SInto;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use rustc_hir::def_id::DefId;
 
-/// Do we fail hard if we don't find the clause implementing a trait ref when
-/// resolving trait parameters?
-const PANIC_IF_NO_TRAIT_CLAUSE_FOUND: bool = true;
-
 /// Same as [TraitClause], but where the clause id is a [TraitInstanceId].
 /// We need this information to solve the provenance of traits coming from
 /// where clauses: when translating the where clauses and adding them to the
@@ -617,7 +613,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             ImplSourceKind::TraitUpcasting(_) => unimplemented!(),
             ImplSourceKind::Error(msg) => {
-                if PANIC_IF_NO_TRAIT_CLAUSE_FOUND {
+                if !self.t_ctx.continue_on_failure {
                     panic!("Error during trait resolution: {}", msg)
                 } else {
                     let trait_id = TraitInstanceId::Unknown(msg.clone());
@@ -708,7 +704,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .values()
             .map(|x| x.fmt_with_ctx(self))
             .collect();
-        if PANIC_IF_NO_TRAIT_CLAUSE_FOUND {
+        if !self.t_ctx.continue_on_failure {
             let clauses = clauses.join("\n");
             unreachable!(
                 "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",

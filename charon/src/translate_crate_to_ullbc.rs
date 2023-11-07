@@ -200,6 +200,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 /// Translate all the declarations in the crate.
 pub fn translate<'tcx, 'ctx>(
     crate_info: CrateInfo,
+    continue_on_failure: bool,
     sess: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
@@ -216,6 +217,7 @@ pub fn translate<'tcx, 'ctx>(
         hax_state,
         mir_level,
         crate_info,
+        continue_on_failure,
         all_ids: LinkedHashSet::new(),
         stack: BTreeSet::new(),
         file_to_id: HashMap::new(),

@@ -101,6 +101,8 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub mir_level: MirLevel,
     ///
     pub crate_info: CrateInfo,
+    /// Do not abort on failure and attempt to extract as much as possible.
+    pub continue_on_failure: bool,
     /// All the ids, in the order in which we encountered them
     pub all_ids: LinkedHashSet<AnyTransId>,
     /// The declarations we came accross and which we haven't translated yet.
