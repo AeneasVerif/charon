@@ -467,7 +467,7 @@ impl TraitClause {
 impl TraitInstanceId {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, ErasedRegion>,
+        C: TypeFormatter<'a, ErasedRegion> + TypeFormatter<'a, Region<RegionVarId::Id>>,
     {
         match self {
             TraitInstanceId::SelfId => "Self".to_string(),
@@ -492,6 +492,13 @@ impl TraitInstanceId {
             TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
             TraitInstanceId::FnPointer(box ty) => {
                 format!("(fn_ptr:{})", ty.fmt_with_ctx(ctx))
+            }
+            TraitInstanceId::Unsolved(trait_id, generics) => {
+                format!(
+                    "Unsolved({}{})",
+                    ctx.format_object(*trait_id),
+                    generics.fmt_with_ctx(ctx),
+                )
             }
             TraitInstanceId::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
@@ -632,7 +639,7 @@ impl TypeDecl {
         field_type
     }
 
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &'a T) -> String
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
         T: TypeFormatter<'a, Region<RegionVarId::Id>>,
     {
@@ -687,7 +694,7 @@ impl std::string::ToString for TypeDecl {
 }
 
 impl Variant {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &'a T) -> String
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
         T: TypeFormatter<'a, Region<RegionVarId::Id>>,
     {
@@ -698,7 +705,7 @@ impl Variant {
 }
 
 impl Field {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &'a T) -> String
+    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
         T: TypeFormatter<'a, Region<RegionVarId::Id>>,
     {
@@ -1619,6 +1626,7 @@ impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
             | TraitInstanceId::Clause(_)
             | TraitInstanceId::BuiltinOrAuto(_)
             | TraitInstanceId::FnPointer(_)
+            | TraitInstanceId::Unsolved(..)
             | TraitInstanceId::Unknown(_) => (),
         }
     }
@@ -1757,7 +1765,7 @@ pub trait TypeVisitor {
     fn visit_trait_impl_id(&mut self, _: &TraitImplId::Id) {}
     fn visit_trait_clause_id(&mut self, _: &TraitClauseId::Id) {}
 
-    fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
+    fn default_visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
         match id {
             TraitInstanceId::SelfId => (),
             TraitInstanceId::TraitImpl(id) => self.visit_trait_impl_id(id),
@@ -1776,8 +1784,16 @@ pub trait TypeVisitor {
             TraitInstanceId::FnPointer(box ty) => {
                 self.visit_ty(ty);
             }
+            TraitInstanceId::Unsolved(trait_id, generics) => {
+                self.visit_trait_decl_id(trait_id);
+                self.visit_generic_args(generics);
+            },
             TraitInstanceId::Unknown(_) => (),
         }
+    }
+
+    fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
+        self.default_visit_trait_instance_id(id)
     }
 
     fn visit_generic_args<R>(&mut self, g: &GenericArgs<R>) {
@@ -1851,6 +1867,17 @@ pub trait TypeVisitor {
         self.visit_predicates(preds);
         for ty in inputs { self.visit_ty(ty); }
         self.visit_ty(output);
+    }
+
+    fn visit_type_outlives(&mut self, x: &TypeOutlives) {
+        self.visit_ty(&x.0);
+    }
+
+    fn visit_trait_type_constraint<R>(&mut self, x : &TraitTypeConstraint<R>) {
+        let TraitTypeConstraint { trait_ref, generics, type_name: _, ty } = x;
+        self.visit_trait_ref(trait_ref);
+        self.visit_generic_args(generics);
+        self.visit_ty(ty);
     }
 }
 

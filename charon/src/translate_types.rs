@@ -63,12 +63,34 @@ pub(crate) trait TyTranslator<R> {
     /// convert the trait clause types.
     fn convert_rty(&self, ty: &RTy) -> Ty<R>;
 
+    /// Necessary to register unsolved trait obligations
+    fn convert_to_rty(&self, ty: &Ty<R>) -> RTy;
+
+    /// Necessary to register unsolved trait obligations
+    fn convert_to_rtrait_ref(&self, t: &TraitRef<R>) -> RTraitRef;
+
     fn translate_region(&self, region: &hax::Region) -> R;
 }
 
 impl<'tcx, 'ctx, 'ctx1> TyTranslator<ErasedRegion> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn convert_rty(&self, ty: &RTy) -> ETy {
         ty.erase_regions()
+    }
+
+    fn convert_to_rty(&self, ty: &ETy) -> RTy {
+        ty.substitute(
+            &|_| unreachable!("Unexpected region"),
+            &|tid| Ty::TypeVar(*tid),
+            &|cgid| ConstGeneric::Var(*cgid),
+        )
+    }
+
+    fn convert_to_rtrait_ref(&self, t: &ETraitRef) -> RTraitRef {
+        t.substitute(
+            &|_| unreachable!("Unexpected region"),
+            &|tid| Ty::TypeVar(*tid),
+            &|cgid| ConstGeneric::Var(*cgid),
+        )
     }
 
     /// Translate a region which is expected to be erased.
@@ -91,6 +113,14 @@ impl<'tcx, 'ctx, 'ctx1> TyTranslator<ErasedRegion> for BodyTransCtx<'tcx, 'ctx, 
 impl<'tcx, 'ctx, 'ctx1> TyTranslator<Region<RegionVarId::Id>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn convert_rty(&self, ty: &RTy) -> RTy {
         ty.clone()
+    }
+
+    fn convert_to_rty(&self, ty: &RTy) -> RTy {
+        ty.clone()
+    }
+
+    fn convert_to_rtrait_ref(&self, t: &RTraitRef) -> RTraitRef {
+        t.clone()
     }
 
     fn translate_region(&self, region: &hax::Region) -> Region<RegionVarId::Id> {
@@ -614,7 +644,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let _substs = bt_ctx.translate_generics(rust_id);
 
         // Translate the predicates
-        bt_ctx.translate_predicates_of(None, rust_id);
+        bt_ctx.translate_predicates_solve_trait_obligations_of(None, rust_id);
 
         // Check if the type has been explicitely marked as opaque.
         // If yes, ignore it, otherwise, dive into the body. Note that for

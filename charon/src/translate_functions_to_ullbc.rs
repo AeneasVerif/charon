@@ -1506,30 +1506,37 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .collect();
         self.push_bound_regions_group(bvar_names);
 
-        // Add the self trait clause if it is a trait decl item
         let fun_kind = self.t_ctx.get_fun_kind(def_id);
-        match &fun_kind {
-            FunKind::Regular => (),
-            FunKind::TraitMethodImpl { impl_id, .. } => {
-                self.add_trait_impl_self_trait_clause(*impl_id);
-            }
-            FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..) => {
-                // This is a trait decl item
-                let trait_id = tcx.trait_of_item(def_id).unwrap();
-                self.add_self_trait_clause(trait_id);
-            }
-        }
 
-        // Translate the predicates (in particular, the trait clauses)
-        match &fun_kind {
-            FunKind::Regular | FunKind::TraitMethodImpl { .. } => {
-                self.translate_predicates_of(None, def_id);
+        // Add the trait clauses
+        self.while_registering_trait_clauses(&mut |ctx| {
+            // Add the ctx trait clause if it is a trait decl item
+            match &fun_kind {
+                FunKind::Regular => (),
+                FunKind::TraitMethodImpl { impl_id, .. } => {
+                    ctx.add_trait_impl_self_trait_clause(*impl_id);
+                }
+                FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..) => {
+                    // This is a trait decl item
+                    let trait_id = tcx.trait_of_item(def_id).unwrap();
+                    ctx.add_self_trait_clause(trait_id);
+                }
             }
-            FunKind::TraitMethodProvided(trait_decl_id, ..)
-            | FunKind::TraitMethodDecl(trait_decl_id, ..) => {
-                self.translate_predicates_of(Some(*trait_decl_id), def_id);
+
+            // Translate the predicates (in particular, the trait clauses)
+            match &fun_kind {
+                FunKind::Regular | FunKind::TraitMethodImpl { .. } => {
+                    ctx.translate_predicates_of(None, def_id);
+                }
+                FunKind::TraitMethodProvided(trait_decl_id, ..)
+                | FunKind::TraitMethodDecl(trait_decl_id, ..) => {
+                    ctx.translate_predicates_of(Some(*trait_decl_id), def_id);
+                }
             }
-        }
+
+            // Solve the unsolved obligations
+            ctx.solve_trait_obligations_in_trait_clauses()
+        });
 
         // Translate the signature
         let signature = signature.value;

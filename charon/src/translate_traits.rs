@@ -235,12 +235,15 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Translate the generic
         let _substs = bt_ctx.translate_generics(rust_id);
 
-        // Add the self trait clause
-        bt_ctx.add_self_trait_clause(rust_id);
+        // Add the trait clauses
+        bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
+            // Add the self trait clause
+            bt_ctx.add_self_trait_clause(rust_id);
 
-        // Translate the predicates.
-        bt_ctx.with_parent_trait_clauses(TraitInstanceId::SelfId, def_id, &mut |s| {
-            s.translate_predicates_of(None, rust_id)
+            // Translate the predicates.
+            bt_ctx.with_parent_trait_clauses(TraitInstanceId::SelfId, def_id, &mut |s| {
+                s.translate_predicates_of(None, rust_id)
+            });
         });
 
         // TODO: move this below (we don't need to perform this function call exactly here)
@@ -412,11 +415,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Translate the generics
         let _substs = bt_ctx.translate_generics(rust_id);
 
-        // Translate the predicates
-        bt_ctx.translate_predicates_of(None, rust_id);
+        // Add the trait self clauses
+        bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
+            // Translate the predicates
+            bt_ctx.translate_predicates_of(None, rust_id);
 
-        // Add the self trait clause
-        bt_ctx.add_trait_impl_self_trait_clause(def_id);
+            // Add the self trait clause
+            bt_ctx.add_trait_impl_self_trait_clause(def_id);
+
+            //
+            bt_ctx.solve_trait_obligations_in_trait_clauses();
+        });
 
         // Retrieve the information about the implemented trait.
         let (

@@ -287,6 +287,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
     }
 
+    /// Translate the predicates then solve the unsolved trait obligations
+    /// in the registered trait clauses.
+    pub(crate) fn translate_predicates_solve_trait_obligations_of(
+        &mut self,
+        parent_trait_id: Option<TraitDeclId::Id>,
+        def_id: DefId,
+    ) {
+        self.while_registering_trait_clauses(&mut |ctx| {
+            ctx.translate_predicates_of(parent_trait_id, def_id);
+            ctx.solve_trait_obligations_in_trait_clauses();
+        })
+    }
+
     pub(crate) fn translate_predicates(&mut self, preds: &hax::GenericPredicates) {
         self.translate_predicates_vec(&preds.predicates);
     }
@@ -321,6 +334,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Returns an [Option] because we may filter clauses about builtin or
     /// auto traits like [core::marker::Sized] and [core::marker::Sync].
+    ///
+    /// TODO: This function is used (among other things) to save trait clauses in the
+    /// context, so that we can use them when solving the trait obligations which depend
+    /// on the trait parameters. In order to make the resolution truly work, we should
+    /// (give the possibility of) normalizing the types.
     pub(crate) fn translate_trait_clause(
         &mut self,
         trait_pred: &hax::TraitPredicate,
@@ -684,7 +702,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Self: TyTranslator<R>,
         Self: Formatter<TraitDeclId::Id> + for<'a> Formatter<&'a R>,
     {
-        trace!("Inside context of: {:?}", self.def_id);
+        trace!(
+            "Inside context of: {:?}\nSpan: {:?}",
+            self.def_id,
+            self.t_ctx.tcx.def_ident_span(self.def_id)
+        );
 
         // Simply explore the trait clauses
         for trait_clause in self.trait_clauses.values() {
@@ -693,35 +715,62 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         }
 
-        // Could not find a clause
-        let trait_ref = format!(
-            "{}{}",
-            self.format_object(trait_id),
-            generics.fmt_with_ctx(self)
-        );
-        let clauses: Vec<String> = self
-            .trait_clauses
-            .values()
-            .map(|x| x.fmt_with_ctx(self))
-            .collect();
-        if !self.t_ctx.continue_on_failure {
-            let clauses = clauses.join("\n");
-            unreachable!(
-                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
-                trait_ref, clauses, self.def_id
-            );
+        // Could not find a clause.
+        // Check if we are in the registration process, otherwise report an error.
+        // TODO: we might be registering a where clause.
+        if self.registering_trait_clauses {
+            // Annoying: we need to convert the types...
+            // TODO: merge RTy, ETy, etc. into one type
+            let GenericArgs {
+                regions,
+                types,
+                const_generics,
+                trait_refs,
+            } = generics;
+            assert!(regions.is_empty());
+            let trait_refs: Vec<RTraitRef> = trait_refs
+                .iter()
+                .map(|x| self.convert_to_rtrait_ref(x))
+                .collect();
+            let types: Vec<RTy> = types.iter().map(|x| self.convert_to_rty(x)).collect();
+            let generics = GenericArgs {
+                regions: Vec::new(),
+                types,
+                const_generics: const_generics.clone(),
+                trait_refs,
+            };
+            TraitInstanceId::Unsolved(trait_id, generics)
         } else {
-            // Return the UNKNOWN clause
-            log::warn!(
-                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
-                trait_ref, clauses.join("\n"), self.def_id
+            let trait_ref = format!(
+                "{}{}",
+                self.format_object(trait_id),
+                generics.fmt_with_ctx(self)
             );
-            TraitInstanceId::Unknown(format!(
-                "Could not find a clause for parameter: {} (available clauses: {}) (context: {:?})",
-                trait_ref,
-                clauses.join("; "),
-                self.def_id
-            ))
+            let clauses: Vec<String> = self
+                .trait_clauses
+                .values()
+                .map(|x| x.fmt_with_ctx(self))
+                .collect();
+
+            if !self.t_ctx.continue_on_failure {
+                let clauses = clauses.join("\n");
+                unreachable!(
+                    "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
+                    trait_ref, clauses, self.def_id
+                );
+            } else {
+                // Return the UNKNOWN clause
+                log::warn!(
+                    "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
+                    trait_ref, clauses.join("\n"), self.def_id
+                );
+                TraitInstanceId::Unknown(format!(
+                    "Could not find a clause for parameter: {} (available clauses: {}) (context: {:?})",
+                    trait_ref,
+                    clauses.join("; "),
+                    self.def_id
+                ))
+            }
         }
     }
 
@@ -751,5 +800,173 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         impl_source: &hax::ImplSource,
     ) -> Option<RTraitRef> {
         self.translate_trait_impl_source(impl_source)
+    }
+}
+
+struct TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
+    /// The number of unsolved trait instances. This allows us to check whether we reached
+    /// a fixed point or not (so that we don't enter infinite loops if we fail to solve
+    /// some instances).
+    pub unsolved_count: usize,
+    /// The unsolved clauses.
+    pub unsolved: Vec<(TraitDeclId::Id, RGenericArgs)>,
+    /// The current context
+    pub ctx: &'a mut BodyTransCtx<'tcx, 'ctx, 'ctx1>,
+}
+
+impl<'a, 'tcx, 'ctx, 'ctx1> MutTypeVisitor for TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
+    /// If we find an unsolved trait instance id, attempt to solve it
+    fn visit_trait_instance_id(&mut self, id: &mut TraitInstanceId) {
+        if let TraitInstanceId::Unsolved(trait_id, generics) = id {
+            let solved_id = self.ctx.find_trait_clause_for_param(*trait_id, generics);
+
+            if let TraitInstanceId::Unsolved(..) = solved_id {
+                // Failure: increment the unsolved count
+                self.unsolved_count += 1;
+            } else {
+                // Success: replace
+                *id = solved_id;
+            }
+        } else {
+            MutTypeVisitor::default_visit_trait_instance_id(self, id);
+        }
+    }
+}
+
+impl<'a, 'tcx, 'ctx, 'ctx1> SharedTypeVisitor for TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
+    /// If we find an unsolved trait instance id, save it
+    fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
+        if let TraitInstanceId::Unsolved(trait_id, generics) = id {
+            self.unsolved.push((*trait_id, generics.clone()))
+        } else {
+            SharedTypeVisitor::default_visit_trait_instance_id(self, id);
+        }
+    }
+}
+
+impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
+    /// Auxiliary function
+    fn visit(&mut self, solve: bool) {
+        // For now we clone the trait clauses map - we will make it more effcicient later
+        let mut trait_clauses: Vec<(TraitInstanceId, NonLocalTraitClause)> = self
+            .ctx
+            .trait_clauses
+            .iter()
+            .map(|(id, c)| (id.clone(), c.clone()))
+            .collect();
+        for (_, clause) in trait_clauses.iter_mut() {
+            if solve {
+                MutTypeVisitor::visit_trait_instance_id(self, &mut clause.clause_id);
+                MutTypeVisitor::visit_generic_args(self, &mut clause.generics);
+            } else {
+                SharedTypeVisitor::visit_trait_instance_id(self, &clause.clause_id);
+                SharedTypeVisitor::visit_generic_args(self, &clause.generics);
+            }
+        }
+
+        // If we are solving: reconstruct the trait clauses map, and replace the one in the context
+        if solve {
+            self.ctx.trait_clauses = im::OrdMap::from(trait_clauses);
+        }
+        // Otherwise: also collect the unsolved proof obligations in the predicates
+        // which are not trait predicates
+        else {
+            // TODO: annoying that we have to clone
+            for x in &self.ctx.types_outlive.clone() {
+                SharedTypeVisitor::visit_type_outlives(self, x);
+            }
+            // TODO: annoying that we have to clone
+            for x in &self.ctx.trait_type_constraints.clone() {
+                SharedTypeVisitor::visit_trait_type_constraint(self, x);
+            }
+        }
+    }
+
+    /// Perform one pass of solving the trait obligations
+    fn solve_one_pass(&mut self) {
+        self.unsolved_count = 0;
+        self.visit(true);
+    }
+
+    fn collect_unsolved(&mut self) {
+        self.visit(false);
+    }
+
+    /// While there are unsolved trait obligations in the registered trait
+    /// clauses, solve them (unless we get stuck).
+    pub(crate) fn solve_repeat(&mut self) {
+        self.solve_one_pass();
+
+        let mut count = self.unsolved_count;
+        let mut pass_id = 0;
+        while count > 0 {
+            log::trace!("Pass id: {}, unsolved count: {}", pass_id, count);
+            self.solve_one_pass();
+            if self.unsolved_count >= count {
+                // We're stuck: report an error
+
+                // Retraverse the context, collecting the unsolved clauses.
+                self.collect_unsolved();
+
+                let unsolved = self
+                    .unsolved
+                    .iter()
+                    .map(|(trait_id, generics)| {
+                        format!(
+                            "{}{}",
+                            self.ctx.format_object(*trait_id),
+                            generics.fmt_with_ctx(&*self.ctx)
+                        )
+                    })
+                    .collect::<Vec<String>>()
+                    .join("\n");
+                let clauses = self
+                    .ctx
+                    .trait_clauses
+                    .values()
+                    .map(|x| x.fmt_with_ctx(&*self.ctx))
+                    .collect::<Vec<String>>()
+                    .join("\n");
+
+                if !self.ctx.t_ctx.continue_on_failure {
+                    unreachable!(
+                        "Could not find clauses for trait obligations:{}\n\nAvailable clauses:\n{}\n- context: {:?}",
+                        unsolved, clauses, self.ctx.def_id
+                    );
+                } else {
+                    // Simply log a warning
+                    log::warn!(
+                        "Could not find clauses for trait obligations:{}\n\nAvailable clauses:\n{}\n- context: {:?}",
+                        unsolved, clauses, self.ctx.def_id
+                    );
+                }
+
+                return;
+            } else {
+                // We made progress: update the count
+                count = self.unsolved_count;
+                pass_id += 1;
+            }
+        }
+
+        // We're done: check the where clauses which are not trait predicates
+        self.collect_unsolved();
+        assert!(self.unsolved.is_empty());
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    /// Solve the unsolved trait obligations in the trait clauses (some clauses
+    /// may refer to other clauses, meaning that we are not necessarily able
+    /// to solve all the trait obligations when registering a clause, but might
+    /// be able later).
+    pub(crate) fn solve_trait_obligations_in_trait_clauses(&mut self) {
+        let mut solver = TraitInstancesSolver {
+            unsolved_count: 0,
+            unsolved: Vec::new(),
+            ctx: self,
+        };
+
+        solver.solve_repeat()
     }
 }

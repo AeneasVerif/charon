@@ -175,6 +175,12 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
     /// All the trait clauses accessible from the current environment
     pub trait_clauses: OrdMap<TraitInstanceId, NonLocalTraitClause>,
+    /// If [true] it means we are currently registering trait clauses in the
+    /// local context. As a consequence, we allow not solving all the trait
+    /// obligations, because the obligations for some clauses may be solved
+    /// by other clauses which have not been registered yet.
+    /// For this reason, we do the resolution in several passes.
+    pub registering_trait_clauses: bool,
     ///
     pub types_outlive: Vec<TypeOutlives>,
     ///
@@ -484,6 +490,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             const_generic_vars_map: ConstGenericVarId::MapGenerator::new(),
             trait_instance_id_gen,
             trait_clauses: OrdMap::new(),
+            registering_trait_clauses: false,
             regions_outlive: Vec::new(),
             types_outlive: Vec::new(),
             trait_type_constraints: Vec::new(),
@@ -704,6 +711,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.trait_instance_id_gen = old_trait_instance_id_gen;
 
         // Return
+        out
+    }
+
+    /// Set [registering_trait_clauses] to [true], call the continuation, and
+    /// reset it to [false]
+    pub(crate) fn while_registering_trait_clauses<T>(
+        &mut self,
+        f: &mut dyn FnMut(&mut Self) -> T,
+    ) -> T {
+        assert!(!self.registering_trait_clauses);
+        self.registering_trait_clauses = true;
+        let out = f(self);
+        self.registering_trait_clauses = false;
         out
     }
 }
