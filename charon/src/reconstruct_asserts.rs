@@ -6,69 +6,31 @@
 use take_mut::take;
 
 use crate::formatter::Formatter;
+use crate::gast::{iter_function_bodies, iter_global_bodies};
+use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
-use crate::{
-    llbc_ast::{Assert, FunDecls, GlobalDecls, RawStatement, Statement, Switch},
-    ullbc_ast::{iter_function_bodies, iter_global_bodies},
-};
-use std::iter::FromIterator;
 
-fn transform_st(mut st: Statement) -> Statement {
-    st.content = match st.content {
-        RawStatement::Assign(p, rv) => RawStatement::Assign(p, rv),
-        RawStatement::FakeRead(p) => RawStatement::FakeRead(p),
-        RawStatement::SetDiscriminant(p, vid) => RawStatement::SetDiscriminant(p, vid),
-        RawStatement::Drop(p) => RawStatement::Drop(p),
-        RawStatement::Assert(assert) => RawStatement::Assert(assert),
-        RawStatement::Call(call) => RawStatement::Call(call),
-        RawStatement::Panic => RawStatement::Panic,
-        RawStatement::Return => RawStatement::Return,
-        RawStatement::Break(i) => RawStatement::Break(i),
-        RawStatement::Continue(i) => RawStatement::Continue(i),
-        RawStatement::Nop => RawStatement::Nop,
-        RawStatement::Switch(switch) => {
-            match switch {
-                Switch::If(op, st1, st2) => {
-                    let st2 = Box::new(transform_st(*st2));
-
-                    // Check if the first statement is a panic: if yes, replace
-                    // the if .. then ... else ... by an assertion.
-                    if st1.content.is_panic() {
-                        let st1 = Statement::new(
-                            st1.meta,
-                            RawStatement::Assert(Assert {
-                                cond: op,
-                                expected: false,
-                            }),
-                        );
-                        let st1 = Box::new(st1);
-
-                        RawStatement::Sequence(st1, st2)
-                    } else {
-                        let switch = Switch::If(op, Box::new(transform_st(*st1)), st2);
-                        RawStatement::Switch(switch)
-                    }
-                }
-                Switch::SwitchInt(op, int_ty, targets, mut otherwise) => {
-                    let targets =
-                        Vec::from_iter(targets.into_iter().map(|(v, e)| (v, transform_st(e))));
-                    *otherwise = transform_st(*otherwise);
-                    let switch = Switch::SwitchInt(op, int_ty, targets, otherwise);
-                    RawStatement::Switch(switch)
-                }
-                Switch::Match(_, _, _) => {
-                    // This variant is introduced in a subsequent pass
-                    unreachable!();
-                }
-            }
+fn transform_st(st: &mut Statement) -> Vec<Statement> {
+    if let RawStatement::Switch(Switch::If(_, st1, _)) = &mut st.content {
+        // Check if the first statement is a panic: if yes, replace
+        // the if .. then ... else ... by an assertion.
+        if st1.content.is_panic() {
+            // Replace: we need to take the value
+            take(&mut st.content, |st| {
+                let (op, st1, st2) = st.to_switch().to_if();
+                let st1 = Statement::new(
+                    st1.meta,
+                    RawStatement::Assert(Assert {
+                        cond: op,
+                        expected: false,
+                    }),
+                );
+                let st1 = Box::new(st1);
+                RawStatement::Sequence(st1, st2)
+            });
         }
-        RawStatement::Loop(loop_body) => RawStatement::Loop(Box::new(transform_st(*loop_body))),
-        RawStatement::Sequence(st1, st2) => {
-            RawStatement::Sequence(Box::new(transform_st(*st1)), Box::new(transform_st(*st2)))
-        }
-    };
-
-    st
+    }
+    Vec::new()
 }
 
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
@@ -77,6 +39,6 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
             "# About to reconstruct asserts in decl: {name}\n{}",
             ctx.format_object(&*b)
         );
-        take(&mut b.body, transform_st);
+        b.body.transform(&mut transform_st);
     }
 }
