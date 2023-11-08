@@ -1403,14 +1403,14 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
 }
 
 fn combine_statement_and_statement(
-    statement: tgt::Statement,
-    next_st: Option<tgt::Statement>,
-) -> tgt::Statement {
+    statement: Box<tgt::Statement>,
+    next_st: Option<Box<tgt::Statement>>,
+) -> Box<tgt::Statement> {
     match next_st {
         Some(next_st) => {
             let meta = combine_meta(&statement.meta, &next_st.meta);
-            let st = tgt::RawStatement::Sequence(Box::new(statement), Box::new(next_st));
-            tgt::Statement::new(meta, st)
+            let st = tgt::RawStatement::Sequence(statement, next_st);
+            Box::new(tgt::Statement::new(meta, st))
         }
         None => statement,
     }
@@ -1418,11 +1418,15 @@ fn combine_statement_and_statement(
 
 fn combine_statements_and_statement(
     statements: Vec<tgt::Statement>,
-    next: Option<tgt::Statement>,
-) -> Option<tgt::Statement> {
-    statements.into_iter().rev().fold(next, |seq, st| {
-        Some(combine_statement_and_statement(st, seq))
-    })
+    next: Option<Box<tgt::Statement>>,
+) -> Option<Box<tgt::Statement>> {
+    statements
+        .into_iter()
+        .map(Box::new)
+        .rev()
+        .fold(next, |seq, st| {
+            Some(combine_statement_and_statement(st, seq))
+        })
 }
 
 fn get_goto_kind(
@@ -1472,20 +1476,20 @@ enum GotoKind {
 /// We use the one for the parent terminator.
 fn translate_child_block(
     info: &mut BlockInfo<'_>,
-    parent_loops: Vector<src::BlockId::Id>,
+    parent_loops: &Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     parent_meta: Meta,
     child_id: src::BlockId::Id,
-) -> Option<tgt::Statement> {
+) -> Option<Box<tgt::Statement>> {
     // Check if this is a backward call
-    match get_goto_kind(info.exits_info, &parent_loops, switch_exit_blocks, child_id) {
+    match get_goto_kind(info.exits_info, parent_loops, switch_exit_blocks, child_id) {
         GotoKind::Break(index) => {
             let st = tgt::RawStatement::Break(index);
-            Some(tgt::Statement::new(parent_meta, st))
+            Some(Box::new(tgt::Statement::new(parent_meta, st)))
         }
         GotoKind::Continue(index) => {
             let st = tgt::RawStatement::Continue(index);
-            Some(tgt::Statement::new(parent_meta, st))
+            Some(Box::new(tgt::Statement::new(parent_meta, st)))
         }
         // If we are going to an exit block we simply ignore the goto
         GotoKind::ExitBlock => None,
@@ -1496,10 +1500,13 @@ fn translate_child_block(
     }
 }
 
-fn opt_statement_to_nop_if_none(meta: Meta, opt_st: Option<tgt::Statement>) -> tgt::Statement {
+fn opt_statement_to_nop_if_none(
+    meta: Meta,
+    opt_st: Option<Box<tgt::Statement>>,
+) -> Box<tgt::Statement> {
     match opt_st {
         Some(st) => st,
-        None => tgt::Statement::new(meta, tgt::RawStatement::Nop),
+        None => Box::new(tgt::Statement::new(meta, tgt::RawStatement::Nop)),
     }
 }
 
@@ -1528,19 +1535,20 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 
 fn translate_terminator(
     info: &mut BlockInfo<'_>,
-    parent_loops: Vector<src::BlockId::Id>,
+    parent_loops: &Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     terminator: &src::Terminator,
-) -> Option<tgt::Statement> {
+) -> Option<Box<tgt::Statement>> {
     let src_meta = terminator.meta;
 
     match &terminator.content {
-        src::RawTerminator::Panic | src::RawTerminator::Unreachable => {
-            Some(tgt::Statement::new(src_meta, tgt::RawStatement::Panic))
-        }
-        src::RawTerminator::Return => {
-            Some(tgt::Statement::new(src_meta, tgt::RawStatement::Return))
-        }
+        src::RawTerminator::Panic | src::RawTerminator::Unreachable => Some(Box::new(
+            tgt::Statement::new(src_meta, tgt::RawStatement::Panic),
+        )),
+        src::RawTerminator::Return => Some(Box::new(tgt::Statement::new(
+            src_meta,
+            tgt::RawStatement::Return,
+        ))),
         src::RawTerminator::Goto { target } => translate_child_block(
             info,
             parent_loops,
@@ -1556,7 +1564,10 @@ fn translate_terminator(
                 terminator.meta,
                 *target,
             );
-            let st = tgt::Statement::new(src_meta, tgt::RawStatement::Drop(place.clone()));
+            let st = Box::new(tgt::Statement::new(
+                src_meta,
+                tgt::RawStatement::Drop(place.clone()),
+            ));
             Some(combine_statement_and_statement(st, opt_child))
         }
         src::RawTerminator::Call { call, target } => {
@@ -1568,7 +1579,7 @@ fn translate_terminator(
                 *target,
             );
             let st = tgt::RawStatement::Call(call.clone());
-            let st = tgt::Statement::new(src_meta, st);
+            let st = Box::new(tgt::Statement::new(src_meta, st));
             Some(combine_statement_and_statement(st, opt_child))
         }
         src::RawTerminator::Assert {
@@ -1587,7 +1598,7 @@ fn translate_terminator(
                 cond: cond.clone(),
                 expected: *expected,
             });
-            let st = tgt::Statement::new(src_meta, st);
+            let st = Box::new(tgt::Statement::new(src_meta, st));
             Some(combine_statement_and_statement(st, opt_child))
         }
         src::RawTerminator::Switch { discr, targets } => {
@@ -1597,7 +1608,7 @@ fn translate_terminator(
                     // Translate the children expressions
                     let then_exp = translate_child_block(
                         info,
-                        parent_loops.clone(),
+                        parent_loops,
                         switch_exit_blocks,
                         terminator.meta,
                         *then_tgt,
@@ -1615,7 +1626,7 @@ fn translate_terminator(
                     let else_exp = opt_statement_to_nop_if_none(terminator.meta, else_exp);
 
                     // Translate
-                    tgt::Switch::If(discr.clone(), Box::new(then_exp), Box::new(else_exp))
+                    tgt::Switch::If(discr.clone(), then_exp, else_exp)
                 }
                 src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
                     // Note that some branches can be grouped together, like
@@ -1655,7 +1666,7 @@ fn translate_terminator(
                             // Not translated: translate it
                             let exp = translate_child_block(
                                 info,
-                                parent_loops.clone(),
+                                parent_loops,
                                 switch_exit_blocks,
                                 terminator.meta,
                                 *bid,
@@ -1663,7 +1674,7 @@ fn translate_terminator(
                             // We use the terminator meta information in case then
                             // then statement is `None`
                             let exp = opt_statement_to_nop_if_none(terminator.meta, exp);
-                            branches.insert(*bid, (vec![*v], exp));
+                            branches.insert(*bid, (vec![*v], *exp));
                         }
                     }
                     let targets_exps: Vec<(Vec<v::ScalarValue>, tgt::Statement)> =
@@ -1682,12 +1693,7 @@ fn translate_terminator(
                         opt_statement_to_nop_if_none(terminator.meta, otherwise_exp);
 
                     // Translate
-                    tgt::Switch::SwitchInt(
-                        discr.clone(),
-                        *int_ty,
-                        targets_exps,
-                        Box::new(otherwise_exp),
-                    )
+                    tgt::Switch::SwitchInt(discr.clone(), *int_ty, targets_exps, otherwise_exp)
                 }
             };
 
@@ -1695,24 +1701,24 @@ fn translate_terminator(
             let meta = tgt::combine_switch_targets_meta(&switch);
             let meta = combine_meta(&src_meta, &meta);
             let st = tgt::RawStatement::Switch(switch);
-            let st = tgt::Statement::new(meta, st);
+            let st = Box::new(tgt::Statement::new(meta, st));
             Some(st)
         }
     }
 }
 
 fn combine_expressions(
-    exp1: Option<tgt::Statement>,
-    exp2: Option<tgt::Statement>,
-) -> Option<tgt::Statement> {
+    exp1: Option<Box<tgt::Statement>>,
+    exp2: Option<Box<tgt::Statement>>,
+) -> Option<Box<tgt::Statement>> {
     match exp1 {
         None => exp2,
         Some(exp1) => match exp2 {
             None => Some(exp1),
             Some(exp2) => {
                 let meta = combine_meta(&exp1.meta, &exp2.meta);
-                let st = tgt::RawStatement::Sequence(Box::new(exp1), Box::new(exp2));
-                Some(tgt::Statement::new(meta, st))
+                let st = tgt::RawStatement::Sequence(exp1, exp2);
+                Some(Box::new(tgt::Statement::new(meta, st)))
             }
         },
     }
@@ -1756,11 +1762,10 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
 
 fn translate_block(
     info: &mut BlockInfo<'_>,
-    parent_loops: Vector<src::BlockId::Id>,
-    // TODO: remove the shared borrow?
+    parent_loops: &Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     block_id: src::BlockId::Id,
-) -> Option<tgt::Statement> {
+) -> Option<Box<tgt::Statement>> {
     // If the user activated this check: check that we didn't already translate
     // this block, and insert the block id in the set of already translated blocks.
     trace!(
@@ -1778,12 +1783,13 @@ fn translate_block(
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
     let is_loop = info.cfg.loop_entries.contains(&block_id);
+    let mut nparent_loops: Vector<src::BlockId::Id>;
     let nparent_loops = if info.cfg.loop_entries.contains(&block_id) {
-        let mut nparent_loops = parent_loops.clone();
+        nparent_loops = parent_loops.clone();
         nparent_loops.push_back(block_id);
-        nparent_loops
+        &nparent_loops
     } else {
-        parent_loops.clone()
+        parent_loops
     };
 
     // If we enter a switch or a loop, we need to check if we own the exit
@@ -1839,7 +1845,7 @@ fn translate_block(
 
         // Put the whole loop body inside a `Loop` wrapper
         let exp = exp.unwrap();
-        let exp = tgt::Statement::new(exp.meta, tgt::RawStatement::Loop(Box::new(exp)));
+        let exp = Box::new(tgt::Statement::new(exp.meta, tgt::RawStatement::Loop(exp)));
 
         // Add the exit block
         if let Some(exit_block_id) = next_block {
@@ -1899,7 +1905,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     };
     let stmt = translate_block(
         &mut info,
-        Vector::new(),
+        &Vector::new(),
         &im::HashSet::new(),
         src::BlockId::ZERO,
     )
@@ -1914,7 +1920,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
         meta: src_body.meta,
         arg_count: src_body.arg_count,
         locals: src_body.locals.clone(),
-        body: stmt,
+        body: *stmt,
     }
 }
 
