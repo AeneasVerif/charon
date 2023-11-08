@@ -276,11 +276,44 @@ where
     }
 }
 
+pub trait WithTarget {
+    type Target;
+}
+
+pub trait ParentTrait2 {
+    type U: WithTarget;
+}
+
+pub trait ChildTrait2: ParentTrait2 {
+    fn convert(x: Self::U) -> <Self::U as WithTarget>::Target;
+}
+
+impl WithTarget for u32 {
+    type Target = u32;
+}
+
+impl ParentTrait2 for u32 {
+    type U = u32;
+}
+
+impl ChildTrait2 for u32 {
+    fn convert(x: u32) -> u32 {
+        x
+    }
+}
+
 /*
+// This one requires a lot of traits
+pub fn test_enumerate(x: usize) {
+    for _ in 0..x {}
+}
+*/
+
 fn incr_u32(x: u32) -> u32 {
     x + 1
 }
 
+/*
 // With a pointer to a top level function
 pub fn test_map_option1(x: Option<u32>) -> Option<u32> {
     map_option(x, incr_u32)

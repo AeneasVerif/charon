@@ -81,7 +81,7 @@ fn rem_test(x: u32, y: u32) -> u32 {
 }
 
 fn mul_test(x: u32, y: u32) -> u32 {
-    x * 12
+    x * y
 }
 
 /* Checking the simplification of binop operations *inside* global constants.
