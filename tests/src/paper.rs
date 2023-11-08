@@ -1,19 +1,18 @@
 //! The examples from the ICFP submission, all in one place.
-#![allow(dead_code)]
 
 // 2.1
-fn ref_incr(x: &mut i32) {
+pub fn ref_incr(x: &mut i32) {
     *x = *x + 1;
 }
 
-fn test_incr() {
+pub fn test_incr() {
     let mut x = 0i32;
     ref_incr(&mut x);
     assert!(x == 1);
 }
 
 // 2.2
-fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T {
+pub fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T {
     if b {
         return x;
     } else {
@@ -21,7 +20,7 @@ fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T {
     }
 }
 
-fn test_choose() {
+pub fn test_choose() {
     let mut x = 0;
     let mut y = 0;
     let z = choose(true, &mut x, &mut y);
@@ -33,14 +32,14 @@ fn test_choose() {
 
 // 2.3
 
-enum List<T> {
+pub enum List<T> {
     Cons(T, Box<List<T>>),
     Nil,
 }
 use List::Cons;
 use List::Nil;
 
-fn list_nth_mut<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
+pub fn list_nth_mut<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
     match l {
         Nil => {
             panic!()
@@ -55,7 +54,7 @@ fn list_nth_mut<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {
     }
 }
 
-fn sum(l: &List<i32>) -> i32 {
+pub fn sum(l: &List<i32>) -> i32 {
     match l {
         Nil => {
             return 0;
@@ -66,7 +65,7 @@ fn sum(l: &List<i32>) -> i32 {
     }
 }
 
-fn test_nth() {
+pub fn test_nth() {
     let mut l = Cons(1, Box::new(Cons(2, Box::new(Cons(3, Box::new(Nil))))));
     let x = list_nth_mut(&mut l, 2);
     *x = *x + 1;
@@ -74,7 +73,7 @@ fn test_nth() {
 }
 
 // 4.3
-fn call_choose(mut p: (u32, u32)) -> u32 {
+pub fn call_choose(mut p: (u32, u32)) -> u32 {
     let px = &mut p.0;
     let py = &mut p.1;
     let pz = choose(true, px, py);

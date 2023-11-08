@@ -309,7 +309,7 @@ pub fn test_enumerate(x: usize) {
 }
 */
 
-fn incr_u32(x: u32) -> u32 {
+pub fn incr_u32(x: u32) -> u32 {
     x + 1
 }
 
