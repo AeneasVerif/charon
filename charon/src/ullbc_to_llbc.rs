@@ -1760,6 +1760,10 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
     }
 }
 
+/// Remark: some values are boxed (here, the returned statement) so that they
+/// are allocated on the heap. This reduces stack usage (we had problems with
+/// stack overflows in the past). A more efficient solution would be to use loops
+/// to make this code constant space, but that would require a serious rewriting.
 fn translate_block(
     info: &mut BlockInfo<'_>,
     parent_loops: &Vector<src::BlockId::Id>,
