@@ -164,6 +164,10 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
 
     trace!("# After translation from MIR:\n\n{}\n", ctx);
 
+    if options.print_ullbc {
+        info!("# ULLBC after translation from MIR:\n\n{}\n", ctx);
+    }
+
     // # Reorder the graph of dependencies and compute the strictly
     // connex components to:
     // - compute the order in which to extract the definitions
@@ -210,6 +214,18 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // the control flow.
         let (mut llbc_funs, mut llbc_globals) =
             ullbc_to_llbc::translate_functions(options.no_code_duplication, &ctx);
+
+        if options.print_built_llbc {
+            let llbc_ctx = crate::translate_ctx::LlbcTransCtx {
+                ctx: &ctx,
+                llbc_globals: &llbc_globals,
+                llbc_funs: &llbc_funs,
+            };
+            info!(
+                "# LLBC resulting from control-flow reconstruction:\n\n{}\n",
+                llbc_ctx
+            );
+        }
 
         // # Micro-pass: remove the dynamic checks for array/slice bounds
         // and division by zero.
@@ -272,6 +288,9 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
             llbc_funs: &llbc_funs,
         };
         trace!("# About to export:\n\n{}\n", llbc_ctx);
+        if options.print_llbc {
+            info!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
+        }
 
         // # Final step: generate the files.
         export::export_llbc(

@@ -106,6 +106,27 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     /// possibly leaving "holes" in the extracted code.
     #[structopt(long = "continue", short = "k")]
     pub continue_on_failure: bool,
+    #[structopt(
+        long = "print-ullbc",
+        help = "
+Print the ULLBC immediately after extraction from MIR.
+"
+    )]
+    pub print_ullbc: bool,
+    #[structopt(
+        long = "print-built-llbc",
+        help = "
+Print the LLBC just after we built it (i.e., immediately after loop reconstruction).
+"
+    )]
+    pub print_built_llbc: bool,
+    #[structopt(
+        long = "print-llbc",
+        help = "
+Print the final LLBC (after all the cleaning micro-passes).
+"
+    )]
+    pub print_llbc: bool,
 }
 
 /// The name of the environment variable we use to save the serialized Cli options
