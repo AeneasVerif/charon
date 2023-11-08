@@ -708,7 +708,28 @@ fn compute_loop_exit_candidates(
 /// }
 /// ```
 ///
-/// When this happens we choose the exit candidate which leads to the
+/// When this happens we choose an exit candidate whose edges don't necessarily
+/// lead to an error (above there are none, so we don't choose any exits). Note
+/// that this last condition is important to prevent loops from being unnecessarily
+/// nested:
+///
+/// ```text
+/// pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize {
+///     let mut s = 0;
+///
+///     for _ in 0..128 { // We don't want this loop to be nested with the loops below
+///         s += 1;
+///     }
+///
+///     for _ in 0..(step_out) {
+///         for _ in 0..(step_in) {
+///             s += 1;
+///         }
+///     }
+///
+///     s
+/// }
+/// ```
 fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
     let mut explored = HashSet::new();
     let mut ordered_loops = Vec::new();
@@ -749,11 +770,13 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         // We choose the exit with:
         // - the most occurrences
         // - the least total distance (if there are several possibilities)
+        // - doesn't necessarily lead to an error (panic, unreachable)
 
         // First:
         // - filter the candidates
         // - compute the number of occurrences
         // - compute the sum of distances
+        // TODO: we could simply order by using a lexicographic order
         let loop_exits = Vec::from_iter(loop_exits.get(&loop_id).unwrap().iter().filter_map(
             |(candidate_id, candidate_info)| {
                 // If candidate already selected for another loop: ignore
@@ -780,10 +803,10 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         );
 
         // Second: actually select the proper candidate.
+
         // We find the one with the highest occurrence and the smallest distance
         // from the entry of the loop (note that we take care of listing the exit
         // candidates in a deterministic order).
-        // TODO: we could simply order by using a lexicographic order
         let mut best_exit: Option<src::BlockId::Id> = None;
         let mut best_occurrences = 0;
         let mut best_dist_sum = std::usize::MAX;
