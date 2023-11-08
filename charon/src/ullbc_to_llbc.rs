@@ -88,6 +88,8 @@ struct CfgPartialInfo {
     pub backward_edges: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
     /// The blocks whose terminators are a switch are stored here.
     pub switch_blocks: HashSet<src::BlockId::Id>,
+    /// The set of nodes from where we can only reach error nodes (panic, etc.)
+    pub only_reach_error: HashSet<src::BlockId::Id>,
 }
 
 /// Similar to `CfgPartialInfo`, but with more information
@@ -97,8 +99,10 @@ struct CfgInfo {
     pub loop_entries: HashSet<src::BlockId::Id>,
     pub backward_edges: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
     pub switch_blocks: HashSet<src::BlockId::Id>,
+    pub only_reach_error: HashSet<src::BlockId::Id>,
     /// The reachability matrix:
     /// src can reach dest <==> (src, dest) in reachability
+    ///
     /// TODO: this is not necessary anymore. There is a place where we use it
     /// as a test to shortcut some computations, but computing this matrix
     /// is actually probably too expensive for the shortcut to be useful...
@@ -114,6 +118,7 @@ fn build_cfg_partial_info(body: &src::ExprBody) -> CfgPartialInfo {
         loop_entries: HashSet::new(),
         backward_edges: HashSet::new(),
         switch_blocks: HashSet::new(),
+        only_reach_error: HashSet::new(),
     };
 
     // Add the nodes
@@ -141,6 +146,18 @@ fn block_is_switch(body: &src::ExprBody, block_id: src::BlockId::Id) -> bool {
     block.terminator.content.is_switch()
 }
 
+/// The terminator of the block is a panic, etc.
+fn block_is_error(body: &src::ExprBody, block_id: src::BlockId::Id) -> bool {
+    let block = body.body.get(block_id).unwrap();
+    use src::RawTerminator::*;
+    match &block.terminator.content {
+        Panic | Unreachable => true,
+        Goto { .. } | Switch { .. } | Return { .. } | Drop { .. } | Call { .. } | Assert { .. } => {
+            false
+        }
+    }
+}
+
 fn build_cfg_partial_info_edges(
     cfg: &mut CfgPartialInfo,
     ancestors: &im::HashSet<src::BlockId::Id>,
@@ -165,6 +182,7 @@ fn build_cfg_partial_info_edges(
 
     // Retrieve the block targets
     let targets = get_block_targets(body, block_id);
+    let mut has_backward_edge = false;
 
     // Add edges for all the targets and explore them, if they are not predecessors
     for tgt in &targets {
@@ -175,6 +193,7 @@ fn build_cfg_partial_info_edges(
         // CFG without backward edges and exploring it
         if ancestors.contains(tgt) {
             // This is a backward edge
+            has_backward_edge = true;
             cfg.loop_entries.insert(*tgt);
             cfg.backward_edges.insert((block_id, *tgt));
         } else {
@@ -182,6 +201,18 @@ fn build_cfg_partial_info_edges(
             cfg.cfg_no_be.add_edge(block_id, *tgt, ());
             build_cfg_partial_info_edges(cfg, &ancestors, explored, body, *tgt);
         }
+    }
+
+    // Check if this node can only reach error nodes:
+    // - we check if the current node ends with an error terminator
+    // - or check that all the targets lead to error nodes
+    // Note that if there is a backward edge, we consider that we don't necessarily
+    // go to error.
+    if !has_backward_edge
+        && (block_is_error(body, block_id)
+            || targets.iter().all(|tgt| cfg.only_reach_error.contains(tgt)))
+    {
+        cfg.only_reach_error.insert(block_id);
     }
 }
 
@@ -211,14 +242,14 @@ impl PartialOrd for OrdBlockId {
 fn compute_reachability(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId::Id, src::BlockId::Id)> {
     // We simply use Floyd-Warshall.
     // We just need to be a little careful: we have to make sure the value we
-    // use for infinity is never reached. That is to say, that there are stricly
+    // use for infinity is never reached. That is to say, that there are
     // less edges in the graph than usize::MAX.
     // Note that for now, the assertion will actually always statically succeed,
     // because `edge_count` returns a usize...
     // Also, if we have as many edges as usize::MAX, the computer will probably
     // be out of memory...
-    // It still is good to keep it there.
-    assert!(cfg.cfg.edge_count() < std::usize::MAX);
+    // It it still good to keep it there, though.
+    assert!(cfg.cfg.edge_count() < std::usize::MAX); // Making the comparison strict to avoid warnings...
 
     let fw_matrix: HashMap<(src::BlockId::Id, src::BlockId::Id), usize> =
         floyd_warshall(&cfg.cfg, &|_| 1).unwrap();
@@ -245,6 +276,7 @@ fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
         loop_entries,
         backward_edges,
         switch_blocks,
+        only_reach_error,
     } = cfg;
 
     CfgInfo {
@@ -253,6 +285,7 @@ fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
         loop_entries,
         backward_edges,
         switch_blocks,
+        only_reach_error,
         reachability,
     }
 }
@@ -625,8 +658,9 @@ fn compute_loop_exit_candidates(
 /// might end up being used for one of the inner loops...
 ///
 /// The best exit is the following one:
-/// - it is the one which is used the most times (actually, there should be
-///   at most one candidate which is referenced strictly more than once)
+/// - it is the one which is used the most times (note that there can be
+///   several candidates which are referenced strictly more than once: see the
+///   comment below)
 /// - if several exits have the same number of occurrences, we choose the one
 ///   for which we goto the "earliest" (earliest meaning that the goto is close to
 ///   the loop entry node in the AST). The reason is that all the loops should
@@ -634,6 +668,47 @@ fn compute_loop_exit_candidates(
 ///   to the exit (note that this is not necessarily the first
 ///   if ... then ... else ... we find: loop conditions can be arbitrary
 ///   expressions, containing branchings).
+///
+/// # Several candidates for a loop exit:
+/// =====================================
+/// There used to be a sanity check to ensure there are no two different
+/// candidates with exactly the same number of occurrences and distance from
+/// the entry of the loop, if the number of occurrences is > 1.
+///
+/// We removed it because it does happen, for instance here (the match
+/// introduces an `unreachable` node, and it has the same number of
+/// occurrences and the same distance to the loop entry as the `panic`
+/// node):
+///
+/// ```text
+/// pub fn list_nth_mut_loop_pair<'a, T>(
+///     mut ls: &'a mut List<T>,
+///     mut i: u32,
+/// ) -> &'a mut T {
+///     loop {
+///         match ls {
+///             List::Nil => {
+///                 panic!() // <-- best candidate
+///             }
+///             List::Cons(x, tl) => {
+///                 if i == 0 {
+///                     return x;
+///                 } else {
+///                     ls = tl;
+///                     i -= 1;
+///                 }
+///             }
+///             _ => {
+///               // Note that Rustc always introduces an unreachable branch after
+///               // desugaring matches.
+///               unreachable!(), // <-- best candidate
+///             }
+///         }
+///     }
+/// }
+/// ```
+///
+/// When this happens we choose the exit candidate which leads to the
 fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
     let mut explored = HashSet::new();
     let mut ordered_loops = Vec::new();
@@ -705,8 +780,10 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         );
 
         // Second: actually select the proper candidate.
-        // We select the first one with the highest number of occurrences (we
-        // take care of listing the exit candidates in a deterministic order).
+        // We find the one with the highest occurrence and the smallest distance
+        // from the entry of the loop (note that we take care of listing the exit
+        // candidates in a deterministic order).
+        // TODO: we could simply order by using a lexicographic order
         let mut best_exit: Option<src::BlockId::Id> = None;
         let mut best_occurrences = 0;
         let mut best_dist_sum = std::usize::MAX;
@@ -720,71 +797,68 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
             }
         }
 
-        let num_possible_candidates = loop_exits
+        let possible_candidates: Vec<_> = loop_exits
             .iter()
-            .filter(|(_, occs, dsum)| *occs == best_occurrences && *dsum == best_dist_sum)
-            .count();
+            .filter_map(|(bid, occs, dsum)| {
+                if *occs == best_occurrences && *dsum == best_dist_sum {
+                    Some(*bid)
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let num_possible_candidates = loop_exits.len();
 
-        // There used to be a sanity check to ensure there are no two different
-        // candidates with exactly the same number of occurrences and dist sum
-        // if the number of occurrences is > 1.
-        //
-        // We removed it because it does happen, for instance here (the match
-        // introduces an `unreachable` node, and it has the same number of
-        // occurrences and the same distance to the loop entry as the `panic`
-        // node):
-        //
-        // ```
-        // pub fn list_nth_mut_loop_pair<'a, 'b, T>(
-        //     mut ls0: &'a mut List<T>,
-        //     mut ls1: &'b mut List<T>,
-        //     mut i: u32,
-        // ) -> (&'a mut T, &'b mut T) {
-        //     loop {
-        //         match (ls0, ls1) {
-        //             (List::Nil, _) | (_, List::Nil) => {
-        //                 panic!()
-        //             }
-        //             (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
-        //                 if i == 0 {
-        //                     return (x0, x1);
-        //                 } else {
-        //                     ls0 = tl0;
-        //                     ls1 = tl1;
-        //                     i -= 1;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // ```
-
-        // If there are several best candidates,
-        // it is actually better not to choose any.
-        //
-        // Example:
-        // ========
-        // ```
-        // loop {
-        //     match ls {
-        //         List::Nil => {
-        //             panic!() // <-- best candidate
-        //         }
-        //         List::Cons(x, tl) => {
-        //             if i == 0 {
-        //                 return x;
-        //             } else {
-        //                 ls = tl;
-        //                 i -= 1;
-        //             }
-        //         }
-        //         // <-- best candidate (Rustc introduces an `unrechable` case)
-        //     }
-        // }
-        // ```
+        // If there is exactly one one best candidate, it is easy.
+        // Otherwise we need to split further.
         if num_possible_candidates > 1 {
-            // We choose not to select an exit
-            chosen_loop_exits.insert(loop_id, None);
+            // TODO: if we use a lexicographic order we can merge this with the code
+            // above.
+            // Remove the candidates which only lead to errors (panic or unreachable).
+            let candidates: Vec<_> = possible_candidates
+                .iter()
+                .filter(|bid| !cfg.only_reach_error.contains(bid))
+                .collect();
+            // If there is exactly one candidate we select it
+            if candidates.len() == 1 {
+                let exit_id = *candidates[0];
+                exits.insert(exit_id);
+                chosen_loop_exits.insert(loop_id, Some(exit_id));
+            } else {
+                // Otherwise we do not select any exit.
+                // We don't want to select any exit if we are in the below situation
+                // (all paths lead to errors). We added a sanity check below to
+                // catch the situations where there are several exits which don't
+                // lead to errors.
+                //
+                // Example:
+                // ========
+                // ```
+                // loop {
+                //     match ls {
+                //         List::Nil => {
+                //             panic!() // <-- best candidate
+                //         }
+                //         List::Cons(x, tl) => {
+                //             if i == 0 {
+                //                 return x;
+                //             } else {
+                //                 ls = tl;
+                //                 i -= 1;
+                //             }
+                //         }
+                //         _ => {
+                //           unreachable!(); // <-- best candidate (Rustc introduces an `unreachable` case)
+                //         }
+                //     }
+                // }
+                // ```
+                //
+                // Adding this sanity check so that we can see when there are
+                // several candidates.
+                assert!(candidates.is_empty());
+                chosen_loop_exits.insert(loop_id, None);
+            }
         } else {
             // Register the exit, if there is one
             match best_exit {

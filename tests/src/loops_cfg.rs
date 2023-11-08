@@ -1,8 +1,7 @@
 //! This module contains loops whose main purpose is to test the CFG reconstruction.
-#![allow(dead_code)]
 
 /// Simple test with a loop
-fn test_loop1(max: u32) -> u32 {
+pub fn test_loop1(max: u32) -> u32 {
     let mut i = 0;
     let mut s = 0;
     while i < max {
@@ -15,7 +14,7 @@ fn test_loop1(max: u32) -> u32 {
 }
 
 /// Test with a loop and a break
-fn test_loop2(max: u32) -> u32 {
+pub fn test_loop2(max: u32) -> u32 {
     let mut i = 0;
     let mut s = 0;
     while i < max {
@@ -30,7 +29,7 @@ fn test_loop2(max: u32) -> u32 {
 }
 
 /// Test with nested loops and continue to outer loops
-fn test_loop3(max: u32) -> u32 {
+pub fn test_loop3(max: u32) -> u32 {
     let mut i = 0;
     let mut j = 0;
     let mut s = 0;
@@ -57,7 +56,7 @@ fn test_loop3(max: u32) -> u32 {
 /// sense, but it initially lead to strange results after control-flow reconstruction
 /// (with some code duplicata).
 #[allow(unused_assignments)]
-fn test_loop4(max: u32) -> u32 {
+pub fn test_loop4(max: u32) -> u32 {
     let mut i = 1;
     let mut j = 0;
     let mut s = 0;
@@ -81,7 +80,7 @@ fn test_loop4(max: u32) -> u32 {
 
 /// Just checking we don't generate interleaved loops (with the inner loop
 /// using a break or a continue to the outer loop).
-fn test_loop5(max: u32) -> u32 {
+pub fn test_loop5(max: u32) -> u32 {
     let mut i = 0;
     let mut j = 0;
     let mut s = 0;
@@ -99,7 +98,7 @@ fn test_loop5(max: u32) -> u32 {
 
 /// In this function, the loop has several exit candidates with a number of
 /// occurrences > 1.
-fn test_loop6(max: u32) -> u32 {
+pub fn test_loop6(max: u32) -> u32 {
     let mut i = 0;
     let mut s = 0;
     while i < max {
@@ -117,7 +116,7 @@ fn test_loop6(max: u32) -> u32 {
 
 /// In this function, the loop is inside an `if ... then ... else ...`, so
 /// that the loop exit coincides with the `if ... then ... else ...` exit.
-fn test_loop7(max: u32) -> u32 {
+pub fn test_loop7(max: u32) -> u32 {
     let mut i = 0;
     let mut s = 0;
     if i < max {
@@ -136,7 +135,7 @@ fn test_loop7(max: u32) -> u32 {
     s
 }
 
-fn test_loops() {
+pub fn test_loops() {
     let x = test_loop1(2);
     assert!(x == 2);
     let x = test_loop2(2);
@@ -149,4 +148,22 @@ fn test_loops() {
     assert!(x == 2);
     let x = test_loop6(2);
     assert!(x == 2);
+}
+
+/// This one is to check that the reconstructed CFG doesn't nest the two loops
+/// (it can happen and be valid, but we of course don't want that).
+pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize {
+    let mut s = 0;
+
+    for _ in 0..128 {
+        s += 1;
+    }
+
+    for _ in 0..(step_out) {
+        for _ in 0..(step_in) {
+            s += 1;
+        }
+    }
+
+    s
 }
