@@ -1,3 +1,4 @@
+use crate::cli_options::CliOpts;
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
 use crate::meta;
 use crate::names::{hir_item_to_name, item_def_id_to_name};
@@ -200,7 +201,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 /// Translate all the declarations in the crate.
 pub fn translate<'tcx, 'ctx>(
     crate_info: CrateInfo,
-    continue_on_failure: bool,
+    options: &CliOpts,
     sess: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
@@ -217,7 +218,8 @@ pub fn translate<'tcx, 'ctx>(
         hax_state,
         mir_level,
         crate_info,
-        continue_on_failure,
+        continue_on_failure: options.continue_on_failure,
+        no_code_duplication: options.no_code_duplication,
         all_ids: LinkedHashSet::new(),
         stack: BTreeSet::new(),
         file_to_id: HashMap::new(),

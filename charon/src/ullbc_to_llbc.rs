@@ -1918,12 +1918,8 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     }
 }
 
-/// TODO: we should use a translation context instead
-fn translate_function(
-    no_code_duplication: bool,
-    ctx: &TransCtx,
-    src_def_id: FunDeclId::Id,
-) -> tgt::FunDecl {
+/// TODO: put `no_code
+fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl {
     // Retrieve the function definition
     let src_def = ctx.fun_defs.get(src_def_id).unwrap();
     trace!(
@@ -1942,15 +1938,11 @@ fn translate_function(
         body: src_def
             .body
             .as_ref()
-            .map(|b| translate_body(no_code_duplication, b)),
+            .map(|b| translate_body(ctx.no_code_duplication, b)),
     }
 }
 
-fn translate_global(
-    no_code_duplication: bool,
-    ctx: &TransCtx,
-    global_id: GlobalDeclId::Id,
-) -> tgt::GlobalDecl {
+fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalDecl {
     // Retrieve the global definition
     let src_def = ctx.global_defs.get(global_id).unwrap();
     trace!(
@@ -1967,7 +1959,7 @@ fn translate_global(
         body: src_def
             .body
             .as_ref()
-            .map(|b| translate_body(no_code_duplication, b)),
+            .map(|b| translate_body(ctx.no_code_duplication, b)),
     }
 }
 
@@ -1977,22 +1969,16 @@ fn translate_global(
 /// can be a sign that the reconstruction is of poor quality, but sometimes
 /// code duplication is necessary, in the presence of "fused" match branches for
 /// instance).
-pub fn translate_functions(no_code_duplication: bool, ctx: &TransCtx) -> Defs {
+pub fn translate_functions(ctx: &TransCtx) -> Defs {
     let mut tgt_funs = FunDeclId::Map::new();
     let mut tgt_globals = GlobalDeclId::Map::new();
 
     // Translate the bodies one at a time
     for (fun_id, _) in ctx.fun_defs.iter_indexed() {
-        tgt_funs.insert(
-            *fun_id,
-            translate_function(no_code_duplication, ctx, *fun_id),
-        );
+        tgt_funs.insert(*fun_id, translate_function(ctx, *fun_id));
     }
     for (global_id, _) in ctx.global_defs.iter_indexed() {
-        tgt_globals.insert(
-            *global_id,
-            translate_global(no_code_duplication, ctx, *global_id),
-        );
+        tgt_globals.insert(*global_id, translate_global(ctx, *global_id));
     }
 
     // Print the functions

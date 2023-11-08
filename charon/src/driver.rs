@@ -154,13 +154,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // # Translate the declarations in the crate.
     // We translate the declarations in an ad-hoc order, and do not group
     // the mutually recursive groups - we do this in the next step.
-    let mut ctx = translate_crate_to_ullbc::translate(
-        crate_info,
-        options.continue_on_failure,
-        sess,
-        tcx,
-        mir_level,
-    );
+    let mut ctx = translate_crate_to_ullbc::translate(crate_info, options, sess, tcx, mir_level);
 
     trace!("# After translation from MIR:\n\n{}\n", ctx);
 
@@ -212,8 +206,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     } else {
         // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing
         // the control flow.
-        let (mut llbc_funs, mut llbc_globals) =
-            ullbc_to_llbc::translate_functions(options.no_code_duplication, &ctx);
+        let (mut llbc_funs, mut llbc_globals) = ullbc_to_llbc::translate_functions(&ctx);
 
         if options.print_built_llbc {
             let llbc_ctx = crate::translate_ctx::LlbcTransCtx {

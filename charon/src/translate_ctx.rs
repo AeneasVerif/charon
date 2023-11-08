@@ -103,6 +103,10 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub crate_info: CrateInfo,
     /// Do not abort on failure and attempt to extract as much as possible.
     pub continue_on_failure: bool,
+    /// Error out if some code ends up being duplicated by the control-flow
+    /// reconstruction (note that because several patterns in a match may lead
+    /// to the same branch, it is node always possible not to duplicate code).
+    pub no_code_duplication: bool,
     /// All the ids, in the order in which we encountered them
     pub all_ids: LinkedHashSet<AnyTransId>,
     /// The declarations we came accross and which we haven't translated yet.
