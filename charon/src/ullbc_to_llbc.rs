@@ -43,8 +43,20 @@ pub type Defs = (tgt::FunDecls, tgt::GlobalDecls);
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId::Id, ()>;
 
+fn get_stack_address() -> usize {
+    let mut x = 0;
+    backtrace::trace(|f| {
+        let str = format!("{:?}", f.sp());
+        let str = str.trim_start_matches("0x");
+        x = usize::from_str_radix(str, 16).unwrap();
+        true
+    });
+    x
+}
+
 /// Small utility
 struct BlockInfo<'a> {
+    initial_stack: usize,
     no_code_duplication: bool,
     cfg: &'a CfgInfo,
     body: &'a src::ExprBody,
@@ -1774,6 +1786,11 @@ fn translate_block(
         switch_exit_blocks,
         block_id
     );
+    trace!(
+        "Current stack: {} (vs initial: {})",
+        get_stack_address(),
+        info.initial_stack
+    );
     if info.no_code_duplication {
         assert!(!info.explored.contains(&block_id));
     }
@@ -1897,6 +1914,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     // Note that we shouldn't get `None`.
     let mut explored = HashSet::new();
     let mut info = BlockInfo {
+        initial_stack: get_stack_address(),
         no_code_duplication,
         cfg: &cfg_info,
         body: src_body,
