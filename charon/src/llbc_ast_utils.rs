@@ -275,7 +275,7 @@ impl Statement {
                     let maps = maps.join(",\n");
 
                     format!(
-                        "{}map {} {{\n{}\n{}}}",
+                        "{}match {} {{\n{}\n{}}}",
                         tab,
                         discr.fmt_with_ctx(ctx),
                         maps,
