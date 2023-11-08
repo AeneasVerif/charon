@@ -11,7 +11,7 @@ use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
 use crate::types::{ErasedRegion, GenericArgs, RefKind};
 
-fn transform_st(s: &mut Statement) -> Vec<Statement> {
+fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
     match &s.content {
         // Transform the ArrayToSlice unop
         RawStatement::Assign(p, Rvalue::UnaryOp(UnOp::ArrayToSlice(ref_kind, ty, cg), op)) => {
@@ -39,7 +39,7 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
                 dest: p.clone(),
             });
 
-            vec![]
+            None
         }
         // Transform the array aggregates to function calls
         RawStatement::Assign(p, Rvalue::Repeat(op, ty, cg)) => {
@@ -64,9 +64,9 @@ fn transform_st(s: &mut Statement) -> Vec<Statement> {
                 dest: p.clone(),
             });
 
-            vec![]
+            None
         }
-        _ => vec![],
+        _ => None,
     }
 }
 

@@ -15,16 +15,8 @@ struct Visitor<'a, 'tcx, 'ctx> {
     _ctx: &'a TransCtx<'tcx, 'ctx>,
 }
 
-impl<'a, 'tcx, 'ctx> MutTypeVisitor for Visitor<'a, 'tcx, 'ctx> {}
-impl<'a, 'tcx, 'ctx> MutExprVisitor for Visitor<'a, 'tcx, 'ctx> {}
-impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-
-    fn visit_raw_statement(&mut self, st: &mut RawStatement) {
+impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
+    fn update_raw_statement(&mut self, st: &mut RawStatement) {
         match st {
             RawStatement::Sequence(
                 box Statement {
@@ -74,7 +66,6 @@ impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
                     )
                 }));
 
-                //let otherwise = Box::new(transform_st(ctx, stack, *otherwise));
                 let switch = RawStatement::Switch(Switch::Match(p.clone(), targets, otherwise));
 
                 // Add the next statement if there is one
@@ -88,17 +79,32 @@ impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
                 } else {
                     switch
                 };
-
-                // Visit again, to make sure we transform the branches and
-                // the next statement
-                self.default_visit_raw_statement(st)
             }
             RawStatement::Assign(_, Rvalue::Discriminant(_)) => {
                 // We failed to remove a [Discriminant]
                 unreachable!();
             }
-            _ => self.default_visit_raw_statement(st),
+            _ => (),
         }
+    }
+}
+
+impl<'a, 'tcx, 'ctx> MutTypeVisitor for Visitor<'a, 'tcx, 'ctx> {}
+impl<'a, 'tcx, 'ctx> MutExprVisitor for Visitor<'a, 'tcx, 'ctx> {}
+impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
+    fn merge(&mut self) {}
+
+    fn visit_raw_statement(&mut self, st: &mut RawStatement) {
+        self.update_raw_statement(st);
+
+        // Visit again, to make sure we transform the branches and
+        // the next statement, in case we updated, or to update the
+        // sub-statements, in case we didn't perform any updates.
+        self.default_visit_raw_statement(st);
     }
 }
 

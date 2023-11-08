@@ -10,7 +10,7 @@ use crate::gast::{iter_function_bodies, iter_global_bodies};
 use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
 
-fn transform_st(st: &mut Statement) -> Vec<Statement> {
+fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     if let RawStatement::Switch(Switch::If(_, st1, _)) = &mut st.content {
         // Check if the first statement is a panic: if yes, replace
         // the if .. then ... else ... by an assertion.
@@ -30,7 +30,7 @@ fn transform_st(st: &mut Statement) -> Vec<Statement> {
             });
         }
     }
-    Vec::new()
+    None
 }
 
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {

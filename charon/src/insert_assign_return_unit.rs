@@ -14,7 +14,7 @@ use crate::translate_ctx::TransCtx;
 use crate::types::*;
 use crate::values::*;
 
-fn transform_st(st: &mut Statement) -> Vec<Statement> {
+fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     if let RawStatement::Return = &mut st.content {
         let ret_place = Place {
             var_id: VarId::Id::new(0),
@@ -28,7 +28,7 @@ fn transform_st(st: &mut Statement) -> Vec<Statement> {
         let ret_st = Statement::new(st.meta, RawStatement::Return);
         st.content = RawStatement::Sequence(Box::new(assign_st), Box::new(ret_st));
     };
-    Vec::new()
+    None
 }
 
 fn transform_body(ctx: &TransCtx, name: &Name, body: &mut Option<ExprBody>) {

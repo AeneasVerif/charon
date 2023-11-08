@@ -222,7 +222,7 @@ impl<'a> MutAstVisitor for Transform<'a> {
     }
 }
 
-fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Vec<Statement> {
+fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Option<Vec<Statement>> {
     // Explore the places/operands
     let mut visitor = Transform {
         locals,
@@ -232,7 +232,7 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Vec<State
     visitor.visit_statement(s);
 
     // Return the statements to insert before the current one
-    visitor.statements
+    Some(visitor.statements)
 }
 
 /// We do the following.

@@ -44,7 +44,7 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
         // Compute the set of local variables
         b.body.transform(&mut |st| {
             transform_st(locals, st);
-            vec![]
+            None
         });
     }
 }

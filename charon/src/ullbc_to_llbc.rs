@@ -1933,7 +1933,7 @@ fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl
     // Retrieve the function definition
     let src_def = ctx.fun_defs.get(src_def_id).unwrap();
     trace!(
-        "# Reconstructing: {}\n\n{}",
+        "# About to reconstruct: {}\n\n{}",
         src_def.name,
         ctx.format_object(src_def)
     );
@@ -1956,7 +1956,7 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalD
     // Retrieve the global definition
     let src_def = ctx.global_defs.get(global_id).unwrap();
     trace!(
-        "# Reconstructing: {}\n\n{}",
+        "# About to reconstruct: {}\n\n{}",
         src_def.name,
         ctx.format_object(src_def)
     );

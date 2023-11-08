@@ -491,13 +491,22 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
 } // make_generic_in_borrows
 
 /// Helper for [transform_statements]
-struct TransformStatements<'a, F: FnMut(&mut Statement) -> Vec<Statement>> {
+struct TransformStatements<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> {
     tr: &'a mut F,
 }
 
-impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutTypeVisitor for TransformStatements<'a, F> {}
-impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutExprVisitor for TransformStatements<'a, F> {}
-impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutAstVisitor for TransformStatements<'a, F> {
+impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutTypeVisitor
+    for TransformStatements<'a, F>
+{
+}
+impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutExprVisitor
+    for TransformStatements<'a, F>
+{
+}
+
+impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutAstVisitor
+    for TransformStatements<'a, F>
+{
     fn visit_statement(&mut self, st: &mut Statement) {
         match &mut st.content {
             RawStatement::Sequence(st1, st2) => {
@@ -507,9 +516,10 @@ impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutAstVisitor for Transform
 
                 // Transform the current statement
                 let st_seq = (self.tr)(st1);
-                if !st_seq.is_empty() {
-                    take(st, |st| chain_statements(st_seq, st))
+                if let Some(seq) = st_seq && !seq.is_empty() {
+                    take(st, |st| chain_statements(seq, st))
                 }
+                // TODO: we might want to apply tr to the whole sequence
             }
             _ => {
                 // Bottom-up
@@ -517,8 +527,8 @@ impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutAstVisitor for Transform
 
                 // Transform the current statement
                 let st_seq = (self.tr)(st);
-                if !st_seq.is_empty() {
-                    take(st, |st| chain_statements(st_seq, st))
+                if let Some(seq) = st_seq && !seq.is_empty() {
+                    take(st, |st| chain_statements(seq, st))
                 }
             }
         }
@@ -543,7 +553,7 @@ impl Statement {
     /// if in `s1; s2` we transform `s1` to the sequence `s1_1; s1_2`,
     /// then the resulting statement is `s1_1; s1_2; s2` and **not**
     /// `{ s1_1; s1_2 }; s2`.
-    pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, f: &mut F) {
+    pub fn transform<F: FnMut(&mut Statement) -> Option<Vec<Statement>>>(&mut self, f: &mut F) {
         let mut visitor = TransformStatements { tr: f };
         visitor.visit_statement(self);
     }

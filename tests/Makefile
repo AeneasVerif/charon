@@ -30,7 +30,7 @@ charon-tests: \
 test-nested_borrows: OPTIONS += --no-code-duplication
 test-no_nested_borrows: OPTIONS += --no-code-duplication
 test-loops:
-test-loops_cfg: OPTIONS += --no-code-duplication
+test-loops_cfg:
 test-hashmap:
 test-hashmap_main: OPTIONS += --opaque=hashmap_utils
 test-paper: OPTIONS += --no-code-duplication
