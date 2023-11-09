@@ -48,7 +48,7 @@
           (crane.mkLib pkgs).overrideToolchain rustToolchainWithExt;
         craneLibNoExt = (crane.mkLib pkgs).overrideToolchain rustToolchainNoExt;
         charon =
-          let cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./charon; };
+          let cargoArtifacts = craneLibWithExt.buildDepsOnly { src = ./charon; };
           in craneLibWithExt.buildPackage {
             src = ./charon;
             inherit cargoArtifacts;
