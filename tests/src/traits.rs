@@ -249,33 +249,6 @@ trait Try: FromResidual<<Self as Try>::Residual> {
 
 trait FromResidual<T> {}
 
-/* Custom function pointers */
-pub trait CFnOnce<Args> {
-    type Output;
-
-    fn call_once(self, args: Args) -> Self::Output;
-}
-
-pub trait CFnMut<Args>: CFnOnce<Args> {
-    fn call_mut(&mut self, args: Args) -> Self::Output;
-}
-
-pub trait CFn<Args>: CFnMut<Args> {
-    fn call_mut(&self, args: Args) -> Self::Output;
-}
-
-/* Testing function pointers and closures */
-#[allow(clippy::manual_map)]
-pub fn map_option<T, F>(x: Option<T>, f: F) -> Option<T>
-where
-    F: Fn(T) -> T,
-{
-    match x {
-        None => None,
-        Some(x) => Some(f(x)),
-    }
-}
-
 pub trait WithTarget {
     type Target;
 }
@@ -311,6 +284,33 @@ pub fn test_enumerate(x: usize) {
 
 pub fn incr_u32(x: u32) -> u32 {
     x + 1
+}
+
+/* Custom function pointers */
+pub trait CFnOnce<Args> {
+    type Output;
+
+    fn call_once(self, args: Args) -> Self::Output;
+}
+
+pub trait CFnMut<Args>: CFnOnce<Args> {
+    fn call_mut(&mut self, args: Args) -> Self::Output;
+}
+
+pub trait CFn<Args>: CFnMut<Args> {
+    fn call_mut(&self, args: Args) -> Self::Output;
+}
+
+/* Testing function pointers and closures */
+#[allow(clippy::manual_map)]
+pub fn map_option<T, F>(x: Option<T>, f: F) -> Option<T>
+where
+    F: Fn(T) -> T,
+{
+    match x {
+        None => None,
+        Some(x) => Some(f(x)),
+    }
 }
 
 /*
