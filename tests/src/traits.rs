@@ -301,7 +301,12 @@ pub trait CFn<Args>: CFnMut<Args> {
     fn call_mut(&self, args: Args) -> Self::Output;
 }
 
+/*
 /* Testing function pointers and closures */
+// TODO: this requires to take into account the constraints over associated types
+// because the output type of the Fn trait is an associated type, not a parameter.
+// More precisely, we have the constraint that:
+// <F as Fn<T>>::Output = T
 #[allow(clippy::manual_map)]
 pub fn map_option<T, F>(x: Option<T>, f: F) -> Option<T>
 where
@@ -312,6 +317,7 @@ where
         Some(x) => Some(f(x)),
     }
 }
+*/
 
 /*
 // With a pointer to a top level function
