@@ -106,6 +106,12 @@ module List = struct
 
   let rec repeat (n : int) (x : 'a) : 'a list =
     if n > 0 then x :: repeat (n - 1) x else []
+
+  let rec iter_times (n : int) (f : unit -> unit) : unit =
+    if n > 0 then (
+      f ();
+      iter_times (n - 1) f)
+    else ()
 end
 
 module type OrderedType = sig
