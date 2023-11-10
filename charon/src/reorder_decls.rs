@@ -194,7 +194,7 @@ pub struct Deps {
     ///
     ///
     /// For instance, the problem happens if in Rust we have:
-    /// ```
+    /// ```text
     /// pub trait WithConstTy {
     ///     type W;
     ///     fn f(x: &mut Self::W);
@@ -208,7 +208,7 @@ pub struct Deps {
     ///
     /// In LLBC we get:
     ///
-    /// ```
+    /// ```text
     /// impl traits::Bool::0 : traits::WithConstTy<bool>
     /// {
     ///     type W = u64 with []

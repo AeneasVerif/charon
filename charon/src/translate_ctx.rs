@@ -216,7 +216,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// the variables inside the group.
     ///
     /// For instance, we have the following:
-    /// ```
+    /// ```text
     ///                     we compute the De Bruijn indices from here
     ///                            VVVVVVVVVVVVVVVVVVVVVVV
     /// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
