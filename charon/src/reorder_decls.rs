@@ -39,6 +39,36 @@ pub enum DeclarationGroup {
     TraitImpl(GDeclarationGroup<TraitImplId::Id>),
 }
 
+impl<Id: Copy> GDeclarationGroup<Id> {
+    pub fn get_ids(&self) -> Vec<Id> {
+        use GDeclarationGroup::*;
+        match self {
+            NonRec(id) => vec![*id],
+            Rec(ids) => ids.clone(),
+        }
+    }
+}
+
+impl<Id: Copy> GDeclarationGroup<Id> {
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
+    where
+        C: crate::formatter::Formatter<Id>,
+    {
+        use GDeclarationGroup::*;
+        match self {
+            NonRec(id) => format!("Non rec: {}", ctx.format_object(*id)),
+            Rec(ids) => {
+                let ids = ids
+                    .iter()
+                    .map(|id| ctx.format_object(*id))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+                format!("Rec: {}", ids)
+            }
+        }
+    }
+}
+
 impl DeclarationGroup {
     fn make_type_group(is_rec: bool, gr: impl Iterator<Item = TypeDeclId::Id>) -> Self {
         let gr: Vec<_> = gr.collect();
@@ -108,6 +138,24 @@ impl DeclarationGroup {
                 .join("\n")
         );
         DeclarationGroup::TraitImpl(GDeclarationGroup::NonRec(gr[0]))
+    }
+
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
+    where
+        C: crate::formatter::Formatter<TypeDeclId::Id>
+            + crate::formatter::Formatter<FunDeclId::Id>
+            + crate::formatter::Formatter<GlobalDeclId::Id>
+            + crate::formatter::Formatter<TraitDeclId::Id>
+            + crate::formatter::Formatter<TraitImplId::Id>,
+    {
+        use DeclarationGroup::*;
+        match self {
+            Type(g) => format!("Type decls group: {}", g.fmt_with_ctx(ctx)),
+            Fun(g) => format!("Fun decls group: {}", g.fmt_with_ctx(ctx)),
+            Global(g) => format!("Global decls group: {}", g.fmt_with_ctx(ctx)),
+            TraitDecl(g) => format!("Trait decls group: {}", g.fmt_with_ctx(ctx)),
+            TraitImpl(g) => format!("Trait impls group: {}", g.fmt_with_ctx(ctx)),
+        }
     }
 }
 

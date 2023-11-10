@@ -646,7 +646,7 @@ impl TypeDecl {
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         // Trait clauses
         let eq_space = if trait_clauses.is_empty() {
-            "".to_string()
+            " ".to_string()
         } else {
             format!("\n ")
         };

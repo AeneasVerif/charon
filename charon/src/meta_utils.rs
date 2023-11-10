@@ -45,19 +45,24 @@ impl Loc {
 /// meta-information of, say, a sequence).
 pub fn combine_meta(m0: &Meta, m1: &Meta) -> Meta {
     // Merge the spans
-    assert!(m0.span.file_id == m1.span.file_id);
-    let span = Span {
-        file_id: m0.span.file_id,
-        beg: Loc::min(&m0.span.beg, &m1.span.beg),
-        end: Loc::max(&m0.span.end, &m1.span.end),
-    };
+    if m0.span.file_id == m1.span.file_id {
+        let span = Span {
+            file_id: m0.span.file_id,
+            beg: Loc::min(&m0.span.beg, &m1.span.beg),
+            end: Loc::max(&m0.span.end, &m1.span.end),
+        };
 
-    // We don't attempt to merge the "generated from" spans: they might
-    // come from different files, and even if they come from the same files
-    // they might come from different macros, etc.
-    Meta {
-        span,
-        generated_from_span: None,
+        // We don't attempt to merge the "generated from" spans: they might
+        // come from different files, and even if they come from the same files
+        // they might come from different macros, etc.
+        Meta {
+            span,
+            generated_from_span: None,
+        }
+    } else {
+        // It happens that the spans don't come from the same file. In this
+        // situation, we just return the first span. TODO: improve this.
+        *m0
     }
 }
 
