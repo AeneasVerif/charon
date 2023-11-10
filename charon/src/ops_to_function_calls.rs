@@ -9,7 +9,7 @@ use crate::expressions::{Rvalue, UnOp};
 use crate::formatter::Formatter;
 use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
-use crate::types::{ErasedRegion, GenericArgs, RefKind};
+use crate::types::*;
 
 fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
     match &s.content {
@@ -23,7 +23,7 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
             };
             let func = FunIdOrTraitMethodRef::mk_assumed(id);
             let generics = GenericArgs::new(
-                vec![ErasedRegion::Erased],
+                vec![Region::Erased],
                 vec![ty.clone()],
                 vec![cg.clone()],
                 vec![],
@@ -48,7 +48,7 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
             let id = AssumedFunId::ArrayRepeat;
             let func = FunIdOrTraitMethodRef::mk_assumed(id);
             let generics = GenericArgs::new(
-                vec![ErasedRegion::Erased],
+                vec![Region::Erased],
                 vec![ty.clone()],
                 vec![cg.clone()],
                 vec![],

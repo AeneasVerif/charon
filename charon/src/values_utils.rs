@@ -95,24 +95,9 @@ impl Formatter<TraitImplId::Id> for DummyFormatter {
     }
 }
 
-impl<Rid: Clone> Formatter<&Region<Rid>> for DummyFormatter
-where
-    DummyFormatter: Formatter<Rid>,
-{
-    fn format_object(&self, r: &Region<Rid>) -> String {
-        r.fmt_with_ctx(self)
-    }
-}
-
 impl Formatter<RegionId::Id> for DummyFormatter {
     fn format_object(&self, id: RegionId::Id) -> String {
         id.to_pretty_string()
-    }
-}
-
-impl Formatter<&ErasedRegion> for DummyFormatter {
-    fn format_object(&self, _: &ErasedRegion) -> String {
-        "'_".to_string()
     }
 }
 

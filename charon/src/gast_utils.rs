@@ -36,7 +36,7 @@ pub fn iter_global_bodies<T>(
 
 /// Makes a lambda that generates a new variable id, pushes a new variable in
 /// the body locals with the given type and returns its id.
-pub fn make_locals_generator(locals: &mut VarId::Vector<Var>) -> impl FnMut(ETy) -> VarId::Id + '_ {
+pub fn make_locals_generator(locals: &mut VarId::Vector<Var>) -> impl FnMut(Ty) -> VarId::Id + '_ {
     let mut next_id = locals.iter().fold(VarId::ZERO, |id, v| max(id, v.index));
     move |ty| {
         next_id.incr();
@@ -69,7 +69,7 @@ impl std::string::ToString for Var {
 }
 
 impl VarId::Vector<Var> {
-    pub fn fresh_var(&mut self, name: Option<String>, ty: ETy) -> VarId::Id {
+    pub fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> VarId::Id {
         let index = VarId::Id::new(self.len());
         self.push_back(Var { index, name, ty });
         index
@@ -79,7 +79,7 @@ impl VarId::Vector<Var> {
 impl Var {
     /// Substitute the region parameters and type variables and return
     /// the resulting variable
-    pub fn substitute(&self, subst: &ETypeSubst, cgsubst: &ConstGenericSubst) -> Var {
+    pub fn substitute(&self, subst: &TypeSubst, cgsubst: &ConstGenericSubst) -> Var {
         Var {
             index: self.index,
             name: self.name.clone(),
@@ -95,11 +95,9 @@ impl FunKind {
 }
 
 impl TraitDecl {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionId::Id>>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<RegionId::Id>,
+        C: TypeFormatter,
     {
         let name = self.name.to_string();
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -170,11 +168,9 @@ impl TraitDecl {
 }
 
 impl TraitImpl {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionId::Id>>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<RegionId::Id>,
+        C: TypeFormatter,
     {
         let name = self.name.to_string();
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -234,9 +230,9 @@ impl TraitImpl {
 
 /// Format a function call.
 /// We return the pair: (function call, comment)
-pub fn fmt_call<'a, 'b, T>(ctx: &'b T, call: &'a Call) -> (String, Option<String>)
+pub fn fmt_call<T>(ctx: &T, call: &Call) -> (String, Option<String>)
 where
-    T: ExprFormatter<'a>,
+    T: ExprFormatter,
 {
     let trait_and_method_generic_args =
         if let Some(generics) = &call.func.trait_and_method_generic_args {
@@ -261,9 +257,9 @@ impl<T> GExprBody<T> {
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn fmt_with_ctx<'a, 'b, 'c, C>(&'a self, tab: &'b str, ctx: &'c C) -> String
+    pub fn fmt_with_ctx<'a, C>(&'a self, tab: &str, ctx: &C) -> String
     where
-        C: ExprFormatter<'a> + Formatter<&'a T>,
+        C: ExprFormatter + Formatter<&'a T>,
     {
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
@@ -310,10 +306,7 @@ impl<T> GExprBody<T> {
     }
 }
 
-pub trait GFunDeclFormatter<'a, Body: 'a> = ExprFormatter<'a>
-    + Formatter<&'a Body>
-    + Formatter<&'a Region<RegionId::Id>>
-    + Formatter<RegionId::Id>;
+pub trait GFunDeclFormatter<'a, Body: 'a> = ExprFormatter + Formatter<&'a Body>;
 
 impl<T> GFunDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
@@ -323,7 +316,7 @@ impl<T> GFunDecl<T> {
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn gfmt_with_ctx<'a, 'b, 'c, C>(&'a self, tab: &'b str, ctx: &'c C) -> String
+    pub fn gfmt_with_ctx<'a, C>(&'a self, tab: &str, ctx: &C) -> String
     where
         C: GFunDeclFormatter<'a, T>,
     {
@@ -389,7 +382,7 @@ impl<T> GFunDecl<T> {
     }
 }
 
-pub trait GGlobalDeclFormatter<'a, Body: 'a> = ExprFormatter<'a> + Formatter<&'a Body>;
+pub trait GGlobalDeclFormatter<'a, Body: 'a> = ExprFormatter + Formatter<&'a Body>;
 
 impl<T> GGlobalDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder

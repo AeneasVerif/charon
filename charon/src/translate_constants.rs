@@ -127,7 +127,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         };
 
-        let ty = self.translate_ety(ty).unwrap();
+        let ty = self.translate_ty(ty).unwrap();
         ConstantExpr { value, ty }
     }
 

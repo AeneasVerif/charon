@@ -373,7 +373,7 @@ impl SharedTypeVisitor for Deps {
     /// The reason why we do this is that otherwise if a trait decl declares
     /// a method which uses one of its associated types we will conclude that
     /// the trait decl is recursive, while it isn't.
-    fn visit_trait_ref<R>(&mut self, tr: &TraitRef<R>) {
+    fn visit_trait_ref(&mut self, tr: &TraitRef) {
         self.visit_trait_instance_id(&tr.trait_id);
         self.visit_generic_args(&tr.generics);
     }

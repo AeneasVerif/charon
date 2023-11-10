@@ -240,7 +240,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let name: Option<String> = var.name.clone();
 
             // Translate the type
-            let ty = self.translate_ety(&var.ty)?;
+            let ty = self.translate_ty(&var.ty)?;
 
             // Add the variable to the environment
             self.push_var(index, ty, name);
@@ -304,8 +304,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate a place and return its type
-    fn translate_place_with_type(&mut self, place: &hax::Place) -> (Place, ETy) {
-        let ty = self.translate_ety(&place.ty).unwrap();
+    fn translate_place_with_type(&mut self, place: &hax::Place) -> (Place, Ty) {
+        let ty = self.translate_ty(&place.ty).unwrap();
         let (var_id, projection) = self.translate_projection(place);
         (Place { var_id, projection }, ty)
     }
@@ -330,7 +330,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let (var_id, mut projection) = self.translate_projection(&*place);
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
-                let current_ty = self.translate_ety(&place.ty).unwrap();
+                let current_ty = self.translate_ty(&place.ty).unwrap();
                 match kind {
                     hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
@@ -433,7 +433,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate an operand with its type
-    fn translate_operand_with_type(&mut self, operand: &hax::Operand) -> (Operand, ETy) {
+    fn translate_operand_with_type(&mut self, operand: &hax::Operand) -> (Operand, Ty) {
         trace!();
         match operand {
             hax::Operand::Copy(place) => {
@@ -537,7 +537,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // casts should only be from integers/booleans to integer/booleans.
 
                 // Translate the target type
-                let tgt_ty = self.translate_ety(tgt_ty).unwrap();
+                let tgt_ty = self.translate_ty(tgt_ty).unwrap();
 
                 // Translate the operand
                 let (op, src_ty) = self.translate_operand_with_type(operand);
@@ -588,12 +588,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                     (
                         hax::CastKind::Pointer(hax::PointerCast::ClosureFnPointer(unsafety)),
-                        Ty::Arrow(inputs1, output1),
-                        Ty::Arrow(inputs2, output2),
+                        src_ty @ Ty::Arrow(_, _),
+                        tgt_ty @ Ty::Arrow(_, _),
                     ) => {
                         assert!(*unsafety == hax::Unsafety::Normal);
-                        let src_ty = Ty::Arrow(inputs1.clone(), output1.clone()).to_rty();
-                        let tgt_ty = Ty::Arrow(inputs2.clone(), output2.clone()).to_rty();
+                        let src_ty = src_ty.clone();
+                        let tgt_ty = tgt_ty.clone();
                         Rvalue::UnaryOp(UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)), op)
                     }
                     _ => {
@@ -648,7 +648,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 match aggregate_kind.deref() {
                     hax::AggregateKind::Array(ty) => {
-                        let t_ty = self.translate_ety(ty).unwrap();
+                        let t_ty = self.translate_ty(ty).unwrap();
                         let cg = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
                             operands_t.len() as u64,
                         )));
@@ -767,7 +767,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the type parameter
             let t_ty = if let hax::GenericArg::Type(ty) = substs.get(0).unwrap() {
-                self.translate_ety(ty).unwrap()
+                self.translate_ty(ty).unwrap()
             } else {
                 unreachable!()
             };
@@ -851,8 +851,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     Option::Some(trait_info) => {
                         // Trait method
                         let rust_id = def_id.rust_def_id.unwrap();
-                        let impl_source = self
-                            .translate_trait_impl_source_erased_regions(&trait_info.impl_source);
+                        let impl_source = self.translate_trait_impl_source(&trait_info.impl_source);
                         // The impl source should be Some(...): trait markers (that we may
                         // eliminate) don't have methods.
                         let impl_source = impl_source.unwrap();
@@ -1208,7 +1207,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_switch_targets(
         &mut self,
         body: &hax::MirBody<()>,
-        switch_ty: &ETy,
+        switch_ty: &Ty,
         targets: &hax::SwitchTargets,
     ) -> SwitchTargets {
         trace!("targets: {:?}", targets);
@@ -1302,10 +1301,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         used_args: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
         trait_refs: &Vec<hax::ImplSource>,
-    ) -> Result<EGenericArgs> {
+    ) -> Result<GenericArgs> {
         trace!("{:?}", substs);
         let (regions, types, const_generics) = self.translate_substs(used_args, substs)?;
-        let trait_refs = self.translate_trait_impl_sources_erased_regions(trait_refs);
+        let trait_refs = self.translate_trait_impl_sources(trait_refs);
         Ok(GenericArgs {
             regions,
             types,
@@ -1473,7 +1472,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     self.push_region(region, name);
                 }
                 GenericArg::Const(c) => {
-                    let ty = self.translate_ety(&c.ty).unwrap();
+                    let ty = self.translate_ty(&c.ty).unwrap();
                     let ty = ty.to_literal();
                     match *c.contents {
                         hax::ConstantExprKind::ConstRef { id: cp } => {
@@ -1547,13 +1546,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Translate the signature
         let signature = signature.value;
         trace!("signature of {def_id:?}:\n{:?}", signature);
-        let inputs: Vec<RTy> = Vec::from_iter(
+        let inputs: Vec<Ty> = Vec::from_iter(
             signature
                 .inputs
                 .iter()
-                .map(|ty| self.translate_sig_ty(ty).unwrap()),
+                .map(|ty| self.translate_ty(ty).unwrap()),
         );
-        let output = self.translate_sig_ty(&signature.output).unwrap();
+        let output = self.translate_ty(&signature.output).unwrap();
 
         trace!(
             "# Input variables types:\n{}",
@@ -1658,7 +1657,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Generate an expression body from a typed constant value.
     fn global_generate_assignment_body(
         &mut self,
-        ty: ETy,
+        ty: Ty,
         def_rid: DefId,
         val: ConstantExpr,
     ) -> ExprBody {
@@ -1709,7 +1708,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
-        let ty = bt_ctx.translate_ety(&mir_ty.sinto(hax_state)).unwrap();
+        let ty = bt_ctx.translate_ty(&mir_ty.sinto(hax_state)).unwrap();
 
         let body = if rust_id.is_local() && is_transparent {
             // It's a local and transparent global: we extract its body as for functions.

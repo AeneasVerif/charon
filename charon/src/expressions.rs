@@ -60,7 +60,7 @@ pub enum ProjectionElem {
     /// We also keep the type of the array/slice that we index for convenience purposes
     /// (this is not necessary).
     /// We **eliminate** this variant in a micro-pass.
-    Index(VarId::Id, ETy),
+    Index(VarId::Id, Ty),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
@@ -107,7 +107,7 @@ pub enum UnOp {
     /// *necessary* as we can retrieve them from the context, but storing them here is
     /// very useful. The [RefKind] argument states whethere we operate on a mutable
     /// or a shared borrow to an array.
-    ArrayToSlice(RefKind, ETy, ConstGeneric),
+    ArrayToSlice(RefKind, Ty, ConstGeneric),
 }
 
 /// For all the variants: the first type gives the source type, the second one gives
@@ -115,7 +115,7 @@ pub enum UnOp {
 #[derive(Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize)]
 pub enum CastKind {
     Integer(IntegerTy, IntegerTy),
-    FnPtr(RTy, RTy),
+    FnPtr(Ty, Ty),
 }
 
 /// Binary operations.
@@ -235,18 +235,18 @@ pub enum FunIdOrTraitMethodRef {
     /// If a trait: the reference to the trait and the id of the trait method.
     /// The fun decl id is not really necessary - we put it here for convenience
     /// purposes.
-    Trait(ETraitRef, TraitItemName, FunDeclId::Id),
+    Trait(TraitRef, TraitItemName, FunDeclId::Id),
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct FnPtr {
     pub func: FunIdOrTraitMethodRef,
-    pub generics: EGenericArgs,
+    pub generics: GenericArgs,
     /// If this is a reference to a trait method: stores *all* the generic arguments
     /// which apply to the trait + the method. The fields [region_args], [type_args]
     /// [const_generic_args] only store the arguments which concern the method call.
     /// See the comments for [ParamsInfo].
-    pub trait_and_method_generic_args: Option<EGenericArgs>,
+    pub trait_and_method_generic_args: Option<GenericArgs>,
 }
 
 /// A constant expression.
@@ -306,7 +306,7 @@ pub enum RawConstantExpr {
     ///
     /// Remark: trait constants can not be used in types, they are necessarily
     /// values. For this reason, we can always erase the regions.
-    TraitConst(ETraitRef, EGenericArgs, TraitItemName),
+    TraitConst(TraitRef, GenericArgs, TraitItemName),
     ///
     /// A shared reference to a constant value
     ///
@@ -321,7 +321,7 @@ pub enum RawConstantExpr {
 #[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct ConstantExpr {
     pub value: RawConstantExpr,
-    pub ty: ETy,
+    pub ty: Ty,
 }
 
 /// TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
@@ -370,20 +370,20 @@ pub enum Rvalue {
     /// together with the bounds checks**. Whenever the user writes `x.len()`
     /// where `x` is a slice or an array, they actually call a non-primitive
     /// function.
-    Len(Place, ETy, Option<ConstGeneric>),
+    Len(Place, Ty, Option<ConstGeneric>),
     /// [Repeat(x, n)] creates an array where [x] is copied [n] times.
     ///
     /// We desugar this to a function call.
-    Repeat(Operand, ETy, ConstGeneric),
+    Repeat(Operand, Ty, ConstGeneric),
 }
 
 #[derive(Debug, Clone, VariantIndexArity, Serialize)]
 pub enum AggregateKind {
-    Adt(TypeId, Option<VariantId::Id>, EGenericArgs),
+    Adt(TypeId, Option<VariantId::Id>, GenericArgs),
     /// We don't put this with the ADT cas because this is the only assumed type
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.
-    Array(ETy, ConstGeneric),
+    Array(Ty, ConstGeneric),
     ///
     Closure(FunDeclId::Id),
 }

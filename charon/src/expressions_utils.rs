@@ -11,7 +11,7 @@ use crate::values::*;
 use macros::make_generic_in_borrows;
 use std::vec::Vec;
 
-pub trait ExprFormatter<'a> = TypeFormatter<'a, ErasedRegion>
+pub trait ExprFormatter = TypeFormatter
     + Formatter<VarId::Id>
     + Formatter<(TypeDeclId::Id, VariantId::Id)>
     + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>;
@@ -37,9 +37,9 @@ impl std::fmt::Display for BorrowKind {
 }
 
 impl CastKind {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, ErasedRegion>,
+        T: TypeFormatter,
     {
         match self {
             CastKind::Integer(src, tgt) => format!("cast<{src},{tgt}>"),
@@ -51,9 +51,9 @@ impl CastKind {
 }
 
 impl UnOp {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, ErasedRegion>,
+        T: TypeFormatter,
     {
         match self {
             UnOp::Not => "~".to_string(),
@@ -138,7 +138,7 @@ impl Place {
     }
 
     /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
+    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
         self.clone()
     }
 }
@@ -150,18 +150,18 @@ impl std::fmt::Display for Place {
 }
 
 impl ConstantExpr {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, ErasedRegion>,
+        T: TypeFormatter,
     {
         self.value.fmt_with_ctx(ctx)
     }
 }
 
 impl RawConstantExpr {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, ErasedRegion>,
+        T: TypeFormatter,
     {
         match self {
             RawConstantExpr::Literal(c) => c.to_string(),
@@ -196,9 +196,9 @@ impl RawConstantExpr {
 }
 
 impl FnPtr {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, ErasedRegion>,
+        T: TypeFormatter,
     {
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         let f = match &self.func {
@@ -224,9 +224,9 @@ impl std::fmt::Display for ConstantExpr {
 }
 
 impl Operand {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: ExprFormatter<'a>,
+        T: ExprFormatter,
     {
         match self {
             Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)),
@@ -236,7 +236,7 @@ impl Operand {
     }
 
     /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
+    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
         self.clone()
     }
 }
@@ -248,9 +248,9 @@ impl std::fmt::Display for Operand {
 }
 
 impl Rvalue {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: ExprFormatter<'a>,
+        T: ExprFormatter,
     {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),
@@ -317,7 +317,7 @@ impl Rvalue {
     }
 
     /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
+    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
         self.clone()
     }
 }
@@ -506,7 +506,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
 
     fn visit_global(&mut self, _: &GlobalDeclId::Id) {}
 
-    fn visit_len(&mut self, p: &Place, ty: &ETy, cg: &Option<ConstGeneric>) {
+    fn visit_len(&mut self, p: &Place, ty: &Ty, cg: &Option<ConstGeneric>) {
         self.visit_place(p);
         self.visit_ty(ty);
         match cg {
@@ -515,7 +515,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         }
     }
 
-    fn visit_repeat(&mut self, op: &Operand, ty: &ETy, cg: &ConstGeneric) {
+    fn visit_repeat(&mut self, op: &Operand, ty: &Ty, cg: &ConstGeneric) {
         self.visit_operand(op);
         self.visit_ty(ty);
         self.visit_const_generic(cg);

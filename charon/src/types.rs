@@ -58,23 +58,15 @@ pub struct ConstGenericVar {
     pub ty: LiteralTy,
 }
 
-/// Region as used in a function's signatures (in which case we use region variable
-/// ids) and in symbolic variables and projections (in which case we use region
-/// ids).
 #[derive(
     Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord, EnumIsA, EnumAsGetters, Serialize,
 )]
-pub enum Region<Rid> {
+pub enum Region {
     /// Static region
     Static,
     /// Non-static region.
-    Var(Rid),
-}
-
-/// The type of erased regions. See [`Ty`](Ty) for more explanations.
-/// We could use `()`, but having a dedicated type makes things more explicit.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Hash, Ord, PartialOrd)]
-pub enum ErasedRegion {
+    Var(RegionId::Id),
+    /// Erased region
     Erased,
 }
 
@@ -177,7 +169,7 @@ pub enum TraitInstanceId {
     ///   a.map(incr)
     /// }
     /// ```
-    FnPointer(Box<ETy>),
+    FnPointer(Box<Ty>),
     ///
     /// Self, in case of trait declarations/implementations.
     ///
@@ -192,22 +184,19 @@ pub enum TraitInstanceId {
     /// haven't been registered yet. This variant is purely internal: after we
     /// finished solving the trait obligations, all the remaining unsolved
     /// clauses (in case we don't fail hard on error) are converted to [Unknown].
-    Unsolved(TraitDeclId::Id, RGenericArgs),
+    Unsolved(TraitDeclId::Id, GenericArgs),
     /// For error reporting
     Unknown(String),
 }
 
 /// A reference to a trait
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
-pub struct TraitRef<R> {
+pub struct TraitRef {
     pub trait_id: TraitInstanceId,
-    pub generics: GenericArgs<R>,
+    pub generics: GenericArgs,
     /// Not necessary, but useful
-    pub trait_decl_ref: TraitDeclRef<R>,
+    pub trait_decl_ref: TraitDeclRef,
 }
-
-pub type ETraitRef = TraitRef<ErasedRegion>;
-pub type RTraitRef = TraitRef<Region<RegionId::Id>>;
 
 /// Reference to a trait declaration.
 ///
@@ -218,20 +207,17 @@ pub type RTraitRef = TraitRef<Region<RegionId::Id>>;
 ///
 /// The substitution is: `[String, bool]`.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
-pub struct TraitDeclRef<R> {
+pub struct TraitDeclRef {
     pub trait_id: TraitDeclId::Id,
-    pub generics: GenericArgs<R>,
+    pub generics: GenericArgs,
 }
-
-pub type ETraitDeclRef = TraitDeclRef<ErasedRegion>;
-pub type RTraitDeclRef = TraitDeclRef<Region<RegionId::Id>>;
 
 /// .0 outlives .1
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct OutlivesPred<T, U>(pub T, pub U);
 
-pub type RegionOutlives = OutlivesPred<Region<RegionId::Id>, Region<RegionId::Id>>;
-pub type TypeOutlives = OutlivesPred<RTy, Region<RegionId::Id>>;
+pub type RegionOutlives = OutlivesPred<Region, Region>;
+pub type TypeOutlives = OutlivesPred<Ty, Region>;
 
 /// A constraint over a trait associated type.
 ///
@@ -241,14 +227,12 @@ pub type TypeOutlives = OutlivesPred<RTy, Region<RegionId::Id>>;
 ///         ^^^^^^^^^^
 /// ```
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct TraitTypeConstraint<R> {
-    pub trait_ref: TraitRef<R>,
-    pub generics: GenericArgs<R>,
+pub struct TraitTypeConstraint {
+    pub trait_ref: TraitRef,
+    pub generics: GenericArgs,
     pub type_name: TraitItemName,
-    pub ty: Ty<R>,
+    pub ty: Ty,
 }
-
-pub type RTraitTypeConstraint = TraitTypeConstraint<Region<RegionId::Id>>;
 
 /// The predicates which apply to a definition
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -258,20 +242,17 @@ pub struct Predicates {
     /// The type outlives the region
     pub types_outlive: Vec<TypeOutlives>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: Vec<RTraitTypeConstraint>,
+    pub trait_type_constraints: Vec<TraitTypeConstraint>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Hash, Ord, PartialOrd)]
-pub struct GenericArgs<R> {
-    pub regions: Vec<R>,
-    pub types: Vec<Ty<R>>,
+pub struct GenericArgs {
+    pub regions: Vec<Region>,
+    pub types: Vec<Ty>,
     pub const_generics: Vec<ConstGeneric>,
     // TODO: rename to match [GenericParams]?
-    pub trait_refs: Vec<TraitRef<R>>,
+    pub trait_refs: Vec<TraitRef>,
 }
-
-pub type EGenericArgs = GenericArgs<ErasedRegion>;
-pub type RGenericArgs = GenericArgs<Region<RegionId::Id>>;
 
 /// Generic parameters for a declaration.
 /// We group the generics which come from the Rust compiler substitutions
@@ -304,7 +285,7 @@ pub struct TraitClause {
     pub meta: Option<Meta>,
     pub trait_id: TraitDeclId::Id,
     /// Remark: the trait refs list in the [generics] field should be empty.
-    pub generics: RGenericArgs,
+    pub generics: GenericArgs,
 }
 
 impl Eq for TraitClause {}
@@ -364,7 +345,7 @@ pub struct Variant {
 pub struct Field {
     pub meta: Meta,
     pub name: Option<String>,
-    pub ty: RTy,
+    pub ty: Ty,
 }
 
 #[derive(
@@ -476,13 +457,6 @@ pub enum ConstGeneric {
 }
 
 /// A type.
-///
-/// Types are parameterized by a type parameter used for regions (or lifetimes).
-/// The reason is that in MIR, regions are used in the function signatures but
-/// are erased in the function bodies. We make this extremely explicit (and less
-/// error prone) in our encoding by using two different types: [`Region`](Region)
-/// and [`ErasedRegion`](ErasedRegion), the latter being an enumeration with only
-/// one variant.
 #[derive(
     Debug,
     Clone,
@@ -498,7 +472,7 @@ pub enum ConstGeneric {
     Ord,
     PartialOrd,
 )]
-pub enum Ty<R> {
+pub enum Ty {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:
     /// - user-defined ADTs
@@ -506,7 +480,7 @@ pub enum Ty<R> {
     /// - assumed types (includes some primitive types, e.g., arrays or slices)
     /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
     /// The last list is used encode const generics, e.g., the size of an array
-    Adt(TypeId, GenericArgs<R>),
+    Adt(TypeId, GenericArgs),
     TypeVar(TypeVarId::Id),
     Literal(LiteralTy),
     /// The never type, for computations which don't return. It is sometimes
@@ -524,26 +498,14 @@ pub enum Ty<R> {
     Never,
     // We don't support floating point numbers on purpose (for now)
     /// A borrow
-    Ref(R, Box<Ty<R>>, RefKind),
+    Ref(Region, Box<Ty>, RefKind),
     /// A raw pointer.
-    RawPtr(Box<Ty<R>>, RefKind),
+    RawPtr(Box<Ty>, RefKind),
     /// A trait type
-    TraitType(TraitRef<R>, GenericArgs<R>, TraitItemName),
+    TraitType(TraitRef, GenericArgs, TraitItemName),
     /// Arrow type
-    Arrow(Vec<Ty<R>>, Box<Ty<R>>),
+    Arrow(Vec<Ty>, Box<Ty>),
 }
-
-/// Type with *R*egions.
-///
-/// Used in function signatures and type definitions.
-/// TODO: rename to sty (*signature* type). Region types are used by the
-/// interpreter.
-pub type RTy = Ty<Region<RegionId::Id>>;
-
-/// Type with *E*rased regions.
-///
-/// Used in function bodies, "general" value types, etc.
-pub type ETy = Ty<ErasedRegion>;
 
 /// Assumed types identifiers.
 ///
@@ -639,11 +601,6 @@ pub struct ParamsInfo {
 }
 
 /// A function signature.
-/// Note that a signature uses unerased lifetimes, while function bodies (and
-/// execution) use erased lifetimes.
-/// We need the functions' signatures *with* the region parameters in order
-/// to correctly abstract those functions (number and signature of the backward
-/// functions) - we only use regions for this purpose.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct FunSig {
     /// Is the function unsafe or not
@@ -652,8 +609,8 @@ pub struct FunSig {
     pub preds: Predicates,
     /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).
     pub parent_params_info: Option<ParamsInfo>,
-    pub inputs: Vec<RTy>,
-    pub output: RTy,
+    pub inputs: Vec<Ty>,
+    pub output: Ty,
     /// The lifetime's hierarchy between the different regions.
     /// We initialize it to a dummy value, and compute it once the whole
     /// crate has been translated from MIR.

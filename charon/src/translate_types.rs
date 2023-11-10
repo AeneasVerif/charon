@@ -1,6 +1,5 @@
 use crate::assumed;
 use crate::common::*;
-use crate::formatter::*;
 use crate::gast::*;
 use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
 use crate::regions_hierarchy::RegionGroups;
@@ -50,82 +49,11 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
     check_region_name(s)
 }
 
-/// We need this to easily switch between translation of [ETy] and [RTy].
-///
-/// TODO: actually, we should have only one [Ty] type, because it is possible
-/// to mix erased and non-erased regions. For instance, if we instantiate
-/// a type parameter with a type containing regions, those regions will not
-/// be erased at call site.
-pub(crate) trait TyTranslator<R> {
-    /// Necessary to translate trait refs: if the trait ref is a parameter,
-    /// we need to find the relavant clause. Trait clauses use [RTy], while
-    /// the trait ref may use either [ETy] or [RTy], which means we need to
-    /// convert the trait clause types.
-    fn convert_rty(&self, ty: &RTy) -> Ty<R>;
-
-    /// Necessary to register unsolved trait obligations
-    fn convert_to_rty(&self, ty: &Ty<R>) -> RTy;
-
-    /// Necessary to register unsolved trait obligations
-    fn convert_to_rtrait_ref(&self, t: &TraitRef<R>) -> RTraitRef;
-
-    fn translate_region(&self, region: &hax::Region) -> R;
-}
-
-impl<'tcx, 'ctx, 'ctx1> TyTranslator<ErasedRegion> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn convert_rty(&self, ty: &RTy) -> ETy {
-        ty.erase_regions()
-    }
-
-    fn convert_to_rty(&self, ty: &ETy) -> RTy {
-        ty.substitute(
-            &|_| unreachable!("Unexpected region"),
-            &|tid| Ty::TypeVar(*tid),
-            &|cgid| ConstGeneric::Var(*cgid),
-        )
-    }
-
-    fn convert_to_rtrait_ref(&self, t: &ETraitRef) -> RTraitRef {
-        t.substitute(
-            &|_| unreachable!("Unexpected region"),
-            &|tid| Ty::TypeVar(*tid),
-            &|cgid| ConstGeneric::Var(*cgid),
-        )
-    }
-
-    /// Translate a region which is expected to be erased.
-    ///
-    /// The regions are expected to be erased inside the function bodies (i.e.:
-    /// we believe MIR uses regions only in the function signatures).
-    fn translate_region(&self, region: &hax::Region) -> ErasedRegion {
-        match region.kind {
-            hax::RegionKind::ReErased => ErasedRegion::Erased,
-            _ => {
-                // Actually, not all regions are erased. My understanding is that the early
-                // bound regions are erased, but when a region appears in a type it is
-                // not. We need to update that.
-                unreachable!()
-            }
-        }
-    }
-}
-
-impl<'tcx, 'ctx, 'ctx1> TyTranslator<Region<RegionId::Id>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn convert_rty(&self, ty: &RTy) -> RTy {
-        ty.clone()
-    }
-
-    fn convert_to_rty(&self, ty: &RTy) -> RTy {
-        ty.clone()
-    }
-
-    fn convert_to_rtrait_ref(&self, t: &RTraitRef) -> RTraitRef {
-        t.clone()
-    }
-
-    fn translate_region(&self, region: &hax::Region) -> Region<RegionId::Id> {
+impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    // Translate a region
+    pub(crate) fn translate_region(&self, region: &hax::Region) -> Region {
         match &region.kind {
-            hax::RegionKind::ReErased => unreachable!(),
+            hax::RegionKind::ReErased => Region::Erased,
             hax::RegionKind::ReStatic => Region::Static,
             hax::RegionKind::ReLateBound(id, br) => {
                 // See the comments in [BodyTransCtx.bound_vars]:
@@ -141,9 +69,7 @@ impl<'tcx, 'ctx, 'ctx1> TyTranslator<Region<RegionId::Id>> for BodyTransCtx<'tcx
             }
         }
     }
-}
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a Ty.
     ///
     /// Typically used in this module to translate the fields of a structure/
@@ -152,11 +78,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that we take as parameter a function to translate regions, because
     /// regions can be translated in several manners (non-erased region or erased
     /// regions), in which case the return type is different.
-    pub(crate) fn translate_ty<R>(&mut self, ty: &hax::Ty) -> Result<Ty<R>>
-    where
-        R: Clone + Eq,
-        Self: TyTranslator<R> + for<'a> Formatter<&'a R>,
-    {
+    pub(crate) fn translate_ty(&mut self, ty: &hax::Ty) -> Result<Ty> {
         trace!("{:?}", ty);
         match ty {
             hax::Ty::Bool => Ok(Ty::Literal(LiteralTy::Bool)),
@@ -351,28 +273,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    /// Translate a signature type, where the regions are not erased and use region
-    /// variable ids.
-    /// Simply calls [`translate_ty`](translate_ty)
-    pub(crate) fn translate_sig_ty(&mut self, ty: &hax::Ty) -> Result<RTy> {
-        self.translate_ty(ty)
-    }
-
-    /// Translate a type where the regions are erased
-    /// Simply calls [translate_ty]
-    pub(crate) fn translate_ety(&mut self, ty: &hax::Ty) -> Result<ETy> {
-        self.translate_ty(ty)
-    }
-
-    pub fn translate_substs<R>(
+    pub fn translate_substs(
         &mut self,
         used_params: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
-    ) -> Result<(Vec<R>, Vec<Ty<R>>, Vec<ConstGeneric>)>
-    where
-        R: Clone + Eq,
-        Self: TyTranslator<R> + for<'a> Formatter<&'a R>,
-    {
+    ) -> Result<(Vec<Region>, Vec<Ty>, Vec<ConstGeneric>)> {
         trace!("{:?}", substs);
         // Filter the parameters
         let substs: Vec<&hax::GenericArg> = match used_params {
@@ -387,7 +292,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         };
 
-        let mut regions: Vec<R> = vec![];
+        let mut regions: Vec<Region> = vec![];
         let mut params = vec![];
         let mut cgs = vec![];
         for param in substs.iter() {
@@ -408,16 +313,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok((regions, params, cgs))
     }
 
-    pub fn translate_substs_and_trait_refs<R>(
+    pub fn translate_substs_and_trait_refs(
         &mut self,
         used_params: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
         trait_refs: &Vec<hax::ImplSource>,
-    ) -> Result<GenericArgs<R>>
-    where
-        R: Clone + Eq,
-        Self: TyTranslator<R> + for<'a> Formatter<&'a R>,
-    {
+    ) -> Result<GenericArgs> {
         let (regions, types, const_generics) = self.translate_substs(used_params, substs)?;
         let trait_refs = self.translate_trait_impl_sources(trait_refs);
         Ok(GenericArgs {
@@ -504,7 +405,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("variant {}: field {}: {:?}", var_id, field_id, field_def);
 
                 // Translate the field type
-                let ty = self.translate_sig_ty(&field_def.ty).unwrap();
+                let ty = self.translate_ty(&field_def.ty).unwrap();
 
                 // Retrieve the field name.
                 let field_name = field_def.name;
@@ -616,7 +517,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Const(c) => {
                     // The type should be primitive, meaning it shouldn't contain variables,
                     // non-primitive adts, etc. As a result, we can use an empty context.
-                    let ty = self.translate_ety(&c.ty).unwrap();
+                    let ty = self.translate_ty(&c.ty).unwrap();
                     let ty = ty.to_literal();
                     if let hax::ConstantExprKind::ConstRef { id: cp } = &*c.contents {
                         self.push_const_generic_var(cp.index, ty, cp.name.clone());

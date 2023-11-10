@@ -159,9 +159,9 @@ impl Statement {
         Statement { meta, content }
     }
 
-    pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
+    pub fn fmt_with_ctx<T>(&self, tab: &str, ctx: &T) -> String
     where
-        T: ExprFormatter<'a>,
+        T: ExprFormatter,
     {
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(

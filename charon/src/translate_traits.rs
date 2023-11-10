@@ -16,8 +16,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_trait_item_name(rust_id)
     }
 
-    fn translate_ty_from_trait_item(&mut self, item: &rustc_middle::ty::AssocItem) -> ETy {
-        self.translate_ety(
+    fn translate_ty_from_trait_item(&mut self, item: &rustc_middle::ty::AssocItem) -> Ty {
+        self.translate_ty(
             &self
                 .t_ctx
                 .tcx
@@ -34,7 +34,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_impl_def_id: DefId,
         rust_impl_trait_ref: &rustc_middle::ty::TraitRef<'tcx>,
         decl_item: &rustc_middle::ty::AssocItem,
-    ) -> Vec<ETraitRef> {
+    ) -> Vec<TraitRef> {
         trace!(
             "- trait_impl_def_id: {:?}\n- rust_impl_trait_ref: {:?}\n- decl_item: {:?}",
             trait_impl_def_id,
@@ -59,7 +59,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             {
                 let trait_ref = rustc_middle::ty::Binder::dummy(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
-                let trait_ref = self.translate_trait_impl_source_erased_regions(&trait_ref);
+                let trait_ref = self.translate_trait_impl_source(&trait_ref);
                 if let Some(trait_ref) = trait_ref {
                     trait_refs.push(trait_ref);
                 }
@@ -73,7 +73,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_const_from_trait_item(
         &mut self,
         item: &rustc_middle::ty::AssocItem,
-    ) -> (TraitItemName, (ETy, GlobalDeclId::Id)) {
+    ) -> (TraitItemName, (Ty, GlobalDeclId::Id)) {
         let ty = self.translate_ty_from_trait_item(item);
         let name = TraitItemName(item.name.to_string());
         let id = self.translate_global_decl_id(item.def_id);
@@ -455,9 +455,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 rust_trait_ref.def_id,
                 rust_trait_ref.substs,
             );
-            let parent_trait_refs: Vec<RTraitRef> =
+            let parent_trait_refs: Vec<TraitRef> =
                 bt_ctx.translate_trait_impl_sources(&parent_trait_refs);
-            let parent_trait_refs: TraitClauseId::Vector<RTraitRef> =
+            let parent_trait_refs: TraitClauseId::Vector<TraitRef> =
                 TraitClauseId::Vector::from(parent_trait_refs);
 
             let generics = GenericArgs {
