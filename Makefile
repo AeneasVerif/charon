@@ -36,12 +36,22 @@ generate-rust-toolchain-%:
 .PHONY: build
 build: build-charon-rust build-charon-ml
 
+.PHONY: build-debug
+build-debug: build-charon-rust-debug build-charon-ml
+
 .PHONY: build-charon-rust
 build-charon-rust: generate-rust-toolchain
 	cd charon && $(MAKE)
 	mkdir -p bin
 	cp -f charon/target/release/charon bin
 	cp -f charon/target/release/charon-driver bin
+
+.PHONY: build-charon-rust-debug
+build-charon-rust-debug: generate-rust-toolchain
+	cd charon && cargo build
+	mkdir -p bin
+	cp -f charon/target/debug/charon bin
+	cp -f charon/target/debug/charon-driver bin
 
 .PHONY: build-charon-ml
 build-charon-ml:
