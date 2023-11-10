@@ -78,6 +78,7 @@ fn compute_sccs_from_lifetime_constraints(
     let all_rids: Vec<Region<RegionVarId::Id>> = all_var_regions
         .chain(Some(Region::Static).into_iter())
         .collect();
+    trace!("all_rids: {:?}\nregion_sccs: {:?}", all_rids, region_sccs);
     let sccs = reorder_sccs(get_region_parents, &all_rids, &region_sccs);
 
     // Debugging
@@ -503,6 +504,10 @@ fn compute_regions_constraints_for_type_decl_group(
             (*id, {
                 let mut graph = LifetimeConstraints::new();
                 graph.add_node(Region::Static);
+                let d = types.get(*id).unwrap();
+                d.generics.regions.iter().for_each(|id| {
+                    let _ = graph.add_node(Region::Var(id.index));
+                });
                 graph
             })
         }));
@@ -624,6 +629,19 @@ pub fn compute_regions_hierarchy_for_type_decl_group(
     types: &mut TypeDecls,
     decl: &TypeDeclarationGroup,
 ) {
+    // TODO: for now we don't properly handle mutually recursive groups of definitions
+    // which use lifetimes.
+    {
+        let ids = decl.get_ids();
+        assert!(
+            ids.len() == 1
+                || ids.iter().all(|id| {
+                    let d = types.get(*id).unwrap();
+                    d.generics.regions.is_empty()
+                })
+        );
+    }
+
     // Compute the constraints for every definition in the declaration group
     let constraints = compute_regions_constraints_for_type_decl_group(constraints_map, types, decl);
 
@@ -816,13 +834,13 @@ pub fn compute(ctx: &mut TransCtx, ordered_decls: &DeclarationsGroups) {
     // constraints map while doing so. We compute by working on a whole type
     // declaration group at a time.
     let mut types_constraints = TypesConstraintsMap::new();
-    let type_defs = &mut ctx.type_defs;
     for dgroup in ordered_decls {
+        trace!("{}", dgroup.fmt_with_ctx(ctx));
         match dgroup {
             DeclarationGroup::Type(decl) => {
                 compute_regions_hierarchy_for_type_decl_group(
                     &mut types_constraints,
-                    type_defs,
+                    &mut ctx.type_defs,
                     decl,
                 );
             }

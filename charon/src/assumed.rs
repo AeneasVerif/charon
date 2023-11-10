@@ -41,6 +41,7 @@ pub static OPTION_SOME_VARIANT_ID: types::VariantId::Id = types::VariantId::ONE;
 //
 pub static PANIC_NAME: [&str; 3] = ["core", "panicking", "panic"];
 pub static BEGIN_PANIC_NAME: [&str; 3] = ["std", "panicking", "begin_panic"];
+pub static ASSERT_FAILED_NAME: [&str; 3] = ["core", "panicking", "assert_failed"];
 
 // Boxes
 pub static BOX_NEW_NAME: [&str; 4] = ["alloc", "boxed", "Box", "new"];

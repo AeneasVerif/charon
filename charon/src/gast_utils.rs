@@ -360,8 +360,8 @@ impl<T> GFunDecl<T> {
             format!(" -> {}", ret_ty.fmt_with_ctx(ctx))
         };
 
-        // Clauses
-        let trait_clauses = fmt_where_clauses_with_ctx(
+        // Predicates
+        let preds = fmt_where_clauses_with_ctx(
             ctx,
             tab,
             &self.signature.parent_params_info,
@@ -373,7 +373,7 @@ impl<T> GFunDecl<T> {
         match &self.body {
             Option::None => {
                 // Put everything together
-                format!("{tab}{unsafe_kw}fn {name}{params}({args}){ret_ty}{trait_clauses}")
+                format!("{tab}{unsafe_kw}fn {name}{params}({args}){ret_ty}{preds}")
             }
             Option::Some(body) => {
                 // Body
@@ -382,7 +382,7 @@ impl<T> GFunDecl<T> {
 
                 // Put everything together
                 format!(
-                    "{tab}{unsafe_kw}fn {name}{params}({args}){ret_ty}{trait_clauses}\n{tab}{{\n{body}\n{tab}}}",
+                    "{tab}{unsafe_kw}fn {name}{params}({args}){ret_ty}{preds}\n{tab}{{\n{body}\n{tab}}}",
                 )
             }
         }

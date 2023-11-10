@@ -746,6 +746,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Check if this function is a actually `panic`
         if name.equals_ref_name(&assumed::PANIC_NAME)
             || name.equals_ref_name(&assumed::BEGIN_PANIC_NAME)
+            || name.equals_ref_name(&assumed::ASSERT_FAILED_NAME)
         {
             return SubstFunIdOrPanic::Panic;
         }
@@ -1274,7 +1275,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok(RawTerminator::Panic)
             }
             SubstFunIdOrPanic::Fun(fid) => {
-                let next_block = target.unwrap();
+                let next_block = target.unwrap_or_else(|| {
+                    panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", rust_id, substs, args)
+                });
 
                 // Translate the target
                 let lval = self.translate_place(destination);
@@ -1481,6 +1484,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
         }
+
+        // Sanity check
+        self.check_generics();
 
         // Add the late bound parameters (bound in the signature, can only be lifetimes)
         let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
