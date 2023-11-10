@@ -31,13 +31,13 @@ pub fn region_group_id_to_pretty_string(rid: RegionGroupId::Id) -> String {
 
 #[derive(Copy, Clone)]
 pub struct LifetimeConstraint {
-    region: Region<RegionVarId::Id>,
-    parent: Region<RegionVarId::Id>,
+    region: Region<RegionId::Id>,
+    parent: Region<RegionId::Id>,
 }
 
 /// An edge from r1 to r2 means:
 /// r1 : r2 (i.e.: r1 lasts longer than r2)
-type LifetimeConstraints = DiGraphMap<Region<RegionVarId::Id>, ()>;
+type LifetimeConstraints = DiGraphMap<Region<RegionId::Id>, ()>;
 
 /// A group of regions.
 ///
@@ -48,7 +48,7 @@ pub struct RegionGroup {
     /// The region group identifier
     pub id: RegionGroupId::Id,
     /// The regions included in this group
-    pub regions: Vec<RegionVarId::Id>,
+    pub regions: Vec<RegionId::Id>,
     /// The parent region groups
     pub parents: Vec<RegionGroupId::Id>,
 }
@@ -58,15 +58,15 @@ pub type RegionGroups = RegionGroupId::Vector<RegionGroup>;
 /// Compute the region strongly connected components from a constraints graph.
 fn compute_sccs_from_lifetime_constraints(
     constraints_graph: &LifetimeConstraints,
-    region_params: &RegionVarId::Vector<RegionVar>,
-) -> SCCs<Region<RegionVarId::Id>> {
+    region_params: &RegionId::Vector<RegionVar>,
+) -> SCCs<Region<RegionId::Id>> {
     // Apply Tarjan's algorithms to group the regions and the borrows which have
     // the same lifetime. We then reorder those group of regions to be as close
     // as possible to the original order.
     let region_sccs = tarjan_scc(&constraints_graph);
 
     // Reorder the SCCs
-    let get_region_parents = &|r: Region<RegionVarId::Id>| {
+    let get_region_parents = &|r: Region<RegionId::Id>| {
         constraints_graph
             .neighbors_directed(r, Direction::Outgoing)
             .collect()
@@ -75,7 +75,7 @@ fn compute_sccs_from_lifetime_constraints(
     // Option::iter is a trick to easily append a single region to the var regions
     // Maybe there is a better way.
     let all_var_regions = region_params.iter_indices().map(Region::Var);
-    let all_rids: Vec<Region<RegionVarId::Id>> = all_var_regions
+    let all_rids: Vec<Region<RegionId::Id>> = all_var_regions
         .chain(Some(Region::Static).into_iter())
         .collect();
     trace!("all_rids: {:?}\nregion_sccs: {:?}", all_rids, region_sccs);
@@ -85,7 +85,7 @@ fn compute_sccs_from_lifetime_constraints(
     trace!(
         "{}",
         vec_to_string(
-            &|scc: &Vec<Region<RegionVarId::Id>>| {
+            &|scc: &Vec<Region<RegionId::Id>>| {
                 let ids: Vec<String> = scc.iter().map(|r| r.to_string()).collect();
                 format!("[{}]", ids.join(", "))
             },
@@ -102,7 +102,7 @@ fn compute_sccs_from_lifetime_constraints(
 /// - then we compute the hierarchy from those accumulated constraints
 /// This function performs the second step.
 fn compute_regions_hierarchy_from_constraints(
-    mut constraints: SCCs<Region<RegionVarId::Id>>,
+    mut constraints: SCCs<Region<RegionId::Id>>,
 ) -> RegionGroups {
     // The last SCC **MUST** contain the static region.
     // For now, we don't handle cases where regions different from 'static
@@ -123,7 +123,7 @@ fn compute_regions_hierarchy_from_constraints(
         let id = RegionGroupId::Id::new(i);
 
         // Retrieve the set of regions in the group
-        let regions: Vec<RegionVarId::Id> = scc.into_iter().map(|r| *r.as_var()).collect();
+        let regions: Vec<RegionId::Id> = scc.into_iter().map(|r| *r.as_var()).collect();
 
         // Compute the set of parent region groups
         let parents: Vec<RegionGroupId::Id> = constraints
@@ -148,10 +148,10 @@ fn compute_regions_hierarchy_from_constraints(
 
 /// See [TypesConstraintsMap]
 pub type RegionVarsConstraintsMap =
-    LinkedHashMap<RegionVarId::Id, HashSet<Region<RegionVarId::Id>>>;
+    LinkedHashMap<RegionId::Id, HashSet<Region<RegionId::Id>>>;
 
 /// See [TypesConstraintsMap]
-pub type TypeVarsConstraintsMap = LinkedHashMap<TypeVarId::Id, HashSet<Region<RegionVarId::Id>>>;
+pub type TypeVarsConstraintsMap = LinkedHashMap<TypeVarId::Id, HashSet<Region<RegionId::Id>>>;
 
 /// See [TypesConstraintsMap]
 #[derive(Debug, Clone)]
@@ -200,8 +200,8 @@ fn add_region_constraints(
     updated: &mut bool,
     acc_constraints: &mut LifetimeConstraints,
     type_def_constraints: &mut Option<TypeDeclConstraintsMap>,
-    region: Region<RegionVarId::Id>,
-    parent_regions: &im::HashSet<Region<RegionVarId::Id>>,
+    region: Region<RegionId::Id>,
+    parent_regions: &im::HashSet<Region<RegionId::Id>>,
 ) {
     // Check that the region is indeed in the nodes
     if !acc_constraints.contains_node(region) {
@@ -250,7 +250,7 @@ fn compute_full_regions_constraints_for_ty(
     constraints_map: &TypesConstraintsMap,
     acc_constraints: &mut LifetimeConstraints,
     type_def_constraints: &mut Option<TypeDeclConstraintsMap>, // TODO: rename
-    parent_regions: im::HashSet<Region<RegionVarId::Id>>,
+    parent_regions: im::HashSet<Region<RegionId::Id>>,
     ty: &RTy,
 ) {
     match ty {
@@ -268,8 +268,8 @@ fn compute_full_regions_constraints_for_ty(
 
             // Compute the map from region param id to region instantation, for
             // this ADT instantiation
-            let region_inst: RegionVarId::Vector<Region<RegionVarId::Id>> =
-                RegionVarId::Vector::from_iter(generics.regions.iter().copied());
+            let region_inst: RegionId::Vector<Region<RegionId::Id>> =
+                RegionId::Vector::from_iter(generics.regions.iter().copied());
 
             // Lookup the constraints for this type definition
             match type_id {
@@ -460,7 +460,7 @@ fn compute_regions_constraints_for_type_decl_group(
     constraints_map: &mut TypesConstraintsMap,
     types: &TypeDecls,
     decl: &TypeDeclarationGroup,
-) -> Vec<SCCs<Region<RegionVarId::Id>>> {
+) -> Vec<SCCs<Region<RegionId::Id>>> {
     // List the type ids in the type declaration group
     let type_ids: HashSet<TypeDeclId::Id> = match decl {
         TypeDeclarationGroup::NonRec(id) => {
@@ -603,7 +603,7 @@ fn compute_regions_constraints_for_type_decl_group(
     }
 
     // Compute the SCCs
-    let mut sccs_vec: Vec<SCCs<Region<RegionVarId::Id>>> = Vec::new();
+    let mut sccs_vec: Vec<SCCs<Region<RegionId::Id>>> = Vec::new();
     for id in type_ids.iter() {
         let type_def = types.get(*id).unwrap();
         let sccs = compute_sccs_from_lifetime_constraints(
@@ -692,7 +692,7 @@ fn compute_regions_constraints_for_ty(
 fn compute_regions_constraints_for_sig(
     types_constraints: &TypesConstraintsMap,
     sig: &FunSig,
-) -> SCCs<Region<RegionVarId::Id>> {
+) -> SCCs<Region<RegionId::Id>> {
     trace!("sig: {sig:?}");
 
     let mut constraints_graph = LifetimeConstraints::new();
@@ -742,7 +742,7 @@ pub fn compute_regions_hierarchies_for_functions(
 impl RegionGroup {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<RegionVarId::Id>,
+        T: Formatter<RegionId::Id>,
     {
         // The parent region groups
         let parents: Vec<String> = self.parents.iter().map(|gid| gid.to_string()).collect();
@@ -773,8 +773,8 @@ fn types_def_constraints_map_fmt_with_ctx<'a, 'b, 'c, T>(
 ) -> String
 where
     T: Formatter<TypeVarId::Id>
-        + Formatter<RegionVarId::Id>
-        + Formatter<&'a Region<RegionVarId::Id>>,
+        + Formatter<RegionId::Id>
+        + Formatter<&'a Region<RegionId::Id>>,
 {
     let region_constraints = cs.region_vars_constraints.iter().map(|(rid, regions)| {
         format!(

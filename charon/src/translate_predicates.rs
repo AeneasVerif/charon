@@ -73,7 +73,7 @@ impl NonLocalTraitClause {
 
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: for<'a> TypeFormatter<'a, Region<RegionVarId::Id>>
+        C: for<'a> TypeFormatter<'a, Region<RegionId::Id>>
             + for<'a> TypeFormatter<'a, ErasedRegion>,
     {
         let clause_id = self.clause_id.fmt_with_ctx(ctx);

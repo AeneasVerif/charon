@@ -157,9 +157,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// A hax state with an owner id
     pub hax_state: hax::State<hax::Base<'tcx>, (), (), rustc_hir::def_id::DefId>,
     /// The regions
-    pub region_vars: RegionVarId::Vector<RegionVar>,
+    pub region_vars: RegionId::Vector<RegionVar>,
     /// The map from rust region to translated region indices
-    pub region_vars_map: RegionVarId::MapGenerator<hax::Region>,
+    pub region_vars_map: RegionId::MapGenerator<hax::Region>,
     /// The type variables
     pub type_vars: TypeVarId::Vector<TypeVar>,
     /// The map from rust type variable indices to translated type variable
@@ -231,7 +231,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// ```
     ///
     /// For this reason, we use a stack of vectors to store the bound variables.
-    pub bound_vars: im::Vector<im::Vector<RegionVarId::Id>>,
+    pub bound_vars: im::Vector<im::Vector<RegionId::Id>>,
 }
 
 /// A formatting context for type/global/function bodies.
@@ -484,8 +484,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             def_id,
             t_ctx,
             hax_state,
-            region_vars: RegionVarId::Vector::new(),
-            region_vars_map: RegionVarId::MapGenerator::new(),
+            region_vars: RegionId::Vector::new(),
+            region_vars_map: RegionId::MapGenerator::new(),
             type_vars: TypeVarId::Vector::new(),
             type_vars_map: TypeVarId::MapGenerator::new(),
             vars: VarId::Vector::new(),
@@ -561,11 +561,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_trait_impl_id(id)
     }
 
-    pub(crate) fn get_region_from_rust(&self, r: hax::Region) -> Option<RegionVarId::Id> {
+    pub(crate) fn get_region_from_rust(&self, r: hax::Region) -> Option<RegionId::Id> {
         self.region_vars_map.get(&r)
     }
 
-    pub(crate) fn push_region(&mut self, r: hax::Region, name: Option<String>) -> RegionVarId::Id {
+    pub(crate) fn push_region(&mut self, r: hax::Region, name: Option<String>) -> RegionId::Id {
         use crate::id_vector::ToUsize;
         let rid = self.region_vars_map.insert(r);
         assert!(rid.to_usize() == self.region_vars.len());
@@ -579,7 +579,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         use crate::id_vector::ToUsize;
 
         // Register the variables
-        let var_ids: im::Vector<RegionVarId::Id> = names
+        let var_ids: im::Vector<RegionId::Id> = names
             .into_iter()
             .map(|name| {
                 // Note that we don't insert a binding in the region_vars_map
@@ -744,8 +744,8 @@ impl<'tcx, 'ctx> Formatter<GlobalDeclId::Id> for TransCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx> Formatter<RegionVarId::Id> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
+impl<'tcx, 'ctx> Formatter<RegionId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: RegionId::Id) -> String {
         id.to_pretty_string()
     }
 }
@@ -756,8 +756,8 @@ impl<'tcx, 'ctx> Formatter<TypeVarId::Id> for TransCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx> Formatter<&Region<RegionVarId::Id>> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, r: &Region<RegionVarId::Id>) -> String {
+impl<'tcx, 'ctx> Formatter<&Region<RegionId::Id>> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, r: &Region<RegionId::Id>) -> String {
         r.fmt_with_ctx(self)
     }
 }
@@ -906,15 +906,15 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<VarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1>
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<RegionVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<RegionId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: RegionId::Id) -> String {
         let v = self.region_vars.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&Region<RegionVarId::Id>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, r: &Region<RegionVarId::Id>) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<&Region<RegionId::Id>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, r: &Region<RegionId::Id>) -> String {
         r.fmt_with_ctx(self)
     }
 }
@@ -937,10 +937,10 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<GlobalDeclId::Id> for BodyTransCtx<'tcx, 'ctx,
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty<Region<RegionVarId::Id>>>
+impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty<Region<RegionId::Id>>>
     for BodyTransCtx<'tcx, 'ctx, 'ctx1>
 {
-    fn format_object(&self, ty: &Ty<Region<RegionVarId::Id>>) -> String {
+    fn format_object(&self, ty: &Ty<Region<RegionId::Id>>) -> String {
         ty.fmt_with_ctx(self)
     }
 }
@@ -1002,8 +1002,8 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<VarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<RegionVarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<RegionId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: RegionId::Id) -> String {
         match self.generics.regions.get(id) {
             None => id.to_pretty_string(),
             Some(v) => v.to_string(),
@@ -1011,8 +1011,8 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<RegionVarId::Id> for BodyFormatCtx<'tcx, 'ctx,
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&Region<RegionVarId::Id>> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, r: &Region<RegionVarId::Id>) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<&Region<RegionId::Id>> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, r: &Region<RegionId::Id>) -> String {
         r.fmt_with_ctx(self)
     }
 }
@@ -1035,10 +1035,10 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<GlobalDeclId::Id> for BodyFormatCtx<'tcx, 'ctx
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty<Region<RegionVarId::Id>>>
+impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty<Region<RegionId::Id>>>
     for BodyFormatCtx<'tcx, 'ctx, 'ctx1>
 {
-    fn format_object(&self, ty: &Ty<Region<RegionVarId::Id>>) -> String {
+    fn format_object(&self, ty: &Ty<Region<RegionId::Id>>) -> String {
         ty.fmt_with_ctx(self)
     }
 }

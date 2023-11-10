@@ -97,9 +97,9 @@ impl FunKind {
 impl TraitDecl {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>
+        C: TypeFormatter<'a, Region<RegionId::Id>>
             + Formatter<&'a ErasedRegion>
-            + Formatter<RegionVarId::Id>,
+            + Formatter<RegionId::Id>,
     {
         let name = self.name.to_string();
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -172,9 +172,9 @@ impl TraitDecl {
 impl TraitImpl {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>
+        C: TypeFormatter<'a, Region<RegionId::Id>>
             + Formatter<&'a ErasedRegion>
-            + Formatter<RegionVarId::Id>,
+            + Formatter<RegionId::Id>,
     {
         let name = self.name.to_string();
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -312,8 +312,8 @@ impl<T> GExprBody<T> {
 
 pub trait GFunDeclFormatter<'a, Body: 'a> = ExprFormatter<'a>
     + Formatter<&'a Body>
-    + Formatter<&'a Region<RegionVarId::Id>>
-    + Formatter<RegionVarId::Id>;
+    + Formatter<&'a Region<RegionId::Id>>
+    + Formatter<RegionId::Id>;
 
 impl<T> GFunDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder

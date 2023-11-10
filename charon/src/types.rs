@@ -23,7 +23,7 @@ generate_index_type!(TypeVarId);
 generate_index_type!(TypeDeclId);
 generate_index_type!(VariantId);
 generate_index_type!(FieldId);
-generate_index_type!(RegionVarId);
+generate_index_type!(RegionId);
 generate_index_type!(ConstGenericVarId);
 generate_index_type!(GlobalDeclId);
 
@@ -42,7 +42,7 @@ pub struct TypeVar {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct RegionVar {
     /// Unique index identifying the variable
-    pub index: RegionVarId::Id,
+    pub index: RegionId::Id,
     /// Region name
     pub name: Option<String>,
 }
@@ -207,7 +207,7 @@ pub struct TraitRef<R> {
 }
 
 pub type ETraitRef = TraitRef<ErasedRegion>;
-pub type RTraitRef = TraitRef<Region<RegionVarId::Id>>;
+pub type RTraitRef = TraitRef<Region<RegionId::Id>>;
 
 /// Reference to a trait declaration.
 ///
@@ -224,14 +224,14 @@ pub struct TraitDeclRef<R> {
 }
 
 pub type ETraitDeclRef = TraitDeclRef<ErasedRegion>;
-pub type RTraitDeclRef = TraitDeclRef<Region<RegionVarId::Id>>;
+pub type RTraitDeclRef = TraitDeclRef<Region<RegionId::Id>>;
 
 /// .0 outlives .1
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct OutlivesPred<T, U>(pub T, pub U);
 
-pub type RegionOutlives = OutlivesPred<Region<RegionVarId::Id>, Region<RegionVarId::Id>>;
-pub type TypeOutlives = OutlivesPred<RTy, Region<RegionVarId::Id>>;
+pub type RegionOutlives = OutlivesPred<Region<RegionId::Id>, Region<RegionId::Id>>;
+pub type TypeOutlives = OutlivesPred<RTy, Region<RegionId::Id>>;
 
 /// A constraint over a trait associated type.
 ///
@@ -248,7 +248,7 @@ pub struct TraitTypeConstraint<R> {
     pub ty: Ty<R>,
 }
 
-pub type RTraitTypeConstraint = TraitTypeConstraint<Region<RegionVarId::Id>>;
+pub type RTraitTypeConstraint = TraitTypeConstraint<Region<RegionId::Id>>;
 
 /// The predicates which apply to a definition
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -271,7 +271,7 @@ pub struct GenericArgs<R> {
 }
 
 pub type EGenericArgs = GenericArgs<ErasedRegion>;
-pub type RGenericArgs = GenericArgs<Region<RegionVarId::Id>>;
+pub type RGenericArgs = GenericArgs<Region<RegionId::Id>>;
 
 /// Generic parameters for a declaration.
 /// We group the generics which come from the Rust compiler substitutions
@@ -282,7 +282,7 @@ pub type RGenericArgs = GenericArgs<Region<RegionVarId::Id>>;
 /// be filled with witnesses/instances.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct GenericParams {
-    pub regions: RegionVarId::Vector<RegionVar>,
+    pub regions: RegionId::Vector<RegionVar>,
     pub types: TypeVarId::Vector<TypeVar>,
     pub const_generics: ConstGenericVarId::Vector<ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
@@ -538,7 +538,7 @@ pub enum Ty<R> {
 /// Used in function signatures and type definitions.
 /// TODO: rename to sty (*signature* type). Region types are used by the
 /// interpreter.
-pub type RTy = Ty<Region<RegionVarId::Id>>;
+pub type RTy = Ty<Region<RegionId::Id>>;
 
 /// Type with *E*rased regions.
 ///

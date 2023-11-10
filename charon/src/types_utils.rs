@@ -13,7 +13,7 @@ use macros::make_generic_in_borrows;
 use std::iter::FromIterator;
 use std::iter::Iterator;
 
-pub type RegionSubst<R> = HashMap<RegionVarId::Id, R>;
+pub type RegionSubst<R> = HashMap<RegionId::Id, R>;
 pub type TypeSubst<R> = HashMap<TypeVarId::Id, Ty<R>>;
 /// Type substitution where the regions are erased
 pub type ETypeSubst = TypeSubst<ErasedRegion>;
@@ -23,7 +23,7 @@ pub type ConstGenericSubst = HashMap<ConstGenericVarId::Id, ConstGeneric>;
 pub trait TypeFormatter<'a, R: 'a> = Formatter<TypeVarId::Id>
     + Formatter<&'a R>
     + Formatter<&'a ErasedRegion>
-    + Formatter<&'a Region<RegionVarId::Id>>
+    + Formatter<&'a Region<RegionId::Id>>
     + Formatter<TypeDeclId::Id>
     + Formatter<ConstGenericVarId::Id>
     + Formatter<FunDeclId::Id>
@@ -31,7 +31,7 @@ pub trait TypeFormatter<'a, R: 'a> = Formatter<TypeVarId::Id>
     + Formatter<TraitDeclId::Id>
     + Formatter<TraitImplId::Id>
     + Formatter<TraitClauseId::Id>
-    + Formatter<RegionVarId::Id>;
+    + Formatter<RegionId::Id>;
 
 impl ConstGenericVarId::Id {
     pub fn substitute(
@@ -55,7 +55,7 @@ impl ConstGeneric {
     }
 }
 
-impl RegionVarId::Id {
+impl RegionId::Id {
     pub fn substitute<R>(&self, rsubst: &RegionSubst<R>) -> R
     where
         R: Clone,
@@ -144,7 +144,7 @@ impl GenericParams {
 
     pub fn empty() -> Self {
         GenericParams {
-            regions: RegionVarId::Vector::new(),
+            regions: RegionId::Vector::new(),
             types: TypeVarId::Vector::new(),
             const_generics: ConstGenericVarId::Vector::new(),
             trait_clauses: TraitClauseId::Vector::new(),
@@ -153,7 +153,7 @@ impl GenericParams {
 
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter<'a, Region<RegionId::Id>>,
     {
         if self.is_empty() {
             "".to_string()
@@ -183,7 +183,7 @@ impl GenericParams {
 
     pub fn fmt_with_ctx_with_trait_clauses<'a, C>(&'a self, ctx: &C) -> (String, Vec<String>)
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter<'a, Region<RegionId::Id>>,
     {
         let mut params = Vec::new();
         let GenericParams {
@@ -283,7 +283,7 @@ pub fn fmt_where_clauses_with_ctx<'a, C>(
     preds: &'a Predicates,
 ) -> String
 where
-    C: TypeFormatter<'a, Region<RegionVarId::Id>>,
+    C: TypeFormatter<'a, Region<RegionId::Id>>,
 {
     let mut types_outlive: Vec<_> = preds
         .types_outlive
@@ -466,7 +466,7 @@ impl<R> GenericArgs<R> {
 impl TraitClause {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter<'a, Region<RegionId::Id>>,
     {
         let clause_id = ctx.format_object(self.clause_id);
         let trait_id = ctx.format_object(self.trait_id);
@@ -478,7 +478,7 @@ impl TraitClause {
 impl TraitInstanceId {
     pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, ErasedRegion> + TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter<'a, ErasedRegion> + TypeFormatter<'a, Region<RegionId::Id>>,
     {
         match self {
             TraitInstanceId::SelfId => "Self".to_string(),
@@ -560,7 +560,7 @@ impl TypeDecl {
     /// `None` if the type is opaque.
     pub fn get_instantiated_variants(
         &self,
-        inst_regions: &Vec<Region<RegionVarId::Id>>,
+        inst_regions: &Vec<Region<RegionId::Id>>,
         inst_types: &Vec<RTy>,
     ) -> Option<VariantId::Vector<FieldId::Vector<RTy>>> {
         // Introduce the substitutions
@@ -652,7 +652,7 @@ impl TypeDecl {
 
     pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        T: TypeFormatter<'a, Region<RegionId::Id>>,
     {
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         // Predicates
@@ -701,7 +701,7 @@ impl std::string::ToString for TypeDecl {
 impl Variant {
     pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        T: TypeFormatter<'a, Region<RegionId::Id>>,
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
@@ -712,7 +712,7 @@ impl Variant {
 impl Field {
     pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        T: TypeFormatter<'a, Region<RegionId::Id>>,
     {
         match &self.name {
             Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
@@ -818,7 +818,7 @@ impl FieldId::Id {
     }
 }
 
-impl RegionVarId::Id {
+impl RegionId::Id {
     pub fn to_pretty_string(&self) -> String {
         format!("@R{self}")
     }
@@ -1297,8 +1297,8 @@ impl RTy {
     /// Substitute the regions and type parameters
     pub fn substitute_regions_types(
         &self,
-        rsubst: &RegionSubst<Region<RegionVarId::Id>>,
-        tsubst: &TypeSubst<Region<RegionVarId::Id>>,
+        rsubst: &RegionSubst<Region<RegionId::Id>>,
+        tsubst: &TypeSubst<Region<RegionId::Id>>,
     ) -> Self {
         self.substitute(
             &|rid| match rid {
@@ -1365,7 +1365,7 @@ where
 pub fn make_region_subst<
     'a,
     R: 'a + Eq,
-    I1: Iterator<Item = RegionVarId::Id>,
+    I1: Iterator<Item = RegionId::Id>,
     I2: Iterator<Item = &'a R>,
 >(
     keys: I1,
@@ -1395,8 +1395,8 @@ impl Formatter<TypeVarId::Id> for TypeDecl {
     }
 }
 
-impl Formatter<RegionVarId::Id> for TypeDecl {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
+impl Formatter<RegionId::Id> for TypeDecl {
+    fn format_object(&self, id: RegionId::Id) -> String {
         let var = self.generics.regions.get(id).unwrap();
         var.to_string()
     }
@@ -1891,7 +1891,7 @@ pub trait TypeVisitor {
 impl FunSig {
     pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        T: TypeFormatter<'a, Region<RegionId::Id>>,
     {
         // Unsafe keyword
         let unsafe_kw = if self.is_unsafe {

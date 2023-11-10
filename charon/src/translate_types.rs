@@ -110,7 +110,7 @@ impl<'tcx, 'ctx, 'ctx1> TyTranslator<ErasedRegion> for BodyTransCtx<'tcx, 'ctx, 
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> TyTranslator<Region<RegionVarId::Id>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'ctx1> TyTranslator<Region<RegionId::Id>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn convert_rty(&self, ty: &RTy) -> RTy {
         ty.clone()
     }
@@ -123,7 +123,7 @@ impl<'tcx, 'ctx, 'ctx1> TyTranslator<Region<RegionVarId::Id>> for BodyTransCtx<'
         t.clone()
     }
 
-    fn translate_region(&self, region: &hax::Region) -> Region<RegionVarId::Id> {
+    fn translate_region(&self, region: &hax::Region) -> Region<RegionId::Id> {
         match &region.kind {
             hax::RegionKind::ReErased => unreachable!(),
             hax::RegionKind::ReStatic => Region::Static,

@@ -104,8 +104,8 @@ where
     }
 }
 
-impl Formatter<RegionVarId::Id> for DummyFormatter {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
+impl Formatter<RegionId::Id> for DummyFormatter {
+    fn format_object(&self, id: RegionId::Id) -> String {
         id.to_pretty_string()
     }
 }
