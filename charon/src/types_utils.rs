@@ -264,6 +264,17 @@ impl<R> TraitTypeConstraint<R> {
     }
 }
 
+impl Predicates {
+    pub fn is_empty(&self) -> bool {
+        let Predicates {
+            regions_outlive,
+            types_outlive,
+            trait_type_constraints,
+        } = self;
+        regions_outlive.is_empty() && types_outlive.is_empty() && trait_type_constraints.is_empty()
+    }
+}
+
 pub fn fmt_where_clauses_with_ctx<'a, C>(
     ctx: &C,
     tab: &str,
@@ -644,13 +655,13 @@ impl TypeDecl {
         T: TypeFormatter<'a, Region<RegionVarId::Id>>,
     {
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        // Trait clauses
-        let eq_space = if trait_clauses.is_empty() {
+        // Predicates
+        let eq_space = if trait_clauses.is_empty() && self.preds.is_empty() {
             " ".to_string()
         } else {
-            format!("\n ")
+            "\n ".to_string()
         };
-        let trait_clauses = fmt_where_clauses("", 0, trait_clauses);
+        let preds = fmt_where_clauses_with_ctx(ctx, "  ", &None, trait_clauses, &self.preds);
 
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
@@ -661,14 +672,11 @@ impl TypeDecl {
                         .collect();
                     let fields = fields.join(",");
                     format!(
-                        "struct {}{params}{trait_clauses}{eq_space}=\n{{{fields}\n}}",
+                        "struct {}{params}{preds}{eq_space}=\n{{{fields}\n}}",
                         self.name
                     )
                 } else {
-                    format!(
-                        "struct {}{params}{trait_clauses}{eq_space}= {{}}",
-                        self.name
-                    )
+                    format!("struct {}{params}{preds}{eq_space}= {{}}", self.name)
                 }
             }
             TypeDeclKind::Enum(variants) => {
@@ -677,12 +685,9 @@ impl TypeDecl {
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
                     .collect();
                 let variants = variants.join("\n");
-                format!(
-                    "enum {}{params}{trait_clauses}{eq_space}=\n{variants}\n",
-                    self.name
-                )
+                format!("enum {}{params}{preds}{eq_space}=\n{variants}\n", self.name)
             }
-            TypeDeclKind::Opaque => format!("opaque type {}{params}{trait_clauses}", self.name),
+            TypeDeclKind::Opaque => format!("opaque type {}{params}{preds}", self.name),
         }
     }
 }

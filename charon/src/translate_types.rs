@@ -682,6 +682,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             regions_hierarchy: RegionGroups::new(),
         };
 
+        trace!("translate_type: preds: {:?}", &type_def.preds);
+
         trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
 
         self.type_defs.insert(trans_id, type_def);
