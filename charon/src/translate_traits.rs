@@ -233,7 +233,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
         // Translate the generic
-        let _substs = bt_ctx.translate_generics(rust_id);
+        bt_ctx.translate_generic_params(rust_id);
 
         // Add the trait clauses
         bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
@@ -413,7 +413,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
         // Translate the generics
-        let _substs = bt_ctx.translate_generics(rust_id);
+        bt_ctx.translate_generic_params(rust_id);
 
         // Add the trait self clauses
         bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {

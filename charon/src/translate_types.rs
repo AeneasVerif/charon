@@ -11,7 +11,7 @@ use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 
-/// Small helper: we ignore region names when they are equal to "'_"
+/// Small helper: we ignore some region names (when they are equal to "'_")
 fn check_region_name(s: Option<String>) -> Option<String> {
     if s.is_some() && s.as_ref().unwrap() == "'_" {
         None
@@ -559,6 +559,27 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         type_def_kind
     }
 
+    /// Sanity check: region names are pairwise distinct (this caused trouble
+    /// when generating names for the backward functions in Aeneas): at some
+    /// point, Rustc introduced names equal to `Some("'_")` for the anonymous
+    /// regions, instead of using `None` (we now check in [translate_region_name]
+    /// and ignore names equal to "'_").
+    pub(crate) fn check_generics(&self) {
+        let mut s = std::collections::HashSet::new();
+        for r in &self.region_vars {
+            let name = &r.name;
+            if name.is_some() {
+                let name = name.as_ref().unwrap();
+                assert!(
+                    !s.contains(name),
+                    "Name \"{}\" used for different lifetimes",
+                    name
+                );
+                s.insert(name.clone());
+            }
+        }
+    }
+
     /// Auxiliary helper.
     ///
     /// Translate the generics of a type definition.
@@ -568,7 +589,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     /// Rem.: this seems simpler in [crate::translate_functions_to_ullbc].
     /// TODO: compare and simplify/factorize?
-    pub(crate) fn translate_generics(&mut self, def_id: DefId) -> Vec<hax::GenericArg> {
+    pub(crate) fn translate_generic_params(&mut self, def_id: DefId) {
         let tcx = self.t_ctx.tcx;
 
         // We could use: TyCtxt::generics_of(DefId)
@@ -589,7 +610,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 }
                 Lifetime(region) => {
-                    let name = translate_region_name(&region);
+                    let name = translate_region_name(region);
                     let _ = self.push_region(region.clone(), name);
                 }
                 Const(c) => {
@@ -598,7 +619,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     let ty = self.translate_ety(&c.ty).unwrap();
                     let ty = ty.to_literal();
                     if let hax::ConstantExprKind::ConstRef { id: cp } = &*c.contents {
-                        let _ = self.push_const_generic_var(cp.index, ty, cp.name.clone());
+                        self.push_const_generic_var(cp.index, ty, cp.name.clone());
                     } else {
                         unreachable!();
                     }
@@ -606,24 +627,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         }
 
-        // Sanity check: region names are pairwise distinct (this caused trouble
-        // when generating names for the backward functinos in Aeneas): at some
-        // point, Rustc introduced names equal to `Some("'_")` for the anonymous
-        // regions, instead of using `None` (we now check in [translate_region_name]
-        // and ignore names equal to "'_").
-        {
-            let mut s = std::collections::HashSet::new();
-            for r in &self.region_vars {
-                let name = &r.name;
-                if name.is_some() {
-                    let name = name.as_ref().unwrap();
-                    assert!(s.contains(name));
-                    s.insert(name.clone());
-                }
-            }
-        }
-
-        substs
+        // Sanity check
+        self.check_generics();
     }
 }
 
@@ -641,7 +646,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Check and translate the generics
         // TODO: use the body trans context as input, and don't return anything.
-        let _substs = bt_ctx.translate_generics(rust_id);
+        bt_ctx.translate_generic_params(rust_id);
 
         // Translate the predicates
         bt_ctx.translate_predicates_solve_trait_obligations_of(None, rust_id);
