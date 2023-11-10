@@ -34,10 +34,10 @@ generate-rust-toolchain-%:
 	cat rust-toolchain.template >> $*/rust-toolchain
 
 .PHONY: build
-build: build-charon-rust build-charon-ml build-bin-dir
+build: build-charon-rust build-charon-ml
 
 .PHONY: build-charon-rust
-build-charon-rust: generate-rust-toolchain
+build-charon-rust: generate-rust-toolchain build-bin-dir
 	cd charon && $(MAKE)
 
 .PHONY: build-charon-ml
@@ -47,8 +47,8 @@ build-charon-ml:
 .PHONY: build-bin-dir
 build-bin-dir:
 	mkdir -p bin
-	cp -f charon/target/debug/charon bin
-	cp -f charon/target/debug/charon-driver bin
+	cp -f charon/target/release/charon bin
+	cp -f charon/target/release/charon-driver bin
 
 # Build the tests crate, and run the cargo tests
 .PHONY: build-tests

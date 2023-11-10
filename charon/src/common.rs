@@ -8,6 +8,8 @@ use rustc_session::Session;
 use serde::{Serialize, Serializer};
 use std::iter::FromIterator;
 
+pub static TAB_INCR: &str = "    ";
+
 /// Our redefinition of Result - we don't care much about the I/O part.
 pub type Result<T> = std::result::Result<T, ()>;
 
@@ -158,32 +160,36 @@ macro_rules! function_name {
 /// A custom log trace macro. Uses the log crate.
 macro_rules! trace {
     ($($arg:tt)+) => {{
+        use colored::Colorize;
         let msg = format!($($arg)+);
-        log::trace!("[{}]:\n{}", function_name!(), msg)
+        log::trace!("[{}]:\n{}", function_name!().yellow(), msg)
     }};
     () => {{
-        log::trace!("[{}]", function_name!())
+        use colored::Colorize;
+        log::trace!("[{}]", function_name!().yellow())
     }};
 }
 
 /// A custom log error macro. Uses the log crate.
 macro_rules! error {
     ($($arg:tt)+) => {{
+        use colored::Colorize;
         let msg = format!($($arg)+);
-        log::error!("[{}]:\n{}", function_name!(), msg)
+        log::error!("[{}]:\n{}", function_name!().red(), msg)
     }};
 }
 
 /// A custom log info macro. Uses the log crate.
 macro_rules! info {
     ($($arg:tt)+) => {{
+        use colored::Colorize;
         let msg = format!($($arg)+);
         // As for info we generally output simple messages, we don't insert
         // a breakline
-        log::info!("[{}]: {}", function_name!(), msg)
+        log::info!("[{}]: {}", function_name!().yellow(), msg)
     }};
     () => {{
-        log::info!("[{}]", function_name!())
+        log::info!("[{}]", function_name!().yellow())
     }};
 }
 

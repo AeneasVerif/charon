@@ -6,17 +6,14 @@ use std::ops::DerefMut;
 use crate::common::*;
 use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
 use crate::formatter::Formatter;
+use crate::gast_utils::{ExprFormatter, GFunDeclFormatter, GGlobalDeclFormatter};
 use crate::llbc_ast::{
-    Assert, Call, ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
-    Switch,
+    Assert, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement, Switch,
 };
 use crate::meta;
 use crate::meta::Meta;
 use crate::types::*;
-use crate::ullbc_ast::{
-    fmt_call, CtxNames, FunDeclId, FunNamesFormatter, FunSigFormatter, GAstFormatter, GlobalDeclId,
-    GlobalNamesFormatter, TAB_INCR,
-};
+use crate::ullbc_ast::{fmt_call, FunDeclId, GlobalDeclId};
 use crate::values::*;
 use macros::make_generic_in_borrows;
 use serde::ser::SerializeTupleVariant;
@@ -164,15 +161,7 @@ impl Statement {
 
     pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
     where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
+        T: ExprFormatter<'a>,
     {
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(
@@ -200,16 +189,8 @@ impl Statement {
                 assert.expected,
             ),
             RawStatement::Call(call) => {
-                let Call {
-                    func,
-                    region_args,
-                    type_args,
-                    const_generic_args,
-                    args,
-                    dest,
-                } = call;
-                let call = fmt_call(ctx, func, region_args, type_args, const_generic_args, args);
-                format!("{}{} := {}", tab, dest.fmt_with_ctx(ctx), call)
+                let (call_s, _) = fmt_call(ctx, call);
+                format!("{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx),)
             }
             RawStatement::Panic => format!("{tab}panic"),
             RawStatement::Return => format!("{tab}return"),
@@ -294,7 +275,7 @@ impl Statement {
                     let maps = maps.join(",\n");
 
                     format!(
-                        "{}map {} {{\n{}\n{}}}",
+                        "{}match {} {{\n{}\n{}}}",
                         tab,
                         discr.fmt_with_ctx(ctx),
                         maps,
@@ -315,184 +296,33 @@ impl Statement {
     }
 }
 
-pub(crate) struct FunDeclsFormatter<'ctx> {
-    decls: &'ctx FunDecls,
-}
-
-pub(crate) struct GlobalDeclsFormatter<'ctx> {
-    decls: &'ctx GlobalDecls,
-}
-
-impl<'ctx> FunDeclsFormatter<'ctx> {
-    pub fn new(decls: &'ctx FunDecls) -> Self {
-        FunDeclsFormatter { decls }
-    }
-}
-
-impl<'ctx> Formatter<FunDeclId::Id> for FunDeclsFormatter<'ctx> {
+impl Formatter<FunDeclId::Id> for FunDecls {
     fn format_object(&self, id: FunDeclId::Id) -> String {
-        let d = self.decls.get(id).unwrap();
-        d.name.to_string()
+        self.get(id).unwrap().name.to_string()
     }
 }
 
-impl<'ctx> GlobalDeclsFormatter<'ctx> {
-    pub fn new(decls: &'ctx GlobalDecls) -> Self {
-        GlobalDeclsFormatter { decls }
-    }
-}
-
-impl<'ctx> Formatter<GlobalDeclId::Id> for GlobalDeclsFormatter<'ctx> {
+impl Formatter<GlobalDeclId::Id> for GlobalDecls {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        let d = self.decls.get(id).unwrap();
-        d.name.to_string()
-    }
-}
-
-impl<'ctx, FD, GD> Formatter<&Statement> for GAstFormatter<'ctx, FD, GD>
-where
-    Self: Formatter<FunDeclId::Id>,
-    Self: Formatter<GlobalDeclId::Id>,
-{
-    fn format_object(&self, st: &Statement) -> String {
-        st.fmt_with_ctx(TAB_INCR, self)
-    }
-}
-
-impl ExprBody {
-    pub fn fmt_with_decls<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDecls,
-        global_ctx: &'ctx GlobalDecls,
-    ) -> String {
-        let locals = Some(&self.locals);
-        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
-        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        // No local types or const generics, both are set to None
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
-        self.fmt_with_ctx(TAB_INCR, &ctx)
-    }
-
-    pub fn fmt_with_names<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Map<String>,
-        global_ctx: &'ctx GlobalDeclId::Map<String>,
-    ) -> String {
-        let locals = Some(&self.locals);
-        let fun_ctx = FunNamesFormatter::new(fun_ctx);
-        let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
-        self.fmt_with_ctx(TAB_INCR, &ctx)
-    }
-
-    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
-        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
+        self.get(id).unwrap().name.to_string()
     }
 }
 
 impl FunDecl {
-    pub fn fmt_with_ctx<'ctx, FD, GD>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FD,
-        global_ctx: &'ctx GD,
-    ) -> String
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        FD: Formatter<FunDeclId::Id>,
-        GD: Formatter<GlobalDeclId::Id>,
+        C: GFunDeclFormatter<'a, Statement>,
     {
-        // Initialize the contexts
-        let fun_sig_ctx = FunSigFormatter {
-            ty_ctx,
-            global_ctx,
-            sig: &self.signature,
-        };
-
-        let locals = self.body.as_ref().map(|body| &body.locals);
-        let fmt_ctx = GAstFormatter::new(
-            ty_ctx,
-            fun_ctx,
-            global_ctx,
-            Some(&self.signature.type_params),
-            locals,
-            Some(&self.signature.const_generic_params),
-        );
-
-        // Use the contexts for printing
-        self.gfmt_with_ctx("", &fun_sig_ctx, &fmt_ctx)
-    }
-
-    pub fn fmt_with_decls<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDecls,
-        global_ctx: &'ctx GlobalDecls,
-    ) -> String {
-        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
-        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
-    }
-
-    pub fn fmt_with_names<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Map<String>,
-        global_ctx: &'ctx GlobalDeclId::Map<String>,
-    ) -> String {
-        let fun_ctx = FunNamesFormatter::new(fun_ctx);
-        let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
-    }
-
-    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
-        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
+        self.gfmt_with_ctx("", ctx)
     }
 }
 
 impl GlobalDecl {
-    pub fn fmt_with_ctx<'ctx, FD, GD>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FD,
-        global_ctx: &'ctx GD,
-    ) -> String
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        FD: Formatter<FunDeclId::Id>,
-        GD: Formatter<GlobalDeclId::Id>,
+        C: GGlobalDeclFormatter<'a, Statement>,
     {
-        let locals = self.body.as_ref().map(|body| &body.locals);
-        let fmt_ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals, None);
-
-        // Use the contexts for printing
-        self.gfmt_with_ctx("", &fmt_ctx)
-    }
-
-    pub fn fmt_with_decls<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDecls,
-        global_ctx: &'ctx GlobalDecls,
-    ) -> String {
-        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
-        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
-    }
-
-    pub fn fmt_with_names<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Map<String>,
-        global_ctx: &'ctx GlobalDeclId::Map<String>,
-    ) -> String {
-        let fun_ctx = FunNamesFormatter::new(fun_ctx);
-        let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
-    }
-
-    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
-        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
+        self.gfmt_with_ctx("", ctx)
     }
 }
 
@@ -661,13 +491,22 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
 } // make_generic_in_borrows
 
 /// Helper for [transform_statements]
-struct TransformStatements<'a, F: FnMut(&mut Statement) -> Vec<Statement>> {
+struct TransformStatements<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> {
     tr: &'a mut F,
 }
 
-impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutTypeVisitor for TransformStatements<'a, F> {}
-impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutExprVisitor for TransformStatements<'a, F> {}
-impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutAstVisitor for TransformStatements<'a, F> {
+impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutTypeVisitor
+    for TransformStatements<'a, F>
+{
+}
+impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutExprVisitor
+    for TransformStatements<'a, F>
+{
+}
+
+impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutAstVisitor
+    for TransformStatements<'a, F>
+{
     fn visit_statement(&mut self, st: &mut Statement) {
         match &mut st.content {
             RawStatement::Sequence(st1, st2) => {
@@ -677,9 +516,10 @@ impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutAstVisitor for Transform
 
                 // Transform the current statement
                 let st_seq = (self.tr)(st1);
-                if !st_seq.is_empty() {
-                    take(st, |st| chain_statements(st_seq, st))
+                if let Some(seq) = st_seq && !seq.is_empty() {
+                    take(st, |st| chain_statements(seq, st))
                 }
+                // TODO: we might want to apply tr to the whole sequence
             }
             _ => {
                 // Bottom-up
@@ -687,8 +527,8 @@ impl<'a, F: FnMut(&mut Statement) -> Vec<Statement>> MutAstVisitor for Transform
 
                 // Transform the current statement
                 let st_seq = (self.tr)(st);
-                if !st_seq.is_empty() {
-                    take(st, |st| chain_statements(st_seq, st))
+                if let Some(seq) = st_seq && !seq.is_empty() {
+                    take(st, |st| chain_statements(seq, st))
                 }
             }
         }
@@ -713,7 +553,7 @@ impl Statement {
     /// if in `s1; s2` we transform `s1` to the sequence `s1_1; s1_2`,
     /// then the resulting statement is `s1_1; s1_2; s2` and **not**
     /// `{ s1_1; s1_2 }; s2`.
-    pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, f: &mut F) {
+    pub fn transform<F: FnMut(&mut Statement) -> Option<Vec<Statement>>>(&mut self, f: &mut F) {
         let mut visitor = TransformStatements { tr: f };
         visitor.visit_statement(self);
     }

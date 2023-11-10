@@ -3,11 +3,27 @@ open Types
 open PrimitiveValues
 module VarId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
+module FunDeclId = IdGen ()
+
+type fun_decl_id = FunDeclId.id [@@deriving show, ord]
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!Charon.UllbcAst.iter_statement_base}).
   *)
 type var_id = VarId.id [@@deriving show, ord]
+
+type assumed_fun_id =
+  | BoxNew
+  | BoxFree
+  | ArrayIndexShared
+  | ArrayIndexMut
+  | ArrayToSliceShared
+  | ArrayToSliceMut
+  | ArrayRepeat
+  | SliceLen
+  | SliceIndexShared
+  | SliceIndexMut
+[@@deriving show, ord]
 
 (** Ancestor the field_proj_kind iter visitor *)
 class ['self] iter_field_proj_kind_base =
@@ -34,11 +50,10 @@ class ['self] map_field_proj_kind_base =
 
 type field_proj_kind =
   | ProjAdt of type_decl_id * variant_id option
-  | ProjOption of variant_id
-      (** Option is an assumed type, coming from the standard library *)
   | ProjTuple of int  (** The integer gives the arity of the tuple *)
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_field_proj_kind";
@@ -60,6 +75,7 @@ type field_proj_kind =
 type projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_projection_elem";
@@ -80,6 +96,7 @@ type projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
 type projection = projection_elem list
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_projection";
@@ -112,6 +129,7 @@ class ['self] map_place_base =
 type place = { var_id : var_id; projection : projection }
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_place";
@@ -131,11 +149,15 @@ type place = { var_id : var_id; projection : projection }
 
 type borrow_kind = Shared | Mut | TwoPhaseMut | Shallow [@@deriving show]
 
-(* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass *)
+(* TODO: FnPtr *)
+type cast_kind = CastInteger of integer_type * integer_type
+[@@deriving show, ord]
+
+(* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass. *)
 type unop =
   | Not
   | Neg
-  | Cast of integer_type * integer_type
+  | Cast of cast_kind
       (** Cast an integer from a source type to a target type *)
 [@@deriving show, ord]
 
@@ -185,25 +207,105 @@ let all_binops =
     Shr;
   ]
 
+(** Ancestor for the constant_expr iter visitor *)
+class ['self] iter_constant_expr_base =
+  object (self : 'self)
+    inherit [_] iter_place
+    inherit! [_] iter_ty
+    method! visit_'r : 'env -> erased_region -> unit = self#visit_erased_region
+    method visit_ety : 'env -> ety -> unit = self#visit_ty
+    method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
+
+    method visit_egeneric_args : 'env -> egeneric_args -> unit =
+      self#visit_generic_args
+
+    method visit_etrait_ref : 'env -> etrait_ref -> unit = self#visit_trait_ref
+    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
+    method visit_assumed_fun_id : 'env -> assumed_fun_id -> unit = fun _ _ -> ()
+  end
+
+(** Ancestor the constant_expr map visitor *)
+class ['self] map_constant_expr_base =
+  object (self : 'self)
+    inherit [_] map_place
+    inherit! [_] map_ty
+
+    method visit_'r : 'env -> erased_region -> erased_region =
+      self#visit_erased_region
+
+    method visit_ety : 'env -> ety -> ety = fun _ x -> x
+
+    method visit_erased_region : 'env -> erased_region -> erased_region =
+      fun _ x -> x
+
+    method visit_egeneric_args : 'env -> egeneric_args -> egeneric_args =
+      self#visit_generic_args
+
+    method visit_etrait_ref : 'env -> etrait_ref -> etrait_ref =
+      self#visit_trait_ref
+
+    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
+
+    method visit_assumed_fun_id : 'env -> assumed_fun_id -> assumed_fun_id =
+      fun _ x -> x
+  end
+
+type raw_constant_expr =
+  | CLiteral of literal
+  | CVar of const_generic_var_id
+  | CTraitConst of etrait_ref * egeneric_args * string
+  | CFnPtr of fn_ptr
+
+and constant_expr = { value : raw_constant_expr; ty : ety }
+
+and fn_ptr = {
+  func : fun_id_or_trait_method_ref;
+  generics : egeneric_args;
+  trait_and_method_generic_args : egeneric_args option;
+}
+
+and fun_id_or_trait_method_ref =
+  | FunId of fun_id
+  | TraitMethod of etrait_ref * string * fun_decl_id
+      (** The fun decl id is not really needed and here for convenience purposes *)
+
+and fun_id = Regular of fun_decl_id | Assumed of assumed_fun_id
+[@@deriving
+  show,
+    ord,
+    visitors
+      {
+        name = "iter_constant_expr";
+        variety = "iter";
+        ancestors = [ "iter_constant_expr_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      },
+    visitors
+      {
+        name = "map_constant_expr";
+        variety = "map";
+        ancestors = [ "map_constant_expr_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+      }]
+
 (** Ancestor the operand iter visitor *)
 class ['self] iter_operand_base =
   object (_self : 'self)
-    inherit [_] iter_place
-    inherit! [_] iter_const_generic
-    method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
+    inherit [_] iter_constant_expr
   end
 
 (** Ancestor the operand map visitor *)
 class ['self] map_operand_base =
   object (_self : 'self)
-    inherit [_] map_place
-    inherit! [_] map_const_generic
-    method visit_ety : 'env -> ety -> ety = fun _ x -> x
+    inherit [_] map_constant_expr
   end
 
-type operand = Copy of place | Move of place | Constant of ety * literal
+type operand = Copy of place | Move of place | Constant of constant_expr
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_operand";
@@ -225,16 +327,12 @@ type operand = Copy of place | Move of place | Constant of ety * literal
 class ['self] iter_aggregate_kind_base =
   object (_self : 'self)
     inherit [_] iter_operand
-    method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the operand map visitor *)
 class ['self] map_aggregate_kind_base =
   object (_self : 'self)
     inherit [_] map_operand
-
-    method visit_erased_region : 'env -> erased_region -> erased_region =
-      fun _ x -> x
   end
 
 (** An aggregated ADT.
@@ -259,16 +357,7 @@ class ['self] map_aggregate_kind_base =
     the field 0, etc.).
  *)
 type aggregate_kind =
-  | AggregatedTuple
-  | AggregatedOption of variant_id * ety
-  (* TODO: AggregatedOption should be merged with AggregatedAdt *)
-  | AggregatedAdt of
-      type_decl_id
-      * variant_id option
-      * erased_region list
-      * ety list
-      * const_generic list
-  | AggregatedRange of ety (* TODO: merge with the Rust *)
+  | AggregatedAdt of type_id * variant_id option * egeneric_args
   | AggregatedArray of ety * const_generic
 [@@deriving
   show,
@@ -308,9 +397,10 @@ class ['self] map_rvalue_base =
   end
 
 (* TODO: move the aggregate kind to operands *)
+(* TODO: we should prefix the type variants with "T", this would avoid collisions *)
 type rvalue =
   | Use of operand
-  | Ref of place * borrow_kind
+  | RvRef of place * borrow_kind
   | UnaryOp of unop * operand
   | BinaryOp of binop * operand * operand
   | Discriminant of place

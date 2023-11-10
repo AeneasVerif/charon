@@ -6,11 +6,13 @@
 #![allow(dead_code)]
 
 use crate::expressions::{MutExprVisitor, SharedExprVisitor};
+use crate::formatter::Formatter;
 use crate::id_vector::ToUsize;
 use crate::llbc_ast::{
-    CtxNames, FunDecls, GlobalDecls, MutAstVisitor, RawStatement, SharedAstVisitor, Statement,
+    FunDecls, GlobalDecls, MutAstVisitor, RawStatement, SharedAstVisitor, Statement,
 };
 use crate::meta::combine_meta;
+use crate::translate_ctx::TransCtx;
 use crate::types::{MutTypeVisitor, SharedTypeVisitor};
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::values::*;
@@ -166,11 +168,11 @@ fn update_locals(
     (locals, vids_map)
 }
 
-pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to remove unused locals in decl: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
         take(b, |mut b| {
             let (locals, vids_map) = update_locals(b.arg_count, b.locals, &b.body);
@@ -181,7 +183,7 @@ pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut Glob
         });
         trace!(
             "# After removing unused locals of: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
         // Check that there are no remaining locals with the type `Never`
         assert!(b.locals.iter().all(|v| !v.ty.is_never()));

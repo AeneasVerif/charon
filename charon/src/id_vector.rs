@@ -7,6 +7,8 @@
 //!
 //! Note that this data structure is implemented by using persistent vectors.
 //! This makes the clone operation almost a no-op.
+//!
+//! TODO: Rustc already provides an `index_vector`. Use it?
 
 use serde::{Serialize, Serializer};
 use std::iter::{FromIterator, IntoIterator};
@@ -33,7 +35,7 @@ where
     I: ToUsize,
     T: Clone,
 {
-    vector: im::Vector<T>,
+    pub vector: im::Vector<T>,
     /// This is a bit annoying, but we need to use `I` somewhere.
     phantom: std::marker::PhantomData<I>,
 }

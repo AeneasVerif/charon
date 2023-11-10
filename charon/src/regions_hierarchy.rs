@@ -11,7 +11,7 @@ use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups};
 use crate::translate_ctx::TransCtx;
 use crate::types as ty;
 use crate::types::*;
-use crate::ullbc_ast::{FunDeclId, FunSig};
+use crate::ullbc_ast::FunDeclId;
 use hashlink::linked_hash_map::LinkedHashMap;
 use macros::generate_index_type;
 use petgraph::algo::tarjan_scc;
@@ -43,7 +43,7 @@ type LifetimeConstraints = DiGraphMap<Region<RegionVarId::Id>, ()>;
 ///
 /// Is used to group regions with the same lifetime together, and express
 /// the lifetime hierarchy between different groups of regions.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct RegionGroup {
     /// The region group identifier
     pub id: RegionGroupId::Id,
@@ -253,9 +253,9 @@ fn compute_full_regions_constraints_for_ty(
     ty: &RTy,
 ) {
     match ty {
-        Ty::Adt(type_id, regions, types, _) => {
+        Ty::Adt(type_id, generics) => {
             // Introduce constraints for all the regions given as parameters
-            for r in regions {
+            for r in &generics.regions {
                 add_region_constraints(
                     updated,
                     acc_constraints,
@@ -268,7 +268,7 @@ fn compute_full_regions_constraints_for_ty(
             // Compute the map from region param id to region instantation, for
             // this ADT instantiation
             let region_inst: RegionVarId::Vector<Region<RegionVarId::Id>> =
-                RegionVarId::Vector::from_iter(regions.iter().copied());
+                RegionVarId::Vector::from_iter(generics.regions.iter().copied());
 
             // Lookup the constraints for this type definition
             match type_id {
@@ -301,7 +301,8 @@ fn compute_full_regions_constraints_for_ty(
                     }
 
                     // Explore the types given as parameters
-                    let types: TypeVarId::Vector<&RTy> = TypeVarId::Vector::from_iter(types.iter());
+                    let types: TypeVarId::Vector<&RTy> =
+                        TypeVarId::Vector::from_iter(generics.types.iter());
                     for (type_param_id, fty) in types.iter_indexed_values() {
                         // Retrieve the (non-instantiated) parent regions for this type param
                         let type_param_constraints = adt_constraints
@@ -333,17 +334,14 @@ fn compute_full_regions_constraints_for_ty(
                 TypeId::Tuple
                 | TypeId::Assumed(
                     AssumedTy::Box
-                    | AssumedTy::Vec
-                    | AssumedTy::Option
                     | AssumedTy::PtrUnique
                     | AssumedTy::Str
                     | AssumedTy::PtrNonNull
                     | AssumedTy::Array
-                    | AssumedTy::Slice
-                    | AssumedTy::Range,
+                    | AssumedTy::Slice,
                 ) => {
                     // Explore the types given as parameters
-                    for fty in types {
+                    for fty in &generics.types {
                         compute_full_regions_constraints_for_ty(
                             updated,
                             constraints_map,
@@ -410,6 +408,32 @@ fn compute_full_regions_constraints_for_ty(
                 }
             }
         }
+        Ty::TraitType(_trait_ref, generics, _name) => {
+            // TODO: A bit unclear what we should do here
+
+            // Introduce constraints for all the regions given as parameters
+            for r in &generics.regions {
+                add_region_constraints(
+                    updated,
+                    acc_constraints,
+                    type_def_constraints,
+                    *r,
+                    &parent_regions,
+                );
+            }
+        }
+        Ty::Arrow(inputs, box output) => {
+            for ty in inputs.iter().chain(std::iter::once(output)) {
+                compute_full_regions_constraints_for_ty(
+                    updated,
+                    constraints_map,
+                    acc_constraints,
+                    type_def_constraints,
+                    parent_regions.clone(),
+                    ty,
+                );
+            }
+        }
     }
 }
 
@@ -446,19 +470,23 @@ fn compute_regions_constraints_for_type_decl_group(
         TypeDeclarationGroup::Rec(ids) => HashSet::from_iter(ids.iter().copied()),
     };
 
+    // TODO: take into account the where clauses
+
     // Initialize the constraints map - TODO: this will be different once we
     // support constraints over the generics in the definitions
     for id in type_ids.iter() {
         let type_def = types.get(*id).unwrap();
         let region_vars_constraints = RegionVarsConstraintsMap::from_iter(
             type_def
-                .region_params
+                .generics
+                .regions
                 .iter()
                 .map(|var| (var.index, HashSet::new())),
         );
         let type_vars_constraints = TypeVarsConstraintsMap::from_iter(
             type_def
-                .type_params
+                .generics
+                .types
                 .iter()
                 .map(|var| (var.index, HashSet::new())),
         );
@@ -494,13 +522,15 @@ fn compute_regions_constraints_for_type_decl_group(
             // Instantiate the type definition variants
             let region_params = Vec::from_iter(
                 type_def
-                    .region_params
+                    .generics
+                    .regions
                     .iter()
                     .map(|rvar| Region::Var(rvar.index)),
             );
             let type_params = Vec::from_iter(
                 type_def
-                    .type_params
+                    .generics
+                    .types
                     .iter()
                     .map(|tvar| Ty::TypeVar(tvar.index)),
             );
@@ -573,7 +603,7 @@ fn compute_regions_constraints_for_type_decl_group(
         let type_def = types.get(*id).unwrap();
         let sccs = compute_sccs_from_lifetime_constraints(
             acc_constraints_map.get(id).unwrap(),
-            &type_def.region_params,
+            &type_def.generics.regions,
         );
         sccs_vec.push(sccs);
     }
@@ -645,8 +675,14 @@ fn compute_regions_constraints_for_sig(
     types_constraints: &TypesConstraintsMap,
     sig: &FunSig,
 ) -> SCCs<Region<RegionVarId::Id>> {
+    trace!("sig: {sig:?}");
+
     let mut constraints_graph = LifetimeConstraints::new();
+    // Add a node for every region
     constraints_graph.add_node(Region::Static);
+    for r in &sig.generics.regions {
+        constraints_graph.add_node(Region::Var(r.index));
+    }
 
     for input_ty in &sig.inputs {
         compute_regions_constraints_for_ty(types_constraints, &mut constraints_graph, input_ty);
@@ -654,7 +690,7 @@ fn compute_regions_constraints_for_sig(
     compute_regions_constraints_for_ty(types_constraints, &mut constraints_graph, &sig.output);
 
     // Compute the SCCs from the region constraints
-    compute_sccs_from_lifetime_constraints(&constraints_graph, &sig.region_params)
+    compute_sccs_from_lifetime_constraints(&constraints_graph, &sig.generics.regions)
 }
 
 /// Compute the region hierarchy (the order between the region's lifetimes)
@@ -760,7 +796,7 @@ pub fn types_constraints_map_fmt_with_ctx(
         .iter()
         .map(|type_def| {
             let cmap = cs.get(&type_def.def_id).unwrap();
-            if type_def.region_params.len() + type_def.type_params.len() == 0 {
+            if type_def.generics.regions.len() + type_def.generics.types.len() == 0 {
                 format!("{} -> []", types.format_object(type_def.def_id))
             } else {
                 let ctx = type_def;
@@ -790,8 +826,11 @@ pub fn compute(ctx: &mut TransCtx, ordered_decls: &DeclarationsGroups) {
                     decl,
                 );
             }
-            DeclarationGroup::Fun(_) | DeclarationGroup::Global(_) => {
-                // Ignore the functions and constants
+            DeclarationGroup::Fun(_)
+            | DeclarationGroup::Global(_)
+            | DeclarationGroup::TraitDecl(_)
+            | DeclarationGroup::TraitImpl(_) => {
+                // Ignore the functions, constants and traits
             }
         }
     }
@@ -799,7 +838,8 @@ pub fn compute(ctx: &mut TransCtx, ordered_decls: &DeclarationsGroups) {
     // Use the types constraints map to compute the regions hierarchies for the
     // function signatures
     for decl in &mut ctx.fun_defs.iter_mut() {
+        trace!("decl: {:?}", &decl.name);
         decl.signature.regions_hierarchy =
-            compute_regions_hierarchy_for_sig(&mut types_constraints, &decl.signature);
+            compute_regions_hierarchy_for_sig(&types_constraints, &decl.signature);
     }
 }

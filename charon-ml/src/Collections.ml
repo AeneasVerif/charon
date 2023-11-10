@@ -47,8 +47,14 @@ module List = struct
         let ls, last = pop_last ls in
         (x :: ls, last)
 
+  (** Return the last element *)
+  let last (ls : 'a list) : 'a = snd (pop_last ls)
+
   (** Return the n first elements of the list *)
   let prefix (n : int) (ls : 'a list) : 'a list = fst (split_at ls n)
+
+  (** Drop the n first elements of the list *)
+  let drop (n : int) (ls : 'a list) : 'a list = snd (split_at ls n)
 
   (** Iter and link the iterations.
 
@@ -100,6 +106,12 @@ module List = struct
 
   let rec repeat (n : int) (x : 'a) : 'a list =
     if n > 0 then x :: repeat (n - 1) x else []
+
+  let rec iter_times (n : int) (f : unit -> unit) : unit =
+    if n > 0 then (
+      f ();
+      iter_times (n - 1) f)
+    else ()
 end
 
 module type OrderedType = sig
@@ -515,3 +527,6 @@ module MakeInjMap (Key : OrderedType) (Elem : OrderedType) :
     let find_opt k = find_opt k !m in
     (m, add, mem, find, find_opt)
 end
+
+module StringSet = MakeSet (OrderedString)
+module StringMap = MakeMap (OrderedString)

@@ -6,6 +6,8 @@
 #![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
+#![feature(trait_alias)]
+#![feature(let_chains)]
 
 extern crate hashlink;
 extern crate im;
@@ -39,11 +41,9 @@ mod driver;
 mod export;
 mod expressions;
 mod expressions_utils;
-mod extract_global_assignments;
 mod formatter;
 mod gast;
 mod gast_utils;
-mod generics;
 mod get_mir;
 mod graphs;
 mod id_map;
@@ -60,16 +60,18 @@ mod names_utils;
 mod ops_to_function_calls;
 mod reconstruct_asserts;
 mod regions_hierarchy;
-mod regularize_constant_adts;
 mod remove_drop_never;
 mod remove_dynamic_checks;
 mod remove_read_discriminant;
 mod remove_unused_locals;
 mod reorder_decls;
+mod simplify_constants;
 mod translate_constants;
 mod translate_crate_to_ullbc;
 mod translate_ctx;
 mod translate_functions_to_ullbc;
+mod translate_predicates;
+mod translate_traits;
 mod translate_types;
 mod types;
 mod types_utils;

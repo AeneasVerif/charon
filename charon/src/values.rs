@@ -19,7 +19,19 @@ generate_index_type!(VarId);
 /// A primitive value.
 ///
 /// Those are for instance used for the constant operands [crate::expressions::Operand::Const]
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, Serialize)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    VariantName,
+    EnumIsA,
+    EnumAsGetters,
+    Serialize,
+    Hash,
+    PartialOrd,
+    Ord,
+)]
 pub enum Literal {
     Scalar(ScalarValue),
     Bool(bool),
@@ -35,7 +47,18 @@ pub enum Literal {
 /// the values to integers, leading to potential overflows: we implement a custom
 /// serialization, which serializes the values to strings.
 #[derive(
-    Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Hash,
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    VariantIndexArity,
+    Hash,
+    PartialOrd,
+    Ord,
 )]
 pub enum ScalarValue {
     /// Using i64 to be safe

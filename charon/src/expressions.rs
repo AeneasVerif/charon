@@ -1,7 +1,9 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
 pub use crate::expressions_utils::*;
+use crate::gast::{FunDeclId, TraitItemName};
 use crate::types::*;
+pub use crate::values::VarId;
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
@@ -9,6 +11,7 @@ use std::vec::Vec;
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct Place {
+    // TODO: update to transform to a recursive type
     pub var_id: VarId::Id,
     pub projection: Projection,
 }
@@ -95,13 +98,8 @@ pub enum UnOp {
     /// (in debug mode) to check that it is not equal to the minimum integer
     /// value (for the proper type).
     Neg,
-    /// Casts are rvalues in MIR, but we treat them as unops. For now, we
-    /// only support for integer to integer, but we can also do from integers/booleans
-    /// to integers/booleans. For now, we don't handle pointer casts.
-    ///
-    /// The first integer type gives the source type, the second one gives
-    /// the destination type.
-    Cast(IntegerTy, IntegerTy),
+    /// Casts are rvalues in MIR, but we treat them as unops.
+    Cast(CastKind),
     /// Coercion from array (i.e., [T; N]) to slice.
     ///
     /// **Remark:** We introduce this unop when translating from MIR, **then transform**
@@ -110,6 +108,14 @@ pub enum UnOp {
     /// very useful. The [RefKind] argument states whethere we operate on a mutable
     /// or a shared borrow to an array.
     ArrayToSlice(RefKind, ETy, ConstGeneric),
+}
+
+/// For all the variants: the first type gives the source type, the second one gives
+/// the destination type.
+#[derive(Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize)]
+pub enum CastKind {
+    Integer(IntegerTy, IntegerTy),
+    FnPtr(RTy, RTy),
 }
 
 /// Binary operations.
@@ -148,15 +154,108 @@ pub enum Operand {
     Copy(Place),
     Move(Place),
     /// Constant value (including constant and static variables)
-    Const(ETy, OperandConstantValue),
+    Const(ConstantExpr),
 }
 
-/// Constant value for an operand.
-/// Only the `ConstantValue` case is remaining in LLBC final form.
+/// A function identifier. See [crate::ullbc_ast::Terminator]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIsA, EnumAsGetters, VariantName, Serialize)]
+pub enum FunId {
+    /// A "regular" function (function local to the crate, external function
+    /// not treated as a primitive one).
+    Regular(FunDeclId::Id),
+    /// A primitive function, coming from a standard library (for instance:
+    /// `alloc::boxed::Box::new`).
+    /// TODO: rename to "Primitive"
+    Assumed(AssumedFunId),
+}
+
+/// An assumed function identifier, identifying a function coming from a
+/// standard library.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIsA, EnumAsGetters, VariantName, Serialize)]
+pub enum AssumedFunId {
+    /// `alloc::boxed::Box::new`
+    BoxNew,
+    /// `alloc::alloc::box_free`
+    /// This is actually an unsafe function, but the rust compiler sometimes
+    /// introduces it when going to MIR.
+    ///
+    /// Also, in practice, deallocation is performed as follows in MIR:
+    /// ```text
+    /// alloc::alloc::box_free::<T, std::alloc::Global>(
+    ///     move (b.0: std::ptr::Unique<T>),
+    ///     move (b.1: std::alloc::Global))
+    /// ```
+    /// When translating from MIR to ULLBC, we do as if the MIR was actually the
+    /// following (this is hardcoded - see [crate::register] and [crate::translate_functions_to_ullbc]):
+    /// ```text
+    /// alloc::alloc::box_free::<T>(move b)
+    /// ```
+    ///
+    /// Also see the comments in [crate::assumed::type_to_used_params].
+    BoxFree,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T,N>(&[T;N], usize) -> &T`
+    ArrayIndexShared,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T,N>(&mut [T;N], usize) -> &mut T`
+    ArrayIndexMut,
+    /// Cast an array as a slice.
+    ///
+    /// Converted from [UnOp::ArrayToSlice]
+    ArrayToSliceShared,
+    /// Cast an array as a slice.
+    ///
+    /// Converted from [UnOp::ArrayToSlice]
+    ArrayToSliceMut,
+    /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
+    ///
+    /// We introduce this when desugaring the [ArrayRepeat] rvalue.
+    ArrayRepeat,
+    /// Remark: when we write `a.len()` in Rust, where `a` is an array, the
+    /// statement is desugared to a conversion from array to slice, followed
+    /// by a call to the `len` function for slices.
+    ///
+    /// Signature: `fn<T>(&[T]) -> usize`
+    SliceLen,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T>(&[T], usize) -> &T`
+    SliceIndexShared,
+    /// Converted from [ProjectionElem::Index].
+    ///
+    /// Signature: `fn<T>(&mut [T], usize) -> &mut T`
+    SliceIndexMut,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, EnumAsGetters)]
+pub enum FunIdOrTraitMethodRef {
+    Fun(FunId),
+    /// If a trait: the reference to the trait and the id of the trait method.
+    /// The fun decl id is not really necessary - we put it here for convenience
+    /// purposes.
+    Trait(ETraitRef, TraitItemName, FunDeclId::Id),
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
+pub struct FnPtr {
+    pub func: FunIdOrTraitMethodRef,
+    pub generics: EGenericArgs,
+    /// If this is a reference to a trait method: stores *all* the generic arguments
+    /// which apply to the trait + the method. The fields [region_args], [type_args]
+    /// [const_generic_args] only store the arguments which concern the method call.
+    /// See the comments for [ParamsInfo].
+    pub trait_and_method_generic_args: Option<EGenericArgs>,
+}
+
+/// A constant expression.
+///
+/// Only the [Literal] and [Var] cases are left in the final LLBC.
 ///
 /// The other cases come from a straight translation from the MIR:
 ///
-/// `Adt` case:
+/// [Adt] case:
 /// It is a bit annoying, but rustc treats some ADT and tuple instances as
 /// constants when generating MIR:
 /// - an enumeration with one variant and no fields is a constant.
@@ -165,11 +264,19 @@ pub enum Operand {
 ///   (if all the fields are constant) rather than as an aggregated value
 /// We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 ///
-/// `Identifier` and `Static` case:
-/// Match constant variables. We later desugar those to separate statements,
-/// see [extract_global_assignments.rs].
-#[derive(Debug, PartialEq, Eq, Clone, VariantName, EnumIsA, EnumAsGetters, VariantIndexArity)]
-pub enum OperandConstantValue {
+/// [Global] case: access to a global variable. We later desugar it to
+/// a separate statement.
+///
+/// [Ref] case: reference to a constant value. We later desugar it to a separate
+/// statement.
+///
+/// [FnPtr] case: a function pointer (to a top-level function).
+///
+/// Remark:
+/// MIR seems to forbid more complex expressions like paths. For instance,
+/// reading the constant `a.b` is translated to `{ _1 = const a; _2 = (_1.0) }`.
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, VariantName, EnumIsA, EnumAsGetters)]
+pub enum RawConstantExpr {
     Literal(Literal),
     ///
     /// In most situations:
@@ -177,17 +284,44 @@ pub enum OperandConstantValue {
     /// no fields, unit (encoded as a 0-tuple).
     ///
     /// Less frequently: arbitrary ADT values.
-    Adt(Option<VariantId::Id>, Vec<OperandConstantValue>),
     ///
-    /// The case when the constant is elsewhere.
-    /// The MIR seems to forbid more complex expressions like paths :
-    /// Reading the constant a.b is translated to { _1 = const a; _2 = (_1.0) }.
-    ConstantId(GlobalDeclId::Id),
+    /// We eliminate this case in a micro-pass.
+    Adt(Option<VariantId::Id>, Vec<ConstantExpr>),
     ///
-    /// Same as for constants, except that statics are accessed through references.
-    StaticId(GlobalDeclId::Id),
+    /// The value is a top-level value.
+    ///
+    /// We eliminate this case in a micro-pass.
+    Global(GlobalDeclId::Id),
+    ///
+    /// A trait constant.
+    ///
+    /// Ex.:
+    /// ```text
+    /// impl Foo for Bar {
+    ///   const C : usize = 32; // <-
+    /// }
+    /// ```
+    ///
+    /// Remark: in the generic args, the trait refs are necessarily empty.
+    ///
+    /// Remark: trait constants can not be used in types, they are necessarily
+    /// values. For this reason, we can always erase the regions.
+    TraitConst(ETraitRef, EGenericArgs, TraitItemName),
+    ///
+    /// A shared reference to a constant value
+    ///
+    /// We eliminate this case in a micro-pass.
+    Ref(Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericVarId::Id),
+    /// Function pointer
+    FnPtr(FnPtr),
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
+pub struct ConstantExpr {
+    pub value: RawConstantExpr,
+    pub ty: ETy,
 }
 
 /// TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
@@ -237,25 +371,19 @@ pub enum Rvalue {
     /// where `x` is a slice or an array, they actually call a non-primitive
     /// function.
     Len(Place, ETy, Option<ConstGeneric>),
+    /// [Repeat(x, n)] creates an array where [x] is copied [n] times.
+    ///
+    /// We desugar this to a function call.
+    Repeat(Operand, ETy, ConstGeneric),
 }
 
 #[derive(Debug, Clone, VariantIndexArity, Serialize)]
 pub enum AggregateKind {
-    Tuple,
-    // TODO: treat Option in a general manner by merging it with the Adt case (we should
-    // extract the definitions of the external enumerations - because as they are public,
-    // their variants are public)
-    Option(VariantId::Id, ETy),
-    // TODO: do we really need this?
-    Range(ETy),
-    Adt(
-        TypeDeclId::Id,
-        Option<VariantId::Id>,
-        Vec<ErasedRegion>,
-        Vec<ETy>,
-        Vec<ConstGeneric>,
-    ),
-    // We don't put this with the ADT cas because this is the only assumed type
-    // with aggregates.
+    Adt(TypeId, Option<VariantId::Id>, EGenericArgs),
+    /// We don't put this with the ADT cas because this is the only assumed type
+    /// with aggregates, and it is a primitive type. In particular, it makes
+    /// sense to treat it differently because it has a variable number of fields.
     Array(ETy, ConstGeneric),
+    ///
+    Closure(FunDeclId::Id),
 }

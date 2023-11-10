@@ -1,7 +1,6 @@
 //! This module tests the translation of matches.
-#![allow(dead_code)]
 
-enum E1 {
+pub enum E1 {
     V1,
     V2,
     V3,
@@ -35,7 +34,7 @@ enum E1 {
 /// main problem is that it would be difficult to make the distinction between
 /// a goto we need to ignore, and a "real" goto.
 /// Consequently, whenever branhces are fused, don't use `--no-code-duplication`.
-fn test1(x: E1) -> bool {
+pub fn test1(x: E1) -> bool {
     match x {
         E1::V1 | E1::V2 => true,
         E1::V3 => false,

@@ -3,12 +3,11 @@
 #![allow(dead_code)]
 
 use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
-use crate::gast::{Call, Var};
-use crate::llbc_ast::{
-    iter_function_bodies, iter_global_bodies, AssumedFunId, CtxNames, FunDecls, FunId, GlobalDecls,
-    MutAstVisitor, RawStatement, Statement, Switch,
-};
+use crate::formatter::Formatter;
+use crate::gast::{Call, GenericArgs, Var};
+use crate::llbc_ast::*;
 use crate::meta::Meta;
+use crate::translate_ctx::TransCtx;
 use crate::types::{AssumedTy, ConstGeneric, ErasedRegion, MutTypeVisitor, RefKind, Ty};
 use crate::values::VarId;
 use std::mem::replace;
@@ -37,8 +36,8 @@ impl<'a> Transform<'a> {
             if pe.is_index() {
                 let (index_var_id, buf_ty) = pe.to_index();
 
-                let (id, _, tys, cgs) = buf_ty.as_adt();
-                let cgs: Vec<ConstGeneric> = cgs.iter().cloned().collect();
+                let (id, generics) = buf_ty.as_adt();
+                let cgs: Vec<ConstGeneric> = generics.const_generics.iter().cloned().collect();
                 let index_id = match id.as_assumed() {
                     AssumedTy::Array => {
                         if mut_access {
@@ -57,7 +56,7 @@ impl<'a> Transform<'a> {
                     _ => unreachable!(),
                 };
 
-                let elem_ty = tys[0].clone();
+                let elem_ty = generics.types[0].clone();
 
                 // We need to introduce intermediate statements (and
                 // temporary variables)
@@ -95,12 +94,16 @@ impl<'a> Transform<'a> {
                 let arg_buf = Operand::Move(Place::new(buf_borrow_var));
                 let arg_index = Operand::Copy(Place::new(index_var_id));
                 let index_dest = Place::new(elem_borrow_var);
-                let index_id = FunId::Assumed(index_id);
-                let index_call = Call {
+                let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
+                let generics =
+                    GenericArgs::new(vec![ErasedRegion::Erased], vec![elem_ty], cgs, vec![]);
+                let func = FnPtr {
                     func: index_id,
-                    region_args: vec![ErasedRegion::Erased],
-                    type_args: vec![elem_ty],
-                    const_generic_args: cgs,
+                    generics,
+                    trait_and_method_generic_args: None,
+                };
+                let index_call = Call {
+                    func,
                     args: vec![arg_buf, arg_index],
                     dest: index_dest,
                 };
@@ -148,7 +151,7 @@ impl<'a> MutExprVisitor for Transform<'a> {
     fn visit_rvalue(&mut self, rv: &mut Rvalue) {
         use Rvalue::*;
         match rv {
-            Use(_) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..) => {
+            Use(_) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..) | Repeat(..) => {
                 // We don't access places here, only operands
                 self.default_visit_rvalue(rv)
             }
@@ -219,7 +222,7 @@ impl<'a> MutAstVisitor for Transform<'a> {
     }
 }
 
-fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Vec<Statement> {
+fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Option<Vec<Statement>> {
     // Explore the places/operands
     let mut visitor = Transform {
         locals,
@@ -229,7 +232,7 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Vec<State
     visitor.visit_statement(s);
 
     // Return the statements to insert before the current one
-    visitor.statements
+    Some(visitor.statements)
 }
 
 /// We do the following.
@@ -290,11 +293,11 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Vec<State
 ///   tmp1 : &mut T = ArrayIndexMut(move y, i)
 ///   *tmp1 = x
 /// ```
-pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to transform array/slice index operations to function calls: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
         let body = &mut b.body;
         let locals = &mut b.locals;
@@ -303,7 +306,7 @@ pub fn transform(fmt_ctx: &CtxNames<'_>, funs: &mut FunDecls, globals: &mut Glob
         body.transform(&mut tr);
         trace!(
             "# After transforming array/slice index operations to function calls: {name}:\n{}",
-            b.fmt_with_ctx_names(fmt_ctx)
+            ctx.format_object(&*b)
         );
     }
 }

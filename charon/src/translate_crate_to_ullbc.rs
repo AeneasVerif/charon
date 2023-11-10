@@ -1,32 +1,61 @@
+use crate::cli_options::CliOpts;
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
 use crate::meta;
 use crate::names::{hir_item_to_name, item_def_id_to_name};
-use crate::reorder_decls as rd;
 use crate::translate_ctx::*;
 use crate::translate_functions_to_ullbc;
 use crate::types as ty;
 use crate::ullbc_ast as ast;
+use hax_frontend_exporter as hax;
+use hax_frontend_exporter::SInto;
 use linked_hash_set::LinkedHashSet;
 use rustc_hir::{Defaultness, ImplItem, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn register_local_hir_impl_item(&mut self, _top_item: bool, impl_item: &ImplItem) {
         // TODO: make a proper error message
         assert!(impl_item.defaultness == Defaultness::Final);
 
+        let def_id = impl_item.owner_id.to_def_id();
+
         // Match on the impl item kind
         match &impl_item.kind {
-            ImplItemKind::Const(_, _) => unimplemented!(),
+            ImplItemKind::Const(_, _) => {
+                // Can happen in traits:
+                // ```
+                // trait Foo {
+                //   const C : usize;
+                // }
+                //
+                // impl Foo for Bar {
+                //   const C = 32; // HERE
+                // }
+                // ```
+                let _ = self.translate_global_decl_id(def_id);
+            }
             ImplItemKind::Type(_) => {
-                // Note sure what to do with associated types yet
-                unimplemented!();
+                // Trait type:
+                // ```
+                // trait Foo {
+                //   type T;
+                // }
+                //
+                // impl Foo for Bar {
+                //   type T = bool; // HERE
+                // }
+                // ```
+                //
+                // Do nothing for now: we won't generate a top-level definition
+                // for this, and handle it when translating the trait implementation
+                // this item belongs to.
+                let tcx = self.tcx;
+                assert!(tcx.associated_item(def_id).trait_item_def_id.is_some());
             }
             ImplItemKind::Fn(_, _) => {
-                let local_id = impl_item.owner_id.to_def_id().as_local().unwrap();
-                let _ = self.translate_fun_decl_id(local_id.to_def_id());
+                let _ = self.translate_fun_decl_id(def_id);
             }
         }
     }
@@ -73,18 +102,38 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 // We ignore the type aliases - it seems they are inlined
             }
             ItemKind::OpaqueTy(_) => unimplemented!(),
-            ItemKind::Union(_, _) => unimplemented!(),
-            ItemKind::Enum(_, _) | ItemKind::Struct(_, _) => {
+            ItemKind::Union(..) => unimplemented!(),
+            ItemKind::Enum(..) | ItemKind::Struct(_, _) => {
                 let _ = self.translate_type_decl_id(def_id);
             }
             ItemKind::Fn(_, _, _) => {
                 let _ = self.translate_fun_decl_id(def_id);
             }
-            ItemKind::Const(_, _) | ItemKind::Static(_, _, _) => {
-                if extract_constants_at_top_level(self.mir_level) {
-                    let _ = self.translate_global_decl_id(def_id);
-                } else {
-                    // Avoid registering globals in optimized MIR (they will be inlined)
+            ItemKind::Trait(..) => {
+                let _ = self.translate_trait_decl_id(def_id);
+                // We don't need to explore the associated items: we will
+                // explore them when translating the trait
+            }
+            ItemKind::Const(..) | ItemKind::Static(..) => {
+                // We ignore the anonymous constants, which are introduced
+                // by the Rust compiler: those constants will be inlined in the
+                // function bodies.
+                //
+                // Important: if we try to retrieve the MIR of anonymous constants,
+                // it will steal the MIR of the bodies of the functions in which
+                // they appear.
+                //
+                // Also note that this is the only place where we need to check
+                // if an item is an anonymous constant: when translating the bodies,
+                // as the anonymous constants are inlined in those bodies, they
+                // disappear completely.
+                let trans_id: hax::DefId = def_id.sinto(&self.hax_state);
+                if !trans_id.is_anon_const() {
+                    if extract_constants_at_top_level(self.mir_level) {
+                        let _ = self.translate_global_decl_id(def_id);
+                    } else {
+                        // Avoid registering globals in optimized MIR (they will be inlined)
+                    }
                 }
             }
 
@@ -92,6 +141,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 trace!("impl");
                 // Sanity checks - TODO: remove?
                 translate_functions_to_ullbc::check_impl_item(impl_block);
+
+                // If this is a trait implementation, register it
+                if self.tcx.trait_id_of_impl(def_id).is_some() {
+                    let _ = self.translate_trait_impl_id(def_id);
+                }
 
                 // Explore the items
                 let hir_map = self.tcx.hir();
@@ -132,6 +186,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     }
                 }
             }
+            ItemKind::Macro(..) => {
+                // We ignore macro definitions. Note that when a macro is applied,
+                // we directly see the result of its expansion by the Rustc compiler,
+                // which is why we don't have to care about them.
+            }
             _ => {
                 unimplemented!("{:?}", item.kind);
             }
@@ -142,17 +201,27 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 /// Translate all the declarations in the crate.
 pub fn translate<'tcx, 'ctx>(
     crate_info: CrateInfo,
+    options: &CliOpts,
     sess: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
 ) -> TransCtx<'tcx, 'ctx> {
+    let hax_state = hax::state::State::new(
+        tcx,
+        hax::options::Options {
+            inline_macro_calls: Vec::new(),
+        },
+    );
     let mut ctx = TransCtx {
         sess,
         tcx,
+        hax_state,
         mir_level,
         crate_info,
+        continue_on_failure: options.continue_on_failure,
+        no_code_duplication: options.no_code_duplication,
         all_ids: LinkedHashSet::new(),
-        stack: LinkedHashSet::new(),
+        stack: BTreeSet::new(),
         file_to_id: HashMap::new(),
         id_to_file: HashMap::new(),
         real_file_counter: meta::LocalFileId::Generator::new(),
@@ -163,6 +232,11 @@ pub fn translate<'tcx, 'ctx>(
         fun_defs: ast::FunDeclId::Map::new(),
         global_id_map: ast::GlobalDeclId::MapGenerator::new(),
         global_defs: ast::GlobalDeclId::Map::new(),
+        trait_decl_id_map: ast::TraitDeclId::MapGenerator::new(),
+        trait_decls: ast::TraitDeclId::Map::new(),
+        trait_impl_id_map: ast::TraitImplId::MapGenerator::new(),
+        trait_impl_id_to_def_id: HashMap::new(),
+        trait_impls: ast::TraitImplId::Map::new(),
     };
 
     // First push all the items in the stack of items to translate.
@@ -183,6 +257,8 @@ pub fn translate<'tcx, 'ctx>(
         ctx.register_local_hir_item(true, item);
     }
 
+    trace!("Stack after we explored the crate:\n{:?}", &ctx.stack);
+
     // Translate.
     //
     // For as long as the stack of items to translate is not empty, we pop the top item
@@ -192,11 +268,14 @@ pub fn translate<'tcx, 'ctx>(
     // Note that the order in which we translate the definitions doesn't matter:
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
-    while let Some(id) = ctx.stack.pop_front() {
+    while let Some(id) = ctx.stack.pop_first() {
+        trace!("About to translate id: {:?}", id);
         match id {
-            rd::AnyDeclId::Type(id) => ctx.translate_type(id),
-            rd::AnyDeclId::Fun(id) => ctx.translate_function(id),
-            rd::AnyDeclId::Global(id) => ctx.translate_global(id),
+            OrdRustId::Type(id) => ctx.translate_type(id),
+            OrdRustId::Fun(id) | OrdRustId::ConstFun(id) => ctx.translate_function(id),
+            OrdRustId::Global(id) => ctx.translate_global(id),
+            OrdRustId::TraitDecl(id) => ctx.translate_trait_decl(id),
+            OrdRustId::TraitImpl(id) => ctx.translate_trait_impl(id),
         }
     }
 

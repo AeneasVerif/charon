@@ -5,7 +5,6 @@
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir::Body;
 use rustc_middle::ty::TyCtxt;
-use std::cell::Ref;
 
 /// TODO: maybe we should always target MIR Built, this would make things
 /// simpler. In particular, the MIR optimized is very low level and
@@ -46,24 +45,27 @@ pub fn get_mir_for_def_id_and_level(
     tcx: TyCtxt<'_>,
     def_id: LocalDefId,
     level: MirLevel,
-) -> &Body<'_> {
+) -> Body<'_> {
+    // Below: we **clone** the bodies to make sure we don't have issues with
+    // locked values (we had in the past).
     match level {
         MirLevel::Built => {
             let body = tcx.mir_built(def_id);
-            // Rk.: leak is unstable
-            Ref::leak(body.borrow())
+            // We clone to be sure there are no problems with locked values
+            body.borrow().clone()
         }
         MirLevel::Promoted => {
             let (body, _) = tcx.mir_promoted(def_id);
-            // Rk.: leak is unstable
-            Ref::leak(body.borrow())
+            // We clone to be sure there are no problems with locked values
+            body.borrow().clone()
         }
         MirLevel::Optimized => {
             let def_id = DefId {
                 krate: rustc_hir::def_id::LOCAL_CRATE,
                 index: def_id.local_def_index,
             };
-            tcx.optimized_mir(def_id)
+            // We clone to be sure there are no problems with locked values
+            tcx.optimized_mir(def_id).clone()
         }
     }
 }

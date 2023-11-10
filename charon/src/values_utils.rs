@@ -4,7 +4,7 @@
 
 use crate::formatter::Formatter;
 use crate::types::*;
-use crate::ullbc_ast::GlobalDeclId;
+use crate::ullbc_ast::{FunDeclId, GlobalDeclId};
 use crate::values::*;
 use serde::{Serialize, Serializer};
 
@@ -24,6 +24,7 @@ pub enum ScalarError {
 /// Our redefinition of Result - we don't care much about the I/O part.
 pub type ScalarResult<T> = std::result::Result<T, ScalarError>;
 
+/// Dummy formatter, which doesn't perform any lookup when formatting an identifier.
 pub struct DummyFormatter {}
 
 impl Formatter<VarId::Id> for DummyFormatter {
@@ -70,15 +71,48 @@ impl Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)> for DummyFo
     }
 }
 
-impl Formatter<&ErasedRegion> for DummyFormatter {
-    fn format_object(&self, _: &ErasedRegion) -> String {
-        "'_".to_string()
+impl Formatter<TraitClauseId::Id> for DummyFormatter {
+    fn format_object(&self, id: TraitClauseId::Id) -> String {
+        id.to_pretty_string()
     }
 }
 
-impl Formatter<&Region<RegionVarId::Id>> for DummyFormatter {
-    fn format_object(&self, r: &Region<RegionVarId::Id>) -> String {
-        r.to_string()
+impl Formatter<FunDeclId::Id> for DummyFormatter {
+    fn format_object(&self, id: FunDeclId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl Formatter<TraitDeclId::Id> for DummyFormatter {
+    fn format_object(&self, id: TraitDeclId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl Formatter<TraitImplId::Id> for DummyFormatter {
+    fn format_object(&self, id: TraitImplId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl<Rid: Clone> Formatter<&Region<Rid>> for DummyFormatter
+where
+    DummyFormatter: Formatter<Rid>,
+{
+    fn format_object(&self, r: &Region<Rid>) -> String {
+        r.fmt_with_ctx(self)
+    }
+}
+
+impl Formatter<RegionVarId::Id> for DummyFormatter {
+    fn format_object(&self, id: RegionVarId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl Formatter<&ErasedRegion> for DummyFormatter {
+    fn format_object(&self, _: &ErasedRegion) -> String {
+        "'_".to_string()
     }
 }
 

@@ -10,8 +10,9 @@ pub use std::collections::btree_map::IterMut as IterAllMut;
 pub use std::collections::BTreeMap;
 use std::iter::{FromIterator, IntoIterator};
 
+#[derive(Clone)]
 pub struct Map<Id, T> {
-    // We use a btree map so that the bindings are sorted by key
+    // We use an ord map so that the bindings are sorted by key
     pub map: std::collections::BTreeMap<Id, T>,
 }
 
@@ -48,6 +49,10 @@ impl<Id: std::cmp::Ord, T> Map<Id, T> {
 
     pub fn len(&self) -> usize {
         self.map.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
     }
 }
 
