@@ -22,7 +22,7 @@ type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 type var = {
   index : VarId.id;  (** Unique variable identifier *)
   name : string option;
-  var_ty : ety;
+  var_ty : ty;
       (** The variable type - erased type, because variables are not used
        ** in function signatures: they are only used to declare the list of
        ** variables manipulated by a function body *)
@@ -108,9 +108,9 @@ type fun_sig = {
   generics : generic_params;
   preds : predicates;
   parent_params_info : params_info option;
-  inputs : sty list;
-  output : sty;
-  regions_hierarchy : region_var_groups;
+  inputs : ty list;
+  output : ty;
+  regions_hierarchy : region_groups;
 }
 [@@deriving show]
 
@@ -160,8 +160,8 @@ type trait_decl = {
   generics : generic_params;
   preds : predicates;
   parent_clauses : trait_clause list;
-  consts : (trait_item_name * (ety * global_decl_id option)) list;
-  types : (trait_item_name * (trait_clause list * ety option)) list;
+  consts : (trait_item_name * (ty * global_decl_id option)) list;
+  types : (trait_item_name * (trait_clause list * ty option)) list;
   required_methods : (trait_item_name * fun_decl_id) list;
   provided_methods : (trait_item_name * fun_decl_id option) list;
 }
@@ -170,12 +170,12 @@ type trait_decl = {
 type trait_impl = {
   def_id : trait_impl_id;
   name : name;
-  impl_trait : strait_decl_ref;
+  impl_trait : trait_decl_ref;
   generics : generic_params;
   preds : predicates;
-  parent_trait_refs : strait_ref list;
-  consts : (trait_item_name * (ety * global_decl_id)) list;
-  types : (trait_item_name * (etrait_ref list * ety)) list;
+  parent_trait_refs : trait_ref list;
+  consts : (trait_item_name * (ty * global_decl_id)) list;
+  types : (trait_item_name * (trait_ref list * ty)) list;
   required_methods : (trait_item_name * fun_decl_id) list;
   provided_methods : (trait_item_name * fun_decl_id) list;
 }

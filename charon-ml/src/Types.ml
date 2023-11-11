@@ -11,14 +11,7 @@ module ConstGenericVarId = IdGen ()
 module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
 module TraitClauseId = IdGen ()
-
-(** Region variable ids. Used in function signatures. *)
-module RegionVarId =
-IdGen ()
-
-(** Region ids. Used for symbolic executions. *)
 module RegionId = IdGen ()
-
 module RegionGroupId = IdGen ()
 
 (** We define this type to control the name of the visitor functions
@@ -53,9 +46,6 @@ type trait_impl_id = TraitImplId.id [@@deriving show, ord]
 type trait_clause_id = TraitClauseId.id [@@deriving show, ord]
 
 (** Same remark as for {!type_var_id} *)
-type region_var_id = RegionVarId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type region_id = RegionId.id [@@deriving show, ord]
 
 (** Same remark as for {!type_var_id} *)
@@ -68,7 +58,7 @@ type ('id, 'name) indexed_var = {
 [@@deriving show]
 
 type type_var = (TypeVarId.id, string) indexed_var [@@deriving show]
-type region_var = (RegionVarId.id, string option) indexed_var [@@deriving show]
+type region_var = (RegionId.id, string option) indexed_var [@@deriving show]
 type literal_type = PrimitiveValues.literal_type [@@deriving show, ord]
 
 type const_generic_var = {
@@ -77,45 +67,6 @@ type const_generic_var = {
   ty : literal_type;
 }
 [@@deriving show, ord]
-
-(** A region.
-
-    Regions are used in function signatures (in which case we use region variable
-    ids) and in symbolic variables and projections (in which case we use region
-    ids).
- *)
-type 'rid region =
-  | Static  (** Static region *)
-  | Var of 'rid  (** Non-static region *)
-[@@deriving show, ord]
-
-(** The type of erased regions.
-
-    We could use unit, but having a dedicated type makes things more explicit.
- *)
-type erased_region = Erased [@@deriving show, ord]
-
-(** A group of regions.
-
-    Results from a lifetime analysis: we group the regions with the same
-    lifetime together, and compute the hierarchy between the regions.
-    This is necessary to introduce the proper abstraction with the
-    proper constraints, when evaluating a function call in symbolic mode.
-*)
-type ('id, 'r) g_region_group = {
-  id : 'id;
-  regions : 'r list;
-  parents : 'id list;
-}
-[@@deriving show]
-
-type ('r, 'id) g_region_groups = ('r, 'id) g_region_group list [@@deriving show]
-
-type region_var_group = (RegionGroupId.id, RegionVarId.id) g_region_group
-[@@deriving show]
-
-type region_var_groups = (RegionGroupId.id, RegionVarId.id) g_region_groups
-[@@deriving show]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
 let all_unsigned_int_types = [ Usize; U8; U16; U32; U64; U128 ]
@@ -248,7 +199,7 @@ type trait_item_name = string [@@deriving show, ord]
 class ['self] iter_ty_base =
   object (_self : 'self)
     inherit [_] iter_const_generic
-    method visit_'r : 'env -> 'r -> unit = fun _ _ -> ()
+    method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
     method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
     method visit_type_id : 'env -> type_id -> unit = fun _ _ -> ()
     method visit_ref_kind : 'env -> ref_kind -> unit = fun _ _ -> ()
@@ -268,7 +219,7 @@ class ['self] iter_ty_base =
 class virtual ['self] map_ty_base =
   object (_self : 'self)
     inherit [_] map_const_generic
-    method virtual visit_'r : 'env -> 'r -> 's
+    method visit_region_id : 'env -> region_id -> region_id = fun _ id -> id
 
     method visit_type_var_id : 'env -> type_var_id -> type_var_id =
       fun _ id -> id
@@ -293,47 +244,47 @@ class virtual ['self] map_ty_base =
   end
 
 (* TODO: we should prefix the type variants with "T", this would avoid collisions *)
-type 'r ty =
-  | Adt of type_id * 'r generic_args
+type ty =
+  | Adt of type_id * generic_args
       (** {!Types.ty.Adt} encodes ADTs, tuples and assumed types *)
   | TypeVar of type_var_id
   | Literal of literal_type
   | Never
-  | Ref of 'r * 'r ty * ref_kind
-  | RawPtr of 'r ty * ref_kind
-  | TraitType of 'r trait_ref * 'r generic_args * string
+  | Ref of region * ty * ref_kind
+  | RawPtr of ty * ref_kind
+  | TraitType of trait_ref * generic_args * string
       (** The string is for the name of the associated type *)
-  | Arrow of 'r ty list * 'r ty
+  | Arrow of ty list * ty
 
-and 'r trait_ref = {
-  trait_id : 'r trait_instance_id;
-  generics : 'r generic_args;
-  trait_decl_ref : 'r trait_decl_ref;
+and trait_ref = {
+  trait_id : trait_instance_id;
+  generics : generic_args;
+  trait_decl_ref : trait_decl_ref;
 }
 
-and 'r trait_decl_ref = {
+and trait_decl_ref = {
   trait_decl_id : trait_decl_id;
-  decl_generics : 'r generic_args; (* The name: annoying field collisions... *)
+  decl_generics : generic_args; (* The name: annoying field collisions... *)
 }
 
-and 'r generic_args = {
-  regions : 'r list;
-  types : 'r ty list;
+and generic_args = {
+  regions : region list;
+  types : ty list;
   const_generics : const_generic list;
-  trait_refs : 'r trait_ref list;
+  trait_refs : trait_ref list;
 }
 
 (** Identifier of a trait instance. *)
-and 'r trait_instance_id =
+and trait_instance_id =
   | Self
       (** Reference to *self*, in case of trait declarations/implementations *)
   | TraitImpl of trait_impl_id  (** A specific implementation *)
   | BuiltinOrAuto of trait_decl_id
   | Clause of trait_clause_id
-  | ParentClause of 'r trait_instance_id * trait_decl_id * trait_clause_id
+  | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
   | ItemClause of
-      'r trait_instance_id * trait_decl_id * trait_item_name * trait_clause_id
-  | TraitRef of 'r trait_ref
+      trait_instance_id * trait_decl_id * trait_item_name * trait_clause_id
+  | TraitRef of trait_ref
       (** Not present in the Rust version of Charon.
 
           We need this case for instantiations: when calling a function which has
@@ -345,7 +296,7 @@ and 'r trait_instance_id =
           trait clause (which can thus be substituted). In the other cases, it references
           a sub-clause relative to a trait instance id.
        *)
-  | FnPointer of 'r ty
+  | FnPointer of ty
   | UnknownTrait of string
       (** Not present in the Rust version of Charon.
 
@@ -353,6 +304,16 @@ and 'r trait_instance_id =
         appear: this allows us to track errors by making sure [Self] indeed did not
         appear.
       *)
+
+(** A region.
+
+    This definition doesn't need to be mutually recursive with the others, but
+    this allows us to factor out the visitors.
+ *)
+and region =
+  | Static  (** Static region *)
+  | Var of region_id  (** Non-static region *)
+  | Erased  (** Erased region *)
 [@@deriving
   show,
     ord,
@@ -375,52 +336,14 @@ and 'r trait_instance_id =
         polymorphic = false;
       }]
 
-(** Generic type with regions *)
-type 'r gr_ty = 'r region ty [@@deriving show, ord]
-
-(** *S*ignature types.
-
-    Used in function signatures and type definitions.
- *)
-type sty = RegionVarId.id gr_ty [@@deriving show, ord]
-
-(** Type with *R*egions.
-
-    Used to project borrows/loans inside of abstractions, during symbolic
-    execution.
- *)
-type rty = RegionId.id gr_ty [@@deriving show, ord]
-
-(** Type with *E*rased regions.
-
-    Used in function bodies, "regular" value types, etc.
- *)
-type ety = erased_region ty [@@deriving show, ord]
-
-type sgeneric_args = RegionVarId.id region generic_args [@@deriving show, ord]
-type egeneric_args = erased_region generic_args [@@deriving show, ord]
-type rgeneric_args = RegionId.id region generic_args [@@deriving show, ord]
-type strait_ref = RegionVarId.id region trait_ref [@@deriving show, ord]
-type etrait_ref = erased_region trait_ref [@@deriving show, ord]
-type rtrait_ref = RegionId.id region trait_ref [@@deriving show, ord]
-type strait_decl_ref = RegionVarId.id region trait_decl_ref [@@deriving show]
-type etrait_decl_ref = erased_region trait_decl_ref [@@deriving show]
-type rtrait_decl_ref = RegionId.id region trait_decl_ref [@@deriving show]
-
-type strait_instance_id = RegionVarId.id region trait_instance_id
-[@@deriving show]
-
-type etrait_instance_id = erased_region trait_instance_id [@@deriving show]
-type rtrait_instance_id = RegionId.id region trait_instance_id [@@deriving show]
-
-type field = { meta : meta; field_name : string option; field_ty : sty }
+type field = { meta : meta; field_name : string option; field_ty : ty }
 [@@deriving show]
 
 type trait_clause = {
   clause_id : trait_clause_id;
   meta : meta option;
   trait_id : trait_decl_id;
-  generics : sgeneric_args;
+  generics : generic_args;
 }
 [@@deriving show]
 
@@ -440,34 +363,39 @@ type generic_params = {
 }
 [@@deriving show]
 
-type region_outlives = region_var_id region * region_var_id region
-[@@deriving show]
+type region_outlives = region * region [@@deriving show]
+type type_outlives = ty * region [@@deriving show]
 
-type type_outlives = sty * region_var_id region [@@deriving show]
-
-type 'r trait_type_constraint = {
-  trait_ref : 'r trait_ref;
-  generics : 'r generic_args;
+type trait_type_constraint = {
+  trait_ref : trait_ref;
+  generics : generic_args;
   type_name : trait_item_name;
-  ty : 'r ty;
+  ty : ty;
 }
-[@@deriving show]
-
-type strait_type_constraint = RegionVarId.id region trait_type_constraint
-[@@deriving show]
-
-type etrait_type_constraint = erased_region trait_type_constraint
-[@@deriving show]
-
-type rtrait_type_constraint = RegionId.id region trait_type_constraint
 [@@deriving show]
 
 type predicates = {
   regions_outlive : region_outlives list;
   types_outlive : type_outlives list;
-  trait_type_constraints : strait_type_constraint list;
+  trait_type_constraints : trait_type_constraint list;
 }
 [@@deriving show]
+
+(** A group of regions.
+
+    Results from a lifetime analysis: we group the regions with the same
+    lifetime together, and compute the hierarchy between the regions.
+    This is necessary to introduce the proper abstraction with the
+    proper constraints, when evaluating a function call in symbolic mode.
+*)
+type region_group = {
+  id : RegionGroupId.id;
+  regions : RegionId.id list;
+  parents : RegionGroupId.id list;
+}
+[@@deriving show]
+
+type region_groups = region_group list [@@deriving show]
 
 type variant = {
   meta : meta;
@@ -503,7 +431,7 @@ type type_decl = {
   generics : generic_params;
   preds : predicates;
   kind : type_decl_kind;
-  regions_hierarchy : region_var_groups;
+  regions_hierarchy : region_groups;
       (** Stores the hierarchy between the regions (which regions have the
           same lifetime, which lifetime should end before which other lifetime,
           etc.) *)

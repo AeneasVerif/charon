@@ -28,10 +28,10 @@ let list_ordered_ancestor_region_groups (sg : fun_sig)
   let pset = list_ancestor_region_groups sg gid in
   let parents =
     List.filter
-      (fun (rg : T.region_var_group) -> T.RegionGroupId.Set.mem rg.id pset)
+      (fun (rg : T.region_group) -> T.RegionGroupId.Set.mem rg.id pset)
       sg.regions_hierarchy
   in
-  let parents = List.map (fun (rg : T.region_var_group) -> rg.id) parents in
+  let parents = List.map (fun (rg : T.region_group) -> rg.id) parents in
   parents
 
 let gexpr_body_get_input_vars (fbody : 'body gexpr_body) : var list =

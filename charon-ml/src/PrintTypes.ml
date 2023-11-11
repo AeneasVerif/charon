@@ -19,21 +19,13 @@ let const_generic_var_id_to_string (id : T.ConstGenericVarId.id) : string =
 let const_generic_var_to_string (v : T.const_generic_var) : string = v.name
 
 let region_var_to_string (rv : T.region_var) : string =
-  match rv.name with
-  | Some name -> name
-  | None -> T.RegionVarId.to_string rv.index
+  match rv.name with Some name -> name | None -> T.RegionId.to_string rv.index
 
-let region_var_id_to_string (rid : T.RegionVarId.id) : string =
-  "rv@" ^ T.RegionVarId.to_string rid
+let region_var_id_to_string (rid : T.RegionId.id) : string =
+  "rv@" ^ T.RegionId.to_string rid
 
 let region_id_to_string (rid : T.RegionId.id) : string =
   "r@" ^ T.RegionId.to_string rid
-
-let region_to_string (rid_to_string : 'rid -> string) (r : 'rid T.region) :
-    string =
-  match r with Static -> "'static" | Var rid -> rid_to_string rid
-
-let erased_region_to_string (_ : T.erased_region) : string = "'_"
 
 let ref_kind_to_string (rk : T.ref_kind) : string =
   match rk with Mut -> "Mut" | Shared -> "Shared"
@@ -43,8 +35,8 @@ let assumed_ty_to_string (_ : T.assumed_ty) : string = "Box"
 let trait_clause_id_to_pretty_string (id : T.trait_clause_id) : string =
   "@TraitClause" ^ T.TraitClauseId.to_string id
 
-type 'r type_formatter = {
-  r_to_string : 'r -> string;
+type type_formatter = {
+  region_id_to_string : T.region_id -> string;
   type_var_id_to_string : T.TypeVarId.id -> string;
   type_decl_id_to_string : T.TypeDeclId.id -> string;
   const_generic_var_id_to_string : T.ConstGenericVarId.id -> string;
@@ -54,11 +46,13 @@ type 'r type_formatter = {
   trait_clause_id_to_string : T.TraitClauseId.id -> string;
 }
 
-type stype_formatter = T.RegionVarId.id T.region type_formatter
-type rtype_formatter = T.RegionId.id T.region type_formatter
-type etype_formatter = T.erased_region type_formatter
+let region_to_string (fmt : type_formatter) (r : T.region) : string =
+  match r with
+  | Static -> "'static"
+  | Erased -> "'_"
+  | Var rid -> fmt.region_id_to_string rid
 
-let type_id_to_string (fmt : 'r type_formatter) (id : T.type_id) : string =
+let type_id_to_string (fmt : type_formatter) (id : T.type_id) : string =
   match id with
   | T.AdtId id -> fmt.type_decl_id_to_string id
   | T.Tuple -> ""
@@ -69,14 +63,14 @@ let type_id_to_string (fmt : 'r type_formatter) (id : T.type_id) : string =
       | Array -> "@Array"
       | Slice -> "@Slice")
 
-let const_generic_to_string (fmt : 'r type_formatter) (cg : T.const_generic) :
+let const_generic_to_string (fmt : type_formatter) (cg : T.const_generic) :
     string =
   match cg with
   | ConstGenericGlobal id -> fmt.global_decl_id_to_string id
   | ConstGenericVar id -> fmt.const_generic_var_id_to_string id
   | ConstGenericValue lit -> literal_to_string lit
 
-let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
+let rec ty_to_string (fmt : type_formatter) (ty : T.ty) : string =
   match ty with
   | T.Adt (id, generics) ->
       let is_tuple = match id with T.Tuple -> true | _ -> false in
@@ -91,8 +85,10 @@ let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
       trait_ref ^ generics ^ "::" ^ type_name
   | T.Ref (r, rty, ref_kind) -> (
       match ref_kind with
-      | T.Mut -> "&" ^ fmt.r_to_string r ^ " mut (" ^ ty_to_string fmt rty ^ ")"
-      | T.Shared -> "&" ^ fmt.r_to_string r ^ " (" ^ ty_to_string fmt rty ^ ")")
+      | T.Mut ->
+          "&" ^ region_to_string fmt r ^ " mut (" ^ ty_to_string fmt rty ^ ")"
+      | T.Shared ->
+          "&" ^ region_to_string fmt r ^ " (" ^ ty_to_string fmt rty ^ ")")
   | T.RawPtr (rty, ref_kind) -> (
       match ref_kind with
       | T.Mut -> "*mut " ^ ty_to_string fmt rty
@@ -103,8 +99,8 @@ let rec ty_to_string (fmt : 'r type_formatter) (ty : 'r T.ty) : string =
       in
       inputs ^ ty_to_string fmt output
 
-and params_to_string (fmt : 'r type_formatter) (is_tuple : bool)
-    (generics : 'r T.generic_args) : string =
+and params_to_string (fmt : type_formatter) (is_tuple : bool)
+    (generics : T.generic_args) : string =
   if is_tuple then
     (* Remark: there shouldn't be any trait ref, but we still print them
        because if there are we *want* to see them (for debugging purposes) *)
@@ -120,18 +116,18 @@ and params_to_string (fmt : 'r type_formatter) (is_tuple : bool)
     - one for the regions, types, const generics
     - one for the trait refs
  *)
-and generic_args_to_strings (fmt : 'r type_formatter)
-    (generics : 'r T.generic_args) : string list * string list =
+and generic_args_to_strings (fmt : type_formatter) (generics : T.generic_args) :
+    string list * string list =
   let { T.regions; types; const_generics; trait_refs } = generics in
-  let regions = List.map fmt.r_to_string regions in
+  let regions = List.map (region_to_string fmt) regions in
   let types = List.map (ty_to_string fmt) types in
   let cgs = List.map (const_generic_to_string fmt) const_generics in
   let params = List.flatten [ regions; types; cgs ] in
   let trait_refs = List.map (trait_ref_to_string fmt) trait_refs in
   (params, trait_refs)
 
-and generic_args_to_string (fmt : 'r type_formatter)
-    (generics : 'r T.generic_args) : string =
+and generic_args_to_string (fmt : type_formatter) (generics : T.generic_args) :
+    string =
   let params, trait_refs = generic_args_to_strings fmt generics in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
@@ -141,20 +137,19 @@ and generic_args_to_string (fmt : 'r type_formatter)
   in
   params ^ trait_refs
 
-and trait_ref_to_string (fmt : 'r type_formatter) (tr : 'r T.trait_ref) : string
-    =
+and trait_ref_to_string (fmt : type_formatter) (tr : T.trait_ref) : string =
   let trait_id = trait_instance_id_to_string fmt tr.T.trait_id in
   let generics = generic_args_to_string fmt tr.T.generics in
   trait_id ^ generics
 
-and trait_decl_ref_to_string (fmt : 'r type_formatter)
-    (tr : 'r T.trait_decl_ref) : string =
+and trait_decl_ref_to_string (fmt : type_formatter) (tr : T.trait_decl_ref) :
+    string =
   let trait_id = fmt.trait_decl_id_to_string tr.T.trait_decl_id in
   let generics = generic_args_to_string fmt tr.T.decl_generics in
   trait_id ^ generics
 
-and trait_instance_id_to_string (fmt : 'r type_formatter)
-    (id : 'r T.trait_instance_id) : string =
+and trait_instance_id_to_string (fmt : type_formatter)
+    (id : T.trait_instance_id) : string =
   match id with
   | Self -> "Self"
   | TraitImpl id -> fmt.trait_impl_id_to_string id
@@ -172,71 +167,14 @@ and trait_instance_id_to_string (fmt : 'r type_formatter)
   | FnPointer ty -> "fn_ptr(" ^ ty_to_string fmt ty ^ ")"
   | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
-let sty_to_string (fmt : stype_formatter) (ty : T.sty) : string =
-  ty_to_string fmt ty
-
-let rty_to_string (fmt : rtype_formatter) (ty : T.rty) : string =
-  ty_to_string fmt ty
-
-let ety_to_string (fmt : etype_formatter) (ty : T.ety) : string =
-  ty_to_string fmt ty
-
-let strait_ref_to_string (fmt : stype_formatter) (trait_ref : T.strait_ref) :
-    string =
-  trait_ref_to_string fmt trait_ref
-
-let rtrait_ref_to_string (fmt : rtype_formatter) (trait_ref : T.rtrait_ref) :
-    string =
-  trait_ref_to_string fmt trait_ref
-
-let etrait_ref_to_string (fmt : etype_formatter) (trait_ref : T.etrait_ref) :
-    string =
-  trait_ref_to_string fmt trait_ref
-
-let strait_decl_ref_to_string (fmt : stype_formatter)
-    (trait_decl_ref : T.strait_decl_ref) : string =
-  trait_decl_ref_to_string fmt trait_decl_ref
-
-let rtrait_decl_ref_to_string (fmt : rtype_formatter)
-    (trait_decl_ref : T.rtrait_decl_ref) : string =
-  trait_decl_ref_to_string fmt trait_decl_ref
-
-let etrait_decl_ref_to_string (fmt : etype_formatter)
-    (trait_decl_ref : T.etrait_decl_ref) : string =
-  trait_decl_ref_to_string fmt trait_decl_ref
-
-let sgeneric_args_to_string (fmt : stype_formatter)
-    (generic_args : T.sgeneric_args) : string =
-  generic_args_to_string fmt generic_args
-
-let rgeneric_args_to_string (fmt : rtype_formatter)
-    (generic_args : T.rgeneric_args) : string =
-  generic_args_to_string fmt generic_args
-
-let egeneric_args_to_string (fmt : etype_formatter)
-    (generic_args : T.egeneric_args) : string =
-  generic_args_to_string fmt generic_args
-
-let strait_instance_id_to_string (fmt : stype_formatter)
-    (trait_instance_id : T.strait_instance_id) : string =
-  trait_instance_id_to_string fmt trait_instance_id
-
-let rtrait_instance_id_to_string (fmt : rtype_formatter)
-    (trait_instance_id : T.rtrait_instance_id) : string =
-  trait_instance_id_to_string fmt trait_instance_id
-
-let etrait_instance_id_to_string (fmt : etype_formatter)
-    (trait_instance_id : T.etrait_instance_id) : string =
-  trait_instance_id_to_string fmt trait_instance_id
-
-let trait_clause_to_string (fmt : stype_formatter) (clause : T.trait_clause) :
+let trait_clause_to_string (fmt : type_formatter) (clause : T.trait_clause) :
     string =
   let clause_id = fmt.trait_clause_id_to_string clause.clause_id in
   let trait_id = fmt.trait_decl_id_to_string clause.trait_id in
   let generics = generic_args_to_string fmt clause.generics in
   "[" ^ clause_id ^ "]: " ^ trait_id ^ generics
 
-let generic_params_to_strings (fmt : stype_formatter)
+let generic_params_to_strings (fmt : type_formatter)
     (generics : T.generic_params) : string list * string list =
   let { T.regions; types; const_generics; trait_clauses } = generics in
   let regions = List.map region_var_to_string regions in
@@ -256,11 +194,11 @@ let variant_to_string fmt (v : T.variant) : string =
   ^ String.concat ", " (List.map (field_to_string fmt) v.fields)
   ^ ")"
 
-let trait_type_constraint_to_string (fmt : 'r type_formatter)
-    (ttc : 'r T.trait_type_constraint) : string =
+let trait_type_constraint_to_string (fmt : type_formatter)
+    (ttc : T.trait_type_constraint) : string =
   let trait_ref = trait_ref_to_string fmt ttc.T.trait_ref in
   let generics = generic_args_to_string fmt ttc.T.generics in
-  let ty = sty_to_string fmt ttc.T.ty in
+  let ty = ty_to_string fmt ttc.T.ty in
   trait_ref ^ generics ^ " = " ^ ty
 
 (** Helper to format "where" clauses *)
@@ -286,19 +224,20 @@ let clauses_to_string (indent : string) (indent_incr : string)
     "\n" ^ String.concat "\n" clauses
 
 (** Helper to format "where" clauses *)
-let predicates_and_trait_clauses_to_string (fmt : stype_formatter)
+let predicates_and_trait_clauses_to_string (fmt : type_formatter)
     (indent : string) (indent_incr : string)
     (params_info : A.params_info option) (trait_clauses : string list)
     (preds : T.predicates) : string =
   let { T.regions_outlive; types_outlive; trait_type_constraints } = preds in
+  let region_to_string = region_to_string fmt in
   let regions_outlive =
     List.map
-      (fun (x, y) -> fmt.r_to_string x ^ " : " ^ fmt.r_to_string y)
+      (fun (x, y) -> region_to_string x ^ " : " ^ region_to_string y)
       regions_outlive
   in
   let types_outlive =
     List.map
-      (fun (x, y) -> sty_to_string fmt x ^ " : " ^ fmt.r_to_string y)
+      (fun (x, y) -> ty_to_string fmt x ^ " : " ^ region_to_string y)
       types_outlive
   in
   let trait_type_constraints =
@@ -336,14 +275,13 @@ let type_decl_to_string (type_decl_id_to_string : T.TypeDeclId.id -> string)
   let regions = def.generics.regions in
   let types = def.generics.types in
   let cgs = def.generics.const_generics in
-  let rid_to_string rid =
+  let region_id_to_string rid =
     match
       List.find_opt (fun (rv : T.region_var) -> rv.T.index = rid) regions
     with
     | Some rv -> region_var_to_string rv
     | None -> raise (Failure "Unreachable")
   in
-  let r_to_string = region_to_string rid_to_string in
   let type_var_id_to_string id =
     match List.find_opt (fun (tv : T.type_var) -> tv.T.index = id) types with
     | Some tv -> type_var_to_string tv
@@ -358,7 +296,7 @@ let type_decl_to_string (type_decl_id_to_string : T.TypeDeclId.id -> string)
   in
   let fmt =
     {
-      r_to_string;
+      region_id_to_string;
       type_var_id_to_string;
       type_decl_id_to_string;
       const_generic_var_id_to_string;

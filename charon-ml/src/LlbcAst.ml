@@ -75,7 +75,7 @@ type global_decl = {
   meta : meta;
   def_id : GlobalDeclId.id;
   name : global_name;
-  ty : ety;
+  ty : ty;
   body_id : FunDeclId.id;  (** TODO: this field should be an option *)
 }
 [@@deriving show]

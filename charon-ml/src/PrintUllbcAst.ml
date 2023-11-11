@@ -111,11 +111,11 @@ module Ast = struct
 
   let global_decl_to_string (fmt : ast_formatter) (indent : string)
       (indent_incr : string) (def : A.global_decl) : string =
-    let ety_fmt = ast_to_etype_formatter fmt in
-    let ety_to_string = PT.ety_to_string ety_fmt in
+    let ty_fmt = ast_to_type_formatter fmt in
+    let ty_to_string = PT.ty_to_string ty_fmt in
 
     let name = fun_name_to_string def.A.name in
-    let ty = ety_to_string def.A.ty in
+    let ty = ty_to_string def.A.ty in
 
     (* We print the declaration differently if it is opaque (no body) or transparent
      * (we have access to a body) *)

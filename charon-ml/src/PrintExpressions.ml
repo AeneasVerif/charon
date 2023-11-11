@@ -11,8 +11,7 @@ module PPV = PrintPrimitiveValues
 let var_id_to_string (id : E.VarId.id) : string = "v@" ^ E.VarId.to_string id
 
 type expr_formatter = {
-  rvar_to_string : T.RegionVarId.id -> string;
-  r_to_string : T.RegionId.id -> string;
+  region_id_to_string : T.RegionId.id -> string;
   type_var_id_to_string : T.TypeVarId.id -> string;
   type_decl_id_to_string : T.TypeDeclId.id -> string;
   const_generic_var_id_to_string : T.ConstGenericVarId.id -> string;
@@ -29,33 +28,9 @@ type expr_formatter = {
   trait_clause_id_to_string : T.TraitClauseId.id -> string;
 }
 
-let expr_to_etype_formatter (fmt : expr_formatter) : PT.etype_formatter =
+let expr_to_type_formatter (fmt : expr_formatter) : PT.type_formatter =
   {
-    PT.r_to_string = PT.erased_region_to_string;
-    PT.type_var_id_to_string = fmt.type_var_id_to_string;
-    PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
-    PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
-    PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
-    PT.trait_decl_id_to_string = fmt.trait_decl_id_to_string;
-    PT.trait_impl_id_to_string = fmt.trait_impl_id_to_string;
-    PT.trait_clause_id_to_string = fmt.trait_clause_id_to_string;
-  }
-
-let expr_to_rtype_formatter (fmt : expr_formatter) : PT.rtype_formatter =
-  {
-    PT.r_to_string = PT.region_to_string fmt.r_to_string;
-    PT.type_var_id_to_string = fmt.type_var_id_to_string;
-    PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
-    PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
-    PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
-    PT.trait_decl_id_to_string = fmt.trait_decl_id_to_string;
-    PT.trait_impl_id_to_string = fmt.trait_impl_id_to_string;
-    PT.trait_clause_id_to_string = fmt.trait_clause_id_to_string;
-  }
-
-let expr_to_stype_formatter (fmt : expr_formatter) : PT.stype_formatter =
-  {
-    PT.r_to_string = PT.region_to_string fmt.rvar_to_string;
+    PT.region_id_to_string = fmt.region_id_to_string;
     PT.type_var_id_to_string = fmt.type_var_id_to_string;
     PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
     PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
@@ -146,7 +121,7 @@ let assumed_fun_id_to_string (aid : E.assumed_fun_id) (generics : string) :
 
 let fun_id_or_trait_method_ref_to_string (fmt : expr_formatter)
     (r : E.fun_id_or_trait_method_ref) (generics : string) : string =
-  let ty_fmt = expr_to_etype_formatter fmt in
+  let ty_fmt = expr_to_type_formatter fmt in
   match r with
   | TraitMethod (trait_ref, method_name, _) ->
       PT.trait_ref_to_string ty_fmt trait_ref ^ "::" ^ method_name ^ generics
@@ -154,7 +129,7 @@ let fun_id_or_trait_method_ref_to_string (fmt : expr_formatter)
   | FunId (Assumed aid) -> assumed_fun_id_to_string aid generics
 
 let fn_ptr_to_string (fmt : expr_formatter) (ptr : E.fn_ptr) : string =
-  let ty_fmt = expr_to_etype_formatter fmt in
+  let ty_fmt = expr_to_type_formatter fmt in
   let generics = PT.generic_args_to_string ty_fmt ptr.generics in
   fun_id_or_trait_method_ref_to_string fmt ptr.func generics
 
@@ -163,13 +138,13 @@ let constant_expr_to_string (fmt : expr_formatter) (cv : E.constant_expr) :
   match cv.E.value with
   | E.CLiteral lit ->
       "(" ^ PPV.literal_to_string lit ^ " : "
-      ^ PT.ety_to_string (expr_to_etype_formatter fmt) cv.E.ty
+      ^ PT.ty_to_string (expr_to_type_formatter fmt) cv.E.ty
       ^ ")"
   | E.CVar vid -> fmt.const_generic_var_id_to_string vid
   | E.CTraitConst (trait_ref, generics, const_name) ->
-      let fmt = expr_to_etype_formatter fmt in
-      let trait_ref = PT.etrait_ref_to_string fmt trait_ref in
-      let generics = PT.egeneric_args_to_string fmt generics in
+      let fmt = expr_to_type_formatter fmt in
+      let trait_ref = PT.trait_ref_to_string fmt trait_ref in
+      let generics = PT.generic_args_to_string fmt generics in
       trait_ref ^ generics ^ const_name
   | E.CFnPtr fn_ptr -> fn_ptr_to_string fmt fn_ptr
 

@@ -124,7 +124,7 @@ type global_decl = {
   meta : meta;
   def_id : GlobalDeclId.id;
   name : global_name;
-  ty : ety;
+  ty : ty;
   body : global_body option;
 }
 [@@deriving show]

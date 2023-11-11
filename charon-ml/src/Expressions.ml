@@ -209,41 +209,18 @@ let all_binops =
 
 (** Ancestor for the constant_expr iter visitor *)
 class ['self] iter_constant_expr_base =
-  object (self : 'self)
+  object (_self : 'self)
     inherit [_] iter_place
     inherit! [_] iter_ty
-    method! visit_'r : 'env -> erased_region -> unit = self#visit_erased_region
-    method visit_ety : 'env -> ety -> unit = self#visit_ty
-    method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
-
-    method visit_egeneric_args : 'env -> egeneric_args -> unit =
-      self#visit_generic_args
-
-    method visit_etrait_ref : 'env -> etrait_ref -> unit = self#visit_trait_ref
     method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
     method visit_assumed_fun_id : 'env -> assumed_fun_id -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the constant_expr map visitor *)
 class ['self] map_constant_expr_base =
-  object (self : 'self)
+  object (_self : 'self)
     inherit [_] map_place
     inherit! [_] map_ty
-
-    method visit_'r : 'env -> erased_region -> erased_region =
-      self#visit_erased_region
-
-    method visit_ety : 'env -> ety -> ety = fun _ x -> x
-
-    method visit_erased_region : 'env -> erased_region -> erased_region =
-      fun _ x -> x
-
-    method visit_egeneric_args : 'env -> egeneric_args -> egeneric_args =
-      self#visit_generic_args
-
-    method visit_etrait_ref : 'env -> etrait_ref -> etrait_ref =
-      self#visit_trait_ref
-
     method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
 
     method visit_assumed_fun_id : 'env -> assumed_fun_id -> assumed_fun_id =
@@ -253,20 +230,20 @@ class ['self] map_constant_expr_base =
 type raw_constant_expr =
   | CLiteral of literal
   | CVar of const_generic_var_id
-  | CTraitConst of etrait_ref * egeneric_args * string
+  | CTraitConst of trait_ref * generic_args * string
   | CFnPtr of fn_ptr
 
-and constant_expr = { value : raw_constant_expr; ty : ety }
+and constant_expr = { value : raw_constant_expr; ty : ty }
 
 and fn_ptr = {
   func : fun_id_or_trait_method_ref;
-  generics : egeneric_args;
-  trait_and_method_generic_args : egeneric_args option;
+  generics : generic_args;
+  trait_and_method_generic_args : generic_args option;
 }
 
 and fun_id_or_trait_method_ref =
   | FunId of fun_id
-  | TraitMethod of etrait_ref * string * fun_decl_id
+  | TraitMethod of trait_ref * string * fun_decl_id
       (** The fun decl id is not really needed and here for convenience purposes *)
 
 and fun_id = Regular of fun_decl_id | Assumed of assumed_fun_id
@@ -357,8 +334,8 @@ class ['self] map_aggregate_kind_base =
     the field 0, etc.).
  *)
 type aggregate_kind =
-  | AggregatedAdt of type_id * variant_id option * egeneric_args
-  | AggregatedArray of ety * const_generic
+  | AggregatedAdt of type_id * variant_id option * generic_args
+  | AggregatedArray of ty * const_generic
 [@@deriving
   show,
     visitors

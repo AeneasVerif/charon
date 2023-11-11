@@ -144,7 +144,7 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
          parent_params_info = None;
          regions_hierarchy = [];
          inputs = [];
-         output = TU.ety_no_regions_to_sty ty;
+         output = ty;
        }
      in
      Ok

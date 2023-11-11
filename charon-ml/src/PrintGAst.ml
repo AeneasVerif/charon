@@ -10,14 +10,8 @@ module PE = PrintExpressions
 
 type ast_formatter = PE.expr_formatter
 
-let ast_to_etype_formatter : ast_formatter -> PT.etype_formatter =
-  PE.expr_to_etype_formatter
-
-let ast_to_rtype_formatter : ast_formatter -> PT.rtype_formatter =
-  PE.expr_to_rtype_formatter
-
-let ast_to_stype_formatter : ast_formatter -> PT.stype_formatter =
-  PE.expr_to_stype_formatter
+let ast_to_type_formatter : ast_formatter -> PT.type_formatter =
+  PE.expr_to_type_formatter
 
 (** Generate an [ast_formatter] by using a declaration context and some additional
     parameters *)
@@ -28,15 +22,10 @@ let gdecls_to_ast_formatter (type_decls : T.type_decl T.TypeDeclId.Map.t)
     (trait_impls : GA.trait_impl GA.TraitImplId.Map.t)
     (generics : T.generic_params) (locals : GA.var list option)
     (get_global_decl_name_as_string : 'gdecl -> string) : ast_formatter =
-  let rvar_to_string r =
-    let rvar = T.RegionVarId.nth generics.regions r in
+  let region_id_to_string r =
+    let rvar = T.RegionId.nth generics.regions r in
     PT.region_var_to_string rvar
   in
-  let r_to_string r =
-    (* TODO: we might want something more informative *)
-    PT.region_id_to_string r
-  in
-
   let type_var_id_to_string vid =
     let var = T.TypeVarId.nth generics.types vid in
     PT.type_var_to_string var
@@ -75,8 +64,7 @@ let gdecls_to_ast_formatter (type_decls : T.type_decl T.TypeDeclId.Map.t)
     name_to_string def.name
   in
   {
-    rvar_to_string;
-    r_to_string;
+    region_id_to_string;
     type_var_id_to_string;
     type_decl_id_to_string;
     const_generic_var_id_to_string;
@@ -123,18 +111,16 @@ let assertion_to_string (fmt : ast_formatter) (indent : string)
 let fun_sig_with_name_to_string (fmt : ast_formatter) (indent : string)
     (indent_incr : string) (attribute : string option) (name : string option)
     (args : GA.var list option) (sg : GA.fun_sig) : string =
-  let sty_fmt = ast_to_stype_formatter fmt in
-  let sty_to_string = PT.sty_to_string sty_fmt in
+  let ty_fmt = ast_to_type_formatter fmt in
+  let ty_to_string = PT.ty_to_string ty_fmt in
 
   (* Unsafe keyword *)
   let unsafe = if sg.is_unsafe then "unsafe " else "" in
 
   (* Generics and predicates *)
-  let params, trait_clauses =
-    PT.generic_params_to_strings sty_fmt sg.generics
-  in
+  let params, trait_clauses = PT.generic_params_to_strings ty_fmt sg.generics in
   let clauses =
-    PT.predicates_and_trait_clauses_to_string sty_fmt indent indent_incr
+    PT.predicates_and_trait_clauses_to_string ty_fmt indent indent_incr
       sg.parent_params_info trait_clauses sg.preds
   in
   let params =
@@ -144,20 +130,20 @@ let fun_sig_with_name_to_string (fmt : ast_formatter) (indent : string)
   (* Return type *)
   let ret_ty = sg.output in
   let ret_ty =
-    if TU.ty_is_unit ret_ty then "" else " -> " ^ sty_to_string ret_ty
+    if TU.ty_is_unit ret_ty then "" else " -> " ^ ty_to_string ret_ty
   in
 
   (* Arguments *)
   let args =
     match args with
     | None ->
-        let args = List.map sty_to_string sg.inputs in
+        let args = List.map ty_to_string sg.inputs in
         String.concat ", " args
     | Some args ->
         let args = List.combine args sg.inputs in
         let args =
           List.map
-            (fun (var, rty) -> var_to_string var ^ " : " ^ sty_to_string rty)
+            (fun (var, rty) -> var_to_string var ^ " : " ^ ty_to_string rty)
             args
         in
         String.concat ", " args
@@ -177,8 +163,8 @@ let gfun_decl_to_string (fmt : ast_formatter) (indent : string)
     (indent_incr : string)
     (body_to_string : ast_formatter -> string -> string -> 'body -> string)
     (def : 'body GA.gfun_decl) : string =
-  let ety_fmt = ast_to_etype_formatter fmt in
-  let ety_to_string = PT.ety_to_string ety_fmt in
+  let ety_fmt = ast_to_type_formatter fmt in
+  let ety_to_string = PT.ty_to_string ety_fmt in
   let sg = def.signature in
 
   (* Function name *)
@@ -219,19 +205,18 @@ let gfun_decl_to_string (fmt : ast_formatter) (indent : string)
 
 let trait_decl_to_string (fmt : ast_formatter) (indent : string)
     (indent_incr : string) (def : GA.trait_decl) : string =
-  let sty_fmt = ast_to_stype_formatter fmt in
-  let ety_fmt = ast_to_etype_formatter fmt in
-  let ety_to_string = PT.ety_to_string ety_fmt in
+  let ty_fmt = ast_to_type_formatter fmt in
+  let ty_to_string = PT.ty_to_string ty_fmt in
 
   (* Name *)
   let name = name_to_string def.GA.name in
 
   (* Generics and predicates *)
   let params, trait_clauses =
-    PT.generic_params_to_strings sty_fmt def.generics
+    PT.generic_params_to_strings ty_fmt def.generics
   in
   let clauses =
-    PT.predicates_and_trait_clauses_to_string sty_fmt indent indent_incr None
+    PT.predicates_and_trait_clauses_to_string ty_fmt indent indent_incr None
       trait_clauses def.preds
   in
   let params =
@@ -247,14 +232,14 @@ let trait_decl_to_string (fmt : ast_formatter) (indent : string)
           indent1 ^ "parent_clause_"
           ^ T.TraitClauseId.to_string clause.T.clause_id
           ^ " : "
-          ^ PT.trait_clause_to_string sty_fmt clause
+          ^ PT.trait_clause_to_string ty_fmt clause
           ^ "\n")
         def.parent_clauses
     in
     let consts =
       List.map
         (fun (name, (ty, opt_id)) ->
-          let ty = ety_to_string ty in
+          let ty = ty_to_string ty in
           let lhs = indent1 ^ "const " ^ name ^ " : " ^ ty in
           match opt_id with
           | None -> lhs ^ "\n"
@@ -264,12 +249,12 @@ let trait_decl_to_string (fmt : ast_formatter) (indent : string)
     let types =
       List.map
         (fun (name, (clauses, opt_ty)) ->
-          let clauses = List.map (PT.trait_clause_to_string sty_fmt) clauses in
+          let clauses = List.map (PT.trait_clause_to_string ty_fmt) clauses in
           let clauses = PT.clauses_to_string indent1 indent_incr 0 clauses in
           match opt_ty with
           | None -> indent1 ^ "type " ^ name ^ clauses ^ "\n"
           | Some ty ->
-              indent1 ^ "type " ^ name ^ " = " ^ ety_to_string ty ^ clauses
+              indent1 ^ "type " ^ name ^ " = " ^ ty_to_string ty ^ clauses
               ^ "\n")
         def.types
     in
@@ -309,19 +294,18 @@ let trait_decl_to_string (fmt : ast_formatter) (indent : string)
 
 let trait_impl_to_string (fmt : ast_formatter) (indent : string)
     (indent_incr : string) (def : GA.trait_impl) : string =
-  let sty_fmt = ast_to_stype_formatter fmt in
-  let ety_fmt = ast_to_etype_formatter fmt in
-  let ety_to_string = PT.ety_to_string ety_fmt in
+  let ty_fmt = ast_to_type_formatter fmt in
+  let ty_to_string = PT.ty_to_string ty_fmt in
 
   (* Name *)
   let name = name_to_string def.GA.name in
 
   (* Generics and predicates *)
   let params, trait_clauses =
-    PT.generic_params_to_strings sty_fmt def.generics
+    PT.generic_params_to_strings ty_fmt def.generics
   in
   let clauses =
-    PT.predicates_and_trait_clauses_to_string sty_fmt indent indent_incr None
+    PT.predicates_and_trait_clauses_to_string ty_fmt indent indent_incr None
       trait_clauses def.preds
   in
   let params =
@@ -336,14 +320,14 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
       Collections.List.mapi
         (fun i trait_ref ->
           indent1 ^ "parent_clause" ^ string_of_int i ^ " = "
-          ^ PT.trait_ref_to_string sty_fmt trait_ref
+          ^ PT.trait_ref_to_string ty_fmt trait_ref
           ^ "\n")
         def.parent_trait_refs
     in
     let consts =
       List.map
         (fun (name, (ty, id)) ->
-          let ty = ety_to_string ty in
+          let ty = ty_to_string ty in
           let id = fmt.global_decl_id_to_string id in
           indent1 ^ "const " ^ name ^ " : " ^ ty ^ " = " ^ id ^ "\n")
         def.consts
@@ -355,12 +339,11 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
             if trait_refs <> [] then
               " where ["
               ^ String.concat ", "
-                  (List.map (PT.trait_ref_to_string ety_fmt) trait_refs)
+                  (List.map (PT.trait_ref_to_string ty_fmt) trait_refs)
               ^ "]"
             else ""
           in
-          indent1 ^ "type " ^ name ^ " = " ^ ety_to_string ty ^ trait_refs
-          ^ "\n")
+          indent1 ^ "type " ^ name ^ " = " ^ ty_to_string ty ^ trait_refs ^ "\n")
         def.types
     in
     let fmt_method (name, f) =
@@ -383,7 +366,7 @@ let trait_impl_to_string (fmt : ast_formatter) (indent : string)
     if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"
   in
 
-  let impl_trait = PT.strait_decl_ref_to_string sty_fmt def.impl_trait in
+  let impl_trait = PT.trait_decl_ref_to_string ty_fmt def.impl_trait in
   "impl" ^ params ^ " " ^ name ^ params ^ " : " ^ impl_trait ^ clauses ^ items
 
 (** This function pretty-prints a type definition by using a definition context *)
