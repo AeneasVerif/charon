@@ -30,10 +30,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         .unwrap()
     }
 
-    /** Helper for [translate_trait_impl].
-
-       Remark: the [decl_item] is the item from the trait declaration.
-    */
+    /// Helper for [translate_trait_impl].
+    ///
+    /// Remark: the [decl_item] is the item from the trait declaration.
     fn translate_trait_refs_from_impl_trait_item(
         &mut self,
         trait_impl_def_id: DefId,
