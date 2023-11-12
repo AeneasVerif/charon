@@ -30,17 +30,18 @@ let type_decl_is_enum (def : type_decl) : bool =
 (** Return [true] if a {!type: Types.ty} is actually [unit] *)
 let ty_is_unit (ty : ty) : bool =
   match ty with
-  | Adt
+  | TAdt
       (Tuple, { regions = []; types = []; const_generics = []; trait_refs = _ })
     ->
       true
   | _ -> false
 
-let ty_is_adt (ty : ty) : bool = match ty with Adt (_, _) -> true | _ -> false
+let ty_is_adt (ty : ty) : bool =
+  match ty with TAdt (_, _) -> true | _ -> false
 
 let ty_as_adt (ty : ty) : type_id * generic_args =
   match ty with
-  | Adt (id, generics) -> (id, generics)
+  | TAdt (id, generics) -> (id, generics)
   | _ -> raise (Failure "Unreachable")
 
 let ty_as_ref (ty : ty) : region * ty * ref_kind =
@@ -49,15 +50,15 @@ let ty_as_ref (ty : ty) : region * ty * ref_kind =
   | _ -> raise (Failure "Unreachable")
 
 let ty_is_custom_adt (ty : ty) : bool =
-  match ty with Adt (AdtId _, _) -> true | _ -> false
+  match ty with TAdt (AdtId _, _) -> true | _ -> false
 
 let ty_as_custom_adt (ty : ty) : TypeDeclId.id * generic_args =
   match ty with
-  | Adt (AdtId id, generics) -> (id, generics)
+  | TAdt (AdtId id, generics) -> (id, generics)
   | _ -> raise (Failure "Unreachable")
 
 let ty_as_literal (ty : ty) : literal_type =
-  match ty with Literal lty -> lty | _ -> raise (Failure "Unreachable")
+  match ty with TLiteral lty -> lty | _ -> raise (Failure "Unreachable")
 
 let const_generic_as_literal (cg : const_generic) : PrimitiveValues.literal =
   match cg with ConstGenericValue v -> v | _ -> raise (Failure "Unreachable")
@@ -97,15 +98,15 @@ let merge_generic_args (g1 : generic_args) (g2 : generic_args) : generic_args =
   }
 
 (** The unit type *)
-let mk_unit_ty : ty = Adt (Tuple, mk_empty_generic_args)
+let mk_unit_ty : ty = TAdt (Tuple, mk_empty_generic_args)
 
 (** The usize type *)
-let mk_usize_ty : ty = Literal (Integer Usize)
+let mk_usize_ty : ty = TLiteral (TInteger Usize)
 
 (** Deconstruct a type of the form [Box<T>] to retrieve the [T] inside *)
 let ty_get_box (box_ty : ty) : ty =
   match box_ty with
-  | Adt (Assumed Box, { types = [ boxed_ty ]; _ }) -> boxed_ty
+  | TAdt (TAssumed TBox, { types = [ boxed_ty ]; _ }) -> boxed_ty
   | _ -> raise (Failure "Not a boxed type")
 
 (** Deconstruct a type of the form [&T] or [&mut T] to retrieve the [T] (and
@@ -121,19 +122,33 @@ let mk_ref_ty (r : region) (ty : ty) (ref_kind : ref_kind) : ty =
 
 (** Make a box type *)
 let mk_box_ty (ty : ty) : ty =
-  Adt (Assumed Box, mk_generic_args_from_types [ ty ])
+  TAdt (TAssumed TBox, mk_generic_args_from_types [ ty ])
 
-(** Check if a region is in a set of regions *)
+(** Check if a region is in a set of regions.
+
+    This function should be used on non erased region. For sanity, we raise
+    an exception if the region is erased.
+ *)
 let region_in_set (r : region) (rset : RegionId.Set.t) : bool =
-  match r with Static | Erased -> false | Var id -> RegionId.Set.mem id rset
+  match r with
+  | RStatic -> false
+  | RErased ->
+      raise (Failure "region_in_set shouldn't be called on erased regions")
+  | RVar id -> RegionId.Set.mem id rset
 
-(** Return the set of regions in an type - TODO: add static? *)
+(** Return the set of regions in an type - TODO: add static?
+
+    This function should be used on non erased region. For sanity, we raise
+    an exception if the region is erased.
+ *)
 let ty_regions (ty : ty) : RegionId.Set.t =
   let s = ref RegionId.Set.empty in
   let add_region (r : region) =
     match r with
-    | Static | Erased -> () (* TODO: static? *)
-    | Var rid -> s := RegionId.Set.add rid !s
+    | RStatic -> () (* TODO: static? *)
+    | RErased ->
+        raise (Failure "ty_regions shouldn't be called on erased regions")
+    | RVar rid -> s := RegionId.Set.add rid !s
   in
   let obj =
     object
@@ -177,13 +192,13 @@ let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
   *)
 let rec ty_is_primitively_copyable (ty : ty) : bool =
   match ty with
-  | Adt (AdtId _, generics) ->
+  | TAdt (AdtId _, generics) ->
       List.for_all ty_is_primitively_copyable generics.types
-  | Adt (Assumed (Box | Str | Slice), _) -> false
-  | Adt ((Tuple | Assumed Array), generics) ->
+  | TAdt (TAssumed (TBox | TStr | TSlice), _) -> false
+  | TAdt ((Tuple | TAssumed TArray), generics) ->
       List.for_all ty_is_primitively_copyable generics.types
   | TypeVar _ | Never -> false
-  | Literal (Bool | Char | Integer _) -> true
+  | TLiteral (TBool | TChar | TInteger _) -> true
   | TraitType _ | Arrow (_, _) -> false
   | Ref (_, _, Mut) -> false
   | Ref (_, _, Shared) -> true

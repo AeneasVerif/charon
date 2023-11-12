@@ -74,39 +74,30 @@ let all_int_types = List.append all_signed_int_types all_unsigned_int_types
 
 type ref_kind = Mut | Shared [@@deriving show, ord]
 
-(* TODO: Str should be a literal *)
-type assumed_ty = Box | Array | Slice | Str [@@deriving show, ord]
-
 (** The variant id for [Option::None] *)
 let option_none_id = VariantId.of_int 0
 
 (** The variant id for [Option::Some] *)
 let option_some_id = VariantId.of_int 1
 
-(** Type identifier for ADTs.
-
-    ADTs are very general in our encoding: they account for "regular" ADTs,
-    tuples and also assumed types.
-*)
-type type_id = AdtId of TypeDeclId.id | Tuple | Assumed of assumed_ty
-[@@deriving show, ord]
-
 (** Ancestor for iter visitor for {!Types.const_generic} *)
 class ['self] iter_const_generic_base =
   object (_self : 'self)
-    inherit [_] VisitorsRuntime.iter
+    inherit [_] iter_literal
+    method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
     method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
 
     method visit_const_generic_var_id : 'env -> const_generic_var_id -> unit =
       fun _ _ -> ()
-
-    method visit_literal : 'env -> literal -> unit = fun _ _ -> ()
   end
 
 (** Ancestor for map visitor for {!Types.const_generic} *)
 class ['self] map_const_generic_base =
   object (_self : 'self)
-    inherit [_] VisitorsRuntime.map
+    inherit [_] map_literal
+
+    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id =
+      fun _ x -> x
 
     method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
       fun _ x -> x
@@ -114,28 +105,30 @@ class ['self] map_const_generic_base =
     method visit_const_generic_var_id
         : 'env -> const_generic_var_id -> const_generic_var_id =
       fun _ x -> x
-
-    method visit_literal : 'env -> literal -> literal = fun _ x -> x
   end
 
 (** Ancestor for reduce visitor for {!Types.const_generic} *)
 class virtual ['self] reduce_const_generic_base =
   object (self : 'self)
-    inherit [_] VisitorsRuntime.reduce
+    inherit [_] reduce_literal
+
+    method visit_type_decl_id : 'env -> type_decl_id -> 'a =
+      fun _ _ -> self#zero
 
     method visit_global_decl_id : 'env -> global_decl_id -> 'a =
       fun _ _ -> self#zero
 
     method visit_const_generic_var_id : 'env -> const_generic_var_id -> 'a =
       fun _ _ -> self#zero
-
-    method visit_literal : 'env -> literal -> 'a = fun _ _ -> self#zero
   end
 
 (** Ancestor for mapreduce visitor for {!Types.const_generic} *)
 class virtual ['self] mapreduce_const_generic_base =
   object (self : 'self)
-    inherit [_] VisitorsRuntime.mapreduce
+    inherit [_] mapreduce_literal
+
+    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id * 'a =
+      fun _ x -> (x, self#zero)
 
     method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id * 'a
         =
@@ -144,13 +137,13 @@ class virtual ['self] mapreduce_const_generic_base =
     method visit_const_generic_var_id
         : 'env -> const_generic_var_id -> const_generic_var_id * 'a =
       fun _ x -> (x, self#zero)
-
-    method visit_literal : 'env -> literal -> literal * 'a =
-      fun _ x -> (x, self#zero)
   end
 
 (** Remark: we have to use long names because otherwise we have collisions in
-    the functions derived for the visitors *)
+    the functions derived for the visitors.
+
+    TODO: change the prefix to "CG"
+ *)
 type const_generic =
   | ConstGenericGlobal of global_decl_id
   | ConstGenericVar of const_generic_var_id
@@ -201,9 +194,7 @@ class ['self] iter_ty_base =
     inherit [_] iter_const_generic
     method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
     method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
-    method visit_type_id : 'env -> type_id -> unit = fun _ _ -> ()
     method visit_ref_kind : 'env -> ref_kind -> unit = fun _ _ -> ()
-    method visit_literal_type : 'env -> literal_type -> unit = fun _ _ -> ()
 
     method visit_trait_item_name : 'env -> trait_item_name -> unit =
       fun _ _ -> ()
@@ -224,11 +215,7 @@ class virtual ['self] map_ty_base =
     method visit_type_var_id : 'env -> type_var_id -> type_var_id =
       fun _ id -> id
 
-    method visit_type_id : 'env -> type_id -> type_id = fun _ id -> id
     method visit_ref_kind : 'env -> ref_kind -> ref_kind = fun _ rk -> rk
-
-    method visit_literal_type : 'env -> literal_type -> literal_type =
-      fun _ x -> x
 
     method visit_trait_item_name : 'env -> trait_item_name -> trait_item_name =
       fun _ x -> x
@@ -243,12 +230,22 @@ class virtual ['self] map_ty_base =
       fun _ x -> x
   end
 
+(* TODO: Str should be a literal *)
+type assumed_ty = TBox | TArray | TSlice | TStr
+
+(** Type identifier for ADTs.
+
+    ADTs are very general in our encoding: they account for "regular" ADTs,
+    tuples and also assumed types.
+*)
+and type_id = AdtId of type_decl_id | Tuple | TAssumed of assumed_ty
+
 (* TODO: we should prefix the type variants with "T", this would avoid collisions *)
-type ty =
-  | Adt of type_id * generic_args
-      (** {!Types.ty.Adt} encodes ADTs, tuples and assumed types *)
+and ty =
+  | TAdt of type_id * generic_args
+      (** {!Types.ty.TAdt} encodes ADTs, tuples and assumed types *)
   | TypeVar of type_var_id
-  | Literal of literal_type
+  | TLiteral of literal_type
   | Never
   | Ref of region * ty * ref_kind
   | RawPtr of ty * ref_kind
@@ -311,9 +308,9 @@ and trait_instance_id =
     this allows us to factor out the visitors.
  *)
 and region =
-  | Static  (** Static region *)
-  | Var of region_id  (** Non-static region *)
-  | Erased  (** Erased region *)
+  | RStatic  (** Static region *)
+  | RVar of region_id  (** Non-static region *)
+  | RErased  (** Erased region *)
 [@@deriving
   show,
     ord,
@@ -335,6 +332,12 @@ and region =
         concrete = false;
         polymorphic = false;
       }]
+
+(** Type with erased regions (this only has an informative purpose) *)
+type ety = ty [@@deriving show, ord]
+
+(** Type with non-erased regions (this only has an informative purpose) *)
+type rty = ty [@@deriving show, ord]
 
 type field = { meta : meta; field_name : string option; field_ty : ty }
 [@@deriving show]
@@ -388,13 +391,14 @@ type predicates = {
     This is necessary to introduce the proper abstraction with the
     proper constraints, when evaluating a function call in symbolic mode.
 *)
-type region_group = {
-  id : RegionGroupId.id;
+type 'id g_region_group = {
+  id : 'id;
   regions : RegionId.id list;
-  parents : RegionGroupId.id list;
+  parents : 'id list;
 }
 [@@deriving show]
 
+type region_group = RegionGroupId.id g_region_group [@@deriving show]
 type region_groups = region_group list [@@deriving show]
 
 type variant = {

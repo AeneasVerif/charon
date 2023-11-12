@@ -48,20 +48,20 @@ type type_formatter = {
 
 let region_to_string (fmt : type_formatter) (r : T.region) : string =
   match r with
-  | Static -> "'static"
-  | Erased -> "'_"
-  | Var rid -> fmt.region_id_to_string rid
+  | RStatic -> "'static"
+  | RErased -> "'_"
+  | RVar rid -> fmt.region_id_to_string rid
 
 let type_id_to_string (fmt : type_formatter) (id : T.type_id) : string =
   match id with
   | T.AdtId id -> fmt.type_decl_id_to_string id
   | T.Tuple -> ""
-  | T.Assumed aty -> (
+  | T.TAssumed aty -> (
       match aty with
-      | Box -> "alloc::boxed::Box"
-      | Str -> "str"
-      | Array -> "@Array"
-      | Slice -> "@Slice")
+      | TBox -> "alloc::boxed::Box"
+      | TStr -> "str"
+      | TArray -> "@Array"
+      | TSlice -> "@Slice")
 
 let const_generic_to_string (fmt : type_formatter) (cg : T.const_generic) :
     string =
@@ -72,13 +72,13 @@ let const_generic_to_string (fmt : type_formatter) (cg : T.const_generic) :
 
 let rec ty_to_string (fmt : type_formatter) (ty : T.ty) : string =
   match ty with
-  | T.Adt (id, generics) ->
+  | T.TAdt (id, generics) ->
       let is_tuple = match id with T.Tuple -> true | _ -> false in
       let params = params_to_string fmt is_tuple generics in
       type_id_to_string fmt id ^ params
   | T.TypeVar tv -> fmt.type_var_id_to_string tv
   | T.Never -> "!"
-  | T.Literal lit_ty -> literal_type_to_string lit_ty
+  | T.TLiteral lit_ty -> literal_type_to_string lit_ty
   | T.TraitType (trait_ref, generics, type_name) ->
       let trait_ref = trait_ref_to_string fmt trait_ref in
       let generics = generic_args_to_string fmt generics in

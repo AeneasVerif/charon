@@ -125,8 +125,8 @@ let fun_id_or_trait_method_ref_to_string (fmt : expr_formatter)
   match r with
   | TraitMethod (trait_ref, method_name, _) ->
       PT.trait_ref_to_string ty_fmt trait_ref ^ "::" ^ method_name ^ generics
-  | FunId (Regular fid) -> fmt.fun_decl_id_to_string fid ^ generics
-  | FunId (Assumed aid) -> assumed_fun_id_to_string aid generics
+  | FunId (FRegular fid) -> fmt.fun_decl_id_to_string fid ^ generics
+  | FunId (FAssumed aid) -> assumed_fun_id_to_string aid generics
 
 let fn_ptr_to_string (fmt : expr_formatter) (ptr : E.fn_ptr) : string =
   let ty_fmt = expr_to_type_formatter fmt in
@@ -200,5 +200,5 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
                     "{ " ^ fields ^ " }"
               in
               variant_name ^ " " ^ fields
-          | Assumed _ -> raise (Failure "Unreachable"))
+          | TAssumed _ -> raise (Failure "Unreachable"))
       | E.AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " ops ^ "]")

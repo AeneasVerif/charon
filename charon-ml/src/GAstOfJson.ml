@@ -158,11 +158,11 @@ let region_var_of_json (js : json) : (T.region_var, string) result =
 let region_of_json (js : json) : (T.region, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "Static" -> Ok T.Static
-    | `String "Erased" -> Ok T.Erased
+    | `String "Static" -> Ok T.RStatic
+    | `String "Erased" -> Ok T.RErased
     | `Assoc [ ("Var", rid) ] ->
         let* rid = T.RegionId.id_of_json rid in
-        Ok (T.Var rid : T.region)
+        Ok (T.RVar rid : T.region)
     | _ -> Error "")
 
 let integer_type_of_json (js : json) : (PV.integer_type, string) result =
@@ -186,9 +186,9 @@ let literal_type_of_json (js : json) : (PV.literal_type, string) result =
     (match js with
     | `Assoc [ ("Integer", int_ty) ] ->
         let* int_ty = integer_type_of_json int_ty in
-        Ok (PV.Integer int_ty)
-    | `String "Bool" -> Ok PV.Bool
-    | `String "Char" -> Ok PV.Char
+        Ok (PV.TInteger int_ty)
+    | `String "Bool" -> Ok PV.TBool
+    | `String "Char" -> Ok PV.TChar
     | _ -> Error "")
 
 let const_generic_var_of_json (js : json) : (T.const_generic_var, string) result
@@ -211,10 +211,10 @@ let ref_kind_of_json (js : json) : (T.ref_kind, string) result =
 let assumed_ty_of_json (js : json) : (T.assumed_ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "Box" -> Ok T.Box
-    | `String "Array" -> Ok T.Array
-    | `String "Slice" -> Ok T.Slice
-    | `String "Str" -> Ok T.Str
+    | `String "Box" -> Ok T.TBox
+    | `String "Array" -> Ok T.TArray
+    | `String "Slice" -> Ok T.TSlice
+    | `String "Str" -> Ok T.TStr
     | _ -> Error "")
 
 let type_id_of_json (js : json) : (T.type_id, string) result =
@@ -226,7 +226,7 @@ let type_id_of_json (js : json) : (T.type_id, string) result =
     | `String "Tuple" -> Ok T.Tuple
     | `Assoc [ ("Assumed", aty) ] ->
         let* aty = assumed_ty_of_json aty in
-        Ok (T.Assumed aty)
+        Ok (T.TAssumed aty)
     | _ -> Error "")
 
 let big_int_of_json (js : json) : (PV.big_int, string) result =
@@ -298,13 +298,13 @@ let literal_of_json (js : json) : (PV.literal, string) result =
     (match js with
     | `Assoc [ ("Scalar", v) ] ->
         let* v = scalar_value_of_json v in
-        Ok (PV.Scalar v)
+        Ok (PV.VScalar v)
     | `Assoc [ ("Bool", v) ] ->
         let* v = bool_of_json v in
-        Ok (PV.Bool v)
+        Ok (PV.VBool v)
     | `Assoc [ ("Char", v) ] ->
         let* v = char_of_json v in
-        Ok (PV.Char v)
+        Ok (PV.VChar v)
     | _ -> Error "")
 
 let const_generic_of_json (js : json) : (T.const_generic, string) result =
@@ -332,13 +332,13 @@ let rec ty_of_json (js : json) : (T.ty, string) result =
         | T.Tuple ->
             assert (generics.T.regions = [] && generics.T.trait_refs = [])
         | _ -> ());
-        Ok (T.Adt (id, generics))
+        Ok (T.TAdt (id, generics))
     | `Assoc [ ("TypeVar", id) ] ->
         let* id = T.TypeVarId.id_of_json id in
         Ok (T.TypeVar id)
     | `Assoc [ ("Literal", ty) ] ->
         let* ty = literal_type_of_json ty in
-        Ok (T.Literal ty)
+        Ok (T.TLiteral ty)
     | `Assoc [ ("Ref", `List [ region; ty; ref_kind ]) ] ->
         let* region = region_of_json region in
         let* ty = ty_of_json ty in
@@ -711,13 +711,13 @@ let literal_of_json (js : json) : (PV.literal, string) result =
     (match js with
     | `Assoc [ ("Scalar", scalar_value) ] ->
         let* scalar_value = scalar_value_of_json scalar_value in
-        Ok (PV.Scalar scalar_value)
+        Ok (PV.VScalar scalar_value)
     | `Assoc [ ("Bool", v) ] ->
         let* v = bool_of_json v in
-        Ok (PV.Bool v)
+        Ok (PV.VBool v)
     | `Assoc [ ("Char", v) ] ->
         let* v = char_of_json v in
-        Ok (PV.Char v)
+        Ok (PV.VChar v)
     | _ -> Error "")
 
 let assumed_fun_id_of_json (js : json) : (A.assumed_fun_id, string) result =
@@ -739,10 +739,10 @@ let fun_id_of_json (js : json) : (A.fun_id, string) result =
     (match js with
     | `Assoc [ ("Regular", id) ] ->
         let* id = A.FunDeclId.id_of_json id in
-        Ok (E.Regular id)
+        Ok (E.FRegular id)
     | `Assoc [ ("Assumed", fid) ] ->
         let* fid = assumed_fun_id_of_json fid in
-        Ok (E.Assumed fid)
+        Ok (E.FAssumed fid)
     | _ -> Error "")
 
 let fun_id_or_trait_method_ref_of_json (js : json) :

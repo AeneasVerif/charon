@@ -22,9 +22,9 @@ let integer_type_to_string = function
 
 let literal_type_to_string (ty : literal_type) : string =
   match ty with
-  | Integer ity -> integer_type_to_string ity
-  | Bool -> "bool"
-  | Char -> "char"
+  | TInteger ity -> integer_type_to_string ity
+  | TBool -> "bool"
+  | TChar -> "char"
 
 let big_int_to_string (bi : big_int) : string = Z.to_string bi
 
@@ -33,6 +33,6 @@ let scalar_value_to_string (sv : scalar_value) : string =
 
 let literal_to_string (lit : literal) : string =
   match lit with
-  | Scalar sv -> scalar_value_to_string sv
-  | Bool b -> Bool.to_string b
-  | Char c -> String.make 1 c
+  | VScalar sv -> scalar_value_to_string sv
+  | VBool b -> Bool.to_string b
+  | VChar c -> String.make 1 c
