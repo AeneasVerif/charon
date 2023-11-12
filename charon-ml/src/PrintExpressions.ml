@@ -176,8 +176,8 @@ let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
       match akind with
       | E.AggregatedAdt (type_id, opt_variant_id, _generics) -> (
           match type_id with
-          | Tuple -> "(" ^ String.concat ", " ops ^ ")"
-          | AdtId def_id ->
+          | TTuple -> "(" ^ String.concat ", " ops ^ ")"
+          | TAdtId def_id ->
               let adt_name = fmt.type_decl_id_to_string def_id in
               let variant_name =
                 match opt_variant_id with

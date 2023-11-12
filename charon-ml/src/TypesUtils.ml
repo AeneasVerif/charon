@@ -31,7 +31,7 @@ let type_decl_is_enum (def : type_decl) : bool =
 let ty_is_unit (ty : ty) : bool =
   match ty with
   | TAdt
-      (Tuple, { regions = []; types = []; const_generics = []; trait_refs = _ })
+      (TTuple, { regions = []; types = []; const_generics = []; trait_refs = _ })
     ->
       true
   | _ -> false
@@ -46,15 +46,15 @@ let ty_as_adt (ty : ty) : type_id * generic_args =
 
 let ty_as_ref (ty : ty) : region * ty * ref_kind =
   match ty with
-  | Ref (r, ref_ty, kind) -> (r, ref_ty, kind)
+  | TRef (r, ref_ty, kind) -> (r, ref_ty, kind)
   | _ -> raise (Failure "Unreachable")
 
 let ty_is_custom_adt (ty : ty) : bool =
-  match ty with TAdt (AdtId _, _) -> true | _ -> false
+  match ty with TAdt (TAdtId _, _) -> true | _ -> false
 
 let ty_as_custom_adt (ty : ty) : TypeDeclId.id * generic_args =
   match ty with
-  | TAdt (AdtId id, generics) -> (id, generics)
+  | TAdt (TAdtId id, generics) -> (id, generics)
   | _ -> raise (Failure "Unreachable")
 
 let ty_as_literal (ty : ty) : literal_type =
@@ -98,7 +98,7 @@ let merge_generic_args (g1 : generic_args) (g2 : generic_args) : generic_args =
   }
 
 (** The unit type *)
-let mk_unit_ty : ty = TAdt (Tuple, mk_empty_generic_args)
+let mk_unit_ty : ty = TAdt (TTuple, mk_empty_generic_args)
 
 (** The usize type *)
 let mk_usize_ty : ty = TLiteral (TInteger Usize)
@@ -114,11 +114,11 @@ let ty_get_box (box_ty : ty) : ty =
  *)
 let ty_get_ref (ty : ty) : region * ty * ref_kind =
   match ty with
-  | Ref (r, ty, ref_kind) -> (r, ty, ref_kind)
+  | TRef (r, ty, ref_kind) -> (r, ty, ref_kind)
   | _ -> raise (Failure "Not a ref type")
 
 let mk_ref_ty (r : region) (ty : ty) (ref_kind : ref_kind) : ty =
-  Ref (r, ty, ref_kind)
+  TRef (r, ty, ref_kind)
 
 (** Make a box type *)
 let mk_box_ty (ty : ty) : ty =
@@ -192,16 +192,16 @@ let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
   *)
 let rec ty_is_primitively_copyable (ty : ty) : bool =
   match ty with
-  | TAdt (AdtId _, generics) ->
+  | TAdt (TAdtId _, generics) ->
       List.for_all ty_is_primitively_copyable generics.types
   | TAdt (TAssumed (TBox | TStr | TSlice), _) -> false
-  | TAdt ((Tuple | TAssumed TArray), generics) ->
+  | TAdt ((TTuple | TAssumed TArray), generics) ->
       List.for_all ty_is_primitively_copyable generics.types
-  | TypeVar _ | Never -> false
+  | TVar _ | TNever -> false
   | TLiteral (TBool | TChar | TInteger _) -> true
-  | TraitType _ | Arrow (_, _) -> false
-  | Ref (_, _, Mut) -> false
-  | Ref (_, _, Shared) -> true
-  | RawPtr (_, _) ->
+  | TTraitType _ | TArrow (_, _) -> false
+  | TRef (_, _, Mut) -> false
+  | TRef (_, _, Shared) -> true
+  | TRawPtr (_, _) ->
       (* Not sure what to do here, so being conservative *)
       false

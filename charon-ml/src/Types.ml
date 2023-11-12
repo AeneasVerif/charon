@@ -235,20 +235,20 @@ type assumed_ty = TBox | TArray | TSlice | TStr
     ADTs are very general in our encoding: they account for "regular" ADTs,
     tuples and also assumed types.
 *)
-and type_id = AdtId of type_decl_id | Tuple | TAssumed of assumed_ty
+and type_id = TAdtId of type_decl_id | TTuple | TAssumed of assumed_ty
 
 (* TODO: we should prefix the type variants with "T", this would avoid collisions *)
 and ty =
   | TAdt of type_id * generic_args
       (** {!Types.ty.TAdt} encodes ADTs, tuples and assumed types *)
-  | TypeVar of type_var_id
+  | TVar of type_var_id
   | TLiteral of literal_type
-  | Never
-  | Ref of region * ty * ref_kind
-  | RawPtr of ty * ref_kind
-  | TraitType of trait_ref * generic_args * string
+  | TNever
+  | TRef of region * ty * ref_kind
+  | TRawPtr of ty * ref_kind
+  | TTraitType of trait_ref * generic_args * string
       (** The string is for the name of the associated type *)
-  | Arrow of ty list * ty
+  | TArrow of ty list * ty
 
 and trait_ref = {
   trait_id : trait_instance_id;

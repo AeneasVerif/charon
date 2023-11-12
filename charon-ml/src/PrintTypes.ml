@@ -54,8 +54,8 @@ let region_to_string (fmt : type_formatter) (r : T.region) : string =
 
 let type_id_to_string (fmt : type_formatter) (id : T.type_id) : string =
   match id with
-  | T.AdtId id -> fmt.type_decl_id_to_string id
-  | T.Tuple -> ""
+  | T.TAdtId id -> fmt.type_decl_id_to_string id
+  | T.TTuple -> ""
   | T.TAssumed aty -> (
       match aty with
       | TBox -> "alloc::boxed::Box"
@@ -73,27 +73,27 @@ let const_generic_to_string (fmt : type_formatter) (cg : T.const_generic) :
 let rec ty_to_string (fmt : type_formatter) (ty : T.ty) : string =
   match ty with
   | T.TAdt (id, generics) ->
-      let is_tuple = match id with T.Tuple -> true | _ -> false in
+      let is_tuple = match id with T.TTuple -> true | _ -> false in
       let params = params_to_string fmt is_tuple generics in
       type_id_to_string fmt id ^ params
-  | T.TypeVar tv -> fmt.type_var_id_to_string tv
-  | T.Never -> "!"
+  | T.TVar tv -> fmt.type_var_id_to_string tv
+  | T.TNever -> "!"
   | T.TLiteral lit_ty -> literal_type_to_string lit_ty
-  | T.TraitType (trait_ref, generics, type_name) ->
+  | T.TTraitType (trait_ref, generics, type_name) ->
       let trait_ref = trait_ref_to_string fmt trait_ref in
       let generics = generic_args_to_string fmt generics in
       trait_ref ^ generics ^ "::" ^ type_name
-  | T.Ref (r, rty, ref_kind) -> (
+  | T.TRef (r, rty, ref_kind) -> (
       match ref_kind with
       | T.Mut ->
           "&" ^ region_to_string fmt r ^ " mut (" ^ ty_to_string fmt rty ^ ")"
       | T.Shared ->
           "&" ^ region_to_string fmt r ^ " (" ^ ty_to_string fmt rty ^ ")")
-  | T.RawPtr (rty, ref_kind) -> (
+  | T.TRawPtr (rty, ref_kind) -> (
       match ref_kind with
       | T.Mut -> "*mut " ^ ty_to_string fmt rty
       | T.Shared -> "*const " ^ ty_to_string fmt rty)
-  | T.Arrow (inputs, output) ->
+  | T.TArrow (inputs, output) ->
       let inputs =
         "(" ^ String.concat ", " (List.map (ty_to_string fmt) inputs) ^ ") -> "
       in

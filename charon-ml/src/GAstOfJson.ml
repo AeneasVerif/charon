@@ -222,8 +222,8 @@ let type_id_of_json (js : json) : (T.type_id, string) result =
     (match js with
     | `Assoc [ ("Adt", id) ] ->
         let* id = T.TypeDeclId.id_of_json id in
-        Ok (T.AdtId id)
-    | `String "Tuple" -> Ok T.Tuple
+        Ok (T.TAdtId id)
+    | `String "Tuple" -> Ok T.TTuple
     | `Assoc [ ("Assumed", aty) ] ->
         let* aty = assumed_ty_of_json aty in
         Ok (T.TAssumed aty)
@@ -329,13 +329,13 @@ let rec ty_of_json (js : json) : (T.ty, string) result =
         let* generics = generic_args_of_json generics in
         (* Sanity check *)
         (match id with
-        | T.Tuple ->
+        | T.TTuple ->
             assert (generics.T.regions = [] && generics.T.trait_refs = [])
         | _ -> ());
         Ok (T.TAdt (id, generics))
     | `Assoc [ ("TypeVar", id) ] ->
         let* id = T.TypeVarId.id_of_json id in
-        Ok (T.TypeVar id)
+        Ok (T.TVar id)
     | `Assoc [ ("Literal", ty) ] ->
         let* ty = literal_type_of_json ty in
         Ok (T.TLiteral ty)
@@ -343,20 +343,20 @@ let rec ty_of_json (js : json) : (T.ty, string) result =
         let* region = region_of_json region in
         let* ty = ty_of_json ty in
         let* ref_kind = ref_kind_of_json ref_kind in
-        Ok (T.Ref (region, ty, ref_kind))
+        Ok (T.TRef (region, ty, ref_kind))
     | `Assoc [ ("RawPtr", `List [ ty; ref_kind ]) ] ->
         let* ty = ty_of_json ty in
         let* ref_kind = ref_kind_of_json ref_kind in
-        Ok (T.RawPtr (ty, ref_kind))
+        Ok (T.TRawPtr (ty, ref_kind))
     | `Assoc [ ("TraitType", `List [ trait_ref; generics; item_name ]) ] ->
         let* trait_ref = trait_ref_of_json trait_ref in
         let* generics = generic_args_of_json generics in
         let* item_name = string_of_json item_name in
-        Ok (T.TraitType (trait_ref, generics, item_name))
+        Ok (T.TTraitType (trait_ref, generics, item_name))
     | `Assoc [ ("Arrow", `List [ inputs; output ]) ] ->
         let* inputs = list_of_json ty_of_json inputs in
         let* output = ty_of_json output in
-        Ok (T.Arrow (inputs, output))
+        Ok (T.TArrow (inputs, output))
     | _ -> Error "")
 
 and trait_ref_of_json (js : json) : (T.trait_ref, string) result =
