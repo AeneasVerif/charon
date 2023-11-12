@@ -231,7 +231,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// ```
     ///
     /// For this reason, we use a stack of vectors to store the bound variables.
-    pub bound_vars: im::Vector<im::Vector<RegionId::Id>>,
+    pub bound_region_vars: im::Vector<im::Vector<RegionId::Id>>,
 }
 
 /// A formatting context for type/global/function bodies.
@@ -500,7 +500,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trait_type_constraints: Vec::new(),
             blocks: im::OrdMap::new(),
             blocks_map: ast::BlockId::MapGenerator::new(),
-            bound_vars: im::Vector::new(),
+            bound_region_vars: im::Vector::new(),
         }
     }
 
@@ -592,7 +592,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .collect();
 
         // Push the group
-        self.bound_vars.push_front(var_ids);
+        self.bound_region_vars.push_front(var_ids);
     }
 
     pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId::Id {

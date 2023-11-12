@@ -29,7 +29,7 @@ pub fn region_group_id_to_pretty_string(rid: RegionGroupId::Id) -> String {
     format!("rg@{rid}")
 }
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct LifetimeConstraint {
     region: Region,
     parent: Region,
@@ -233,6 +233,9 @@ fn add_region_constraints(
                 }
             }
         }
+        (Region::Unknown, _) => {
+            // Ignoring this case, which stems from errors
+        }
     }
 
     // Also constrain with regards to static:
@@ -285,6 +288,7 @@ fn compute_full_regions_constraints_for_ty(
                         // We need to instantiate the additional parents
                         let additional_parents =
                             im::HashSet::from_iter(additional_parents.iter().map(|r| match r {
+                                Region::Unknown => Region::Unknown,
                                 Region::Static => Region::Static,
                                 Region::Erased => Region::Erased,
                                 Region::Var(rid) => *region_inst.get(*rid).unwrap(),
@@ -314,6 +318,7 @@ fn compute_full_regions_constraints_for_ty(
                         let mut parent_regions = parent_regions.clone();
                         for r in type_param_constraints {
                             let region = match r {
+                                Region::Unknown => Region::Unknown,
                                 Region::Static => Region::Static,
                                 Region::Erased => Region::Erased,
                                 Region::Var(rid) => *region_inst.get(*rid).unwrap(),

@@ -65,6 +65,7 @@ impl Region {
             Region::Static => "'static".to_string(),
             Region::Var(id) => ctx.format_object(*id),
             Region::Erased => "'_".to_string(),
+            Region::Unknown => "'_UNKNOWN_".to_string(),
         }
     }
 }
@@ -76,7 +77,7 @@ impl Region {
 
     pub fn contains_var(&self, rset: &OrdSet<RegionId::Id>) -> bool {
         match self {
-            Region::Static | Region::Erased => false,
+            Region::Static | Region::Erased | Region::Unknown => false,
             Region::Var(id) => rset.contains(id),
         }
     }
@@ -1083,6 +1084,7 @@ impl std::fmt::Display for Region {
             Region::Static => write!(f, "'static"),
             Region::Var(id) => write!(f, "'_{id}"),
             Region::Erased => write!(f, "'_"),
+            Region::Unknown => write!(f, "'_UNKNOWN_"),
         }
     }
 }
@@ -1280,7 +1282,7 @@ impl Ty {
     pub fn substitute_regions_types(&self, rsubst: &RegionSubst, tsubst: &TypeSubst) -> Self {
         self.substitute(
             &|r| match r {
-                Region::Static | Region::Erased => *r,
+                Region::Static | Region::Erased | Region::Unknown => *r,
                 Region::Var(rid) => *rsubst.get(rid).unwrap(),
             },
             &|tid| tsubst.get(tid).unwrap().clone(),
@@ -1624,7 +1626,7 @@ pub trait TypeVisitor {
 
     fn visit_region(&mut self, r: &Region) {
         match r {
-            Region::Erased | Region::Static => (),
+            Region::Erased | Region::Static | Region::Unknown => (),
             Region::Var(id) => self.visit_region_id(id),
         }
     }

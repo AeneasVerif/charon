@@ -59,7 +59,7 @@ pub struct ConstGenericVar {
 }
 
 #[derive(
-    Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord, EnumIsA, EnumAsGetters, Serialize,
+    Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, EnumIsA, EnumAsGetters, Serialize,
 )]
 pub enum Region {
     /// Static region
@@ -68,6 +68,9 @@ pub enum Region {
     Var(RegionId::Id),
     /// Erased region
     Erased,
+    /// For error reporting.
+    /// Can appear only if the option [CliOpts::continue_on_failure] is used.
+    Unknown,
 }
 
 /// Identifier of a trait instance.
@@ -185,7 +188,8 @@ pub enum TraitInstanceId {
     /// finished solving the trait obligations, all the remaining unsolved
     /// clauses (in case we don't fail hard on error) are converted to [Unknown].
     Unsolved(TraitDeclId::Id, GenericArgs),
-    /// For error reporting
+    /// For error reporting.
+    /// Can appear only if the option [CliOpts::continue_on_failure] is used.
     Unknown(String),
 }
 

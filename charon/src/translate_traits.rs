@@ -17,7 +17,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     fn translate_ty_from_trait_item(&mut self, item: &rustc_middle::ty::AssocItem) -> Ty {
+        let erase_regions = false;
         self.translate_ty(
+            erase_regions,
             &self
                 .t_ctx
                 .tcx
@@ -28,7 +30,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         .unwrap()
     }
 
-    /** Remark: the [decl_item] is the item from the trait declaration. */
+    /** Helper for [translate_trait_impl].
+
+       Remark: the [decl_item] is the item from the trait declaration.
+    */
     fn translate_trait_refs_from_impl_trait_item(
         &mut self,
         trait_impl_def_id: DefId,
@@ -49,6 +54,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let bounds = tcx.item_bounds(decl_item.def_id);
         let param_env = tcx.param_env(trait_impl_def_id);
         let bounds = tcx.subst_and_normalize_erasing_regions(subst, param_env, bounds);
+        let erase_regions = false;
 
         // Solve the predicate bounds
         let mut trait_refs = Vec::new();
@@ -59,7 +65,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             {
                 let trait_ref = rustc_middle::ty::Binder::dummy(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
-                let trait_ref = self.translate_trait_impl_source(&trait_ref);
+                let trait_ref = self.translate_trait_impl_source(erase_regions, &trait_ref);
                 if let Some(trait_ref) = trait_ref {
                     trait_refs.push(trait_ref);
                 }
@@ -411,6 +417,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+        let erase_regions = false;
 
         // Translate the generics
         bt_ctx.translate_generic_params(rust_id);
@@ -446,7 +453,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     tcx.impl_subject(rust_id).subst_identity() else { unreachable!() };
             let trait_ref = rust_trait_ref.sinto(&bt_ctx.hax_state);
             let (regions, types, const_generics) = bt_ctx
-                .translate_substs(None, &trait_ref.generic_args)
+                .translate_substs(erase_regions, None, &trait_ref.generic_args)
                 .unwrap();
 
             let parent_trait_refs = hax::solve_item_traits(
@@ -456,7 +463,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 rust_trait_ref.substs,
             );
             let parent_trait_refs: Vec<TraitRef> =
-                bt_ctx.translate_trait_impl_sources(&parent_trait_refs);
+                bt_ctx.translate_trait_impl_sources(erase_regions, &parent_trait_refs);
             let parent_trait_refs: TraitClauseId::Vector<TraitRef> =
                 TraitClauseId::Vector::from(parent_trait_refs);
 
