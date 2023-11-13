@@ -495,8 +495,8 @@ let trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
         let* clause_id = T.TraitClauseId.id_of_json clause_id in
         let* meta = option_of_json (meta_of_json id_to_file) meta in
         let* trait_id = T.TraitDeclId.id_of_json trait_id in
-        let* generics = generic_args_of_json generics in
-        Ok ({ clause_id; meta; trait_id; generics } : T.trait_clause)
+        let* clause_generics = generic_args_of_json generics in
+        Ok ({ clause_id; meta; trait_id; clause_generics } : T.trait_clause)
     | _ -> Error "")
 
 let generic_params_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -589,7 +589,6 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("generics", generics);
           ("preds", preds);
           ("kind", kind);
-          ("regions_hierarchy", regions_hierarchy);
         ] ->
         let* def_id = T.TypeDeclId.id_of_json def_id in
         let* meta = meta_of_json id_to_file meta in
@@ -598,18 +597,7 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* kind = type_decl_kind_of_json id_to_file kind in
-        let* regions_hierarchy = region_var_groups_of_json regions_hierarchy in
-        Ok
-          {
-            T.def_id;
-            meta;
-            is_local;
-            name;
-            generics;
-            preds;
-            kind;
-            regions_hierarchy;
-          }
+        Ok { T.def_id; meta; is_local; name; generics; preds; kind }
     | _ -> Error "")
 
 let var_of_json (js : json) : (A.var, string) result =
@@ -912,7 +900,6 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
           ("parent_params_info", parent_params_info);
           ("inputs", inputs);
           ("output", output);
-          ("regions_hierarchy", regions_hierarchy);
         ] ->
         let* is_unsafe = bool_of_json is_unsafe in
         let* generics = generic_params_of_json id_to_file generics in
@@ -922,17 +909,7 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
         in
         let* inputs = list_of_json ty_of_json inputs in
         let* output = ty_of_json output in
-        let* regions_hierarchy = region_var_groups_of_json regions_hierarchy in
-        Ok
-          {
-            A.is_unsafe;
-            generics;
-            preds;
-            parent_params_info;
-            inputs;
-            output;
-            regions_hierarchy;
-          }
+        Ok { A.is_unsafe; generics; preds; parent_params_info; inputs; output }
     | _ -> Error "")
 
 let call_of_json (js : json) : (A.call, string) result =

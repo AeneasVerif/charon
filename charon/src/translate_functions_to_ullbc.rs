@@ -11,7 +11,6 @@ use crate::formatter::Formatter;
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::id_vector;
 use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
-use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::translate_types;
 use crate::types::*;
@@ -1574,7 +1573,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             generics: self.get_generics(),
             preds: self.get_predicates(),
             is_unsafe,
-            regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
             parent_params_info,
             inputs,
             output,

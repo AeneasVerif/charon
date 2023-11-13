@@ -3,7 +3,6 @@
 pub use crate::gast::TraitItemName;
 use crate::meta::Meta;
 use crate::names::TypeName;
-use crate::regions_hierarchy::RegionGroups;
 pub use crate::types_utils::*;
 use crate::values::Literal;
 use derivative::Derivative;
@@ -320,12 +319,6 @@ pub struct TypeDecl {
     pub preds: Predicates,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
-    /// The lifetime's hierarchy between the different regions.
-    /// We initialize it to a dummy value, then compute it once the whole crate
-    /// has been translated.
-    ///
-    /// TODO: move to Aeneas
-    pub regions_hierarchy: RegionGroups,
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
@@ -615,10 +608,4 @@ pub struct FunSig {
     pub parent_params_info: Option<ParamsInfo>,
     pub inputs: Vec<Ty>,
     pub output: Ty,
-    /// The lifetime's hierarchy between the different regions.
-    /// We initialize it to a dummy value, and compute it once the whole
-    /// crate has been translated from MIR.
-    ///
-    /// TODO: move to Aeneas.
-    pub regions_hierarchy: RegionGroups,
 }

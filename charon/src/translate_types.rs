@@ -2,7 +2,6 @@ use crate::assumed;
 use crate::common::*;
 use crate::gast::*;
 use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
-use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::types::*;
 use core::convert::*;
@@ -610,8 +609,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             generics,
             preds: bt_ctx.get_predicates(),
             kind,
-            // Dummy value for now: we compute this later
-            regions_hierarchy: RegionGroups::new(),
         };
 
         trace!("translate_type: preds: {:?}", &type_def.preds);

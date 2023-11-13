@@ -7,7 +7,6 @@ use crate::index_to_function_calls;
 use crate::insert_assign_return_unit;
 use crate::ops_to_function_calls;
 use crate::reconstruct_asserts;
-use crate::regions_hierarchy;
 use crate::remove_drop_never;
 use crate::remove_dynamic_checks;
 use crate::remove_read_discriminant;
@@ -168,10 +167,6 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // - find the recursive definitions
     // - group the mutually recursive definitions
     let ordered_decls = reorder_decls::reorder_declarations(&ctx)?;
-
-    // # Compute the regions hierarchies for the types and the function signatures
-    // TODO: move to Aeneas
-    regions_hierarchy::compute(&mut ctx, &ordered_decls);
 
     //
     // =================

@@ -6,14 +6,14 @@ module T = Types
 
     This list *doesn't* include the current region.
  *)
-let rec list_ancestor_region_groups (sg : fun_sig) (gid : T.RegionGroupId.id) :
-    T.RegionGroupId.Set.t =
-  let rg = T.RegionGroupId.nth sg.regions_hierarchy gid in
+let rec list_ancestor_region_groups (regions_hierarchy : T.region_groups)
+    (gid : T.RegionGroupId.id) : T.RegionGroupId.Set.t =
+  let rg = T.RegionGroupId.nth regions_hierarchy gid in
   let parents =
     List.fold_left
       (fun s gid ->
         (* Compute the parents *)
-        let parents = list_ancestor_region_groups sg gid in
+        let parents = list_ancestor_region_groups regions_hierarchy gid in
         (* Parents U current region *)
         let parents = T.RegionGroupId.Set.add gid parents in
         (* Make the union with the accumulator *)
@@ -23,13 +23,13 @@ let rec list_ancestor_region_groups (sg : fun_sig) (gid : T.RegionGroupId.id) :
   parents
 
 (** Small utility: same as {!list_ancestor_region_groups}, but returns an ordered list.  *)
-let list_ordered_ancestor_region_groups (sg : fun_sig)
+let list_ordered_ancestor_region_groups (regions_hierarchy : T.region_groups)
     (gid : T.RegionGroupId.id) : T.RegionGroupId.id list =
-  let pset = list_ancestor_region_groups sg gid in
+  let pset = list_ancestor_region_groups regions_hierarchy gid in
   let parents =
     List.filter
       (fun (rg : T.region_group) -> T.RegionGroupId.Set.mem rg.id pset)
-      sg.regions_hierarchy
+      regions_hierarchy
   in
   let parents = List.map (fun (rg : T.region_group) -> rg.id) parents in
   parents

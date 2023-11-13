@@ -171,7 +171,7 @@ let trait_clause_to_string (fmt : type_formatter) (clause : T.trait_clause) :
     string =
   let clause_id = fmt.trait_clause_id_to_string clause.clause_id in
   let trait_id = fmt.trait_decl_id_to_string clause.trait_id in
-  let generics = generic_args_to_string fmt clause.generics in
+  let generics = generic_args_to_string fmt clause.clause_generics in
   "[" ^ clause_id ^ "]: " ^ trait_id ^ generics
 
 let generic_params_to_strings (fmt : type_formatter)

@@ -1836,7 +1836,6 @@ pub trait TypeVisitor {
             parent_params_info: _,
             inputs,
             output,
-            regions_hierarchy: _,
         } = sig;
 
         self.visit_generic_params(generics);

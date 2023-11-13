@@ -237,7 +237,6 @@ type assumed_ty = TBox | TArray | TSlice | TStr
 *)
 and type_id = TAdtId of type_decl_id | TTuple | TAssumed of assumed_ty
 
-(* TODO: we should prefix the type variants with "T", this would avoid collisions *)
 and ty =
   | TAdt of type_id * generic_args
       (** {!Types.ty.TAdt} encodes ADTs, tuples and assumed types *)
@@ -330,24 +329,76 @@ and region =
         polymorphic = false;
       }]
 
+(** Ancestor for iter visitor for {!type: Types.predicates} *)
+class ['self] iter_predicates_base =
+  object (self : 'self)
+    inherit [_] iter_ty
+    method visit_meta : 'env -> meta -> unit = fun _ _ -> ()
+
+    method visit_type_var : 'env -> type_var -> unit =
+      fun env x ->
+        let { index; name } : type_var = x in
+        self#visit_type_var_id env index;
+        self#visit_string env name
+
+    method visit_region_var : 'env -> region_var -> unit =
+      fun env x ->
+        let { index; name } : region_var = x in
+        self#visit_region_id env index;
+        self#visit_option self#visit_string env name
+
+    method visit_const_generic_var : 'env -> const_generic_var -> unit =
+      fun env x ->
+        let { index; name; ty } : const_generic_var = x in
+        self#visit_const_generic_var_id env index;
+        self#visit_string env name;
+        self#visit_literal_type env ty
+  end
+
+(** Ancestor for map visitor for {!type: Types.ty} *)
+class virtual ['self] map_predicates_base =
+  object (self : 'self)
+    inherit [_] map_ty
+    method visit_meta : 'env -> meta -> meta = fun _ x -> x
+
+    method visit_region_var : 'env -> region_var -> region_var =
+      fun env x ->
+        let { index; name } : region_var = x in
+        let index = self#visit_region_id env index in
+        let name = self#visit_option self#visit_string env name in
+        { index; name }
+
+    method visit_type_var : 'env -> type_var -> type_var =
+      fun env x ->
+        let { index; name } : type_var = x in
+        let index = self#visit_type_var_id env index in
+        let name = self#visit_string env name in
+        { index; name }
+
+    method visit_const_generic_var
+        : 'env -> const_generic_var -> const_generic_var =
+      fun env x ->
+        let { index; name; ty } : const_generic_var = x in
+        let index = self#visit_const_generic_var_id env index in
+        let name = self#visit_string env name in
+        let ty = self#visit_literal_type env ty in
+        { index; name; ty }
+  end
+
 (** Type with erased regions (this only has an informative purpose) *)
-type ety = ty [@@deriving show, ord]
+type ety = ty
 
 (** Type with non-erased regions (this only has an informative purpose) *)
-type rty = ty [@@deriving show, ord]
+and rty = ty
 
-type field = { meta : meta; field_name : string option; field_ty : ty }
-[@@deriving show]
-
-type trait_clause = {
+and trait_clause = {
   clause_id : trait_clause_id;
   meta : meta option;
   trait_id : trait_decl_id;
-  generics : generic_args;
+  clause_generics : generic_args;
 }
-[@@deriving show]
 
-type generic_params = {
+and generic_params = {
   regions : region_var list;
   types : type_var list;
       (** The type parameters can be indexed with {!Types.TypeVarId.id}.
@@ -361,25 +412,45 @@ type generic_params = {
        *)
   trait_clauses : trait_clause list;
 }
-[@@deriving show]
 
-type region_outlives = region * region [@@deriving show]
-type type_outlives = ty * region [@@deriving show]
+(** ('long, 'short) means that 'long outlives 'short *)
+and region_outlives = region * region
 
-type trait_type_constraint = {
+(** (T, 'a) means that T outlives 'a *)
+and type_outlives = ty * region
+
+and trait_type_constraint = {
   trait_ref : trait_ref;
   generics : generic_args;
   type_name : trait_item_name;
   ty : ty;
 }
-[@@deriving show]
 
-type predicates = {
+and predicates = {
   regions_outlive : region_outlives list;
   types_outlive : type_outlives list;
   trait_type_constraints : trait_type_constraint list;
 }
-[@@deriving show]
+[@@deriving
+  show,
+    visitors
+      {
+        name = "iter_predicates";
+        variety = "iter";
+        ancestors = [ "iter_predicates_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
+        concrete = true;
+        polymorphic = false;
+      },
+    visitors
+      {
+        name = "map_predicates";
+        variety = "map";
+        ancestors = [ "map_predicates_base" ];
+        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
+        concrete = false;
+        polymorphic = false;
+      }]
 
 (** A group of regions.
 
@@ -397,6 +468,9 @@ type 'id g_region_group = {
 
 type region_group = RegionGroupId.id g_region_group [@@deriving show]
 type region_groups = region_group list [@@deriving show]
+
+type field = { meta : meta; field_name : string option; field_ty : ty }
+[@@deriving show]
 
 type variant = {
   meta : meta;
@@ -432,9 +506,5 @@ type type_decl = {
   generics : generic_params;
   preds : predicates;
   kind : type_decl_kind;
-  regions_hierarchy : region_groups;
-      (** Stores the hierarchy between the regions (which regions have the
-          same lifetime, which lifetime should end before which other lifetime,
-          etc.) *)
 }
 [@@deriving show]

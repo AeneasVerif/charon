@@ -1,5 +1,18 @@
+open Collections
 open Types
 open Utils
+
+module RegionOrderedType : OrderedType with type t = region = struct
+  type t = region
+
+  let compare = compare_region
+  let to_string = show_region
+  let pp_t = pp_region
+  let show_t = show_region
+end
+
+module RegionMap = Collections.MakeMap (RegionOrderedType)
+module RegionSet = Collections.MakeSet (RegionOrderedType)
 
 let type_decl_is_opaque (d : type_decl) : bool =
   match d.kind with Struct _ | Enum _ -> false | Opaque -> true

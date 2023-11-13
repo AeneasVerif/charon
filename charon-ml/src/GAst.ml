@@ -32,14 +32,14 @@ type var = {
 class ['self] iter_ast_base =
   object (_self : 'self)
     inherit [_] iter_rvalue
-    method visit_meta : 'env -> meta -> unit = fun _ _ -> ()
+    inherit! [_] iter_predicates
   end
 
 (** Ancestor the AST map visitors *)
 class ['self] map_ast_base =
   object (_self : 'self)
     inherit [_] map_rvalue
-    method visit_meta : 'env -> meta -> meta = fun _ x -> x
+    inherit! [_] map_predicates
   end
 
 (* Below: the types need not be mutually recursive, but it makes it easier
@@ -97,7 +97,6 @@ type fun_sig = {
   parent_params_info : params_info option;
   inputs : ty list;
   output : ty;
-  regions_hierarchy : region_groups;
 }
 [@@deriving show]
 

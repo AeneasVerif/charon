@@ -142,7 +142,6 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
          generics = TypesUtils.mk_empty_generic_params;
          preds = TypesUtils.mk_empty_predicates;
          parent_params_info = None;
-         regions_hierarchy = [];
          inputs = [];
          output = ty;
        }
