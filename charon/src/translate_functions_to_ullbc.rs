@@ -1421,7 +1421,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 tcx.fn_sig(def_id).subst_identity()
             };
 
-        // The parameters (and in particular the lifetimegs) are split between
+        // The parameters (and in particular the lifetimes) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
         // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
         // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
