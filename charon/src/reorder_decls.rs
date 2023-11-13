@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::common::*;
 use crate::expressions::*;
 use crate::gast::*;
