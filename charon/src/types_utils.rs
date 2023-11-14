@@ -641,9 +641,9 @@ impl TypeDecl {
         field_type
     }
 
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: TypeFormatter,
     {
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         // Predicates
@@ -664,10 +664,13 @@ impl TypeDecl {
                     let fields = fields.join(",");
                     format!(
                         "struct {}{params}{preds}{eq_space}=\n{{{fields}\n}}",
-                        self.name
+                        self.name.fmt_with_ctx(ctx)
                     )
                 } else {
-                    format!("struct {}{params}{preds}{eq_space}= {{}}", self.name)
+                    format!(
+                        "struct {}{params}{preds}{eq_space}= {{}}",
+                        self.name.fmt_with_ctx(ctx)
+                    )
                 }
             }
             TypeDeclKind::Enum(variants) => {
@@ -676,9 +679,14 @@ impl TypeDecl {
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
                     .collect();
                 let variants = variants.join("\n");
-                format!("enum {}{params}{preds}{eq_space}=\n{variants}\n", self.name)
+                format!(
+                    "enum {}{params}{preds}{eq_space}=\n{variants}\n",
+                    self.name.fmt_with_ctx(ctx)
+                )
             }
-            TypeDeclKind::Opaque => format!("opaque type {}{params}{preds}", self.name),
+            TypeDeclKind::Opaque => {
+                format!("opaque type {}{params}{preds}", self.name.fmt_with_ctx(ctx))
+            }
         }
     }
 }
@@ -1367,17 +1375,6 @@ where
 {
     fn format_object(&self, r: &Region) -> String {
         r.fmt_with_ctx(self)
-    }
-}
-
-impl Formatter<TypeDeclId::Id> for TypeDecls {
-    fn format_object(&self, id: TypeDeclId::Id) -> String {
-        // The definition may not be available yet, especially if we print-debug
-        // while translating the crate
-        match self.get(id) {
-            Option::None => id.to_pretty_string(),
-            Option::Some(def) => def.name.to_string(),
-        }
     }
 }
 

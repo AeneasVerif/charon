@@ -144,7 +144,7 @@ pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
 /// For instance, many types like box or vec are parameterized (in MIR) by an allocator
 /// (`std::alloc::Allocator`): we ignore it.
 pub fn type_to_used_params(name: &TypeName) -> Option<Vec<bool>> {
-    trace!("{}", name);
+    trace!("{:?}", name);
     match get_type_id_from_name(name) {
         Option::None => Option::None,
         Option::Some(id) => {
@@ -174,7 +174,7 @@ pub struct FunInfo {
 
 /// See the comments for [type_to_used_params]
 pub fn function_to_info(name: &FunName) -> Option<FunInfo> {
-    trace!("{}", name);
+    trace!("{:?}", name);
     match get_fun_id_from_name_full(name) {
         Option::None => Option::None,
         Option::Some(id) => {

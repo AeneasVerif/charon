@@ -2,7 +2,6 @@
 #![allow(dead_code)]
 
 use crate::common::TAB_INCR;
-use crate::formatter::Formatter;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
 use crate::types::*;
@@ -311,18 +310,6 @@ pub fn body_transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand
 ) {
     for block in blocks.iter_mut() {
         take(block, |b| b.transform_operands(f));
-    }
-}
-
-impl Formatter<FunDeclId::Id> for FunDecls {
-    fn format_object(&self, id: FunDeclId::Id) -> String {
-        self.get(id).unwrap().name.to_string()
-    }
-}
-
-impl Formatter<GlobalDeclId::Id> for GlobalDecls {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        self.get(id).unwrap().name.to_string()
     }
 }
 

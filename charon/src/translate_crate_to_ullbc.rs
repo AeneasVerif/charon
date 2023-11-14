@@ -1,7 +1,6 @@
 use crate::cli_options::CliOpts;
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
 use crate::meta;
-use crate::names::{hir_item_to_name, item_def_id_to_name};
 use crate::translate_ctx::*;
 use crate::translate_functions_to_ullbc;
 use crate::types as ty;
@@ -81,7 +80,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // item (not an item transitively reachable from an item which is not
         // opaque) and inside an opaque module (or sub-module), we ignore it.
         if top_item {
-            match hir_item_to_name(self.tcx, item) {
+            match self.hir_item_to_name(item) {
                 Option::None => {
                     // This kind of item is to be ignored
                     return;
@@ -171,13 +170,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 // to check that all the opaque modules given as arguments actually
                 // exist
                 trace!("{:?}", def_id);
-                let module_name = item_def_id_to_name(self.tcx, def_id);
                 let opaque = self.id_is_opaque(def_id);
                 if opaque {
                     // Ignore
-                    trace!("Ignoring module [{}] because marked as opaque", module_name);
+                    trace!("Ignoring module [{:?}] because marked as opaque", def_id);
                 } else {
-                    trace!("Diving into module [{}]", module_name);
+                    trace!("Diving into module [{:?}]", def_id);
                     let hir_map = self.tcx.hir();
                     for item_id in module.item_ids {
                         // Lookup and register the item

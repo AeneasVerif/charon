@@ -35,7 +35,8 @@ fn transform_st(locals: &VarId::Vector<Var>, st: &mut Statement) {
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
-            "# About to remove drops of variables with type ! in decl: {name}:\n{}",
+            "# About to remove drops of variables with type ! in decl: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
 

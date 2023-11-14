@@ -1,7 +1,6 @@
 use crate::assumed;
 use crate::common::*;
 use crate::gast::*;
-use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
 use crate::translate_ctx::*;
 use crate::types::*;
 use core::convert::*;
@@ -154,7 +153,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let used_params = if adt_did.is_local() {
                     Option::None
                 } else {
-                    let name = def_id_to_name(self.t_ctx.tcx, def_id);
+                    let name = self.t_ctx.def_id_to_name(def_id);
                     assumed::type_to_used_params(&name)
                 };
 
@@ -368,7 +367,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Non-local: check if the type has primitive support
 
             // Retrieve the type name
-            let name = def_id_to_name(self.t_ctx.tcx, def_id);
+            let name = self.t_ctx.def_id_to_name(def_id);
 
             match assumed::get_type_id_from_name(&name) {
                 Option::Some(id) => {
@@ -528,8 +527,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, def_id)
             .sinto(&self.hax_state);
 
+        self.translate_generic_params_from_hax(&substs);
+    }
+
+    pub(crate) fn translate_generic_params_from_hax(&mut self, substs: &Vec<hax::GenericArg>) {
         let erase_regions = false;
-        for p in &substs {
+        for p in substs {
             use hax::GenericArg::*;
             match p {
                 Type(p) => {
@@ -541,7 +544,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 }
                 Lifetime(region) => {
-                    let name = translate_region_name(region);
+                    let name = translate_region_name(&region);
                     let _ = self.push_region(region.clone(), name);
                 }
                 Const(c) => {
@@ -595,7 +598,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Register the type
-        let name = extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+        let name = bt_ctx
+            .t_ctx
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
         let generics = bt_ctx.get_generics();
 
         // Translate the span information

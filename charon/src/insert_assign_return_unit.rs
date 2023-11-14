@@ -34,7 +34,8 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
 fn transform_body(ctx: &TransCtx, name: &Name, body: &mut Option<ExprBody>) {
     if let Some(b) = body.as_mut() {
         trace!(
-            "About to insert assign and return unit in decl: {name}:\n{}",
+            "About to insert assign and return unit in decl: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
         b.body.transform(&mut transform_st);

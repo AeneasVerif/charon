@@ -294,7 +294,8 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Option<Ve
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
-            "# About to transform array/slice index operations to function calls: {name}:\n{}",
+            "# About to transform array/slice index operations to function calls: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
         let body = &mut b.body;
@@ -303,7 +304,8 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
         let mut tr = |s: &mut Statement| transform_st(locals, s);
         body.transform(&mut tr);
         trace!(
-            "# After transforming array/slice index operations to function calls: {name}:\n{}",
+            "# After transforming array/slice index operations to function calls: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
     }

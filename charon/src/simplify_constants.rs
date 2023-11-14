@@ -126,7 +126,8 @@ pub fn transform(ctx: &mut TransCtx) {
     for (name, b) in iter_function_bodies(&mut fun_defs).chain(iter_global_bodies(&mut global_defs))
     {
         trace!(
-            "# About to simplify constants in function: {name}:\n{}",
+            "# About to simplify constants in function: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
 

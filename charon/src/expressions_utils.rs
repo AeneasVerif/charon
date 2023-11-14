@@ -126,9 +126,6 @@ impl Place {
                     FieldProjKind::Tuple(_) => {
                         out = format!("({out}).{field_id}");
                     }
-                    FieldProjKind::Option(_) => {
-                        out = format!("({out}).{field_id}");
-                    }
                 },
                 ProjectionElem::Index(i, _) => out = format!("({out})[{}]", ctx.format_object(*i)),
             }

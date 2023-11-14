@@ -99,7 +99,7 @@ impl TraitDecl {
     where
         C: TypeFormatter,
     {
-        let name = self.name.to_string();
+        let name = self.name.fmt_with_ctx(ctx);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
 
@@ -172,7 +172,7 @@ impl TraitImpl {
     where
         C: TypeFormatter,
     {
-        let name = self.name.to_string();
+        let name = self.name.fmt_with_ctx(ctx);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
 
@@ -328,7 +328,7 @@ impl<T> GFunDecl<T> {
         };
 
         // Function name
-        let name = self.name.to_string();
+        let name = self.name.fmt_with_ctx(ctx);
 
         // Generic parameters
         let (params, trait_clauses) = self.signature.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -397,7 +397,7 @@ impl<T> GGlobalDecl<T> {
         C: GGlobalDeclFormatter<'a, T>,
     {
         // Decl name
-        let name = self.name.to_string();
+        let name = self.name.fmt_with_ctx(ctx);
 
         // Case disjunction on the presence of a body (transparent/opaque definition)
         match &self.body {

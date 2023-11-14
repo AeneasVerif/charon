@@ -73,12 +73,14 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
-            "# About to transform some operations to function calls: {name}:\n{}",
+            "# About to transform some operations to function calls: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
         b.body.transform(&mut transform_st);
         trace!(
-            "# After transforming some operations to function calls: {name}:\n{}",
+            "# After transforming some operations to function calls: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
     }

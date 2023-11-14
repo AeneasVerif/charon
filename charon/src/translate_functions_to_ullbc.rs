@@ -10,7 +10,6 @@ use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::id_vector;
-use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
 use crate::translate_ctx::*;
 use crate::translate_types;
 use crate::types::*;
@@ -23,7 +22,7 @@ use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir::START_BLOCK;
 use rustc_middle::ty;
 use std::iter::FromIterator;
-use translate_types::{translate_bound_region_kind_name, translate_region_name};
+use translate_types::translate_bound_region_kind_name;
 
 pub(crate) struct SubstFunId {
     pub func: FnPtr,
@@ -749,7 +748,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_info: &Option<hax::TraitInfo>,
     ) -> SubstFunIdOrPanic {
         let rust_id = def_id.rust_def_id.unwrap();
-        let name = def_id_to_name(self.t_ctx.tcx, def_id);
+        let name = self.t_ctx.def_id_to_name(def_id);
         let is_local = rust_id.is_local();
 
         // Check if this function is a actually `panic`
@@ -1446,42 +1445,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                tcx.generics_of(def_id), signature.bound_vars(), signature);
 
         // Add the *early-bound* parameters.
-        // TODO: use the generics instead of the substs ([TyCtxt.generics_of])? In
-        // practice is easier to use the subst. For instance, in the subst, the
-        // constant generics are typed.
-        for param in substs {
-            use hax::GenericArg;
-            match param {
-                GenericArg::Type(param_ty) => {
-                    // This type should be a param type
-                    match param_ty {
-                        hax::Ty::Param(param_ty) => {
-                            self.push_type_var(param_ty.index, param_ty.name);
-                        }
-                        _ => {
-                            unreachable!();
-                        }
-                    }
-                }
-                GenericArg::Lifetime(region) => {
-                    let name = translate_region_name(&region);
-                    self.push_region(region, name);
-                }
-                GenericArg::Const(c) => {
-                    let ty = self.translate_ty(erase_regions, &c.ty).unwrap();
-                    let ty = ty.to_literal();
-                    match *c.contents {
-                        hax::ConstantExprKind::ConstRef { id: cp } => {
-                            self.push_const_generic_var(cp.index, ty, cp.name);
-                        }
-                        _ => unreachable!(),
-                    }
-                }
-            }
-        }
-
-        // Sanity check
-        self.check_generics();
+        self.translate_generic_params_from_hax(&substs);
 
         //
         // Add the *late-bound* parameters (bound in the signature, can only be lifetimes)
@@ -1606,7 +1570,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         // Translate the function name
-        let name = extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+        let name = bt_ctx
+            .t_ctx
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
@@ -1699,7 +1665,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let hax_state = &bt_ctx.hax_state;
 
         // Translate the global name
-        let name = extended_def_id_to_name(&rust_id.sinto(hax_state));
+        let name = bt_ctx
+            .t_ctx
+            .extended_def_id_to_name(&rust_id.sinto(hax_state));
 
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();

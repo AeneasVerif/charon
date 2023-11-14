@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 use crate::gast::*;
-use crate::names_utils;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::ullbc_ast as ast;
@@ -216,8 +215,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Remark: this **doesn't** register the def id (on purpose)
     pub(crate) fn translate_trait_item_name(&mut self, rust_id: DefId) -> TraitItemName {
         // Translate the name
-        let name = names_utils::item_def_id_to_name(self.tcx, rust_id);
-        TraitItemName(name.name.last().unwrap().as_ident().clone())
+        let name = self.item_def_id_to_name(rust_id);
+        let (name, id) = name.name.last().unwrap().as_ident();
+        assert!(id.is_zero());
+        TraitItemName(name.to_string())
     }
 
     pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) {
@@ -235,7 +236,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+        let name = bt_ctx
+            .t_ctx
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
         // Translate the generic
         bt_ctx.translate_generic_params(rust_id);
@@ -415,7 +418,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let tcx = self.tcx;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+        let name = bt_ctx
+            .t_ctx
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
         let erase_regions = false;
 
         // Translate the generics
