@@ -4,7 +4,6 @@ open PrimitiveValues
 open Expressions
 open Meta
 open Identifiers
-open Names
 module BlockId = IdGen ()
 
 (** We define this type to control the name of the visitor functions
@@ -119,15 +118,7 @@ type expr_body = blocks gexpr_body [@@deriving show]
 type fun_body = expr_body [@@deriving show]
 type fun_decl = blocks gfun_decl [@@deriving show]
 type global_body = expr_body [@@deriving show]
-
-type global_decl = {
-  meta : meta;
-  def_id : GlobalDeclId.id;
-  name : global_name;
-  ty : ty;
-  body : global_body option;
-}
-[@@deriving show]
+type global_decl = global_body option gglobal_decl [@@deriving show]
 
 (** ULLBC crate *)
-type crate = (fun_decl, global_decl) gcrate
+type crate = (blocks, global_body option) gcrate

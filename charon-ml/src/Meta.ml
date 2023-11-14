@@ -5,16 +5,17 @@ type loc = {
   line : int;  (** The (1-based) line number. *)
   col : int;  (** The (0-based) column offset. *)
 }
-[@@deriving show]
+[@@deriving show, ord]
 
 type file_name =
   | Virtual of string  (** A remapped path (namely paths into stdlib) *)
   | Local of string
       (** A local path (a file coming from the current crate for instance) *)
-[@@deriving show]
+[@@deriving show, ord]
 
 (** Span data *)
-type span = { file : file_name; beg_loc : loc; end_loc : loc } [@@deriving show]
+type span = { file : file_name; beg_loc : loc; end_loc : loc }
+[@@deriving show, ord]
 
 type meta = {
   span : span;
@@ -41,4 +42,4 @@ type meta = {
   generated_from_span : span option;
       (** Where the code actually comes from, in case of macro expansion/inlining/etc. *)
 }
-[@@deriving show]
+[@@deriving show, ord]

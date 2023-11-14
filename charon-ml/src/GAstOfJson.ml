@@ -9,7 +9,6 @@
  *)
 
 open Yojson.Basic
-open Names
 open OfJsonBasic
 open Identifiers
 open Meta
@@ -119,23 +118,6 @@ let meta_of_json (id_to_file : id_to_file_map) (js : json) :
         in
         Ok { span; generated_from_span }
     | _ -> Error "")
-
-let path_elem_of_json (js : json) : (path_elem, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Ident", name) ] ->
-        let* name = string_of_json name in
-        Ok (Ident name)
-    | `Assoc [ ("Disambiguator", d) ] ->
-        let* d = Disambiguator.id_of_json d in
-        Ok (Disambiguator d)
-    | _ -> Error "")
-
-let name_of_json (js : json) : (name, string) result =
-  combine_error_msgs js __FUNCTION__ (list_of_json path_elem_of_json js)
-
-let fun_name_of_json (js : json) : (fun_name, string) result =
-  combine_error_msgs js __FUNCTION__ (name_of_json js)
 
 let type_var_of_json (js : json) : (T.type_var, string) result =
   combine_error_msgs js __FUNCTION__
@@ -576,6 +558,42 @@ let predicates_of_json (js : json) : (T.predicates, string) result =
         Ok { T.regions_outlive; types_outlive; trait_type_constraints }
     | _ -> Error "")
 
+let impl_elem_of_json (id_to_file : id_to_file_map) (js : json) :
+    (T.impl_elem, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("generics", generics);
+          ("preds", preds);
+          ("ty", ty);
+          ("disambiguator", disambiguator);
+        ] ->
+        let* generics = generic_params_of_json id_to_file generics in
+        let* preds = predicates_of_json preds in
+        let* ty = ty_of_json ty in
+        let* disambiguator = T.Disambiguator.id_of_json disambiguator in
+        Ok { T.generics; preds; ty; disambiguator }
+    | _ -> Error "")
+
+let path_elem_of_json (id_to_file : id_to_file_map) (js : json) :
+    (T.path_elem, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Ident", `List [ name; d ]) ] ->
+        let* name = string_of_json name in
+        let* d = T.Disambiguator.id_of_json d in
+        Ok (T.PeIdent (name, d))
+    | `Assoc [ ("Impl", impl) ] ->
+        let* d = impl_elem_of_json id_to_file impl in
+        Ok (T.PeImpl d)
+    | _ -> Error "")
+
+let name_of_json (id_to_file : id_to_file_map) (js : json) :
+    (T.name, string) result =
+  combine_error_msgs js __FUNCTION__
+    (list_of_json (path_elem_of_json id_to_file) js)
+
 let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
     (T.type_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -593,7 +611,7 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* def_id = T.TypeDeclId.id_of_json def_id in
         let* meta = meta_of_json id_to_file meta in
         let* is_local = bool_of_json is_local in
-        let* name = name_of_json name in
+        let* name = name_of_json id_to_file name in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* kind = type_decl_kind_of_json id_to_file kind in
@@ -986,7 +1004,7 @@ let gfun_decl_of_json (body_of_json : json -> ('body, string) result)
         ] ->
         let* def_id = A.FunDeclId.id_of_json def_id in
         let* meta = meta_of_json id_to_file meta in
-        let* name = fun_name_of_json name in
+        let* name = name_of_json id_to_file name in
         let* signature = fun_sig_of_json id_to_file signature in
         let* kind = fun_kind_of_json kind in
         let* body =
@@ -1009,7 +1027,7 @@ type 'body gglobal_decl = {
   def_id : A.GlobalDeclId.id;
   meta : meta;
   body : 'body A.gexpr_body option;
-  name : global_name;
+  name : T.name;
   ty : T.ty;
 }
 [@@deriving show]
@@ -1029,7 +1047,7 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
         ] ->
         let* global_id = A.GlobalDeclId.id_of_json def_id in
         let* meta = meta_of_json id_to_file meta in
-        let* name = fun_name_of_json name in
+        let* name = name_of_json id_to_file name in
         let* ty = ty_of_json ty in
         let* body =
           option_of_json (gexpr_body_of_json body_of_json id_to_file) body
@@ -1054,7 +1072,7 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("provided_methods", provided_methods);
         ] ->
         let* def_id = A.TraitDeclId.id_of_json def_id in
-        let* name = name_of_json name in
+        let* name = name_of_json id_to_file name in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* parent_clauses =
@@ -1118,7 +1136,7 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("provided_methods", provided_methods);
         ] ->
         let* def_id = A.TraitImplId.id_of_json def_id in
-        let* name = name_of_json name in
+        let* name = name_of_json id_to_file name in
         let* impl_trait = trait_decl_ref_of_json impl_trait in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in

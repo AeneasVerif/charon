@@ -1,7 +1,6 @@
 (** Definitions shared between the ULLBC and the LLBC ASTs. *)
-
-open Names
 open Types
+
 open Meta
 open Expressions
 module FunDeclId = Expressions.FunDeclId
@@ -132,7 +131,7 @@ type 'body gexpr_body = {
 type 'body gfun_decl = {
   def_id : FunDeclId.id;
   meta : meta;
-  name : fun_name;
+  name : name;
   signature : fun_sig;
   kind : fun_kind;
   body : 'body gexpr_body option;
@@ -184,13 +183,22 @@ type declaration_group =
   | TraitImpl of TraitImplId.id
 [@@deriving show]
 
+type 'body gglobal_decl = {
+  meta : meta;
+  def_id : GlobalDeclId.id;
+  name : name;
+  ty : ty;
+  body : 'body;
+}
+[@@deriving show]
+
 (** A crate *)
-type ('fun_decl, 'global_decl) gcrate = {
+type ('fun_body, 'global_body) gcrate = {
   name : string;
   declarations : declaration_group list;
-  types : type_decl TypeDeclId.Map.t;
-  functions : 'fun_decl FunDeclId.Map.t;
-  globals : 'global_decl GlobalDeclId.Map.t;
+  type_decls : type_decl TypeDeclId.Map.t;
+  fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;
+  global_decls : 'global_body gglobal_decl GlobalDeclId.Map.t;
   trait_decls : trait_decl TraitDeclId.Map.t;
   trait_impls : trait_impl TraitImplId.Map.t;
 }

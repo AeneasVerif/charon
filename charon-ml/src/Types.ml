@@ -1,5 +1,4 @@
 open Identifiers
-open Names
 open Meta
 open PrimitiveValues
 module TypeVarId = IdGen ()
@@ -13,6 +12,7 @@ module TraitImplId = IdGen ()
 module TraitClauseId = IdGen ()
 module RegionId = IdGen ()
 module RegionGroupId = IdGen ()
+module Disambiguator = IdGen ()
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!Types.iter_ty_base} and {!Types.TypeVar}).
@@ -55,10 +55,13 @@ type ('id, 'name) indexed_var = {
   index : 'id;  (** Unique index identifying the variable *)
   name : 'name;  (** Variable name *)
 }
-[@@deriving show]
+[@@deriving show, ord]
 
-type type_var = (TypeVarId.id, string) indexed_var [@@deriving show]
-type region_var = (RegionId.id, string option) indexed_var [@@deriving show]
+type type_var = (TypeVarId.id, string) indexed_var [@@deriving show, ord]
+
+type region_var = (RegionId.id, string option) indexed_var
+[@@deriving show, ord]
+
 type literal_type = PrimitiveValues.literal_type [@@deriving show, ord]
 
 type const_generic_var = {
@@ -433,6 +436,7 @@ and predicates = {
 }
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_predicates";
@@ -451,6 +455,22 @@ and predicates = {
         concrete = false;
         polymorphic = false;
       }]
+
+(** An impl path element for [name] *)
+type impl_elem = {
+  generics : generic_params;
+  preds : predicates;
+  ty : ty;
+  disambiguator : Disambiguator.id;
+}
+[@@deriving show, ord]
+
+(** A path element for [name] *)
+type path_elem = PeIdent of string * Disambiguator.id | PeImpl of impl_elem
+[@@deriving show, ord]
+
+(** A name *)
+type name = path_elem list [@@deriving show, ord]
 
 (** A group of regions.
 
@@ -502,7 +522,7 @@ type type_decl = {
   def_id : TypeDeclId.id;
   meta : meta;
   is_local : bool;
-  name : type_name;
+  name : name;
   generics : generic_params;
   preds : predicates;
   kind : type_decl_kind;

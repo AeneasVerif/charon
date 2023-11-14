@@ -167,15 +167,15 @@ let crate_of_json (js : json) : (A.crate, string) result =
         let* trait_impls =
           list_of_json (trait_impl_of_json id_to_file) trait_impls
         in
-        let types =
+        let type_decls =
           T.TypeDeclId.Map.of_list
             (List.map (fun (d : T.type_decl) -> (d.def_id, d)) types)
         in
-        let functions =
+        let fun_decls =
           A.FunDeclId.Map.of_list
             (List.map (fun (d : A.fun_decl) -> (d.def_id, d)) functions)
         in
-        let globals =
+        let global_decls =
           A.GlobalDeclId.Map.of_list
             (List.map (fun (d : A.global_decl) -> (d.def_id, d)) globals)
         in
@@ -191,9 +191,9 @@ let crate_of_json (js : json) : (A.crate, string) result =
           {
             A.name;
             declarations;
-            types;
-            functions;
-            globals;
+            type_decls;
+            fun_decls;
+            global_decls;
             trait_decls;
             trait_impls;
           }

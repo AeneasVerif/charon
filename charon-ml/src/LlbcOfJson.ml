@@ -139,15 +139,15 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
        {
          (* Not sure about `is_unsafe` actually *)
          is_unsafe = false;
-         generics = TypesUtils.mk_empty_generic_params;
-         preds = TypesUtils.mk_empty_predicates;
+         generics = TypesUtils.empty_generic_params;
+         preds = TypesUtils.empty_predicates;
          parent_params_info = None;
          inputs = [];
          output = ty;
        }
      in
      Ok
-       ( { A.def_id = global_id; meta; body_id = fun_id; name; ty },
+       ( { A.def_id = global_id; meta; body = fun_id; name; ty },
          {
            A.def_id = fun_id;
            meta;
@@ -193,18 +193,18 @@ let crate_of_json (js : json) : (A.crate, string) result =
             globals
         in
         let globals, global_bodies = List.split globals in
-        let types =
+        let type_decls =
           T.TypeDeclId.Map.of_list
             (List.map (fun (d : T.type_decl) -> (d.def_id, d)) types)
         in
         (* Concatenate the functions and the global bodies *)
-        let functions =
+        let fun_decls =
           A.FunDeclId.Map.of_list
             (List.map
                (fun (d : A.fun_decl) -> (d.def_id, d))
                (functions @ global_bodies))
         in
-        let globals =
+        let global_decls =
           A.GlobalDeclId.Map.of_list
             (List.map (fun (d : A.global_decl) -> (d.def_id, d)) globals)
         in
@@ -227,9 +227,9 @@ let crate_of_json (js : json) : (A.crate, string) result =
           {
             A.name;
             declarations;
-            types;
-            functions;
-            globals;
+            type_decls;
+            fun_decls;
+            global_decls;
             trait_decls;
             trait_impls;
           }

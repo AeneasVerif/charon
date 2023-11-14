@@ -14,6 +14,9 @@ end
 module RegionMap = Collections.MakeMap (RegionOrderedType)
 module RegionSet = Collections.MakeSet (RegionOrderedType)
 
+let to_name (ls : string list) : name =
+  List.map (fun s -> PeIdent (s, Disambiguator.zero)) ls
+
 let type_decl_is_opaque (d : type_decl) : bool =
   match d.kind with Struct _ | Enum _ -> false | Opaque -> true
 
@@ -79,10 +82,10 @@ let const_generic_as_literal (cg : const_generic) : PrimitiveValues.literal =
 let trait_instance_id_as_trait_impl (id : trait_instance_id) : trait_impl_id =
   match id with TraitImpl id -> id | _ -> raise (Failure "Unreachable")
 
-let mk_empty_generic_args : generic_args =
+let empty_generic_args : generic_args =
   { regions = []; types = []; const_generics = []; trait_refs = [] }
 
-let mk_generic_args (regions : region list) (types : ty list)
+let generic_args (regions : region list) (types : ty list)
     (const_generics : const_generic list) (trait_refs : trait_ref list) :
     generic_args =
   { regions; types; const_generics; trait_refs }
@@ -90,10 +93,10 @@ let mk_generic_args (regions : region list) (types : ty list)
 let mk_generic_args_from_types (types : ty list) : generic_args =
   { regions = []; types; const_generics = []; trait_refs = [] }
 
-let mk_empty_generic_params : generic_params =
+let empty_generic_params : generic_params =
   { regions = []; types = []; const_generics = []; trait_clauses = [] }
 
-let mk_empty_predicates : predicates =
+let empty_predicates : predicates =
   { regions_outlive = []; types_outlive = []; trait_type_constraints = [] }
 
 let merge_generic_args (g1 : generic_args) (g2 : generic_args) : generic_args =
@@ -111,7 +114,7 @@ let merge_generic_args (g1 : generic_args) (g2 : generic_args) : generic_args =
   }
 
 (** The unit type *)
-let mk_unit_ty : ty = TAdt (TTuple, mk_empty_generic_args)
+let mk_unit_ty : ty = TAdt (TTuple, empty_generic_args)
 
 (** The usize type *)
 let mk_usize_ty : ty = TLiteral (TInteger Usize)
