@@ -47,9 +47,6 @@ pub static ASSERT_FAILED_NAME: [&str; 3] = ["core", "panicking", "assert_failed"
 pub static BOX_NEW_NAME: [&str; 4] = ["alloc", "boxed", "Box", "new"];
 pub static BOX_FREE_NAME: [&str; 3] = ["alloc", "alloc", "box_free"];
 
-// Slices
-pub static SLICE_LEN_NAME: [&str; 4] = ["core", "slice", "[T]", "len"]; // TODO: fix the `[T]` name element
-
 // Pointers
 pub static PTR_UNIQUE_NAME: [&str; 3] = ["core", "ptr", "Unique"];
 pub static PTR_NON_NULL_NAME: [&str; 3] = ["core", "ptr", "NonNull"];
@@ -72,7 +69,6 @@ enum FunId {
     BeginPanic,
     BoxNew,
     BoxFree,
-    SliceLen,
 }
 
 pub fn is_marker_trait(name: &Name) -> bool {
@@ -117,8 +113,6 @@ fn get_fun_id_from_name_full(name: &FunName) -> Option<FunId> {
         Option::Some(FunId::BoxNew)
     } else if name.equals_ref_name(&BOX_FREE_NAME) {
         Option::Some(FunId::BoxFree)
-    } else if name.equals_ref_name(&SLICE_LEN_NAME) {
-        Option::Some(FunId::SliceLen)
     } else {
         Option::None
     }
@@ -131,7 +125,6 @@ pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
                 FunId::Panic | FunId::BeginPanic => unreachable!(),
                 FunId::BoxNew => ullbc_ast::AssumedFunId::BoxNew,
                 FunId::BoxFree => ullbc_ast::AssumedFunId::BoxFree,
-                FunId::SliceLen => ullbc_ast::AssumedFunId::SliceLen,
             };
             Option::Some(id)
         }
@@ -194,10 +187,6 @@ pub fn function_to_info(name: &FunName) -> Option<FunInfo> {
                 FunId::BoxFree => FunInfo {
                     used_type_params: vec![true, false],
                     used_args: vec![true, false],
-                },
-                FunId::SliceLen => FunInfo {
-                    used_type_params: vec![true],
-                    used_args: vec![true],
                 },
             };
             Option::Some(info)

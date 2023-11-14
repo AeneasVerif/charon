@@ -210,12 +210,6 @@ pub enum AssumedFunId {
     ///
     /// We introduce this when desugaring the [ArrayRepeat] rvalue.
     ArrayRepeat,
-    /// Remark: when we write `a.len()` in Rust, where `a` is an array, the
-    /// statement is desugared to a conversion from array to slice, followed
-    /// by a call to the `len` function for slices.
-    ///
-    /// Signature: `fn<T>(&[T]) -> usize`
-    SliceLen,
     /// Converted from [ProjectionElem::Index].
     ///
     /// Signature: `fn<T>(&[T], usize) -> &T`

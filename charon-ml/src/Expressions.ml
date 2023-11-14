@@ -20,7 +20,6 @@ type assumed_fun_id =
   | ArrayToSliceShared
   | ArrayToSliceMut
   | ArrayRepeat
-  | SliceLen
   | SliceIndexShared
   | SliceIndexMut
 [@@deriving show, ord]

@@ -949,7 +949,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // We have to retrieve the type `Box<u32>` and check that it is of the
                 // form `Box<T>` (and we generate `box_deref<u32>`).
                 match aid {
-                    AssumedFunId::BoxNew | AssumedFunId::SliceLen => {
+                    AssumedFunId::BoxNew => {
                         // Nothing to do
                     }
                     AssumedFunId::BoxFree => {

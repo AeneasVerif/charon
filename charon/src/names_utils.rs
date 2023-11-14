@@ -43,6 +43,27 @@ impl PathElem {
     }
 }
 
+impl ImplElem {
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
+    where
+        C: TypeFormatter,
+    {
+        let d = if self.disambiguator.is_zero() {
+            "".to_string()
+        } else {
+            format!("#{}", self.disambiguator)
+        };
+        let fmt = WithGenericsFmt {
+            ctx,
+            generics: &self.generics,
+        };
+        // Just printing the generics (not the predicates)
+        // TODO: there is something wrong here: we should add the generic parameters
+        // to the context, and then use them to print.
+        format!("{{{}{d}}}", self.ty.fmt_with_ctx(&fmt),)
+    }
+}
+
 struct WithGenericsFmt<'a, C> {
     ctx: &'a C,
     generics: &'a GenericParams,
@@ -107,27 +128,6 @@ impl<'a, C: Formatter<TraitImplId::Id>> Formatter<TraitImplId::Id> for WithGener
 impl<'a, C: Formatter<TraitClauseId::Id>> Formatter<TraitClauseId::Id> for WithGenericsFmt<'a, C> {
     fn format_object(&self, x: TraitClauseId::Id) -> String {
         self.ctx.format_object(x)
-    }
-}
-
-impl ImplElem {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: TypeFormatter,
-    {
-        let d = if self.disambiguator.is_zero() {
-            "".to_string()
-        } else {
-            format!("#{}", self.disambiguator)
-        };
-        let fmt = WithGenericsFmt {
-            ctx,
-            generics: &self.generics,
-        };
-        // Just printing the generics (not the predicates)
-        // TODO: there is something wrong here: we should add the generic parameters
-        // to the context, and then use them to print.
-        format!("{}{d}", self.ty.fmt_with_ctx(&fmt),)
     }
 }
 

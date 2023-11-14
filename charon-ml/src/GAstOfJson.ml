@@ -717,7 +717,6 @@ let assumed_fun_id_of_json (js : json) : (A.assumed_fun_id, string) result =
   | `String "ArrayToSliceShared" -> Ok ArrayToSliceShared
   | `String "ArrayToSliceMut" -> Ok ArrayToSliceMut
   | `String "ArrayRepeat" -> Ok ArrayRepeat
-  | `String "SliceLen" -> Ok SliceLen
   | `String "SliceIndexShared" -> Ok SliceIndexShared
   | `String "SliceIndexMut" -> Ok SliceIndexMut
   | _ -> Error ("assumed_fun_id_of_json failed on:" ^ show js)

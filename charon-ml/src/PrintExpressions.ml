@@ -115,7 +115,6 @@ let assumed_fun_id_to_string (aid : E.assumed_fun_id) (generics : string) :
   | ArrayToSliceShared -> "@ArrayToSliceShared" ^ generics
   | ArrayToSliceMut -> "@ArrayToSliceMut" ^ generics
   | ArrayRepeat -> "@ArrayRepeat" ^ generics
-  | SliceLen -> "@SliceLen" ^ generics
   | SliceIndexShared -> "@SliceIndexShared" ^ generics
   | SliceIndexMut -> "@SliceIndexMut" ^ generics
 
