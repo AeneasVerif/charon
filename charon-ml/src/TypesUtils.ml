@@ -85,7 +85,7 @@ let trait_instance_id_as_trait_impl (id : trait_instance_id) : trait_impl_id =
 let empty_generic_args : generic_args =
   { regions = []; types = []; const_generics = []; trait_refs = [] }
 
-let generic_args (regions : region list) (types : ty list)
+let mk_generic_args (regions : region list) (types : ty list)
     (const_generics : const_generic list) (trait_refs : trait_ref list) :
     generic_args =
   { regions; types; const_generics; trait_refs }
@@ -216,8 +216,8 @@ let rec ty_is_primitively_copyable (ty : ty) : bool =
   | TVar _ | TNever -> false
   | TLiteral (TBool | TChar | TInteger _) -> true
   | TTraitType _ | TArrow (_, _) -> false
-  | TRef (_, _, Mut) -> false
-  | TRef (_, _, Shared) -> true
+  | TRef (_, _, RMut) -> false
+  | TRef (_, _, RShared) -> true
   | TRawPtr (_, _) ->
       (* Not sure what to do here, so being conservative *)
       false

@@ -1,10 +1,7 @@
 (** Pretty-printing for primitive values *)
 
-module T = Types
-module TU = TypesUtils
-module E = Expressions
-module A = LlbcAst
 open PrimitiveValues
+open Types
 
 let integer_type_to_string = function
   | Isize -> "isize"

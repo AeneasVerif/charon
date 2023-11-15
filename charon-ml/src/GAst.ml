@@ -176,11 +176,11 @@ type fun_declaration_group = FunDeclId.id g_declaration_group [@@deriving show]
 
 (** Module declaration. Globals cannot be mutually recursive. *)
 type declaration_group =
-  | Type of type_declaration_group
-  | Fun of fun_declaration_group
-  | Global of GlobalDeclId.id
-  | TraitDecl of TraitDeclId.id
-  | TraitImpl of TraitImplId.id
+  | TypeGroup of type_declaration_group
+  | FunGroup of fun_declaration_group
+  | GlobalGroup of GlobalDeclId.id
+  | TraitDeclGroup of TraitDeclId.id
+  | TraitImplGroup of TraitImplId.id
 [@@deriving show]
 
 type 'body gglobal_decl = {

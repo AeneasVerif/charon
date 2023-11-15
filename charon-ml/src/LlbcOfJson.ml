@@ -5,81 +5,82 @@
 
 include GAstOfJson
 open OfJsonBasic
-module A = LlbcAst
+open Types
+open LlbcAst
 
-let assertion_of_json (js : json) : (A.assertion, string) result =
+let assertion_of_json (js : json) : (assertion, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("cond", cond); ("expected", expected) ] ->
         let* cond = operand_of_json cond in
         let* expected = bool_of_json expected in
-        Ok { A.cond; expected }
+        Ok { cond; expected }
     | _ -> Error "")
 
 let rec statement_of_json (id_to_file : id_to_file_map) (js : json) :
-    (A.statement, string) result =
+    (statement, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("meta", meta); ("content", content) ] ->
         let* meta = meta_of_json id_to_file meta in
         let* content = raw_statement_of_json id_to_file content in
-        Ok { A.meta; content }
+        Ok { meta; content }
     | _ -> Error "")
 
 and raw_statement_of_json (id_to_file : id_to_file_map) (js : json) :
-    (A.raw_statement, string) result =
+    (raw_statement, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Assign", `List [ place; rvalue ]) ] ->
         let* place = place_of_json place in
         let* rvalue = rvalue_of_json rvalue in
-        Ok (A.Assign (place, rvalue))
+        Ok (Assign (place, rvalue))
     | `Assoc [ ("FakeRead", place) ] ->
         let* place = place_of_json place in
-        Ok (A.FakeRead place)
+        Ok (FakeRead place)
     | `Assoc [ ("SetDiscriminant", `List [ place; variant_id ]) ] ->
         let* place = place_of_json place in
-        let* variant_id = T.VariantId.id_of_json variant_id in
-        Ok (A.SetDiscriminant (place, variant_id))
+        let* variant_id = VariantId.id_of_json variant_id in
+        Ok (SetDiscriminant (place, variant_id))
     | `Assoc [ ("Drop", place) ] ->
         let* place = place_of_json place in
-        Ok (A.Drop place)
+        Ok (Drop place)
     | `Assoc [ ("Assert", assertion) ] ->
         let* assertion = assertion_of_json assertion in
-        Ok (A.Assert assertion)
+        Ok (Assert assertion)
     | `Assoc [ ("Call", call) ] ->
         let* call = call_of_json call in
-        Ok (A.Call call)
-    | `String "Panic" -> Ok A.Panic
-    | `String "Return" -> Ok A.Return
+        Ok (Call call)
+    | `String "Panic" -> Ok Panic
+    | `String "Return" -> Ok Return
     | `Assoc [ ("Break", i) ] ->
         let* i = int_of_json i in
-        Ok (A.Break i)
+        Ok (Break i)
     | `Assoc [ ("Continue", i) ] ->
         let* i = int_of_json i in
-        Ok (A.Continue i)
-    | `String "Nop" -> Ok A.Nop
+        Ok (Continue i)
+    | `String "Nop" -> Ok Nop
     | `Assoc [ ("Sequence", `List [ st1; st2 ]) ] ->
         let* st1 = statement_of_json id_to_file st1 in
         let* st2 = statement_of_json id_to_file st2 in
-        Ok (A.Sequence (st1, st2))
+        Ok (Sequence (st1, st2))
     | `Assoc [ ("Switch", tgt) ] ->
         let* switch = switch_of_json id_to_file tgt in
-        Ok (A.Switch switch)
+        Ok (Switch switch)
     | `Assoc [ ("Loop", st) ] ->
         let* st = statement_of_json id_to_file st in
-        Ok (A.Loop st)
+        Ok (Loop st)
     | _ -> Error "")
 
 and switch_of_json (id_to_file : id_to_file_map) (js : json) :
-    (A.switch, string) result =
+    (switch, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("If", `List [ op; st1; st2 ]) ] ->
         let* op = operand_of_json op in
         let* st1 = statement_of_json id_to_file st1 in
         let* st2 = statement_of_json id_to_file st2 in
-        Ok (A.If (op, st1, st2))
+        Ok (If (op, st1, st2))
     | `Assoc [ ("SwitchInt", `List [ op; int_ty; tgts; otherwise ]) ] ->
         let* op = operand_of_json op in
         let* int_ty = integer_type_of_json int_ty in
@@ -91,22 +92,22 @@ and switch_of_json (id_to_file : id_to_file_map) (js : json) :
             tgts
         in
         let* otherwise = statement_of_json id_to_file otherwise in
-        Ok (A.SwitchInt (op, int_ty, tgts, otherwise))
+        Ok (SwitchInt (op, int_ty, tgts, otherwise))
     | `Assoc [ ("Match", `List [ p; tgts; otherwise ]) ] ->
         let* p = place_of_json p in
         let* tgts =
           list_of_json
             (pair_of_json
-               (list_of_json T.VariantId.id_of_json)
+               (list_of_json VariantId.id_of_json)
                (statement_of_json id_to_file))
             tgts
         in
         let* otherwise = statement_of_json id_to_file otherwise in
-        Ok (A.Match (p, tgts, otherwise))
+        Ok (Match (p, tgts, otherwise))
     | _ -> Error "")
 
 let fun_decl_of_json (id_to_file : id_to_file_map) (js : json) :
-    (A.fun_decl, string) result =
+    (fun_decl, string) result =
   combine_error_msgs js __FUNCTION__
     (gfun_decl_of_json (statement_of_json id_to_file) id_to_file js)
 
@@ -117,16 +118,15 @@ type global_id_converter = { fun_count : int } [@@deriving show]
     To do so, it adds the global id to the number of function declarations :
     We have the bijection [global_fun_id <=> global_id + fun_id_count].
 *)
-let global_to_fun_id (conv : global_id_converter) (gid : A.GlobalDeclId.id) :
-    A.FunDeclId.id =
-  A.FunDeclId.of_int (A.GlobalDeclId.to_int gid + conv.fun_count)
+let global_to_fun_id (conv : global_id_converter) (gid : GlobalDeclId.id) :
+    FunDeclId.id =
+  FunDeclId.of_int (GlobalDeclId.to_int gid + conv.fun_count)
 
 (** Deserialize a global declaration, and decompose it into a global declaration
     and a function declaration.
  *)
 let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
-    (gid_conv : global_id_converter) :
-    (A.global_decl * A.fun_decl, string) result =
+    (gid_conv : global_id_converter) : (global_decl * fun_decl, string) result =
   combine_error_msgs js __FUNCTION__
     ((* Deserialize the global declaration *)
      let* global =
@@ -135,7 +135,7 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
      let { def_id = global_id; meta; body; name; ty } = global in
      (* Decompose into a global and a function *)
      let fun_id = global_to_fun_id gid_conv global.def_id in
-     let signature : A.fun_sig =
+     let signature : fun_sig =
        {
          (* Not sure about `is_unsafe` actually *)
          is_unsafe = false;
@@ -146,19 +146,23 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
          output = ty;
        }
      in
-     Ok
-       ( { A.def_id = global_id; meta; body = fun_id; name; ty },
-         {
-           A.def_id = fun_id;
-           meta;
-           name;
-           signature;
-           kind = A.RegularKind;
-           body;
-           is_global_decl_body = true;
-         } ))
+     let global_decl : global_decl =
+       { def_id = global_id; meta; body = fun_id; name; ty }
+     in
+     let fun_decl : fun_decl =
+       {
+         def_id = fun_id;
+         meta;
+         name;
+         signature;
+         kind = RegularKind;
+         body;
+         is_global_decl_body = true;
+       }
+     in
+     Ok (global_decl, fun_decl))
 
-let crate_of_json (js : json) : (A.crate, string) result =
+let crate_of_json (js : json) : (crate, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
@@ -194,19 +198,19 @@ let crate_of_json (js : json) : (A.crate, string) result =
         in
         let globals, global_bodies = List.split globals in
         let type_decls =
-          T.TypeDeclId.Map.of_list
-            (List.map (fun (d : T.type_decl) -> (d.def_id, d)) types)
+          TypeDeclId.Map.of_list
+            (List.map (fun (d : type_decl) -> (d.def_id, d)) types)
         in
         (* Concatenate the functions and the global bodies *)
         let fun_decls =
-          A.FunDeclId.Map.of_list
+          FunDeclId.Map.of_list
             (List.map
-               (fun (d : A.fun_decl) -> (d.def_id, d))
+               (fun (d : fun_decl) -> (d.def_id, d))
                (functions @ global_bodies))
         in
         let global_decls =
-          A.GlobalDeclId.Map.of_list
-            (List.map (fun (d : A.global_decl) -> (d.def_id, d)) globals)
+          GlobalDeclId.Map.of_list
+            (List.map (fun (d : global_decl) -> (d.def_id, d)) globals)
         in
         (* Traits *)
         let* trait_decls =
@@ -216,16 +220,16 @@ let crate_of_json (js : json) : (A.crate, string) result =
           list_of_json (trait_impl_of_json id_to_file) trait_impls
         in
         let trait_decls =
-          A.TraitDeclId.Map.of_list
-            (List.map (fun (d : A.trait_decl) -> (d.def_id, d)) trait_decls)
+          TraitDeclId.Map.of_list
+            (List.map (fun (d : trait_decl) -> (d.def_id, d)) trait_decls)
         in
         let trait_impls =
-          A.TraitImplId.Map.of_list
-            (List.map (fun (d : A.trait_impl) -> (d.def_id, d)) trait_impls)
+          TraitImplId.Map.of_list
+            (List.map (fun (d : trait_impl) -> (d.def_id, d)) trait_impls)
         in
         Ok
           {
-            A.name;
+            name;
             declarations;
             type_decls;
             fun_decls;

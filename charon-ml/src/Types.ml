@@ -75,7 +75,7 @@ let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
 let all_unsigned_int_types = [ Usize; U8; U16; U32; U64; U128 ]
 let all_int_types = List.append all_signed_int_types all_unsigned_int_types
 
-type ref_kind = Mut | Shared [@@deriving show, ord]
+type ref_kind = RMut | RShared [@@deriving show, ord]
 
 (** The variant id for [Option::None] *)
 let option_none_id = VariantId.of_int 0

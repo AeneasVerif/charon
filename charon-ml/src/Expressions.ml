@@ -76,7 +76,8 @@ and place = { var_id : var_id; projection : projection }
         concrete = true;
       }]
 
-type borrow_kind = Shared | Mut | TwoPhaseMut | Shallow [@@deriving show, ord]
+type borrow_kind = BShared | BMut | BTwoPhaseMut | BShallow
+[@@deriving show, ord]
 
 (** A binary operation
 

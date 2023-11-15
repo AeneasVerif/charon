@@ -1,4 +1,5 @@
 open PrintUtils
+open Types
 open TypesUtils
 open LlbcAst
 open PrintTypes
@@ -24,7 +25,7 @@ module Ast = struct
     | SetDiscriminant (p, variant_id) ->
         (* TODO: improve this to lookup the variant name by using the def id *)
         indent ^ "set_discriminant(" ^ place_to_string env p ^ ", "
-        ^ T.VariantId.to_string variant_id
+        ^ VariantId.to_string variant_id
         ^ ")"
     | Drop p -> indent ^ "drop " ^ place_to_string env p
     | Assert a -> assertion_to_string env indent a
@@ -85,7 +86,7 @@ module Ast = struct
               List.map
                 (fun (svl, be) ->
                   let svl =
-                    List.map (fun sv -> "| " ^ T.VariantId.to_string sv) svl
+                    List.map (fun sv -> "| " ^ VariantId.to_string sv) svl
                   in
                   let svl = String.concat " " svl in
                   indent ^ svl ^ " => {\n" ^ inner_to_string2 be ^ "\n"
@@ -124,31 +125,34 @@ module Ast = struct
     indent ^ "global " ^ name ^ " : " ^ ty ^ " = " ^ body_id
 end
 
-module PA = Ast (* local module *)
-
 (** Pretty-printing for ASTs (functions based on a declaration context) *)
 module Crate = struct
   open Ast
 
+  let crate_to_fmt_env (m : crate) : fmt_env =
+    {
+      type_decls = m.type_decls;
+      fun_decls = m.fun_decls;
+      global_decls = m.global_decls;
+      trait_decls = m.trait_decls;
+      trait_impls = m.trait_impls;
+      generics = empty_generic_params;
+      preds = empty_predicates;
+      locals = [];
+    }
+
+  let crate_fun_decl_to_string (m : crate) (d : fun_decl) : string =
+    let env = crate_to_fmt_env m in
+    fun_decl_to_string env "" "  " d
+
   let crate_to_string (m : crate) : string =
-    let env : fmt_env =
-      {
-        type_decls = m.type_decls;
-        fun_decls = m.fun_decls;
-        global_decls = m.global_decls;
-        trait_decls = m.trait_decls;
-        trait_impls = m.trait_impls;
-        generics = empty_generic_params;
-        preds = empty_predicates;
-        locals = [];
-      }
-    in
+    let env = crate_to_fmt_env m in
 
     (* The types *)
     let type_decls =
       List.map
         (fun (_, d) -> type_decl_to_string env d)
-        (T.TypeDeclId.Map.bindings m.type_decls)
+        (TypeDeclId.Map.bindings m.type_decls)
     in
 
     (* The globals *)

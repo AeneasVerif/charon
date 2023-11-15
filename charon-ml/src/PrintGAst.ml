@@ -92,7 +92,8 @@ let gfun_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
         (Some name) None sg
   | Some body ->
       (* Locally update the environment *)
-      let env = { env with locals = body.locals } in
+      let locals = List.map (fun v -> (v.index, v.name)) body.locals in
+      let env = { env with locals } in
 
       (* Arguments *)
       let inputs = List.tl body.locals in

@@ -1,4 +1,5 @@
 open PrintUtils
+open Types
 open TypesUtils
 open UllbcAst
 open PrintTypes
@@ -111,9 +112,6 @@ module Ast = struct
         indent ^ "global " ^ name ^ " : " ^ ty ^ " =\n" ^ body
 end
 
-(** local module *)
-module PA = Ast
-
 (** Pretty-printing for ASTs (functions based on a declaration context) *)
 module Crate = struct
   open Ast
@@ -136,7 +134,7 @@ module Crate = struct
     let type_decls =
       List.map
         (fun (_, d) -> type_decl_to_string env d)
-        (T.TypeDeclId.Map.bindings m.type_decls)
+        (TypeDeclId.Map.bindings m.type_decls)
     in
 
     (* The globals *)

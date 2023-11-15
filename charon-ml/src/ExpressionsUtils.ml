@@ -1,9 +1,9 @@
-module E = Expressions
+open Expressions
 
-let unop_can_fail (unop : E.unop) : bool =
+let unop_can_fail (unop : unop) : bool =
   match unop with Neg | Cast _ -> true | Not -> false
 
-let binop_can_fail (binop : E.binop) : bool =
+let binop_can_fail (binop : binop) : bool =
   match binop with
   | BitXor | BitAnd | BitOr | Eq | Lt | Le | Ne | Ge | Gt -> false
   | Div | Rem | Add | Sub | Mul -> true

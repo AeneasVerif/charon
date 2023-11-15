@@ -1,6 +1,7 @@
 (** Pretty-printing for types *)
 
 open Types
+open TypesUtils
 open PrintPrimitiveValues
 open GAst
 open PrintUtils
@@ -12,7 +13,7 @@ let region_var_to_string (rv : region_var) : string =
   match rv.name with Some name -> name | None -> RegionId.to_string rv.index
 
 let ref_kind_to_string (rk : ref_kind) : string =
-  match rk with Mut -> "Mut" | Shared -> "Shared"
+  match rk with RMut -> "Mut" | RShared -> "Shared"
 
 let assumed_ty_to_string (_ : assumed_ty) : string = "Box"
 
@@ -44,18 +45,29 @@ let field_id_to_pretty_string (id : field_id) : string =
   "Field@" ^ FieldId.to_string id
 
 let region_id_to_string (env : ('a, 'b) fmt_env) (id : region_id) : string =
-  match RegionId.nth_opt env.generics.regions id with
+  (* Note that the regions are not necessarily ordered following their indices *)
+  match
+    List.find_opt (fun (r : region_var) -> r.index = id) env.generics.regions
+  with
   | None -> region_id_to_pretty_string id
   | Some r -> region_var_to_string r
 
 let type_var_id_to_string (env : ('a, 'b) fmt_env) (id : type_var_id) : string =
-  match TypeVarId.nth_opt env.generics.types id with
+  (* Note that the types are not necessarily ordered following their indices *)
+  match
+    List.find_opt (fun (x : type_var) -> x.index = id) env.generics.types
+  with
   | None -> type_var_id_to_pretty_string id
   | Some x -> type_var_to_string x
 
 let const_generic_var_id_to_string (env : ('a, 'b) fmt_env)
     (id : const_generic_var_id) : string =
-  match ConstGenericVarId.nth_opt env.generics.const_generics id with
+  (* Note that the const generics are not necessarily ordered following their indices *)
+  match
+    List.find_opt
+      (fun (x : const_generic_var) -> x.index = id)
+      env.generics.const_generics
+  with
   | None -> const_generic_var_id_to_pretty_string id
   | Some x -> const_generic_var_to_string x
 
@@ -79,7 +91,7 @@ let rec type_id_to_string (env : ('a, 'b) fmt_env) (id : type_id) : string =
       | TSlice -> "@Slice")
 
 and type_decl_id_to_string env def_id =
-  let def = T.TypeDeclId.Map.find def_id env.type_decls in
+  let def = TypeDeclId.Map.find def_id env.type_decls in
   name_to_string env def.name
 
 and global_decl_id_to_string env def_id =
@@ -116,14 +128,14 @@ and ty_to_string (env : ('a, 'b) fmt_env) (ty : ty) : string =
       trait_ref ^ generics ^ "::" ^ type_name
   | TRef (r, rty, ref_kind) -> (
       match ref_kind with
-      | Mut ->
+      | RMut ->
           "&" ^ region_to_string env r ^ " mut (" ^ ty_to_string env rty ^ ")"
-      | Shared ->
+      | RShared ->
           "&" ^ region_to_string env r ^ " (" ^ ty_to_string env rty ^ ")")
   | TRawPtr (rty, ref_kind) -> (
       match ref_kind with
-      | Mut -> "*mut " ^ ty_to_string env rty
-      | Shared -> "*const " ^ ty_to_string env rty)
+      | RMut -> "*mut " ^ ty_to_string env rty
+      | RShared -> "*const " ^ ty_to_string env rty)
   | TArrow (inputs, output) ->
       let inputs =
         "(" ^ String.concat ", " (List.map (ty_to_string env) inputs) ^ ") -> "
@@ -279,9 +291,8 @@ let clauses_to_string (indent : string) (indent_incr : string)
 
 (** Helper to format "where" clauses *)
 let predicates_and_trait_clauses_to_string (env : ('a, 'b) fmt_env)
-    (indent : string) (indent_incr : string)
-    (params_info : A.params_info option) (trait_clauses : string list)
-    (preds : predicates) : string =
+    (indent : string) (indent_incr : string) (params_info : params_info option)
+    (trait_clauses : string list) (preds : predicates) : string =
   let { regions_outlive; types_outlive; trait_type_constraints } = preds in
   let region_to_string = region_to_string env in
   let regions_outlive =
@@ -306,12 +317,10 @@ let predicates_and_trait_clauses_to_string (env : ('a, 'b) fmt_env)
       clauses_to_string indent indent_incr 0 clauses
   | Some pi ->
       let split_at = Collections.List.split_at in
-      let trait_clauses = split_at trait_clauses pi.A.num_trait_clauses in
-      let regions_outlive = split_at regions_outlive pi.A.num_regions_outlive in
-      let types_outlive = split_at types_outlive pi.A.num_types_outlive in
-      let ttc =
-        split_at trait_type_constraints pi.A.num_trait_type_constraints
-      in
+      let trait_clauses = split_at trait_clauses pi.num_trait_clauses in
+      let regions_outlive = split_at regions_outlive pi.num_regions_outlive in
+      let types_outlive = split_at types_outlive pi.num_types_outlive in
+      let ttc = split_at trait_type_constraints pi.num_trait_type_constraints in
       let inherited, local =
         List.split [ trait_clauses; regions_outlive; types_outlive; ttc ]
       in
@@ -369,7 +378,7 @@ let adt_field_names (env : ('a, 'b) fmt_env) (def_id : TypeDeclId.id)
   match TypeDeclId.Map.find_opt def_id env.type_decls with
   | None -> None
   | Some def ->
-      let fields = TU.type_decl_get_fields def opt_variant_id in
+      let fields = type_decl_get_fields def opt_variant_id in
       (* There are two cases: either all the fields have names, or none
          of them has names *)
       let has_names =
@@ -386,6 +395,6 @@ let adt_field_to_string (env : ('a, 'b) fmt_env) (def_id : TypeDeclId.id)
   match TypeDeclId.Map.find_opt def_id env.type_decls with
   | None -> None
   | Some def ->
-      let fields = TU.type_decl_get_fields def opt_variant_id in
+      let fields = type_decl_get_fields def opt_variant_id in
       let field = FieldId.nth fields field_id in
       field.field_name

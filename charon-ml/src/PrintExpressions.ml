@@ -18,27 +18,34 @@ let fun_decl_id_to_string (env : ('a, 'b) fmt_env) (id : FunDeclId.id) : string
   | None -> fun_decl_id_to_pretty_string id
   | Some def -> name_to_string env def.name
 
+let var_to_string (v : var) : string =
+  match v.name with
+  | None -> var_id_to_pretty_string v.index
+  | Some name -> name ^ "^" ^ VarId.to_string v.index
+
 let var_id_to_string (env : ('a, 'b) fmt_env) (id : VarId.id) : string =
-  match VarId.nth_opt env.locals id with
+  match List.find_opt (fun (i, _) -> i = id) env.locals with
   | None -> var_id_to_pretty_string id
-  | Some v -> var_to_string v
+  | Some (_, name) -> (
+      match name with
+      | None -> var_id_to_pretty_string id
+      | Some name -> name ^ "^" ^ VarId.to_string id)
 
 let rec projection_to_string (env : ('a, 'b) fmt_env) (s : string)
-    (p : E.projection) : string =
+    (p : projection) : string =
   match p with
   | [] -> s
   | pe :: p' ->
       let s =
         match pe with
-        | E.Deref -> "*(" ^ s ^ ")"
-        | E.DerefBox -> "deref_box(" ^ s ^ ")"
-        | E.Field (E.ProjTuple _, fid) ->
-            "(" ^ s ^ ")." ^ T.FieldId.to_string fid
-        | E.Field (E.ProjAdt (adt_id, opt_variant_id), fid) -> (
+        | Deref -> "*(" ^ s ^ ")"
+        | DerefBox -> "deref_box(" ^ s ^ ")"
+        | Field (ProjTuple _, fid) -> "(" ^ s ^ ")." ^ FieldId.to_string fid
+        | Field (ProjAdt (adt_id, opt_variant_id), fid) -> (
             let field_name =
               match adt_field_to_string env adt_id opt_variant_id fid with
               | Some field_name -> field_name
-              | None -> T.FieldId.to_string fid
+              | None -> FieldId.to_string fid
             in
             match opt_variant_id with
             | None -> "(" ^ s ^ ")." ^ field_name
@@ -134,10 +141,10 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
   | RvRef (p, bk) -> (
       let p = place_to_string env p in
       match bk with
-      | Shared -> "&" ^ p
-      | Mut -> "&mut " ^ p
-      | TwoPhaseMut -> "&two-phase " ^ p
-      | Shallow -> "&shallow " ^ p)
+      | BShared -> "&" ^ p
+      | BMut -> "&mut " ^ p
+      | BTwoPhaseMut -> "&two-phase " ^ p
+      | BShallow -> "&shallow " ^ p)
   | UnaryOp (unop, op) ->
       unop_to_string env unop ^ " " ^ operand_to_string env op
   | BinaryOp (binop, op1, op2) ->
