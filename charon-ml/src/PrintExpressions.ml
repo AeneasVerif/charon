@@ -4,7 +4,6 @@ open Types
 open Expressions
 open LlbcAst
 open PrintUtils
-open PrintPrimitiveValues
 open PrintTypes
 
 let var_id_to_pretty_string (id : var_id) : string = "v@" ^ VarId.to_string id

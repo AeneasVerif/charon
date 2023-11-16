@@ -1165,10 +1165,10 @@ let g_declaration_group_of_json (id_of_json : json -> ('id, string) result)
     (match js with
     | `Assoc [ ("NonRec", id) ] ->
         let* id = id_of_json id in
-        Ok (NonRec id)
+        Ok (NonRecGroup id)
     | `Assoc [ ("Rec", ids) ] ->
         let* ids = list_of_json id_of_json ids in
-        Ok (Rec ids)
+        Ok (RecGroup ids)
     | _ -> Error "")
 
 let type_declaration_group_of_json (js : json) :
@@ -1186,24 +1186,24 @@ let global_declaration_group_of_json (js : json) :
   combine_error_msgs js __FUNCTION__
     (let* decl = g_declaration_group_of_json GlobalDeclId.id_of_json js in
      match decl with
-     | NonRec id -> Ok id
-     | Rec _ -> Error "got mutually dependent globals")
+     | NonRecGroup id -> Ok id
+     | RecGroup _ -> Error "got mutually dependent globals")
 
 let trait_declaration_group_of_json (js : json) :
     (TraitDeclId.id, string) result =
   combine_error_msgs js __FUNCTION__
     (let* decl = g_declaration_group_of_json TraitDeclId.id_of_json js in
      match decl with
-     | NonRec id -> Ok id
-     | Rec _ -> Error "got mutually dependent trait decls")
+     | NonRecGroup id -> Ok id
+     | RecGroup _ -> Error "got mutually dependent trait decls")
 
 let trait_implementation_group_of_json (js : json) :
     (TraitImplId.id, string) result =
   combine_error_msgs js __FUNCTION__
     (let* decl = g_declaration_group_of_json TraitImplId.id_of_json js in
      match decl with
-     | NonRec id -> Ok id
-     | Rec _ -> Error "got mutually dependent trait impls")
+     | NonRecGroup id -> Ok id
+     | RecGroup _ -> Error "got mutually dependent trait impls")
 
 let declaration_group_of_json (js : json) : (declaration_group, string) result =
   combine_error_msgs js __FUNCTION__

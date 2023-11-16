@@ -1,8 +1,8 @@
 (** Pretty-printing for types *)
 
+include PrintPrimitiveValues
 open Types
 open TypesUtils
-open PrintPrimitiveValues
 open GAst
 open PrintUtils
 

@@ -17,6 +17,9 @@ module RegionSet = Collections.MakeSet (RegionOrderedType)
 let to_name (ls : string list) : name =
   List.map (fun s -> PeIdent (s, Disambiguator.zero)) ls
 
+let as_ident (e : path_elem) : string =
+  match e with PeIdent (s, _) -> s | _ -> raise (Failure "Unexpected")
+
 let type_decl_is_opaque (d : type_decl) : bool =
   match d.kind with Struct _ | Enum _ -> false | Opaque -> true
 

@@ -80,8 +80,9 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
     let add_group (map : M.key g_declaration_group M.t)
         (group : M.key g_declaration_group) : M.key g_declaration_group M.t =
       match group with
-      | NonRec id -> M.add id group map
-      | Rec ids -> List.fold_left (fun map id -> M.add id group map) map ids
+      | NonRecGroup id -> M.add id group map
+      | RecGroup ids ->
+          List.fold_left (fun map id -> M.add id group map) map ids
 
     let create_map (groups : M.key g_declaration_group list) :
         M.key g_declaration_group M.t =

@@ -71,8 +71,9 @@ let compute_fun_decl_groups_map (c : crate) : FunDeclId.Set.t FunDeclId.Map.t =
     (List.flatten
        (List.filter_map
           (function
-            | FunGroup (NonRec id) -> Some [ (id, FunDeclId.Set.singleton id) ]
-            | FunGroup (Rec ids) ->
+            | FunGroup (NonRecGroup id) ->
+                Some [ (id, FunDeclId.Set.singleton id) ]
+            | FunGroup (RecGroup ids) ->
                 let idset = FunDeclId.Set.of_list ids in
                 Some (List.map (fun id -> (id, idset)) ids)
             | TypeGroup _ | GlobalGroup _ | TraitDeclGroup _ | TraitImplGroup _

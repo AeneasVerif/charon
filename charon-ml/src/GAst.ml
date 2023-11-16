@@ -166,7 +166,7 @@ type trait_impl = {
 }
 [@@deriving show]
 
-type 'id g_declaration_group = NonRec of 'id | Rec of 'id list
+type 'id g_declaration_group = NonRecGroup of 'id | RecGroup of 'id list
 [@@deriving show]
 
 type type_declaration_group = TypeDeclId.id g_declaration_group
