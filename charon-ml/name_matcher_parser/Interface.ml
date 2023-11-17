@@ -24,8 +24,8 @@ let parse' f s =
 
 (*let parse_program s = parse' Parser.program s*)
 
-let parse_name s =
+let parse_pattern s =
   let lexbuf = Lexing.from_string s in
-  try Parser.name Lexer.token lexbuf
+  try Parser.pattern Lexer.token lexbuf
   with Parser.Error ->
     raise (Failure ("Parse error at " ^ pos_string lexbuf.lex_curr_p))
