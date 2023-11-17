@@ -1,4 +1,4 @@
 (tests
   (names Tests)
-  (modules Tests Test_Deserialize)
+  (modules Tests Test_Deserialize Test_NameMatcher)
   (libraries charon))

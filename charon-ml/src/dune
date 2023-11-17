@@ -3,7 +3,7 @@
  (public_name charon) ;; The name as revealed to the projects importing this library
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord visitors.ppx))
- (libraries yojson zarith easy_logging)
+ (libraries yojson zarith easy_logging name_matcher_parser)
  (modules
   Collections
   Expressions

@@ -1,0 +1,10 @@
+(ocamllex Lexer)
+(menhir
+ (modules Parser))
+
+(library
+ (name name_matcher_parser)
+ (public_name name_matcher_parser)
+ (flags
+  ; menhir generates instances of the "unused rec flag" warning
+  (:standard -w -39)))

@@ -1,4 +1,5 @@
 (lang dune 3.7)
+(using menhir 2.1)
 
 (name charon)
 
@@ -29,3 +30,8 @@
    Charon. Charon acts as an interface between the rustc compiler and program
    verification projects.  Its purpose is to process Rust .rs files and convert
    them into files easy to handle by program verifiers."))
+
+(package
+ (name name_matcher_parser)
+ (synopsis "Parser to define name matchers")
+ (description ""))
