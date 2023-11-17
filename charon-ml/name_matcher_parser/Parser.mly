@@ -11,7 +11,7 @@ open Ast
 %token <int option> REGION_VAR
 %token <int option> TYPE_VAR
 %token <int option> CONST_GENERIC_VAR
-%token <int> INT
+%token <Z.t> INT
 %token SEP
 %token LEFT_BRACKET
 %token RIGHT_BRACKET

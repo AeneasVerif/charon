@@ -1,7 +1,7 @@
 type type_var = int
 type region = int
 type const_generic_var = int
-type const_generic = CgVar of const_generic_var option | CgValue of int
+type const_generic = CgVar of const_generic_var option | CgValue of Z.t
 type ref_kind = RMut | RShared
 
 type name = name_elem list

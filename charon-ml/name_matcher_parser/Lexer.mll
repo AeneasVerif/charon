@@ -12,7 +12,7 @@ rule token = parse
   | "::" { SEP }
   | "mut" { MUT }
   | ident { IDENT (Lexing.lexeme lexbuf) }
-  | digit { INT (int_of_string (Lexing.lexeme lexbuf)) }
+  | digit { INT (Z.of_string (Lexing.lexeme lexbuf)) }
   | '(' { LEFT_BRACKET }
   | ')' { RIGHT_BRACKET }
   | '{' { LEFT_CURLY }
