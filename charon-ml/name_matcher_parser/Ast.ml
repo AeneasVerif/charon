@@ -19,3 +19,5 @@ and generic_arg =
   | GConstGeneric of const_generic
 
 and generic_args = generic_arg list
+
+type inst_name = { name : name; generics : generic_args }

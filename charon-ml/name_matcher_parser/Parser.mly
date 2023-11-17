@@ -11,6 +11,7 @@ open Ast
 %token <int option> REGION_VAR
 %token <int option> TYPE_VAR
 %token <int option> CONST_GENERIC_VAR
+%token <int> INT
 %token SEP
 %token LEFT_CURLY
 %token RIGHT_CURLY
@@ -27,7 +28,8 @@ open Ast
 /* Types */
 
 /*%type <Ast.program> program*/
-%type <name> pattern
+%type <name> name_pattern
+%type <inst_name> inst_name_pattern
 %type <name> name
 %type <name_elem> name_elem
 %type <region option> region
@@ -37,12 +39,22 @@ open Ast
 %type <generic_arg> generic_arg
 
 //%start program
-%start pattern
+%start name_pattern
+%start inst_name_pattern
 
 %%
 
-pattern:
+name_pattern:
   | n=name EOF { n }
+
+/* Instantiated names.
+
+   Useful for trait references for instance:
+   `core::slice::index::SliceIndex<Range<usize>, [T]>`
+ */
+inst_name_pattern:
+  | name=name; LEFT_ANGLE; generics=generic_args; RIGHT_ANGLE; EOF {
+    { name; generics } }
 
 name:
   | e=name_elem { [e] }
@@ -50,6 +62,7 @@ name:
 
 name_elem:
   | id=IDENT { Ident id }
+  // Impl path elem
   | LEFT_CURLY; ty=ty; RIGHT_CURLY { Impl ty }
 
 ty:
@@ -69,10 +82,13 @@ ty:
   // Compound types
   | n=name; LEFT_ANGLE; g=generic_args; RIGHT_ANGLE {
     TTy (TName n, g) }
+  | n=name {
+    TTy (TName n, []) }
   ;
 
 cg:
   | cg=CONST_GENERIC_VAR { CgVar cg }
+  | i=INT { CgConst i }
 
 region:
   | r=REGION_VAR { r }
