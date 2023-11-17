@@ -22,4 +22,6 @@ let run_tests () =
   let _ =
     parse_inst_name_pattern "core::slice::index::SliceIndex<Range<usize>, [@T]>"
   in
+  let _ = parse_name_pattern "{()}" in
+  let _ = parse_name_pattern "{(@T, @T, Range<usize>)}" in
   ()

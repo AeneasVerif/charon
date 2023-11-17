@@ -18,6 +18,7 @@
   Logging
   Meta
   MetaUtils
+  NameMatcher
   OfJsonBasic
   PrintExpressions
   PrintGAst

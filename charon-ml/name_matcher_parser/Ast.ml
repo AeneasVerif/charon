@@ -1,15 +1,15 @@
 type type_var = int
 type region = int
 type const_generic_var = int
-type const_generic = CgVar of const_generic_var option | CgConst of int
+type const_generic = CgVar of const_generic_var option | CgValue of int
 type ref_kind = RMut | RShared
 
-type name_elem = Ident of string | Impl of ty
-and name = name_elem list
-and adt_id = TName of name | TArray | TSlice
+type name = name_elem list
+and name_elem = Ident of string | Impl of ty
+and type_id = TName of name | TArray | TSlice | TTuple
 
 and ty =
-  | TTy of adt_id * generic_args  (** Adt, primitive type, etc. *)
+  | TTy of type_id * generic_args  (** Adt, primitive type, etc. *)
   | TVar of int option
   | TRef of region option * ty * ref_kind
 

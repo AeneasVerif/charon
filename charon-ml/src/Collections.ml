@@ -534,5 +534,7 @@ module MakeInjMap (Key : OrderedType) (Elem : OrderedType) :
     (m, add, mem, find, find_opt)
 end
 
+module IntSet = MakeSet (OrderedInt)
+module IntMap = MakeMap (OrderedInt)
 module StringSet = MakeSet (OrderedString)
 module StringMap = MakeMap (OrderedString)

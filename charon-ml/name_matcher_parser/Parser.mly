@@ -13,6 +13,8 @@ open Ast
 %token <int option> CONST_GENERIC_VAR
 %token <int> INT
 %token SEP
+%token LEFT_BRACKET
+%token RIGHT_BRACKET
 %token LEFT_CURLY
 %token RIGHT_CURLY
 %token LEFT_SQUARE
@@ -84,11 +86,14 @@ ty:
     TTy (TName n, g) }
   | n=name {
     TTy (TName n, []) }
+  // Tuples
+  | LEFT_BRACKET; tys=separated_list(COMMA, ty); RIGHT_BRACKET {
+    TTy (TTuple, List.map (fun x -> GType x) tys) }
   ;
 
 cg:
   | cg=CONST_GENERIC_VAR { CgVar cg }
-  | i=INT { CgConst i }
+  | i=INT { CgValue i }
 
 region:
   | r=REGION_VAR { r }
