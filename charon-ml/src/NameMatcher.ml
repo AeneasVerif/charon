@@ -132,7 +132,9 @@ and convert_tty (name : RNM.type_id) (generics : RNM.generic_args) : ty =
   | TName n -> (
       let n = convert_name n in
       match n with
-      | [ PeIdent "Box" ] -> mk_assumed TBox
+      | [ PeIdent "Box" ] | [ PeIdent "alloc"; PeIdent "boxed"; PeIdent "Box" ]
+        ->
+          mk_assumed TBox
       | [ PeIdent "str" ] -> mk_assumed TStr
       | [ PeIdent "bool" ] -> mk_literal TBool
       | [ PeIdent "char" ] -> mk_literal TChar
