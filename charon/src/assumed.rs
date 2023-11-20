@@ -93,7 +93,6 @@ pub fn get_type_id_from_name(name: &TypeName) -> Option<AssumedTy> {
 }
 
 pub fn get_name_from_type_id(id: AssumedTy) -> Vec<String> {
-    use AssumedTy;
     match id {
         AssumedTy::Box => BOX_NAME.iter().map(|s| s.to_string()).collect(),
         AssumedTy::PtrUnique => PTR_UNIQUE_NAME.iter().map(|s| s.to_string()).collect(),
