@@ -197,22 +197,25 @@ and match_name (ctx : ctx) (c : match_config) (p : pattern) (n : T.name) : bool
     =
   match_name_with_generics ctx c p n TypesUtils.empty_generic_args
 
-and match_pattern_with_type_id (ctx : ctx) (c : match_config) (pid : pattern)
-    (id : T.type_id) : bool =
+and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
+    (pid : pattern) (id : T.type_id) (generics : T.generic_args) : bool =
   match id with
   | TAdtId id ->
       (* Lookup the type decl and match the name *)
       let d = T.TypeDeclId.Map.find id ctx.type_decls in
-      match_name ctx c pid d.name
+      match_name_with_generics ctx c pid d.name generics
   | TTuple -> false
   | TAssumed id -> (
       match (id, pid) with
       | ( TBox,
-          ( [ PIdent ("Box", []) ]
-          | [ PIdent ("alloc", []); PIdent ("boxed", []); PIdent ("Box", []) ]
-            ) )
-      | TStr, [ PIdent ("str", []) ] ->
-          true
+          ( [ PIdent ("Box", pgenerics) ]
+          | [
+              PIdent ("alloc", []);
+              PIdent ("boxed", []);
+              PIdent ("Box", pgenerics);
+            ] ) ) ->
+          match_generic_args ctx c m pgenerics generics
+      | TStr, [ PIdent ("str", []) ] -> generics = TypesUtils.empty_generic_args
       | _ -> false)
 
 and match_pattern_with_literal_type (pty : pattern) (ty : T.literal_type) : bool
@@ -228,11 +231,9 @@ and match_primitive_adt (pid : primitive_adt) (id : T.type_id) : bool =
 and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
     (ty : T.ty) : bool =
   match (pty, ty) with
-  | EComp (pid, pgenerics), TAdt (id, generics) ->
-      match_pattern_with_type_id ctx c pid id
-      && match_generic_args ctx c m pgenerics generics
-  | EComp (pid, pgenerics), TLiteral lit ->
-      pgenerics = [] && match_pattern_with_literal_type pid lit
+  | EComp pid, TAdt (id, generics) ->
+      match_pattern_with_type_id ctx c m pid id generics
+  | EComp pid, TLiteral lit -> match_pattern_with_literal_type pid lit
   | EPrimAdt (pid, pgenerics), TAdt (id, generics) ->
       match_primitive_adt pid id
       && match_generic_args ctx c m pgenerics generics
@@ -241,9 +242,8 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
       && match_expr_with_ty ctx c m pty ty
       && match_ref_kind prk rk
   | EVar v, _ -> opt_update_tmap c m v ty
-  | EComp (pid, pgenerics), TTraitType (trait_ref, generics, type_name) ->
-      pgenerics = []
-      && generics = TypesUtils.empty_generic_args
+  | EComp pid, TTraitType (trait_ref, generics, type_name) ->
+      generics = TypesUtils.empty_generic_args
       && match_trait_type ctx c pid trait_ref type_name
   | _ -> false
 
@@ -294,7 +294,7 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
     (pcg : expr) (cg : T.const_generic) : bool =
   match (pcg, cg) with
   | EVar pv, _ -> opt_update_cmap c m pv cg
-  | EComp (pat, []), CgGlobal gid ->
+  | EComp pat, CgGlobal gid ->
       (* Lookup the decl and match the name *)
       let d = T.GlobalDeclId.Map.find gid ctx.global_decls in
       match_name ctx c pat d.name
@@ -458,7 +458,7 @@ let mk_compute_constraints_map_visitor () =
   (visitor, get_constraints)*)
 
 let literal_type_to_pattern (lit : T.literal_type) : expr =
-  EComp ([ PIdent (literal_type_to_string lit, []) ], [])
+  EComp [ PIdent (literal_type_to_string lit, []) ]
 
 let literal_to_pattern (lit : PrimitiveValues.literal) : literal =
   match lit with
@@ -500,12 +500,13 @@ and ty_to_pattern_aux (ctx : ctx) (m : constraints) (ty : T.ty) : expr =
       | TAdtId id ->
           (* Lookup the declaration *)
           let d = T.TypeDeclId.Map.find id ctx.type_decls in
-          EComp (name_to_pattern_aux ctx d.name, generics)
+          EComp
+            (name_with_generic_args_to_pattern_aux ctx d.name (Some generics))
       | TTuple -> EPrimAdt (TTuple, generics)
       | TAssumed TArray -> EPrimAdt (TArray, generics)
       | TAssumed TSlice -> EPrimAdt (TSlice, generics)
-      | TAssumed TBox -> EComp ([ PIdent ("Box", []) ], generics)
-      | TAssumed TStr -> EComp ([ PIdent ("str", []) ], generics))
+      | TAssumed TBox -> EComp [ PIdent ("Box", generics) ]
+      | TAssumed TStr -> EComp [ PIdent ("str", generics) ])
   | TVar v -> EVar (type_var_to_pattern m v)
   | TLiteral lit -> literal_type_to_pattern lit
   | TRef (r, ty, rk) ->
@@ -522,7 +523,7 @@ and ty_to_pattern_aux (ctx : ctx) (m : constraints) (ty : T.ty) : expr =
       let g = generic_args_to_pattern ctx m trait_decl_ref.decl_generics in
       let name = name_with_generic_args_to_pattern_aux ctx d.name (Some g) in
       let name = name @ [ PIdent (type_name, []) ] in
-      EComp (name, [])
+      EComp name
   | TNever | TRawPtr _ | TArrow _ -> raise (Failure "Unimplemented")
 
 and ty_to_pattern (ctx : ctx) (params : T.generic_params) (ty : T.ty) : expr =
@@ -539,7 +540,7 @@ and const_generic_to_pattern (ctx : ctx) (m : constraints)
   | CgGlobal gid ->
       let d = T.GlobalDeclId.Map.find gid ctx.global_decls in
       let n = name_to_pattern_aux ctx d.name in
-      GExpr (EComp (n, []))
+      GExpr (EComp n)
 
 and generic_args_to_pattern (ctx : ctx) (m : constraints)
     (generics : T.generic_args) : generic_args =
@@ -646,8 +647,7 @@ and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
 
 and expr_to_string (c : print_config) (e : expr) : string =
   match e with
-  | EComp (pat, generics) ->
-      pattern_to_string_aux c pat ^ generic_args_to_string c generics
+  | EComp pat -> pattern_to_string_aux c pat
   | EPrimAdt (id, generics) -> (
       match id with
       | TTuple ->

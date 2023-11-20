@@ -45,11 +45,9 @@ pattern_elem:
   | LEFT_CURLY; ty=expr; RIGHT_CURLY { PImpl ty }
 
 expr:
-  // Compound types
-  | n=pattern; LEFT_ANGLE; g=generic_args; RIGHT_ANGLE {
-      EComp (n, g) }
-  | n=pattern {
-      EComp (n, []) }
+  // Compound types - note that if a type has generics, they will be grouped
+  // with the last pattern_elem of the name
+  | n=pattern { EComp n }
   // Primitive ADT: Tuple
   | LEFT_BRACKET; tys=separated_list(COMMA, expr); RIGHT_BRACKET {
       EPrimAdt (TTuple, List.map (fun x -> GExpr x) tys) }

@@ -26,8 +26,11 @@ and pattern_elem = PIdent of string * generic_args | PImpl of expr
     types because they have special syntax.
  *)
 and expr =
-  | EComp of pattern * generic_args
-      (** Compound expression: instantiated adt, primitive type, constant, etc. *)
+  | EComp of pattern
+      (** Compound expression: instantiated adt, primitive type, constant, etc.
+          Note that if a type has generic arguments, they will be grouped with
+          the last pattern elem.
+       *)
   | EPrimAdt of primitive_adt * generic_args
   | ERef of region * expr * ref_kind
   | EVar of var option
