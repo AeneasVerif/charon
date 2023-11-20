@@ -15,20 +15,22 @@
 
     Here are some examples of patterns:
     - "core::mem::replace": the function `core::mem::replace`
-    - "alloc::vec::{alloc::vec::Vec<@T>}::push": the function `push` in any
+    - "alloc::vec::{alloc::vec::Vec<@>}::push": the function `push` in any
       impl block of type `alloc::vec::Vec<T>`, where T is a type variable.
-      Note that "@T" means that this matches any type variable. In case
-      we need stronger constraints, we can add indices: "@T1". All the
-      occurrences of "@T1" must match the same variable (ex.: "Foo<@T, @T>"
-      would match `Foo<T1, T2` as well as `Foo<T, T>`, while "Foo<@T1, @T1>"
-      only matches `Foo<T, T>`).
+      Note that "@" means that this matches any (type) variable. In case
+      we need stronger constraints, we can name those variables: "@T". All the
+      occurrences of "@T" must match the same variable (ex.: "Foo<@T, @T>"
+      would match `Foo<U, U>` but not `Foo<T, U>`).
+    - the "@" syntax is used both for types and const generics. For regions/lifetimes,
+      we use "'": "&'a mut @T"
     - for the types we put inside blocks, we have syntax for arrays, slices,
       and references:
-      - "[@T; @C]": slice
-      - "&@R mut @T": mutable reference
+      - "[@T; @N]": slice
+      - "&'R mut @T": mutable reference
 
     Remark: `Box` is treated as a primitive type, which means that one only
-    needs to type "Box" (instead of "alloc::boxed::Box").
+    needs to type "Box" (instead of "alloc::boxed::Box" - though the latter
+    also works).
  *)
 
 (* The "raw" name matcher patterns *)
@@ -637,7 +639,7 @@ let opt_var_to_string (c : print_config) (v : var option) : string =
       | Some (VarName n) -> n
       | Some (VarIndex id) -> "P" ^ string_of_int id)
 
-let rec pattern_to_string_aux (c : print_config) (p : pattern) : string =
+let rec pattern_to_string (c : print_config) (p : pattern) : string =
   String.concat "::" (List.map (pattern_elem_to_string c) p)
 
 and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
@@ -647,22 +649,30 @@ and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
 
 and expr_to_string (c : print_config) (e : expr) : string =
   match e with
-  | EComp pat -> pattern_to_string_aux c pat
+  | EComp pat -> pattern_to_string c pat
   | EPrimAdt (id, generics) -> (
       match id with
-      | TTuple ->
-          "("
-          ^ String.concat ", " (List.map (generic_arg_to_string c) generics)
-          ^ ")"
+      | TTuple -> (
+          let generics = List.map (generic_arg_to_string c) generics in
+          match c.tgt_kind with
+          | TkPattern | TkPretty -> "(" ^ String.concat ", " generics ^ ")"
+          | TkName -> "Tuple" ^ String.concat "" generics)
       | TArray -> (
           match generics with
-          | [ ty; cg ] ->
-              "[" ^ generic_arg_to_string c ty ^ "; "
-              ^ generic_arg_to_string c cg ^ "]"
+          | [ ty; cg ] -> (
+              let ty = generic_arg_to_string c ty in
+              let cg = generic_arg_to_string c cg in
+              match c.tgt_kind with
+              | TkPattern | TkPretty -> "[" ^ ty ^ "; " ^ cg ^ "]"
+              | TkName -> "Array" ^ ty ^ cg)
           | _ -> raise (Failure "Ill-formed pattern"))
       | TSlice -> (
           match generics with
-          | [ ty ] -> "[" ^ generic_arg_to_string c ty ^ "]"
+          | [ ty ] -> (
+              let ty = generic_arg_to_string c ty in
+              match c.tgt_kind with
+              | TkPattern | TkPretty -> "[" ^ ty ^ "]"
+              | TkName -> "Slice" ^ ty)
           | _ -> raise (Failure "Ill-formed pattern")))
   | ERef (r, ty, rk) ->
       let rk = match rk with RMut -> "mut " | RShared -> "" in
