@@ -689,4 +689,7 @@ and generic_args_to_string (c : print_config) (generics : generic_args) : string
     =
   if generics = [] then ""
   else
-    "<" ^ String.concat ", " (List.map (generic_arg_to_string c) generics) ^ ">"
+    let generics = List.map (generic_arg_to_string c) generics in
+    match c.tgt_kind with
+    | TkPattern | TkPretty -> "<" ^ String.concat ", " generics ^ ">"
+    | TkName -> String.concat "" generics
