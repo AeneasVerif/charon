@@ -30,6 +30,7 @@
   PrimitiveValues
   PrimitiveValuesUtils
   Scalars
+  StringUtils
   Types
   TypesUtils
   UllbcAst

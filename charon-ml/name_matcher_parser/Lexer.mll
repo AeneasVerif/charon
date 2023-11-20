@@ -1,5 +1,6 @@
 {
   open Parser
+  open Ast
 }
 
 let digit = ['0'-'9']
@@ -11,6 +12,10 @@ let whitespace = [' ']+
 rule token = parse
   | "::" { SEP }
   | "mut" { MUT }
+  | "'static" { STATIC_REGION }
+  | ''' { REGION (index lexbuf) }
+  | "true" { TRUE }
+  | "false" { FALSE }
   | ident { IDENT (Lexing.lexeme lexbuf) }
   | digit { INT (Z.of_string (Lexing.lexeme lexbuf)) }
   | '(' { LEFT_BRACKET }
@@ -19,9 +24,7 @@ rule token = parse
   | '}' { RIGHT_CURLY }
   | '[' { LEFT_SQUARE }
   | ']' { RIGHT_SQUARE }
-  | "@R" { REGION_VAR(index lexbuf) }
-  | "@T" { TYPE_VAR(index lexbuf) }
-  | "@C" { CONST_GENERIC_VAR(index lexbuf) }
+  | "@" { VAR(index lexbuf) }
   | ';' { SEMICOL }
   | '&' { AMPERSAND }
   | whitespace { token lexbuf }
@@ -32,5 +35,7 @@ rule token = parse
   | _ { raise (Failure ("Character not allowed in source text: '" ^ Lexing.lexeme lexbuf ^ "'")) }
 
 and index = parse
-  | digit+ { Some (int_of_string (Lexing.lexeme lexbuf)) }
+  | ident { Some (VarName (Lexing.lexeme lexbuf)) }
+  | digit+ { Some (VarIndex (int_of_string (Lexing.lexeme lexbuf))) }
+  | '_' { None }
   | "" { None }

@@ -290,13 +290,13 @@ let const_generic_of_json (js : json) : (const_generic, string) result =
     (match js with
     | `Assoc [ ("Global", id) ] ->
         let* id = GlobalDeclId.id_of_json id in
-        Ok (CGGlobal id)
+        Ok (CgGlobal id)
     | `Assoc [ ("Var", id) ] ->
         let* id = ConstGenericVarId.id_of_json id in
-        Ok (CGVar id)
+        Ok (CgVar id)
     | `Assoc [ ("Value", lit) ] ->
         let* lit = literal_of_json lit in
-        Ok (CGValue lit)
+        Ok (CgValue lit)
     | _ -> Error "")
 
 let rec ty_of_json (js : json) : (ty, string) result =

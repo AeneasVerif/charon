@@ -1,23 +1,36 @@
-type type_var = int
-type region = int
-type const_generic_var = int
-type const_generic = CgVar of const_generic_var option | CgValue of Z.t
-type ref_kind = RMut | RShared
+(* TODO: this duplicates PrimitiveValues *)
+type big_int = Z.t
 
-type name = name_elem list
-and name_elem = Ident of string | Impl of ty
-and type_id = TName of name | TArray | TSlice | TTuple
+let pp_big_int (fmt : Format.formatter) (bi : big_int) : unit =
+  Format.pp_print_string fmt (Z.to_string bi)
 
-and ty =
-  | TTy of type_id * generic_args  (** Adt, primitive type, etc. *)
-  | TVar of int option
-  | TRef of region option * ty * ref_kind
+let compare_big_int (bi0 : big_int) (bi1 : big_int) : int = Z.compare bi0 bi1
+let show_big_int (bi : big_int) : string = Z.to_string bi
 
-and generic_arg =
-  | GRegion of region option
-  | GType of ty
-  | GConstGeneric of const_generic
+type var = VarName of string | VarIndex of int [@@deriving show, ord]
 
-and generic_args = generic_arg list
+type literal = LInt of big_int | LBool of bool | LChar of char
+[@@deriving show, ord]
 
-type inst_name = { name : name; generics : generic_args }
+(*type const_generic = CgVar of const_generic_var option | CgValue of Z.t*)
+type ref_kind = RMut | RShared [@@deriving show, ord]
+type region = RVar of var option | RStatic [@@deriving show, ord]
+type primitive_adt = TTuple | TArray | TSlice [@@deriving show, ord]
+
+type pattern = pattern_elem list
+and pattern_elem = PIdent of string * generic_args | PImpl of expr
+
+(** An expression can be a type or a trait ref.
+
+    Note that we put in separate cases the tuple, array, slice and reference
+    types because they have special syntax.
+ *)
+and expr =
+  | EComp of pattern * generic_args
+      (** Compound expression: instantiated adt, primitive type, constant, etc. *)
+  | EPrimAdt of primitive_adt * generic_args
+  | ERef of region * expr * ref_kind
+  | EVar of var option
+
+and generic_arg = GExpr of expr | GValue of literal | GRegion of region
+and generic_args = generic_arg list [@@deriving show, ord]

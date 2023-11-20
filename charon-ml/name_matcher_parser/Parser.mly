@@ -2,107 +2,86 @@
 open Ast
 %}
 
-/*%token <int> INT_CONSTANT
-%token <float> FLOAT_CONSTANT
-%token <string> WORD*/
-
-//%token <int option> INDEX
 %token <string> IDENT
-%token <int option> REGION_VAR
-%token <int option> TYPE_VAR
-%token <int option> CONST_GENERIC_VAR
+%token <Ast.var option> VAR // For types and const generics
+%token <Ast.var option> REGION
 %token <Z.t> INT
-%token SEP
-%token LEFT_BRACKET
-%token RIGHT_BRACKET
-%token LEFT_CURLY
-%token RIGHT_CURLY
-%token LEFT_SQUARE
-%token RIGHT_SQUARE
-%token SEMICOL
-%token AMPERSAND
-%token MUT
-%token LEFT_ANGLE
-%token RIGHT_ANGLE
-%token COMMA
-%token EOF
+%token STATIC_REGION
+%token SEP TRUE FALSE
+%token LEFT_BRACKET RIGHT_BRACKET
+%token LEFT_CURLY RIGHT_CURLY
+%token LEFT_SQUARE RIGHT_SQUARE
+%token LEFT_ANGLE RIGHT_ANGLE
+%token SEMICOL AMPERSAND MUT COMMA EOF
 
 /* Types */
 
-/*%type <Ast.program> program*/
-%type <name> name_pattern
-%type <inst_name> inst_name_pattern
-%type <name> name
-%type <name_elem> name_elem
-%type <region option> region
-%type <ty> ty
-%type <const_generic> cg
+%type <pattern> full_pattern
+%type <pattern> pattern
+%type <pattern_elem> pattern_elem
+%type <expr> expr
+%type <region> region
 %type <generic_args> generic_args
 %type <generic_arg> generic_arg
 
-//%start program
-%start name_pattern
-%start inst_name_pattern
+/* Entry point */
+
+%start full_pattern
 
 %%
 
-name_pattern:
-  | n=name EOF { n }
+full_pattern:
+  | n=pattern EOF { n }
 
-/* Instantiated names.
+pattern:
+  | e=pattern_elem { [e] }
+  | e=pattern_elem SEP n=pattern { e :: n }
 
-   Useful for trait references for instance:
-   `core::slice::index::SliceIndex<Range<usize>, [T]>`
- */
-inst_name_pattern:
-  | name=name; LEFT_ANGLE; generics=generic_args; RIGHT_ANGLE; EOF {
-    { name; generics } }
-
-name:
-  | e=name_elem { [e] }
-  | e=name_elem SEP n=name { e :: n }
-
-name_elem:
-  | id=IDENT { Ident id }
+pattern_elem:
+  // (Instantiated) identifier
+  | id=IDENT { PIdent (id, []) }
+  | id=IDENT; LEFT_ANGLE; g=generic_args; RIGHT_ANGLE { PIdent (id, g) }
   // Impl path elem
-  | LEFT_CURLY; ty=ty; RIGHT_CURLY { Impl ty }
+  | LEFT_CURLY; ty=expr; RIGHT_CURLY { PImpl ty }
 
-ty:
-  // Type variables
-  | i=TYPE_VAR { TVar i }
-  // Slices
-  | LEFT_SQUARE; ty=ty; RIGHT_SQUARE {
-      TTy (TSlice, [GType ty]) }
-  // Arrays
-  | LEFT_SQUARE; ty=ty; SEMICOL; cg=cg; RIGHT_SQUARE {
-      TTy (TSlice, [GType ty; GConstGeneric cg]) }
-  // References
-  | AMPERSAND; r=region; MUT; ty=ty {
-      TRef (r, ty, RMut) }
-  | AMPERSAND; r=region; ty=ty {
-      TRef (r, ty, RShared) }
+expr:
   // Compound types
-  | n=name; LEFT_ANGLE; g=generic_args; RIGHT_ANGLE {
-    TTy (TName n, g) }
-  | n=name {
-    TTy (TName n, []) }
-  // Tuples
-  | LEFT_BRACKET; tys=separated_list(COMMA, ty); RIGHT_BRACKET {
-    TTy (TTuple, List.map (fun x -> GType x) tys) }
+  | n=pattern; LEFT_ANGLE; g=generic_args; RIGHT_ANGLE {
+      EComp (n, g) }
+  | n=pattern {
+      EComp (n, []) }
+  // Primitive ADT: Tuple
+  | LEFT_BRACKET; tys=separated_list(COMMA, expr); RIGHT_BRACKET {
+      EPrimAdt (TTuple, List.map (fun x -> GExpr x) tys) }
+  // Primitive ADT: Slice
+  | LEFT_SQUARE; ty=expr; RIGHT_SQUARE {
+      EPrimAdt (TSlice, [GExpr ty]) }
+  // Primitive ADT: Array
+  | LEFT_SQUARE; ty=expr; SEMICOL; cg=expr; RIGHT_SQUARE {
+      EPrimAdt (TArray, [GExpr ty; GExpr cg]) }
+  // References
+  | AMPERSAND; r=region; MUT; ty=expr {
+      ERef (r, ty, RMut) }
+  | AMPERSAND; r=region; ty=expr {
+      ERef (r, ty, RShared) }
+  // Variables
+  | v=VAR { EVar v }
   ;
 
-cg:
-  | cg=CONST_GENERIC_VAR { CgVar cg }
-  | i=INT { CgValue i }
-
 region:
-  | r=REGION_VAR { r }
+  | STATIC_REGION { RStatic }
+  | r=REGION { RVar r }
 
 generic_args:
   | g=generic_arg { [ g ] }
   | g=generic_arg; COMMA; gl=generic_args { g :: gl }
 
 generic_arg:
+  // Expressions
+  | e=expr { GExpr e }
+  // Values
+  | TRUE { GValue (LBool true) }
+  | FALSE { GValue (LBool false) }
+  | v=INT { GValue (LInt v) }
+  // Regions
   | r=region { GRegion r }
-  | ty=ty { GType ty }
-  | cg=cg { GConstGeneric cg }

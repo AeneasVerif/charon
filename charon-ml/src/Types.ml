@@ -145,9 +145,9 @@ class virtual ['self] mapreduce_const_generic_base =
 (** Remark: we have to use long names because otherwise we have collisions in
     the functions derived for the visitors. *)
 type const_generic =
-  | CGGlobal of global_decl_id
-  | CGVar of const_generic_var_id
-  | CGValue of literal
+  | CgGlobal of global_decl_id
+  | CgVar of const_generic_var_id
+  | CgValue of literal
 [@@deriving
   show,
     ord,

@@ -109,9 +109,9 @@ and trait_impl_id_to_string env id =
 and const_generic_to_string (env : ('a, 'b) fmt_env) (cg : const_generic) :
     string =
   match cg with
-  | CGGlobal id -> global_decl_id_to_string env id
-  | CGVar id -> const_generic_var_id_to_string env id
-  | CGValue lit -> literal_to_string lit
+  | CgGlobal id -> global_decl_id_to_string env id
+  | CgVar id -> const_generic_var_id_to_string env id
+  | CgValue lit -> literal_to_string lit
 
 and ty_to_string (env : ('a, 'b) fmt_env) (ty : ty) : string =
   match ty with

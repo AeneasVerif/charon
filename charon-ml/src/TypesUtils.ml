@@ -80,7 +80,7 @@ let ty_as_literal (ty : ty) : literal_type =
   match ty with TLiteral lty -> lty | _ -> raise (Failure "Unreachable")
 
 let const_generic_as_literal (cg : const_generic) : PrimitiveValues.literal =
-  match cg with CGValue v -> v | _ -> raise (Failure "Unreachable")
+  match cg with CgValue v -> v | _ -> raise (Failure "Unreachable")
 
 let trait_instance_id_as_trait_impl (id : trait_instance_id) : trait_impl_id =
   match id with TraitImpl id -> id | _ -> raise (Failure "Unreachable")
