@@ -41,6 +41,8 @@ rustc_tools_util = "0.2.1"
 bumpalo = "3.11.1" # We constrain the version of [bumpalo] because of a vulnerability
 hax-frontend-exporter = { git = "https://github.com/hacspec/hacspec-v2.git", branch = "charon_traits" }
 hax-frontend-exporter-options = { git = "https://github.com/hacspec/hacspec-v2.git", branch = "charon_traits" }
+#hax-frontend-exporter = { path = "../../hacspec-v2/frontend/exporter" }
+#hax-frontend-exporter-options = { path = "../../hacspec-v2/frontend/exporter/options" }
 colored = "2.0.4"
 derivative = "2.2.0"
 backtrace = "0.3.69"
