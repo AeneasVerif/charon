@@ -459,29 +459,43 @@ let mk_compute_constraints_map_visitor () =
   in
   (visitor, get_constraints)*)
 
-let literal_type_to_pattern (lit : T.literal_type) : expr =
-  EComp [ PIdent (literal_type_to_string lit, []) ]
+type target_kind =
+  | TkPattern  (** Generate a string which can be parsed as a pattern *)
+  | TkPretty  (** Pretty printing *)
+  | TkName  (** A name for code extraction (for instance for trait instances) *)
 
-let literal_to_pattern (lit : PrimitiveValues.literal) : literal =
+type to_pat_config = { tgt : target_kind }
+
+let literal_type_to_pattern (c : to_pat_config) (lit : T.literal_type) : expr =
+  let lit = literal_type_to_string lit in
+  let lit =
+    match c.tgt with
+    | TkPattern | TkPretty -> lit
+    | TkName -> StringUtils.capitalize_first_letter lit
+  in
+  EComp [ PIdent (lit, []) ]
+
+let literal_to_pattern (_c : to_pat_config) (lit : PrimitiveValues.literal) :
+    literal =
   match lit with
   | VScalar sv -> LInt sv.value
   | VBool v -> LBool v
   | VChar v -> LChar v
 
-let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (n : T.name)
-    (generics : generic_args option) : pattern =
+let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (c : to_pat_config)
+    (n : T.name) (generics : generic_args option) : pattern =
   match n with
   | [] -> raise (Failure "Empty names are not valid")
-  | [ e ] -> [ path_elem_with_generic_args_to_pattern ctx e generics ]
+  | [ e ] -> [ path_elem_with_generic_args_to_pattern ctx c e generics ]
   | e :: n ->
-      path_elem_with_generic_args_to_pattern ctx e None
-      :: name_with_generic_args_to_pattern_aux ctx n generics
+      path_elem_with_generic_args_to_pattern ctx c e None
+      :: name_with_generic_args_to_pattern_aux ctx c n generics
 
-and name_to_pattern_aux (ctx : ctx) (n : T.name) : pattern =
-  name_with_generic_args_to_pattern_aux ctx n None
+and name_to_pattern_aux (ctx : ctx) (c : to_pat_config) (n : T.name) : pattern =
+  name_with_generic_args_to_pattern_aux ctx c n None
 
-and path_elem_with_generic_args_to_pattern (ctx : ctx) (e : T.path_elem)
-    (generics : generic_args option) : pattern_elem =
+and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
+    (e : T.path_elem) (generics : generic_args option) : pattern_elem =
   match e with
   | PeIdent (s, _) -> (
       match generics with
@@ -489,32 +503,34 @@ and path_elem_with_generic_args_to_pattern (ctx : ctx) (e : T.path_elem)
       | Some args -> PIdent (s, args))
   | PeImpl impl ->
       assert (generics = None);
-      impl_elem_to_pattern ctx impl
+      impl_elem_to_pattern ctx c impl
 
-and impl_elem_to_pattern (ctx : ctx) (impl : T.impl_elem) : pattern_elem =
-  PImpl (ty_to_pattern ctx impl.generics impl.ty)
+and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
+    pattern_elem =
+  PImpl (ty_to_pattern ctx c impl.generics impl.ty)
 
-and ty_to_pattern_aux (ctx : ctx) (m : constraints) (ty : T.ty) : expr =
+and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
+    (ty : T.ty) : expr =
   match ty with
   | TAdt (id, generics) -> (
-      let generics = generic_args_to_pattern ctx m generics in
+      let generics = generic_args_to_pattern ctx c m generics in
       match id with
       | TAdtId id ->
           (* Lookup the declaration *)
           let d = T.TypeDeclId.Map.find id ctx.type_decls in
           EComp
-            (name_with_generic_args_to_pattern_aux ctx d.name (Some generics))
+            (name_with_generic_args_to_pattern_aux ctx c d.name (Some generics))
       | TTuple -> EPrimAdt (TTuple, generics)
       | TAssumed TArray -> EPrimAdt (TArray, generics)
       | TAssumed TSlice -> EPrimAdt (TSlice, generics)
       | TAssumed TBox -> EComp [ PIdent ("Box", generics) ]
       | TAssumed TStr -> EComp [ PIdent ("str", generics) ])
   | TVar v -> EVar (type_var_to_pattern m v)
-  | TLiteral lit -> literal_type_to_pattern lit
+  | TLiteral lit -> literal_type_to_pattern c lit
   | TRef (r, ty, rk) ->
       ERef
         ( region_to_pattern m r,
-          ty_to_pattern_aux ctx m ty,
+          ty_to_pattern_aux ctx c m ty,
           ref_kind_to_pattern rk )
   | TTraitType (trait_ref, generics, type_name) ->
       assert (generics = TypesUtils.empty_generic_args);
@@ -522,37 +538,38 @@ and ty_to_pattern_aux (ctx : ctx) (m : constraints) (ty : T.ty) : expr =
       let d =
         T.TraitDeclId.Map.find trait_decl_ref.trait_decl_id ctx.trait_decls
       in
-      let g = generic_args_to_pattern ctx m trait_decl_ref.decl_generics in
-      let name = name_with_generic_args_to_pattern_aux ctx d.name (Some g) in
+      let g = generic_args_to_pattern ctx c m trait_decl_ref.decl_generics in
+      let name = name_with_generic_args_to_pattern_aux ctx c d.name (Some g) in
       let name = name @ [ PIdent (type_name, []) ] in
       EComp name
   | TNever | TRawPtr _ | TArrow _ -> raise (Failure "Unimplemented")
 
-and ty_to_pattern (ctx : ctx) (params : T.generic_params) (ty : T.ty) : expr =
+and ty_to_pattern (ctx : ctx) (c : to_pat_config) (params : T.generic_params)
+    (ty : T.ty) : expr =
   (* Compute the constraints map *)
   let m = compute_constraints_map params in
   (* Convert the type *)
-  ty_to_pattern_aux ctx m ty
+  ty_to_pattern_aux ctx c m ty
 
-and const_generic_to_pattern (ctx : ctx) (m : constraints)
+and const_generic_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
     (cg : T.const_generic) : generic_arg =
   match cg with
   | CgVar v -> GExpr (EVar (T.ConstGenericVarId.Map.find v m.cmap))
-  | CgValue v -> GValue (literal_to_pattern v)
+  | CgValue v -> GValue (literal_to_pattern c v)
   | CgGlobal gid ->
       let d = T.GlobalDeclId.Map.find gid ctx.global_decls in
-      let n = name_to_pattern_aux ctx d.name in
+      let n = name_to_pattern_aux ctx c d.name in
       GExpr (EComp n)
 
-and generic_args_to_pattern (ctx : ctx) (m : constraints)
+and generic_args_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
     (generics : T.generic_args) : generic_args =
   let { regions; types; const_generics; trait_refs = _ } : T.generic_args =
     generics
   in
   let regions = List.map (region_to_pattern m) regions in
-  let types = List.map (ty_to_pattern_aux ctx m) types in
+  let types = List.map (ty_to_pattern_aux ctx c m) types in
   let const_generics =
-    List.map (const_generic_to_pattern ctx m) const_generics
+    List.map (const_generic_to_pattern ctx c m) const_generics
   in
   List.concat
     [
@@ -561,43 +578,40 @@ and generic_args_to_pattern (ctx : ctx) (m : constraints)
       const_generics;
     ]
 
-let name_to_pattern (ctx : ctx) (n : T.name) : pattern =
+let name_to_pattern (ctx : ctx) (c : to_pat_config) (n : T.name) : pattern =
   (* Convert the name to a pattern *)
-  let pat = name_to_pattern_aux ctx n in
+  let pat = name_to_pattern_aux ctx c n in
   (* Sanity check: the name should match the pattern *)
-  assert (match_name ctx { map_vars_to_vars = true } pat n);
+  assert (c.tgt = TkName || match_name ctx { map_vars_to_vars = true } pat n);
   (* Return *)
   pat
 
-let name_with_generics_to_pattern (ctx : ctx) (n : T.name)
+let name_with_generics_to_pattern (ctx : ctx) (c : to_pat_config) (n : T.name)
     (params : T.generic_params) (args : T.generic_args) : pattern =
   (* Convert the name to a pattern *)
   let pat =
     let m = compute_constraints_map params in
-    let args = generic_args_to_pattern ctx m args in
-    name_with_generic_args_to_pattern_aux ctx n (Some args)
+    let args = generic_args_to_pattern ctx c m args in
+    name_with_generic_args_to_pattern_aux ctx c n (Some args)
   in
   (* Sanity check: the name should match the pattern *)
-  assert (match_name_with_generics ctx { map_vars_to_vars = true } pat n args);
+  assert (
+    c.tgt = TkName
+    || match_name_with_generics ctx { map_vars_to_vars = true } pat n args);
   (* Return *)
   pat
 
 (*
  * Convert patterns to strings
  *)
-type target_kind =
-  | TkPattern  (** Generate a string which can be parsed as a pattern *)
-  | TkPretty  (** Pretty printing *)
-  | TkName  (** A name for code extraction (for instance for trait instances) *)
-
-type print_config = { tgt_kind : target_kind }
+type print_config = { tgt : target_kind }
 
 let literal_to_string (c : print_config) (l : literal) : string =
   match l with
   | LInt v -> Z.to_string v
   | LBool b -> Bool.to_string b
   | LChar x -> (
-      match c.tgt_kind with
+      match c.tgt with
       | TkPattern ->
           (* TODO: we can't use the syntax 'x' for now because of lifetimes *)
           raise (Failure "TODO")
@@ -605,7 +619,7 @@ let literal_to_string (c : print_config) (l : literal) : string =
       | TkName -> String.make 1 x)
 
 let region_var_to_string (c : print_config) (v : var option) : string =
-  match c.tgt_kind with
+  match c.tgt with
   | TkPattern | TkPretty -> (
       match v with
       | None -> "'_"
@@ -620,13 +634,11 @@ let region_var_to_string (c : print_config) (v : var option) : string =
 let region_to_string (c : print_config) (r : region) : string =
   match r with
   | RStatic -> (
-      match c.tgt_kind with
-      | TkPattern | TkPretty -> "'static"
-      | TkName -> "Static")
+      match c.tgt with TkPattern | TkPretty -> "'static" | TkName -> "Static")
   | RVar v -> region_var_to_string c v
 
 let opt_var_to_string (c : print_config) (v : var option) : string =
-  match c.tgt_kind with
+  match c.tgt with
   | TkPattern -> (
       match v with
       | None -> "@"
@@ -640,7 +652,8 @@ let opt_var_to_string (c : print_config) (v : var option) : string =
       | Some (VarIndex id) -> "P" ^ string_of_int id)
 
 let rec pattern_to_string (c : print_config) (p : pattern) : string =
-  String.concat "::" (List.map (pattern_elem_to_string c) p)
+  let sep = match c.tgt with TkPattern | TkPretty -> "::" | TkName -> "" in
+  String.concat sep (List.map (pattern_elem_to_string c) p)
 
 and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
   match e with
@@ -654,7 +667,7 @@ and expr_to_string (c : print_config) (e : expr) : string =
       match id with
       | TTuple -> (
           let generics = List.map (generic_arg_to_string c) generics in
-          match c.tgt_kind with
+          match c.tgt with
           | TkPattern | TkPretty -> "(" ^ String.concat ", " generics ^ ")"
           | TkName -> "Tuple" ^ String.concat "" generics)
       | TArray -> (
@@ -662,7 +675,7 @@ and expr_to_string (c : print_config) (e : expr) : string =
           | [ ty; cg ] -> (
               let ty = generic_arg_to_string c ty in
               let cg = generic_arg_to_string c cg in
-              match c.tgt_kind with
+              match c.tgt with
               | TkPattern | TkPretty -> "[" ^ ty ^ "; " ^ cg ^ "]"
               | TkName -> "Array" ^ ty ^ cg)
           | _ -> raise (Failure "Ill-formed pattern"))
@@ -670,7 +683,7 @@ and expr_to_string (c : print_config) (e : expr) : string =
           match generics with
           | [ ty ] -> (
               let ty = generic_arg_to_string c ty in
-              match c.tgt_kind with
+              match c.tgt with
               | TkPattern | TkPretty -> "[" ^ ty ^ "]"
               | TkName -> "Slice" ^ ty)
           | _ -> raise (Failure "Ill-formed pattern")))
@@ -682,7 +695,11 @@ and expr_to_string (c : print_config) (e : expr) : string =
 and generic_arg_to_string (c : print_config) (g : generic_arg) : string =
   match g with
   | GExpr e -> expr_to_string c e
-  | GValue l -> literal_to_string c l
+  | GValue l -> (
+      let l = literal_to_string c l in
+      match c.tgt with
+      | TkPattern | TkPretty -> l
+      | TkName -> StringUtils.capitalize_first_letter l)
   | GRegion r -> region_to_string c r
 
 and generic_args_to_string (c : print_config) (generics : generic_args) : string
@@ -690,6 +707,6 @@ and generic_args_to_string (c : print_config) (generics : generic_args) : string
   if generics = [] then ""
   else
     let generics = List.map (generic_arg_to_string c) generics in
-    match c.tgt_kind with
+    match c.tgt with
     | TkPattern | TkPretty -> "<" ^ String.concat ", " generics ^ ">"
     | TkName -> String.concat "" generics
