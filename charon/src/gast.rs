@@ -165,6 +165,7 @@ pub struct TraitDecl {
     /// an external crate.
     pub is_local: bool,
     pub name: Name,
+    pub meta: Meta,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// The "parent" clauses: the supertraits.
@@ -223,6 +224,7 @@ pub struct TraitImpl {
     /// an external crate.
     pub is_local: bool,
     pub name: Name,
+    pub meta: Meta,
     /// The information about the implemented trait.
     /// Note that this contains the instantiation of the "parent"
     /// clauses.

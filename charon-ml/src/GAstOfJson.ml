@@ -1053,6 +1053,7 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("def_id", def_id);
           ("is_local", is_local);
           ("name", name);
+          ("meta", meta);
           ("generics", generics);
           ("preds", preds);
           ("parent_clauses", parent_clauses);
@@ -1064,6 +1065,7 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* def_id = TraitDeclId.id_of_json def_id in
         let* is_local = bool_of_json is_local in
         let* name = name_of_json id_to_file name in
+        let* meta = meta_of_json id_to_file meta in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* parent_clauses =
@@ -1099,6 +1101,7 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
             def_id;
             is_local;
             name;
+            meta;
             generics;
             preds;
             parent_clauses;
@@ -1118,6 +1121,7 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("def_id", def_id);
           ("is_local", is_local);
           ("name", name);
+          ("meta", meta);
           ("impl_trait", impl_trait);
           ("generics", generics);
           ("preds", preds);
@@ -1130,6 +1134,7 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* def_id = TraitImplId.id_of_json def_id in
         let* is_local = bool_of_json is_local in
         let* name = name_of_json id_to_file name in
+        let* meta = meta_of_json id_to_file meta in
         let* impl_trait = trait_decl_ref_of_json impl_trait in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
@@ -1158,6 +1163,7 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
              def_id;
              is_local;
              name;
+             meta;
              impl_trait;
              generics;
              preds;
