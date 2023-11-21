@@ -621,3 +621,145 @@ and generic_args_to_string (c : print_config) (generics : generic_args) : string
     match c.tgt with
     | TkPattern | TkPretty -> "<" ^ String.concat ", " generics ^ ">"
     | TkName -> String.concat "" generics
+
+(*
+ * Check if two patterns are convertible, and compute the common "convertible"
+ * suffix.
+ *)
+
+type inj_map = { m0 : var VarMap.t; m1 : var VarMap.t }
+
+let empty_inj_map = { m0 = VarMap.empty; m1 = VarMap.empty }
+
+type conv_map = { rmap : inj_map; vmap : inj_map }
+
+let empty_conv_map = { rmap = empty_inj_map; vmap = empty_inj_map }
+
+open Result
+
+let ( let* ) o f = match o with Error e -> Error e | Ok x -> f x
+
+let gen_var_convertible (m : inj_map) (v0 : var) (v1 : var) :
+    (inj_map, unit) result =
+  match (VarMap.find_opt v0 m.m0, VarMap.find_opt v1 m.m1) with
+  | None, None ->
+      let m0 = VarMap.add v0 v1 m.m0 in
+      let m1 = VarMap.add v1 v0 m.m0 in
+      Ok { m0; m1 }
+  | Some v1', Some v0' -> if v1 = v1' && v0 = v0' then Ok m else Error ()
+  | _ -> Error ()
+
+let region_convertible (m : conv_map) (r0 : region) (r1 : region) :
+    (conv_map, unit) result =
+  match (r0, r1) with
+  | RStatic, RStatic -> Ok m
+  | RVar None, RVar None -> Ok m
+  | RVar (Some r0), RVar (Some r1) ->
+      let* rmap = gen_var_convertible m.rmap r0 r1 in
+      Ok { m with rmap }
+  | _ -> Error ()
+
+let var_convertible (m : conv_map) (v0 : var) (v1 : var) :
+    (conv_map, unit) result =
+  let* vmap = gen_var_convertible m.vmap v0 v1 in
+  Ok { m with vmap }
+
+let opt_var_convertible (m : conv_map) (v0 : var option) (v1 : var option) :
+    (conv_map, unit) result =
+  match (v0, v1) with
+  | None, None -> Ok m
+  | Some v0, Some v1 -> var_convertible m v0 v1
+  | _ -> Error ()
+
+(** Return the common prefix, and the divergent suffixes.
+
+    The conv map is optional:
+    - if [Some] it means we are analyzing an Impl pattern elem
+    - if [None] it means we are not inside an Impl pattern elem
+ *)
+let rec pattern_common_suffix_aux (m : conv_map option) (p0 : pattern)
+    (p1 : pattern) : pattern * conv_map option * pattern * pattern =
+  match (p0, p1) with
+  | [], _ | _, [] -> ([], m, p0, p1)
+  | e0 :: tp0, e1 :: tp1 -> (
+      match pattern_elem_convertible_aux m e0 e1 with
+      | Error _ -> ([], m, p0, p1)
+      | Ok m ->
+          let pre, m, p0, p1 = pattern_common_suffix_aux m tp0 tp1 in
+          (e0 :: pre, m, p0, p1))
+
+(** We use the result type because otherwise we have options of options, which
+    is confusing.
+ *)
+and pattern_elem_convertible_aux (m : conv_map option) (p0 : pattern_elem)
+    (p1 : pattern_elem) : (conv_map option, unit) result =
+  match (p0, p1) with
+  | PIdent (s0, g0), PIdent (s1, g1) ->
+      if s0 = s1 then
+        match m with
+        | None ->
+            (* No map: we are not inside an impl block.
+               We must check that there are no variables in the elements,
+               that is they are convertible with an empty map *)
+            let* m = generic_args_convertible_aux empty_conv_map g0 g1 in
+            if m = empty_conv_map then Ok None else Error ()
+        | Some m ->
+            (* There is a map: we are inside an impl block *)
+            let* nm = generic_args_convertible_aux m g0 g1 in
+            Ok (Some nm)
+      else Error ()
+  | PImpl e0, PImpl e1 ->
+      let nm = empty_conv_map in
+      let* _ = expr_convertible_aux nm e0 e1 in
+      Ok m
+  | _ -> Error ()
+
+and expr_convertible_aux (m : conv_map) (e0 : expr) (e1 : expr) :
+    (conv_map, unit) result =
+  match (e0, e1) with
+  | EComp p0, EComp p1 ->
+      let _, nm, p0, p1 = pattern_common_suffix_aux (Some m) p0 p1 in
+      if p0 = [] && p1 = [] then Ok (Option.get nm) else Error ()
+  | EPrimAdt (a0, g0), EPrimAdt (a1, g1) ->
+      if a0 = a1 then generic_args_convertible_aux m g0 g1 else Error ()
+  | ERef (r0, e0, rk0), ERef (r1, e1, rk1) ->
+      if rk0 = rk1 then
+        let* m = region_convertible m r0 r1 in
+        expr_convertible_aux m e0 e1
+      else Error ()
+  | EVar v0, EVar v1 -> opt_var_convertible m v0 v1
+  | _ -> Error ()
+
+and generic_args_convertible_aux (m : conv_map) (g0 : generic_args)
+    (g1 : generic_args) : (conv_map, unit) result =
+  match (g0, g1) with
+  | [], [] -> Ok m
+  | x0 :: g0, x1 :: g1 ->
+      let* m = generic_arg_convertible_aux m x0 x1 in
+      generic_args_convertible_aux m g0 g1
+  | _ -> Error ()
+
+and generic_arg_convertible_aux (m : conv_map) (g0 : generic_arg)
+    (g1 : generic_arg) : (conv_map, unit) result =
+  match (g0, g1) with
+  | GExpr e0, GExpr e1 -> expr_convertible_aux m e0 e1
+  | GValue lit0, GValue lit1 -> if lit0 = lit1 then Ok m else Error ()
+  | GRegion r0, GRegion r1 -> region_convertible m r0 r1
+  | _ -> Error ()
+
+(** Return the common prefix, and the divergent suffixes.
+
+    The conv map is optional:
+    - if [Some] it means we are analyzing an Impl pattern elem
+    - if [None] it means we are not inside an Impl pattern elem
+ *)
+let pattern_common_prefix (p0 : pattern) (p1 : pattern) :
+    pattern * pattern * pattern =
+  let pre, _, p0, p1 = pattern_common_suffix_aux None p0 p1 in
+  (pre, p0, p1)
+
+(** Check if two pattern elements are convertible between each other *)
+let pattern_elem_convertible (p0 : pattern_elem) (p1 : pattern_elem) : bool =
+  match pattern_elem_convertible_aux None p0 p1 with
+  | Error _ -> false
+  | Ok _ -> true
