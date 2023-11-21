@@ -63,11 +63,3 @@ pub struct ImplElem {
 pub struct Name {
     pub name: Vec<PathElem>,
 }
-
-// TODO: remove those
-pub type ModuleName = Name;
-pub type TypeName = Name;
-pub type ItemName = Name;
-pub type FunName = Name;
-pub type GlobalName = Name;
-pub type HirItemName = Name;

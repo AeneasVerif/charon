@@ -421,9 +421,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         {
             // Retrieve the id of the implemented trait decl
             let id = self.tcx.trait_id_of_impl(rust_id).unwrap();
-            if self.register_trait_decl_id(id).is_none() {
-                return None;
-            }
+            let _ = self.register_trait_decl_id(id)?;
         }
 
         match self.trait_impl_id_map.get(&rust_id) {

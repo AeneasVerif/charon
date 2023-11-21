@@ -4,8 +4,7 @@
 pub use crate::expressions::*;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
-use crate::names::GlobalName;
-use crate::names::{FunName, Name};
+use crate::names::Name;
 pub use crate::types::GlobalDeclId;
 pub use crate::types::TraitClauseId;
 use crate::types::*;
@@ -95,7 +94,7 @@ pub struct GFunDecl<T> {
     pub def_id: FunDeclId::Id,
     /// The meta data associated with the declaration.
     pub meta: Meta,
-    pub name: FunName,
+    pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,
@@ -113,7 +112,7 @@ pub struct GGlobalDecl<T> {
     pub def_id: GlobalDeclId::Id,
     /// The meta data associated with the declaration.
     pub meta: Meta,
-    pub name: GlobalName,
+    pub name: Name,
     pub ty: Ty,
     pub body: Option<GExprBody<T>>,
 }

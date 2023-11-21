@@ -589,6 +589,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // If yes, ignore it, otherwise, dive into the body. Note that for
         // external types we have to check the body: if the body is
         // public, we translate it, otherwise we consider the type as opaque.
+        // For instance, because `core::option::Option` is public, we can
+        // manipulate its variants. If we encounter this type, we must retrieve
+        // its definition.
         let is_local = rust_id.is_local();
         let kind = if !is_transparent {
             TypeDeclKind::Opaque

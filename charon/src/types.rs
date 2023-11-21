@@ -2,7 +2,7 @@
 
 pub use crate::gast::TraitItemName;
 use crate::meta::Meta;
-use crate::names::TypeName;
+use crate::names::Name;
 pub use crate::types_utils::*;
 use crate::values::Literal;
 use derivative::Derivative;
@@ -314,7 +314,7 @@ pub struct TypeDecl {
     /// [true] if the type decl is a local type decl, [false] if is comes from
     /// an external crate.
     pub is_local: bool,
-    pub name: TypeName,
+    pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// The type kind: enum, struct, or opaque.

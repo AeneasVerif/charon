@@ -118,8 +118,8 @@ let gfun_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
       in
 
       (* Put everything together *)
-      fun_sig_with_name_to_string env indent indent_incr (Some "opaque")
-        (Some name) (Some inputs) sg
+      fun_sig_with_name_to_string env indent indent_incr None (Some name)
+        (Some inputs) sg
       ^ indent ^ "\n{\n" ^ locals ^ "\n\n" ^ body ^ "\n" ^ indent ^ "}"
 
 let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)

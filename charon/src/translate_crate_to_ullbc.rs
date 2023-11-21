@@ -83,16 +83,19 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             match self.hir_item_to_name(item) {
                 Option::None => {
                     // This kind of item is to be ignored
+                    trace!("Ignoring {:?} (ignoring item kind)", item.item_id());
                     return;
                 }
                 Option::Some(item_name) => {
                     if self.crate_info.is_opaque_decl(&item_name) {
+                        trace!("Ignoring {:?} (marked as opaque)", item.item_id());
                         return;
                     }
                     // Continue
                 }
             }
         }
+        trace!("Registering {:?}", item.item_id());
 
         // Case disjunction on the item kind.
         let def_id = item.owner_id.to_def_id();
@@ -239,13 +242,21 @@ pub fn translate<'tcx, 'ctx>(
 
     // First push all the items in the stack of items to translate.
     //
-    // The way rustc works is as follows:
-    // - we call it on the root of the crate (for instance "main.rs"), and it
-    //   explores all the files from there (typically listed through statements
-    //   of the form "mod MODULE_NAME")
-    // - the other files in the crate are Module items in the HIR graph
+    // We explore the crate by starting with the root module.
+    //
+    // Remark: It is important to do like this (and not iterate over all the items)
+    // if we want the "opaque" options (to ignore parts of the crate) to work.
+    // For instance, if we mark "foo::bar" as opaque, we will ignore the module
+    // "foo::bar" altogether (we will not even look at the items).
+    // If we look at the items, we risk registering items just by looking
+    // at their name. For instance, if we check the item `foo::bar::{foo::bar::Ty}::f`,
+    // then by converting the Rust name to an LLBC name, we will actually register
+    // the name "foo::bar::Ty" (so that we can generate the "impl" path element
+    // `{foo::bar::Ty}`), which means we will register the item `foo::bar::Ty`.
+    // We could make the name translation work differently if we do have to
+    // explore all the items in the crate.
     let hir = tcx.hir();
-    for item_id in hir.items() {
+    for item_id in hir.root_module().item_ids {
         let item_id = item_id.hir_id();
         let node = hir.find(item_id).unwrap();
         let item = match node {

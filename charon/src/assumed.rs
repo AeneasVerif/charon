@@ -80,7 +80,7 @@ pub fn is_marker_trait(name: &Name) -> bool {
     false
 }
 
-pub fn get_type_id_from_name(name: &TypeName) -> Option<AssumedTy> {
+pub fn get_type_id_from_name(name: &Name) -> Option<AssumedTy> {
     if name.equals_ref_name(&BOX_NAME) {
         Option::Some(AssumedTy::Box)
     } else if name.equals_ref_name(&PTR_UNIQUE_NAME) {
@@ -103,7 +103,7 @@ pub fn get_name_from_type_id(id: AssumedTy) -> Vec<String> {
     }
 }
 
-fn get_fun_id_from_name_full(name: &FunName) -> Option<FunId> {
+fn get_fun_id_from_name_full(name: &Name) -> Option<FunId> {
     if name.equals_ref_name(&PANIC_NAME) {
         Option::Some(FunId::Panic)
     } else if name.equals_ref_name(&BEGIN_PANIC_NAME) {
@@ -148,7 +148,7 @@ fn get_fun_id_from_name_full(name: &FunName) -> Option<FunId> {
     }
 }
 
-pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
+pub fn get_fun_id_from_name(name: &Name) -> Option<ullbc_ast::AssumedFunId> {
     match get_fun_id_from_name_full(name) {
         Option::Some(id) => {
             let id = match id {
@@ -166,7 +166,7 @@ pub fn get_fun_id_from_name(name: &FunName) -> Option<ullbc_ast::AssumedFunId> {
 /// assumed types.
 /// For instance, many types like box or vec are parameterized (in MIR) by an allocator
 /// (`std::alloc::Allocator`): we ignore it.
-pub fn type_to_used_params(name: &TypeName) -> Option<Vec<bool>> {
+pub fn type_to_used_params(name: &Name) -> Option<Vec<bool>> {
     trace!("{:?}", name);
     match get_type_id_from_name(name) {
         Option::None => Option::None,
@@ -195,7 +195,7 @@ pub struct FunInfo {
 }
 
 /// See the comments for [type_to_used_params]
-pub fn function_to_info(name: &FunName) -> Option<FunInfo> {
+pub fn function_to_info(name: &Name) -> Option<FunInfo> {
     trace!("{:?}", name);
     match get_fun_id_from_name_full(name) {
         Option::None => Option::None,

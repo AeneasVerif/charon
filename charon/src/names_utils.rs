@@ -217,7 +217,7 @@ impl Serialize for Name {
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Retrieve an item name from a [DefId].
-    pub fn extended_def_id_to_name(&mut self, def_id: &hax::ExtendedDefId) -> ItemName {
+    pub fn extended_def_id_to_name(&mut self, def_id: &hax::ExtendedDefId) -> Name {
         trace!("{:?}", def_id);
 
         // We have to be a bit careful when retrieving names from def ids. For instance,
@@ -395,7 +395,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     ///
     /// Rk.: this function is only used by [crate::register], and implemented with this
     /// context in mind.
-    pub fn hir_item_to_name(&mut self, item: &Item) -> Option<HirItemName> {
+    pub fn hir_item_to_name(&mut self, item: &Item) -> Option<Name> {
         // We have to create a hax state, which is annoying...
         let state = self.make_hax_state_with_id(item.owner_id.to_def_id());
         let def_id = item.owner_id.to_def_id().sinto(&state);
@@ -429,12 +429,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     // TODO: remove
-    pub fn item_def_id_to_name(&mut self, def_id: rustc_span::def_id::DefId) -> ItemName {
+    pub fn item_def_id_to_name(&mut self, def_id: rustc_span::def_id::DefId) -> Name {
         let state = self.make_hax_state_with_id(def_id);
         self.extended_def_id_to_name(&def_id.sinto(&state))
     }
 
-    pub fn def_id_to_name(&mut self, def_id: &hax::DefId) -> ItemName {
+    pub fn def_id_to_name(&mut self, def_id: &hax::DefId) -> Name {
         // We have to create a hax state, which is annoying...
         let state = self.make_hax_state_with_id(def_id.rust_def_id.unwrap());
         self.extended_def_id_to_name(&def_id.rust_def_id.unwrap().sinto(&state))
