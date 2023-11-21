@@ -132,7 +132,7 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
      let* global =
        gglobal_decl_of_json (statement_of_json id_to_file) id_to_file js
      in
-     let { def_id = global_id; meta; body; name; ty } = global in
+     let { def_id = global_id; meta; body; is_local; name; ty } = global in
      (* Decompose into a global and a function *)
      let fun_id = global_to_fun_id gid_conv global.def_id in
      let signature : fun_sig =
@@ -147,12 +147,13 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
        }
      in
      let global_decl : global_decl =
-       { def_id = global_id; meta; body = fun_id; name; ty }
+       { def_id = global_id; meta; body = fun_id; is_local; name; ty }
      in
      let fun_decl : fun_decl =
        {
          def_id = fun_id;
          meta;
+         is_local;
          name;
          signature;
          kind = RegularKind;

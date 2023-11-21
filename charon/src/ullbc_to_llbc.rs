@@ -1942,6 +1942,7 @@ fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl
     tgt::FunDecl {
         def_id: src_def.def_id,
         meta: src_def.meta,
+        is_local: src_def.is_local,
         name: src_def.name.clone(),
         signature: src_def.signature.clone(),
         kind: src_def.kind.clone(),
@@ -1964,6 +1965,7 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalD
     tgt::GlobalDecl {
         def_id: src_def.def_id,
         meta: src_def.meta,
+        is_local: src_def.is_local,
         name: src_def.name.clone(),
         ty: src_def.ty.clone(),
         body: src_def

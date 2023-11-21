@@ -1607,6 +1607,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             FunDecl {
                 meta,
                 def_id,
+                is_local,
                 name,
                 signature,
                 kind,
@@ -1690,6 +1691,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             GlobalDecl {
                 def_id,
                 meta,
+                is_local: rust_id.is_local(),
                 name,
                 ty,
                 body,

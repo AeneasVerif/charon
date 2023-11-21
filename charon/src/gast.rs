@@ -94,6 +94,9 @@ pub struct GFunDecl<T> {
     pub def_id: FunDeclId::Id,
     /// The meta data associated with the declaration.
     pub meta: Meta,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
     pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
@@ -112,6 +115,9 @@ pub struct GGlobalDecl<T> {
     pub def_id: GlobalDeclId::Id,
     /// The meta data associated with the declaration.
     pub meta: Meta,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
     pub name: Name,
     pub ty: Ty,
     pub body: Option<GExprBody<T>>,
@@ -155,6 +161,9 @@ pub struct TraitItemName(pub String);
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
     pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,
@@ -210,6 +219,9 @@ pub struct TraitDecl {
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitImpl {
     pub def_id: TraitImplId::Id,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
     pub name: Name,
     /// The information about the implemented trait.
     /// Note that this contains the instantiation of the "parent"

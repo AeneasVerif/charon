@@ -392,6 +392,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // check those, and lookup the relevant values.
         let trait_decl = ast::TraitDecl {
             def_id,
+            is_local: rust_id.is_local(),
             name,
             generics,
             preds,
@@ -594,6 +595,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let trait_impl = ast::TraitImpl {
             def_id,
+            is_local: rust_id.is_local(),
             name,
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),

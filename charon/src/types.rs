@@ -311,7 +311,7 @@ pub struct TypeDecl {
     pub def_id: TypeDeclId::Id,
     /// Meta information associated with the type.
     pub meta: Meta,
-    /// [true] if the type decl is a local type decl, [false] if is comes from
+    /// [true] if the type decl is a local type decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
     pub name: Name,
