@@ -369,96 +369,6 @@ let compute_constraints_map (generics : T.generic_params) : constraints =
   in
   { rmap; tmap; cmap }
 
-(*let region_to_pattern (m : constraints) (r : T.region) : int option =
-    match r with
-    | RVar r -> T.RegionId.Map.find r m.rmap
-    | _ -> raise (Failure "Unimplemented")
-
-  let const_generic_to_pattern (m : constraints) (cg : T.const_generic) :
-      const_generic =
-    match cg with
-    | CGVar v -> CgVar (T.ConstGenericVarId.Map.find v m.cmap)
-    | CGValue (VScalar v) -> CgValue v.value
-    | _ -> raise (Failure "Unimplemented") *)
-
-(*
-(** Visitor to compute constraints map.
-
-    We essentially count the occurrences of (type, region, const generic)
-    variables. If a variable appears once, it doesn't have any constraints
-    (we use the @R, @T, @C patterns). If a variable appears more than once,
-    we give it an identifier (@T1, etc.).
-*)
-let mk_compute_constraints_map_visitor () =
-  (* The sets of variables we encounter *)
-  let rset = ref T.RegionId.Set.empty in
-  let tset = ref T.TypeVarId.Set.empty in
-  let cset = ref T.ConstGenericVarId.Set.empty in
-  (* The sets of variables we encounter twice *)
-  let rset_dup = ref T.RegionId.Set.empty in
-  let tset_dup = ref T.TypeVarId.Set.empty in
-  let cset_dup = ref T.ConstGenericVarId.Set.empty in
-  (* Helpers *)
-  let register_var (type s e)
-      (module S : Collections.Set with type t = s and type elt = e)
-      (set : S.t ref) (set_dup : S.t ref) (x : S.elt) : unit =
-    (* If the variable has already been registered, add it to the duplicate
-       set, otherwise register it in the "regular" set *)
-    if S.mem x !set then set_dup := S.add x !set_dup else set := S.add x !set
-  in
-  let register_region_var =
-    register_var (module T.RegionId.Set) rset rset_dup
-  in
-  let register_type_var = register_var (module T.TypeVarId.Set) tset tset_dup in
-  let register_const_generic_var =
-    register_var (module T.ConstGenericVarId.Set) cset cset_dup
-  in
-  (* TODO: we can't parameterize with a module M satisfying Collections.Map,
-     because we would then need to introduce a constraint on the polymorphic
-     type 'a M.t, which is not possible in OCaml *)
-  let get_var_pattern_ids (type s e)
-      (module S : Collections.Set with type t = s and type elt = e)
-      (set : S.t ref) (set_dup : S.t ref) (id_gen : int ref) :
-      (S.elt * int option) list =
-    List.map
-      (fun x ->
-        let id =
-          if S.mem x !set_dup then (
-            let id = !id_gen in
-            id_gen := id + 1;
-            Some id)
-          else None
-        in
-        (x, id))
-      (S.elements !set)
-  in
-  let get_constraints () : constraints =
-    let rmap =
-      T.RegionId.Map.of_list
-        (get_var_pattern_ids (module T.RegionId.Set) rset rset_dup (ref 0))
-    in
-    let tmap =
-      T.TypeVarId.Map.of_list
-        (get_var_pattern_ids (module T.TypeVarId.Set) tset tset_dup (ref 0))
-    in
-    let cmap =
-      T.ConstGenericVarId.Map.of_list
-        (get_var_pattern_ids
-           (module T.ConstGenericVarId.Set)
-           cset cset_dup (ref 0))
-    in
-    { rmap; tmap; cmap }
-  in
-  let visitor =
-    object
-      inherit [_] Types.iter_ty
-      method! visit_region_id _ id = register_region_var id
-      method! visit_type_var_id _ id = register_type_var id
-      method! visit_const_generic_var_id _ id = register_const_generic_var id
-    end
-  in
-  (visitor, get_constraints)*)
-
 type target_kind =
   | TkPattern  (** Generate a string which can be parsed as a pattern *)
   | TkPretty  (** Pretty printing *)
@@ -475,8 +385,7 @@ let literal_type_to_pattern (c : to_pat_config) (lit : T.literal_type) : expr =
   in
   EComp [ PIdent (lit, []) ]
 
-let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) :
-    literal =
+let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
   match lit with
   | VScalar sv -> LInt sv.value
   | VBool v -> LBool v
