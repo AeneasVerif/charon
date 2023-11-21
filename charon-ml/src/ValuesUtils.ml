@@ -1,4 +1,4 @@
-open PrimitiveValues
+open Values
 
 let literal_as_scalar (v : literal) : scalar_value =
   match v with VScalar v -> v | _ -> raise (Failure "Unexpected")

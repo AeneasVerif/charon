@@ -3,7 +3,7 @@ open Types
 open TypesUtils
 open UllbcAst
 open PrintTypes
-open PrintPrimitiveValues
+open PrintValues
 open PrintExpressions
 
 type fmt_env = (blocks, global_body option) PrintUtils.fmt_env

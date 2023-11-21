@@ -172,7 +172,7 @@ let match_region (c : match_config) (m : maps) (id : region) (v : T.region) :
 let match_ref_kind (prk : ref_kind) (rk : T.ref_kind) : bool =
   match (prk, rk) with RMut, RMut | RShared, RShared -> true | _ -> false
 
-let match_literal (pl : literal) (l : PrimitiveValues.literal) : bool =
+let match_literal (pl : literal) (l : Values.literal) : bool =
   match (pl, l) with
   | LInt pv, VScalar v -> pv = v.value
   | LBool pv, VBool v -> pv = v
@@ -475,7 +475,7 @@ let literal_type_to_pattern (c : to_pat_config) (lit : T.literal_type) : expr =
   in
   EComp [ PIdent (lit, []) ]
 
-let literal_to_pattern (_c : to_pat_config) (lit : PrimitiveValues.literal) :
+let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) :
     literal =
   match lit with
   | VScalar sv -> LInt sv.value

@@ -12,7 +12,7 @@ open Yojson.Basic
 open OfJsonBasic
 open Identifiers
 open Meta
-open PrimitiveValues
+open Values
 open Types
 open Scalars
 open Expressions

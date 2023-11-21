@@ -1,6 +1,6 @@
 include GAst
 open Types
-open PrimitiveValues
+open Values
 open Expressions
 open Meta
 

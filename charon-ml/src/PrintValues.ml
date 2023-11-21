@@ -1,6 +1,6 @@
 (** Pretty-printing for primitive values *)
 
-open PrimitiveValues
+open Values
 open Types
 
 let integer_type_to_string = function

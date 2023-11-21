@@ -1,6 +1,6 @@
 (** Pretty-printing for types *)
 
-include PrintPrimitiveValues
+include PrintValues
 open Types
 open TypesUtils
 open GAst

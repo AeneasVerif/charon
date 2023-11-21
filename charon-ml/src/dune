@@ -24,11 +24,9 @@
   PrintGAst
   PrintLlbcAst
   PrintUllbcAst
-  PrintPrimitiveValues
   PrintTypes
   PrintUtils
-  PrimitiveValues
-  PrimitiveValuesUtils
+  PrintValues
   Scalars
   StringUtils
   Types
@@ -36,7 +34,9 @@
   UllbcAst
   UllbcAstUtils
   UllbcOfJson
-  Utils))
+  Utils
+  Values
+  ValuesUtils))
 
 (documentation
  (package charon))

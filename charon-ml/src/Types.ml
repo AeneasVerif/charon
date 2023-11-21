@@ -1,6 +1,6 @@
 open Identifiers
 open Meta
-open PrimitiveValues
+open Values
 module TypeVarId = IdGen ()
 module TypeDeclId = IdGen ()
 module VariantId = IdGen ()
@@ -25,7 +25,7 @@ type const_generic_var_id = ConstGenericVarId.id [@@deriving show, ord]
 (** Same remark as for {!type_var_id} *)
 type global_decl_id = GlobalDeclId.id [@@deriving show, ord]
 
-type integer_type = PrimitiveValues.integer_type [@@deriving show, ord]
+type integer_type = Values.integer_type [@@deriving show, ord]
 
 (** Same remark as for {!type_var_id} *)
 type variant_id = VariantId.id [@@deriving show, ord]
@@ -62,7 +62,7 @@ type type_var = (TypeVarId.id, string) indexed_var [@@deriving show, ord]
 type region_var = (RegionId.id, string option) indexed_var
 [@@deriving show, ord]
 
-type literal_type = PrimitiveValues.literal_type [@@deriving show, ord]
+type literal_type = Values.literal_type [@@deriving show, ord]
 
 type const_generic_var = {
   index : ConstGenericVarId.id;

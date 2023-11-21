@@ -1,6 +1,6 @@
 open Identifiers
 open Types
-open PrimitiveValues
+open Values
 module VarId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
 module FunDeclId = IdGen ()

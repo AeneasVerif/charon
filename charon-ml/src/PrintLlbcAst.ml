@@ -3,7 +3,7 @@ open Types
 open TypesUtils
 open LlbcAst
 open PrintTypes
-open PrintPrimitiveValues
+open PrintValues
 open PrintExpressions
 
 type fmt_env = (statement, FunDeclId.id) PrintUtils.fmt_env

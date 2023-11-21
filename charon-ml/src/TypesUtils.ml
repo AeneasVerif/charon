@@ -79,7 +79,7 @@ let ty_as_custom_adt (ty : ty) : TypeDeclId.id * generic_args =
 let ty_as_literal (ty : ty) : literal_type =
   match ty with TLiteral lty -> lty | _ -> raise (Failure "Unreachable")
 
-let const_generic_as_literal (cg : const_generic) : PrimitiveValues.literal =
+let const_generic_as_literal (cg : const_generic) : Values.literal =
   match cg with CgValue v -> v | _ -> raise (Failure "Unreachable")
 
 let trait_instance_id_as_trait_impl (id : trait_instance_id) : trait_impl_id =
