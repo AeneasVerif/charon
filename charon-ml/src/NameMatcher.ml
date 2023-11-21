@@ -658,7 +658,9 @@ let rec pattern_to_string (c : print_config) (p : pattern) : string =
 and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
   match e with
   | PIdent (s, g) -> s ^ generic_args_to_string c g
-  | PImpl ty -> "{" ^ expr_to_string c ty ^ "}"
+  | PImpl ty -> (
+      let ty = expr_to_string c ty in
+      match c.tgt with TkPattern | TkPretty -> "{" ^ ty ^ "}" | TkName -> ty)
 
 and expr_to_string (c : print_config) (e : expr) : string =
   match e with
