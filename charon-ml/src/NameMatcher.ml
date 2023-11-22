@@ -778,6 +778,10 @@ let pattern_elem_convertible (p0 : pattern_elem) (p1 : pattern_elem) : bool =
  *)
 
 module NameMatcherMap = struct
+  (* TODO: it would be even better if instead of storing a pattern
+     we stored a pattern_elem. The performance would likely be
+     better (there would be less backtracking in find_opt) and
+     the implementation would be simpler. *)
   type 'a t =
     | Node of 'a option * (pattern * 'a t) list
         (** Nodes are branchings. We do not even attempt to order the branches
