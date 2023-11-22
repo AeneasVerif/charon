@@ -182,11 +182,19 @@ let match_literal (pl : literal) (l : Values.literal) : bool =
 let rec match_name_with_generics (ctx : ctx) (c : match_config) (p : pattern)
     (n : T.name) (g : T.generic_args) : bool =
   match (p, n) with
-  | [], [] -> false (* We shouldn't get there: the names should be non empty *)
+  | [], [] ->
+      raise
+        (Failure
+           "match_name_with_generics: attempt to match empty names and patterns")
+      (* We shouldn't get there: the names/patterns should be non empty *)
   | [ PIdent (pid, pg) ], [ PeIdent (id, _) ] ->
       (* We reached the end: match the generics.
          We have to generate an empty map. *)
       pid = id && match_generic_args ctx c (mk_empty_maps ()) pg g
+  | [ PImpl pty ], [ PeImpl impl ] ->
+      (* We can get there when matching a prefix of the name with a pattern *)
+      match_expr_with_ty ctx c (mk_empty_maps ()) pty impl.ty
+      && g = TypesUtils.empty_generic_args
   | PIdent (pid, pg) :: p, PeIdent (id, _) :: n ->
       (* This is not the end: check that the generics are empty *)
       pid = id && pg = [] && match_name_with_generics ctx c p n g
@@ -898,6 +906,29 @@ module NameMatcherMap = struct
 
   let of_list (ls : (pattern * 'a) list) : 'a t =
     List.fold_left (fun m (pat, v) -> add pat v m) empty ls
+
+  let rec to_string_aux (current_indent : string) (indent : string)
+      (v_to_string : 'a -> string) (m : 'a t) : string =
+    let (Node (opt_v, children)) = m in
+    let opt_v =
+      current_indent ^ PrintUtils.option_to_string v_to_string opt_v
+    in
+    let children =
+      String.concat "\n"
+        (List.map (child_to_string current_indent indent v_to_string) children)
+    in
+    opt_v ^ " [\n" ^ children ^ "\n" ^ current_indent ^ "]"
+
+  and child_to_string (current_indent : string) (indent : string)
+      (v_to_string : 'a -> string) (child_pat, child) : string =
+    let c : print_config = { tgt = TkPattern } in
+    current_indent
+    ^ pattern_to_string c child_pat
+    ^ " ->\n"
+    ^ to_string_aux (current_indent ^ indent) indent v_to_string child
+
+  let to_string (v_to_string : 'a -> string) (m : 'a t) : string =
+    to_string_aux "" "  " v_to_string m
 end
 
 (* Test *)
