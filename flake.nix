@@ -109,7 +109,7 @@
             nativeBuildInputs = with ocamlPackages; [
               menhir
             ];
-            buildInputs = with ocamlPackages; [
+            propagatedBuildInputs = with ocamlPackages; [
               ppx_deriving
               visitors
               zarith
@@ -130,14 +130,13 @@
               cp ${tests-polonius}/llbc/* tests/serialized
             '' else
               "";
-            buildInputs = with ocamlPackages; [
+            propagatedBuildInputs = with ocamlPackages; [
               ppx_deriving
               visitors
               easy_logging
               zarith
               yojson
               calendar
-              menhirLib
               charon-name_matcher_parser
             ];
             src = ./charon-ml;
