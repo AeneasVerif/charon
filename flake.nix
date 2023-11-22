@@ -101,6 +101,22 @@
           };
           buildInputs = [ ocamlPackages.calendar ];
         };
+        charon-name_matcher_parser =
+          ocamlPackages.buildDunePackage {
+            pname = "name_matcher_parser";
+            version = "0.1.0";
+            duneVersion = "3";
+            nativeBuildInputs = with ocamlPackages; [
+              menhir
+            ];
+            buildInputs = with ocamlPackages; [
+              ppx_deriving
+              visitors
+              zarith
+              menhirLib
+            ];
+            src = ./charon-ml;
+          };
         mk-charon-ml = doCheck:
           ocamlPackages.buildDunePackage {
             pname = "charon";
@@ -121,6 +137,8 @@
               zarith
               yojson
               calendar
+              menhirLib
+              charon-name_matcher_parser
             ];
             src = ./charon-ml;
             inherit doCheck;

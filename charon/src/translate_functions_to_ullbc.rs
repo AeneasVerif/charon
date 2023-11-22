@@ -10,8 +10,6 @@ use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::id_vector;
-use crate::names_utils::{def_id_to_name, extended_def_id_to_name};
-use crate::regions_hierarchy::RegionGroups;
 use crate::translate_ctx::*;
 use crate::translate_types;
 use crate::types::*;
@@ -24,7 +22,7 @@ use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_middle::mir::START_BLOCK;
 use rustc_middle::ty;
 use std::iter::FromIterator;
-use translate_types::{translate_bound_region_kind_name, translate_region_name};
+use translate_types::translate_bound_region_kind_name;
 
 pub(crate) struct SubstFunId {
     pub func: FnPtr,
@@ -240,7 +238,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let name: Option<String> = var.name.clone();
 
             // Translate the type
-            let ty = self.translate_ety(&var.ty)?;
+            let erase_regions = true;
+            let ty = self.translate_ty(erase_regions, &var.ty)?;
 
             // Add the variable to the environment
             self.push_var(index, ty, name);
@@ -304,8 +303,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate a place and return its type
-    fn translate_place_with_type(&mut self, place: &hax::Place) -> (Place, ETy) {
-        let ty = self.translate_ety(&place.ty).unwrap();
+    fn translate_place_with_type(&mut self, place: &hax::Place) -> (Place, Ty) {
+        let erase_regions = true;
+        let ty = self.translate_ty(erase_regions, &place.ty).unwrap();
         let (var_id, projection) = self.translate_projection(place);
         (Place { var_id, projection }, ty)
     }
@@ -318,9 +318,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a place - TODO: rename
     /// TODO: Hax represents places in a different manner than MIR. We should
     /// update our representation of places to match the Hax representation.
-    /// TODO: we don't need to return the projected type, it is directly
-    /// given by the place.
     fn translate_projection(&mut self, place: &hax::Place) -> (VarId::Id, Projection) {
+        let erase_regions = true;
         match &place.kind {
             hax::PlaceKind::Local(local) => {
                 let var_id = self.get_local(&local).unwrap();
@@ -330,7 +329,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let (var_id, mut projection) = self.translate_projection(&*place);
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
-                let current_ty = self.translate_ety(&place.ty).unwrap();
+                let current_ty = self.translate_ty(erase_regions, &place.ty).unwrap();
                 match kind {
                     hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
@@ -433,7 +432,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate an operand with its type
-    fn translate_operand_with_type(&mut self, operand: &hax::Operand) -> (Operand, ETy) {
+    fn translate_operand_with_type(&mut self, operand: &hax::Operand) -> (Operand, Ty) {
         trace!();
         match operand {
             hax::Operand::Copy(place) => {
@@ -489,6 +488,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate an rvalue
     fn translate_rvalue(&mut self, rvalue: &hax::Rvalue) -> Rvalue {
         use std::ops::Deref;
+        let erase_regions = true;
         match rvalue {
             hax::Rvalue::Use(operand) => Rvalue::Use(self.translate_operand(operand)),
             hax::Rvalue::CopyForDeref(place) => {
@@ -537,7 +537,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // casts should only be from integers/booleans to integer/booleans.
 
                 // Translate the target type
-                let tgt_ty = self.translate_ety(tgt_ty).unwrap();
+                let tgt_ty = self.translate_ty(erase_regions, tgt_ty).unwrap();
 
                 // Translate the operand
                 let (op, src_ty) = self.translate_operand_with_type(operand);
@@ -588,12 +588,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                     (
                         hax::CastKind::Pointer(hax::PointerCast::ClosureFnPointer(unsafety)),
-                        Ty::Arrow(inputs1, output1),
-                        Ty::Arrow(inputs2, output2),
+                        src_ty @ Ty::Arrow(_, _),
+                        tgt_ty @ Ty::Arrow(_, _),
                     ) => {
                         assert!(*unsafety == hax::Unsafety::Normal);
-                        let src_ty = Ty::Arrow(inputs1.clone(), output1.clone()).to_rty();
-                        let tgt_ty = Ty::Arrow(inputs2.clone(), output2.clone()).to_rty();
+                        let src_ty = src_ty.clone();
+                        let tgt_ty = tgt_ty.clone();
                         Rvalue::UnaryOp(UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)), op)
                     }
                     _ => {
@@ -648,7 +648,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 match aggregate_kind.deref() {
                     hax::AggregateKind::Array(ty) => {
-                        let t_ty = self.translate_ety(ty).unwrap();
+                        let t_ty = self.translate_ty(erase_regions, ty).unwrap();
                         let cg = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
                             operands_t.len() as u64,
                         )));
@@ -680,7 +680,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         // Translate the substitution
                         let generics = self
-                            .translate_substs_and_trait_refs_in_body(None, substs, trait_refs)
+                            .translate_substs_and_trait_refs(
+                                erase_regions,
+                                None,
+                                substs,
+                                trait_refs,
+                            )
                             .unwrap();
 
                         let type_id = self.translate_type_id(adt_id);
@@ -731,8 +736,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// some parameters/arguments might need to be filtered.
     /// We return the fun id, its generics, and filtering information for the
     /// arguments.
+    ///
+    /// TODO: should we always erase the regions?
     pub(crate) fn translate_fun_decl_id_with_args(
         &mut self,
+        erase_regions: bool,
         def_id: &hax::DefId,
         substs: &Vec<hax::GenericArg>,
         args: Option<&Vec<hax::Operand>>,
@@ -740,7 +748,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_info: &Option<hax::TraitInfo>,
     ) -> SubstFunIdOrPanic {
         let rust_id = def_id.rust_def_id.unwrap();
-        let name = def_id_to_name(self.t_ctx.tcx, def_id);
+        let name = self.t_ctx.def_id_to_name(def_id);
         let is_local = rust_id.is_local();
 
         // Check if this function is a actually `panic`
@@ -767,7 +775,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the type parameter
             let t_ty = if let hax::GenericArg::Type(ty) = substs.get(0).unwrap() {
-                self.translate_ety(ty).unwrap()
+                self.translate_ty(erase_regions, ty).unwrap()
             } else {
                 unreachable!()
             };
@@ -807,7 +815,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the type parameters
             let generics = self
-                .translate_substs_and_trait_refs_in_body(used_type_args, substs, trait_refs)
+                .translate_substs_and_trait_refs(erase_regions, used_type_args, substs, trait_refs)
                 .unwrap();
 
             // Translate the arguments
@@ -852,7 +860,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // Trait method
                         let rust_id = def_id.rust_def_id.unwrap();
                         let impl_source = self
-                            .translate_trait_impl_source_erased_regions(&trait_info.impl_source);
+                            .translate_trait_impl_source(erase_regions, &trait_info.impl_source);
                         // The impl source should be Some(...): trait markers (that we may
                         // eliminate) don't have methods.
                         let impl_source = impl_source.unwrap();
@@ -866,7 +874,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // the function (trait arguments + method arguments).
                         let trait_and_method_generic_args = {
                             let (regions, types, const_generics) = self
-                                .translate_substs(None, &trait_info.all_generics)
+                                .translate_substs(erase_regions, None, &trait_info.all_generics)
                                 .unwrap();
 
                             // When concatenating the trait refs we have to be careful:
@@ -941,7 +949,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // We have to retrieve the type `Box<u32>` and check that it is of the
                 // form `Box<T>` (and we generate `box_deref<u32>`).
                 match aid {
-                    AssumedFunId::BoxNew | AssumedFunId::SliceLen => {
+                    AssumedFunId::BoxNew => {
                         // Nothing to do
                     }
                     AssumedFunId::BoxFree => {
@@ -1208,7 +1216,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_switch_targets(
         &mut self,
         body: &hax::MirBody<()>,
-        switch_ty: &ETy,
+        switch_ty: &Ty,
         targets: &hax::SwitchTargets,
     ) -> SwitchTargets {
         trace!("targets: {:?}", targets);
@@ -1257,7 +1265,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("func: {:?}", rust_id);
 
         // Translate the function id, with its parameters
+        let erase_regions = true;
         let fid = self.translate_fun_decl_id_with_args(
+            erase_regions,
             def_id,
             substs,
             Some(args),
@@ -1295,23 +1305,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 })
             }
         }
-    }
-
-    pub(crate) fn translate_substs_and_trait_refs_in_body(
-        &mut self,
-        used_args: Option<Vec<bool>>,
-        substs: &Vec<hax::GenericArg>,
-        trait_refs: &Vec<hax::ImplSource>,
-    ) -> Result<EGenericArgs> {
-        trace!("{:?}", substs);
-        let (regions, types, const_generics) = self.translate_substs(used_args, substs)?;
-        let trait_refs = self.translate_trait_impl_sources_erased_regions(trait_refs);
-        Ok(GenericArgs {
-            regions,
-            types,
-            const_generics,
-            trait_refs,
-        })
     }
 
     /// Evaluate function arguments in a context, and return the list of computed
@@ -1407,6 +1400,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// type parameters, that we put in the translation context.
     fn translate_function_signature(&mut self, def_id: DefId) -> FunSig {
         let tcx = self.t_ctx.tcx;
+        let erase_regions = false;
 
         // Retrieve the function signature, which includes the lifetimes
         let signature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
@@ -1426,7 +1420,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 tcx.fn_sig(def_id).subst_identity()
             };
 
-        // The parameters (and in particular the lifetimegs) are split between
+        // The parameters (and in particular the lifetimes) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
         // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
         // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
@@ -1447,55 +1441,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let substs = substs.sinto(&self.hax_state);
 
         // Some debugging information:
-        trace!("Def id: {def_id:?}:\n\n- generics:\n{:?}\n\n- substs:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
-               tcx.generics_of(def_id), substs, signature.bound_vars(), signature);
+        trace!("Def id: {def_id:?}:\n\n- substs:\n{substs:?}\n\n- generics:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
+               tcx.generics_of(def_id), signature.bound_vars(), signature);
 
-        // Add the early-bound parameters.
-        // TODO: use the generics instead of the substs ([TyCtxt.generics_of])? In
-        // practice is easier to use the subst. For instance, in the subst, the
-        // constant generics are typed.
-        for param in substs {
-            use hax::GenericArg;
-            match param {
-                GenericArg::Type(param_ty) => {
-                    // This type should be a param type
-                    match param_ty {
-                        hax::Ty::Param(param_ty) => {
-                            self.push_type_var(param_ty.index, param_ty.name);
-                        }
-                        _ => {
-                            unreachable!();
-                        }
-                    }
-                }
-                GenericArg::Lifetime(region) => {
-                    let name = translate_region_name(&region);
-                    self.push_region(region, name);
-                }
-                GenericArg::Const(c) => {
-                    let ty = self.translate_ety(&c.ty).unwrap();
-                    let ty = ty.to_literal();
-                    match *c.contents {
-                        hax::ConstantExprKind::ConstRef { id: cp } => {
-                            self.push_const_generic_var(cp.index, ty, cp.name);
-                        }
-                        _ => unreachable!(),
-                    }
-                }
-            }
-        }
+        // Add the *early-bound* parameters.
+        self.translate_generic_params_from_hax(&substs);
 
-        // Sanity check
-        self.check_generics();
-
-        // Add the late bound parameters (bound in the signature, can only be lifetimes)
+        //
+        // Add the *late-bound* parameters (bound in the signature, can only be lifetimes)
+        //
         let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
-
         let is_unsafe = match signature.value.unsafety {
             hax::Unsafety::Unsafe => true,
             hax::Unsafety::Normal => false,
         };
-
         let bvar_names = signature
             .bound_vars
             .into_iter()
@@ -1547,13 +1506,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Translate the signature
         let signature = signature.value;
         trace!("signature of {def_id:?}:\n{:?}", signature);
-        let inputs: Vec<RTy> = Vec::from_iter(
+        let inputs: Vec<Ty> = Vec::from_iter(
             signature
                 .inputs
                 .iter()
-                .map(|ty| self.translate_sig_ty(ty).unwrap()),
+                .map(|ty| self.translate_ty(erase_regions, ty).unwrap()),
         );
-        let output = self.translate_sig_ty(&signature.output).unwrap();
+        let output = self.translate_ty(erase_regions, &signature.output).unwrap();
 
         trace!(
             "# Input variables types:\n{}",
@@ -1578,7 +1537,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             generics: self.get_generics(),
             preds: self.get_predicates(),
             is_unsafe,
-            regions_hierarchy: RegionGroups::new(), // Hierarchy not yet computed
             parent_params_info,
             inputs,
             output,
@@ -1612,7 +1570,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         // Translate the function name
-        let name = extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+        let name = bt_ctx
+            .t_ctx
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
@@ -1647,6 +1607,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             FunDecl {
                 meta,
                 def_id,
+                is_local,
                 name,
                 signature,
                 kind,
@@ -1658,7 +1619,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Generate an expression body from a typed constant value.
     fn global_generate_assignment_body(
         &mut self,
-        ty: ETy,
+        ty: Ty,
         def_rid: DefId,
         val: ConstantExpr,
     ) -> ExprBody {
@@ -1705,11 +1666,16 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let hax_state = &bt_ctx.hax_state;
 
         // Translate the global name
-        let name = extended_def_id_to_name(&rust_id.sinto(hax_state));
+        let name = bt_ctx
+            .t_ctx
+            .extended_def_id_to_name(&rust_id.sinto(hax_state));
 
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
-        let ty = bt_ctx.translate_ety(&mir_ty.sinto(hax_state)).unwrap();
+        let erase_regions = false; // This doesn't matter: there shouldn't be any regions
+        let ty = bt_ctx
+            .translate_ty(erase_regions, &mir_ty.sinto(hax_state))
+            .unwrap();
 
         let body = if rust_id.is_local() && is_transparent {
             // It's a local and transparent global: we extract its body as for functions.
@@ -1725,6 +1691,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             GlobalDecl {
                 def_id,
                 meta,
+                is_local: rust_id.is_local(),
                 name,
                 ty,
                 body,

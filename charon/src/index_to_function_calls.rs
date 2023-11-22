@@ -8,7 +8,7 @@ use crate::gast::{Call, GenericArgs, Var};
 use crate::llbc_ast::*;
 use crate::meta::Meta;
 use crate::translate_ctx::TransCtx;
-use crate::types::{AssumedTy, ConstGeneric, ErasedRegion, MutTypeVisitor, RefKind, Ty};
+use crate::types::*;
 use crate::values::VarId;
 use std::mem::replace;
 
@@ -68,7 +68,7 @@ impl<'a> Transform<'a> {
 
                 // Push the statement:
                 //`tmp0 = & proj`
-                let buf_borrow_ty = Ty::Ref(ErasedRegion::Erased, Box::new(buf_ty), ref_kind);
+                let buf_borrow_ty = Ty::Ref(Region::Erased, Box::new(buf_ty), ref_kind);
                 let buf_borrow_var = self.locals.fresh_var(Option::None, buf_borrow_ty);
                 let borrow_st = RawStatement::Assign(
                     Place::new(buf_borrow_var),
@@ -88,15 +88,13 @@ impl<'a> Transform<'a> {
 
                 // Push the statement:
                 // `tmp1 = Array{Mut,Shared}Index(move tmp0, copy i)`
-                let elem_borrow_ty =
-                    Ty::Ref(ErasedRegion::Erased, Box::new(elem_ty.clone()), ref_kind);
+                let elem_borrow_ty = Ty::Ref(Region::Erased, Box::new(elem_ty.clone()), ref_kind);
                 let elem_borrow_var = self.locals.fresh_var(Option::None, elem_borrow_ty);
                 let arg_buf = Operand::Move(Place::new(buf_borrow_var));
                 let arg_index = Operand::Copy(Place::new(index_var_id));
                 let index_dest = Place::new(elem_borrow_var);
                 let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
-                let generics =
-                    GenericArgs::new(vec![ErasedRegion::Erased], vec![elem_ty], cgs, vec![]);
+                let generics = GenericArgs::new(vec![Region::Erased], vec![elem_ty], cgs, vec![]);
                 let func = FnPtr {
                     func: index_id,
                     generics,
@@ -296,7 +294,8 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Option<Ve
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
-            "# About to transform array/slice index operations to function calls: {name}:\n{}",
+            "# About to transform array/slice index operations to function calls: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
         let body = &mut b.body;
@@ -305,7 +304,8 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
         let mut tr = |s: &mut Statement| transform_st(locals, s);
         body.transform(&mut tr);
         trace!(
-            "# After transforming array/slice index operations to function calls: {name}:\n{}",
+            "# After transforming array/slice index operations to function calls: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
     }

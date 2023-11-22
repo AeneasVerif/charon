@@ -157,9 +157,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// A hax state with an owner id
     pub hax_state: hax::State<hax::Base<'tcx>, (), (), rustc_hir::def_id::DefId>,
     /// The regions
-    pub region_vars: RegionVarId::Vector<RegionVar>,
+    pub region_vars: RegionId::Vector<RegionVar>,
     /// The map from rust region to translated region indices
-    pub region_vars_map: RegionVarId::MapGenerator<hax::Region>,
+    pub region_vars_map: RegionId::MapGenerator<hax::Region>,
     /// The type variables
     pub type_vars: TypeVarId::Vector<TypeVar>,
     /// The map from rust type variable indices to translated type variable
@@ -190,7 +190,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     pub regions_outlive: Vec<RegionOutlives>,
     ///
-    pub trait_type_constraints: Vec<RTraitTypeConstraint>,
+    pub trait_type_constraints: Vec<TraitTypeConstraint>,
     /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
@@ -231,7 +231,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// ```
     ///
     /// For this reason, we use a stack of vectors to store the bound variables.
-    pub bound_vars: im::Vector<im::Vector<RegionVarId::Id>>,
+    pub bound_region_vars: im::Vector<im::Vector<RegionId::Id>>,
 }
 
 /// A formatting context for type/global/function bodies.
@@ -341,12 +341,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn id_is_opaque(&self, id: DefId) -> bool {
-        let name = crate::names_utils::item_def_id_to_name(self.tcx, id);
+    pub(crate) fn id_is_opaque(&mut self, id: DefId) -> bool {
+        let name = self.item_def_id_to_name(id);
         self.crate_info.is_opaque_decl(&name)
     }
 
-    pub(crate) fn id_is_transparent(&self, id: DefId) -> bool {
+    pub(crate) fn id_is_transparent(&mut self, id: DefId) -> bool {
         !self.id_is_opaque(id)
     }
 
@@ -394,7 +394,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     pub(crate) fn register_trait_decl_id(&mut self, id: DefId) -> Option<ast::TraitDeclId::Id> {
         use crate::assumed;
         if assumed::IGNORE_BUILTIN_MARKER_TRAITS {
-            let name = crate::names::item_def_id_to_name(self.tcx, id);
+            let name = self.item_def_id_to_name(id);
             if assumed::is_marker_trait(&name) {
                 return None;
             }
@@ -421,9 +421,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         {
             // Retrieve the id of the implemented trait decl
             let id = self.tcx.trait_id_of_impl(rust_id).unwrap();
-            if self.register_trait_decl_id(id).is_none() {
-                return None;
-            }
+            let _ = self.register_trait_decl_id(id)?;
         }
 
         match self.trait_impl_id_map.get(&rust_id) {
@@ -474,7 +472,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>) -> Self {
-        let hax_state = crate::names_utils::make_hax_state_with_id(t_ctx.tcx, def_id);
+        let hax_state = t_ctx.make_hax_state_with_id(def_id);
         let mut trait_clauses_counter = TraitClauseId::Generator::new();
         let trait_instance_id_gen = Box::new(move || {
             let id = trait_clauses_counter.fresh_id();
@@ -484,8 +482,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             def_id,
             t_ctx,
             hax_state,
-            region_vars: RegionVarId::Vector::new(),
-            region_vars_map: RegionVarId::MapGenerator::new(),
+            region_vars: RegionId::Vector::new(),
+            region_vars_map: RegionId::MapGenerator::new(),
             type_vars: TypeVarId::Vector::new(),
             type_vars_map: TypeVarId::MapGenerator::new(),
             vars: VarId::Vector::new(),
@@ -500,7 +498,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trait_type_constraints: Vec::new(),
             blocks: im::OrdMap::new(),
             blocks_map: ast::BlockId::MapGenerator::new(),
-            bound_vars: im::Vector::new(),
+            bound_region_vars: im::Vector::new(),
         }
     }
 
@@ -561,11 +559,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_trait_impl_id(id)
     }
 
-    pub(crate) fn get_region_from_rust(&self, r: hax::Region) -> Option<RegionVarId::Id> {
+    pub(crate) fn get_region_from_rust(&self, r: hax::Region) -> Option<RegionId::Id> {
         self.region_vars_map.get(&r)
     }
 
-    pub(crate) fn push_region(&mut self, r: hax::Region, name: Option<String>) -> RegionVarId::Id {
+    pub(crate) fn push_region(&mut self, r: hax::Region, name: Option<String>) -> RegionId::Id {
         use crate::id_vector::ToUsize;
         let rid = self.region_vars_map.insert(r);
         assert!(rid.to_usize() == self.region_vars.len());
@@ -579,7 +577,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         use crate::id_vector::ToUsize;
 
         // Register the variables
-        let var_ids: im::Vector<RegionVarId::Id> = names
+        let var_ids: im::Vector<RegionId::Id> = names
             .into_iter()
             .map(|name| {
                 // Note that we don't insert a binding in the region_vars_map
@@ -592,7 +590,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .collect();
 
         // Push the group
-        self.bound_vars.push_front(var_ids);
+        self.bound_region_vars.push_front(var_ids);
     }
 
     pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId::Id {
@@ -607,7 +605,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         var_id
     }
 
-    pub(crate) fn push_var(&mut self, rid: usize, ty: ETy, name: Option<String>) {
+    pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
         use crate::id_vector::ToUsize;
         let var_id = self.vars_map.insert(rid);
         assert!(var_id.to_usize() == self.vars.len());
@@ -734,18 +732,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
 impl<'tcx, 'ctx> Formatter<TypeDeclId::Id> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        self.type_defs.format_object(id)
+        match self.type_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
     }
 }
 
 impl<'tcx, 'ctx> Formatter<GlobalDeclId::Id> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        self.global_defs.format_object(id)
+        match self.global_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
     }
 }
 
-impl<'tcx, 'ctx> Formatter<RegionVarId::Id> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
+impl<'tcx, 'ctx> Formatter<RegionId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: RegionId::Id) -> String {
         id.to_pretty_string()
     }
 }
@@ -753,12 +757,6 @@ impl<'tcx, 'ctx> Formatter<RegionVarId::Id> for TransCtx<'tcx, 'ctx> {
 impl<'tcx, 'ctx> Formatter<TypeVarId::Id> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, id: TypeVarId::Id) -> String {
         id.to_pretty_string()
-    }
-}
-
-impl<'tcx, 'ctx> Formatter<&Region<RegionVarId::Id>> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, r: &Region<RegionVarId::Id>) -> String {
-        r.fmt_with_ctx(self)
     }
 }
 
@@ -772,7 +770,7 @@ impl<'tcx, 'ctx> Formatter<ast::FunDeclId::Id> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, id: ast::FunDeclId::Id) -> String {
         match self.fun_defs.get(id) {
             None => id.to_pretty_string(),
-            Some(d) => d.name.to_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
         }
     }
 }
@@ -787,7 +785,7 @@ impl<'tcx, 'ctx> Formatter<ast::TraitDeclId::Id> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, id: ast::TraitDeclId::Id) -> String {
         match self.trait_decls.get(id) {
             None => id.to_pretty_string(),
-            Some(d) => d.name.to_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
         }
     }
 }
@@ -796,7 +794,7 @@ impl<'tcx, 'ctx> Formatter<ast::TraitImplId::Id> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, id: ast::TraitImplId::Id) -> String {
         match self.trait_impls.get(id) {
             None => id.to_pretty_string(),
-            Some(d) => d.name.to_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
         }
     }
 }
@@ -815,7 +813,7 @@ impl<'tcx, 'ctx> Formatter<(TypeDeclId::Id, VariantId::Id)> for TransCtx<'tcx, '
             ),
             Option::Some(def) => {
                 let variants = def.kind.as_enum();
-                let mut name = def.name.to_string();
+                let mut name = def.name.fmt_with_ctx(self);
                 let variant_name = &variants.get(variant_id).unwrap().name;
                 name.push_str("::");
                 name.push_str(variant_name);
@@ -879,12 +877,6 @@ impl<'tcx, 'ctx> Formatter<VarId::Id> for TransCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx> Formatter<&ErasedRegion> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, _: &ErasedRegion) -> String {
-        "'_".to_owned()
-    }
-}
-
 impl<'tcx, 'ctx, 'ctx1> Formatter<TypeVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: TypeVarId::Id) -> String {
         let v = self.type_vars.get(id).unwrap();
@@ -906,47 +898,33 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<VarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1>
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<RegionVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<RegionId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: RegionId::Id) -> String {
         let v = self.region_vars.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&Region<RegionVarId::Id>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, r: &Region<RegionVarId::Id>) -> String {
-        r.fmt_with_ctx(self)
-    }
-}
-
-impl<'tcx, 'ctx, 'ctx1> Formatter<&ErasedRegion> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, _: &ErasedRegion) -> String {
-        "'_".to_owned()
-    }
-}
-
 impl<'tcx, 'ctx, 'ctx1> Formatter<TypeDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        self.t_ctx.type_defs.format_object(id)
+        match self.t_ctx.type_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
     }
 }
 
 impl<'tcx, 'ctx, 'ctx1> Formatter<GlobalDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        self.t_ctx.global_defs.format_object(id)
+        match self.t_ctx.global_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty<Region<RegionVarId::Id>>>
-    for BodyTransCtx<'tcx, 'ctx, 'ctx1>
-{
-    fn format_object(&self, ty: &Ty<Region<RegionVarId::Id>>) -> String {
-        ty.fmt_with_ctx(self)
-    }
-}
-
-impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty<ErasedRegion>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, ty: &Ty<ErasedRegion>) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, ty: &Ty) -> String {
         ty.fmt_with_ctx(self)
     }
 }
@@ -1002,8 +980,8 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<VarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<RegionVarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<RegionId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: RegionId::Id) -> String {
         match self.generics.regions.get(id) {
             None => id.to_pretty_string(),
             Some(v) => v.to_string(),
@@ -1011,40 +989,26 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<RegionVarId::Id> for BodyFormatCtx<'tcx, 'ctx,
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&Region<RegionVarId::Id>> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, r: &Region<RegionVarId::Id>) -> String {
-        r.fmt_with_ctx(self)
-    }
-}
-
-impl<'tcx, 'ctx, 'ctx1> Formatter<&ErasedRegion> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, _: &ErasedRegion) -> String {
-        "'_".to_owned()
-    }
-}
-
 impl<'tcx, 'ctx, 'ctx1> Formatter<TypeDeclId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        self.t_ctx.type_defs.format_object(id)
+        match self.t_ctx.type_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
     }
 }
 
 impl<'tcx, 'ctx, 'ctx1> Formatter<GlobalDeclId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        self.t_ctx.global_defs.format_object(id)
+        match self.t_ctx.global_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty<Region<RegionVarId::Id>>>
-    for BodyFormatCtx<'tcx, 'ctx, 'ctx1>
-{
-    fn format_object(&self, ty: &Ty<Region<RegionVarId::Id>>) -> String {
-        ty.fmt_with_ctx(self)
-    }
-}
-
-impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty<ErasedRegion>> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, ty: &Ty<ErasedRegion>) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, ty: &Ty) -> String {
         ty.fmt_with_ctx(self)
     }
 }
@@ -1249,14 +1213,8 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&FunSig> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx> Formatter<&ETy> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, x: &ETy) -> String {
-        x.fmt_with_ctx(self)
-    }
-}
-
-impl<'tcx, 'ctx> Formatter<&RTy> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, x: &RTy) -> String {
+impl<'tcx, 'ctx> Formatter<&Ty> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, x: &Ty) -> String {
         x.fmt_with_ctx(self)
     }
 }

@@ -5,15 +5,12 @@ use std::ops::DerefMut;
 
 use crate::common::*;
 use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
-use crate::formatter::Formatter;
 use crate::gast_utils::{ExprFormatter, GFunDeclFormatter, GGlobalDeclFormatter};
-use crate::llbc_ast::{
-    Assert, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement, Switch,
-};
+use crate::llbc_ast::{Assert, FunDecl, GlobalDecl, RawStatement, Statement, Switch};
 use crate::meta;
 use crate::meta::Meta;
 use crate::types::*;
-use crate::ullbc_ast::{fmt_call, FunDeclId, GlobalDeclId};
+pub use crate::ullbc_ast::fmt_call;
 use crate::values::*;
 use macros::make_generic_in_borrows;
 use serde::ser::SerializeTupleVariant;
@@ -159,9 +156,9 @@ impl Statement {
         Statement { meta, content }
     }
 
-    pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
+    pub fn fmt_with_ctx<T>(&self, tab: &str, ctx: &T) -> String
     where
-        T: ExprFormatter<'a>,
+        T: ExprFormatter,
     {
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(
@@ -293,18 +290,6 @@ impl Statement {
                 )
             }
         }
-    }
-}
-
-impl Formatter<FunDeclId::Id> for FunDecls {
-    fn format_object(&self, id: FunDeclId::Id) -> String {
-        self.get(id).unwrap().name.to_string()
-    }
-}
-
-impl Formatter<GlobalDeclId::Id> for GlobalDecls {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        self.get(id).unwrap().name.to_string()
     }
 }
 

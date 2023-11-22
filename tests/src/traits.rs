@@ -282,10 +282,6 @@ pub fn test_enumerate(x: usize) {
 }
 */
 
-pub fn incr_u32(x: u32) -> u32 {
-    x + 1
-}
-
 /* Custom function pointers */
 pub trait CFnOnce<Args> {
     type Output;
@@ -299,6 +295,10 @@ pub trait CFnMut<Args>: CFnOnce<Args> {
 
 pub trait CFn<Args>: CFnMut<Args> {
     fn call_mut(&self, args: Args) -> Self::Output;
+}
+
+pub fn incr_u32(x: u32) -> u32 {
+    x + 1
 }
 
 /*
@@ -317,12 +317,19 @@ where
         Some(x) => Some(f(x)),
     }
 }
-*/
 
-/*
 // With a pointer to a top level function
 pub fn test_map_option1(x: Option<u32>) -> Option<u32> {
     map_option(x, incr_u32)
+}*/
+
+/*
+//
+pub fn test_closure1<T>(x: &T) -> &T {
+    //let f: fn(&T) -> &T = |x| x;
+    let f: fn(u32) -> u32 = |x| x;
+    //(f)(x)
+    x
 }
 */
 
@@ -332,7 +339,6 @@ pub fn test_map_option2(x: Option<u32>) -> Option<u32> {
     let f: fn(u32) -> u32 = |x| x + 1;
     map_option(x, f)
 }
-*/
 
 /*
 // With a local function which uses local type variables
@@ -347,3 +353,12 @@ pub fn test_map_option3(x: Option<u32>) -> Option<u32> {
     let f: fn(u32) -> u32 = |x| x + 1;
     map_option(x, f)
 }*/
+
+/*
+
+pub fn map(x: [i32; 256]) -> [i32; 256] {
+    x.map(|v| v)
+}
+
+*/
+*/

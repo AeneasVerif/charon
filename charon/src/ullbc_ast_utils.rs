@@ -2,7 +2,6 @@
 #![allow(dead_code)]
 
 use crate::common::TAB_INCR;
-use crate::formatter::Formatter;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
 use crate::types::*;
@@ -29,7 +28,7 @@ impl SwitchTargets {
     }
 
     /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
+    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
         self.clone()
     }
 }
@@ -40,7 +39,7 @@ impl Statement {
     }
 
     /// Substitute the type variables and return the resulting statement.
-    pub fn substitute(&self, subst: &ETypeSubst) -> Statement {
+    pub fn substitute(&self, subst: &TypeSubst) -> Statement {
         let st = match &self.content {
             RawStatement::Assign(place, rvalue) => {
                 RawStatement::Assign(place.substitute(subst), rvalue.substitute(subst))
@@ -64,9 +63,9 @@ impl Terminator {
 }
 
 impl Statement {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: ExprFormatter<'a>,
+        T: ExprFormatter,
     {
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(
@@ -93,9 +92,9 @@ impl Statement {
 }
 
 impl Terminator {
-    pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: ExprFormatter<'a>,
+        T: ExprFormatter,
     {
         match &self.content {
             RawTerminator::Goto { target } => format!("goto bb{target}"),
@@ -142,9 +141,9 @@ impl Terminator {
 }
 
 impl BlockData {
-    pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
+    pub fn fmt_with_ctx<T>(&self, tab: &str, ctx: &T) -> String
     where
-        T: ExprFormatter<'a>,
+        T: ExprFormatter,
     {
         let mut out: Vec<String> = Vec::new();
 
@@ -161,13 +160,13 @@ impl BlockData {
     }
 }
 
-pub(crate) fn fmt_body_blocks_with_ctx<'a, 'b, 'c, C>(
-    body: &'a BlockId::Vector<BlockData>,
-    tab: &'b str,
-    ctx: &'c C,
+pub(crate) fn fmt_body_blocks_with_ctx<C>(
+    body: &BlockId::Vector<BlockData>,
+    tab: &str,
+    ctx: &C,
 ) -> String
 where
-    C: ExprFormatter<'a>,
+    C: ExprFormatter,
 {
     let block_tab = format!("{tab}{TAB_INCR}");
     let mut blocks: Vec<String> = Vec::new();
@@ -186,18 +185,18 @@ where
 }
 
 impl FunDecl {
-    pub fn fmt_with_ctx<'ctx, C>(&'ctx self, ctx: &'ctx C) -> String
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: GFunDeclFormatter<'ctx, BlockId::Vector<BlockData>>,
+        C: GFunDeclFormatter<'a, BlockId::Vector<BlockData>>,
     {
         self.gfmt_with_ctx("", ctx)
     }
 }
 
 impl GlobalDecl {
-    pub fn fmt_with_ctx<'ctx, C>(&'ctx self, ctx: &'ctx C) -> String
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        C: GGlobalDeclFormatter<'ctx, BlockId::Vector<BlockData>>,
+        C: GGlobalDeclFormatter<'a, BlockId::Vector<BlockData>>,
     {
         self.gfmt_with_ctx("", ctx)
     }
@@ -311,18 +310,6 @@ pub fn body_transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand
 ) {
     for block in blocks.iter_mut() {
         take(block, |b| b.transform_operands(f));
-    }
-}
-
-impl Formatter<FunDeclId::Id> for FunDecls {
-    fn format_object(&self, id: FunDeclId::Id) -> String {
-        self.get(id).unwrap().name.to_string()
-    }
-}
-
-impl Formatter<GlobalDeclId::Id> for GlobalDecls {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        self.get(id).unwrap().name.to_string()
     }
 }
 

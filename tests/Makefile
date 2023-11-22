@@ -1,7 +1,7 @@
 CURRENT_DIR = $(shell pwd)
 CHARON ?= $(CURRENT_DIR)/../bin/charon
 DEST ?= .
-OPTIONS =
+OPTIONS ?=
 CHARON_CMD :=
 NOT_ALL_TESTS ?=
 

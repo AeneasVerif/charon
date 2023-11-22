@@ -21,7 +21,7 @@ use crate::ullbc_ast::{
 use crate::ullbc_ast_utils::body_transform_operands;
 use crate::values::VarId;
 
-fn make_aggregate_kind(ty: &ETy, var_index: Option<VariantId::Id>) -> AggregateKind {
+fn make_aggregate_kind(ty: &Ty, var_index: Option<VariantId::Id>) -> AggregateKind {
     let (id, generics) = ty.as_adt();
     AggregateKind::Adt(*id, var_index, generics.clone())
 }
@@ -32,7 +32,7 @@ fn make_aggregate_kind(ty: &ETy, var_index: Option<VariantId::Id>) -> AggregateK
 ///
 /// Goes fom e.g. `f(T::A(x, y))` to `let a = T::A(x, y); f(a)`.
 /// The function is recursively called on the aggregate fields (e.g. here x and y).
-fn transform_constant_expr<F: FnMut(ETy) -> VarId::Id>(
+fn transform_constant_expr<F: FnMut(Ty) -> VarId::Id>(
     meta: &Meta,
     nst: &mut Vec<Statement>,
     val: ConstantExpr,
@@ -102,7 +102,7 @@ fn transform_constant_expr<F: FnMut(ETy) -> VarId::Id>(
     }
 }
 
-fn transform_operand<F: FnMut(ETy) -> VarId::Id>(
+fn transform_operand<F: FnMut(Ty) -> VarId::Id>(
     meta: &Meta,
     nst: &mut Vec<Statement>,
     op: &mut Operand,
@@ -126,7 +126,8 @@ pub fn transform(ctx: &mut TransCtx) {
     for (name, b) in iter_function_bodies(&mut fun_defs).chain(iter_global_bodies(&mut global_defs))
     {
         trace!(
-            "# About to simplify constants in function: {name}:\n{}",
+            "# About to simplify constants in function: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
 

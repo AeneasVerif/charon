@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 pub use crate::names_utils::*;
+use crate::types::*;
 use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA};
 use serde::Serialize;
@@ -11,8 +12,16 @@ generate_index_type!(Disambiguator);
 /// See the comments for [Name]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, EnumIsA, EnumAsGetters)]
 pub enum PathElem {
-    Ident(String),
-    Disambiguator(Disambiguator::Id),
+    Ident(String, Disambiguator::Id),
+    Impl(ImplElem),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ImplElem {
+    pub generics: GenericParams,
+    pub preds: Predicates,
+    pub ty: Ty,
+    pub disambiguator: Disambiguator::Id,
 }
 
 /// An item name/path
@@ -54,11 +63,3 @@ pub enum PathElem {
 pub struct Name {
     pub name: Vec<PathElem>,
 }
-
-// TODO: remove those
-pub type ModuleName = Name;
-pub type TypeName = Name;
-pub type ItemName = Name;
-pub type FunName = Name;
-pub type GlobalName = Name;
-pub type HirItemName = Name;

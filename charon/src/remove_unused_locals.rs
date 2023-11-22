@@ -171,7 +171,8 @@ fn update_locals(
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
-            "# About to remove unused locals in decl: {name}:\n{}",
+            "# About to remove unused locals in decl: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
         take(b, |mut b| {
@@ -182,7 +183,8 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
             b
         });
         trace!(
-            "# After removing unused locals of: {name}:\n{}",
+            "# After removing unused locals of: {}:\n{}",
+            name.fmt_with_ctx(ctx),
             ctx.format_object(&*b)
         );
         // Check that there are no remaining locals with the type `Never`

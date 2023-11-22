@@ -1,8 +1,6 @@
 (** Definitions shared between the ULLBC and the LLBC ASTs. *)
-
-open Names
 open Types
-open PrimitiveValues
+
 open Meta
 open Expressions
 module FunDeclId = Expressions.FunDeclId
@@ -22,7 +20,7 @@ type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 type var = {
   index : VarId.id;  (** Unique variable identifier *)
   name : string option;
-  var_ty : ety;
+  var_ty : ty;
       (** The variable type - erased type, because variables are not used
        ** in function signatures: they are only used to declare the list of
        ** variables manipulated by a function body *)
@@ -33,26 +31,14 @@ type var = {
 class ['self] iter_ast_base =
   object (_self : 'self)
     inherit [_] iter_rvalue
-    inherit! [_] iter_literal
-
-    (* Remark: can't inherit iter_literal_type because of a name collision (`Bool`) *)
-
-    method visit_meta : 'env -> meta -> unit = fun _ _ -> ()
-    method visit_integer_type : 'env -> integer_type -> unit = fun _ _ -> ()
+    inherit! [_] iter_predicates
   end
 
 (** Ancestor the AST map visitors *)
 class ['self] map_ast_base =
   object (_self : 'self)
     inherit [_] map_rvalue
-    inherit! [_] map_literal
-
-    (* Remark: can't inherit map_literal_type because of a name collision (`Bool`) *)
-
-    method visit_meta : 'env -> meta -> meta = fun _ x -> x
-
-    method visit_integer_type : 'env -> integer_type -> integer_type =
-      fun _ x -> x
+    inherit! [_] map_predicates
   end
 
 (* Below: the types need not be mutually recursive, but it makes it easier
@@ -108,9 +94,8 @@ type fun_sig = {
   generics : generic_params;
   preds : predicates;
   parent_params_info : params_info option;
-  inputs : sty list;
-  output : sty;
-  regions_hierarchy : region_var_groups;
+  inputs : ty list;
+  output : ty;
 }
 [@@deriving show]
 
@@ -146,7 +131,8 @@ type 'body gexpr_body = {
 type 'body gfun_decl = {
   def_id : FunDeclId.id;
   meta : meta;
-  name : fun_name;
+  is_local : bool;
+  name : name;
   signature : fun_sig;
   kind : fun_kind;
   body : 'body gexpr_body option;
@@ -156,12 +142,14 @@ type 'body gfun_decl = {
 
 type trait_decl = {
   def_id : trait_decl_id;
+  is_local : bool;
   name : name;
+  meta : meta;
   generics : generic_params;
   preds : predicates;
   parent_clauses : trait_clause list;
-  consts : (trait_item_name * (ety * global_decl_id option)) list;
-  types : (trait_item_name * (trait_clause list * ety option)) list;
+  consts : (trait_item_name * (ty * global_decl_id option)) list;
+  types : (trait_item_name * (trait_clause list * ty option)) list;
   required_methods : (trait_item_name * fun_decl_id) list;
   provided_methods : (trait_item_name * fun_decl_id option) list;
 }
@@ -169,19 +157,21 @@ type trait_decl = {
 
 type trait_impl = {
   def_id : trait_impl_id;
+  is_local : bool;
   name : name;
-  impl_trait : strait_decl_ref;
+  meta : meta;
+  impl_trait : trait_decl_ref;
   generics : generic_params;
   preds : predicates;
-  parent_trait_refs : strait_ref list;
-  consts : (trait_item_name * (ety * global_decl_id)) list;
-  types : (trait_item_name * (etrait_ref list * ety)) list;
+  parent_trait_refs : trait_ref list;
+  consts : (trait_item_name * (ty * global_decl_id)) list;
+  types : (trait_item_name * (trait_ref list * ty)) list;
   required_methods : (trait_item_name * fun_decl_id) list;
   provided_methods : (trait_item_name * fun_decl_id) list;
 }
 [@@deriving show]
 
-type 'id g_declaration_group = NonRec of 'id | Rec of 'id list
+type 'id g_declaration_group = NonRecGroup of 'id | RecGroup of 'id list
 [@@deriving show]
 
 type type_declaration_group = TypeDeclId.id g_declaration_group
@@ -191,20 +181,30 @@ type fun_declaration_group = FunDeclId.id g_declaration_group [@@deriving show]
 
 (** Module declaration. Globals cannot be mutually recursive. *)
 type declaration_group =
-  | Type of type_declaration_group
-  | Fun of fun_declaration_group
-  | Global of GlobalDeclId.id
-  | TraitDecl of TraitDeclId.id
-  | TraitImpl of TraitImplId.id
+  | TypeGroup of type_declaration_group
+  | FunGroup of fun_declaration_group
+  | GlobalGroup of GlobalDeclId.id
+  | TraitDeclGroup of TraitDeclId.id
+  | TraitImplGroup of TraitImplId.id
+[@@deriving show]
+
+type 'body gglobal_decl = {
+  meta : meta;
+  def_id : GlobalDeclId.id;
+  is_local : bool;
+  name : name;
+  ty : ty;
+  body : 'body;
+}
 [@@deriving show]
 
 (** A crate *)
-type ('fun_decl, 'global_decl) gcrate = {
+type ('fun_body, 'global_body) gcrate = {
   name : string;
   declarations : declaration_group list;
-  types : type_decl TypeDeclId.Map.t;
-  functions : 'fun_decl FunDeclId.Map.t;
-  globals : 'global_decl GlobalDeclId.Map.t;
+  type_decls : type_decl TypeDeclId.Map.t;
+  fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;
+  global_decls : 'global_body gglobal_decl GlobalDeclId.Map.t;
   trait_decls : trait_decl TraitDeclId.Map.t;
   trait_impls : trait_impl TraitImplId.Map.t;
 }

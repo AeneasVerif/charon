@@ -4,14 +4,12 @@
 pub use crate::expressions::*;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
-use crate::names::GlobalName;
-use crate::names::{FunName, Name};
+use crate::names::Name;
 pub use crate::types::GlobalDeclId;
 pub use crate::types::TraitClauseId;
 use crate::types::*;
 pub use crate::types::{
-    EGenericArgs, ETraitRef, GenericArgs, GenericParams, RGenericArgs, RTraitRef, TraitDeclId,
-    TraitImplId, TraitInstanceId, TraitRef,
+    GenericArgs, GenericParams, TraitDeclId, TraitImplId, TraitInstanceId, TraitRef,
 };
 use macros::generate_index_type;
 use serde::Serialize;
@@ -27,7 +25,7 @@ pub struct Var {
     /// through desugaring.
     pub name: Option<String>,
     /// The variable type
-    pub ty: ETy,
+    pub ty: Ty,
 }
 
 /// An expression body.
@@ -96,7 +94,10 @@ pub struct GFunDecl<T> {
     pub def_id: FunDeclId::Id,
     /// The meta data associated with the declaration.
     pub meta: Meta,
-    pub name: FunName,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
+    pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,
@@ -114,8 +115,11 @@ pub struct GGlobalDecl<T> {
     pub def_id: GlobalDeclId::Id,
     /// The meta data associated with the declaration.
     pub meta: Meta,
-    pub name: GlobalName,
-    pub ty: ETy,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
+    pub name: Name,
+    pub ty: Ty,
     pub body: Option<GExprBody<T>>,
 }
 
@@ -157,7 +161,11 @@ pub struct TraitItemName(pub String);
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
     pub name: Name,
+    pub meta: Meta,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// The "parent" clauses: the supertraits.
@@ -176,9 +184,9 @@ pub struct TraitDecl {
     /// The associated constants declared in the trait.
     ///
     /// The optional id is for the default value.
-    pub consts: Vec<(TraitItemName, (ETy, Option<GlobalDeclId::Id>))>,
+    pub consts: Vec<(TraitItemName, (Ty, Option<GlobalDeclId::Id>))>,
     /// The associated types declared in the trait.
-    pub types: Vec<(TraitItemName, (Vec<TraitClause>, Option<ETy>))>,
+    pub types: Vec<(TraitItemName, (Vec<TraitClause>, Option<Ty>))>,
     /// The *required* methods.
     ///
     /// The required methods are the methods declared by the trait but with
@@ -212,19 +220,23 @@ pub struct TraitDecl {
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitImpl {
     pub def_id: TraitImplId::Id,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
     pub name: Name,
+    pub meta: Meta,
     /// The information about the implemented trait.
     /// Note that this contains the instantiation of the "parent"
     /// clauses.
-    pub impl_trait: RTraitDeclRef,
+    pub impl_trait: TraitDeclRef,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// The trait references for the parent clauses (see [TraitDecl]).
-    pub parent_trait_refs: TraitClauseId::Vector<RTraitRef>,
+    pub parent_trait_refs: TraitClauseId::Vector<TraitRef>,
     /// The associated constants declared in the trait.
-    pub consts: Vec<(TraitItemName, (ETy, GlobalDeclId::Id))>,
+    pub consts: Vec<(TraitItemName, (Ty, GlobalDeclId::Id))>,
     /// The associated types declared in the trait.
-    pub types: Vec<(TraitItemName, (Vec<ETraitRef>, ETy))>,
+    pub types: Vec<(TraitItemName, (Vec<TraitRef>, Ty))>,
     /// The implemented required methods
     pub required_methods: Vec<(TraitItemName, FunDeclId::Id)>,
     /// The re-implemented provided methods

@@ -57,6 +57,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         v: &hax::ConstantExprKind,
     ) -> ConstantExpr {
         use hax::ConstantExprKind;
+        let erase_regions = true;
         let value = match v {
             ConstantExprKind::Literal(lit) => {
                 self.translate_constant_literal_to_raw_constant_expr(lit)
@@ -88,12 +89,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 substs,
                 name,
             } => {
-                let trait_ref = self.translate_trait_impl_source(impl_source);
+                let trait_ref = self.translate_trait_impl_source(erase_regions, impl_source);
                 // The trait ref should be Some(...): trait markers (that we
                 // may eliminate) don't have constants.
                 let trait_ref = trait_ref.unwrap();
 
-                let (regions, types, const_generics) = self.translate_substs(None, substs).unwrap();
+                let (regions, types, const_generics) =
+                    self.translate_substs(erase_regions, None, substs).unwrap();
                 let generics = GenericArgs {
                     regions,
                     types,
@@ -116,8 +118,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             ConstantExprKind::FnPtr(fn_id, substs, trait_refs, trait_info) => {
                 use crate::translate_functions_to_ullbc::SubstFunIdOrPanic;
-                let fn_id = self
-                    .translate_fun_decl_id_with_args(fn_id, substs, None, trait_refs, trait_info);
+                let erase_regions = true; // TODO: not sure
+                let fn_id = self.translate_fun_decl_id_with_args(
+                    erase_regions,
+                    fn_id,
+                    substs,
+                    None,
+                    trait_refs,
+                    trait_info,
+                );
                 let SubstFunIdOrPanic::Fun(fn_id) = fn_id else  { unreachable!() };
                 RawConstantExpr::FnPtr(fn_id.func)
             }
@@ -127,7 +136,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         };
 
-        let ty = self.translate_ety(ty).unwrap();
+        let ty = self.translate_ty(erase_regions, ty).unwrap();
         ConstantExpr { value, ty }
     }
 

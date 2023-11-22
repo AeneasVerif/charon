@@ -1934,7 +1934,7 @@ fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl
     let src_def = ctx.fun_defs.get(src_def_id).unwrap();
     trace!(
         "# About to reconstruct: {}\n\n{}",
-        src_def.name,
+        src_def.name.fmt_with_ctx(ctx),
         ctx.format_object(src_def)
     );
 
@@ -1942,6 +1942,7 @@ fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl
     tgt::FunDecl {
         def_id: src_def.def_id,
         meta: src_def.meta,
+        is_local: src_def.is_local,
         name: src_def.name.clone(),
         signature: src_def.signature.clone(),
         kind: src_def.kind.clone(),
@@ -1957,13 +1958,14 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalD
     let src_def = ctx.global_defs.get(global_id).unwrap();
     trace!(
         "# About to reconstruct: {}\n\n{}",
-        src_def.name,
+        src_def.name.fmt_with_ctx(ctx),
         ctx.format_object(src_def)
     );
 
     tgt::GlobalDecl {
         def_id: src_def.def_id,
         meta: src_def.meta,
+        is_local: src_def.is_local,
         name: src_def.name.clone(),
         ty: src_def.ty.clone(),
         body: src_def

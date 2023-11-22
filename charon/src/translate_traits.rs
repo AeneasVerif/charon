@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 use crate::gast::*;
-use crate::names_utils;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::ullbc_ast as ast;
@@ -16,8 +15,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_trait_item_name(rust_id)
     }
 
-    fn translate_ty_from_trait_item(&mut self, item: &rustc_middle::ty::AssocItem) -> ETy {
-        self.translate_ety(
+    fn translate_ty_from_trait_item(&mut self, item: &rustc_middle::ty::AssocItem) -> Ty {
+        let erase_regions = false;
+        self.translate_ty(
+            erase_regions,
             &self
                 .t_ctx
                 .tcx
@@ -28,13 +29,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         .unwrap()
     }
 
-    /** Remark: the [decl_item] is the item from the trait declaration. */
+    /// Helper for [translate_trait_impl].
+    ///
+    /// Remark: the [decl_item] is the item from the trait declaration.
     fn translate_trait_refs_from_impl_trait_item(
         &mut self,
         trait_impl_def_id: DefId,
         rust_impl_trait_ref: &rustc_middle::ty::TraitRef<'tcx>,
         decl_item: &rustc_middle::ty::AssocItem,
-    ) -> Vec<ETraitRef> {
+    ) -> Vec<TraitRef> {
         trace!(
             "- trait_impl_def_id: {:?}\n- rust_impl_trait_ref: {:?}\n- decl_item: {:?}",
             trait_impl_def_id,
@@ -49,6 +52,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let bounds = tcx.item_bounds(decl_item.def_id);
         let param_env = tcx.param_env(trait_impl_def_id);
         let bounds = tcx.subst_and_normalize_erasing_regions(subst, param_env, bounds);
+        let erase_regions = false;
 
         // Solve the predicate bounds
         let mut trait_refs = Vec::new();
@@ -59,7 +63,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             {
                 let trait_ref = rustc_middle::ty::Binder::dummy(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
-                let trait_ref = self.translate_trait_impl_source_erased_regions(&trait_ref);
+                let trait_ref = self.translate_trait_impl_source(erase_regions, &trait_ref);
                 if let Some(trait_ref) = trait_ref {
                     trait_refs.push(trait_ref);
                 }
@@ -73,7 +77,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_const_from_trait_item(
         &mut self,
         item: &rustc_middle::ty::AssocItem,
-    ) -> (TraitItemName, (ETy, GlobalDeclId::Id)) {
+    ) -> (TraitItemName, (Ty, GlobalDeclId::Id)) {
         let ty = self.translate_ty_from_trait_item(item);
         let name = TraitItemName(item.name.to_string());
         let id = self.translate_global_decl_id(item.def_id);
@@ -211,8 +215,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Remark: this **doesn't** register the def id (on purpose)
     pub(crate) fn translate_trait_item_name(&mut self, rust_id: DefId) -> TraitItemName {
         // Translate the name
-        let name = names_utils::item_def_id_to_name(self.tcx, rust_id);
-        TraitItemName(name.name.last().unwrap().as_ident().clone())
+        let name = self.item_def_id_to_name(rust_id);
+        let (name, id) = name.name.last().unwrap().as_ident();
+        assert!(id.is_zero());
+        TraitItemName(name.to_string())
     }
 
     pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) {
@@ -230,7 +236,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+        let name = bt_ctx
+            .t_ctx
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
         // Translate the generic
         bt_ctx.translate_generic_params(rust_id);
@@ -384,7 +392,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // check those, and lookup the relevant values.
         let trait_decl = ast::TraitDecl {
             def_id,
+            is_local: rust_id.is_local(),
             name,
+            meta: self.translate_meta_from_rid(rust_id),
             generics,
             preds,
             parent_clauses,
@@ -410,7 +420,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let tcx = self.tcx;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        let name = names_utils::extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+        let name = bt_ctx
+            .t_ctx
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+        let erase_regions = false;
 
         // Translate the generics
         bt_ctx.translate_generic_params(rust_id);
@@ -446,7 +459,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     tcx.impl_subject(rust_id).subst_identity() else { unreachable!() };
             let trait_ref = rust_trait_ref.sinto(&bt_ctx.hax_state);
             let (regions, types, const_generics) = bt_ctx
-                .translate_substs(None, &trait_ref.generic_args)
+                .translate_substs(erase_regions, None, &trait_ref.generic_args)
                 .unwrap();
 
             let parent_trait_refs = hax::solve_item_traits(
@@ -455,9 +468,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 rust_trait_ref.def_id,
                 rust_trait_ref.substs,
             );
-            let parent_trait_refs: Vec<RTraitRef> =
-                bt_ctx.translate_trait_impl_sources(&parent_trait_refs);
-            let parent_trait_refs: TraitClauseId::Vector<RTraitRef> =
+            let parent_trait_refs: Vec<TraitRef> =
+                bt_ctx.translate_trait_impl_sources(erase_regions, &parent_trait_refs);
+            let parent_trait_refs: TraitClauseId::Vector<TraitRef> =
                 TraitClauseId::Vector::from(parent_trait_refs);
 
             let generics = GenericArgs {
@@ -583,7 +596,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let trait_impl = ast::TraitImpl {
             def_id,
+            is_local: rust_id.is_local(),
             name,
+            meta: bt_ctx.t_ctx.translate_meta_from_rid(rust_id),
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),
             preds: bt_ctx.get_predicates(),

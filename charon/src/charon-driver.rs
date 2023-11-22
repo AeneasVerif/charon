@@ -59,7 +59,6 @@ mod names;
 mod names_utils;
 mod ops_to_function_calls;
 mod reconstruct_asserts;
-mod regions_hierarchy;
 mod remove_drop_never;
 mod remove_dynamic_checks;
 mod remove_read_discriminant;

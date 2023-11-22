@@ -1,9 +1,8 @@
 include GAst
 open Types
-open PrimitiveValues
+open Values
 open Expressions
 open Meta
-open Names
 
 type statement = {
   meta : meta;  (** The statement meta-data *)
@@ -71,14 +70,8 @@ and switch =
 type fun_body = statement gexpr_body [@@deriving show]
 type fun_decl = statement gfun_decl [@@deriving show]
 
-type global_decl = {
-  meta : meta;
-  def_id : GlobalDeclId.id;
-  name : global_name;
-  ty : ety;
-  body_id : FunDeclId.id;  (** TODO: this field should be an option *)
-}
-[@@deriving show]
+(* TODO: the function id should be an option *)
+type global_decl = FunDeclId.id gglobal_decl [@@deriving show]
 
 (** LLBC crate *)
-type crate = (fun_decl, global_decl) gcrate
+type crate = (statement, FunDeclId.id) gcrate

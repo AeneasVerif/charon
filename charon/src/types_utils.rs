@@ -13,17 +13,12 @@ use macros::make_generic_in_borrows;
 use std::iter::FromIterator;
 use std::iter::Iterator;
 
-pub type RegionSubst<R> = HashMap<RegionVarId::Id, R>;
-pub type TypeSubst<R> = HashMap<TypeVarId::Id, Ty<R>>;
-/// Type substitution where the regions are erased
-pub type ETypeSubst = TypeSubst<ErasedRegion>;
+pub type RegionSubst = HashMap<RegionId::Id, Region>;
+pub type TypeSubst = HashMap<TypeVarId::Id, Ty>;
 pub type ConstGenericSubst = HashMap<ConstGenericVarId::Id, ConstGeneric>;
 
 // TODO: should we just put all the potential constraints we need in there?
-pub trait TypeFormatter<'a, R: 'a> = Formatter<TypeVarId::Id>
-    + Formatter<&'a R>
-    + Formatter<&'a ErasedRegion>
-    + Formatter<&'a Region<RegionVarId::Id>>
+pub trait TypeFormatter = Formatter<TypeVarId::Id>
     + Formatter<TypeDeclId::Id>
     + Formatter<ConstGenericVarId::Id>
     + Formatter<FunDeclId::Id>
@@ -31,7 +26,7 @@ pub trait TypeFormatter<'a, R: 'a> = Formatter<TypeVarId::Id>
     + Formatter<TraitDeclId::Id>
     + Formatter<TraitImplId::Id>
     + Formatter<TraitClauseId::Id>
-    + Formatter<RegionVarId::Id>;
+    + Formatter<RegionId::Id>;
 
 impl ConstGenericVarId::Id {
     pub fn substitute(
@@ -55,38 +50,34 @@ impl ConstGeneric {
     }
 }
 
-impl RegionVarId::Id {
-    pub fn substitute<R>(&self, rsubst: &RegionSubst<R>) -> R
-    where
-        R: Clone,
-    {
+impl RegionId::Id {
+    pub fn substitute(&self, rsubst: &RegionSubst) -> Region {
         rsubst.get(self).unwrap().clone()
     }
 }
 
-impl<Rid: Clone> Region<Rid> {
+impl Region {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<Rid>,
+        T: Formatter<RegionId::Id>,
     {
         match self {
             Region::Static => "'static".to_string(),
-            Region::Var(id) => ctx.format_object(id.clone()),
+            Region::Var(id) => ctx.format_object(*id),
+            Region::Erased => "'_".to_string(),
+            Region::Unknown => "'_UNKNOWN_".to_string(),
         }
     }
 }
 
-impl<Rid1: Clone + Ord + std::hash::Hash> Region<Rid1> {
-    pub fn substitute<Rid2: Clone>(&self, rsubst: &HashMap<Rid1, Region<Rid2>>) -> Region<Rid2> {
-        match self {
-            Region::Static => Region::Static,
-            Region::Var(id) => rsubst.get(id).unwrap().clone(),
-        }
+impl Region {
+    pub fn substitute(&self, rsubst: &HashMap<Region, Region>) -> Region {
+        *rsubst.get(self).unwrap()
     }
 
-    pub fn contains_var(&self, rset: &OrdSet<Rid1>) -> bool {
+    pub fn contains_var(&self, rset: &OrdSet<RegionId::Id>) -> bool {
         match self {
-            Region::Static => false,
+            Region::Static | Region::Erased | Region::Unknown => false,
             Region::Var(id) => rset.contains(id),
         }
     }
@@ -144,16 +135,16 @@ impl GenericParams {
 
     pub fn empty() -> Self {
         GenericParams {
-            regions: RegionVarId::Vector::new(),
+            regions: RegionId::Vector::new(),
             types: TypeVarId::Vector::new(),
             const_generics: ConstGenericVarId::Vector::new(),
             trait_clauses: TraitClauseId::Vector::new(),
         }
     }
 
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter,
     {
         if self.is_empty() {
             "".to_string()
@@ -181,9 +172,9 @@ impl GenericParams {
         }
     }
 
-    pub fn fmt_with_ctx_with_trait_clauses<'a, C>(&'a self, ctx: &C) -> (String, Vec<String>)
+    pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C) -> (String, Vec<String>)
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter,
     {
         let mut params = Vec::new();
         let GenericParams {
@@ -252,10 +243,10 @@ pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<Stri
     }
 }
 
-impl<R> TraitTypeConstraint<R> {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+impl TraitTypeConstraint {
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, R>,
+        C: TypeFormatter,
     {
         let trait_ref = self.trait_ref.fmt_with_ctx(ctx);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
@@ -275,15 +266,15 @@ impl Predicates {
     }
 }
 
-pub fn fmt_where_clauses_with_ctx<'a, C>(
+pub fn fmt_where_clauses_with_ctx<C>(
     ctx: &C,
     tab: &str,
     info: &Option<ParamsInfo>,
     mut trait_clauses: Vec<String>,
-    preds: &'a Predicates,
+    preds: &Predicates,
 ) -> String
 where
-    C: TypeFormatter<'a, Region<RegionVarId::Id>>,
+    C: TypeFormatter,
 {
     let mut types_outlive: Vec<_> = preds
         .types_outlive
@@ -340,7 +331,7 @@ where
     }
 }
 
-impl<R> GenericArgs<R> {
+impl GenericArgs {
     pub fn len(&self) -> usize {
         let GenericArgs {
             regions,
@@ -364,7 +355,7 @@ impl<R> GenericArgs<R> {
         }
     }
 
-    pub fn new_from_types(types: Vec<Ty<R>>) -> Self {
+    pub fn new_from_types(types: Vec<Ty>) -> Self {
         GenericArgs {
             regions: Vec::new(),
             types,
@@ -374,10 +365,10 @@ impl<R> GenericArgs<R> {
     }
 
     pub fn new(
-        regions: Vec<R>,
-        types: Vec<Ty<R>>,
+        regions: Vec<Region>,
+        types: Vec<Ty>,
         const_generics: Vec<ConstGeneric>,
-        trait_refs: Vec<TraitRef<R>>,
+        trait_refs: Vec<TraitRef>,
     ) -> Self {
         GenericArgs {
             regions,
@@ -387,9 +378,9 @@ impl<R> GenericArgs<R> {
         }
     }
 
-    pub(crate) fn fmt_with_ctx_no_brackets<'a, C>(&'a self, ctx: &C) -> String
+    pub(crate) fn fmt_with_ctx_no_brackets<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, R>,
+        C: TypeFormatter,
     {
         let mut params = Vec::new();
         let GenericArgs {
@@ -399,7 +390,7 @@ impl<R> GenericArgs<R> {
             trait_refs,
         } = self;
         for x in regions {
-            params.push(ctx.format_object(x));
+            params.push(x.fmt_with_ctx(ctx));
         }
         for x in types {
             params.push(x.fmt_with_ctx(ctx));
@@ -413,9 +404,9 @@ impl<R> GenericArgs<R> {
         params.join(", ")
     }
 
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, R>,
+        C: TypeFormatter,
     {
         if self.is_empty() {
             "".to_string()
@@ -424,9 +415,9 @@ impl<R> GenericArgs<R> {
         }
     }
 
-    pub fn fmt_with_ctx_split_trait_refs<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx_split_trait_refs<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, R>,
+        C: TypeFormatter,
     {
         let mut params = Vec::new();
         let GenericArgs {
@@ -436,7 +427,7 @@ impl<R> GenericArgs<R> {
             trait_refs,
         } = self;
         for x in regions {
-            params.push(ctx.format_object(x));
+            params.push(x.fmt_with_ctx(ctx));
         }
         for x in types {
             params.push(x.fmt_with_ctx(ctx));
@@ -464,9 +455,9 @@ impl<R> GenericArgs<R> {
 }
 
 impl TraitClause {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter,
     {
         let clause_id = ctx.format_object(self.clause_id);
         let trait_id = ctx.format_object(self.trait_id);
@@ -476,9 +467,9 @@ impl TraitClause {
 }
 
 impl TraitInstanceId {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, ErasedRegion> + TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter,
     {
         match self {
             TraitInstanceId::SelfId => "Self".to_string(),
@@ -516,10 +507,10 @@ impl TraitInstanceId {
     }
 }
 
-impl<R> TraitRef<R> {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+impl TraitRef {
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, R>,
+        C: TypeFormatter,
     {
         let trait_id = self.trait_id.fmt_with_ctx(ctx);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
@@ -527,10 +518,10 @@ impl<R> TraitRef<R> {
     }
 }
 
-impl<R> TraitDeclRef<R> {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+impl TraitDeclRef {
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter<'a, R>,
+        C: TypeFormatter,
     {
         let trait_id = ctx.format_object(self.trait_id);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
@@ -560,9 +551,9 @@ impl TypeDecl {
     /// `None` if the type is opaque.
     pub fn get_instantiated_variants(
         &self,
-        inst_regions: &Vec<Region<RegionVarId::Id>>,
-        inst_types: &Vec<RTy>,
-    ) -> Option<VariantId::Vector<FieldId::Vector<RTy>>> {
+        inst_regions: &Vec<Region>,
+        inst_types: &Vec<Ty>,
+    ) -> Option<VariantId::Vector<FieldId::Vector<Ty>>> {
         // Introduce the substitutions
         let r_subst = make_region_subst(
             self.generics.regions.iter().map(|x| x.index),
@@ -599,9 +590,9 @@ impl TypeDecl {
     pub fn get_erased_regions_instantiated_field_types(
         &self,
         variant_id: Option<VariantId::Id>,
-        inst_types: &Vec<ETy>,
+        inst_types: &Vec<Ty>,
         cgs: &Vec<ConstGeneric>,
-    ) -> Vec<ETy> {
+    ) -> Vec<Ty> {
         // Introduce the substitution
         let ty_subst = make_type_subst(
             self.generics.types.iter().map(|x| x.index),
@@ -613,7 +604,7 @@ impl TypeDecl {
         );
 
         let fields = self.get_fields(variant_id);
-        let field_types: Vec<ETy> = fields
+        let field_types: Vec<Ty> = fields
             .iter()
             .map(|f| f.ty.erase_regions_substitute_types(&ty_subst, &cg_subst))
             .collect();
@@ -626,10 +617,10 @@ impl TypeDecl {
     pub fn get_erased_regions_instantiated_field_type(
         &self,
         variant_id: Option<VariantId::Id>,
-        inst_types: &Vec<ETy>,
+        inst_types: &Vec<Ty>,
         cgs: &Vec<ConstGeneric>,
         field_id: FieldId::Id,
-    ) -> ETy {
+    ) -> Ty {
         // Introduce the substitution
         let ty_subst = make_type_subst(
             self.generics.types.iter().map(|x| x.index),
@@ -650,9 +641,9 @@ impl TypeDecl {
         field_type
     }
 
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        C: TypeFormatter,
     {
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         // Predicates
@@ -673,10 +664,13 @@ impl TypeDecl {
                     let fields = fields.join(",");
                     format!(
                         "struct {}{params}{preds}{eq_space}=\n{{{fields}\n}}",
-                        self.name
+                        self.name.fmt_with_ctx(ctx)
                     )
                 } else {
-                    format!("struct {}{params}{preds}{eq_space}= {{}}", self.name)
+                    format!(
+                        "struct {}{params}{preds}{eq_space}= {{}}",
+                        self.name.fmt_with_ctx(ctx)
+                    )
                 }
             }
             TypeDeclKind::Enum(variants) => {
@@ -685,9 +679,14 @@ impl TypeDecl {
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
                     .collect();
                 let variants = variants.join("\n");
-                format!("enum {}{params}{preds}{eq_space}=\n{variants}\n", self.name)
+                format!(
+                    "enum {}{params}{preds}{eq_space}=\n{variants}\n",
+                    self.name.fmt_with_ctx(ctx)
+                )
             }
-            TypeDeclKind::Opaque => format!("opaque type {}{params}{preds}", self.name),
+            TypeDeclKind::Opaque => {
+                format!("opaque type {}{params}{preds}", self.name.fmt_with_ctx(ctx))
+            }
         }
     }
 }
@@ -699,9 +698,9 @@ impl std::string::ToString for TypeDecl {
 }
 
 impl Variant {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        T: TypeFormatter,
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
@@ -710,9 +709,9 @@ impl Variant {
 }
 
 impl Field {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        T: TypeFormatter,
     {
         match &self.name {
             Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
@@ -818,7 +817,7 @@ impl FieldId::Id {
     }
 }
 
-impl RegionVarId::Id {
+impl RegionId::Id {
     pub fn to_pretty_string(&self) -> String {
         format!("@R{self}")
     }
@@ -935,7 +934,7 @@ impl ConstGeneric {
     }
 }
 
-impl<R> Ty<R> {
+impl Ty {
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
         match self {
@@ -949,7 +948,7 @@ impl<R> Ty<R> {
     }
 
     /// Return the unit type
-    pub fn mk_unit() -> Ty<R> {
+    pub fn mk_unit() -> Ty {
         Ty::Adt(TypeId::Tuple, GenericArgs::empty())
     }
 
@@ -980,10 +979,9 @@ impl<R> Ty<R> {
     /// We take an optional type context to be able to implement the Display
     /// trait, in which case there is no type context available and we print
     /// the ADT ids rather than their names.
-    pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        R: 'a,
-        T: TypeFormatter<'a, R>,
+        T: TypeFormatter,
     {
         match self {
             Ty::Adt(id, generics) => {
@@ -1003,10 +1001,10 @@ impl<R> Ty<R> {
             Ty::Never => "!".to_string(),
             Ty::Ref(r, ty, kind) => match kind {
                 RefKind::Mut => {
-                    format!("&{} mut ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx))
+                    format!("&{} mut ({})", r.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
                 }
                 RefKind::Shared => {
-                    format!("&{} ({})", ctx.format_object(r), ty.fmt_with_ctx(ctx))
+                    format!("&{} ({})", r.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
                 }
             },
             Ty::RawPtr(ty, kind) => match kind {
@@ -1049,7 +1047,7 @@ impl<R> Ty<R> {
         }
     }
 
-    pub fn as_box(&self) -> Option<&Ty<R>> {
+    pub fn as_box(&self) -> Option<&Ty> {
         match self {
             Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
                 assert!(generics.regions.is_empty());
@@ -1062,11 +1060,11 @@ impl<R> Ty<R> {
     }
 }
 
-impl<Rid: Clone + Ord + std::hash::Hash> Ty<Region<Rid>> {
+impl Ty {
     /// Returns `true` if the type contains one of the regions listed
     /// in the set
     /// TODO: reimplement this with visitors
-    pub fn contains_region_var(&self, rset: &OrdSet<Rid>) -> bool {
+    pub fn contains_region_var(&self, rset: &OrdSet<RegionId::Id>) -> bool {
         match self {
             Ty::TypeVar(_) => false,
             Ty::Literal(_) | Ty::Never => false,
@@ -1088,37 +1086,30 @@ impl<Rid: Clone + Ord + std::hash::Hash> Ty<Region<Rid>> {
     }
 }
 
-impl<Rid> std::fmt::Display for Region<Rid>
-where
-    Rid: std::fmt::Display,
-{
+impl std::fmt::Display for Region {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
             Region::Static => write!(f, "'static"),
             Region::Var(id) => write!(f, "'_{id}"),
+            Region::Erased => write!(f, "'_"),
+            Region::Unknown => write!(f, "'_UNKNOWN_"),
         }
     }
 }
 
-impl std::fmt::Display for ErasedRegion {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "'_")
-    }
-}
-
-impl std::string::ToString for Ty<ErasedRegion> {
+impl std::string::ToString for Ty {
     fn to_string(&self) -> String {
         self.fmt_with_ctx(&DummyFormatter {})
     }
 }
 
-impl<R: Eq + Clone> TraitRef<R> {
-    pub fn substitute<R1: Eq>(
+impl TraitRef {
+    pub fn substitute(
         &self,
-        rsubst: &dyn Fn(&R) -> R1,
-        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
+        rsubst: &dyn Fn(&Region) -> Region,
+        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty,
         cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> TraitRef<R1> {
+    ) -> TraitRef {
         let generics = self.generics.substitute(rsubst, tsubst, cgsubst);
         let trait_decl_ref = self.trait_decl_ref.substitute(rsubst, tsubst, cgsubst);
         TraitRef {
@@ -1129,13 +1120,13 @@ impl<R: Eq + Clone> TraitRef<R> {
     }
 }
 
-impl<R: Eq + Clone> TraitDeclRef<R> {
-    pub fn substitute<R1: Eq>(
+impl TraitDeclRef {
+    pub fn substitute(
         &self,
-        rsubst: &dyn Fn(&R) -> R1,
-        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
+        rsubst: &dyn Fn(&Region) -> Region,
+        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty,
         cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> TraitDeclRef<R1> {
+    ) -> TraitDeclRef {
         let generics = self.generics.substitute(rsubst, tsubst, cgsubst);
         TraitDeclRef {
             trait_id: self.trait_id,
@@ -1144,13 +1135,13 @@ impl<R: Eq + Clone> TraitDeclRef<R> {
     }
 }
 
-impl<R: Eq + Clone> GenericArgs<R> {
-    pub fn substitute<R1: Eq>(
+impl GenericArgs {
+    pub fn substitute(
         &self,
-        rsubst: &dyn Fn(&R) -> R1,
-        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
+        rsubst: &dyn Fn(&Region) -> Region,
+        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty,
         cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> GenericArgs<R1> {
+    ) -> GenericArgs {
         let GenericArgs {
             regions,
             types,
@@ -1179,13 +1170,13 @@ impl<R: Eq + Clone> GenericArgs<R> {
     }
 }
 
-impl<R: Eq + Clone> Ty<R> {
-    pub fn substitute<R1: Eq>(
+impl Ty {
+    pub fn substitute(
         &self,
-        rsubst: &dyn Fn(&R) -> R1,
-        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty<R1>,
+        rsubst: &dyn Fn(&Region) -> Region,
+        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty,
         cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> Ty<R1> {
+    ) -> Ty {
         match self {
             Ty::Adt(id, args) => {
                 let args = args.substitute(rsubst, tsubst, cgsubst);
@@ -1218,13 +1209,16 @@ impl<R: Eq + Clone> Ty<R> {
         }
     }
 
-    fn substitute_regions<R1>(regions: &Vec<R>, rsubst: &dyn Fn(&R) -> R1) -> Vec<R1> {
+    fn substitute_regions(
+        regions: &Vec<Region>,
+        rsubst: &dyn Fn(&Region) -> Region,
+    ) -> Vec<Region> {
         Vec::from_iter(regions.iter().map(|rid| rsubst(rid)))
     }
 
     /// Substitute the type parameters
     // TODO: tsubst and cgsubst should be closures instead of hashmaps
-    pub fn substitute_types(&self, subst: &TypeSubst<R>, cgsubst: &ConstGenericSubst) -> Self {
+    pub fn substitute_types(&self, subst: &TypeSubst, cgsubst: &ConstGenericSubst) -> Self {
         self.substitute(
             &|r| r.clone(),
             &|tid| subst.get(tid).unwrap().clone(),
@@ -1233,22 +1227,20 @@ impl<R: Eq + Clone> Ty<R> {
     }
 
     /// Erase the regions
-    pub fn erase_regions(&self) -> ETy {
-        self.substitute(
-            &|_| ErasedRegion::Erased,
-            &|tid| Ty::TypeVar(*tid),
-            &|cgid| ConstGeneric::Var(*cgid),
-        )
+    pub fn erase_regions(&self) -> Ty {
+        self.substitute(&|_| Region::Erased, &|tid| Ty::TypeVar(*tid), &|cgid| {
+            ConstGeneric::Var(*cgid)
+        })
     }
 
     /// Erase the regions and substitute the types at the same time
     pub fn erase_regions_substitute_types(
         &self,
-        subst: &TypeSubst<ErasedRegion>,
+        subst: &TypeSubst,
         cgsubst: &ConstGenericSubst,
-    ) -> ETy {
+    ) -> Ty {
         self.substitute(
-            &|_| ErasedRegion::Erased,
+            &|_| Region::Erased,
             &|tid| subst.get(tid).unwrap().clone(),
             &|cgid| cgsubst.get(cgid).unwrap().clone(),
         )
@@ -1293,31 +1285,15 @@ impl<R: Eq + Clone> Ty<R> {
     }
 }
 
-impl RTy {
+impl Ty {
     /// Substitute the regions and type parameters
-    pub fn substitute_regions_types(
-        &self,
-        rsubst: &RegionSubst<Region<RegionVarId::Id>>,
-        tsubst: &TypeSubst<Region<RegionVarId::Id>>,
-    ) -> Self {
+    pub fn substitute_regions_types(&self, rsubst: &RegionSubst, tsubst: &TypeSubst) -> Self {
         self.substitute(
-            &|rid| match rid {
-                Region::Static => Region::Static,
+            &|r| match r {
+                Region::Static | Region::Erased | Region::Unknown => *r,
                 Region::Var(rid) => *rsubst.get(rid).unwrap(),
             },
             &|tid| tsubst.get(tid).unwrap().clone(),
-            &|cgid| ConstGeneric::Var(*cgid),
-        )
-    }
-}
-
-impl ETy {
-    /// Convert an `ETy` to an `Ty<R>` provided there are no (erased) regions
-    /// in the type.
-    pub fn to_rty<R: Eq>(&self) -> Ty<R> {
-        self.substitute(
-            &|_| panic!("Unexpected region"),
-            &|tid| Ty::TypeVar(*tid),
             &|cgid| ConstGeneric::Var(*cgid),
         )
     }
@@ -1347,33 +1323,17 @@ where
     res
 }
 
-pub fn make_type_subst<
-    'a,
-    R: 'a + Eq,
-    I1: Iterator<Item = TypeVarId::Id>,
-    I2: Iterator<Item = &'a Ty<R>>,
->(
+pub fn make_type_subst<'a, I1: Iterator<Item = TypeVarId::Id>, I2: Iterator<Item = &'a Ty>>(
     params: I1,
     types: I2,
-) -> TypeSubst<R>
-where
-    R: Clone,
-{
+) -> TypeSubst {
     make_subst(params, types)
 }
 
-pub fn make_region_subst<
-    'a,
-    R: 'a + Eq,
-    I1: Iterator<Item = RegionVarId::Id>,
-    I2: Iterator<Item = &'a R>,
->(
+pub fn make_region_subst<'a, I1: Iterator<Item = RegionId::Id>, I2: Iterator<Item = &'a Region>>(
     keys: I1,
     values: I2,
-) -> RegionSubst<R>
-where
-    R: Clone,
-{
+) -> RegionSubst {
     make_subst(keys, values)
 }
 
@@ -1395,8 +1355,8 @@ impl Formatter<TypeVarId::Id> for TypeDecl {
     }
 }
 
-impl Formatter<RegionVarId::Id> for TypeDecl {
-    fn format_object(&self, id: RegionVarId::Id) -> String {
+impl Formatter<RegionId::Id> for TypeDecl {
+    fn format_object(&self, id: RegionId::Id) -> String {
         let var = self.generics.regions.get(id).unwrap();
         var.to_string()
     }
@@ -1409,33 +1369,16 @@ impl Formatter<ConstGenericVarId::Id> for TypeDecl {
     }
 }
 
-impl<Rid: Clone> Formatter<&Region<Rid>> for TypeDecl
+impl Formatter<&Region> for TypeDecl
 where
-    TypeDecl: Formatter<Rid>,
+    TypeDecl: Formatter<RegionId::Id>,
 {
-    fn format_object(&self, r: &Region<Rid>) -> String {
+    fn format_object(&self, r: &Region) -> String {
         r.fmt_with_ctx(self)
     }
 }
 
-impl Formatter<&ErasedRegion> for TypeDecl {
-    fn format_object(&self, _: &ErasedRegion) -> String {
-        "'_".to_string()
-    }
-}
-
-impl Formatter<TypeDeclId::Id> for TypeDecls {
-    fn format_object(&self, id: TypeDeclId::Id) -> String {
-        // The definition may not be available yet, especially if we print-debug
-        // while translating the crate
-        match self.get(id) {
-            Option::None => id.to_pretty_string(),
-            Option::Some(def) => def.name.to_string(),
-        }
-    }
-}
-
-impl<R: Clone + std::cmp::Eq> Ty<R> {
+impl Ty {
     // TODO: reimplement this with visitors
     pub fn contains_never(&self) -> bool {
         match self {
@@ -1454,13 +1397,13 @@ impl<R: Clone + std::cmp::Eq> Ty<R> {
     }
 }
 
-pub struct TySubst<R> {
+pub struct TySubst {
     pub ignore_regions: bool,
     /// This map is from regions to regions, not from region ids to regions.
     /// In case the regions are not erased, we must be careful with the
     /// static region.
-    pub regions_map: HashMap<R, R>,
-    pub type_vars_map: HashMap<TypeVarId::Id, Ty<R>>,
+    pub regions_map: HashMap<Region, Region>,
+    pub type_vars_map: HashMap<TypeVarId::Id, Ty>,
     pub const_generics_map: HashMap<ConstGenericVarId::Id, ConstGeneric>,
 }
 
@@ -1482,17 +1425,21 @@ macro_rules! check_ok {
     }};
 }
 
-impl<R: Clone + Eq + std::hash::Hash> TySubst<R> {
+impl TySubst {
     fn new() -> Self {
+        let mut regions_map = HashMap::new();
+        // Fix the static and erased regions
+        regions_map.insert(Region::Static, Region::Static);
+        regions_map.insert(Region::Erased, Region::Erased);
         TySubst {
             ignore_regions: false,
-            regions_map: HashMap::new(),
+            regions_map,
             type_vars_map: HashMap::new(),
             const_generics_map: HashMap::new(),
         }
     }
 
-    fn unify_regions(&mut self, src: &R, tgt: &R) -> Result<(), ()> {
+    fn unify_regions(&mut self, src: &Region, tgt: &Region) -> Result<(), ()> {
         use Result::*;
         match self.regions_map.get(src) {
             None => {
@@ -1521,7 +1468,7 @@ impl<R: Clone + Eq + std::hash::Hash> TySubst<R> {
         }
     }
 
-    fn unify_types(&mut self, src: &Ty<R>, tgt: &Ty<R>) -> Result<(), ()> {
+    fn unify_types(&mut self, src: &Ty, tgt: &Ty) -> Result<(), ()> {
         use Result::*;
         use Ty::*;
 
@@ -1553,7 +1500,7 @@ impl<R: Clone + Eq + std::hash::Hash> TySubst<R> {
         }
     }
 
-    fn unify_regions_lists(&mut self, src: &[R], tgt: &[R]) -> Result<(), ()> {
+    fn unify_regions_lists(&mut self, src: &[Region], tgt: &[Region]) -> Result<(), ()> {
         check_ok!(src.len() == tgt.len());
         for (src, tgt) in src.iter().zip(tgt.iter()) {
             self.unify_regions(src, tgt)?;
@@ -1573,7 +1520,7 @@ impl<R: Clone + Eq + std::hash::Hash> TySubst<R> {
         Ok(())
     }
 
-    fn unify_types_lists(&mut self, src: &[Ty<R>], tgt: &[Ty<R>]) -> Result<(), ()> {
+    fn unify_types_lists(&mut self, src: &[Ty], tgt: &[Ty]) -> Result<(), ()> {
         check_ok!(src.len() == tgt.len());
         for (src, tgt) in src.iter().zip(tgt.iter()) {
             self.unify_types(src, tgt)?;
@@ -1583,8 +1530,8 @@ impl<R: Clone + Eq + std::hash::Hash> TySubst<R> {
 
     fn unify_args(
         &mut self,
-        src: &crate::gast::GenericArgs<R>,
-        tgt: &crate::gast::GenericArgs<R>,
+        src: &crate::gast::GenericArgs,
+        tgt: &crate::gast::GenericArgs,
     ) -> Result<(), ()> {
         if !self.ignore_regions {
             self.unify_regions_lists(&src.regions, &tgt.regions)?;
@@ -1595,12 +1542,12 @@ impl<R: Clone + Eq + std::hash::Hash> TySubst<R> {
     }
 }
 
-impl TySubst<ErasedRegion> {
-    pub fn unify_eargs(
+impl TySubst {
+    pub fn unify_args_with_fixed(
         fixed_type_vars: impl std::iter::Iterator<Item = TypeVarId::Id>,
         fixed_const_generic_vars: impl std::iter::Iterator<Item = ConstGenericVarId::Id>,
-        src: &crate::gast::EGenericArgs,
-        tgt: &crate::gast::EGenericArgs,
+        src: &crate::gast::GenericArgs,
+        tgt: &crate::gast::GenericArgs,
     ) -> Result<Self, ()> {
         let mut s = TySubst::new();
         for v in fixed_type_vars {
@@ -1637,7 +1584,7 @@ impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
     }
 }
 
-impl<R> Ty<R> {
+impl Ty {
     pub(crate) fn replace_self_trait_instance_id(mut self, new_id: TraitInstanceId) -> Self {
         let mut visitor = TraitInstanceIdSelfReplacer { new_id };
         visitor.visit_ty(&mut self);
@@ -1653,11 +1600,11 @@ make_generic_in_borrows! {
 // TODO: we should use traits with default implementations to allow overriding
 // the default behavior (that would also prevent problems with naming collisions)
 pub trait TypeVisitor {
-    fn visit_ty<R>(&mut self, ty: &Ty<R>) {
+    fn visit_ty(&mut self, ty: &Ty) {
         self.default_visit_ty(ty)
     }
 
-    fn default_visit_ty<R>(&mut self, ty: &Ty<R>) {
+    fn default_visit_ty(&mut self, ty: &Ty) {
         use Ty::*;
         match ty {
             Adt(id, args) => self.visit_ty_adt(id, args),
@@ -1674,20 +1621,34 @@ pub trait TypeVisitor {
         }
     }
 
-    fn visit_arrow<R>(&mut self, inputs: &Vec<Ty<R>>, output: &Ty<R>) {
+    fn visit_region(&mut self, r: &Region) {
+        match r {
+            Region::Erased | Region::Static | Region::Unknown => (),
+            Region::Var(id) => self.visit_region_id(id),
+        }
+    }
+
+    fn visit_region_id(&mut self, _ : &RegionId::Id) {}
+
+    fn visit_arrow(&mut self, inputs: &Vec<Ty>, output: &Ty) {
         for ty in inputs {
             self.visit_ty(ty);
         }
         self.visit_ty(output);
     }
 
-    fn visit_ty_adt<R>(
+    fn visit_ty_adt(
         &mut self,
         id: &TypeId,
-        args: &GenericArgs<R>,
+        args: &GenericArgs,
     ) {
         self.visit_type_id(id);
         self.visit_generic_args(args);
+    }
+
+    fn visit_region_var(&mut self, r: &RegionVar) {
+        // Ignoring the name
+        self.visit_region_id(&r.index);
     }
 
     fn visit_ty_type_var(&mut self, vid: &TypeVarId::Id) {
@@ -1698,13 +1659,12 @@ pub trait TypeVisitor {
 
     fn visit_ty_never(&mut self) {}
 
-    fn visit_ty_ref<R>(&mut self, _r: &R, ty: &Box<Ty<R>>, _rk: &RefKind) {
-        // We ignore the region
+    fn visit_ty_ref(&mut self, r: &Region, ty: &Box<Ty>, _rk: &RefKind) {
+        self.visit_region(r);
         self.visit_ty(ty);
     }
 
-    fn visit_ty_raw_ptr<R>(&mut self, ty: &Box<Ty<R>>, _rk: &RefKind) {
-        // We ignore the region
+    fn visit_ty_raw_ptr(&mut self, ty: &Box<Ty>, _rk: &RefKind) {
         self.visit_ty(ty);
     }
 
@@ -1746,7 +1706,7 @@ pub trait TypeVisitor {
 
     fn visit_literal(&mut self, _: &Literal) {}
 
-    fn visit_trait_ref<R>(&mut self, tr: &TraitRef<R>) {
+    fn visit_trait_ref(&mut self, tr: &TraitRef) {
         let TraitRef {
             trait_id,
             generics,
@@ -1757,7 +1717,7 @@ pub trait TypeVisitor {
         self.visit_trait_decl_ref(trait_decl_ref);
     }
 
-    fn visit_trait_decl_ref<R>(&mut self, tr: &TraitDeclRef<R>) {
+    fn visit_trait_decl_ref(&mut self, tr: &TraitDeclRef) {
         let TraitDeclRef {
             trait_id,
             generics,
@@ -1801,8 +1761,10 @@ pub trait TypeVisitor {
         self.default_visit_trait_instance_id(id)
     }
 
-    fn visit_generic_args<R>(&mut self, g: &GenericArgs<R>) {
-        // We ignore the regions - TODO: we shouldn't
+    fn visit_generic_args(&mut self, g: &GenericArgs) {
+        for r in &g.regions {
+            self.visit_region(r)
+        }
         for t in &g.types {
             self.visit_ty(t);
         }
@@ -1815,7 +1777,9 @@ pub trait TypeVisitor {
     }
 
     fn visit_generic_params(&mut self, g: &GenericParams) {
-        // We ignore the regions - TODO: we shouldn't
+        for r in g.regions.iter() {
+            self.visit_region_var(r)
+        }
         for t in g.types.iter() {
             self.visit_type_var(t);
         }
@@ -1835,14 +1799,18 @@ pub trait TypeVisitor {
     }
 
     fn visit_predicates(&mut self, preds: &Predicates) {
-        // We don't need to visit the regions - TODO: we should
         let Predicates {
-            regions_outlive: _,
+            regions_outlive,
             types_outlive,
             trait_type_constraints,
         } = preds;
+        for p in regions_outlive {
+            self.visit_region(&p.0);
+            self.visit_region(&p.1);
+        }
         for p in types_outlive {
             self.visit_ty(&p.0);
+            self.visit_region(&p.1);
         }
         for TraitTypeConstraint {
             trait_ref,
@@ -1865,7 +1833,6 @@ pub trait TypeVisitor {
             parent_params_info: _,
             inputs,
             output,
-            regions_hierarchy: _,
         } = sig;
 
         self.visit_generic_params(generics);
@@ -1878,7 +1845,7 @@ pub trait TypeVisitor {
         self.visit_ty(&x.0);
     }
 
-    fn visit_trait_type_constraint<R>(&mut self, x : &TraitTypeConstraint<R>) {
+    fn visit_trait_type_constraint(&mut self, x : &TraitTypeConstraint) {
         let TraitTypeConstraint { trait_ref, generics, type_name: _, ty } = x;
         self.visit_trait_ref(trait_ref);
         self.visit_generic_args(generics);
@@ -1889,9 +1856,9 @@ pub trait TypeVisitor {
 } // make_generic_in_borrows
 
 impl FunSig {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: TypeFormatter<'a, Region<RegionVarId::Id>>,
+        T: TypeFormatter,
     {
         // Unsafe keyword
         let unsafe_kw = if self.is_unsafe {
