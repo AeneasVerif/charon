@@ -40,12 +40,10 @@ pub enum ProjectionElem {
     /// In rust, this comes from the `*` operator applied on boxes.
     DerefBox,
     /// Dereference a raw pointer. See the comments for [crate::types::Ty::RawPtr].
-    /// TODO: remove those? Or if we keep them, change to: `Deref(DerefKind)`?
+    /// TODO: remove those (we would also need: `DerefPtrUnique`, `DerefPtrNonNull`, etc.)
+    /// and only keep a single `Deref` variant?
+    /// Or if we keep them, change to: `Deref(DerefKind)`?
     DerefRawPtr,
-    /// Dereference a unique pointer. See the comments for [crate::types::Ty::RawPtr].
-    DerefPtrUnique,
-    /// Dereference a non-null pointer. See the comments for [crate::types::Ty::RawPtr].
-    DerefPtrNonNull,
     /// Projection from ADTs (variants, structures).
     /// We allow projections to be used as left-values and right-values.
     /// We should never have projections to fields of symbolic variants (they

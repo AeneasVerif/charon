@@ -108,12 +108,6 @@ impl Place {
                 ProjectionElem::DerefRawPtr => {
                     out = format!("deref_raw_ptr ({out})");
                 }
-                ProjectionElem::DerefPtrUnique => {
-                    out = format!("deref_ptr_unique ({out})");
-                }
-                ProjectionElem::DerefPtrNonNull => {
-                    out = format!("deref_ptr_non_null ({out})");
-                }
                 ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                     FieldProjKind::Adt(adt_id, opt_variant_id) => {
                         let field_name = ctx.format_object((*adt_id, *opt_variant_id, *field_id));
@@ -352,8 +346,6 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             ProjectionElem::Deref => self.visit_deref(),
             ProjectionElem::DerefBox => self.visit_deref_box(),
             ProjectionElem::DerefRawPtr => self.visit_deref_raw_ptr(),
-            ProjectionElem::DerefPtrUnique => self.visit_deref_ptr_unique(),
-            ProjectionElem::DerefPtrNonNull => self.visit_deref_ptr_non_null(),
             ProjectionElem::Field(proj_kind, fid) => self.visit_projection_field(proj_kind, fid),
             ProjectionElem::Index(i, _) => self.visit_var_id(i),
         }
@@ -366,8 +358,6 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
     fn visit_deref(&mut self) {}
     fn visit_deref_box(&mut self) {}
     fn visit_deref_raw_ptr(&mut self) {}
-    fn visit_deref_ptr_unique(&mut self) {}
-    fn visit_deref_ptr_non_null(&mut self) {}
     fn visit_projection_field(&mut self, _: &FieldProjKind, _: &FieldId::Id) {}
 
     fn default_visit_operand(&mut self, o: &Operand) {
