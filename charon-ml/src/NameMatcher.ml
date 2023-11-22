@@ -675,7 +675,7 @@ let opt_var_convertible (m : conv_map) (v0 : var option) (v1 : var option) :
     - if [Some] it means we are analyzing an Impl pattern elem
     - if [None] it means we are not inside an Impl pattern elem
  *)
-let rec pattern_common_suffix_aux (m : conv_map option) (p0 : pattern)
+let rec pattern_common_prefix_aux (m : conv_map option) (p0 : pattern)
     (p1 : pattern) : pattern * conv_map option * pattern * pattern =
   match (p0, p1) with
   | [], _ | _, [] -> ([], m, p0, p1)
@@ -683,7 +683,7 @@ let rec pattern_common_suffix_aux (m : conv_map option) (p0 : pattern)
       match pattern_elem_convertible_aux m e0 e1 with
       | Error _ -> ([], m, p0, p1)
       | Ok m ->
-          let pre, m, p0, p1 = pattern_common_suffix_aux m tp0 tp1 in
+          let pre, m, p0, p1 = pattern_common_prefix_aux m tp0 tp1 in
           (e0 :: pre, m, p0, p1))
 
 (** We use the result type because otherwise we have options of options, which
@@ -716,7 +716,7 @@ and expr_convertible_aux (m : conv_map) (e0 : expr) (e1 : expr) :
     (conv_map, unit) result =
   match (e0, e1) with
   | EComp p0, EComp p1 ->
-      let _, nm, p0, p1 = pattern_common_suffix_aux (Some m) p0 p1 in
+      let _, nm, p0, p1 = pattern_common_prefix_aux (Some m) p0 p1 in
       if p0 = [] && p1 = [] then Ok (Option.get nm) else Error ()
   | EPrimAdt (a0, g0), EPrimAdt (a1, g1) ->
       if a0 = a1 then generic_args_convertible_aux m g0 g1 else Error ()
@@ -753,7 +753,7 @@ and generic_arg_convertible_aux (m : conv_map) (g0 : generic_arg)
  *)
 let pattern_common_prefix (p0 : pattern) (p1 : pattern) :
     pattern * pattern * pattern =
-  let pre, _, p0, p1 = pattern_common_suffix_aux None p0 p1 in
+  let pre, _, p0, p1 = pattern_common_prefix_aux None p0 p1 in
   (pre, p0, p1)
 
 (** Check if two pattern elements are convertible between each other *)
@@ -761,3 +761,162 @@ let pattern_elem_convertible (p0 : pattern_elem) (p1 : pattern_elem) : bool =
   match pattern_elem_convertible_aux None p0 p1 with
   | Error _ -> false
   | Ok _ -> true
+
+(*
+ * Pattern maps - maps from patterns to values.
+ *
+ * We do something simple: the maps are implemented as trees in which
+ * we attempt to share prefixes of patterns (seen as paths).
+ *)
+
+module NameMatcherMap = struct
+  type 'a t =
+    | Node of 'a option * (pattern * 'a t) list
+        (** Nodes are branchings. We do not even attempt to order the branches
+            to minimize the number of comparisons - we could do this in later
+            updates.
+
+            A node holds a value.
+            All the children patterns must be non-empty, and their common
+            prefixes must be pairwise empty.
+         *)
+
+  let empty : 'a t = Node (None, [])
+
+  let rec replace (np : pattern) (nv : 'a) (m : 'a t) : 'a t * 'a option =
+    let (Node (node_v, children)) = m in
+    (* If the path is empty: stop there *)
+    if np = [] then (Node (Some nv, children), node_v)
+      (* Otherwise: explore the children *)
+    else
+      let children, replaced = replace_in_children np nv children in
+      (Node (node_v, children), replaced)
+
+  and replace_in_children (np : pattern) (nv : 'a)
+      (children : (pattern * 'a t) list) : (pattern * 'a t) list * 'a option =
+    (* The patterns used in the children should have been selected
+       such that their common prefixes are pairwise empty.
+       We thus just need to check each pattern: if there is one which
+       has a non-empty prefix with np, we insert a node there. Otherwise
+       we insert a new child at the end.
+    *)
+    match children with
+    | [] ->
+        (* We reached the end without finding a pattern which has a non-empty
+           prefix with the current children patterns: we simply insert a new child. *)
+        ([ (np, Node (Some nv, [])) ], None)
+    | (child_pat, child_tree) :: children_tl ->
+        (* Check if there is a common prefix *)
+        let pre, np_end, child_pat_end = pattern_common_prefix np child_pat in
+        if pre = [] then
+          (* Empty prefix: continue *)
+          let children_tl, replaced = replace_in_children np nv children_tl in
+          ((child_pat, child_tree) :: children_tl, replaced)
+        else
+          (* Non-empty prefix: insert here *)
+          let (nchild, replaced) : (pattern * 'a t) * 'a option =
+            match child_pat_end with
+            | [] ->
+                (* The child path is a prefix of the current path: insert
+                   in the child *)
+                let child_tree, replaced = replace np_end nv child_tree in
+                ((child_pat, child_tree), replaced)
+            | _ ->
+                (* The child path is not a prefix of the current path:
+                   insert a branching.
+                   Check if the current path is a prefix of the child path *)
+                if np_end = [] then
+                  (* Prefix *)
+                  ((pre, Node (Some nv, [ (child_pat_end, child_tree) ])), None)
+                else
+                  (* Not a prefix *)
+                  ( ( pre,
+                      Node
+                        ( None,
+                          [
+                            (child_pat_end, child_tree);
+                            (np_end, Node (Some nv, []));
+                          ] ) ),
+                    None )
+          in
+          (nchild :: children_tl, replaced)
+
+  let add (np : pattern) (nv : 'a) (m : 'a t) : 'a t =
+    let nm, replaced = replace np nv m in
+    (* Because of the way we currently use patterns, we should never override
+       a binding: we thuse check it doesn't happen *)
+    assert (replaced = None);
+    nm
+
+  let match_name_with_generics_prefix (ctx : ctx) (c : match_config)
+      (p : pattern) (n : T.name) (g : T.generic_args) :
+      (T.name * T.generic_args) option =
+    if List.length p = List.length n then
+      if match_name_with_generics ctx c p n g then
+        Some ([], TypesUtils.empty_generic_args)
+      else None
+    else if List.length p < List.length n then
+      let npre, nend = Collections.List.split_at n (List.length p) in
+      if match_name ctx c p npre then Some (nend, g) else None
+    else None
+
+  let rec find_with_generics_opt (ctx : ctx) (c : match_config)
+      (name : Types.name) (g : Types.generic_args) (m : 'a t) : 'a option =
+    let (Node (node_v, children)) = m in
+    (* Check if we reached the destination *)
+    if name = [] then if g = TypesUtils.empty_generic_args then node_v else None
+    else
+      (* Explore the children *)
+      find_with_generics_in_children_opt ctx c name g children
+
+  and find_with_generics_in_children_opt (ctx : ctx) (c : match_config)
+      (name : Types.name) (g : Types.generic_args)
+      (children : (pattern * 'a t) list) : 'a option =
+    match children with
+    | [] -> None
+    | (child_pat, child_tree) :: children -> (
+        (* Check if the pattern matches a prefix of the name *)
+        match match_name_with_generics_prefix ctx c child_pat name g with
+        | None ->
+            (* No match: continue.
+
+               Note that because the children patterns are all non-empty and
+               pairwise disjoint, there is no point in exploring the other
+               children.
+            *)
+            find_with_generics_in_children_opt ctx c name g children
+        | Some (nend, g) ->
+            (* Dive into the child *)
+            find_with_generics_opt ctx c nend g child_tree)
+
+  let find_opt (ctx : ctx) (c : match_config) (name : Types.name) (m : 'a t) :
+      'a option =
+    find_with_generics_opt ctx c name TypesUtils.empty_generic_args m
+
+  let mem (ctx : ctx) (c : match_config) (name : Types.name) (m : 'a t) : bool =
+    find_opt ctx c name m <> None
+
+  let of_list (ls : (pattern * 'a) list) : 'a t =
+    List.fold_left (fun m (pat, v) -> add pat v m) empty ls
+end
+
+(* Test *)
+let () =
+  let bindings =
+    [
+      "a";
+      "a::b::{Type<@>}";
+      "a::b::{Type<@T>}::c";
+      "a::b::{Type<@>}::d";
+      "a::b::{Type<@1>}::d::e";
+      "a::b";
+      "a::c";
+      "a::{Type1<'a, @T>}::h";
+      "a::{Type1<'b, @T>}::e";
+    ]
+  in
+  let bindings = List.mapi (fun i p -> (parse_pattern p, i)) bindings in
+  let m = NameMatcherMap.of_list bindings in
+  List.iter
+    (fun (p, i) -> assert (snd (NameMatcherMap.replace p (-1) m) = Some i))
+    bindings
