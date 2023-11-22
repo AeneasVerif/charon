@@ -410,9 +410,7 @@ and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
       match generics with
       | None -> PIdent (s, [])
       | Some args -> PIdent (s, args))
-  | PeImpl impl ->
-      assert (generics = None);
-      impl_elem_to_pattern ctx c impl
+  | PeImpl impl -> impl_elem_to_pattern ctx c impl
 
 and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
     pattern_elem =
