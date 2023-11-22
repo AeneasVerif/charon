@@ -934,24 +934,3 @@ module NameMatcherMap = struct
   let to_string (v_to_string : 'a -> string) (m : 'a t) : string =
     to_string_aux "" "  " v_to_string m
 end
-
-(* Test *)
-let () =
-  let bindings =
-    [
-      "a";
-      "a::b::{Type<@>}";
-      "a::b::{Type<@T>}::c";
-      "a::b::{Type<@>}::d";
-      "a::b::{Type<@1>}::d::e";
-      "a::b";
-      "a::c";
-      "a::{Type1<'a, @T>}::h";
-      "a::{Type1<'b, @T>}::e";
-    ]
-  in
-  let bindings = List.mapi (fun i p -> (parse_pattern p, i)) bindings in
-  let m = NameMatcherMap.of_list bindings in
-  List.iter
-    (fun (p, i) -> assert (snd (NameMatcherMap.replace p (-1) m) = Some i))
-    bindings
