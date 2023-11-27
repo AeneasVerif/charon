@@ -14,22 +14,22 @@
       writing patterns by hand)
 
     Here are some examples of patterns:
-    - "core::mem::replace": the function `core::mem::replace`
-    - "alloc::vec::{alloc::vec::Vec<@>}::push": the function `push` in any
-      impl block of type `alloc::vec::Vec<T>`, where T is a type variable.
-      Note that "@" means that this matches any (type) variable. In case
+    - ["core::mem::replace"]: the function [core::mem::replace]
+    - ["alloc::vec::{alloc::vec::Vec<@>}::push"]: the function [push] in any
+      impl block of type [alloc::vec::Vec<T>], where T is a type variable.
+      Note that ["@"] means that this matches any (type) variable. In case
       we need stronger constraints, we can name those variables: "@T". All the
-      occurrences of "@T" must match the same variable (ex.: "Foo<@T, @T>"
-      would match `Foo<U, U>` but not `Foo<T, U>`).
-    - the "@" syntax is used both for types and const generics. For regions/lifetimes,
-      we use "'": "&'a mut @T"
+      occurrences of  ["@T"] must match the same variable (ex.: ["Foo<@T, @T>"]
+      would match [Foo<U, U>] but not [Foo<T, U>]).
+    - the ["@"] syntax is used both for types and const generics. For regions/lifetimes,
+      we use ["'"]: ["&'a mut @T"]
     - for the types we put inside blocks, we have syntax for arrays, slices,
       and references:
-      - "[@T; @N]": slice
-      - "&'R mut @T": mutable reference
+      - ["[@T; @N]"]: slice
+      - ["&'R mut @T"]: mutable reference
 
-    Remark: `Box` is treated as a primitive type, which means that one only
-    needs to type "Box" (instead of "alloc::boxed::Box" - though the latter
+    Remark: [Box] is treated as a primitive type, which means that one only
+    needs to type ["Box"] (instead of ["alloc::boxed::Box"] - though the latter
     also works).
  *)
 
@@ -66,11 +66,11 @@ type match_config = {
       (** If true, only allow matching variables to variables.
 
           This is important when matching names: if the pattern
-          is `alloc::boxed::{Box<@T>}::new`, we only want to match
-          names where `@T` is a variable. For instance, we wouldn't
-          want to match `alloc::boxed::{Box<u32>}::new` (if it existed...).
+          is [alloc::boxed::{Box<@T>}::new], we only want to match
+          names where [@T] is a variable. For instance, we wouldn't
+          want to match [alloc::boxed::{Box<u32>}::new] (if it existed...).
           However, we might want to match instantiations (i.e., for which
-          `@T` is matched to `usize`) when matching function calls inside
+          [@T] is matched to [usize]) when matching function calls inside
           bodies.
        *)
 }

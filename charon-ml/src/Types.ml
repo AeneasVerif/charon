@@ -15,7 +15,7 @@ module RegionGroupId = IdGen ()
 module Disambiguator = IdGen ()
 
 (** We define this type to control the name of the visitor functions
-    (see e.g., {!Types.iter_ty_base} and {!Types.TypeVar}).
+    (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
   *)
 type type_var_id = TypeVarId.id [@@deriving show, ord]
 

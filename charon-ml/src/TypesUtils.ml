@@ -46,7 +46,7 @@ let type_decl_get_fields (def : type_decl)
 let type_decl_is_enum (def : type_decl) : bool =
   match def.kind with Struct _ -> false | Enum _ -> true | Opaque -> false
 
-(** Return [true] if a {!type: Types.ty} is actually [unit] *)
+(** Return [true] if a {!type:Charon.Types.ty} is actually [unit] *)
 let ty_is_unit (ty : ty) : bool =
   match ty with
   | TAdt
@@ -185,7 +185,7 @@ let ty_regions_intersect (ty : ty) (regions : RegionId.Set.t) : bool =
   let ty_regions = ty_regions ty in
   not (RegionId.Set.disjoint ty_regions regions)
 
-(** Check if a {!type: Types.ty} contains regions from a given set *)
+(** Check if a {!type:Charon.Types.ty} contains regions from a given set *)
 let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
   let obj =
     object
