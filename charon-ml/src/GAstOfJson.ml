@@ -215,7 +215,7 @@ let big_int_of_json (js : json) : (big_int, string) result =
     | `String is -> Ok (Z.of_string is)
     | _ -> Error "")
 
-(** Deserialize a {!scalar_value} from JSON and **check the ranges**.
+(** Deserialize a {!Values.scalar_value} from JSON and **check the ranges**.
 
     Note that in practice we also check that the values are in range
     in the interpreter functions. Still, it doesn't cost much to be
