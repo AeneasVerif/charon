@@ -92,13 +92,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 substs,
                 name,
             } => {
-                let trait_ref = self.translate_trait_impl_source(erase_regions, impl_source);
+                let trait_ref =
+                    self.translate_trait_impl_source(span, erase_regions, impl_source)?;
                 // The trait ref should be Some(...): trait markers (that we
                 // may eliminate) don't have constants.
                 let trait_ref = trait_ref.unwrap();
 
                 let (regions, types, const_generics) =
-                    self.translate_substs(erase_regions, None, substs)?;
+                    self.translate_substs(span, erase_regions, None, substs)?;
                 let generics = GenericArgs {
                     regions,
                     types,
@@ -140,7 +141,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         };
 
-        let ty = self.translate_ty(erase_regions, ty)?;
+        let ty = self.translate_ty(span, erase_regions, ty)?;
         Ok(ConstantExpr { value, ty })
     }
 

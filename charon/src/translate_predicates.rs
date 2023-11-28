@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+use crate::common::*;
 use crate::formatter::Formatter;
 use crate::gast::*;
 use crate::meta::Meta;
@@ -278,7 +279,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         parent_trait_id: Option<TraitDeclId::Id>,
         def_id: DefId,
-    ) {
+    ) -> Result<(), Error> {
         trace!("def_id: {:?}", def_id);
         let tcx = self.t_ctx.tcx;
 
@@ -298,9 +299,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         TraitInstanceId::SelfId,
                         trait_id,
                         &mut |ctx: &mut Self| ctx.translate_predicates(&preds),
-                    );
+                    )?;
                 } else {
-                    self.translate_predicates(&preds);
+                    self.translate_predicates(&preds)?;
                 }
             }
         }
@@ -320,7 +321,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // The predicates of the current definition
         let preds = self.get_predicates_of(def_id);
         trace!("Local predicates of {:?}:\n{:?}", def_id, preds);
-        self.translate_predicates(&preds);
+        self.translate_predicates(&preds)?;
 
         let clauses = self
             .trait_clauses
@@ -333,6 +334,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             def_id,
             clauses
         );
+        Ok(())
     }
 
     /// Translate the predicates then solve the unsolved trait obligations
@@ -341,18 +343,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         parent_trait_id: Option<TraitDeclId::Id>,
         def_id: DefId,
-    ) {
+    ) -> Result<(), Error> {
         self.while_registering_trait_clauses(&mut |ctx| {
-            ctx.translate_predicates_of(parent_trait_id, def_id);
+            ctx.translate_predicates_of(parent_trait_id, def_id)?;
             ctx.solve_trait_obligations_in_trait_clauses();
+            Ok(())
         })
     }
 
-    pub(crate) fn translate_predicates(&mut self, preds: &hax::GenericPredicates) {
-        self.translate_predicates_vec(&preds.predicates);
+    pub(crate) fn translate_predicates(
+        &mut self,
+        preds: &hax::GenericPredicates,
+    ) -> Result<(), Error> {
+        self.translate_predicates_vec(&preds.predicates)
     }
 
-    pub(crate) fn translate_predicates_vec(&mut self, preds: &Vec<(hax::Predicate, hax::Span)>) {
+    pub(crate) fn translate_predicates_vec(
+        &mut self,
+        preds: &Vec<(hax::Predicate, hax::Span)>,
+    ) -> Result<(), Error> {
         trace!("Predicates:\n{:?}", preds);
         // We reorder the trait predicates so that we translate the predicates
         // which introduce trait clauses *before* translating the other predicates
@@ -365,7 +374,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let preds: Vec<_> = preds_traits.into_iter().chain(preds.into_iter()).collect();
 
         for (pred, span) in preds {
-            match self.translate_predicate(pred, span) {
+            match self.translate_predicate(pred, span)? {
                 None => (),
                 Some(pred) => match pred {
                     Predicate::Trait(_) => {
@@ -378,6 +387,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 },
             }
         }
+        Ok(())
     }
 
     /// Returns an [Option] because we may filter clauses about builtin or
@@ -389,11 +399,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// (give the possibility of) normalizing the types.
     pub(crate) fn translate_trait_clause(
         &mut self,
+        hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
-        span: Option<&hax::Span>,
-    ) -> Option<NonLocalTraitClause> {
+    ) -> Result<Option<NonLocalTraitClause>, Error> {
         // Note sure what this is about
         assert!(trait_pred.is_positive);
+        let span = hspan.rust_span;
 
         // We translate trait clauses for signatures, etc. so we do not erase the regions
         let erase_regions = false;
@@ -401,23 +412,26 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let trait_ref = &trait_pred.trait_ref;
         let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
         // We might have to ignore the trait
-        let trait_id = trait_id?;
+        let trait_id = if let Some(trait_id) = trait_id {
+            trait_id
+        } else {
+            return Ok(None);
+        };
 
-        let (regions, types, const_generics) = self
-            .translate_substs(erase_regions, None, &trait_ref.generic_args)
-            .unwrap();
+        let (regions, types, const_generics) =
+            self.translate_substs(span, erase_regions, None, &trait_ref.generic_args)?;
         // There are no trait refs
         let generics = GenericArgs::new(regions, types, const_generics, Vec::new());
 
         // Compute the current clause id
         let clause_id = (self.trait_instance_id_gen)();
-        let meta = span.map(|x| self.translate_meta_from_rspan(x.clone()));
+        let meta = self.translate_meta_from_rspan(hspan.clone());
 
         // Immediately register the clause (we may need to refer to it in the parent/
         // item clauses)
         let trait_clause = NonLocalTraitClause {
             clause_id: clause_id.clone(),
-            meta,
+            meta: Some(meta),
             trait_id,
             generics,
         };
@@ -430,9 +444,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_pred
                     .parent_preds
                     .iter()
-                    .filter_map(|x| ctx.translate_trait_clause(x, None))
-                    .collect()
-            });
+                    .map(|x|
+                      // TODO: the span information is not correct
+                      ctx.translate_trait_clause(hspan, x))
+                    .try_collect()
+            })?;
 
         // [translate_trait_clause] takes care of registering the clause
         let _items_clauses: Vec<_> = trait_pred
@@ -446,31 +462,33 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     &mut |ctx: &mut Self| {
                         clauses
                             .iter()
-                            .filter_map(|clause| {
+                            .map(|clause| {
                                 // The clause is inside a binder
                                 assert!(clause.bound_vars.is_empty());
-                                ctx.translate_trait_clause(&clause.value, None)
+                                // TODO: the span is not correct
+                                ctx.translate_trait_clause(hspan, &clause.value)
                             })
-                            .collect()
+                            .try_collect()
                     },
-                );
-                (TraitItemName(name.to_string()), clauses)
+                )?;
+                Ok((TraitItemName(name.to_string()), clauses))
             })
-            .collect();
+            .try_collect()?;
 
         // Return
-        Some(trait_clause)
+        Ok(Some(trait_clause))
     }
 
     pub(crate) fn translate_predicate(
         &mut self,
         pred: &hax::Predicate,
-        span: &hax::Span,
-    ) -> Option<Predicate> {
+        hspan: &hax::Span,
+    ) -> Result<Option<Predicate>, Error> {
         trace!("{:?}", pred);
         // Predicates are always used in signatures/type definitions, etc.
         // For this reason, we do not erase the regions.
         let erase_regions = false;
+        let span = hspan.rust_span;
 
         // Skip the binder (which lists the quantified variables).
         // By doing so, we allow the predicates to contain DeBruijn indices,
@@ -478,18 +496,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let pred_kind = &pred.value;
         use hax::{Clause, PredicateKind};
         match pred_kind {
-            PredicateKind::Clause(Clause::Trait(trait_pred)) => self
-                .translate_trait_clause(trait_pred, Some(span))
-                .map(Predicate::Trait),
+            PredicateKind::Clause(Clause::Trait(trait_pred)) => Ok(self
+                .translate_trait_clause(hspan, trait_pred)?
+                .map(Predicate::Trait)),
             PredicateKind::Clause(Clause::RegionOutlives(p)) => {
-                let r0 = self.translate_region(erase_regions, &p.0);
-                let r1 = self.translate_region(erase_regions, &p.1);
-                Some(Predicate::RegionOutlives(OutlivesPred(r0, r1)))
+                let r0 = self.translate_region(span, erase_regions, &p.0)?;
+                let r1 = self.translate_region(span, erase_regions, &p.1)?;
+                Ok(Some(Predicate::RegionOutlives(OutlivesPred(r0, r1))))
             }
             PredicateKind::Clause(Clause::TypeOutlives(p)) => {
-                let ty = self.translate_ty(erase_regions, &p.0).unwrap();
-                let r = self.translate_region(erase_regions, &p.1);
-                Some(Predicate::TypeOutlives(OutlivesPred(ty, r)))
+                let ty = self.translate_ty(span, erase_regions, &p.0)?;
+                let r = self.translate_region(span, erase_regions, &p.1)?;
+                Ok(Some(Predicate::TypeOutlives(OutlivesPred(ty, r))))
             }
             PredicateKind::Clause(Clause::Projection(p)) => {
                 // This is used to express constraints over associated types.
@@ -505,82 +523,164 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     ty,
                 } = p;
 
-                let trait_ref = self.translate_trait_impl_source(erase_regions, impl_source);
+                let trait_ref =
+                    self.translate_trait_impl_source(span, erase_regions, impl_source)?;
                 // The trait ref should be Some(...): the marker traits (that
                 // we may filter) don't have associated types.
                 let trait_ref = trait_ref.unwrap();
 
-                let (regions, types, const_generics) =
-                    self.translate_substs(erase_regions, None, substs).unwrap();
+                let (regions, types, const_generics) = self
+                    .translate_substs(span, erase_regions, None, substs)
+                    .unwrap();
                 let generics = GenericArgs {
                     regions,
                     types,
                     const_generics,
                     trait_refs: Vec::new(),
                 };
-                let ty = self.translate_ty(erase_regions, ty).unwrap();
+                let ty = self.translate_ty(span, erase_regions, ty).unwrap();
                 let type_name = TraitItemName(type_name.clone());
-                Some(Predicate::TraitType(TraitTypeConstraint {
+                Ok(Some(Predicate::TraitType(TraitTypeConstraint {
                     trait_ref,
                     generics,
                     type_name,
                     ty,
-                }))
+                })))
             }
             PredicateKind::Clause(Clause::ConstArgHasType(..)) => {
                 // I don't really understand that one. Why don't they put
                 // the type information in the const generic parameters
                 // directly? For now we just ignore it.
-                None
+                Ok(None)
             }
-            PredicateKind::WellFormed(_) => unimplemented!(),
-            PredicateKind::ObjectSafe(_) => unimplemented!(),
-            PredicateKind::ClosureKind(_, _, _) => unimplemented!(),
-            PredicateKind::Subtype(_) => unimplemented!(),
-            PredicateKind::Coerce(_) => unimplemented!(),
-            PredicateKind::ConstEvaluatable(_) => unimplemented!(),
-            PredicateKind::ConstEquate(_, _) => unimplemented!(),
-            PredicateKind::TypeWellFormedFromEnv(_) => unimplemented!(),
-            PredicateKind::Ambiguous => unimplemented!(),
-            PredicateKind::AliasRelate(..) => unimplemented!(),
+            PredicateKind::WellFormed(_) => error_or_panic!(
+                self,
+                span,
+                format!("Unsupported predicate: {:?}", pred_kind)
+            ),
+            PredicateKind::ObjectSafe(_) => error_or_panic!(
+                self,
+                span,
+                format!("Unsupported predicate: {:?}", pred_kind)
+            ),
+            PredicateKind::ClosureKind(_, _, _) => error_or_panic!(
+                self,
+                span,
+                format!("Unsupported predicate: {:?}", pred_kind)
+            ),
+            PredicateKind::Subtype(_) => error_or_panic!(
+                self,
+                span,
+                format!("Unsupported predicate: {:?}", pred_kind)
+            ),
+            PredicateKind::Coerce(_) => error_or_panic!(
+                self,
+                span,
+                format!("Unsupported predicate: {:?}", pred_kind)
+            ),
+            PredicateKind::ConstEvaluatable(_) => error_or_panic!(
+                self,
+                span,
+                format!("Unsupported predicate: {:?}", pred_kind)
+            ),
+            PredicateKind::ConstEquate(_, _) => error_or_panic!(
+                self,
+                span,
+                format!("Unsupported predicate: {:?}", pred_kind)
+            ),
+            PredicateKind::TypeWellFormedFromEnv(_) => error_or_panic!(
+                self,
+                span,
+                format!("Unsupported predicate: {:?}", pred_kind)
+            ),
+            PredicateKind::Ambiguous => error_or_panic!(
+                self,
+                span,
+                format!("Unsupported predicate: {:?}", pred_kind)
+            ),
+            PredicateKind::AliasRelate(..) => error_or_panic!(
+                self,
+                span,
+                format!("Unsupported predicate: {:?}", pred_kind)
+            ),
         }
     }
 
     pub(crate) fn translate_trait_impl_sources(
         &mut self,
+        span: rustc_span::Span,
         erase_regions: bool,
         impl_sources: &Vec<hax::ImplSource>,
-    ) -> Vec<TraitRef> {
-        impl_sources
+    ) -> Result<Vec<TraitRef>, Error> {
+        let res: Vec<_> = impl_sources
             .iter()
-            .filter_map(|x| self.translate_trait_impl_source(erase_regions, x))
-            .collect()
+            .map(|x| self.translate_trait_impl_source(span, erase_regions, x))
+            .try_collect()?;
+        Ok(res.into_iter().filter_map(|x| x).collect())
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn translate_trait_impl_source(
         &mut self,
+        span: rustc_span::Span,
         erase_regions: bool,
         impl_source: &hax::ImplSource,
-    ) -> Option<TraitRef> {
-        trace!("impl_source: {:?}", impl_source);
-        use hax::ImplSourceKind;
-
+    ) -> Result<Option<TraitRef>, Error> {
         let trait_decl_ref = {
             let trait_ref = &impl_source.trait_ref;
-            let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap())?;
+            let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
+            let trait_id = if let Some(trait_id) = trait_id {
+                trait_id
+            } else {
+                return Ok(None);
+            };
+
             let parent_trait_refs = Vec::new();
-            let generics = self
-                .translate_substs_and_trait_refs(
-                    erase_regions,
-                    None,
-                    &trait_ref.generic_args,
-                    &parent_trait_refs,
-                )
-                .unwrap();
+            let generics = self.translate_substs_and_trait_refs(
+                span,
+                erase_regions,
+                None,
+                &trait_ref.generic_args,
+                &parent_trait_refs,
+            )?;
             TraitDeclRef { trait_id, generics }
         };
+
+        match self.translate_trait_impl_source_aux(
+            span,
+            erase_regions,
+            impl_source,
+            trait_decl_ref.clone(),
+        ) {
+            Ok(res) => Ok(res),
+            Err(err) => {
+                if !self.t_ctx.continue_on_failure {
+                    panic!("Error during trait resolution: {}", err.msg)
+                } else {
+                    let msg = format!("Error during trait resolution: {}", &err.msg);
+                    self.span_err(span, &msg);
+                    let trait_id = TraitInstanceId::Unknown(err.msg);
+                    Ok(Some(TraitRef {
+                        trait_id,
+                        generics: GenericArgs::empty(),
+                        trait_decl_ref,
+                    }))
+                }
+            }
+        }
+    }
+
+    pub(crate) fn translate_trait_impl_source_aux(
+        &mut self,
+        span: rustc_span::Span,
+        erase_regions: bool,
+        impl_source: &hax::ImplSource,
+        trait_decl_ref: TraitDeclRef,
+    ) -> Result<Option<TraitRef>, Error> {
+        // TODO: in the body of this function:
+        trace!("impl_source: {:?}", impl_source);
+        use hax::ImplSourceKind;
 
         let trait_ref = match &impl_source.kind {
             ImplSourceKind::UserDefined(data) => {
@@ -590,14 +690,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_id = trait_id.unwrap();
                 let trait_id = TraitInstanceId::TraitImpl(trait_id);
 
-                let generics = self
-                    .translate_substs_and_trait_refs(
-                        erase_regions,
-                        None,
-                        &data.substs,
-                        &data.nested,
-                    )
-                    .unwrap();
+                let generics = self.translate_substs_and_trait_refs(
+                    span,
+                    erase_regions,
+                    None,
+                    &data.substs,
+                    &data.nested,
+                )?;
                 TraitRef {
                     trait_id,
                     generics,
@@ -621,14 +720,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_id = self.translate_trait_decl_id(def_id).unwrap();
 
                 // Retrieve the arguments
-                let generics = self
-                    .translate_substs_and_trait_refs(
-                        erase_regions,
-                        None,
-                        &trait_ref.generic_args,
-                        trait_refs,
-                    )
-                    .unwrap();
+                let generics = self.translate_substs_and_trait_refs(
+                    span,
+                    erase_regions,
+                    None,
+                    &trait_ref.generic_args,
+                    trait_refs,
+                )?;
                 assert!(generics.trait_refs.is_empty());
 
                 // We need to find the trait clause which corresponds to
@@ -644,7 +742,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplSourceKind::Object(_) => unimplemented!(),
+            ImplSourceKind::Object(_) => {
+                error_or_panic!(self, span, "Unsupported trait impl source kind: object")
+            }
             ImplSourceKind::Builtin(trait_ref, traits) => {
                 assert!(trait_ref.bound_vars.is_empty());
                 let trait_ref = &trait_ref.value;
@@ -654,14 +754,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_id = self.translate_trait_decl_id(def_id).unwrap();
 
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
-                let generics = self
-                    .translate_substs_and_trait_refs(
-                        erase_regions,
-                        None,
-                        &trait_ref.generic_args,
-                        traits,
-                    )
-                    .unwrap();
+                let generics = self.translate_substs_and_trait_refs(
+                    span,
+                    erase_regions,
+                    None,
+                    &trait_ref.generic_args,
+                    traits,
+                )?;
                 TraitRef {
                     trait_id,
                     generics,
@@ -682,9 +781,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
             ImplSourceKind::FnPointer(data) => {
-                let ty = self.translate_ty(erase_regions, &data.fn_ty).unwrap();
+                let ty = self.translate_ty(span, erase_regions, &data.fn_ty)?;
                 let trait_id = TraitInstanceId::FnPointer(Box::new(ty));
-                let trait_refs = self.translate_trait_impl_sources(erase_regions, &data.nested);
+                let trait_refs =
+                    self.translate_trait_impl_sources(span, erase_regions, &data.nested)?;
                 let generics = GenericArgs {
                     regions: vec![],
                     types: vec![],
@@ -711,7 +811,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
         };
-        Some(trait_ref)
+        Ok(Some(trait_ref))
     }
 
     fn match_trait_clauses(

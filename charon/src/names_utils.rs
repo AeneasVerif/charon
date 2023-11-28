@@ -219,6 +219,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Retrieve an item name from a [DefId].
     pub fn extended_def_id_to_name(&mut self, def_id: &hax::ExtendedDefId) -> Name {
         trace!("{:?}", def_id);
+        let span = self.tcx.def_span(def_id.rust_def_id.unwrap());
 
         // We have to be a bit careful when retrieving names from def ids. For instance,
         // due to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
@@ -321,10 +322,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let id = id.unwrap();
                     let mut bt_ctx = BodyTransCtx::new(id, self);
 
-                    bt_ctx.translate_generic_params_from_hax(substs).unwrap();
-                    bt_ctx.translate_predicates_of(None, id);
+                    bt_ctx
+                        .translate_generic_params_from_hax(span, substs)
+                        .unwrap();
+                    bt_ctx.translate_predicates_of(None, id).unwrap();
                     let erase_regions = false;
-                    let ty = bt_ctx.translate_ty(erase_regions, ty).unwrap();
+                    let ty = bt_ctx.translate_ty(span, erase_regions, ty).unwrap();
 
                     name.push(PathElem::Impl(ImplElem {
                         generics: bt_ctx.get_generics(),

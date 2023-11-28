@@ -49,13 +49,18 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     // Translate a region
-    pub(crate) fn translate_region(&self, erase_regions: bool, region: &hax::Region) -> Region {
+    pub(crate) fn translate_region(
+        &self,
+        span: rustc_span::Span,
+        erase_regions: bool,
+        region: &hax::Region,
+    ) -> Result<Region, Error> {
         if erase_regions {
-            Region::Erased
+            Ok(Region::Erased)
         } else {
             match &region.kind {
-                hax::RegionKind::ReErased => Region::Erased,
-                hax::RegionKind::ReStatic => Region::Static,
+                hax::RegionKind::ReErased => Ok(Region::Erased),
+                hax::RegionKind::ReStatic => Ok(Region::Static),
                 hax::RegionKind::ReLateBound(id, br) => {
                     // See the comments in [BodyTransCtx.bound_vars]:
                     // - the De Bruijn index identifies the group of variables
@@ -66,23 +71,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         .unwrap()
                         .get(br.var)
                         .unwrap();
-                    Region::Var(*rid)
+                    Ok(Region::Var(*rid))
                 }
                 _ => {
                     // For the other regions, we use the regions map
                     match self.region_vars_map.get(region) {
-                        Some(rid) => Region::Var(rid),
+                        Some(rid) => Ok(Region::Var(rid)),
                         None => {
                             let err = format!(
                                 "Could not find region: {:?}\n\nRegion vars map:\n{:?}\n\nBound region vars:\n{:?}",
                                 region, self.region_vars_map, self.bound_region_vars
                             );
-                            if self.t_ctx.continue_on_failure {
-                                log::error!("{}", err);
-                                Region::Unknown
-                            } else {
-                                panic!("{}", err)
-                            }
+                            error_or_panic!(self, span, err)
                         }
                     }
                 }
@@ -98,7 +98,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that we take as parameter a function to translate regions, because
     /// regions can be translated in several manners (non-erased region or erased
     /// regions), in which case the return type is different.
-    pub(crate) fn translate_ty(&mut self, erase_regions: bool, ty: &hax::Ty) -> Result<Ty, Error> {
+    pub(crate) fn translate_ty(
+        &mut self,
+        span: rustc_span::Span,
+        erase_regions: bool,
+        ty: &hax::Ty,
+    ) -> Result<Ty, Error> {
         trace!("{:?}", ty);
         match ty {
             hax::Ty::Bool => Ok(Ty::Literal(LiteralTy::Bool)),
@@ -111,7 +116,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ))),
             hax::Ty::Float(_) => {
                 trace!("Float");
-                unimplemented!();
+                error_or_panic!(self, span, "Floats are not supported yet")
             }
             hax::Ty::Never => Ok(Ty::Never),
 
@@ -121,12 +126,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     substs,
                     name,
                 } => {
-                    let trait_ref = self.translate_trait_impl_source(erase_regions, impl_source);
+                    let trait_ref =
+                        self.translate_trait_impl_source(span, erase_regions, impl_source)?;
                     // This should succeed because no marker trait (that we may
                     // ignore) has associated types.
                     let trait_ref = trait_ref.unwrap();
                     let (regions, types, const_generics) =
-                        self.translate_substs(erase_regions, None, substs)?;
+                        self.translate_substs(span, erase_regions, None, substs)?;
                     let generics = GenericArgs {
                         regions,
                         types,
@@ -137,7 +143,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     Ok(Ty::TraitType(trait_ref, generics, name))
                 }
                 _ => {
-                    unimplemented!("{:?}", ty)
+                    error_or_panic!(self, span, format!("Unimplemented: {:?}", ty))
                 }
             },
 
@@ -159,6 +165,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Translate the type parameters instantiation
                 let generics = self.translate_substs_and_trait_refs(
+                    span,
                     erase_regions,
                     used_params,
                     substs,
@@ -181,7 +188,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Array");
 
                 let c = self.translate_constant_expr_to_const_generic(const_param)?;
-                let tys = vec![self.translate_ty(erase_regions, ty)?];
+                let tys = vec![self.translate_ty(span, erase_regions, ty)?];
                 let cgs = vec![c];
                 let id = TypeId::Assumed(AssumedTy::Array);
                 Ok(Ty::Adt(
@@ -192,15 +199,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Ty::Slice(ty) => {
                 trace!("Slice");
 
-                let tys = vec![self.translate_ty(erase_regions, ty)?];
+                let tys = vec![self.translate_ty(span, erase_regions, ty)?];
                 let id = TypeId::Assumed(AssumedTy::Slice);
                 Ok(Ty::Adt(id, GenericArgs::new_from_types(tys)))
             }
             hax::Ty::Ref(region, ty, mutability) => {
                 trace!("Ref");
 
-                let region = self.translate_region(erase_regions, region);
-                let ty = self.translate_ty(erase_regions, ty)?;
+                let region = self.translate_region(span, erase_regions, region)?;
+                let ty = self.translate_ty(span, erase_regions, ty)?;
                 let kind = if *mutability {
                     RefKind::Mut
                 } else {
@@ -210,7 +217,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::Ty::RawPtr(ty_and_mut) => {
                 trace!("RawPtr: {:?}", ty_and_mut);
-                let ty = self.translate_ty(erase_regions, &ty_and_mut.ty)?;
+                let ty = self.translate_ty(span, erase_regions, &ty_and_mut.ty)?;
                 let kind = if ty_and_mut.mutbl {
                     RefKind::Mut
                 } else {
@@ -223,7 +230,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 let mut params = vec![];
                 for param in substs.iter() {
-                    let param_ty = self.translate_ty(erase_regions, param)?;
+                    let param_ty = self.translate_ty(span, erase_regions, param)?;
                     params.push(param_ty);
                 }
 
@@ -247,32 +254,39 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok(ty)
             }
 
-            hax::Ty::Foreign(_) => {
+            hax::Ty::Foreign(id) => {
                 trace!("Foreign");
-                unimplemented!();
+                error_or_panic!(
+                    self,
+                    span,
+                    format!(
+                        "Unsupported type: foreign type: {:?}",
+                        id.rust_def_id.unwrap()
+                    )
+                )
             }
             hax::Ty::Infer(_) => {
                 trace!("Infer");
-                unimplemented!();
+                error_or_panic!(self, span, "Unsupported type: infer type")
             }
 
             hax::Ty::Dynamic(_, _, _) => {
                 trace!("Dynamic");
-                unimplemented!();
+                error_or_panic!(self, span, "Dynamic types are not supported yet")
             }
 
             hax::Ty::Generator(_, _, _) => {
                 trace!("Generator");
-                unimplemented!();
+                error_or_panic!(self, span, "Generator types are not supported yet")
             }
 
             hax::Ty::Bound(_, _) => {
                 trace!("Bound");
-                unimplemented!();
+                error_or_panic!(self, span, "Unexpected type kind: bound")
             }
             hax::Ty::Placeholder(_) => {
                 trace!("PlaceHolder");
-                unimplemented!();
+                error_or_panic!(self, span, "Unsupported type: placeholder")
             }
             hax::Ty::Arrow(box sig) => {
                 trace!("Arrow");
@@ -281,24 +295,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .value
                     .inputs
                     .iter()
-                    .map(|x| self.translate_ty(erase_regions, x))
+                    .map(|x| self.translate_ty(span, erase_regions, x))
                     .try_collect()?;
-                let output = self.translate_ty(erase_regions, &sig.value.output)?;
+                let output = self.translate_ty(span, erase_regions, &sig.value.output)?;
                 Ok(Ty::Arrow(inputs, Box::new(output)))
             }
             hax::Ty::Error => {
                 trace!("Error");
-                unimplemented!();
+                error_or_panic!(self, span, "Unknown error")
             }
             hax::Ty::Todo(s) => {
                 trace!("Todo: {s}");
-                unimplemented!();
+                error_or_panic!(self, span, format!("Unsupported type: {:?}", s))
             }
         }
     }
 
     pub fn translate_substs(
         &mut self,
+        span: rustc_span::Span,
         erase_regions: bool,
         used_params: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
@@ -323,11 +338,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         for param in substs.iter() {
             match param {
                 hax::GenericArg::Type(param_ty) => {
-                    let param_ty = self.translate_ty(erase_regions, &param_ty)?;
+                    let param_ty = self.translate_ty(span, erase_regions, &param_ty)?;
                     params.push(param_ty);
                 }
                 hax::GenericArg::Lifetime(region) => {
-                    regions.push(self.translate_region(erase_regions, &region));
+                    regions.push(self.translate_region(span, erase_regions, &region)?);
                 }
                 hax::GenericArg::Const(c) => {
                     cgs.push(self.translate_constant_expr_to_const_generic(c)?);
@@ -340,14 +355,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub fn translate_substs_and_trait_refs(
         &mut self,
+        span: rustc_span::Span,
         erase_regions: bool,
         used_params: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
         trait_refs: &Vec<hax::ImplSource>,
     ) -> Result<GenericArgs, Error> {
         let (regions, types, const_generics) =
-            self.translate_substs(erase_regions, used_params, substs)?;
-        let trait_refs = self.translate_trait_impl_sources(erase_regions, trait_refs);
+            self.translate_substs(span, erase_regions, used_params, substs)?;
+        let trait_refs = self.translate_trait_impl_sources(span, erase_regions, trait_refs)?;
         Ok(GenericArgs {
             regions,
             types,
@@ -433,7 +449,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("variant {}: field {}: {:?}", var_id, field_id, field_def);
 
                 // Translate the field type
-                let ty = self.translate_ty(erase_regions, &field_def.ty)?;
+                let ty =
+                    self.translate_ty(field_def.span.rust_span, erase_regions, &field_def.ty)?;
 
                 // Retrieve the field name.
                 let field_name = field_def.name;
@@ -481,7 +498,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
             AdtKind::Enum => TypeDeclKind::Enum(VariantId::Vector::from(variants)),
             AdtKind::Union => {
-                unimplemented!();
+                let span = self.t_ctx.tcx.def_span(adt.did.rust_def_id.unwrap());
+                error_or_panic!(self, span, "Union types are not supported")
             }
         };
 
@@ -520,6 +538,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// TODO: compare and simplify/factorize?
     pub(crate) fn translate_generic_params(&mut self, def_id: DefId) -> Result<(), Error> {
         let tcx = self.t_ctx.tcx;
+        let span = tcx.def_span(def_id);
 
         // We could use: TyCtxt::generics_of(DefId)
         // But using the identity substitution is simpler. For instance, we can
@@ -527,11 +546,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, def_id)
             .sinto(&self.hax_state);
 
-        self.translate_generic_params_from_hax(&substs)
+        self.translate_generic_params_from_hax(span, &substs)
     }
 
     pub(crate) fn translate_generic_params_from_hax(
         &mut self,
+        span: rustc_span::Span,
         substs: &Vec<hax::GenericArg>,
     ) -> Result<(), Error> {
         let erase_regions = false;
@@ -553,7 +573,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Const(c) => {
                     // The type should be primitive, meaning it shouldn't contain variables,
                     // non-primitive adts, etc. As a result, we can use an empty context.
-                    let ty = self.translate_ty(erase_regions, &c.ty)?;
+                    let ty = self.translate_ty(span, erase_regions, &c.ty)?;
                     let ty = ty.to_literal();
                     if let hax::ConstantExprKind::ConstRef { id: cp } = &*c.contents {
                         self.push_const_generic_var(cp.index, ty, cp.name.clone());
@@ -587,7 +607,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.translate_generic_params(rust_id).unwrap();
 
         // Translate the predicates
-        bt_ctx.translate_predicates_solve_trait_obligations_of(None, rust_id);
+        bt_ctx
+            .translate_predicates_solve_trait_obligations_of(None, rust_id)
+            .unwrap();
 
         // Check if the type has been explicitely marked as opaque.
         // If yes, ignore it, otherwise, dive into the body. Note that for

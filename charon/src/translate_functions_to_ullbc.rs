@@ -242,7 +242,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the type
             let erase_regions = true;
-            let ty = self.translate_ty(erase_regions, &var.ty)?;
+            let span = var.source_info.span.rust_span;
+            let ty = self.translate_ty(span, erase_regions, &var.ty)?;
 
             // Add the variable to the environment
             self.push_var(index, ty, name);
@@ -315,7 +316,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         place: &hax::Place,
     ) -> Result<(Place, Ty), Error> {
         let erase_regions = true;
-        let ty = self.translate_ty(erase_regions, &place.ty)?;
+        let ty = self.translate_ty(span, erase_regions, &place.ty)?;
         let (var_id, projection) = self.translate_projection(span, place)?;
         Ok((Place { var_id, projection }, ty))
     }
@@ -347,7 +348,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let (var_id, mut projection) = self.translate_projection(span, place)?;
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
-                let current_ty = self.translate_ty(erase_regions, &place.ty)?;
+                let current_ty = self.translate_ty(span, erase_regions, &place.ty)?;
                 match kind {
                     hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
@@ -571,7 +572,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // casts should only be from integers/booleans to integer/booleans.
 
                 // Translate the target type
-                let tgt_ty = self.translate_ty(erase_regions, tgt_ty)?;
+                let tgt_ty = self.translate_ty(span, erase_regions, tgt_ty)?;
 
                 // Translate the operand
                 let (op, src_ty) = self.translate_operand_with_type(span, operand)?;
@@ -698,7 +699,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 match aggregate_kind.deref() {
                     hax::AggregateKind::Array(ty) => {
-                        let t_ty = self.translate_ty(erase_regions, ty)?;
+                        let t_ty = self.translate_ty(span, erase_regions, ty)?;
                         let cg = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
                             operands_t.len() as u64,
                         )));
@@ -733,6 +734,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         // Translate the substitution
                         let generics = self.translate_substs_and_trait_refs(
+                            span,
                             erase_regions,
                             None,
                             substs,
@@ -827,7 +829,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the type parameter
             let t_ty = if let hax::GenericArg::Type(ty) = substs.get(0).unwrap() {
-                self.translate_ty(erase_regions, ty)?
+                self.translate_ty(span, erase_regions, ty)?
             } else {
                 unreachable!()
             };
@@ -869,6 +871,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the type parameters
             let generics = self.translate_substs_and_trait_refs(
+                span,
                 erase_regions,
                 used_type_args,
                 substs,
@@ -918,8 +921,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     Option::Some(trait_info) => {
                         // Trait method
                         let rust_id = def_id.rust_def_id.unwrap();
-                        let impl_source = self
-                            .translate_trait_impl_source(erase_regions, &trait_info.impl_source);
+                        let impl_source = self.translate_trait_impl_source(
+                            span,
+                            erase_regions,
+                            &trait_info.impl_source,
+                        )?;
                         // The impl source should be Some(...): trait markers (that we may
                         // eliminate) don't have methods.
                         let impl_source = impl_source.unwrap();
@@ -933,6 +939,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // the function (trait arguments + method arguments).
                         let trait_and_method_generic_args = {
                             let (regions, types, const_generics) = self.translate_substs(
+                                span,
                                 erase_regions,
                                 None,
                                 &trait_info.all_generics,
@@ -1514,7 +1521,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                tcx.generics_of(def_id), signature.bound_vars(), signature);
 
         // Add the *early-bound* parameters.
-        self.translate_generic_params_from_hax(&substs)?;
+        self.translate_generic_params_from_hax(span, &substs)?;
 
         //
         // Add the *late-bound* parameters (bound in the signature, can only be lifetimes)
@@ -1552,29 +1559,30 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             match &fun_kind {
                 FunKind::Regular => (),
                 FunKind::TraitMethodImpl { impl_id, .. } => {
-                    ctx.add_trait_impl_self_trait_clause(*impl_id);
+                    ctx.add_trait_impl_self_trait_clause(*impl_id)?;
                 }
                 FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..) => {
                     // This is a trait decl item
                     let trait_id = tcx.trait_of_item(def_id).unwrap();
-                    ctx.add_self_trait_clause(trait_id);
+                    ctx.add_self_trait_clause(trait_id)?;
                 }
             }
 
             // Translate the predicates (in particular, the trait clauses)
             match &fun_kind {
                 FunKind::Regular | FunKind::TraitMethodImpl { .. } => {
-                    ctx.translate_predicates_of(None, def_id);
+                    ctx.translate_predicates_of(None, def_id)?;
                 }
                 FunKind::TraitMethodProvided(trait_decl_id, ..)
                 | FunKind::TraitMethodDecl(trait_decl_id, ..) => {
-                    ctx.translate_predicates_of(Some(*trait_decl_id), def_id);
+                    ctx.translate_predicates_of(Some(*trait_decl_id), def_id)?;
                 }
             }
 
             // Solve the unsolved obligations
-            ctx.solve_trait_obligations_in_trait_clauses()
-        });
+            ctx.solve_trait_obligations_in_trait_clauses();
+            Ok(())
+        })?;
 
         // Translate the signature
         let signature = signature.value;
@@ -1582,9 +1590,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let inputs: Vec<Ty> = signature
             .inputs
             .iter()
-            .map(|ty| self.translate_ty(erase_regions, ty))
+            .map(|ty| self.translate_ty(span, erase_regions, ty))
             .try_collect()?;
-        let output = self.translate_ty(erase_regions, &signature.output)?;
+        let output = self.translate_ty(span, erase_regions, &signature.output)?;
 
         trace!(
             "# Input variables types:\n{}",
@@ -1728,6 +1736,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Translate one global.
     pub(crate) fn translate_global(&mut self, rust_id: DefId) {
         trace!("About to translate global:\n{:?}", rust_id);
+        let span = self.tcx.def_span(rust_id);
 
         let def_id = self.translate_global_decl_id(rust_id);
 
@@ -1748,7 +1757,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
         let erase_regions = false; // This doesn't matter: there shouldn't be any regions
         let ty = bt_ctx
-            .translate_ty(erase_regions, &mir_ty.sinto(hax_state))
+            .translate_ty(span, erase_regions, &mir_ty.sinto(hax_state))
             .unwrap();
 
         let body = if rust_id.is_local() && is_transparent {
