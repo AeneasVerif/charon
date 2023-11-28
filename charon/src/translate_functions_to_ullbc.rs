@@ -729,8 +729,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // the documentation seems outdated (it says the 4th parameter
                         // is a field index, while it makes more sense for it to be
                         // the 5th, and I don't know how I should use it anyway).
-                        assert!(user_annotation.is_none());
-                        assert!(field_index.is_none());
+                        error_assert!(self, span, user_annotation.is_none());
+                        error_assert!(self, span, field_index.is_none());
 
                         // Translate the substitution
                         let generics = self.translate_substs_and_trait_refs(
@@ -999,9 +999,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // is translated to:
                 // `box_deref<T>`
                 // (the type parameter is not `Box<T>` but `T`).
-
-                // TODO: remove the cases for vector index, box deref, etc.
-                // assert!(trait_info.is_none());
+                assert!(trait_info.is_none());
 
                 let aid = assumed::get_fun_id_from_name(&name).unwrap();
 

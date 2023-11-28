@@ -323,7 +323,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let substs: Vec<&hax::GenericArg> = match used_params {
             Option::None => substs.iter().collect(),
             Option::Some(used_args) => {
-                assert!(substs.len() == used_args.len());
+                error_assert!(self, span, substs.len() == used_args.len());
                 substs
                     .iter()
                     .zip(used_args.into_iter())
@@ -410,6 +410,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         adt: hax::AdtDef,
     ) -> Result<TypeDeclKind, Error> {
         trace!("{}", trans_id);
+        let def_span = self.t_ctx.tcx.def_span(adt.did.rust_def_id.unwrap());
 
         // In case the type is external, check if we should consider the type as
         // transparent (i.e., extract its body). If it is an enumeration, then yes
@@ -420,13 +421,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 hax::AdtKind::Enum => true,
                 hax::AdtKind::Struct => {
                     // Check the unique variant
-                    assert!(adt.variants.raw.len() == 1);
+                    error_assert!(self, def_span, adt.variants.raw.len() == 1);
                     adt.variants.raw[0]
                         .fields
                         .iter()
                         .all(|f| matches!(f.vis, hax::Visibility::Public))
                 }
-                hax::AdtKind::Union => unimplemented!(),
+                hax::AdtKind::Union => {
+                    error_or_panic!(self, def_span, "Unions are not supported")
+                }
             };
 
         if !is_transparent {
@@ -447,10 +450,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let mut have_names: Option<bool> = Option::None;
             for field_def in var_def.fields.into_iter() {
                 trace!("variant {}: field {}: {:?}", var_id, field_id, field_def);
+                let field_span = field_def.span.rust_span;
 
                 // Translate the field type
-                let ty =
-                    self.translate_ty(field_def.span.rust_span, erase_regions, &field_def.ty)?;
+                let ty = self.translate_ty(field_span, erase_regions, &field_def.ty)?;
 
                 // Retrieve the field name.
                 let field_name = field_def.name;
@@ -463,7 +466,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         }
                     }
                     Option::Some(b) => {
-                        assert!(*b == field_name.is_some());
+                        error_assert!(self, field_span, *b == field_name.is_some());
                     }
                 };
 
