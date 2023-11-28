@@ -671,7 +671,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
         use crate::id_vector::ToUsize;
         let var_id = self.const_generic_vars_map.insert(rid);
-        assert!(var_id.to_usize() == self.vars.len());
+        assert!(var_id.to_usize() == self.const_generic_vars.len());
         let var = ConstGenericVar {
             index: var_id,
             name,
