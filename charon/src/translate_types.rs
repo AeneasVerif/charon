@@ -290,7 +290,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::Ty::Arrow(box sig) => {
                 trace!("Arrow");
-                assert!(sig.bound_vars.is_empty());
+                error_assert!(self, span, sig.bound_vars.is_empty());
                 let inputs = sig
                     .value
                     .inputs

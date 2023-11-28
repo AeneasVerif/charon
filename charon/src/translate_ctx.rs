@@ -29,9 +29,9 @@ use std::fmt;
 
 /// Macro to either panic or return on error, depending on the CLI options
 macro_rules! error_or_panic {
-    ($ctx:ident, $span: ident, $msg: expr) => {
+    ($ctx:ident, $span: ident, $msg: expr) => {{
+        $ctx.span_err($span, &$msg);
         if $ctx.continue_on_failure() {
-            $ctx.span_err($span, &$msg);
             let e = crate::common::Error {
                 span: $span,
                 msg: $msg.to_string(),
@@ -40,9 +40,26 @@ macro_rules! error_or_panic {
         } else {
             panic!("{}", $msg);
         }
-    };
+    }};
 }
 pub(crate) use error_or_panic;
+
+/// Custom assert to either panic or return an error
+macro_rules! error_assert {
+    ($ctx:ident, $span: ident, $b: expr) => {
+        if !$b {
+            let msg = format!("assertion failure: {:?}", stringify!($b));
+            $ctx.span_err($span, &msg);
+            if $ctx.continue_on_failure() {
+                let e = crate::common::Error { span: $span, msg };
+                return (Err(e));
+            } else {
+                panic!("{}", msg);
+            }
+        }
+    };
+}
+pub(crate) use error_assert;
 
 pub struct CrateInfo {
     pub crate_name: String,
