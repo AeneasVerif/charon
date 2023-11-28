@@ -797,10 +797,26 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplSourceKind::TraitUpcasting(_) => unimplemented!(),
-            ImplSourceKind::Error(msg) => {
+            ImplSourceKind::Closure(_) => {
+                let error = "Closures are not supported yet".to_string();
+                self.span_err(span, &error);
                 if !self.t_ctx.continue_on_failure {
-                    panic!("Error during trait resolution: {}", msg)
+                    panic!("{}", error)
+                } else {
+                    let trait_id = TraitInstanceId::Unknown(error);
+                    TraitRef {
+                        trait_id,
+                        generics: GenericArgs::empty(),
+                        trait_decl_ref,
+                    }
+                }
+            }
+            ImplSourceKind::TraitUpcasting(_) => unimplemented!(),
+            ImplSourceKind::Error(msg) | ImplSourceKind::Todo(msg) => {
+                let error = format!("Error during trait resolution: {}", msg);
+                self.span_err(span, &error);
+                if !self.t_ctx.continue_on_failure {
+                    panic!("{}", error)
                 } else {
                     let trait_id = TraitInstanceId::Unknown(msg.clone());
                     TraitRef {
