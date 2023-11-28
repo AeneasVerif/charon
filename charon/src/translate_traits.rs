@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+use crate::common::*;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -15,7 +16,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_trait_item_name(rust_id)
     }
 
-    fn translate_ty_from_trait_item(&mut self, item: &rustc_middle::ty::AssocItem) -> Ty {
+    fn translate_ty_from_trait_item(
+        &mut self,
+        item: &rustc_middle::ty::AssocItem,
+    ) -> Result<Ty, Error> {
         let erase_regions = false;
         self.translate_ty(
             erase_regions,
@@ -26,7 +30,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 .subst_identity()
                 .sinto(&self.hax_state),
         )
-        .unwrap()
     }
 
     /// Helper for [translate_trait_impl].
@@ -77,11 +80,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_const_from_trait_item(
         &mut self,
         item: &rustc_middle::ty::AssocItem,
-    ) -> (TraitItemName, (Ty, GlobalDeclId::Id)) {
-        let ty = self.translate_ty_from_trait_item(item);
+    ) -> Result<(TraitItemName, (Ty, GlobalDeclId::Id)), Error> {
+        let ty = self.translate_ty_from_trait_item(item)?;
         let name = TraitItemName(item.name.to_string());
         let id = self.translate_global_decl_id(item.def_id);
-        (name, (ty, id))
+        Ok((name, (ty, id)))
     }
 
     /// Add the self trait clause, for itself (if it is a trait declaration) or
@@ -241,7 +244,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
         // Translate the generic
-        bt_ctx.translate_generic_params(rust_id);
+        bt_ctx.translate_generic_params(rust_id).unwrap();
 
         // Add the trait clauses
         bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
@@ -293,10 +296,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // check whether the constant has a default value.
                     trace!("id: {:?}\n- item: {:?}", rust_id, item);
                     let c = if has_default_value {
-                        let (name, (ty, id)) = bt_ctx.translate_const_from_trait_item(item);
+                        let (name, (ty, id)) =
+                            bt_ctx.translate_const_from_trait_item(item).unwrap();
                         (name, (ty, Some(id)))
                     } else {
-                        let ty = bt_ctx.translate_ty_from_trait_item(item);
+                        let ty = bt_ctx.translate_ty_from_trait_item(item).unwrap();
                         let name = TraitItemName(item.name.to_string());
                         (name, (ty, None))
                     };
@@ -348,7 +352,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         .collect();
 
                     let ty = if has_default_value {
-                        Some(bt_ctx.translate_ty_from_trait_item(item))
+                        Some(bt_ctx.translate_ty_from_trait_item(item).unwrap())
                     } else {
                         None
                     };
@@ -426,7 +430,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let erase_regions = false;
 
         // Translate the generics
-        bt_ctx.translate_generic_params(rust_id);
+        bt_ctx.translate_generic_params(rust_id).unwrap();
 
         // Add the trait self clauses
         bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
@@ -511,7 +515,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // We do something subtle here: TODO
         let tcx = bt_ctx.t_ctx.tcx;
         let mut consts = HashMap::new();
-        let mut types = HashMap::new();
+        let mut types: HashMap<TraitItemName, Ty> = HashMap::new();
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
 
@@ -532,12 +536,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     }
                 }
                 AssocKind::Const => {
-                    let (name, c) = bt_ctx.translate_const_from_trait_item(item);
+                    let (name, c) = bt_ctx.translate_const_from_trait_item(item).unwrap();
                     consts.insert(name, c);
                 }
                 AssocKind::Type => {
                     let name = TraitItemName(item.name.to_string());
-                    let ty = bt_ctx.translate_ty_from_trait_item(item);
+                    let ty = bt_ctx.translate_ty_from_trait_item(item).unwrap();
                     types.insert(name, ty);
                 }
             }
@@ -564,7 +568,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         None => {
                             // The item is not defined in the trait impl:
                             // the trait decl *must* define a default value.
-                            bt_ctx.translate_const_from_trait_item(item).1
+                            bt_ctx.translate_const_from_trait_item(item).unwrap().1
                         }
                     };
                     consts.push((name, c));
@@ -578,7 +582,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                             // The item is not defined in the trait impl:
                             // the trait decl *must* define a default value.
                             // TODO: should we normalize the type?
-                            bt_ctx.translate_ty_from_trait_item(item)
+                            bt_ctx.translate_ty_from_trait_item(item).unwrap()
                         }
                     };
 

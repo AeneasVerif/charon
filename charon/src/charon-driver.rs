@@ -8,6 +8,7 @@
 #![recursion_limit = "256"]
 #![feature(trait_alias)]
 #![feature(let_chains)]
+#![feature(iterator_try_collect)]
 
 extern crate hashlink;
 extern crate im;

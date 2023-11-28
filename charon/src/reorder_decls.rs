@@ -482,7 +482,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups, ()> {
                             }
                         }
                     }
-                    Opaque => (),
+                    Opaque | Error(_) => (),
                 }
             }
             AnyTransId::Fun(id) => {

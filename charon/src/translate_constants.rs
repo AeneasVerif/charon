@@ -1,5 +1,6 @@
 //! Functions to translate constants to LLBC.
 #![allow(dead_code)]
+use crate::common::*;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -55,7 +56,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         ty: &hax::Ty,
         v: &hax::ConstantExprKind,
-    ) -> ConstantExpr {
+    ) -> Result<ConstantExpr, Error> {
         use hax::ConstantExprKind;
         let erase_regions = true;
         let value = match v {
@@ -70,7 +71,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
                     .map(|f| self.translate_constant_expr_to_constant_expr(&f.value))
-                    .collect();
+                    .try_collect()?;
                 let vid = vid.map(VariantId::Id::new);
                 RawConstantExpr::Adt(vid, fields)
             }
@@ -81,7 +82,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
                     .map(|f| self.translate_constant_expr_to_constant_expr(f))
-                    .collect();
+                    .try_collect()?;
                 RawConstantExpr::Adt(Option::None, fields)
             }
             ConstantExprKind::TraitConst {
@@ -95,7 +96,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_ref = trait_ref.unwrap();
 
                 let (regions, types, const_generics) =
-                    self.translate_substs(erase_regions, None, substs).unwrap();
+                    self.translate_substs(erase_regions, None, substs)?;
                 let generics = GenericArgs {
                     regions,
                     types,
@@ -109,7 +110,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 RawConstantExpr::Global(self.translate_global_decl_id(id.rust_def_id.unwrap()))
             }
             ConstantExprKind::Borrow(be) => {
-                let be = self.translate_constant_expr_to_constant_expr(be);
+                let be = self.translate_constant_expr_to_constant_expr(be)?;
                 RawConstantExpr::Ref(Box::new(be))
             }
             ConstantExprKind::ConstRef { id } => {
@@ -126,7 +127,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     None,
                     trait_refs,
                     trait_info,
-                );
+                )?;
                 let SubstFunIdOrPanic::Fun(fn_id) = fn_id else  { unreachable!() };
                 RawConstantExpr::FnPtr(fn_id.func)
             }
@@ -136,36 +137,36 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         };
 
-        let ty = self.translate_ty(erase_regions, ty).unwrap();
-        ConstantExpr { value, ty }
+        let ty = self.translate_ty(erase_regions, ty)?;
+        Ok(ConstantExpr { value, ty })
     }
 
     pub(crate) fn translate_constant_expr_to_constant_expr(
         &mut self,
         v: &hax::ConstantExpr,
-    ) -> ConstantExpr {
+    ) -> Result<ConstantExpr, Error> {
         self.translate_constant_expr_kind_to_constant_expr(&v.ty, &v.contents)
     }
 
     pub(crate) fn translate_constant_expr_to_const_generic(
         &mut self,
         v: &hax::ConstantExpr,
-    ) -> ConstGeneric {
-        match self.translate_constant_expr_to_constant_expr(v).value {
-            RawConstantExpr::Literal(v) => ConstGeneric::Value(v),
+    ) -> Result<ConstGeneric, Error> {
+        match self.translate_constant_expr_to_constant_expr(v)?.value {
+            RawConstantExpr::Literal(v) => Ok(ConstGeneric::Value(v)),
             RawConstantExpr::Adt(..) => unreachable!(),
-            RawConstantExpr::Global(v) => ConstGeneric::Global(v),
+            RawConstantExpr::Global(v) => Ok(ConstGeneric::Global(v)),
             RawConstantExpr::TraitConst { .. }
             | RawConstantExpr::Ref(_)
             | RawConstantExpr::FnPtr { .. } => unreachable!(),
-            RawConstantExpr::Var(v) => ConstGeneric::Var(v),
+            RawConstantExpr::Var(v) => Ok(ConstGeneric::Var(v)),
         }
     }
 
     pub(crate) fn translate_constant_to_constant_expr(
         &mut self,
         v: &hax::Constant,
-    ) -> ConstantExpr {
+    ) -> Result<ConstantExpr, Error> {
         self.translate_constant_expr_to_constant_expr(&v.literal.constant_kind)
     }
 
@@ -175,7 +176,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         ty: ty::Ty<'tcx>,
         val: &mir::interpret::ConstValue<'tcx>,
         span: rustc_span::Span,
-    ) -> ConstantExpr {
+    ) -> Result<ConstantExpr, Error> {
         let val = hax::const_value_to_constant_expr(&self.hax_state, ty, *val, span);
         self.translate_constant_expr_to_constant_expr(&val)
     }

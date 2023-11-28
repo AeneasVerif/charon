@@ -321,7 +321,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let id = id.unwrap();
                     let mut bt_ctx = BodyTransCtx::new(id, self);
 
-                    bt_ctx.translate_generic_params_from_hax(substs);
+                    bt_ctx.translate_generic_params_from_hax(substs).unwrap();
                     bt_ctx.translate_predicates_of(None, id);
                     let erase_regions = false;
                     let ty = bt_ctx.translate_ty(erase_regions, ty).unwrap();
