@@ -12,11 +12,12 @@ use rustc_middle::ty;
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_constant_literal_to_raw_constant_expr(
         &mut self,
+        span: rustc_span::Span,
         v: &hax::ConstantLiteral,
-    ) -> RawConstantExpr {
+    ) -> Result<RawConstantExpr, Error> {
         let lit = match v {
             hax::ConstantLiteral::ByteStr(..) => {
-                unimplemented!()
+                error_or_panic!(self, span, "byte str constants are not supported yet");
             }
             hax::ConstantLiteral::Char(c) => Literal::Char(*c),
             hax::ConstantLiteral::Bool(b) => Literal::Bool(*b),
@@ -49,11 +50,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Literal::Scalar(scalar)
             }
         };
-        RawConstantExpr::Literal(lit)
+        Ok(RawConstantExpr::Literal(lit))
     }
 
     pub(crate) fn translate_constant_expr_kind_to_constant_expr(
         &mut self,
+        span: rustc_span::Span,
         ty: &hax::Ty,
         v: &hax::ConstantExprKind,
     ) -> Result<ConstantExpr, Error> {
@@ -61,7 +63,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = true;
         let value = match v {
             ConstantExprKind::Literal(lit) => {
-                self.translate_constant_literal_to_raw_constant_expr(lit)
+                self.translate_constant_literal_to_raw_constant_expr(span, lit)?
             }
             ConstantExprKind::Adt {
                 info: _,
@@ -76,7 +78,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 RawConstantExpr::Adt(vid, fields)
             }
             ConstantExprKind::Array { .. } => {
-                unimplemented!()
+                error_or_panic!(self, span, "array constants are not supported yet")
             }
             ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<ConstantExpr> = fields
@@ -121,6 +123,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 use crate::translate_functions_to_ullbc::SubstFunIdOrPanic;
                 let erase_regions = true; // TODO: not sure
                 let fn_id = self.translate_fun_decl_id_with_args(
+                    span,
                     erase_regions,
                     fn_id,
                     substs,
@@ -131,9 +134,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let SubstFunIdOrPanic::Fun(fn_id) = fn_id else  { unreachable!() };
                 RawConstantExpr::FnPtr(fn_id.func)
             }
-            ConstantExprKind::Todo(_) => {
+            ConstantExprKind::Todo(msg) => {
                 // Case not yet handled by hax
-                unreachable!()
+                error_or_panic!(self, span, format!("Unsupported constant: {:?}", msg))
             }
         };
 
@@ -145,20 +148,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         v: &hax::ConstantExpr,
     ) -> Result<ConstantExpr, Error> {
-        self.translate_constant_expr_kind_to_constant_expr(&v.ty, &v.contents)
+        self.translate_constant_expr_kind_to_constant_expr(v.span.rust_span, &v.ty, &v.contents)
     }
 
     pub(crate) fn translate_constant_expr_to_const_generic(
         &mut self,
         v: &hax::ConstantExpr,
     ) -> Result<ConstGeneric, Error> {
-        match self.translate_constant_expr_to_constant_expr(v)?.value {
+        let value = self.translate_constant_expr_to_constant_expr(v)?.value;
+        match value {
             RawConstantExpr::Literal(v) => Ok(ConstGeneric::Value(v)),
-            RawConstantExpr::Adt(..) => unreachable!(),
             RawConstantExpr::Global(v) => Ok(ConstGeneric::Global(v)),
-            RawConstantExpr::TraitConst { .. }
+            RawConstantExpr::Adt(..)
+            | RawConstantExpr::TraitConst { .. }
             | RawConstantExpr::Ref(_)
-            | RawConstantExpr::FnPtr { .. } => unreachable!(),
+            | RawConstantExpr::FnPtr { .. } => {
+                let span = v.span.rust_span;
+                error_or_panic!(
+                    self,
+                    span,
+                    format!("Unexpected constant generic: {:?}", value)
+                )
+            }
             RawConstantExpr::Var(v) => Ok(ConstGeneric::Var(v)),
         }
     }

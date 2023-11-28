@@ -203,7 +203,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 pub fn translate<'tcx, 'ctx>(
     crate_info: CrateInfo,
     options: &CliOpts,
-    sess: &'ctx Session,
+    session: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
 ) -> TransCtx<'tcx, 'ctx> {
@@ -214,7 +214,7 @@ pub fn translate<'tcx, 'ctx>(
         },
     );
     let mut ctx = TransCtx {
-        sess,
+        session,
         tcx,
         hax_state,
         mir_level,

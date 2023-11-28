@@ -27,6 +27,23 @@ use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt;
 
+/// Macro to either panic or return on error, depending on the CLI options
+macro_rules! error_or_panic {
+    ($ctx:ident, $span: ident, $msg: expr) => {
+        if $ctx.continue_on_failure() {
+            $ctx.span_err($span, &$msg);
+            let e = crate::common::Error {
+                span: $span,
+                msg: $msg.to_string(),
+            };
+            return (Err(e));
+        } else {
+            panic!("{}", $msg);
+        }
+    };
+}
+pub(crate) use error_or_panic;
+
 pub struct CrateInfo {
     pub crate_name: String,
     pub opaque_mods: HashSet<String>,
@@ -92,7 +109,7 @@ impl Ord for OrdRustId {
 /// Translation context containing the top-level definitions.
 pub struct TransCtx<'tcx, 'ctx> {
     /// The compiler session
-    pub sess: &'ctx Session,
+    pub session: &'ctx Session,
     /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
     /// The Hax context
@@ -253,6 +270,15 @@ pub(crate) struct BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+    pub fn continue_on_failure(&self) -> bool {
+        self.continue_on_failure
+    }
+
+    pub fn span_err(&self, span: rustc_span::Span, msg: &str) {
+        let msg = msg.to_string();
+        self.session.span_err(span, msg);
+    }
+
     /// Register a file if it is a "real" file and was not already registered
     fn register_file(&mut self, filename: FileName) -> FileId::Id {
         // Lookup the file if it was already registered
@@ -500,6 +526,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             blocks_map: ast::BlockId::MapGenerator::new(),
             bound_region_vars: im::Vector::new(),
         }
+    }
+
+    pub fn continue_on_failure(&self) -> bool {
+        self.t_ctx.continue_on_failure()
+    }
+
+    pub fn span_err(&self, span: rustc_span::Span, msg: &str) {
+        self.t_ctx.span_err(span, msg)
     }
 
     pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {

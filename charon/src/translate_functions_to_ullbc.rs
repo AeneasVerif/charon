@@ -62,30 +62,6 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
     }
 }
 
-fn translate_binaryop_kind(binop: hax::BinOp) -> BinOp {
-    match binop {
-        hax::BinOp::BitXor => BinOp::BitXor,
-        hax::BinOp::BitAnd => BinOp::BitAnd,
-        hax::BinOp::BitOr => BinOp::BitOr,
-        hax::BinOp::Eq => BinOp::Eq,
-        hax::BinOp::Lt => BinOp::Lt,
-        hax::BinOp::Le => BinOp::Le,
-        hax::BinOp::Ne => BinOp::Ne,
-        hax::BinOp::Ge => BinOp::Ge,
-        hax::BinOp::Gt => BinOp::Gt,
-        hax::BinOp::Div => BinOp::Div,
-        hax::BinOp::Rem => BinOp::Rem,
-        hax::BinOp::Add => BinOp::Add,
-        hax::BinOp::Sub => BinOp::Sub,
-        hax::BinOp::Mul => BinOp::Mul,
-        hax::BinOp::Shl => BinOp::Shl,
-        hax::BinOp::Shr => BinOp::Shr,
-        _ => {
-            unreachable!();
-        }
-    }
-}
-
 fn translate_unaryop_kind(binop: hax::UnOp) -> UnOp {
     match binop {
         hax::UnOp::Not => UnOp::Not,
@@ -117,6 +93,34 @@ pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+    fn translate_binaryop_kind(
+        &self,
+        span: rustc_span::Span,
+        binop: hax::BinOp,
+    ) -> Result<BinOp, Error> {
+        match binop {
+            hax::BinOp::BitXor => Ok(BinOp::BitXor),
+            hax::BinOp::BitAnd => Ok(BinOp::BitAnd),
+            hax::BinOp::BitOr => Ok(BinOp::BitOr),
+            hax::BinOp::Eq => Ok(BinOp::Eq),
+            hax::BinOp::Lt => Ok(BinOp::Lt),
+            hax::BinOp::Le => Ok(BinOp::Le),
+            hax::BinOp::Ne => Ok(BinOp::Ne),
+            hax::BinOp::Ge => Ok(BinOp::Ge),
+            hax::BinOp::Gt => Ok(BinOp::Gt),
+            hax::BinOp::Div => Ok(BinOp::Div),
+            hax::BinOp::Rem => Ok(BinOp::Rem),
+            hax::BinOp::Add => Ok(BinOp::Add),
+            hax::BinOp::Sub => Ok(BinOp::Sub),
+            hax::BinOp::Mul => Ok(BinOp::Mul),
+            hax::BinOp::Shl => Ok(BinOp::Shl),
+            hax::BinOp::Shr => Ok(BinOp::Shr),
+            hax::BinOp::Offset => {
+                error_or_panic!(self, span, "Unsupported binary operation: offset")
+            }
+        }
+    }
+
     pub(crate) fn get_fun_kind(&mut self, rust_id: DefId) -> FunKind {
         trace!("rust_id: {:?}", rust_id);
         let tcx = self.tcx;
@@ -305,16 +309,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate a place and return its type
-    fn translate_place_with_type(&mut self, place: &hax::Place) -> Result<(Place, Ty), Error> {
+    fn translate_place_with_type(
+        &mut self,
+        span: rustc_span::Span,
+        place: &hax::Place,
+    ) -> Result<(Place, Ty), Error> {
         let erase_regions = true;
         let ty = self.translate_ty(erase_regions, &place.ty)?;
-        let (var_id, projection) = self.translate_projection(place)?;
+        let (var_id, projection) = self.translate_projection(span, place)?;
         Ok((Place { var_id, projection }, ty))
     }
 
     /// Translate a place
-    fn translate_place(&mut self, place: &hax::Place) -> Result<Place, Error> {
-        Ok(self.translate_place_with_type(place)?.0)
+    fn translate_place(
+        &mut self,
+        span: rustc_span::Span,
+        place: &hax::Place,
+    ) -> Result<Place, Error> {
+        Ok(self.translate_place_with_type(span, place)?.0)
     }
 
     /// Translate a place - TODO: rename
@@ -322,6 +334,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// update our representation of places to match the Hax representation.
     fn translate_projection(
         &mut self,
+        span: rustc_span::Span,
         place: &hax::Place,
     ) -> Result<(VarId::Id, Projection), Error> {
         let erase_regions = true;
@@ -331,7 +344,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok((var_id, Vec::new()))
             }
             hax::PlaceKind::Projection { place, kind } => {
-                let (var_id, mut projection) = self.translate_projection(place)?;
+                let (var_id, mut projection) = self.translate_projection(span, place)?;
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
                 let current_ty = self.translate_ty(erase_regions, &place.ty)?;
@@ -376,7 +389,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 index,
                             } => {
                                 let field_id = translate_field_id(*index);
-                                let variant_id = variant.map(|vid| translate_variant_id(vid));
+                                let variant_id = variant.map(translate_variant_id);
                                 match current_ty {
                                     Ty::Adt(TypeId::Adt(type_id), ..) => {
                                         let proj_kind = FieldProjKind::Adt(type_id, variant_id);
@@ -403,7 +416,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                         ProjectionElem::DerefBox
                                     }
                                     _ => {
-                                        unreachable!();
+                                        error_or_panic!(self, span, "Unexpected field projection");
                                     }
                                 }
                             }
@@ -422,11 +435,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     hax::ProjectionElem::ConstantIndex { .. }
                     | hax::ProjectionElem::Subslice { .. } => {
                         // Those don't seem to occur in MIR built
-                        unimplemented!()
+                        error_or_panic!(self, span, "Unexpected ProjectionElem::Subslice");
                     }
                     hax::ProjectionElem::OpaqueCast => {
                         // Don't know what that is
-                        unimplemented!()
+                        error_or_panic!(self, span, "Unexpected ProjectionElem::OpaqueCast");
                     }
                 };
 
@@ -439,16 +452,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate an operand with its type
     fn translate_operand_with_type(
         &mut self,
+        span: rustc_span::Span,
         operand: &hax::Operand,
     ) -> Result<(Operand, Ty), Error> {
         trace!();
         match operand {
             hax::Operand::Copy(place) => {
-                let (p, ty) = self.translate_place_with_type(place)?;
+                let (p, ty) = self.translate_place_with_type(span, place)?;
                 Ok((Operand::Copy(p), ty))
             }
             hax::Operand::Move(place) => {
-                let (p, ty) = self.translate_place_with_type(place)?;
+                let (p, ty) = self.translate_place_with_type(span, place)?;
                 Ok((Operand::Move(p), ty))
             }
             hax::Operand::Constant(constant) => {
@@ -460,9 +474,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate an operand
-    fn translate_operand(&mut self, operand: &hax::Operand) -> Result<Operand, Error> {
+    fn translate_operand(
+        &mut self,
+        span: rustc_span::Span,
+        operand: &hax::Operand,
+    ) -> Result<Operand, Error> {
         trace!();
-        Ok(self.translate_operand_with_type(operand)?.0)
+        Ok(self.translate_operand_with_type(span, operand)?.0)
     }
 
     /// Translate an operand which should be `move b.0` where `b` is a box (such
@@ -477,12 +495,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// reveals implementation details).
     fn translate_move_box_first_projector_operand(
         &mut self,
+        span: rustc_span::Span,
         operand: &hax::Operand,
     ) -> Result<Operand, Error> {
         trace!();
         match operand {
             hax::Operand::Move(place) => {
-                let place = self.translate_place(place)?;
+                let place = self.translate_place(span, place)?;
 
                 // Sanity check
                 let var = self.get_var_from_id(place.var_id).unwrap();
@@ -497,36 +516,40 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate an rvalue
-    fn translate_rvalue(&mut self, rvalue: &hax::Rvalue) -> Result<Rvalue, Error> {
+    fn translate_rvalue(
+        &mut self,
+        span: rustc_span::Span,
+        rvalue: &hax::Rvalue,
+    ) -> Result<Rvalue, Error> {
         use std::ops::Deref;
         let erase_regions = true;
         match rvalue {
-            hax::Rvalue::Use(operand) => Ok(Rvalue::Use(self.translate_operand(operand)?)),
+            hax::Rvalue::Use(operand) => Ok(Rvalue::Use(self.translate_operand(span, operand)?)),
             hax::Rvalue::CopyForDeref(place) => {
                 // According to the documentation, it seems to be an optimisation
                 // for drop elaboration. We treat it as a regular copy.
-                let place = self.translate_place(place)?;
+                let place = self.translate_place(span, place)?;
                 Ok(Rvalue::Use(Operand::Copy(place)))
             }
             hax::Rvalue::Repeat(operand, cnst) => {
                 let c = self.translate_constant_expr_to_const_generic(cnst)?;
-                let (operand, t) = self.translate_operand_with_type(operand)?;
+                let (operand, t) = self.translate_operand_with_type(span, operand)?;
                 // Remark: we could desugar this into a function call later.
                 Ok(Rvalue::Repeat(operand, t, c))
             }
             hax::Rvalue::Ref(_region, borrow_kind, place) => {
-                let place = self.translate_place(place)?;
+                let place = self.translate_place(span, place)?;
                 let borrow_kind = translate_borrow_kind(*borrow_kind);
                 Ok(Rvalue::Ref(place, borrow_kind))
             }
             hax::Rvalue::ThreadLocalRef(_) => {
-                unreachable!();
+                error_or_panic!(self, span, "Unsupported rvalue: thread local ref");
             }
             hax::Rvalue::AddressOf(_, _) => {
-                unreachable!();
+                error_or_panic!(self, span, "Unsupported rvalue: address of");
             }
             hax::Rvalue::Len(place) => {
-                let (place, ty) = self.translate_place_with_type(place)?;
+                let (place, ty) = self.translate_place_with_type(span, place)?;
                 let cg = match &ty {
                     Ty::Adt(
                         TypeId::Assumed(aty @ (AssumedTy::Array | AssumedTy::Slice)),
@@ -551,7 +574,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let tgt_ty = self.translate_ty(erase_regions, tgt_ty)?;
 
                 // Translate the operand
-                let (op, src_ty) = self.translate_operand_with_type(operand)?;
+                let (op, src_ty) = self.translate_operand_with_type(span, operand)?;
 
                 match (cast_kind, &src_ty, &tgt_ty) {
                     (hax::CastKind::IntToInt, _, _) => {
@@ -593,9 +616,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 ))
                             }
                             _ => {
-                                panic!(
-                                    "Unsupported cast: {:?}, src={:?}, dst={:?}",
-                                    rvalue, src_ty, tgt_ty
+                                error_or_panic!(
+                                    self,
+                                    span,
+                                    format!(
+                                        "Unsupported cast: {:?}, src={:?}, dst={:?}",
+                                        rvalue, src_ty, tgt_ty
+                                    )
                                 )
                             }
                         }
@@ -614,9 +641,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         ))
                     }
                     _ => {
-                        panic!(
-                            "Unsupported cast:\n- rvalue: {:?}\n- src={:?}\n- dst={:?}",
-                            rvalue, src_ty, tgt_ty
+                        error_or_panic!(
+                            self,
+                            span,
+                            format!(
+                                "Unsupported cast:\n- rvalue: {:?}\n- src={:?}\n- dst={:?}",
+                                rvalue, src_ty, tgt_ty
+                            )
                         )
                     }
                 }
@@ -626,23 +657,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // We merge checked and unchecked binary operations
                 let (left, right) = operands.deref();
                 Ok(Rvalue::BinaryOp(
-                    translate_binaryop_kind(*binop),
-                    self.translate_operand(left)?,
-                    self.translate_operand(right)?,
+                    self.t_ctx.translate_binaryop_kind(span, *binop)?,
+                    self.translate_operand(span, left)?,
+                    self.translate_operand(span, right)?,
                 ))
             }
             hax::Rvalue::NullaryOp(nullop, _ty) => {
                 trace!("NullOp: {:?}", nullop);
                 // Nullary operations are very low-level and shouldn't be necessary
                 // unless one needs to write unsafe code.
-                unreachable!();
+                error_or_panic!(self, span, "Nullary operations are not supported");
             }
             hax::Rvalue::UnaryOp(unop, operand) => Ok(Rvalue::UnaryOp(
                 translate_unaryop_kind(*unop),
-                self.translate_operand(operand)?,
+                self.translate_operand(span, operand)?,
             )),
             hax::Rvalue::Discriminant(place) => {
-                Ok(Rvalue::Discriminant(self.translate_place(place)?))
+                Ok(Rvalue::Discriminant(self.translate_place(span, place)?))
             }
             hax::Rvalue::Aggregate(aggregate_kind, operands) => {
                 // It seems this instruction is not present in certain passes:
@@ -662,7 +693,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let operands_t: Vec<Operand> = operands
                     .raw
                     .iter()
-                    .map(|op| self.translate_operand(op))
+                    .map(|op| self.translate_operand(span, op))
                     .try_collect()?;
 
                 match aggregate_kind.deref() {
@@ -720,7 +751,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 Some(variant_id)
                             }
                             AdtKind::Union => {
-                                unimplemented!();
+                                error_or_panic!(self, span, "Union values are not supported");
                             }
                         };
 
@@ -732,18 +763,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // We need to register the signature for def_id, so that
                         // we can later translate the closure the same way as top-level
                         // functions.
-                        todo!();
+                        error_or_panic!(self, span, "Support for closures is not implemented yet")
                         /*let def_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
                         let akind = AggregateKind::Closure(def_id);
                         Rvalue::Aggregate(akind, Vec::new()) */
                     }
                     hax::AggregateKind::Generator(_def_id, _subst, _movability) => {
-                        unimplemented!();
+                        error_or_panic!(self, span, "Generators are not supported");
                     }
                 }
             }
             hax::Rvalue::ShallowInitBox(_, _) => {
-                unimplemented!();
+                error_or_panic!(self, span, "Unsupported rvalue: shallow init box");
             }
         }
     }
@@ -760,6 +791,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// TODO: should we always erase the regions?
     pub(crate) fn translate_fun_decl_id_with_args(
         &mut self,
+        span: rustc_span::Span,
         erase_regions: bool,
         def_id: &hax::DefId,
         substs: &Vec<hax::GenericArg>,
@@ -807,7 +839,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // function to translate it: the operand should be of the form:
                     // `move b.0`, and if it is the case it will return `move b`
                     let arg = &args[0];
-                    let t_arg = self.translate_move_box_first_projector_operand(arg)?;
+                    let t_arg = self.translate_move_box_first_projector_operand(span, arg)?;
                     Ok(vec![t_arg])
                 })
                 .transpose()?;
@@ -845,7 +877,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the arguments
             let args = args
-                .map(|args| self.translate_arguments(used_args, args))
+                .map(|args| self.translate_arguments(span, used_args, args))
                 .transpose()?;
 
             // Check if the function is considered primitive: primitive
@@ -1019,6 +1051,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         statement: &hax::Statement,
     ) -> Result<Option<Statement>, Error> {
         trace!("About to translate statement (MIR) {:?}", statement);
+        let span = statement.source_info.span.rust_span;
 
         use std::ops::Deref;
 
@@ -1026,21 +1059,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let t_statement: Option<RawStatement> = match &*statement.kind {
             StatementKind::Assign(assign) => {
                 let (place, rvalue) = assign.deref();
-                let t_place = self.translate_place(place)?;
-                let t_rvalue = self.translate_rvalue(rvalue)?;
+                let t_place = self.translate_place(span, place)?;
+                let t_rvalue =
+                    self.translate_rvalue(statement.source_info.span.rust_span, rvalue)?;
 
                 Some(RawStatement::Assign(t_place, t_rvalue))
             }
             StatementKind::FakeRead(info) => {
                 let (_read_cause, place) = info.deref();
-                let t_place = self.translate_place(place)?;
+                let t_place = self.translate_place(span, place)?;
 
                 Some(RawStatement::FakeRead(t_place))
             }
             StatementKind::PlaceMention(place) => {
                 // Simply accesses a place. Introduced for instance in place
                 // of `let _ = ...`. We desugar it to a fake read.
-                let t_place = self.translate_place(place)?;
+                let t_place = self.translate_place(span, place)?;
 
                 Some(RawStatement::FakeRead(t_place))
             }
@@ -1048,7 +1082,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 place,
                 variant_index,
             } => {
-                let t_place = self.translate_place(place)?;
+                let t_place = self.translate_place(span, place)?;
                 let variant_id = translate_variant_id(*variant_index);
                 Some(RawStatement::SetDiscriminant(t_place, variant_id))
             }
@@ -1073,18 +1107,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 None
             }
             StatementKind::Coverage(_) => {
-                unimplemented!();
+                error_or_panic!(self, span, "Unsupported statement kind: coverage");
             }
             StatementKind::Nop => {
                 // We ignore this statement
                 None
             }
             StatementKind::Deinit(place) => {
-                let t_place = self.translate_place(place)?;
+                let t_place = self.translate_place(span, place)?;
                 Some(RawStatement::Deinit(t_place))
             }
             StatementKind::Intrinsic(_) => {
-                unimplemented!();
+                error_or_panic!(self, span, "Unsupported statement kind: intrinsic");
             }
             StatementKind::ConstEvalCounter => {
                 // See the doc: only used in the interpreter, to check that
@@ -1114,6 +1148,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         terminator: &hax::Terminator,
     ) -> Result<Terminator, Error> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
+        let span = terminator.source_info.span.rust_span;
 
         // Compute the meta information beforehand (we might need it to introduce
         // intermediate statements - we desugar some terminators)
@@ -1130,7 +1165,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             TerminatorKind::SwitchInt { discr, targets } => {
                 // Translate the operand which gives the discriminant
-                let (discr, discr_ty) = self.translate_operand_with_type(discr)?;
+                let (discr, discr_ty) = self.translate_operand_with_type(span, discr)?;
 
                 // Translate the switch targets
                 let targets = self.translate_switch_targets(body, &discr_ty, targets)?;
@@ -1140,7 +1175,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             TerminatorKind::Resume => {
                 // This is used to correctly unwind. We shouldn't get there: if
                 // we panic, the state gets stuck.
-                unreachable!();
+                error_or_panic!(self, span, "Unexpected terminator: resume");
             }
             TerminatorKind::Return => RawTerminator::Return,
             TerminatorKind::Unreachable => RawTerminator::Unreachable,
@@ -1151,7 +1186,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 replace: _,
             } => RawTerminator::Drop {
-                place: self.translate_place(place)?,
+                place: self.translate_place(span, place)?,
                 target: self.translate_basic_block(body, *target)?,
             },
             TerminatorKind::Call {
@@ -1168,6 +1203,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             } => {
                 trace!("Call: func: {:?}", fun_id.rust_def_id);
                 self.translate_function_call(
+                    span,
                     body,
                     fun_id,
                     substs,
@@ -1185,7 +1221,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 target,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
             } => {
-                let cond = self.translate_operand(cond)?;
+                let cond = self.translate_operand(span, cond)?;
                 let target = self.translate_basic_block(body, *target)?;
                 RawTerminator::Assert {
                     cond,
@@ -1199,10 +1235,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 resume_arg: _,
                 drop: _,
             } => {
-                unimplemented!();
+                error_or_panic!(self, span, "Unsupported terminator: yield");
             }
             TerminatorKind::GeneratorDrop => {
-                unimplemented!();
+                error_or_panic!(self, span, "Unsupported terminator: generator drop");
             }
             TerminatorKind::FalseEdge {
                 real_target,
@@ -1232,8 +1268,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 RawTerminator::Goto { target }
             }
             TerminatorKind::InlineAsm { .. } => {
-                // This case should have been eliminated during the registration phase
-                unreachable!();
+                error_or_panic!(self, span, "Inline assembly is not supported");
             }
         };
 
@@ -1277,6 +1312,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// the blocks we go to after the function call returns.
     fn translate_function_call(
         &mut self,
+        span: rustc_span::Span,
         body: &hax::MirBody<()>,
         def_id: &hax::DefId,
         substs: &Vec<hax::GenericArg>,
@@ -1296,6 +1332,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Translate the function id, with its parameters
         let erase_regions = true;
         let fid = self.translate_fun_decl_id_with_args(
+            span,
             erase_regions,
             def_id,
             substs,
@@ -1319,7 +1356,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 });
 
                 // Translate the target
-                let lval = self.translate_place(destination)?;
+                let lval = self.translate_place(span, destination)?;
                 let next_block = self.translate_basic_block(body, next_block)?;
 
                 let call = Call {
@@ -1340,6 +1377,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// values.
     fn translate_arguments(
         &mut self,
+        span: rustc_span::Span,
         used_args: Option<Vec<bool>>,
         args: &Vec<hax::Operand>,
     ) -> Result<Vec<Operand>, Error> {
@@ -1367,7 +1405,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
 
             // Translate
-            let op = self.translate_operand(arg)?;
+            let op = self.translate_operand(span, arg)?;
             t_args.push(op);
         }
 
@@ -1430,6 +1468,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_function_signature(&mut self, def_id: DefId) -> Result<FunSig, Error> {
         let tcx = self.t_ctx.tcx;
         let erase_regions = false;
+        let span = self.t_ctx.tcx.def_span(def_id);
 
         // Retrieve the function signature, which includes the lifetimes
         let signature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
@@ -1444,7 +1483,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // closures. We also need to replace the vectors of type variables,
                 // regions, etc. with maps, because the indices will not always
                 // start at 0.
-                todo!("{:?}", tcx.type_of(def_id))
+                log::error!("{:?}", tcx.type_of(def_id));
+                error_or_panic!(self, span, "Closures are not supported yet");
             } else {
                 tcx.fn_sig(def_id).subst_identity()
             };
@@ -1491,13 +1531,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // There should only be regions in the late-bound parameters
                 use hax::BoundVariableKind;
                 match bvar {
-                    BoundVariableKind::Region(br) => translate_bound_region_kind_name(&br),
+                    BoundVariableKind::Region(br) => Ok(translate_bound_region_kind_name(&br)),
                     BoundVariableKind::Ty(_) | BoundVariableKind::Const => {
-                        unreachable!()
+                        error_or_panic!(
+                            self,
+                            span,
+                            format!("Unexpected bound variable: {:?}", bvar)
+                        )
                     }
                 }
             })
-            .collect();
+            .try_collect()?;
         self.push_bound_regions_group(bvar_names);
 
         let fun_kind = self.t_ctx.get_fun_kind(def_id);
