@@ -229,7 +229,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a function's local variables by adding them in the environment.
-    fn translate_body_locals(&mut self, body: &hax::MirBody<()>) -> Result<()> {
+    fn translate_body_locals(&mut self, body: &hax::MirBody<()>) -> Result<(), ()> {
         // Translate the parameters
         for (index, var) in body.local_decls.raw.iter().enumerate() {
             trace!("Translating local of index {} and type {:?}", index, var.ty);
@@ -252,7 +252,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     /// The local variables should already have been translated and inserted in
     /// the context.
-    fn translate_transparent_expression_body(&mut self, body: &hax::MirBody<()>) -> Result<()> {
+    fn translate_transparent_expression_body(&mut self, body: &hax::MirBody<()>) -> Result<(), ()> {
         trace!();
 
         let id = self.translate_basic_block(body, rustc_index::Idx::new(START_BLOCK.as_usize()))?;
@@ -265,7 +265,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         body: &hax::MirBody<()>,
         block_id: hax::BasicBlock,
-    ) -> Result<BlockId::Id> {
+    ) -> Result<BlockId::Id, ()> {
         // Check if the block has already been translated
         if let Some(id) = self.blocks_map.get(&block_id) {
             return Ok(id);
@@ -988,7 +988,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         body: &hax::MirBody<()>,
         statement: &hax::Statement,
-    ) -> Result<Option<Statement>> {
+    ) -> Result<Option<Statement>, ()> {
         trace!("About to translate statement (MIR) {:?}", statement);
 
         use std::ops::Deref;
@@ -1083,7 +1083,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         body: &hax::MirBody<()>,
         terminator: &hax::Terminator,
-    ) -> Result<Terminator> {
+    ) -> Result<Terminator, ()> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
 
         // Compute the meta information beforehand (we might need it to introduce
@@ -1256,7 +1256,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         target: &Option<hax::BasicBlock>,
         trait_refs: &Vec<hax::ImplSource>,
         trait_info: &Option<hax::TraitInfo>,
-    ) -> Result<RawTerminator> {
+    ) -> Result<RawTerminator, ()> {
         trace!();
         let rust_id = def_id.rust_def_id.unwrap();
 
@@ -1345,7 +1345,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         t_args
     }
 
-    fn translate_body(mut self, local_id: LocalDefId, arg_count: usize) -> Result<ExprBody> {
+    fn translate_body(mut self, local_id: LocalDefId, arg_count: usize) -> Result<ExprBody, ()> {
         let tcx = self.t_ctx.tcx;
 
         // Retrive the body

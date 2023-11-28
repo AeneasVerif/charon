@@ -1,5 +1,4 @@
 use crate::assumed;
-use crate::common::*;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -98,7 +97,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that we take as parameter a function to translate regions, because
     /// regions can be translated in several manners (non-erased region or erased
     /// regions), in which case the return type is different.
-    pub(crate) fn translate_ty(&mut self, erase_regions: bool, ty: &hax::Ty) -> Result<Ty> {
+    pub(crate) fn translate_ty(&mut self, erase_regions: bool, ty: &hax::Ty) -> Result<Ty, ()> {
         trace!("{:?}", ty);
         match ty {
             hax::Ty::Bool => Ok(Ty::Literal(LiteralTy::Bool)),
@@ -302,7 +301,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         used_params: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
-    ) -> Result<(Vec<Region>, Vec<Ty>, Vec<ConstGeneric>)> {
+    ) -> Result<(Vec<Region>, Vec<Ty>, Vec<ConstGeneric>), ()> {
         trace!("{:?}", substs);
         // Filter the parameters
         let substs: Vec<&hax::GenericArg> = match used_params {
@@ -344,7 +343,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         used_params: Option<Vec<bool>>,
         substs: &Vec<hax::GenericArg>,
         trait_refs: &Vec<hax::ImplSource>,
-    ) -> Result<GenericArgs> {
+    ) -> Result<GenericArgs, ()> {
         let (regions, types, const_generics) =
             self.translate_substs(erase_regions, used_params, substs)?;
         let trait_refs = self.translate_trait_impl_sources(erase_regions, trait_refs);

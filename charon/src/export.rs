@@ -64,7 +64,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     trait_impls: &TraitImplId::Map<TraitImpl>,
     dest_dir: &Option<PathBuf>,
     extension: &str,
-) -> Result<()> {
+) -> Result<(),()> {
     // Generate the destination file - we use the crate name for the file name
     let mut target_filename = dest_dir
         .as_deref()
@@ -149,7 +149,7 @@ pub fn export_ullbc(
     trait_decls: &TraitDecls,
     trait_impls: &TraitImpls,
     dest_dir: &Option<PathBuf>,
-) -> Result<()> {
+) -> Result<(),()> {
     gexport(
         crate_name,
         id_to_file,
@@ -175,7 +175,7 @@ pub fn export_llbc(
     trait_decls: &TraitDecls,
     trait_impls: &TraitImpls,
     dest_dir: &Option<PathBuf>,
-) -> Result<()> {
+) -> Result<(),()> {
     gexport(
         crate_name,
         id_to_file,

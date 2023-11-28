@@ -10,17 +10,14 @@ use std::iter::FromIterator;
 
 pub static TAB_INCR: &str = "    ";
 
-/// Our redefinition of Result - we don't care much about the I/O part.
-pub type Result<T> = std::result::Result<T, ()>;
-
 /// Propagate the error from a callback to the caller :
 /// Used to avoid saving, checking and returning the result by hand.
 /// The callback will not be called again if it returned an error.
 /// The dynamic signature is used to pass a generic function as argument.
 /// A simple use case is shown in `test_propagate_error`.
-pub fn propagate_error<T, C, F>(consumer: C, mut callback: F) -> Result<()>
+pub fn propagate_error<T, C, F>(consumer: C, mut callback: F) -> Result<(), ()>
 where
-    F: FnMut(T) -> Result<()>,
+    F: FnMut(T) -> Result<(),()>,
     C: FnOnce(&mut dyn FnMut(T)),
 {
     let mut res = Ok(());
@@ -121,7 +118,7 @@ pub fn write_vec<T>(
 }
 
 /// Assertion which doesn't panick
-pub fn assert(x: bool) -> Result<()> {
+pub fn assert(x: bool) -> Result<(),()> {
     if x {
         Ok(())
     } else {
