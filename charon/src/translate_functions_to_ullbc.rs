@@ -467,7 +467,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok((Operand::Move(p), ty))
             }
             hax::Operand::Constant(constant) => {
-                let constant = self.translate_constant_to_constant_expr(constant)?;
+                let constant = self.translate_constant_to_constant_expr(span, constant)?;
                 let ty = constant.ty.clone();
                 Ok((Operand::Const(constant), ty))
             }
@@ -533,7 +533,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok(Rvalue::Use(Operand::Copy(place)))
             }
             hax::Rvalue::Repeat(operand, cnst) => {
-                let c = self.translate_constant_expr_to_const_generic(cnst)?;
+                let c = self.translate_constant_expr_to_const_generic(span, cnst)?;
                 let (operand, t) = self.translate_operand_with_type(span, operand)?;
                 // Remark: we could desugar this into a function call later.
                 Ok(Rvalue::Repeat(operand, t, c))

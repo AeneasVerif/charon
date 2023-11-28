@@ -187,7 +187,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Ty::Array(ty, const_param) => {
                 trace!("Array");
 
-                let c = self.translate_constant_expr_to_const_generic(const_param)?;
+                let c = self.translate_constant_expr_to_const_generic(span, const_param)?;
                 let tys = vec![self.translate_ty(span, erase_regions, ty)?];
                 let cgs = vec![c];
                 let id = TypeId::Assumed(AssumedTy::Array);
@@ -345,7 +345,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     regions.push(self.translate_region(span, erase_regions, &region)?);
                 }
                 hax::GenericArg::Const(c) => {
-                    cgs.push(self.translate_constant_expr_to_const_generic(c)?);
+                    cgs.push(self.translate_constant_expr_to_const_generic(span, c)?);
                 }
             }
         }

@@ -72,7 +72,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
-                    .map(|f| self.translate_constant_expr_to_constant_expr(&f.value))
+                    .map(|f| self.translate_constant_expr_to_constant_expr(span, &f.value))
                     .try_collect()?;
                 let vid = vid.map(VariantId::Id::new);
                 RawConstantExpr::Adt(vid, fields)
@@ -83,7 +83,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
-                    .map(|f| self.translate_constant_expr_to_constant_expr(f))
+                    .map(|f| self.translate_constant_expr_to_constant_expr(span, f))
                     .try_collect()?;
                 RawConstantExpr::Adt(Option::None, fields)
             }
@@ -113,7 +113,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 RawConstantExpr::Global(self.translate_global_decl_id(id.rust_def_id.unwrap()))
             }
             ConstantExprKind::Borrow(be) => {
-                let be = self.translate_constant_expr_to_constant_expr(be)?;
+                let be = self.translate_constant_expr_to_constant_expr(span, be)?;
                 RawConstantExpr::Ref(Box::new(be))
             }
             ConstantExprKind::ConstRef { id } => {
@@ -145,18 +145,26 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(ConstantExpr { value, ty })
     }
 
+    /// Remark: [hax::ConstantExpr] contains span information, but it is often
+    /// the default span (i.e., it is useless), hence the additional span argument.
     pub(crate) fn translate_constant_expr_to_constant_expr(
         &mut self,
+        span: rustc_span::Span,
         v: &hax::ConstantExpr,
     ) -> Result<ConstantExpr, Error> {
-        self.translate_constant_expr_kind_to_constant_expr(v.span.rust_span, &v.ty, &v.contents)
+        self.translate_constant_expr_kind_to_constant_expr(span, &v.ty, &v.contents)
     }
 
+    /// Remark: [hax::ConstantExpr] contains span information, but it is often
+    /// the default span (i.e., it is useless), hence the additional span argument.
     pub(crate) fn translate_constant_expr_to_const_generic(
         &mut self,
+        span: rustc_span::Span,
         v: &hax::ConstantExpr,
     ) -> Result<ConstGeneric, Error> {
-        let value = self.translate_constant_expr_to_constant_expr(v)?.value;
+        let value = self
+            .translate_constant_expr_to_constant_expr(span, v)?
+            .value;
         match value {
             RawConstantExpr::Literal(v) => Ok(ConstGeneric::Value(v)),
             RawConstantExpr::Global(v) => Ok(ConstGeneric::Global(v)),
@@ -164,7 +172,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             | RawConstantExpr::TraitConst { .. }
             | RawConstantExpr::Ref(_)
             | RawConstantExpr::FnPtr { .. } => {
-                let span = v.span.rust_span;
                 error_or_panic!(
                     self,
                     span,
@@ -175,11 +182,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    /// Remark: [hax::ConstantExpr] contains span information, but it is often
+    /// the default span (i.e., it is useless), hence the additional span argument.
     pub(crate) fn translate_constant_to_constant_expr(
         &mut self,
+        span: rustc_span::Span,
         v: &hax::Constant,
     ) -> Result<ConstantExpr, Error> {
-        self.translate_constant_expr_to_constant_expr(&v.literal.constant_kind)
+        self.translate_constant_expr_to_constant_expr(span, &v.literal.constant_kind)
     }
 
     // TODO: remove once we make the external globals opaque
@@ -190,6 +200,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: rustc_span::Span,
     ) -> Result<ConstantExpr, Error> {
         let val = hax::const_value_to_constant_expr(&self.hax_state, ty, *val, span);
-        self.translate_constant_expr_to_constant_expr(&val)
+        self.translate_constant_expr_to_constant_expr(span, &val)
     }
 }
