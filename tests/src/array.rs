@@ -124,6 +124,20 @@ pub fn take_array_borrow(_: &[u32; 2]) {}
 pub fn take_slice(_: &[u32]) {}
 pub fn take_mut_slice(_: &mut [u32]) {}
 
+pub fn const_array() -> [u32; 2] {
+    [0, 0]
+}
+
+pub fn const_slice() {
+    let _: &[u32] = &[0, 0];
+}
+
+/*
+// This triggers a special case in the constant expressions
+pub fn const_string() {
+    let _ = "hello";
+}*/
+
 pub fn take_all() {
     let mut x: [u32; 2] = [0, 0];
     // x is deep copied (copy node appears in Charon, followed by a move)
