@@ -1476,7 +1476,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let span = self.t_ctx.tcx.def_span(def_id);
 
         // Retrieve the function signature, which includes the lifetimes
-        let signature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
+        let rsignature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
             if tcx.is_closure(def_id) {
                 // TODO:
                 // ```
@@ -1488,10 +1488,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // closures. We also need to replace the vectors of type variables,
                 // regions, etc. with maps, because the indices will not always
                 // start at 0.
-                log::error!("{:?}", tcx.type_of(def_id));
+                log::trace!("{:?}", tcx.type_of(def_id));
                 error_or_panic!(self, span, "Closures are not supported yet");
             } else {
-                tcx.fn_sig(def_id).subst_identity()
+                let fn_sig = tcx.fn_sig(def_id);
+                trace!("Fun sig: {:?}", fn_sig);
+                // There is an early binder for the early-bound regions, that
+                // we ignore, and a binder for the late-bound regions, that we
+                // keep.
+                fn_sig.subst_identity()
             };
 
         // The parameters (and in particular the lifetimes) are split between
@@ -1506,17 +1511,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Start by translating the early-bound parameters (those are contained by `substs`).
         let fun_type = tcx.type_of(def_id).subst_identity();
-        let substs = match fun_type.kind() {
+        let rsubsts = match fun_type.kind() {
             ty::TyKind::FnDef(_def_id, substs_ref) => substs_ref,
             _ => {
                 unreachable!()
             }
         };
-        let substs = substs.sinto(&self.hax_state);
+        let substs = rsubsts.sinto(&self.hax_state);
 
         // Some debugging information:
         trace!("Def id: {def_id:?}:\n\n- substs:\n{substs:?}\n\n- generics:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
-               tcx.generics_of(def_id), signature.bound_vars(), signature);
+               tcx.generics_of(def_id), rsignature.bound_vars(), rsignature);
 
         // Add the *early-bound* parameters.
         self.translate_generic_params_from_hax(span, &substs)?;
@@ -1524,7 +1529,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         //
         // Add the *late-bound* parameters (bound in the signature, can only be lifetimes)
         //
-        let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
+        let signature: hax::MirPolyFnSig = rsignature.sinto(&self.hax_state);
         let is_unsafe = match signature.value.unsafety {
             hax::Unsafety::Unsafe => true,
             hax::Unsafety::Normal => false,

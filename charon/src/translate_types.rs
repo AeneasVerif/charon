@@ -73,6 +73,62 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         .unwrap();
                     Ok(Region::Var(*rid))
                 }
+                hax::RegionKind::ReVar(re_var) => {
+                    // TODO: I'm really not sure how to handle those, here.
+                    // They sometimes appear and seem to refer to the early bound
+                    // regions. But on the other hand, whenever I investigated, I
+                    // only encountered those in *trait references* in trait
+                    // implementations.
+                    //
+                    // For instance, here is a minimal example which triggers
+                    // this case:
+                    // ```
+                    // pub trait From<T> {
+                    //     type Error;
+                    //   fn from(v: T) -> Result<Self, Self::Error>
+                    // //                                ^^^^^^^^^^
+                    // //                    This associated type is important
+                    //     where
+                    //         Self: std::marker::Sized;
+                    //
+                    // impl From<&bool> for bool {
+                    // //        ^^^^^
+                    // // This reference is important
+                    //     type Error = ();
+                    //
+                    //     fn from(v: &bool) -> Result<Self, Self::Error> {
+                    //         Ok(*v)
+                    //     }
+                    // }
+                    // ```
+                    //
+                    // If we extract this to LLBC, wet get (focusing on the implementation
+                    //  of `from`):
+                    // ```
+                    // ... // omitted
+                    //
+                    // fn crate::{bool}::from<@R0, @R1>(@1: &@R1 (bool)) ->
+                    //   core::result::Result<bool, crate::{bool}<@R0>::Error> {
+                    //   //                                       ^^^
+                    //   //                             The problematic region
+                    //   ... // omitted
+                    // }
+                    // ```
+                    error_assert!(self, span, self.region_vars_map.get(region).is_none());
+
+                    for (rk, rid) in self.region_vars_map.map.iter() {
+                        if let hax::RegionKind::ReEarlyBound(eb) = &rk.kind {
+                            if eb.index == re_var.index {
+                                return Ok(Region::Var(*rid));
+                            }
+                        }
+                    }
+                    let err = format!(
+                        "Could not find region: {:?}\n\nRegion vars map:\n{:?}\n\nBound region vars:\n{:?}",
+                        region, self.region_vars_map, self.bound_region_vars
+                    );
+                    error_or_panic!(self, span, err)
+                }
                 _ => {
                     // For the other regions, we use the regions map
                     match self.region_vars_map.get(region) {
