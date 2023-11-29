@@ -139,7 +139,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    pub(crate) fn get_predicates_of(&mut self, def_id: DefId) -> hax::GenericPredicates {
+    pub(crate) fn get_predicates_of(
+        &mut self,
+        def_id: DefId,
+    ) -> Result<hax::GenericPredicates, Error> {
         // **IMPORTANT**:
         // There are two functions which allow to retrieve the predicates of
         // a definition:
@@ -205,18 +208,26 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_clauses
                     .into_iter()
                     .map(|(pred, span)| {
-                        if let rustc_middle::ty::PredicateKind::Clause(
-                            rustc_middle::ty::Clause::Trait(tr),
-                        ) = &pred.kind().no_bound_vars().unwrap()
-                        {
-                            // Normalize the trait clause
-                            let tr = tcx.normalize_erasing_regions(param_env, *tr);
-                            (tr, *span)
+                        if let Some(pred) = &pred.kind().no_bound_vars() {
+                            if let rustc_middle::ty::PredicateKind::Clause(
+                                rustc_middle::ty::Clause::Trait(tr),
+                            ) = pred
+                            {
+                                // Normalize the trait clause
+                                let tr = tcx.normalize_erasing_regions(param_env, *tr);
+                                Ok((tr, *span))
+                            } else {
+                                unreachable!();
+                            }
                         } else {
-                            unreachable!();
+                            let err = Error {
+                                span: *span,
+                                msg: "Bound variables on predicate".to_string(),
+                            };
+                            Err(err)
                         }
                     })
-                    .collect();
+                    .try_collect()?;
 
             let trait_preds: Vec<_> = trait_clauses
                 .iter()
@@ -267,7 +278,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .chain(non_trait_preds.into_iter())
             .collect();
         trace!("Predicates of {:?}\n{:?}", def_id, predicates);
-        hax::GenericPredicates { parent, predicates }
+        Ok(hax::GenericPredicates { parent, predicates })
     }
 
     /// This function should be called **after** we translated the generics
@@ -291,7 +302,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("No parents for {:?}", def_id);
             }
             Some(parent_id) => {
-                let preds = self.get_predicates_of(parent_id);
+                let preds = self.get_predicates_of(parent_id)?;
                 trace!("Predicates of parent ({:?}): {:?}", parent_id, preds);
 
                 if let Some(trait_id) = parent_trait_id {
@@ -319,7 +330,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
 
         // The predicates of the current definition
-        let preds = self.get_predicates_of(def_id);
+        let preds = self.get_predicates_of(def_id)?;
         trace!("Local predicates of {:?}:\n{:?}", def_id, preds);
         self.translate_predicates(&preds)?;
 

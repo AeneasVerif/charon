@@ -601,18 +601,29 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// account the fact that some types are mutually recursive at this point
     /// (we will need to take that into account when generating the code in a file).
     pub(crate) fn translate_type(&mut self, rust_id: DefId) {
+        // TODO: for now, if there is an error while translating the parameters/
+        // predicates of the declaration, we ignore it altogether, while we should
+        // save somewhere that we failed to extract it.
+        match self.translate_type_aux(rust_id) {
+            Ok(()) => (),
+            Err(_) => {
+                // TODO
+            }
+        }
+    }
+
+    /// Auxliary helper to properly handle errors, see [translate_type].
+    fn translate_type_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         let trans_id = self.translate_type_decl_id(rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         // Check and translate the generics
-        bt_ctx.translate_generic_params(rust_id).unwrap();
+        bt_ctx.translate_generic_params(rust_id)?;
 
         // Translate the predicates
-        bt_ctx
-            .translate_predicates_solve_trait_obligations_of(None, rust_id)
-            .unwrap();
+        bt_ctx.translate_predicates_solve_trait_obligations_of(None, rust_id)?;
 
         // Check if the type has been explicitely marked as opaque.
         // If yes, ignore it, otherwise, dive into the body. Note that for
@@ -656,5 +667,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
 
         self.type_defs.insert(trans_id, type_def);
+
+        Ok(())
     }
 }

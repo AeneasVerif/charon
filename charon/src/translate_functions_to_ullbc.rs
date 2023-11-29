@@ -1637,6 +1637,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Translate one function.
     pub(crate) fn translate_function(&mut self, rust_id: DefId) {
+        // TODO: for now, if there is an error while translating the signature
+        // of the function, we ignore the function altogether, while we should
+        // save somewhere that we failed to extract it.
+        match self.translate_function_aux(rust_id) {
+            Ok(()) => (),
+            Err(_) => {
+                // TODO
+            }
+        }
+    }
+
+    /// Auxliary helper to properly handle errors, see [translate_function].
+    pub fn translate_function_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_id = self.translate_fun_decl_id(rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
@@ -1664,7 +1677,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Translate the function signature
         trace!("Translating function signature");
-        let signature = bt_ctx.translate_function_signature(rust_id).unwrap();
+        let signature = bt_ctx.translate_function_signature(rust_id)?;
 
         // Check if the type is opaque or transparent
         let is_local = rust_id.is_local();
@@ -1694,6 +1707,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 body,
             },
         );
+
+        Ok(())
     }
 
     /// Generate an expression body from a typed constant value.
@@ -1733,6 +1748,19 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     /// Translate one global.
     pub(crate) fn translate_global(&mut self, rust_id: DefId) {
+        // TODO: for now, if there is an error while translating the parameters/
+        // predicates of the global, we ignore the declaration altogether, while
+        // we should save somewhere that we failed to extract it.
+        match self.translate_global_aux(rust_id) {
+            Ok(()) => (),
+            Err(_) => {
+                // TODO
+            }
+        }
+    }
+
+    /// Auxliary helper to properly handle errors, see [translate_global].
+    pub fn translate_global_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate global:\n{:?}", rust_id);
         let span = self.tcx.def_span(rust_id);
 
@@ -1754,9 +1782,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
         let erase_regions = false; // This doesn't matter: there shouldn't be any regions
-        let ty = bt_ctx
-            .translate_ty(span, erase_regions, &mir_ty.sinto(hax_state))
-            .unwrap();
+        let ty = bt_ctx.translate_ty(span, erase_regions, &mir_ty.sinto(hax_state))?;
 
         let body = if rust_id.is_local() && is_transparent {
             // It's a local and transparent global: we extract its body as for functions.
@@ -1784,5 +1810,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 body,
             },
         );
+
+        Ok(())
     }
 }
