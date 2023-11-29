@@ -429,12 +429,28 @@ let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
 
 let region_to_pattern (m : constraints) (r : T.region) : region =
   match r with
-  | RVar r -> RVar (T.RegionId.Map.find r m.rmap)
+  | RVar r ->
+      RVar
+        (match T.RegionId.Map.find_opt r m.rmap with
+        | Some r -> r
+        | None -> None)
   | RStatic -> RStatic
   | _ -> raise (Failure "Unexpected")
 
 let type_var_to_pattern (m : constraints) (v : T.TypeVarId.id) : var option =
-  T.TypeVarId.Map.find v m.tmap
+  match T.TypeVarId.Map.find_opt v m.tmap with
+  | Some v -> v
+  | None ->
+      (* Return the empty pattern *)
+      None
+
+let const_generic_var_to_pattern (m : constraints) (v : T.ConstGenericVarId.id)
+    : var option =
+  match T.ConstGenericVarId.Map.find_opt v m.cmap with
+  | Some v -> v
+  | None ->
+      (* Return the empty pattern *)
+      None
 
 let compute_constraints_map (generics : T.generic_params) : constraints =
   let fresh_id (gen : int ref) : int =
@@ -576,7 +592,7 @@ and ty_to_pattern (ctx : ctx) (c : to_pat_config) (params : T.generic_params)
 and const_generic_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
     (cg : T.const_generic) : generic_arg =
   match cg with
-  | CgVar v -> GExpr (EVar (T.ConstGenericVarId.Map.find v m.cmap))
+  | CgVar v -> GExpr (EVar (const_generic_var_to_pattern m v))
   | CgValue v -> GValue (literal_to_pattern c v)
   | CgGlobal gid ->
       let d = T.GlobalDeclId.Map.find gid ctx.global_decls in
@@ -615,6 +631,9 @@ let name_to_pattern (ctx : ctx) (c : to_pat_config) (n : T.name) : pattern =
   (* Return *)
   pat
 
+(** We use the [params] to compute proper names for the variables.
+    Note that it is safe to provide empty generic parameters.
+ *)
 let name_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
     (params : T.generic_params) (n : T.name) (args : T.generic_args) : pattern =
   (* Convert the name to a pattern *)
@@ -635,6 +654,9 @@ let name_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
   (* Return *)
   pat
 
+(** We use the [params] to compute proper names for the variables.
+    Note that it is safe to provide empty generic parameters.
+ *)
 let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
     (params : T.generic_params) (func : E.fn_ptr) : pattern =
   (* Convert the function pointer to a pattern *)
