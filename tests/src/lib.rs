@@ -1,5 +1,6 @@
 pub mod array;
 pub mod array_const_generics;
+pub mod closures;
 pub mod constants;
 pub mod external;
 pub mod hashmap;
@@ -10,3 +11,4 @@ pub mod nested_borrows;
 pub mod no_nested_borrows;
 pub mod paper;
 pub mod traits;
+pub mod traits_special;
