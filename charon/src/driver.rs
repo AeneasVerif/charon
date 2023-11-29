@@ -28,6 +28,8 @@ use std::ops::Deref;
 /// The callbacks for Charon
 pub struct CharonCallbacks {
     pub options: cli_options::CliOpts,
+    /// This is to be filled during the extraction
+    pub error_count: usize,
 }
 
 impl Callbacks for CharonCallbacks {
@@ -114,7 +116,7 @@ pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize>
 /// Translate a crate to LLBC (Low-Level Borrow Calculus).
 ///
 /// This function is a callback function for the Rust compiler.
-pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Result<(), ()> {
+pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) -> Result<(), ()> {
     trace!();
     let options = &internal.options;
 
@@ -188,6 +190,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     if options.ullbc {
         // # Extract the files
         export::export_ullbc(
+            ctx.error_count > 0,
             crate_name,
             &ctx.id_to_file,
             &ordered_decls,
@@ -282,6 +285,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
 
         // # Final step: generate the files.
         export::export_llbc(
+            ctx.error_count > 0,
             crate_name,
             &ctx.id_to_file,
             &ordered_decls,
@@ -294,6 +298,9 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         )?;
     }
     trace!("Done");
+
+    // Update the error count
+    internal.error_count = ctx.error_count;
 
     Ok(())
 }

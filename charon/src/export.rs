@@ -54,6 +54,7 @@ struct GCrateSerializer<'a, FD, GD> {
 ///
 /// This is a generic function, used both for LLBC and ULLBC.
 pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
+    errors: bool,
     crate_name: String,
     id_to_file: &HashMap<FileId::Id, FileName>,
     ordered_decls: &DeclarationsGroups,
@@ -64,7 +65,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     trait_impls: &TraitImplId::Map<TraitImpl>,
     dest_dir: &Option<PathBuf>,
     extension: &str,
-) -> Result<(),()> {
+) -> Result<(), ()> {
     // Generate the destination file - we use the crate name for the file name
     let mut target_filename = dest_dir
         .as_deref()
@@ -123,7 +124,14 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
                 // We canonicalize (i.e., make absolute) the path before printing it:
                 // this makes it clearer to the user where to find the file.
                 let path = std::fs::canonicalize(target_filename).unwrap();
-                info!("Generated the file: {}", path.to_str().unwrap());
+                if errors {
+                    info!(
+                        "Generated the partial (because we encountered errors) file: {}",
+                        path.to_str().unwrap()
+                    );
+                } else {
+                    info!("Generated the file: {}", path.to_str().unwrap());
+                }
                 Ok(())
             }
             std::result::Result::Err(_) => {
@@ -140,6 +148,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
 
 /// Export the translated ULLBC definitions to a JSON file.
 pub fn export_ullbc(
+    errors: bool,
     crate_name: String,
     id_to_file: &HashMap<FileId::Id, FileName>,
     ordered_decls: &DeclarationsGroups,
@@ -149,8 +158,9 @@ pub fn export_ullbc(
     trait_decls: &TraitDecls,
     trait_impls: &TraitImpls,
     dest_dir: &Option<PathBuf>,
-) -> Result<(),()> {
+) -> Result<(), ()> {
     gexport(
+        errors,
         crate_name,
         id_to_file,
         ordered_decls,
@@ -166,6 +176,7 @@ pub fn export_ullbc(
 
 /// Export the translated LLBC definitions to a JSON file.
 pub fn export_llbc(
+    errors: bool,
     crate_name: String,
     id_to_file: &HashMap<FileId::Id, FileName>,
     ordered_decls: &DeclarationsGroups,
@@ -175,8 +186,9 @@ pub fn export_llbc(
     trait_decls: &TraitDecls,
     trait_impls: &TraitImpls,
     dest_dir: &Option<PathBuf>,
-) -> Result<(),()> {
+) -> Result<(), ()> {
     gexport(
+        errors,
         crate_name,
         id_to_file,
         ordered_decls,

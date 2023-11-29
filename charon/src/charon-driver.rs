@@ -205,16 +205,18 @@ fn main() {
     // We don't need to check this case in order to use the default Rustc callbacks
     // instead of the Charon callback: because there is nothing to build, Rustc will
     // take care of everything and actually not call us back.
-    let continue_on_failure = options.continue_on_failure;
-    let res = RunCompiler::new(&compiler_args, &mut CharonCallbacks { options }).run();
+    let mut callback = CharonCallbacks {
+        options,
+        error_count: 0,
+    };
+    let res = RunCompiler::new(&compiler_args, &mut callback).run();
 
     match res {
         Ok(()) => (),
         Err(_) => {
-            log::error!("The extraction encountered errors");
-            if !continue_on_failure {
-                panic!("The extraction encountered errors");
-            }
+            let msg = format!("The extraction encountered {} errors", callback.error_count);
+            log::error!("{}", msg);
+            std::process::exit(1);
         }
     }
 }
