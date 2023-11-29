@@ -1,5 +1,6 @@
 pub mod array;
 pub mod array_const_generics;
+pub mod bitwise;
 pub mod closures;
 pub mod constants;
 pub mod external;

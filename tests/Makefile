@@ -26,7 +26,7 @@ charon-tests: \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
 	test-constants test-array test-array_const_generics test-traits \
-	test-closures test-shifts
+	test-closures test-bitwise
 
 test-nested_borrows: OPTIONS += --no-code-duplication
 test-no_nested_borrows: OPTIONS += --no-code-duplication
@@ -45,7 +45,7 @@ test-array_const_generics:
 test-traits:
 test-traits_special:
 test-closures:
-test-shifts:
+test-bitwise:
 
 # =============================================================================
 # The tests.
@@ -56,6 +56,13 @@ test-shifts:
 .PHONY: test-%
 test-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
 test-%: build
+
+.PHONY: clean
+clean:
+	rm -f $(DEST)/llbc/* \
+	rm -f $(DEST)/ullbc/* \
+	rm -f $(DEST)/llbc_prom/* \
+	rm -f $(DEST)/llbc_opt/*
 
 ifeq (, $(NOT_ALL_TESTS))
 
