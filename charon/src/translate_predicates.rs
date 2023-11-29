@@ -1099,7 +1099,6 @@ impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
                 } else {
                     let msg = format!("Could not find clauses for trait obligations:{}\n\nAvailable clauses:\n{}\n- context: {:?}",
                         unsolved, clauses, self.ctx.def_id);
-                    self.ctx.increment_error_count();
                     self.ctx.span_err(self.span, &msg);
                 }
 

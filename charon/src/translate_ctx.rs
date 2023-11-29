@@ -30,7 +30,6 @@ use std::fmt;
 /// Macro to either panic or return on error, depending on the CLI options
 macro_rules! error_or_panic {
     ($ctx:ident, $span: ident, $msg: expr) => {{
-        $ctx.increment_error_count();
         $ctx.span_err($span, &$msg);
         if $ctx.continue_on_failure() {
             let e = crate::common::Error {
@@ -49,7 +48,6 @@ pub(crate) use error_or_panic;
 macro_rules! error_assert {
     ($ctx:ident, $span: ident, $b: expr) => {
         if !$b {
-            $ctx.increment_error_count();
             let msg = format!("assertion failure: {:?}", stringify!($b));
             $ctx.span_err($span, &msg);
             if $ctx.continue_on_failure() {
@@ -295,12 +293,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.continue_on_failure
     }
 
-    pub fn span_err(&self, span: rustc_span::Span, msg: &str) {
+    pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
         let msg = msg.to_string();
         self.session.span_err(span, msg);
+        self.increment_error_count();
     }
 
-    pub fn increment_error_count(&mut self) {
+    fn increment_error_count(&mut self) {
         self.error_count += 1;
     }
 
@@ -557,12 +556,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.continue_on_failure()
     }
 
-    pub fn span_err(&self, span: rustc_span::Span, msg: &str) {
+    pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
         self.t_ctx.span_err(span, msg)
-    }
-
-    pub fn increment_error_count(&mut self) {
-        self.t_ctx.increment_error_count();
     }
 
     pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
