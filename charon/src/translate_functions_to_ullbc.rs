@@ -3,19 +3,16 @@
 //! us to handle, and easier to maintain - rustc's representation can evolve
 //! independently.
 
-#![allow(dead_code)]
 use crate::assumed;
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
-use crate::id_vector;
 use crate::translate_ctx::*;
 use crate::translate_types;
 use crate::types::*;
 use crate::ullbc_ast::*;
 use crate::values::*;
-use core::convert::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::{DefId, LocalDefId};
@@ -67,12 +64,6 @@ fn translate_unaryop_kind(binop: hax::UnOp) -> UnOp {
         hax::UnOp::Not => UnOp::Not,
         hax::UnOp::Neg => UnOp::Neg,
     }
-}
-
-/// Build an uninterpreted constant from a MIR constant identifier.
-fn rid_as_unevaluated_constant<'tcx>(id: DefId) -> rustc_middle::mir::UnevaluatedConst<'tcx> {
-    let p = ty::List::empty();
-    rustc_middle::mir::UnevaluatedConst::new(id, p)
 }
 
 /// Small utility
@@ -1714,41 +1705,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         );
 
         Ok(())
-    }
-
-    /// Generate an expression body from a typed constant value.
-    fn global_generate_assignment_body(
-        &mut self,
-        ty: Ty,
-        def_rid: DefId,
-        val: ConstantExpr,
-    ) -> ExprBody {
-        // Compute the meta information (we use the same everywhere)
-        let meta = self.translate_meta_from_rid(def_rid);
-
-        // # Variables
-        // ret : ty
-        let var = Var {
-            index: VarId::ZERO,
-            name: None,
-            ty,
-        };
-        // # Instructions
-        // ret := const (ty, val)
-        // return
-        let block = BlockData {
-            statements: vec![Statement::new(
-                meta,
-                RawStatement::Assign(Place::new(var.index), Rvalue::Use(Operand::Const(val))),
-            )],
-            terminator: Terminator::new(meta, RawTerminator::Return),
-        };
-        ExprBody {
-            meta,
-            arg_count: 0,
-            locals: id_vector::Vector::from(vec![var]),
-            body: id_vector::Vector::from(vec![block]),
-        }
     }
 
     /// Translate one global.
