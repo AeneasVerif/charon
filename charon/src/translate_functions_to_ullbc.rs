@@ -94,7 +94,7 @@ pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn translate_binaryop_kind(
-        &self,
+        &mut self,
         span: rustc_span::Span,
         binop: hax::BinOp,
     ) -> Result<BinOp, Error> {
@@ -1578,7 +1578,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
 
             // Solve the unsolved obligations
-            ctx.solve_trait_obligations_in_trait_clauses();
+            ctx.solve_trait_obligations_in_trait_clauses(span);
             Ok(())
         })?;
 

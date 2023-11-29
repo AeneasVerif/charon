@@ -50,7 +50,7 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     // Translate a region
     pub(crate) fn translate_region(
-        &self,
+        &mut self,
         span: rustc_span::Span,
         erase_regions: bool,
         region: &hax::Region,

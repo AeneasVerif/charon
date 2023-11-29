@@ -355,9 +355,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         parent_trait_id: Option<TraitDeclId::Id>,
         def_id: DefId,
     ) -> Result<(), Error> {
+        let span = self.t_ctx.tcx.def_span(def_id);
         self.while_registering_trait_clauses(&mut |ctx| {
             ctx.translate_predicates_of(parent_trait_id, def_id)?;
-            ctx.solve_trait_obligations_in_trait_clauses();
+            ctx.solve_trait_obligations_in_trait_clauses(span);
             Ok(())
         })
     }
@@ -942,6 +943,8 @@ struct TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
     pub unsolved_count: usize,
     /// The unsolved clauses.
     pub unsolved: Vec<(TraitDeclId::Id, GenericArgs)>,
+    /// For error messages
+    pub span: rustc_span::Span,
     /// The current context
     pub ctx: &'a mut BodyTransCtx<'tcx, 'ctx, 'ctx1>,
 }
@@ -979,6 +982,10 @@ impl<'a, 'tcx, 'ctx, 'ctx1> SharedTypeVisitor for TraitInstancesSolver<'a, 'tcx,
 impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
     /// Auxiliary function
     fn visit(&mut self, solve: bool) {
+        //
+        // Explore the trait clauses map
+        //
+
         // For now we clone the trait clauses map - we will make it more effcicient later
         let mut trait_clauses: Vec<(TraitInstanceId, NonLocalTraitClause)> = self
             .ctx
@@ -1000,17 +1007,40 @@ impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
         if solve {
             self.ctx.trait_clauses = im::OrdMap::from(trait_clauses);
         }
-        // Otherwise: also collect the unsolved proof obligations in the predicates
-        // which are not trait predicates
-        else {
-            // TODO: annoying that we have to clone
-            for x in &self.ctx.types_outlive.clone() {
+
+        //
+        // Also explore the other predicates
+        // Remark: we could do this *after* we solved all the trait obligations
+        // in the trait clauses map.
+
+        // Types outlive predicates
+        // TODO: annoying that we have to clone
+        let mut types_outlive = self.ctx.types_outlive.clone();
+        for x in &mut types_outlive {
+            if solve {
+                MutTypeVisitor::visit_type_outlives(self, x);
+            } else {
                 SharedTypeVisitor::visit_type_outlives(self, x);
             }
-            // TODO: annoying that we have to clone
-            for x in &self.ctx.trait_type_constraints.clone() {
+        }
+        // Replace
+        if solve {
+            self.ctx.types_outlive = types_outlive;
+        }
+
+        // Trait type constraints predicates
+        // TODO: annoying that we have to clone
+        let mut trait_type_constraints = self.ctx.trait_type_constraints.clone();
+        for x in &mut trait_type_constraints {
+            if solve {
+                MutTypeVisitor::visit_trait_type_constraint(self, x);
+            } else {
                 SharedTypeVisitor::visit_trait_type_constraint(self, x);
             }
+        }
+        // Replace
+        if solve {
+            self.ctx.trait_type_constraints = trait_type_constraints;
         }
     }
 
@@ -1021,6 +1051,7 @@ impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
     }
 
     fn collect_unsolved(&mut self) {
+        self.unsolved.clear();
         self.visit(false);
     }
 
@@ -1066,11 +1097,10 @@ impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
                         unsolved, clauses, self.ctx.def_id
                     );
                 } else {
-                    // Simply log a warning
-                    log::warn!(
-                        "Could not find clauses for trait obligations:{}\n\nAvailable clauses:\n{}\n- context: {:?}",
-                        unsolved, clauses, self.ctx.def_id
-                    );
+                    let msg = format!("Could not find clauses for trait obligations:{}\n\nAvailable clauses:\n{}\n- context: {:?}",
+                        unsolved, clauses, self.ctx.def_id);
+                    self.ctx.increment_error_count();
+                    self.ctx.span_err(self.span, &msg);
                 }
 
                 return;
@@ -1092,10 +1122,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// may refer to other clauses, meaning that we are not necessarily able
     /// to solve all the trait obligations when registering a clause, but might
     /// be able later).
-    pub(crate) fn solve_trait_obligations_in_trait_clauses(&mut self) {
+    pub(crate) fn solve_trait_obligations_in_trait_clauses(&mut self, span: rustc_span::Span) {
         let mut solver = TraitInstancesSolver {
             unsolved_count: 0,
             unsolved: Vec::new(),
+            span,
             ctx: self,
         };
 

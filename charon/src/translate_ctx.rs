@@ -30,6 +30,7 @@ use std::fmt;
 /// Macro to either panic or return on error, depending on the CLI options
 macro_rules! error_or_panic {
     ($ctx:ident, $span: ident, $msg: expr) => {{
+        $ctx.increment_error_count();
         $ctx.span_err($span, &$msg);
         if $ctx.continue_on_failure() {
             let e = crate::common::Error {
@@ -48,6 +49,7 @@ pub(crate) use error_or_panic;
 macro_rules! error_assert {
     ($ctx:ident, $span: ident, $b: expr) => {
         if !$b {
+            $ctx.increment_error_count();
             let msg = format!("assertion failure: {:?}", stringify!($b));
             $ctx.span_err($span, &msg);
             if $ctx.continue_on_failure() {
@@ -137,6 +139,8 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub crate_info: CrateInfo,
     /// Do not abort on failure and attempt to extract as much as possible.
     pub continue_on_failure: bool,
+    /// The number of errors encountered so far.
+    pub error_count: usize,
     /// Error out if some code ends up being duplicated by the control-flow
     /// reconstruction (note that because several patterns in a match may lead
     /// to the same branch, it is node always possible not to duplicate code).
@@ -294,6 +298,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     pub fn span_err(&self, span: rustc_span::Span, msg: &str) {
         let msg = msg.to_string();
         self.session.span_err(span, msg);
+    }
+
+    pub fn increment_error_count(&mut self) {
+        self.error_count += 1;
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -551,6 +559,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub fn span_err(&self, span: rustc_span::Span, msg: &str) {
         self.t_ctx.span_err(span, msg)
+    }
+
+    pub fn increment_error_count(&mut self) {
+        self.t_ctx.increment_error_count();
     }
 
     pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
