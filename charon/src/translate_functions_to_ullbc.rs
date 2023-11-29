@@ -753,13 +753,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                     hax::AggregateKind::Closure(def_id, sig) => {
                         trace!("Closure:\n- def_id: {:?}\n- sig: {:?}", def_id, sig);
-                        // We need to register the signature for def_id, so that
-                        // we can later translate the closure the same way as top-level
-                        // functions.
-                        error_or_panic!(self, span, "Support for closures is not implemented yet")
-                        /*let def_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
+                        let def_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
                         let akind = AggregateKind::Closure(def_id);
-                        Rvalue::Aggregate(akind, Vec::new()) */
+                        Ok(Rvalue::Aggregate(akind, Vec::new()))
                     }
                     hax::AggregateKind::Generator(_def_id, _subst, _movability) => {
                         error_or_panic!(self, span, "Generators are not supported");
@@ -1469,20 +1465,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let span = self.t_ctx.tcx.def_span(def_id);
 
         // Retrieve the function signature, which includes the lifetimes
-        let rsignature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
+        let signature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
             if tcx.is_closure(def_id) {
-                // TODO:
-                // ```
-                // error: internal compiler error: compiler/rustc_hir_analysis/src/collect.rs:1118:13:
-                // to get the signature of a closure, use `substs.as_closure().sig()` not `fn_sig()`
-                // ```
-                //
-                // We need to have a map from def ids to signatures, for the
-                // closures. We also need to replace the vectors of type variables,
-                // regions, etc. with maps, because the indices will not always
-                // start at 0.
-                log::trace!("{:?}", tcx.type_of(def_id));
-                error_or_panic!(self, span, "Closures are not supported yet");
+                // Closures have a peculiar handling in Rust: we can't call
+                // `TyCtxt::fn_sig`.
+                let fun_type = tcx.type_of(def_id).subst_identity();
+                let rsubsts = match fun_type.kind() {
+                    ty::TyKind::Closure(_def_id, substs_ref) => substs_ref,
+                    _ => {
+                        unreachable!()
+                    }
+                };
+                rsubsts.as_closure().sig()
             } else {
                 let fn_sig = tcx.fn_sig(def_id);
                 trace!("Fun sig: {:?}", fn_sig);
@@ -1491,6 +1485,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // keep.
                 fn_sig.subst_identity()
             };
+        let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
 
         // The parameters (and in particular the lifetimes) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
@@ -1504,17 +1499,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Start by translating the early-bound parameters (those are contained by `substs`).
         let fun_type = tcx.type_of(def_id).subst_identity();
-        let rsubsts = match fun_type.kind() {
-            ty::TyKind::FnDef(_def_id, substs_ref) => substs_ref,
+        let substs: Vec<hax::GenericArg> = match fun_type.kind() {
+            ty::TyKind::FnDef(_def_id, substs_ref) => substs_ref.sinto(&self.hax_state),
+            ty::TyKind::Closure(_, _) => {
+                // All the parameters seem to be contained in the signature,
+                // which we actually retrieve with `TyCtxt::type_of`
+                Vec::new()
+            }
             _ => {
                 unreachable!()
             }
         };
-        let substs = rsubsts.sinto(&self.hax_state);
 
         // Some debugging information:
         trace!("Def id: {def_id:?}:\n\n- substs:\n{substs:?}\n\n- generics:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
-               tcx.generics_of(def_id), rsignature.bound_vars(), rsignature);
+               tcx.generics_of(def_id), signature.bound_vars, signature);
 
         // Add the *early-bound* parameters.
         self.translate_generic_params_from_hax(span, &substs)?;
@@ -1522,7 +1521,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         //
         // Add the *late-bound* parameters (bound in the signature, can only be lifetimes)
         //
-        let signature: hax::MirPolyFnSig = rsignature.sinto(&self.hax_state);
         let is_unsafe = match signature.value.unsafety {
             hax::Unsafety::Unsafe => true,
             hax::Unsafety::Normal => false,
