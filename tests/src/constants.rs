@@ -1,83 +1,83 @@
 //! Tests with constants
-#![allow(dead_code)]
 
 // Integers
 
-const X0: u32 = 0;
+pub const X0: u32 = 0;
 
-const X1: u32 = u32::MAX;
+pub const X1: u32 = u32::MAX;
 
-const X2: u32 = {
+#[allow(clippy::let_and_return)]
+pub const X2: u32 = {
     let x = 3;
     x
 };
 
-const X3: u32 = incr(32);
+pub const X3: u32 = incr(32);
 
-const fn incr(n: u32) -> u32 {
+pub const fn incr(n: u32) -> u32 {
     n + 1
 }
 
 // Pairs
 
-const fn mk_pair0(x: u32, y: u32) -> (u32, u32) {
+pub const fn mk_pair0(x: u32, y: u32) -> (u32, u32) {
     (x, y)
 }
 
-const fn mk_pair1(x: u32, y: u32) -> Pair<u32, u32> {
+pub const fn mk_pair1(x: u32, y: u32) -> Pair<u32, u32> {
     Pair { x, y }
 }
 
-const P0: (u32, u32) = mk_pair0(0, 1);
-const P1: Pair<u32, u32> = mk_pair1(0, 1);
-const P2: (u32, u32) = (0, 1);
-const P3: Pair<u32, u32> = Pair { x: 0, y: 1 };
+pub const P0: (u32, u32) = mk_pair0(0, 1);
+pub const P1: Pair<u32, u32> = mk_pair1(0, 1);
+pub const P2: (u32, u32) = (0, 1);
+pub const P3: Pair<u32, u32> = Pair { x: 0, y: 1 };
 
 pub struct Pair<T1, T2> {
-    x: T1,
-    y: T2,
+    pub x: T1,
+    pub y: T2,
 }
 
-const Y: Wrap<i32> = Wrap::new(2);
+pub const Y: Wrap<i32> = Wrap::new(2);
 
-const fn unwrap_y() -> i32 {
-    Y.val
+pub const fn unwrap_y() -> i32 {
+    Y.value
 }
 
-const YVAL: i32 = unwrap_y();
+pub const YVAL: i32 = unwrap_y();
 
-struct Wrap<T> {
-    val: T,
+pub struct Wrap<T> {
+    value: T,
 }
 
 impl<T> Wrap<T> {
-    const fn new(val: T) -> Wrap<T> {
-        Wrap { val }
+    pub const fn new(value: T) -> Wrap<T> {
+        Wrap { value }
     }
 }
 
 // Additions
 
-const fn get_z1() -> i32 {
+pub const fn get_z1() -> i32 {
     const Z1: i32 = 3;
     Z1
 }
 
-const fn add(a: i32, b: i32) -> i32 {
+pub const fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-const fn get_z2() -> i32 {
+pub const fn get_z2() -> i32 {
     add(Q1, add(get_z1(), Q3))
 }
 
-const Q1: i32 = 5;
-const Q2: i32 = Q1;
-const Q3: i32 = add(Q2, 3);
+pub const Q1: i32 = 5;
+pub const Q2: i32 = Q1;
+pub const Q3: i32 = add(Q2, 3);
 
-// Statiques
+// Static
 
-static S1: u32 = 6;
-static S2: u32 = incr(S1);
-static S3: Pair<u32, u32> = P3;
-static S4: Pair<u32, u32> = mk_pair1(7, 8);
+pub static S1: u32 = 6;
+pub static S2: u32 = incr(S1);
+pub static S3: Pair<u32, u32> = P3;
+pub static S4: Pair<u32, u32> = mk_pair1(7, 8);

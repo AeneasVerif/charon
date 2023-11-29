@@ -11,7 +11,6 @@
 //!   signatures, like in `&'a mut &'b mut T` (and the real problem comes from
 //!   nested *lifetimes*, not nested borrows). Getting the borrows inside of
 //!   enumerations mostly requires to pour some implementation time in it.
-#![allow(dead_code)]
 
 use std::vec::Vec;
 pub type Key = usize; // TODO: make this generic
@@ -312,6 +311,7 @@ impl<T> HashMap<T> {
 /// so I have to define the test functions somewhere and call them from
 /// a test function.
 /// TODO: find a way to do that.
+#[allow(dead_code)]
 fn test1() {
     let mut hm: HashMap<u64> = HashMap::new();
     hm.insert(0, 42);

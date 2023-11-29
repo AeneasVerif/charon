@@ -123,7 +123,7 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
     sccs.iter().for_each(|_| reordered_sccs.push(vec![]));
     for id in ids {
         let scc_id = match id_to_scc.get(id) {
-            None => panic!("Could not find id; {:?}", id),
+            None => panic!("Could not find id: {:?}", id),
             Some(id) => id,
         };
         reordered_sccs[*scc_id].push(*id);

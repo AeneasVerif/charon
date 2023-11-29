@@ -3,7 +3,7 @@
  (public_name charon) ;; The name as revealed to the projects importing this library
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord visitors.ppx))
- (libraries yojson zarith easy_logging)
+ (libraries yojson zarith easy_logging name_matcher_parser)
  (modules
   Collections
   Expressions
@@ -18,24 +18,25 @@
   Logging
   Meta
   MetaUtils
-  Names
+  NameMatcher
   OfJsonBasic
   PrintExpressions
   PrintGAst
   PrintLlbcAst
   PrintUllbcAst
-  PrintPrimitiveValues
   PrintTypes
   PrintUtils
-  PrimitiveValues
-  PrimitiveValuesUtils
+  PrintValues
   Scalars
+  StringUtils
   Types
   TypesUtils
   UllbcAst
   UllbcAstUtils
   UllbcOfJson
-  Utils))
+  Utils
+  Values
+  ValuesUtils))
 
 (documentation
  (package charon))
@@ -48,7 +49,7 @@
    -g
    ;-dsource
    -warn-error
-   -5-8-9-11-14-33-20-21-26-27-39))
+   -5@8-11-14-33-20-21-26-27-39))
  (release
   (flags
    :standard
@@ -56,4 +57,4 @@
    -g
    ;-dsource
    -warn-error
-   -5-8-9-11-14-33-20-21-26-27-39)))
+   -5@8-11-14-33-20-21-26-27-39)))

@@ -48,7 +48,7 @@
           (crane.mkLib pkgs).overrideToolchain rustToolchainWithExt;
         craneLibNoExt = (crane.mkLib pkgs).overrideToolchain rustToolchainNoExt;
         charon =
-          let cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./charon; };
+          let cargoArtifacts = craneLibWithExt.buildDepsOnly { src = ./charon; };
           in craneLibWithExt.buildPackage {
             src = ./charon;
             inherit cargoArtifacts;
@@ -101,6 +101,22 @@
           };
           buildInputs = [ ocamlPackages.calendar ];
         };
+        charon-name_matcher_parser =
+          ocamlPackages.buildDunePackage {
+            pname = "name_matcher_parser";
+            version = "0.1.0";
+            duneVersion = "3";
+            nativeBuildInputs = with ocamlPackages; [
+              menhir
+            ];
+            propagatedBuildInputs = with ocamlPackages; [
+              ppx_deriving
+              visitors
+              zarith
+              menhirLib
+            ];
+            src = ./charon-ml;
+          };
         mk-charon-ml = doCheck:
           ocamlPackages.buildDunePackage {
             pname = "charon";
@@ -114,13 +130,14 @@
               cp ${tests-polonius}/llbc/* tests/serialized
             '' else
               "";
-            buildInputs = with ocamlPackages; [
+            propagatedBuildInputs = with ocamlPackages; [
               ppx_deriving
               visitors
               easy_logging
               zarith
               yojson
               calendar
+              charon-name_matcher_parser
             ];
             src = ./charon-ml;
             inherit doCheck;
@@ -133,8 +150,5 @@
           default = charon;
         };
         checks = { inherit tests tests-polonius charon-ml-tests; };
-        hydraJobs = {
-          inherit charon tests tests-polonius charon-ml charon-ml-tests;
-        };
       });
 }

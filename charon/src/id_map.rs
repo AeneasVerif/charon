@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 //! A map with custom index types.
 //!
 //! This data-structure is mostly meant to be used with the index types defined
@@ -10,12 +9,14 @@ pub use std::collections::btree_map::IterMut as IterAllMut;
 pub use std::collections::BTreeMap;
 use std::iter::{FromIterator, IntoIterator};
 
+#[derive(Clone)]
 pub struct Map<Id, T> {
-    // We use a btree map so that the bindings are sorted by key
+    // We use an ord map so that the bindings are sorted by key
     pub map: std::collections::BTreeMap<Id, T>,
 }
 
 impl<Id: std::cmp::Ord, T> Map<Id, T> {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Map {
             map: std::collections::BTreeMap::new(),
@@ -35,7 +36,7 @@ impl<Id: std::cmp::Ord, T> Map<Id, T> {
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &T> {
-        self.map.iter().map(|(_, x)| x)
+        self.map.values()
     }
 
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
@@ -48,6 +49,10 @@ impl<Id: std::cmp::Ord, T> Map<Id, T> {
 
     pub fn len(&self) -> usize {
         self.map.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
     }
 }
 

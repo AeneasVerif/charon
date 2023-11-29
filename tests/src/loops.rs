@@ -1,9 +1,7 @@
-#![allow(dead_code)]
-
 use std::vec::Vec;
 
 /// No borrows
-fn sum(max: u32) -> u32 {
+pub fn sum(max: u32) -> u32 {
     let mut i = 0;
     let mut s = 0;
     while i < max {
@@ -18,7 +16,7 @@ fn sum(max: u32) -> u32 {
 /// Same as [sum], but we use borrows in order tocreate loans inside a loop
 /// iteration, and those borrows will have to be ended by the end of the
 /// iteration.
-fn sum_with_mut_borrows(max: u32) -> u32 {
+pub fn sum_with_mut_borrows(max: u32) -> u32 {
     let mut i = 0;
     let mut s = 0;
     while i < max {
@@ -33,7 +31,7 @@ fn sum_with_mut_borrows(max: u32) -> u32 {
 }
 
 /// Similar to [sum_with_mut_borrows].
-fn sum_with_shared_borrows(max: u32) -> u32 {
+pub fn sum_with_shared_borrows(max: u32) -> u32 {
     let mut i = 0;
     let mut s = 0;
     while i < max {
@@ -51,7 +49,7 @@ fn sum_with_shared_borrows(max: u32) -> u32 {
 
 /// This case is interesting, because the fixed point for the loop doesn't
 /// introduce new abstractions.
-fn clear(v: &mut Vec<u32>) {
+pub fn clear(v: &mut Vec<u32>) {
     let mut i = 0;
     while i < v.len() {
         v[i] = 0;

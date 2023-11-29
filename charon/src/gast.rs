@@ -1,21 +1,16 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
-#![allow(dead_code)]
-
-pub use crate::expressions::{Operand, Place};
+pub use crate::expressions::*;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
-use crate::names::FunName;
-use crate::names::GlobalName;
-use crate::regions_hierarchy::RegionGroups;
+use crate::names::Name;
 pub use crate::types::GlobalDeclId;
+pub use crate::types::TraitClauseId;
 use crate::types::*;
-use crate::values::*;
+pub use crate::types::{
+    GenericArgs, GenericParams, TraitDeclId, TraitImplId, TraitInstanceId, TraitRef,
+};
 use macros::generate_index_type;
-use macros::{EnumAsGetters, EnumIsA, VariantName};
 use serde::Serialize;
-
-// TODO: move this definition
-pub static TAB_INCR: &str = "    ";
 
 generate_index_type!(FunDeclId);
 
@@ -28,47 +23,14 @@ pub struct Var {
     /// through desugaring.
     pub name: Option<String>,
     /// The variable type
-    pub ty: ETy,
-}
-
-/// A function signature.
-/// Note that a signature uses unerased lifetimes, while function bodies (and
-/// execution) use erased lifetimes.
-/// We need the functions' signatures *with* the region parameters in order
-/// to correctly abstract those functions (number and signature of the backward
-/// functions) - we only use regions for this purpose.
-#[derive(Debug, Clone, Serialize)]
-pub struct FunSig {
-    pub region_params: RegionVarId::Vector<RegionVar>,
-    /// The region parameters contain early bound and late bound parameters.
-    /// The early bound regions are those introduced by the `impl` block (if
-    /// this definition  is defined in an `impl` block), the late bound regions
-    /// are those introduced by the function itself.
-    ///  For example, in:
-    ///  ```text
-    ///  impl<'a> Foo<'a> {
-    ///      fn bar<'b>(...) -> ... { ... }
-    ///  }
-    ///  ```
-    ///  `'a` is early-bound while `'b` is late-bound.
-    pub num_early_bound_regions: usize,
-    pub type_params: TypeVarId::Vector<TypeVar>,
-    pub const_generic_params: ConstGenericVarId::Vector<ConstGenericVar>,
-    pub inputs: Vec<RTy>,
-    pub output: RTy,
-    /// The lifetime's hierarchy between the different regions.
-    /// We initialize it to a dummy value, and compute it once the whole
-    /// crate has been translated from MIR.
-    ///
-    /// TODO: move to Aeneas.
-    pub regions_hierarchy: RegionGroups,
+    pub ty: Ty,
 }
 
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
 #[derive(Debug, Clone, Serialize)]
-pub struct GExprBody<T: std::fmt::Debug + Clone + Serialize> {
+pub struct GExprBody<T> {
     pub meta: Meta,
     /// The number of local variables used for the input arguments.
     pub arg_count: usize,
@@ -81,16 +43,64 @@ pub struct GExprBody<T: std::fmt::Debug + Clone + Serialize> {
     pub body: T,
 }
 
+/// Function kind: "regular" function, trait method declaration, etc.
+///
+/// Example:
+/// ========
+/// ```text
+/// trait Foo {
+///   fn bar(x : u32) -> u32; // trait method: declaration
+///
+///   fn baz(x : bool) -> bool { x } // trait method: provided
+/// }
+///
+/// impl Foo for ... {
+///   fn bar(x : u32) -> u32 { x } // trait method: implementation
+/// }
+///
+/// fn test(...) { ... } // regular
+///
+/// impl Type {
+///   fn test(...) { ... } // regular
+/// }
+/// ```
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub enum FunKind {
+    /// A "normal" function
+    Regular,
+    /// Trait method implementation
+    TraitMethodImpl {
+        /// The trait implementation block the method belongs to
+        impl_id: TraitImplId::Id,
+        /// The id of the trait decl the method belongs to
+        trait_id: TraitDeclId::Id,
+        /// The name of the method
+        method_name: TraitItemName,
+        /// True if this function re-implements a provided method
+        provided: bool,
+    },
+    /// Trait method declaration
+    TraitMethodDecl(TraitDeclId::Id, TraitItemName),
+    /// Trait method provided function (trait method declaration which defines
+    /// a default implementation at the same time)
+    TraitMethodProvided(TraitDeclId::Id, TraitItemName),
+}
+
 /// A function definition
 #[derive(Debug, Clone, Serialize)]
-pub struct GFunDecl<T: std::fmt::Debug + Clone + Serialize> {
+pub struct GFunDecl<T> {
     pub def_id: FunDeclId::Id,
     /// The meta data associated with the declaration.
     pub meta: Meta,
-    pub name: FunName,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
+    pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,
+    /// The function kind: "regular" function, trait method declaration, etc.
+    pub kind: FunKind,
     /// The function body, in case the function is not opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.
@@ -99,135 +109,142 @@ pub struct GFunDecl<T: std::fmt::Debug + Clone + Serialize> {
 
 /// A global variable definition, either opaque or transparent.
 #[derive(Debug, Clone, Serialize)]
-pub struct GGlobalDecl<T: std::fmt::Debug + Clone + Serialize> {
+pub struct GGlobalDecl<T> {
     pub def_id: GlobalDeclId::Id,
     /// The meta data associated with the declaration.
     pub meta: Meta,
-    pub name: GlobalName,
-    pub ty: ETy,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
+    pub name: Name,
+    pub ty: Ty,
     pub body: Option<GExprBody<T>>,
 }
 
-/// A function identifier. See [crate::ullbc_ast::Terminator]
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
-pub enum FunId {
-    /// A "regular" function (function local to the crate, external function
-    /// not treated as a primitive one).
-    Regular(FunDeclId::Id),
-    /// A primitive function, coming from a standard library (for instance:
-    /// `alloc::boxed::Box::new`).
-    /// TODO: rename to "Primitive"
-    Assumed(AssumedFunId),
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct TraitItemName(pub String);
+
+/// A trait **declaration**.
+///
+/// For instance:
+/// ```text
+/// trait Foo {
+///   type Bar;
+///
+///   fn baz(...); // required method (see below)
+///
+///   fn test() -> bool { true } // provided method (see below)
+/// }
+/// ```
+///
+/// In case of a trait declaration, we don't include the provided methods (the methods
+/// with a default implementation): they will be translated on a per-need basis. This is
+/// important for two reasons:
+/// - this makes the trait definitions a lot smaller (the Iterator trait
+///   has *one* declared function and more than 70 provided functions)
+/// - this is important for the external traits, whose provided methods
+///   often use features we don't support yet
+///
+/// Remark:
+/// In Aeneas, we still translate the provided methods on an individual basis,
+/// and in such a way thay they take as input a trait instance. This means that
+/// we can use default methods *but*:
+/// - implementations of required methods shoudln't call default methods
+/// - trait implementations shouldn't redefine required methods
+/// The use case we have in mind is [std::iter::Iterator]: it declares one required
+/// method (`next`) that should be implemented for every iterator, and defines many
+/// helpers like `all`, `map`, etc. that shouldn't be re-implemented.
+/// Of course, this forbids other useful use cases such as visitors implemented
+/// by means of traits.
+#[allow(clippy::type_complexity)]
+#[derive(Debug, Clone, Serialize)]
+pub struct TraitDecl {
+    pub def_id: TraitDeclId::Id,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
+    pub name: Name,
+    pub meta: Meta,
+    pub generics: GenericParams,
+    pub preds: Predicates,
+    /// The "parent" clauses: the supertraits.
+    ///
+    /// Supertraits are actually regular where clauses, but we decided to have
+    /// a custom treatment.
+    /// ```text
+    /// trait Foo : Bar {
+    ///             ^^^
+    ///         supertrait, that we treat as a parent predicate
+    /// }
+    /// ```
+    /// TODO: actually, as of today, we consider that all trait clauses of
+    /// trait declarations are parent clauses.
+    pub parent_clauses: TraitClauseId::Vector<TraitClause>,
+    /// The associated constants declared in the trait.
+    ///
+    /// The optional id is for the default value.
+    pub consts: Vec<(TraitItemName, (Ty, Option<GlobalDeclId::Id>))>,
+    /// The associated types declared in the trait.
+    pub types: Vec<(TraitItemName, (Vec<TraitClause>, Option<Ty>))>,
+    /// The *required* methods.
+    ///
+    /// The required methods are the methods declared by the trait but with
+    /// no default implementation.
+    pub required_methods: Vec<(TraitItemName, FunDeclId::Id)>,
+    /// The *provided* methods.
+    ///
+    /// The provided methods are the methods with a default implementation.
+    ///
+    /// We include the [FunDeclId::Id] identifiers *only* for the local
+    /// trait declarations. Otherwise, it would mean we extract *all* the
+    /// provided methods, which is not something we want to do *yet* for
+    /// the external traits.
+    ///
+    /// TODO: allow to optionnaly extract information. For instance: attempt
+    /// to extract, and fail nicely if we don't succeed (definition not in
+    /// the supported subset, etc.).
+    pub provided_methods: Vec<(TraitItemName, Option<FunDeclId::Id>)>,
 }
 
-/// An assumed function identifier, identifying a function coming from a
-/// standard library.
-#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, Serialize)]
-pub enum AssumedFunId {
-    /// `core::mem::replace`
-    Replace,
-    /// `alloc::boxed::Box::new`
-    BoxNew,
-    /// `core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref`
-    BoxDeref,
-    /// `core::ops::deref::DerefMut::<alloc::boxed::Box<T>>::deref_mut`
-    BoxDerefMut,
-    /// `alloc::alloc::box_free`
-    /// This is actually an unsafe function, but the rust compiler sometimes
-    /// introduces it when going to MIR.
-    ///
-    /// Also, in practice, deallocation is performed as follows in MIR:
-    /// ```text
-    /// alloc::alloc::box_free::<T, std::alloc::Global>(
-    ///     move (b.0: std::ptr::Unique<T>),
-    ///     move (b.1: std::alloc::Global))
-    /// ```
-    /// When translating from MIR to ULLBC, we do as if the MIR was actually the
-    /// following (this is hardcoded - see [crate::register] and [crate::translate_functions_to_ullbc]):
-    /// ```text
-    /// alloc::alloc::box_free::<T>(move b)
-    /// ```
-    ///
-    /// Also see the comments in [crate::assumed::type_to_used_params].
-    BoxFree,
-    /// `alloc::vec::Vec::new`
-    VecNew,
-    /// `alloc::vec::Vec::push`
-    VecPush,
-    /// `alloc::vec::Vec::insert`
-    VecInsert,
-    /// `alloc::vec::Vec::len`
-    VecLen,
-    /// `core::ops::index::Index::index<alloc::vec::Vec<T>, usize>`
-    VecIndex,
-    /// `core::ops::index::IndexMut::index_mut<alloc::vec::Vec<T>, usize>`
-    VecIndexMut,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T,N>(&[T;N], usize) -> &T`
-    ArrayIndexShared,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T,N>(&mut [T;N], usize) -> &mut T`
-    ArrayIndexMut,
-    /// Cast an array as a slice.
-    ///
-    /// Converted from [UnOp::ArrayToSlice]
-    ArrayToSliceShared,
-    /// Cast an array as a slice.
-    ///
-    /// Converted from [UnOp::ArrayToSlice]
-    ArrayToSliceMut,
-    /// Take a subslice from an array.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    ///
-    /// TODO: there are a lot of shared/mut version. Parameterize them with
-    /// a mutability attribute?
-    ArraySubsliceShared,
-    /// Take a subslice from an array.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    ArraySubsliceMut,
-    /// Remark: when we write `a.len()` in Rust, where `a` is an array, the
-    /// statement is desugared to a conversion from array to slice, followed
-    /// by a call to the `len` function for slices.
-    ///
-    /// Signature: `fn<T>(&[T]) -> usize`
-    SliceLen,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T>(&[T], usize) -> &T`
-    SliceIndexShared,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T>(&mut [T], usize) -> &mut T`
-    SliceIndexMut,
-    /// Take a subslice from a slice.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    SliceSubsliceShared,
-    /// Take a subslice from a slice.
-    ///
-    /// Introduced by disambiguating the `Index::index` trait (takes a range
-    /// as argument).
-    SliceSubsliceMut,
+/// A trait **implementation**.
+///
+/// For instance:
+/// ```text
+/// impl Foo for List {
+///   type Bar = ...
+///
+///   fn baz(...) { ... }
+/// }
+/// ```
+#[derive(Debug, Clone, Serialize)]
+pub struct TraitImpl {
+    pub def_id: TraitImplId::Id,
+    /// [true] if the decl is a local decl, [false] if it comes from
+    /// an external crate.
+    pub is_local: bool,
+    pub name: Name,
+    pub meta: Meta,
+    /// The information about the implemented trait.
+    /// Note that this contains the instantiation of the "parent"
+    /// clauses.
+    pub impl_trait: TraitDeclRef,
+    pub generics: GenericParams,
+    pub preds: Predicates,
+    /// The trait references for the parent clauses (see [TraitDecl]).
+    pub parent_trait_refs: TraitClauseId::Vector<TraitRef>,
+    /// The associated constants declared in the trait.
+    pub consts: Vec<(TraitItemName, (Ty, GlobalDeclId::Id))>,
+    /// The associated types declared in the trait.
+    pub types: Vec<(TraitItemName, (Vec<TraitRef>, Ty))>,
+    /// The implemented required methods
+    pub required_methods: Vec<(TraitItemName, FunDeclId::Id)>,
+    /// The re-implemented provided methods
+    pub provided_methods: Vec<(TraitItemName, FunDeclId::Id)>,
 }
 
-/// TODO: factor out with [Rvalue]
 #[derive(Debug, Clone, Serialize)]
 pub struct Call {
-    pub func: FunId,
-    /// Technically this is useless, but we still keep it because we might
-    /// want to introduce some information (and the way we encode from MIR
-    /// is as simple as possible - and in MIR we also have a vector of erased
-    /// regions).
-    pub region_args: Vec<ErasedRegion>,
-    pub type_args: Vec<ETy>,
-    pub const_generic_args: Vec<ConstGeneric>,
+    pub func: FnPtr,
     pub args: Vec<Operand>,
     pub dest: Place,
 }

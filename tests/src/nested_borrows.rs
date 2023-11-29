@@ -1,15 +1,14 @@
 //! This module contains functions with nested borrows in their signatures.
-#![allow(dead_code)]
 
-fn id_mut_mut<'a, 'b, T>(x: &'a mut &'b mut T) -> &'a mut &'b mut T {
+pub fn id_mut_mut<'a, 'b, T>(x: &'a mut &'b mut T) -> &'a mut &'b mut T {
     x
 }
 
-fn id_mut_pair<'a, T>(x: &'a mut (&'a mut T, u32)) -> &'a mut (&'a mut T, u32) {
+pub fn id_mut_pair<'a, T>(x: &'a mut (&'a mut T, u32)) -> &'a mut (&'a mut T, u32) {
     x
 }
 
-fn id_mut_pair_test1() {
+pub fn id_mut_pair_test1() {
     let mut x: u32 = 0;
     let px = &mut x;
     let mut p = (px, 1);
@@ -19,20 +18,22 @@ fn id_mut_pair_test1() {
     *pp1 = (&mut y, 3);
 }
 
-fn id_mut_mut_pair<'a, T>(x: &'a mut &'a mut (&'a mut T, u32)) -> &'a mut &'a mut (&'a mut T, u32) {
+pub fn id_mut_mut_pair<'a, T>(
+    x: &'a mut &'a mut (&'a mut T, u32),
+) -> &'a mut &'a mut (&'a mut T, u32) {
     x
 }
 
-fn id_mut_mut_mut_same<'a, T>(x: &'a mut &'a mut &'a mut u32) -> &'a mut &'a mut &'a mut u32 {
+pub fn id_mut_mut_mut_same<'a, T>(x: &'a mut &'a mut &'a mut u32) -> &'a mut &'a mut &'a mut u32 {
     x
 }
 
-fn id_borrow1<'a, 'b, 'c>(_x: &'a mut &'b u32, _y: &'a &'a mut u32) {
+pub fn id_borrow1<'a, 'b, 'c>(_x: &'a mut &'b u32, _y: &'a &'a mut u32) {
     ()
 }
 
 /// For symbolic execution: testing what happens with several abstractions.
-fn id_mut_mut_test1() {
+pub fn id_mut_mut_test1() {
     let mut x = 0;
     let mut px = &mut x;
     let ppx = &mut px;
@@ -49,7 +50,7 @@ fn id_mut_mut_test1() {
 /// This case is a bit trickier, because we modify the borrow graph through
 /// a value returned by a function call.
 /// TODO: not supported! We overwrite a borrow in a returned value.
-fn id_mut_mut_test2() {
+pub fn id_mut_mut_test2() {
     let mut x = 0;
     let mut px = &mut x;
     let ppx = &mut px;
@@ -72,7 +73,7 @@ fn id_mut_mut_test2() {
 /// For symbolic execution: testing what happens with several abstractions.
 /// See what happens when chaining function calls.
 /// TODO: not supported! We overwrite a borrow in a returned value.
-fn id_mut_mut_test3() {
+pub fn id_mut_mut_test3() {
     let mut x = 0;
     let mut px = &mut x;
     let ppx = &mut px;
@@ -90,7 +91,7 @@ fn id_mut_mut_test3() {
 /// For symbolic execution: testing what happens with several abstractions.
 /// See what happens when chaining function calls.
 /// This one is slightly more complex than the previous one.
-fn id_mut_mut_test4() {
+pub fn id_mut_mut_test4() {
     let mut x = 0;
     let mut px = &mut x;
     let ppx = &mut px;

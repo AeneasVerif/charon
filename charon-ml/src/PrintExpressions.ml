@@ -1,188 +1,184 @@
 (** Pretty-printing for expressions *)
 
-module T = Types
-module TU = TypesUtils
-module E = Expressions
-module A = LlbcAst
+open Types
+open Expressions
+open LlbcAst
 open PrintUtils
-module PT = PrintTypes
-module PPV = PrintPrimitiveValues
+open PrintTypes
 
-let var_id_to_string (id : E.VarId.id) : string = "v@" ^ E.VarId.to_string id
+let var_id_to_pretty_string (id : var_id) : string = "v@" ^ VarId.to_string id
 
-type expr_formatter = {
-  rvar_to_string : T.RegionVarId.id -> string;
-  r_to_string : T.RegionId.id -> string;
-  type_var_id_to_string : T.TypeVarId.id -> string;
-  type_decl_id_to_string : T.TypeDeclId.id -> string;
-  const_generic_var_id_to_string : T.ConstGenericVarId.id -> string;
-  adt_variant_to_string : T.TypeDeclId.id -> T.VariantId.id -> string;
-  adt_field_to_string :
-    T.TypeDeclId.id -> T.VariantId.id option -> T.FieldId.id -> string option;
-  var_id_to_string : E.VarId.id -> string;
-  adt_field_names :
-    T.TypeDeclId.id -> T.VariantId.id option -> string list option;
-  fun_decl_id_to_string : A.FunDeclId.id -> string;
-  global_decl_id_to_string : A.GlobalDeclId.id -> string;
-}
+let fun_decl_id_to_pretty_string (id : FunDeclId.id) : string =
+  "FunDecl@" ^ FunDeclId.to_string id
 
-let expr_to_etype_formatter (fmt : expr_formatter) : PT.etype_formatter =
-  {
-    PT.r_to_string = PT.erased_region_to_string;
-    PT.type_var_id_to_string = fmt.type_var_id_to_string;
-    PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
-    PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
-    PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
-  }
+let fun_decl_id_to_string (env : ('a, 'b) fmt_env) (id : FunDeclId.id) : string
+    =
+  match FunDeclId.Map.find_opt id env.fun_decls with
+  | None -> fun_decl_id_to_pretty_string id
+  | Some def -> name_to_string env def.name
 
-let expr_to_rtype_formatter (fmt : expr_formatter) : PT.rtype_formatter =
-  {
-    PT.r_to_string = PT.region_to_string fmt.r_to_string;
-    PT.type_var_id_to_string = fmt.type_var_id_to_string;
-    PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
-    PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
-    PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
-  }
+let var_to_string (v : var) : string =
+  match v.name with
+  | None -> var_id_to_pretty_string v.index
+  | Some name -> name ^ "^" ^ VarId.to_string v.index
 
-let expr_to_stype_formatter (fmt : expr_formatter) : PT.stype_formatter =
-  {
-    PT.r_to_string = PT.region_to_string fmt.rvar_to_string;
-    PT.type_var_id_to_string = fmt.type_var_id_to_string;
-    PT.type_decl_id_to_string = fmt.type_decl_id_to_string;
-    PT.const_generic_var_id_to_string = fmt.const_generic_var_id_to_string;
-    PT.global_decl_id_to_string = fmt.global_decl_id_to_string;
-  }
+let var_id_to_string (env : ('a, 'b) fmt_env) (id : VarId.id) : string =
+  match List.find_opt (fun (i, _) -> i = id) env.locals with
+  | None -> var_id_to_pretty_string id
+  | Some (_, name) -> (
+      match name with
+      | None -> var_id_to_pretty_string id
+      | Some name -> name ^ "^" ^ VarId.to_string id)
 
-let rec projection_to_string (fmt : expr_formatter) (s : string)
-    (p : E.projection) : string =
+let rec projection_to_string (env : ('a, 'b) fmt_env) (s : string)
+    (p : projection) : string =
   match p with
   | [] -> s
   | pe :: p' ->
       let s =
         match pe with
-        | E.Deref -> "*(" ^ s ^ ")"
-        | E.DerefBox -> "deref_box(" ^ s ^ ")"
-        | E.Field (E.ProjOption variant_id, fid) ->
-            assert (variant_id = T.option_some_id);
-            assert (fid = T.FieldId.zero);
-            "(" ^ s ^ " as Option::Some)." ^ T.FieldId.to_string fid
-        | E.Field (E.ProjTuple _, fid) ->
-            "(" ^ s ^ ")." ^ T.FieldId.to_string fid
-        | E.Field (E.ProjAdt (adt_id, opt_variant_id), fid) -> (
+        | Deref -> "*(" ^ s ^ ")"
+        | DerefBox -> "deref_box(" ^ s ^ ")"
+        | Field (ProjTuple _, fid) -> "(" ^ s ^ ")." ^ FieldId.to_string fid
+        | Field (ProjAdt (adt_id, opt_variant_id), fid) -> (
             let field_name =
-              match fmt.adt_field_to_string adt_id opt_variant_id fid with
+              match adt_field_to_string env adt_id opt_variant_id fid with
               | Some field_name -> field_name
-              | None -> T.FieldId.to_string fid
+              | None -> FieldId.to_string fid
             in
             match opt_variant_id with
             | None -> "(" ^ s ^ ")." ^ field_name
             | Some variant_id ->
                 let variant_name =
-                  fmt.adt_variant_to_string adt_id variant_id
+                  adt_variant_to_string env adt_id variant_id
                 in
                 "(" ^ s ^ " as " ^ variant_name ^ ")." ^ field_name)
       in
-      projection_to_string fmt s p'
+      projection_to_string env s p'
 
-let place_to_string (fmt : expr_formatter) (p : E.place) : string =
-  let var = fmt.var_id_to_string p.E.var_id in
-  projection_to_string fmt var p.E.projection
+let place_to_string (env : ('a, 'b) fmt_env) (p : place) : string =
+  let var = var_id_to_string env p.var_id in
+  projection_to_string env var p.projection
 
-let unop_to_string (unop : E.unop) : string =
-  match unop with
-  | E.Not -> "¬"
-  | E.Neg -> "-"
-  | E.Cast (src, tgt) ->
-      "cast<"
-      ^ PPV.integer_type_to_string src
-      ^ ","
-      ^ PPV.integer_type_to_string tgt
+let cast_kind_to_string (_env : ('a, 'b) fmt_env) (cast : cast_kind) : string =
+  match cast with
+  | CastInteger (src, tgt) ->
+      "cast<" ^ integer_type_to_string src ^ "," ^ integer_type_to_string tgt
       ^ ">"
 
-let binop_to_string (binop : E.binop) : string =
+let unop_to_string (env : ('a, 'b) fmt_env) (unop : unop) : string =
+  match unop with
+  | Not -> "¬"
+  | Neg -> "-"
+  | Cast cast_kind -> cast_kind_to_string env cast_kind
+
+let binop_to_string (binop : binop) : string =
   match binop with
-  | E.BitXor -> "^"
-  | E.BitAnd -> "&"
-  | E.BitOr -> "|"
-  | E.Eq -> "=="
-  | E.Lt -> "<"
-  | E.Le -> "<="
-  | E.Ne -> "!="
-  | E.Ge -> ">="
-  | E.Gt -> ">"
-  | E.Div -> "/"
-  | E.Rem -> "%"
-  | E.Add -> "+"
-  | E.Sub -> "-"
-  | E.Mul -> "*"
-  | E.Shl -> "<<"
-  | E.Shr -> ">>"
+  | BitXor -> "^"
+  | BitAnd -> "&"
+  | BitOr -> "|"
+  | Eq -> "=="
+  | Lt -> "<"
+  | Le -> "<="
+  | Ne -> "!="
+  | Ge -> ">="
+  | Gt -> ">"
+  | Div -> "/"
+  | Rem -> "%"
+  | Add -> "+"
+  | Sub -> "-"
+  | Mul -> "*"
+  | Shl -> "<<"
+  | Shr -> ">>"
 
-let operand_to_string (fmt : expr_formatter) (op : E.operand) : string =
+let assumed_fun_id_to_string (aid : assumed_fun_id) (generics : string) : string
+    =
+  match aid with
+  | BoxNew -> "alloc::boxed::Box" ^ generics ^ "::new"
+  | BoxFree -> "alloc::alloc::box_free" ^ generics
+  | ArrayIndexShared -> "@ArrayIndexShared" ^ generics
+  | ArrayIndexMut -> "@ArrayIndexMut" ^ generics
+  | ArrayToSliceShared -> "@ArrayToSliceShared" ^ generics
+  | ArrayToSliceMut -> "@ArrayToSliceMut" ^ generics
+  | ArrayRepeat -> "@ArrayRepeat" ^ generics
+  | SliceIndexShared -> "@SliceIndexShared" ^ generics
+  | SliceIndexMut -> "@SliceIndexMut" ^ generics
+
+let fun_id_or_trait_method_ref_to_string (env : ('a, 'b) fmt_env)
+    (r : fun_id_or_trait_method_ref) (generics : string) : string =
+  match r with
+  | TraitMethod (trait_ref, method_name, _) ->
+      trait_ref_to_string env trait_ref ^ "::" ^ method_name ^ generics
+  | FunId (FRegular fid) -> fun_decl_id_to_string env fid ^ generics
+  | FunId (FAssumed aid) -> assumed_fun_id_to_string aid generics
+
+let fn_ptr_to_string (env : ('a, 'b) fmt_env) (ptr : fn_ptr) : string =
+  let generics = generic_args_to_string env ptr.generics in
+  fun_id_or_trait_method_ref_to_string env ptr.func generics
+
+let constant_expr_to_string (env : ('a, 'b) fmt_env) (cv : constant_expr) :
+    string =
+  match cv.value with
+  | CLiteral lit ->
+      "(" ^ literal_to_string lit ^ " : " ^ ty_to_string env cv.ty ^ ")"
+  | CVar vid -> const_generic_var_id_to_string env vid
+  | CTraitConst (trait_ref, generics, const_name) ->
+      let trait_ref = trait_ref_to_string env trait_ref in
+      let generics = generic_args_to_string env generics in
+      trait_ref ^ generics ^ const_name
+  | CFnPtr fn_ptr -> fn_ptr_to_string env fn_ptr
+
+let operand_to_string (env : ('a, 'b) fmt_env) (op : operand) : string =
   match op with
-  | E.Copy p -> "copy " ^ place_to_string fmt p
-  | E.Move p -> "move " ^ place_to_string fmt p
-  | E.Constant (ty, cv) ->
-      "(" ^ PPV.literal_to_string cv ^ " : "
-      ^ PT.ety_to_string (expr_to_etype_formatter fmt) ty
-      ^ ")"
+  | Copy p -> "copy " ^ place_to_string env p
+  | Move p -> "move " ^ place_to_string env p
+  | Constant cv -> constant_expr_to_string env cv
 
-let rvalue_to_string (fmt : expr_formatter) (rv : E.rvalue) : string =
+let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
   match rv with
-  | E.Use op -> operand_to_string fmt op
-  | E.Ref (p, bk) -> (
-      let p = place_to_string fmt p in
+  | Use op -> operand_to_string env op
+  | RvRef (p, bk) -> (
+      let p = place_to_string env p in
       match bk with
-      | E.Shared -> "&" ^ p
-      | E.Mut -> "&mut " ^ p
-      | E.TwoPhaseMut -> "&two-phase " ^ p
-      | E.Shallow -> "&shallow " ^ p)
-  | E.UnaryOp (unop, op) -> unop_to_string unop ^ " " ^ operand_to_string fmt op
-  | E.BinaryOp (binop, op1, op2) ->
-      operand_to_string fmt op1 ^ " " ^ binop_to_string binop ^ " "
-      ^ operand_to_string fmt op2
-  | E.Discriminant p -> "discriminant(" ^ place_to_string fmt p ^ ")"
-  | E.Global gid -> "global " ^ fmt.global_decl_id_to_string gid
-  | E.Aggregate (akind, ops) -> (
-      let ops = List.map (operand_to_string fmt) ops in
+      | BShared -> "&" ^ p
+      | BMut -> "&mut " ^ p
+      | BTwoPhaseMut -> "&two-phase " ^ p
+      | BShallow -> "&shallow " ^ p)
+  | UnaryOp (unop, op) ->
+      unop_to_string env unop ^ " " ^ operand_to_string env op
+  | BinaryOp (binop, op1, op2) ->
+      operand_to_string env op1 ^ " " ^ binop_to_string binop ^ " "
+      ^ operand_to_string env op2
+  | Discriminant p -> "discriminant(" ^ place_to_string env p ^ ")"
+  | Global gid -> "global " ^ global_decl_id_to_string env gid
+  | Aggregate (akind, ops) -> (
+      let ops = List.map (operand_to_string env) ops in
       match akind with
-      | E.AggregatedTuple -> "(" ^ String.concat ", " ops ^ ")"
-      | E.AggregatedOption (variant_id, _ty) ->
-          if variant_id = T.option_none_id then (
-            assert (ops = []);
-            "@Option::None")
-          else if variant_id = T.option_some_id then (
-            assert (List.length ops = 1);
-            let op = List.hd ops in
-            "@Option::Some(" ^ op ^ ")")
-          else raise (Failure "Unreachable")
-      | E.AggregatedAdt (def_id, opt_variant_id, _regions, _types, _cgs) ->
-          let adt_name = fmt.type_decl_id_to_string def_id in
-          let variant_name =
-            match opt_variant_id with
-            | None -> adt_name
-            | Some variant_id ->
-                adt_name ^ "::" ^ fmt.adt_variant_to_string def_id variant_id
-          in
-          let fields =
-            match fmt.adt_field_names def_id opt_variant_id with
-            | None -> "(" ^ String.concat ", " ops ^ ")"
-            | Some field_names ->
-                let fields = List.combine field_names ops in
-                let fields =
-                  List.map
-                    (fun (field, value) -> field ^ " = " ^ value ^ ";")
-                    fields
-                in
-                let fields = String.concat " " fields in
-                "{ " ^ fields ^ " }"
-          in
-          variant_name ^ " " ^ fields
-      | E.AggregatedRange ty ->
-          let fmt = expr_to_etype_formatter fmt in
-          "@Range " ^ PT.ety_to_string fmt ty
-      | E.AggregatedArray (ty, cg) ->
-          let fmt = expr_to_etype_formatter fmt in
-          "@Array(" ^ PT.ety_to_string fmt ty ^ ", "
-          ^ PT.const_generic_to_string fmt cg
-          ^ ")")
+      | AggregatedAdt (type_id, opt_variant_id, _generics) -> (
+          match type_id with
+          | TTuple -> "(" ^ String.concat ", " ops ^ ")"
+          | TAdtId def_id ->
+              let adt_name = type_decl_id_to_string env def_id in
+              let variant_name =
+                match opt_variant_id with
+                | None -> adt_name
+                | Some variant_id ->
+                    adt_name ^ "::"
+                    ^ adt_variant_to_string env def_id variant_id
+              in
+              let fields =
+                match adt_field_names env def_id opt_variant_id with
+                | None -> "(" ^ String.concat ", " ops ^ ")"
+                | Some field_names ->
+                    let fields = List.combine field_names ops in
+                    let fields =
+                      List.map
+                        (fun (field, value) -> field ^ " = " ^ value ^ ";")
+                        fields
+                    in
+                    let fields = String.concat " " fields in
+                    "{ " ^ fields ^ " }"
+              in
+              variant_name ^ " " ^ fields
+          | TAssumed _ -> raise (Failure "Unreachable"))
+      | AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " ops ^ "]")

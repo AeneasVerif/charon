@@ -7,7 +7,7 @@ build:
 # For instance: `CHARON_LOG=1 make tests`.
 .PHONY: tests
 tests: build copy-tests
-	dune runtest -p charon
+	dune test
 
 # Reformat the code
 .PHONY: format

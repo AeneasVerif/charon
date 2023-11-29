@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 /// The options received as input by cargo-charon
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -102,6 +100,30 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     /// specific version of Cargo.
     #[structopt(long = "cargo-no-rust-version")]
     pub cargo_no_rust_version: bool,
+    /// Panic on the first error. This is useful for debugging.
+    #[structopt(long = "panic-on-error")]
+    pub panic_on_error: bool,
+    #[structopt(
+        long = "print-ullbc",
+        help = "
+Print the ULLBC immediately after extraction from MIR.
+"
+    )]
+    pub print_ullbc: bool,
+    #[structopt(
+        long = "print-built-llbc",
+        help = "
+Print the LLBC just after we built it (i.e., immediately after loop reconstruction).
+"
+    )]
+    pub print_built_llbc: bool,
+    #[structopt(
+        long = "print-llbc",
+        help = "
+Print the final LLBC (after all the cleaning micro-passes).
+"
+    )]
+    pub print_llbc: bool,
 }
 
 /// The name of the environment variable we use to save the serialized Cli options

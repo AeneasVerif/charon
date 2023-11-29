@@ -1,8 +1,5 @@
 //! "Unstructured LLBC" ast (ULLBC). This is LLBC before the control-flow
 //! reconstruction. In effect, this is a cleaned up version of MIR.
-#![allow(dead_code)]
-
-use crate::expressions::*;
 pub use crate::gast::*;
 use crate::meta::Meta;
 pub use crate::types::GlobalDeclId;
@@ -26,6 +23,9 @@ pub type FunDecls = FunDeclId::Map<FunDecl>;
 
 pub type GlobalDecl = GGlobalDecl<BlockId::Vector<BlockData>>;
 pub type GlobalDecls = GlobalDeclId::Map<GlobalDecl>;
+
+pub type TraitDecls = TraitDeclId::Map<TraitDecl>;
+pub type TraitImpls = TraitImplId::Map<TraitImpl>;
 
 /// A raw statement: a statement without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]

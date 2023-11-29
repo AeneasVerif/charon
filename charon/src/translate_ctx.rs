@@ -1,25 +1,63 @@
 //! The translation contexts.
-
-#![allow(dead_code)]
+use crate::common::TAB_INCR;
 use crate::formatter::Formatter;
+use crate::gast;
 use crate::get_mir::MirLevel;
+use crate::llbc_ast;
 use crate::meta;
 use crate::meta::{FileId, FileName, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
-use crate::reorder_decls::{AnyRustId, AnyTransId};
-use crate::types as ty;
-use crate::types::LiteralTy;
+use crate::reorder_decls::AnyTransId;
+use crate::translate_predicates::NonLocalTraitClause;
+use crate::types::*;
+use crate::ullbc_ast;
 use crate::ullbc_ast as ast;
-use crate::values as v;
+use crate::values::*;
+use hax_frontend_exporter as hax;
+use hax_frontend_exporter::SInto;
+use im::OrdMap;
 use linked_hash_set::LinkedHashSet;
+use macros::VariantIndexArity;
 use rustc_hir::def_id::DefId;
-use rustc_index::IndexVec;
-use rustc_middle::mir;
-use rustc_middle::mir::BasicBlock;
-use rustc_middle::mir::{SourceInfo, SourceScope, SourceScopeData};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
-use std::collections::{HashMap, HashSet};
+use std::cmp::{Ord, Ordering, PartialOrd};
+use std::collections::{BTreeSet, HashMap, HashSet};
+use std::fmt;
+
+/// Macro to either panic or return on error, depending on the CLI options
+macro_rules! error_or_panic {
+    ($ctx:ident, $span: ident, $msg: expr) => {{
+        $ctx.span_err($span, &$msg);
+        if $ctx.continue_on_failure() {
+            let e = crate::common::Error {
+                span: $span,
+                msg: $msg.to_string(),
+            };
+            return (Err(e));
+        } else {
+            panic!("{}", $msg);
+        }
+    }};
+}
+pub(crate) use error_or_panic;
+
+/// Custom assert to either panic or return an error
+macro_rules! error_assert {
+    ($ctx:ident, $span: ident, $b: expr) => {
+        if !$b {
+            let msg = format!("assertion failure: {:?}", stringify!($b));
+            $ctx.span_err($span, &msg);
+            if $ctx.continue_on_failure() {
+                let e = crate::common::Error { span: $span, msg };
+                return (Err(e));
+            } else {
+                panic!("{}", msg);
+            }
+        }
+    };
+}
+pub(crate) use error_assert;
 
 pub struct CrateInfo {
     pub crate_name: String,
@@ -31,34 +69,94 @@ impl CrateInfo {
         name.is_in_modules(&self.crate_name, &self.opaque_mods)
     }
 
-    fn is_transparent_decl(&self, name: &Name) -> bool {
+    #[allow(dead_code)]
+    pub(crate) fn is_transparent_decl(&self, name: &Name) -> bool {
         !self.is_opaque_decl(name)
+    }
+}
+
+/// We use a special type to store the Rust identifiers in the stack, to
+/// make sure we translate them in a specific order (top-level constants
+/// before constant functions before functions...). This allows us to
+/// avoid stealing issues when looking up the MIR bodies.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, VariantIndexArity)]
+pub enum OrdRustId {
+    Global(DefId),
+    ConstFun(DefId),
+    TraitDecl(DefId),
+    TraitImpl(DefId),
+    Fun(DefId),
+    Type(DefId),
+}
+
+impl OrdRustId {
+    fn get_id(&self) -> DefId {
+        match self {
+            OrdRustId::Global(id)
+            | OrdRustId::ConstFun(id)
+            | OrdRustId::TraitDecl(id)
+            | OrdRustId::TraitImpl(id)
+            | OrdRustId::Fun(id)
+            | OrdRustId::Type(id) => *id,
+        }
+    }
+}
+
+impl PartialOrd for OrdRustId {
+    fn partial_cmp(&self, other: &OrdRustId) -> Option<Ordering> {
+        let (vid0, _) = self.variant_index_arity();
+        let (vid1, _) = other.variant_index_arity();
+        if vid0 != vid1 {
+            Option::Some(vid0.cmp(&vid1))
+        } else {
+            let id0 = self.get_id();
+            let id1 = other.get_id();
+            Option::Some(id0.cmp(&id1))
+        }
+    }
+}
+
+impl Ord for OrdRustId {
+    fn cmp(&self, other: &OrdRustId) -> Ordering {
+        self.partial_cmp(other).unwrap()
     }
 }
 
 /// Translation context containing the top-level definitions.
 pub struct TransCtx<'tcx, 'ctx> {
     /// The compiler session
-    pub sess: &'ctx Session,
-    ///
+    pub session: &'ctx Session,
+    /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
+    /// The Hax context
+    pub hax_state: hax::State<hax::Base<'tcx>, (), (), ()>,
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
     ///
     pub crate_info: CrateInfo,
-    /// All the ids
+    /// Do not abort on the first error and attempt to extract as much as possible.
+    pub continue_on_failure: bool,
+    /// The number of errors encountered so far.
+    pub error_count: usize,
+    /// Error out if some code ends up being duplicated by the control-flow
+    /// reconstruction (note that because several patterns in a match may lead
+    /// to the same branch, it is node always possible not to duplicate code).
+    pub no_code_duplication: bool,
+    /// All the ids, in the order in which we encountered them
     pub all_ids: LinkedHashSet<AnyTransId>,
-    /// The declarations we came accross and which we haven't translated yet
-    pub stack: LinkedHashSet<AnyRustId>,
+    /// The declarations we came accross and which we haven't translated yet.
+    /// We use an ordered set to make sure we translate them in a specific
+    /// order (this avoids stealing issues when querying the MIR bodies).
+    pub stack: BTreeSet<OrdRustId>,
     /// File names to ids and vice-versa
     pub file_to_id: HashMap<FileName, FileId::Id>,
     pub id_to_file: HashMap<FileId::Id, FileName>,
     pub real_file_counter: LocalFileId::Generator,
     pub virtual_file_counter: VirtualFileId::Generator,
     /// The map from Rust type ids to translated type ids
-    pub type_id_map: ty::TypeDeclId::MapGenerator<DefId>,
+    pub type_id_map: TypeDeclId::MapGenerator<DefId>,
     /// The translated type definitions
-    pub type_defs: ty::TypeDecls,
+    pub type_defs: TypeDecls,
     /// The map from Rust function ids to translated function ids
     pub fun_id_map: ast::FunDeclId::MapGenerator<DefId>,
     /// The translated function definitions
@@ -67,48 +165,67 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub global_id_map: ast::GlobalDeclId::MapGenerator<DefId>,
     /// The translated global definitions
     pub global_defs: ast::GlobalDecls,
+    /// The map from Rust trait decl ids to translated trait decl ids
+    pub trait_decl_id_map: ast::TraitDeclId::MapGenerator<DefId>,
+    /// The translated trait declarations
+    pub trait_decls: ast::TraitDecls,
+    /// The map from Rust trait impls ids to translated trait impls ids
+    pub trait_impl_id_map: ast::TraitImplId::MapGenerator<DefId>,
+    pub trait_impl_id_to_def_id: HashMap<ast::TraitImplId::Id, DefId>,
+    /// The translated trait declarations
+    pub trait_impls: ast::TraitImpls,
 }
 
 /// A translation context for type/global/function bodies.
 /// Simply augments the [TransCtx] with local variables.
 ///
-/// TODO: use other collections than `im::OrdMap`? (we don't need a O(1) clone
-/// operation).
-/// TODO: remove the borrow for the TransCtx, or make it a mutable borrow.
+/// Remark: for now we don't really need to use collections from the [im] crate,
+/// because we don't need the O(1) clone operation, but we may need it once we
+/// implement support for universally quantified traits, where we might need
+/// to be able to dive in/out of universal quantifiers. Also, it doesn't cost
+/// us to use those collections.
 pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    /// This is used in very specific situations.
+    /// This is used in very specific situations. TODO: remove?
     pub def_id: DefId,
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>,
-    /// Region counter
-    pub regions_counter: ty::RegionVarId::Generator,
-    /// The regions - TODO: rename to region_vars
-    pub region_vars: ty::RegionVarId::Vector<ty::RegionVar>,
-    // TODO: use the MapGenerator types
+    /// A hax state with an owner id
+    pub hax_state: hax::State<hax::Base<'tcx>, (), (), rustc_hir::def_id::DefId>,
+    /// The regions
+    pub region_vars: RegionId::Vector<RegionVar>,
     /// The map from rust region to translated region indices
-    pub region_vars_map: im::OrdMap<rustc_middle::ty::RegionKind<'tcx>, ty::RegionVarId::Id>,
-    /// Id counter for the type variables
-    pub type_vars_counter: ty::TypeVarId::Generator,
+    pub region_vars_map: RegionId::MapGenerator<hax::Region>,
     /// The type variables
-    pub type_vars: ty::TypeVarId::Vector<ty::TypeVar>,
+    pub type_vars: TypeVarId::Vector<TypeVar>,
     /// The map from rust type variable indices to translated type variable
     /// indices.
-    pub type_vars_map: im::OrdMap<u32, ty::TypeVarId::Id>,
-    /// Id counter for the variables
-    pub vars_counter: v::VarId::Generator,
+    pub type_vars_map: TypeVarId::MapGenerator<u32>,
     /// The "regular" variables
-    pub vars: v::VarId::Vector<ast::Var>,
+    pub vars: VarId::Vector<ast::Var>,
     /// The map from rust variable indices to translated variables indices.
-    pub vars_map: im::OrdMap<u32, v::VarId::Id>,
-    /// Id counter for the const generic variables
-    pub const_generic_counter: ty::ConstGenericVarId::Generator,
+    pub vars_map: VarId::MapGenerator<usize>,
     /// The const generic variables
-    pub const_generic_vars: ty::ConstGenericVarId::Vector<ty::ConstGenericVar>,
+    pub const_generic_vars: ConstGenericVarId::Vector<ConstGenericVar>,
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
-    pub const_generic_vars_map: im::OrdMap<u32, ty::ConstGenericVarId::Id>,
-    /// Block id counter
-    pub blocks_counter: ast::BlockId::Generator,
+    pub const_generic_vars_map: ConstGenericVarId::MapGenerator<u32>,
+    /// A generator for trait instance ids.
+    /// We initialize it so that it generates ids for local clauses.
+    pub trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
+    /// All the trait clauses accessible from the current environment
+    pub trait_clauses: OrdMap<TraitInstanceId, NonLocalTraitClause>,
+    /// If [true] it means we are currently registering trait clauses in the
+    /// local context. As a consequence, we allow not solving all the trait
+    /// obligations, because the obligations for some clauses may be solved
+    /// by other clauses which have not been registered yet.
+    /// For this reason, we do the resolution in several passes.
+    pub registering_trait_clauses: bool,
+    ///
+    pub types_outlive: Vec<TypeOutlives>,
+    ///
+    pub regions_outlive: Vec<RegionOutlives>,
+    ///
+    pub trait_type_constraints: Vec<TraitTypeConstraint>,
     /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
@@ -116,21 +233,74 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The map from rust blocks to translated blocks.
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
-    pub blocks_map: im::OrdMap<BasicBlock, ast::BlockId::Id>,
+    pub blocks_map: ast::BlockId::MapGenerator<hax::BasicBlock>,
+    ///
+    /// The stack of late-bound parameters (can only be lifetimes for now), which
+    /// use DeBruijn indices (the other parameters use free variables).
+    /// For explanations about what early-bound and late-bound parameters are, see:
+    /// https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
+    /// https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+    ///
+    /// Remark: even though performance is not critical, the use of [im::Vec] allows
+    /// us to push/pop and access indexed elements with very good performance.
+    ///
+    /// **Important**:
+    /// ==============
+    /// The Rust compiler uses De Bruijn indices to identify the *group* of
+    /// universally quantified variables, and variable identifiers to identity
+    /// the variables inside the group.
+    ///
+    /// For instance, we have the following:
+    /// ```text
+    ///                     we compute the De Bruijn indices from here
+    ///                            VVVVVVVVVVVVVVVVVVVVVVV
+    /// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+    ///      ^^^^^^         ^^       ^       ^        ^
+    ///        |      De Bruijn: 0   |       |        |
+    ///  De Bruijn: 1                |       |        |
+    ///                        De Bruijn: 1  |    De Bruijn: 0
+    ///                           Var id: 0  |       Var id: 0
+    ///                                      |
+    ///                                De Bruijn: 1
+    ///                                   Var id: 1
+    /// ```
+    ///
+    /// For this reason, we use a stack of vectors to store the bound variables.
+    pub bound_region_vars: im::Vector<im::Vector<RegionId::Id>>,
+}
+
+/// A formatting context for type/global/function bodies.
+/// Simply augments the [TransCtx] with local variables.
+///
+/// We can directly use the [TransCtx] and the [BodyTransCtx] for formatting.
+/// However, sometimes we only have a [TransCtx] at our disposal when formatting
+/// a definition. We could transform it into a [BodyTransCtx] by adding the
+/// proper information, but this requires a mutable access to the [TransCtx].
+/// Instead, we can create a [BodyFormatCtx].
+pub(crate) struct BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    /// The translation context containing the top-level definitions/ids.
+    pub t_ctx: &'ctx TransCtx<'tcx, 'ctx1>,
+    pub generics: &'ctx GenericParams,
+    /// The "regular" variables
+    pub vars: &'ctx VarId::Vector<ast::Var>,
+    ///
+    #[allow(dead_code)]
+    pub trait_clauses: &'ctx TraitClauseId::Vector<TraitClause>,
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
-    /// Register the file containing a definition (rem.: we register the
-    /// file containing the definition itself, not its def ident).
-    fn translate_file_from_def_id(&mut self, def_id: DefId) -> FileId::Id {
-        let span = meta::get_rspan_from_def_id(self.tcx, def_id);
-        self.translate_file_from_span(span)
+    pub fn continue_on_failure(&self) -> bool {
+        self.continue_on_failure
     }
 
-    /// Register the file referenced by a span
-    fn translate_file_from_span(&mut self, span: rustc_span::Span) -> FileId::Id {
-        let filename = meta::get_filename_from_rspan(self.sess, span);
-        self.register_file(filename)
+    pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
+        let msg = msg.to_string();
+        self.session.span_err(span, msg);
+        self.increment_error_count();
+    }
+
+    fn increment_error_count(&mut self) {
+        self.error_count += 1;
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -158,20 +328,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
         // Retrieve the span from the def id
         let rspan = meta::get_rspan_from_def_id(self.tcx, def_id);
-
+        let rspan = rspan.sinto(&self.hax_state);
         self.translate_meta_from_rspan(rspan)
     }
 
-    pub fn translate_span(&mut self, rspan: rustc_span::Span) -> meta::Span {
-        // Retrieve the source map, which contains information about the source file:
-        // we need it to be able to interpret the span.
-        let source_map = self.sess.source_map();
-
-        // Find the source file and the span.
-        // It is very annoying: macros get expanded to statements whose spans refer
-        // to the file where the macro is defined, not the file where it is used.
-        let (beg, end) = source_map.is_valid_span(rspan).unwrap();
-        let filename = meta::convert_filename(&beg.file.name);
+    pub fn translate_span(&mut self, rspan: hax::Span) -> meta::Span {
+        let filename = meta::convert_filename(&rspan.filename);
         let file_id = match &filename {
             FileName::NotReal(_) => {
                 // For now we forbid not real filenames
@@ -180,8 +342,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename),
         };
 
-        let beg = meta::convert_loc(beg);
-        let end = meta::convert_loc(end);
+        let beg = meta::convert_loc(rspan.lo);
+        let end = meta::convert_loc(rspan.hi);
 
         // Put together
         meta::Span { file_id, beg, end }
@@ -190,12 +352,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Compute meta data from a Rust source scope
     pub fn translate_meta_from_source_info(
         &mut self,
-        source_scopes: &IndexVec<SourceScope, SourceScopeData<'_>>,
-        source_info: SourceInfo,
+        source_scopes: &hax::IndexVec<hax::SourceScope, hax::SourceScopeData>,
+        source_info: &hax::SourceInfo,
     ) -> Meta {
         // Translate the span
         let mut scope_data = source_scopes.get(source_info.scope).unwrap();
-        let span = self.translate_span(scope_data.span);
+        let span = self.translate_span(scope_data.span.clone());
 
         // Lookup the top-most inlined parent scope.
         if scope_data.inlined_parent_scope.is_some() {
@@ -204,7 +366,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 scope_data = source_scopes.get(parent_scope).unwrap();
             }
 
-            let parent_span = self.translate_span(scope_data.span);
+            let parent_span = self.translate_span(scope_data.span.clone());
 
             Meta {
                 span: parent_span,
@@ -218,8 +380,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: rustc_span::Span) -> Meta {
-        // Translate teh span
+    // TODO: rename
+    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
+        // Translate the span
         let span = self.translate_span(rspan);
 
         Meta {
@@ -228,26 +391,26 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn id_is_opaque(&self, id: DefId) -> bool {
-        let name = crate::names_utils::item_def_id_to_name(self.tcx, id);
+    pub(crate) fn id_is_opaque(&mut self, id: DefId) -> bool {
+        let name = self.item_def_id_to_name(id);
         self.crate_info.is_opaque_decl(&name)
     }
 
-    pub(crate) fn id_is_transparent(&self, id: DefId) -> bool {
+    pub(crate) fn id_is_transparent(&mut self, id: DefId) -> bool {
         !self.id_is_opaque(id)
     }
 
-    pub(crate) fn push_id(&mut self, _rust_id: DefId, id: AnyRustId, trans_id: AnyTransId) {
+    pub(crate) fn push_id(&mut self, _rust_id: DefId, id: OrdRustId, trans_id: AnyTransId) {
         // Add the id to the stack of declarations to translate
         self.stack.insert(id);
         self.all_ids.insert(trans_id);
     }
 
-    pub(crate) fn register_type_decl_id(&mut self, id: DefId) -> ty::TypeDeclId::Id {
-        match self.type_id_map.get(id) {
+    pub(crate) fn register_type_decl_id(&mut self, id: DefId) -> TypeDeclId::Id {
+        match self.type_id_map.get(&id) {
             Option::Some(id) => id,
             Option::None => {
-                let rid = AnyRustId::Type(id);
+                let rid = OrdRustId::Type(id);
                 let trans_id = self.type_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::Type(trans_id));
                 trans_id
@@ -255,18 +418,70 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn translate_type_decl_id(&mut self, id: DefId) -> ty::TypeDeclId::Id {
+    pub(crate) fn translate_type_decl_id(&mut self, id: DefId) -> TypeDeclId::Id {
         self.register_type_decl_id(id)
     }
 
+    // TODO: factor out all the "register_..." functions
     pub(crate) fn register_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
-        match self.fun_id_map.get(id) {
+        match self.fun_id_map.get(&id) {
             Option::Some(id) => id,
             Option::None => {
-                let rid = AnyRustId::Fun(id);
+                let rid = if self.tcx.is_const_fn_raw(id) {
+                    OrdRustId::ConstFun(id)
+                } else {
+                    OrdRustId::Fun(id)
+                };
                 let trans_id = self.fun_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::Fun(trans_id));
                 trans_id
+            }
+        }
+    }
+
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn register_trait_decl_id(&mut self, id: DefId) -> Option<ast::TraitDeclId::Id> {
+        use crate::assumed;
+        if assumed::IGNORE_BUILTIN_MARKER_TRAITS {
+            let name = self.item_def_id_to_name(id);
+            if assumed::is_marker_trait(&name) {
+                return None;
+            }
+        }
+
+        match self.trait_decl_id_map.get(&id) {
+            Option::Some(id) => Some(id),
+            Option::None => {
+                let rid = OrdRustId::TraitDecl(id);
+                let trans_id = self.trait_decl_id_map.insert(id);
+                self.push_id(id, rid, AnyTransId::TraitDecl(trans_id));
+                Some(trans_id)
+            }
+        }
+    }
+
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn register_trait_impl_id(
+        &mut self,
+        rust_id: DefId,
+    ) -> Option<ast::TraitImplId::Id> {
+        // Check if we need to filter
+        {
+            // Retrieve the id of the implemented trait decl
+            let id = self.tcx.trait_id_of_impl(rust_id).unwrap();
+            let _ = self.register_trait_decl_id(id)?;
+        }
+
+        match self.trait_impl_id_map.get(&rust_id) {
+            Option::Some(id) => Some(id),
+            Option::None => {
+                let rid = OrdRustId::TraitImpl(rust_id);
+                let trans_id = self.trait_impl_id_map.insert(rust_id);
+                self.trait_impl_id_to_def_id.insert(trans_id, rust_id);
+                self.push_id(rust_id, rid, AnyTransId::TraitImpl(trans_id));
+                Some(trans_id)
             }
         }
     }
@@ -275,11 +490,23 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.register_fun_decl_id(id)
     }
 
-    pub(crate) fn register_global_decl_id(&mut self, id: DefId) -> ty::GlobalDeclId::Id {
-        match self.global_id_map.get(id) {
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn translate_trait_decl_id(&mut self, id: DefId) -> Option<ast::TraitDeclId::Id> {
+        self.register_trait_decl_id(id)
+    }
+
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn translate_trait_impl_id(&mut self, id: DefId) -> Option<ast::TraitImplId::Id> {
+        self.register_trait_impl_id(id)
+    }
+
+    pub(crate) fn register_global_decl_id(&mut self, id: DefId) -> GlobalDeclId::Id {
+        match self.global_id_map.get(&id) {
             Option::Some(id) => id,
             Option::None => {
-                let rid = AnyRustId::Global(id);
+                let rid = OrdRustId::Global(id);
                 let trans_id = self.global_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::Global(trans_id));
                 trans_id
@@ -295,108 +522,135 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>) -> Self {
+        let hax_state = t_ctx.make_hax_state_with_id(def_id);
+        let mut trait_clauses_counter = TraitClauseId::Generator::new();
+        let trait_instance_id_gen = Box::new(move || {
+            let id = trait_clauses_counter.fresh_id();
+            TraitInstanceId::Clause(id)
+        });
         BodyTransCtx {
             def_id,
             t_ctx,
-            regions_counter: ty::RegionVarId::Generator::new(),
-            region_vars: ty::RegionVarId::Vector::new(),
-            region_vars_map: im::OrdMap::new(),
-            type_vars_counter: ty::TypeVarId::Generator::new(),
-            type_vars: ty::TypeVarId::Vector::new(),
-            type_vars_map: im::OrdMap::new(),
-            vars_counter: v::VarId::Generator::new(),
-            vars: v::VarId::Vector::new(),
-            vars_map: im::OrdMap::new(),
-            const_generic_counter: ty::ConstGenericVarId::Generator::new(),
-            const_generic_vars: ty::ConstGenericVarId::Vector::new(),
-            const_generic_vars_map: im::OrdMap::new(),
-            blocks_counter: ast::BlockId::Generator::new(),
+            hax_state,
+            region_vars: RegionId::Vector::new(),
+            region_vars_map: RegionId::MapGenerator::new(),
+            type_vars: TypeVarId::Vector::new(),
+            type_vars_map: TypeVarId::MapGenerator::new(),
+            vars: VarId::Vector::new(),
+            vars_map: VarId::MapGenerator::new(),
+            const_generic_vars: ConstGenericVarId::Vector::new(),
+            const_generic_vars_map: ConstGenericVarId::MapGenerator::new(),
+            trait_instance_id_gen,
+            trait_clauses: OrdMap::new(),
+            registering_trait_clauses: false,
+            regions_outlive: Vec::new(),
+            types_outlive: Vec::new(),
+            trait_type_constraints: Vec::new(),
             blocks: im::OrdMap::new(),
-            blocks_map: im::OrdMap::new(),
+            blocks_map: ast::BlockId::MapGenerator::new(),
+            bound_region_vars: im::Vector::new(),
         }
+    }
+
+    pub fn continue_on_failure(&self) -> bool {
+        self.t_ctx.continue_on_failure()
+    }
+
+    pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
+        self.t_ctx.span_err(span, msg)
     }
 
     pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
         self.t_ctx.translate_meta_from_rid(def_id)
     }
 
-    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: rustc_span::Span) -> Meta {
+    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
         self.t_ctx.translate_meta_from_rspan(rspan)
     }
 
-    pub(crate) fn get_local(&self, local: &mir::Local) -> Option<v::VarId::Id> {
-        self.vars_map.get(&local.as_u32()).copied()
+    pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId::Id> {
+        use rustc_index::Idx;
+        self.vars_map.get(&local.index())
     }
 
-    pub(crate) fn get_block_id_from_rid(&self, rid: BasicBlock) -> Option<ast::BlockId::Id> {
-        self.blocks_map.get(&rid).copied()
+    #[allow(dead_code)]
+    pub(crate) fn get_block_id_from_rid(&self, rid: hax::BasicBlock) -> Option<ast::BlockId::Id> {
+        self.blocks_map.get(&rid)
     }
 
-    pub(crate) fn get_var_from_id(&self, var_id: v::VarId::Id) -> Option<&ast::Var> {
+    pub(crate) fn get_var_from_id(&self, var_id: VarId::Id) -> Option<&ast::Var> {
         self.vars.get(var_id)
     }
 
-    pub(crate) fn register_type_decl_id(&mut self, id: DefId) -> ty::TypeDeclId::Id {
-        self.t_ctx.register_type_decl_id(id)
-    }
-
-    pub(crate) fn translate_type_decl_id(&mut self, id: DefId) -> ty::TypeDeclId::Id {
+    pub(crate) fn translate_type_decl_id(&mut self, id: DefId) -> TypeDeclId::Id {
         self.t_ctx.translate_type_decl_id(id)
-    }
-
-    pub(crate) fn register_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
-        self.t_ctx.register_fun_decl_id(id)
     }
 
     pub(crate) fn translate_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
         self.t_ctx.translate_fun_decl_id(id)
     }
 
-    pub(crate) fn register_global_decl_id(&mut self, id: DefId) -> ty::GlobalDeclId::Id {
-        self.t_ctx.register_global_decl_id(id)
-    }
-
     pub(crate) fn translate_global_decl_id(&mut self, id: DefId) -> ast::GlobalDeclId::Id {
         self.t_ctx.translate_global_decl_id(id)
     }
 
-    pub(crate) fn get_region_from_rust(
-        &self,
-        r: rustc_middle::ty::RegionKind<'tcx>,
-    ) -> Option<ty::RegionVarId::Id> {
-        self.region_vars_map.get(&r).copied()
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn translate_trait_decl_id(&mut self, id: DefId) -> Option<ast::TraitDeclId::Id> {
+        self.t_ctx.translate_trait_decl_id(id)
     }
 
-    pub(crate) fn push_region(
-        &mut self,
-        r: rustc_middle::ty::RegionKind<'tcx>,
-        name: Option<String>,
-    ) -> ty::RegionVarId::Id {
+    /// Returns an [Option] because we may ignore some builtin or auto traits
+    /// like [core::marker::Sized] or [core::marker::Sync].
+    pub(crate) fn translate_trait_impl_id(&mut self, id: DefId) -> Option<ast::TraitImplId::Id> {
+        self.t_ctx.translate_trait_impl_id(id)
+    }
+
+    pub(crate) fn push_region(&mut self, r: hax::Region, name: Option<String>) -> RegionId::Id {
         use crate::id_vector::ToUsize;
-        let rid = self.regions_counter.fresh_id();
+        let rid = self.region_vars_map.insert(r);
         assert!(rid.to_usize() == self.region_vars.len());
-        let var = ty::RegionVar { index: rid, name };
+        let var = RegionVar { index: rid, name };
         self.region_vars.insert(rid, var);
-        self.region_vars_map.insert(r, rid);
         rid
     }
 
-    pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> ty::TypeVarId::Id {
+    /// Push a group of bound regions
+    pub(crate) fn push_bound_regions_group(&mut self, names: Vec<Option<String>>) {
         use crate::id_vector::ToUsize;
-        let var_id = self.type_vars_counter.fresh_id();
+
+        // Register the variables
+        let var_ids: im::Vector<RegionId::Id> = names
+            .into_iter()
+            .map(|name| {
+                // Note that we don't insert a binding in the region_vars_map
+                let rid = self.region_vars_map.fresh_id();
+                assert!(rid.to_usize() == self.region_vars.len());
+                let var = RegionVar { index: rid, name };
+                self.region_vars.insert(rid, var);
+                rid
+            })
+            .collect();
+
+        // Push the group
+        self.bound_region_vars.push_front(var_ids);
+    }
+
+    pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId::Id {
+        use crate::id_vector::ToUsize;
+        let var_id = self.type_vars_map.insert(rindex);
         assert!(var_id.to_usize() == self.type_vars.len());
-        let var = ty::TypeVar {
+        let var = TypeVar {
             index: var_id,
             name,
         };
         self.type_vars.insert(var_id, var);
-        self.type_vars_map.insert(rindex, var_id);
         var_id
     }
 
-    pub(crate) fn push_var(&mut self, rid: u32, ty: ty::ETy, name: Option<String>) {
+    pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
         use crate::id_vector::ToUsize;
-        let var_id = self.vars_counter.fresh_id();
+        let var_id = self.vars_map.insert(rid);
         assert!(var_id.to_usize() == self.vars.len());
         let var = ast::Var {
             index: var_id,
@@ -404,194 +658,768 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ty,
         };
         self.vars.insert(var_id, var);
-        self.vars_map.insert(rid, var_id);
     }
 
     pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
         use crate::id_vector::ToUsize;
-        let var_id = self.const_generic_counter.fresh_id();
-        assert!(var_id.to_usize() == self.vars.len());
-        let var = ty::ConstGenericVar {
+        let var_id = self.const_generic_vars_map.insert(rid);
+        assert!(var_id.to_usize() == self.const_generic_vars.len());
+        let var = ConstGenericVar {
             index: var_id,
             name,
             ty,
         };
         self.const_generic_vars.insert(var_id, var);
-        self.const_generic_vars_map.insert(rid, var_id);
     }
 
-    pub(crate) fn fresh_block_id(&mut self, rid: BasicBlock) -> ast::BlockId::Id {
-        let block_id = self.blocks_counter.fresh_id();
-        self.blocks_map.insert(rid, block_id);
-        block_id
+    pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId::Id {
+        self.blocks_map.insert(rid)
     }
 
     pub(crate) fn push_block(&mut self, id: ast::BlockId::Id, block: ast::BlockData) {
         self.blocks.insert(id, block);
     }
 
-    pub(crate) fn get_type_defs(&self) -> &ty::TypeDecls {
-        &self.t_ctx.type_defs
+    pub(crate) fn get_generics(&self) -> GenericParams {
+        GenericParams {
+            regions: self.region_vars.clone(),
+            types: self.type_vars.clone(),
+            const_generics: self.const_generic_vars.clone(),
+            trait_clauses: self.get_local_trait_clauses(),
+        }
+    }
+
+    /// Retrieve the *local* trait clauses available in the current environment
+    /// (we filter the parent of those clauses, etc.).
+    pub(crate) fn get_local_trait_clauses(&self) -> TraitClauseId::Vector<TraitClause> {
+        let clauses: TraitClauseId::Vector<TraitClause> = self
+            .trait_clauses
+            .iter()
+            .filter_map(|(_, x)| x.to_local_trait_clause())
+            .collect();
+        // Sanity check
+        assert!(clauses.iter_indexed_values().all(|(i, c)| c.clause_id == i));
+        clauses
+    }
+
+    pub(crate) fn get_parent_trait_clauses(&self) -> TraitClauseId::Vector<TraitClause> {
+        let clauses: TraitClauseId::Vector<TraitClause> = self
+            .trait_clauses
+            .iter()
+            .filter_map(|(_, x)| {
+                x.to_trait_clause_with_id(&|id| match id {
+                    TraitInstanceId::ParentClause(box TraitInstanceId::SelfId, _, id) => Some(*id),
+                    _ => None,
+                })
+            })
+            .collect();
+        // Sanity check
+        assert!(clauses.iter_indexed_values().all(|(i, c)| c.clause_id == i));
+        clauses
+    }
+
+    pub(crate) fn get_predicates(&self) -> Predicates {
+        Predicates {
+            regions_outlive: self.regions_outlive.clone(),
+            types_outlive: self.types_outlive.clone(),
+            trait_type_constraints: self.trait_type_constraints.clone(),
+        }
+    }
+
+    /// We use this when exploring the clauses of a predicate, to introduce
+    /// its parent clauses, etc. in the context. We temporarily replace the
+    /// trait instance id generator so that the continuation registers the
+    ///
+    pub(crate) fn with_local_trait_clauses<T>(
+        &mut self,
+        new_trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
+        f: &mut dyn FnMut(&mut Self) -> T,
+    ) -> T {
+        use std::mem::replace;
+
+        // Save the trait instance id generator
+        let old_trait_instance_id_gen =
+            replace(&mut self.trait_instance_id_gen, new_trait_instance_id_gen);
+
+        // Apply the continuation
+        let out = f(self);
+
+        // Restore
+        self.trait_instance_id_gen = old_trait_instance_id_gen;
+
+        // Return
+        out
+    }
+
+    /// Set [registering_trait_clauses] to [true], call the continuation, and
+    /// reset it to [false]
+    pub(crate) fn while_registering_trait_clauses<T>(
+        &mut self,
+        f: &mut dyn FnMut(&mut Self) -> T,
+    ) -> T {
+        assert!(!self.registering_trait_clauses);
+        self.registering_trait_clauses = true;
+        let out = f(self);
+        self.registering_trait_clauses = false;
+        out
     }
 }
 
-impl<'tcx, 'ctx> Formatter<ty::TypeDeclId::Id> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, id: ty::TypeDeclId::Id) -> String {
-        self.type_defs.format_object(id)
+impl<'tcx, 'ctx> Formatter<TypeDeclId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: TypeDeclId::Id) -> String {
+        match self.type_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<ty::TypeVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: ty::TypeVarId::Id) -> String {
+impl<'tcx, 'ctx> Formatter<GlobalDeclId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        match self.global_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<RegionId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: RegionId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<TypeVarId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: TypeVarId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<ConstGenericVarId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<ast::FunDeclId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ast::FunDeclId::Id) -> String {
+        match self.fun_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<ast::TraitClauseId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ast::TraitClauseId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<ast::TraitDeclId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ast::TraitDeclId::Id) -> String {
+        match self.trait_decls.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<ast::TraitImplId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: ast::TraitImplId::Id) -> String {
+        match self.trait_impls.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
+    }
+}
+
+/// For enum values: `List::Cons`
+impl<'tcx, 'ctx> Formatter<(TypeDeclId::Id, VariantId::Id)> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
+        let (def_id, variant_id) = id;
+        // The definition may not be available yet, especially if we print-debug
+        // while translating the crate
+        match self.type_defs.get(def_id) {
+            Option::None => format!(
+                "{}::{}",
+                def_id.to_pretty_string(),
+                variant_id.to_pretty_string()
+            ),
+            Option::Some(def) => {
+                let variants = def.kind.as_enum();
+                let mut name = def.name.fmt_with_ctx(self);
+                let variant_name = &variants.get(variant_id).unwrap().name;
+                name.push_str("::");
+                name.push_str(variant_name);
+                name
+            }
+        }
+    }
+}
+
+/// For struct/enum values: retrieve a field name
+impl<'tcx, 'ctx> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
+    for TransCtx<'tcx, 'ctx>
+{
+    fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
+        let (def_id, opt_variant_id, field_id) = id;
+        // The definition may not be available yet, especially if we print-debug
+        // while translating the crate
+        match self.type_defs.get(def_id) {
+            Option::None => match opt_variant_id {
+                Option::None => format!(
+                    "{}::{}",
+                    def_id.to_pretty_string(),
+                    field_id.to_pretty_string()
+                ),
+                Option::Some(variant_id) => format!(
+                    "{}::{}::{}",
+                    def_id.to_pretty_string(),
+                    variant_id.to_pretty_string(),
+                    field_id.to_pretty_string()
+                ),
+            },
+            Option::Some(gen_def) => match (&gen_def.kind, opt_variant_id) {
+                (TypeDeclKind::Enum(variants), Some(variant_id)) => {
+                    let field = variants
+                        .get(variant_id)
+                        .unwrap()
+                        .fields
+                        .get(field_id)
+                        .unwrap();
+                    match &field.name {
+                        Option::Some(name) => name.clone(),
+                        Option::None => field_id.to_string(),
+                    }
+                }
+                (TypeDeclKind::Struct(fields), None) => {
+                    let field = fields.get(field_id).unwrap();
+                    match &field.name {
+                        Option::Some(name) => name.clone(),
+                        Option::None => field_id.to_string(),
+                    }
+                }
+                _ => unreachable!(),
+            },
+        }
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<VarId::Id> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, v: VarId::Id) -> String {
+        v.to_pretty_string()
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<TypeVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: TypeVarId::Id) -> String {
         let v = self.type_vars.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<v::VarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: v::VarId::Id) -> String {
-        let v = self.vars.get(id).unwrap();
-        v.to_string()
-    }
-}
-
-impl<'tcx, 'ctx, 'ctx1> Formatter<ty::RegionVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: ty::RegionVarId::Id) -> String {
-        let v = self.region_vars.get(id).unwrap();
-        v.to_string()
-    }
-}
-
-impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Region<ty::RegionVarId::Id>>
-    for BodyTransCtx<'tcx, 'ctx, 'ctx1>
-{
-    fn format_object(&self, r: &ty::Region<ty::RegionVarId::Id>) -> String {
-        r.fmt_with_ctx(self)
-    }
-}
-
-impl<'tcx, 'ctx, 'ctx1> Formatter<ty::ConstGenericVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: ty::ConstGenericVarId::Id) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<ConstGenericVarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
         let v = self.const_generic_vars.get(id).unwrap();
         v.to_string()
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::ErasedRegion> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, _: &ty::ErasedRegion) -> String {
-        "'_".to_owned()
+impl<'tcx, 'ctx, 'ctx1> Formatter<VarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: VarId::Id) -> String {
+        let v = self.vars.get(id).unwrap();
+        v.to_string()
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<ty::TypeDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: ty::TypeDeclId::Id) -> String {
-        self.t_ctx.type_defs.format_object(id)
+impl<'tcx, 'ctx, 'ctx1> Formatter<RegionId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: RegionId::Id) -> String {
+        let v = self.region_vars.get(id).unwrap();
+        v.to_string()
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<ty::GlobalDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: ty::GlobalDeclId::Id) -> String {
-        self.t_ctx.global_defs.format_object(id)
+impl<'tcx, 'ctx, 'ctx1> Formatter<TypeDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: TypeDeclId::Id) -> String {
+        match self.t_ctx.type_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::Region<ty::RegionVarId::Id>>>
-    for BodyTransCtx<'tcx, 'ctx, 'ctx1>
-{
-    fn format_object(&self, ty: &ty::Ty<ty::Region<ty::RegionVarId::Id>>) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<GlobalDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        match self.t_ctx.global_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, ty: &Ty) -> String {
         ty.fmt_with_ctx(self)
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::Ty<ty::ErasedRegion>> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, ty: &ty::Ty<ty::ErasedRegion>) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::TraitClauseId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::TraitClauseId::Id) -> String {
+        id.to_pretty_string()
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::TraitDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::TraitDeclId::Id) -> String {
+        self.t_ctx.format_object(id)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::TraitImplId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::TraitImplId::Id) -> String {
+        self.t_ctx.format_object(id)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::FunDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::FunDeclId::Id) -> String {
+        self.t_ctx.format_object(id)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<TypeVarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: TypeVarId::Id) -> String {
+        match self.generics.types.get(id) {
+            None => id.to_pretty_string(),
+            Some(v) => v.to_string(),
+        }
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<ConstGenericVarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+        match self.generics.const_generics.get(id) {
+            None => id.to_pretty_string(),
+            Some(v) => v.to_string(),
+        }
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<VarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: VarId::Id) -> String {
+        match self.vars.get(id) {
+            None => id.to_pretty_string(),
+            Some(v) => v.to_string(),
+        }
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<RegionId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: RegionId::Id) -> String {
+        match self.generics.regions.get(id) {
+            None => id.to_pretty_string(),
+            Some(v) => v.to_string(),
+        }
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<TypeDeclId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: TypeDeclId::Id) -> String {
+        match self.t_ctx.type_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<GlobalDeclId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+        match self.t_ctx.global_defs.get(id) {
+            None => id.to_pretty_string(),
+            Some(d) => d.name.fmt_with_ctx(self),
+        }
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&Ty> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, ty: &Ty) -> String {
         ty.fmt_with_ctx(self)
     }
 }
 
-/// Auxiliary definition used to format definitions.
-pub(crate) struct TypeDeclFormatter<'a> {
-    pub type_defs: &'a ty::TypeDecls,
-    pub global_defs: &'a ast::GlobalDecls,
-    /// The region parameters of the definition we are printing (needed to
-    /// correctly pretty print region var ids)
-    pub region_params: &'a ty::RegionVarId::Vector<ty::RegionVar>,
-    /// The type parameters of the definition we are printing (needed to
-    /// correctly pretty print type var ids)
-    pub type_params: &'a ty::TypeVarId::Vector<ty::TypeVar>,
-    /// The const generic parameters of the definition we are printing (needed to
-    /// correctly pretty print type var ids)
-    pub const_generic_params: &'a ty::ConstGenericVarId::Vector<ty::ConstGenericVar>,
-}
-
-impl<'a> Formatter<ty::RegionVarId::Id> for TypeDeclFormatter<'a> {
-    fn format_object(&self, id: ty::RegionVarId::Id) -> String {
-        // Lookup the region parameter
-        let v = self.region_params.get(id).unwrap();
-        // Format
-        v.to_string()
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::TraitClauseId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::TraitClauseId::Id) -> String {
+        id.to_pretty_string()
     }
 }
 
-impl<'a> Formatter<ty::ConstGenericVarId::Id> for TypeDeclFormatter<'a> {
-    fn format_object(&self, id: ty::ConstGenericVarId::Id) -> String {
-        // Lookup the region parameter
-        let v = self.const_generic_params.get(id).unwrap();
-        // Format
-        v.to_string()
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::TraitDeclId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::TraitDeclId::Id) -> String {
+        self.t_ctx.format_object(id)
     }
 }
 
-impl<'a> Formatter<ty::TypeVarId::Id> for TypeDeclFormatter<'a> {
-    fn format_object(&self, id: ty::TypeVarId::Id) -> String {
-        // Lookup the type parameter
-        let v = self.type_params.get(id).unwrap();
-        // Format
-        v.to_string()
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::TraitImplId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::TraitImplId::Id) -> String {
+        self.t_ctx.format_object(id)
     }
 }
 
-impl<'a> Formatter<&ty::Region<ty::RegionVarId::Id>> for TypeDeclFormatter<'a> {
-    fn format_object(&self, r: &ty::Region<ty::RegionVarId::Id>) -> String {
-        r.fmt_with_ctx(self)
+impl<'tcx, 'ctx, 'ctx1> Formatter<ast::FunDeclId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, id: ast::FunDeclId::Id) -> String {
+        self.t_ctx.format_object(id)
     }
 }
 
-impl<'a> Formatter<&ty::ErasedRegion> for TypeDeclFormatter<'a> {
-    fn format_object(&self, _: &ty::ErasedRegion) -> String {
-        "".to_owned()
-    }
-}
-
-impl<'a> Formatter<&ty::TypeDecl> for TypeDeclFormatter<'a> {
-    fn format_object(&self, def: &ty::TypeDecl) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<&TypeDecl> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, def: &TypeDecl) -> String {
         def.fmt_with_ctx(self)
     }
 }
 
-impl<'a> Formatter<ty::TypeDeclId::Id> for TypeDeclFormatter<'a> {
-    fn format_object(&self, id: ty::TypeDeclId::Id) -> String {
-        self.type_defs.format_object(id)
+impl<'tcx, 'ctx, 'ctx1> Formatter<(TypeDeclId::Id, VariantId::Id)>
+    for BodyTransCtx<'tcx, 'ctx, 'ctx1>
+{
+    fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
+        self.t_ctx.format_object(id)
     }
 }
 
-impl<'a> Formatter<ty::GlobalDeclId::Id> for TypeDeclFormatter<'a> {
-    fn format_object(&self, id: ty::GlobalDeclId::Id) -> String {
-        self.global_defs.format_object(id)
+impl<'tcx, 'ctx, 'ctx1> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
+    for BodyTransCtx<'tcx, 'ctx, 'ctx1>
+{
+    fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
+        self.t_ctx.format_object(id)
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<&ty::TypeDecl> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, def: &ty::TypeDecl) -> String {
-        // Create a type def formatter (which will take care of the
-        // type parameters)
-        let formatter = TypeDeclFormatter {
-            type_defs: &self.t_ctx.type_defs,
-            global_defs: &self.t_ctx.global_defs,
-            region_params: &def.region_params,
-            type_params: &def.type_params,
-            const_generic_params: &def.const_generic_params,
+impl<'tcx, 'ctx, 'ctx1> Formatter<(TypeDeclId::Id, VariantId::Id)>
+    for BodyFormatCtx<'tcx, 'ctx, 'ctx1>
+{
+    fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
+        self.t_ctx.format_object(id)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
+    for BodyFormatCtx<'tcx, 'ctx, 'ctx1>
+{
+    fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
+        self.t_ctx.format_object(id)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&TypeDecl> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, def: &TypeDecl) -> String {
+        // Create a body format context
+        let formatter = BodyFormatCtx {
+            t_ctx: self,
+            generics: &def.generics,
+            vars: &VarId::Vector::new(),
+            trait_clauses: &TraitClauseId::Vector::new(),
         };
-        formatter.format_object(def)
+        def.fmt_with_ctx(&formatter)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&llbc_ast::Statement> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, x: &llbc_ast::Statement) -> String {
+        x.fmt_with_ctx(TAB_INCR, self)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>>
+    for BodyFormatCtx<'tcx, 'ctx, 'ctx1>
+{
+    fn format_object(&self, x: &ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>) -> String {
+        ullbc_ast::fmt_body_blocks_with_ctx(x, TAB_INCR, self)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&TypeDecl> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, def: &TypeDecl) -> String {
+        self.t_ctx.format_object(def)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&ullbc_ast::ExprBody> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, body: &ullbc_ast::ExprBody) -> String {
+        // Create a body format context
+        let formatter = BodyFormatCtx {
+            t_ctx: self,
+            generics: &GenericParams::empty(),
+            vars: &body.locals,
+            trait_clauses: &TraitClauseId::Vector::new(),
+        };
+        body.fmt_with_ctx(TAB_INCR, &formatter)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&ullbc_ast::ExprBody> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, body: &ullbc_ast::ExprBody) -> String {
+        self.t_ctx.format_object(body)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&llbc_ast::ExprBody> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, body: &llbc_ast::ExprBody) -> String {
+        // Create a body format context
+        let formatter = BodyFormatCtx {
+            t_ctx: self,
+            generics: &GenericParams::empty(),
+            vars: &body.locals,
+            trait_clauses: &TraitClauseId::Vector::new(),
+        };
+        body.fmt_with_ctx(TAB_INCR, &formatter)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&llbc_ast::ExprBody> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, body: &llbc_ast::ExprBody) -> String {
+        self.t_ctx.format_object(body)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&ullbc_ast::GlobalDecl> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, def: &ullbc_ast::GlobalDecl) -> String {
+        // Create a body format context
+        let empty_vars = VarId::Vector::new();
+        let vars = match &def.body {
+            None => &empty_vars,
+            Some(body) => &body.locals,
+        };
+        let formatter = BodyFormatCtx {
+            t_ctx: self,
+            generics: &GenericParams::empty(),
+            vars,
+            trait_clauses: &TraitClauseId::Vector::new(),
+        };
+        def.fmt_with_ctx(&formatter)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&ullbc_ast::GlobalDecl> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, def: &ullbc_ast::GlobalDecl) -> String {
+        self.t_ctx.format_object(def)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&llbc_ast::GlobalDecl> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, def: &llbc_ast::GlobalDecl) -> String {
+        // Create a body format context
+        let empty_vars = VarId::Vector::new();
+        let vars = match &def.body {
+            None => &empty_vars,
+            Some(body) => &body.locals,
+        };
+        let formatter = BodyFormatCtx {
+            t_ctx: self,
+            generics: &GenericParams::empty(),
+            vars,
+            trait_clauses: &TraitClauseId::Vector::new(),
+        };
+        def.fmt_with_ctx(&formatter)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&llbc_ast::GlobalDecl> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, def: &llbc_ast::GlobalDecl) -> String {
+        self.t_ctx.format_object(def)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&FunSig> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, sig: &FunSig) -> String {
+        // Create a body format context
+        let formatter = BodyFormatCtx {
+            t_ctx: self,
+            generics: &sig.generics,
+            vars: &VarId::Vector::new(),
+            trait_clauses: &TraitClauseId::Vector::new(),
+        };
+        sig.fmt_with_ctx(&formatter)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&FunSig> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, sig: &FunSig) -> String {
+        self.t_ctx.format_object(sig)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&Ty> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, x: &Ty) -> String {
+        x.fmt_with_ctx(self)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&ullbc_ast::FunDecl> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, def: &ullbc_ast::FunDecl) -> String {
+        // Create a body format context
+        let empty_vars = VarId::Vector::new();
+        let vars = match &def.body {
+            None => &empty_vars,
+            Some(body) => &body.locals,
+        };
+        let sig = &def.signature;
+        let formatter = BodyFormatCtx {
+            t_ctx: self,
+            generics: &sig.generics,
+            vars,
+            trait_clauses: &TraitClauseId::Vector::new(),
+        };
+        def.fmt_with_ctx(&formatter)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&ullbc_ast::FunDecl> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, def: &ullbc_ast::FunDecl) -> String {
+        self.t_ctx.format_object(def)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&llbc_ast::FunDecl> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, def: &llbc_ast::FunDecl) -> String {
+        // Create a body format context
+        let empty_vars = VarId::Vector::new();
+        let vars = match &def.body {
+            None => &empty_vars,
+            Some(body) => &body.locals,
+        };
+        let sig = &def.signature;
+        let formatter = BodyFormatCtx {
+            t_ctx: self,
+            generics: &sig.generics,
+            vars,
+            trait_clauses: &TraitClauseId::Vector::new(),
+        };
+        def.fmt_with_ctx(&formatter)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&llbc_ast::FunDecl> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, def: &llbc_ast::FunDecl) -> String {
+        self.t_ctx.format_object(def)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&gast::TraitDecl> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, def: &gast::TraitDecl) -> String {
+        def.fmt_with_ctx(self)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&gast::TraitDecl> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, def: &gast::TraitDecl) -> String {
+        let formatter = BodyFormatCtx {
+            t_ctx: self,
+            generics: &def.generics,
+            vars: &VarId::Vector::new(),
+            trait_clauses: &TraitClauseId::Vector::new(),
+        };
+        def.fmt_with_ctx(&formatter)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&gast::TraitDecl> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, def: &gast::TraitDecl) -> String {
+        self.t_ctx.format_object(def)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&gast::TraitImpl> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, def: &gast::TraitImpl) -> String {
+        def.fmt_with_ctx(self)
+    }
+}
+
+impl<'tcx, 'ctx> Formatter<&gast::TraitImpl> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, def: &gast::TraitImpl) -> String {
+        let formatter = BodyFormatCtx {
+            t_ctx: self,
+            generics: &def.generics,
+            vars: &VarId::Vector::new(),
+            trait_clauses: &TraitClauseId::Vector::new(),
+        };
+        def.fmt_with_ctx(&formatter)
+    }
+}
+
+impl<'tcx, 'ctx, 'ctx1> Formatter<&gast::TraitImpl> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, def: &gast::TraitImpl) -> String {
+        self.t_ctx.format_object(def)
+    }
+}
+
+impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // We do simple: types, globals, traits, functions
+        for (_, d) in &self.type_defs {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in &self.global_defs {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in &self.trait_decls {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in &self.trait_impls {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in &self.fun_defs {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        fmt::Result::Ok(())
+    }
+}
+
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+    fn fmt_with_llbc_defs(
+        &self,
+        f: &mut fmt::Formatter,
+        llbc_globals: &llbc_ast::GlobalDecls,
+        llbc_funs: &llbc_ast::FunDecls,
+    ) -> fmt::Result {
+        // We do simple: types, globals, traits, functions
+        for (_, d) in &self.type_defs {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in llbc_globals {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in &self.trait_decls {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in &self.trait_impls {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        for (_, d) in llbc_funs {
+            writeln!(f, "{}\n", self.format_object(d))?
+        }
+
+        fmt::Result::Ok(())
+    }
+}
+
+pub(crate) struct LlbcTransCtx<'a, 'tcx, 'ctx> {
+    pub ctx: &'a TransCtx<'tcx, 'ctx>,
+    pub llbc_globals: &'a llbc_ast::GlobalDecls,
+    pub llbc_funs: &'a llbc_ast::FunDecls,
+}
+
+impl<'a, 'tcx, 'ctx> fmt::Display for LlbcTransCtx<'a, 'tcx, 'ctx> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.ctx
+            .fmt_with_llbc_defs(f, self.llbc_globals, self.llbc_funs)
     }
 }

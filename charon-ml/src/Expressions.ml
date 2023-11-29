@@ -1,16 +1,31 @@
 open Identifiers
 open Types
-open PrimitiveValues
+open Values
 module VarId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
+module FunDeclId = IdGen ()
+
+type fun_decl_id = FunDeclId.id [@@deriving show, ord]
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!Charon.UllbcAst.iter_statement_base}).
   *)
 type var_id = VarId.id [@@deriving show, ord]
 
+type assumed_fun_id =
+  | BoxNew
+  | BoxFree
+  | ArrayIndexShared
+  | ArrayIndexMut
+  | ArrayToSliceShared
+  | ArrayToSliceMut
+  | ArrayRepeat
+  | SliceIndexShared
+  | SliceIndexMut
+[@@deriving show, ord]
+
 (** Ancestor the field_proj_kind iter visitor *)
-class ['self] iter_field_proj_kind_base =
+class ['self] iter_place_base =
   object (_self : 'self)
     inherit [_] VisitorsRuntime.iter
     method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
@@ -20,7 +35,7 @@ class ['self] iter_field_proj_kind_base =
   end
 
 (** Ancestor the field_proj_kind map visitor *)
-class ['self] map_field_proj_kind_base =
+class ['self] map_place_base =
   object (_self : 'self)
     inherit [_] VisitorsRuntime.map
 
@@ -34,84 +49,16 @@ class ['self] map_field_proj_kind_base =
 
 type field_proj_kind =
   | ProjAdt of type_decl_id * variant_id option
-  | ProjOption of variant_id
-      (** Option is an assumed type, coming from the standard library *)
   | ProjTuple of int  (** The integer gives the arity of the tuple *)
-[@@deriving
-  show,
-    visitors
-      {
-        name = "iter_field_proj_kind";
-        variety = "iter";
-        ancestors = [ "iter_field_proj_kind_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      },
-    visitors
-      {
-        name = "map_field_proj_kind";
-        variety = "map";
-        ancestors = [ "map_field_proj_kind_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      }]
 
 (* Remark: no `Index` variant, as it is eliminated by a micro-pass *)
-type projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
+and projection_elem = Deref | DerefBox | Field of field_proj_kind * field_id
+and projection = projection_elem list
+
+and place = { var_id : var_id; projection : projection }
 [@@deriving
   show,
-    visitors
-      {
-        name = "iter_projection_elem";
-        variety = "iter";
-        ancestors = [ "iter_field_proj_kind" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      },
-    visitors
-      {
-        name = "map_projection_elem";
-        variety = "map";
-        ancestors = [ "map_field_proj_kind" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      }]
-
-type projection = projection_elem list
-[@@deriving
-  show,
-    visitors
-      {
-        name = "iter_projection";
-        variety = "iter";
-        ancestors = [ "iter_projection_elem" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      },
-    visitors
-      {
-        name = "map_projection";
-        variety = "map";
-        ancestors = [ "map_projection_elem" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      }]
-
-(** Ancestor the place iter visitor *)
-class ['self] iter_place_base =
-  object (_self : 'self)
-    inherit [_] iter_projection
-  end
-
-(** Ancestor the place map visitor *)
-class ['self] map_place_base =
-  object (_self : 'self)
-    inherit [_] map_projection
-  end
-
-type place = { var_id : var_id; projection : projection }
-[@@deriving
-  show,
+    ord,
     visitors
       {
         name = "iter_place";
@@ -129,14 +76,7 @@ type place = { var_id : var_id; projection : projection }
         concrete = true;
       }]
 
-type borrow_kind = Shared | Mut | TwoPhaseMut | Shallow [@@deriving show]
-
-(* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass *)
-type unop =
-  | Not
-  | Neg
-  | Cast of integer_type * integer_type
-      (** Cast an integer from a source type to a target type *)
+type borrow_kind = BShared | BMut | BTwoPhaseMut | BShallow
 [@@deriving show, ord]
 
 (** A binary operation
@@ -185,57 +125,94 @@ let all_binops =
     Shr;
   ]
 
-(** Ancestor the operand iter visitor *)
-class ['self] iter_operand_base =
+(** Ancestor for the constant_expr iter visitor *)
+class ['self] iter_constant_expr_base =
   object (_self : 'self)
     inherit [_] iter_place
-    inherit! [_] iter_const_generic
-    method visit_ety : 'env -> ety -> unit = fun _ _ -> ()
+    inherit! [_] iter_ty
+    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
+    method visit_assumed_fun_id : 'env -> assumed_fun_id -> unit = fun _ _ -> ()
   end
 
-(** Ancestor the operand map visitor *)
-class ['self] map_operand_base =
+(** Ancestor the constant_expr map visitor *)
+class ['self] map_constant_expr_base =
   object (_self : 'self)
     inherit [_] map_place
-    inherit! [_] map_const_generic
-    method visit_ety : 'env -> ety -> ety = fun _ x -> x
+    inherit! [_] map_ty
+    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
+
+    method visit_assumed_fun_id : 'env -> assumed_fun_id -> assumed_fun_id =
+      fun _ x -> x
   end
 
-type operand = Copy of place | Move of place | Constant of ety * literal
+(* TODO: FnPtr *)
+type cast_kind = CastInteger of integer_type * integer_type
+
+(* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass. *)
+and unop =
+  | Not
+  | Neg
+  | Cast of cast_kind
+      (** Cast an integer from a source type to a target type *)
+
+and raw_constant_expr =
+  | CLiteral of literal
+  | CVar of const_generic_var_id
+  | CTraitConst of trait_ref * generic_args * string
+  | CFnPtr of fn_ptr
+
+and constant_expr = { value : raw_constant_expr; ty : ty }
+
+and fn_ptr = {
+  func : fun_id_or_trait_method_ref;
+  generics : generic_args;
+  trait_and_method_generic_args : generic_args option;
+}
+
+and fun_id_or_trait_method_ref =
+  | FunId of fun_id
+  | TraitMethod of trait_ref * string * fun_decl_id
+      (** The fun decl id is not really needed and here for convenience purposes *)
+
+(* TODO: prefix with "F" *)
+and fun_id = FRegular of fun_decl_id | FAssumed of assumed_fun_id
 [@@deriving
   show,
+    ord,
     visitors
       {
-        name = "iter_operand";
+        name = "iter_constant_expr";
         variety = "iter";
-        ancestors = [ "iter_operand_base" ];
+        ancestors = [ "iter_constant_expr_base" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
         concrete = true;
       },
     visitors
       {
-        name = "map_operand";
+        name = "map_constant_expr";
         variety = "map";
-        ancestors = [ "map_operand_base" ];
+        ancestors = [ "map_constant_expr_base" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
         concrete = true;
       }]
 
 (** Ancestor the operand iter visitor *)
-class ['self] iter_aggregate_kind_base =
+class ['self] iter_rvalue_base =
   object (_self : 'self)
-    inherit [_] iter_operand
-    method visit_erased_region : 'env -> erased_region -> unit = fun _ _ -> ()
+    inherit [_] iter_constant_expr
+    method visit_binop : 'env -> binop -> unit = fun _ _ -> ()
+    method visit_borrow_kind : 'env -> borrow_kind -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the operand map visitor *)
-class ['self] map_aggregate_kind_base =
+class ['self] map_rvalue_base =
   object (_self : 'self)
-    inherit [_] map_operand
-
-    method visit_erased_region : 'env -> erased_region -> erased_region =
-      fun _ x -> x
+    inherit [_] map_constant_expr
+    method visit_binop : 'env -> binop -> binop = fun _ x -> x
+    method visit_borrow_kind : 'env -> borrow_kind -> borrow_kind = fun _ x -> x
   end
+
+type operand = Copy of place | Move of place | Constant of constant_expr
 
 (** An aggregated ADT.
 
@@ -258,59 +235,15 @@ class ['self] map_aggregate_kind_base =
     [Cons (⊥, ⊥)] upon the first assignment, at which point we can initialize
     the field 0, etc.).
  *)
-type aggregate_kind =
-  | AggregatedTuple
-  | AggregatedOption of variant_id * ety
-  (* TODO: AggregatedOption should be merged with AggregatedAdt *)
-  | AggregatedAdt of
-      type_decl_id
-      * variant_id option
-      * erased_region list
-      * ety list
-      * const_generic list
-  | AggregatedRange of ety (* TODO: merge with the Rust *)
-  | AggregatedArray of ety * const_generic
-[@@deriving
-  show,
-    visitors
-      {
-        name = "iter_aggregate_kind";
-        variety = "iter";
-        ancestors = [ "iter_aggregate_kind_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      },
-    visitors
-      {
-        name = "map_aggregate_kind";
-        variety = "map";
-        ancestors = [ "map_aggregate_kind_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      }]
-
-(** Ancestor the rvalue iter visitor *)
-class ['self] iter_rvalue_base =
-  object (_self : 'self)
-    inherit [_] iter_aggregate_kind
-    method visit_unop : 'env -> unop -> unit = fun _ _ -> ()
-    method visit_binop : 'env -> binop -> unit = fun _ _ -> ()
-    method visit_borrow_kind : 'env -> borrow_kind -> unit = fun _ _ -> ()
-  end
-
-(** Ancestor the rvalue map visitor *)
-class ['self] map_rvalue_base =
-  object (_self : 'self)
-    inherit [_] map_aggregate_kind
-    method visit_unop : 'env -> unop -> unop = fun _ x -> x
-    method visit_binop : 'env -> binop -> binop = fun _ x -> x
-    method visit_borrow_kind : 'env -> borrow_kind -> borrow_kind = fun _ x -> x
-  end
+and aggregate_kind =
+  | AggregatedAdt of type_id * variant_id option * generic_args
+  | AggregatedArray of ty * const_generic
 
 (* TODO: move the aggregate kind to operands *)
-type rvalue =
+(* TODO: we should prefix the type variants with "T", this would avoid collisions *)
+and rvalue =
   | Use of operand
-  | Ref of place * borrow_kind
+  | RvRef of place * borrow_kind
   | UnaryOp of unop * operand
   | BinaryOp of binop * operand * operand
   | Discriminant of place

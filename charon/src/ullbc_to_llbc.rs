@@ -21,9 +21,10 @@
 //! many nodes and edges).
 
 use crate::expressions::Place;
+use crate::formatter::Formatter;
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_meta, Meta};
-use crate::types::TypeDecls;
+use crate::translate_ctx::TransCtx;
 use crate::ullbc_ast::FunDeclId;
 use crate::ullbc_ast::{self as src, GlobalDeclId};
 use crate::values as v;
@@ -87,6 +88,8 @@ struct CfgPartialInfo {
     pub backward_edges: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
     /// The blocks whose terminators are a switch are stored here.
     pub switch_blocks: HashSet<src::BlockId::Id>,
+    /// The set of nodes from where we can only reach error nodes (panic, etc.)
+    pub only_reach_error: HashSet<src::BlockId::Id>,
 }
 
 /// Similar to `CfgPartialInfo`, but with more information
@@ -96,8 +99,10 @@ struct CfgInfo {
     pub loop_entries: HashSet<src::BlockId::Id>,
     pub backward_edges: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
     pub switch_blocks: HashSet<src::BlockId::Id>,
+    pub only_reach_error: HashSet<src::BlockId::Id>,
     /// The reachability matrix:
     /// src can reach dest <==> (src, dest) in reachability
+    ///
     /// TODO: this is not necessary anymore. There is a place where we use it
     /// as a test to shortcut some computations, but computing this matrix
     /// is actually probably too expensive for the shortcut to be useful...
@@ -113,6 +118,7 @@ fn build_cfg_partial_info(body: &src::ExprBody) -> CfgPartialInfo {
         loop_entries: HashSet::new(),
         backward_edges: HashSet::new(),
         switch_blocks: HashSet::new(),
+        only_reach_error: HashSet::new(),
     };
 
     // Add the nodes
@@ -140,6 +146,18 @@ fn block_is_switch(body: &src::ExprBody, block_id: src::BlockId::Id) -> bool {
     block.terminator.content.is_switch()
 }
 
+/// The terminator of the block is a panic, etc.
+fn block_is_error(body: &src::ExprBody, block_id: src::BlockId::Id) -> bool {
+    let block = body.body.get(block_id).unwrap();
+    use src::RawTerminator::*;
+    match &block.terminator.content {
+        Panic | Unreachable => true,
+        Goto { .. } | Switch { .. } | Return { .. } | Drop { .. } | Call { .. } | Assert { .. } => {
+            false
+        }
+    }
+}
+
 fn build_cfg_partial_info_edges(
     cfg: &mut CfgPartialInfo,
     ancestors: &im::HashSet<src::BlockId::Id>,
@@ -164,6 +182,7 @@ fn build_cfg_partial_info_edges(
 
     // Retrieve the block targets
     let targets = get_block_targets(body, block_id);
+    let mut has_backward_edge = false;
 
     // Add edges for all the targets and explore them, if they are not predecessors
     for tgt in &targets {
@@ -174,6 +193,7 @@ fn build_cfg_partial_info_edges(
         // CFG without backward edges and exploring it
         if ancestors.contains(tgt) {
             // This is a backward edge
+            has_backward_edge = true;
             cfg.loop_entries.insert(*tgt);
             cfg.backward_edges.insert((block_id, *tgt));
         } else {
@@ -181,6 +201,18 @@ fn build_cfg_partial_info_edges(
             cfg.cfg_no_be.add_edge(block_id, *tgt, ());
             build_cfg_partial_info_edges(cfg, &ancestors, explored, body, *tgt);
         }
+    }
+
+    // Check if this node can only reach error nodes:
+    // - we check if the current node ends with an error terminator
+    // - or check that all the targets lead to error nodes
+    // Note that if there is a backward edge, we consider that we don't necessarily
+    // go to error.
+    if !has_backward_edge
+        && (block_is_error(body, block_id)
+            || targets.iter().all(|tgt| cfg.only_reach_error.contains(tgt)))
+    {
+        cfg.only_reach_error.insert(block_id);
     }
 }
 
@@ -210,14 +242,14 @@ impl PartialOrd for OrdBlockId {
 fn compute_reachability(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId::Id, src::BlockId::Id)> {
     // We simply use Floyd-Warshall.
     // We just need to be a little careful: we have to make sure the value we
-    // use for infinity is never reached. That is to say, that there are stricly
+    // use for infinity is never reached. That is to say, that there are
     // less edges in the graph than usize::MAX.
     // Note that for now, the assertion will actually always statically succeed,
     // because `edge_count` returns a usize...
     // Also, if we have as many edges as usize::MAX, the computer will probably
     // be out of memory...
-    // It still is good to keep it there.
-    assert!(cfg.cfg.edge_count() < std::usize::MAX);
+    // It it still good to keep it there, though.
+    assert!(cfg.cfg.edge_count() < std::usize::MAX); // Making the comparison strict to avoid warnings...
 
     let fw_matrix: HashMap<(src::BlockId::Id, src::BlockId::Id), usize> =
         floyd_warshall(&cfg.cfg, &|_| 1).unwrap();
@@ -244,6 +276,7 @@ fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
         loop_entries,
         backward_edges,
         switch_blocks,
+        only_reach_error,
     } = cfg;
 
     CfgInfo {
@@ -252,6 +285,7 @@ fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
         loop_entries,
         backward_edges,
         switch_blocks,
+        only_reach_error,
         reachability,
     }
 }
@@ -624,8 +658,9 @@ fn compute_loop_exit_candidates(
 /// might end up being used for one of the inner loops...
 ///
 /// The best exit is the following one:
-/// - it is the one which is used the most times (actually, there should be
-///   at most one candidate which is referenced strictly more than once)
+/// - it is the one which is used the most times (note that there can be
+///   several candidates which are referenced strictly more than once: see the
+///   comment below)
 /// - if several exits have the same number of occurrences, we choose the one
 ///   for which we goto the "earliest" (earliest meaning that the goto is close to
 ///   the loop entry node in the AST). The reason is that all the loops should
@@ -633,6 +668,68 @@ fn compute_loop_exit_candidates(
 ///   to the exit (note that this is not necessarily the first
 ///   if ... then ... else ... we find: loop conditions can be arbitrary
 ///   expressions, containing branchings).
+///
+/// # Several candidates for a loop exit:
+/// =====================================
+/// There used to be a sanity check to ensure there are no two different
+/// candidates with exactly the same number of occurrences and distance from
+/// the entry of the loop, if the number of occurrences is > 1.
+///
+/// We removed it because it does happen, for instance here (the match
+/// introduces an `unreachable` node, and it has the same number of
+/// occurrences and the same distance to the loop entry as the `panic`
+/// node):
+///
+/// ```text
+/// pub fn list_nth_mut_loop_pair<'a, T>(
+///     mut ls: &'a mut List<T>,
+///     mut i: u32,
+/// ) -> &'a mut T {
+///     loop {
+///         match ls {
+///             List::Nil => {
+///                 panic!() // <-- best candidate
+///             }
+///             List::Cons(x, tl) => {
+///                 if i == 0 {
+///                     return x;
+///                 } else {
+///                     ls = tl;
+///                     i -= 1;
+///                 }
+///             }
+///             _ => {
+///               // Note that Rustc always introduces an unreachable branch after
+///               // desugaring matches.
+///               unreachable!(), // <-- best candidate
+///             }
+///         }
+///     }
+/// }
+/// ```
+///
+/// When this happens we choose an exit candidate whose edges don't necessarily
+/// lead to an error (above there are none, so we don't choose any exits). Note
+/// that this last condition is important to prevent loops from being unnecessarily
+/// nested:
+///
+/// ```text
+/// pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize {
+///     let mut s = 0;
+///
+///     for _ in 0..128 { // We don't want this loop to be nested with the loops below
+///         s += 1;
+///     }
+///
+///     for _ in 0..(step_out) {
+///         for _ in 0..(step_in) {
+///             s += 1;
+///         }
+///     }
+///
+///     s
+/// }
+/// ```
 fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
     let mut explored = HashSet::new();
     let mut ordered_loops = Vec::new();
@@ -673,11 +770,13 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         // We choose the exit with:
         // - the most occurrences
         // - the least total distance (if there are several possibilities)
+        // - doesn't necessarily lead to an error (panic, unreachable)
 
         // First:
         // - filter the candidates
         // - compute the number of occurrences
         // - compute the sum of distances
+        // TODO: we could simply order by using a lexicographic order
         let loop_exits = Vec::from_iter(loop_exits.get(&loop_id).unwrap().iter().filter_map(
             |(candidate_id, candidate_info)| {
                 // If candidate already selected for another loop: ignore
@@ -704,8 +803,10 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         );
 
         // Second: actually select the proper candidate.
-        // We select the first one with the highest number of occurrences (we
-        // take care of listing the exit candidates in a deterministic order).
+
+        // We find the one with the highest occurrence and the smallest distance
+        // from the entry of the loop (note that we take care of listing the exit
+        // candidates in a deterministic order).
         let mut best_exit: Option<src::BlockId::Id> = None;
         let mut best_occurrences = 0;
         let mut best_dist_sum = std::usize::MAX;
@@ -719,71 +820,68 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
             }
         }
 
-        let num_possible_candidates = loop_exits
+        let possible_candidates: Vec<_> = loop_exits
             .iter()
-            .filter(|(_, occs, dsum)| *occs == best_occurrences && *dsum == best_dist_sum)
-            .count();
+            .filter_map(|(bid, occs, dsum)| {
+                if *occs == best_occurrences && *dsum == best_dist_sum {
+                    Some(*bid)
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let num_possible_candidates = loop_exits.len();
 
-        // There used to be a sanity check to ensure there are no two different
-        // candidates with exactly the same number of occurrences and dist sum
-        // if the number of occurrences is > 1.
-        //
-        // We removed it because it does happen, for instance here (the match
-        // introduces an `unreachable` node, and it has the same number of
-        // occurrences and the same distance to the loop entry as the `panic`
-        // node):
-        //
-        // ```
-        // pub fn list_nth_mut_loop_pair<'a, 'b, T>(
-        //     mut ls0: &'a mut List<T>,
-        //     mut ls1: &'b mut List<T>,
-        //     mut i: u32,
-        // ) -> (&'a mut T, &'b mut T) {
-        //     loop {
-        //         match (ls0, ls1) {
-        //             (List::Nil, _) | (_, List::Nil) => {
-        //                 panic!()
-        //             }
-        //             (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {
-        //                 if i == 0 {
-        //                     return (x0, x1);
-        //                 } else {
-        //                     ls0 = tl0;
-        //                     ls1 = tl1;
-        //                     i -= 1;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // ```
-
-        // If there are several best candidates,
-        // it is actually better not to choose any.
-        //
-        // Example:
-        // ========
-        // ```
-        // loop {
-        //     match ls {
-        //         List::Nil => {
-        //             panic!() // <-- best candidate
-        //         }
-        //         List::Cons(x, tl) => {
-        //             if i == 0 {
-        //                 return x;
-        //             } else {
-        //                 ls = tl;
-        //                 i -= 1;
-        //             }
-        //         }
-        //         // <-- best candidate (Rustc introduces an `unrechable` case)
-        //     }
-        // }
-        // ```
+        // If there is exactly one one best candidate, it is easy.
+        // Otherwise we need to split further.
         if num_possible_candidates > 1 {
-            // We choose not to select an exit
-            chosen_loop_exits.insert(loop_id, None);
+            // TODO: if we use a lexicographic order we can merge this with the code
+            // above.
+            // Remove the candidates which only lead to errors (panic or unreachable).
+            let candidates: Vec<_> = possible_candidates
+                .iter()
+                .filter(|bid| !cfg.only_reach_error.contains(bid))
+                .collect();
+            // If there is exactly one candidate we select it
+            if candidates.len() == 1 {
+                let exit_id = *candidates[0];
+                exits.insert(exit_id);
+                chosen_loop_exits.insert(loop_id, Some(exit_id));
+            } else {
+                // Otherwise we do not select any exit.
+                // We don't want to select any exit if we are in the below situation
+                // (all paths lead to errors). We added a sanity check below to
+                // catch the situations where there are several exits which don't
+                // lead to errors.
+                //
+                // Example:
+                // ========
+                // ```
+                // loop {
+                //     match ls {
+                //         List::Nil => {
+                //             panic!() // <-- best candidate
+                //         }
+                //         List::Cons(x, tl) => {
+                //             if i == 0 {
+                //                 return x;
+                //             } else {
+                //                 ls = tl;
+                //                 i -= 1;
+                //             }
+                //         }
+                //         _ => {
+                //           unreachable!(); // <-- best candidate (Rustc introduces an `unreachable` case)
+                //         }
+                //     }
+                // }
+                // ```
+                //
+                // Adding this sanity check so that we can see when there are
+                // several candidates.
+                assert!(candidates.is_empty());
+                chosen_loop_exits.insert(loop_id, None);
+            }
         } else {
             // Register the exit, if there is one
             match best_exit {
@@ -1305,14 +1403,14 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
 }
 
 fn combine_statement_and_statement(
-    statement: tgt::Statement,
-    next_st: Option<tgt::Statement>,
-) -> tgt::Statement {
+    statement: Box<tgt::Statement>,
+    next_st: Option<Box<tgt::Statement>>,
+) -> Box<tgt::Statement> {
     match next_st {
         Some(next_st) => {
             let meta = combine_meta(&statement.meta, &next_st.meta);
-            let st = tgt::RawStatement::Sequence(Box::new(statement), Box::new(next_st));
-            tgt::Statement::new(meta, st)
+            let st = tgt::RawStatement::Sequence(statement, next_st);
+            Box::new(tgt::Statement::new(meta, st))
         }
         None => statement,
     }
@@ -1320,11 +1418,15 @@ fn combine_statement_and_statement(
 
 fn combine_statements_and_statement(
     statements: Vec<tgt::Statement>,
-    next: Option<tgt::Statement>,
-) -> Option<tgt::Statement> {
-    statements.into_iter().rev().fold(next, |seq, st| {
-        Some(combine_statement_and_statement(st, seq))
-    })
+    next: Option<Box<tgt::Statement>>,
+) -> Option<Box<tgt::Statement>> {
+    statements
+        .into_iter()
+        .map(Box::new)
+        .rev()
+        .fold(next, |seq, st| {
+            Some(combine_statement_and_statement(st, seq))
+        })
 }
 
 fn get_goto_kind(
@@ -1374,20 +1476,20 @@ enum GotoKind {
 /// We use the one for the parent terminator.
 fn translate_child_block(
     info: &mut BlockInfo<'_>,
-    parent_loops: Vector<src::BlockId::Id>,
+    parent_loops: &Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     parent_meta: Meta,
     child_id: src::BlockId::Id,
-) -> Option<tgt::Statement> {
+) -> Option<Box<tgt::Statement>> {
     // Check if this is a backward call
-    match get_goto_kind(info.exits_info, &parent_loops, switch_exit_blocks, child_id) {
+    match get_goto_kind(info.exits_info, parent_loops, switch_exit_blocks, child_id) {
         GotoKind::Break(index) => {
             let st = tgt::RawStatement::Break(index);
-            Some(tgt::Statement::new(parent_meta, st))
+            Some(Box::new(tgt::Statement::new(parent_meta, st)))
         }
         GotoKind::Continue(index) => {
             let st = tgt::RawStatement::Continue(index);
-            Some(tgt::Statement::new(parent_meta, st))
+            Some(Box::new(tgt::Statement::new(parent_meta, st)))
         }
         // If we are going to an exit block we simply ignore the goto
         GotoKind::ExitBlock => None,
@@ -1398,10 +1500,13 @@ fn translate_child_block(
     }
 }
 
-fn opt_statement_to_nop_if_none(meta: Meta, opt_st: Option<tgt::Statement>) -> tgt::Statement {
+fn opt_statement_to_nop_if_none(
+    meta: Meta,
+    opt_st: Option<Box<tgt::Statement>>,
+) -> Box<tgt::Statement> {
     match opt_st {
         Some(st) => st,
-        None => tgt::Statement::new(meta, tgt::RawStatement::Nop),
+        None => Box::new(tgt::Statement::new(meta, tgt::RawStatement::Nop)),
     }
 }
 
@@ -1430,19 +1535,20 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 
 fn translate_terminator(
     info: &mut BlockInfo<'_>,
-    parent_loops: Vector<src::BlockId::Id>,
+    parent_loops: &Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     terminator: &src::Terminator,
-) -> Option<tgt::Statement> {
+) -> Option<Box<tgt::Statement>> {
     let src_meta = terminator.meta;
 
     match &terminator.content {
-        src::RawTerminator::Panic | src::RawTerminator::Unreachable => {
-            Some(tgt::Statement::new(src_meta, tgt::RawStatement::Panic))
-        }
-        src::RawTerminator::Return => {
-            Some(tgt::Statement::new(src_meta, tgt::RawStatement::Return))
-        }
+        src::RawTerminator::Panic | src::RawTerminator::Unreachable => Some(Box::new(
+            tgt::Statement::new(src_meta, tgt::RawStatement::Panic),
+        )),
+        src::RawTerminator::Return => Some(Box::new(tgt::Statement::new(
+            src_meta,
+            tgt::RawStatement::Return,
+        ))),
         src::RawTerminator::Goto { target } => translate_child_block(
             info,
             parent_loops,
@@ -1458,7 +1564,10 @@ fn translate_terminator(
                 terminator.meta,
                 *target,
             );
-            let st = tgt::Statement::new(src_meta, tgt::RawStatement::Drop(place.clone()));
+            let st = Box::new(tgt::Statement::new(
+                src_meta,
+                tgt::RawStatement::Drop(place.clone()),
+            ));
             Some(combine_statement_and_statement(st, opt_child))
         }
         src::RawTerminator::Call { call, target } => {
@@ -1470,7 +1579,7 @@ fn translate_terminator(
                 *target,
             );
             let st = tgt::RawStatement::Call(call.clone());
-            let st = tgt::Statement::new(src_meta, st);
+            let st = Box::new(tgt::Statement::new(src_meta, st));
             Some(combine_statement_and_statement(st, opt_child))
         }
         src::RawTerminator::Assert {
@@ -1489,7 +1598,7 @@ fn translate_terminator(
                 cond: cond.clone(),
                 expected: *expected,
             });
-            let st = tgt::Statement::new(src_meta, st);
+            let st = Box::new(tgt::Statement::new(src_meta, st));
             Some(combine_statement_and_statement(st, opt_child))
         }
         src::RawTerminator::Switch { discr, targets } => {
@@ -1499,7 +1608,7 @@ fn translate_terminator(
                     // Translate the children expressions
                     let then_exp = translate_child_block(
                         info,
-                        parent_loops.clone(),
+                        parent_loops,
                         switch_exit_blocks,
                         terminator.meta,
                         *then_tgt,
@@ -1517,7 +1626,7 @@ fn translate_terminator(
                     let else_exp = opt_statement_to_nop_if_none(terminator.meta, else_exp);
 
                     // Translate
-                    tgt::Switch::If(discr.clone(), Box::new(then_exp), Box::new(else_exp))
+                    tgt::Switch::If(discr.clone(), then_exp, else_exp)
                 }
                 src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
                     // Note that some branches can be grouped together, like
@@ -1557,7 +1666,7 @@ fn translate_terminator(
                             // Not translated: translate it
                             let exp = translate_child_block(
                                 info,
-                                parent_loops.clone(),
+                                parent_loops,
                                 switch_exit_blocks,
                                 terminator.meta,
                                 *bid,
@@ -1565,7 +1674,7 @@ fn translate_terminator(
                             // We use the terminator meta information in case then
                             // then statement is `None`
                             let exp = opt_statement_to_nop_if_none(terminator.meta, exp);
-                            branches.insert(*bid, (vec![*v], exp));
+                            branches.insert(*bid, (vec![*v], *exp));
                         }
                     }
                     let targets_exps: Vec<(Vec<v::ScalarValue>, tgt::Statement)> =
@@ -1584,12 +1693,7 @@ fn translate_terminator(
                         opt_statement_to_nop_if_none(terminator.meta, otherwise_exp);
 
                     // Translate
-                    tgt::Switch::SwitchInt(
-                        discr.clone(),
-                        *int_ty,
-                        targets_exps,
-                        Box::new(otherwise_exp),
-                    )
+                    tgt::Switch::SwitchInt(discr.clone(), *int_ty, targets_exps, otherwise_exp)
                 }
             };
 
@@ -1597,24 +1701,24 @@ fn translate_terminator(
             let meta = tgt::combine_switch_targets_meta(&switch);
             let meta = combine_meta(&src_meta, &meta);
             let st = tgt::RawStatement::Switch(switch);
-            let st = tgt::Statement::new(meta, st);
+            let st = Box::new(tgt::Statement::new(meta, st));
             Some(st)
         }
     }
 }
 
 fn combine_expressions(
-    exp1: Option<tgt::Statement>,
-    exp2: Option<tgt::Statement>,
-) -> Option<tgt::Statement> {
+    exp1: Option<Box<tgt::Statement>>,
+    exp2: Option<Box<tgt::Statement>>,
+) -> Option<Box<tgt::Statement>> {
     match exp1 {
         None => exp2,
         Some(exp1) => match exp2 {
             None => Some(exp1),
             Some(exp2) => {
                 let meta = combine_meta(&exp1.meta, &exp2.meta);
-                let st = tgt::RawStatement::Sequence(Box::new(exp1), Box::new(exp2));
-                Some(tgt::Statement::new(meta, st))
+                let st = tgt::RawStatement::Sequence(exp1, exp2);
+                Some(Box::new(tgt::Statement::new(meta, st)))
             }
         },
     }
@@ -1656,13 +1760,16 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
     }
 }
 
+/// Remark: some values are boxed (here, the returned statement) so that they
+/// are allocated on the heap. This reduces stack usage (we had problems with
+/// stack overflows in the past). A more efficient solution would be to use loops
+/// to make this code constant space, but that would require a serious rewriting.
 fn translate_block(
     info: &mut BlockInfo<'_>,
-    parent_loops: Vector<src::BlockId::Id>,
-    // TODO: remove the shared borrow?
+    parent_loops: &Vector<src::BlockId::Id>,
     switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
     block_id: src::BlockId::Id,
-) -> Option<tgt::Statement> {
+) -> Option<Box<tgt::Statement>> {
     // If the user activated this check: check that we didn't already translate
     // this block, and insert the block id in the set of already translated blocks.
     trace!(
@@ -1680,12 +1787,13 @@ fn translate_block(
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
     let is_loop = info.cfg.loop_entries.contains(&block_id);
+    let mut nparent_loops: Vector<src::BlockId::Id>;
     let nparent_loops = if info.cfg.loop_entries.contains(&block_id) {
-        let mut nparent_loops = parent_loops.clone();
+        nparent_loops = parent_loops.clone();
         nparent_loops.push_back(block_id);
-        nparent_loops
+        &nparent_loops
     } else {
-        parent_loops.clone()
+        parent_loops
     };
 
     // If we enter a switch or a loop, we need to check if we own the exit
@@ -1741,7 +1849,7 @@ fn translate_block(
 
         // Put the whole loop body inside a `Loop` wrapper
         let exp = exp.unwrap();
-        let exp = tgt::Statement::new(exp.meta, tgt::RawStatement::Loop(Box::new(exp)));
+        let exp = Box::new(tgt::Statement::new(exp.meta, tgt::RawStatement::Loop(exp)));
 
         // Add the exit block
         if let Some(exit_block_id) = next_block {
@@ -1801,7 +1909,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     };
     let stmt = translate_block(
         &mut info,
-        Vector::new(),
+        &Vector::new(),
         &im::HashSet::new(),
         src::BlockId::ZERO,
     )
@@ -1816,63 +1924,54 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
         meta: src_body.meta,
         arg_count: src_body.arg_count,
         locals: src_body.locals.clone(),
-        body: stmt,
+        body: *stmt,
     }
 }
 
-/// `type_defs`, `global_defs`: those parameters are used for pretty-printing purposes
-fn translate_function(
-    no_code_duplication: bool,
-    type_defs: &TypeDecls,
-    src_defs: &src::FunDecls,
-    src_def_id: FunDeclId::Id,
-    global_defs: &src::GlobalDecls,
-) -> tgt::FunDecl {
+/// TODO: put `no_code
+fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl {
     // Retrieve the function definition
-    let src_def = src_defs.get(src_def_id).unwrap();
+    let src_def = ctx.fun_defs.get(src_def_id).unwrap();
     trace!(
-        "# Reconstructing: {}\n\n{}",
-        src_def.name,
-        src_def.fmt_with_decls(type_defs, src_defs, global_defs)
+        "# About to reconstruct: {}\n\n{}",
+        src_def.name.fmt_with_ctx(ctx),
+        ctx.format_object(src_def)
     );
 
     // Return the translated definition
     tgt::FunDecl {
         def_id: src_def.def_id,
         meta: src_def.meta,
+        is_local: src_def.is_local,
         name: src_def.name.clone(),
         signature: src_def.signature.clone(),
+        kind: src_def.kind.clone(),
         body: src_def
             .body
             .as_ref()
-            .map(|b| translate_body(no_code_duplication, b)),
+            .map(|b| translate_body(ctx.no_code_duplication, b)),
     }
 }
 
-fn translate_global(
-    no_code_duplication: bool,
-    type_defs: &TypeDecls,
-    global_defs: &src::GlobalDecls,
-    global_id: GlobalDeclId::Id,
-    fun_defs: &src::FunDecls,
-) -> tgt::GlobalDecl {
+fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalDecl {
     // Retrieve the global definition
-    let src_def = global_defs.get(global_id).unwrap();
+    let src_def = ctx.global_defs.get(global_id).unwrap();
     trace!(
-        "# Reconstructing: {}\n\n{}",
-        src_def.name,
-        src_def.fmt_with_decls(type_defs, fun_defs, global_defs)
+        "# About to reconstruct: {}\n\n{}",
+        src_def.name.fmt_with_ctx(ctx),
+        ctx.format_object(src_def)
     );
 
     tgt::GlobalDecl {
         def_id: src_def.def_id,
         meta: src_def.meta,
+        is_local: src_def.is_local,
         name: src_def.name.clone(),
         ty: src_def.ty.clone(),
         body: src_def
             .body
             .as_ref()
-            .map(|b| translate_body(no_code_duplication, b)),
+            .map(|b| translate_body(ctx.no_code_duplication, b)),
     }
 }
 
@@ -1882,55 +1981,32 @@ fn translate_global(
 /// can be a sign that the reconstruction is of poor quality, but sometimes
 /// code duplication is necessary, in the presence of "fused" match branches for
 /// instance).
-pub fn translate_functions(
-    no_code_duplication: bool,
-    type_defs: &TypeDecls,
-    src_funs: &src::FunDecls,
-    src_globals: &src::GlobalDecls,
-) -> Defs {
+pub fn translate_functions(ctx: &TransCtx) -> Defs {
     let mut tgt_funs = FunDeclId::Map::new();
     let mut tgt_globals = GlobalDeclId::Map::new();
 
     // Translate the bodies one at a time
-    for (fun_id, _) in src_funs.iter_indexed() {
-        tgt_funs.insert(
-            *fun_id,
-            translate_function(
-                no_code_duplication,
-                type_defs,
-                src_funs,
-                *fun_id,
-                src_globals,
-            ),
-        );
+    for (fun_id, _) in ctx.fun_defs.iter_indexed() {
+        tgt_funs.insert(*fun_id, translate_function(ctx, *fun_id));
     }
-    for (global_id, _) in src_globals.iter_indexed() {
-        tgt_globals.insert(
-            *global_id,
-            translate_global(
-                no_code_duplication,
-                type_defs,
-                src_globals,
-                *global_id,
-                src_funs,
-            ),
-        );
+    for (global_id, _) in ctx.global_defs.iter_indexed() {
+        tgt_globals.insert(*global_id, translate_global(ctx, *global_id));
     }
 
     // Print the functions
     for (_, fun) in &tgt_funs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            fun.signature.fmt_with_decls(type_defs, src_globals),
-            fun.fmt_with_decls(type_defs, &tgt_funs, &tgt_globals)
+            ctx.format_object(&fun.signature),
+            ctx.format_object(fun),
         );
     }
     // Print the global variables
     for (_, global) in &tgt_globals {
         trace!(
-            "# Type:\n{:?}\n\n# Global definition:\n{}\n",
-            global.ty,
-            global.fmt_with_decls(type_defs, &tgt_funs, &tgt_globals)
+            "# Type:\n{}\n\n# Global definition:\n{}\n",
+            ctx.format_object(&global.ty),
+            ctx.format_object(global)
         );
     }
 

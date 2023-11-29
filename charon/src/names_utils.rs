@@ -2,47 +2,147 @@
 //!
 //! For now, we have one function per object kind (type, trait, function,
 //! module): many of them could be factorized (will do).
-#![allow(dead_code)]
-
+use crate::formatter::Formatter;
+use crate::gast::*;
 use crate::names::*;
-use rustc_hir::def_id::DefId;
-use rustc_hir::definitions::DefPathData;
+use crate::translate_ctx::*;
+use crate::types::*;
+use hax_frontend_exporter as hax;
+use hax_frontend_exporter::SInto;
 use rustc_hir::{Item, ItemKind};
-use rustc_middle::ty::TyCtxt;
+use rustc_span::def_id::DefId;
 use serde::{Serialize, Serializer};
 use std::collections::HashSet;
 
 impl PathElem {
-    // TODO: we could make that an eq trait?
-    // On the other hand I'm not fond of overloading...
     fn equals_ident(&self, id: &str) -> bool {
         match self {
-            PathElem::Ident(s) => s == id,
-            PathElem::Disambiguator(_) => false,
+            PathElem::Ident(s, d) => s == id && d.is_zero(),
+            PathElem::Impl(_) => false,
+        }
+    }
+
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
+    where
+        C: TypeFormatter,
+    {
+        match self {
+            PathElem::Ident(s, d) => {
+                let d = if d.is_zero() {
+                    "".to_string()
+                } else {
+                    format!("#{}", d)
+                };
+                format!("{s}{d}")
+            }
+            PathElem::Impl(impl_elem) => impl_elem.fmt_with_ctx(ctx),
         }
     }
 }
 
-impl std::fmt::Display for PathElem {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            PathElem::Ident(s) => {
-                write!(f, "{s}")
-            }
-            PathElem::Disambiguator(d) => {
-                write!(f, "{d}")
-            }
+impl ImplElem {
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
+    where
+        C: TypeFormatter,
+    {
+        let d = if self.disambiguator.is_zero() {
+            "".to_string()
+        } else {
+            format!("#{}", self.disambiguator)
+        };
+        let fmt = WithGenericsFmt {
+            ctx,
+            generics: &self.generics,
+        };
+        // Just printing the generics (not the predicates)
+        // TODO: there is something wrong here: we should add the generic parameters
+        // to the context, and then use them to print.
+        format!("{{{}{d}}}", self.ty.fmt_with_ctx(&fmt),)
+    }
+}
+
+struct WithGenericsFmt<'a, C> {
+    ctx: &'a C,
+    generics: &'a GenericParams,
+}
+
+impl<'a, C> Formatter<TypeVarId::Id> for WithGenericsFmt<'a, C> {
+    fn format_object(&self, x: TypeVarId::Id) -> String {
+        self.generics.types.get(x).unwrap().name.to_string()
+    }
+}
+
+impl<'a, C> Formatter<ConstGenericVarId::Id> for WithGenericsFmt<'a, C> {
+    fn format_object(&self, x: ConstGenericVarId::Id) -> String {
+        self.generics
+            .const_generics
+            .get(x)
+            .unwrap()
+            .name
+            .to_string()
+    }
+}
+
+impl<'a, C> Formatter<RegionId::Id> for WithGenericsFmt<'a, C> {
+    fn format_object(&self, x: RegionId::Id) -> String {
+        match &self.generics.regions.get(x).unwrap().name {
+            None => "'_".to_string(),
+            Some(r) => r.to_string(),
         }
+    }
+}
+
+impl<'a, C: Formatter<TypeDeclId::Id>> Formatter<TypeDeclId::Id> for WithGenericsFmt<'a, C> {
+    fn format_object(&self, x: TypeDeclId::Id) -> String {
+        self.ctx.format_object(x)
+    }
+}
+
+impl<'a, C: Formatter<FunDeclId::Id>> Formatter<FunDeclId::Id> for WithGenericsFmt<'a, C> {
+    fn format_object(&self, x: FunDeclId::Id) -> String {
+        self.ctx.format_object(x)
+    }
+}
+
+impl<'a, C: Formatter<GlobalDeclId::Id>> Formatter<GlobalDeclId::Id> for WithGenericsFmt<'a, C> {
+    fn format_object(&self, x: GlobalDeclId::Id) -> String {
+        self.ctx.format_object(x)
+    }
+}
+
+impl<'a, C: Formatter<TraitDeclId::Id>> Formatter<TraitDeclId::Id> for WithGenericsFmt<'a, C> {
+    fn format_object(&self, x: TraitDeclId::Id) -> String {
+        self.ctx.format_object(x)
+    }
+}
+
+impl<'a, C: Formatter<TraitImplId::Id>> Formatter<TraitImplId::Id> for WithGenericsFmt<'a, C> {
+    fn format_object(&self, x: TraitImplId::Id) -> String {
+        self.ctx.format_object(x)
+    }
+}
+
+impl<'a, C: Formatter<TraitClauseId::Id>> Formatter<TraitClauseId::Id> for WithGenericsFmt<'a, C> {
+    fn format_object(&self, x: TraitClauseId::Id) -> String {
+        self.ctx.format_object(x)
     }
 }
 
 impl Name {
-    pub fn from(name: Vec<String>) -> Name {
-        Name {
-            name: name.into_iter().map(PathElem::Ident).collect(),
-        }
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
+    where
+        C: TypeFormatter,
+    {
+        let name = self
+            .name
+            .iter()
+            .map(|x| x.fmt_with_ctx(ctx))
+            .collect::<Vec<String>>();
+        name.join("::")
     }
+}
 
+impl Name {
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.name.len()
@@ -89,7 +189,9 @@ impl Name {
     pub fn is_in_modules(&self, krate: &String, modules: &HashSet<String>) -> bool {
         if self.len() >= 2 {
             match (&self.name[0], &self.name[1]) {
-                (PathElem::Ident(s0), PathElem::Ident(s1)) => s0 == krate && modules.contains(s1),
+                (PathElem::Ident(s0, _), PathElem::Ident(s1, _)) => {
+                    s0 == krate && modules.contains(s1)
+                }
                 _ => false,
             }
         } else {
@@ -98,253 +200,241 @@ impl Name {
     }
 }
 
-impl std::fmt::Display for Name {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        let v: Vec<String> = self.name.iter().map(|s| s.to_string()).collect();
-        write!(f, "{}", v.join("::"))
-    }
-}
-
+// Implementating the serializer for Name so as to ignore the wrapper
 impl Serialize for Name {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        use crate::common::*;
-        let name = VecSerializer::new(&self.name);
-        name.serialize(serializer)
+        self.name.serialize(serializer)
     }
 }
 
-/// Retrieve an item name from a `DefId`.
-pub fn item_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ItemName {
-    trace!("{:?}", def_id);
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+    /// Retrieve an item name from a [DefId].
+    pub fn extended_def_id_to_name(&mut self, def_id: &hax::ExtendedDefId) -> Name {
+        trace!("{:?}", def_id);
+        let span = self.tcx.def_span(def_id.rust_def_id.unwrap());
 
-    // We have to be a bit careful when retrieving names from def ids. For instance,
-    // due to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
-    // different names depending on the def id on which it is called, even though
-    // those def ids might actually identify the same definition.
-    // For instance: `std::boxed::Box` and `alloc::boxed::Box` are actually
-    // the same (the first one is a reexport).
-    // This is why we implement a custom function to retrieve the original name
-    // (though this makes us loose aliases - we may want to investigate this
-    // issue in the future).
+        // We have to be a bit careful when retrieving names from def ids. For instance,
+        // due to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
+        // different names depending on the def id on which it is called, even though
+        // those def ids might actually identify the same definition.
+        // For instance: `std::boxed::Box` and `alloc::boxed::Box` are actually
+        // the same (the first one is a reexport).
+        // This is why we implement a custom function to retrieve the original name
+        // (though this makes us loose aliases - we may want to investigate this
+        // issue in the future).
 
-    // We lookup the path associated to an id, and convert it to a name.
-    // Paths very precisely identify where an item is. There are important
-    // subcases, like the items in an `Impl` block:
-    // ```
-    // impl<T> List<T> {
-    //   fn new() ...
-    // }
-    // ```
-    //
-    // One issue here is that "List" *doesn't appear* in the path, which would
-    // look like the following:
-    //
-    //   `TypeNS("Crate") :: Impl :: ValueNs("new")`
-    //                       ^^^
-    //           This is where "List" should be
-    //
-    // What we do is the following:
-    // - we convert the path to a name starting *with the end*
-    // - whenever we find an "impl" path element, we can actually lookup its
-    //   type (yes, it makes sense for rustc...), which allows us to retrieve
-    //   the type identifier. We then grab its last path element of the type
-    //   identifier (say the identifier is "list::List", we only use "List"
-    //   and insert it in the name).
-    //
-    // Besides, as there may be several "impl" blocks for one type, each impl
-    // block is identified by a unique number (rustc calls this a
-    // "disambiguator"), which we grab.
-    //
-    // Example:
-    // ========
-    // For instance, if we write the following code in crate `test` and module
-    // `bla`:
-    // ```
-    // impl<T> Foo<T> {
-    //   fn foo() { ... }
-    // }
-    //
-    // impl<T> Foo<T> {
-    //   fn bar() { ... }
-    // }
-    // ```
-    //
-    // The names we will generate for `foo` and `bar` are:
-    // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(0), Ident("foo")]`
-    // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(1), Ident("bar")]`
-    let mut found_crate_name = false;
-    let mut id = def_id;
-    let mut name: Vec<PathElem> = Vec::new();
+        // We lookup the path associated to an id, and convert it to a name.
+        // Paths very precisely identify where an item is. There are important
+        // subcases, like the items in an `Impl` block:
+        // ```
+        // impl<T> List<T> {
+        //   fn new() ...
+        // }
+        // ```
+        //
+        // One issue here is that "List" *doesn't appear* in the path, which would
+        // look like the following:
+        //
+        //   `TypeNS("Crate") :: Impl :: ValueNs("new")`
+        //                       ^^^
+        //           This is where "List" should be
+        //
+        // For this reason, whenever we find an `Impl` path element, we actually
+        // lookup the type of the sub-path, from which we can derive a name.
+        //
+        // Besides, as there may be several "impl" blocks for one type, each impl
+        // block is identified by a unique number (rustc calls this a
+        // "disambiguator"), which we grab.
+        //
+        // Example:
+        // ========
+        // For instance, if we write the following code in crate `test` and module
+        // `bla`:
+        // ```
+        // impl<T> Foo<T> {
+        //   fn foo() { ... }
+        // }
+        //
+        // impl<T> Foo<T> {
+        //   fn bar() { ... }
+        // }
+        // ```
+        //
+        // The names we will generate for `foo` and `bar` are:
+        // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(0), Ident("foo")]`
+        // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(1), Ident("bar")]`
+        let mut found_crate_name = false;
+        let mut name: Vec<PathElem> = Vec::new();
 
-    // Rk.: below we try to be as tight as possible with regards to sanity
-    // checks, to make sure we understand what happens with def paths, and
-    // fail whenever we get something which is even slightly outside what
-    // we expect.
-    loop {
-        // Retrieve the id key
-        let id_key = tcx.def_key(id);
+        // Rk.: below we try to be as tight as possible with regards to sanity
+        // checks, to make sure we understand what happens with def paths, and
+        // fail whenever we get something which is even slightly outside what
+        // we expect.
+        for data in &def_id.path {
+            // Match over the key data
+            let disambiguator = Disambiguator::Id::new(data.disambiguator as usize);
+            use hax::ExtendedDefPathItem;
+            match &data.data {
+                ExtendedDefPathItem::TypeNs(symbol) => {
+                    assert!(data.disambiguator == 0); // Sanity check
+                    name.push(PathElem::Ident(symbol.clone(), disambiguator));
+                }
+                ExtendedDefPathItem::ValueNs(symbol) => {
+                    if data.disambiguator != 0 {
+                        // I don't like that
 
-        // Match over the key data
-        let data = id_key.disambiguated_data;
-        match data.data {
-            DefPathData::TypeNs(symbol) => {
-                assert!(data.disambiguator == 0); // Sanity check
-                name.push(PathElem::Ident(symbol.to_ident_string()));
-            }
-            DefPathData::ValueNs(symbol) => {
-                if data.disambiguator != 0 {
-                    // I don't like that
+                        // I think this only happens with names introduced by macros
+                        // (though not sure). For instance:
+                        // `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
+                        let s = symbol;
+                        assert!(s == "_");
+                        name.push(PathElem::Ident(s.clone(), disambiguator));
+                    } else {
+                        name.push(PathElem::Ident(symbol.clone(), disambiguator));
+                    }
+                }
+                ExtendedDefPathItem::CrateRoot => {
+                    // Sanity check
+                    assert!(data.disambiguator == 0);
 
-                    // I think this only happens with names introduced by macros
-                    // (though not sure). For instance:
-                    // `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
-                    let s = symbol.to_ident_string();
-                    assert!(s == "_");
-                    name.push(PathElem::Ident(s));
-                    name.push(PathElem::Disambiguator(Disambiguator::Id::new(
-                        data.disambiguator as usize,
-                    )));
-                } else {
-                    name.push(PathElem::Ident(symbol.to_ident_string()));
+                    // This should be the beginning of the path
+                    assert!(name.is_empty());
+                    found_crate_name = true;
+                    name.push(PathElem::Ident(def_id.krate.clone(), disambiguator));
+                }
+                ExtendedDefPathItem::Impl {
+                    id,
+                    substs,
+                    bounds: _, // We actually need to directly interact with Rustc
+                    ty,
+                } => {
+                    // We need to convert the type, which may contain quantified
+                    // substs and bounds. In order to properly do so, we introduce
+                    // a body translation context.
+                    let id = id.unwrap();
+                    let mut bt_ctx = BodyTransCtx::new(id, self);
+
+                    bt_ctx
+                        .translate_generic_params_from_hax(span, substs)
+                        .unwrap();
+                    bt_ctx.translate_predicates_of(None, id).unwrap();
+                    let erase_regions = false;
+                    let ty = bt_ctx.translate_ty(span, erase_regions, ty).unwrap();
+
+                    name.push(PathElem::Impl(ImplElem {
+                        generics: bt_ctx.get_generics(),
+                        preds: bt_ctx.get_predicates(),
+                        ty,
+                        disambiguator,
+                    }));
+                }
+                ExtendedDefPathItem::ImplTrait => {
+                    // TODO: do nothing for now
+                }
+                ExtendedDefPathItem::MacroNs(symbol) => {
+                    assert!(data.disambiguator == 0); // Sanity check
+
+                    // There may be namespace collisions between, say, function
+                    // names and macros (not sure). However, this isn't much
+                    // of an issue here, because for now we don't expose macros
+                    // in the AST, and only use macro names in [register], for
+                    // instance to filter opaque modules.
+                    name.push(PathElem::Ident(symbol.clone(), disambiguator));
+                }
+                ExtendedDefPathItem::ClosureExpr => {
+                    // TODO: this is not very satisfactory, but on the other hand
+                    // we should be able to extract closures in local let-bindings
+                    // (i.e., we shouldn't have to introduce top-level let-bindings).
+                    name.push(PathElem::Ident("closure".to_string(), disambiguator))
+                }
+                _ => {
+                    error!("Unexpected ExtendedDefPathItem: {:?}", data);
+                    unreachable!("Unexpected ExtendedDefPathItem: {:?}", data);
                 }
             }
-            DefPathData::CrateRoot => {
-                // Sanity check
-                assert!(data.disambiguator == 0);
+        }
 
-                // This should be the end of the path
-                assert!(id_key.parent.is_none());
-                found_crate_name = true;
+        // We always add the crate name
+        if !found_crate_name {
+            name.push(PathElem::Ident(
+                def_id.krate.clone(),
+                Disambiguator::Id::new(0),
+            ));
+        }
 
-                let crate_name = tcx.crate_name(id.krate).to_string();
-                name.push(PathElem::Ident(crate_name));
+        trace!("{:?}", name);
+        Name { name }
+    }
+
+    pub(crate) fn make_hax_state_with_id(
+        &mut self,
+        def_id: DefId,
+    ) -> hax::State<hax::Base<'tcx>, (), (), DefId> {
+        hax::state::State {
+            thir: (),
+            mir: (),
+            owner_id: def_id,
+            base: hax::Base::new(
+                self.tcx,
+                hax::options::Options {
+                    inline_macro_calls: Vec::new(),
+                },
+            ),
+        }
+    }
+
+    /// Returns an optional name for an HIR item.
+    ///
+    /// If the option is `None`, it means the item is to be ignored (example: it
+    /// is a `use` item).
+    ///
+    /// Rk.: this function is only used by [crate::register], and implemented with this
+    /// context in mind.
+    pub fn hir_item_to_name(&mut self, item: &Item) -> Option<Name> {
+        // We have to create a hax state, which is annoying...
+        let state = self.make_hax_state_with_id(item.owner_id.to_def_id());
+        let def_id = item.owner_id.to_def_id().sinto(&state);
+
+        match &item.kind {
+            ItemKind::OpaqueTy(_) => unimplemented!(),
+            ItemKind::Union(_, _) => unimplemented!(),
+            ItemKind::ExternCrate(_) => {
+                // We ignore this -
+                // TODO: investigate when extern crates appear, and why
+                Option::None
             }
-            DefPathData::Impl => {
-                // Push the disambiguator
-                name.push(PathElem::Disambiguator(Disambiguator::Id::new(
-                    data.disambiguator as usize,
-                )));
-
-                // "impl" blocks are defined for types.
-                // We retrieve its unqualified type name.
-                let ty = tcx.type_of(id).subst_identity();
-
-                // Match over the type.
-                name.push(PathElem::Ident(match ty.kind() {
-                    rustc_middle::ty::TyKind::Adt(adt_def, _) => {
-                        let mut type_name = type_def_id_to_name(tcx, adt_def.did());
-                        type_name.name.pop().unwrap().to_string()
-                    }
-                    // Builtin cases.
-                    rustc_middle::ty::TyKind::Int(_)
-                    | rustc_middle::ty::TyKind::Uint(_)
-                    | rustc_middle::ty::TyKind::Array(..)
-                    | rustc_middle::ty::TyKind::Slice(_) => {
-                        format!("{ty:?}")
-                    }
-                    _ => unreachable!(),
-                }));
+            ItemKind::Use(_, _) => Option::None,
+            ItemKind::TyAlias(_, _) => {
+                // We ignore the type aliases - it seems they are inlined
+                Option::None
             }
-            DefPathData::ImplTrait => {
-                // TODO: this should work the same as for `Impl`
-                unimplemented!();
-            }
-            DefPathData::MacroNs(symbol) => {
-                assert!(data.disambiguator == 0); // Sanity check
-
-                // There may be namespace collisions between, say, function
-                // names and macros (not sure). However, this isn't much
-                // of an issue here, because for now we don't expose macros
-                // in the AST, and only use macro names in [register], for
-                // instance to filter opaque modules.
-                name.push(PathElem::Ident(symbol.to_ident_string()));
-            }
+            ItemKind::Enum(_, _)
+            | ItemKind::Struct(_, _)
+            | ItemKind::Fn(_, _, _)
+            | ItemKind::Impl(_)
+            | ItemKind::Mod(_)
+            | ItemKind::Const(_, _)
+            | ItemKind::Static(_, _, _)
+            | ItemKind::Macro(_, _)
+            | ItemKind::Trait(..) => Option::Some(self.extended_def_id_to_name(&def_id)),
             _ => {
-                error!("Unexpected DefPathData: {:?}", data);
-                unreachable!("Unexpected DefPathData: {:?}", data);
-            }
-        }
-
-        // Update the id to be the parent id
-        match id_key.parent {
-            Some(parent_index) => id.index = parent_index,
-            None => {
-                // We completely explored the path
-                break;
+                unimplemented!("{:?}", item.kind);
             }
         }
     }
 
-    // We always add the crate name
-    if !found_crate_name {
-        let crate_name = tcx.crate_name(id.krate).to_string();
-        name.push(PathElem::Ident(crate_name));
+    // TODO: remove
+    pub fn item_def_id_to_name(&mut self, def_id: rustc_span::def_id::DefId) -> Name {
+        let state = self.make_hax_state_with_id(def_id);
+        self.extended_def_id_to_name(&def_id.sinto(&state))
     }
 
-    // Reverse the name and return
-    name.reverse();
-    trace!("{:?}", name);
-    Name { name }
-}
-
-pub fn type_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> TypeName {
-    item_def_id_to_name(tcx, def_id)
-}
-
-pub fn module_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> ModuleName {
-    item_def_id_to_name(tcx, def_id)
-}
-
-pub fn function_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
-    item_def_id_to_name(tcx, def_id)
-}
-
-pub fn global_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> GlobalName {
-    item_def_id_to_name(tcx, def_id)
-}
-
-pub fn trait_def_id_to_name(tcx: TyCtxt, def_id: DefId) -> FunName {
-    item_def_id_to_name(tcx, def_id)
-}
-
-/// Returns an optional name for an HIR item.
-///
-/// If the option is `None`, it means the item is to be ignored (example: it
-/// is a `use` item).
-///
-/// Rk.: this function is only used by [crate::register], and implemented with this
-/// context in mind.
-pub fn hir_item_to_name(tcx: TyCtxt, item: &Item) -> Option<HirItemName> {
-    let def_id = item.owner_id.to_def_id();
-
-    // TODO: calling different functions to retrieve the name is not very
-    // satisfying below
-    match &item.kind {
-        ItemKind::OpaqueTy(_) => unimplemented!(),
-        ItemKind::Union(_, _) => unimplemented!(),
-        ItemKind::ExternCrate(_) => {
-            // We ignore this -
-            // TODO: investigate when extern crates appear, and why
-            Option::None
-        }
-        ItemKind::Use(_, _) => Option::None,
-        ItemKind::TyAlias(_, _) => {
-            // We ignore the type aliases - it seems they are inlined
-            Option::None
-        }
-        ItemKind::Enum(_, _)
-        | ItemKind::Struct(_, _)
-        | ItemKind::Fn(_, _, _)
-        | ItemKind::Impl(_)
-        | ItemKind::Mod(_)
-        | ItemKind::Const(_, _)
-        | ItemKind::Static(_, _, _)
-        | ItemKind::Macro(_, _) => Option::Some(item_def_id_to_name(tcx, def_id)),
-        _ => {
-            unimplemented!("{:?}", item.kind);
-        }
+    pub fn def_id_to_name(&mut self, def_id: &hax::DefId) -> Name {
+        // We have to create a hax state, which is annoying...
+        let state = self.make_hax_state_with_id(def_id.rust_def_id.unwrap());
+        self.extended_def_id_to_name(&def_id.rust_def_id.unwrap().sinto(&state))
     }
 }

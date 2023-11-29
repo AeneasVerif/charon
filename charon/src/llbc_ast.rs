@@ -6,13 +6,11 @@
 //! Also note that we completely break the definitions Statement and Terminator
 //! from MIR to use Statement only.
 
-#![allow(dead_code)]
-use crate::expressions::*;
 pub use crate::gast::*;
 pub use crate::llbc_ast_utils::*;
 use crate::meta::Meta;
 use crate::types::*;
-pub use crate::ullbc_ast::{Call, CtxNames, FunDeclId, GlobalDeclId, Var};
+pub use crate::ullbc_ast::{Call, FunDeclId, GlobalDeclId, Var};
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
@@ -68,7 +66,9 @@ pub struct Statement {
     pub content: RawStatement,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(
+    Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, VariantName, VariantIndexArity,
+)]
 pub enum Switch {
     /// Gives the `if` block and the `else` block
     If(Operand, Box<Statement>, Box<Statement>),

@@ -1,15 +1,11 @@
 //! Implementations for [crate::ullbc_ast]
-#![allow(dead_code)]
-
-use crate::expressions::*;
-use crate::formatter::Formatter;
+use crate::common::TAB_INCR;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
 use crate::types::*;
 use crate::ullbc_ast::*;
 use crate::values::*;
 use macros::make_generic_in_borrows;
-use std::iter::FromIterator;
 use take_mut::take;
 
 impl SwitchTargets {
@@ -30,7 +26,7 @@ impl SwitchTargets {
     }
 
     /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &ETypeSubst) -> Self {
+    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
         self.clone()
     }
 }
@@ -41,7 +37,7 @@ impl Statement {
     }
 
     /// Substitute the type variables and return the resulting statement.
-    pub fn substitute(&self, subst: &ETypeSubst) -> Statement {
+    pub fn substitute(&self, subst: &TypeSubst) -> Statement {
         let st = match &self.content {
             RawStatement::Assign(place, rvalue) => {
                 RawStatement::Assign(place.substitute(subst), rvalue.substitute(subst))
@@ -62,92 +58,12 @@ impl Terminator {
     pub fn new(meta: Meta, content: RawTerminator) -> Self {
         Terminator { meta, content }
     }
-
-    /// Substitute the type variables and return the resulting terminator
-    pub fn substitute(&self, subst: &ETypeSubst, cgsubst: &ConstGenericSubst) -> Terminator {
-        let terminator = match &self.content {
-            RawTerminator::Goto { target } => RawTerminator::Goto { target: *target },
-            RawTerminator::Switch { discr, targets } => RawTerminator::Switch {
-                discr: discr.substitute(subst),
-                targets: targets.substitute(subst),
-            },
-            RawTerminator::Panic => RawTerminator::Panic,
-            RawTerminator::Return => RawTerminator::Return,
-            RawTerminator::Unreachable => RawTerminator::Unreachable,
-            RawTerminator::Drop { place, target } => RawTerminator::Drop {
-                place: place.substitute(subst),
-                target: *target,
-            },
-            RawTerminator::Call { call, target } => {
-                let Call {
-                    func,
-                    region_args,
-                    type_args,
-                    const_generic_args,
-                    args,
-                    dest,
-                } = call;
-                let call = Call {
-                    func: func.clone(),
-                    region_args: region_args.clone(),
-                    type_args: type_args
-                        .iter()
-                        .map(|ty| ty.substitute_types(subst, cgsubst))
-                        .collect(),
-                    const_generic_args: const_generic_args
-                        .iter()
-                        .map(|cg| cg.substitute(&|var| cgsubst.get(var).unwrap().clone()))
-                        .collect(),
-                    args: Vec::from_iter(args.iter().map(|arg| arg.substitute(subst))),
-                    dest: dest.substitute(subst),
-                };
-                RawTerminator::Call {
-                    call,
-                    target: *target,
-                }
-            }
-            RawTerminator::Assert {
-                cond,
-                expected,
-                target,
-            } => RawTerminator::Assert {
-                cond: cond.substitute(subst),
-                expected: *expected,
-                target: *target,
-            },
-        };
-
-        Terminator::new(self.meta, terminator)
-    }
-}
-
-impl BlockData {
-    /// Substitute the type variables and return the resulting `BlockData`
-    pub fn substitute(&self, subst: &ETypeSubst, cgsubst: &ConstGenericSubst) -> BlockData {
-        let statements = self
-            .statements
-            .iter()
-            .map(|x| x.substitute(subst))
-            .collect();
-        let terminator = self.terminator.substitute(subst, cgsubst);
-        BlockData {
-            statements,
-            terminator,
-        }
-    }
 }
 
 impl Statement {
-    pub fn fmt_with_ctx<'a, T>(&'a self, ctx: &T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-            + Formatter<TypeVarId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<&'a ErasedRegion>,
+        T: ExprFormatter,
     {
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(
@@ -174,17 +90,9 @@ impl Statement {
 }
 
 impl Terminator {
-    pub fn fmt_with_ctx<'a, 'b, T>(&'a self, ctx: &'b T) -> String
+    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
+        T: ExprFormatter,
     {
         match &self.content {
             RawTerminator::Goto { target } => format!("goto bb{target}"),
@@ -213,17 +121,8 @@ impl Terminator {
                 format!("drop {} -> bb{}", place.fmt_with_ctx(ctx), target)
             }
             RawTerminator::Call { call, target } => {
-                let Call {
-                    func,
-                    region_args,
-                    type_args,
-                    const_generic_args,
-                    args,
-                    dest,
-                } = call;
-                let call = fmt_call(ctx, func, region_args, type_args, const_generic_args, args);
-
-                format!("{} := {} -> bb{}", dest.fmt_with_ctx(ctx), call, target,)
+                let (call_s, _) = fmt_call(ctx, call);
+                format!("{} := {call_s} -> bb{target}", call.dest.fmt_with_ctx(ctx),)
             }
             RawTerminator::Assert {
                 cond,
@@ -240,17 +139,9 @@ impl Terminator {
 }
 
 impl BlockData {
-    pub fn fmt_with_ctx<'a, 'b, 'c, T>(&'a self, tab: &'b str, ctx: &'c T) -> String
+    pub fn fmt_with_ctx<T>(&self, tab: &str, ctx: &T) -> String
     where
-        T: Formatter<VarId::Id>
-            + Formatter<TypeVarId::Id>
-            + Formatter<&'a ErasedRegion>
-            + Formatter<TypeDeclId::Id>
-            + Formatter<ConstGenericVarId::Id>
-            + Formatter<FunDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<(TypeDeclId::Id, VariantId::Id)>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
+        T: ExprFormatter,
     {
         let mut out: Vec<String> = Vec::new();
 
@@ -267,21 +158,13 @@ impl BlockData {
     }
 }
 
-fn fmt_body_blocks_with_ctx<'a, 'b, 'c, C>(
-    body: &'a BlockId::Vector<BlockData>,
-    tab: &'b str,
-    ctx: &'c C,
+pub(crate) fn fmt_body_blocks_with_ctx<C>(
+    body: &BlockId::Vector<BlockData>,
+    tab: &str,
+    ctx: &C,
 ) -> String
 where
-    C: Formatter<VarId::Id>
-        + Formatter<TypeVarId::Id>
-        + Formatter<&'a ErasedRegion>
-        + Formatter<TypeDeclId::Id>
-        + Formatter<ConstGenericVarId::Id>
-        + Formatter<FunDeclId::Id>
-        + Formatter<GlobalDeclId::Id>
-        + Formatter<(TypeDeclId::Id, VariantId::Id)>
-        + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
+    C: ExprFormatter,
 {
     let block_tab = format!("{tab}{TAB_INCR}");
     let mut blocks: Vec<String> = Vec::new();
@@ -299,209 +182,21 @@ where
     blocks.join("\n")
 }
 
-impl ExprBody {
-    pub fn fmt_with_decls<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDecls,
-        global_ctx: &'ctx GlobalDecls,
-    ) -> String {
-        let locals = Some(&self.locals);
-        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
-        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
-        self.fmt_with_ctx(TAB_INCR, &ctx)
-    }
-
-    pub fn fmt_with_names<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Map<String>,
-        global_ctx: &'ctx GlobalDeclId::Map<String>,
-    ) -> String {
-        let locals = Some(&self.locals);
-        let fun_ctx = FunNamesFormatter::new(fun_ctx);
-        let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        let ctx = GAstFormatter::new(ty_ctx, &fun_ctx, &global_ctx, None, locals, None);
-        self.fmt_with_ctx(TAB_INCR, &ctx)
-    }
-
-    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
-        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
-    }
-}
-
-pub(crate) struct FunDeclsFormatter<'ctx> {
-    decls: &'ctx FunDecls,
-}
-
-pub(crate) struct GlobalDeclsFormatter<'ctx> {
-    decls: &'ctx GlobalDecls,
-}
-
-impl<'ctx, FD, GD> Formatter<&Statement> for GAstFormatter<'ctx, FD, GD>
-where
-    Self: Formatter<GlobalDeclId::Id>,
-{
-    fn format_object(&self, statement: &Statement) -> String {
-        statement.fmt_with_ctx(self)
-    }
-}
-
-impl<'ctx, FD, GD> Formatter<&BlockId::Vector<BlockData>> for GAstFormatter<'ctx, FD, GD>
-where
-    Self: Formatter<FunDeclId::Id>,
-    Self: Formatter<GlobalDeclId::Id>,
-{
-    fn format_object(&self, body: &BlockId::Vector<BlockData>) -> String {
-        fmt_body_blocks_with_ctx(body, TAB_INCR, self)
-    }
-}
-
-impl<'ctx, FD, GD> Formatter<&Terminator> for GAstFormatter<'ctx, FD, GD>
-where
-    Self: Formatter<FunDeclId::Id>,
-    Self: Formatter<GlobalDeclId::Id>,
-{
-    fn format_object(&self, terminator: &Terminator) -> String {
-        terminator.fmt_with_ctx(self)
-    }
-}
-
-impl<'ctx> FunDeclsFormatter<'ctx> {
-    pub fn new(decls: &'ctx FunDecls) -> Self {
-        FunDeclsFormatter { decls }
-    }
-}
-
-impl<'ctx> Formatter<FunDeclId::Id> for FunDeclsFormatter<'ctx> {
-    fn format_object(&self, id: FunDeclId::Id) -> String {
-        let d = self.decls.get(id).unwrap();
-        d.name.to_string()
-    }
-}
-
-impl<'ctx> GlobalDeclsFormatter<'ctx> {
-    pub fn new(decls: &'ctx GlobalDecls) -> Self {
-        GlobalDeclsFormatter { decls }
-    }
-}
-
-impl<'ctx> Formatter<GlobalDeclId::Id> for GlobalDeclsFormatter<'ctx> {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        let d = self.decls.get(id).unwrap();
-        d.name.to_string()
-    }
-}
-
-impl Formatter<GlobalDeclId::Id> for GlobalDecls {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        let d = self.get(id).unwrap();
-        d.name.to_string()
-    }
-}
-
 impl FunDecl {
-    pub fn fmt_with_ctx<'ctx, FD, GD>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FD,
-        global_ctx: &'ctx GD,
-    ) -> String
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        FD: Formatter<FunDeclId::Id>,
-        GD: Formatter<GlobalDeclId::Id>,
+        C: GFunDeclFormatter<'a, BlockId::Vector<BlockData>>,
     {
-        // Initialize the contexts
-        let fun_sig_ctx = FunSigFormatter {
-            ty_ctx,
-            global_ctx,
-            sig: &self.signature,
-        };
-
-        let locals = self.body.as_ref().map(|body| &body.locals);
-        let ctx = GAstFormatter::new(
-            ty_ctx,
-            fun_ctx,
-            global_ctx,
-            Some(&self.signature.type_params),
-            locals,
-            Some(&self.signature.const_generic_params),
-        );
-
-        // Use the contexts for printing
-        self.gfmt_with_ctx("", &fun_sig_ctx, &ctx)
-    }
-
-    pub fn fmt_with_decls<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDecls,
-        global_ctx: &'ctx GlobalDecls,
-    ) -> String {
-        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
-        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
-    }
-
-    pub fn fmt_with_names<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Map<String>,
-        global_ctx: &'ctx GlobalDeclId::Map<String>,
-    ) -> String {
-        let fun_ctx = FunNamesFormatter::new(fun_ctx);
-        let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
-    }
-
-    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
-        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
+        self.gfmt_with_ctx("", ctx)
     }
 }
 
 impl GlobalDecl {
-    pub fn fmt_with_ctx<'ctx, FD, GD>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FD,
-        global_ctx: &'ctx GD,
-    ) -> String
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
     where
-        FD: Formatter<FunDeclId::Id>,
-        GD: Formatter<GlobalDeclId::Id>,
+        C: GGlobalDeclFormatter<'a, BlockId::Vector<BlockData>>,
     {
-        let locals = self.body.as_ref().map(|body| &body.locals);
-        let ctx = GAstFormatter::new(ty_ctx, fun_ctx, global_ctx, None, locals, None);
-
-        // Use the contexts for printing
-        self.gfmt_with_ctx("", &ctx)
-    }
-
-    pub fn fmt_with_decls<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDecls,
-        global_ctx: &'ctx GlobalDecls,
-    ) -> String {
-        let fun_ctx = FunDeclsFormatter::new(fun_ctx);
-        let global_ctx = GlobalDeclsFormatter::new(global_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
-    }
-
-    pub fn fmt_with_names<'ctx>(
-        &self,
-        ty_ctx: &'ctx TypeDecls,
-        fun_ctx: &'ctx FunDeclId::Map<String>,
-        global_ctx: &'ctx GlobalDeclId::Map<String>,
-    ) -> String {
-        let fun_ctx = FunNamesFormatter::new(fun_ctx);
-        let global_ctx = GlobalNamesFormatter::new(global_ctx);
-        self.fmt_with_ctx(ty_ctx, &fun_ctx, &global_ctx)
-    }
-
-    pub fn fmt_with_ctx_names(&self, ctx: &CtxNames<'_>) -> String {
-        self.fmt_with_names(ctx.type_context, ctx.fun_context, ctx.global_context)
+        self.gfmt_with_ctx("", ctx)
     }
 }
 
@@ -525,6 +220,9 @@ impl BlockData {
                 for op in ops {
                     f(meta, nst, op);
                 }
+            }
+            Rvalue::Repeat(op, _, _) => {
+                f(meta, nst, op);
             }
             Rvalue::Global(_) | Rvalue::Discriminant(_) | Rvalue::Ref(_, _) | Rvalue::Len(..) => {
                 // No operands: nothing to do
