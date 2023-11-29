@@ -50,7 +50,7 @@ impl ConstGeneric {
 
 impl RegionId::Id {
     pub fn substitute(&self, rsubst: &RegionSubst) -> Region {
-        rsubst.get(self).unwrap().clone()
+        *rsubst.get(self).unwrap()
     }
 }
 
@@ -530,6 +530,7 @@ impl TraitDeclRef {
 impl TypeDecl {
     /// The variant id should be `None` if it is a structure and `Some` if it
     /// is an enumeration.
+    #[allow(clippy::result_unit_err)]
     pub fn get_fields(
         &self,
         variant_id: Option<VariantId::Id>,
@@ -706,61 +707,61 @@ impl IntegerTy {
 }
 
 impl TypeVarId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@T{self}")
     }
 }
 
 impl TypeDeclId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Adt{self}")
     }
 }
 
 impl VariantId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Variant{self}")
     }
 }
 
 impl FieldId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Field{self}")
     }
 }
 
 impl RegionId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@R{self}")
     }
 }
 
 impl ConstGenericVarId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Const{self}")
     }
 }
 
 impl GlobalDeclId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Global{self}")
     }
 }
 
 impl TraitClauseId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@TraitClause{self}")
     }
 }
 
 impl TraitDeclId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@TraitDecl{self}")
     }
 }
 
 impl TraitImplId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@TraitImpl{self}")
     }
 }
@@ -1092,7 +1093,7 @@ impl Ty {
         match self {
             Ty::Adt(id, args) => {
                 let args = args.substitute(rsubst, tsubst, cgsubst);
-                Ty::Adt(id.clone(), args)
+                Ty::Adt(*id, args)
             }
             Ty::TypeVar(id) => tsubst(id),
             Ty::Literal(pty) => Ty::Literal(*pty),
@@ -1121,21 +1122,16 @@ impl Ty {
         }
     }
 
-    fn substitute_regions(
-        regions: &Vec<Region>,
-        rsubst: &dyn Fn(&Region) -> Region,
-    ) -> Vec<Region> {
+    fn substitute_regions(regions: &[Region], rsubst: &dyn Fn(&Region) -> Region) -> Vec<Region> {
         Vec::from_iter(regions.iter().map(|rid| rsubst(rid)))
     }
 
     /// Substitute the type parameters
     // TODO: tsubst and cgsubst should be closures instead of hashmaps
     pub fn substitute_types(&self, subst: &TypeSubst, cgsubst: &ConstGenericSubst) -> Self {
-        self.substitute(
-            &|r| r.clone(),
-            &|tid| subst.get(tid).unwrap().clone(),
-            &|cgid| cgsubst.get(cgid).unwrap().clone(),
-        )
+        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone(), &|cgid| {
+            cgsubst.get(cgid).unwrap().clone()
+        })
     }
 
     /// Erase the regions
@@ -1355,7 +1351,7 @@ impl TySubst {
         use Result::*;
         match self.regions_map.get(src) {
             None => {
-                check_ok_return!(self.regions_map.insert(src.clone(), tgt.clone()).is_none());
+                check_ok_return!(self.regions_map.insert(*src, *tgt).is_none());
             }
             Some(src) => {
                 check_ok_return!(src == tgt);
@@ -1455,6 +1451,7 @@ impl TySubst {
 }
 
 impl TySubst {
+    #[allow(clippy::result_unit_err)]
     pub fn unify_args_with_fixed(
         fixed_type_vars: impl std::iter::Iterator<Item = TypeVarId::Id>,
         fixed_const_generic_vars: impl std::iter::Iterator<Item = ConstGenericVarId::Id>,

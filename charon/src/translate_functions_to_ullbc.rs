@@ -782,6 +782,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// arguments.
     ///
     /// TODO: should we always erase the regions?
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn translate_fun_decl_id_with_args(
         &mut self,
         span: rustc_span::Span,
@@ -1306,6 +1307,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that `body` is the body of the function being translated, not of the
     /// function referenced in the function call: we need it in order to translate
     /// the blocks we go to after the function call returns.
+    #[allow(clippy::too_many_arguments)]
     fn translate_function_call(
         &mut self,
         span: rustc_span::Span,
@@ -1636,11 +1638,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // TODO: for now, if there is an error while translating the signature
         // of the function, we ignore the function altogether, while we should
         // save somewhere that we failed to extract it.
-        match self.translate_function_aux(rust_id) {
-            Ok(()) => (),
-            Err(_) => {
-                // TODO
-            }
+        if self.translate_function_aux(rust_id).is_err() {
+            // TODO
         }
     }
 
@@ -1712,11 +1711,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // TODO: for now, if there is an error while translating the parameters/
         // predicates of the global, we ignore the declaration altogether, while
         // we should save somewhere that we failed to extract it.
-        match self.translate_global_aux(rust_id) {
-            Ok(()) => (),
-            Err(_) => {
-                // TODO
-            }
+        if self.translate_global_aux(rust_id).is_err() {
+            // TODO
         }
     }
 

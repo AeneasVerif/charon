@@ -367,12 +367,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    #[allow(clippy::type_complexity)]
     pub fn translate_substs(
         &mut self,
         span: rustc_span::Span,
         erase_regions: bool,
         used_params: Option<Vec<bool>>,
-        substs: &Vec<hax::GenericArg>,
+        substs: &[hax::GenericArg],
     ) -> Result<(Vec<Region>, Vec<Ty>, Vec<ConstGeneric>), Error> {
         trace!("{:?}", substs);
         // Filter the parameters
@@ -394,11 +395,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         for param in substs.iter() {
             match param {
                 hax::GenericArg::Type(param_ty) => {
-                    let param_ty = self.translate_ty(span, erase_regions, &param_ty)?;
+                    let param_ty = self.translate_ty(span, erase_regions, param_ty)?;
                     params.push(param_ty);
                 }
                 hax::GenericArg::Lifetime(region) => {
-                    regions.push(self.translate_region(span, erase_regions, &region)?);
+                    regions.push(self.translate_region(span, erase_regions, region)?);
                 }
                 hax::GenericArg::Const(c) => {
                     cgs.push(self.translate_constant_expr_to_const_generic(span, c)?);
@@ -414,8 +415,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: rustc_span::Span,
         erase_regions: bool,
         used_params: Option<Vec<bool>>,
-        substs: &Vec<hax::GenericArg>,
-        trait_refs: &Vec<hax::ImplSource>,
+        substs: &[hax::GenericArg],
+        trait_refs: &[hax::ImplSource],
     ) -> Result<GenericArgs, Error> {
         let (regions, types, const_generics) =
             self.translate_substs(span, erase_regions, used_params, substs)?;
@@ -626,7 +627,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 }
                 Lifetime(region) => {
-                    let name = translate_region_name(&region);
+                    let name = translate_region_name(region);
                     let _ = self.push_region(region.clone(), name);
                 }
                 Const(c) => {
@@ -660,11 +661,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // TODO: for now, if there is an error while translating the parameters/
         // predicates of the declaration, we ignore it altogether, while we should
         // save somewhere that we failed to extract it.
-        match self.translate_type_aux(rust_id) {
-            Ok(()) => (),
-            Err(_) => {
-                // TODO
-            }
+        if self.translate_type_aux(rust_id).is_err() {
+            // TODO
         }
     }
 

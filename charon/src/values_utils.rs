@@ -6,7 +6,7 @@ use crate::values::*;
 use serde::{Serialize, Serializer};
 
 impl VarId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@{self}")
     }
 }

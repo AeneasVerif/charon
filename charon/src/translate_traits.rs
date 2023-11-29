@@ -228,11 +228,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // TODO: for now, if there is an error while translating the parameters/
         // predicates of the declaration, we ignore it altogether, while we should
         // save somewhere that we failed to extract it.
-        match self.translate_trait_decl_aux(rust_id) {
-            Ok(()) => (),
-            Err(_) => {
-                // TODO
-            }
+        if self.translate_trait_decl_aux(rust_id).is_err() {
+            // TODO
         }
     }
 
@@ -428,11 +425,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // TODO: for now, if there is an error while translating the parameters/
         // predicates of the declaration, we ignore it altogether, while we should
         // save somewhere that we failed to extract it.
-        match self.translate_trait_impl_aux(rust_id) {
-            Ok(()) => (),
-            Err(_) => {
-                // TODO
-            }
+        if self.translate_trait_impl_aux(rust_id).is_err() {
+            // TODO
         }
     }
 

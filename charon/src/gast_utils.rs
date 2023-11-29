@@ -49,7 +49,7 @@ pub fn make_locals_generator(locals: &mut VarId::Vector<Var>) -> impl FnMut(Ty) 
 }
 
 impl FunDeclId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Fun{self}")
     }
 }
@@ -226,12 +226,11 @@ pub fn fmt_call<T>(ctx: &T, call: &Call) -> (String, Option<String>)
 where
     T: ExprFormatter,
 {
-    let trait_and_method_generic_args =
-        if let Some(generics) = &call.func.trait_and_method_generic_args {
-            Option::Some(generics.fmt_with_ctx_split_trait_refs(ctx))
-        } else {
-            None
-        };
+    let trait_and_method_generic_args = call
+        .func
+        .trait_and_method_generic_args
+        .as_ref()
+        .map(|generics| generics.fmt_with_ctx_split_trait_refs(ctx));
 
     let f = call.func.fmt_with_ctx(ctx);
 

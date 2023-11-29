@@ -296,17 +296,15 @@ impl Deps {
                 //
                 // The declaration may not be present if we encountered errors.
                 if let Some(decl) = ctx.fun_defs.get(id) {
-                    match &decl.kind {
-                        FunKind::TraitMethodImpl {
-                            impl_id,
-                            trait_id: _,
-                            method_name: _,
-                            provided: _,
-                        } => {
-                            // Register the trait decl id
-                            self.impl_trait_id = Some(*impl_id)
-                        }
-                        _ => (),
+                    if let FunKind::TraitMethodImpl {
+                        impl_id,
+                        trait_id: _,
+                        method_name: _,
+                        provided: _,
+                    } = &decl.kind
+                    {
+                        // Register the trait decl id
+                        self.impl_trait_id = Some(*impl_id)
                     }
                 } else {
                     // Sanity check

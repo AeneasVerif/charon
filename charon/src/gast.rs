@@ -156,6 +156,7 @@ pub struct TraitItemName(pub String);
 /// helpers like `all`, `map`, etc. that shouldn't be re-implemented.
 /// Of course, this forbids other useful use cases such as visitors implemented
 /// by means of traits.
+#[allow(clippy::type_complexity)]
 #[derive(Debug, Clone, Serialize)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,

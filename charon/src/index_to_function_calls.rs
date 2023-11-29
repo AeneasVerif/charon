@@ -35,7 +35,7 @@ impl<'a> Transform<'a> {
                 let (index_var_id, buf_ty) = pe.to_index();
 
                 let (id, generics) = buf_ty.as_adt();
-                let cgs: Vec<ConstGeneric> = generics.const_generics.iter().cloned().collect();
+                let cgs: Vec<ConstGeneric> = generics.const_generics.to_vec();
                 let index_id = match id.as_assumed() {
                     AssumedTy::Array => {
                         if mut_access {
@@ -173,6 +173,7 @@ impl<'a> MutExprVisitor for Transform<'a> {
 
 impl<'a> MutAstVisitor for Transform<'a> {
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        #[allow(clippy::mem_replace_with_default)]
         let statements = replace(&mut self.statements, Vec::new());
         visitor(self);
         // Make sure we didn't update the vector of statements

@@ -1,11 +1,11 @@
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
 use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups};
+use crate::translate_ctx::*;
 use crate::types::*;
 use crate::ullbc_ast;
-use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDecl, TraitDecls, TraitImpl, TraitImpls};
+use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDecl, TraitImpl};
 use serde::Serialize;
-use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
 
@@ -29,16 +29,13 @@ struct GCrateSerializer<'a, FD, GD> {
 /// Export the translated definitions to a JSON file.
 ///
 /// This is a generic function, used both for LLBC and ULLBC.
+#[allow(clippy::result_unit_err)]
 pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
-    errors: bool,
+    ctx: &TransCtx,
     crate_name: String,
-    id_to_file: &HashMap<FileId::Id, FileName>,
     ordered_decls: &DeclarationsGroups,
-    type_defs: &TypeDecls,
     fun_defs: &FunDeclId::Map<FD>,
     global_defs: &GlobalDeclId::Map<GD>,
-    trait_decls: &TraitDeclId::Map<TraitDecl>,
-    trait_impls: &TraitImplId::Map<TraitImpl>,
     dest_dir: &Option<PathBuf>,
     extension: &str,
 ) -> Result<(), ()> {
@@ -52,6 +49,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
 
     // Transform the map file id -> file into a vector.
     // Sort the vector to make the serialized file as stable as possible.
+    let id_to_file = &ctx.id_to_file;
     let mut file_ids: Vec<FileId::Id> = id_to_file.keys().copied().collect();
     file_ids.sort();
     let id_to_file: Vec<(FileId::Id, FileName)> = file_ids
@@ -63,11 +61,11 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     // Serialize
     // Note that we replace the maps with vectors (the declarations contain
     // their ids, so it is easy to reconstruct the maps from there).
-    let types = type_defs.iter().cloned().collect();
+    let types = ctx.type_defs.iter().cloned().collect();
     let functions = fun_defs.iter().cloned().collect();
     let globals = global_defs.iter().cloned().collect();
-    let trait_decls = trait_decls.iter().cloned().collect();
-    let trait_impls = trait_impls.iter().cloned().collect();
+    let trait_decls = ctx.trait_decls.iter().cloned().collect();
+    let trait_impls = ctx.trait_impls.iter().cloned().collect();
     let crate_serializer = GCrateSerializer {
         name: crate_name,
         id_to_file,
@@ -100,7 +98,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
                 // We canonicalize (i.e., make absolute) the path before printing it:
                 // this makes it clearer to the user where to find the file.
                 let path = std::fs::canonicalize(target_filename).unwrap();
-                if errors {
+                if ctx.error_count > 0 {
                     info!(
                         "Generated the partial (because we encountered errors) file: {}",
                         path.to_str().unwrap()
@@ -123,56 +121,42 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
 }
 
 /// Export the translated ULLBC definitions to a JSON file.
+#[allow(clippy::result_unit_err)]
 pub fn export_ullbc(
-    errors: bool,
+    ctx: &TransCtx,
     crate_name: String,
-    id_to_file: &HashMap<FileId::Id, FileName>,
     ordered_decls: &DeclarationsGroups,
-    type_defs: &TypeDecls,
     fun_defs: &ullbc_ast::FunDecls,
     global_defs: &ullbc_ast::GlobalDecls,
-    trait_decls: &TraitDecls,
-    trait_impls: &TraitImpls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<(), ()> {
     gexport(
-        errors,
+        ctx,
         crate_name,
-        id_to_file,
         ordered_decls,
-        type_defs,
         fun_defs,
         global_defs,
-        trait_decls,
-        trait_impls,
         dest_dir,
         "ullbc",
     )
 }
 
 /// Export the translated LLBC definitions to a JSON file.
+#[allow(clippy::result_unit_err)]
 pub fn export_llbc(
-    errors: bool,
+    ctx: &TransCtx,
     crate_name: String,
-    id_to_file: &HashMap<FileId::Id, FileName>,
     ordered_decls: &DeclarationsGroups,
-    type_defs: &TypeDecls,
     fun_defs: &llbc_ast::FunDecls,
     global_defs: &llbc_ast::GlobalDecls,
-    trait_decls: &TraitDecls,
-    trait_impls: &TraitImpls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<(), ()> {
     gexport(
-        errors,
+        ctx,
         crate_name,
-        id_to_file,
         ordered_decls,
-        type_defs,
         fun_defs,
         global_defs,
-        trait_decls,
-        trait_impls,
         dest_dir,
         "llbc",
     )

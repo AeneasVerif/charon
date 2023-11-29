@@ -115,6 +115,7 @@ pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize>
 /// Translate a crate to LLBC (Low-Level Borrow Calculus).
 ///
 /// This function is a callback function for the Rust compiler.
+#[allow(clippy::result_unit_err)]
 pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) -> Result<(), ()> {
     trace!();
     let options = &internal.options;
@@ -189,15 +190,11 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
     if options.ullbc {
         // # Extract the files
         export::export_ullbc(
-            ctx.error_count > 0,
+            &ctx,
             crate_name,
-            &ctx.id_to_file,
             &ordered_decls,
-            &ctx.type_defs,
             &ctx.fun_defs,
             &ctx.global_defs,
-            &ctx.trait_decls,
-            &ctx.trait_impls,
             &options.dest_dir,
         )?;
     } else {
@@ -288,15 +285,11 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
 
         // # Final step: generate the files.
         export::export_llbc(
-            ctx.error_count > 0,
+            &ctx,
             crate_name,
-            &ctx.id_to_file,
             &ordered_decls,
-            &ctx.type_defs,
             &llbc_funs,
             &llbc_globals,
-            &ctx.trait_decls,
-            &ctx.trait_impls,
             &options.dest_dir,
         )?;
     }

@@ -59,15 +59,12 @@ impl NonLocalTraitClause {
         &self,
         get_id: &dyn Fn(&TraitInstanceId) -> Option<TraitClauseId::Id>,
     ) -> Option<TraitClause> {
-        match get_id(&self.clause_id) {
-            None => None,
-            Some(clause_id) => Some(TraitClause {
-                clause_id,
-                meta: self.meta,
-                trait_id: self.trait_id,
-                generics: self.generics.clone(),
-            }),
-        }
+        get_id(&self.clause_id).map(|clause_id| TraitClause {
+            clause_id,
+            meta: self.meta,
+            trait_id: self.trait_id,
+            generics: self.generics.clone(),
+        })
     }
 
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
@@ -118,18 +115,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // **IMPORTANT**: we do NOT want to use [TyCtxt::predicates_of].
                 let preds = tcx.predicates_defined_on(parent_id).sinto(&self.hax_state);
                 for (pred, _) in preds.predicates {
-                    match &pred.value {
-                        hax::PredicateKind::Clause(hax::Clause::Trait(clause)) => {
-                            if self
-                                .translate_trait_decl_id(
-                                    clause.trait_ref.def_id.rust_def_id.unwrap(),
-                                )
-                                .is_some()
-                            {
-                                num_trait_clauses += 1;
-                            }
+                    if let hax::PredicateKind::Clause(hax::Clause::Trait(clause)) = &pred.value {
+                        if self
+                            .translate_trait_decl_id(clause.trait_ref.def_id.rust_def_id.unwrap())
+                            .is_some()
+                        {
+                            num_trait_clauses += 1;
                         }
-                        _ => (),
                     }
                 }
                 params_info.num_trait_clauses = num_trait_clauses;
@@ -621,13 +613,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         erase_regions: bool,
-        impl_sources: &Vec<hax::ImplSource>,
+        impl_sources: &[hax::ImplSource],
     ) -> Result<Vec<TraitRef>, Error> {
         let res: Vec<_> = impl_sources
             .iter()
             .map(|x| self.translate_trait_impl_source(span, erase_regions, x))
             .try_collect()?;
-        Ok(res.into_iter().filter_map(|x| x).collect())
+        Ok(res.into_iter().flatten().collect())
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
