@@ -102,10 +102,9 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     /// specific version of Cargo.
     #[structopt(long = "cargo-no-rust-version")]
     pub cargo_no_rust_version: bool,
-    /// Do not abort on failure and attempt to extract as much as possible by
-    /// possibly leaving "holes" in the extracted code.
-    #[structopt(long = "continue", short = "k")]
-    pub continue_on_failure: bool,
+    /// Panic on the first error. This is useful for debugging.
+    #[structopt(long = "panic-on-error")]
+    pub panic_on_error: bool,
     #[structopt(
         long = "print-ullbc",
         help = "

@@ -137,7 +137,7 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub mir_level: MirLevel,
     ///
     pub crate_info: CrateInfo,
-    /// Do not abort on failure and attempt to extract as much as possible.
+    /// Do not abort on the first error and attempt to extract as much as possible.
     pub continue_on_failure: bool,
     /// The number of errors encountered so far.
     pub error_count: usize,
