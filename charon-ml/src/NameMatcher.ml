@@ -37,6 +37,8 @@
 include Name_matcher_parser.Ast
 include Name_matcher_parser.Interface
 module T = Types
+module E = Expressions
+module A = LlbcAst
 
 (*
  * Match a name
@@ -53,11 +55,13 @@ end
 
 module VarMap = Collections.MakeMap (VarOrderedType)
 
-(* Context to lookup definitions *)
+(** Context to lookup definitions *)
 type ctx = {
   type_decls : T.type_decl T.TypeDeclId.Map.t;
   global_decls : LlbcAst.global_decl T.GlobalDeclId.Map.t;
-  trait_decls : GAst.trait_decl T.TraitDeclId.Map.t;
+  fun_decls : A.fun_decl A.FunDeclId.Map.t;
+  trait_decls : A.trait_decl T.TraitDeclId.Map.t;
+  trait_impls : A.trait_impl T.TraitImplId.Map.t;
 }
 
 (** Match configuration *)
@@ -72,6 +76,16 @@ type match_config = {
           However, we might want to match instantiations (i.e., for which
           [@T] is matched to [usize]) when matching function calls inside
           bodies.
+       *)
+  match_with_trait_decl_refs : bool;
+      (** If true, when matching trait refs, use the implemented trait decl
+          refs, otherwise match the name of the implementations.
+
+          For instance, if it is set to true, you can identify a call to
+          [std::ops::Index<usize>::index] for [Vec<T>] with the name:
+          ["std::ops::Index<Vec<@T>, usize>::index"].
+          Otherwise, you will have to refer to the [index] function in
+          the proper [impl] block for [Vec].
        *)
 }
 
@@ -257,22 +271,35 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
       && match_trait_type ctx c pid trait_ref type_name
   | _ -> false
 
-and match_trait_type (ctx : ctx) (c : match_config) (pid : pattern)
-    (tr : T.trait_ref) (type_name : string) : bool =
-  (* We match the trait decl ref *)
-  (* We split the pattern between the trait decl ref and the associated type name *)
-  let pid, ptype_name = Collections.List.pop_last pid in
+and match_trait_ref (ctx : ctx) (c : match_config) (pid : pattern)
+    (tr : T.trait_ref) : bool =
   (* Lookup the trait declaration *)
   let d =
     T.TraitDeclId.Map.find tr.trait_decl_ref.trait_decl_id ctx.trait_decls
   in
   (* Match the trait decl ref *)
   match_name_with_generics ctx c pid d.name tr.trait_decl_ref.decl_generics
-  &&
-  (* Match the type name *)
-  match ptype_name with
-  | PIdent (ptype_name, []) -> ptype_name = type_name
-  | _ -> false
+
+and match_trait_ref_item (ctx : ctx) (c : match_config) (pid : pattern)
+    (tr : T.trait_ref) (item_name : string) (generics : T.generic_args) : bool =
+  if c.match_with_trait_decl_refs then
+    (* We match the trait decl ref *)
+    (* We split the pattern between the trait decl ref and the associated item name *)
+    let pid, pitem_name = Collections.List.pop_last pid in
+    (* Match the trait ref *)
+    match_trait_ref ctx c pid tr
+    &&
+    (* Match the item name *)
+    match pitem_name with
+    | PIdent (pitem_name, pgenerics) ->
+        pitem_name = item_name
+        && match_generic_args ctx c (mk_empty_maps ()) pgenerics generics
+    | _ -> false
+  else raise (Failure "Unimplemented")
+
+and match_trait_type (ctx : ctx) (c : match_config) (pid : pattern)
+    (tr : T.trait_ref) (type_name : string) : bool =
+  match_trait_ref_item ctx c pid tr type_name TypesUtils.empty_generic_args
 
 and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
     (pgenerics : generic_args) (generics : T.generic_args) : bool =
@@ -310,6 +337,64 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
       match_name ctx c pat d.name
   | _ -> false
 
+let assumed_fun_id_to_string (fid : E.assumed_fun_id) : string =
+  match fid with
+  | BoxNew -> "alloc::boxed::{Box<@T, alloc::alloc::Global>}::new"
+  | BoxFree -> "alloc::alloc::box_free"
+  | ArrayIndexShared -> "ArrayIndexShared"
+  | ArrayIndexMut -> "ArrayIndexMut"
+  | ArrayToSliceShared -> "ArrayToSliceShared"
+  | ArrayToSliceMut -> "ArrayToSliceMut"
+  | ArrayRepeat -> "ArrayRepeat"
+  | SliceIndexShared -> "SliceIndexShared"
+  | SliceIndexMut -> "SliceIndexMut"
+
+let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
+    : bool =
+  let to_name (s : string list) : T.name =
+    List.map (fun s -> T.PeIdent (s, T.Disambiguator.of_int 0)) s
+  in
+  match func.func with
+  | FunId (FAssumed fid) -> (
+      match fid with
+      | BoxNew -> (
+          (* Slightly annoying because of the impl block.
+             TODO: we could use the functions which check if two patterns
+             are convertible. But we would need to update them (convertible
+             is too strong, we simply need unification).
+          *)
+          match p with
+          | [
+           PIdent ("alloc", g0);
+           PIdent ("boxed", g1);
+           PImpl (EComp box_impl);
+           PIdent ("new", g2);
+          ] -> (
+              g0 = [] && g1 = []
+              && match_generic_args ctx c (mk_empty_maps ()) g2 func.generics
+              &&
+              match box_impl with
+              | [ PIdent ("Box", [ GExpr (EVar _) ]) ]
+              | [
+                  PIdent ("alloc", []);
+                  PIdent ("boxed", []);
+                  PIdent ("Box", [ GExpr (EVar _) ]);
+                ] ->
+                  true
+              | _ -> false)
+          | _ -> false)
+      | BoxFree ->
+          let name = to_name [ "alloc"; "alloc"; "box_free" ] in
+          match_name_with_generics ctx c p name func.generics
+      | _ ->
+          let name = assumed_fun_id_to_string fid in
+          match_name_with_generics ctx c p (to_name [ name ]) func.generics)
+  | FunId (FRegular fid) ->
+      let d = A.FunDeclId.Map.find fid ctx.fun_decls in
+      match_name_with_generics ctx c p d.name func.generics
+  | TraitMethod (tr, method_name, _) ->
+      match_trait_ref_item ctx c p tr method_name func.generics
+
 let mk_name_with_generics_matcher (ctx : ctx) (c : match_config) (pat : string)
     : T.name -> T.generic_args -> bool =
   let pat = parse_pattern pat in
@@ -331,6 +416,13 @@ type constraints = {
   tmap : var option T.TypeVarId.Map.t;
   cmap : var option T.ConstGenericVarId.Map.t;
 }
+
+let empty_constraints =
+  {
+    rmap = T.RegionId.Map.empty;
+    tmap = T.TypeVarId.Map.empty;
+    cmap = T.ConstGenericVarId.Map.empty;
+  }
 
 let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
   match rk with RMut -> RMut | RShared -> RShared
@@ -382,7 +474,10 @@ type target_kind =
   | TkPretty  (** Pretty printing *)
   | TkName  (** A name for code extraction (for instance for trait instances) *)
 
-type to_pat_config = { tgt : target_kind }
+type to_pat_config = {
+  tgt : target_kind;
+  use_trait_decl_refs : bool;  (** See {!match_with_trait_decl_refs} *)
+}
 
 let literal_type_to_pattern (c : to_pat_config) (lit : T.literal_type) : expr =
   let lit = literal_type_to_string lit in
@@ -449,15 +544,27 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
           ref_kind_to_pattern rk )
   | TTraitType (trait_ref, generics, type_name) ->
       assert (generics = TypesUtils.empty_generic_args);
-      let trait_decl_ref = trait_ref.trait_decl_ref in
-      let d =
-        T.TraitDeclId.Map.find trait_decl_ref.trait_decl_id ctx.trait_decls
+      let name =
+        trait_ref_item_with_generics_to_pattern ctx c m trait_ref type_name
+          TypesUtils.empty_generic_args
       in
-      let g = generic_args_to_pattern ctx c m trait_decl_ref.decl_generics in
-      let name = name_with_generic_args_to_pattern_aux ctx c d.name (Some g) in
-      let name = name @ [ PIdent (type_name, []) ] in
       EComp name
   | TNever | TRawPtr _ | TArrow _ -> raise (Failure "Unimplemented")
+
+and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
+    (m : constraints) (trait_ref : T.trait_ref) (item_name : string)
+    (item_generics : T.generic_args) : pattern =
+  if c.use_trait_decl_refs then
+    let trait_decl_ref = trait_ref.trait_decl_ref in
+    let d =
+      T.TraitDeclId.Map.find trait_decl_ref.trait_decl_id ctx.trait_decls
+    in
+    let g = generic_args_to_pattern ctx c m trait_decl_ref.decl_generics in
+    let name = name_with_generic_args_to_pattern_aux ctx c d.name (Some g) in
+    let item_generics = generic_args_to_pattern ctx c m item_generics in
+    let name = name @ [ PIdent (item_name, item_generics) ] in
+    name
+  else raise (Failure "TODO")
 
 and ty_to_pattern (ctx : ctx) (c : to_pat_config) (params : T.generic_params)
     (ty : T.ty) : expr =
@@ -497,12 +604,19 @@ let name_to_pattern (ctx : ctx) (c : to_pat_config) (n : T.name) : pattern =
   (* Convert the name to a pattern *)
   let pat = name_to_pattern_aux ctx c n in
   (* Sanity check: the name should match the pattern *)
-  assert (c.tgt = TkName || match_name ctx { map_vars_to_vars = true } pat n);
+  assert (
+    c.tgt = TkName
+    || match_name ctx
+         {
+           map_vars_to_vars = true;
+           match_with_trait_decl_refs = c.use_trait_decl_refs;
+         }
+         pat n);
   (* Return *)
   pat
 
-let name_with_generics_to_pattern (ctx : ctx) (c : to_pat_config) (n : T.name)
-    (params : T.generic_params) (args : T.generic_args) : pattern =
+let name_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
+    (params : T.generic_params) (n : T.name) (args : T.generic_args) : pattern =
   (* Convert the name to a pattern *)
   let pat =
     let m = compute_constraints_map params in
@@ -512,7 +626,64 @@ let name_with_generics_to_pattern (ctx : ctx) (c : to_pat_config) (n : T.name)
   (* Sanity check: the name should match the pattern *)
   assert (
     c.tgt = TkName
-    || match_name_with_generics ctx { map_vars_to_vars = true } pat n args);
+    || match_name_with_generics ctx
+         {
+           map_vars_to_vars = true;
+           match_with_trait_decl_refs = c.use_trait_decl_refs;
+         }
+         pat n args);
+  (* Return *)
+  pat
+
+let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
+    (params : T.generic_params) (func : E.fn_ptr) : pattern =
+  (* Convert the function pointer to a pattern *)
+  let m = compute_constraints_map params in
+  let args = generic_args_to_pattern ctx c m func.generics in
+  let pat =
+    match func.func with
+    | FunId (FAssumed fid) -> (
+        match fid with
+        | BoxNew ->
+            let var = Some (VarName "T") in
+            let box_impl =
+              [
+                PIdent ("alloc", []);
+                PIdent ("boxed", []);
+                PIdent ("Box", [ GExpr (EVar var) ]);
+              ]
+            in
+            [
+              PIdent ("alloc", []);
+              PIdent ("boxed", []);
+              PImpl (EComp box_impl);
+              PIdent ("new", args);
+            ]
+        | BoxFree ->
+            [
+              PIdent ("alloc", []);
+              PIdent ("alloc", []);
+              PIdent ("box_free", args);
+            ]
+        | _ ->
+            let fid = assumed_fun_id_to_string fid in
+            [ PIdent (fid, args) ])
+    | FunId (FRegular fid) ->
+        let d = A.FunDeclId.Map.find fid ctx.fun_decls in
+        name_with_generic_args_to_pattern_aux ctx c d.name (Some args)
+    | TraitMethod (tr, method_name, _) ->
+        trait_ref_item_with_generics_to_pattern ctx c m tr method_name
+          func.generics
+  in
+  (* Sanity check *)
+  assert (
+    c.tgt = TkName
+    || match_fn_ptr ctx
+         {
+           map_vars_to_vars = true;
+           match_with_trait_decl_refs = c.use_trait_decl_refs;
+         }
+         pat func);
   (* Return *)
   pat
 
