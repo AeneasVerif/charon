@@ -67,7 +67,9 @@ pub struct Statement {
     pub content: RawStatement,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(
+    Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, VariantName, VariantIndexArity,
+)]
 pub enum Switch {
     /// Gives the `if` block and the `else` block
     If(Operand, Box<Statement>, Box<Statement>),

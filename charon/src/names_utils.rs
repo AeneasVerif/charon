@@ -203,15 +203,13 @@ impl Name {
     }
 }
 
-// TODO: is that really needed?
+// Implementating the serializer for Name so as to ignore the wrapper
 impl Serialize for Name {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        use crate::common::*;
-        let name = VecSerializer::new(&self.name);
-        name.serialize(serializer)
+        self.name.serialize(serializer)
     }
 }
 

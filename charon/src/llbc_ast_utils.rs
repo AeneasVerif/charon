@@ -13,8 +13,6 @@ use crate::types::*;
 pub use crate::ullbc_ast::fmt_call;
 use crate::values::*;
 use macros::make_generic_in_borrows;
-use serde::ser::SerializeTupleVariant;
-use serde::{Serialize, Serializer};
 use take_mut::take;
 
 /// Goes from e.g. `(A; B; C) ; D` to `(A; (B; (C; D)))`.
@@ -102,52 +100,6 @@ impl Switch {
                 out
             }
         }
-    }
-}
-
-impl Serialize for Switch {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let enum_name = "Switch";
-        let variant_name = self.variant_name();
-        let (variant_index, variant_arity) = self.variant_index_arity();
-        let mut vs = serializer.serialize_tuple_variant(
-            enum_name,
-            variant_index,
-            variant_name,
-            variant_arity,
-        )?;
-        match self {
-            Switch::If(op, e1, e2) => {
-                vs.serialize_field(op)?;
-                vs.serialize_field(e1)?;
-                vs.serialize_field(e2)?;
-            }
-            Switch::SwitchInt(op, int_ty, targets, otherwise) => {
-                vs.serialize_field(op)?;
-                vs.serialize_field(int_ty)?;
-                let targets: Vec<(VecSerializer<ScalarValue>, &Statement)> = targets
-                    .iter()
-                    .map(|(values, st)| (VecSerializer::new(values), st))
-                    .collect();
-                let targets = VecSerializer::new(&targets);
-                vs.serialize_field(&targets)?;
-                vs.serialize_field(otherwise)?;
-            }
-            Switch::Match(p, targets, otherwise) => {
-                vs.serialize_field(p)?;
-                let targets: Vec<(VecSerializer<VariantId::Id>, &Statement)> = targets
-                    .iter()
-                    .map(|(values, st)| (VecSerializer::new(values), st))
-                    .collect();
-                let targets = VecSerializer::new(&targets);
-                vs.serialize_field(&targets)?;
-                vs.serialize_field(otherwise)?;
-            }
-        }
-        vs.end()
     }
 }
 

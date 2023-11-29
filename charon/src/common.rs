@@ -1,10 +1,4 @@
-#![allow(dead_code)]
-
-use crate::meta;
 use im::Vector;
-use rustc_error_messages::MultiSpan;
-use rustc_errors::DiagnosticId;
-use rustc_session::Session;
 use serde::{Serialize, Serializer};
 use std::iter::FromIterator;
 
@@ -15,40 +9,6 @@ pub static TAB_INCR: &str = "    ";
 pub struct Error {
     pub span: rustc_span::Span,
     pub msg: String,
-}
-
-/// We use both `ErrorEmitter` and the logger to report errors and warnings.
-/// Those two ways of reporting information don't target the same usage and
-/// the same users.
-/// - `ErrorEmitter` allows us to report a limited number of messages to
-///   the user, with the same formatting as the compiler messages.
-/// - On the other hand, the logger allows us to report and filter a big number
-///   of detailed messages, for debugging purposes.
-/// TODO: remove?
-pub trait ErrorEmitter {
-    fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &'static str);
-
-    fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &'static str);
-}
-
-impl ErrorEmitter for Session {
-    fn span_err<S: Into<MultiSpan>>(&self, s: S, msg: &'static str) {
-        self.span_err_with_code(s, msg, DiagnosticId::Error(String::from("Aeneas")));
-    }
-
-    fn span_warn<S: Into<MultiSpan>>(&self, s: S, msg: &'static str) {
-        self.span_warn_with_code(s, msg, DiagnosticId::Error(String::from("Aeneas")));
-    }
-}
-
-pub fn span_err(sess: &Session, span: rustc_span::Span, msg: &'static str) {
-    log::error!("{}:\n{}", meta::span_to_string(sess, span), msg);
-    sess.span_err(span, msg);
-}
-
-pub fn span_warn(sess: &Session, span: rustc_span::Span, msg: &'static str) {
-    log::warn!("{}:\n{}", meta::span_to_string(sess, span), msg);
-    sess.span_warn(span, msg);
 }
 
 /// Custom function to pretty-print elements from an iterator
@@ -104,15 +64,6 @@ pub fn write_vec<T>(
     v: &[T],
 ) -> std::result::Result<(), std::fmt::Error> {
     write_iterator(write_t, f, v.iter())
-}
-
-/// Assertion which doesn't panick
-pub fn assert(x: bool) -> Result<(), ()> {
-    if x {
-        Ok(())
-    } else {
-        Err(())
-    }
 }
 
 /// This macro computes the name of the function in which it is called.
@@ -177,81 +128,4 @@ macro_rules! info {
     () => {{
         log::info!("[{}]", function_name!().yellow())
     }};
-}
-
-/// Serialize a vector
-pub fn serialize_vec<T: Serialize, S: Serializer>(
-    v: &Vec<T>,
-    serializer: S,
-) -> std::result::Result<S::Ok, S::Error> {
-    use serde::ser::SerializeSeq;
-    // Note that we don't write the sequence length in the json file: it causes
-    // errors with OCaml's Yojson (because then we mix named fields with unnamed
-    // fields).
-    let mut seq = serializer.serialize_seq(Some(v.len()))?;
-    for e in v {
-        seq.serialize_element(e)?;
-    }
-    seq.end()
-}
-
-/// Serialize a collection by using an iterator on this collection
-pub fn serialize_collection<T: Serialize, I: IntoIterator<Item = T>, S: Serializer>(
-    it: I,
-    serializer: S,
-) -> std::result::Result<S::Ok, S::Error> {
-    // For simplicity, we convert to a vec (this gives us the length)
-    let v = Vec::from_iter(it);
-    serialize_vec(&v, serializer)
-}
-
-pub fn serialize_vector<T: Clone + Serialize, S: Serializer>(
-    v: &Vector<T>,
-    serializer: S,
-) -> std::result::Result<S::Ok, S::Error> {
-    serialize_collection(v.iter(), serializer)
-}
-
-/// Wrapper to serialize std::vec::Vec
-///
-/// We need this because serialization is implemented via the trait system.
-pub struct VecSerializer<'a, T> {
-    pub vector: &'a Vec<T>,
-}
-
-impl<'a, T> VecSerializer<'a, T> {
-    pub fn new(vector: &'a Vec<T>) -> Self {
-        VecSerializer { vector }
-    }
-}
-
-impl<'a, T: Serialize> Serialize for VecSerializer<'a, T> {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serialize_vec(self.vector, serializer)
-    }
-}
-
-/// Wrapper to serialize vectors from im::Vector.
-///
-/// We need this because serialization is implemented via the trait system.
-pub struct VectorSerializer<'a, T: Clone> {
-    pub vector: &'a Vector<T>,
-}
-
-impl<'a, T: Clone> VectorSerializer<'a, T> {
-    pub fn new(vector: &'a Vector<T>) -> Self {
-        VectorSerializer { vector }
-    }
-}
-
-impl<'a, T: Clone + Serialize> Serialize for VectorSerializer<'a, T> {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serialize_vector(self.vector, serializer)
-    }
 }

@@ -10,29 +10,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
 
-/// Serialization wrapper for vectors
-pub struct VecSW<'a, T> {
-    pub vector: &'a Vec<T>,
-}
-
-impl<'a, T> VecSW<'a, T> {
-    pub fn new(vector: &'a Vec<T>) -> Self {
-        VecSW { vector }
-    }
-}
-
-impl<'a, T: Serialize> Serialize for VecSW<'a, T> {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serialize_vec(self.vector, serializer)
-    }
-}
-
-/// An auxiliary type used for serialization of declaration groups
-type DeclarationsSerializer<'a> = VecSW<'a, DeclarationGroup>;
-
 /// A generic crate, which implements the [Serialize] trait
 #[derive(Serialize)]
 #[serde(rename = "Crate")]
@@ -41,8 +18,8 @@ struct GCrateSerializer<'a, FD, GD> {
     /// The `id_to_file` map is serialized as a vector.
     /// We use this map for the spans: the spans only store the file ids, not
     /// the file names, in order to save space.
-    id_to_file: VecSW<'a, (FileId::Id, FileName)>,
-    declarations: DeclarationsSerializer<'a>,
+    id_to_file: &'a Vec<(FileId::Id, FileName)>,
+    declarations: &'a Vec<DeclarationGroup>,
     types: Vec<TypeDecl>,
     functions: Vec<FD>,
     globals: Vec<GD>,
@@ -82,7 +59,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
         .into_iter()
         .map(|id| (id, id_to_file.get(&id).unwrap().clone()))
         .collect();
-    let id_to_file = VecSW::new(&id_to_file);
+    let id_to_file = &id_to_file;
 
     // Serialize
     // Note that we replace the maps with vectors (the declarations contain
@@ -95,7 +72,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     let crate_serializer = GCrateSerializer {
         name: crate_name,
         id_to_file,
-        declarations: VecSW::new(ordered_decls),
+        declarations: ordered_decls,
         types,
         functions,
         globals,
