@@ -168,7 +168,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
     // - compute the order in which to extract the definitions
     // - find the recursive definitions
     // - group the mutually recursive definitions
-    let ordered_decls = reorder_decls::reorder_declarations(&ctx)?;
+    let ordered_decls = reorder_decls::reorder_declarations(&ctx);
 
     //
     // =================

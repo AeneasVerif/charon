@@ -456,7 +456,7 @@ impl Deps {
     }
 }
 
-pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups, ()> {
+pub fn reorder_declarations(ctx: &TransCtx) -> DeclarationsGroups {
     trace!();
 
     // Step 1: explore the declarations to build the graph
@@ -693,7 +693,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups, ()> {
 
     trace!("{:?}", reordered_decls);
 
-    Ok(reordered_decls)
+    reordered_decls
 }
 
 #[cfg(test)]
