@@ -18,6 +18,7 @@
 #![recursion_limit = "256"]
 #![feature(trait_alias)]
 #![feature(let_chains)]
+#![feature(iterator_try_collect)]
 
 extern crate hashlink;
 extern crate im;
@@ -71,6 +72,7 @@ pub mod ops_to_function_calls;
 pub mod reconstruct_asserts;
 pub mod remove_drop_never;
 pub mod remove_dynamic_checks;
+pub mod remove_nops;
 pub mod remove_read_discriminant;
 pub mod remove_unused_locals;
 pub mod reorder_decls;

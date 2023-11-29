@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+use crate::common::*;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -9,24 +9,19 @@ use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    /// Remark: this **doesn't** register the def id (on purpose)
-    /// TODO: directly use the
-    pub(crate) fn translate_trait_item_name(&mut self, rust_id: DefId) -> TraitItemName {
-        self.t_ctx.translate_trait_item_name(rust_id)
-    }
-
-    fn translate_ty_from_trait_item(&mut self, item: &rustc_middle::ty::AssocItem) -> Ty {
+    fn translate_ty_from_trait_item(
+        &mut self,
+        item: &rustc_middle::ty::AssocItem,
+    ) -> Result<Ty, Error> {
         let erase_regions = false;
+        let tcx = self.t_ctx.tcx;
         self.translate_ty(
+            tcx.def_span(item.def_id),
             erase_regions,
-            &self
-                .t_ctx
-                .tcx
-                .type_of(item.def_id)
+            &tcx.type_of(item.def_id)
                 .subst_identity()
                 .sinto(&self.hax_state),
         )
-        .unwrap()
     }
 
     /// Helper for [translate_trait_impl].
@@ -37,7 +32,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_impl_def_id: DefId,
         rust_impl_trait_ref: &rustc_middle::ty::TraitRef<'tcx>,
         decl_item: &rustc_middle::ty::AssocItem,
-    ) -> Vec<TraitRef> {
+    ) -> Result<Vec<TraitRef>, Error> {
         trace!(
             "- trait_impl_def_id: {:?}\n- rust_impl_trait_ref: {:?}\n- decl_item: {:?}",
             trait_impl_def_id,
@@ -46,6 +41,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
 
         let tcx = self.t_ctx.tcx;
+        let span = tcx.def_span(trait_impl_def_id);
 
         // Lookup the trait clauses and substitute - TODO: not sure about the substitution
         let subst = rust_impl_trait_ref.substs;
@@ -63,7 +59,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             {
                 let trait_ref = rustc_middle::ty::Binder::dummy(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
-                let trait_ref = self.translate_trait_impl_source(erase_regions, &trait_ref);
+                let trait_ref =
+                    self.translate_trait_impl_source(span, erase_regions, &trait_ref)?;
                 if let Some(trait_ref) = trait_ref {
                     trait_refs.push(trait_ref);
                 }
@@ -71,17 +68,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Return
-        trait_refs
+        Ok(trait_refs)
     }
 
     fn translate_const_from_trait_item(
         &mut self,
         item: &rustc_middle::ty::AssocItem,
-    ) -> (TraitItemName, (Ty, GlobalDeclId::Id)) {
-        let ty = self.translate_ty_from_trait_item(item);
+    ) -> Result<(TraitItemName, (Ty, GlobalDeclId::Id)), Error> {
+        let ty = self.translate_ty_from_trait_item(item)?;
         let name = TraitItemName(item.name.to_string());
         let id = self.translate_global_decl_id(item.def_id);
-        (name, (ty, id))
+        Ok((name, (ty, id)))
     }
 
     /// Add the self trait clause, for itself (if it is a trait declaration) or
@@ -91,7 +88,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// an id which is not the id of the item under scrutinee (if the current
     /// id is for an item trait, we need to lookup the trait itself and give
     /// its id).
-    pub(crate) fn add_self_trait_clause(&mut self, def_id: DefId) {
+    pub(crate) fn add_self_trait_clause(&mut self, def_id: DefId) -> Result<(), Error> {
         trace!("id: {:?}", def_id);
         // The self trait clause is actually the *last* trait predicate given by
         // [TyCtxt::predicates_of].
@@ -134,15 +131,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             TraitInstanceId::SelfId
         });
         let self_clause = self.with_local_trait_clauses(self_instance_id_gen, &mut |s| {
-            s.translate_trait_clause(&self_pred, Some(&span))
-        });
+            s.translate_trait_clause(&span, &self_pred)
+        })?;
         trace!("self clause: {}", self_clause.unwrap().fmt_with_ctx(self));
+        Ok(())
     }
 
     /// Similar to [add_self_trait_clause] but for trait implementations.
     ///
     /// We call this when translating trait impls and trait impl items.
-    pub(crate) fn add_trait_impl_self_trait_clause(&mut self, impl_id: TraitImplId::Id) {
+    pub(crate) fn add_trait_impl_self_trait_clause(
+        &mut self,
+        impl_id: TraitImplId::Id,
+    ) -> Result<(), Error> {
         let def_id = *self.t_ctx.trait_impl_id_to_def_id.get(&impl_id).unwrap();
         trace!("id: {:?}", def_id);
 
@@ -164,14 +165,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Save the self clause (and its parent/item clauses)
         let mut initialized = false;
+        let span = tcx.def_span(def_id).sinto(&self.t_ctx.hax_state);
         let _ = self.with_local_trait_clauses(
             Box::new(move || {
                 assert!(!initialized);
                 initialized = true;
                 TraitInstanceId::SelfId
             }),
-            &mut |s| s.translate_trait_clause(&trait_pred, None),
-        );
+            &mut |s| s.translate_trait_clause(&span, &trait_pred),
+        )?;
+        Ok(())
     }
 
     pub(crate) fn with_parent_trait_clauses<T>(
@@ -222,13 +225,23 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) {
+        // TODO: for now, if there is an error while translating the parameters/
+        // predicates of the declaration, we ignore it altogether, while we should
+        // save somewhere that we failed to extract it.
+        if self.translate_trait_decl_aux(rust_id).is_err() {
+            // TODO
+        }
+    }
+
+    /// Auxliary helper to properly handle errors, see [translate_trait_decl].
+    fn translate_trait_decl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
 
         let def_id = self.translate_trait_decl_id(rust_id);
         // We may need to ignore the trait (happens if the trait is a marker
         // trait like [core::marker::Sized]
         if def_id.is_none() {
-            return;
+            return Ok(());
         }
         let def_id = def_id.unwrap();
 
@@ -241,24 +254,24 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
 
         // Translate the generic
-        bt_ctx.translate_generic_params(rust_id);
+        bt_ctx.translate_generic_params(rust_id)?;
 
         // Add the trait clauses
         bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
             // Add the self trait clause
-            bt_ctx.add_self_trait_clause(rust_id);
+            bt_ctx.add_self_trait_clause(rust_id)?;
 
             // Translate the predicates.
             bt_ctx.with_parent_trait_clauses(TraitInstanceId::SelfId, def_id, &mut |s| {
                 s.translate_predicates_of(None, rust_id)
-            });
-        });
+            })
+        })?;
 
         // TODO: move this below (we don't need to perform this function call exactly here)
         let preds = bt_ctx.get_predicates();
 
         // Explore the associated items
-        // We do something subtle here: TODO
+        // We do something subtle here: TODO: explain
         let tcx = bt_ctx.t_ctx.tcx;
         let mut consts = Vec::new();
         let mut types = Vec::new();
@@ -293,10 +306,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // check whether the constant has a default value.
                     trace!("id: {:?}\n- item: {:?}", rust_id, item);
                     let c = if has_default_value {
-                        let (name, (ty, id)) = bt_ctx.translate_const_from_trait_item(item);
+                        let (name, (ty, id)) = bt_ctx.translate_const_from_trait_item(item)?;
                         (name, (ty, Some(id)))
                     } else {
-                        let ty = bt_ctx.translate_ty_from_trait_item(item);
+                        let ty = bt_ctx.translate_ty_from_trait_item(item)?;
                         let name = TraitItemName(item.name.to_string());
                         (name, (ty, None))
                     };
@@ -320,7 +333,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                             def_id,
                             name.clone(),
                             &mut |s| s.translate_predicates_vec(&bounds),
-                        );
+                        )?;
                     }
 
                     // Retrieve the trait clauses which are specific to this item
@@ -348,7 +361,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         .collect();
 
                     let ty = if has_default_value {
-                        Some(bt_ctx.translate_ty_from_trait_item(item))
+                        Some(bt_ctx.translate_ty_from_trait_item(item)?)
                     } else {
                         None
                     };
@@ -403,21 +416,34 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             required_methods,
             provided_methods,
         };
-        self.trait_decls.insert(def_id, trait_decl)
+        self.trait_decls.insert(def_id, trait_decl);
+
+        Ok(())
     }
 
     pub(crate) fn translate_trait_impl(&mut self, rust_id: DefId) {
+        // TODO: for now, if there is an error while translating the parameters/
+        // predicates of the declaration, we ignore it altogether, while we should
+        // save somewhere that we failed to extract it.
+        if self.translate_trait_impl_aux(rust_id).is_err() {
+            // TODO
+        }
+    }
+
+    /// Auxliary helper to properly handle errors, see [translate_impl_decl].
+    fn translate_trait_impl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
 
         let def_id = self.translate_trait_impl_id(rust_id);
         // We may need to ignore the trait
         if def_id.is_none() {
-            return;
+            return Ok(());
         }
         let def_id = def_id.unwrap();
         trace!("Trait impl id:\n{:?}", def_id);
 
         let tcx = self.tcx;
+        let span = tcx.def_span(rust_id);
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         let name = bt_ctx
@@ -426,19 +452,21 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let erase_regions = false;
 
         // Translate the generics
-        bt_ctx.translate_generic_params(rust_id);
+        bt_ctx.translate_generic_params(rust_id)?;
 
         // Add the trait self clauses
         bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
             // Translate the predicates
-            bt_ctx.translate_predicates_of(None, rust_id);
+            bt_ctx.translate_predicates_of(None, rust_id)?;
 
             // Add the self trait clause
-            bt_ctx.add_trait_impl_self_trait_clause(def_id);
+            bt_ctx.add_trait_impl_self_trait_clause(def_id)?;
 
             //
-            bt_ctx.solve_trait_obligations_in_trait_clauses();
-        });
+            bt_ctx.solve_trait_obligations_in_trait_clauses(span);
+
+            Ok(())
+        })?;
 
         // Retrieve the information about the implemented trait.
         let (
@@ -458,9 +486,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             let rustc_middle::ty::ImplSubject::Trait(rust_trait_ref) =
                     tcx.impl_subject(rust_id).subst_identity() else { unreachable!() };
             let trait_ref = rust_trait_ref.sinto(&bt_ctx.hax_state);
-            let (regions, types, const_generics) = bt_ctx
-                .translate_substs(erase_regions, None, &trait_ref.generic_args)
-                .unwrap();
+            let (regions, types, const_generics) =
+                bt_ctx.translate_substs(span, erase_regions, None, &trait_ref.generic_args)?;
 
             let parent_trait_refs = hax::solve_item_traits(
                 &bt_ctx.hax_state,
@@ -469,7 +496,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 rust_trait_ref.substs,
             );
             let parent_trait_refs: Vec<TraitRef> =
-                bt_ctx.translate_trait_impl_sources(erase_regions, &parent_trait_refs);
+                bt_ctx.translate_trait_impl_sources(span, erase_regions, &parent_trait_refs)?;
             let parent_trait_refs: TraitClauseId::Vector<TraitRef> =
                 TraitClauseId::Vector::from(parent_trait_refs);
 
@@ -511,7 +538,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // We do something subtle here: TODO
         let tcx = bt_ctx.t_ctx.tcx;
         let mut consts = HashMap::new();
-        let mut types = HashMap::new();
+        let mut types: HashMap<TraitItemName, Ty> = HashMap::new();
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
 
@@ -532,12 +559,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     }
                 }
                 AssocKind::Const => {
-                    let (name, c) = bt_ctx.translate_const_from_trait_item(item);
+                    let (name, c) = bt_ctx.translate_const_from_trait_item(item)?;
                     consts.insert(name, c);
                 }
                 AssocKind::Type => {
                     let name = TraitItemName(item.name.to_string());
-                    let ty = bt_ctx.translate_ty_from_trait_item(item);
+                    let ty = bt_ctx.translate_ty_from_trait_item(item)?;
                     types.insert(name, ty);
                 }
             }
@@ -549,7 +576,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let partial_consts = consts;
         let partial_types = types;
         let mut consts = Vec::new();
-        let mut types = Vec::new();
+        let mut types: Vec<(TraitItemName, (Vec<TraitRef>, Ty))> = Vec::new();
         for item in tcx
             .associated_items(implemented_trait_rust_id)
             .in_definition_order()
@@ -564,7 +591,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         None => {
                             // The item is not defined in the trait impl:
                             // the trait decl *must* define a default value.
-                            bt_ctx.translate_const_from_trait_item(item).1
+                            bt_ctx.translate_const_from_trait_item(item)?.1
                         }
                     };
                     consts.push((name, c));
@@ -578,7 +605,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                             // The item is not defined in the trait impl:
                             // the trait decl *must* define a default value.
                             // TODO: should we normalize the type?
-                            bt_ctx.translate_ty_from_trait_item(item)
+                            bt_ctx.translate_ty_from_trait_item(item)?
                         }
                     };
 
@@ -587,7 +614,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         rust_id,
                         &rust_implemented_trait_ref,
                         item,
-                    );
+                    )?;
 
                     types.push((name, (trait_refs, ty)));
                 }
@@ -608,6 +635,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             required_methods,
             provided_methods,
         };
-        self.trait_impls.insert(def_id, trait_impl)
+        self.trait_impls.insert(def_id, trait_impl);
+
+        Ok(())
     }
 }

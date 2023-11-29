@@ -1,6 +1,4 @@
 //! This file groups everything which is linked to implementations about [crate::expressions]
-#![allow(dead_code)]
-
 use crate::expressions::*;
 use crate::formatter::Formatter;
 use crate::gast::{AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitItemName};

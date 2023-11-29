@@ -6,7 +6,6 @@
 //! Also note that we completely break the definitions Statement and Terminator
 //! from MIR to use Statement only.
 
-#![allow(dead_code)]
 pub use crate::gast::*;
 pub use crate::llbc_ast_utils::*;
 use crate::meta::Meta;
@@ -67,7 +66,9 @@ pub struct Statement {
     pub content: RawStatement,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(
+    Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, VariantName, VariantIndexArity,
+)]
 pub enum Switch {
     /// Gives the `if` block and the `else` block
     If(Operand, Box<Statement>, Box<Statement>),
@@ -106,6 +107,3 @@ pub type FunDecls = FunDeclId::Map<FunDecl>;
 
 pub type GlobalDecl = GGlobalDecl<Statement>;
 pub type GlobalDecls = GlobalDeclId::Map<GlobalDecl>;
-
-pub type TraitDecls = TraitDeclId::Map<TraitDecl>;
-pub type TraitImpls = TraitImplId::Map<TraitImpl>;

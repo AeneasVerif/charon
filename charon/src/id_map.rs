@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 //! A map with custom index types.
 //!
 //! This data-structure is mostly meant to be used with the index types defined
@@ -17,6 +16,7 @@ pub struct Map<Id, T> {
 }
 
 impl<Id: std::cmp::Ord, T> Map<Id, T> {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Map {
             map: std::collections::BTreeMap::new(),
@@ -36,7 +36,7 @@ impl<Id: std::cmp::Ord, T> Map<Id, T> {
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &T> {
-        self.map.iter().map(|(_, x)| x)
+        self.map.values()
     }
 
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {

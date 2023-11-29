@@ -203,7 +203,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 pub fn translate<'tcx, 'ctx>(
     crate_info: CrateInfo,
     options: &CliOpts,
-    sess: &'ctx Session,
+    session: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
 ) -> TransCtx<'tcx, 'ctx> {
@@ -214,12 +214,13 @@ pub fn translate<'tcx, 'ctx>(
         },
     );
     let mut ctx = TransCtx {
-        sess,
+        session,
         tcx,
         hax_state,
         mir_level,
         crate_info,
-        continue_on_failure: options.continue_on_failure,
+        continue_on_failure: !options.panic_on_error,
+        error_count: 0,
         no_code_duplication: options.no_code_duplication,
         all_ids: LinkedHashSet::new(),
         stack: BTreeSet::new(),

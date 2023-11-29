@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::cli_options;
 use crate::export;
 use crate::get_mir::MirLevel;
@@ -9,6 +7,7 @@ use crate::ops_to_function_calls;
 use crate::reconstruct_asserts;
 use crate::remove_drop_never;
 use crate::remove_dynamic_checks;
+use crate::remove_nops;
 use crate::remove_read_discriminant;
 use crate::remove_unused_locals;
 use crate::reorder_decls;
@@ -28,6 +27,8 @@ use std::ops::Deref;
 /// The callbacks for Charon
 pub struct CharonCallbacks {
     pub options: cli_options::CliOpts,
+    /// This is to be filled during the extraction
+    pub error_count: usize,
 }
 
 impl Callbacks for CharonCallbacks {
@@ -114,7 +115,8 @@ pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize>
 /// Translate a crate to LLBC (Low-Level Borrow Calculus).
 ///
 /// This function is a callback function for the Rust compiler.
-pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Result<(), ()> {
+#[allow(clippy::result_unit_err)]
+pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) -> Result<(), ()> {
     trace!();
     let options = &internal.options;
 
@@ -166,7 +168,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     // - compute the order in which to extract the definitions
     // - find the recursive definitions
     // - group the mutually recursive definitions
-    let ordered_decls = reorder_decls::reorder_declarations(&ctx)?;
+    let ordered_decls = reorder_decls::reorder_declarations(&ctx);
 
     //
     // =================
@@ -188,14 +190,11 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
     if options.ullbc {
         // # Extract the files
         export::export_ullbc(
+            &ctx,
             crate_name,
-            &ctx.id_to_file,
             &ordered_decls,
-            &ctx.type_defs,
             &ctx.fun_defs,
             &ctx.global_defs,
-            &ctx.trait_decls,
-            &ctx.trait_impls,
             &options.dest_dir,
         )?;
     } else {
@@ -265,6 +264,10 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
         // check that there are no remaining locals with type `Never`.
         remove_unused_locals::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
+        // # Micro-pass (not necessary, but good for cleaning): remove the
+        // useless no-ops.
+        remove_nops::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+
         trace!("# Final LLBC:\n");
         for (_, def) in &llbc_funs {
             trace!("#{}\n", ctx.format_object(def));
@@ -282,18 +285,18 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &CharonCallbacks) -> Res
 
         // # Final step: generate the files.
         export::export_llbc(
+            &ctx,
             crate_name,
-            &ctx.id_to_file,
             &ordered_decls,
-            &ctx.type_defs,
             &llbc_funs,
             &llbc_globals,
-            &ctx.trait_decls,
-            &ctx.trait_impls,
             &options.dest_dir,
         )?;
     }
     trace!("Done");
+
+    // Update the error count
+    internal.error_count = ctx.error_count;
 
     Ok(())
 }

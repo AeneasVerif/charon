@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 use crate::common::*;
 use crate::expressions::*;
 use crate::gast::*;
@@ -293,19 +292,23 @@ impl Deps {
                 // TODO
             }
             Fun(id) => {
-                // Lookup the function declaration
-                let decl = ctx.fun_defs.get(id).unwrap();
-                match &decl.kind {
-                    FunKind::TraitMethodImpl {
+                // Lookup the function declaration.
+                //
+                // The declaration may not be present if we encountered errors.
+                if let Some(decl) = ctx.fun_defs.get(id) {
+                    if let FunKind::TraitMethodImpl {
                         impl_id,
                         trait_id: _,
                         method_name: _,
                         provided: _,
-                    } => {
+                    } = &decl.kind
+                    {
                         // Register the trait decl id
                         self.impl_trait_id = Some(*impl_id)
                     }
-                    _ => (),
+                } else {
+                    // Sanity check
+                    assert!(ctx.error_count > 0);
                 }
             }
         }
@@ -453,7 +456,7 @@ impl Deps {
     }
 }
 
-pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
+pub fn reorder_declarations(ctx: &TransCtx) -> DeclarationsGroups {
     trace!();
 
     // Step 1: explore the declarations to build the graph
@@ -462,127 +465,143 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
         graph.set_current_id(ctx, *id);
         match id {
             AnyTransId::Type(id) => {
-                let d = ctx.type_defs.get(*id).unwrap();
-                use TypeDeclKind::*;
+                if let Some(d) = ctx.type_defs.get(*id) {
+                    use TypeDeclKind::*;
 
-                // Visit the generics and the predicates
-                graph.visit_generics_and_preds(&d.generics, &d.preds);
+                    // Visit the generics and the predicates
+                    graph.visit_generics_and_preds(&d.generics, &d.preds);
 
-                // Visit the body
-                match &d.kind {
-                    Struct(fields) => {
-                        for f in fields {
-                            graph.visit_ty(&f.ty)
-                        }
-                    }
-                    Enum(vl) => {
-                        for v in vl {
-                            for f in &v.fields {
-                                graph.visit_ty(&f.ty);
+                    // Visit the body
+                    match &d.kind {
+                        Struct(fields) => {
+                            for f in fields {
+                                graph.visit_ty(&f.ty)
                             }
                         }
+                        Enum(vl) => {
+                            for v in vl {
+                                for f in &v.fields {
+                                    graph.visit_ty(&f.ty);
+                                }
+                            }
+                        }
+                        Opaque | Error(_) => (),
                     }
-                    Opaque => (),
+                } else {
+                    // There may have been errors
+                    assert!(ctx.error_count > 0);
                 }
             }
             AnyTransId::Fun(id) => {
-                let d = ctx.fun_defs.get(*id).unwrap();
-
-                // Explore the signature
-                let sig = &d.signature;
-                graph.visit_generics_and_preds(&sig.generics, &sig.preds);
-                for ty in &sig.inputs {
-                    graph.visit_ty(ty);
-                }
-                graph.visit_ty(&sig.output);
-
-                // Explore the body
-                graph.visit_body(&d.body);
-            }
-            AnyTransId::Global(id) => {
-                let d = ctx.global_defs.get(*id).unwrap();
-
-                // Explore the body
-                graph.visit_body(&d.body);
-            }
-            AnyTransId::TraitDecl(id) => {
-                let d = ctx.trait_decls.get(*id).unwrap();
-
-                // Visit the generics and the predicates
-                graph.visit_generics_and_preds(&d.generics, &d.preds);
-
-                // Visit the parent clauses
-                for clause in &d.parent_clauses {
-                    graph.visit_trait_clause(clause);
-                }
-
-                // Visit the items
-                for (_, (ty, c)) in &d.consts {
-                    graph.visit_ty(ty);
-                    if let Some(id) = c {
-                        graph.visit_global_decl_id(id);
-                    }
-                }
-
-                for (_, (clauses, ty)) in &d.types {
-                    for c in clauses {
-                        graph.visit_trait_clause(c);
-                    }
-                    if let Some(ty) = ty {
+                if let Some(d) = ctx.fun_defs.get(*id) {
+                    // Explore the signature
+                    let sig = &d.signature;
+                    graph.visit_generics_and_preds(&sig.generics, &sig.preds);
+                    for ty in &sig.inputs {
                         graph.visit_ty(ty);
                     }
-                }
+                    graph.visit_ty(&sig.output);
 
-                let method_ids = d.required_methods.iter().map(|(_, id)| *id).chain(
-                    d.provided_methods
-                        .iter()
-                        .filter_map(|(_, id)| id.as_ref().copied()),
-                );
-                for id in method_ids {
-                    // Important: we must ignore the function id, because
-                    // otherwise in the presence of associated types we may
-                    // get a mutual recursion between the function and the
-                    // trait.
-                    // Ex:
-                    // ```
-                    // trait Trait {
-                    //   type X;
-                    //   fn f(x : Trait::X);
-                    // }
-                    // ```
-                    graph.visit_fun_signature_from_trait(ctx, id)
+                    // Explore the body
+                    graph.visit_body(&d.body);
+                } else {
+                    // There may have been errors
+                    assert!(ctx.error_count > 0);
+                }
+            }
+            AnyTransId::Global(id) => {
+                if let Some(d) = ctx.global_defs.get(*id) {
+                    // Explore the body
+                    graph.visit_body(&d.body);
+                } else {
+                    // There may have been errors
+                    assert!(ctx.error_count > 0);
+                }
+            }
+            AnyTransId::TraitDecl(id) => {
+                if let Some(d) = ctx.trait_decls.get(*id) {
+                    // Visit the generics and the predicates
+                    graph.visit_generics_and_preds(&d.generics, &d.preds);
+
+                    // Visit the parent clauses
+                    for clause in &d.parent_clauses {
+                        graph.visit_trait_clause(clause);
+                    }
+
+                    // Visit the items
+                    for (_, (ty, c)) in &d.consts {
+                        graph.visit_ty(ty);
+                        if let Some(id) = c {
+                            graph.visit_global_decl_id(id);
+                        }
+                    }
+
+                    for (_, (clauses, ty)) in &d.types {
+                        for c in clauses {
+                            graph.visit_trait_clause(c);
+                        }
+                        if let Some(ty) = ty {
+                            graph.visit_ty(ty);
+                        }
+                    }
+
+                    let method_ids = d.required_methods.iter().map(|(_, id)| *id).chain(
+                        d.provided_methods
+                            .iter()
+                            .filter_map(|(_, id)| id.as_ref().copied()),
+                    );
+                    for id in method_ids {
+                        // Important: we must ignore the function id, because
+                        // otherwise in the presence of associated types we may
+                        // get a mutual recursion between the function and the
+                        // trait.
+                        // Ex:
+                        // ```
+                        // trait Trait {
+                        //   type X;
+                        //   fn f(x : Trait::X);
+                        // }
+                        // ```
+                        graph.visit_fun_signature_from_trait(ctx, id)
+                    }
+                } else {
+                    // There may have been errors
+                    assert!(ctx.error_count > 0);
                 }
             }
             AnyTransId::TraitImpl(id) => {
-                let d = ctx.trait_impls.get(*id).unwrap();
+                if let Some(d) = ctx.trait_impls.get(*id) {
+                    // Visit the generics and the predicates
+                    graph.visit_generics_and_preds(&d.generics, &d.preds);
 
-                // Visit the generics and the predicates
-                graph.visit_generics_and_preds(&d.generics, &d.preds);
+                    // Visit the implemented trait
+                    graph.visit_trait_decl_id(&d.impl_trait.trait_id);
+                    graph.visit_generic_args(&d.impl_trait.generics);
 
-                // Visit the implemented trait
-                graph.visit_trait_decl_id(&d.impl_trait.trait_id);
-                graph.visit_generic_args(&d.impl_trait.generics);
-
-                // Visit the parent trait refs
-                for tr in &d.parent_trait_refs {
-                    graph.visit_trait_ref(tr)
-                }
-
-                // Visit the items
-                for (_, (ty, id)) in &d.consts {
-                    graph.visit_ty(ty);
-                    graph.visit_global_decl_id(id);
-                }
-
-                for (_, (trait_refs, ty)) in &d.types {
-                    graph.visit_ty(ty);
-                    for trait_ref in trait_refs {
-                        graph.visit_trait_ref(trait_ref);
+                    // Visit the parent trait refs
+                    for tr in &d.parent_trait_refs {
+                        graph.visit_trait_ref(tr)
                     }
-                }
 
-                for (_, id) in d.required_methods.iter().chain(d.provided_methods.iter()) {
-                    graph.visit_fun_decl_id(id)
+                    // Visit the items
+                    for (_, (ty, id)) in &d.consts {
+                        graph.visit_ty(ty);
+                        graph.visit_global_decl_id(id);
+                    }
+
+                    for (_, (trait_refs, ty)) in &d.types {
+                        graph.visit_ty(ty);
+                        for trait_ref in trait_refs {
+                            graph.visit_trait_ref(trait_ref);
+                        }
+                    }
+
+                    for (_, id) in d.required_methods.iter().chain(d.provided_methods.iter()) {
+                        graph.visit_fun_decl_id(id)
+                    }
+                } else {
+                    // There may have been errors
+                    assert!(ctx.error_count > 0);
                 }
             }
         }
@@ -674,7 +693,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> Result<DeclarationsGroups> {
 
     trace!("{:?}", reordered_decls);
 
-    Ok(reordered_decls)
+    reordered_decls
 }
 
 #[cfg(test)]

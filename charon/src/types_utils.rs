@@ -1,6 +1,4 @@
 //! This file groups everything which is linked to implementations about [crate::types]
-#![allow(dead_code)]
-
 use crate::assumed::get_name_from_type_id;
 use crate::common::TAB_INCR;
 use crate::formatter::Formatter;
@@ -52,7 +50,7 @@ impl ConstGeneric {
 
 impl RegionId::Id {
     pub fn substitute(&self, rsubst: &RegionSubst) -> Region {
-        rsubst.get(self).unwrap().clone()
+        *rsubst.get(self).unwrap()
     }
 }
 
@@ -532,113 +530,22 @@ impl TraitDeclRef {
 impl TypeDecl {
     /// The variant id should be `None` if it is a structure and `Some` if it
     /// is an enumeration.
-    pub fn get_fields(&self, variant_id: Option<VariantId::Id>) -> &FieldId::Vector<Field> {
+    #[allow(clippy::result_unit_err)]
+    pub fn get_fields(
+        &self,
+        variant_id: Option<VariantId::Id>,
+    ) -> Result<&FieldId::Vector<Field>, ()> {
         match &self.kind {
-            TypeDeclKind::Enum(variants) => &variants.get(variant_id.unwrap()).unwrap().fields,
+            TypeDeclKind::Enum(variants) => Ok(&variants.get(variant_id.unwrap()).unwrap().fields),
             TypeDeclKind::Struct(fields) => {
                 assert!(variant_id.is_none());
-                fields
+                Ok(fields)
             }
             TypeDeclKind::Opaque => {
                 unreachable!("Opaque type")
             }
+            TypeDeclKind::Error(_) => Err(()),
         }
-    }
-
-    /// Instantiate the fields of every variant of a type definition.
-    ///
-    /// Return an option: `Some` if we have access to the type definition,
-    /// `None` if the type is opaque.
-    pub fn get_instantiated_variants(
-        &self,
-        inst_regions: &Vec<Region>,
-        inst_types: &Vec<Ty>,
-    ) -> Option<VariantId::Vector<FieldId::Vector<Ty>>> {
-        // Introduce the substitutions
-        let r_subst = make_region_subst(
-            self.generics.regions.iter().map(|x| x.index),
-            inst_regions.iter(),
-        );
-        let ty_subst = make_type_subst(
-            self.generics.types.iter().map(|x| x.index),
-            inst_types.iter(),
-        );
-
-        match &self.kind {
-            TypeDeclKind::Struct(fields) => {
-                Option::Some(VariantId::Vector::from(vec![FieldId::Vector::from_iter(
-                    fields
-                        .iter()
-                        .map(|f| f.ty.substitute_regions_types(&r_subst, &ty_subst)),
-                )]))
-            }
-            TypeDeclKind::Enum(variants) => {
-                Option::Some(VariantId::Vector::from_iter(variants.iter().map(|v| {
-                    FieldId::Vector::from_iter(
-                        v.fields
-                            .iter()
-                            .map(|f| f.ty.substitute_regions_types(&r_subst, &ty_subst)),
-                    )
-                })))
-            }
-            TypeDeclKind::Opaque => Option::None,
-        }
-    }
-
-    /// The variant id should be `None` if it is a structure and `Some` if it
-    /// is an enumeration.
-    pub fn get_erased_regions_instantiated_field_types(
-        &self,
-        variant_id: Option<VariantId::Id>,
-        inst_types: &Vec<Ty>,
-        cgs: &Vec<ConstGeneric>,
-    ) -> Vec<Ty> {
-        // Introduce the substitution
-        let ty_subst = make_type_subst(
-            self.generics.types.iter().map(|x| x.index),
-            inst_types.iter(),
-        );
-        let cg_subst = make_cg_subst(
-            self.generics.const_generics.iter().map(|x| x.index),
-            cgs.iter(),
-        );
-
-        let fields = self.get_fields(variant_id);
-        let field_types: Vec<Ty> = fields
-            .iter()
-            .map(|f| f.ty.erase_regions_substitute_types(&ty_subst, &cg_subst))
-            .collect();
-
-        Vec::from(field_types)
-    }
-
-    /// The variant id should be `None` if it is a structure and `Some` if it
-    /// is an enumeration.
-    pub fn get_erased_regions_instantiated_field_type(
-        &self,
-        variant_id: Option<VariantId::Id>,
-        inst_types: &Vec<Ty>,
-        cgs: &Vec<ConstGeneric>,
-        field_id: FieldId::Id,
-    ) -> Ty {
-        // Introduce the substitution
-        let ty_subst = make_type_subst(
-            self.generics.types.iter().map(|x| x.index),
-            inst_types.iter(),
-        );
-        let cg_subst = make_cg_subst(
-            self.generics.const_generics.iter().map(|x| x.index),
-            cgs.iter(),
-        );
-
-        let fields = self.get_fields(variant_id);
-        let field_type = fields
-            .get(field_id)
-            .unwrap()
-            .ty
-            .erase_regions()
-            .substitute_types(&ty_subst, &cg_subst);
-        field_type
     }
 
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
@@ -686,6 +593,12 @@ impl TypeDecl {
             }
             TypeDeclKind::Opaque => {
                 format!("opaque type {}{params}{preds}", self.name.fmt_with_ctx(ctx))
+            }
+            TypeDeclKind::Error(msg) => {
+                format!(
+                    "opaque type {}{params}{preds} = ERROR({msg})",
+                    self.name.fmt_with_ctx(ctx),
+                )
             }
         }
     }
@@ -794,61 +707,61 @@ impl IntegerTy {
 }
 
 impl TypeVarId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@T{self}")
     }
 }
 
 impl TypeDeclId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Adt{self}")
     }
 }
 
 impl VariantId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Variant{self}")
     }
 }
 
 impl FieldId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Field{self}")
     }
 }
 
 impl RegionId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@R{self}")
     }
 }
 
 impl ConstGenericVarId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Const{self}")
     }
 }
 
 impl GlobalDeclId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Global{self}")
     }
 }
 
 impl TraitClauseId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@TraitClause{self}")
     }
 }
 
 impl TraitDeclId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@TraitDecl{self}")
     }
 }
 
 impl TraitImplId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@TraitImpl{self}")
     }
 }
@@ -896,7 +809,7 @@ pub fn intty_to_string(ty: hax::IntTy) -> String {
 }
 
 // UintTy is not defined in the current crate
-fn uintty_to_string(ty: hax::UintTy) -> String {
+pub fn uintty_to_string(ty: hax::UintTy) -> String {
     use hax::UintTy::*;
     match ty {
         Usize => "usize".to_string(),
@@ -1180,7 +1093,7 @@ impl Ty {
         match self {
             Ty::Adt(id, args) => {
                 let args = args.substitute(rsubst, tsubst, cgsubst);
-                Ty::Adt(id.clone(), args)
+                Ty::Adt(*id, args)
             }
             Ty::TypeVar(id) => tsubst(id),
             Ty::Literal(pty) => Ty::Literal(*pty),
@@ -1209,21 +1122,16 @@ impl Ty {
         }
     }
 
-    fn substitute_regions(
-        regions: &Vec<Region>,
-        rsubst: &dyn Fn(&Region) -> Region,
-    ) -> Vec<Region> {
+    fn substitute_regions(regions: &[Region], rsubst: &dyn Fn(&Region) -> Region) -> Vec<Region> {
         Vec::from_iter(regions.iter().map(|rid| rsubst(rid)))
     }
 
     /// Substitute the type parameters
     // TODO: tsubst and cgsubst should be closures instead of hashmaps
     pub fn substitute_types(&self, subst: &TypeSubst, cgsubst: &ConstGenericSubst) -> Self {
-        self.substitute(
-            &|r| r.clone(),
-            &|tid| subst.get(tid).unwrap().clone(),
-            &|cgid| cgsubst.get(cgid).unwrap().clone(),
-        )
+        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone(), &|cgid| {
+            cgsubst.get(cgid).unwrap().clone()
+        })
     }
 
     /// Erase the regions
@@ -1443,7 +1351,7 @@ impl TySubst {
         use Result::*;
         match self.regions_map.get(src) {
             None => {
-                check_ok_return!(self.regions_map.insert(src.clone(), tgt.clone()).is_none());
+                check_ok_return!(self.regions_map.insert(*src, *tgt).is_none());
             }
             Some(src) => {
                 check_ok_return!(src == tgt);
@@ -1543,6 +1451,7 @@ impl TySubst {
 }
 
 impl TySubst {
+    #[allow(clippy::result_unit_err)]
     pub fn unify_args_with_fixed(
         fixed_type_vars: impl std::iter::Iterator<Item = TypeVarId::Id>,
         fixed_const_generic_vars: impl std::iter::Iterator<Item = ConstGenericVarId::Id>,
@@ -1581,14 +1490,6 @@ impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
             | TraitInstanceId::Unsolved(..)
             | TraitInstanceId::Unknown(_) => (),
         }
-    }
-}
-
-impl Ty {
-    pub(crate) fn replace_self_trait_instance_id(mut self, new_id: TraitInstanceId) -> Self {
-        let mut visitor = TraitInstanceIdSelfReplacer { new_id };
-        visitor.visit_ty(&mut self);
-        self
     }
 }
 

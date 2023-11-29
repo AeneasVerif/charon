@@ -20,7 +20,7 @@ pub fn export(
     fun_defs: &FunDecls,
     global_defs: &GlobalDecls,
     dest_dir: &Option<PathBuf>,
-) -> Result<()> {
+) -> Result<(),()> {
     // Generate the destination file - we use the crate name for the file name
     let mut target_filename = dest_dir
         .as_deref()

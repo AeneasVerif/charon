@@ -1,6 +1,7 @@
 //! The Charon driver, which calls Rustc with callbacks to compile some Rust
 //! crate to LLBC.
 
+#![allow(dead_code)]
 #![feature(rustc_private, register_tool)]
 #![feature(box_patterns)]
 #![feature(cell_leak)] // For Ref::leak
@@ -8,6 +9,7 @@
 #![recursion_limit = "256"]
 #![feature(trait_alias)]
 #![feature(let_chains)]
+#![feature(iterator_try_collect)]
 
 extern crate hashlink;
 extern crate im;
@@ -61,6 +63,7 @@ mod ops_to_function_calls;
 mod reconstruct_asserts;
 mod remove_drop_never;
 mod remove_dynamic_checks;
+mod remove_nops;
 mod remove_read_discriminant;
 mod remove_unused_locals;
 mod reorder_decls;
@@ -204,7 +207,18 @@ fn main() {
     // We don't need to check this case in order to use the default Rustc callbacks
     // instead of the Charon callback: because there is nothing to build, Rustc will
     // take care of everything and actually not call us back.
-    RunCompiler::new(&compiler_args, &mut CharonCallbacks { options })
-        .run()
-        .unwrap();
+    let mut callback = CharonCallbacks {
+        options,
+        error_count: 0,
+    };
+    let res = RunCompiler::new(&compiler_args, &mut callback).run();
+
+    match res {
+        Ok(()) => (),
+        Err(_) => {
+            let msg = format!("The extraction encountered {} errors", callback.error_count);
+            log::error!("{}", msg);
+            std::process::exit(1);
+        }
+    }
 }

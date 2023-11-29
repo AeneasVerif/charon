@@ -25,7 +25,8 @@ charon-tests: \
 	test-loops test-loops_cfg test-hashmap \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
-	test-constants test-array test-array_const_generics test-traits
+	test-constants test-array test-array_const_generics test-traits \
+	test-closures
 
 test-nested_borrows: OPTIONS += --no-code-duplication
 test-no_nested_borrows: OPTIONS += --no-code-duplication
@@ -42,6 +43,8 @@ test-matches_duplicate:
 test-array:
 test-array_const_generics:
 test-traits:
+test-traits_special:
+test-closures:
 
 # =============================================================================
 # The tests.

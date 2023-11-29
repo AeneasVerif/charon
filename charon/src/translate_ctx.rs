@@ -1,6 +1,4 @@
 //! The translation contexts.
-
-#![allow(dead_code)]
 use crate::common::TAB_INCR;
 use crate::formatter::Formatter;
 use crate::gast;
@@ -27,6 +25,40 @@ use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt;
 
+/// Macro to either panic or return on error, depending on the CLI options
+macro_rules! error_or_panic {
+    ($ctx:ident, $span: ident, $msg: expr) => {{
+        $ctx.span_err($span, &$msg);
+        if $ctx.continue_on_failure() {
+            let e = crate::common::Error {
+                span: $span,
+                msg: $msg.to_string(),
+            };
+            return (Err(e));
+        } else {
+            panic!("{}", $msg);
+        }
+    }};
+}
+pub(crate) use error_or_panic;
+
+/// Custom assert to either panic or return an error
+macro_rules! error_assert {
+    ($ctx:ident, $span: ident, $b: expr) => {
+        if !$b {
+            let msg = format!("assertion failure: {:?}", stringify!($b));
+            $ctx.span_err($span, &msg);
+            if $ctx.continue_on_failure() {
+                let e = crate::common::Error { span: $span, msg };
+                return (Err(e));
+            } else {
+                panic!("{}", msg);
+            }
+        }
+    };
+}
+pub(crate) use error_assert;
+
 pub struct CrateInfo {
     pub crate_name: String,
     pub opaque_mods: HashSet<String>,
@@ -37,7 +69,8 @@ impl CrateInfo {
         name.is_in_modules(&self.crate_name, &self.opaque_mods)
     }
 
-    fn is_transparent_decl(&self, name: &Name) -> bool {
+    #[allow(dead_code)]
+    pub(crate) fn is_transparent_decl(&self, name: &Name) -> bool {
         !self.is_opaque_decl(name)
     }
 }
@@ -92,7 +125,7 @@ impl Ord for OrdRustId {
 /// Translation context containing the top-level definitions.
 pub struct TransCtx<'tcx, 'ctx> {
     /// The compiler session
-    pub sess: &'ctx Session,
+    pub session: &'ctx Session,
     /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
     /// The Hax context
@@ -101,8 +134,10 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub mir_level: MirLevel,
     ///
     pub crate_info: CrateInfo,
-    /// Do not abort on failure and attempt to extract as much as possible.
+    /// Do not abort on the first error and attempt to extract as much as possible.
     pub continue_on_failure: bool,
+    /// The number of errors encountered so far.
+    pub error_count: usize,
     /// Error out if some code ends up being duplicated by the control-flow
     /// reconstruction (note that because several patterns in a match may lead
     /// to the same branch, it is node always possible not to duplicate code).
@@ -249,10 +284,25 @@ pub(crate) struct BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     /// The "regular" variables
     pub vars: &'ctx VarId::Vector<ast::Var>,
     ///
+    #[allow(dead_code)]
     pub trait_clauses: &'ctx TraitClauseId::Vector<TraitClause>,
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+    pub fn continue_on_failure(&self) -> bool {
+        self.continue_on_failure
+    }
+
+    pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
+        let msg = msg.to_string();
+        self.session.span_err(span, msg);
+        self.increment_error_count();
+    }
+
+    fn increment_error_count(&mut self) {
+        self.error_count += 1;
+    }
+
     /// Register a file if it is a "real" file and was not already registered
     fn register_file(&mut self, filename: FileName) -> FileId::Id {
         // Lookup the file if it was already registered
@@ -502,6 +552,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    pub fn continue_on_failure(&self) -> bool {
+        self.t_ctx.continue_on_failure()
+    }
+
+    pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
+        self.t_ctx.span_err(span, msg)
+    }
+
     pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
         self.t_ctx.translate_meta_from_rid(def_id)
     }
@@ -515,6 +573,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.vars_map.get(&local.index())
     }
 
+    #[allow(dead_code)]
     pub(crate) fn get_block_id_from_rid(&self, rid: hax::BasicBlock) -> Option<ast::BlockId::Id> {
         self.blocks_map.get(&rid)
     }
@@ -523,24 +582,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.vars.get(var_id)
     }
 
-    pub(crate) fn register_type_decl_id(&mut self, id: DefId) -> TypeDeclId::Id {
-        self.t_ctx.register_type_decl_id(id)
-    }
-
     pub(crate) fn translate_type_decl_id(&mut self, id: DefId) -> TypeDeclId::Id {
         self.t_ctx.translate_type_decl_id(id)
     }
 
-    pub(crate) fn register_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
-        self.t_ctx.register_fun_decl_id(id)
-    }
-
     pub(crate) fn translate_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
         self.t_ctx.translate_fun_decl_id(id)
-    }
-
-    pub(crate) fn register_global_decl_id(&mut self, id: DefId) -> GlobalDeclId::Id {
-        self.t_ctx.register_global_decl_id(id)
     }
 
     pub(crate) fn translate_global_decl_id(&mut self, id: DefId) -> ast::GlobalDeclId::Id {
@@ -557,10 +604,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn translate_trait_impl_id(&mut self, id: DefId) -> Option<ast::TraitImplId::Id> {
         self.t_ctx.translate_trait_impl_id(id)
-    }
-
-    pub(crate) fn get_region_from_rust(&self, r: hax::Region) -> Option<RegionId::Id> {
-        self.region_vars_map.get(&r)
     }
 
     pub(crate) fn push_region(&mut self, r: hax::Region, name: Option<String>) -> RegionId::Id {
@@ -620,7 +663,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
         use crate::id_vector::ToUsize;
         let var_id = self.const_generic_vars_map.insert(rid);
-        assert!(var_id.to_usize() == self.vars.len());
+        assert!(var_id.to_usize() == self.const_generic_vars.len());
         let var = ConstGenericVar {
             index: var_id,
             name,
@@ -635,14 +678,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn push_block(&mut self, id: ast::BlockId::Id, block: ast::BlockData) {
         self.blocks.insert(id, block);
-    }
-
-    pub(crate) fn get_type_defs(&self) -> &TypeDecls {
-        &self.t_ctx.type_defs
-    }
-
-    pub(crate) fn fresh_trait_instance_id(&mut self) -> TraitInstanceId {
-        (*self.trait_instance_id_gen)()
     }
 
     pub(crate) fn get_generics(&self) -> GenericParams {

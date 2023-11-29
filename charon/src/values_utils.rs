@@ -1,7 +1,4 @@
 //! Implementations for [crate::values]
-
-#![allow(dead_code)]
-
 use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId};
@@ -9,7 +6,7 @@ use crate::values::*;
 use serde::{Serialize, Serializer};
 
 impl VarId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@{self}")
     }
 }

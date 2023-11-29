@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 pub use crate::gast::TraitItemName;
 use crate::meta::Meta;
 use crate::names::Name;
@@ -329,6 +327,9 @@ pub enum TypeDeclKind {
     ///
     /// Either a local type marked as opaque, or an external type.
     Opaque,
+    /// Used if an error happened during the extraction, and we don't panic
+    /// on error.
+    Error(String),
 }
 
 #[derive(Debug, Clone, Serialize)]

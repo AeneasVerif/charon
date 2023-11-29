@@ -1,5 +1,4 @@
 //! Implementations for [crate::gast]
-#![allow(dead_code)]
 
 use crate::common::TAB_INCR;
 pub use crate::expressions_utils::ExprFormatter;
@@ -8,7 +7,6 @@ use crate::gast::*;
 use crate::names::Name;
 use crate::types::*;
 use crate::values::*;
-use serde::Serialize;
 use std::cmp::max;
 
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
@@ -51,7 +49,7 @@ pub fn make_locals_generator(locals: &mut VarId::Vector<Var>) -> impl FnMut(Ty) 
 }
 
 impl FunDeclId::Id {
-    pub fn to_pretty_string(&self) -> String {
+    pub fn to_pretty_string(self) -> String {
         format!("@Fun{self}")
     }
 }
@@ -85,12 +83,6 @@ impl Var {
             name: self.name.clone(),
             ty: self.ty.substitute_types(subst, cgsubst),
         }
-    }
-}
-
-impl FunKind {
-    pub(crate) fn is_trait_method(&self) -> bool {
-        matches!(self, FunKind::Regular)
     }
 }
 
@@ -234,12 +226,11 @@ pub fn fmt_call<T>(ctx: &T, call: &Call) -> (String, Option<String>)
 where
     T: ExprFormatter,
 {
-    let trait_and_method_generic_args =
-        if let Some(generics) = &call.func.trait_and_method_generic_args {
-            Option::Some(generics.fmt_with_ctx_split_trait_refs(ctx))
-        } else {
-            None
-        };
+    let trait_and_method_generic_args = call
+        .func
+        .trait_and_method_generic_args
+        .as_ref()
+        .map(|generics| generics.fmt_with_ctx_split_trait_refs(ctx));
 
     let f = call.func.fmt_with_ctx(ctx);
 
@@ -414,12 +405,6 @@ impl<T> GGlobalDecl<T> {
                 format!("{tab}global {name} {{\n{body}\n{tab}}}")
             }
         }
-    }
-}
-
-impl<T: std::fmt::Debug + Clone + Serialize> GGlobalDecl<T> {
-    fn is_opaque(&self) -> bool {
-        self.body.is_none()
     }
 }
 

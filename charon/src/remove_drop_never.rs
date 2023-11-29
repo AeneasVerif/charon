@@ -31,7 +31,6 @@ fn transform_st(locals: &VarId::Vector<Var>, st: &mut Statement) {
     }
 }
 
-/// `fmt_ctx` is used for pretty-printing purposes.
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
@@ -42,7 +41,6 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
 
         let locals = &b.locals;
 
-        // Compute the set of local variables
         b.body.transform(&mut |st| {
             transform_st(locals, st);
             None

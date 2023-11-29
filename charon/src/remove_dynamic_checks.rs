@@ -3,9 +3,6 @@
 //! must lead to a panic in Rust (which is why those checks are always present, even when
 //! compiling for release). In our case, we take this into account in the semantics of our
 //! array/slice manipulation and arithmetic functions, on the verification side.
-
-#![allow(dead_code)]
-
 use crate::formatter::Formatter;
 use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
@@ -167,40 +164,35 @@ impl MutAstVisitor for RemoveDynChecks {
                                 && move_p.projection.len() == 1
                                 && move_p1.projection.len() == 1
                             {
-                                match (&move_p.projection[0], &move_p1.projection[0]) {
-                                    (
-                                        ProjectionElem::Field(FieldProjKind::Tuple(..), fid0),
-                                        ProjectionElem::Field(FieldProjKind::Tuple(..), fid1),
-                                    ) => {
-                                        use crate::id_vector::ToUsize;
-                                        if fid0.to_usize() == 1 && fid1.to_usize() == 0 {
-                                            // Collapse into one assignment
-                                            take(s, |s| {
-                                                let (s0, s1) = s.content.to_sequence();
-                                                let (_, s2) = s1.content.to_sequence();
-                                                let (s2, s3) = s2.content.to_sequence();
-                                                let (_, op) = s0.content.to_assign();
-                                                let (dest, _) = s2.content.to_assign();
-                                                let meta0 = s0.meta;
-                                                let s0 = RawStatement::Assign(dest, op);
-                                                let s0 = Statement {
-                                                    meta: meta0,
-                                                    content: s0,
-                                                };
-                                                Statement {
-                                                    meta: s2.meta,
-                                                    content: RawStatement::Sequence(
-                                                        Box::new(s0),
-                                                        s3,
-                                                    ),
-                                                }
-                                            });
-                                            self.visit_statement(s);
-                                            // Return so as not to take the default branch
-                                            return;
-                                        }
+                                if let (
+                                    ProjectionElem::Field(FieldProjKind::Tuple(..), fid0),
+                                    ProjectionElem::Field(FieldProjKind::Tuple(..), fid1),
+                                ) = (&move_p.projection[0], &move_p1.projection[0])
+                                {
+                                    use crate::id_vector::ToUsize;
+                                    if fid0.to_usize() == 1 && fid1.to_usize() == 0 {
+                                        // Collapse into one assignment
+                                        take(s, |s| {
+                                            let (s0, s1) = s.content.to_sequence();
+                                            let (_, s2) = s1.content.to_sequence();
+                                            let (s2, s3) = s2.content.to_sequence();
+                                            let (_, op) = s0.content.to_assign();
+                                            let (dest, _) = s2.content.to_assign();
+                                            let meta0 = s0.meta;
+                                            let s0 = RawStatement::Assign(dest, op);
+                                            let s0 = Statement {
+                                                meta: meta0,
+                                                content: s0,
+                                            };
+                                            Statement {
+                                                meta: s2.meta,
+                                                content: RawStatement::Sequence(Box::new(s0), s3),
+                                            }
+                                        });
+                                        self.visit_statement(s);
+                                        // Return so as not to take the default branch
+                                        return;
                                     }
-                                    _ => (),
                                 }
                             }
                         }
