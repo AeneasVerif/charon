@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::cli_options;
 use crate::export;
 use crate::get_mir::MirLevel;
@@ -9,6 +7,7 @@ use crate::ops_to_function_calls;
 use crate::reconstruct_asserts;
 use crate::remove_drop_never;
 use crate::remove_dynamic_checks;
+use crate::remove_nops;
 use crate::remove_read_discriminant;
 use crate::remove_unused_locals;
 use crate::reorder_decls;
@@ -267,6 +266,10 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         // # Micro-pass: remove the locals which are never used. After doing so, we
         // check that there are no remaining locals with type `Never`.
         remove_unused_locals::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+
+        // # Micro-pass (not necessary, but good for cleaning): remove the
+        // useless no-ops.
+        remove_nops::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         trace!("# Final LLBC:\n");
         for (_, def) in &llbc_funs {

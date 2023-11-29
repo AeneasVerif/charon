@@ -1,7 +1,3 @@
-use im::Vector;
-use serde::{Serialize, Serializer};
-use std::iter::FromIterator;
-
 pub static TAB_INCR: &str = "    ";
 
 /// Common error used during the translation.

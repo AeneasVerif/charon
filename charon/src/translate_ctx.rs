@@ -1,6 +1,4 @@
 //! The translation contexts.
-
-#![allow(dead_code)]
 use crate::common::TAB_INCR;
 use crate::formatter::Formatter;
 use crate::gast;
@@ -71,7 +69,8 @@ impl CrateInfo {
         name.is_in_modules(&self.crate_name, &self.opaque_mods)
     }
 
-    fn is_transparent_decl(&self, name: &Name) -> bool {
+    #[allow(dead_code)]
+    pub(crate) fn is_transparent_decl(&self, name: &Name) -> bool {
         !self.is_opaque_decl(name)
     }
 }
@@ -285,6 +284,7 @@ pub(crate) struct BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     /// The "regular" variables
     pub vars: &'ctx VarId::Vector<ast::Var>,
     ///
+    #[allow(dead_code)]
     pub trait_clauses: &'ctx TraitClauseId::Vector<TraitClause>,
 }
 
@@ -573,6 +573,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.vars_map.get(&local.index())
     }
 
+    #[allow(dead_code)]
     pub(crate) fn get_block_id_from_rid(&self, rid: hax::BasicBlock) -> Option<ast::BlockId::Id> {
         self.blocks_map.get(&rid)
     }
@@ -581,24 +582,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.vars.get(var_id)
     }
 
-    pub(crate) fn register_type_decl_id(&mut self, id: DefId) -> TypeDeclId::Id {
-        self.t_ctx.register_type_decl_id(id)
-    }
-
     pub(crate) fn translate_type_decl_id(&mut self, id: DefId) -> TypeDeclId::Id {
         self.t_ctx.translate_type_decl_id(id)
     }
 
-    pub(crate) fn register_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
-        self.t_ctx.register_fun_decl_id(id)
-    }
-
     pub(crate) fn translate_fun_decl_id(&mut self, id: DefId) -> ast::FunDeclId::Id {
         self.t_ctx.translate_fun_decl_id(id)
-    }
-
-    pub(crate) fn register_global_decl_id(&mut self, id: DefId) -> GlobalDeclId::Id {
-        self.t_ctx.register_global_decl_id(id)
     }
 
     pub(crate) fn translate_global_decl_id(&mut self, id: DefId) -> ast::GlobalDeclId::Id {
@@ -615,10 +604,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn translate_trait_impl_id(&mut self, id: DefId) -> Option<ast::TraitImplId::Id> {
         self.t_ctx.translate_trait_impl_id(id)
-    }
-
-    pub(crate) fn get_region_from_rust(&self, r: hax::Region) -> Option<RegionId::Id> {
-        self.region_vars_map.get(&r)
     }
 
     pub(crate) fn push_region(&mut self, r: hax::Region, name: Option<String>) -> RegionId::Id {
@@ -693,14 +678,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn push_block(&mut self, id: ast::BlockId::Id, block: ast::BlockData) {
         self.blocks.insert(id, block);
-    }
-
-    pub(crate) fn get_type_defs(&self) -> &TypeDecls {
-        &self.t_ctx.type_defs
-    }
-
-    pub(crate) fn fresh_trait_instance_id(&mut self) -> TraitInstanceId {
-        (*self.trait_instance_id_gen)()
     }
 
     pub(crate) fn get_generics(&self) -> GenericParams {

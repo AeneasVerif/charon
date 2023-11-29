@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 use crate::common::*;
 use crate::gast::*;
 use crate::translate_ctx::*;
@@ -10,12 +9,6 @@ use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    /// Remark: this **doesn't** register the def id (on purpose)
-    /// TODO: directly use the
-    pub(crate) fn translate_trait_item_name(&mut self, rust_id: DefId) -> TraitItemName {
-        self.t_ctx.translate_trait_item_name(rust_id)
-    }
-
     fn translate_ty_from_trait_item(
         &mut self,
         item: &rustc_middle::ty::AssocItem,

@@ -1,8 +1,5 @@
 //! Implementations for [crate::llbc_ast]
 
-#![allow(dead_code)]
-use std::ops::DerefMut;
-
 use crate::common::*;
 use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
 use crate::gast_utils::{ExprFormatter, GFunDeclFormatter, GGlobalDeclFormatter};
@@ -13,6 +10,7 @@ use crate::types::*;
 pub use crate::ullbc_ast::fmt_call;
 use crate::values::*;
 use macros::make_generic_in_borrows;
+use std::ops::DerefMut;
 use take_mut::take;
 
 /// Goes from e.g. `(A; B; C) ; D` to `(A; (B; (C; D)))`.

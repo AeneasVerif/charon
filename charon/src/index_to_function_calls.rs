@@ -1,7 +1,5 @@
 //! Desugar array/slice index operations to function calls.
 
-#![allow(dead_code)]
-
 use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
 use crate::formatter::Formatter;
 use crate::gast::{Call, GenericArgs, Var};

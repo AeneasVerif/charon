@@ -1,6 +1,4 @@
 //! This file groups everything which is linked to implementations about [crate::types]
-#![allow(dead_code)]
-
 use crate::assumed::get_name_from_type_id;
 use crate::common::TAB_INCR;
 use crate::formatter::Formatter;
@@ -810,7 +808,7 @@ pub fn intty_to_string(ty: hax::IntTy) -> String {
 }
 
 // UintTy is not defined in the current crate
-fn uintty_to_string(ty: hax::UintTy) -> String {
+pub fn uintty_to_string(ty: hax::UintTy) -> String {
     use hax::UintTy::*;
     match ty {
         Usize => "usize".to_string(),
@@ -1495,14 +1493,6 @@ impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
             | TraitInstanceId::Unsolved(..)
             | TraitInstanceId::Unknown(_) => (),
         }
-    }
-}
-
-impl Ty {
-    pub(crate) fn replace_self_trait_instance_id(mut self, new_id: TraitInstanceId) -> Self {
-        let mut visitor = TraitInstanceIdSelfReplacer { new_id };
-        visitor.visit_ty(&mut self);
-        self
     }
 }
 

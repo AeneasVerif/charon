@@ -1,6 +1,4 @@
 //! This file groups everything which is linked to implementations about [crate::meta]
-#![allow(dead_code)]
-
 use crate::meta::*;
 use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;

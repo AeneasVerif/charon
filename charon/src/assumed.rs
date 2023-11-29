@@ -4,7 +4,6 @@
 //! When checking whether names are equal to one of the reference names below,
 //! we ignore the disambiguators (see [crate::names] and [crate::names_utils]).
 // TODO: rename to "primitive"
-#![allow(dead_code)]
 
 use crate::names::*;
 use crate::types::*;
@@ -15,14 +14,14 @@ use macros::EnumIsA;
 pub const IGNORE_BUILTIN_MARKER_TRAITS: bool = true;
 
 // Ignored traits (includes marker traits, and others)
-pub static SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
+pub static MARKER_SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
 pub static MARKER_TUPLE_NAME: [&str; 3] = ["core", "marker", "Tuple"];
 pub static SYNC_NAME: [&str; 3] = ["core", "marker", "SYNC"];
 pub static SEND_NAME: [&str; 3] = ["core", "marker", "SEND"];
 pub static UNPIN_NAME: [&str; 3] = ["core", "marker", "UNPIN"];
 pub static ALLOC_ALLOCATOR: [&str; 3] = ["core", "alloc", "Allocator"];
 pub static IGNORED_TRAITS_NAMES: [&[&str]; 6] = [
-    &SIZED_NAME,
+    &MARKER_SIZED_NAME,
     &MARKER_TUPLE_NAME,
     &SYNC_NAME,
     &SEND_NAME,
@@ -32,9 +31,6 @@ pub static IGNORED_TRAITS_NAMES: [&[&str]; 6] = [
 
 // Assumed types
 pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
-
-pub static OPTION_NONE_VARIANT_ID: VariantId::Id = VariantId::ZERO;
-pub static OPTION_SOME_VARIANT_ID: VariantId::Id = VariantId::ONE;
 
 //
 // Assumed functions
@@ -50,10 +46,6 @@ pub static BOX_FREE_NAME: [&str; 3] = ["alloc", "alloc", "box_free"];
 // Pointers
 pub static PTR_UNIQUE_NAME: [&str; 3] = ["core", "ptr", "Unique"];
 pub static PTR_NON_NULL_NAME: [&str; 3] = ["core", "ptr", "NonNull"];
-
-// We ignore this trait, which is automatically added for some type parameters
-// when defining a new type.
-pub static MARKER_SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
 
 /// We redefine identifiers for assumed functions here, instead of reusing the
 /// identifiers from [ullbc_ast], because:

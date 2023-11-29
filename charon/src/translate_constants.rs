@@ -1,13 +1,10 @@
 //! Functions to translate constants to LLBC.
-#![allow(dead_code)]
 use crate::common::*;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::*;
 use hax_frontend_exporter as hax;
-use rustc_middle::mir;
-use rustc_middle::ty;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_constant_literal_to_raw_constant_expr(
@@ -190,16 +187,5 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         v: &hax::Constant,
     ) -> Result<ConstantExpr, Error> {
         self.translate_constant_expr_to_constant_expr(span, &v.literal.constant_kind)
-    }
-
-    // TODO: remove once we make the external globals opaque
-    pub(crate) fn translate_evaluated_operand_constant(
-        &mut self,
-        ty: ty::Ty<'tcx>,
-        val: &mir::interpret::ConstValue<'tcx>,
-        span: rustc_span::Span,
-    ) -> Result<ConstantExpr, Error> {
-        let val = hax::const_value_to_constant_expr(&self.hax_state, ty, *val, span);
-        self.translate_constant_expr_to_constant_expr(span, &val)
     }
 }

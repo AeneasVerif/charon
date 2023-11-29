@@ -1,6 +1,4 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
-#![allow(dead_code)]
-
 pub use crate::expressions::*;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;

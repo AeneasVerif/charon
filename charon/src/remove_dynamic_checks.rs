@@ -3,9 +3,6 @@
 //! must lead to a panic in Rust (which is why those checks are always present, even when
 //! compiling for release). In our case, we take this into account in the semantics of our
 //! array/slice manipulation and arithmetic functions, on the verification side.
-
-#![allow(dead_code)]
-
 use crate::formatter::Formatter;
 use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;

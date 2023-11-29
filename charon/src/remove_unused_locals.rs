@@ -2,60 +2,16 @@
 //! never used in the function bodies.  This is useful to remove the locals with
 //! type `Never`. We actually check that there are no such local variables
 //! remaining afterwards.
-
-#![allow(dead_code)]
-
 use crate::expressions::{MutExprVisitor, SharedExprVisitor};
 use crate::formatter::Formatter;
 use crate::id_vector::ToUsize;
-use crate::llbc_ast::{
-    FunDecls, GlobalDecls, MutAstVisitor, RawStatement, SharedAstVisitor, Statement,
-};
-use crate::meta::combine_meta;
+use crate::llbc_ast::{FunDecls, GlobalDecls, MutAstVisitor, SharedAstVisitor, Statement};
 use crate::translate_ctx::TransCtx;
 use crate::types::{MutTypeVisitor, SharedTypeVisitor};
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
 use take_mut::take;
-
-struct RemoveNops {}
-
-impl MutTypeVisitor for RemoveNops {}
-impl MutExprVisitor for RemoveNops {}
-
-impl MutAstVisitor for RemoveNops {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-
-    fn visit_statement(&mut self, s: &mut Statement) {
-        match &s.content {
-            RawStatement::Sequence(s1, _) => {
-                if s1.content.is_nop() {
-                    take(s, |s| {
-                        let (s1, s2) = s.content.to_sequence();
-                        Statement {
-                            content: s2.content,
-                            meta: combine_meta(&s1.meta, &s2.meta),
-                        }
-                    })
-                } else {
-                    self.default_visit_raw_statement(&mut s.content)
-                }
-            }
-            _ => self.default_visit_raw_statement(&mut s.content),
-        }
-    }
-}
-
-// TODO: remove?
-pub(crate) fn remove_nops(s: &mut Statement) {
-    let mut v = RemoveNops {};
-    v.visit_statement(s);
-}
 
 #[derive(Debug, Clone)]
 pub(crate) struct ComputeUsedLocals {

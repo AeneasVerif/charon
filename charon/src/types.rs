@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 pub use crate::gast::TraitItemName;
 use crate::meta::Meta;
 use crate::names::Name;

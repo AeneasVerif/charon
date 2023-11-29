@@ -1,6 +1,4 @@
 //! Implementations for [crate::ullbc_ast]
-#![allow(dead_code)]
-
 use crate::common::TAB_INCR;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;

@@ -1,11 +1,10 @@
-use crate::common::*;
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
 use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups};
 use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDecl, TraitDecls, TraitImpl, TraitImpls};
-use serde::{Serialize, Serializer};
+use serde::Serialize;
 use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;

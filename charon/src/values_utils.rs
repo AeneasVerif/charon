@@ -1,7 +1,4 @@
 //! Implementations for [crate::values]
-
-#![allow(dead_code)]
-
 use crate::formatter::Formatter;
 use crate::types::*;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId};

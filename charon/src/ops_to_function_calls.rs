@@ -2,9 +2,6 @@
 //! For instance, we desugar ArrayToSlice from an unop to a function call.
 //! This allows a more uniform treatment later on.
 //! TODO: actually transform all the unops and binops to function calls?
-
-#![allow(dead_code)]
-
 use crate::expressions::{Rvalue, UnOp};
 use crate::formatter::Formatter;
 use crate::llbc_ast::*;

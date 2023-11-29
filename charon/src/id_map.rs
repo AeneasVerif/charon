@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 //! A map with custom index types.
 //!
 //! This data-structure is mostly meant to be used with the index types defined

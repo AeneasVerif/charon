@@ -1,6 +1,4 @@
 //! Defines some utilities for the variables
-#![allow(dead_code)]
-
 pub use crate::names_utils::*;
 use crate::types::*;
 use macros::generate_index_type;

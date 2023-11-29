@@ -1,5 +1,4 @@
 //! Implementations for [crate::gast]
-#![allow(dead_code)]
 
 use crate::common::TAB_INCR;
 pub use crate::expressions_utils::ExprFormatter;
@@ -8,7 +7,6 @@ use crate::gast::*;
 use crate::names::Name;
 use crate::types::*;
 use crate::values::*;
-use serde::Serialize;
 use std::cmp::max;
 
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
@@ -85,12 +83,6 @@ impl Var {
             name: self.name.clone(),
             ty: self.ty.substitute_types(subst, cgsubst),
         }
-    }
-}
-
-impl FunKind {
-    pub(crate) fn is_trait_method(&self) -> bool {
-        matches!(self, FunKind::Regular)
     }
 }
 
@@ -414,12 +406,6 @@ impl<T> GGlobalDecl<T> {
                 format!("{tab}global {name} {{\n{body}\n{tab}}}")
             }
         }
-    }
-}
-
-impl<T: std::fmt::Debug + Clone + Serialize> GGlobalDecl<T> {
-    fn is_opaque(&self) -> bool {
-        self.body.is_none()
     }
 }
 
