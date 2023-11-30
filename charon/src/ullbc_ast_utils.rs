@@ -24,33 +24,11 @@ impl SwitchTargets {
             }
         }
     }
-
-    /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
-        self.clone()
-    }
 }
 
 impl Statement {
     pub fn new(meta: Meta, content: RawStatement) -> Self {
         Statement { meta, content }
-    }
-
-    /// Substitute the type variables and return the resulting statement.
-    pub fn substitute(&self, subst: &TypeSubst) -> Statement {
-        let st = match &self.content {
-            RawStatement::Assign(place, rvalue) => {
-                RawStatement::Assign(place.substitute(subst), rvalue.substitute(subst))
-            }
-            RawStatement::FakeRead(place) => RawStatement::FakeRead(place.substitute(subst)),
-            RawStatement::SetDiscriminant(place, variant_id) => {
-                RawStatement::SetDiscriminant(place.substitute(subst), *variant_id)
-            }
-            RawStatement::StorageDead(var_id) => RawStatement::StorageDead(*var_id),
-            RawStatement::Deinit(place) => RawStatement::Deinit(place.substitute(subst)),
-        };
-
-        Statement::new(self.meta, st)
     }
 }
 

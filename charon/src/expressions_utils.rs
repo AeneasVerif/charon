@@ -127,11 +127,6 @@ impl Place {
 
         out
     }
-
-    /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
-        self.clone()
-    }
 }
 
 impl std::fmt::Display for Place {
@@ -225,11 +220,6 @@ impl Operand {
             Operand::Const(c) => format!("const ({})", c.fmt_with_ctx(ctx)),
         }
     }
-
-    /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
-        self.clone()
-    }
 }
 
 impl std::fmt::Display for Operand {
@@ -305,11 +295,6 @@ impl Rvalue {
                 format!("[{}; {}]", op.fmt_with_ctx(ctx), cg.fmt_with_ctx(ctx))
             }
         }
-    }
-
-    /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
-        self.clone()
     }
 }
 

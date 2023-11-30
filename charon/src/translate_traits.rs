@@ -130,7 +130,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             initialized = true;
             TraitInstanceId::SelfId
         });
-        let self_clause = self.with_local_trait_clauses(self_instance_id_gen, &mut |s| {
+        let self_clause = self.with_local_trait_clauses(self_instance_id_gen, move |s| {
             s.translate_trait_clause(&span, &self_pred)
         })?;
         trace!("self clause: {}", self_clause.unwrap().fmt_with_ctx(self));
@@ -172,7 +172,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 initialized = true;
                 TraitInstanceId::SelfId
             }),
-            &mut |s| s.translate_trait_clause(&span, &trait_pred),
+            move |s| s.translate_trait_clause(&span, &trait_pred),
         )?;
         Ok(())
     }
@@ -257,7 +257,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.translate_generic_params(rust_id)?;
 
         // Add the trait clauses
-        bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
+        bt_ctx.while_registering_trait_clauses(move |bt_ctx| {
             // Add the self trait clause
             bt_ctx.add_self_trait_clause(rust_id)?;
 
@@ -455,7 +455,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.translate_generic_params(rust_id)?;
 
         // Add the trait self clauses
-        bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
+        bt_ctx.while_registering_trait_clauses(move |bt_ctx| {
             // Translate the predicates
             bt_ctx.translate_predicates_of(None, rust_id)?;
 

@@ -74,18 +74,6 @@ impl VarId::Vector<Var> {
     }
 }
 
-impl Var {
-    /// Substitute the region parameters and type variables and return
-    /// the resulting variable
-    pub fn substitute(&self, subst: &TypeSubst, cgsubst: &ConstGenericSubst) -> Var {
-        Var {
-            index: self.index,
-            name: self.name.clone(),
-            ty: self.ty.substitute_types(subst, cgsubst),
-        }
-    }
-}
-
 impl TraitDecl {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where

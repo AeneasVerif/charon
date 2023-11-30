@@ -92,9 +92,9 @@ impl Formatter<TraitImplId::Id> for DummyFormatter {
     }
 }
 
-impl Formatter<RegionId::Id> for DummyFormatter {
-    fn format_object(&self, id: RegionId::Id) -> String {
-        id.to_pretty_string()
+impl Formatter<(DeBruijnId, RegionId::Id)> for DummyFormatter {
+    fn format_object(&self, (grid, id): (DeBruijnId, RegionId::Id)) -> String {
+        bound_region_var_to_pretty_string(grid, id)
     }
 }
 

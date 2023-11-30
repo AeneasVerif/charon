@@ -83,11 +83,16 @@ impl<'a, C> Formatter<ConstGenericVarId::Id> for WithGenericsFmt<'a, C> {
     }
 }
 
-impl<'a, C> Formatter<RegionId::Id> for WithGenericsFmt<'a, C> {
-    fn format_object(&self, x: RegionId::Id) -> String {
-        match &self.generics.regions.get(x).unwrap().name {
-            None => "'_".to_string(),
-            Some(r) => r.to_string(),
+impl<'a, C> Formatter<(DeBruijnId, RegionId::Id)> for WithGenericsFmt<'a, C> {
+    fn format_object(&self, (grid, id): (DeBruijnId, RegionId::Id)) -> String {
+        // TODO: this is wrong
+        if grid.index == 0 {
+            match &self.generics.regions.get(id).unwrap().name {
+                None => "'_".to_string(),
+                Some(r) => r.to_string(),
+            }
+        } else {
+            "'_".to_string()
         }
     }
 }

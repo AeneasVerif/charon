@@ -36,7 +36,7 @@ pub struct TypeVar {
 }
 
 /// Region variable.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Hash, PartialOrd, Ord)]
 pub struct RegionVar {
     /// Unique index identifying the variable
     pub index: RegionId::Id,
@@ -55,14 +55,40 @@ pub struct ConstGenericVar {
     pub ty: LiteralTy,
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize)]
+pub struct DeBruijnId {
+    pub index: usize,
+}
+
 #[derive(
     Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, EnumIsA, EnumAsGetters, Serialize,
 )]
 pub enum Region {
     /// Static region
     Static,
-    /// Non-static region.
-    Var(RegionId::Id),
+    /// Bound region variable.
+    ///
+    /// **Important**:
+    /// ==============
+    /// Similarly to what the Rust compiler does, we use De Bruijn indices to
+    /// identify *groups* of bound variables, and variable identifiers to
+    /// identity the variables inside the groups.
+    ///
+    /// For instance, we have the following:
+    /// ```text
+    ///                     we compute the De Bruijn indices from here
+    ///                            VVVVVVVVVVVVVVVVVVVVVVV
+    /// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+    ///      ^^^^^^         ^^       ^       ^        ^
+    ///        |      De Bruijn: 0   |       |        |
+    ///  De Bruijn: 1                |       |        |
+    ///                        De Bruijn: 1  |    De Bruijn: 0
+    ///                           Var id: 0  |       Var id: 0
+    ///                                      |
+    ///                                De Bruijn: 1
+    ///                                   Var id: 1
+    /// ```
+    BVar(DeBruijnId, RegionId::Id),
     /// Erased region
     Erased,
     /// For error reporting.
@@ -501,8 +527,11 @@ pub enum Ty {
     RawPtr(Box<Ty>, RefKind),
     /// A trait type
     TraitType(TraitRef, GenericArgs, TraitItemName),
-    /// Arrow type
-    Arrow(Vec<Ty>, Box<Ty>),
+    /// Arrow type, used in particular for the local function pointers.
+    /// This is essentially a "constrained" function signature:
+    /// arrow types can only contain generic lifetime parameters
+    /// (no generic types), no predicates, etc.
+    Arrow(Vec<RegionVar>, Vec<Ty>, Box<Ty>),
 }
 
 /// Assumed types identifiers.

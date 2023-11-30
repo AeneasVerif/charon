@@ -6,14 +6,9 @@ use crate::types::*;
 use crate::ullbc_ast::*;
 use crate::values::*;
 use hax_frontend_exporter as hax;
-use im::{HashMap, OrdSet};
+use im::HashMap;
 use macros::make_generic_in_borrows;
-use std::iter::FromIterator;
 use std::iter::Iterator;
-
-pub type RegionSubst = HashMap<RegionId::Id, Region>;
-pub type TypeSubst = HashMap<TypeVarId::Id, Ty>;
-pub type ConstGenericSubst = HashMap<ConstGenericVarId::Id, ConstGeneric>;
 
 // TODO: should we just put all the potential constraints we need in there?
 pub trait TypeFormatter = Formatter<TypeVarId::Id>
@@ -24,59 +19,34 @@ pub trait TypeFormatter = Formatter<TypeVarId::Id>
     + Formatter<TraitDeclId::Id>
     + Formatter<TraitImplId::Id>
     + Formatter<TraitClauseId::Id>
-    + Formatter<RegionId::Id>;
+    + Formatter<(DeBruijnId, RegionId::Id)>;
 
-impl ConstGenericVarId::Id {
-    pub fn substitute(
-        &self,
-        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> ConstGeneric {
-        cgsubst(self)
+impl DeBruijnId {
+    pub fn new(index: usize) -> Self {
+        DeBruijnId { index }
     }
-}
 
-impl ConstGeneric {
-    pub fn substitute(
-        &self,
-        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> ConstGeneric {
-        match self {
-            ConstGeneric::Var(id) => id.substitute(cgsubst),
-            ConstGeneric::Value(v) => ConstGeneric::Value(v.clone()),
-            ConstGeneric::Global(id) => ConstGeneric::Global(*id),
+    pub fn is_zero(&self) -> bool {
+        self.index == 0
+    }
+
+    pub fn decr(&self) -> Self {
+        DeBruijnId {
+            index: self.index - 1,
         }
-    }
-}
-
-impl RegionId::Id {
-    pub fn substitute(&self, rsubst: &RegionSubst) -> Region {
-        *rsubst.get(self).unwrap()
     }
 }
 
 impl Region {
     pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
     where
-        T: Formatter<RegionId::Id>,
+        T: Formatter<(DeBruijnId, RegionId::Id)>,
     {
         match self {
             Region::Static => "'static".to_string(),
-            Region::Var(id) => ctx.format_object(*id),
+            Region::BVar(grid, id) => ctx.format_object((*grid, *id)),
             Region::Erased => "'_".to_string(),
             Region::Unknown => "'_UNKNOWN_".to_string(),
-        }
-    }
-}
-
-impl Region {
-    pub fn substitute(&self, rsubst: &HashMap<Region, Region>) -> Region {
-        *rsubst.get(self).unwrap()
-    }
-
-    pub fn contains_var(&self, rset: &OrdSet<RegionId::Id>) -> bool {
-        match self {
-            Region::Static | Region::Erased | Region::Unknown => false,
-            Region::Var(id) => rset.contains(id),
         }
     }
 }
@@ -102,10 +72,9 @@ impl std::string::ToString for TypeVar {
 
 impl std::string::ToString for RegionVar {
     fn to_string(&self) -> String {
-        let id = self.index.to_pretty_string();
         match &self.name {
             Some(name) => name.to_string(),
-            None => id,
+            None => format!("'_{}", self.index),
         }
     }
 }
@@ -730,12 +699,6 @@ impl FieldId::Id {
     }
 }
 
-impl RegionId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@R{self}")
-    }
-}
-
 impl ConstGenericVarId::Id {
     pub fn to_pretty_string(self) -> String {
         format!("@Const{self}")
@@ -764,6 +727,10 @@ impl TraitImplId::Id {
     pub fn to_pretty_string(self) -> String {
         format!("@TraitImpl{self}")
     }
+}
+
+pub fn bound_region_var_to_pretty_string(grid: DeBruijnId, rid: RegionId::Id) -> String {
+    format!("'_{}_{}", grid.index, rid.to_string())
 }
 
 impl std::string::ToString for LiteralTy {
@@ -931,17 +898,30 @@ impl Ty {
                     substs.fmt_with_ctx_split_trait_refs(ctx)
                 )
             }
-            Ty::Arrow(inputs, box output) => {
+            Ty::Arrow(regions, inputs, box output) => {
+                // TODO: update the generics
+                let regions = if regions.is_empty() {
+                    "".to_string()
+                } else {
+                    format!(
+                        "<{}>",
+                        regions
+                            .iter()
+                            .map(|r| r.to_string())
+                            .collect::<Vec<String>>()
+                            .join(", ")
+                    )
+                };
                 let inputs = inputs
                     .iter()
                     .map(|x| x.fmt_with_ctx(ctx))
                     .collect::<Vec<String>>()
                     .join(", ");
                 if output.is_unit() {
-                    format!("fn({inputs})")
+                    format!("fn{regions}({inputs})")
                 } else {
                     let output = output.fmt_with_ctx(ctx);
-                    format!("fn({inputs}) -> {output}")
+                    format!("fn{regions}({inputs}) -> {output}")
                 }
             }
         }
@@ -973,37 +953,11 @@ impl Ty {
     }
 }
 
-impl Ty {
-    /// Returns `true` if the type contains one of the regions listed
-    /// in the set
-    /// TODO: reimplement this with visitors
-    pub fn contains_region_var(&self, rset: &OrdSet<RegionId::Id>) -> bool {
-        match self {
-            Ty::TypeVar(_) => false,
-            Ty::Literal(_) | Ty::Never => false,
-            Ty::Ref(r, ty, _) => r.contains_var(rset) || ty.contains_region_var(rset),
-            Ty::RawPtr(ty, _) => ty.contains_region_var(rset),
-            Ty::TraitType(_, generics, _) | Ty::Adt(_, generics) => {
-                // For the trait type case: we are checking the projected type,
-                // so we don't need to explore the trait ref
-                generics.regions.iter().any(|r| {
-                    r.contains_var(rset)
-                        || generics.types.iter().any(|x| x.contains_region_var(rset))
-                })
-            }
-            Ty::Arrow(inputs, box output) => {
-                inputs.iter().any(|x| x.contains_region_var(rset))
-                    || output.contains_region_var(rset)
-            }
-        }
-    }
-}
-
 impl std::fmt::Display for Region {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
             Region::Static => write!(f, "'static"),
-            Region::Var(id) => write!(f, "'_{id}"),
+            Region::BVar(grid, id) => write!(f, "'_{}_{id}", grid.index),
             Region::Erased => write!(f, "'_"),
             Region::Unknown => write!(f, "'_UNKNOWN_"),
         }
@@ -1016,246 +970,6 @@ impl std::string::ToString for Ty {
     }
 }
 
-impl TraitRef {
-    pub fn substitute(
-        &self,
-        rsubst: &dyn Fn(&Region) -> Region,
-        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty,
-        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> TraitRef {
-        let generics = self.generics.substitute(rsubst, tsubst, cgsubst);
-        let trait_decl_ref = self.trait_decl_ref.substitute(rsubst, tsubst, cgsubst);
-        TraitRef {
-            trait_id: self.trait_id.clone(),
-            generics,
-            trait_decl_ref,
-        }
-    }
-}
-
-impl TraitDeclRef {
-    pub fn substitute(
-        &self,
-        rsubst: &dyn Fn(&Region) -> Region,
-        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty,
-        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> TraitDeclRef {
-        let generics = self.generics.substitute(rsubst, tsubst, cgsubst);
-        TraitDeclRef {
-            trait_id: self.trait_id,
-            generics,
-        }
-    }
-}
-
-impl GenericArgs {
-    pub fn substitute(
-        &self,
-        rsubst: &dyn Fn(&Region) -> Region,
-        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty,
-        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> GenericArgs {
-        let GenericArgs {
-            regions,
-            types,
-            const_generics,
-            trait_refs,
-        } = self;
-        let regions = Ty::substitute_regions(regions, rsubst);
-        let types = types
-            .iter()
-            .map(|ty| ty.substitute(rsubst, tsubst, cgsubst))
-            .collect();
-        let const_generics = const_generics
-            .iter()
-            .map(|cg| cg.substitute(cgsubst))
-            .collect();
-        let trait_refs = trait_refs
-            .iter()
-            .map(|x| x.substitute(rsubst, tsubst, cgsubst))
-            .collect();
-        GenericArgs {
-            regions,
-            types,
-            const_generics,
-            trait_refs,
-        }
-    }
-}
-
-impl Ty {
-    pub fn substitute(
-        &self,
-        rsubst: &dyn Fn(&Region) -> Region,
-        tsubst: &dyn Fn(&TypeVarId::Id) -> Ty,
-        cgsubst: &dyn Fn(&ConstGenericVarId::Id) -> ConstGeneric,
-    ) -> Ty {
-        match self {
-            Ty::Adt(id, args) => {
-                let args = args.substitute(rsubst, tsubst, cgsubst);
-                Ty::Adt(*id, args)
-            }
-            Ty::TypeVar(id) => tsubst(id),
-            Ty::Literal(pty) => Ty::Literal(*pty),
-            Ty::Never => Ty::Never,
-            Ty::Ref(rid, ty, kind) => Ty::Ref(
-                rsubst(rid),
-                Box::new(ty.substitute(rsubst, tsubst, cgsubst)),
-                *kind,
-            ),
-            Ty::RawPtr(ty, kind) => {
-                Ty::RawPtr(Box::new(ty.substitute(rsubst, tsubst, cgsubst)), *kind)
-            }
-            Ty::TraitType(trait_ref, args, name) => {
-                let trait_ref = trait_ref.substitute(rsubst, tsubst, cgsubst);
-                let args = args.substitute(rsubst, tsubst, cgsubst);
-                Ty::TraitType(trait_ref, args, name.clone())
-            }
-            Ty::Arrow(inputs, box output) => {
-                let inputs = inputs
-                    .iter()
-                    .map(|ty| ty.substitute(rsubst, tsubst, cgsubst))
-                    .collect();
-                let output = output.substitute(rsubst, tsubst, cgsubst);
-                Ty::Arrow(inputs, Box::new(output))
-            }
-        }
-    }
-
-    fn substitute_regions(regions: &[Region], rsubst: &dyn Fn(&Region) -> Region) -> Vec<Region> {
-        Vec::from_iter(regions.iter().map(|rid| rsubst(rid)))
-    }
-
-    /// Substitute the type parameters
-    // TODO: tsubst and cgsubst should be closures instead of hashmaps
-    pub fn substitute_types(&self, subst: &TypeSubst, cgsubst: &ConstGenericSubst) -> Self {
-        self.substitute(&|r| *r, &|tid| subst.get(tid).unwrap().clone(), &|cgid| {
-            cgsubst.get(cgid).unwrap().clone()
-        })
-    }
-
-    /// Erase the regions
-    pub fn erase_regions(&self) -> Ty {
-        self.substitute(&|_| Region::Erased, &|tid| Ty::TypeVar(*tid), &|cgid| {
-            ConstGeneric::Var(*cgid)
-        })
-    }
-
-    /// Erase the regions and substitute the types at the same time
-    pub fn erase_regions_substitute_types(
-        &self,
-        subst: &TypeSubst,
-        cgsubst: &ConstGenericSubst,
-    ) -> Ty {
-        self.substitute(
-            &|_| Region::Erased,
-            &|tid| subst.get(tid).unwrap().clone(),
-            &|cgid| cgsubst.get(cgid).unwrap().clone(),
-        )
-    }
-
-    /// Returns `true` if the type contains some region or type variables
-    /// TODO: reimplement this with visitors
-    pub fn contains_variables(&self) -> bool {
-        match self {
-            Ty::TypeVar(_) => true,
-            Ty::Literal(_) | Ty::Never => false,
-            Ty::Ref(_, _, _) => true, // Always contains a region identifier
-            Ty::RawPtr(ty, _) => ty.contains_variables(),
-            Ty::TraitType(_, args, _) | Ty::Adt(_, args) => {
-                // For the trait type case: we are checking the projected type,
-                // so we don't need to explore the trait ref
-                !args.regions.is_empty() || args.types.iter().any(|x| x.contains_variables())
-            }
-            Ty::Arrow(inputs, box output) => {
-                inputs.iter().any(|ty| ty.contains_variables()) || output.contains_variables()
-            }
-        }
-    }
-
-    /// Returns `true` if the type contains some regions
-    /// TODO: reimplement this with visitors
-    pub fn contains_regions(&self) -> bool {
-        match self {
-            Ty::TypeVar(_) => false,
-            Ty::Literal(_) | Ty::Never => false,
-            Ty::Ref(_, _, _) => true,
-            Ty::RawPtr(ty, _) => ty.contains_regions(),
-            Ty::TraitType(_, args, _) | Ty::Adt(_, args) => {
-                // For the trait type case: we are checking the projected type,
-                // so we don't need to explore the trait ref
-                !args.regions.is_empty() || args.types.iter().any(|x| x.contains_regions())
-            }
-            Ty::Arrow(inputs, box output) => {
-                inputs.iter().any(|ty| ty.contains_regions()) || output.contains_regions()
-            }
-        }
-    }
-}
-
-impl Ty {
-    /// Substitute the regions and type parameters
-    pub fn substitute_regions_types(&self, rsubst: &RegionSubst, tsubst: &TypeSubst) -> Self {
-        self.substitute(
-            &|r| match r {
-                Region::Static | Region::Erased | Region::Unknown => *r,
-                Region::Var(rid) => *rsubst.get(rid).unwrap(),
-            },
-            &|tid| tsubst.get(tid).unwrap().clone(),
-            &|cgid| ConstGeneric::Var(*cgid),
-        )
-    }
-}
-
-pub fn make_subst<'a, T1, T2: 'a, I1: Iterator<Item = T1>, I2: Iterator<Item = &'a T2>>(
-    keys: I1,
-    values: I2,
-) -> HashMap<T1, T2>
-where
-    T1: std::hash::Hash + Eq + Clone + Copy,
-    T2: Clone,
-{
-    // We don't need to do this, but we want to check the lengths
-    let keys: Vec<T1> = keys.collect();
-    let values: Vec<T2> = values.cloned().collect();
-    assert!(
-        keys.len() == values.len(),
-        "keys and values don't have the same length"
-    );
-
-    let mut res: HashMap<T1, T2> = HashMap::new();
-    keys.iter().zip(values.into_iter()).for_each(|(p, ty)| {
-        let _ = res.insert(*p, ty);
-    });
-
-    res
-}
-
-pub fn make_type_subst<'a, I1: Iterator<Item = TypeVarId::Id>, I2: Iterator<Item = &'a Ty>>(
-    params: I1,
-    types: I2,
-) -> TypeSubst {
-    make_subst(params, types)
-}
-
-pub fn make_region_subst<'a, I1: Iterator<Item = RegionId::Id>, I2: Iterator<Item = &'a Region>>(
-    keys: I1,
-    values: I2,
-) -> RegionSubst {
-    make_subst(keys, values)
-}
-
-pub fn make_cg_subst<
-    'a,
-    I1: Iterator<Item = ConstGenericVarId::Id>,
-    I2: Iterator<Item = &'a ConstGeneric>,
->(
-    keys: I1,
-    values: I2,
-) -> ConstGenericSubst {
-    make_subst(keys, values)
-}
-
 impl Formatter<TypeVarId::Id> for TypeDecl {
     fn format_object(&self, id: TypeVarId::Id) -> String {
         let var = self.generics.types.get(id).unwrap();
@@ -1263,10 +977,13 @@ impl Formatter<TypeVarId::Id> for TypeDecl {
     }
 }
 
-impl Formatter<RegionId::Id> for TypeDecl {
-    fn format_object(&self, id: RegionId::Id) -> String {
-        let var = self.generics.regions.get(id).unwrap();
-        var.to_string()
+impl Formatter<(DeBruijnId, RegionId::Id)> for TypeDecl {
+    fn format_object(&self, (grid, id): (DeBruijnId, RegionId::Id)) -> String {
+        // TODO: this is wrong
+        match self.generics.regions.get(id) {
+            None => bound_region_var_to_pretty_string(grid, id),
+            Some(var) => var.to_string(),
+        }
     }
 }
 
@@ -1279,7 +996,7 @@ impl Formatter<ConstGenericVarId::Id> for TypeDecl {
 
 impl Formatter<&Region> for TypeDecl
 where
-    TypeDecl: Formatter<RegionId::Id>,
+    TypeDecl: Formatter<(DeBruijnId, RegionId::Id)>,
 {
     fn format_object(&self, r: &Region) -> String {
         r.fmt_with_ctx(self)
@@ -1298,7 +1015,7 @@ impl Ty {
             }
             Ty::TypeVar(_) | Ty::Literal(_) => false,
             Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => ty.contains_never(),
-            Ty::Arrow(inputs, box output) => {
+            Ty::Arrow(_, inputs, box output) => {
                 inputs.iter().any(|ty| ty.contains_never()) || output.contains_never()
             }
         }
@@ -1518,20 +1235,25 @@ pub trait TypeVisitor {
                 self.visit_trait_ref(trait_ref);
                 self.visit_generic_args(generics);
             }
-            Arrow(inputs, box output) => self.visit_arrow(inputs, output),
+            Arrow(regions, inputs, box output) => self.visit_arrow(regions, inputs, output),
         }
     }
 
     fn visit_region(&mut self, r: &Region) {
         match r {
             Region::Erased | Region::Static | Region::Unknown => (),
-            Region::Var(id) => self.visit_region_id(id),
+            Region::BVar(grid, id) => {
+                self.visit_region_bvar(grid, id)
+            },
         }
     }
 
-    fn visit_region_id(&mut self, _ : &RegionId::Id) {}
+    fn visit_region_bvar(&mut self, _grid: &DeBruijnId, _rid: &RegionId::Id) {}
 
-    fn visit_arrow(&mut self, inputs: &Vec<Ty>, output: &Ty) {
+    fn visit_arrow(&mut self, regions: &Vec<RegionVar>, inputs: &Vec<Ty>, output: &Ty) {
+        for r in regions {
+            self.visit_region_var(r);
+        }
         for ty in inputs {
             self.visit_ty(ty);
         }
@@ -1547,10 +1269,7 @@ pub trait TypeVisitor {
         self.visit_generic_args(args);
     }
 
-    fn visit_region_var(&mut self, r: &RegionVar) {
-        // Ignoring the name
-        self.visit_region_id(&r.index);
-    }
+    fn visit_region_var(&mut self, r: &RegionVar) {}
 
     fn visit_ty_type_var(&mut self, vid: &TypeVarId::Id) {
         self.visit_type_var_id(vid);

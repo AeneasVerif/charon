@@ -191,10 +191,41 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>,
     /// A hax state with an owner id
     pub hax_state: hax::State<hax::Base<'tcx>, (), (), rustc_hir::def_id::DefId>,
-    /// The regions
-    pub region_vars: RegionId::Vector<RegionVar>,
-    /// The map from rust region to translated region indices
-    pub region_vars_map: RegionId::MapGenerator<hax::Region>,
+    /// The regions.
+    /// We use DeBruijn indices, so we have a stack of regions.
+    /// See the comments for [Region::BVar].
+    pub region_vars: im::Vector<RegionId::Vector<RegionVar>>,
+    /// The map from rust (free) regions to translated region indices.
+    /// This contains the early bound regions.
+    ///
+    /// Important:
+    /// ==========
+    /// Rust makes the distinction between the early bound regions, which
+    /// are free, and the late-bound regions, which are bound (and use
+    /// DeBruijn indices).
+    /// We do not make this distinction, and use bound regions everywhere.
+    /// This means that we consider the free regions as belonging to the first
+    /// group of bound regions.
+    ///
+    /// The [bound_region_vars] field below takes care of the regions which
+    /// are bound in the Rustc representation.
+    pub free_region_vars: std::collections::BTreeMap<hax::Region, RegionId::Id>,
+    /// The generator for bound region indices
+    pub bound_region_var_id_generator: RegionId::Generator,
+    ///
+    /// The stack of late-bound parameters (can only be lifetimes for now), which
+    /// use DeBruijn indices (the other parameters use free variables).
+    /// For explanations about what early-bound and late-bound parameters are, see:
+    /// https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
+    /// https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+    ///
+    /// Remark: even though performance is not critical, the use of [im::Vec] allows
+    /// us to push/pop and access indexed elements with very good performance.
+    ///
+    /// **Important**:
+    /// ==============
+    /// We use DeBruijn indices. See the comments for [Region::Var].
+    pub bound_region_vars: im::Vector<im::Vector<RegionId::Id>>,
     /// The type variables
     pub type_vars: TypeVarId::Vector<TypeVar>,
     /// The map from rust type variable indices to translated type variable
@@ -234,41 +265,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
     pub blocks_map: ast::BlockId::MapGenerator<hax::BasicBlock>,
-    ///
-    /// The stack of late-bound parameters (can only be lifetimes for now), which
-    /// use DeBruijn indices (the other parameters use free variables).
-    /// For explanations about what early-bound and late-bound parameters are, see:
-    /// https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
-    /// https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
-    ///
-    /// Remark: even though performance is not critical, the use of [im::Vec] allows
-    /// us to push/pop and access indexed elements with very good performance.
-    ///
-    /// **Important**:
-    /// ==============
-    /// The Rust compiler uses De Bruijn indices to identify the *group* of
-    /// universally quantified variables, and variable identifiers to identity
-    /// the variables inside the group.
-    ///
-    /// For instance, we have the following:
-    /// ```text
-    ///                     we compute the De Bruijn indices from here
-    ///                            VVVVVVVVVVVVVVVVVVVVVVV
-    /// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
-    ///      ^^^^^^         ^^       ^       ^        ^
-    ///        |      De Bruijn: 0   |       |        |
-    ///  De Bruijn: 1                |       |        |
-    ///                        De Bruijn: 1  |    De Bruijn: 0
-    ///                           Var id: 0  |       Var id: 0
-    ///                                      |
-    ///                                De Bruijn: 1
-    ///                                   Var id: 1
-    /// ```
-    ///
-    /// For this reason, we use a stack of vectors to store the bound variables.
-    pub bound_region_vars: im::Vector<im::Vector<RegionId::Id>>,
 }
 
+// TODO: remove
 /// A formatting context for type/global/function bodies.
 /// Simply augments the [TransCtx] with local variables.
 ///
@@ -532,8 +531,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             def_id,
             t_ctx,
             hax_state,
-            region_vars: RegionId::Vector::new(),
-            region_vars_map: RegionId::MapGenerator::new(),
+            region_vars: im::vector![RegionId::Vector::new()],
+            free_region_vars: std::collections::BTreeMap::new(),
+            bound_region_var_id_generator: RegionId::Generator::new(),
+            bound_region_vars: im::Vector::new(),
             type_vars: TypeVarId::Vector::new(),
             type_vars_map: TypeVarId::MapGenerator::new(),
             vars: VarId::Vector::new(),
@@ -548,7 +549,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trait_type_constraints: Vec::new(),
             blocks: im::OrdMap::new(),
             blocks_map: ast::BlockId::MapGenerator::new(),
-            bound_region_vars: im::Vector::new(),
         }
     }
 
@@ -606,34 +606,62 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_trait_impl_id(id)
     }
 
-    pub(crate) fn push_region(&mut self, r: hax::Region, name: Option<String>) -> RegionId::Id {
+    /// Push a free region.
+    ///
+    /// Important: we must push *all* the free regions (which are early-bound
+    /// regions) before pushing any (late-)bound region.
+    pub(crate) fn push_free_region(
+        &mut self,
+        r: hax::Region,
+        name: Option<String>,
+    ) -> RegionId::Id {
         use crate::id_vector::ToUsize;
-        let rid = self.region_vars_map.insert(r);
-        assert!(rid.to_usize() == self.region_vars.len());
+        // Check that there are no late-bound regions
+        assert!(self.bound_region_vars.is_empty());
+        let rid = self.bound_region_var_id_generator.fresh_id();
+        self.free_region_vars.insert(r, rid);
+        assert!(rid.to_usize() == self.region_vars[0].len());
         let var = RegionVar { index: rid, name };
-        self.region_vars.insert(rid, var);
+        self.region_vars[0].insert(rid, var);
         rid
     }
 
-    /// Push a group of bound regions
-    pub(crate) fn push_bound_regions_group(&mut self, names: Vec<Option<String>>) {
+    /// Push a group of bound regions and call the continuation
+    pub(crate) fn with_bound_regions_group<F, T>(&mut self, names: Vec<Option<String>>, f: F) -> T
+    where
+        F: FnOnce(&mut Self) -> T,
+    {
         use crate::id_vector::ToUsize;
 
         // Register the variables
         let var_ids: im::Vector<RegionId::Id> = names
             .into_iter()
             .map(|name| {
-                // Note that we don't insert a binding in the region_vars_map
-                let rid = self.region_vars_map.fresh_id();
-                assert!(rid.to_usize() == self.region_vars.len());
+                let rid = self.bound_region_var_id_generator.fresh_id();
+                assert!(rid.to_usize() == self.region_vars[0].len());
                 let var = RegionVar { index: rid, name };
-                self.region_vars.insert(rid, var);
+                self.region_vars[0].insert(rid, var);
                 rid
             })
             .collect();
 
         // Push the group
         self.bound_region_vars.push_front(var_ids);
+        // Reinitialize the counter
+        let old_gen = std::mem::replace(
+            &mut self.bound_region_var_id_generator,
+            RegionId::Generator::new(),
+        );
+
+        // Call the continuation
+        let res = f(self);
+
+        // Reset
+        self.bound_region_var_id_generator = old_gen;
+        self.bound_region_vars.pop_front();
+
+        // Return
+        res
     }
 
     pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId::Id {
@@ -681,8 +709,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn get_generics(&self) -> GenericParams {
+        assert!(self.region_vars.len() == 1);
         GenericParams {
-            regions: self.region_vars.clone(),
+            regions: self.region_vars[0].clone(),
+            types: self.type_vars.clone(),
+            const_generics: self.const_generic_vars.clone(),
+            trait_clauses: self.get_local_trait_clauses(),
+        }
+    }
+
+    pub(crate) fn get_current_generics(&self) -> GenericParams {
+        GenericParams {
+            regions: self.region_vars[0].clone(),
             types: self.type_vars.clone(),
             const_generics: self.const_generic_vars.clone(),
             trait_clauses: self.get_local_trait_clauses(),
@@ -730,11 +768,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// its parent clauses, etc. in the context. We temporarily replace the
     /// trait instance id generator so that the continuation registers the
     ///
-    pub(crate) fn with_local_trait_clauses<T>(
+    pub(crate) fn with_local_trait_clauses<F, T>(
         &mut self,
         new_trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
-        f: &mut dyn FnMut(&mut Self) -> T,
-    ) -> T {
+        f: F,
+    ) -> T
+    where
+        F: FnOnce(&mut Self) -> T,
+    {
         use std::mem::replace;
 
         // Save the trait instance id generator
@@ -753,10 +794,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Set [registering_trait_clauses] to [true], call the continuation, and
     /// reset it to [false]
-    pub(crate) fn while_registering_trait_clauses<T>(
-        &mut self,
-        f: &mut dyn FnMut(&mut Self) -> T,
-    ) -> T {
+    pub(crate) fn while_registering_trait_clauses<F, T>(&mut self, f: F) -> T
+    where
+        F: FnOnce(&mut Self) -> T,
+    {
         assert!(!self.registering_trait_clauses);
         self.registering_trait_clauses = true;
         let out = f(self);
@@ -783,9 +824,9 @@ impl<'tcx, 'ctx> Formatter<GlobalDeclId::Id> for TransCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx> Formatter<RegionId::Id> for TransCtx<'tcx, 'ctx> {
-    fn format_object(&self, id: RegionId::Id) -> String {
-        id.to_pretty_string()
+impl<'tcx, 'ctx> Formatter<(DeBruijnId, RegionId::Id)> for TransCtx<'tcx, 'ctx> {
+    fn format_object(&self, (grid, id): (DeBruijnId, RegionId::Id)) -> String {
+        bound_region_var_to_pretty_string(grid, id)
     }
 }
 
@@ -933,10 +974,15 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<VarId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1>
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<RegionId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: RegionId::Id) -> String {
-        let v = self.region_vars.get(id).unwrap();
-        v.to_string()
+impl<'tcx, 'ctx, 'ctx1> Formatter<(DeBruijnId, RegionId::Id)> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, (grid, id): (DeBruijnId, RegionId::Id)) -> String {
+        match self.region_vars.get(grid.index) {
+            None => bound_region_var_to_pretty_string(grid, id),
+            Some(gr) => match gr.get(id) {
+                None => bound_region_var_to_pretty_string(grid, id),
+                Some(v) => v.to_string(),
+            },
+        }
     }
 }
 
@@ -1015,10 +1061,11 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<VarId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> Formatter<RegionId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
-    fn format_object(&self, id: RegionId::Id) -> String {
+impl<'tcx, 'ctx, 'ctx1> Formatter<(DeBruijnId, RegionId::Id)> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
+    fn format_object(&self, (grid, id): (DeBruijnId, RegionId::Id)) -> String {
+        // TODO: this is wrong
         match self.generics.regions.get(id) {
-            None => id.to_pretty_string(),
+            None => bound_region_var_to_pretty_string(grid, id),
             Some(v) => v.to_string(),
         }
     }

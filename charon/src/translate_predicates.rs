@@ -347,7 +347,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         def_id: DefId,
     ) -> Result<(), Error> {
         let span = self.t_ctx.tcx.def_span(def_id);
-        self.while_registering_trait_clauses(&mut |ctx| {
+        self.while_registering_trait_clauses(move |ctx| {
             ctx.translate_predicates_of(parent_trait_id, def_id)?;
             ctx.solve_trait_obligations_in_trait_clauses(span);
             Ok(())
