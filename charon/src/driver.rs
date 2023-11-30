@@ -193,8 +193,8 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
             &ctx,
             crate_name,
             &ordered_decls,
-            &ctx.fun_defs,
-            &ctx.global_defs,
+            &ctx.fun_decls,
+            &ctx.global_decls,
             &options.dest_dir,
         )?;
     } else {

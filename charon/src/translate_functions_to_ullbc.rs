@@ -1723,7 +1723,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Save the new function
-        self.fun_defs.insert(
+        self.fun_decls.insert(
             def_id,
             FunDecl {
                 meta,
@@ -1789,7 +1789,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Save the new global
-        self.global_defs.insert(
+        self.global_decls.insert(
             def_id,
             GlobalDecl {
                 def_id,

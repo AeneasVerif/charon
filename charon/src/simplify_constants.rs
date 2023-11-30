@@ -120,10 +120,11 @@ fn transform_operand<F: FnMut(Ty) -> VarId::Id>(
 
 pub fn transform(ctx: &mut TransCtx) {
     // Slightly annoying: we have to clone because of borrowing issues
-    let mut fun_defs = ctx.fun_defs.clone();
-    let mut global_defs = ctx.global_defs.clone();
+    let mut fun_decls = ctx.fun_decls.clone();
+    let mut global_decls = ctx.global_decls.clone();
 
-    for (name, b) in iter_function_bodies(&mut fun_defs).chain(iter_global_bodies(&mut global_defs))
+    for (name, b) in
+        iter_function_bodies(&mut fun_decls).chain(iter_global_bodies(&mut global_decls))
     {
         trace!(
             "# About to simplify constants in function: {}:\n{}",
@@ -137,6 +138,6 @@ pub fn transform(ctx: &mut TransCtx) {
         });
     }
 
-    ctx.fun_defs = fun_defs;
-    ctx.global_defs = global_defs;
+    ctx.fun_decls = fun_decls;
+    ctx.global_decls = global_decls;
 }

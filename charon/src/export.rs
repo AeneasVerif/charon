@@ -34,8 +34,8 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     ctx: &TransCtx,
     crate_name: String,
     ordered_decls: &DeclarationsGroups,
-    fun_defs: &FunDeclId::Map<FD>,
-    global_defs: &GlobalDeclId::Map<GD>,
+    fun_decls: &FunDeclId::Map<FD>,
+    global_decls: &GlobalDeclId::Map<GD>,
     dest_dir: &Option<PathBuf>,
     extension: &str,
 ) -> Result<(), ()> {
@@ -61,9 +61,9 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     // Serialize
     // Note that we replace the maps with vectors (the declarations contain
     // their ids, so it is easy to reconstruct the maps from there).
-    let types = ctx.type_defs.iter().cloned().collect();
-    let functions = fun_defs.iter().cloned().collect();
-    let globals = global_defs.iter().cloned().collect();
+    let types = ctx.type_decls.iter().cloned().collect();
+    let functions = fun_decls.iter().cloned().collect();
+    let globals = global_decls.iter().cloned().collect();
     let trait_decls = ctx.trait_decls.iter().cloned().collect();
     let trait_impls = ctx.trait_impls.iter().cloned().collect();
     let crate_serializer = GCrateSerializer {
@@ -126,16 +126,16 @@ pub fn export_ullbc(
     ctx: &TransCtx,
     crate_name: String,
     ordered_decls: &DeclarationsGroups,
-    fun_defs: &ullbc_ast::FunDecls,
-    global_defs: &ullbc_ast::GlobalDecls,
+    fun_decls: &ullbc_ast::FunDecls,
+    global_decls: &ullbc_ast::GlobalDecls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<(), ()> {
     gexport(
         ctx,
         crate_name,
         ordered_decls,
-        fun_defs,
-        global_defs,
+        fun_decls,
+        global_decls,
         dest_dir,
         "ullbc",
     )
@@ -147,16 +147,16 @@ pub fn export_llbc(
     ctx: &TransCtx,
     crate_name: String,
     ordered_decls: &DeclarationsGroups,
-    fun_defs: &llbc_ast::FunDecls,
-    global_defs: &llbc_ast::GlobalDecls,
+    fun_decls: &llbc_ast::FunDecls,
+    global_decls: &llbc_ast::GlobalDecls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<(), ()> {
     gexport(
         ctx,
         crate_name,
         ordered_decls,
-        fun_defs,
-        global_defs,
+        fun_decls,
+        global_decls,
         dest_dir,
         "llbc",
     )

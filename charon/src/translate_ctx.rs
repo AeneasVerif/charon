@@ -156,15 +156,15 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// The map from Rust type ids to translated type ids
     pub type_id_map: TypeDeclId::MapGenerator<DefId>,
     /// The translated type definitions
-    pub type_defs: TypeDecls,
+    pub type_decls: TypeDecls,
     /// The map from Rust function ids to translated function ids
     pub fun_id_map: ast::FunDeclId::MapGenerator<DefId>,
     /// The translated function definitions
-    pub fun_defs: ast::FunDecls,
+    pub fun_decls: ast::FunDecls,
     /// The map from Rust global ids to translated global ids
     pub global_id_map: ast::GlobalDeclId::MapGenerator<DefId>,
     /// The translated global definitions
-    pub global_defs: ast::GlobalDecls,
+    pub global_decls: ast::GlobalDecls,
     /// The map from Rust trait decl ids to translated trait decl ids
     pub trait_decl_id_map: ast::TraitDeclId::MapGenerator<DefId>,
     /// The translated trait declarations
@@ -808,7 +808,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
 impl<'tcx, 'ctx> Formatter<TypeDeclId::Id> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        match self.type_defs.get(id) {
+        match self.type_decls.get(id) {
             None => id.to_pretty_string(),
             Some(d) => d.name.fmt_with_ctx(self),
         }
@@ -817,7 +817,7 @@ impl<'tcx, 'ctx> Formatter<TypeDeclId::Id> for TransCtx<'tcx, 'ctx> {
 
 impl<'tcx, 'ctx> Formatter<GlobalDeclId::Id> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        match self.global_defs.get(id) {
+        match self.global_decls.get(id) {
             None => id.to_pretty_string(),
             Some(d) => d.name.fmt_with_ctx(self),
         }
@@ -844,7 +844,7 @@ impl<'tcx, 'ctx> Formatter<ConstGenericVarId::Id> for TransCtx<'tcx, 'ctx> {
 
 impl<'tcx, 'ctx> Formatter<ast::FunDeclId::Id> for TransCtx<'tcx, 'ctx> {
     fn format_object(&self, id: ast::FunDeclId::Id) -> String {
-        match self.fun_defs.get(id) {
+        match self.fun_decls.get(id) {
             None => id.to_pretty_string(),
             Some(d) => d.name.fmt_with_ctx(self),
         }
@@ -881,7 +881,7 @@ impl<'tcx, 'ctx> Formatter<(TypeDeclId::Id, VariantId::Id)> for TransCtx<'tcx, '
         let (def_id, variant_id) = id;
         // The definition may not be available yet, especially if we print-debug
         // while translating the crate
-        match self.type_defs.get(def_id) {
+        match self.type_decls.get(def_id) {
             Option::None => format!(
                 "{}::{}",
                 def_id.to_pretty_string(),
@@ -907,7 +907,7 @@ impl<'tcx, 'ctx> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
         let (def_id, opt_variant_id, field_id) = id;
         // The definition may not be available yet, especially if we print-debug
         // while translating the crate
-        match self.type_defs.get(def_id) {
+        match self.type_decls.get(def_id) {
             Option::None => match opt_variant_id {
                 Option::None => format!(
                     "{}::{}",
@@ -988,7 +988,7 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<(DeBruijnId, RegionId::Id)> for BodyTransCtx<'
 
 impl<'tcx, 'ctx, 'ctx1> Formatter<TypeDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        match self.t_ctx.type_defs.get(id) {
+        match self.t_ctx.type_decls.get(id) {
             None => id.to_pretty_string(),
             Some(d) => d.name.fmt_with_ctx(self),
         }
@@ -997,7 +997,7 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<TypeDeclId::Id> for BodyTransCtx<'tcx, 'ctx, '
 
 impl<'tcx, 'ctx, 'ctx1> Formatter<GlobalDeclId::Id> for BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        match self.t_ctx.global_defs.get(id) {
+        match self.t_ctx.global_decls.get(id) {
             None => id.to_pretty_string(),
             Some(d) => d.name.fmt_with_ctx(self),
         }
@@ -1073,7 +1073,7 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<(DeBruijnId, RegionId::Id)> for BodyFormatCtx<
 
 impl<'tcx, 'ctx, 'ctx1> Formatter<TypeDeclId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
-        match self.t_ctx.type_defs.get(id) {
+        match self.t_ctx.type_decls.get(id) {
             None => id.to_pretty_string(),
             Some(d) => d.name.fmt_with_ctx(self),
         }
@@ -1082,7 +1082,7 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<TypeDeclId::Id> for BodyFormatCtx<'tcx, 'ctx, 
 
 impl<'tcx, 'ctx, 'ctx1> Formatter<GlobalDeclId::Id> for BodyFormatCtx<'tcx, 'ctx, 'ctx1> {
     fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        match self.t_ctx.global_defs.get(id) {
+        match self.t_ctx.global_decls.get(id) {
             None => id.to_pretty_string(),
             Some(d) => d.name.fmt_with_ctx(self),
         }
@@ -1402,11 +1402,11 @@ impl<'tcx, 'ctx, 'ctx1> Formatter<&gast::TraitImpl> for BodyTransCtx<'tcx, 'ctx,
 impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // We do simple: types, globals, traits, functions
-        for (_, d) in &self.type_defs {
+        for (_, d) in &self.type_decls {
             writeln!(f, "{}\n", self.format_object(d))?
         }
 
-        for (_, d) in &self.global_defs {
+        for (_, d) in &self.global_decls {
             writeln!(f, "{}\n", self.format_object(d))?
         }
 
@@ -1418,7 +1418,7 @@ impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
             writeln!(f, "{}\n", self.format_object(d))?
         }
 
-        for (_, d) in &self.fun_defs {
+        for (_, d) in &self.fun_decls {
             writeln!(f, "{}\n", self.format_object(d))?
         }
 
@@ -1434,7 +1434,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         llbc_funs: &llbc_ast::FunDecls,
     ) -> fmt::Result {
         // We do simple: types, globals, traits, functions
-        for (_, d) in &self.type_defs {
+        for (_, d) in &self.type_decls {
             writeln!(f, "{}\n", self.format_object(d))?
         }
 

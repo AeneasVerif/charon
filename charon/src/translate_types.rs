@@ -741,7 +741,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
 
-        self.type_defs.insert(trans_id, type_def);
+        self.type_decls.insert(trans_id, type_def);
 
         Ok(())
     }
