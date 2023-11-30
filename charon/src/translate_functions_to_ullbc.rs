@@ -1183,7 +1183,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 target: self.translate_basic_block(body, *target)?,
             },
             TerminatorKind::Call {
-                fun_id,
+                fun,
                 substs,
                 args,
                 destination,
@@ -1193,20 +1193,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 from_hir_call: _,
                 fn_span: _,
-            } => {
-                trace!("Call: func: {:?}", fun_id.rust_def_id);
-                self.translate_function_call(
-                    span,
-                    body,
-                    fun_id,
-                    substs,
-                    args,
-                    destination,
-                    target,
-                    trait_refs,
-                    trait_info,
-                )?
-            }
+            } => self.translate_function_call(
+                span,
+                body,
+                fun,
+                substs,
+                args,
+                destination,
+                target,
+                trait_refs,
+                trait_info,
+            )?,
             TerminatorKind::Assert {
                 cond,
                 expected,
@@ -1308,7 +1305,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         body: &hax::MirBody<()>,
-        def_id: &hax::DefId,
+        fun: &hax::FunOperand,
         substs: &Vec<hax::GenericArg>,
         args: &Vec<hax::Operand>,
         destination: &hax::Place,
@@ -1317,48 +1314,85 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_info: &Option<hax::TraitInfo>,
     ) -> Result<RawTerminator, Error> {
         trace!();
-        let rust_id = def_id.rust_def_id.unwrap();
+        // There are two cases, depending on whether this is a "regular"
+        // call to a top-level function identified by its id, or if we
+        // are using a local function pointer (i.e., the operand is a "move").
+        match fun {
+            hax::FunOperand::Id(def_id) => {
+                // Regular function call
+                let rust_id = def_id.rust_def_id.unwrap();
 
-        // Translate the function operand - should be a constant: we don't
-        // support closures for now
-        trace!("func: {:?}", rust_id);
+                // Translate the function operand - should be a constant: we don't
+                // support closures for now
+                trace!("func: {:?}", rust_id);
 
-        // Translate the function id, with its parameters
-        let erase_regions = true;
-        let fid = self.translate_fun_decl_id_with_args(
-            span,
-            erase_regions,
-            def_id,
-            substs,
-            Some(args),
-            trait_refs,
-            trait_info,
-        )?;
+                // Translate the function id, with its parameters
+                let erase_regions = true;
+                let fid = self.translate_fun_decl_id_with_args(
+                    span,
+                    erase_regions,
+                    def_id,
+                    substs,
+                    Some(args),
+                    trait_refs,
+                    trait_info,
+                )?;
 
-        match fid {
-            SubstFunIdOrPanic::Panic => {
-                // If the call is `panic!`, then the target is `None`.
-                // I don't know in which other cases it can be `None`.
-                assert!(target.is_none());
+                match fid {
+                    SubstFunIdOrPanic::Panic => {
+                        // If the call is `panic!`, then the target is `None`.
+                        // I don't know in which other cases it can be `None`.
+                        assert!(target.is_none());
 
-                // We ignore the arguments
-                Ok(RawTerminator::Panic)
+                        // We ignore the arguments
+                        Ok(RawTerminator::Panic)
+                    }
+                    SubstFunIdOrPanic::Fun(fid) => {
+                        let next_block = target.unwrap_or_else(|| {
+                            panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", rust_id, substs, args)
+                        });
+
+                        // Translate the target
+                        let lval = self.translate_place(span, destination)?;
+                        let next_block = self.translate_basic_block(body, next_block)?;
+
+                        let call = Call {
+                            func: FnOperand::Regular(fid.func),
+                            args: fid.args.unwrap(),
+                            dest: lval,
+                        };
+
+                        Ok(RawTerminator::Call {
+                            call,
+                            target: next_block,
+                        })
+                    }
+                }
             }
-            SubstFunIdOrPanic::Fun(fid) => {
-                let next_block = target.unwrap_or_else(|| {
-                    panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", rust_id, substs, args)
-                });
+            hax::FunOperand::Move(p) => {
+                // Call to a local function pointer
+                // The function
+                let p = self.translate_place(span, p)?;
 
                 // Translate the target
+                let next_block = target.unwrap_or_else(|| {
+                    panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", p, substs, args)
+                });
                 let lval = self.translate_place(span, destination)?;
                 let next_block = self.translate_basic_block(body, next_block)?;
 
+                // TODO: we may have a problem here because as we don't
+                // know which function is being called, we may not be
+                // able to filter the arguments properly... But maybe
+                // this is rather an issue for the statement which creates
+                // the function pointer, by refering to a top-level function
+                // for instance.
+                let args = self.translate_arguments(span, None, args)?;
                 let call = Call {
-                    func: fid.func,
-                    args: fid.args.unwrap(),
+                    func: FnOperand::Move(p),
+                    args,
                     dest: lval,
                 };
-
                 Ok(RawTerminator::Call {
                     call,
                     target: next_block,

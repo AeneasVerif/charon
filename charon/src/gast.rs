@@ -242,9 +242,20 @@ pub struct TraitImpl {
     pub provided_methods: Vec<(TraitItemName, FunDeclId::Id)>,
 }
 
+/// A function operand is used in function calls.
+/// It either designates a top-level function, or a place in case
+/// we are using function pointers stored in local variables.
+#[derive(Debug, Clone, Serialize)]
+pub enum FnOperand {
+    /// Regular case: call to a top-level function, trait method, etc.
+    Regular(FnPtr),
+    /// Use of a function pointer stored in a local variable
+    Move(Place),
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Call {
-    pub func: FnPtr,
+    pub func: FnOperand,
     pub args: Vec<Operand>,
     pub dest: Place,
 }

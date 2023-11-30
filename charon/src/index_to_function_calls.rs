@@ -93,11 +93,11 @@ impl<'a> Transform<'a> {
                 let index_dest = Place::new(elem_borrow_var);
                 let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
                 let generics = GenericArgs::new(vec![Region::Erased], vec![elem_ty], cgs, vec![]);
-                let func = FnPtr {
+                let func = FnOperand::Regular(FnPtr {
                     func: index_id,
                     generics,
                     trait_and_method_generic_args: None,
-                };
+                });
                 let index_call = Call {
                     func,
                     args: vec![arg_buf, arg_index],

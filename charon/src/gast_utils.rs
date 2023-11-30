@@ -220,22 +220,36 @@ impl TraitImpl {
     }
 }
 
+impl FnOperand {
+    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    where
+        C: ExprFormatter,
+    {
+        match self {
+            FnOperand::Regular(func) => func.fmt_with_ctx(ctx),
+            FnOperand::Move(p) => format!("(move {})", p.fmt_with_ctx(ctx)),
+        }
+    }
+}
+
 /// Format a function call.
 /// We return the pair: (function call, comment)
 pub fn fmt_call<T>(ctx: &T, call: &Call) -> (String, Option<String>)
 where
     T: ExprFormatter,
 {
-    let trait_and_method_generic_args = call
-        .func
-        .trait_and_method_generic_args
-        .as_ref()
-        .map(|generics| generics.fmt_with_ctx_split_trait_refs(ctx));
-
-    let f = call.func.fmt_with_ctx(ctx);
-
     let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
     let args = args.join(", ");
+
+    let trait_and_method_generic_args = match &call.func {
+        FnOperand::Regular(func) => func
+            .trait_and_method_generic_args
+            .as_ref()
+            .map(|generics| generics.fmt_with_ctx_split_trait_refs(ctx)),
+        FnOperand::Move(_) => Option::None,
+    };
+
+    let f = call.func.fmt_with_ctx(ctx);
 
     (format!("{f}({args})"), trait_and_method_generic_args)
 }

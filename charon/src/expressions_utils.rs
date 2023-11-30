@@ -1,7 +1,9 @@
 //! This file groups everything which is linked to implementations about [crate::expressions]
 use crate::expressions::*;
 use crate::formatter::Formatter;
-use crate::gast::{AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitItemName};
+use crate::gast::{
+    AssumedFunId, Call, FnOperand, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitItemName,
+};
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
 use crate::values;
@@ -512,7 +514,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             args,
             dest,
         } = c;
-        self.visit_fn_ptr(func);
+        self.visit_fn_operand(func);
         for o in args {
             self.visit_operand(o);
         }
@@ -528,6 +530,13 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Some(generics) => {
                 self.visit_generic_args(generics);
             }
+        }
+    }
+
+    fn visit_fn_operand(&mut self, fn_op: &FnOperand) {
+        match fn_op {
+            FnOperand::Regular(func) => self.visit_fn_ptr(func),
+            FnOperand::Move(p) => self.visit_place(p),
         }
     }
 
