@@ -40,6 +40,125 @@ module T = Types
 module E = Expressions
 module A = LlbcAst
 
+let log = Logging.name_matcher_logger
+
+(*
+ * Convert patterns to strings
+ *)
+type target_kind =
+  | TkPattern  (** Generate a string which can be parsed as a pattern *)
+  | TkPretty  (** Pretty printing *)
+  | TkName  (** A name for code extraction (for instance for trait instances) *)
+
+type print_config = { tgt : target_kind }
+
+let literal_to_string (c : print_config) (l : literal) : string =
+  match l with
+  | LInt v -> Z.to_string v
+  | LBool b -> Bool.to_string b
+  | LChar x -> (
+      match c.tgt with
+      | TkPattern ->
+          (* TODO: we can't use the syntax 'x' for now because of lifetimes *)
+          raise (Failure "TODO")
+      | TkPretty -> "'" ^ String.make 1 x ^ "'"
+      | TkName -> String.make 1 x)
+
+let region_var_to_string (c : print_config) (v : var option) : string =
+  match c.tgt with
+  | TkPattern | TkPretty -> (
+      match v with
+      | None -> "'_"
+      | Some (VarName n) -> "'" ^ n
+      | Some (VarIndex id) -> "'" ^ string_of_int id)
+  | TkName -> (
+      match v with
+      | None -> ""
+      | Some (VarName n) -> StringUtils.capitalize_first_letter n
+      | Some (VarIndex id) -> string_of_int id)
+
+let region_to_string (c : print_config) (r : region) : string =
+  match r with
+  | RStatic -> (
+      match c.tgt with TkPattern | TkPretty -> "'static" | TkName -> "Static")
+  | RVar v -> region_var_to_string c v
+
+let opt_var_to_string (c : print_config) (v : var option) : string =
+  match c.tgt with
+  | TkPattern -> (
+      match v with
+      | None -> "@"
+      | Some (VarName n) -> "@" ^ n
+      | Some (VarIndex id) -> "@" ^ string_of_int id)
+  | TkPretty | TkName -> (
+      (* Below: when generating names, we shouldn't use the None or VarIndex cases *)
+      match v with
+      | None -> "P"
+      | Some (VarName n) -> n
+      | Some (VarIndex id) -> "P" ^ string_of_int id)
+
+let rec pattern_to_string (c : print_config) (p : pattern) : string =
+  let sep = match c.tgt with TkPattern | TkPretty -> "::" | TkName -> "" in
+  String.concat sep (List.map (pattern_elem_to_string c) p)
+
+and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
+  match e with
+  | PIdent (s, g) -> s ^ generic_args_to_string c g
+  | PImpl ty -> (
+      let ty = expr_to_string c ty in
+      match c.tgt with TkPattern | TkPretty -> "{" ^ ty ^ "}" | TkName -> ty)
+
+and expr_to_string (c : print_config) (e : expr) : string =
+  match e with
+  | EComp pat -> pattern_to_string c pat
+  | EPrimAdt (id, generics) -> (
+      match id with
+      | TTuple -> (
+          let generics = List.map (generic_arg_to_string c) generics in
+          match c.tgt with
+          | TkPattern | TkPretty -> "(" ^ String.concat ", " generics ^ ")"
+          | TkName -> "Tuple" ^ String.concat "" generics)
+      | TArray -> (
+          match generics with
+          | [ ty; cg ] -> (
+              let ty = generic_arg_to_string c ty in
+              let cg = generic_arg_to_string c cg in
+              match c.tgt with
+              | TkPattern | TkPretty -> "[" ^ ty ^ "; " ^ cg ^ "]"
+              | TkName -> "Array" ^ ty ^ cg)
+          | _ -> raise (Failure "Ill-formed pattern"))
+      | TSlice -> (
+          match generics with
+          | [ ty ] -> (
+              let ty = generic_arg_to_string c ty in
+              match c.tgt with
+              | TkPattern | TkPretty -> "[" ^ ty ^ "]"
+              | TkName -> "Slice" ^ ty)
+          | _ -> raise (Failure "Ill-formed pattern")))
+  | ERef (r, ty, rk) ->
+      let rk = match rk with RMut -> "mut " | RShared -> "" in
+      "&" ^ region_to_string c r ^ " " ^ rk ^ expr_to_string c ty
+  | EVar v -> opt_var_to_string c v
+
+and generic_arg_to_string (c : print_config) (g : generic_arg) : string =
+  match g with
+  | GExpr e -> expr_to_string c e
+  | GValue l -> (
+      let l = literal_to_string c l in
+      match c.tgt with
+      | TkPattern | TkPretty -> l
+      | TkName -> StringUtils.capitalize_first_letter l)
+  | GRegion r -> region_to_string c r
+
+and generic_args_to_string (c : print_config) (generics : generic_args) : string
+    =
+  if generics = [] then ""
+  else
+    let generics = List.map (generic_arg_to_string c) generics in
+    match c.tgt with
+    | TkPattern | TkPretty -> "<" ^ String.concat ", " generics ^ ">"
+    | TkName -> String.concat "" generics
+
 (*
  * Match a name
  *)
@@ -63,6 +182,18 @@ type ctx = {
   trait_decls : A.trait_decl T.TraitDeclId.Map.t;
   trait_impls : A.trait_impl T.TraitImplId.Map.t;
 }
+
+let ctx_to_fmt_env (ctx : ctx) : PrintLlbcAst.fmt_env =
+  {
+    type_decls = ctx.type_decls;
+    fun_decls = ctx.fun_decls;
+    global_decls = ctx.global_decls;
+    trait_decls = ctx.trait_decls;
+    trait_impls = ctx.trait_impls;
+    generics = TypesUtils.empty_generic_params;
+    preds = TypesUtils.empty_predicates;
+    locals = [];
+  }
 
 (** Match configuration *)
 type match_config = {
@@ -94,6 +225,7 @@ type match_config = {
     The {!MRegion} variant is used when matching generics.
  *)
 type mexpr = MTy of T.ty | MCg of T.const_generic | MRegion of T.region
+[@@deriving show]
 
 (* Small helper to store the mappings from variables to expressions *)
 type maps = {
@@ -178,9 +310,10 @@ let match_region (c : match_config) (m : maps) (id : region) (v : T.region) :
     bool =
   match (id, v) with
   | RStatic, RStatic -> true
-  | RVar id, RVar _ -> opt_update_rmap c m id v
-  | RVar id, RStatic ->
-      if c.map_vars_to_vars then false else opt_update_rmap c m id v
+  | RVar id, (RVar _ | RErased) ->
+      (* When it comes to matching, we treat erased regions like variables *)
+      opt_update_rmap c m id v
+  | RVar id, _ -> if c.map_vars_to_vars then false else opt_update_rmap c m id v
   | _ -> false
 
 let match_ref_kind (prk : ref_kind) (rk : T.ref_kind) : bool =
@@ -202,6 +335,10 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config) (p : pattern)
            "match_name_with_generics: attempt to match empty names and patterns")
       (* We shouldn't get there: the names/patterns should be non empty *)
   | [ PIdent (pid, pg) ], [ PeIdent (id, _) ] ->
+      log#ldebug
+        (lazy
+          ("match_name_with_generics: last ident:" ^ "\n- pid: " ^ pid
+         ^ "\n- id: " ^ id));
       (* We reached the end: match the generics.
          We have to generate an empty map. *)
       pid = id && match_generic_args ctx c (mk_empty_maps ()) pg g
@@ -303,6 +440,13 @@ and match_trait_type (ctx : ctx) (c : match_config) (pid : pattern)
 
 and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
     (pgenerics : generic_args) (generics : T.generic_args) : bool =
+  log#ldebug
+    (lazy
+      (let fmt_env = ctx_to_fmt_env ctx in
+       "match_generic_args: " ^ "\n- pgenerics: "
+       ^ generic_args_to_string { tgt = TkPattern } pgenerics
+       ^ "\n- generics: "
+       ^ PrintTypes.generic_args_to_string fmt_env generics));
   let { regions; types; const_generics; trait_refs = _ } : T.generic_args =
     generics
   in
@@ -320,6 +464,11 @@ and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
 
 and match_generic_arg (ctx : ctx) (c : match_config) (m : maps)
     (pg : generic_arg) (g : mexpr) : bool =
+  log#ldebug
+    (lazy
+      ("match_generic_arg: " ^ "\n- pg: "
+      ^ generic_arg_to_string { tgt = TkPattern } pg
+      ^ "\n- g: " ^ show_mexpr g));
   match (pg, g) with
   | GRegion pr, MRegion r -> match_region c m pr r
   | GExpr e, MTy ty -> match_expr_with_ty ctx c m e ty
@@ -435,7 +584,10 @@ let region_to_pattern (m : constraints) (r : T.region) : region =
         | Some r -> r
         | None -> None)
   | RStatic -> RStatic
-  | _ -> raise (Failure "Unexpected")
+  | RErased ->
+      (* We do get there when converting function pointers (when we try to
+         detect specific function calls) to patterns. *)
+      RVar None
 
 let type_var_to_pattern (m : constraints) (v : T.TypeVarId.id) : var option =
   match T.TypeVarId.Map.find_opt v m.tmap with
@@ -484,11 +636,6 @@ let compute_constraints_map (generics : T.generic_params) : constraints =
          generics.const_generics)
   in
   { rmap; tmap; cmap }
-
-type target_kind =
-  | TkPattern  (** Generate a string which can be parsed as a pattern *)
-  | TkPretty  (** Pretty printing *)
-  | TkName  (** A name for code extraction (for instance for trait instances) *)
 
 type to_pat_config = {
   tgt : target_kind;
@@ -698,6 +845,13 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
           func.generics
   in
   (* Sanity check *)
+  log#ldebug
+    (lazy
+      (let fmt_env = ctx_to_fmt_env ctx in
+       "fn_ptr_to_pattern:" ^ "\n- fn_ptr: "
+       ^ PrintExpressions.fn_ptr_to_string fmt_env func
+       ^ "\n- pattern: "
+       ^ pattern_to_string { tgt = TkPattern } pat));
   assert (
     c.tgt = TkName
     || match_fn_ptr ctx
@@ -708,118 +862,6 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
          pat func);
   (* Return *)
   pat
-
-(*
- * Convert patterns to strings
- *)
-type print_config = { tgt : target_kind }
-
-let literal_to_string (c : print_config) (l : literal) : string =
-  match l with
-  | LInt v -> Z.to_string v
-  | LBool b -> Bool.to_string b
-  | LChar x -> (
-      match c.tgt with
-      | TkPattern ->
-          (* TODO: we can't use the syntax 'x' for now because of lifetimes *)
-          raise (Failure "TODO")
-      | TkPretty -> "'" ^ String.make 1 x ^ "'"
-      | TkName -> String.make 1 x)
-
-let region_var_to_string (c : print_config) (v : var option) : string =
-  match c.tgt with
-  | TkPattern | TkPretty -> (
-      match v with
-      | None -> "'_"
-      | Some (VarName n) -> "'" ^ n
-      | Some (VarIndex id) -> "'" ^ string_of_int id)
-  | TkName -> (
-      match v with
-      | None -> ""
-      | Some (VarName n) -> StringUtils.capitalize_first_letter n
-      | Some (VarIndex id) -> string_of_int id)
-
-let region_to_string (c : print_config) (r : region) : string =
-  match r with
-  | RStatic -> (
-      match c.tgt with TkPattern | TkPretty -> "'static" | TkName -> "Static")
-  | RVar v -> region_var_to_string c v
-
-let opt_var_to_string (c : print_config) (v : var option) : string =
-  match c.tgt with
-  | TkPattern -> (
-      match v with
-      | None -> "@"
-      | Some (VarName n) -> "@" ^ n
-      | Some (VarIndex id) -> "@" ^ string_of_int id)
-  | TkPretty | TkName -> (
-      (* Below: when generating names, we shouldn't use the None or VarIndex cases *)
-      match v with
-      | None -> "P"
-      | Some (VarName n) -> n
-      | Some (VarIndex id) -> "P" ^ string_of_int id)
-
-let rec pattern_to_string (c : print_config) (p : pattern) : string =
-  let sep = match c.tgt with TkPattern | TkPretty -> "::" | TkName -> "" in
-  String.concat sep (List.map (pattern_elem_to_string c) p)
-
-and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
-  match e with
-  | PIdent (s, g) -> s ^ generic_args_to_string c g
-  | PImpl ty -> (
-      let ty = expr_to_string c ty in
-      match c.tgt with TkPattern | TkPretty -> "{" ^ ty ^ "}" | TkName -> ty)
-
-and expr_to_string (c : print_config) (e : expr) : string =
-  match e with
-  | EComp pat -> pattern_to_string c pat
-  | EPrimAdt (id, generics) -> (
-      match id with
-      | TTuple -> (
-          let generics = List.map (generic_arg_to_string c) generics in
-          match c.tgt with
-          | TkPattern | TkPretty -> "(" ^ String.concat ", " generics ^ ")"
-          | TkName -> "Tuple" ^ String.concat "" generics)
-      | TArray -> (
-          match generics with
-          | [ ty; cg ] -> (
-              let ty = generic_arg_to_string c ty in
-              let cg = generic_arg_to_string c cg in
-              match c.tgt with
-              | TkPattern | TkPretty -> "[" ^ ty ^ "; " ^ cg ^ "]"
-              | TkName -> "Array" ^ ty ^ cg)
-          | _ -> raise (Failure "Ill-formed pattern"))
-      | TSlice -> (
-          match generics with
-          | [ ty ] -> (
-              let ty = generic_arg_to_string c ty in
-              match c.tgt with
-              | TkPattern | TkPretty -> "[" ^ ty ^ "]"
-              | TkName -> "Slice" ^ ty)
-          | _ -> raise (Failure "Ill-formed pattern")))
-  | ERef (r, ty, rk) ->
-      let rk = match rk with RMut -> "mut " | RShared -> "" in
-      "&" ^ region_to_string c r ^ " " ^ rk ^ expr_to_string c ty
-  | EVar v -> opt_var_to_string c v
-
-and generic_arg_to_string (c : print_config) (g : generic_arg) : string =
-  match g with
-  | GExpr e -> expr_to_string c e
-  | GValue l -> (
-      let l = literal_to_string c l in
-      match c.tgt with
-      | TkPattern | TkPretty -> l
-      | TkName -> StringUtils.capitalize_first_letter l)
-  | GRegion r -> region_to_string c r
-
-and generic_args_to_string (c : print_config) (generics : generic_args) : string
-    =
-  if generics = [] then ""
-  else
-    let generics = List.map (generic_arg_to_string c) generics in
-    match c.tgt with
-    | TkPattern | TkPretty -> "<" ^ String.concat ", " generics ^ ">"
-    | TkName -> String.concat "" generics
 
 (*
  * Check if two patterns are convertible, and compute the common "convertible"
