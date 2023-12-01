@@ -45,9 +45,145 @@ where
 }
 
 pub trait IntoFormatter {
-    type T: AstFormatter;
+    type C: AstFormatter;
 
-    fn into_fmt(self) -> Self::T;
+    fn into_fmt(self) -> Self::C;
+}
+
+/// We use this trait with the formatter to update the context,
+/// for instance when we enter a declaration that we need to print.
+pub trait SetGenerics<'a> {
+    type C: 'a + AstFormatter;
+
+    fn set_generics(&'a self, generics: &'a GenericParams) -> Self::C;
+}
+
+impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
+    type C = FmtCtx<'a>;
+
+    fn set_generics(&'a self, generics: &'a GenericParams) -> Self::C {
+        let FmtCtx {
+            type_decls,
+            fun_decls,
+            global_decls,
+            trait_decls,
+            trait_impls,
+            region_vars: _,
+            type_vars: _,
+            const_generic_vars: _,
+            locals,
+        } = self;
+
+        let type_decls = type_decls.as_deref();
+        let fun_decls = fun_decls.as_deref();
+        let global_decls = global_decls.as_deref();
+        let trait_decls = trait_decls.as_deref();
+        let trait_impls = trait_impls.as_deref();
+        let locals = locals.as_deref();
+        FmtCtx {
+            type_decls,
+            fun_decls,
+            global_decls,
+            trait_decls,
+            trait_impls,
+            region_vars: im::vector![generics.regions.clone()],
+            type_vars: Some(&generics.types),
+            const_generic_vars: Some(&generics.const_generics),
+            locals,
+        }
+    }
+}
+
+/// We use this trait with the formatter to update the context,
+/// for instance when we enter a declaration that we need to print.
+pub trait SetLocals<'a> {
+    type C: 'a + AstFormatter;
+
+    fn set_locals(&'a self, locals: &'a VarId::Vector<ast::Var>) -> Self::C;
+}
+
+impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
+    type C = FmtCtx<'a>;
+
+    fn set_locals(&'a self, locals: &'a VarId::Vector<ast::Var>) -> Self::C {
+        let FmtCtx {
+            type_decls,
+            fun_decls,
+            global_decls,
+            trait_decls,
+            trait_impls,
+            region_vars,
+            type_vars,
+            const_generic_vars,
+            locals: _,
+        } = self;
+
+        let type_decls = type_decls.as_deref();
+        let fun_decls = fun_decls.as_deref();
+        let global_decls = global_decls.as_deref();
+        let trait_decls = trait_decls.as_deref();
+        let trait_impls = trait_impls.as_deref();
+        let type_vars = type_vars.as_deref();
+        let const_generic_vars = const_generic_vars.as_deref();
+        FmtCtx {
+            type_decls,
+            fun_decls,
+            global_decls,
+            trait_decls,
+            trait_impls,
+            region_vars: region_vars.clone(),
+            type_vars,
+            const_generic_vars,
+            locals: Some(locals),
+        }
+    }
+}
+
+/// We use this trait to update the context by pushing a group of bound regions.
+pub trait PushBoundRegions<'a> {
+    type C: 'a + AstFormatter;
+
+    fn push_bound_regions(&'a self, regions: &RegionId::Vector<RegionVar>) -> Self::C;
+}
+
+impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
+    type C = FmtCtx<'a>;
+
+    fn push_bound_regions(&'a self, regions: &RegionId::Vector<RegionVar>) -> Self::C {
+        let FmtCtx {
+            type_decls,
+            fun_decls,
+            global_decls,
+            trait_decls,
+            trait_impls,
+            region_vars,
+            type_vars,
+            const_generic_vars,
+            locals,
+        } = self;
+
+        let type_decls = type_decls.as_deref();
+        let fun_decls = fun_decls.as_deref();
+        let global_decls = global_decls.as_deref();
+        let trait_decls = trait_decls.as_deref();
+        let trait_impls = trait_impls.as_deref();
+        let type_vars = type_vars.as_deref();
+        let const_generic_vars = const_generic_vars.as_deref();
+        let locals = locals.as_deref();
+        let mut region_vars = region_vars.clone();
+        region_vars.push_front(regions.clone());
+        FmtCtx {
+            type_decls,
+            fun_decls,
+            global_decls,
+            trait_decls,
+            trait_impls,
+            region_vars,
+            type_vars,
+            const_generic_vars,
+            locals,
+        }
+    }
 }
 
 pub trait AstFormatter = Formatter<TypeVarId::Id>
@@ -63,7 +199,10 @@ pub trait AstFormatter = Formatter<TypeVarId::Id>
     + Formatter<(TypeDeclId::Id, VariantId::Id)>
     + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
     + for<'a> Formatter<&'a ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>>
-    + for<'a> Formatter<&'a llbc_ast::Statement>;
+    + for<'a> Formatter<&'a llbc_ast::Statement>
+    + for<'a> SetGenerics<'a>
+    + for<'a> SetLocals<'a>
+    + for<'a> PushBoundRegions<'a>;
 
 /// For formatting.
 ///
@@ -81,24 +220,17 @@ pub struct FmtCtx<'a> {
     pub global_decls: Option<&'a ast::GlobalDecls>,
     pub trait_decls: Option<&'a ast::TraitDecls>,
     pub trait_impls: Option<&'a ast::TraitImpls>,
+    /// The region variables are not an option, because we need to be able to push/pop
     pub region_vars: im::Vector<RegionId::Vector<RegionVar>>,
-    pub type_vars: TypeVarId::Vector<TypeVar>,
-    pub const_generic_vars: ConstGenericVarId::Vector<ConstGenericVar>,
-    pub locals: VarId::Vector<ast::Var>,
+    pub type_vars: Option<&'a TypeVarId::Vector<TypeVar>>,
+    pub const_generic_vars: Option<&'a ConstGenericVarId::Vector<ConstGenericVar>>,
+    pub locals: Option<&'a VarId::Vector<ast::Var>>,
 }
 
 impl<'a> IntoFormatter for FmtCtx<'a> {
-    type T = FmtCtx<'a>;
+    type C = FmtCtx<'a>;
 
-    fn into_fmt(self) -> Self::T {
-        self
-    }
-}
-
-impl<'a, 'b> IntoFormatter for &'b FmtCtx<'a> {
-    type T = &'b FmtCtx<'a>;
-
-    fn into_fmt(self) -> Self::T {
+    fn into_fmt(self) -> Self::C {
         self
     }
 }
@@ -112,9 +244,9 @@ impl<'a> FmtCtx<'a> {
             trait_decls: None,
             trait_impls: None,
             region_vars: im::Vector::new(),
-            type_vars: TypeVarId::Vector::new(),
-            const_generic_vars: ConstGenericVarId::Vector::new(),
-            locals: VarId::Vector::new(),
+            type_vars: None,
+            const_generic_vars: None,
+            locals: None,
         }
     }
 }
@@ -193,13 +325,25 @@ impl<'a> Formatter<(DeBruijnId, RegionId::Id)> for FmtCtx<'a> {
 
 impl<'a> Formatter<TypeVarId::Id> for FmtCtx<'a> {
     fn format_object(&self, id: TypeVarId::Id) -> String {
-        id.to_pretty_string()
+        match &self.type_vars {
+            None => id.to_pretty_string(),
+            Some(vars) => match vars.get(id) {
+                None => id.to_pretty_string(),
+                Some(v) => v.to_string(),
+            },
+        }
     }
 }
 
 impl<'a> Formatter<ConstGenericVarId::Id> for FmtCtx<'a> {
     fn format_object(&self, id: ConstGenericVarId::Id) -> String {
-        id.to_pretty_string()
+        match &self.const_generic_vars {
+            None => id.to_pretty_string(),
+            Some(vars) => match vars.get(id) {
+                None => id.to_pretty_string(),
+                Some(v) => v.to_string(),
+            },
+        }
     }
 }
 
@@ -307,8 +451,14 @@ impl<'a> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)> for Fmt
 }
 
 impl<'a> Formatter<VarId::Id> for FmtCtx<'a> {
-    fn format_object(&self, v: VarId::Id) -> String {
-        v.to_pretty_string()
+    fn format_object(&self, id: VarId::Id) -> String {
+        match &self.locals {
+            None => id.to_pretty_string(),
+            Some(vars) => match vars.get(id) {
+                None => id.to_pretty_string(),
+                Some(v) => v.to_string(),
+            },
+        }
     }
 }
 

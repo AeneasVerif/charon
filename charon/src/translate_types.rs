@@ -1,5 +1,6 @@
 use crate::assumed;
 use crate::common::*;
+use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -375,7 +376,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .map(|x| self.translate_ty(span, erase_regions, x))
                     .try_collect()?;
                 let output = self.translate_ty(span, erase_regions, &sig.value.output)?;
-                Ok(Ty::Arrow(Vec::new(), inputs, Box::new(output)))
+                Ok(Ty::Arrow(RegionId::Vector::new(), inputs, Box::new(output)))
             }
             hax::Ty::Error => {
                 trace!("Error");
@@ -739,7 +740,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         trace!("translate_type: preds: {:?}", &type_def.preds);
 
-        trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
+        trace!(
+            "{} -> {}",
+            trans_id.to_string(),
+            type_def.fmt_with_ctx(&self.into_fmt())
+        );
 
         self.type_decls.insert(trans_id, type_def);
 

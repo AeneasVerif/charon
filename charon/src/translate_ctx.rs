@@ -775,9 +775,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 }
 
 impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TransCtx<'tcx, 'ctx> {
-    type T = FmtCtx<'a>;
+    type C = FmtCtx<'a>;
 
-    fn into_fmt(self) -> Self::T {
+    fn into_fmt(self) -> Self::C {
         FmtCtx {
             type_decls: Some(&self.type_decls),
             fun_decls: Some(&self.fun_decls),
@@ -785,17 +785,17 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TransCtx<'tcx, 'ctx> {
             trait_decls: Some(&self.trait_decls),
             trait_impls: Some(&self.trait_impls),
             region_vars: im::Vector::new(),
-            type_vars: TypeVarId::Vector::new(),
-            const_generic_vars: ConstGenericVarId::Vector::new(),
-            locals: VarId::Vector::new(),
+            type_vars: None,
+            const_generic_vars: None,
+            locals: None,
         }
     }
 }
 
 impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    type T = FmtCtx<'a>;
+    type C = FmtCtx<'a>;
 
-    fn into_fmt(self) -> Self::T {
+    fn into_fmt(self) -> Self::C {
         FmtCtx {
             type_decls: Some(&self.t_ctx.type_decls),
             fun_decls: Some(&self.t_ctx.fun_decls),
@@ -803,9 +803,9 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
             trait_decls: Some(&self.t_ctx.trait_decls),
             trait_impls: Some(&self.t_ctx.trait_impls),
             region_vars: self.region_vars.clone(),
-            type_vars: self.type_vars.clone(),
-            const_generic_vars: self.const_generic_vars.clone(),
-            locals: self.vars.clone(),
+            type_vars: Some(&self.type_vars),
+            const_generic_vars: Some(&self.const_generic_vars),
+            locals: Some(&self.vars),
         }
     }
 }

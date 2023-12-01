@@ -1,7 +1,7 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::assumed::get_name_from_type_id;
 use crate::common::TAB_INCR;
-use crate::formatter::{AstFormatter, FmtCtx, IntoFormatter};
+use crate::formatter::{AstFormatter, FmtCtx};
 use crate::types::*;
 use crate::values::*;
 use hax_frontend_exporter as hax;
@@ -509,6 +509,8 @@ impl TypeDecl {
     where
         C: AstFormatter,
     {
+        let ctx = &ctx.set_generics(&self.generics);
+
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         // Predicates
         let eq_space = if trait_clauses.is_empty() && self.preds.is_empty() {
@@ -557,30 +559,6 @@ impl TypeDecl {
                     self.name.fmt_with_ctx(ctx),
                 )
             }
-        }
-    }
-}
-
-impl std::string::ToString for TypeDecl {
-    fn to_string(&self) -> String {
-        self.fmt_with_ctx(&self.into_fmt())
-    }
-}
-
-impl<'a> IntoFormatter for &'a TypeDecl {
-    type T = FmtCtx<'a>;
-
-    fn into_fmt(self) -> FmtCtx<'a> {
-        FmtCtx {
-            type_decls: None,
-            fun_decls: None,
-            global_decls: None,
-            trait_decls: None,
-            trait_impls: None,
-            region_vars: im::Vector::new(),
-            type_vars: TypeVarId::Vector::new(),
-            const_generic_vars: ConstGenericVarId::Vector::new(),
-            locals: VarId::Vector::new(),
         }
     }
 }
@@ -905,7 +883,9 @@ impl Ty {
                 )
             }
             Ty::Arrow(regions, inputs, box output) => {
-                // TODO: update the generics
+                // Update the bound regions
+                let ctx = &ctx.push_bound_regions(regions);
+
                 let regions = if regions.is_empty() {
                     "".to_string()
                 } else {
@@ -967,12 +947,6 @@ impl std::fmt::Display for Region {
             Region::Erased => write!(f, "'_"),
             Region::Unknown => write!(f, "'_UNKNOWN_"),
         }
-    }
-}
-
-impl std::string::ToString for Ty {
-    fn to_string(&self) -> String {
-        self.fmt_with_ctx(&FmtCtx::new())
     }
 }
 
@@ -1223,8 +1197,8 @@ pub trait TypeVisitor {
 
     fn visit_region_bvar(&mut self, _grid: &DeBruijnId, _rid: &RegionId::Id) {}
 
-    fn visit_arrow(&mut self, regions: &Vec<RegionVar>, inputs: &Vec<Ty>, output: &Ty) {
-        for r in regions {
+    fn visit_arrow(&mut self, regions: &RegionId::Vector<RegionVar>, inputs: &Vec<Ty>, output: &Ty) {
+        for r in regions.iter() {
             self.visit_region_var(r);
         }
         for ty in inputs {
@@ -1453,6 +1427,8 @@ impl FunSig {
     where
         C: AstFormatter,
     {
+        let ctx = &ctx.set_generics(&self.generics);
+
         // Unsafe keyword
         let unsafe_kw = if self.is_unsafe {
             "unsafe ".to_string()

@@ -1,7 +1,7 @@
 //! Implementations for [crate::gast]
 
 use crate::common::TAB_INCR;
-use crate::formatter::{AstFormatter, Formatter};
+use crate::formatter::{AstFormatter, Formatter, SetGenerics, SetLocals};
 use crate::gast::*;
 use crate::names::Name;
 use crate::types::*;
@@ -78,6 +78,9 @@ impl TraitDecl {
     where
         C: AstFormatter,
     {
+        // Update the context
+        let ctx = &ctx.set_generics(&self.generics);
+
         let name = self.name.fmt_with_ctx(ctx);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
@@ -151,6 +154,9 @@ impl TraitImpl {
     where
         C: AstFormatter,
     {
+        // Update the context
+        let ctx = &ctx.set_generics(&self.generics);
+
         let name = self.name.fmt_with_ctx(ctx);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
@@ -251,8 +257,13 @@ impl<T> GExprBody<T> {
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
     pub fn fmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        C: AstFormatter + for<'a> Formatter<&'a T>,
+        C: for<'a> SetLocals<'a>,
+        for<'a> <C as SetLocals<'a>>::C: AstFormatter,
+        for<'a, 'b> <C as SetLocals<'a>>::C: AstFormatter + Formatter<&'b T>,
     {
+        // Update the context
+        let ctx = &ctx.set_locals(&self.locals);
+
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
         for v in &self.locals {
@@ -308,8 +319,18 @@ impl<T> GFunDecl<T> {
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
     pub fn gfmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        C: AstFormatter + for<'a> Formatter<&'a T>,
+        // For the signature
+        C: for<'a> SetGenerics<'a>,
+        for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
+        for<'a, 'b> <C as SetGenerics<'a>>::C: AstFormatter + Formatter<&'b T>,
+        // For the body
+        for<'a, 'b> <C as SetGenerics<'a>>::C: SetLocals<'b>,
+        for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
+        for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: Formatter<&'c T>,
     {
+        // Update the context
+        let ctx = &ctx.set_generics(&self.signature.generics);
+
         // Unsafe keyword
         let unsafe_kw = if self.signature.is_unsafe {
             "unsafe ".to_string()
@@ -382,8 +403,13 @@ impl<T> GGlobalDecl<T> {
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
     pub fn gfmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        C: AstFormatter + for<'a> Formatter<&'a T>,
+        C: AstFormatter,
+        C: for<'a> SetLocals<'a>,
+        for<'a> <C as SetLocals<'a>>::C: AstFormatter,
+        for<'a, 'b> <C as SetLocals<'a>>::C: AstFormatter + Formatter<&'b T>,
     {
+        // No need to update the context: global definitions don't have generics
+
         // Decl name
         let name = self.name.fmt_with_ctx(ctx);
 

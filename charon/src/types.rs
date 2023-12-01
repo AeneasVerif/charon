@@ -531,7 +531,7 @@ pub enum Ty {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(Vec<RegionVar>, Vec<Ty>, Box<Ty>),
+    Arrow(RegionId::Vector<RegionVar>, Vec<Ty>, Box<Ty>),
 }
 
 /// Assumed types identifiers.

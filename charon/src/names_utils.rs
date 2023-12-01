@@ -48,12 +48,9 @@ impl ImplElem {
         } else {
             format!("#{}", self.disambiguator)
         };
-        // TODO
-        todo!();
+        let ctx = ctx.set_generics(&self.generics);
         // Just printing the generics (not the predicates)
-        // TODO: there is something wrong here: we should add the generic parameters
-        // to the context, and then use them to print.
-        format!("{{{}{d}}}", self.ty.fmt_with_ctx(ctx),)
+        format!("{{{}{d}}}", self.ty.fmt_with_ctx(&ctx),)
     }
 }
 
