@@ -667,6 +667,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Reset
         self.bound_region_var_id_generator = old_gen;
         self.bound_region_vars.pop_front();
+        self.region_vars.pop_front();
 
         // Return
         res
