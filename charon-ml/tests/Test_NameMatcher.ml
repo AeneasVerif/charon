@@ -1,4 +1,9 @@
-open Charon.NameMatcher
+open Charon
+open Logging
+open NameMatcher
+
+let log = main_log
+let _ = log#linfo (lazy "Name matcher tests: starting")
 
 let parse_tests () =
   let patterns : string list =
@@ -50,3 +55,5 @@ let name_map_tests () =
 let run_tests () =
   parse_tests ();
   name_map_tests ()
+
+let _ = log#linfo (lazy "Name matcher tests: success")
