@@ -612,7 +612,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                     self,
                                     span,
                                     format!(
-                                        "Unsupported cast: {:?}, src={:?}, dst={:?}",
+                                        "Unsupported cast:\n\n- rvalue: {:?}\n\n- src={:?}\n\n- dst={:?}",
                                         rvalue, src_ty, tgt_ty
                                     )
                                 )
@@ -632,12 +632,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             op,
                         ))
                     }
+                    (
+                        hax::CastKind::Pointer(hax::PointerCast::ReifyFnPointer),
+                        src_ty @ Ty::Arrow(..),
+                        tgt_ty @ Ty::Arrow(..),
+                    ) => {
+                        let src_ty = src_ty.clone();
+                        let tgt_ty = tgt_ty.clone();
+                        Ok(Rvalue::UnaryOp(
+                            UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
+                            op,
+                        ))
+                    }
                     _ => {
                         error_or_panic!(
                             self,
                             span,
                             format!(
-                                "Unsupported cast:\n- rvalue: {:?}\n- src={:?}\n- dst={:?}",
+                                "Unsupported cast:\n\n- rvalue: {:?}\n\n- src={:?}\n\n- dst={:?}",
                                 rvalue, src_ty, tgt_ty
                             )
                         )

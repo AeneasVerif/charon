@@ -76,11 +76,17 @@ pub fn id_clone<T: Clone>(x: T) -> T {
     x.clone()
 }
 
-/*// Testing the trait resolution on function pointers
+// Testing the trait resolution on function pointers
 pub fn test_id_clone(x: u32) -> u32 {
     let f: fn(u32) -> u32 = id_clone;
     (f)(x)
-}*/
+}
+
+// Testing the trait resolution on function pointers
+pub fn test_id_clone_param<T: Clone>(x: T) -> T {
+    let f: fn(T) -> T = id_clone;
+    (f)(x)
+}
 
 // Testing the trait resolution on function pointers
 pub fn test_map_option_id_clone(x: Option<u32>) -> Option<u32> {
