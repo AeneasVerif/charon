@@ -1579,80 +1579,79 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .try_collect()?;
         let signature = signature.value;
 
-        self.with_bound_regions_group(bvar_names, move |ctx| {
-            let fun_kind = &ctx.t_ctx.get_fun_kind(def_id);
+        self.set_first_bound_regions_group(bvar_names);
+        let fun_kind = &self.t_ctx.get_fun_kind(def_id);
 
-            // Add the trait clauses
-            ctx.while_registering_trait_clauses(move |ctx| {
-                // Add the ctx trait clause if it is a trait decl item
-                match fun_kind {
-                    FunKind::Regular => (),
-                    FunKind::TraitMethodImpl { impl_id, .. } => {
-                        ctx.add_trait_impl_self_trait_clause(*impl_id)?;
-                    }
-                    FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..) => {
-                        // This is a trait decl item
-                        let trait_id = tcx.trait_of_item(def_id).unwrap();
-                        ctx.add_self_trait_clause(trait_id)?;
-                    }
+        // Add the trait clauses
+        self.while_registering_trait_clauses(move |ctx| {
+            // Add the ctx trait clause if it is a trait decl item
+            match fun_kind {
+                FunKind::Regular => (),
+                FunKind::TraitMethodImpl { impl_id, .. } => {
+                    ctx.add_trait_impl_self_trait_clause(*impl_id)?;
                 }
-
-                // Translate the predicates (in particular, the trait clauses)
-                match &fun_kind {
-                    FunKind::Regular | FunKind::TraitMethodImpl { .. } => {
-                        ctx.translate_predicates_of(None, def_id)?;
-                    }
-                    FunKind::TraitMethodProvided(trait_decl_id, ..)
-                    | FunKind::TraitMethodDecl(trait_decl_id, ..) => {
-                        ctx.translate_predicates_of(Some(*trait_decl_id), def_id)?;
-                    }
-                }
-
-                // Solve the unsolved obligations
-                ctx.solve_trait_obligations_in_trait_clauses(span);
-                Ok(())
-            })?;
-
-            // Translate the signature
-            trace!("signature of {def_id:?}:\n{:?}", signature);
-            let inputs: Vec<Ty> = signature
-                .inputs
-                .iter()
-                .map(|ty| ctx.translate_ty(span, erase_regions, ty))
-                .try_collect()?;
-            let output = ctx.translate_ty(span, erase_regions, &signature.output)?;
-
-            let fmt_ctx = ctx.into_fmt();
-            trace!(
-                "# Input variables types:\n{}",
-                iterator_to_string(&|x| fmt_ctx.format_object(x), inputs.iter())
-            );
-            trace!(
-                "# Output variable type:\n{}",
-                fmt_ctx.format_object(&output)
-            );
-
-            let mut parent_params_info = ctx.get_function_parent_params_info(def_id);
-            // If this is a trait decl method, we need to adjust the number of parent clauses
-            if matches!(
-                fun_kind,
-                FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..)
-            ) {
-                if let Some(info) = &mut parent_params_info {
-                    // All the trait clauses are registered as parent (of Self)
-                    // trait clauses, not as local trait clauses.
-                    info.num_trait_clauses = 0;
+                FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..) => {
+                    // This is a trait decl item
+                    let trait_id = tcx.trait_of_item(def_id).unwrap();
+                    ctx.add_self_trait_clause(trait_id)?;
                 }
             }
 
-            Ok(FunSig {
-                generics: ctx.get_generics(),
-                preds: ctx.get_predicates(),
-                is_unsafe,
-                parent_params_info,
-                inputs,
-                output,
-            })
+            // Translate the predicates (in particular, the trait clauses)
+            match &fun_kind {
+                FunKind::Regular | FunKind::TraitMethodImpl { .. } => {
+                    ctx.translate_predicates_of(None, def_id)?;
+                }
+                FunKind::TraitMethodProvided(trait_decl_id, ..)
+                | FunKind::TraitMethodDecl(trait_decl_id, ..) => {
+                    ctx.translate_predicates_of(Some(*trait_decl_id), def_id)?;
+                }
+            }
+
+            // Solve the unsolved obligations
+            ctx.solve_trait_obligations_in_trait_clauses(span);
+            Ok(())
+        })?;
+
+        // Translate the signature
+        trace!("signature of {def_id:?}:\n{:?}", signature);
+        let inputs: Vec<Ty> = signature
+            .inputs
+            .iter()
+            .map(|ty| self.translate_ty(span, erase_regions, ty))
+            .try_collect()?;
+        let output = self.translate_ty(span, erase_regions, &signature.output)?;
+
+        let fmt_ctx = self.into_fmt();
+        trace!(
+            "# Input variables types:\n{}",
+            iterator_to_string(&|x| fmt_ctx.format_object(x), inputs.iter())
+        );
+        trace!(
+            "# Output variable type:\n{}",
+            fmt_ctx.format_object(&output)
+        );
+
+        let mut parent_params_info = self.get_function_parent_params_info(def_id);
+        // If this is a trait decl method, we need to adjust the number of parent clauses
+        if matches!(
+            fun_kind,
+            FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..)
+        ) {
+            if let Some(info) = &mut parent_params_info {
+                // All the trait clauses are registered as parent (of Self)
+                // trait clauses, not as local trait clauses.
+                info.num_trait_clauses = 0;
+            }
+        }
+
+        Ok(FunSig {
+            generics: self.get_generics(),
+            preds: self.get_predicates(),
+            is_unsafe,
+            parent_params_info,
+            inputs,
+            output,
         })
     }
 

@@ -603,12 +603,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         rid
     }
 
-    /// Push a group of bound regions and call the continuation
-    pub(crate) fn with_bound_regions_group<F, T>(&mut self, names: Vec<Option<String>>, f: F) -> T
-    where
-        F: FnOnce(&mut Self) -> T,
-    {
+    /// Set the first bound regions group
+    pub(crate) fn set_first_bound_regions_group(&mut self, names: Vec<Option<String>>) {
         use crate::id_vector::ToUsize;
+        assert!(self.bound_region_vars.is_empty());
 
         // Register the variables
         let var_ids: im::Vector<RegionId::Id> = names
@@ -625,10 +623,43 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Push the group
         self.bound_region_vars.push_front(var_ids);
         // Reinitialize the counter
+        self.bound_region_var_id_generator = RegionId::Generator::new();
+    }
+
+    /// Push a group of bound regions and call the continuation.
+    /// We use this when diving into a `for<'a>`, or inside an arrow type (because
+    /// it contains universally quantified regions).
+    pub(crate) fn with_locally_bound_regions_group<F, T>(
+        &mut self,
+        names: Vec<Option<String>>,
+        f: F,
+    ) -> T
+    where
+        F: FnOnce(&mut Self) -> T,
+    {
+        use crate::id_vector::ToUsize;
+        assert!(!self.region_vars.is_empty());
+        self.region_vars.push_front(RegionId::Vector::new());
+        // Reinitialize the counter
         let old_gen = std::mem::replace(
             &mut self.bound_region_var_id_generator,
             RegionId::Generator::new(),
         );
+
+        // Register the variables
+        let var_ids: im::Vector<RegionId::Id> = names
+            .into_iter()
+            .map(|name| {
+                let rid = self.bound_region_var_id_generator.fresh_id();
+                assert!(rid.to_usize() == self.region_vars[0].len());
+                let var = RegionVar { index: rid, name };
+                self.region_vars[0].insert(rid, var);
+                rid
+            })
+            .collect();
+
+        // Push the group
+        self.bound_region_vars.push_front(var_ids);
 
         // Call the continuation
         let res = f(self);

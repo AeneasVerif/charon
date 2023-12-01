@@ -315,10 +315,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Param");
 
                 // Retrieve the translation of the substituted type:
-                let var_id = self.type_vars_map.get(&param.index).unwrap();
-                let ty = Ty::TypeVar(var_id);
-
-                Ok(ty)
+                match self.type_vars_map.get(&param.index) {
+                    None => error_or_panic!(
+                        self,
+                        span,
+                        format!(
+                            "Could not find the type variable {:?} (index: {:?})",
+                            param.name, param.index
+                        )
+                    ),
+                    Some(var_id) => Ok(Ty::TypeVar(var_id)),
+                }
             }
 
             hax::Ty::Foreign(id) => {
@@ -359,24 +366,46 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
 
-                // Translate the generics.
+                // Translate the generics parameters.
                 // Note that there can only be bound regions.
-                //let tcx = self.t_ctx.tcx;
-                /*                for bv in &sig.bound_var {
-                    use hax::GenericArgs::*;
-
-                }
-                let bound_vars = sig.bound_vars().sinto(&self.t_ctx.hax_state);*/
-
-                error_assert!(self, span, sig.bound_vars.is_empty());
-                let inputs = sig
-                    .value
-                    .inputs
+                let bound_region_names: Vec<Option<String>> = sig
+                    .bound_vars
                     .iter()
-                    .map(|x| self.translate_ty(span, erase_regions, x))
+                    .map(|p| {
+                        use hax::BoundVariableKind::*;
+                        match p {
+                            Region(region) => Ok(translate_bound_region_kind_name(region)),
+                            Ty(_) => {
+                                error_or_panic!(
+                                    self,
+                                    span,
+                                    "Unexpected locally bound type variable"
+                                );
+                            }
+                            Const => {
+                                error_or_panic!(
+                                    self,
+                                    span,
+                                    "Unexpected locally bound const generic variable"
+                                );
+                            }
+                        }
+                    })
                     .try_collect()?;
-                let output = self.translate_ty(span, erase_regions, &sig.value.output)?;
-                Ok(Ty::Arrow(RegionId::Vector::new(), inputs, Box::new(output)))
+
+                // Push the ground region group
+                let erase_regions = false;
+                self.with_locally_bound_regions_group(bound_region_names, move |ctx| {
+                    let regions = ctx.region_vars[0].clone();
+                    let inputs = sig
+                        .value
+                        .inputs
+                        .iter()
+                        .map(|x| ctx.translate_ty(span, erase_regions, x))
+                        .try_collect()?;
+                    let output = ctx.translate_ty(span, erase_regions, &sig.value.output)?;
+                    Ok(Ty::Arrow(regions, inputs, Box::new(output)))
+                })
             }
             hax::Ty::Error => {
                 trace!("Error");
