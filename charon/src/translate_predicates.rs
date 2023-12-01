@@ -803,18 +803,31 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplSourceKind::Closure(_) => {
-                let error = "Closures are not supported yet".to_string();
-                self.span_err(span, &error);
-                if !self.t_ctx.continue_on_failure {
-                    panic!("{}", error)
-                } else {
-                    let trait_id = TraitInstanceId::Unknown(error);
-                    TraitRef {
-                        trait_id,
-                        generics: GenericArgs::empty(),
-                        trait_decl_ref,
-                    }
+            ImplSourceKind::Closure(data) => {
+                trace!("{data:?}");
+                // Remark: a closure is always a function defined locally in the
+                // body of the caller, which means it can't be an assumed function
+                // (there is a very limited number of assumed functions, and they
+                // are all top-level).
+                let fn_id = self.translate_fun_decl_id(data.closure_def_id.rust_def_id.unwrap());
+                let erased_regions = false;
+                let (regions, types, const_generics) =
+                    self.translate_substs(span, erased_regions, None, &data.parent_substs)?;
+                let parent_substs = GenericArgs::new(regions, types, const_generics, Vec::new());
+                // TODO: translate the signature
+                let trait_refs =
+                    self.translate_trait_impl_sources(span, erase_regions, &data.nested)?;
+                let trait_id = TraitInstanceId::Closure(fn_id, parent_substs);
+                let generics = GenericArgs {
+                    regions: vec![],
+                    types: vec![],
+                    const_generics: vec![],
+                    trait_refs,
+                };
+                TraitRef {
+                    trait_id,
+                    generics,
+                    trait_decl_ref,
                 }
             }
             ImplSourceKind::TraitUpcasting(_) => unimplemented!(),

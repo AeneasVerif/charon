@@ -123,7 +123,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             if eb.index == re_var.index {
                                 // Note that the DeBruijn index depends
                                 // on the current stack of bound region groups.
-                                let db_id = self.bound_region_vars.len() - 1;
+                                let db_id = self.region_vars.len() - 1;
                                 return Ok(Region::BVar(DeBruijnId::new(db_id), *rid));
                             }
                         }
@@ -141,7 +141,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         Some(rid) => {
                             // Note that the DeBruijn index depends
                             // on the current stack of bound region groups.
-                            let db_id = self.bound_region_vars.len() - 1;
+                            let db_id = self.region_vars.len() - 1;
                             Ok(Region::BVar(DeBruijnId::new(db_id), *rid))
                         }
                         None => {
@@ -409,7 +409,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::Ty::Error => {
                 trace!("Error");
-                error_or_panic!(self, span, "Unknown error")
+                error_or_panic!(self, span, "Type checking error")
             }
             hax::Ty::Todo(s) => {
                 trace!("Todo: {s}");

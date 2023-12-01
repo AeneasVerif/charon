@@ -379,15 +379,14 @@ impl SharedTypeVisitor for Deps {
         self.visit_trait_instance_id(&tr.trait_id);
         self.visit_generic_args(&tr.generics);
     }
-}
 
-impl SharedExprVisitor for Deps {
     fn visit_fun_decl_id(&mut self, id: &FunDeclId::Id) {
         let id = AnyDeclId::Fun(*id);
         self.insert_edge(id);
     }
 }
 
+impl SharedExprVisitor for Deps {}
 impl SharedAstVisitor for Deps {}
 
 impl Deps {

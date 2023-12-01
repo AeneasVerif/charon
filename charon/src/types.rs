@@ -1,4 +1,4 @@
-pub use crate::gast::TraitItemName;
+pub use crate::gast::{FunDeclId, TraitItemName};
 use crate::meta::Meta;
 use crate::names::Name;
 pub use crate::types_utils::*;
@@ -196,6 +196,8 @@ pub enum TraitInstanceId {
     /// }
     /// ```
     FnPointer(Box<Ty>),
+    /// Similar to [FnPointer], but where we use a closure.
+    Closure(FunDeclId::Id, GenericArgs),
     ///
     /// Self, in case of trait declarations/implementations.
     ///
@@ -632,6 +634,13 @@ pub struct ParamsInfo {
 pub struct FunSig {
     /// Is the function unsafe or not
     pub is_unsafe: bool,
+    /// `true` if the signature is for a closure.
+    ///
+    /// Importantly: if the signature is for a closure, then:
+    /// - the type and const generic params actually come from the parent function
+    ///   (the function in which the closure is defined)
+    /// - the region variables are local to the closure
+    pub is_closure: bool,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).

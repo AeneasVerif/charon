@@ -251,6 +251,12 @@ impl<'a> FmtCtx<'a> {
     }
 }
 
+impl<'a> Default for FmtCtx<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> Formatter<TypeDeclId::Id> for FmtCtx<'a> {
     fn format_object(&self, id: TypeDeclId::Id) -> String {
         match &self.type_decls {

@@ -53,6 +53,20 @@ macro_rules! error_assert {
             }
         }
     };
+    ($ctx:ident, $span: ident, $b: expr, $msg: expr) => {
+        if !$b {
+            $ctx.span_err($span, &$msg);
+            if $ctx.continue_on_failure() {
+                let e = crate::common::Error {
+                    span: $span,
+                    msg: $msg.to_string(),
+                };
+                return (Err(e));
+            } else {
+                panic!("{}", $msg);
+            }
+        }
+    };
 }
 pub(crate) use error_assert;
 

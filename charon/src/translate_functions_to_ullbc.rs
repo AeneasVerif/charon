@@ -1497,29 +1497,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let tcx = self.t_ctx.tcx;
         let erase_regions = false;
         let span = self.t_ctx.tcx.def_span(def_id);
-
-        // Retrieve the function signature, which includes the lifetimes
-        let signature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
-            if tcx.is_closure(def_id) {
-                // Closures have a peculiar handling in Rust: we can't call
-                // `TyCtxt::fn_sig`.
-                let fun_type = tcx.type_of(def_id).subst_identity();
-                let rsubsts = match fun_type.kind() {
-                    ty::TyKind::Closure(_def_id, substs_ref) => substs_ref,
-                    _ => {
-                        unreachable!()
-                    }
-                };
-                rsubsts.as_closure().sig()
-            } else {
-                let fn_sig = tcx.fn_sig(def_id);
-                trace!("Fun sig: {:?}", fn_sig);
-                // There is an early binder for the early-bound regions, that
-                // we ignore, and a binder for the late-bound regions, that we
-                // keep.
-                fn_sig.subst_identity()
-            };
-        let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
+        let is_closure = tcx.is_closure(def_id);
 
         // The parameters (and in particular the lifetimes) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
@@ -1531,20 +1509,70 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // The late-bounds parameters are bound in the [Binder] returned by
         // [TyCtxt.type_of].
 
-        // Start by translating the early-bound parameters (those are contained by `substs`).
-        let fun_type = tcx.type_of(def_id).subst_identity();
-        let substs: Vec<hax::GenericArg> = match fun_type.kind() {
-            ty::TyKind::FnDef(_def_id, substs_ref) => substs_ref.sinto(&self.hax_state),
-            ty::TyKind::Closure(_, _) => {
-                // All the parameters seem to be contained in the signature,
-                // which we actually retrieve with `TyCtxt::type_of`
-                Vec::new()
-            }
-            _ => {
-                unreachable!()
-            }
-        };
+        // Retrieve the early bound parameters, and the late-bound parameters
+        // through the function signature.
+        let (substs, signature): (
+            Vec<hax::GenericArg>,
+            rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>>,
+        ) = if is_closure {
+            // Closures have a peculiar handling in Rust: we can't call
+            // `TyCtxt::fn_sig`.
+            let fun_type = tcx.type_of(def_id).subst_identity();
+            let rsubsts = match fun_type.kind() {
+                ty::TyKind::Closure(_def_id, substs_ref) => substs_ref,
+                _ => {
+                    unreachable!()
+                }
+            };
+            let closure = rsubsts.as_closure();
+            // Retrieve the early bound parameters from the *parent* (i.e.,
+            // the function in which the closure is actually defined).
+            // Importantly, the type parameters necessarily come from the parents:
+            // the closure can't itself be polymorphic, and the signature of
+            // the closure only quantifies lifetimes.
+            let substs = closure.parent_substs();
+            trace!("closure.parent_substs: {:?}", substs);
+            let sig = closure.sig();
+            trace!("losure.sig: {:?}", sig);
+            let substs = substs.sinto(&self.hax_state);
 
+            // Sanity check: the parent subst only contains types and generics
+            error_assert!(
+                self,
+                span,
+                substs
+                    .iter()
+                    .all(|bv| !matches!(bv, hax::GenericArg::Lifetime(_))),
+                "The closure parent parameters contain regions"
+            );
+
+            (substs, sig)
+        } else {
+            // Retrieve the signature
+            let fn_sig = tcx.fn_sig(def_id);
+            trace!("Fun sig: {:?}", fn_sig);
+            // There is an early binder for the early-bound regions, that
+            // we ignore, and a binder for the late-bound regions, that we
+            // keep.
+            let fn_sig = fn_sig.subst_identity();
+
+            // Retrieve the early-bound parameters
+            let fun_type = tcx.type_of(def_id).subst_identity();
+            let substs: Vec<hax::GenericArg> = match fun_type.kind() {
+                ty::TyKind::FnDef(_def_id, substs_ref) => substs_ref.sinto(&self.hax_state),
+                ty::TyKind::Closure(_, _) => {
+                    unreachable!()
+                }
+                _ => {
+                    unreachable!()
+                }
+            };
+
+            (substs, fn_sig)
+        };
+        let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
+
+        // Start by translating the early-bound parameters (those are contained by `substs`).
         // Some debugging information:
         trace!("Def id: {def_id:?}:\n\n- substs:\n{substs:?}\n\n- generics:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
                tcx.generics_of(def_id), signature.bound_vars, signature);
@@ -1649,6 +1677,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             generics: self.get_generics(),
             preds: self.get_predicates(),
             is_unsafe,
+            is_closure,
             parent_params_info,
             inputs,
             output,

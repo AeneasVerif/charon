@@ -450,6 +450,13 @@ impl TraitInstanceId {
             TraitInstanceId::FnPointer(box ty) => {
                 format!("(fn_ptr:{})", ty.fmt_with_ctx(ctx))
             }
+            TraitInstanceId::Closure(fid, generics) => {
+                format!(
+                    "(closure:{}{})",
+                    ctx.format_object(*fid),
+                    generics.fmt_with_ctx(ctx)
+                )
+            }
             TraitInstanceId::Unsolved(trait_id, generics) => {
                 format!(
                     "Unsolved({}{})",
@@ -1151,6 +1158,7 @@ impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
             | TraitInstanceId::Clause(_)
             | TraitInstanceId::BuiltinOrAuto(_)
             | TraitInstanceId::FnPointer(_)
+            | TraitInstanceId::Closure(..)
             | TraitInstanceId::Unsolved(..)
             | TraitInstanceId::Unknown(_) => (),
         }
@@ -1316,6 +1324,10 @@ pub trait TypeVisitor {
             TraitInstanceId::FnPointer(box ty) => {
                 self.visit_ty(ty);
             }
+            TraitInstanceId::Closure(fid, generics) => {
+                self.visit_fun_decl_id(fid);
+                self.visit_generic_args(generics);
+            }
             TraitInstanceId::Unsolved(trait_id, generics) => {
                 self.visit_trait_decl_id(trait_id);
                 self.visit_generic_args(generics);
@@ -1395,6 +1407,7 @@ pub trait TypeVisitor {
     fn visit_fun_sig(&mut self, sig: &FunSig) {
         let FunSig {
             is_unsafe : _,
+            is_closure: _,
             generics,
             preds,
             parent_params_info: _,
@@ -1418,6 +1431,8 @@ pub trait TypeVisitor {
         self.visit_generic_args(generics);
         self.visit_ty(ty);
     }
+
+    fn visit_fun_decl_id(&mut self, _: &FunDeclId::Id) {}
 }
 
 } // make_generic_in_borrows
