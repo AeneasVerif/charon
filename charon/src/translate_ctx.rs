@@ -41,7 +41,7 @@ pub(crate) use error_or_panic;
 
 /// Custom assert to either panic or return an error
 macro_rules! error_assert {
-    ($ctx:ident, $span: ident, $b: expr) => {
+    ($ctx:expr, $span: expr, $b: expr) => {
         if !$b {
             let msg = format!("assertion failure: {:?}", stringify!($b));
             $ctx.span_err($span, &msg);
@@ -53,7 +53,7 @@ macro_rules! error_assert {
             }
         }
     };
-    ($ctx:ident, $span: ident, $b: expr, $msg: expr) => {
+    ($ctx:expr, $span: expr, $b: expr, $msg: expr) => {
         if !$b {
             $ctx.span_err($span, &$msg);
             if $ctx.continue_on_failure() {
@@ -69,6 +69,36 @@ macro_rules! error_assert {
     };
 }
 pub(crate) use error_assert;
+
+/// Custom assert to either panic or return an error
+macro_rules! error_assert_then {
+    ($ctx:expr, $span: expr, $b: expr, $then: expr) => {
+        if !$b {
+            let msg = format!("assertion failure: {:?}", stringify!($b));
+            $ctx.span_err($span, &msg);
+            if $ctx.continue_on_failure() {
+                {
+                    $then
+                }
+            } else {
+                panic!("{}", msg);
+            }
+        }
+    };
+    ($ctx:expr, $span: expr, $b: expr, $then: expr, $msg:expr) => {
+        if !$b {
+            $ctx.span_err($span, &$msg);
+            if $ctx.continue_on_failure() {
+                {
+                    $then
+                }
+            } else {
+                panic!("{}", $msg);
+            }
+        }
+    };
+}
+pub(crate) use error_assert_then;
 
 pub struct CrateInfo {
     pub crate_name: String,
@@ -340,7 +370,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let end = meta::convert_loc(rspan.hi);
 
         // Put together
-        meta::Span { file_id, beg, end }
+        meta::Span {
+            file_id,
+            beg,
+            end,
+            rust_span: rspan.rust_span,
+        }
     }
 
     /// Compute meta data from a Rust source scope

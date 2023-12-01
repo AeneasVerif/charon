@@ -224,7 +224,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         // introduced by Rustc use a special "assert" construct. Because of
         // this, it must happen *before* the [reconstruct_asserts] pass.
         // See the comments in [crate::remove_dynamic_checks].
-        remove_dynamic_checks::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_dynamic_checks::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: reconstruct the asserts
         reconstruct_asserts::transform(&ctx, &mut llbc_funs, &mut llbc_globals);

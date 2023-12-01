@@ -5,14 +5,17 @@
 //! array/slice manipulation and arithmetic functions, on the verification side.
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::{error_assert_then, TransCtx};
 use crate::types::*;
 use take_mut::take;
 
-struct RemoveDynChecks {}
+struct RemoveDynChecks<'tcx, 'ctx, 'a> {
+    /// We use the context for debugging and error reporting
+    ctx: &'a mut TransCtx<'tcx, 'ctx>,
+}
 
-impl MutTypeVisitor for RemoveDynChecks {}
-impl MutExprVisitor for RemoveDynChecks {}
+impl<'tcx, 'ctx, 'a> MutTypeVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {}
+impl<'tcx, 'ctx, 'a> MutExprVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {}
 
 /// Check that a statement is exactly:
 /// ```text
@@ -30,7 +33,7 @@ fn is_assert_move(p: &Place, s: &Statement, expected: bool) -> bool {
     false
 }
 
-impl MutAstVisitor for RemoveDynChecks {
+impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
         visitor(self)
     }
@@ -149,10 +152,16 @@ impl MutAstVisitor for RemoveDynChecks {
                     {
                         // TODO: the last statement is not necessarily a sequence
                         // This should be the addition/subtraction/etc. case
-                        assert!(
+                        error_assert_then!(
+                            self.ctx,
+                            s0.meta.span.rust_span,
                             matches!(binop, BinOp::Add | BinOp::Sub | BinOp::Mul),
-                            "{:?}",
-                            binop
+                            // TODO: we could replace the whole statement with an "ERROR" statement
+                            return,
+                            format!(
+                                "Unexpected binop while removing dynamic checks: {:?}",
+                                binop
+                            )
                         );
 
                         if let RawStatement::Assign(_, Rvalue::Use(Operand::Move(move_p1))) =
@@ -211,16 +220,17 @@ impl MutAstVisitor for RemoveDynChecks {
     }
 }
 
-pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    let fmt_ctx = ctx.into_fmt();
+pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+        let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove the dynamic checks: {}:\n{}",
             name.fmt_with_ctx(&fmt_ctx),
             fmt_ctx.format_object(&*b)
         );
-        let mut visitor = RemoveDynChecks {};
+        let mut visitor = RemoveDynChecks { ctx };
         visitor.visit_statement(&mut b.body);
+        let fmt_ctx = ctx.into_fmt();
         trace!(
             "# After we removed the dynamic checks: {}:\n{}",
             name.fmt_with_ctx(&fmt_ctx),
