@@ -35,7 +35,7 @@ fn is_assert_move(p: &Place, s: &Statement, expected: bool) -> bool {
 }
 
 impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
-    /// Returns [true] if we simplified something.
+    /// Return [true] if we simplified the statements, [false] otherwise.
     /// TODO: we need a way of simplifying all this...
     ///
     /// We simply detect sequences of the following shapes, and remove them:
@@ -106,7 +106,6 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                             let (_, s3) = s2.content.to_sequence();
                             *s3
                         });
-                        self.visit_statement(s);
                         // A simplification happened
                         return true;
                     }
@@ -132,7 +131,6 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                             let (_, s3) = s2.content.to_sequence();
                             *s3
                         });
-                        self.visit_statement(s);
                         // A simplification happened
                         return true;
                     }
@@ -201,7 +199,6 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                                     let (_, s4) = s3.content.to_sequence();
                                     *s4
                                 });
-                                self.visit_statement(s);
                                 return true;
                             }
                         }
@@ -221,8 +218,7 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                             let (_, s2) = s1.content.to_sequence();
                             *s2
                         });
-                        self.visit_statement(s);
-                        // We perform a change
+                        // We performed a change
                         return true;
                     } else if let (
                         RawStatement::Assert(Assert {
@@ -239,7 +235,8 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                             s0.meta.span.rust_span,
                             matches!(binop, BinOp::Add | BinOp::Sub | BinOp::Mul),
                             // TODO: we could replace the whole statement with an "ERROR" statement
-                            // A simplification happened
+                            // A simplification should have happened but was missed:
+                            // stop the simplification here.
                             return true,
                             format!(
                                 "Unexpected binop while removing dynamic checks: {:?}",
@@ -281,7 +278,6 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                                                 content: RawStatement::Sequence(Box::new(s0), s3),
                                             }
                                         });
-                                        self.visit_statement(s);
                                         // A simplification happened
                                         return true;
                                     }
@@ -308,15 +304,29 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
     fn visit_statement(&mut self, s: &mut Statement) {
         // Simplify
         if self.simplify(s) {
-            // A simplification happened, and we recursively simplified the body:
-            // nothing left to do
+            // A simplification happened: visit again the updated statement
+            self.visit_statement(s)
         } else {
             // No simplification: dive in.
             // Make sure we eliminated all the asserts and all the `len`
-            assert!(!s.content.is_assert());
+            error_assert_then!(
+                self.ctx,
+                s.meta.span.rust_span,
+                !s.content.is_assert(),
+                // Return so as to stop the exploration
+                return,
+                "Found an assert which was not simplified"
+            );
             if s.content.is_assign() {
                 let (_, rv) = s.content.as_assign();
-                assert!(!rv.is_len());
+                error_assert_then!(
+                    self.ctx,
+                    s.meta.span.rust_span,
+                    !rv.is_len(),
+                    // Return so as to stop the exploration
+                    return,
+                    "Found an occurrence of Len which was not simplified"
+                );
             }
             self.default_visit_raw_statement(&mut s.content);
         }
