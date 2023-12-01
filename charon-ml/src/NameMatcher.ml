@@ -712,7 +712,9 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
           TypesUtils.empty_generic_args
       in
       EComp name
-  | TNever | TRawPtr _ | TArrow _ -> raise (Failure "Unimplemented")
+  | TNever -> raise (Failure "Unimplemented: Never")
+  | TRawPtr _ -> raise (Failure "Unimplemented: Raw pointer")
+  | TArrow _ -> raise (Failure "Unimplemented: Arrow")
 
 and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
     (m : constraints) (trait_ref : T.trait_ref) (item_name : string)
