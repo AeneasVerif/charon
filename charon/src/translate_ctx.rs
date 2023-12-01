@@ -19,7 +19,7 @@ use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::cmp::{Ord, Ordering, PartialOrd};
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
 use std::fmt;
 
 /// Macro to either panic or return on error, depending on the CLI options
@@ -276,6 +276,10 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
     pub blocks_map: ast::BlockId::MapGenerator<hax::BasicBlock>,
+    /// We register the blocks to translate in a stack, so as to avoid
+    /// writing the translation functions as recursive functions. We do
+    /// so because we had stack overflows in the past.
+    pub blocks_stack: VecDeque<hax::BasicBlock>,
 }
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
@@ -540,6 +544,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trait_type_constraints: Vec::new(),
             blocks: im::OrdMap::new(),
             blocks_map: ast::BlockId::MapGenerator::new(),
+            blocks_stack: VecDeque::new(),
         }
     }
 
@@ -724,6 +729,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId::Id {
+        // Push to the stack of blocks awaiting translation
+        self.blocks_stack.push_back(rid);
+        // Insert in the map
         self.blocks_map.insert(rid)
     }
 

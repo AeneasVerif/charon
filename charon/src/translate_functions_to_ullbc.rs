@@ -253,22 +253,36 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<(), Error> {
         trace!();
 
-        let id = self.translate_basic_block(body, rustc_index::Idx::new(START_BLOCK.as_usize()))?;
+        // Register the start block
+        let id = self.translate_basic_block_id(rustc_index::Idx::new(START_BLOCK.as_usize()));
         assert!(id == START_BLOCK_ID);
 
+        // For as long as there are blocks in the stack, translate them
+        while let Some(block_id) = self.blocks_stack.pop_front() {
+            self.translate_basic_block(body, block_id)?;
+        }
+
         Ok(())
+    }
+
+    /// Translate a basic block id and register it, if it hasn't been done.
+    fn translate_basic_block_id(&mut self, block_id: hax::BasicBlock) -> BlockId::Id {
+        match self.blocks_map.get(&block_id) {
+            None => {
+                // Generate a fresh id - this also registers the block
+                self.fresh_block_id(block_id)
+            }
+            Some(id) => id,
+        }
     }
 
     fn translate_basic_block(
         &mut self,
         body: &hax::MirBody<()>,
         block_id: hax::BasicBlock,
-    ) -> Result<BlockId::Id, Error> {
-        // Check if the block has already been translated
-        if let Some(id) = self.blocks_map.get(&block_id) {
-            return Ok(id);
-        }
-        let nid = self.fresh_block_id(block_id);
+    ) -> Result<(), Error> {
+        // Retrieve the translated block id
+        let nid = self.translate_basic_block_id(block_id);
 
         // Retrieve the block data
         let block = body.basic_blocks.get(block_id).unwrap();
@@ -297,7 +311,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         self.push_block(nid, block);
 
-        Ok(nid)
+        Ok(())
     }
 
     /// Translate a place and return its type
@@ -1169,7 +1183,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         use hax::TerminatorKind;
         let t_terminator: RawTerminator = match &terminator.kind {
             TerminatorKind::Goto { target } => {
-                let target = self.translate_basic_block(body, *target)?;
+                let target = self.translate_basic_block_id(*target);
                 RawTerminator::Goto { target }
             }
             TerminatorKind::SwitchInt { discr, targets } => {
@@ -1177,7 +1191,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let (discr, discr_ty) = self.translate_operand_with_type(span, discr)?;
 
                 // Translate the switch targets
-                let targets = self.translate_switch_targets(body, &discr_ty, targets)?;
+                let targets = self.translate_switch_targets(&discr_ty, targets)?;
 
                 RawTerminator::Switch { discr, targets }
             }
@@ -1196,7 +1210,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 replace: _,
             } => RawTerminator::Drop {
                 place: self.translate_place(span, place)?,
-                target: self.translate_basic_block(body, *target)?,
+                target: self.translate_basic_block_id(*target),
             },
             TerminatorKind::Call {
                 fun,
@@ -1211,7 +1225,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 fn_span: _,
             } => self.translate_function_call(
                 span,
-                body,
                 fun,
                 substs,
                 args,
@@ -1228,7 +1241,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unwind: _, // We consider that panic is an error, and don't model unwinding
             } => {
                 let cond = self.translate_operand(span, cond)?;
-                let target = self.translate_basic_block(body, *target)?;
+                let target = self.translate_basic_block_id(*target);
                 RawTerminator::Assert {
                     cond,
                     expected: *expected,
@@ -1262,7 +1275,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // We translate them as Gotos.
                 // Also note that they are used in some passes, and not in some others
                 // (they are present in mir_promoted, but not mir_optimized).
-                let target = self.translate_basic_block(body, *real_target)?;
+                let target = self.translate_basic_block_id(*real_target);
                 RawTerminator::Goto { target }
             }
             TerminatorKind::FalseUnwind {
@@ -1270,7 +1283,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unwind: _,
             } => {
                 // We consider this to be a goto
-                let target = self.translate_basic_block(body, *real_target)?;
+                let target = self.translate_basic_block_id(*real_target);
                 RawTerminator::Goto { target }
             }
             TerminatorKind::InlineAsm { .. } => {
@@ -1285,15 +1298,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate switch targets
     fn translate_switch_targets(
         &mut self,
-        body: &hax::MirBody<()>,
         switch_ty: &Ty,
         targets: &hax::SwitchTargets,
     ) -> Result<SwitchTargets, Error> {
         trace!("targets: {:?}", targets);
         match targets {
             hax::SwitchTargets::If(if_block, then_block) => {
-                let if_block = self.translate_basic_block(body, *if_block)?;
-                let then_block = self.translate_basic_block(body, *then_block)?;
+                let if_block = self.translate_basic_block_id(*if_block);
+                let then_block = self.translate_basic_block_id(*then_block);
                 Ok(SwitchTargets::If(if_block, then_block))
             }
             hax::SwitchTargets::SwitchInt(_, targets_map, otherwise) => {
@@ -1302,11 +1314,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .iter()
                     .map(|(v, tgt)| {
                         let v = ScalarValue::from_le_bytes(int_ty, v.data_le_bytes);
-                        let tgt = self.translate_basic_block(body, *tgt)?;
+                        let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })
                     .try_collect()?;
-                let otherwise = self.translate_basic_block(body, *otherwise)?;
+                let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(int_ty, targets_map, otherwise))
             }
         }
@@ -1320,7 +1332,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_function_call(
         &mut self,
         span: rustc_span::Span,
-        body: &hax::MirBody<()>,
         fun: &hax::FunOperand,
         substs: &Vec<hax::GenericArg>,
         args: &Vec<hax::Operand>,
@@ -1370,7 +1381,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         // Translate the target
                         let lval = self.translate_place(span, destination)?;
-                        let next_block = self.translate_basic_block(body, next_block)?;
+                        let next_block = self.translate_basic_block_id(next_block);
 
                         let call = Call {
                             func: FnOperand::Regular(fid.func),
@@ -1395,7 +1406,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", p, substs, args)
                 });
                 let lval = self.translate_place(span, destination)?;
-                let next_block = self.translate_basic_block(body, next_block)?;
+                let next_block = self.translate_basic_block_id(next_block);
 
                 // TODO: we may have a problem here because as we don't
                 // know which function is being called, we may not be
