@@ -12,7 +12,7 @@ open Ast
 %token LEFT_CURLY RIGHT_CURLY
 %token LEFT_SQUARE RIGHT_SQUARE
 %token LEFT_ANGLE RIGHT_ANGLE
-%token SEMICOL AMPERSAND MUT COMMA EOF FN ARROW
+%token SEMICOL AMPERSAND MUT CONST COMMA EOF FN ARROW STAR
 
 /* Types */
 
@@ -69,6 +69,11 @@ expr:
     EArrow (inputs, Some ret) }
   | FN; LEFT_BRACKET; inputs=separated_list(COMMA, expr); RIGHT_BRACKET {
     EArrow (inputs, None) }
+  // Raw pointers
+  | STAR; MUT; ty=expr {
+    ERawPtr (Mut, ty) }
+  | STAR; CONST; ty=expr {
+    ERawPtr (Not, ty) }
   ;
 
 region:

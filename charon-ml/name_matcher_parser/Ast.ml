@@ -16,6 +16,7 @@ type literal = LInt of big_int | LBool of bool | LChar of char
 type ref_kind = RMut | RShared [@@deriving show, ord]
 type region = RVar of var option | RStatic [@@deriving show, ord]
 type primitive_adt = TTuple | TArray | TSlice [@@deriving show, ord]
+type mutability = Mut | Not [@@deriving show, ord]
 
 type pattern = pattern_elem list
 and pattern_elem = PIdent of string * generic_args | PImpl of expr
@@ -35,6 +36,7 @@ and expr =
   | ERef of region * expr * ref_kind
   | EArrow of expr list * expr option
   | EVar of var option
+  | ERawPtr of mutability * expr
 
 and generic_arg = GExpr of expr | GValue of literal | GRegion of region
 and generic_args = generic_arg list [@@deriving show, ord]

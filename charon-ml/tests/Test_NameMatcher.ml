@@ -30,6 +30,8 @@ let parse_tests () =
       "{fn ()}";
       "{fn (@T, @U)}";
       "{fn (@T, @U) -> u32}";
+      "{*const @T}";
+      "{*mut @T}";
     ]
   in
   let _ = List.map parse_pattern patterns in

@@ -12,6 +12,7 @@ let whitespace = [' ']+
 rule token = parse
   | "::" { SEP }
   | "mut" { MUT }
+  | "const" { CONST }
   | "fn" { FN }
   | "'static" { STATIC_REGION }
   | ''' { REGION (index lexbuf) }
@@ -34,6 +35,7 @@ rule token = parse
   | '>' { RIGHT_ANGLE }
   | ',' { COMMA }
   | "->" { ARROW }
+  | '*' { STAR }
   | _ { raise (Failure ("Character not allowed in source text: '" ^ Lexing.lexeme lexbuf ^ "'")) }
 
 and index = parse

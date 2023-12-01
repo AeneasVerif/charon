@@ -149,6 +149,16 @@ and expr_to_string (c : print_config) (e : expr) : string =
       | TkName -> (
           "Arrow" ^ String.concat "" inputs
           ^ match out with None -> "" | Some out -> out))
+  | ERawPtr (mut, ty) -> (
+      match c.tgt with
+      | TkPattern | TkPretty ->
+          let mut = match mut with Mut -> "*mut" | Not -> "*const" in
+          mut ^ " " ^ expr_to_string c ty
+      | TkName ->
+          let mut =
+            match mut with Mut -> "RawPtrMut" | Not -> "RawPtrConst"
+          in
+          mut ^ expr_to_string c ty)
 
 and generic_arg_to_string (c : print_config) (g : generic_arg) : string =
   match g with
@@ -422,6 +432,9 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
       match pout with
       | None -> out = TypesUtils.mk_unit_ty
       | Some pout -> match_expr_with_ty ctx c m pout out)
+  | ERawPtr (Mut, pty), TRawPtr (ty, RMut) -> match_expr_with_ty ctx c m pty ty
+  | ERawPtr (Not, pty), TRawPtr (ty, RShared) ->
+      match_expr_with_ty ctx c m pty ty
   | _ -> false
 
 and match_trait_ref (ctx : ctx) (c : match_config) (pid : pattern)
@@ -735,8 +748,9 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
         else Some (ty_to_pattern_aux ctx c m out)
       in
       EArrow (inputs, out)
+  | TRawPtr (ty, RMut) -> ERawPtr (Mut, ty_to_pattern_aux ctx c m ty)
+  | TRawPtr (ty, RShared) -> ERawPtr (Not, ty_to_pattern_aux ctx c m ty)
   | TNever -> raise (Failure "Unimplemented: Never")
-  | TRawPtr _ -> raise (Failure "Unimplemented: Raw pointer")
 
 and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
     (m : constraints) (trait_ref : T.trait_ref) (item_name : string)
@@ -1014,6 +1028,8 @@ and expr_convertible_aux (c : conv_config) (m : conv_map) (e0 : expr)
   | EArrow (inputs0, Some out0), EArrow (inputs1, Some out1) ->
       let* m = exprl_convertible_aux c m inputs0 inputs1 in
       expr_convertible_aux c m out0 out1
+  | ERawPtr (mut0, ty0), ERawPtr (mut1, ty1) ->
+      if mut0 = mut1 then expr_convertible_aux c m ty0 ty1 else Error ()
   | _ -> Error ()
 
 and exprl_convertible_aux (c : conv_config) (m : conv_map) (e0 : expr list)
