@@ -1,8 +1,7 @@
-/*pub fn incr_u32(x: u32) -> u32 {
+pub fn incr_u32(x: u32) -> u32 {
     x + 1
 }
 
-/*
 /* Testing function pointers and closures */
 // TODO: this requires to take into account the constraints over associated types
 // because the output type of the Fn trait is an associated type, not a parameter.
@@ -18,30 +17,81 @@ where
         Some(x) => Some(f(x)),
     }
 }
-*/
 
 // With a pointer to a top level function
 pub fn test_map_option1(x: Option<u32>) -> Option<u32> {
     map_option(x, incr_u32)
 }
-*/
 
-/*
-//
-pub fn test_closure1<T>(x: &T) -> &T {
-    //let f: fn(&T) -> &T = |x| x;
+// Local function
+pub fn test_closure_u32(x: u32) -> u32 {
     let f: fn(u32) -> u32 = |x| x;
-    //(f)(x)
-    x
+    (f)(x)
 }
-*/
 
-/*
+// Local function with reference
+//
+// The lifetime 'a could be omitted, but we insert it to check that the
+// lifetimes are correctly retrieved by Charon (in particular, that it doesn't
+// mix the lifetimes used in the closure with the lifetimes used by the top-level
+// function).
+#[clippy::allow(needless_lifetime)]
+pub fn test_closure_ref_u32<'a>(x: &'a u32) -> &'a u32 {
+    let f: fn(&u32) -> &u32 = |x| x;
+    (f)(x)
+}
+
+// Local function which uses local type variables
+pub fn test_closure_ref_param<T>(x: &T) -> &T {
+    let f: fn(&T) -> &T = |x| x;
+    (f)(x)
+}
+
+// TODO: what happens if we use a top-level function with generic parameters
+// and where clauses? Where does the instantiation and the trait resolutionb
+// happen?
+
+// TODO: Local function which uses local lifetime variables
+
 // With a local function
 pub fn test_map_option2(x: Option<u32>) -> Option<u32> {
     let f: fn(u32) -> u32 = |x| x + 1;
     map_option(x, f)
 }
+
+pub fn id<T>(x: T) -> T {
+    x
+}
+
+pub fn test_map_option_id1(x: Option<u32>) -> Option<u32> {
+    map_option(x, id)
+}
+
+pub fn test_map_option_id2(x: Option<u32>) -> Option<u32> {
+    let f = id;
+    map_option(x, f)
+}
+
+pub fn id_clone<T: Clone>(x: T) -> T {
+    x.clone()
+}
+
+/*// Testing the trait resolution on function pointers
+pub fn test_id_clone(x: u32) -> u32 {
+    let f: fn(u32) -> u32 = id_clone;
+    (f)(x)
+}*/
+
+// Testing the trait resolution on function pointers
+pub fn test_map_option_id_clone(x: Option<u32>) -> Option<u32> {
+    map_option(x, id_clone)
+}
+
+pub fn test_map_option3(x: Option<u32>) -> Option<u32> {
+    map_option(x, |x| x + 1)
+}
+
+// TODO: with a closure which uses regions from the parent function
 
 /*
 // With a local function which uses local type variables
@@ -63,7 +113,6 @@ pub fn map(x: [i32; 256]) -> [i32; 256] {
     x.map(|v| v)
 }
 
-*/
 */
 
 /*
