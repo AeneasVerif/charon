@@ -51,36 +51,70 @@ pub fn neg_test(x: i32) -> i32 {
 
 /// Testing binop simplification
 /// In debug mode, rust inserts an assertion after the addition
-pub fn add_test(x: u32, y: u32) -> u32 {
+pub fn add_u32(x: u32, y: u32) -> u32 {
     x + y
 }
 
 /// Testing binop simplification
 /// In debug mode, rust inserts an assertion after the substraction
-pub fn subs_test(x: u32, y: u32) -> u32 {
+pub fn subs_u32(x: u32, y: u32) -> u32 {
     x - y
 }
 
 /// Testing binop simplification
 /// In debug mode, rust inserts an assertion before the division
-pub fn div_test(x: u32, y: u32) -> u32 {
+pub fn div_u32(x: u32, y: u32) -> u32 {
     x / y
 }
 
 /// Testing binop simplification
 /// When using constants, rustc removes the unnecessary assertions (but
 /// only at a specific pass)
-pub fn div_test1(x: u32) -> u32 {
+pub fn div_u32_const(x: u32) -> u32 {
     x / 2
 }
 
 /// Testing binop simplification
-pub fn rem_test(x: u32, y: u32) -> u32 {
+pub fn rem_u32(x: u32, y: u32) -> u32 {
     x % y
 }
 
-pub fn mul_test(x: u32, y: u32) -> u32 {
+pub fn mul_u32(x: u32, y: u32) -> u32 {
     x * y
+}
+
+/// The assertions introduced by rust are not the same for the signed integers
+/// and the unsigned integers. For instance, `i32::min / (-1)` can overflow.
+pub fn add_i32(x: i32, y: i32) -> i32 {
+    x + y
+}
+
+pub fn subs_i32(x: i32, y: i32) -> i32 {
+    x - y
+}
+
+pub fn div_i32(x: i32, y: i32) -> i32 {
+    x / y
+}
+
+pub fn div_i32_const(x: i32) -> i32 {
+    x / 2
+}
+
+pub fn rem_i32(x: i32, y: i32) -> i32 {
+    x % y
+}
+
+pub fn mul_i32(x: i32, y: i32) -> i32 {
+    x * y
+}
+
+pub fn mix_arith_u32(x: u32, y: u32, z: u32) -> u32 {
+    ((x + y) * (x / y) + (x - (z % y))) % (x + y + z)
+}
+
+pub fn mix_arith_i32(x: i32, y: i32, z: i32) -> i32 {
+    ((x + y) * (x / y) + (x - (z % y))) % (x + y + z)
 }
 
 /* Checking the simplification of binop operations *inside* global constants.

@@ -7,6 +7,7 @@ use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
 use crate::translate_ctx::{error_assert_then, TransCtx};
 use crate::types::*;
+use crate::values::*;
 use take_mut::take;
 
 struct RemoveDynChecks<'tcx, 'ctx, 'a> {
@@ -33,21 +34,30 @@ fn is_assert_move(p: &Place, s: &Statement, expected: bool) -> bool {
     false
 }
 
-impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-
+impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
+    /// Returns [true] if we simplified something.
+    /// TODO: we need a way of simplifying all this...
+    ///
     /// We simply detect sequences of the following shapes, and remove them:
     /// # 1. Division/remainder/multiplication
+    /// ======================================
     /// ```text
     /// b := copy x == const 0
     /// assert(move b == false)
     /// ```
     ///
+    /// **Special case**: division/remainder for signed integers. Rust checks
+    /// that we don't have, for instance: `i32::min / (-1)`:
+    /// ```text
+    /// b_y := y == const (-1)
+    /// b_x := x == const INT::min
+    /// b := move (b_y) & move (b_x)
+    /// assert(move b == false)
+    /// z := x / y
+    /// ```
+    ///
     /// # 2. Addition/substraction/multiplication.
+    /// ==========================================
     /// In release mode, the rust compiler inserts assertions only inside the
     /// body of global constants.
     /// ```text
@@ -57,6 +67,7 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
     /// ```
     ///
     /// # 3. Arrays/slices
+    /// ==================
     /// ```text
     /// l := len(a)
     /// b := copy x < copy l
@@ -64,12 +75,13 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
     /// ```
     ///
     /// # Shifts
+    /// ========
     /// ```text
     /// x := ...;
     /// b := move x < const 32; // or another constant
     /// assert(move b == true);
     /// ```
-    fn visit_statement(&mut self, s: &mut Statement) {
+    fn simplify(&mut self, s: &mut Statement) -> bool {
         if let RawStatement::Sequence(s0, s1) = &s.content {
             if let RawStatement::Sequence(s1, s2) = &s1.content {
                 // Arrays/Slices
@@ -95,8 +107,8 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
                             *s3
                         });
                         self.visit_statement(s);
-                        // Return so as not to take the default branch
-                        return;
+                        // A simplification happened
+                        return true;
                     }
                 }
                 // Shift left
@@ -121,8 +133,78 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
                             *s3
                         });
                         self.visit_statement(s);
-                        // Return so as not to take the default branch
-                        return;
+                        // A simplification happened
+                        return true;
+                    }
+                }
+                // Signed division and remainder
+                // TODO: check x_op and y_op
+                else if let (
+                    // b_y_p := y == (-1)
+                    RawStatement::Assign(
+                        b_y_p,
+                        Rvalue::BinaryOp(
+                            BinOp::Eq,
+                            _y_op,
+                            Operand::Const(ConstantExpr {
+                                value: RawConstantExpr::Literal(Literal::Scalar(_)),
+                                ty: _,
+                            }),
+                        ),
+                    ),
+                    // b_x_p := x == INT::min
+                    // TODO: check min_op
+                    RawStatement::Assign(b_x_p, Rvalue::BinaryOp(BinOp::Eq, _x_op, _min_op)),
+                    // s2
+                    // s3
+                    RawStatement::Sequence(s2, s3),
+                ) = (&s0.content, &s1.content, &s2.content)
+                {
+                    if let RawStatement::Sequence(s3, s4) = &s3.content {
+                        if let (
+                            // b := move (b_y) & move (b_x)
+                            RawStatement::Assign(
+                                b_p,
+                                Rvalue::BinaryOp(
+                                    BinOp::BitAnd,
+                                    Operand::Move(b_y_p1),
+                                    Operand::Move(b_x_p1),
+                                ),
+                            ),
+                            // assert(move b == false)
+                            RawStatement::Assert(Assert {
+                                cond: Operand::Move(b_p_1),
+                                expected: false,
+                            }),
+                            // z := x / y;
+                            // ...
+                            RawStatement::Sequence(s4, _),
+                        ) = (&s2.content, &s3.content, &s4.content)
+                        {
+                            if b_x_p == b_x_p1
+                                && b_y_p1 == b_y_p
+                                && b_p == b_p_1
+                                // x := x / y
+                                && matches!(
+                                    &s4.content,
+                                    RawStatement::Assign(
+                                        _,
+                                        Rvalue::BinaryOp(BinOp::Div | BinOp::Rem, _, _)
+                                    )
+                                )
+                            {
+                                // Eliminate the first 4 statements
+                                take(s, |s| {
+                                    let (_, s1) = s.content.to_sequence();
+                                    let (_, s2) = s1.content.to_sequence();
+                                    let (_, s3) = s2.content.to_sequence();
+                                    let (_, s4) = s3.content.to_sequence();
+                                    *s4
+                                });
+                                self.visit_statement(s);
+                                return true;
+                            }
+                        }
                     }
                 }
                 // Division/remainder/addition/etc.
@@ -140,8 +222,8 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
                             *s2
                         });
                         self.visit_statement(s);
-                        // Return so as not to take the default branch
-                        return;
+                        // We perform a change
+                        return true;
                     } else if let (
                         RawStatement::Assert(Assert {
                             cond: Operand::Move(move_p),
@@ -157,7 +239,8 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
                             s0.meta.span.rust_span,
                             matches!(binop, BinOp::Add | BinOp::Sub | BinOp::Mul),
                             // TODO: we could replace the whole statement with an "ERROR" statement
-                            return,
+                            // A simplification happened
+                            return true,
                             format!(
                                 "Unexpected binop while removing dynamic checks: {:?}",
                                 binop
@@ -199,8 +282,8 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
                                             }
                                         });
                                         self.visit_statement(s);
-                                        // Return so as not to take the default branch
-                                        return;
+                                        // A simplification happened
+                                        return true;
                                     }
                                 }
                             }
@@ -208,15 +291,35 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
                     }
                 }
             }
+        };
+
+        // No simplification
+        false
+    }
+}
+
+impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
+    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
+    fn merge(&mut self) {}
+
+    fn visit_statement(&mut self, s: &mut Statement) {
+        // Simplify
+        if self.simplify(s) {
+            // A simplification happened, and we recursively simplified the body:
+            // nothing left to do
+        } else {
+            // No simplification: dive in.
+            // Make sure we eliminated all the asserts and all the `len`
+            assert!(!s.content.is_assert());
+            if s.content.is_assign() {
+                let (_, rv) = s.content.as_assign();
+                assert!(!rv.is_len());
+            }
+            self.default_visit_raw_statement(&mut s.content);
         }
-        // Dive in.
-        // Make sure we eliminate all the asserts and all the len
-        assert!(!s.content.is_assert());
-        if s.content.is_assign() {
-            let (_, rv) = s.content.as_assign();
-            assert!(!rv.is_len());
-        }
-        self.default_visit_raw_statement(&mut s.content);
     }
 }
 
