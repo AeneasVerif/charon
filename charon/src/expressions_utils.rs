@@ -1,20 +1,14 @@
 //! This file groups everything which is linked to implementations about [crate::expressions]
 use crate::expressions::*;
-use crate::formatter::Formatter;
+use crate::formatter::{AstFormatter, FmtCtx};
 use crate::gast::{
     AssumedFunId, Call, FnOperand, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitItemName,
 };
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
-use crate::values;
 use crate::values::*;
 use macros::make_generic_in_borrows;
 use std::vec::Vec;
-
-pub trait ExprFormatter = TypeFormatter
-    + Formatter<VarId::Id>
-    + Formatter<(TypeDeclId::Id, VariantId::Id)>
-    + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>;
 
 impl Place {
     pub fn new(var_id: VarId::Id) -> Place {
@@ -37,9 +31,9 @@ impl std::fmt::Display for BorrowKind {
 }
 
 impl CastKind {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         match self {
             CastKind::Integer(src, tgt) => format!("cast<{src},{tgt}>"),
@@ -51,9 +45,9 @@ impl CastKind {
 }
 
 impl UnOp {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         match self {
             UnOp::Not => "~".to_string(),
@@ -88,12 +82,9 @@ impl std::fmt::Display for BinOp {
 }
 
 impl Place {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: Formatter<TypeDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<VarId::Id>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
+        C: AstFormatter,
     {
         let mut out = ctx.format_object(self.var_id);
 
@@ -131,23 +122,23 @@ impl Place {
 
 impl std::fmt::Display for Place {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
+        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
     }
 }
 
 impl ConstantExpr {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         self.value.fmt_with_ctx(ctx)
     }
 }
 
 impl RawConstantExpr {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         match self {
             RawConstantExpr::Literal(c) => c.to_string(),
@@ -182,9 +173,9 @@ impl RawConstantExpr {
 }
 
 impl FnPtr {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         let f = match &self.func {
@@ -205,14 +196,14 @@ impl FnPtr {
 
 impl std::fmt::Display for ConstantExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
+        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
     }
 }
 
 impl Operand {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: ExprFormatter,
+        C: AstFormatter,
     {
         match self {
             Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)),
@@ -224,14 +215,14 @@ impl Operand {
 
 impl std::fmt::Display for Operand {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
+        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
     }
 }
 
 impl Rvalue {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: ExprFormatter,
+        C: AstFormatter,
     {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),
@@ -300,7 +291,7 @@ impl Rvalue {
 
 impl std::fmt::Display for Rvalue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
+        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
     }
 }
 

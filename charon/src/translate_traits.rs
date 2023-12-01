@@ -1,4 +1,5 @@
 use crate::common::*;
+use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -133,7 +134,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let self_clause = self.with_local_trait_clauses(self_instance_id_gen, move |s| {
             s.translate_trait_clause(&span, &self_pred)
         })?;
-        trace!("self clause: {}", self_clause.unwrap().fmt_with_ctx(self));
+        trace!(
+            "self clause: {}",
+            self_clause.unwrap().fmt_with_ctx(&self.into_fmt())
+        );
         Ok(())
     }
 
@@ -380,16 +384,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Debugging:
         {
+            let ctx = bt_ctx.into_fmt();
             let clauses = bt_ctx
                 .trait_clauses
                 .values()
-                .map(|c| c.fmt_with_ctx(&bt_ctx))
+                .map(|c| c.fmt_with_ctx(&ctx))
                 .collect::<Vec<String>>()
                 .join("\n");
             let generic_clauses = generics
                 .trait_clauses
                 .iter()
-                .map(|c| c.fmt_with_ctx(&bt_ctx))
+                .map(|c| c.fmt_with_ctx(&ctx))
                 .collect::<Vec<String>>()
                 .join("\n");
             trace!(
@@ -512,9 +517,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         {
             // Debugging
+            let ctx = bt_ctx.into_fmt();
             let refs = parent_trait_refs
                 .iter()
-                .map(|c| c.fmt_with_ctx(&bt_ctx))
+                .map(|c| c.fmt_with_ctx(&ctx))
                 .collect::<Vec<String>>()
                 .join("\n");
             trace!("Trait impl: {:?}\n- parent_trait_refs:\n{}", rust_id, refs);

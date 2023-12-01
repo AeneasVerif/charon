@@ -5,7 +5,7 @@
 //! an extra assignment just before returning.
 
 use crate::expressions::*;
-use crate::formatter::Formatter;
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{
     ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
 };
@@ -32,10 +32,11 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
 }
 
 fn transform_body(ctx: &TransCtx, name: &Name, body: &mut Option<ExprBody>) {
+    let ctx = ctx.into_fmt();
     if let Some(b) = body.as_mut() {
         trace!(
             "About to insert assign and return unit in decl: {}:\n{}",
-            name.fmt_with_ctx(ctx),
+            name.fmt_with_ctx(&ctx),
             ctx.format_object(&*b)
         );
         b.body.transform(&mut transform_st);

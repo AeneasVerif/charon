@@ -2,7 +2,7 @@
 
 use crate::common::*;
 use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
-use crate::gast_utils::{ExprFormatter, GFunDeclFormatter, GGlobalDeclFormatter};
+use crate::formatter::{AstFormatter, Formatter};
 use crate::llbc_ast::{Assert, FunDecl, GlobalDecl, RawStatement, Statement, Switch};
 use crate::meta;
 use crate::meta::Meta;
@@ -106,9 +106,9 @@ impl Statement {
         Statement { meta, content }
     }
 
-    pub fn fmt_with_ctx<T>(&self, tab: &str, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        T: ExprFormatter,
+        C: AstFormatter,
     {
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(
@@ -244,18 +244,20 @@ impl Statement {
 }
 
 impl FunDecl {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: GFunDeclFormatter<'a, Statement>,
+        C: AstFormatter,
+        for<'a> C: Formatter<&'a Statement>,
     {
         self.gfmt_with_ctx("", ctx)
     }
 }
 
 impl GlobalDecl {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: GGlobalDeclFormatter<'a, Statement>,
+        C: AstFormatter,
+        for<'a> C: Formatter<&'a Statement>,
     {
         self.gfmt_with_ctx("", ctx)
     }

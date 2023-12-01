@@ -1,6 +1,6 @@
 //! Remove the useless no-ops.
 
-use crate::formatter::Formatter;
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{FunDecls, GlobalDecls, RawStatement, Statement};
 use crate::meta::combine_meta;
 use crate::translate_ctx::TransCtx;
@@ -23,10 +23,11 @@ fn transform_st(s: &mut Statement) {
 
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+        let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove useless no-ops in decl: {}:\n{}",
-            name.fmt_with_ctx(ctx),
-            ctx.format_object(&*b)
+            name.fmt_with_ctx(&fmt_ctx),
+            fmt_ctx.format_object(&*b)
         );
 
         // Compute the set of local variables

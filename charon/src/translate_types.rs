@@ -360,7 +360,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Translate the generics.
                 // Note that there can only be bound regions.
-                let tcx = self.t_ctx.tcx;
+                //let tcx = self.t_ctx.tcx;
                 /*                for bv in &sig.bound_var {
                     use hax::GenericArgs::*;
 

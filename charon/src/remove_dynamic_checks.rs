@@ -3,7 +3,7 @@
 //! must lead to a panic in Rust (which is why those checks are always present, even when
 //! compiling for release). In our case, we take this into account in the semantics of our
 //! array/slice manipulation and arithmetic functions, on the verification side.
-use crate::formatter::Formatter;
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
 use crate::types::*;
@@ -212,18 +212,19 @@ impl MutAstVisitor for RemoveDynChecks {
 }
 
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    let fmt_ctx = ctx.into_fmt();
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to remove the dynamic checks: {}:\n{}",
-            name.fmt_with_ctx(ctx),
-            ctx.format_object(&*b)
+            name.fmt_with_ctx(&fmt_ctx),
+            fmt_ctx.format_object(&*b)
         );
         let mut visitor = RemoveDynChecks {};
         visitor.visit_statement(&mut b.body);
         trace!(
             "# After we removed the dynamic checks: {}:\n{}",
-            name.fmt_with_ctx(ctx),
-            ctx.format_object(&*b)
+            name.fmt_with_ctx(&fmt_ctx),
+            fmt_ctx.format_object(&*b)
         );
     }
 }

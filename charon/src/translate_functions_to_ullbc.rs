@@ -6,7 +6,7 @@
 use crate::assumed;
 use crate::common::*;
 use crate::expressions::*;
-use crate::formatter::Formatter;
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::translate_ctx::*;
 use crate::translate_types;
@@ -1622,11 +1622,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 .try_collect()?;
             let output = ctx.translate_ty(span, erase_regions, &signature.output)?;
 
+            let fmt_ctx = ctx.into_fmt();
             trace!(
                 "# Input variables types:\n{}",
-                iterator_to_string(&|x| ctx.format_object(x), inputs.iter())
+                iterator_to_string(&|x| fmt_ctx.format_object(x), inputs.iter())
             );
-            trace!("# Output variable type:\n{}", ctx.format_object(&output));
+            trace!(
+                "# Output variable type:\n{}",
+                fmt_ctx.format_object(&output)
+            );
 
             let mut parent_params_info = ctx.get_function_parent_params_info(def_id);
             // If this is a trait decl method, we need to adjust the number of parent clauses

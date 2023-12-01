@@ -3,7 +3,7 @@
 //! This allows a more uniform treatment later on.
 //! TODO: actually transform all the unops and binops to function calls?
 use crate::expressions::{Rvalue, UnOp};
-use crate::formatter::Formatter;
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
 use crate::types::*;
@@ -68,17 +68,18 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
 }
 
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    let fmt_ctx = ctx.into_fmt();
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to transform some operations to function calls: {}:\n{}",
-            name.fmt_with_ctx(ctx),
-            ctx.format_object(&*b)
+            name.fmt_with_ctx(&fmt_ctx),
+            fmt_ctx.format_object(&*b)
         );
         b.body.transform(&mut transform_st);
         trace!(
             "# After transforming some operations to function calls: {}:\n{}",
-            name.fmt_with_ctx(ctx),
-            ctx.format_object(&*b)
+            name.fmt_with_ctx(&fmt_ctx),
+            fmt_ctx.format_object(&*b)
         );
     }
 }

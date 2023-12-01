@@ -21,7 +21,7 @@
 //! many nodes and edges).
 
 use crate::expressions::Place;
-use crate::formatter::Formatter;
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_meta, Meta};
 use crate::translate_ctx::TransCtx;
@@ -1932,10 +1932,11 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
 fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl {
     // Retrieve the function definition
     let src_def = ctx.fun_decls.get(src_def_id).unwrap();
+    let fctx = ctx.into_fmt();
     trace!(
         "# About to reconstruct: {}\n\n{}",
-        src_def.name.fmt_with_ctx(ctx),
-        ctx.format_object(src_def)
+        src_def.name.fmt_with_ctx(&fctx),
+        fctx.into_fmt().format_object(src_def)
     );
 
     // Return the translated definition
@@ -1956,10 +1957,11 @@ fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl
 fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalDecl {
     // Retrieve the global definition
     let src_def = ctx.global_decls.get(global_id).unwrap();
+    let fctx = ctx.into_fmt();
     trace!(
         "# About to reconstruct: {}\n\n{}",
-        src_def.name.fmt_with_ctx(ctx),
-        ctx.format_object(src_def)
+        src_def.name.fmt_with_ctx(&fctx),
+        fctx.format_object(src_def)
     );
 
     tgt::GlobalDecl {
@@ -1994,6 +1996,7 @@ pub fn translate_functions(ctx: &TransCtx) -> Defs {
     }
 
     // Print the functions
+    let ctx = ctx.into_fmt();
     for (_, fun) in &tgt_funs {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",

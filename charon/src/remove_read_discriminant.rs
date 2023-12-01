@@ -3,7 +3,7 @@
 //! `drop(v)` where `v` has type `Never` (it can happen - this module does the
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
 
-use crate::formatter::Formatter;
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
 use crate::meta::combine_meta;
 use crate::translate_ctx::TransCtx;
@@ -109,11 +109,12 @@ impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
 }
 
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    let fmt_ctx = ctx.into_fmt();
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to remove [ReadDiscriminant] occurrences in decl: {}:\n{}",
-            name.fmt_with_ctx(ctx),
-            ctx.format_object(&*b)
+            name.fmt_with_ctx(&fmt_ctx),
+            fmt_ctx.format_object(&*b)
         );
 
         let mut visitor = Visitor { _ctx: ctx };

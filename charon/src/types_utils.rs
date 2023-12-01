@@ -1,25 +1,13 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::assumed::get_name_from_type_id;
 use crate::common::TAB_INCR;
-use crate::formatter::Formatter;
+use crate::formatter::{AstFormatter, FmtCtx, IntoFormatter};
 use crate::types::*;
-use crate::ullbc_ast::*;
 use crate::values::*;
 use hax_frontend_exporter as hax;
 use im::HashMap;
 use macros::make_generic_in_borrows;
 use std::iter::Iterator;
-
-// TODO: should we just put all the potential constraints we need in there?
-pub trait TypeFormatter = Formatter<TypeVarId::Id>
-    + Formatter<TypeDeclId::Id>
-    + Formatter<ConstGenericVarId::Id>
-    + Formatter<FunDeclId::Id>
-    + Formatter<GlobalDeclId::Id>
-    + Formatter<TraitDeclId::Id>
-    + Formatter<TraitImplId::Id>
-    + Formatter<TraitClauseId::Id>
-    + Formatter<(DeBruijnId, RegionId::Id)>;
 
 impl DeBruijnId {
     pub fn new(index: usize) -> Self {
@@ -38,9 +26,9 @@ impl DeBruijnId {
 }
 
 impl Region {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: Formatter<(DeBruijnId, RegionId::Id)>,
+        C: AstFormatter,
     {
         match self {
             Region::Static => "'static".to_string(),
@@ -111,7 +99,7 @@ impl GenericParams {
 
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         if self.is_empty() {
             "".to_string()
@@ -141,7 +129,7 @@ impl GenericParams {
 
     pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C) -> (String, Vec<String>)
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let mut params = Vec::new();
         let GenericParams {
@@ -213,7 +201,7 @@ pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<Stri
 impl TraitTypeConstraint {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let trait_ref = self.trait_ref.fmt_with_ctx(ctx);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
@@ -241,7 +229,7 @@ pub fn fmt_where_clauses_with_ctx<C>(
     preds: &Predicates,
 ) -> String
 where
-    C: TypeFormatter,
+    C: AstFormatter,
 {
     let mut types_outlive: Vec<_> = preds
         .types_outlive
@@ -347,7 +335,7 @@ impl GenericArgs {
 
     pub(crate) fn fmt_with_ctx_no_brackets<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let mut params = Vec::new();
         let GenericArgs {
@@ -373,7 +361,7 @@ impl GenericArgs {
 
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         if self.is_empty() {
             "".to_string()
@@ -384,7 +372,7 @@ impl GenericArgs {
 
     pub fn fmt_with_ctx_split_trait_refs<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let mut params = Vec::new();
         let GenericArgs {
@@ -424,7 +412,7 @@ impl GenericArgs {
 impl TraitClause {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let clause_id = ctx.format_object(self.clause_id);
         let trait_id = ctx.format_object(self.trait_id);
@@ -436,7 +424,7 @@ impl TraitClause {
 impl TraitInstanceId {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         match self {
             TraitInstanceId::SelfId => "Self".to_string(),
@@ -477,7 +465,7 @@ impl TraitInstanceId {
 impl TraitRef {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let trait_id = self.trait_id.fmt_with_ctx(ctx);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
@@ -488,7 +476,7 @@ impl TraitRef {
 impl TraitDeclRef {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let trait_id = ctx.format_object(self.trait_id);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
@@ -519,7 +507,7 @@ impl TypeDecl {
 
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         // Predicates
@@ -575,14 +563,32 @@ impl TypeDecl {
 
 impl std::string::ToString for TypeDecl {
     fn to_string(&self) -> String {
-        self.fmt_with_ctx(&DummyFormatter {})
+        self.fmt_with_ctx(&self.into_fmt())
+    }
+}
+
+impl<'a> IntoFormatter for &'a TypeDecl {
+    type T = FmtCtx<'a>;
+
+    fn into_fmt(self) -> FmtCtx<'a> {
+        FmtCtx {
+            type_decls: None,
+            fun_decls: None,
+            global_decls: None,
+            trait_decls: None,
+            trait_impls: None,
+            region_vars: im::Vector::new(),
+            type_vars: TypeVarId::Vector::new(),
+            const_generic_vars: ConstGenericVarId::Vector::new(),
+            locals: VarId::Vector::new(),
+        }
     }
 }
 
 impl Variant {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
@@ -591,9 +597,9 @@ impl Variant {
 }
 
 impl Field {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         match &self.name {
             Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
@@ -604,13 +610,13 @@ impl Field {
 
 impl std::string::ToString for Variant {
     fn to_string(&self) -> String {
-        self.fmt_with_ctx(&DummyFormatter {})
+        self.fmt_with_ctx(&FmtCtx::new())
     }
 }
 
 impl std::string::ToString for Field {
     fn to_string(&self) -> String {
-        self.fmt_with_ctx(&DummyFormatter {})
+        self.fmt_with_ctx(&FmtCtx::new())
     }
 }
 
@@ -789,9 +795,9 @@ pub fn uintty_to_string(ty: hax::UintTy) -> String {
 }
 
 impl TypeId {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: Formatter<TypeDeclId::Id>,
+        C: AstFormatter,
     {
         match self {
             TypeId::Tuple => "".to_string(),
@@ -802,9 +808,9 @@ impl TypeId {
 }
 
 impl ConstGeneric {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: Formatter<ConstGenericVarId::Id> + Formatter<GlobalDeclId::Id>,
+        C: AstFormatter,
     {
         match self {
             ConstGeneric::Var(id) => ctx.format_object(*id),
@@ -859,9 +865,9 @@ impl Ty {
     /// We take an optional type context to be able to implement the Display
     /// trait, in which case there is no type context available and we print
     /// the ADT ids rather than their names.
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         match self {
             Ty::Adt(id, generics) => {
@@ -966,40 +972,7 @@ impl std::fmt::Display for Region {
 
 impl std::string::ToString for Ty {
     fn to_string(&self) -> String {
-        self.fmt_with_ctx(&DummyFormatter {})
-    }
-}
-
-impl Formatter<TypeVarId::Id> for TypeDecl {
-    fn format_object(&self, id: TypeVarId::Id) -> String {
-        let var = self.generics.types.get(id).unwrap();
-        var.to_string()
-    }
-}
-
-impl Formatter<(DeBruijnId, RegionId::Id)> for TypeDecl {
-    fn format_object(&self, (grid, id): (DeBruijnId, RegionId::Id)) -> String {
-        // TODO: this is wrong
-        match self.generics.regions.get(id) {
-            None => bound_region_var_to_pretty_string(grid, id),
-            Some(var) => var.to_string(),
-        }
-    }
-}
-
-impl Formatter<ConstGenericVarId::Id> for TypeDecl {
-    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
-        let var = self.generics.const_generics.get(id).unwrap();
-        var.to_string()
-    }
-}
-
-impl Formatter<&Region> for TypeDecl
-where
-    TypeDecl: Formatter<(DeBruijnId, RegionId::Id)>,
-{
-    fn format_object(&self, r: &Region) -> String {
-        r.fmt_with_ctx(self)
+        self.fmt_with_ctx(&FmtCtx::new())
     }
 }
 
@@ -1476,9 +1449,9 @@ pub trait TypeVisitor {
 } // make_generic_in_borrows
 
 impl FunSig {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         // Unsafe keyword
         let unsafe_kw = if self.is_unsafe {

@@ -226,11 +226,11 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         reconstruct_asserts::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // TODO: we should mostly use the TransCtx to format declarations
-        use crate::formatter::Formatter;
+        use crate::formatter::{Formatter, IntoFormatter};
         for (_, def) in &llbc_funs {
             trace!(
                 "# After asserts reconstruction:\n{}\n",
-                ctx.format_object(def)
+                ctx.into_fmt().format_object(def)
             );
         }
 
@@ -270,7 +270,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
 
         trace!("# Final LLBC:\n");
         for (_, def) in &llbc_funs {
-            trace!("#{}\n", ctx.format_object(def));
+            trace!("#{}\n", ctx.into_fmt().format_object(def));
         }
 
         let llbc_ctx = crate::translate_ctx::LlbcTransCtx {

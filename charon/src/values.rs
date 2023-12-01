@@ -1,6 +1,5 @@
 //! Contains definitions for variables and constant values.
 
-pub use crate::values_utils::DummyFormatter; // Don't understand why we need to do this
 pub use crate::values_utils::*;
 use core::hash::Hash;
 use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};

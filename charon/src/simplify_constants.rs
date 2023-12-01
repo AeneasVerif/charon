@@ -11,7 +11,7 @@
 //! handle the globals like function calls.
 
 use crate::expressions::*;
-use crate::formatter::Formatter;
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::meta::Meta;
 use crate::translate_ctx::TransCtx;
 use crate::types::*;
@@ -126,10 +126,11 @@ pub fn transform(ctx: &mut TransCtx) {
     for (name, b) in
         iter_function_bodies(&mut fun_decls).chain(iter_global_bodies(&mut global_decls))
     {
+        let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to simplify constants in function: {}:\n{}",
-            name.fmt_with_ctx(ctx),
-            ctx.format_object(&*b)
+            name.fmt_with_ctx(&fmt_ctx),
+            fmt_ctx.format_object(&*b)
         );
 
         let mut f = make_locals_generator(&mut b.locals);

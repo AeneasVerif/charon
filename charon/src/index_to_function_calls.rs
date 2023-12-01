@@ -1,7 +1,7 @@
 //! Desugar array/slice index operations to function calls.
 
 use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
-use crate::formatter::Formatter;
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::gast::{Call, GenericArgs, Var};
 use crate::llbc_ast::*;
 use crate::meta::Meta;
@@ -291,10 +291,11 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Option<Ve
 ///   *tmp1 = x
 /// ```
 pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    let ctx = ctx.into_fmt();
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
         trace!(
             "# About to transform array/slice index operations to function calls: {}:\n{}",
-            name.fmt_with_ctx(ctx),
+            name.fmt_with_ctx(&ctx),
             ctx.format_object(&*b)
         );
         let body = &mut b.body;
@@ -304,7 +305,7 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
         body.transform(&mut tr);
         trace!(
             "# After transforming array/slice index operations to function calls: {}:\n{}",
-            name.fmt_with_ctx(ctx),
+            name.fmt_with_ctx(&ctx),
             ctx.format_object(&*b)
         );
     }

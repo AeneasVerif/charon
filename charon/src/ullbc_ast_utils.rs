@@ -1,5 +1,6 @@
 //! Implementations for [crate::ullbc_ast]
 use crate::common::TAB_INCR;
+use crate::formatter::AstFormatter;
 pub use crate::gast_utils::*;
 use crate::meta::Meta;
 use crate::types::*;
@@ -39,9 +40,9 @@ impl Terminator {
 }
 
 impl Statement {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: ExprFormatter,
+        C: AstFormatter,
     {
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(
@@ -68,9 +69,9 @@ impl Statement {
 }
 
 impl Terminator {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: ExprFormatter,
+        C: AstFormatter,
     {
         match &self.content {
             RawTerminator::Goto { target } => format!("goto bb{target}"),
@@ -117,9 +118,9 @@ impl Terminator {
 }
 
 impl BlockData {
-    pub fn fmt_with_ctx<T>(&self, tab: &str, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        T: ExprFormatter,
+        C: AstFormatter,
     {
         let mut out: Vec<String> = Vec::new();
 
@@ -142,7 +143,7 @@ pub(crate) fn fmt_body_blocks_with_ctx<C>(
     ctx: &C,
 ) -> String
 where
-    C: ExprFormatter,
+    C: AstFormatter,
 {
     let block_tab = format!("{tab}{TAB_INCR}");
     let mut blocks: Vec<String> = Vec::new();
@@ -161,18 +162,18 @@ where
 }
 
 impl FunDecl {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: GFunDeclFormatter<'a, BlockId::Vector<BlockData>>,
+        C: AstFormatter,
     {
         self.gfmt_with_ctx("", ctx)
     }
 }
 
 impl GlobalDecl {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: GGlobalDeclFormatter<'a, BlockId::Vector<BlockData>>,
+        C: AstFormatter,
     {
         self.gfmt_with_ctx("", ctx)
     }

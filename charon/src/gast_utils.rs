@@ -1,8 +1,7 @@
 //! Implementations for [crate::gast]
 
 use crate::common::TAB_INCR;
-pub use crate::expressions_utils::ExprFormatter;
-use crate::formatter::Formatter;
+use crate::formatter::{AstFormatter, Formatter};
 use crate::gast::*;
 use crate::names::Name;
 use crate::types::*;
@@ -77,7 +76,7 @@ impl VarId::Vector<Var> {
 impl TraitDecl {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let name = self.name.fmt_with_ctx(ctx);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -150,7 +149,7 @@ impl TraitDecl {
 impl TraitImpl {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let name = self.name.fmt_with_ctx(ctx);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -209,9 +208,9 @@ impl TraitImpl {
 }
 
 impl FnOperand {
-    pub fn fmt_with_ctx<'a, C>(&'a self, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: ExprFormatter,
+        C: AstFormatter,
     {
         match self {
             FnOperand::Regular(func) => func.fmt_with_ctx(ctx),
@@ -222,9 +221,9 @@ impl FnOperand {
 
 /// Format a function call.
 /// We return the pair: (function call, comment)
-pub fn fmt_call<T>(ctx: &T, call: &Call) -> (String, Option<String>)
+pub fn fmt_call<C>(ctx: &C, call: &Call) -> (String, Option<String>)
 where
-    T: ExprFormatter,
+    C: AstFormatter,
 {
     let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
     let args = args.join(", ");
@@ -250,9 +249,9 @@ impl<T> GExprBody<T> {
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn fmt_with_ctx<'a, C>(&'a self, tab: &str, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        C: ExprFormatter + Formatter<&'a T>,
+        C: AstFormatter + for<'a> Formatter<&'a T>,
     {
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
@@ -299,8 +298,6 @@ impl<T> GExprBody<T> {
     }
 }
 
-pub trait GFunDeclFormatter<'a, Body: 'a> = ExprFormatter + Formatter<&'a Body>;
-
 impl<T> GFunDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
@@ -309,9 +306,9 @@ impl<T> GFunDecl<T> {
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn gfmt_with_ctx<'a, C>(&'a self, tab: &str, ctx: &C) -> String
+    pub fn gfmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        C: GFunDeclFormatter<'a, T>,
+        C: AstFormatter + for<'a> Formatter<&'a T>,
     {
         // Unsafe keyword
         let unsafe_kw = if self.signature.is_unsafe {
@@ -375,8 +372,6 @@ impl<T> GFunDecl<T> {
     }
 }
 
-pub trait GGlobalDeclFormatter<'a, Body: 'a> = ExprFormatter + Formatter<&'a Body>;
-
 impl<T> GGlobalDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
@@ -385,9 +380,9 @@ impl<T> GGlobalDecl<T> {
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the global
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn gfmt_with_ctx<'a, C>(&'a self, tab: &str, ctx: &C) -> String
+    pub fn gfmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        C: GGlobalDeclFormatter<'a, T>,
+        C: AstFormatter + for<'a> Formatter<&'a T>,
     {
         // Decl name
         let name = self.name.fmt_with_ctx(ctx);
