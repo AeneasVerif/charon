@@ -27,6 +27,9 @@ let parse_tests () =
       "core::slice::index::SliceIndex<Range<usize>, [@T]>";
       "{()}";
       "{(@T, @T, Range<usize>)}";
+      "{fn ()}";
+      "{fn (@T, @U)}";
+      "{fn (@T, @U) -> u32}";
     ]
   in
   let _ = List.map parse_pattern patterns in

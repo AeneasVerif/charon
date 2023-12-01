@@ -33,6 +33,7 @@ and expr =
        *)
   | EPrimAdt of primitive_adt * generic_args
   | ERef of region * expr * ref_kind
+  | EArrow of expr list * expr option
   | EVar of var option
 
 and generic_arg = GExpr of expr | GValue of literal | GRegion of region

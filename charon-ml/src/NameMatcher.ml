@@ -139,6 +139,16 @@ and expr_to_string (c : print_config) (e : expr) : string =
       let rk = match rk with RMut -> "mut " | RShared -> "" in
       "&" ^ region_to_string c r ^ " " ^ rk ^ expr_to_string c ty
   | EVar v -> opt_var_to_string c v
+  | EArrow (inputs, out) -> (
+      let inputs = List.map (expr_to_string c) inputs in
+      let out = Option.map (expr_to_string c) out in
+      match c.tgt with
+      | TkPattern | TkPretty ->
+          let out = match out with None -> "" | Some out -> " -> " ^ out in
+          "fn (" ^ String.concat ", " inputs ^ ")" ^ out
+      | TkName -> (
+          "Arrow" ^ String.concat "" inputs
+          ^ match out with None -> "" | Some out -> out))
 
 and generic_arg_to_string (c : print_config) (g : generic_arg) : string =
   match g with
@@ -406,6 +416,12 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
   | EComp pid, TTraitType (trait_ref, generics, type_name) ->
       generics = TypesUtils.empty_generic_args
       && match_trait_type ctx c pid trait_ref type_name
+  | EArrow (pinputs, pout), TArrow (inputs, out) -> (
+      List.for_all2 (match_expr_with_ty ctx c m) pinputs inputs
+      &&
+      match pout with
+      | None -> out = TypesUtils.mk_unit_ty
+      | Some pout -> match_expr_with_ty ctx c m pout out)
   | _ -> false
 
 and match_trait_ref (ctx : ctx) (c : match_config) (pid : pattern)
@@ -712,9 +728,15 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
           TypesUtils.empty_generic_args
       in
       EComp name
+  | TArrow (inputs, out) ->
+      let inputs = List.map (ty_to_pattern_aux ctx c m) inputs in
+      let out =
+        if out = TypesUtils.mk_unit_ty then None
+        else Some (ty_to_pattern_aux ctx c m out)
+      in
+      EArrow (inputs, out)
   | TNever -> raise (Failure "Unimplemented: Never")
   | TRawPtr _ -> raise (Failure "Unimplemented: Raw pointer")
-  | TArrow _ -> raise (Failure "Unimplemented: Arrow")
 
 and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
     (m : constraints) (trait_ref : T.trait_ref) (item_name : string)
@@ -987,6 +1009,20 @@ and expr_convertible_aux (c : conv_config) (m : conv_map) (e0 : expr)
         expr_convertible_aux c m e0 e1
       else Error ()
   | EVar v0, EVar v1 -> opt_var_convertible c m v0 v1
+  | EArrow (inputs0, None), EArrow (inputs1, None) ->
+      exprl_convertible_aux c m inputs0 inputs1
+  | EArrow (inputs0, Some out0), EArrow (inputs1, Some out1) ->
+      let* m = exprl_convertible_aux c m inputs0 inputs1 in
+      expr_convertible_aux c m out0 out1
+  | _ -> Error ()
+
+and exprl_convertible_aux (c : conv_config) (m : conv_map) (e0 : expr list)
+    (e1 : expr list) : (conv_map, unit) result =
+  match (e0, e1) with
+  | [], [] -> Ok m
+  | x0 :: e0, x1 :: e1 ->
+      let* m = expr_convertible_aux c m x0 x1 in
+      exprl_convertible_aux c m e0 e1
   | _ -> Error ()
 
 and generic_args_convertible_aux (c : conv_config) (m : conv_map)
