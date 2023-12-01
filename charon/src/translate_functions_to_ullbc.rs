@@ -412,6 +412,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                     }
                                 }
                             }
+                            ClosureState(index) => {
+                                let field_id = translate_field_id(*index);
+                                ProjectionElem::Field(FieldProjKind::ClosureState, field_id)
+                            }
                         };
                         projection.push(proj_elem);
                     }
@@ -764,10 +768,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Closure(def_id, sig) => {
-                        trace!("Closure:\n- def_id: {:?}\n- sig: {:?}", def_id, sig);
+                        trace!("Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}", def_id, sig);
                         let def_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
                         let akind = AggregateKind::Closure(def_id);
-                        Ok(Rvalue::Aggregate(akind, Vec::new()))
+                        Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Generator(_def_id, _subst, _movability) => {
                         error_or_panic!(self, span, "Generators are not supported");
@@ -1536,6 +1540,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     unreachable!()
                 }
             };
+            trace!("closure: rsubsts: {:?}", rsubsts);
             let closure = rsubsts.as_closure();
             // Retrieve the early bound parameters from the *parent* (i.e.,
             // the function in which the closure is actually defined).
@@ -1545,8 +1550,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let substs = closure.parent_substs();
             trace!("closure.parent_substs: {:?}", substs);
             let sig = closure.sig();
-            trace!("losure.sig: {:?}", sig);
+            trace!("closure.sig: {:?}", sig);
             let substs = substs.sinto(&self.hax_state);
+
+            trace!("closure.sig_as_fn_ptr_ty: {:?}", closure.sig_as_fn_ptr_ty());
+            trace!("closure.kind_ty: {:?}", closure.kind_ty());
 
             // Sanity check: the parent subst only contains types and generics
             error_assert!(

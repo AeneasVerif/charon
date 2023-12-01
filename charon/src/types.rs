@@ -197,6 +197,10 @@ pub enum TraitInstanceId {
     /// ```
     FnPointer(Box<Ty>),
     /// Similar to [FnPointer], but where we use a closure.
+    ///
+    /// It is important to differentiate the cases, because closures have a
+    /// state. Whenever we create a closure, we actually create an aggregated
+    /// value with a function pointer and a state.
     Closure(FunDeclId::Id, GenericArgs),
     ///
     /// Self, in case of trait declarations/implementations.

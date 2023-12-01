@@ -109,6 +109,9 @@ impl Place {
                     FieldProjKind::Tuple(_) => {
                         out = format!("({out}).{field_id}");
                     }
+                    FieldProjKind::ClosureState => {
+                        out = format!("({out}).@closure_state_field_{field_id}");
+                    }
                 },
                 ProjectionElem::Index(i, _) => out = format!("({out})[{}]", ctx.format_object(*i)),
             }
@@ -274,7 +277,7 @@ impl Rvalue {
                         format!("[{}; {}]", ops_s.join(", "), len.fmt_with_ctx(ctx))
                     }
                     AggregateKind::Closure(fn_id) => {
-                        format!("{}", ctx.format_object(*fn_id))
+                        format!("{{{}}} {{{}}}", ctx.format_object(*fn_id), ops_s.join(", "))
                     }
                 }
             }

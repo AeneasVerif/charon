@@ -214,6 +214,10 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
             );
         }
 
+        // # Micro-pass: the first local variable of closures is the
+        // closure itself (it seems). This is not consistent with the fact
+        //
+
         // # Micro-pass: remove the dynamic checks for array/slice bounds
         // and division by zero.
         // **WARNING**: this pass uses the fact that the dynamic checks
