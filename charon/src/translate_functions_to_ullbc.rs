@@ -781,10 +781,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let akind = AggregateKind::Adt(type_id, variant_id, generics);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::Closure(def_id, sig) => {
+                    hax::AggregateKind::Closure(def_id, substs, trait_refs, sig) => {
                         trace!("Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}", def_id, sig);
+
+                        // Translate the substitution
+                        let generics = self.translate_substs_and_trait_refs(
+                            span,
+                            erase_regions,
+                            None,
+                            substs,
+                            trait_refs,
+                        )?;
+
                         let def_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
-                        let akind = AggregateKind::Closure(def_id);
+                        let akind = AggregateKind::Closure(def_id, generics);
+
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Generator(_def_id, _subst, _movability) => {

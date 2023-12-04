@@ -276,8 +276,13 @@ impl Rvalue {
                     AggregateKind::Array(_, len) => {
                         format!("[{}; {}]", ops_s.join(", "), len.fmt_with_ctx(ctx))
                     }
-                    AggregateKind::Closure(fn_id) => {
-                        format!("{{{}}} {{{}}}", ctx.format_object(*fn_id), ops_s.join(", "))
+                    AggregateKind::Closure(fn_id, generics) => {
+                        format!(
+                            "{{{}{}}} {{{}}}",
+                            ctx.format_object(*fn_id),
+                            generics.fmt_with_ctx_split_trait_refs(ctx),
+                            ops_s.join(", ")
+                        )
                     }
                 }
             }
@@ -464,7 +469,10 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
                 self.visit_ty(ty);
                 self.visit_const_generic(cg);
             }
-            Closure(fn_id) => self.visit_fun_decl_id(fn_id),
+            Closure(fn_id, generics) => {
+                self.visit_fun_decl_id(fn_id);
+                self.visit_generic_args(generics);
+            }
         }
     }
 

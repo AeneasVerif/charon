@@ -499,6 +499,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 tcx.param_env(rust_id),
                 rust_trait_ref.def_id,
                 rust_trait_ref.substs,
+                None,
             );
             let parent_trait_refs: Vec<TraitRef> =
                 bt_ctx.translate_trait_impl_sources(span, erase_regions, &parent_trait_refs)?;

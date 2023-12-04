@@ -382,5 +382,5 @@ pub enum AggregateKind {
     Array(Ty, ConstGeneric),
     /// Aggregated values for closures group the function id together with its
     /// state.
-    Closure(FunDeclId::Id),
+    Closure(FunDeclId::Id, GenericArgs),
 }
