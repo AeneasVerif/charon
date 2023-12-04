@@ -20,7 +20,7 @@ checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 [[package]]
 name = "adt-into"
 version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits#232cd398f99825137bd29d5b8666e12f11c96563"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits#669c9301b4723051dd8fd5d673ee0baaf8dfaf7b"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -336,7 +336,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits#232cd398f99825137bd29d5b8666e12f11c96563"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits#669c9301b4723051dd8fd5d673ee0baaf8dfaf7b"
 dependencies = [
  "adt-into",
  "hax-frontend-exporter-options",
@@ -351,7 +351,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits#232cd398f99825137bd29d5b8666e12f11c96563"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits#669c9301b4723051dd8fd5d673ee0baaf8dfaf7b"
 dependencies = [
  "schemars",
  "serde",
