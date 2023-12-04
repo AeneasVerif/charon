@@ -1538,9 +1538,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Retrieve the early bound parameters, and the late-bound parameters
         // through the function signature.
-        let (substs, signature): (
+        let (substs, signature, closure_info): (
             Vec<hax::GenericArg>,
             rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>>,
+            Option<(ClosureKind, Vec<rustc_middle::ty::Ty<'tcx>>)>,
         ) = if is_closure {
             // Closures have a peculiar handling in Rust: we can't call
             // `TyCtxt::fn_sig`.
@@ -1562,10 +1563,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trace!("closure.parent_substs: {:?}", substs);
             let sig = closure.sig();
             trace!("closure.sig: {:?}", sig);
+
+            // Retrieve the kind of the closure
+            let kind = match closure.kind() {
+                rustc_middle::ty::ClosureKind::Fn => ClosureKind::Fn,
+                rustc_middle::ty::ClosureKind::FnMut => ClosureKind::FnMut,
+                rustc_middle::ty::ClosureKind::FnOnce => ClosureKind::FnOnce,
+            };
+
+            // Retrieve the type of the captured stated
+            let state: Vec<rustc_middle::ty::Ty<'tcx>> = closure.upvar_tys().collect();
+
             let substs = substs.sinto(&self.hax_state);
 
             trace!("closure.sig_as_fn_ptr_ty: {:?}", closure.sig_as_fn_ptr_ty());
             trace!("closure.kind_ty: {:?}", closure.kind_ty());
+            trace!(
+                "closure.print_as_impl_trait: {:?}",
+                closure.print_as_impl_trait()
+            );
 
             // Sanity check: the parent subst only contains types and generics
             error_assert!(
@@ -1577,7 +1593,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 "The closure parent parameters contain regions"
             );
 
-            (substs, sig)
+            (substs, sig, Some((kind, state)))
         } else {
             // Retrieve the signature
             let fn_sig = tcx.fn_sig(def_id);
@@ -1599,7 +1615,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             };
 
-            (substs, fn_sig)
+            (substs, fn_sig, None)
         };
         let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
 
@@ -1691,6 +1707,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             fmt_ctx.format_object(&output)
         );
 
+        // Compute the additional information for closures
+        let closure_info = if let Some((kind, state_tys)) = closure_info {
+            let erase_regions = false;
+            let state = state_tys
+                .into_iter()
+                .map(|ty| self.translate_ty(span, erase_regions, &ty.sinto(&self.hax_state)))
+                .try_collect::<Vec<Ty>>()?;
+
+            Some(ClosureInfo { kind, state })
+        } else {
+            None
+        };
+
         let mut parent_params_info = self.get_function_parent_params_info(def_id);
         // If this is a trait decl method, we need to adjust the number of parent clauses
         if matches!(
@@ -1709,6 +1738,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             preds: self.get_predicates(),
             is_unsafe,
             is_closure,
+            closure_info,
             parent_params_info,
             inputs,
             output,
@@ -1791,6 +1821,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             FunDecl {
                 meta,
                 def_id,
+                rust_id,
                 is_local,
                 name,
                 signature,

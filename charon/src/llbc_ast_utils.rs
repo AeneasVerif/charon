@@ -456,7 +456,7 @@ impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutAstVisitor
                 if let Some(seq) = st_seq && !seq.is_empty() {
                     take(st, |st| chain_statements(seq, st))
                 }
-                // TODO: we might want to apply tr to the whole sequence
+                // TODO: we might want to apply tr to the whole resulting sequence
             }
             _ => {
                 // Bottom-up

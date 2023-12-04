@@ -1173,6 +1173,14 @@ make_generic_in_borrows! {
 // TODO: we should use traits with default implementations to allow overriding
 // the default behavior (that would also prevent problems with naming collisions)
 pub trait TypeVisitor {
+    fn default_enter_region_group(&mut self, regions: &RegionId::Vector<RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
+        visitor(self)
+    }
+
+    fn enter_region_group(&mut self, regions: &RegionId::Vector<RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
+        self.default_enter_region_group(regions, visitor)
+    }
+
     fn visit_ty(&mut self, ty: &Ty) {
         self.default_visit_ty(ty)
     }
@@ -1209,10 +1217,16 @@ pub trait TypeVisitor {
         for r in regions.iter() {
             self.visit_region_var(r);
         }
-        for ty in inputs {
-            self.visit_ty(ty);
-        }
-        self.visit_ty(output);
+
+        let regions = &(*regions);
+        let inputs = &(*inputs);
+        let output = &(*output);
+        self.enter_region_group(regions, &mut |ctx| {
+          for ty in inputs.iter() {
+              ctx.visit_ty(ty);
+          }
+          ctx.visit_ty(output);
+        });
     }
 
     fn visit_ty_adt(
@@ -1408,6 +1422,7 @@ pub trait TypeVisitor {
         let FunSig {
             is_unsafe : _,
             is_closure: _,
+            closure_info,
             generics,
             preds,
             parent_params_info: _,
@@ -1415,10 +1430,23 @@ pub trait TypeVisitor {
             output,
         } = sig;
 
+        if let Some(info) = closure_info {
+            self.visit_closure_info(info);
+        }
+
         self.visit_generic_params(generics);
         self.visit_predicates(preds);
         for ty in inputs { self.visit_ty(ty); }
         self.visit_ty(output);
+    }
+
+    fn visit_closure_info(&mut self, info: &ClosureInfo) {
+        let ClosureInfo {
+            kind: _,
+            state,
+        } = info;
+
+        for ty in state { self.visit_ty(ty); }
     }
 
     fn visit_type_outlives(&mut self, x: &TypeOutlives) {

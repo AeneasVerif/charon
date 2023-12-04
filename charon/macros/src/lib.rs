@@ -105,6 +105,10 @@ pub mod {} {{
             Generator {{ counter: 0 }}
         }}
 
+        pub fn new_with_init_value(counter: usize) -> Generator {{
+            Generator {{ counter }}
+        }}
+
         pub fn fresh_id(&mut self) -> Id {{
             // The release version of the code doesn't check for overflows.
             // As the max usize is very large, overflows are extremely
@@ -1288,38 +1292,30 @@ fn generic_pat_to_mut(p: &mut Pat) {
     }
 }
 
-/// We use this macro to write implementation which are generic in borrow
-/// kinds (i.e., from one implementation, we derive two implementations which
-/// use shared borrows or mut borrows).
-///
-/// Note that this macro is meant to work on a limited set of cases: it is not
-/// very general.
-/// For instance, for now it only works on traits.
-///
-/// Applied on a trait definition named "Trait", it will generate two traits:
-/// "MutTrait" and "SharedTrait".
-#[proc_macro]
-pub fn make_generic_in_borrows(tokens: TokenStream) -> TokenStream {
-    let input_item = parse_macro_input!(tokens as ItemTrait);
-    // We should have received the shared version
-    let mut shared_item = input_item.clone();
-    let mut mut_item = input_item;
-
-    let id = &shared_item.ident;
-    mut_item.ident = generic_mk_ident(id, true);
-    shared_item.ident = generic_mk_ident(id, false);
-
-    generic_supertraits_to_mut_shared(&mut shared_item, false);
-    generic_supertraits_to_mut_shared(&mut mut_item, true);
-
-    // Update the mutable version
-    for item in &mut mut_item.items {
-        match item {
-            TraitItem::Const(_) | TraitItem::Type(_) | TraitItem::Macro(_) => {
-                unimplemented!("Trait item")
+fn generic_mk_item(id: &Ident, to_mut: bool, item: &mut TraitItem) {
+    match item {
+        TraitItem::Const(_) | TraitItem::Macro(_) => {
+            unimplemented!("Trait item")
+        }
+        TraitItem::Type(ty) => {
+            // Update the references to self (we need to change the name).
+            // For now, we only update the bounds
+            for bound in &mut ty.bounds {
+                if let TypeParamBound::Trait(tr) = bound {
+                    if tr.path.segments.len() == 1 {
+                        if let Some(last) = tr.path.segments.last_mut() {
+                            if &last.ident == id {
+                                last.ident = generic_mk_ident(&mut last.ident, to_mut)
+                            }
+                        }
+                    }
+                }
             }
-            TraitItem::Verbatim(_) => (),
-            TraitItem::Method(s) => {
+        }
+        TraitItem::Verbatim(_) => (),
+        TraitItem::Method(s) => {
+            // Update the borrows
+            if to_mut {
                 // Update the signature
                 for input in &mut s.sig.inputs {
                     match input {
@@ -1351,12 +1347,47 @@ pub fn make_generic_in_borrows(tokens: TokenStream) -> TokenStream {
                     }
                 }
             }
-            #[cfg_attr(test, deny(non_exhaustive_omitted_patterns))]
-            _ => {
-                /* See the fox of [TraitItem] */
-                unimplemented!()
-            }
         }
+        #[cfg_attr(test, deny(non_exhaustive_omitted_patterns))]
+        _ => {
+            /* See the fox of [TraitItem] */
+            unimplemented!()
+        }
+    }
+}
+
+/// We use this macro to write implementation which are generic in borrow
+/// kinds (i.e., from one implementation, we derive two implementations which
+/// use shared borrows or mut borrows).
+///
+/// Note that this macro is meant to work on a limited set of cases: it is not
+/// very general.
+/// For instance, for now it only works on traits.
+///
+/// Applied on a trait definition named "Trait", it will generate two traits:
+/// "MutTrait" and "SharedTrait".
+#[proc_macro]
+pub fn make_generic_in_borrows(tokens: TokenStream) -> TokenStream {
+    let input_item = parse_macro_input!(tokens as ItemTrait);
+    // We should have received the shared version
+    let mut shared_item = input_item.clone();
+    let mut mut_item = input_item;
+
+    let id = shared_item.ident.clone();
+    mut_item.ident = generic_mk_ident(&id, true);
+    shared_item.ident = generic_mk_ident(&id, false);
+
+    generic_supertraits_to_mut_shared(&mut shared_item, false);
+    generic_supertraits_to_mut_shared(&mut mut_item, true);
+
+    // Update the shared version
+    for item in &mut shared_item.items {
+        generic_mk_item(&id, false, item)
+    }
+
+    // Update the mutable version
+    for item in &mut mut_item.items {
+        generic_mk_item(&id, true, item)
     }
 
     // TODO: This is not very clean, but I don't know how to concatenate stream tokens

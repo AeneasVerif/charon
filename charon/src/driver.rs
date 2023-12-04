@@ -15,6 +15,7 @@ use crate::simplify_constants;
 use crate::translate_crate_to_ullbc;
 use crate::translate_ctx;
 use crate::ullbc_to_llbc;
+use crate::update_closure_signatures;
 use regex::Regex;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
@@ -214,8 +215,9 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         }
 
         // # Micro-pass: the first local variable of closures is the
-        // closure itself (it seems). This is not consistent with the fact
-        //
+        // closure itself. This is not consistent with the closure signature,
+        // which ignores this first variable. This micro-pass updates this.
+        update_closure_signatures::transform(&ctx, &mut llbc_funs);
 
         // # Micro-pass: remove the dynamic checks for array/slice bounds
         // and division by zero.

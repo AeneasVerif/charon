@@ -19,6 +19,7 @@
 #![feature(trait_alias)]
 #![feature(let_chains)]
 #![feature(iterator_try_collect)]
+#![feature(associated_type_defaults)]
 
 extern crate hashlink;
 extern crate im;
@@ -89,5 +90,6 @@ pub mod types_utils;
 pub mod ullbc_ast;
 pub mod ullbc_ast_utils;
 pub mod ullbc_to_llbc;
+pub mod update_closure_signatures;
 pub mod values;
 pub mod values_utils;

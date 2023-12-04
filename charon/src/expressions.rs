@@ -65,11 +65,12 @@ pub enum ProjectionElem {
 pub enum FieldProjKind {
     #[serde(rename = "ProjAdt")]
     Adt(TypeDeclId::Id, Option<VariantId::Id>),
-    /// If we project from a tuple, the projection kind gives the arity of the
+    /// If we project from a tuple, the projection kind gives the arity of the tuple.
     #[serde(rename = "ProjTuple")]
     Tuple(usize),
     #[serde(rename = "ProjClosureState")]
-    /// Access to a field in a closure state
+    /// Access to a field in a closure state.
+    /// We eliminate this in a micro-pass ([crate::update_closure_signatures]).
     ClosureState,
 }
 

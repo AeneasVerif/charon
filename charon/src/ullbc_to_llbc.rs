@@ -45,6 +45,10 @@ type Cfg = DiGraphMap<src::BlockId::Id, ()>;
 
 /// Small utility
 struct BlockInfo<'a> {
+    /// `no_code_duplication`: if true, check that no block is translated twice (this
+    /// can be a sign that the reconstruction is of poor quality, but sometimes
+    /// code duplication is necessary, in the presence of "fused" match branches for
+    /// instance, like in `match ... { Foo | Bar => { ... }}`).
     no_code_duplication: bool,
     cfg: &'a CfgInfo,
     body: &'a src::ExprBody,
@@ -1928,7 +1932,6 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     }
 }
 
-/// TODO: put `no_code
 fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl {
     // Retrieve the function definition
     let src_def = ctx.fun_decls.get(src_def_id).unwrap();
@@ -1942,6 +1945,7 @@ fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl
     // Return the translated definition
     tgt::FunDecl {
         def_id: src_def.def_id,
+        rust_id: src_def.rust_id,
         meta: src_def.meta,
         is_local: src_def.is_local,
         name: src_def.name.clone(),
@@ -1978,11 +1982,6 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalD
 }
 
 /// Translate the functions by reconstructing the control-flow.
-///
-/// `no_code_duplication`: if true, check that no block is translated twice (this
-/// can be a sign that the reconstruction is of poor quality, but sometimes
-/// code duplication is necessary, in the presence of "fused" match branches for
-/// instance).
 pub fn translate_functions(ctx: &TransCtx) -> Defs {
     let mut tgt_funs = FunDeclId::Map::new();
     let mut tgt_globals = GlobalDeclId::Map::new();

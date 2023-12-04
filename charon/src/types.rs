@@ -633,6 +633,32 @@ pub struct ParamsInfo {
     pub num_trait_type_constraints: usize,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]
+pub enum ClosureKind {
+    Fn,
+    FnMut,
+    FnOnce,
+}
+
+/// Additional information for closures.
+/// We mostly use it in micro-passes like [crate::update_closure_signature].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ClosureInfo {
+    pub kind: ClosureKind,
+    /// Contains the types of the fields in the closure state.
+    /// More precisely, for every place captured by the
+    /// closure, the state has one field (typically a ref).
+    ///
+    /// For instance, below the closure has a state with two fields of type `&u32`:
+    /// ```text
+    /// pub fn test_closure_capture(x: u32, y: u32) -> u32 {
+    ///   let f = &|z| x + y + z;
+    ///   (f)(0)
+    /// }
+    /// ```
+    pub state: Vec<Ty>,
+}
+
 /// A function signature.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct FunSig {
@@ -645,6 +671,8 @@ pub struct FunSig {
     ///   (the function in which the closure is defined)
     /// - the region variables are local to the closure
     pub is_closure: bool,
+    /// Additional information if this is the signature of a closure.
+    pub closure_info: Option<ClosureInfo>,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).
