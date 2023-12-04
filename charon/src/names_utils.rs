@@ -9,7 +9,6 @@ use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::{Item, ItemKind};
 use rustc_span::def_id::DefId;
-use serde::{Serialize, Serializer};
 use std::collections::HashSet;
 
 impl PathElem {
@@ -123,16 +122,6 @@ impl Name {
         } else {
             false
         }
-    }
-}
-
-// Implementating the serializer for Name so as to ignore the wrapper
-impl Serialize for Name {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.name.serialize(serializer)
     }
 }
 

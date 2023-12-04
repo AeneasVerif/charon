@@ -7,9 +7,14 @@ open PrintUtils
 open PrintTypes
 open PrintExpressions
 
+let fn_operand_to_string (env : ('a, 'b) fmt_env) (op : fn_operand) : string =
+  match op with
+  | FnOpRegular func -> fn_ptr_to_string env func
+  | FnOpMove p -> "move " ^ place_to_string env p
+
 let call_to_string (env : ('a, 'b) fmt_env) (indent : string) (call : call) :
     string =
-  let func = fn_ptr_to_string env call.func in
+  let func = fn_operand_to_string env call.func in
   let args = List.map (operand_to_string env) call.args in
   let args = "(" ^ String.concat ", " args ^ ")" in
   let dest = place_to_string env call.dest in
@@ -76,7 +81,8 @@ let gfun_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     (def : 'body gfun_decl) : string =
   (* Locally update the environment *)
   let env =
-    { env with generics = def.signature.generics; preds = def.signature.preds }
+    fmt_env_update_generics_and_preds env def.signature.generics
+      def.signature.preds
   in
 
   let sg = def.signature in
@@ -125,7 +131,7 @@ let gfun_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
 let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     (indent_incr : string) (def : trait_decl) : string =
   (* Locally update the environment *)
-  let env = { env with generics = def.generics; preds = def.preds } in
+  let env = fmt_env_update_generics_and_preds env def.generics def.preds in
 
   let ty_to_string = ty_to_string env in
 
@@ -214,7 +220,7 @@ let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
 let trait_impl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     (indent_incr : string) (def : trait_impl) : string =
   (* Locally update the environment *)
-  let env = { env with generics = def.generics; preds = def.preds } in
+  let env = fmt_env_update_generics_and_preds env def.generics def.preds in
 
   let ty_to_string = ty_to_string env in
 

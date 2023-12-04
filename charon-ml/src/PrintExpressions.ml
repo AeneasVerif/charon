@@ -8,15 +8,6 @@ open PrintTypes
 
 let var_id_to_pretty_string (id : var_id) : string = "v@" ^ VarId.to_string id
 
-let fun_decl_id_to_pretty_string (id : FunDeclId.id) : string =
-  "FunDecl@" ^ FunDeclId.to_string id
-
-let fun_decl_id_to_string (env : ('a, 'b) fmt_env) (id : FunDeclId.id) : string
-    =
-  match FunDeclId.Map.find_opt id env.fun_decls with
-  | None -> fun_decl_id_to_pretty_string id
-  | Some def -> name_to_string env def.name
-
 let var_to_string (v : var) : string =
   match v.name with
   | None -> var_id_to_pretty_string v.index
@@ -60,11 +51,13 @@ let place_to_string (env : ('a, 'b) fmt_env) (p : place) : string =
   let var = var_id_to_string env p.var_id in
   projection_to_string env var p.projection
 
-let cast_kind_to_string (_env : ('a, 'b) fmt_env) (cast : cast_kind) : string =
+let cast_kind_to_string (env : ('a, 'b) fmt_env) (cast : cast_kind) : string =
   match cast with
   | CastInteger (src, tgt) ->
       "cast<" ^ integer_type_to_string src ^ "," ^ integer_type_to_string tgt
       ^ ">"
+  | CastFnPtr (src, tgt) ->
+      "cast<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
 
 let unop_to_string (env : ('a, 'b) fmt_env) (unop : unop) : string =
   match unop with
@@ -181,4 +174,9 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
               in
               variant_name ^ " " ^ fields
           | TAssumed _ -> raise (Failure "Unreachable"))
-      | AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " ops ^ "]")
+      | AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " ops ^ "]"
+      | AggregatedClosure (fid, generics) ->
+          "{"
+          ^ fun_decl_id_to_string env fid
+          ^ generic_args_to_string env generics
+          ^ "}" ^ " {" ^ String.concat ", " ops ^ "}")

@@ -130,7 +130,7 @@ let region_var_of_json (js : json) : (region_var, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("index", index); ("name", name) ] ->
-        let* index = RegionId.id_of_json index in
+        let* index = RegionVarId.id_of_json index in
         let* name = string_option_of_json name in
         Ok { index; name }
     | _ -> Error "")
@@ -140,9 +140,10 @@ let region_of_json (js : json) : (region, string) result =
     (match js with
     | `String "Static" -> Ok RStatic
     | `String "Erased" -> Ok RErased
-    | `Assoc [ ("Var", rid) ] ->
-        let* rid = RegionId.id_of_json rid in
-        Ok (RVar rid : region)
+    | `Assoc [ ("BVar", `List [ dbid; rid ]) ] ->
+        let* dbid = int_of_json dbid in
+        let* rid = RegionVarId.id_of_json rid in
+        Ok (RBVar (dbid, rid) : region)
     | _ -> Error "")
 
 let integer_type_of_json (js : json) : (integer_type, string) result =
@@ -330,10 +331,11 @@ let rec ty_of_json (js : json) : (ty, string) result =
         let* generics = generic_args_of_json generics in
         let* item_name = string_of_json item_name in
         Ok (TTraitType (trait_ref, generics, item_name))
-    | `Assoc [ ("Arrow", `List [ inputs; output ]) ] ->
+    | `Assoc [ ("Arrow", `List [ regions; inputs; output ]) ] ->
+        let* regions = list_of_json region_var_of_json regions in
         let* inputs = list_of_json ty_of_json inputs in
         let* output = ty_of_json output in
-        Ok (TArrow (inputs, output))
+        Ok (TArrow (regions, inputs, output))
     | _ -> Error "")
 
 and trait_ref_of_json (js : json) : (trait_ref, string) result =
@@ -407,6 +409,10 @@ and trait_instance_id_of_json (js : json) : (trait_instance_id, string) result =
     | `Assoc [ ("FnPointer", ty) ] ->
         let* ty = ty_of_json ty in
         Ok (FnPointer ty)
+    | `Assoc [ ("Closure", `List [ fid; generics ]) ] ->
+        let* fid = FunDeclId.id_of_json fid in
+        let* generics = generic_args_of_json generics in
+        Ok (Closure (fid, generics))
     | _ -> Error "")
 
 let field_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -674,6 +680,10 @@ let cast_kind_of_json (js : json) : (cast_kind, string) result =
         let* src_ty = integer_type_of_json src_ty in
         let* tgt_ty = integer_type_of_json tgt_ty in
         Ok (CastInteger (src_ty, tgt_ty))
+    | `Assoc [ ("FnPtr", `List [ src_ty; tgt_ty ]) ] ->
+        let* src_ty = ty_of_json src_ty in
+        let* tgt_ty = ty_of_json tgt_ty in
+        Ok (CastFnPtr (src_ty, tgt_ty))
     | _ -> Error "")
 
 let unop_of_json (js : json) : (unop, string) result =
@@ -775,6 +785,17 @@ let fn_ptr_of_json (js : json) : (fn_ptr, string) result =
         Ok { func; generics; trait_and_method_generic_args }
     | _ -> Error "")
 
+let fn_operand_of_json (js : json) : (fn_operand, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Regular", func) ] ->
+        let* func = fn_ptr_of_json func in
+        Ok (FnOpRegular func)
+    | `Assoc [ ("Move", p) ] ->
+        let* p = place_of_json p in
+        Ok (FnOpMove p)
+    | _ -> Error "")
+
 let rec constant_expr_of_json (js : json) : (constant_expr, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -831,6 +852,10 @@ let aggregate_kind_of_json (js : json) : (aggregate_kind, string) result =
         let* ty = ty_of_json ty in
         let* cg = const_generic_of_json cg in
         Ok (AggregatedArray (ty, cg))
+    | `Assoc [ ("Closure", `List [ fid; generics ]) ] ->
+        let* fid = FunDeclId.id_of_json fid in
+        let* generics = generic_args_of_json generics in
+        Ok (AggregatedClosure (fid, generics))
     | _ -> Error "")
 
 let rvalue_of_json (js : json) : (rvalue, string) result =
@@ -898,6 +923,23 @@ let params_info_of_json (js : json) : (params_info, string) result =
           }
     | _ -> Error "")
 
+let closure_kind_of_json (js : json) : (closure_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Fn" -> Ok Fn
+    | `String "FnMut" -> Ok FnMut
+    | `String "FnOnce" -> Ok FnOnce
+    | _ -> Error "")
+
+let closure_info_of_json (js : json) : (closure_info, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("kind", kind); ("state", state) ] ->
+        let* kind = closure_kind_of_json kind in
+        let* state = list_of_json ty_of_json state in
+        Ok { kind; state }
+    | _ -> Error "")
+
 let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
     (fun_sig, string) result =
   combine_error_msgs js __FUNCTION__
@@ -905,6 +947,8 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc
         [
           ("is_unsafe", is_unsafe);
+          ("is_closure", is_closure);
+          ("closure_info", closure_info);
           ("generics", generics);
           ("preds", preds);
           ("parent_params_info", parent_params_info);
@@ -912,6 +956,9 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
           ("output", output);
         ] ->
         let* is_unsafe = bool_of_json is_unsafe in
+        let* is_closure = bool_of_json is_closure in
+        let* closure_info = option_of_json closure_info_of_json closure_info in
+
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* parent_params_info =
@@ -919,14 +966,24 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
         in
         let* inputs = list_of_json ty_of_json inputs in
         let* output = ty_of_json output in
-        Ok { is_unsafe; generics; preds; parent_params_info; inputs; output }
+        Ok
+          {
+            is_unsafe;
+            is_closure;
+            closure_info;
+            generics;
+            preds;
+            parent_params_info;
+            inputs;
+            output;
+          }
     | _ -> Error "")
 
 let call_of_json (js : json) : (call, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("func", func); ("args", args); ("dest", dest) ] ->
-        let* func = fn_ptr_of_json func in
+        let* func = fn_operand_of_json func in
         let* args = list_of_json operand_of_json args in
         let* dest = place_of_json dest in
         Ok { func; args; dest }

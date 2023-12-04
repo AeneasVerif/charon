@@ -64,7 +64,6 @@ pub struct Meta {
     /// ```
     pub span: Span,
     /// Where the code actually comes from, in case of macro expansion/inlining/etc.
-    #[serde(skip)]
     pub generated_from_span: Option<Span>,
 }
 

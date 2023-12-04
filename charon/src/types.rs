@@ -56,6 +56,7 @@ pub struct ConstGenericVar {
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize)]
+#[serde(transparent)]
 pub struct DeBruijnId {
     pub index: usize,
 }
@@ -92,7 +93,6 @@ pub enum Region {
     /// Erased region
     Erased,
     /// For error reporting.
-    /// Can appear only if the option [CliOpts::continue_on_failure] is used.
     Unknown,
 }
 

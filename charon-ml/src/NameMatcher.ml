@@ -118,7 +118,7 @@ let update_map (find_opt : 'a -> 'm -> 'b option) (add : 'a -> 'b -> 'm -> 'm)
       v = v'
 
 let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
-  let is_var = match v with RVar _ -> true | _ -> false in
+  let is_var = match v with RBVar _ -> true | _ -> false in
   if c.map_vars_to_vars && not is_var then false
   else update_map VarMap.find_opt VarMap.add m.rmap id v
 
@@ -178,7 +178,7 @@ let match_region (c : match_config) (m : maps) (id : region) (v : T.region) :
     bool =
   match (id, v) with
   | RStatic, RStatic -> true
-  | RVar id, RVar _ -> opt_update_rmap c m id v
+  | RVar id, RBVar _ -> opt_update_rmap c m id v
   | RVar id, RStatic ->
       if c.map_vars_to_vars then false else opt_update_rmap c m id v
   | _ -> false
@@ -412,14 +412,15 @@ let mk_name_matcher (ctx : ctx) (c : match_config) (pat : string) :
 (* We use this to store the constraints maps (the map from variable
    ids to option pattern variable ids) *)
 type constraints = {
-  rmap : var option T.RegionId.Map.t;
+  rmap : var option T.RegionVarId.Map.t list;
+      (** Note that we have a stack of maps for the regions *)
   tmap : var option T.TypeVarId.Map.t;
   cmap : var option T.ConstGenericVarId.Map.t;
 }
 
 let empty_constraints =
   {
-    rmap = T.RegionId.Map.empty;
+    rmap = [ T.RegionVarId.Map.empty ];
     tmap = T.TypeVarId.Map.empty;
     cmap = T.ConstGenericVarId.Map.empty;
   }
@@ -429,32 +430,36 @@ let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
 
 let region_to_pattern (m : constraints) (r : T.region) : region =
   match r with
-  | RVar r -> RVar (T.RegionId.Map.find r m.rmap)
+  | RBVar (bdid, r) ->
+      let gr = List.nth m.rmap bdid in
+      RVar (T.RegionVarId.Map.find r gr)
   | RStatic -> RStatic
   | _ -> raise (Failure "Unexpected")
 
 let type_var_to_pattern (m : constraints) (v : T.TypeVarId.id) : var option =
   T.TypeVarId.Map.find v m.tmap
 
-let compute_constraints_map (generics : T.generic_params) : constraints =
+let constraints_map_compute_regions_map (regions : T.region_var list) :
+    var option T.RegionVarId.Map.t =
   let fresh_id (gen : int ref) : int =
     let id = !gen in
     gen := id + 1;
     id
   in
-  let rmap =
-    let rid_gen = ref 0 in
-    T.RegionId.Map.of_list
-      (List.map
-         (fun (r : T.region_var) ->
-           let v =
-             match r.name with
-             | None -> VarIndex (fresh_id rid_gen)
-             | Some name -> VarName name
-           in
-           (r.index, Some v))
-         generics.regions)
-  in
+  let rid_gen = ref 0 in
+  T.RegionVarId.Map.of_list
+    (List.map
+       (fun (r : T.region_var) ->
+         let v =
+           match r.name with
+           | None -> VarIndex (fresh_id rid_gen)
+           | Some name -> VarName name
+         in
+         (r.index, Some v))
+       regions)
+
+let compute_constraints_map (generics : T.generic_params) : constraints =
+  let rmap = [ constraints_map_compute_regions_map generics.regions ] in
   let tmap =
     T.TypeVarId.Map.of_list
       (List.map
@@ -468,6 +473,11 @@ let compute_constraints_map (generics : T.generic_params) : constraints =
          generics.const_generics)
   in
   { rmap; tmap; cmap }
+
+let constraints_map_push_regions_map (c : constraints)
+    (regions : T.region_var list) (f : constraints -> 'b) : constraints =
+  let rmap = constraints_map_compute_regions_map regions in
+  f { c with rmap = rmap :: c.rmap }
 
 type target_kind =
   | TkPattern  (** Generate a string which can be parsed as a pattern *)
