@@ -168,7 +168,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
     // - compute the order in which to extract the definitions
     // - find the recursive definitions
     // - group the mutually recursive definitions
-    let ordered_decls = reorder_decls::reorder_declarations(&ctx);
+    reorder_decls::reorder_declarations(&mut ctx);
 
     //
     // =================
@@ -192,7 +192,6 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         export::export_ullbc(
             &ctx,
             crate_name,
-            &ordered_decls,
             &ctx.fun_decls,
             &ctx.global_decls,
             &options.dest_dir,
@@ -291,7 +290,6 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         export::export_llbc(
             &ctx,
             crate_name,
-            &ordered_decls,
             &llbc_funs,
             &llbc_globals,
             &options.dest_dir,

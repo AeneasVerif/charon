@@ -35,6 +35,11 @@ pub trait Formatter<T> {
     fn format_object(&self, x: T) -> String;
 }
 
+/// Provided some id, print the declaration (not simply its name).
+pub trait DeclFormatter<Id> {
+    fn format_decl(&self, x: Id) -> String;
+}
+
 impl<C, T> Formatter<T> for &C
 where
     C: Formatter<T>,
@@ -543,5 +548,75 @@ impl<'a> Formatter<&gast::TraitDecl> for FmtCtx<'a> {
 impl<'a> Formatter<&gast::TraitImpl> for FmtCtx<'a> {
     fn format_object(&self, def: &gast::TraitImpl) -> String {
         def.fmt_with_ctx(self)
+    }
+}
+
+impl<'a> DeclFormatter<TypeDeclId::Id> for FmtCtx<'a> {
+    fn format_decl(&self, id: TypeDeclId::Id) -> String {
+        match &self.type_decls {
+            None => format!("Unknown decl: {:?}", id),
+            Some(decls) => match decls.get(id) {
+                None => {
+                    format!("Unknown decl: {:?}", id)
+                }
+                Some(d) => d.fmt_with_ctx(self),
+            },
+        }
+    }
+}
+
+impl<'a> DeclFormatter<GlobalDeclId::Id> for FmtCtx<'a> {
+    fn format_decl(&self, id: GlobalDeclId::Id) -> String {
+        match &self.global_decls {
+            None => format!("Unknown decl: {:?}", id),
+            Some(decls) => match decls.get(id) {
+                None => {
+                    format!("Unknown decl: {:?}", id)
+                }
+                Some(d) => d.fmt_with_ctx(self),
+            },
+        }
+    }
+}
+
+impl<'a> DeclFormatter<FunDeclId::Id> for FmtCtx<'a> {
+    fn format_decl(&self, id: FunDeclId::Id) -> String {
+        match &self.fun_decls {
+            None => format!("Unknown decl: {:?}", id),
+            Some(decls) => match decls.get(id) {
+                None => {
+                    format!("Unknown decl: {:?}", id)
+                }
+                Some(d) => d.fmt_with_ctx(self),
+            },
+        }
+    }
+}
+
+impl<'a> DeclFormatter<TraitDeclId::Id> for FmtCtx<'a> {
+    fn format_decl(&self, id: TraitDeclId::Id) -> String {
+        match &self.trait_decls {
+            None => format!("Unknown decl: {:?}", id),
+            Some(decls) => match decls.get(id) {
+                None => {
+                    format!("Unknown decl: {:?}", id)
+                }
+                Some(d) => d.fmt_with_ctx(self),
+            },
+        }
+    }
+}
+
+impl<'a> DeclFormatter<TraitImplId::Id> for FmtCtx<'a> {
+    fn format_decl(&self, id: TraitImplId::Id) -> String {
+        match &self.trait_impls {
+            None => format!("Unknown impl: {:?}", id),
+            Some(decls) => match decls.get(id) {
+                None => {
+                    format!("Unknown impl: {:?}", id)
+                }
+                Some(d) => d.fmt_with_ctx(self),
+            },
+        }
     }
 }

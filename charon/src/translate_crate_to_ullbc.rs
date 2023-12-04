@@ -239,6 +239,7 @@ pub fn translate<'tcx, 'ctx>(
         trait_impl_id_map: ast::TraitImplId::MapGenerator::new(),
         trait_impl_id_to_def_id: HashMap::new(),
         trait_impls: ast::TraitImplId::Map::new(),
+        ordered_decls: None,
     };
 
     // First push all the items in the stack of items to translate.

@@ -1,6 +1,6 @@
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
-use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups};
+use crate::reorder_decls::DeclarationGroup;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::ullbc_ast;
@@ -33,7 +33,6 @@ struct GCrateSerializer<'a, FD, GD> {
 pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     ctx: &TransCtx,
     crate_name: String,
-    ordered_decls: &DeclarationsGroups,
     fun_decls: &FunDeclId::Map<FD>,
     global_decls: &GlobalDeclId::Map<GD>,
     dest_dir: &Option<PathBuf>,
@@ -69,7 +68,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     let crate_serializer = GCrateSerializer {
         name: crate_name,
         id_to_file,
-        declarations: ordered_decls,
+        declarations: ctx.ordered_decls.as_ref().unwrap(),
         types,
         functions,
         globals,
@@ -125,20 +124,11 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
 pub fn export_ullbc(
     ctx: &TransCtx,
     crate_name: String,
-    ordered_decls: &DeclarationsGroups,
     fun_decls: &ullbc_ast::FunDecls,
     global_decls: &ullbc_ast::GlobalDecls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<(), ()> {
-    gexport(
-        ctx,
-        crate_name,
-        ordered_decls,
-        fun_decls,
-        global_decls,
-        dest_dir,
-        "ullbc",
-    )
+    gexport(ctx, crate_name, fun_decls, global_decls, dest_dir, "ullbc")
 }
 
 /// Export the translated LLBC definitions to a JSON file.
@@ -146,18 +136,9 @@ pub fn export_ullbc(
 pub fn export_llbc(
     ctx: &TransCtx,
     crate_name: String,
-    ordered_decls: &DeclarationsGroups,
     fun_decls: &llbc_ast::FunDecls,
     global_decls: &llbc_ast::GlobalDecls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<(), ()> {
-    gexport(
-        ctx,
-        crate_name,
-        ordered_decls,
-        fun_decls,
-        global_decls,
-        dest_dir,
-        "llbc",
-    )
+    gexport(ctx, crate_name, fun_decls, global_decls, dest_dir, "llbc")
 }
