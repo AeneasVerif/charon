@@ -212,11 +212,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 unreachable!();
                             }
                         } else {
-                            let err = Error {
-                                span: *span,
-                                msg: "Bound variables on predicate".to_string(),
-                            };
-                            Err(err)
+                            // Report an error
+                            error_or_panic!(self, *span, "Bound variables found on a predicate")
                         }
                     })
                     .try_collect()?;

@@ -24,7 +24,7 @@ use std::fmt;
 
 /// Macro to either panic or return on error, depending on the CLI options
 macro_rules! error_or_panic {
-    ($ctx:ident, $span: ident, $msg: expr) => {{
+    ($ctx:expr, $span: expr, $msg: expr) => {{
         $ctx.span_err($span, &$msg);
         if $ctx.continue_on_failure() {
             let e = crate::common::Error {

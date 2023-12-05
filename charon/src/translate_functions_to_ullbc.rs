@@ -1776,6 +1776,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // of the function, we ignore the function altogether, while we should
         // save somewhere that we failed to extract it.
         if self.translate_function_aux(rust_id).is_err() {
+            let span = self.tcx.def_span(rust_id);
+            self.span_err(
+                span,
+                &format!(
+                    "Ignoring the following function due to an error: {:?}",
+                    rust_id
+                ),
+            );
             // TODO
         }
     }
@@ -1850,6 +1858,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // predicates of the global, we ignore the declaration altogether, while
         // we should save somewhere that we failed to extract it.
         if self.translate_global_aux(rust_id).is_err() {
+            let span = self.tcx.def_span(rust_id);
+            self.span_err(
+                span,
+                &format!(
+                    "Ignoring the following global due to an error: {:?}",
+                    rust_id
+                ),
+            );
             // TODO
         }
     }

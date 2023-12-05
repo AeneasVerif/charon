@@ -219,7 +219,7 @@ pub fn translate<'tcx, 'ctx>(
         hax_state,
         mir_level,
         crate_info,
-        continue_on_failure: !options.panic_on_error,
+        continue_on_failure: !options.abort_on_error,
         error_count: 0,
         no_code_duplication: options.no_code_duplication,
         all_ids: LinkedHashSet::new(),

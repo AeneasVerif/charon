@@ -101,8 +101,8 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     #[structopt(long = "cargo-no-rust-version")]
     pub cargo_no_rust_version: bool,
     /// Panic on the first error. This is useful for debugging.
-    #[structopt(long = "panic-on-error")]
-    pub panic_on_error: bool,
+    #[structopt(long = "abort-on-error")]
+    pub abort_on_error: bool,
     #[structopt(
         long = "print-ullbc",
         help = "

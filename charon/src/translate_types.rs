@@ -713,6 +713,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // predicates of the declaration, we ignore it altogether, while we should
         // save somewhere that we failed to extract it.
         if self.translate_type_aux(rust_id).is_err() {
+            let span = self.tcx.def_span(rust_id);
+            self.span_err(
+                span,
+                &format!("Ignoring the following type due to an error: {:?}", rust_id),
+            );
             // TODO
         }
     }
