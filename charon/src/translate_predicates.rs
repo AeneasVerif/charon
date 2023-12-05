@@ -213,7 +213,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             }
                         } else {
                             // Report an error
-                            error_or_panic!(self, *span, "Bound variables found on a predicate")
+                            error_or_panic!(self, *span, "Predicates with bound regions (i.e., `for<'a> ...`) are not supported yet")
                         }
                     })
                     .try_collect()?;
