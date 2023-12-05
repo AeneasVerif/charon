@@ -1,4 +1,9 @@
-open Charon.NameMatcher
+open Charon
+open Logging
+open NameMatcher
+
+let log = main_log
+let _ = log#linfo (lazy "Name matcher tests: starting")
 
 let parse_tests () =
   let patterns : string list =
@@ -22,6 +27,11 @@ let parse_tests () =
       "core::slice::index::SliceIndex<Range<usize>, [@T]>";
       "{()}";
       "{(@T, @T, Range<usize>)}";
+      "{fn ()}";
+      "{fn (@T, @U)}";
+      "{fn (@T, @U) -> u32}";
+      "{*const @T}";
+      "{*mut @T}";
     ]
   in
   let _ = List.map parse_pattern patterns in
@@ -50,3 +60,5 @@ let name_map_tests () =
 let run_tests () =
   parse_tests ();
   name_map_tests ()
+
+let _ = log#linfo (lazy "Name matcher tests: success")
