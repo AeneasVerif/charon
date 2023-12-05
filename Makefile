@@ -4,7 +4,7 @@ ifeq (3.81,$(MAKE_VERSION))
 endif
 
 .PHONY: default
-default: build
+default: build-charon-rust
 
 .PHONY: all
 all: build tests nix
