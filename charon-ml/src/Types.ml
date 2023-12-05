@@ -506,15 +506,17 @@ type name = path_elem list [@@deriving show, ord]
     This is necessary to introduce the proper abstraction with the
     proper constraints, when evaluating a function call in symbolic mode.
 *)
-type 'id g_region_group = {
+type ('rid, 'id) g_region_group = {
   id : 'id;
-  regions : RegionId.id list;
+  regions : 'rid list;
   parents : 'id list;
 }
 [@@deriving show]
 
-type region_group = RegionGroupId.id g_region_group [@@deriving show]
-type region_groups = region_group list [@@deriving show]
+type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
+[@@deriving show]
+
+type region_var_groups = region_var_group list [@@deriving show]
 
 type field = { meta : meta; field_name : string option; field_ty : ty }
 [@@deriving show]

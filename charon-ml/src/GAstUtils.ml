@@ -6,7 +6,7 @@ open GAst
 
     This list *doesn't* include the current region.
  *)
-let rec list_ancestor_region_groups (regions_hierarchy : region_groups)
+let rec list_ancestor_region_groups (regions_hierarchy : region_var_groups)
     (gid : RegionGroupId.id) : RegionGroupId.Set.t =
   let rg = RegionGroupId.nth regions_hierarchy gid in
   let parents =
@@ -23,15 +23,15 @@ let rec list_ancestor_region_groups (regions_hierarchy : region_groups)
   parents
 
 (** Small utility: same as {!list_ancestor_region_groups}, but returns an ordered list.  *)
-let list_ordered_ancestor_region_groups (regions_hierarchy : region_groups)
+let list_ordered_ancestor_region_groups (regions_hierarchy : region_var_groups)
     (gid : RegionGroupId.id) : RegionGroupId.id list =
   let pset = list_ancestor_region_groups regions_hierarchy gid in
   let parents =
     List.filter
-      (fun (rg : region_group) -> RegionGroupId.Set.mem rg.id pset)
+      (fun (rg : region_var_group) -> RegionGroupId.Set.mem rg.id pset)
       regions_hierarchy
   in
-  let parents = List.map (fun (rg : region_group) -> rg.id) parents in
+  let parents = List.map (fun (rg : region_var_group) -> rg.id) parents in
   parents
 
 let gexpr_body_get_input_vars (fbody : 'body gexpr_body) : var list =

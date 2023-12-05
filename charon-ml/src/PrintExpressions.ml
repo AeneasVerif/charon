@@ -6,6 +6,7 @@ open LlbcAst
 open PrintUtils
 open PrintTypes
 
+let fun_decl_id_to_string = PrintTypes.fun_decl_id_to_string
 let var_id_to_pretty_string (id : var_id) : string = "v@" ^ VarId.to_string id
 
 let var_to_string (v : var) : string =
@@ -84,30 +85,33 @@ let binop_to_string (binop : binop) : string =
   | Shl -> "<<"
   | Shr -> ">>"
 
-let assumed_fun_id_to_string (aid : assumed_fun_id) (generics : string) : string
-    =
+let assumed_fun_id_to_string (aid : assumed_fun_id) : string =
   match aid with
-  | BoxNew -> "alloc::boxed::Box" ^ generics ^ "::new"
-  | BoxFree -> "alloc::alloc::box_free" ^ generics
-  | ArrayIndexShared -> "@ArrayIndexShared" ^ generics
-  | ArrayIndexMut -> "@ArrayIndexMut" ^ generics
-  | ArrayToSliceShared -> "@ArrayToSliceShared" ^ generics
-  | ArrayToSliceMut -> "@ArrayToSliceMut" ^ generics
-  | ArrayRepeat -> "@ArrayRepeat" ^ generics
-  | SliceIndexShared -> "@SliceIndexShared" ^ generics
-  | SliceIndexMut -> "@SliceIndexMut" ^ generics
+  | BoxNew -> "alloc::boxed::Box::new"
+  | BoxFree -> "alloc::alloc::box_free"
+  | ArrayIndexShared -> "@ArrayIndexShared"
+  | ArrayIndexMut -> "@ArrayIndexMut"
+  | ArrayToSliceShared -> "@ArrayToSliceShared"
+  | ArrayToSliceMut -> "@ArrayToSliceMut"
+  | ArrayRepeat -> "@ArrayRepeat"
+  | SliceIndexShared -> "@SliceIndexShared"
+  | SliceIndexMut -> "@SliceIndexMut"
+
+let fun_id_to_string (env : ('a, 'b) fmt_env) (fid : fun_id) : string =
+  match fid with
+  | FRegular fid -> fun_decl_id_to_string env fid
+  | FAssumed aid -> assumed_fun_id_to_string aid
 
 let fun_id_or_trait_method_ref_to_string (env : ('a, 'b) fmt_env)
-    (r : fun_id_or_trait_method_ref) (generics : string) : string =
+    (r : fun_id_or_trait_method_ref) : string =
   match r with
   | TraitMethod (trait_ref, method_name, _) ->
-      trait_ref_to_string env trait_ref ^ "::" ^ method_name ^ generics
-  | FunId (FRegular fid) -> fun_decl_id_to_string env fid ^ generics
-  | FunId (FAssumed aid) -> assumed_fun_id_to_string aid generics
+      trait_ref_to_string env trait_ref ^ "::" ^ method_name
+  | FunId fid -> fun_id_to_string env fid
 
 let fn_ptr_to_string (env : ('a, 'b) fmt_env) (ptr : fn_ptr) : string =
   let generics = generic_args_to_string env ptr.generics in
-  fun_id_or_trait_method_ref_to_string env ptr.func generics
+  fun_id_or_trait_method_ref_to_string env ptr.func ^ generics
 
 let constant_expr_to_string (env : ('a, 'b) fmt_env) (cv : constant_expr) :
     string =

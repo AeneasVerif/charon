@@ -450,17 +450,17 @@ let type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :
     | `String "Opaque" -> Ok Opaque
     | _ -> Error "")
 
-let region_var_group_of_json (js : json) : (region_group, string) result =
+let region_var_group_of_json (js : json) : (region_var_group, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("id", id); ("regions", regions); ("parents", parents) ] ->
         let* id = RegionGroupId.id_of_json id in
-        let* regions = list_of_json RegionId.id_of_json regions in
+        let* regions = list_of_json RegionVarId.id_of_json regions in
         let* parents = list_of_json RegionGroupId.id_of_json parents in
         Ok { id; regions; parents }
     | _ -> Error "")
 
-let region_var_groups_of_json (js : json) : (region_groups, string) result =
+let region_var_groups_of_json (js : json) : (region_var_groups, string) result =
   combine_error_msgs js __FUNCTION__ (list_of_json region_var_group_of_json js)
 
 let trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
