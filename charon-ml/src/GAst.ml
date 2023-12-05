@@ -44,8 +44,9 @@ class ['self] map_ast_base =
 (* Below: the types need not be mutually recursive, but it makes it easier
    to derive the visitors *)
 type assertion = { cond : operand; expected : bool }
+and fn_operand = FnOpRegular of fn_ptr | FnOpMove of place
 
-and call = { func : fn_ptr; args : operand list; dest : place }
+and call = { func : fn_operand; args : operand list; dest : place }
 [@@deriving
   show,
     visitors
@@ -88,9 +89,14 @@ type params_info = {
 }
 [@@deriving show]
 
+type closure_kind = Fn | FnMut | FnOnce [@@deriving show]
+type closure_info = { kind : closure_kind; state : ty list } [@@deriving show]
+
 (** A function signature for function declarations *)
 type fun_sig = {
   is_unsafe : bool;
+  is_closure : bool;
+  closure_info : closure_info option;
   generics : generic_params;
   preds : predicates;
   parent_params_info : params_info option;

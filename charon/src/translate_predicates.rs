@@ -1,5 +1,6 @@
 use crate::common::*;
-use crate::formatter::Formatter;
+use crate::formatter::AstFormatter;
+use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::meta::Meta;
 use crate::translate_ctx::*;
@@ -69,7 +70,7 @@ impl NonLocalTraitClause {
 
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let clause_id = self.clause_id.fmt_with_ctx(ctx);
         let trait_id = ctx.format_object(self.trait_id);
@@ -211,11 +212,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 unreachable!();
                             }
                         } else {
-                            let err = Error {
-                                span: *span,
-                                msg: "Bound variables on predicate".to_string(),
-                            };
-                            Err(err)
+                            // Report an error
+                            error_or_panic!(self, *span, "Predicates with bound regions (i.e., `for<'a> ...`) are not supported yet")
                         }
                     })
                     .try_collect()?;
@@ -308,10 +306,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         }
 
+        let fmt_ctx = self.into_fmt();
         let clauses = self
             .trait_clauses
             .values()
-            .map(|c| c.fmt_with_ctx(self))
+            .map(|c| c.fmt_with_ctx(&fmt_ctx))
             .collect::<Vec<String>>()
             .join(",\n");
         trace!(
@@ -325,10 +324,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("Local predicates of {:?}:\n{:?}", def_id, preds);
         self.translate_predicates(&preds)?;
 
+        let fmt_ctx = self.into_fmt();
         let clauses = self
             .trait_clauses
             .values()
-            .map(|c| c.fmt_with_ctx(self))
+            .map(|c| c.fmt_with_ctx(&fmt_ctx))
             .collect::<Vec<String>>()
             .join(",\n");
         trace!(
@@ -347,7 +347,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         def_id: DefId,
     ) -> Result<(), Error> {
         let span = self.t_ctx.tcx.def_span(def_id);
-        self.while_registering_trait_clauses(&mut |ctx| {
+        self.while_registering_trait_clauses(move |ctx| {
             ctx.translate_predicates_of(parent_trait_id, def_id)?;
             ctx.solve_trait_obligations_in_trait_clauses(span);
             Ok(())
@@ -800,18 +800,31 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplSourceKind::Closure(_) => {
-                let error = "Closures are not supported yet".to_string();
-                self.span_err(span, &error);
-                if !self.t_ctx.continue_on_failure {
-                    panic!("{}", error)
-                } else {
-                    let trait_id = TraitInstanceId::Unknown(error);
-                    TraitRef {
-                        trait_id,
-                        generics: GenericArgs::empty(),
-                        trait_decl_ref,
-                    }
+            ImplSourceKind::Closure(data) => {
+                trace!("{data:?}");
+                // Remark: a closure is always a function defined locally in the
+                // body of the caller, which means it can't be an assumed function
+                // (there is a very limited number of assumed functions, and they
+                // are all top-level).
+                let fn_id = self.translate_fun_decl_id(data.closure_def_id.rust_def_id.unwrap());
+                let erased_regions = false;
+                let (regions, types, const_generics) =
+                    self.translate_substs(span, erased_regions, None, &data.parent_substs)?;
+                let parent_substs = GenericArgs::new(regions, types, const_generics, Vec::new());
+                // TODO: translate the signature
+                let trait_refs =
+                    self.translate_trait_impl_sources(span, erase_regions, &data.nested)?;
+                let trait_id = TraitInstanceId::Closure(fn_id, parent_substs);
+                let generics = GenericArgs {
+                    regions: vec![],
+                    types: vec![],
+                    const_generics: vec![],
+                    trait_refs,
+                };
+                TraitRef {
+                    trait_id,
+                    generics,
+                    trait_decl_ref,
                 }
             }
             ImplSourceKind::TraitUpcasting(_) => unimplemented!(),
@@ -839,9 +852,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         generics: &GenericArgs,
         clause: &NonLocalTraitClause,
     ) -> bool {
+        let fmt_ctx = self.into_fmt();
         trace!("Matching trait clauses:\n- trait_id: {:?}\n- generics: {:?}\n- clause.trait_id: {:?}\n- clause.generics: {:?}",
-               self.format_object(trait_id), generics.fmt_with_ctx(self),
-               self.format_object(clause.trait_id), clause.generics.fmt_with_ctx(self)
+               fmt_ctx.format_object(trait_id), generics.fmt_with_ctx(&fmt_ctx),
+               fmt_ctx.format_object(clause.trait_id), clause.generics.fmt_with_ctx(&fmt_ctx)
         );
         // Check if the clause is about the same trait
         if clause.trait_id != trait_id {
@@ -893,15 +907,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         if self.registering_trait_clauses {
             TraitInstanceId::Unsolved(trait_id, generics.clone())
         } else {
+            let fmt_ctx = self.into_fmt();
             let trait_ref = format!(
                 "{}{}",
-                self.format_object(trait_id),
-                generics.fmt_with_ctx(self)
+                fmt_ctx.format_object(trait_id),
+                generics.fmt_with_ctx(&fmt_ctx)
             );
             let clauses: Vec<String> = self
                 .trait_clauses
                 .values()
-                .map(|x| x.fmt_with_ctx(self))
+                .map(|x| x.fmt_with_ctx(&fmt_ctx))
                 .collect();
 
             if !self.t_ctx.continue_on_failure {
@@ -1062,14 +1077,15 @@ impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
                 // Retraverse the context, collecting the unsolved clauses.
                 self.collect_unsolved();
 
+                let ctx = self.ctx.into_fmt();
                 let unsolved = self
                     .unsolved
                     .iter()
                     .map(|(trait_id, generics)| {
                         format!(
                             "{}{}",
-                            self.ctx.format_object(*trait_id),
-                            generics.fmt_with_ctx(&*self.ctx)
+                            ctx.format_object(*trait_id),
+                            generics.fmt_with_ctx(&ctx)
                         )
                     })
                     .collect::<Vec<String>>()
@@ -1078,7 +1094,7 @@ impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
                     .ctx
                     .trait_clauses
                     .values()
-                    .map(|x| x.fmt_with_ctx(&*self.ctx))
+                    .map(|x| x.fmt_with_ctx(&ctx))
                     .collect::<Vec<String>>()
                     .join("\n");
 

@@ -2,16 +2,13 @@
 //!
 //! For now, we have one function per object kind (type, trait, function,
 //! module): many of them could be factorized (will do).
-use crate::formatter::Formatter;
-use crate::gast::*;
+use crate::formatter::AstFormatter;
 use crate::names::*;
 use crate::translate_ctx::*;
-use crate::types::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::{Item, ItemKind};
 use rustc_span::def_id::DefId;
-use serde::{Serialize, Serializer};
 use std::collections::HashSet;
 
 impl PathElem {
@@ -24,7 +21,7 @@ impl PathElem {
 
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         match self {
             PathElem::Ident(s, d) => {
@@ -43,95 +40,23 @@ impl PathElem {
 impl ImplElem {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let d = if self.disambiguator.is_zero() {
             "".to_string()
         } else {
             format!("#{}", self.disambiguator)
         };
-        let fmt = WithGenericsFmt {
-            ctx,
-            generics: &self.generics,
-        };
+        let ctx = ctx.set_generics(&self.generics);
         // Just printing the generics (not the predicates)
-        // TODO: there is something wrong here: we should add the generic parameters
-        // to the context, and then use them to print.
-        format!("{{{}{d}}}", self.ty.fmt_with_ctx(&fmt),)
-    }
-}
-
-struct WithGenericsFmt<'a, C> {
-    ctx: &'a C,
-    generics: &'a GenericParams,
-}
-
-impl<'a, C> Formatter<TypeVarId::Id> for WithGenericsFmt<'a, C> {
-    fn format_object(&self, x: TypeVarId::Id) -> String {
-        self.generics.types.get(x).unwrap().name.to_string()
-    }
-}
-
-impl<'a, C> Formatter<ConstGenericVarId::Id> for WithGenericsFmt<'a, C> {
-    fn format_object(&self, x: ConstGenericVarId::Id) -> String {
-        self.generics
-            .const_generics
-            .get(x)
-            .unwrap()
-            .name
-            .to_string()
-    }
-}
-
-impl<'a, C> Formatter<RegionId::Id> for WithGenericsFmt<'a, C> {
-    fn format_object(&self, x: RegionId::Id) -> String {
-        match &self.generics.regions.get(x).unwrap().name {
-            None => "'_".to_string(),
-            Some(r) => r.to_string(),
-        }
-    }
-}
-
-impl<'a, C: Formatter<TypeDeclId::Id>> Formatter<TypeDeclId::Id> for WithGenericsFmt<'a, C> {
-    fn format_object(&self, x: TypeDeclId::Id) -> String {
-        self.ctx.format_object(x)
-    }
-}
-
-impl<'a, C: Formatter<FunDeclId::Id>> Formatter<FunDeclId::Id> for WithGenericsFmt<'a, C> {
-    fn format_object(&self, x: FunDeclId::Id) -> String {
-        self.ctx.format_object(x)
-    }
-}
-
-impl<'a, C: Formatter<GlobalDeclId::Id>> Formatter<GlobalDeclId::Id> for WithGenericsFmt<'a, C> {
-    fn format_object(&self, x: GlobalDeclId::Id) -> String {
-        self.ctx.format_object(x)
-    }
-}
-
-impl<'a, C: Formatter<TraitDeclId::Id>> Formatter<TraitDeclId::Id> for WithGenericsFmt<'a, C> {
-    fn format_object(&self, x: TraitDeclId::Id) -> String {
-        self.ctx.format_object(x)
-    }
-}
-
-impl<'a, C: Formatter<TraitImplId::Id>> Formatter<TraitImplId::Id> for WithGenericsFmt<'a, C> {
-    fn format_object(&self, x: TraitImplId::Id) -> String {
-        self.ctx.format_object(x)
-    }
-}
-
-impl<'a, C: Formatter<TraitClauseId::Id>> Formatter<TraitClauseId::Id> for WithGenericsFmt<'a, C> {
-    fn format_object(&self, x: TraitClauseId::Id) -> String {
-        self.ctx.format_object(x)
+        format!("{{{}{d}}}", self.ty.fmt_with_ctx(&ctx),)
     }
 }
 
 impl Name {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
         let name = self
             .name
@@ -197,16 +122,6 @@ impl Name {
         } else {
             false
         }
-    }
-}
-
-// Implementating the serializer for Name so as to ignore the wrapper
-impl Serialize for Name {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.name.serialize(serializer)
     }
 }
 

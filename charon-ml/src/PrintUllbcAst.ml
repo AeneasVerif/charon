@@ -124,7 +124,10 @@ module Crate = struct
         global_decls = m.global_decls;
         trait_decls = m.trait_decls;
         trait_impls = m.trait_impls;
-        generics = empty_generic_params;
+        regions = [];
+        types = [];
+        const_generics = [];
+        trait_clauses = [];
         preds = empty_predicates;
         locals = [];
       }

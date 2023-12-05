@@ -1,4 +1,4 @@
-pub use crate::gast::TraitItemName;
+pub use crate::gast::{FunDeclId, TraitItemName};
 use crate::meta::Meta;
 use crate::names::Name;
 pub use crate::types_utils::*;
@@ -36,7 +36,7 @@ pub struct TypeVar {
 }
 
 /// Region variable.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Hash, PartialOrd, Ord)]
 pub struct RegionVar {
     /// Unique index identifying the variable
     pub index: RegionId::Id,
@@ -55,18 +55,44 @@ pub struct ConstGenericVar {
     pub ty: LiteralTy,
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize)]
+#[serde(transparent)]
+pub struct DeBruijnId {
+    pub index: usize,
+}
+
 #[derive(
     Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, EnumIsA, EnumAsGetters, Serialize,
 )]
 pub enum Region {
     /// Static region
     Static,
-    /// Non-static region.
-    Var(RegionId::Id),
+    /// Bound region variable.
+    ///
+    /// **Important**:
+    /// ==============
+    /// Similarly to what the Rust compiler does, we use De Bruijn indices to
+    /// identify *groups* of bound variables, and variable identifiers to
+    /// identity the variables inside the groups.
+    ///
+    /// For instance, we have the following:
+    /// ```text
+    ///                     we compute the De Bruijn indices from here
+    ///                            VVVVVVVVVVVVVVVVVVVVVVV
+    /// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+    ///      ^^^^^^         ^^       ^       ^        ^
+    ///        |      De Bruijn: 0   |       |        |
+    ///  De Bruijn: 1                |       |        |
+    ///                        De Bruijn: 1  |    De Bruijn: 0
+    ///                           Var id: 0  |       Var id: 0
+    ///                                      |
+    ///                                De Bruijn: 1
+    ///                                   Var id: 1
+    /// ```
+    BVar(DeBruijnId, RegionId::Id),
     /// Erased region
     Erased,
     /// For error reporting.
-    /// Can appear only if the option [CliOpts::continue_on_failure] is used.
     Unknown,
 }
 
@@ -170,6 +196,12 @@ pub enum TraitInstanceId {
     /// }
     /// ```
     FnPointer(Box<Ty>),
+    /// Similar to [FnPointer], but where we use a closure.
+    ///
+    /// It is important to differentiate the cases, because closures have a
+    /// state. Whenever we create a closure, we actually create an aggregated
+    /// value with a function pointer and a state.
+    Closure(FunDeclId::Id, GenericArgs),
     ///
     /// Self, in case of trait declarations/implementations.
     ///
@@ -501,8 +533,11 @@ pub enum Ty {
     RawPtr(Box<Ty>, RefKind),
     /// A trait type
     TraitType(TraitRef, GenericArgs, TraitItemName),
-    /// Arrow type
-    Arrow(Vec<Ty>, Box<Ty>),
+    /// Arrow type, used in particular for the local function pointers.
+    /// This is essentially a "constrained" function signature:
+    /// arrow types can only contain generic lifetime parameters
+    /// (no generic types), no predicates, etc.
+    Arrow(RegionId::Vector<RegionVar>, Vec<Ty>, Box<Ty>),
 }
 
 /// Assumed types identifiers.
@@ -598,11 +633,46 @@ pub struct ParamsInfo {
     pub num_trait_type_constraints: usize,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]
+pub enum ClosureKind {
+    Fn,
+    FnMut,
+    FnOnce,
+}
+
+/// Additional information for closures.
+/// We mostly use it in micro-passes like [crate::update_closure_signature].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ClosureInfo {
+    pub kind: ClosureKind,
+    /// Contains the types of the fields in the closure state.
+    /// More precisely, for every place captured by the
+    /// closure, the state has one field (typically a ref).
+    ///
+    /// For instance, below the closure has a state with two fields of type `&u32`:
+    /// ```text
+    /// pub fn test_closure_capture(x: u32, y: u32) -> u32 {
+    ///   let f = &|z| x + y + z;
+    ///   (f)(0)
+    /// }
+    /// ```
+    pub state: Vec<Ty>,
+}
+
 /// A function signature.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct FunSig {
     /// Is the function unsafe or not
     pub is_unsafe: bool,
+    /// `true` if the signature is for a closure.
+    ///
+    /// Importantly: if the signature is for a closure, then:
+    /// - the type and const generic params actually come from the parent function
+    ///   (the function in which the closure is defined)
+    /// - the region variables are local to the closure
+    pub is_closure: bool,
+    /// Additional information if this is the signature of a closure.
+    pub closure_info: Option<ClosureInfo>,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).

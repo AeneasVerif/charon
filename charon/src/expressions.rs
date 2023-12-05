@@ -65,9 +65,13 @@ pub enum ProjectionElem {
 pub enum FieldProjKind {
     #[serde(rename = "ProjAdt")]
     Adt(TypeDeclId::Id, Option<VariantId::Id>),
-    /// If we project from a tuple, the projection kind gives the arity of the
+    /// If we project from a tuple, the projection kind gives the arity of the tuple.
     #[serde(rename = "ProjTuple")]
     Tuple(usize),
+    #[serde(rename = "ProjClosureState")]
+    /// Access to a field in a closure state.
+    /// We eliminate this in a micro-pass ([crate::update_closure_signatures]).
+    ClosureState,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize)]
@@ -343,6 +347,9 @@ pub enum Rvalue {
     /// our semantics. Aggregate value initialization is easy, you might want
     /// to have a look at expansion of `Bottom` values for explanations about the
     /// other case.
+    ///
+    /// Remark: in case of closures, the aggregated value groups the closure id
+    /// together with its state.
     Aggregate(AggregateKind, Vec<Operand>),
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs]
@@ -373,6 +380,7 @@ pub enum AggregateKind {
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.
     Array(Ty, ConstGeneric),
-    ///
-    Closure(FunDeclId::Id),
+    /// Aggregated values for closures group the function id together with its
+    /// state.
+    Closure(FunDeclId::Id, GenericArgs),
 }

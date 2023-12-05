@@ -139,6 +139,8 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
        {
          (* Not sure about `is_unsafe` actually *)
          is_unsafe = false;
+         is_closure = false;
+         closure_info = None;
          generics = TypesUtils.empty_generic_params;
          preds = TypesUtils.empty_predicates;
          parent_params_info = None;

@@ -10,9 +10,11 @@ module ConstGenericVarId = IdGen ()
 module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
 module TraitClauseId = IdGen ()
+module RegionVarId = IdGen ()
 module RegionId = IdGen ()
 module RegionGroupId = IdGen ()
 module Disambiguator = IdGen ()
+module FunDeclId = IdGen ()
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
@@ -37,6 +39,9 @@ type field_id = FieldId.id [@@deriving show, ord]
 type type_decl_id = TypeDeclId.id [@@deriving show, ord]
 
 (** Same remark as for {!type_var_id} *)
+type fun_decl_id = FunDeclId.id [@@deriving show, ord]
+
+(** Same remark as for {!type_var_id} *)
 type trait_decl_id = TraitDeclId.id [@@deriving show, ord]
 
 (** Same remark as for {!type_var_id} *)
@@ -46,10 +51,16 @@ type trait_impl_id = TraitImplId.id [@@deriving show, ord]
 type trait_clause_id = TraitClauseId.id [@@deriving show, ord]
 
 (** Same remark as for {!type_var_id} *)
+type region_var_id = RegionVarId.id [@@deriving show, ord]
+
+(** Same remark as for {!type_var_id} *)
 type region_id = RegionId.id [@@deriving show, ord]
 
 (** Same remark as for {!type_var_id} *)
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
+
+(** Region DeBruijn identifiers *)
+type region_db_id = int [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
   index : 'id;  (** Unique index identifying the variable *)
@@ -59,7 +70,7 @@ type ('id, 'name) indexed_var = {
 
 type type_var = (TypeVarId.id, string) indexed_var [@@deriving show, ord]
 
-type region_var = (RegionId.id, string option) indexed_var
+type region_var = (RegionVarId.id, string option) indexed_var
 [@@deriving show, ord]
 
 type literal_type = Values.literal_type [@@deriving show, ord]
@@ -190,8 +201,10 @@ type trait_item_name = string [@@deriving show, ord]
 
 (** Ancestor for iter visitor for {!type: Types.ty} *)
 class ['self] iter_ty_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] iter_const_generic
+    method visit_region_db_id : 'env -> region_db_id -> unit = fun _ _ -> ()
+    method visit_region_var_id : 'env -> region_var_id -> unit = fun _ _ -> ()
     method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
     method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
     method visit_ref_kind : 'env -> ref_kind -> unit = fun _ _ -> ()
@@ -199,17 +212,31 @@ class ['self] iter_ty_base =
     method visit_trait_item_name : 'env -> trait_item_name -> unit =
       fun _ _ -> ()
 
+    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
     method visit_trait_decl_id : 'env -> trait_decl_id -> unit = fun _ _ -> ()
     method visit_trait_impl_id : 'env -> trait_impl_id -> unit = fun _ _ -> ()
 
     method visit_trait_clause_id : 'env -> trait_clause_id -> unit =
       fun _ _ -> ()
+
+    method visit_region_var : 'env -> region_var -> unit =
+      fun env x ->
+        let { index; name } : region_var = x in
+        self#visit_region_var_id env index;
+        self#visit_option self#visit_string env name
   end
 
 (** Ancestor for map visitor for {!type: Types.ty} *)
 class virtual ['self] map_ty_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] map_const_generic
+
+    method visit_region_db_id : 'env -> region_db_id -> region_db_id =
+      fun _ id -> id
+
+    method visit_region_var_id : 'env -> region_var_id -> region_var_id =
+      fun _ id -> id
+
     method visit_region_id : 'env -> region_id -> region_id = fun _ id -> id
 
     method visit_type_var_id : 'env -> type_var_id -> type_var_id =
@@ -220,6 +247,8 @@ class virtual ['self] map_ty_base =
     method visit_trait_item_name : 'env -> trait_item_name -> trait_item_name =
       fun _ x -> x
 
+    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
+
     method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id =
       fun _ x -> x
 
@@ -228,6 +257,13 @@ class virtual ['self] map_ty_base =
 
     method visit_trait_clause_id : 'env -> trait_clause_id -> trait_clause_id =
       fun _ x -> x
+
+    method visit_region_var : 'env -> region_var -> region_var =
+      fun env x ->
+        let { index; name } : region_var = x in
+        let index = self#visit_region_var_id env index in
+        let name = self#visit_option self#visit_string env name in
+        { index; name }
   end
 
 (* TODO: Str should be a literal *)
@@ -250,7 +286,7 @@ and ty =
   | TRawPtr of ty * ref_kind
   | TTraitType of trait_ref * generic_args * string
       (** The string is for the name of the associated type *)
-  | TArrow of ty list * ty
+  | TArrow of region_var list * ty list * ty
 
 and trait_ref = {
   trait_id : trait_instance_id;
@@ -293,13 +329,14 @@ and trait_instance_id =
           a sub-clause relative to a trait instance id.
        *)
   | FnPointer of ty
+  | Closure of fun_decl_id * generic_args
   | UnknownTrait of string
       (** Not present in the Rust version of Charon.
 
-        We use this in the substitutions, to substitute [Self] when [Self] shouldn't
-        appear: this allows us to track errors by making sure [Self] indeed did not
-        appear.
-      *)
+          We use this in the substitutions, to substitute [Self] when [Self] shouldn't
+          appear: this allows us to track errors by making sure [Self] indeed did not
+          appear.
+       *)
 
 (** A region.
 
@@ -308,7 +345,10 @@ and trait_instance_id =
  *)
 and region =
   | RStatic  (** Static region *)
-  | RVar of region_id  (** Non-static region *)
+  | RBVar of region_db_id * region_var_id
+      (** Bound region. We use those in function signatures, type definitions, etc. *)
+  | RFVar of region_id
+      (** Free region. We use those during the symbolic execution. *)
   | RErased  (** Erased region *)
 [@@deriving
   show,
@@ -344,12 +384,6 @@ class ['self] iter_predicates_base =
         self#visit_type_var_id env index;
         self#visit_string env name
 
-    method visit_region_var : 'env -> region_var -> unit =
-      fun env x ->
-        let { index; name } : region_var = x in
-        self#visit_region_id env index;
-        self#visit_option self#visit_string env name
-
     method visit_const_generic_var : 'env -> const_generic_var -> unit =
       fun env x ->
         let { index; name; ty } : const_generic_var = x in
@@ -363,13 +397,6 @@ class virtual ['self] map_predicates_base =
   object (self : 'self)
     inherit [_] map_ty
     method visit_meta : 'env -> meta -> meta = fun _ x -> x
-
-    method visit_region_var : 'env -> region_var -> region_var =
-      fun env x ->
-        let { index; name } : region_var = x in
-        let index = self#visit_region_id env index in
-        let name = self#visit_option self#visit_string env name in
-        { index; name }
 
     method visit_type_var : 'env -> type_var -> type_var =
       fun env x ->
@@ -479,15 +506,17 @@ type name = path_elem list [@@deriving show, ord]
     This is necessary to introduce the proper abstraction with the
     proper constraints, when evaluating a function call in symbolic mode.
 *)
-type 'id g_region_group = {
+type ('rid, 'id) g_region_group = {
   id : 'id;
-  regions : RegionId.id list;
+  regions : 'rid list;
   parents : 'id list;
 }
 [@@deriving show]
 
-type region_group = RegionGroupId.id g_region_group [@@deriving show]
-type region_groups = region_group list [@@deriving show]
+type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
+[@@deriving show]
+
+type region_var_groups = region_var_group list [@@deriving show]
 
 type field = { meta : meta; field_name : string option; field_ty : ty }
 [@@deriving show]

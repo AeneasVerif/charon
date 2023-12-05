@@ -145,20 +145,22 @@ let mk_box_ty (ty : ty) : ty =
 
 (** Check if a region is in a set of regions.
 
-    This function should be used on non erased region. For sanity, we raise
-    an exception if the region is erased.
+    This function should be used on non-erased and non-bound regions.
+    For sanity, we raise exceptions if this is not the case.
  *)
 let region_in_set (r : region) (rset : RegionId.Set.t) : bool =
   match r with
   | RStatic -> false
   | RErased ->
       raise (Failure "region_in_set shouldn't be called on erased regions")
-  | RVar id -> RegionId.Set.mem id rset
+  | RBVar _ ->
+      raise (Failure "region_in_set shouldn't be called on bound regions")
+  | RFVar id -> RegionId.Set.mem id rset
 
 (** Return the set of regions in an type - TODO: add static?
 
-    This function should be used on non erased region. For sanity, we raise
-    an exception if the region is erased.
+    This function should be used on non-erased and non-bound regions.
+    For sanity, we raise exceptions if this is not the case.
  *)
 let ty_regions (ty : ty) : RegionId.Set.t =
   let s = ref RegionId.Set.empty in
@@ -167,7 +169,9 @@ let ty_regions (ty : ty) : RegionId.Set.t =
     | RStatic -> () (* TODO: static? *)
     | RErased ->
         raise (Failure "ty_regions shouldn't be called on erased regions")
-    | RVar rid -> s := RegionId.Set.add rid !s
+    | RBVar _ ->
+        raise (Failure "region_in_set shouldn't be called on bound regions")
+    | RFVar rid -> s := RegionId.Set.add rid !s
   in
   let obj =
     object
@@ -218,7 +222,7 @@ let rec ty_is_primitively_copyable (ty : ty) : bool =
       List.for_all ty_is_primitively_copyable generics.types
   | TVar _ | TNever -> false
   | TLiteral (TBool | TChar | TInteger _) -> true
-  | TTraitType _ | TArrow (_, _) -> false
+  | TTraitType _ | TArrow (_, _, _) -> false
   | TRef (_, _, RMut) -> false
   | TRef (_, _, RShared) -> true
   | TRawPtr (_, _) ->

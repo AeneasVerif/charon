@@ -1,18 +1,12 @@
 //! This file groups everything which is linked to implementations about [crate::expressions]
 use crate::expressions::*;
-use crate::formatter::Formatter;
-use crate::gast::{AssumedFunId, Call, FunDeclId, FunId, FunIdOrTraitMethodRef, TraitItemName};
+use crate::formatter::{AstFormatter, FmtCtx};
+use crate::gast::{AssumedFunId, Call, FnOperand, FunId, FunIdOrTraitMethodRef, TraitItemName};
 use crate::types::*;
 use crate::ullbc_ast::GlobalDeclId;
-use crate::values;
 use crate::values::*;
 use macros::make_generic_in_borrows;
 use std::vec::Vec;
-
-pub trait ExprFormatter = TypeFormatter
-    + Formatter<VarId::Id>
-    + Formatter<(TypeDeclId::Id, VariantId::Id)>
-    + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>;
 
 impl Place {
     pub fn new(var_id: VarId::Id) -> Place {
@@ -35,9 +29,9 @@ impl std::fmt::Display for BorrowKind {
 }
 
 impl CastKind {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         match self {
             CastKind::Integer(src, tgt) => format!("cast<{src},{tgt}>"),
@@ -49,9 +43,9 @@ impl CastKind {
 }
 
 impl UnOp {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         match self {
             UnOp::Not => "~".to_string(),
@@ -86,12 +80,9 @@ impl std::fmt::Display for BinOp {
 }
 
 impl Place {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: Formatter<TypeDeclId::Id>
-            + Formatter<GlobalDeclId::Id>
-            + Formatter<VarId::Id>
-            + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>,
+        C: AstFormatter,
     {
         let mut out = ctx.format_object(self.var_id);
 
@@ -118,6 +109,9 @@ impl Place {
                     FieldProjKind::Tuple(_) => {
                         out = format!("({out}).{field_id}");
                     }
+                    FieldProjKind::ClosureState => {
+                        out = format!("({out}).@closure_state_field_{field_id}");
+                    }
                 },
                 ProjectionElem::Index(i, _) => out = format!("({out})[{}]", ctx.format_object(*i)),
             }
@@ -125,32 +119,27 @@ impl Place {
 
         out
     }
-
-    /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
-        self.clone()
-    }
 }
 
 impl std::fmt::Display for Place {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
+        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
     }
 }
 
 impl ConstantExpr {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         self.value.fmt_with_ctx(ctx)
     }
 }
 
 impl RawConstantExpr {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         match self {
             RawConstantExpr::Literal(c) => c.to_string(),
@@ -185,9 +174,9 @@ impl RawConstantExpr {
 }
 
 impl FnPtr {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: TypeFormatter,
+        C: AstFormatter,
     {
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         let f = match &self.func {
@@ -208,14 +197,14 @@ impl FnPtr {
 
 impl std::fmt::Display for ConstantExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
+        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
     }
 }
 
 impl Operand {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: ExprFormatter,
+        C: AstFormatter,
     {
         match self {
             Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)),
@@ -223,23 +212,18 @@ impl Operand {
             Operand::Const(c) => format!("const ({})", c.fmt_with_ctx(ctx)),
         }
     }
-
-    /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
-        self.clone()
-    }
 }
 
 impl std::fmt::Display for Operand {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
+        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
     }
 }
 
 impl Rvalue {
-    pub fn fmt_with_ctx<T>(&self, ctx: &T) -> String
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        T: ExprFormatter,
+        C: AstFormatter,
     {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),
@@ -292,8 +276,13 @@ impl Rvalue {
                     AggregateKind::Array(_, len) => {
                         format!("[{}; {}]", ops_s.join(", "), len.fmt_with_ctx(ctx))
                     }
-                    AggregateKind::Closure(fn_id) => {
-                        format!("{}", ctx.format_object(*fn_id))
+                    AggregateKind::Closure(fn_id, generics) => {
+                        format!(
+                            "{{{}{}}} {{{}}}",
+                            ctx.format_object(*fn_id),
+                            generics.fmt_with_ctx_split_trait_refs(ctx),
+                            ops_s.join(", ")
+                        )
                     }
                 }
             }
@@ -304,16 +293,11 @@ impl Rvalue {
             }
         }
     }
-
-    /// Perform a type substitution - actually simply clone the object
-    pub fn substitute(&self, _subst: &TypeSubst) -> Self {
-        self.clone()
-    }
 }
 
 impl std::fmt::Display for Rvalue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&values::DummyFormatter {}))
+        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
     }
 }
 
@@ -485,7 +469,10 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
                 self.visit_ty(ty);
                 self.visit_const_generic(cg);
             }
-            Closure(fn_id) => self.visit_fun_decl_id(fn_id),
+            Closure(fn_id, generics) => {
+                self.visit_fun_decl_id(fn_id);
+                self.visit_generic_args(generics);
+            }
         }
     }
 
@@ -512,7 +499,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             args,
             dest,
         } = c;
-        self.visit_fn_ptr(func);
+        self.visit_fn_operand(func);
         for o in args {
             self.visit_operand(o);
         }
@@ -528,6 +515,13 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Some(generics) => {
                 self.visit_generic_args(generics);
             }
+        }
+    }
+
+    fn visit_fn_operand(&mut self, fn_op: &FnOperand) {
+        match fn_op {
+            FnOperand::Regular(func) => self.visit_fn_ptr(func),
+            FnOperand::Move(p) => self.visit_place(p),
         }
     }
 
@@ -551,8 +545,6 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
     }
 
     fn visit_trait_method_name(&mut self, _: &TraitItemName) {}
-
-    fn visit_fun_decl_id(&mut self, _: &FunDeclId::Id) {}
     fn visit_assumed_fun_id(&mut self, _: &AssumedFunId) {}
 }
 

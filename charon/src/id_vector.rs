@@ -28,7 +28,7 @@ pub trait Zero {
 }
 
 /// Indexed vector
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Vector<I, T>
 where
     I: ToUsize,

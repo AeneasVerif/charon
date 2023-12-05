@@ -15,6 +15,7 @@ use crate::simplify_constants;
 use crate::translate_crate_to_ullbc;
 use crate::translate_ctx;
 use crate::ullbc_to_llbc;
+use crate::update_closure_signatures;
 use regex::Regex;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
@@ -168,7 +169,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
     // - compute the order in which to extract the definitions
     // - find the recursive definitions
     // - group the mutually recursive definitions
-    let ordered_decls = reorder_decls::reorder_declarations(&ctx);
+    reorder_decls::reorder_declarations(&mut ctx);
 
     //
     // =================
@@ -192,9 +193,8 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         export::export_ullbc(
             &ctx,
             crate_name,
-            &ordered_decls,
-            &ctx.fun_defs,
-            &ctx.global_defs,
+            &ctx.fun_decls,
+            &ctx.global_decls,
             &options.dest_dir,
         )?;
     } else {
@@ -214,23 +214,28 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
             );
         }
 
+        // # Micro-pass: the first local variable of closures is the
+        // closure itself. This is not consistent with the closure signature,
+        // which ignores this first variable. This micro-pass updates this.
+        update_closure_signatures::transform(&ctx, &mut llbc_funs);
+
         // # Micro-pass: remove the dynamic checks for array/slice bounds
         // and division by zero.
         // **WARNING**: this pass uses the fact that the dynamic checks
         // introduced by Rustc use a special "assert" construct. Because of
         // this, it must happen *before* the [reconstruct_asserts] pass.
         // See the comments in [crate::remove_dynamic_checks].
-        remove_dynamic_checks::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_dynamic_checks::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: reconstruct the asserts
         reconstruct_asserts::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // TODO: we should mostly use the TransCtx to format declarations
-        use crate::formatter::Formatter;
+        use crate::formatter::{Formatter, IntoFormatter};
         for (_, def) in &llbc_funs {
             trace!(
                 "# After asserts reconstruction:\n{}\n",
-                ctx.format_object(def)
+                ctx.into_fmt().format_object(def)
             );
         }
 
@@ -270,7 +275,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
 
         trace!("# Final LLBC:\n");
         for (_, def) in &llbc_funs {
-            trace!("#{}\n", ctx.format_object(def));
+            trace!("#{}\n", ctx.into_fmt().format_object(def));
         }
 
         let llbc_ctx = crate::translate_ctx::LlbcTransCtx {
@@ -287,7 +292,6 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         export::export_llbc(
             &ctx,
             crate_name,
-            &ordered_decls,
             &llbc_funs,
             &llbc_globals,
             &options.dest_dir,

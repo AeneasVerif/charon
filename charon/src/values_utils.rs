@@ -1,7 +1,5 @@
 //! Implementations for [crate::values]
-use crate::formatter::Formatter;
 use crate::types::*;
-use crate::ullbc_ast::{FunDeclId, GlobalDeclId};
 use crate::values::*;
 use serde::{Serialize, Serializer};
 
@@ -20,83 +18,6 @@ pub enum ScalarError {
 }
 /// Our redefinition of Result - we don't care much about the I/O part.
 pub type ScalarResult<T> = std::result::Result<T, ScalarError>;
-
-/// Dummy formatter, which doesn't perform any lookup when formatting an identifier.
-pub struct DummyFormatter {}
-
-impl Formatter<VarId::Id> for DummyFormatter {
-    fn format_object(&self, id: VarId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<TypeDeclId::Id> for DummyFormatter {
-    fn format_object(&self, id: TypeDeclId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<GlobalDeclId::Id> for DummyFormatter {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<TypeVarId::Id> for DummyFormatter {
-    fn format_object(&self, id: TypeVarId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<ConstGenericVarId::Id> for DummyFormatter {
-    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<(TypeDeclId::Id, VariantId::Id)> for DummyFormatter {
-    fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
-        let (def_id, variant_id) = id;
-        format!("{}::@Variant{variant_id}", self.format_object(def_id))
-    }
-}
-
-impl Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)> for DummyFormatter {
-    fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
-        let (_def_id, _opt_variant_id, field_id) = id;
-        format!("@field{field_id}")
-    }
-}
-
-impl Formatter<TraitClauseId::Id> for DummyFormatter {
-    fn format_object(&self, id: TraitClauseId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<FunDeclId::Id> for DummyFormatter {
-    fn format_object(&self, id: FunDeclId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<TraitDeclId::Id> for DummyFormatter {
-    fn format_object(&self, id: TraitDeclId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<TraitImplId::Id> for DummyFormatter {
-    fn format_object(&self, id: TraitImplId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
-
-impl Formatter<RegionId::Id> for DummyFormatter {
-    fn format_object(&self, id: RegionId::Id) -> String {
-        id.to_pretty_string()
-    }
-}
 
 impl ScalarValue {
     pub fn get_integer_ty(&self) -> IntegerTy {

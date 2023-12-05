@@ -1,8 +1,7 @@
 //! Implementations for [crate::gast]
 
 use crate::common::TAB_INCR;
-pub use crate::expressions_utils::ExprFormatter;
-use crate::formatter::Formatter;
+use crate::formatter::{AstFormatter, Formatter, SetGenerics, SetLocals};
 use crate::gast::*;
 use crate::names::Name;
 use crate::types::*;
@@ -74,23 +73,14 @@ impl VarId::Vector<Var> {
     }
 }
 
-impl Var {
-    /// Substitute the region parameters and type variables and return
-    /// the resulting variable
-    pub fn substitute(&self, subst: &TypeSubst, cgsubst: &ConstGenericSubst) -> Var {
-        Var {
-            index: self.index,
-            name: self.name.clone(),
-            ty: self.ty.substitute_types(subst, cgsubst),
-        }
-    }
-}
-
 impl TraitDecl {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
+        // Update the context
+        let ctx = &ctx.set_generics(&self.generics);
+
         let name = self.name.fmt_with_ctx(ctx);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
@@ -162,8 +152,11 @@ impl TraitDecl {
 impl TraitImpl {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: TypeFormatter,
+        C: AstFormatter,
     {
+        // Update the context
+        let ctx = &ctx.set_generics(&self.generics);
+
         let name = self.name.fmt_with_ctx(ctx);
         let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
@@ -220,22 +213,36 @@ impl TraitImpl {
     }
 }
 
+impl FnOperand {
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
+    where
+        C: AstFormatter,
+    {
+        match self {
+            FnOperand::Regular(func) => func.fmt_with_ctx(ctx),
+            FnOperand::Move(p) => format!("(move {})", p.fmt_with_ctx(ctx)),
+        }
+    }
+}
+
 /// Format a function call.
 /// We return the pair: (function call, comment)
-pub fn fmt_call<T>(ctx: &T, call: &Call) -> (String, Option<String>)
+pub fn fmt_call<C>(ctx: &C, call: &Call) -> (String, Option<String>)
 where
-    T: ExprFormatter,
+    C: AstFormatter,
 {
-    let trait_and_method_generic_args = call
-        .func
-        .trait_and_method_generic_args
-        .as_ref()
-        .map(|generics| generics.fmt_with_ctx_split_trait_refs(ctx));
-
-    let f = call.func.fmt_with_ctx(ctx);
-
     let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
     let args = args.join(", ");
+
+    let trait_and_method_generic_args = match &call.func {
+        FnOperand::Regular(func) => func
+            .trait_and_method_generic_args
+            .as_ref()
+            .map(|generics| generics.fmt_with_ctx_split_trait_refs(ctx)),
+        FnOperand::Move(_) => Option::None,
+    };
+
+    let f = call.func.fmt_with_ctx(ctx);
 
     (format!("{f}({args})"), trait_and_method_generic_args)
 }
@@ -248,10 +255,15 @@ impl<T> GExprBody<T> {
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn fmt_with_ctx<'a, C>(&'a self, tab: &str, ctx: &C) -> String
+    pub fn fmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        C: ExprFormatter + Formatter<&'a T>,
+        C: for<'a> SetLocals<'a>,
+        for<'a> <C as SetLocals<'a>>::C: AstFormatter,
+        for<'a, 'b> <C as SetLocals<'a>>::C: AstFormatter + Formatter<&'b T>,
     {
+        // Update the context
+        let ctx = &ctx.set_locals(&self.locals);
+
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
         for v in &self.locals {
@@ -297,8 +309,6 @@ impl<T> GExprBody<T> {
     }
 }
 
-pub trait GFunDeclFormatter<'a, Body: 'a> = ExprFormatter + Formatter<&'a Body>;
-
 impl<T> GFunDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
@@ -307,10 +317,20 @@ impl<T> GFunDecl<T> {
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the function
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn gfmt_with_ctx<'a, C>(&'a self, tab: &str, ctx: &C) -> String
+    pub fn gfmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        C: GFunDeclFormatter<'a, T>,
+        // For the signature
+        C: for<'a> SetGenerics<'a>,
+        for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
+        for<'a, 'b> <C as SetGenerics<'a>>::C: AstFormatter + Formatter<&'b T>,
+        // For the body
+        for<'a, 'b> <C as SetGenerics<'a>>::C: SetLocals<'b>,
+        for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
+        for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: Formatter<&'c T>,
     {
+        // Update the context
+        let ctx = &ctx.set_generics(&self.signature.generics);
+
         // Unsafe keyword
         let unsafe_kw = if self.signature.is_unsafe {
             "unsafe ".to_string()
@@ -373,8 +393,6 @@ impl<T> GFunDecl<T> {
     }
 }
 
-pub trait GGlobalDeclFormatter<'a, Body: 'a> = ExprFormatter + Formatter<&'a Body>;
-
 impl<T> GGlobalDecl<T> {
     /// This is an auxiliary function for printing definitions. One may wonder
     /// why we require a formatter to format, for instance, (type) var ids,
@@ -383,10 +401,15 @@ impl<T> GGlobalDecl<T> {
     /// generic auxiliary function, then apply it on an evaluation context
     /// properly initialized (with the information contained in the global
     /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn gfmt_with_ctx<'a, C>(&'a self, tab: &str, ctx: &C) -> String
+    pub fn gfmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
     where
-        C: GGlobalDeclFormatter<'a, T>,
+        C: AstFormatter,
+        C: for<'a> SetLocals<'a>,
+        for<'a> <C as SetLocals<'a>>::C: AstFormatter,
+        for<'a, 'b> <C as SetLocals<'a>>::C: AstFormatter + Formatter<&'b T>,
     {
+        // No need to update the context: global definitions don't have generics
+
         // Decl name
         let name = self.name.fmt_with_ctx(ctx);
 

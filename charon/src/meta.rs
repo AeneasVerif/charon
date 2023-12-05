@@ -34,6 +34,10 @@ pub struct Span {
     pub file_id: FileId::Id,
     pub beg: Loc,
     pub end: Loc,
+    /// We keep the rust span so as to be able to leverage Rustc to print
+    /// error messages (useful in the micro-passes for instance).
+    #[serde(skip)]
+    pub rust_span: rustc_span::Span,
 }
 
 /// Meta information about a piece of code (block, statement, etc.)

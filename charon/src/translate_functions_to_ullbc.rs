@@ -6,7 +6,7 @@
 use crate::assumed;
 use crate::common::*;
 use crate::expressions::*;
-use crate::formatter::Formatter;
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::translate_ctx::*;
 use crate::translate_types;
@@ -253,22 +253,36 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<(), Error> {
         trace!();
 
-        let id = self.translate_basic_block(body, rustc_index::Idx::new(START_BLOCK.as_usize()))?;
+        // Register the start block
+        let id = self.translate_basic_block_id(rustc_index::Idx::new(START_BLOCK.as_usize()));
         assert!(id == START_BLOCK_ID);
 
+        // For as long as there are blocks in the stack, translate them
+        while let Some(block_id) = self.blocks_stack.pop_front() {
+            self.translate_basic_block(body, block_id)?;
+        }
+
         Ok(())
+    }
+
+    /// Translate a basic block id and register it, if it hasn't been done.
+    fn translate_basic_block_id(&mut self, block_id: hax::BasicBlock) -> BlockId::Id {
+        match self.blocks_map.get(&block_id) {
+            None => {
+                // Generate a fresh id - this also registers the block
+                self.fresh_block_id(block_id)
+            }
+            Some(id) => id,
+        }
     }
 
     fn translate_basic_block(
         &mut self,
         body: &hax::MirBody<()>,
         block_id: hax::BasicBlock,
-    ) -> Result<BlockId::Id, Error> {
-        // Check if the block has already been translated
-        if let Some(id) = self.blocks_map.get(&block_id) {
-            return Ok(id);
-        }
-        let nid = self.fresh_block_id(block_id);
+    ) -> Result<(), Error> {
+        // Retrieve the translated block id
+        let nid = self.translate_basic_block_id(block_id);
 
         // Retrieve the block data
         let block = body.basic_blocks.get(block_id).unwrap();
@@ -297,7 +311,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         self.push_block(nid, block);
 
-        Ok(nid)
+        Ok(())
     }
 
     /// Translate a place and return its type
@@ -411,6 +425,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                         error_or_panic!(self, span, "Unexpected field projection");
                                     }
                                 }
+                            }
+                            ClosureState(index) => {
+                                let field_id = translate_field_id(*index);
+                                ProjectionElem::Field(FieldProjKind::ClosureState, field_id)
                             }
                         };
                         projection.push(proj_elem);
@@ -612,7 +630,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                     self,
                                     span,
                                     format!(
-                                        "Unsupported cast: {:?}, src={:?}, dst={:?}",
+                                        "Unsupported cast:\n\n- rvalue: {:?}\n\n- src={:?}\n\n- dst={:?}",
                                         rvalue, src_ty, tgt_ty
                                     )
                                 )
@@ -621,10 +639,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                     (
                         hax::CastKind::Pointer(hax::PointerCast::ClosureFnPointer(unsafety)),
-                        src_ty @ Ty::Arrow(_, _),
-                        tgt_ty @ Ty::Arrow(_, _),
+                        src_ty @ Ty::Arrow(..),
+                        tgt_ty @ Ty::Arrow(..),
                     ) => {
                         assert!(*unsafety == hax::Unsafety::Normal);
+                        let src_ty = src_ty.clone();
+                        let tgt_ty = tgt_ty.clone();
+                        Ok(Rvalue::UnaryOp(
+                            UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
+                            op,
+                        ))
+                    }
+                    (
+                        hax::CastKind::Pointer(hax::PointerCast::ReifyFnPointer),
+                        src_ty @ Ty::Arrow(..),
+                        tgt_ty @ Ty::Arrow(..),
+                    ) => {
                         let src_ty = src_ty.clone();
                         let tgt_ty = tgt_ty.clone();
                         Ok(Rvalue::UnaryOp(
@@ -637,7 +667,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             self,
                             span,
                             format!(
-                                "Unsupported cast:\n- rvalue: {:?}\n- src={:?}\n- dst={:?}",
+                                "Unsupported cast:\n\n- rvalue: {:?}\n\n- src={:?}\n\n- dst={:?}",
                                 rvalue, src_ty, tgt_ty
                             )
                         )
@@ -751,15 +781,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let akind = AggregateKind::Adt(type_id, variant_id, generics);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::Closure(def_id, sig) => {
-                        trace!("Closure:\n- def_id: {:?}\n- sig: {:?}", def_id, sig);
-                        // We need to register the signature for def_id, so that
-                        // we can later translate the closure the same way as top-level
-                        // functions.
-                        error_or_panic!(self, span, "Support for closures is not implemented yet")
-                        /*let def_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
-                        let akind = AggregateKind::Closure(def_id);
-                        Rvalue::Aggregate(akind, Vec::new()) */
+                    hax::AggregateKind::Closure(def_id, substs, trait_refs, sig) => {
+                        trace!("Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}", def_id, sig);
+
+                        // Translate the substitution
+                        let generics = self.translate_substs_and_trait_refs(
+                            span,
+                            erase_regions,
+                            None,
+                            substs,
+                            trait_refs,
+                        )?;
+
+                        let def_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
+                        let akind = AggregateKind::Closure(def_id, generics);
+
+                        Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Generator(_def_id, _subst, _movability) => {
                         error_or_panic!(self, span, "Generators are not supported");
@@ -1157,7 +1194,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         use hax::TerminatorKind;
         let t_terminator: RawTerminator = match &terminator.kind {
             TerminatorKind::Goto { target } => {
-                let target = self.translate_basic_block(body, *target)?;
+                let target = self.translate_basic_block_id(*target);
                 RawTerminator::Goto { target }
             }
             TerminatorKind::SwitchInt { discr, targets } => {
@@ -1165,7 +1202,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let (discr, discr_ty) = self.translate_operand_with_type(span, discr)?;
 
                 // Translate the switch targets
-                let targets = self.translate_switch_targets(body, &discr_ty, targets)?;
+                let targets = self.translate_switch_targets(&discr_ty, targets)?;
 
                 RawTerminator::Switch { discr, targets }
             }
@@ -1184,10 +1221,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 replace: _,
             } => RawTerminator::Drop {
                 place: self.translate_place(span, place)?,
-                target: self.translate_basic_block(body, *target)?,
+                target: self.translate_basic_block_id(*target),
             },
             TerminatorKind::Call {
-                fun_id,
+                fun,
                 substs,
                 args,
                 destination,
@@ -1197,20 +1234,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 from_hir_call: _,
                 fn_span: _,
-            } => {
-                trace!("Call: func: {:?}", fun_id.rust_def_id);
-                self.translate_function_call(
-                    span,
-                    body,
-                    fun_id,
-                    substs,
-                    args,
-                    destination,
-                    target,
-                    trait_refs,
-                    trait_info,
-                )?
-            }
+            } => self.translate_function_call(
+                span,
+                fun,
+                substs,
+                args,
+                destination,
+                target,
+                trait_refs,
+                trait_info,
+            )?,
             TerminatorKind::Assert {
                 cond,
                 expected,
@@ -1219,7 +1252,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unwind: _, // We consider that panic is an error, and don't model unwinding
             } => {
                 let cond = self.translate_operand(span, cond)?;
-                let target = self.translate_basic_block(body, *target)?;
+                let target = self.translate_basic_block_id(*target);
                 RawTerminator::Assert {
                     cond,
                     expected: *expected,
@@ -1253,7 +1286,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // We translate them as Gotos.
                 // Also note that they are used in some passes, and not in some others
                 // (they are present in mir_promoted, but not mir_optimized).
-                let target = self.translate_basic_block(body, *real_target)?;
+                let target = self.translate_basic_block_id(*real_target);
                 RawTerminator::Goto { target }
             }
             TerminatorKind::FalseUnwind {
@@ -1261,7 +1294,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unwind: _,
             } => {
                 // We consider this to be a goto
-                let target = self.translate_basic_block(body, *real_target)?;
+                let target = self.translate_basic_block_id(*real_target);
                 RawTerminator::Goto { target }
             }
             TerminatorKind::InlineAsm { .. } => {
@@ -1276,15 +1309,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate switch targets
     fn translate_switch_targets(
         &mut self,
-        body: &hax::MirBody<()>,
         switch_ty: &Ty,
         targets: &hax::SwitchTargets,
     ) -> Result<SwitchTargets, Error> {
         trace!("targets: {:?}", targets);
         match targets {
             hax::SwitchTargets::If(if_block, then_block) => {
-                let if_block = self.translate_basic_block(body, *if_block)?;
-                let then_block = self.translate_basic_block(body, *then_block)?;
+                let if_block = self.translate_basic_block_id(*if_block);
+                let then_block = self.translate_basic_block_id(*then_block);
                 Ok(SwitchTargets::If(if_block, then_block))
             }
             hax::SwitchTargets::SwitchInt(_, targets_map, otherwise) => {
@@ -1293,11 +1325,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .iter()
                     .map(|(v, tgt)| {
                         let v = ScalarValue::from_le_bytes(int_ty, v.data_le_bytes);
-                        let tgt = self.translate_basic_block(body, *tgt)?;
+                        let tgt = self.translate_basic_block_id(*tgt);
                         Ok((v, tgt))
                     })
                     .try_collect()?;
-                let otherwise = self.translate_basic_block(body, *otherwise)?;
+                let otherwise = self.translate_basic_block_id(*otherwise);
                 Ok(SwitchTargets::SwitchInt(int_ty, targets_map, otherwise))
             }
         }
@@ -1311,8 +1343,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_function_call(
         &mut self,
         span: rustc_span::Span,
-        body: &hax::MirBody<()>,
-        def_id: &hax::DefId,
+        fun: &hax::FunOperand,
         substs: &Vec<hax::GenericArg>,
         args: &Vec<hax::Operand>,
         destination: &hax::Place,
@@ -1321,48 +1352,85 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_info: &Option<hax::TraitInfo>,
     ) -> Result<RawTerminator, Error> {
         trace!();
-        let rust_id = def_id.rust_def_id.unwrap();
+        // There are two cases, depending on whether this is a "regular"
+        // call to a top-level function identified by its id, or if we
+        // are using a local function pointer (i.e., the operand is a "move").
+        match fun {
+            hax::FunOperand::Id(def_id) => {
+                // Regular function call
+                let rust_id = def_id.rust_def_id.unwrap();
 
-        // Translate the function operand - should be a constant: we don't
-        // support closures for now
-        trace!("func: {:?}", rust_id);
+                // Translate the function operand - should be a constant: we don't
+                // support closures for now
+                trace!("func: {:?}", rust_id);
 
-        // Translate the function id, with its parameters
-        let erase_regions = true;
-        let fid = self.translate_fun_decl_id_with_args(
-            span,
-            erase_regions,
-            def_id,
-            substs,
-            Some(args),
-            trait_refs,
-            trait_info,
-        )?;
+                // Translate the function id, with its parameters
+                let erase_regions = true;
+                let fid = self.translate_fun_decl_id_with_args(
+                    span,
+                    erase_regions,
+                    def_id,
+                    substs,
+                    Some(args),
+                    trait_refs,
+                    trait_info,
+                )?;
 
-        match fid {
-            SubstFunIdOrPanic::Panic => {
-                // If the call is `panic!`, then the target is `None`.
-                // I don't know in which other cases it can be `None`.
-                assert!(target.is_none());
+                match fid {
+                    SubstFunIdOrPanic::Panic => {
+                        // If the call is `panic!`, then the target is `None`.
+                        // I don't know in which other cases it can be `None`.
+                        assert!(target.is_none());
 
-                // We ignore the arguments
-                Ok(RawTerminator::Panic)
+                        // We ignore the arguments
+                        Ok(RawTerminator::Panic)
+                    }
+                    SubstFunIdOrPanic::Fun(fid) => {
+                        let next_block = target.unwrap_or_else(|| {
+                            panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", rust_id, substs, args)
+                        });
+
+                        // Translate the target
+                        let lval = self.translate_place(span, destination)?;
+                        let next_block = self.translate_basic_block_id(next_block);
+
+                        let call = Call {
+                            func: FnOperand::Regular(fid.func),
+                            args: fid.args.unwrap(),
+                            dest: lval,
+                        };
+
+                        Ok(RawTerminator::Call {
+                            call,
+                            target: next_block,
+                        })
+                    }
+                }
             }
-            SubstFunIdOrPanic::Fun(fid) => {
-                let next_block = target.unwrap_or_else(|| {
-                    panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", rust_id, substs, args)
-                });
+            hax::FunOperand::Move(p) => {
+                // Call to a local function pointer
+                // The function
+                let p = self.translate_place(span, p)?;
 
                 // Translate the target
+                let next_block = target.unwrap_or_else(|| {
+                    panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", p, substs, args)
+                });
                 let lval = self.translate_place(span, destination)?;
-                let next_block = self.translate_basic_block(body, next_block)?;
+                let next_block = self.translate_basic_block_id(next_block);
 
+                // TODO: we may have a problem here because as we don't
+                // know which function is being called, we may not be
+                // able to filter the arguments properly... But maybe
+                // this is rather an issue for the statement which creates
+                // the function pointer, by refering to a top-level function
+                // for instance.
+                let args = self.translate_arguments(span, None, args)?;
                 let call = Call {
-                    func: fid.func,
-                    args: fid.args.unwrap(),
+                    func: FnOperand::Move(p),
+                    args,
                     dest: lval,
                 };
-
                 Ok(RawTerminator::Call {
                     call,
                     target: next_block,
@@ -1467,30 +1535,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let tcx = self.t_ctx.tcx;
         let erase_regions = false;
         let span = self.t_ctx.tcx.def_span(def_id);
-
-        // Retrieve the function signature, which includes the lifetimes
-        let rsignature: rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>> =
-            if tcx.is_closure(def_id) {
-                // TODO:
-                // ```
-                // error: internal compiler error: compiler/rustc_hir_analysis/src/collect.rs:1118:13:
-                // to get the signature of a closure, use `substs.as_closure().sig()` not `fn_sig()`
-                // ```
-                //
-                // We need to have a map from def ids to signatures, for the
-                // closures. We also need to replace the vectors of type variables,
-                // regions, etc. with maps, because the indices will not always
-                // start at 0.
-                log::trace!("{:?}", tcx.type_of(def_id));
-                error_or_panic!(self, span, "Closures are not supported yet");
-            } else {
-                let fn_sig = tcx.fn_sig(def_id);
-                trace!("Fun sig: {:?}", fn_sig);
-                // There is an early binder for the early-bound regions, that
-                // we ignore, and a binder for the late-bound regions, that we
-                // keep.
-                fn_sig.subst_identity()
-            };
+        let is_closure = tcx.is_closure(def_id);
 
         // The parameters (and in particular the lifetimes) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
@@ -1502,19 +1547,93 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // The late-bounds parameters are bound in the [Binder] returned by
         // [TyCtxt.type_of].
 
-        // Start by translating the early-bound parameters (those are contained by `substs`).
-        let fun_type = tcx.type_of(def_id).subst_identity();
-        let rsubsts = match fun_type.kind() {
-            ty::TyKind::FnDef(_def_id, substs_ref) => substs_ref,
-            _ => {
-                unreachable!()
-            }
-        };
-        let substs = rsubsts.sinto(&self.hax_state);
+        // Retrieve the early bound parameters, and the late-bound parameters
+        // through the function signature.
+        let (substs, signature, closure_info): (
+            Vec<hax::GenericArg>,
+            rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>>,
+            Option<(ClosureKind, Vec<rustc_middle::ty::Ty<'tcx>>)>,
+        ) = if is_closure {
+            // Closures have a peculiar handling in Rust: we can't call
+            // `TyCtxt::fn_sig`.
+            let fun_type = tcx.type_of(def_id).subst_identity();
+            let rsubsts = match fun_type.kind() {
+                ty::TyKind::Closure(_def_id, substs_ref) => substs_ref,
+                _ => {
+                    unreachable!()
+                }
+            };
+            trace!("closure: rsubsts: {:?}", rsubsts);
+            let closure = rsubsts.as_closure();
+            // Retrieve the early bound parameters from the *parent* (i.e.,
+            // the function in which the closure is actually defined).
+            // Importantly, the type parameters necessarily come from the parents:
+            // the closure can't itself be polymorphic, and the signature of
+            // the closure only quantifies lifetimes.
+            let substs = closure.parent_substs();
+            trace!("closure.parent_substs: {:?}", substs);
+            let sig = closure.sig();
+            trace!("closure.sig: {:?}", sig);
 
+            // Retrieve the kind of the closure
+            let kind = match closure.kind() {
+                rustc_middle::ty::ClosureKind::Fn => ClosureKind::Fn,
+                rustc_middle::ty::ClosureKind::FnMut => ClosureKind::FnMut,
+                rustc_middle::ty::ClosureKind::FnOnce => ClosureKind::FnOnce,
+            };
+
+            // Retrieve the type of the captured stated
+            let state: Vec<rustc_middle::ty::Ty<'tcx>> = closure.upvar_tys().collect();
+
+            let substs = substs.sinto(&self.hax_state);
+
+            trace!("closure.sig_as_fn_ptr_ty: {:?}", closure.sig_as_fn_ptr_ty());
+            trace!("closure.kind_ty: {:?}", closure.kind_ty());
+            trace!(
+                "closure.print_as_impl_trait: {:?}",
+                closure.print_as_impl_trait()
+            );
+
+            // Sanity check: the parent subst only contains types and generics
+            error_assert!(
+                self,
+                span,
+                substs
+                    .iter()
+                    .all(|bv| !matches!(bv, hax::GenericArg::Lifetime(_))),
+                "The closure parent parameters contain regions"
+            );
+
+            (substs, sig, Some((kind, state)))
+        } else {
+            // Retrieve the signature
+            let fn_sig = tcx.fn_sig(def_id);
+            trace!("Fun sig: {:?}", fn_sig);
+            // There is an early binder for the early-bound regions, that
+            // we ignore, and a binder for the late-bound regions, that we
+            // keep.
+            let fn_sig = fn_sig.subst_identity();
+
+            // Retrieve the early-bound parameters
+            let fun_type = tcx.type_of(def_id).subst_identity();
+            let substs: Vec<hax::GenericArg> = match fun_type.kind() {
+                ty::TyKind::FnDef(_def_id, substs_ref) => substs_ref.sinto(&self.hax_state),
+                ty::TyKind::Closure(_, _) => {
+                    unreachable!()
+                }
+                _ => {
+                    unreachable!()
+                }
+            };
+
+            (substs, fn_sig, None)
+        };
+        let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
+
+        // Start by translating the early-bound parameters (those are contained by `substs`).
         // Some debugging information:
         trace!("Def id: {def_id:?}:\n\n- substs:\n{substs:?}\n\n- generics:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
-               tcx.generics_of(def_id), rsignature.bound_vars(), rsignature);
+               tcx.generics_of(def_id), signature.bound_vars, signature);
 
         // Add the *early-bound* parameters.
         self.translate_generic_params_from_hax(span, &substs)?;
@@ -1522,7 +1641,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         //
         // Add the *late-bound* parameters (bound in the signature, can only be lifetimes)
         //
-        let signature: hax::MirPolyFnSig = rsignature.sinto(&self.hax_state);
         let is_unsafe = match signature.value.unsafety {
             hax::Unsafety::Unsafe => true,
             hax::Unsafety::Normal => false,
@@ -1545,14 +1663,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             })
             .try_collect()?;
-        self.push_bound_regions_group(bvar_names);
+        let signature = signature.value;
 
-        let fun_kind = self.t_ctx.get_fun_kind(def_id);
+        self.set_first_bound_regions_group(bvar_names);
+        let fun_kind = &self.t_ctx.get_fun_kind(def_id);
 
         // Add the trait clauses
-        self.while_registering_trait_clauses(&mut |ctx| {
+        self.while_registering_trait_clauses(move |ctx| {
             // Add the ctx trait clause if it is a trait decl item
-            match &fun_kind {
+            match fun_kind {
                 FunKind::Regular => (),
                 FunKind::TraitMethodImpl { impl_id, .. } => {
                     ctx.add_trait_impl_self_trait_clause(*impl_id)?;
@@ -1581,7 +1700,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         })?;
 
         // Translate the signature
-        let signature = signature.value;
         trace!("signature of {def_id:?}:\n{:?}", signature);
         let inputs: Vec<Ty> = signature
             .inputs
@@ -1590,16 +1708,33 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .try_collect()?;
         let output = self.translate_ty(span, erase_regions, &signature.output)?;
 
+        let fmt_ctx = self.into_fmt();
         trace!(
             "# Input variables types:\n{}",
-            iterator_to_string(&|x| self.format_object(x), inputs.iter())
+            iterator_to_string(&|x| fmt_ctx.format_object(x), inputs.iter())
         );
-        trace!("# Output variable type:\n{}", self.format_object(&output));
+        trace!(
+            "# Output variable type:\n{}",
+            fmt_ctx.format_object(&output)
+        );
+
+        // Compute the additional information for closures
+        let closure_info = if let Some((kind, state_tys)) = closure_info {
+            let erase_regions = false;
+            let state = state_tys
+                .into_iter()
+                .map(|ty| self.translate_ty(span, erase_regions, &ty.sinto(&self.hax_state)))
+                .try_collect::<Vec<Ty>>()?;
+
+            Some(ClosureInfo { kind, state })
+        } else {
+            None
+        };
 
         let mut parent_params_info = self.get_function_parent_params_info(def_id);
         // If this is a trait decl method, we need to adjust the number of parent clauses
         if matches!(
-            &fun_kind,
+            fun_kind,
             FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..)
         ) {
             if let Some(info) = &mut parent_params_info {
@@ -1613,6 +1748,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             generics: self.get_generics(),
             preds: self.get_predicates(),
             is_unsafe,
+            is_closure,
+            closure_info,
             parent_params_info,
             inputs,
             output,
@@ -1639,6 +1776,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // of the function, we ignore the function altogether, while we should
         // save somewhere that we failed to extract it.
         if self.translate_function_aux(rust_id).is_err() {
+            let span = self.tcx.def_span(rust_id);
+            self.span_err(
+                span,
+                &format!(
+                    "Ignoring the following function due to an error: {:?}",
+                    rust_id
+                ),
+            );
             // TODO
         }
     }
@@ -1690,11 +1835,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Save the new function
-        self.fun_defs.insert(
+        self.fun_decls.insert(
             def_id,
             FunDecl {
                 meta,
                 def_id,
+                rust_id,
                 is_local,
                 name,
                 signature,
@@ -1712,6 +1858,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // predicates of the global, we ignore the declaration altogether, while
         // we should save somewhere that we failed to extract it.
         if self.translate_global_aux(rust_id).is_err() {
+            let span = self.tcx.def_span(rust_id);
+            self.span_err(
+                span,
+                &format!(
+                    "Ignoring the following global due to an error: {:?}",
+                    rust_id
+                ),
+            );
             // TODO
         }
     }
@@ -1756,7 +1910,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Save the new global
-        self.global_defs.insert(
+        self.global_decls.insert(
             def_id,
             GlobalDecl {
                 def_id,

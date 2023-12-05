@@ -151,3 +151,8 @@ let main_logger_handler =
   match handlers with
   | [ handler ] -> handler
   | _ -> raise (Failure "Unexpected")
+
+(*
+ * Subloggers
+ *)
+let name_matcher_logger = L.get_logger "NameMatcher"

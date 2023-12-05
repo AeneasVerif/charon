@@ -1,5 +1,5 @@
 use crate::common::*;
-use crate::expressions::*;
+use crate::formatter::{AstFormatter, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::graphs::*;
 use crate::translate_ctx::TransCtx;
@@ -11,7 +11,7 @@ use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
 use serde::Serialize;
-use std::fmt::{Debug, Display, Error, Formatter};
+use std::fmt::{Debug, Display, Error};
 use std::vec::Vec;
 
 /// A (group of) top-level declaration(s), properly reordered.
@@ -52,7 +52,7 @@ impl<Id: Copy> GDeclarationGroup<Id> {
 impl<Id: Copy> GDeclarationGroup<Id> {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: crate::formatter::Formatter<Id>,
+        C: AstFormatter + Formatter<Id>,
     {
         use GDeclarationGroup::*;
         match self {
@@ -106,6 +106,7 @@ impl DeclarationGroup {
         gr: impl Iterator<Item = TraitDeclId::Id>,
     ) -> Self {
         let gr: Vec<_> = gr.collect();
+        let ctx = ctx.into_fmt();
         // Trait declarations often refer to `Self`, like below,
         // which means they are often considered as recursive by our
         // analysis. TODO: do something more precise. What is important
@@ -129,6 +130,7 @@ impl DeclarationGroup {
         gr: impl Iterator<Item = TraitImplId::Id>,
     ) -> Self {
         let gr: Vec<_> = gr.collect();
+        let ctx = ctx.into_fmt();
         assert!(
             !is_rec && gr.len() == 1,
             "Invalid trait impl group:\n{}",
@@ -142,11 +144,7 @@ impl DeclarationGroup {
 
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
-        C: crate::formatter::Formatter<TypeDeclId::Id>
-            + crate::formatter::Formatter<FunDeclId::Id>
-            + crate::formatter::Formatter<GlobalDeclId::Id>
-            + crate::formatter::Formatter<TraitDeclId::Id>
-            + crate::formatter::Formatter<TraitImplId::Id>,
+        C: AstFormatter,
     {
         use DeclarationGroup::*;
         match self {
@@ -191,7 +189,7 @@ pub type DeclarationsGroups = Vec<DeclarationGroup>;
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
 impl<Id: Debug> Display for GDeclarationGroup<Id> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
             GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {id:?}"),
             GDeclarationGroup::Rec(ids) => write!(
@@ -206,7 +204,7 @@ impl<Id: Debug> Display for GDeclarationGroup<Id> {
 /// We use the [Debug] trait instead of [Display] for the identifiers, because
 /// the rustc [DefId] doesn't implement [Display]...
 impl Display for DeclarationGroup {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
             DeclarationGroup::Type(decl) => write!(f, "{{ Type(s): {decl} }}"),
             DeclarationGroup::Fun(decl) => write!(f, "{{ Fun(s): {decl} }}"),
@@ -295,7 +293,7 @@ impl Deps {
                 // Lookup the function declaration.
                 //
                 // The declaration may not be present if we encountered errors.
-                if let Some(decl) = ctx.fun_defs.get(id) {
+                if let Some(decl) = ctx.fun_decls.get(id) {
                     if let FunKind::TraitMethodImpl {
                         impl_id,
                         trait_id: _,
@@ -381,15 +379,14 @@ impl SharedTypeVisitor for Deps {
         self.visit_trait_instance_id(&tr.trait_id);
         self.visit_generic_args(&tr.generics);
     }
-}
 
-impl SharedExprVisitor for Deps {
     fn visit_fun_decl_id(&mut self, id: &FunDeclId::Id) {
         let id = AnyDeclId::Fun(*id);
         self.insert_edge(id);
     }
 }
 
+impl SharedExprVisitor for Deps {}
 impl SharedAstVisitor for Deps {}
 
 impl Deps {
@@ -419,7 +416,7 @@ impl Deps {
 
     /// Lookup a function and visit its signature
     fn visit_fun_signature_from_trait(&mut self, ctx: &TransCtx, fid: FunDeclId::Id) {
-        let decl = ctx.fun_defs.get(fid).unwrap();
+        let decl = ctx.fun_decls.get(fid).unwrap();
         self.visit_fun_sig(&decl.signature);
     }
 }
@@ -427,6 +424,7 @@ impl Deps {
 impl AnyTransId {
     fn fmt_with_ctx(&self, ctx: &TransCtx) -> String {
         use AnyDeclId::*;
+        let ctx = ctx.into_fmt();
         match self {
             Type(id) => ctx.format_object(*id),
             Fun(id) => ctx.format_object(*id),
@@ -456,7 +454,7 @@ impl Deps {
     }
 }
 
-pub fn reorder_declarations(ctx: &TransCtx) -> DeclarationsGroups {
+pub fn reorder_declarations(ctx: &mut TransCtx) {
     trace!();
 
     // Step 1: explore the declarations to build the graph
@@ -465,7 +463,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> DeclarationsGroups {
         graph.set_current_id(ctx, *id);
         match id {
             AnyTransId::Type(id) => {
-                if let Some(d) = ctx.type_defs.get(*id) {
+                if let Some(d) = ctx.type_decls.get(*id) {
                     use TypeDeclKind::*;
 
                     // Visit the generics and the predicates
@@ -493,7 +491,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> DeclarationsGroups {
                 }
             }
             AnyTransId::Fun(id) => {
-                if let Some(d) = ctx.fun_defs.get(*id) {
+                if let Some(d) = ctx.fun_decls.get(*id) {
                     // Explore the signature
                     let sig = &d.signature;
                     graph.visit_generics_and_preds(&sig.generics, &sig.preds);
@@ -510,7 +508,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> DeclarationsGroups {
                 }
             }
             AnyTransId::Global(id) => {
-                if let Some(d) = ctx.global_defs.get(*id) {
+                if let Some(d) = ctx.global_decls.get(*id) {
                     // Explore the body
                     graph.visit_body(&d.body);
                 } else {
@@ -693,7 +691,7 @@ pub fn reorder_declarations(ctx: &TransCtx) -> DeclarationsGroups {
 
     trace!("{:?}", reordered_decls);
 
-    reordered_decls
+    ctx.ordered_decls = Some(reordered_decls);
 }
 
 #[cfg(test)]

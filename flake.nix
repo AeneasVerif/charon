@@ -124,9 +124,7 @@
             duneVersion = "3";
             preCheck = if doCheck then ''
               mkdir -p tests/serialized
-              cp ${tests}/ullbc/* tests/serialized
               cp ${tests}/llbc/* tests/serialized
-              cp ${tests-polonius}/ullbc/* tests/serialized
               cp ${tests-polonius}/llbc/* tests/serialized
             '' else
               "";

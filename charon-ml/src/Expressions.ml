@@ -3,7 +3,7 @@ open Types
 open Values
 module VarId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
-module FunDeclId = IdGen ()
+module FunDeclId = Types.FunDeclId
 
 type fun_decl_id = FunDeclId.id [@@deriving show, ord]
 
@@ -130,7 +130,6 @@ class ['self] iter_constant_expr_base =
   object (_self : 'self)
     inherit [_] iter_place
     inherit! [_] iter_ty
-    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
     method visit_assumed_fun_id : 'env -> assumed_fun_id -> unit = fun _ _ -> ()
   end
 
@@ -139,14 +138,14 @@ class ['self] map_constant_expr_base =
   object (_self : 'self)
     inherit [_] map_place
     inherit! [_] map_ty
-    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
 
     method visit_assumed_fun_id : 'env -> assumed_fun_id -> assumed_fun_id =
       fun _ x -> x
   end
 
-(* TODO: FnPtr *)
-type cast_kind = CastInteger of integer_type * integer_type
+type cast_kind =
+  | CastInteger of integer_type * integer_type
+  | CastFnPtr of ty * ty
 
 (* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass. *)
 and unop =
@@ -238,6 +237,7 @@ type operand = Copy of place | Move of place | Constant of constant_expr
 and aggregate_kind =
   | AggregatedAdt of type_id * variant_id option * generic_args
   | AggregatedArray of ty * const_generic
+  | AggregatedClosure of fun_decl_id * generic_args
 
 (* TODO: move the aggregate kind to operands *)
 (* TODO: we should prefix the type variants with "T", this would avoid collisions *)

@@ -1,5 +1,6 @@
 use crate::assumed;
 use crate::common::*;
+use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -71,7 +72,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         .unwrap()
                         .get(br.var)
                         .unwrap();
-                    Ok(Region::Var(*rid))
+                    let br_id = DeBruijnId::new(*id);
+                    Ok(Region::BVar(br_id, *rid))
                 }
                 hax::RegionKind::ReVar(re_var) => {
                     // TODO: I'm really not sure how to handle those, here.
@@ -114,29 +116,38 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     //   ... // omitted
                     // }
                     // ```
-                    error_assert!(self, span, self.region_vars_map.get(region).is_none());
+                    error_assert!(self, span, self.free_region_vars.get(region).is_none());
 
-                    for (rk, rid) in self.region_vars_map.map.iter() {
+                    for (rk, rid) in self.free_region_vars.iter() {
                         if let hax::RegionKind::ReEarlyBound(eb) = &rk.kind {
                             if eb.index == re_var.index {
-                                return Ok(Region::Var(*rid));
+                                // Note that the DeBruijn index depends
+                                // on the current stack of bound region groups.
+                                let db_id = self.region_vars.len() - 1;
+                                return Ok(Region::BVar(DeBruijnId::new(db_id), *rid));
                             }
                         }
                     }
                     let err = format!(
                         "Could not find region: {:?}\n\nRegion vars map:\n{:?}\n\nBound region vars:\n{:?}",
-                        region, self.region_vars_map, self.bound_region_vars
+                        region, self.free_region_vars, self.bound_region_vars
                     );
                     error_or_panic!(self, span, err)
                 }
                 _ => {
-                    // For the other regions, we use the regions map
-                    match self.region_vars_map.get(region) {
-                        Some(rid) => Ok(Region::Var(rid)),
+                    // For the other regions, we use the regions map, which
+                    // contains the early-bound (free) regions.
+                    match self.free_region_vars.get(region) {
+                        Some(rid) => {
+                            // Note that the DeBruijn index depends
+                            // on the current stack of bound region groups.
+                            let db_id = self.region_vars.len() - 1;
+                            Ok(Region::BVar(DeBruijnId::new(db_id), *rid))
+                        }
                         None => {
                             let err = format!(
                                 "Could not find region: {:?}\n\nRegion vars map:\n{:?}\n\nBound region vars:\n{:?}",
-                                region, self.region_vars_map, self.bound_region_vars
+                                region, self.free_region_vars, self.bound_region_vars
                             );
                             error_or_panic!(self, span, err)
                         }
@@ -304,10 +315,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Param");
 
                 // Retrieve the translation of the substituted type:
-                let var_id = self.type_vars_map.get(&param.index).unwrap();
-                let ty = Ty::TypeVar(var_id);
-
-                Ok(ty)
+                match self.type_vars_map.get(&param.index) {
+                    None => error_or_panic!(
+                        self,
+                        span,
+                        format!(
+                            "Could not find the type variable {:?} (index: {:?})",
+                            param.name, param.index
+                        )
+                    ),
+                    Some(var_id) => Ok(Ty::TypeVar(var_id)),
+                }
             }
 
             hax::Ty::Foreign(id) => {
@@ -346,19 +364,52 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::Ty::Arrow(box sig) => {
                 trace!("Arrow");
-                error_assert!(self, span, sig.bound_vars.is_empty());
-                let inputs = sig
-                    .value
-                    .inputs
+                trace!("bound vars: {:?}", sig.bound_vars);
+
+                // Translate the generics parameters.
+                // Note that there can only be bound regions.
+                let bound_region_names: Vec<Option<String>> = sig
+                    .bound_vars
                     .iter()
-                    .map(|x| self.translate_ty(span, erase_regions, x))
+                    .map(|p| {
+                        use hax::BoundVariableKind::*;
+                        match p {
+                            Region(region) => Ok(translate_bound_region_kind_name(region)),
+                            Ty(_) => {
+                                error_or_panic!(
+                                    self,
+                                    span,
+                                    "Unexpected locally bound type variable"
+                                );
+                            }
+                            Const => {
+                                error_or_panic!(
+                                    self,
+                                    span,
+                                    "Unexpected locally bound const generic variable"
+                                );
+                            }
+                        }
+                    })
                     .try_collect()?;
-                let output = self.translate_ty(span, erase_regions, &sig.value.output)?;
-                Ok(Ty::Arrow(inputs, Box::new(output)))
+
+                // Push the ground region group
+                let erase_regions = false;
+                self.with_locally_bound_regions_group(bound_region_names, move |ctx| {
+                    let regions = ctx.region_vars[0].clone();
+                    let inputs = sig
+                        .value
+                        .inputs
+                        .iter()
+                        .map(|x| ctx.translate_ty(span, erase_regions, x))
+                        .try_collect()?;
+                    let output = ctx.translate_ty(span, erase_regions, &sig.value.output)?;
+                    Ok(Ty::Arrow(regions, inputs, Box::new(output)))
+                })
             }
             hax::Ty::Error => {
                 trace!("Error");
-                error_or_panic!(self, span, "Unknown error")
+                error_or_panic!(self, span, "Type checking error")
             }
             hax::Ty::Todo(s) => {
                 trace!("Todo: {s}");
@@ -573,7 +624,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// and ignore names equal to "'_").
     pub(crate) fn check_generics(&self) {
         let mut s = std::collections::HashSet::new();
-        for r in &self.region_vars {
+        for r in self.region_vars.get(0).unwrap() {
             let name = &r.name;
             if name.is_some() {
                 let name = name.as_ref().unwrap();
@@ -628,7 +679,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
                 Lifetime(region) => {
                     let name = translate_region_name(region);
-                    let _ = self.push_region(region.clone(), name);
+                    let _ = self.push_free_region(region.clone(), name);
                 }
                 Const(c) => {
                     // The type should be primitive, meaning it shouldn't contain variables,
@@ -662,6 +713,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // predicates of the declaration, we ignore it altogether, while we should
         // save somewhere that we failed to extract it.
         if self.translate_type_aux(rust_id).is_err() {
+            let span = self.tcx.def_span(rust_id);
+            self.span_err(
+                span,
+                &format!("Ignoring the following type due to an error: {:?}", rust_id),
+            );
             // TODO
         }
     }
@@ -718,9 +774,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         trace!("translate_type: preds: {:?}", &type_def.preds);
 
-        trace!("{} -> {}", trans_id.to_string(), type_def.to_string());
+        trace!(
+            "{} -> {}",
+            trans_id.to_string(),
+            type_def.fmt_with_ctx(&self.into_fmt())
+        );
 
-        self.type_defs.insert(trans_id, type_def);
+        self.type_decls.insert(trans_id, type_def);
 
         Ok(())
     }

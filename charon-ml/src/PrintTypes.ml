@@ -10,7 +10,9 @@ let type_var_to_string (tv : type_var) : string = tv.name
 let const_generic_var_to_string (v : const_generic_var) : string = v.name
 
 let region_var_to_string (rv : region_var) : string =
-  match rv.name with Some name -> name | None -> RegionId.to_string rv.index
+  match rv.name with
+  | Some name -> name
+  | None -> RegionVarId.to_string rv.index
 
 let ref_kind_to_string (rk : ref_kind) : string =
   match rk with RMut -> "Mut" | RShared -> "Shared"
@@ -20,8 +22,12 @@ let assumed_ty_to_string (_ : assumed_ty) : string = "Box"
 let trait_clause_id_to_pretty_string (id : trait_clause_id) : string =
   "TraitClause@" ^ TraitClauseId.to_string id
 
+let region_var_id_to_pretty_string (db_id : region_db_id) (id : region_var_id) :
+    string =
+  "'" ^ show_region_db_id db_id ^ "_" ^ RegionVarId.to_string id
+
 let region_id_to_pretty_string (id : region_id) : string =
-  "R@" ^ RegionId.to_string id
+  "'" ^ RegionId.to_string id
 
 let type_var_id_to_pretty_string (id : type_var_id) : string =
   "T@" ^ TypeVarId.to_string id
@@ -31,6 +37,9 @@ let const_generic_var_id_to_pretty_string (id : const_generic_var_id) : string =
 
 let type_decl_id_to_pretty_string (id : type_decl_id) : string =
   "TypeDecl@" ^ TypeDeclId.to_string id
+
+let fun_decl_id_to_pretty_string (id : FunDeclId.id) : string =
+  "FunDecl@" ^ FunDeclId.to_string id
 
 let trait_decl_id_to_pretty_string (id : trait_decl_id) : string =
   "TraitDecl@" ^ TraitDeclId.to_string id
@@ -44,19 +53,19 @@ let variant_id_to_pretty_string (id : variant_id) : string =
 let field_id_to_pretty_string (id : field_id) : string =
   "Field@" ^ FieldId.to_string id
 
-let region_id_to_string (env : ('a, 'b) fmt_env) (id : region_id) : string =
-  (* Note that the regions are not necessarily ordered following their indices *)
-  match
-    List.find_opt (fun (r : region_var) -> r.index = id) env.generics.regions
-  with
-  | None -> region_id_to_pretty_string id
-  | Some r -> region_var_to_string r
+let region_var_id_to_string (env : ('a, 'b) fmt_env) (db_id : region_db_id)
+    (id : region_var_id) : string =
+  match List.nth_opt env.regions db_id with
+  | None -> region_var_id_to_pretty_string db_id id
+  | Some regions -> (
+      (* Note that the regions are not necessarily ordered following their indices *)
+      match List.find_opt (fun (r : region_var) -> r.index = id) regions with
+      | None -> region_var_id_to_pretty_string db_id id
+      | Some r -> region_var_to_string r)
 
 let type_var_id_to_string (env : ('a, 'b) fmt_env) (id : type_var_id) : string =
   (* Note that the types are not necessarily ordered following their indices *)
-  match
-    List.find_opt (fun (x : type_var) -> x.index = id) env.generics.types
-  with
+  match List.find_opt (fun (x : type_var) -> x.index = id) env.types with
   | None -> type_var_id_to_pretty_string id
   | Some x -> type_var_to_string x
 
@@ -66,7 +75,7 @@ let const_generic_var_id_to_string (env : ('a, 'b) fmt_env)
   match
     List.find_opt
       (fun (x : const_generic_var) -> x.index = id)
-      env.generics.const_generics
+      env.const_generics
   with
   | None -> const_generic_var_id_to_pretty_string id
   | Some x -> const_generic_var_to_string x
@@ -75,7 +84,8 @@ let region_to_string (env : ('a, 'b) fmt_env) (r : region) : string =
   match r with
   | RStatic -> "'static"
   | RErased -> "'_"
-  | RVar rid -> region_id_to_string env rid
+  | RBVar (db, rid) -> region_var_id_to_string env db rid
+  | RFVar rid -> region_id_to_pretty_string rid
 
 let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
 
@@ -93,6 +103,12 @@ let rec type_id_to_string (env : ('a, 'b) fmt_env) (id : type_id) : string =
 and type_decl_id_to_string env def_id =
   let def = TypeDeclId.Map.find def_id env.type_decls in
   name_to_string env def.name
+
+and fun_decl_id_to_string (env : ('a, 'b) fmt_env) (id : FunDeclId.id) : string
+    =
+  match FunDeclId.Map.find_opt id env.fun_decls with
+  | None -> fun_decl_id_to_pretty_string id
+  | Some def -> name_to_string env def.name
 
 and global_decl_id_to_string env def_id =
   let def = GlobalDeclId.Map.find def_id env.global_decls in
@@ -136,7 +152,8 @@ and ty_to_string (env : ('a, 'b) fmt_env) (ty : ty) : string =
       match ref_kind with
       | RMut -> "*mut " ^ ty_to_string env rty
       | RShared -> "*const " ^ ty_to_string env rty)
-  | TArrow (inputs, output) ->
+  | TArrow (regions, inputs, output) ->
+      let env = { env with regions = regions :: env.regions } in
       let inputs =
         "(" ^ String.concat ", " (List.map (ty_to_string env) inputs) ^ ") -> "
       in
@@ -208,11 +225,16 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
       "(" ^ inst_id ^ ")::" ^ item_name ^ "::[" ^ clause_id ^ "]"
   | TraitRef tr -> trait_ref_to_string env tr
   | FnPointer ty -> "fn_ptr(" ^ ty_to_string env ty ^ ")"
+  | Closure (fid, generics) ->
+      "closure("
+      ^ fun_decl_id_to_string env fid
+      ^ generic_args_to_string env generics
+      ^ ")"
   | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
 and impl_elem_to_string (env : ('a, 'b) fmt_env) (e : impl_elem) : string =
   (* Locally replace the generics and the predicates *)
-  let env = { env with generics = e.generics; preds = e.preds } in
+  let env = fmt_env_update_generics_and_preds env e.generics e.preds in
   let d =
     if e.disambiguator = Disambiguator.zero then ""
     else "#" ^ Disambiguator.to_string e.disambiguator
@@ -242,7 +264,9 @@ let trait_clause_to_string (env : ('a, 'b) fmt_env) (clause : trait_clause) :
 
 let generic_params_to_strings (env : ('a, 'b) fmt_env)
     (generics : generic_params) : string list * string list =
-  let { regions; types; const_generics; trait_clauses } = generics in
+  let { regions; types; const_generics; trait_clauses } : generic_params =
+    generics
+  in
   let regions = List.map region_var_to_string regions in
   let types = List.map type_var_to_string types in
   let cgs = List.map const_generic_var_to_string const_generics in
@@ -332,7 +356,7 @@ let predicates_and_trait_clauses_to_string (env : ('a, 'b) fmt_env)
 
 let type_decl_to_string (env : ('a, 'b) fmt_env) (def : type_decl) : string =
   (* Locally update the generics and the predicates *)
-  let env = { env with generics = def.generics; preds = def.preds } in
+  let env = fmt_env_update_generics_and_preds env def.generics def.preds in
   let params, trait_clauses = generic_params_to_strings env def.generics in
   let clauses =
     predicates_and_trait_clauses_to_string env "" "  " None trait_clauses

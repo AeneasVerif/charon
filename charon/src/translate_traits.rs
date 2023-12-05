@@ -1,4 +1,5 @@
 use crate::common::*;
+use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -130,10 +131,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             initialized = true;
             TraitInstanceId::SelfId
         });
-        let self_clause = self.with_local_trait_clauses(self_instance_id_gen, &mut |s| {
+        let self_clause = self.with_local_trait_clauses(self_instance_id_gen, move |s| {
             s.translate_trait_clause(&span, &self_pred)
         })?;
-        trace!("self clause: {}", self_clause.unwrap().fmt_with_ctx(self));
+        trace!(
+            "self clause: {}",
+            self_clause.unwrap().fmt_with_ctx(&self.into_fmt())
+        );
         Ok(())
     }
 
@@ -172,7 +176,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 initialized = true;
                 TraitInstanceId::SelfId
             }),
-            &mut |s| s.translate_trait_clause(&span, &trait_pred),
+            move |s| s.translate_trait_clause(&span, &trait_pred),
         )?;
         Ok(())
     }
@@ -229,6 +233,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // predicates of the declaration, we ignore it altogether, while we should
         // save somewhere that we failed to extract it.
         if self.translate_trait_decl_aux(rust_id).is_err() {
+            let span = self.tcx.def_span(rust_id);
+            self.span_err(
+                span,
+                &format!(
+                    "Ignoring the following trait decl due to an error: {:?}",
+                    rust_id
+                ),
+            );
             // TODO
         }
     }
@@ -257,7 +269,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.translate_generic_params(rust_id)?;
 
         // Add the trait clauses
-        bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
+        bt_ctx.while_registering_trait_clauses(move |bt_ctx| {
             // Add the self trait clause
             bt_ctx.add_self_trait_clause(rust_id)?;
 
@@ -380,16 +392,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Debugging:
         {
+            let ctx = bt_ctx.into_fmt();
             let clauses = bt_ctx
                 .trait_clauses
                 .values()
-                .map(|c| c.fmt_with_ctx(&bt_ctx))
+                .map(|c| c.fmt_with_ctx(&ctx))
                 .collect::<Vec<String>>()
                 .join("\n");
             let generic_clauses = generics
                 .trait_clauses
                 .iter()
-                .map(|c| c.fmt_with_ctx(&bt_ctx))
+                .map(|c| c.fmt_with_ctx(&ctx))
                 .collect::<Vec<String>>()
                 .join("\n");
             trace!(
@@ -426,6 +439,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // predicates of the declaration, we ignore it altogether, while we should
         // save somewhere that we failed to extract it.
         if self.translate_trait_impl_aux(rust_id).is_err() {
+            let span = self.tcx.def_span(rust_id);
+            self.span_err(
+                span,
+                &format!(
+                    "Ignoring the following trait impl due to an error: {:?}",
+                    rust_id
+                ),
+            );
             // TODO
         }
     }
@@ -455,7 +476,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         bt_ctx.translate_generic_params(rust_id)?;
 
         // Add the trait self clauses
-        bt_ctx.while_registering_trait_clauses(&mut |bt_ctx| {
+        bt_ctx.while_registering_trait_clauses(move |bt_ctx| {
             // Translate the predicates
             bt_ctx.translate_predicates_of(None, rust_id)?;
 
@@ -494,6 +515,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 tcx.param_env(rust_id),
                 rust_trait_ref.def_id,
                 rust_trait_ref.substs,
+                None,
             );
             let parent_trait_refs: Vec<TraitRef> =
                 bt_ctx.translate_trait_impl_sources(span, erase_regions, &parent_trait_refs)?;
@@ -512,9 +534,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         {
             // Debugging
+            let ctx = bt_ctx.into_fmt();
             let refs = parent_trait_refs
                 .iter()
-                .map(|c| c.fmt_with_ctx(&bt_ctx))
+                .map(|c| c.fmt_with_ctx(&ctx))
                 .collect::<Vec<String>>()
                 .join("\n");
             trace!("Trait impl: {:?}\n- parent_trait_refs:\n{}", rust_id, refs);
