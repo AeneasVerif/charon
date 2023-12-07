@@ -526,3 +526,24 @@ pub fn test_shared_borrow_enum2() -> u32 {
         List::Cons(_, _) => 1,
     }
 }
+
+pub struct Tuple<T1, T2>(T1, T2);
+
+pub fn use_tuple_struct(x: &mut Tuple<u32, u32>) {
+    x.0 = 1;
+}
+
+pub fn create_tuple_struct(x: u32, y: u64) -> Tuple<u32, u64> {
+    Tuple(x, y)
+}
+
+/// Structure with one field
+pub struct IdType<T>(T);
+
+pub fn use_id_type<T>(x: IdType<T>) -> T {
+    x.0
+}
+
+pub fn create_id_type<T>(x: T) -> IdType<T> {
+    IdType(x)
+}
