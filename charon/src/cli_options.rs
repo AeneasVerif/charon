@@ -103,6 +103,14 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     /// Panic on the first error. This is useful for debugging.
     #[structopt(long = "abort-on-error")]
     pub abort_on_error: bool,
+    /// Print the errors as warnings
+    #[structopt(
+        long = "errors-as-warnings",
+        help = "
+Report the errors as warnings
+"
+    )]
+    pub errors_as_warnings: bool,
     #[structopt(
         long = "print-ullbc",
         help = "

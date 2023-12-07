@@ -177,6 +177,8 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub crate_info: CrateInfo,
     /// Do not abort on the first error and attempt to extract as much as possible.
     pub continue_on_failure: bool,
+    /// Print the errors as warnings, and do not
+    pub errors_as_warnings: bool,
     /// The number of errors encountered so far.
     pub error_count: usize,
     /// Error out if some code ends up being duplicated by the control-flow
@@ -321,7 +323,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
         let msg = msg.to_string();
-        self.session.span_err(span, msg);
+        if self.errors_as_warnings {
+            self.session.span_warn(span, msg);
+        } else {
+            self.session.span_err(span, msg);
+        }
         self.increment_error_count();
     }
 

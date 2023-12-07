@@ -65,6 +65,11 @@ pub fn main() {
         "Can't use --mir_promoted and --mir_optimized at the same time"
     );
 
+    assert!(
+        !options.abort_on_error || !options.errors_as_warnings,
+        "Can't use --abort-on-error and --errors-as-warnings at the same time"
+    );
+
     if let Err(code) = process(&options) {
         std::process::exit(code);
     }

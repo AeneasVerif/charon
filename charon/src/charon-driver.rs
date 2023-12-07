@@ -209,6 +209,7 @@ fn main() {
     // We don't need to check this case in order to use the default Rustc callbacks
     // instead of the Charon callback: because there is nothing to build, Rustc will
     // take care of everything and actually not call us back.
+    let errors_as_warnings = options.errors_as_warnings;
     let mut callback = CharonCallbacks {
         options,
         error_count: 0,
@@ -216,8 +217,15 @@ fn main() {
     let res = RunCompiler::new(&compiler_args, &mut callback).run();
 
     match res {
-        Ok(()) => (),
+        Ok(()) => {
+            if callback.error_count > 0 {
+                assert!(errors_as_warnings);
+                let msg = format!("The extraction generated {} warnings", callback.error_count);
+                log::warn!("{}", msg);
+            }
+        }
         Err(_) => {
+            assert!(!errors_as_warnings);
             let msg = format!("The extraction encountered {} errors", callback.error_count);
             log::error!("{}", msg);
             std::process::exit(1);
