@@ -41,6 +41,9 @@ let type_decl_id_to_pretty_string (id : type_decl_id) : string =
 let fun_decl_id_to_pretty_string (id : FunDeclId.id) : string =
   "FunDecl@" ^ FunDeclId.to_string id
 
+let global_decl_id_to_pretty_string (id : GlobalDeclId.id) : string =
+  "GlobalDecl@" ^ GlobalDeclId.to_string id
+
 let trait_decl_id_to_pretty_string (id : trait_decl_id) : string =
   "TraitDecl@" ^ TraitDeclId.to_string id
 
@@ -101,8 +104,10 @@ let rec type_id_to_string (env : ('a, 'b) fmt_env) (id : type_id) : string =
       | TSlice -> "@Slice")
 
 and type_decl_id_to_string env def_id =
-  let def = TypeDeclId.Map.find def_id env.type_decls in
-  name_to_string env def.name
+  (* We don't want the printing functions to crash if the crate is partial *)
+  match TypeDeclId.Map.find_opt def_id env.type_decls with
+  | None -> type_decl_id_to_pretty_string def_id
+  | Some def -> name_to_string env def.name
 
 and fun_decl_id_to_string (env : ('a, 'b) fmt_env) (id : FunDeclId.id) : string
     =
@@ -111,16 +116,19 @@ and fun_decl_id_to_string (env : ('a, 'b) fmt_env) (id : FunDeclId.id) : string
   | Some def -> name_to_string env def.name
 
 and global_decl_id_to_string env def_id =
-  let def = GlobalDeclId.Map.find def_id env.global_decls in
-  name_to_string env def.name
+  match GlobalDeclId.Map.find_opt def_id env.global_decls with
+  | None -> global_decl_id_to_pretty_string def_id
+  | Some def -> name_to_string env def.name
 
 and trait_decl_id_to_string env id =
-  let def = TraitDeclId.Map.find id env.trait_decls in
-  name_to_string env def.name
+  match TraitDeclId.Map.find_opt id env.trait_decls with
+  | None -> trait_decl_id_to_pretty_string id
+  | Some def -> name_to_string env def.name
 
 and trait_impl_id_to_string env id =
-  let def = TraitImplId.Map.find id env.trait_impls in
-  name_to_string env def.name
+  match TraitImplId.Map.find_opt id env.trait_impls with
+  | None -> trait_impl_id_to_pretty_string id
+  | Some def -> name_to_string env def.name
 
 and const_generic_to_string (env : ('a, 'b) fmt_env) (cg : const_generic) :
     string =

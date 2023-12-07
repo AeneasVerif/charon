@@ -220,6 +220,7 @@ pub fn translate<'tcx, 'ctx>(
         mir_level,
         crate_info,
         continue_on_failure: !options.abort_on_error,
+        errors_as_warnings: options.errors_as_warnings,
         error_count: 0,
         no_code_duplication: options.no_code_duplication,
         all_ids: LinkedHashSet::new(),
