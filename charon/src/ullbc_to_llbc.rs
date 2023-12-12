@@ -80,6 +80,7 @@ fn get_block_targets(body: &src::ExprBody, block_id: src::BlockId::Id) -> Vec<sr
 }
 
 /// This structure contains various information about a function's CFG.
+#[derive(Debug)]
 struct CfgPartialInfo {
     /// The CFG
     pub cfg: Cfg,
@@ -97,6 +98,7 @@ struct CfgPartialInfo {
 }
 
 /// Similar to `CfgPartialInfo`, but with more information
+#[derive(Debug)]
 struct CfgInfo {
     pub cfg: Cfg,
     pub cfg_no_be: Cfg,
@@ -214,7 +216,10 @@ fn build_cfg_partial_info_edges(
     // go to error.
     if !has_backward_edge
         && (block_is_error(body, block_id)
-            || targets.iter().all(|tgt| cfg.only_reach_error.contains(tgt)))
+            || (
+                // The targets are empty if this is an error node *or* a return node
+                !targets.is_empty() && targets.iter().all(|tgt| cfg.only_reach_error.contains(tgt))
+            ))
     {
         cfg.only_reach_error.insert(block_id);
     }
@@ -839,6 +844,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         // If there is exactly one one best candidate, it is easy.
         // Otherwise we need to split further.
         if num_possible_candidates > 1 {
+            trace!("Best candidates: {:?}", possible_candidates);
             // TODO: if we use a lexicographic order we can merge this with the code
             // above.
             // Remove the candidates which only lead to errors (panic or unreachable).
@@ -850,6 +856,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
             if candidates.len() == 1 {
                 let exit_id = *candidates[0];
                 exits.insert(exit_id);
+                trace!("Loop {loop_id}: selected the best exit candidate {exit_id}");
                 chosen_loop_exits.insert(loop_id, Some(exit_id));
             } else {
                 // Otherwise we do not select any exit.
@@ -884,6 +891,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
                 // Adding this sanity check so that we can see when there are
                 // several candidates.
                 assert!(candidates.is_empty());
+                trace!("Loop {loop_id}: did not select an exit candidate because they all lead to panics");
                 chosen_loop_exits.insert(loop_id, None);
             }
         } else {
@@ -891,10 +899,12 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
             match best_exit {
                 None => {
                     // No exit was found
+                    trace!("Loop {loop_id}: could not find an exit candidate");
                     chosen_loop_exits.insert(loop_id, None);
                 }
                 Some(exit_id) => {
                     exits.insert(exit_id);
+                    trace!("Loop {loop_id}: selected the unique exit candidate {exit_id}");
                     chosen_loop_exits.insert(loop_id, Some(exit_id));
                 }
             }
@@ -1355,6 +1365,8 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
         let bid = bid.id;
         // Check if loop or switch block
         if cfg_info.loop_entries.contains(&bid) {
+            // This is a loop.
+            //
             // For loops, we always register the exit (if there is one).
             // However, the exit may be owned by an outer switch (note
             // that we already took care of spreading the exits between
@@ -1892,6 +1904,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     // edges, and identify the loop entries (which are destinations of backward edges).
     let cfg_info = build_cfg_partial_info(src_body);
     let cfg_info = compute_cfg_info_from_partial(cfg_info);
+    trace!("cfg_info: {:?}", cfg_info);
 
     // Find the exit block for all the loops and switches, if such an exit point
     // exists.
