@@ -29,6 +29,7 @@
   PrintValues
   Scalars
   StringUtils
+  Substitute
   Types
   TypesUtils
   UllbcAst
