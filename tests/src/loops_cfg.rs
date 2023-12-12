@@ -167,3 +167,18 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize {
 
     s
 }
+
+/// The fact that the loop is inside an if then else caused problems during
+/// the control-flow reconstruction at some point.
+pub fn loop_inside_if(b: bool, n: u32) -> u32 {
+    if b {
+        let mut s = 0;
+        for i in 0..n {
+            s += i;
+        }
+
+        s
+    } else {
+        0
+    }
+}
