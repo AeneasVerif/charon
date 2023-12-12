@@ -524,14 +524,24 @@ pub enum Ty {
     /// ```
     /// the second branch will have type `Never`. Also note that `Never`
     /// can be coerced to any type.
-    /// TODO: but do we really use this type for variables?...
+    ///
+    /// Note that we eliminate the variables which have this type in a micro-pass.
+    /// As statements don't have types, this type disappears eventually disappears
+    /// from the AST.
     Never,
     // We don't support floating point numbers on purpose (for now)
     /// A borrow
     Ref(Region, Box<Ty>, RefKind),
     /// A raw pointer.
     RawPtr(Box<Ty>, RefKind),
-    /// A trait type
+    /// A trait associated type
+    ///
+    /// Ex.:
+    /// ```text
+    /// trait Foo {
+    ///   type Bar; // type associated to the trait Foo
+    /// }
+    /// ```
     TraitType(TraitRef, GenericArgs, TraitItemName),
     /// Arrow type, used in particular for the local function pointers.
     /// This is essentially a "constrained" function signature:

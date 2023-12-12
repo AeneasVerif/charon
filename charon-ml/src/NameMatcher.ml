@@ -1140,8 +1140,7 @@ let pattern_elem_convertible (c : conv_config) (p0 : pattern_elem)
 (*
  * Pattern maps - maps from patterns to values.
  *
- * We do something simple: the maps are implemented as trees in which
- * we attempt to share prefixes of patterns (seen as paths).
+ * We implement those as tries.
  *)
 
 module NameMatcherMap = struct
