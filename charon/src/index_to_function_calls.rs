@@ -162,7 +162,7 @@ impl<'a> MutExprVisitor for Transform<'a> {
                     }
                 }
             }
-            Discriminant(p) | Len(p, _, _) => {
+            Discriminant(p, _) | Len(p, _, _) => {
                 // We access places, but those places are used to access
                 // elements without mutating them
                 self.visit_transform_place(false, p);

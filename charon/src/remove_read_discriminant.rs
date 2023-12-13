@@ -6,21 +6,22 @@
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
 use crate::meta::combine_meta;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::*;
 use crate::types::*;
 use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
+use std::collections::HashSet;
 use std::iter::FromIterator;
 
 struct Visitor<'a, 'tcx, 'ctx> {
-    _ctx: &'a TransCtx<'tcx, 'ctx>,
+    ctx: &'a mut TransCtx<'tcx, 'ctx>,
 }
 
 impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
-    fn update_raw_statement(&mut self, st: &mut RawStatement) {
-        match st {
+    fn update_statement(&mut self, st: &mut Statement) {
+        match &mut st.content {
             RawStatement::Sequence(
                 box Statement {
-                    content: RawStatement::Assign(dest, Rvalue::Discriminant(p)),
+                    content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
                     meta: meta1,
                 },
                 box st2,
@@ -65,11 +66,55 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                         e,
                     )
                 }));
+                // Filter the otherwise branch, if it is not necessary.
+                use crate::id_vector::ToUsize;
+                let covered_variants: HashSet<usize> =
+                    targets.iter().fold(HashSet::new(), |mut hs, (ids, _)| {
+                        ids.iter().for_each(|id| {
+                            let _ = hs.insert(id.to_usize());
+                        });
+                        hs
+                    });
+                let covers_all = {
+                    // Lookup the type of the scrutinee
+                    match self.ctx.type_decls.get(*adt_id) {
+                        None => {
+                            // This can happen if there was an error while
+                            // extracting the definitions
+                            assert!(self.ctx.error_count > 0);
+                            // For safety, we consider that not all the patterns
+                            // were covered
+                            false
+                        }
+                        Some(d) => {
+                            match &d.kind {
+                                TypeDeclKind::Struct(_) | TypeDeclKind::Opaque => {
+                                    // We shouldn't get there
+                                    register_error_or_panic!(
+                                        self.ctx,
+                                        st.meta.span.rust_span,
+                                        "Unreachable case"
+                                    );
+                                    false
+                                }
+                                TypeDeclKind::Error(_) => false,
+                                TypeDeclKind::Enum(variants) => {
+                                    // Check that all the variants are covered
+                                    variants
+                                        .iter()
+                                        .enumerate()
+                                        .all(|(i, _)| covered_variants.contains(&i))
+                                }
+                            }
+                        }
+                    }
+                };
+                let otherwise = if covers_all { None } else { Some(otherwise) };
 
                 let switch = RawStatement::Switch(Switch::Match(p.clone(), targets, otherwise));
 
                 // Add the next statement if there is one
-                *st = if let Some(st3) = st3_opt {
+                st.content = if let Some(st3) = st3_opt {
                     let meta = combine_meta(meta1, &meta2);
                     let switch = Statement {
                         meta,
@@ -80,7 +125,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                     switch
                 };
             }
-            RawStatement::Assign(_, Rvalue::Discriminant(_)) => {
+            RawStatement::Assign(_, Rvalue::Discriminant(_, _)) => {
                 // We failed to remove a [Discriminant]
                 unreachable!();
             }
@@ -98,26 +143,26 @@ impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
 
     fn merge(&mut self) {}
 
-    fn visit_raw_statement(&mut self, st: &mut RawStatement) {
-        self.update_raw_statement(st);
+    fn visit_statement(&mut self, st: &mut Statement) {
+        self.update_statement(st);
 
         // Visit again, to make sure we transform the branches and
         // the next statement, in case we updated, or to update the
         // sub-statements, in case we didn't perform any updates.
-        self.default_visit_raw_statement(st);
+        self.default_visit_statement(st);
     }
 }
 
-pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    let fmt_ctx = ctx.into_fmt();
+pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+        let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove [ReadDiscriminant] occurrences in decl: {}:\n{}",
             name.fmt_with_ctx(&fmt_ctx),
             fmt_ctx.format_object(&*b)
         );
 
-        let mut visitor = Visitor { _ctx: ctx };
+        let mut visitor = Visitor { ctx };
         visitor.visit_statement(&mut b.body);
     }
 }

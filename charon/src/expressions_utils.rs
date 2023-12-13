@@ -241,7 +241,7 @@ impl Rvalue {
             Rvalue::BinaryOp(binop, x, y) => {
                 format!("{} {} {}", x.fmt_with_ctx(ctx), binop, y.fmt_with_ctx(ctx))
             }
-            Rvalue::Discriminant(p) => {
+            Rvalue::Discriminant(p, _) => {
                 format!("@discriminant({})", p.fmt_with_ctx(ctx),)
             }
             Rvalue::Aggregate(kind, ops) => {
@@ -405,7 +405,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Rvalue::Ref(p, bkind) => self.visit_ref(p, bkind),
             Rvalue::UnaryOp(op, o1) => self.visit_unary_op(op, o1),
             Rvalue::BinaryOp(op, o1, o2) => self.visit_binary_op(op, o1, o2),
-            Rvalue::Discriminant(p) => self.visit_discriminant(p),
+            Rvalue::Discriminant(p, adt_id) => self.visit_discriminant(p, adt_id),
             Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
             Rvalue::Global(gid) => self.visit_global(gid),
             Rvalue::Len(p, ty, cg) => self.visit_len(p, ty, cg),
@@ -445,8 +445,9 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         self.visit_operand(o2);
     }
 
-    fn visit_discriminant(&mut self, p: &Place) {
-        self.visit_place(p)
+    fn visit_discriminant(&mut self, p: &Place, adt_id: &TypeDeclId::Id) {
+        self.visit_place(p);
+        self.visit_type_decl_id(adt_id);
     }
 
     fn visit_aggregate(&mut self, ak: &AggregateKind, ops: &Vec<Operand>) {

@@ -100,6 +100,19 @@ macro_rules! error_assert_then {
 }
 pub(crate) use error_assert_then;
 
+macro_rules! register_error_or_panic {
+    ($ctx:expr, $span: expr, $msg: expr) => {{
+        $ctx.span_err($span, &$msg);
+        if $ctx.continue_on_failure() {
+            // Nothing to do
+            ();
+        } else {
+            panic!("{}", $msg);
+        }
+    }};
+}
+pub(crate) use register_error_or_panic;
+
 pub struct CrateInfo {
     pub crate_name: String,
     pub opaque_mods: HashSet<String>,

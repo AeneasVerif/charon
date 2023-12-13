@@ -328,10 +328,11 @@ pub enum Rvalue {
     /// Binary operations (note that we merge "checked" and "unchecked" binops)
     BinaryOp(BinOp, Operand, Operand),
     /// Discriminant (for enumerations).
-    /// Note that discriminant values have type isize.
+    /// Note that discriminant values have type isize. We also store the identifier
+    /// of the type from which we read the discriminant.
     ///
     /// This case is filtered in [crate::remove_read_discriminant]
-    Discriminant(Place),
+    Discriminant(Place, TypeDeclId::Id),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text
     /// l = List::Cons { value:x, tail:tl };
