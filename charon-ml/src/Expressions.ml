@@ -246,7 +246,7 @@ and rvalue =
   | RvRef of place * borrow_kind
   | UnaryOp of unop * operand
   | BinaryOp of binop * operand * operand
-  | Discriminant of place
+  | Discriminant of place * type_decl_id
   | Aggregate of aggregate_kind * operand list
   | Global of global_decl_id
 [@@deriving

@@ -94,10 +94,14 @@ module Ast = struct
                 branches
             in
             let branches = String.concat "\n" branches in
-            let branches =
-              branches ^ "\n" ^ indent1 ^ "_ => {\n"
-              ^ inner_to_string2 otherwise ^ "\n" ^ indent1 ^ "}"
+            let otherwise =
+              match otherwise with
+              | None -> ""
+              | Some otherwise ->
+                  "\n" ^ indent1 ^ "_ => {\n" ^ inner_to_string2 otherwise
+                  ^ "\n" ^ indent1 ^ "}"
             in
+            let branches = branches ^ otherwise in
             indent ^ "match (" ^ p ^ ") {\n" ^ branches ^ "\n" ^ indent ^ "}")
     | Loop loop_st ->
         indent ^ "loop {\n"

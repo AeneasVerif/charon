@@ -43,10 +43,11 @@ and switch =
           - the "otherwise" statement
           Also note that we precise the type of the integer (uint32, int64, etc.)
           which we switch on. *)
-  | Match of place * (variant_id list * statement) list * statement
+  | Match of place * (variant_id list * statement) list * statement option
       (** A match over an ADT.
 
-          Similar comments as for {!SwitchInt}.
+          Similar comments as for {!SwitchInt}. Note that the "otherwise" branch
+          is optional.
        *)
 [@@deriving
   show,

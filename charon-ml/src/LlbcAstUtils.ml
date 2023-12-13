@@ -62,7 +62,11 @@ and chain_statements_in_switch (switch : switch) (st : statement) : switch =
       let branches =
         List.map (fun (svl, br) -> (svl, chain_statements br st)) branches
       in
-      let otherwise = chain_statements otherwise st in
+      let otherwise =
+        match otherwise with
+        | None -> None
+        | Some otherwise -> Some (chain_statements otherwise st)
+      in
       Match (op, branches, otherwise)
 
 (** Compute a map from function declaration ids to declaration groups. *)
