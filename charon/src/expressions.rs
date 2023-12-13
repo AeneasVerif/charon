@@ -113,7 +113,9 @@ pub enum UnOp {
 /// the destination type.
 #[derive(Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize)]
 pub enum CastKind {
-    Integer(IntegerTy, IntegerTy),
+    /// Conversion between types in {Integer, Bool}
+    /// Remark: for now we don't support conversions with Char.
+    Scalar(LiteralTy, LiteralTy),
     FnPtr(Ty, Ty),
 }
 

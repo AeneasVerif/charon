@@ -54,8 +54,8 @@ let place_to_string (env : ('a, 'b) fmt_env) (p : place) : string =
 
 let cast_kind_to_string (env : ('a, 'b) fmt_env) (cast : cast_kind) : string =
   match cast with
-  | CastInteger (src, tgt) ->
-      "cast<" ^ integer_type_to_string src ^ "," ^ integer_type_to_string tgt
+  | CastScalar (src, tgt) ->
+      "cast<" ^ literal_type_to_string src ^ "," ^ literal_type_to_string tgt
       ^ ">"
   | CastFnPtr (src, tgt) ->
       "cast<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"

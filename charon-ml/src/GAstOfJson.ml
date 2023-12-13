@@ -676,10 +676,10 @@ let borrow_kind_of_json (js : json) : (borrow_kind, string) result =
 let cast_kind_of_json (js : json) : (cast_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Integer", `List [ src_ty; tgt_ty ]) ] ->
-        let* src_ty = integer_type_of_json src_ty in
-        let* tgt_ty = integer_type_of_json tgt_ty in
-        Ok (CastInteger (src_ty, tgt_ty))
+    | `Assoc [ ("Scalar", `List [ src_ty; tgt_ty ]) ] ->
+        let* src_ty = literal_type_of_json src_ty in
+        let* tgt_ty = literal_type_of_json tgt_ty in
+        Ok (CastScalar (src_ty, tgt_ty))
     | `Assoc [ ("FnPtr", `List [ src_ty; tgt_ty ]) ] ->
         let* src_ty = ty_of_json src_ty in
         let* tgt_ty = ty_of_json tgt_ty in

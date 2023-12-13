@@ -144,7 +144,7 @@ class ['self] map_constant_expr_base =
   end
 
 type cast_kind =
-  | CastInteger of integer_type * integer_type
+  | CastScalar of literal_type * literal_type
   | CastFnPtr of ty * ty
 
 (* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass. *)

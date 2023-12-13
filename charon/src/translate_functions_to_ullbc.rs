@@ -588,12 +588,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 match (cast_kind, &src_ty, &tgt_ty) {
                     (hax::CastKind::IntToInt, _, _) => {
-                        // We only support source and target types for integers
-                        let tgt_ty = *tgt_ty.as_literal().as_integer();
-                        let src_ty = *src_ty.as_literal().as_integer();
+                        // Note that bool is considered as an integer by Rust.
+                        let tgt_ty = *tgt_ty.as_literal();
+                        let src_ty = *src_ty.as_literal();
 
                         Ok(Rvalue::UnaryOp(
-                            UnOp::Cast(CastKind::Integer(src_ty, tgt_ty)),
+                            UnOp::Cast(CastKind::Scalar(src_ty, tgt_ty)),
                             op,
                         ))
                     }

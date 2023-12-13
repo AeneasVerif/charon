@@ -34,7 +34,7 @@ impl CastKind {
         C: AstFormatter,
     {
         match self {
-            CastKind::Integer(src, tgt) => format!("cast<{src},{tgt}>"),
+            CastKind::Scalar(src, tgt) => format!("cast<{src},{tgt}>"),
             CastKind::FnPtr(src, tgt) => {
                 format!("cast<{},{}>", src.fmt_with_ctx(ctx), tgt.fmt_with_ctx(ctx))
             }
@@ -427,7 +427,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
 
     fn visit_unary_op(&mut self, unop: &UnOp, o1: &Operand) {
         match unop {
-            UnOp::Not | UnOp::Neg | UnOp::Cast(CastKind::Integer(_, _)) => (),
+            UnOp::Not | UnOp::Neg | UnOp::Cast(CastKind::Scalar(_, _)) => (),
             UnOp::Cast(CastKind::FnPtr(src, tgt)) => {
                 self.visit_ty(src);
                 self.visit_ty(tgt);
