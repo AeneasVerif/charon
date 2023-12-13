@@ -695,7 +695,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 self.translate_operand(span, operand)?,
             )),
             hax::Rvalue::Discriminant(place) => {
-                Ok(Rvalue::Discriminant(self.translate_place(span, place)?))
+                let (place, ty) = self.translate_place_with_type(span, place)?;
+                if let Ty::Adt(TypeId::Adt(adt_id), _) = &ty {
+                    Ok(Rvalue::Discriminant(place, *adt_id))
+                } else {
+                    error_or_panic!(
+                        self,
+                        span,
+                        format!(
+                            "Unexpected scrutinee type for ReadDiscriminant: {}",
+                            ty.fmt_with_ctx(&self.into_fmt())
+                        )
+                    )
+                }
             }
             hax::Rvalue::Aggregate(aggregate_kind, operands) => {
                 // It seems this instruction is not present in certain passes:

@@ -877,9 +877,10 @@ let rvalue_of_json (js : json) : (rvalue, string) result =
         let* op1 = operand_of_json op1 in
         let* op2 = operand_of_json op2 in
         Ok (BinaryOp (binop, op1, op2))
-    | `Assoc [ ("Discriminant", place) ] ->
+    | `Assoc [ ("Discriminant", `List [ place; adt_id ]) ] ->
         let* place = place_of_json place in
-        Ok (Discriminant place)
+        let* adt_id = TypeDeclId.id_of_json adt_id in
+        Ok (Discriminant (place, adt_id))
     | `Assoc [ ("Global", gid) ] ->
         let* gid = GlobalDeclId.id_of_json gid in
         Ok (Global gid : rvalue)

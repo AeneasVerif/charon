@@ -96,8 +96,12 @@ pub enum Switch {
     ///
     /// The match statement is introduced in [crate::remove_read_discriminant]
     /// (whenever we find a discriminant read, we merge it with the subsequent
-    /// switch into a match)
-    Match(Place, Vec<(Vec<VariantId::Id>, Statement)>, Box<Statement>),
+    /// switch into a match).
+    Match(
+        Place,
+        Vec<(Vec<VariantId::Id>, Statement)>,
+        Option<Box<Statement>>,
+    ),
 }
 
 pub type ExprBody = GExprBody<Statement>;

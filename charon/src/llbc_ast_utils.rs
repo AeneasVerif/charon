@@ -70,7 +70,11 @@ pub fn combine_switch_targets_meta(targets: &Switch) -> Meta {
         Switch::Match(_, branches, otherwise) => {
             let branches = branches.iter().map(|b| &b.1.meta);
             let mbranches = meta::combine_meta_iter(branches);
-            meta::combine_meta(&mbranches, &otherwise.meta)
+            if let Some(otherwise) = otherwise {
+                meta::combine_meta(&mbranches, &otherwise.meta)
+            } else {
+                mbranches
+            }
         }
     }
 }
@@ -94,7 +98,9 @@ impl Switch {
                 for (_, tgt) in targets {
                     out.push(tgt);
                 }
-                out.push(otherwise);
+                if let Some(otherwise) = otherwise {
+                    out.push(otherwise);
+                }
                 out
             }
         }
@@ -213,12 +219,14 @@ impl Statement {
                             )
                         })
                         .collect();
-                    maps.push(format!(
-                        "{}_ => {{\n{}\n{}}}",
-                        inner_tab1,
-                        otherwise.fmt_with_ctx(&inner_tab2, ctx),
-                        inner_tab1
-                    ));
+                    if let Some(otherwise) = otherwise {
+                        maps.push(format!(
+                            "{}_ => {{\n{}\n{}}}",
+                            inner_tab1,
+                            otherwise.fmt_with_ctx(&inner_tab2, ctx),
+                            inner_tab1
+                        ));
+                    };
                     let maps = maps.join(",\n");
 
                     format!(
@@ -286,9 +294,13 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     /// in a branching.
     fn merge(&mut self);
 
-    fn visit_statement(&mut self, st: &Statement) {
+    fn default_visit_statement(&mut self, st: &Statement) {
         self.visit_meta(&st.meta);
         self.visit_raw_statement(&st.content)
+    }
+
+    fn visit_statement(&mut self, st: &Statement) {
+        self.default_visit_statement(st)
     }
 
     fn visit_meta(&mut self, st: &Meta) {}
@@ -410,13 +422,15 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         &mut self,
         scrut: &Place,
         branches: &Vec<(Vec<VariantId::Id>, Statement)>,
-        otherwise: &Statement,
+        otherwise: &Option<Box<Statement>>,
     ) {
         self.visit_place(scrut);
         for (_, st) in branches {
             self.spawn(&mut |v| v.visit_statement(st));
         }
-        self.spawn(&mut |v| v.visit_statement(otherwise));
+        if let Some(otherwise) = otherwise {
+            self.spawn(&mut |v| v.visit_statement(otherwise));
+        }
         self.merge();
     }
 

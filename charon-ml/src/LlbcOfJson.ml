@@ -102,7 +102,9 @@ and switch_of_json (id_to_file : id_to_file_map) (js : json) :
                (statement_of_json id_to_file))
             tgts
         in
-        let* otherwise = statement_of_json id_to_file otherwise in
+        let* otherwise =
+          option_of_json (statement_of_json id_to_file) otherwise
+        in
         Ok (Match (p, tgts, otherwise))
     | _ -> Error "")
 

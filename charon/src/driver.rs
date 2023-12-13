@@ -249,7 +249,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         index_to_function_calls::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: Remove the discriminant reads (merge them with the switches)
-        remove_read_discriminant::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_read_discriminant::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: add the missing assignments to the return value.
         // When the function return type is unit, the generated MIR doesn't
