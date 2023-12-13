@@ -724,16 +724,6 @@ pub fn bound_region_var_to_pretty_string(grid: DeBruijnId, rid: RegionId::Id) ->
     format!("'_{}_{}", grid.index, rid.to_string())
 }
 
-impl std::string::ToString for LiteralTy {
-    fn to_string(&self) -> String {
-        match self {
-            LiteralTy::Integer(ty) => ty.to_string(),
-            LiteralTy::Bool => "bool".to_string(),
-            LiteralTy::Char => "char".to_string(),
-        }
-    }
-}
-
 impl std::fmt::Display for IntegerTy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
@@ -749,6 +739,16 @@ impl std::fmt::Display for IntegerTy {
             IntegerTy::U32 => write!(f, "u32"),
             IntegerTy::U64 => write!(f, "u64"),
             IntegerTy::U128 => write!(f, "u128"),
+        }
+    }
+}
+
+impl std::fmt::Display for LiteralTy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            LiteralTy::Integer(ty) => ty.fmt(f),
+            LiteralTy::Char => write!(f, "char"),
+            LiteralTy::Bool => write!(f, "bool"),
         }
     }
 }
