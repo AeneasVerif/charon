@@ -125,8 +125,17 @@ pub fn mix_arith_i32(x: i32, y: i32, z: i32) -> i32 {
 pub const CONST0: usize = 1 + 1;
 pub const CONST1: usize = 2 * 2;
 
-pub fn cast_test(x: u32) -> i32 {
+pub fn cast_u32_to_i32(x: u32) -> i32 {
     x as i32
+}
+
+pub fn cast_bool_to_i32(x: bool) -> i32 {
+    x as i32
+}
+
+#[allow(clippy::unnecessary_cast)]
+pub fn cast_bool_to_bool(x: bool) -> bool {
+    x as bool
 }
 
 #[allow(unused_variables)]
