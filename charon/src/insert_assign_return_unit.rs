@@ -43,18 +43,22 @@ fn transform_body(ctx: &TransCtx, name: &Name, body: &mut Option<ExprBody>) {
     }
 }
 
-fn transform_function(ctx: &TransCtx, def: &mut FunDecl) {
+fn transform_function(ctx: &mut TransCtx, def: &mut FunDecl) {
     if def.signature.output.is_unit() {
-        transform_body(ctx, &def.name, &mut def.body);
+        ctx.with_def_id(def.rust_id, |ctx| {
+            transform_body(ctx, &def.name, &mut def.body)
+        });
     }
 }
-fn transform_global(ctx: &TransCtx, def: &mut GlobalDecl) {
+fn transform_global(ctx: &mut TransCtx, def: &mut GlobalDecl) {
     if def.ty.is_unit() {
-        transform_body(ctx, &def.name, &mut def.body);
+        ctx.with_def_id(def.rust_id, |ctx| {
+            transform_body(ctx, &def.name, &mut def.body)
+        });
     }
 }
 
-pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
     funs.iter_mut().for_each(|d| transform_function(ctx, d));
     globals.iter_mut().for_each(|d| transform_global(ctx, d));
 }
