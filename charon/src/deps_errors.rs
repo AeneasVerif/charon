@@ -55,11 +55,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// the external dependencies, print a detailed report to explain
     /// to the user which dependencies were problematic, and where they
     /// are used in the code.
-    ///
-    /// Remark: for now, we only output a report for the dependencies
-    /// which had to be ignored altogether.
-    /// TODO: implement a pass which checks whether the definitions fit
-    /// into the subset supported by Aeneas.
     pub(crate) fn report_external_deps_errors(&self) {
         if self.error_count == 0 {
             return;
@@ -92,8 +87,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         trace!("Graph:\n{}", graph);
 
         // We need to compute the reachability graph. An easy way is simply
-        // to use Dijkstra.
-        for id in &self.ignored_failed_decls {
+        // to use Dijkstra on every external definition which triggered an
+        // error.
+        for id in &self.decls_with_errors {
             if !id.is_local() {
                 let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
                 trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
@@ -108,7 +104,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
                 // Display the error message
                 let span = MultiSpan::from_spans(reachable);
-                let msg = format!("The external definition {:?} had to be ignored due to errors. It is (transitively) used at the following location(s):",
+                let msg = format!("The external definition {:?} triggered errors. It is (transitively) used at the following location(s):",
                 *id,
                 );
                 self.span_err_no_register(span, &msg);

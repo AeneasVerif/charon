@@ -372,17 +372,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
+    /// Span an error and register the error.
     pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
         self.span_err_no_register(span, msg);
         self.increment_error_count();
+        if let Some(id) = self.def_id {
+            let _ = self.decls_with_errors.insert(id);
+        }
     }
 
     fn increment_error_count(&mut self) {
         self.error_count += 1;
-    }
-
-    fn current_def_id(&self) -> DefId {
-        self.def_id.unwrap()
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -725,10 +725,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub fn continue_on_failure(&self) -> bool {
         self.t_ctx.continue_on_failure()
-    }
-
-    fn current_def_id(&self) -> DefId {
-        self.def_id
     }
 
     pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
