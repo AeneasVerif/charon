@@ -712,15 +712,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// account the fact that some types are mutually recursive at this point
     /// (we will need to take that into account when generating the code in a file).
     pub(crate) fn translate_type(&mut self, rust_id: DefId) {
-        if self.translate_type_aux(rust_id).is_err() {
-            let span = self.tcx.def_span(rust_id);
-            self.span_err(
-                span,
-                &format!("Ignoring the following type due to an error: {:?}", rust_id),
-            );
-            // Save the definition
-            let _ = self.ignored_failed_defs.insert(rust_id);
-        }
+        self.with_def_id(rust_id, |ctx| {
+            if ctx.translate_type_aux(rust_id).is_err() {
+                let span = ctx.tcx.def_span(rust_id);
+                ctx.span_err(
+                    span,
+                    &format!("Ignoring the following type due to an error: {:?}", rust_id),
+                );
+                // Save the definition
+                let _ = ctx.ignored_failed_decls.insert(rust_id);
+            }
+        });
     }
 
     /// Auxliary helper to properly handle errors, see [translate_type].

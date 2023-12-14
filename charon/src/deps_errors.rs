@@ -93,7 +93,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // We need to compute the reachability graph. An easy way is simply
         // to use Dijkstra.
-        for id in &self.ignored_failed_defs {
+        for id in &self.ignored_failed_decls {
             if !id.is_local() {
                 let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
                 trace!("id: {:?}\nreachable:\n{:?}", id, reachable);

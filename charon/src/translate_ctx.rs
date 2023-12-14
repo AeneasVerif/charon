@@ -1,5 +1,6 @@
 //! The translation contexts.
 use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
+use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::llbc_ast;
 use crate::meta;
@@ -221,6 +222,8 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// We use an ordered set to make sure we translate them in a specific
     /// order (this avoids stealing issues when querying the MIR bodies).
     pub stack: BTreeSet<OrdRustId>,
+    /// The id of the definition we are exploring
+    pub def_id: Option<DefId>,
     /// File names to ids and vice-versa
     pub file_to_id: HashMap<FileName, FileId::Id>,
     pub id_to_file: HashMap<FileId::Id, FileName>,
@@ -233,9 +236,11 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// Dependency graph with sources. We use this for error reporting.
     /// See [DepSource].
     pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
-    /// The ids of the definitions we completely failed to extract
+    /// The ids of the declarations for which extraction we encountered errors.
+    pub decls_with_errors: HashSet<DefId>,
+    /// The ids of the declarations we completely failed to extract
     /// and had to ignore.
-    pub ignored_failed_defs: HashSet<DefId>,
+    pub ignored_failed_decls: HashSet<DefId>,
     /// The map from Rust function ids to translated function ids
     pub fun_id_map: ast::FunDeclId::MapGenerator<DefId>,
     /// The translated function definitions
@@ -267,6 +272,7 @@ pub struct TransCtx<'tcx, 'ctx> {
 /// us to use those collections.
 pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The definition we are currently extracting.
+    /// TODO: this duplicates the field of [TransCtx]
     pub def_id: DefId,
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>,
@@ -373,6 +379,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     fn increment_error_count(&mut self) {
         self.error_count += 1;
+    }
+
+    fn current_def_id(&self) -> DefId {
+        self.def_id.unwrap()
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -652,6 +662,30 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     ) -> ast::GlobalDeclId::Id {
         self.register_global_decl_id(src, id)
     }
+
+    pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, f: F) -> T
+    where
+        F: FnOnce(&mut Self) -> T,
+    {
+        let current_def_id = self.def_id;
+        self.def_id = Some(def_id);
+        let ret = f(self);
+        self.def_id = current_def_id;
+        ret
+    }
+
+    pub(crate) fn iter_bodies<F, B>(
+        &mut self,
+        funs: &mut FunDeclId::Map<GFunDecl<B>>,
+        globals: &mut GlobalDeclId::Map<GGlobalDecl<B>>,
+        f: F,
+    ) where
+        F: Fn(&mut Self, &Name, &mut GExprBody<B>),
+    {
+        for (id, name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+            self.with_def_id(id, |ctx| f(ctx, name, b))
+        }
+    }
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
@@ -691,6 +725,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub fn continue_on_failure(&self) -> bool {
         self.t_ctx.continue_on_failure()
+    }
+
+    fn current_def_id(&self) -> DefId {
+        self.def_id
     }
 
     pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {

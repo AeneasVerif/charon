@@ -6,7 +6,6 @@
 use take_mut::take;
 
 use crate::formatter::{Formatter, IntoFormatter};
-use crate::gast::{iter_function_bodies, iter_global_bodies};
 use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
 
@@ -33,14 +32,14 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     None
 }
 
-pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    let fmt_ctx = ctx.into_fmt();
-    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    ctx.iter_bodies(funs, globals, |ctx, name, b| {
+        let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to reconstruct asserts in decl: {}\n{}",
             name.fmt_with_ctx(&fmt_ctx),
             fmt_ctx.format_object(&*b)
         );
         b.body.transform(&mut transform_st);
-    }
+    })
 }

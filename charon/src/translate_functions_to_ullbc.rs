@@ -1792,18 +1792,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Translate one function.
     pub(crate) fn translate_function(&mut self, rust_id: DefId) {
-        if self.translate_function_aux(rust_id).is_err() {
-            let span = self.tcx.def_span(rust_id);
-            self.span_err(
-                span,
-                &format!(
-                    "Ignoring the following function due to an error: {:?}",
-                    rust_id
-                ),
-            );
-            // Save the definition
-            let _ = self.ignored_failed_defs.insert(rust_id);
-        }
+        self.with_def_id(rust_id, |ctx| {
+            if ctx.translate_function_aux(rust_id).is_err() {
+                let span = ctx.tcx.def_span(rust_id);
+                ctx.span_err(
+                    span,
+                    &format!(
+                        "Ignoring the following function due to an error: {:?}",
+                        rust_id
+                    ),
+                );
+                // Save the definition
+                let _ = ctx.ignored_failed_decls.insert(rust_id);
+            }
+        });
     }
 
     /// Auxliary helper to properly handle errors, see [translate_function].
@@ -1875,18 +1877,20 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     /// Translate one global.
     pub(crate) fn translate_global(&mut self, rust_id: DefId) {
-        if self.translate_global_aux(rust_id).is_err() {
-            let span = self.tcx.def_span(rust_id);
-            self.span_err(
-                span,
-                &format!(
-                    "Ignoring the following global due to an error: {:?}",
-                    rust_id
-                ),
-            );
-            // Save the definition
-            let _ = self.ignored_failed_defs.insert(rust_id);
-        }
+        self.with_def_id(rust_id, |ctx| {
+            if ctx.translate_global_aux(rust_id).is_err() {
+                let span = ctx.tcx.def_span(rust_id);
+                ctx.span_err(
+                    span,
+                    &format!(
+                        "Ignoring the following global due to an error: {:?}",
+                        rust_id
+                    ),
+                );
+                // Save the definition
+                let _ = ctx.ignored_failed_decls.insert(rust_id);
+            }
+        });
     }
 
     /// Auxliary helper to properly handle errors, see [translate_global].
@@ -1933,6 +1937,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             def_id,
             GlobalDecl {
                 def_id,
+                rust_id,
                 meta,
                 is_local: rust_id.is_local(),
                 name,

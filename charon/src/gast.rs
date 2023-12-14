@@ -113,6 +113,8 @@ pub struct GFunDecl<T> {
 #[derive(Debug, Clone, Serialize)]
 pub struct GGlobalDecl<T> {
     pub def_id: GlobalDeclId::Id,
+    #[serde(skip)]
+    pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
     pub meta: Meta,
     /// [true] if the decl is a local decl, [false] if it comes from

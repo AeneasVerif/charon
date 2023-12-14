@@ -231,18 +231,20 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) {
-        if self.translate_trait_decl_aux(rust_id).is_err() {
-            let span = self.tcx.def_span(rust_id);
-            self.span_err(
-                span,
-                &format!(
-                    "Ignoring the following trait decl due to an error: {:?}",
-                    rust_id
-                ),
-            );
-            // Save the definition
-            let _ = self.ignored_failed_defs.insert(rust_id);
-        }
+        self.with_def_id(rust_id, |ctx| {
+            if ctx.translate_trait_decl_aux(rust_id).is_err() {
+                let span = ctx.tcx.def_span(rust_id);
+                ctx.span_err(
+                    span,
+                    &format!(
+                        "Ignoring the following trait decl due to an error: {:?}",
+                        rust_id
+                    ),
+                );
+                // Save the definition
+                let _ = ctx.ignored_failed_decls.insert(rust_id);
+            }
+        });
     }
 
     /// Auxliary helper to properly handle errors, see [translate_trait_decl].
@@ -436,18 +438,20 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_trait_impl(&mut self, rust_id: DefId) {
-        if self.translate_trait_impl_aux(rust_id).is_err() {
-            let span = self.tcx.def_span(rust_id);
-            self.span_err(
-                span,
-                &format!(
-                    "Ignoring the following trait impl due to an error: {:?}",
-                    rust_id
-                ),
-            );
-            // Save the definition
-            let _ = self.ignored_failed_defs.insert(rust_id);
-        }
+        self.with_def_id(rust_id, |ctx| {
+            if ctx.translate_trait_impl_aux(rust_id).is_err() {
+                let span = ctx.tcx.def_span(rust_id);
+                ctx.span_err(
+                    span,
+                    &format!(
+                        "Ignoring the following trait impl due to an error: {:?}",
+                        rust_id
+                    ),
+                );
+                // Save the definition
+                let _ = ctx.ignored_failed_decls.insert(rust_id);
+            }
+        });
     }
 
     /// Auxliary helper to properly handle errors, see [translate_impl_decl].
