@@ -8,7 +8,7 @@ use crate::id_vector::ToUsize;
 use crate::llbc_ast::{FunDecls, GlobalDecls, MutAstVisitor, SharedAstVisitor, Statement};
 use crate::translate_ctx::TransCtx;
 use crate::types::{MutTypeVisitor, SharedTypeVisitor};
-use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies, Var};
+use crate::ullbc_ast::Var;
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
 use take_mut::take;
@@ -124,8 +124,8 @@ fn update_locals(
     (locals, vids_map)
 }
 
-pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    ctx.iter_bodies(funs, globals, |ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove unused locals in decl: {}:\n{}",
@@ -147,5 +147,5 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
         );
         // Check that there are no remaining locals with the type `Never`
         assert!(b.locals.iter().all(|v| !v.ty.is_never()));
-    }
+    })
 }

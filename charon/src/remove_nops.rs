@@ -4,7 +4,6 @@ use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{FunDecls, GlobalDecls, RawStatement, Statement};
 use crate::meta::combine_meta;
 use crate::translate_ctx::TransCtx;
-use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use take_mut::take;
 
 fn transform_st(s: &mut Statement) {
@@ -21,8 +20,8 @@ fn transform_st(s: &mut Statement) {
     }
 }
 
-pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    ctx.iter_bodies(funs, globals, |ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove useless no-ops in decl: {}:\n{}",
@@ -35,5 +34,5 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
             transform_st(st);
             None
         });
-    }
+    })
 }

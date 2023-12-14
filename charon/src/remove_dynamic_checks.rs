@@ -334,7 +334,7 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
 }
 
 pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+    ctx.iter_bodies(funs, globals, |ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove the dynamic checks: {}:\n{}",
@@ -349,5 +349,5 @@ pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDe
             name.fmt_with_ctx(&fmt_ctx),
             fmt_ctx.format_object(&*b)
         );
-    }
+    })
 }

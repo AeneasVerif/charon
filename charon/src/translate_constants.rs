@@ -106,9 +106,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let name = TraitItemName(name.clone());
                 RawConstantExpr::TraitConst(trait_ref, generics, name)
             }
-            ConstantExprKind::GlobalName { id } => {
-                RawConstantExpr::Global(self.translate_global_decl_id(id.rust_def_id.unwrap()))
-            }
+            ConstantExprKind::GlobalName { id } => RawConstantExpr::Global(
+                self.translate_global_decl_id(span, id.rust_def_id.unwrap()),
+            ),
             ConstantExprKind::Borrow(be) => {
                 let be = self.translate_constant_expr_to_constant_expr(span, be)?;
                 RawConstantExpr::Ref(Box::new(be))

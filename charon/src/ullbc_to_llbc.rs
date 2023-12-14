@@ -1983,6 +1983,7 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalD
 
     tgt::GlobalDecl {
         def_id: src_def.def_id,
+        rust_id: src_def.rust_id,
         meta: src_def.meta,
         is_local: src_def.is_local,
         name: src_def.name.clone(),

@@ -290,9 +290,9 @@ fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Option<Ve
 ///   tmp1 : &mut T = ArrayIndexMut(move y, i)
 ///   *tmp1 = x
 /// ```
-pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    let ctx = ctx.into_fmt();
-    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    ctx.iter_bodies(funs, globals, |ctx, name, b| {
+        let ctx = ctx.into_fmt();
         trace!(
             "# About to transform array/slice index operations to function calls: {}:\n{}",
             name.fmt_with_ctx(&ctx),
@@ -308,5 +308,5 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
             name.fmt_with_ctx(&ctx),
             ctx.format_object(&*b)
         );
-    }
+    });
 }

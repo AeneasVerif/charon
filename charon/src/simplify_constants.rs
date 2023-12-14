@@ -15,9 +15,7 @@ use crate::formatter::{Formatter, IntoFormatter};
 use crate::meta::Meta;
 use crate::translate_ctx::TransCtx;
 use crate::types::*;
-use crate::ullbc_ast::{
-    iter_function_bodies, iter_global_bodies, make_locals_generator, RawStatement, Statement,
-};
+use crate::ullbc_ast::{make_locals_generator, RawStatement, Statement};
 use crate::ullbc_ast_utils::body_transform_operands;
 use crate::values::VarId;
 
@@ -123,9 +121,7 @@ pub fn transform(ctx: &mut TransCtx) {
     let mut fun_decls = ctx.fun_decls.clone();
     let mut global_decls = ctx.global_decls.clone();
 
-    for (name, b) in
-        iter_function_bodies(&mut fun_decls).chain(iter_global_bodies(&mut global_decls))
-    {
+    ctx.iter_bodies(&mut fun_decls, &mut global_decls, |ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to simplify constants in function: {}:\n{}",
@@ -137,7 +133,7 @@ pub fn transform(ctx: &mut TransCtx) {
         body_transform_operands(&mut b.body, &mut |meta, nst, op| {
             transform_operand(meta, nst, op, &mut f)
         });
-    }
+    });
 
     ctx.fun_decls = fun_decls;
     ctx.global_decls = global_decls;

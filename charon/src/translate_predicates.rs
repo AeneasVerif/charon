@@ -115,10 +115,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let mut num_trait_clauses = 0;
                 // **IMPORTANT**: we do NOT want to use [TyCtxt::predicates_of].
                 let preds = tcx.predicates_defined_on(parent_id).sinto(&self.hax_state);
-                for (pred, _) in preds.predicates {
+                for (pred, span) in preds.predicates {
                     if let hax::PredicateKind::Clause(hax::Clause::Trait(clause)) = &pred.value {
                         if self
-                            .translate_trait_decl_id(clause.trait_ref.def_id.rust_def_id.unwrap())
+                            .translate_trait_decl_id(
+                                span.rust_span,
+                                clause.trait_ref.def_id.rust_def_id.unwrap(),
+                            )
                             .is_some()
                         {
                             num_trait_clauses += 1;
@@ -413,7 +416,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = false;
 
         let trait_ref = &trait_pred.trait_ref;
-        let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
+        let trait_id = self.translate_trait_decl_id(span, trait_ref.def_id.rust_def_id.unwrap());
         // We might have to ignore the trait
         let trait_id = if let Some(trait_id) = trait_id {
             trait_id
@@ -632,7 +635,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<Option<TraitRef>, Error> {
         let trait_decl_ref = {
             let trait_ref = &impl_source.trait_ref;
-            let trait_id = self.translate_trait_decl_id(trait_ref.def_id.rust_def_id.unwrap());
+            let trait_id =
+                self.translate_trait_decl_id(span, trait_ref.def_id.rust_def_id.unwrap());
             let trait_id = if let Some(trait_id) = trait_id {
                 trait_id
             } else {
@@ -688,7 +692,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let trait_ref = match &impl_source.kind {
             ImplSourceKind::UserDefined(data) => {
                 let def_id = data.impl_def_id.rust_def_id.unwrap();
-                let trait_id = self.translate_trait_impl_id(def_id);
+                let trait_id = self.translate_trait_impl_id(span, def_id);
                 // We already tested above whether the trait should be filtered
                 let trait_id = trait_id.unwrap();
                 let trait_id = TraitInstanceId::TraitImpl(trait_id);
@@ -720,7 +724,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.translate_trait_decl_id(def_id).unwrap();
+                let trait_id = self.translate_trait_decl_id(span, def_id).unwrap();
 
                 // Retrieve the arguments
                 let generics = self.translate_substs_and_trait_refs(
@@ -754,7 +758,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.translate_trait_decl_id(def_id).unwrap();
+                let trait_id = self.translate_trait_decl_id(span, def_id).unwrap();
 
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
                 let generics = self.translate_substs_and_trait_refs(
@@ -774,7 +778,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = data.trait_def_id.rust_def_id.unwrap();
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.translate_trait_decl_id(def_id).unwrap();
+                let trait_id = self.translate_trait_decl_id(span, def_id).unwrap();
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
 
                 TraitRef {
@@ -806,7 +810,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // body of the caller, which means it can't be an assumed function
                 // (there is a very limited number of assumed functions, and they
                 // are all top-level).
-                let fn_id = self.translate_fun_decl_id(data.closure_def_id.rust_def_id.unwrap());
+                let fn_id =
+                    self.translate_fun_decl_id(span, data.closure_def_id.rust_def_id.unwrap());
                 let erased_regions = false;
                 let (regions, types, const_generics) =
                     self.translate_substs(span, erased_regions, None, &data.parent_substs)?;

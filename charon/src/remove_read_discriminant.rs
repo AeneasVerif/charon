@@ -8,7 +8,6 @@ use crate::llbc_ast::*;
 use crate::meta::combine_meta;
 use crate::translate_ctx::*;
 use crate::types::*;
-use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
@@ -154,7 +153,7 @@ impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
 }
 
 pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+    ctx.iter_bodies(funs, globals, |ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove [ReadDiscriminant] occurrences in decl: {}:\n{}",
@@ -164,5 +163,5 @@ pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDe
 
         let mut visitor = Visitor { ctx };
         visitor.visit_statement(&mut b.body);
-    }
+    })
 }

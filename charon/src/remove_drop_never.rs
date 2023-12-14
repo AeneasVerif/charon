@@ -6,7 +6,6 @@
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{FunDecls, GlobalDecls, RawStatement, Statement, Var};
 use crate::translate_ctx::TransCtx;
-use crate::ullbc_ast::{iter_function_bodies, iter_global_bodies};
 use crate::values::*;
 
 /// Filter the statement by replacing it with `Nop` if it is a `Drop(x)` where
@@ -31,8 +30,8 @@ fn transform_st(locals: &VarId::Vector<Var>, st: &mut Statement) {
     }
 }
 
-pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    for (name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
+pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
+    ctx.iter_bodies(funs, globals, |ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove drops of variables with type ! in decl: {}:\n{}",
@@ -46,5 +45,5 @@ pub fn transform(ctx: &TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls)
             transform_st(locals, st);
             None
         });
-    }
+    })
 }

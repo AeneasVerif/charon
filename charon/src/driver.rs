@@ -228,7 +228,7 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         remove_dynamic_checks::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: reconstruct the asserts
-        reconstruct_asserts::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+        reconstruct_asserts::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // TODO: we should mostly use the TransCtx to format declarations
         use crate::formatter::{Formatter, IntoFormatter};
@@ -241,12 +241,12 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
 
         // # Micro-pass: replace some unops/binops and the array aggregates with
         // function calls (introduces: ArrayToSlice, etc.)
-        ops_to_function_calls::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+        ops_to_function_calls::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: replace the arrays/slices index operations with function
         // calls.
         // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
-        index_to_function_calls::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+        index_to_function_calls::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: Remove the discriminant reads (merge them with the switches)
         remove_read_discriminant::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
@@ -259,19 +259,19 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         // an extra assignment just before returning.
         // This also applies to globals (for checking or executing code before
         // the main or at compile-time).
-        insert_assign_return_unit::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+        insert_assign_return_unit::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
         // is in preparation of the next transformation.
-        remove_drop_never::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_drop_never::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: remove the locals which are never used. After doing so, we
         // check that there are no remaining locals with type `Never`.
-        remove_unused_locals::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_unused_locals::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass (not necessary, but good for cleaning): remove the
         // useless no-ops.
-        remove_nops::transform(&ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_nops::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         trace!("# Final LLBC:\n");
         for (_, def) in &llbc_funs {
@@ -287,6 +287,9 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         if options.print_llbc {
             info!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
         }
+
+        // Display an error report about the external dependencies, if necessary
+        ctx.report_external_deps_errors();
 
         // # Final step: generate the files.
         export::export_llbc(

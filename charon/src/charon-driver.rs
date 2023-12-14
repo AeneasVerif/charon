@@ -40,6 +40,7 @@ extern crate take_mut;
 mod common;
 mod assumed;
 mod cli_options;
+mod deps_errors;
 mod driver;
 mod export;
 mod expressions;
