@@ -78,7 +78,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<(TraitItemName, (Ty, GlobalDeclId::Id)), Error> {
         let ty = self.translate_ty_from_trait_item(item)?;
         let name = TraitItemName(item.name.to_string());
-        let id = self.translate_global_decl_id(item.def_id);
+        let span = self.t_ctx.tcx.def_span(self.def_id);
+        let id = self.translate_global_decl_id(span, item.def_id);
         Ok((name, (ty, id)))
     }
 
@@ -104,25 +105,26 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("predicates: {:?}", predicates);
 
         // Get the last predicate
-        let (pred, span) = predicates.predicates.iter().next_back().unwrap();
+        let (pred, rspan) = predicates.predicates.iter().next_back().unwrap();
         let pred = pred.sinto(&self.hax_state);
-        let span = span.sinto(&self.hax_state);
+        let span = rspan.sinto(&self.hax_state);
 
         // Convert to a clause
         assert!(pred.bound_vars.is_empty());
-        let self_pred =
-            if let hax::PredicateKind::Clause(hax::Clause::Trait(trait_pred)) = pred.value {
-                if self
-                    .translate_trait_decl_id(trait_pred.trait_ref.def_id.rust_def_id.unwrap())
-                    .is_some()
-                {
-                    trait_pred
-                } else {
-                    panic!();
-                }
+        let self_pred = if let hax::PredicateKind::Clause(hax::Clause::Trait(trait_pred)) =
+            pred.value
+        {
+            if self
+                .translate_trait_decl_id(*rspan, trait_pred.trait_ref.def_id.rust_def_id.unwrap())
+                .is_some()
+            {
+                trait_pred
             } else {
                 panic!();
-            };
+            }
+        } else {
+            panic!();
+        };
 
         // Convert
         let mut initialized = false;
@@ -249,7 +251,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn translate_trait_decl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
 
-        let def_id = self.translate_trait_decl_id(rust_id);
+        let def_id = self.translate_trait_decl_id(&None, rust_id);
         // We may need to ignore the trait (happens if the trait is a marker
         // trait like [core::marker::Sized]
         if def_id.is_none() {
@@ -295,20 +297,21 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             let has_default_value = item.defaultness(tcx).has_value();
             match &item.kind {
                 AssocKind::Fn => {
+                    let span = tcx.def_span(rust_id);
                     let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id);
                     // Skip the provided methods for the *external* trait declarations,
                     // but still remember their name.
                     if has_default_value {
                         // This is a *provided* method
                         if rust_id.is_local() {
-                            let fun_id = bt_ctx.translate_fun_decl_id(item.def_id);
+                            let fun_id = bt_ctx.translate_fun_decl_id(span, item.def_id);
                             provided_methods.push((method_name, Some(fun_id)));
                         } else {
                             provided_methods.push((method_name, None));
                         }
                     } else {
                         // This is a required method (no default implementation)
-                        let fun_id = bt_ctx.translate_fun_decl_id(item.def_id);
+                        let fun_id = bt_ctx.translate_fun_decl_id(span, item.def_id);
                         required_methods.push((method_name, fun_id));
                     }
                 }
@@ -455,7 +458,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn translate_trait_impl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
 
-        let def_id = self.translate_trait_impl_id(rust_id);
+        let def_id = self.translate_trait_impl_id(&None, rust_id);
         // We may need to ignore the trait
         if def_id.is_none() {
             return Ok(());
@@ -500,7 +503,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         ) = {
             // TODO: what is below duplicates a bit [add_trait_impl_self_trait_clause]
             let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
-            let trait_id = bt_ctx.translate_trait_decl_id(trait_rust_id);
+            let trait_id = bt_ctx.translate_trait_decl_id(span, trait_rust_id);
             // We already tested above whether the trait should be filtered
             let trait_id = trait_id.unwrap();
 
@@ -570,7 +573,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             match &item.kind {
                 AssocKind::Fn => {
                     let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id);
-                    let fun_id = bt_ctx.translate_fun_decl_id(item.def_id);
+                    let fun_id = bt_ctx.translate_fun_decl_id(span, item.def_id);
 
                     // Check if we implement a required method or reimplement
                     // a provided method

@@ -33,7 +33,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 //   const C = 32; // HERE
                 // }
                 // ```
-                let _ = self.translate_global_decl_id(def_id);
+                let _ = self.translate_global_decl_id(&None, def_id);
             }
             ImplItemKind::Type(_) => {
                 // Trait type:
@@ -54,7 +54,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 assert!(tcx.associated_item(def_id).trait_item_def_id.is_some());
             }
             ImplItemKind::Fn(_, _) => {
-                let _ = self.translate_fun_decl_id(def_id);
+                let _ = self.translate_fun_decl_id(&None, def_id);
             }
         }
     }
@@ -106,13 +106,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             ItemKind::OpaqueTy(_) => unimplemented!(),
             ItemKind::Union(..) => unimplemented!(),
             ItemKind::Enum(..) | ItemKind::Struct(_, _) => {
-                let _ = self.translate_type_decl_id(def_id);
+                let _ = self.translate_type_decl_id(&None, def_id);
             }
             ItemKind::Fn(_, _, _) => {
-                let _ = self.translate_fun_decl_id(def_id);
+                let _ = self.translate_fun_decl_id(&None, def_id);
             }
             ItemKind::Trait(..) => {
-                let _ = self.translate_trait_decl_id(def_id);
+                let _ = self.translate_trait_decl_id(&None, def_id);
                 // We don't need to explore the associated items: we will
                 // explore them when translating the trait
             }
@@ -132,7 +132,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 let trans_id: hax::DefId = def_id.sinto(&self.hax_state);
                 if !trans_id.is_anon_const() {
                     if extract_constants_at_top_level(self.mir_level) {
-                        let _ = self.translate_global_decl_id(def_id);
+                        let _ = self.translate_global_decl_id(&None, def_id);
                     } else {
                         // Avoid registering globals in optimized MIR (they will be inlined)
                     }
@@ -146,7 +146,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
                 // If this is a trait implementation, register it
                 if self.tcx.trait_id_of_impl(def_id).is_some() {
-                    let _ = self.translate_trait_impl_id(def_id);
+                    let _ = self.translate_trait_impl_id(&None, def_id);
                 }
 
                 // Explore the items
@@ -229,6 +229,7 @@ pub fn translate<'tcx, 'ctx>(
         id_to_file: HashMap::new(),
         real_file_counter: meta::LocalFileId::Generator::new(),
         virtual_file_counter: meta::VirtualFileId::Generator::new(),
+        dep_sources: HashMap::new(),
         type_id_map: ty::TypeDeclId::MapGenerator::new(),
         type_decls: ty::TypeDeclId::Map::new(),
         fun_id_map: ast::FunDeclId::MapGenerator::new(),

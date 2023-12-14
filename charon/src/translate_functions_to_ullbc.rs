@@ -112,7 +112,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn get_fun_kind(&mut self, rust_id: DefId) -> FunKind {
+    pub(crate) fn get_fun_kind(&mut self, src: &Option<DepSource>, rust_id: DefId) -> FunKind {
         trace!("rust_id: {:?}", rust_id);
         let tcx = self.tcx;
         if let Some(assoc) = tcx.opt_associated_item(rust_id) {
@@ -151,14 +151,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         None => FunKind::Regular,
                         Some(trait_method_id) => {
                             let trait_id = tcx.trait_of_item(trait_method_id).unwrap();
-                            let trait_id = self.translate_trait_decl_id(trait_id);
+                            let trait_id = self.translate_trait_decl_id(src, trait_id);
                             // The trait id should be Some(...): trait markers (that we
                             // may eliminate) don't have methods.
                             let trait_id = trait_id.unwrap();
 
                             // Retrieve the id of the impl block
                             let impl_id = self
-                                .translate_trait_impl_id(tcx.predicates_of(rust_id).parent.unwrap())
+                                .translate_trait_impl_id(
+                                    src,
+                                    tcx.predicates_of(rust_id).parent.unwrap(),
+                                )
                                 .unwrap();
 
                             let method_name = self.translate_trait_item_name(trait_method_id);
@@ -166,7 +169,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                             // Check if the current function implements a provided method.
                             // We do so by retrieving the def id of the method which is
                             // implemented, and checking its kind.
-                            let provided = match self.get_fun_kind(trait_method_id) {
+                            let provided = match self.get_fun_kind(src, trait_method_id) {
                                 FunKind::TraitMethodDecl(..) => false,
                                 FunKind::TraitMethodProvided(..) => true,
                                 FunKind::Regular | FunKind::TraitMethodImpl { .. } => {
@@ -203,7 +206,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // Compute additional information
                     let method_name = self.translate_trait_item_name(rust_id);
                     let trait_id = tcx.trait_of_item(rust_id).unwrap();
-                    let trait_id = self.translate_trait_decl_id(trait_id);
+                    let trait_id = self.translate_trait_decl_id(src, trait_id);
                     // The trait id should be Some(...): trait markers (that we
                     // may eliminate) don't have methods.
                     let trait_id = trait_id.unwrap();
@@ -774,7 +777,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             trait_refs,
                         )?;
 
-                        let type_id = self.translate_type_id(adt_id);
+                        let type_id = self.translate_type_id(span, adt_id);
                         // Sanity check
                         matches!(&type_id, TypeId::Adt(_));
 
@@ -805,7 +808,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             trait_refs,
                         )?;
 
-                        let def_id = self.translate_fun_decl_id(def_id.rust_def_id.unwrap());
+                        let def_id = self.translate_fun_decl_id(span, def_id.rust_def_id.unwrap());
                         let akind = AggregateKind::Closure(def_id, generics);
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
@@ -949,7 +952,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 match trait_info {
                     Option::None => {
                         // "Regular" function call
-                        let def_id = self.translate_fun_decl_id(rust_id);
+                        let def_id = self.translate_fun_decl_id(span, rust_id);
                         let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
                         let func = FnPtr {
                             func,
@@ -973,7 +976,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         trace!("{:?}", rust_id);
 
-                        let trait_method_fun_id = self.translate_fun_decl_id(rust_id);
+                        let trait_method_fun_id = self.translate_fun_decl_id(span, rust_id);
                         let method_name = self.t_ctx.translate_trait_item_name(rust_id);
 
                         // Compute the concatenation of all the generic arguments which were given to
@@ -1548,6 +1551,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = false;
         let span = self.t_ctx.tcx.def_span(def_id);
         let is_closure = tcx.is_closure(def_id);
+        let dep_src = DepSource::make(def_id, span);
 
         // The parameters (and in particular the lifetimes) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
@@ -1678,7 +1682,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let signature = signature.value;
 
         self.set_first_bound_regions_group(bvar_names);
-        let fun_kind = &self.t_ctx.get_fun_kind(def_id);
+        let fun_kind = &self.t_ctx.get_fun_kind(&dep_src, def_id);
 
         // Add the trait clauses
         self.while_registering_trait_clauses(move |ctx| {
@@ -1743,7 +1747,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             None
         };
 
-        let mut parent_params_info = self.get_function_parent_params_info(def_id);
+        let mut parent_params_info = self.get_function_parent_params_info(&dep_src, def_id);
         // If this is a trait decl method, we need to adjust the number of parent clauses
         if matches!(
             fun_kind,
@@ -1768,8 +1772,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         })
     }
 
-    fn get_function_parent_params_info(&mut self, def_id: DefId) -> Option<ParamsInfo> {
-        let kind = self.t_ctx.get_fun_kind(def_id);
+    fn get_function_parent_params_info(
+        &mut self,
+        src: &Option<DepSource>,
+        def_id: DefId,
+    ) -> Option<ParamsInfo> {
+        let kind = self.t_ctx.get_fun_kind(src, def_id);
         match kind {
             FunKind::Regular => None,
             FunKind::TraitMethodImpl { .. }
@@ -1803,8 +1811,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Auxliary helper to properly handle errors, see [translate_function].
     pub fn translate_function_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate function:\n{:?}", rust_id);
-        let def_id = self.translate_fun_decl_id(rust_id);
+        let def_id = self.translate_fun_decl_id(&None, rust_id);
         let is_transparent = self.id_is_transparent(rust_id);
+        let def_span = self.tcx.def_span(rust_id);
 
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
@@ -1819,7 +1828,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
-        let kind = bt_ctx.t_ctx.get_fun_kind(rust_id);
+        let kind = bt_ctx
+            .t_ctx
+            .get_fun_kind(&DepSource::make(rust_id, def_span), rust_id);
         let is_trait_method_decl = match &kind {
             FunKind::Regular
             | FunKind::TraitMethodImpl { .. }
@@ -1887,7 +1898,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         trace!("About to translate global:\n{:?}", rust_id);
         let span = self.tcx.def_span(rust_id);
 
-        let def_id = self.translate_global_decl_id(rust_id);
+        let def_id = self.translate_global_decl_id(&None, rust_id);
 
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
