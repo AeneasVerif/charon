@@ -114,8 +114,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 RawConstantExpr::Ref(Box::new(be))
             }
             ConstantExprKind::ConstRef { id } => {
-                let var_id = self.const_generic_vars_map.get(&id.index).unwrap();
-                RawConstantExpr::Var(var_id)
+                let var_id = self.const_generic_vars_map.get(&id.index);
+                if let Some(var_id) = var_id {
+                    RawConstantExpr::Var(var_id)
+                } else {
+                    error_or_panic!(
+                        self,
+                        span,
+                        &format!(
+                            "Unexpected error: could not find the const var generic of index {}",
+                            id.index
+                        )
+                    )
+                }
             }
             ConstantExprKind::FnPtr(fn_id, substs, trait_refs, trait_info) => {
                 use crate::translate_functions_to_ullbc::SubstFunIdOrPanic;
