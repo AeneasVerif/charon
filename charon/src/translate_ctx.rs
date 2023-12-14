@@ -15,6 +15,7 @@ use hax_frontend_exporter::SInto;
 use im::OrdMap;
 use linked_hash_set::LinkedHashSet;
 use macros::VariantIndexArity;
+use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
@@ -119,8 +120,8 @@ pub(crate) use register_error_or_panic;
 /// (transitively) lead to the extraction of those problematic dependencies.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DepSource {
-    src_id: DefId,
-    span: rustc_span::Span,
+    pub src_id: DefId,
+    pub span: rustc_span::Span,
 }
 
 impl DepSource {
@@ -232,6 +233,9 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// Dependency graph with sources. We use this for error reporting.
     /// See [DepSource].
     pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
+    /// The ids of the definitions we completely failed to extract
+    /// and had to ignore.
+    pub ignored_failed_defs: HashSet<DefId>,
     /// The map from Rust function ids to translated function ids
     pub fun_id_map: ast::FunDeclId::MapGenerator<DefId>,
     /// The translated function definitions
@@ -353,13 +357,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.continue_on_failure
     }
 
-    pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
+    pub fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
         let msg = msg.to_string();
         if self.errors_as_warnings {
             self.session.span_warn(span, msg);
         } else {
             self.session.span_err(span, msg);
         }
+    }
+
+    pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+        self.span_err_no_register(span, msg);
         self.increment_error_count();
     }
 
@@ -475,6 +483,22 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.all_ids.insert(trans_id);
     }
 
+    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
+    pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
+        if let Some(src) = src {
+            if src.src_id != id {
+                match self.dep_sources.get_mut(&id) {
+                    None => {
+                        let _ = self.dep_sources.insert(id, HashSet::from([*src]));
+                    }
+                    Some(srcs) => {
+                        let _ = srcs.insert(*src);
+                    }
+                }
+            }
+        }
+    }
+
     pub(crate) fn register_type_decl_id(
         &mut self,
         src: &Option<DepSource>,
@@ -500,33 +524,15 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.register_type_decl_id(src, id)
     }
 
-    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
-    pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
-        if let Some(src) = src {
-            if src.src_id != id {
-                match self.dep_sources.get_mut(&id) {
-                    None => {
-                        let _ = self.dep_sources.insert(id, HashSet::from([*src]));
-                    }
-                    Some(srcs) => {
-                        let _ = srcs.insert(*src);
-                    }
-                }
-            }
-        }
-    }
-
     // TODO: factor out all the "register_..." functions
     pub(crate) fn register_fun_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
     ) -> ast::FunDeclId::Id {
+        self.register_dep_source(src, id);
         match self.fun_id_map.get(&id) {
-            Option::Some(tid) => {
-                self.register_dep_source(src, id);
-                tid
-            }
+            Option::Some(tid) => tid,
             Option::None => {
                 let rid = if self.tcx.is_const_fn_raw(id) {
                     OrdRustId::ConstFun(id)

@@ -1792,9 +1792,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Translate one function.
     pub(crate) fn translate_function(&mut self, rust_id: DefId) {
-        // TODO: for now, if there is an error while translating the signature
-        // of the function, we ignore the function altogether, while we should
-        // save somewhere that we failed to extract it.
         if self.translate_function_aux(rust_id).is_err() {
             let span = self.tcx.def_span(rust_id);
             self.span_err(
@@ -1804,7 +1801,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     rust_id
                 ),
             );
-            // TODO
+            // Save the definition
+            let _ = self.ignored_failed_defs.insert(rust_id);
         }
     }
 
@@ -1877,9 +1875,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     /// Translate one global.
     pub(crate) fn translate_global(&mut self, rust_id: DefId) {
-        // TODO: for now, if there is an error while translating the parameters/
-        // predicates of the global, we ignore the declaration altogether, while
-        // we should save somewhere that we failed to extract it.
         if self.translate_global_aux(rust_id).is_err() {
             let span = self.tcx.def_span(rust_id);
             self.span_err(
@@ -1889,7 +1884,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     rust_id
                 ),
             );
-            // TODO
+            // Save the definition
+            let _ = self.ignored_failed_defs.insert(rust_id);
         }
     }
 

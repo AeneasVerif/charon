@@ -231,9 +231,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) {
-        // TODO: for now, if there is an error while translating the parameters/
-        // predicates of the declaration, we ignore it altogether, while we should
-        // save somewhere that we failed to extract it.
         if self.translate_trait_decl_aux(rust_id).is_err() {
             let span = self.tcx.def_span(rust_id);
             self.span_err(
@@ -243,7 +240,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     rust_id
                 ),
             );
-            // TODO
+            // Save the definition
+            let _ = self.ignored_failed_defs.insert(rust_id);
         }
     }
 
@@ -438,9 +436,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_trait_impl(&mut self, rust_id: DefId) {
-        // TODO: for now, if there is an error while translating the parameters/
-        // predicates of the declaration, we ignore it altogether, while we should
-        // save somewhere that we failed to extract it.
         if self.translate_trait_impl_aux(rust_id).is_err() {
             let span = self.tcx.def_span(rust_id);
             self.span_err(
@@ -450,7 +445,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     rust_id
                 ),
             );
-            // TODO
+            // Save the definition
+            let _ = self.ignored_failed_defs.insert(rust_id);
         }
     }
 
@@ -557,8 +553,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 decl_required_methods.insert(item.name.to_string());
             }
         }
-
-        // Explore the clauses of the
 
         // Explore the associated items
         // We do something subtle here: TODO

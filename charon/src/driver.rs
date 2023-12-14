@@ -288,6 +288,8 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
             info!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
         }
 
+        // Display an error report about the external dependencies, if necessary
+        ctx.report_external_deps_errors();
         // # Final step: generate the files.
         export::export_llbc(
             &ctx,

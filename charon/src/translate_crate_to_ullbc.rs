@@ -11,7 +11,7 @@ use linked_hash_set::LinkedHashSet;
 use rustc_hir::{Defaultness, ImplItem, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn register_local_hir_impl_item(&mut self, _top_item: bool, impl_item: &ImplItem) {
@@ -230,6 +230,7 @@ pub fn translate<'tcx, 'ctx>(
         real_file_counter: meta::LocalFileId::Generator::new(),
         virtual_file_counter: meta::VirtualFileId::Generator::new(),
         dep_sources: HashMap::new(),
+        ignored_failed_defs: HashSet::new(),
         type_id_map: ty::TypeDeclId::MapGenerator::new(),
         type_decls: ty::TypeDeclId::Map::new(),
         fun_id_map: ast::FunDeclId::MapGenerator::new(),
