@@ -813,7 +813,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             trait_refs,
                         )?;
 
-                        let def_id = self.translate_fun_decl_id(span, def_id.rust_def_id.unwrap());
+                        let def_id = self.translate_fun_decl_id(span, DefId::from(def_id));
                         let akind = AggregateKind::Closure(def_id, generics);
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
@@ -969,7 +969,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                     Option::Some(trait_info) => {
                         // Trait method
-                        let rust_id = def_id.rust_def_id.unwrap();
+                        let rust_id = DefId::from(def_id);
                         let impl_source = self.translate_trait_impl_source(
                             span,
                             erase_regions,
@@ -1378,7 +1378,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         match fun {
             hax::FunOperand::Id(def_id) => {
                 // Regular function call
-                let rust_id = def_id.rust_def_id.unwrap();
+                let rust_id = DefId::from(def_id);
 
                 // Translate the function operand - should be a constant: we don't
                 // support closures for now

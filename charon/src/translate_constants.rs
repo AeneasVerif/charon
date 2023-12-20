@@ -5,6 +5,7 @@ use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::*;
 use hax_frontend_exporter as hax;
+use rustc_hir::def_id::DefId;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_constant_literal_to_raw_constant_expr(
@@ -62,16 +63,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ConstantExprKind::Literal(lit) => {
                 self.translate_constant_literal_to_raw_constant_expr(span, lit)?
             }
-            ConstantExprKind::Adt {
-                info: _,
-                vid,
-                fields,
-            } => {
+            ConstantExprKind::Adt { info, fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
                     .map(|f| self.translate_constant_expr_to_constant_expr(span, &f.value))
                     .try_collect()?;
-                let vid = vid.map(VariantId::Id::new);
+                let vid = if info.typ_is_struct {
+                    None
+                } else {
+                    Some(VariantId::Id::new(info.variant_index))
+                };
                 RawConstantExpr::Adt(vid, fields)
             }
             ConstantExprKind::Array { .. } => {
@@ -106,9 +107,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let name = TraitItemName(name.clone());
                 RawConstantExpr::TraitConst(trait_ref, generics, name)
             }
-            ConstantExprKind::GlobalName { id } => RawConstantExpr::Global(
-                self.translate_global_decl_id(span, id.rust_def_id.unwrap()),
-            ),
+            ConstantExprKind::GlobalName { id } => {
+                RawConstantExpr::Global(self.translate_global_decl_id(span, DefId::from(id)))
+            }
             ConstantExprKind::Borrow(be) => {
                 let be = self.translate_constant_expr_to_constant_expr(span, be)?;
                 RawConstantExpr::Ref(Box::new(be))

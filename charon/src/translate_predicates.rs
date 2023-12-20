@@ -119,7 +119,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // **IMPORTANT**: we do NOT want to use [TyCtxt::predicates_of].
                 let preds = tcx.predicates_defined_on(parent_id).sinto(&self.hax_state);
                 for (pred, span) in preds.predicates {
-                    if let hax::PredicateKind::Clause(hax::Clause::Trait(clause)) = &pred.value {
+                    if let hax::PredicateKind::Clause(hax::Clause {
+                        kind: hax::ClauseKind::Trait(clause),
+                        ..
+                    }) = &pred.value
+                    {
                         if self
                             .translate_trait_decl_id(
                                 span.rust_span,
@@ -228,8 +232,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let trait_preds: Vec<_> = trait_clauses
                 .iter()
                 .map(|(tr, span)| {
-                    let value =
-                        hax::PredicateKind::Clause(hax::Clause::Trait(tr.sinto(&self.hax_state)));
+                    let value = hax::PredicateKind::Clause(hax::Clause {
+                        kind: hax::ClauseKind::Trait(tr.sinto(&self.hax_state)),
+                        // Remark: we introduce a dummy id...
+                        id: 0,
+                    });
                     let pred = hax::Binder {
                         value,
                         bound_vars: Vec::new(),
@@ -377,10 +384,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // which introduce trait clauses *before* translating the other predicates
         // (because in order to translate the latters we might need to solve
         // trait parameters which need the formers).
-        use hax::{Clause, PredicateKind};
-        let (preds_traits, preds): (Vec<_>, Vec<_>) = preds
-            .iter()
-            .partition(|(pred, _)| matches!(&pred.value, PredicateKind::Clause(Clause::Trait(_))));
+        use hax::{Clause, ClauseKind, PredicateKind};
+        let (preds_traits, preds): (Vec<_>, Vec<_>) = preds.iter().partition(|(pred, _)| {
+            matches!(
+                &pred.value,
+                PredicateKind::Clause(Clause {
+                    kind: ClauseKind::Trait(_),
+                    ..
+                })
+            )
+        });
         let preds: Vec<_> = preds_traits.into_iter().chain(preds.into_iter()).collect();
 
         for (pred, span) in preds {
@@ -531,64 +544,68 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // By doing so, we allow the predicates to contain DeBruijn indices,
         // but it is ok because we only do a simple check.
         let pred_kind = &pred.value;
-        use hax::{Clause, PredicateKind};
+        use hax::{Clause, ClauseKind, PredicateKind};
         match pred_kind {
-            PredicateKind::Clause(Clause::Trait(trait_pred)) => Ok(self
-                .translate_trait_clause(hspan, trait_pred)?
-                .map(Predicate::Trait)),
-            PredicateKind::Clause(Clause::RegionOutlives(p)) => {
-                let r0 = self.translate_region(span, erase_regions, &p.0)?;
-                let r1 = self.translate_region(span, erase_regions, &p.1)?;
-                Ok(Some(Predicate::RegionOutlives(OutlivesPred(r0, r1))))
-            }
-            PredicateKind::Clause(Clause::TypeOutlives(p)) => {
-                let ty = self.translate_ty(span, erase_regions, &p.0)?;
-                let r = self.translate_region(span, erase_regions, &p.1)?;
-                Ok(Some(Predicate::TypeOutlives(OutlivesPred(ty, r))))
-            }
-            PredicateKind::Clause(Clause::Projection(p)) => {
-                // This is used to express constraints over associated types.
-                // For instance:
-                // ```
-                // T : Foo<S = String>
-                //         ^^^^^^^^^^
-                // ```
-                let hax::ProjectionPredicate {
-                    impl_source,
-                    substs,
-                    type_name,
-                    ty,
-                } = p;
+            PredicateKind::Clause(Clause { kind, .. }) => {
+                match kind {
+                    ClauseKind::Trait(trait_pred) => Ok(self
+                        .translate_trait_clause(hspan, trait_pred)?
+                        .map(Predicate::Trait)),
+                    ClauseKind::RegionOutlives(p) => {
+                        let r0 = self.translate_region(span, erase_regions, &p.lhs)?;
+                        let r1 = self.translate_region(span, erase_regions, &p.rhs)?;
+                        Ok(Some(Predicate::RegionOutlives(OutlivesPred(r0, r1))))
+                    }
+                    ClauseKind::TypeOutlives(p) => {
+                        let ty = self.translate_ty(span, erase_regions, &p.lhs)?;
+                        let r = self.translate_region(span, erase_regions, &p.rhs)?;
+                        Ok(Some(Predicate::TypeOutlives(OutlivesPred(ty, r))))
+                    }
+                    ClauseKind::Projection(p) => {
+                        // This is used to express constraints over associated types.
+                        // For instance:
+                        // ```
+                        // T : Foo<S = String>
+                        //         ^^^^^^^^^^
+                        // ```
+                        let hax::ProjectionPredicate {
+                            impl_source,
+                            substs,
+                            type_name,
+                            ty,
+                        } = p;
 
-                let trait_ref =
-                    self.translate_trait_impl_source(span, erase_regions, impl_source)?;
-                // The trait ref should be Some(...): the marker traits (that
-                // we may filter) don't have associated types.
-                let trait_ref = trait_ref.unwrap();
+                        let trait_ref =
+                            self.translate_trait_impl_source(span, erase_regions, impl_source)?;
+                        // The trait ref should be Some(...): the marker traits (that
+                        // we may filter) don't have associated types.
+                        let trait_ref = trait_ref.unwrap();
 
-                let (regions, types, const_generics) = self
-                    .translate_substs(span, erase_regions, None, substs)
-                    .unwrap();
-                let generics = GenericArgs {
-                    regions,
-                    types,
-                    const_generics,
-                    trait_refs: Vec::new(),
-                };
-                let ty = self.translate_ty(span, erase_regions, ty).unwrap();
-                let type_name = TraitItemName(type_name.clone());
-                Ok(Some(Predicate::TraitType(TraitTypeConstraint {
-                    trait_ref,
-                    generics,
-                    type_name,
-                    ty,
-                })))
-            }
-            PredicateKind::Clause(Clause::ConstArgHasType(..)) => {
-                // I don't really understand that one. Why don't they put
-                // the type information in the const generic parameters
-                // directly? For now we just ignore it.
-                Ok(None)
+                        let (regions, types, const_generics) = self
+                            .translate_substs(span, erase_regions, None, substs)
+                            .unwrap();
+                        let generics = GenericArgs {
+                            regions,
+                            types,
+                            const_generics,
+                            trait_refs: Vec::new(),
+                        };
+                        let ty = self.translate_ty(span, erase_regions, ty).unwrap();
+                        let type_name = TraitItemName(type_name.clone());
+                        Ok(Some(Predicate::TraitType(TraitTypeConstraint {
+                            trait_ref,
+                            generics,
+                            type_name,
+                            ty,
+                        })))
+                    }
+                    ClauseKind::ConstArgHasType(..) => {
+                        // I don't really understand that one. Why don't they put
+                        // the type information in the const generic parameters
+                        // directly? For now we just ignore it.
+                        Ok(None)
+                    }
+                }
             }
             PredicateKind::WellFormed(_) => error_or_panic!(
                 self,
@@ -737,7 +754,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 assert!(trait_ref.bound_vars.is_empty());
                 let trait_ref = &trait_ref.value;
 
-                let def_id = trait_ref.def_id.rust_def_id.unwrap();
+                let def_id = DefId::from(&trait_ref.def_id);
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
                 let trait_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
@@ -771,7 +788,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ImplSourceKind::Builtin(trait_ref, traits) => {
                 assert!(trait_ref.bound_vars.is_empty());
                 let trait_ref = &trait_ref.value;
-                let def_id = trait_ref.def_id.rust_def_id.unwrap();
+                let def_id = DefId::from(&trait_ref.def_id);
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
                 let trait_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
@@ -791,7 +808,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
             ImplSourceKind::AutoImpl(data) => {
-                let def_id = data.trait_def_id.rust_def_id.unwrap();
+                let def_id = DefId::from(&data.trait_def_id);
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
                 let trait_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
@@ -826,8 +843,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // body of the caller, which means it can't be an assumed function
                 // (there is a very limited number of assumed functions, and they
                 // are all top-level).
-                let fn_id =
-                    self.translate_fun_decl_id(span, data.closure_def_id.rust_def_id.unwrap());
+                let fn_id = self.translate_fun_decl_id(span, DefId::from(&data.closure_def_id));
                 let erased_regions = false;
                 let (regions, types, const_generics) =
                     self.translate_substs(span, erased_regions, None, &data.parent_substs)?;

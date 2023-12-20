@@ -153,9 +153,10 @@ impl Name {
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Retrieve an item name from a [DefId].
-    pub fn extended_def_id_to_name(&mut self, def_id: &hax::ExtendedDefId) -> Result<Name, Error> {
+    pub fn extended_def_id_to_name(&mut self, def_id: DefId) -> Result<Name, Error> {
         trace!("{:?}", def_id);
-        let span = self.tcx.def_span(def_id.rust_def_id.unwrap());
+        let tcx = self.tcx;
+        let span = tcx.def_span(def_id);
 
         // We have to be a bit careful when retrieving names from def ids. For instance,
         // due to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
@@ -210,60 +211,83 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut found_crate_name = false;
         let mut name: Vec<PathElem> = Vec::new();
 
+        let def_path = tcx.def_path(def_id);
+        let crate_name = tcx.crate_name(def_path.krate).to_string();
+
+        let parents: Vec<DefId> = {
+            let mut parents = vec![def_id];
+            let mut cur_id = def_id;
+            while let Some(parent) = tcx.opt_parent(cur_id) {
+                parents.push(parent);
+                cur_id = parent;
+            }
+            parents.into_iter().rev().collect()
+        };
+
         // Rk.: below we try to be as tight as possible with regards to sanity
         // checks, to make sure we understand what happens with def paths, and
         // fail whenever we get something which is even slightly outside what
         // we expect.
-        for data in &def_id.path {
+        for (data, cur_id) in def_path.data.iter().zip(parents.into_iter()) {
             // Match over the key data
             let disambiguator = Disambiguator::Id::new(data.disambiguator as usize);
-            use hax::ExtendedDefPathItem;
+            use rustc_hir::definitions::DefPathData;
             match &data.data {
-                ExtendedDefPathItem::TypeNs(symbol) => {
+                DefPathData::TypeNs(symbol) => {
                     assert!(data.disambiguator == 0); // Sanity check
-                    name.push(PathElem::Ident(symbol.clone(), disambiguator));
+                    name.push(PathElem::Ident(symbol.to_string(), disambiguator));
                 }
-                ExtendedDefPathItem::ValueNs(symbol) => {
+                DefPathData::ValueNs(symbol) => {
                     if data.disambiguator != 0 {
                         // I don't like that
 
                         // I think this only happens with names introduced by macros
                         // (though not sure). For instance:
                         // `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
-                        let s = symbol;
+                        let s = symbol.to_string();
                         assert!(s == "_");
-                        name.push(PathElem::Ident(s.clone(), disambiguator));
+                        name.push(PathElem::Ident(s, disambiguator));
                     } else {
-                        name.push(PathElem::Ident(symbol.clone(), disambiguator));
+                        name.push(PathElem::Ident(symbol.to_string(), disambiguator));
                     }
                 }
-                ExtendedDefPathItem::CrateRoot => {
+                DefPathData::CrateRoot => {
                     // Sanity check
                     assert!(data.disambiguator == 0);
 
                     // This should be the beginning of the path
                     assert!(name.is_empty());
                     found_crate_name = true;
-                    name.push(PathElem::Ident(def_id.krate.clone(), disambiguator));
+                    name.push(PathElem::Ident(crate_name.clone(), disambiguator));
                 }
-                ExtendedDefPathItem::Impl {
-                    id,
-                    substs,
-                    bounds: _, // We actually need to directly interact with Rustc
-                    ty,
-                } => {
+                DefPathData::Impl => {
                     // We need to convert the type, which may contain quantified
                     // substs and bounds. In order to properly do so, we introduce
                     // a body translation context.
-                    let id = id.unwrap();
+                    let id = cur_id;
+
+                    // Translate to hax types
+                    let s1 = &hax::State::new_from_state_and_id(&self.hax_state, id);
+                    let substs =
+                        rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, id)
+                            .sinto(s1);
+                    // TODO: use the bounds
+                    let _bounds: Vec<hax::Predicate> = tcx
+                        .predicates_of(id)
+                        .predicates
+                        .into_iter()
+                        .map(|(x, _)| x.sinto(s1))
+                        .collect();
+                    let ty = tcx.type_of(id).subst_identity().sinto(s1);
+
+                    // Translate from hax to LLBC
                     let mut bt_ctx = BodyTransCtx::new(id, self);
 
                     bt_ctx
-                        .translate_generic_params_from_hax(span, substs)
+                        .translate_generic_params_from_hax(span, &substs)
                         .unwrap();
                     bt_ctx.translate_predicates_of(None, id).unwrap();
                     let erase_regions = false;
-
                     // Two cases, depending on whether the impl block is
                     // a "regular" impl block (`impl Foo { ... }`) or a trait
                     // implementation (`impl Bar for Foo { ... }`).
@@ -295,10 +319,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         kind,
                     }));
                 }
-                ExtendedDefPathItem::ImplTrait => {
+                DefPathData::ImplTrait => {
                     // TODO: do nothing for now
                 }
-                ExtendedDefPathItem::MacroNs(symbol) => {
+                DefPathData::MacroNs(symbol) => {
                     assert!(data.disambiguator == 0); // Sanity check
 
                     // There may be namespace collisions between, say, function
@@ -306,17 +330,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // of an issue here, because for now we don't expose macros
                     // in the AST, and only use macro names in [register], for
                     // instance to filter opaque modules.
-                    name.push(PathElem::Ident(symbol.clone(), disambiguator));
+                    name.push(PathElem::Ident(symbol.to_string(), disambiguator));
                 }
-                ExtendedDefPathItem::ClosureExpr => {
+                DefPathData::ClosureExpr => {
                     // TODO: this is not very satisfactory, but on the other hand
                     // we should be able to extract closures in local let-bindings
                     // (i.e., we shouldn't have to introduce top-level let-bindings).
                     name.push(PathElem::Ident("closure".to_string(), disambiguator))
                 }
                 _ => {
-                    error!("Unexpected ExtendedDefPathItem: {:?}", data);
-                    unreachable!("Unexpected ExtendedDefPathItem: {:?}", data);
+                    error!("Unexpected DefPathData: {:?}", data);
+                    unreachable!("Unexpected DefPathData: {:?}", data);
                 }
             }
         }
@@ -324,7 +348,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // We always add the crate name
         if !found_crate_name {
             name.push(PathElem::Ident(
-                def_id.krate.clone(),
+                crate_name.clone(),
                 Disambiguator::Id::new(0),
             ));
         }
@@ -402,7 +426,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     pub fn def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
         // We have to create a hax state, which is annoying...
-        let state = self.make_hax_state_with_id(def_id.rust_def_id.unwrap());
-        self.extended_def_id_to_name(&def_id.rust_def_id.unwrap().sinto(&state))
+        self.extended_def_id_to_name(DefId::from(def_id))
     }
 }

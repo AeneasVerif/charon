@@ -135,7 +135,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 // as the anonymous constants are inlined in those bodies, they
                 // disappear completely.
                 let trans_id: hax::DefId = def_id.sinto(&self.hax_state);
-                if !trans_id.is_anon_const() {
+                if trans_id.path.last().unwrap().data != hax::DefPathItem::AnonConst {
                     if extract_constants_at_top_level(self.mir_level) {
                         let _ = self.translate_global_decl_id(&None, def_id);
                     } else {

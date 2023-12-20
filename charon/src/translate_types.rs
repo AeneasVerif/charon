@@ -219,7 +219,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_refs,
                 def_id,
             } => {
-                let adt_did = def_id.rust_def_id.unwrap();
+                let adt_did: DefId = def_id.into();
                 trace!("Adt: {:?}", adt_did);
 
                 // Retrieve the list of used arguments
@@ -333,10 +333,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 error_or_panic!(
                     self,
                     span,
-                    format!(
-                        "Unsupported type: foreign type: {:?}",
-                        id.rust_def_id.unwrap()
-                    )
+                    format!("Unsupported type: foreign type: {:?}", DefId::from(id))
                 )
             }
             hax::Ty::Infer(_) => {
@@ -487,7 +484,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         def_id: &hax::DefId,
     ) -> Result<TypeId, Error> {
         trace!("{:?}", def_id);
-        let rust_id = def_id.rust_def_id.unwrap();
+        let rust_id: DefId = def_id.into();
         if rust_id.is_local() {
             Ok(TypeId::Adt(self.translate_type_decl_id(span, rust_id)))
         } else {
@@ -521,7 +518,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         adt: hax::AdtDef,
     ) -> Result<TypeDeclKind, Error> {
         trace!("{}", trans_id);
-        let def_span = self.t_ctx.tcx.def_span(adt.did.rust_def_id.unwrap());
+        let def_span = self.t_ctx.tcx.def_span(DefId::from(&adt.did));
 
         // In case the type is external, check if we should consider the type as
         // transparent (i.e., extract its body). If it is an enumeration, then yes
@@ -612,7 +609,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
             AdtKind::Enum => TypeDeclKind::Enum(VariantId::Vector::from(variants)),
             AdtKind::Union => {
-                let span = self.t_ctx.tcx.def_span(adt.did.rust_def_id.unwrap());
+                let span = self.t_ctx.tcx.def_span(DefId::from(&adt.did));
                 error_or_panic!(self, span, "Union types are not supported")
             }
         };

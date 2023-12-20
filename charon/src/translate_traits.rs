@@ -111,8 +111,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Convert to a clause
         assert!(pred.bound_vars.is_empty());
-        let self_pred = if let hax::PredicateKind::Clause(hax::Clause::Trait(trait_pred)) =
-            pred.value
+        let self_pred = if let hax::PredicateKind::Clause(hax::Clause {
+            kind: hax::ClauseKind::Trait(trait_pred),
+            ..
+        }) = pred.value
         {
             if self
                 .translate_trait_decl_id(*rspan, trait_pred.trait_ref.def_id.rust_def_id.unwrap())?
@@ -265,7 +267,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         trace!("Trait decl id:\n{:?}", def_id);
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
-
         let name = bt_ctx
             .t_ctx
             .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
