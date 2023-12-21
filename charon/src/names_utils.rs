@@ -223,13 +223,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             }
             parents.into_iter().rev().collect()
         };
-        assert!(parents.len() == def_path.data.len());
 
         // Rk.: below we try to be as tight as possible with regards to sanity
         // checks, to make sure we understand what happens with def paths, and
         // fail whenever we get something which is even slightly outside what
         // we expect.
-        for (data, cur_id) in def_path.data.iter().zip(parents.into_iter()) {
+        for cur_id in parents {
+            let data = tcx.def_key(cur_id).disambiguated_data;
             // Match over the key data
             let disambiguator = Disambiguator::Id::new(data.disambiguator as usize);
             use rustc_hir::definitions::DefPathData;
@@ -276,7 +276,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let _bounds: Vec<hax::Predicate> = tcx
                         .predicates_of(id)
                         .predicates
-                        .into_iter()
+                        .iter()
                         .map(|(x, _)| x.sinto(s1))
                         .collect();
                     let ty = tcx.type_of(id).subst_identity().sinto(s1);
