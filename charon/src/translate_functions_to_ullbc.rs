@@ -1828,9 +1828,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         // Translate the function name
-        let name = bt_ctx
-            .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
+        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
@@ -1915,9 +1913,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let hax_state = &bt_ctx.hax_state;
 
         // Translate the global name
-        let name = bt_ctx
-            .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(hax_state))?;
+        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();

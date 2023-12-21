@@ -153,7 +153,7 @@ impl Name {
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Retrieve an item name from a [DefId].
-    pub fn extended_def_id_to_name(&mut self, def_id: DefId) -> Result<Name, Error> {
+    pub fn def_id_to_name(&mut self, def_id: DefId) -> Result<Name, Error> {
         trace!("{:?}", def_id);
         let tcx = self.tcx;
         let span = tcx.def_span(def_id);
@@ -223,6 +223,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             }
             parents.into_iter().rev().collect()
         };
+        assert!(parents.len() == def_path.data.len());
 
         // Rk.: below we try to be as tight as possible with regards to sanity
         // checks, to make sure we understand what happens with def paths, and
@@ -407,25 +408,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             | ItemKind::Const(_, _)
             | ItemKind::Static(_, _, _)
             | ItemKind::Macro(_, _)
-            | ItemKind::Trait(..) => Option::Some(self.extended_def_id_to_name(&def_id)?),
+            | ItemKind::Trait(..) => Option::Some(self.def_id_to_name(def_id)?),
             _ => {
                 unimplemented!("{:?}", item.kind);
             }
         };
         Ok(name)
-    }
-
-    // TODO: remove
-    pub fn item_def_id_to_name(
-        &mut self,
-        def_id: rustc_span::def_id::DefId,
-    ) -> Result<Name, Error> {
-        let state = self.make_hax_state_with_id(def_id);
-        self.extended_def_id_to_name(&def_id.sinto(&state))
-    }
-
-    pub fn def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
-        // We have to create a hax state, which is annoying...
-        self.extended_def_id_to_name(DefId::from(def_id))
     }
 }

@@ -492,7 +492,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Retrieve the type name
             let name = self.t_ctx.def_id_to_name(def_id)?;
-
             match assumed::get_type_id_from_name(&name) {
                 Option::Some(id) => {
                     // The type has primitive support
@@ -754,9 +753,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Register the type
-        let name = bt_ctx
-            .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
+        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
         let generics = bt_ctx.get_generics();
 
         // Translate the span information
