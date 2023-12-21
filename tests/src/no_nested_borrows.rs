@@ -536,6 +536,15 @@ pub fn test_shared_borrow_enum2() -> u32 {
     }
 }
 
+pub fn incr(x: &mut u32) {
+    *x += 1;
+}
+
+pub fn call_incr(mut x: u32) -> u32 {
+    incr(&mut x);
+    x
+}
+
 pub fn read_then_incr(x: &mut u32) -> u32 {
     let r = *x;
     *x += 1;
