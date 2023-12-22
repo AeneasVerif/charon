@@ -332,6 +332,8 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// We initialize it so that it generates ids for local clauses.
     pub trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
     /// All the trait clauses accessible from the current environment
+    /// TODO: we don't need something as generic anymore because most of the
+    /// work of solving the trait obligations is now done in hax.
     pub trait_clauses: OrdMap<TraitInstanceId, NonLocalTraitClause>,
     /// If [true] it means we are currently registering trait clauses in the
     /// local context. As a consequence, we allow not solving all the trait
@@ -433,7 +435,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             file_id,
             beg,
             end,
-            rust_span: rspan.rust_span,
+            rust_span: rspan.rust_span_data.unwrap().span(),
         }
     }
 

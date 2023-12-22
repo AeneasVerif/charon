@@ -11,7 +11,7 @@ use crate::ullbc_ast;
 use macros::EnumIsA;
 
 /// Ignore the builtin/auto traits like [core::marker::Sized] or [core::marker::Sync].
-pub const IGNORE_BUILTIN_MARKER_TRAITS: bool = true;
+pub const IGNORE_BUILTIN_MARKER_TRAITS: bool = false;
 
 // Ignored traits (includes marker traits, and others)
 pub static MARKER_SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];

@@ -297,11 +297,9 @@ pub enum RawConstantExpr {
     /// }
     /// ```
     ///
-    /// Remark: in the generic args, the trait refs are necessarily empty.
-    ///
     /// Remark: trait constants can not be used in types, they are necessarily
-    /// values. For this reason, we can always erase the regions.
-    TraitConst(TraitRef, GenericArgs, TraitItemName),
+    /// values.
+    TraitConst(TraitRef, TraitItemName),
     ///
     /// A shared reference to a constant value
     ///

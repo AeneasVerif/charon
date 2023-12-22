@@ -188,26 +188,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Ty::Never => Ok(Ty::Never),
 
             hax::Ty::Alias(alias_kind) => match alias_kind {
-                hax::AliasKind::Projection {
-                    impl_source,
-                    substs,
-                    name,
-                } => {
+                hax::AliasKind::Projection { impl_expr, name } => {
                     let trait_ref =
-                        self.translate_trait_impl_source(span, erase_regions, impl_source)?;
+                        self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
                     // This should succeed because no marker trait (that we may
                     // ignore) has associated types.
                     let trait_ref = trait_ref.unwrap();
-                    let (regions, types, const_generics) =
-                        self.translate_substs(span, erase_regions, None, substs)?;
-                    let generics = GenericArgs {
-                        regions,
-                        types,
-                        const_generics,
-                        trait_refs: Vec::new(),
-                    };
                     let name = TraitItemName(name.clone());
-                    Ok(Ty::TraitType(trait_ref, generics, name))
+                    Ok(Ty::TraitType(trait_ref, name))
                 }
                 _ => {
                     error_or_panic!(self, span, format!("Unimplemented: {:?}", ty))
@@ -464,11 +452,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         used_params: Option<Vec<bool>>,
         substs: &[hax::GenericArg],
-        trait_refs: &[hax::ImplSource],
+        trait_refs: &[hax::ImplExpr],
     ) -> Result<GenericArgs, Error> {
         let (regions, types, const_generics) =
             self.translate_substs(span, erase_regions, used_params, substs)?;
-        let trait_refs = self.translate_trait_impl_sources(span, erase_regions, trait_refs)?;
+        let trait_refs = self.translate_trait_impl_exprs(span, erase_regions, trait_refs)?;
         Ok(GenericArgs {
             regions,
             types,
@@ -557,7 +545,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let mut have_names: Option<bool> = Option::None;
             for field_def in var_def.fields.into_iter() {
                 trace!("variant {}: field {}: {:?}", var_id, field_id, field_def);
-                let field_span = field_def.span.rust_span;
+                let field_span = field_def.span.rust_span_data.unwrap().span();
 
                 // Translate the field type
                 let ty = self.translate_ty(field_span, erase_regions, &field_def.ty)?;

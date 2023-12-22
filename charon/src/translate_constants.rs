@@ -85,27 +85,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .try_collect()?;
                 RawConstantExpr::Adt(Option::None, fields)
             }
-            ConstantExprKind::TraitConst {
-                impl_source,
-                substs,
-                name,
-            } => {
-                let trait_ref =
-                    self.translate_trait_impl_source(span, erase_regions, impl_source)?;
+            ConstantExprKind::TraitConst { impl_expr, name } => {
+                let trait_ref = self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
                 // The trait ref should be Some(...): trait markers (that we
                 // may eliminate) don't have constants.
                 let trait_ref = trait_ref.unwrap();
-
-                let (regions, types, const_generics) =
-                    self.translate_substs(span, erase_regions, None, substs)?;
-                let generics = GenericArgs {
-                    regions,
-                    types,
-                    const_generics,
-                    trait_refs: Vec::new(),
-                };
                 let name = TraitItemName(name.clone());
-                RawConstantExpr::TraitConst(trait_ref, generics, name)
+                RawConstantExpr::TraitConst(trait_ref, name)
             }
             ConstantExprKind::GlobalName { id } => {
                 RawConstantExpr::Global(self.translate_global_decl_id(span, DefId::from(id)))

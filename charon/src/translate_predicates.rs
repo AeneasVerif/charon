@@ -454,7 +454,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<Option<NonLocalTraitClause>, Error> {
         // Note sure what this is about
         assert!(trait_pred.is_positive);
-        let span = hspan.rust_span;
+        let span = hspan.rust_span_data.unwrap().span();
 
         // We translate trait clauses for signatures, etc. so we do not erase the regions
         let erase_regions = false;
@@ -488,43 +488,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.trait_clauses
             .insert(trait_clause.clause_id.clone(), trait_clause.clone());
 
-        // [translate_trait_clause] takes care of registering the clause
-        let _parent_clauses: Vec<_> =
-            self.with_parent_trait_clauses(clause_id.clone(), trait_id, &mut |ctx: &mut Self| {
-                trait_pred
-                    .parent_preds
-                    .iter()
-                    .map(|x|
-                      // TODO: the span information is not correct
-                      ctx.translate_trait_clause(hspan, x))
-                    .try_collect()
-            })?;
-
-        // [translate_trait_clause] takes care of registering the clause
-        let _items_clauses: Vec<_> = trait_pred
-            .items_preds
-            .iter()
-            .map(|(name, clauses)| {
-                let clauses: Vec<_> = self.with_item_trait_clauses(
-                    clause_id.clone(),
-                    trait_id,
-                    name.clone(),
-                    &mut |ctx: &mut Self| {
-                        clauses
-                            .iter()
-                            .map(|clause| {
-                                // The clause is inside a binder
-                                assert!(clause.bound_vars.is_empty());
-                                // TODO: the span is not correct
-                                ctx.translate_trait_clause(hspan, &clause.value)
-                            })
-                            .try_collect()
-                    },
-                )?;
-                Ok((TraitItemName(name.to_string()), clauses))
-            })
-            .try_collect()?;
-
         // Return
         Ok(Some(trait_clause))
     }
@@ -538,7 +501,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Predicates are always used in signatures/type definitions, etc.
         // For this reason, we do not erase the regions.
         let erase_regions = false;
-        let span = hspan.rust_span;
+        let span = hspan.rust_span_data.unwrap().span();
 
         // Skip the binder (which lists the quantified variables).
         // By doing so, we allow the predicates to contain DeBruijn indices,
@@ -569,32 +532,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         //         ^^^^^^^^^^
                         // ```
                         let hax::ProjectionPredicate {
-                            impl_source,
-                            substs,
+                            impl_expr,
                             type_name,
                             ty,
                         } = p;
 
                         let trait_ref =
-                            self.translate_trait_impl_source(span, erase_regions, impl_source)?;
+                            self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
                         // The trait ref should be Some(...): the marker traits (that
                         // we may filter) don't have associated types.
                         let trait_ref = trait_ref.unwrap();
-
-                        let (regions, types, const_generics) = self
-                            .translate_substs(span, erase_regions, None, substs)
-                            .unwrap();
-                        let generics = GenericArgs {
-                            regions,
-                            types,
-                            const_generics,
-                            trait_refs: Vec::new(),
-                        };
                         let ty = self.translate_ty(span, erase_regions, ty).unwrap();
                         let type_name = TraitItemName(type_name.clone());
                         Ok(Some(Predicate::TraitType(TraitTypeConstraint {
                             trait_ref,
-                            generics,
                             type_name,
                             ty,
                         })))
@@ -660,26 +611,26 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    pub(crate) fn translate_trait_impl_sources(
+    pub(crate) fn translate_trait_impl_exprs(
         &mut self,
         span: rustc_span::Span,
         erase_regions: bool,
-        impl_sources: &[hax::ImplSource],
+        impl_sources: &[hax::ImplExpr],
     ) -> Result<Vec<TraitRef>, Error> {
         let res: Vec<_> = impl_sources
             .iter()
-            .map(|x| self.translate_trait_impl_source(span, erase_regions, x))
+            .map(|x| self.translate_trait_impl_expr(span, erase_regions, x))
             .try_collect()?;
         Ok(res.into_iter().flatten().collect())
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
-    pub(crate) fn translate_trait_impl_source(
+    pub(crate) fn translate_trait_impl_expr(
         &mut self,
         span: rustc_span::Span,
         erase_regions: bool,
-        impl_source: &hax::ImplSource,
+        impl_expr: &hax::ImplExpr,
     ) -> Result<Option<TraitRef>, Error> {
         let trait_decl_ref =
             match self.translate_trait_decl_ref(span, erase_regions, &impl_source.trait_ref)? {
@@ -687,10 +638,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Some(tr) => tr,
             };
 
-        match self.translate_trait_impl_source_aux(
+        match self.translate_trait_impl_expr_aux(
             span,
             erase_regions,
-            impl_source,
+            impl_expr,
             trait_decl_ref.clone(),
         ) {
             Ok(res) => Ok(res),
@@ -711,20 +662,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    pub(crate) fn translate_trait_impl_source_aux(
+    pub(crate) fn translate_trait_impl_expr_aux(
         &mut self,
         span: rustc_span::Span,
         erase_regions: bool,
-        impl_source: &hax::ImplSource,
+        impl_source: &hax::ImplExpr,
         trait_decl_ref: TraitDeclRef,
     ) -> Result<Option<TraitRef>, Error> {
         // TODO: in the body of this function:
         trace!("impl_source: {:?}", impl_source);
-        use hax::ImplSourceKind;
+        use hax::ImplExprAtom;
 
-        let trait_ref = match &impl_source.kind {
-            ImplSourceKind::UserDefined(data) => {
-                let def_id = data.impl_def_id.rust_def_id.unwrap();
+        let nested = &impl_source.args;
+        let trait_ref = match &impl_source.r#impl {
+            ImplExprAtom::Concrete {
+                id: impl_def_id,
+                generics,
+            } => {
+                let def_id = DefId::from(impl_def_id);
                 let trait_id = self.translate_trait_impl_id(span, def_id)?;
                 // We already tested above whether the trait should be filtered
                 let trait_id = trait_id.unwrap();
@@ -734,8 +689,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     span,
                     erase_regions,
                     None,
-                    &data.substs,
-                    &data.nested,
+                    generics,
+                    nested,
                 )?;
                 TraitRef {
                     trait_id,
@@ -743,13 +698,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplSourceKind::Param(trait_ref, trait_refs, constness) => {
+            ImplExprAtom::LocalBound {
+                clause_id: _,
+                r#trait: trait_ref,
+                path,
+            } => {
+                // (trait_ref, trait_refs, constness)
+                // TODO: the constness information is not there anymore...
                 // Explanations about constness: https://stackoverflow.com/questions/70441495/what-is-impl-const-in-rust
                 trace!(
-                    "impl_source: param:\n- trait_ref: {:?}\n- trait_refs: {:?}\n- constness: {:?}",
+                    "impl_source: param:\n- trait_ref: {:?}\n- path: {:?}",
                     trait_ref,
-                    trait_refs,
-                    constness
+                    path,
                 );
                 assert!(trait_ref.bound_vars.is_empty());
                 let trait_ref = &trait_ref.value;
@@ -757,7 +717,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = DefId::from(&trait_ref.def_id);
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
+                let trait_decl_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
 
                 // Retrieve the arguments
                 let generics = self.translate_substs_and_trait_refs(
@@ -765,15 +725,53 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     erase_regions,
                     None,
                     &trait_ref.generic_args,
-                    trait_refs,
+                    nested,
                 )?;
                 assert!(generics.trait_refs.is_empty());
 
                 // We need to find the trait clause which corresponds to
                 // this obligation.
-                let trait_id = self.find_trait_clause_for_param(trait_id, &generics);
+                let mut trait_id = self.find_trait_clause_for_param(trait_decl_id, &generics);
+                let mut current_trait_decl_id = trait_decl_id;
 
-                assert!(generics.trait_refs.is_empty());
+                // Apply the path
+                for path_elem in path {
+                    use hax::ImplExprPathChunk::*;
+                    match path_elem {
+                        AssocItem {
+                            item,
+                            predicate,
+                            index,
+                        } => {
+                            trait_id = TraitInstanceId::ItemClause(
+                                Box::new(trait_id),
+                                current_trait_decl_id,
+                                TraitItemName(item.name.clone()),
+                                TraitClauseId::Id::new(*index),
+                            );
+                            current_trait_decl_id = self
+                                .translate_trait_decl_id(
+                                    span,
+                                    DefId::from(&predicate.trait_ref.def_id),
+                                )
+                                .unwrap();
+                        }
+                        Parent { predicate, index } => {
+                            trait_id = TraitInstanceId::ParentClause(
+                                Box::new(trait_id),
+                                current_trait_decl_id,
+                                TraitClauseId::Id::new(*index),
+                            );
+                            current_trait_decl_id = self
+                                .translate_trait_decl_id(
+                                    span,
+                                    DefId::from(&predicate.trait_ref.def_id),
+                                )
+                                .unwrap();
+                        }
+                    }
+                }
+
                 // Ignore the arguments: we forbid using universal quantifiers
                 // on the trait clauses for now.
                 TraitRef {
@@ -782,12 +780,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplSourceKind::Object(_) => {
+            ImplExprAtom::Dyn { .. } => {
                 error_or_panic!(self, span, "Unsupported trait impl source kind: object")
             }
-            ImplSourceKind::Builtin(trait_ref, traits) => {
-                assert!(trait_ref.bound_vars.is_empty());
-                let trait_ref = &trait_ref.value;
+            ImplExprAtom::Builtin { r#trait: trait_ref } => {
                 let def_id = DefId::from(&trait_ref.def_id);
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
@@ -799,7 +795,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     erase_regions,
                     None,
                     &trait_ref.generic_args,
-                    traits,
+                    nested,
                 )?;
                 TraitRef {
                     trait_id,
@@ -807,24 +803,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplSourceKind::AutoImpl(data) => {
-                let def_id = DefId::from(&data.trait_def_id);
-                // Remark: we already filtered the marker traits when translating
-                // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
-                let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
-
-                TraitRef {
-                    trait_id,
-                    generics: GenericArgs::empty(),
-                    trait_decl_ref,
-                }
-            }
-            ImplSourceKind::FnPointer(data) => {
-                let ty = self.translate_ty(span, erase_regions, &data.fn_ty)?;
+            ImplExprAtom::FnPointer { fn_ty } => {
+                let ty = self.translate_ty(span, erase_regions, fn_ty)?;
                 let trait_id = TraitInstanceId::FnPointer(Box::new(ty));
                 let trait_refs =
-                    self.translate_trait_impl_sources(span, erase_regions, &data.nested)?;
+                    self.translate_trait_impl_exprs(span, erase_regions, &impl_source.args)?;
                 let generics = GenericArgs {
                     regions: vec![],
                     types: vec![],
@@ -837,20 +820,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplSourceKind::Closure(data) => {
-                trace!("{data:?}");
+            ImplExprAtom::Closure {
+                closure_def_id,
+                parent_substs,
+                sig: _,
+            } => {
                 // Remark: a closure is always a function defined locally in the
                 // body of the caller, which means it can't be an assumed function
                 // (there is a very limited number of assumed functions, and they
                 // are all top-level).
-                let fn_id = self.translate_fun_decl_id(span, DefId::from(&data.closure_def_id));
+                let fn_id = self.translate_fun_decl_id(span, DefId::from(closure_def_id));
                 let erased_regions = false;
                 let (regions, types, const_generics) =
-                    self.translate_substs(span, erased_regions, None, &data.parent_substs)?;
+                    self.translate_substs(span, erased_regions, None, parent_substs)?;
                 let parent_substs = GenericArgs::new(regions, types, const_generics, Vec::new());
                 // TODO: translate the signature
-                let trait_refs =
-                    self.translate_trait_impl_sources(span, erase_regions, &data.nested)?;
+                let trait_refs = self.translate_trait_impl_exprs(span, erase_regions, nested)?;
                 let trait_id = TraitInstanceId::Closure(fn_id, parent_substs);
                 let generics = GenericArgs {
                     regions: vec![],
@@ -864,8 +849,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplSourceKind::TraitUpcasting(_) => unimplemented!(),
-            ImplSourceKind::Error(msg) | ImplSourceKind::Todo(msg) => {
+            ImplExprAtom::Error(msg) | ImplExprAtom::Todo(msg) => {
                 let error = format!("Error during trait resolution: {}", msg);
                 self.span_err(span, &error);
                 if !self.t_ctx.continue_on_failure {
@@ -1165,6 +1149,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// may refer to other clauses, meaning that we are not necessarily able
     /// to solve all the trait obligations when registering a clause, but might
     /// be able later).
+    /// TODO: doing this in several passes is probably not necessary anymore
     pub(crate) fn solve_trait_obligations_in_trait_clauses(&mut self, span: rustc_span::Span) {
         let mut solver = TraitInstancesSolver {
             unsolved_count: 0,

@@ -241,7 +241,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the type
             let erase_regions = true;
-            let span = var.source_info.span.rust_span;
+            let span = var.source_info.span.rust_span_data.unwrap().span();
             let ty = self.translate_ty(span, erase_regions, &var.ty)?;
 
             // Add the variable to the environment
@@ -847,7 +847,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         def_id: &hax::DefId,
         substs: &Vec<hax::GenericArg>,
         args: Option<&Vec<hax::Operand>>,
-        trait_refs: &Vec<hax::ImplSource>,
+        trait_refs: &Vec<hax::ImplExpr>,
         trait_info: &Option<hax::TraitInfo>,
     ) -> Result<SubstFunIdOrPanic, Error> {
         let rust_id = def_id.rust_def_id.unwrap();
@@ -970,14 +970,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     Option::Some(trait_info) => {
                         // Trait method
                         let rust_id = DefId::from(def_id);
-                        let impl_source = self.translate_trait_impl_source(
+                        let impl_expr = self.translate_trait_impl_expr(
                             span,
                             erase_regions,
-                            &trait_info.impl_source,
+                            &trait_info.impl_expr,
                         )?;
                         // The impl source should be Some(...): trait markers (that we may
                         // eliminate) don't have methods.
-                        let impl_source = impl_source.unwrap();
+                        let impl_expr = impl_expr.unwrap();
 
                         trace!("{:?}", rust_id);
 
@@ -999,15 +999,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             //   trait references given to the impl source
                             // - if we refer to a clause, we must retrieve the
                             //   parent trait clauses.
-                            let trait_refs = match &impl_source.trait_id {
-                                TraitInstanceId::TraitImpl(_) => impl_source
+                            let trait_refs = match &impl_expr.trait_id {
+                                TraitInstanceId::TraitImpl(_) => impl_expr
                                     .generics
                                     .trait_refs
                                     .iter()
                                     .chain(generics.trait_refs.iter())
                                     .cloned()
                                     .collect(),
-                                _ => impl_source
+                                _ => impl_expr
                                     .trait_decl_ref
                                     .generics
                                     .trait_refs
@@ -1025,7 +1025,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         };
 
                         let func = FunIdOrTraitMethodRef::Trait(
-                            impl_source,
+                            impl_expr,
                             method_name,
                             trait_method_fun_id,
                         );
@@ -1105,7 +1105,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         statement: &hax::Statement,
     ) -> Result<Option<Statement>, Error> {
         trace!("About to translate statement (MIR) {:?}", statement);
-        let span = statement.source_info.span.rust_span;
+        let span = statement.source_info.span.rust_span_data.unwrap().span();
 
         use std::ops::Deref;
 
@@ -1114,8 +1114,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             StatementKind::Assign(assign) => {
                 let (place, rvalue) = assign.deref();
                 let t_place = self.translate_place(span, place)?;
-                let t_rvalue =
-                    self.translate_rvalue(statement.source_info.span.rust_span, rvalue)?;
+                let t_rvalue = self.translate_rvalue(
+                    statement.source_info.span.rust_span_data.unwrap().span(),
+                    rvalue,
+                )?;
 
                 Some(RawStatement::Assign(t_place, t_rvalue))
             }
@@ -1202,7 +1204,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         terminator: &hax::Terminator,
     ) -> Result<Terminator, Error> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
-        let span = terminator.source_info.span.rust_span;
+        let span = terminator.source_info.span.rust_span_data.unwrap().span();
 
         // Compute the meta information beforehand (we might need it to introduce
         // intermediate statements - we desugar some terminators)
@@ -1368,7 +1370,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         args: &Vec<hax::Operand>,
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
-        trait_refs: &Vec<hax::ImplSource>,
+        trait_refs: &Vec<hax::ImplExpr>,
         trait_info: &Option<hax::TraitInfo>,
     ) -> Result<RawTerminator, Error> {
         trace!();

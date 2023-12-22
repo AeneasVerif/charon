@@ -60,8 +60,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             {
                 let trait_ref = rustc_middle::ty::Binder::dummy(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
-                let trait_ref =
-                    self.translate_trait_impl_source(span, erase_regions, &trait_ref)?;
+                let trait_ref = self.translate_trait_impl_expr(span, erase_regions, &trait_ref)?;
                 if let Some(trait_ref) = trait_ref {
                     trait_refs.push(trait_ref);
                 }
@@ -521,7 +520,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 None,
             );
             let parent_trait_refs: Vec<TraitRef> =
-                bt_ctx.translate_trait_impl_sources(span, erase_regions, &parent_trait_refs)?;
+                bt_ctx.translate_trait_impl_exprs(span, erase_regions, &parent_trait_refs)?;
             let parent_trait_refs: TraitClauseId::Vector<TraitRef> =
                 TraitClauseId::Vector::from(parent_trait_refs);
 

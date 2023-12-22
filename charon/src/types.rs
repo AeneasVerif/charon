@@ -262,7 +262,6 @@ pub type TypeOutlives = OutlivesPred<Ty, Region>;
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct TraitTypeConstraint {
     pub trait_ref: TraitRef,
-    pub generics: GenericArgs,
     pub type_name: TraitItemName,
     pub ty: Ty,
 }
@@ -542,7 +541,7 @@ pub enum Ty {
     ///   type Bar; // type associated to the trait Foo
     /// }
     /// ```
-    TraitType(TraitRef, GenericArgs, TraitItemName),
+    TraitType(TraitRef, TraitItemName),
     /// Arrow type, used in particular for the local function pointers.
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
