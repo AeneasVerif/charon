@@ -348,10 +348,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // We always add the crate name
         if !found_crate_name {
-            name.push(PathElem::Ident(
-                crate_name.clone(),
-                Disambiguator::Id::new(0),
-            ));
+            name.push(PathElem::Ident(crate_name, Disambiguator::Id::new(0)));
         }
 
         trace!("{:?}", name);

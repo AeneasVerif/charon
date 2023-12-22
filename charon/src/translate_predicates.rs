@@ -480,7 +480,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Immediately register the clause (we may need to refer to it in the parent/
         // item clauses)
         let trait_clause = NonLocalTraitClause {
-            clause_id: clause_id.clone(),
+            clause_id,
             meta: Some(meta),
             trait_id,
             generics,
