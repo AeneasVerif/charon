@@ -294,5 +294,14 @@ pub trait CFnMut<Args>: CFnOnce<Args> {
 }
 
 pub trait CFn<Args>: CFnMut<Args> {
-    fn call_mut(&self, args: Args) -> Self::Output;
+    fn call(&self, args: Args) -> Self::Output;
+}
+
+pub trait GetTrait {
+    type W;
+    fn get_w(&self) -> Self::W;
+}
+
+pub fn test_get_trait<T: GetTrait>(x: &T) -> T::W {
+    x.get_w()
 }
