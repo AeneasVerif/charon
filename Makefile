@@ -96,7 +96,7 @@ charon-tests-polonius: build-tests-polonius
 
 .PHONY: clean
 clean:
-	cd attributes && cargo clean
+	cd charon/attributes && cargo clean
 	cd charon && cargo clean
 	cd charon/macros && cargo clean
 	cd tests && cargo clean
