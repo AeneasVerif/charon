@@ -47,6 +47,16 @@ pub fn sum_with_shared_borrows(max: u32) -> u32 {
     s
 }
 
+pub fn sum_array<const N: usize>(a: [u32; N]) -> u32 {
+    let mut i = 0;
+    let mut s = 0;
+    while i < N {
+        s += a[i];
+        i += 1;
+    }
+    s
+}
+
 /// This case is interesting, because the fixed point for the loop doesn't
 /// introduce new abstractions.
 pub fn clear(v: &mut Vec<u32>) {
