@@ -675,6 +675,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let nested = &impl_source.args;
         let trait_ref = match &impl_source.r#impl {
+            ImplExprAtom::SelfImpl => {
+                // TODO: there should be a path
+                let trait_id = TraitInstanceId::SelfId;
+                TraitRef {
+                    trait_id,
+                    generics: GenericArgs::empty(),
+                    trait_decl_ref,
+                }
+            }
             ImplExprAtom::Concrete {
                 id: impl_def_id,
                 generics,
