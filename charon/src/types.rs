@@ -300,9 +300,10 @@ pub struct GenericParams {
     pub types: TypeVarId::Vector<TypeVar>,
     pub const_generics: ConstGenericVarId::Vector<ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
-    // Remark: this is an OrdMap, not a vector, because due to the filtering
-    // of some trait clauses (for the marker traits for instance) the indexation
-    // is not contiguous.
+    // Remark: this is a [BTreeMap], not a [TraitClauseId::Vector], because due to the
+    // filtering of some trait clauses (for the marker traits for instance) the indexation
+    // is not contiguous. We could use a simple [Vector], but for now we want to make sure
+    // there are no ambiguities.
     pub trait_clauses: BTreeMap<TraitClauseId::Id, TraitClause>,
 }
 
