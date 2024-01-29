@@ -8,6 +8,7 @@ use macros::{
     generate_index_type, EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName,
 };
 use serde::Serialize;
+use std::collections::BTreeMap;
 
 pub type FieldName = String;
 
@@ -299,7 +300,10 @@ pub struct GenericParams {
     pub types: TypeVarId::Vector<TypeVar>,
     pub const_generics: ConstGenericVarId::Vector<ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
-    pub trait_clauses: TraitClauseId::Vector<TraitClause>,
+    // Remark: this is an OrdMap, not a vector, because due to the filtering
+    // of some trait clauses (for the marker traits for instance) the indexation
+    // is not contiguous.
+    pub trait_clauses: BTreeMap<TraitClauseId::Id, TraitClause>,
 }
 
 generate_index_type!(TraitClauseId);

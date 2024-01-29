@@ -22,7 +22,7 @@ use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::cmp::{Ord, Ordering, PartialOrd};
-use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque};
 use std::fmt;
 
 /// Macro to either panic or return on error, depending on the CLI options
@@ -955,14 +955,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Retrieve the *local* trait clauses available in the current environment
     /// (we filter the parent of those clauses, etc.).
-    pub(crate) fn get_local_trait_clauses(&self) -> TraitClauseId::Vector<TraitClause> {
-        let clauses: TraitClauseId::Vector<TraitClause> = self
+    pub(crate) fn get_local_trait_clauses(&self) -> BTreeMap<TraitClauseId::Id, TraitClause> {
+        let clauses: Vec<TraitClause> = self
             .trait_clauses
             .iter()
             .filter_map(|(_, x)| x.to_local_trait_clause())
             .collect();
         // Sanity check
-        assert!(clauses.iter_indexed_values().all(|(i, c)| c.clause_id == i));
+        if !crate::assumed::IGNORE_BUILTIN_MARKER_TRAITS {
+            use crate::id_vector::ToUsize;
+            assert!(clauses
+                .iter()
+                .enumerate()
+                .all(|(i, c)| c.clause_id.to_usize() == i));
+        }
+        let clauses: BTreeMap<TraitClauseId::Id, TraitClause> =
+            clauses.into_iter().map(|x| (x.clause_id, x)).collect();
         clauses
     }
 

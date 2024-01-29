@@ -7,6 +7,7 @@ use crate::values::*;
 use hax_frontend_exporter as hax;
 use im::HashMap;
 use macros::make_generic_in_borrows;
+use std::collections::BTreeMap;
 use std::iter::Iterator;
 
 impl DeBruijnId {
@@ -93,7 +94,7 @@ impl GenericParams {
             regions: RegionId::Vector::new(),
             types: TypeVarId::Vector::new(),
             const_generics: ConstGenericVarId::Vector::new(),
-            trait_clauses: TraitClauseId::Vector::new(),
+            trait_clauses: BTreeMap::new(),
         }
     }
 
@@ -120,7 +121,7 @@ impl GenericParams {
             for x in const_generics {
                 params.push(x.to_string());
             }
-            for x in trait_clauses {
+            for x in trait_clauses.values() {
                 params.push(x.fmt_with_ctx(ctx));
             }
             format!("<{}>", params.join(", "))
@@ -154,7 +155,7 @@ impl GenericParams {
         };
 
         let mut clauses = Vec::new();
-        for x in trait_clauses {
+        for x in trait_clauses.values() {
             clauses.push(x.fmt_with_ctx(ctx));
         }
         (params, clauses)
@@ -1398,7 +1399,7 @@ pub trait TypeVisitor {
         for cg in g.const_generics.iter() {
             self.visit_const_generic_var(cg);
         }
-        for t in g.trait_clauses.iter() {
+        for (_, t) in g.trait_clauses.iter() {
             self.visit_trait_clause(t);
         }
     }
