@@ -405,7 +405,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 .join("\n");
             let generic_clauses = generics
                 .trait_clauses
-                .values()
+                .iter()
                 .map(|c| c.fmt_with_ctx(&ctx))
                 .collect::<Vec<String>>()
                 .join("\n");

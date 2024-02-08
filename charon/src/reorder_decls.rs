@@ -406,7 +406,7 @@ impl Deps {
 
     fn visit_generics_and_preds(&mut self, generics: &GenericParams, preds: &Predicates) {
         // Visit the traits referenced in the generics
-        for clause in generics.trait_clauses.values() {
+        for clause in &generics.trait_clauses {
             self.visit_trait_clause(clause);
         }
 
