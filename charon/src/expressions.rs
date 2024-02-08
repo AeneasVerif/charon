@@ -237,11 +237,6 @@ pub enum FunIdOrTraitMethodRef {
 pub struct FnPtr {
     pub func: FunIdOrTraitMethodRef,
     pub generics: GenericArgs,
-    /// If this is a reference to a trait method: stores *all* the generic arguments
-    /// which apply to the trait + the method. The fields [region_args], [type_args]
-    /// [const_generic_args] only store the arguments which concern the method call.
-    /// See the comments for [ParamsInfo].
-    pub trait_and_method_generic_args: Option<GenericArgs>,
 }
 
 /// A constant expression.

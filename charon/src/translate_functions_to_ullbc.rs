@@ -848,7 +848,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         substs: &Vec<hax::GenericArg>,
         args: Option<&Vec<hax::Operand>>,
         trait_refs: &Vec<hax::ImplExpr>,
-        trait_info: &Option<hax::TraitInfo>,
+        trait_info: &Option<hax::ImplExpr>,
     ) -> Result<SubstFunIdOrPanic, Error> {
         let rust_id = def_id.rust_def_id.unwrap();
         let name = self.t_ctx.def_id_to_name(def_id)?;
@@ -899,7 +899,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let func = FnPtr {
                 func: FunIdOrTraitMethodRef::mk_assumed(AssumedFunId::BoxFree),
                 generics: GenericArgs::new_from_types(vec![t_ty]),
-                trait_and_method_generic_args: None,
             };
             let sfid = SubstFunId { func, args };
             Ok(SubstFunIdOrPanic::Fun(sfid))
@@ -959,22 +958,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // "Regular" function call
                         let def_id = self.translate_fun_decl_id(span, rust_id);
                         let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
-                        let func = FnPtr {
-                            func,
-                            generics,
-                            trait_and_method_generic_args: None,
-                        };
+                        let func = FnPtr { func, generics };
                         let sfid = SubstFunId { func, args };
                         Ok(SubstFunIdOrPanic::Fun(sfid))
                     }
                     Option::Some(trait_info) => {
                         // Trait method
                         let rust_id = DefId::from(def_id);
-                        let impl_expr = self.translate_trait_impl_expr(
-                            span,
-                            erase_regions,
-                            &trait_info.impl_expr,
-                        )?;
+                        let impl_expr =
+                            self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
                         // The impl source should be Some(...): trait markers (that we may
                         // eliminate) don't have methods.
                         let impl_expr = impl_expr.unwrap();
@@ -984,56 +976,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let trait_method_fun_id = self.translate_fun_decl_id(span, rust_id);
                         let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
 
-                        // Compute the concatenation of all the generic arguments which were given to
-                        // the function (trait arguments + method arguments).
-                        let trait_and_method_generic_args = {
-                            let (regions, types, const_generics) = self.translate_substs(
-                                span,
-                                erase_regions,
-                                None,
-                                &trait_info.all_generics,
-                            )?;
-
-                            // When concatenating the trait refs we have to be careful:
-                            // - if we refer to an implementation, we must concatenate the
-                            //   trait references given to the impl source
-                            // - if we refer to a clause, we must retrieve the
-                            //   parent trait clauses.
-                            let trait_refs = match &impl_expr.trait_id {
-                                TraitInstanceId::TraitImpl(_) => impl_expr
-                                    .generics
-                                    .trait_refs
-                                    .iter()
-                                    .chain(generics.trait_refs.iter())
-                                    .cloned()
-                                    .collect(),
-                                _ => impl_expr
-                                    .trait_decl_ref
-                                    .generics
-                                    .trait_refs
-                                    .iter()
-                                    .chain(generics.trait_refs.iter())
-                                    .cloned()
-                                    .collect(),
-                            };
-                            Some(GenericArgs {
-                                regions,
-                                types,
-                                const_generics,
-                                trait_refs,
-                            })
-                        };
-
                         let func = FunIdOrTraitMethodRef::Trait(
                             impl_expr,
                             method_name,
                             trait_method_fun_id,
                         );
-                        let func = FnPtr {
-                            func,
-                            generics,
-                            trait_and_method_generic_args,
-                        };
+                        let func = FnPtr { func, generics };
                         let sfid = SubstFunId { func, args };
                         Ok(SubstFunIdOrPanic::Fun(sfid))
                     }
@@ -1088,7 +1036,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let func = FnPtr {
                     func: FunIdOrTraitMethodRef::Fun(FunId::Assumed(aid)),
                     generics,
-                    trait_and_method_generic_args: None,
                 };
                 let sfid = SubstFunId { func, args };
                 Ok(SubstFunIdOrPanic::Fun(sfid))
@@ -1371,7 +1318,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
         trait_refs: &Vec<hax::ImplExpr>,
-        trait_info: &Option<hax::TraitInfo>,
+        trait_info: &Option<hax::ImplExpr>,
     ) -> Result<RawTerminator, Error> {
         trace!();
         // There are two cases, depending on whether this is a "regular"

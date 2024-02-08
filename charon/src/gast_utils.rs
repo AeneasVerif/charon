@@ -234,18 +234,8 @@ where
 {
     let args: Vec<String> = call.args.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
     let args = args.join(", ");
-
-    let trait_and_method_generic_args = match &call.func {
-        FnOperand::Regular(func) => func
-            .trait_and_method_generic_args
-            .as_ref()
-            .map(|generics| generics.fmt_with_ctx_split_trait_refs(ctx)),
-        FnOperand::Move(_) => Option::None,
-    };
-
     let f = call.func.fmt_with_ctx(ctx);
-
-    (format!("{f}({args})"), trait_and_method_generic_args)
+    (format!("{f}({args})"), None)
 }
 
 impl<T> GExprBody<T> {

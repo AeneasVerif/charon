@@ -775,18 +775,10 @@ let fun_id_or_trait_method_ref_of_json (js : json) :
 let fn_ptr_of_json (js : json) : (fn_ptr, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc
-        [
-          ("func", func);
-          ("generics", generics);
-          ("trait_and_method_generic_args", trait_and_method_generic_args);
-        ] ->
+    | `Assoc [ ("func", func); ("generics", generics) ] ->
         let* func = fun_id_or_trait_method_ref_of_json func in
         let* generics = generic_args_of_json generics in
-        let* trait_and_method_generic_args =
-          option_of_json generic_args_of_json trait_and_method_generic_args
-        in
-        Ok { func; generics; trait_and_method_generic_args }
+        Ok { func; generics }
     | _ -> Error "")
 
 let fn_operand_of_json (js : json) : (fn_operand, string) result =

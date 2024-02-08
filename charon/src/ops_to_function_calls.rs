@@ -25,11 +25,7 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
                 vec![cg.clone()],
                 vec![],
             );
-            let func = FnOperand::Regular(FnPtr {
-                func,
-                generics,
-                trait_and_method_generic_args: None,
-            });
+            let func = FnOperand::Regular(FnPtr { func, generics });
             s.content = RawStatement::Call(Call {
                 func,
                 args: vec![op.clone()],
@@ -50,11 +46,7 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
                 vec![cg.clone()],
                 vec![],
             );
-            let func = FnOperand::Regular(FnPtr {
-                func,
-                generics,
-                trait_and_method_generic_args: None,
-            });
+            let func = FnOperand::Regular(FnPtr { func, generics });
             s.content = RawStatement::Call(Call {
                 func,
                 args: vec![op.clone()],

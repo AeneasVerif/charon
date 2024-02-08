@@ -503,15 +503,9 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
     }
 
     fn visit_fn_ptr(&mut self, fn_ptr: &FnPtr) {
-        let FnPtr { func, generics, trait_and_method_generic_args } = fn_ptr;
+        let FnPtr { func, generics } = fn_ptr;
         self.visit_fun_id_or_trait_ref(func);
         self.visit_generic_args(generics);
-        match trait_and_method_generic_args {
-            None => (),
-            Some(generics) => {
-                self.visit_generic_args(generics);
-            }
-        }
     }
 
     fn visit_fn_operand(&mut self, fn_op: &FnOperand) {
