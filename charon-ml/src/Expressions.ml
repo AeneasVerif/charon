@@ -157,7 +157,7 @@ and unop =
 and raw_constant_expr =
   | CLiteral of literal
   | CVar of const_generic_var_id
-  | CTraitConst of trait_ref * generic_args * string
+  | CTraitConst of trait_ref * string
   | CFnPtr of fn_ptr
 
 and constant_expr = { value : raw_constant_expr; ty : ty }

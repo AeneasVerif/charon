@@ -326,11 +326,10 @@ let rec ty_of_json (js : json) : (ty, string) result =
         let* ty = ty_of_json ty in
         let* ref_kind = ref_kind_of_json ref_kind in
         Ok (TRawPtr (ty, ref_kind))
-    | `Assoc [ ("TraitType", `List [ trait_ref; generics; item_name ]) ] ->
+    | `Assoc [ ("TraitType", `List [ trait_ref; item_name ]) ] ->
         let* trait_ref = trait_ref_of_json trait_ref in
-        let* generics = generic_args_of_json generics in
         let* item_name = string_of_json item_name in
-        Ok (TTraitType (trait_ref, generics, item_name))
+        Ok (TTraitType (trait_ref, item_name))
     | `Assoc [ ("Arrow", `List [ regions; inputs; output ]) ] ->
         let* regions = list_of_json region_var_of_json regions in
         let* inputs = list_of_json ty_of_json inputs in
@@ -525,18 +524,12 @@ let trait_type_constraint_of_json (js : json) :
     (trait_type_constraint, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc
-        [
-          ("trait_ref", trait_ref);
-          ("generics", generics);
-          ("type_name", type_name);
-          ("ty", ty);
-        ] ->
+    | `Assoc [ ("trait_ref", trait_ref); ("type_name", type_name); ("ty", ty) ]
+      ->
         let* trait_ref = trait_ref_of_json trait_ref in
-        let* generics = generic_args_of_json generics in
         let* type_name = string_of_json type_name in
         let* ty = ty_of_json ty in
-        Ok ({ trait_ref; generics; type_name; ty } : trait_type_constraint)
+        Ok ({ trait_ref; type_name; ty } : trait_type_constraint)
     | _ -> Error "")
 
 let predicates_of_json (js : json) : (predicates, string) result =
@@ -825,11 +818,10 @@ and raw_constant_expr_of_json (js : json) : (raw_constant_expr, string) result =
     | `Assoc [ ("Var", vid) ] ->
         let* vid = ConstGenericVarId.id_of_json vid in
         Ok (CVar vid)
-    | `Assoc [ ("TraitConst", `List [ trait_ref; generics; const_name ]) ] ->
+    | `Assoc [ ("TraitConst", `List [ trait_ref; const_name ]) ] ->
         let* trait_ref = trait_ref_of_json trait_ref in
-        let* generics = generic_args_of_json generics in
         let* const_name = string_of_json const_name in
-        Ok (CTraitConst (trait_ref, generics, const_name))
+        Ok (CTraitConst (trait_ref, const_name))
     | `Assoc [ ("FnPtr", fn_ptr) ] ->
         let* fn_ptr = fn_ptr_of_json fn_ptr in
         Ok (CFnPtr fn_ptr)

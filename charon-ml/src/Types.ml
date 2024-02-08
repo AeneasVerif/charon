@@ -284,7 +284,7 @@ and ty =
   | TNever
   | TRef of region * ty * ref_kind
   | TRawPtr of ty * ref_kind
-  | TTraitType of trait_ref * generic_args * string
+  | TTraitType of trait_ref * string
       (** The string is for the name of the associated type *)
   | TArrow of region_var list * ty list * ty
 
@@ -441,6 +441,12 @@ and generic_params = {
           See {!Identifiers.Id.mapi} for instance.
        *)
   trait_clauses : trait_clause list;
+      (** **REMARK:**:
+          The indices used by the trait clauses may not be contiguous
+          (e.g., we may have the list: `[clause 0; clause 2; clause3; clause 5]`).
+          because of the way the clauses are resolved in hax (see the comments
+          in Charon).
+        *)
 }
 
 (** ('long, 'short) means that 'long outlives 'short *)
@@ -451,7 +457,6 @@ and type_outlives = ty * region
 
 and trait_type_constraint = {
   trait_ref : trait_ref;
-  generics : generic_args;
   type_name : trait_item_name;
   ty : ty;
 }
