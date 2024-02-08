@@ -675,15 +675,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let nested = &impl_source.args;
         let trait_ref = match &impl_source.r#impl {
-            ImplExprAtom::SelfImpl => {
-                // TODO: there should be a path
-                let trait_id = TraitInstanceId::SelfId;
-                TraitRef {
-                    trait_id,
-                    generics: GenericArgs::empty(),
-                    trait_decl_ref,
-                }
-            }
             ImplExprAtom::Concrete {
                 id: impl_def_id,
                 generics,
@@ -707,7 +698,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplExprAtom::LocalBound {
+            // The self clause and the other clauses are handled in a similar manner
+            ImplExprAtom::SelfImpl {
+                r#trait: trait_ref,
+                path,
+            }
+            | ImplExprAtom::LocalBound {
                 clause_id: _,
                 r#trait: trait_ref,
                 path,
@@ -716,7 +712,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // TODO: the constness information is not there anymore...
                 // Explanations about constness: https://stackoverflow.com/questions/70441495/what-is-impl-const-in-rust
                 trace!(
-                    "impl_source: param:\n- trait_ref: {:?}\n- path: {:?}",
+                    "impl source (self or clause): param:\n- trait_ref: {:?}\n- path: {:?}",
                     trait_ref,
                     path,
                 );
@@ -725,7 +721,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 let def_id = DefId::from(&trait_ref.def_id);
                 // Remark: we already filtered the marker traits when translating
-                // the trait decl ref: the trait id should be Some(...).
+                // the trait decl ref: the trait decl id should be Some(...).
                 let trait_decl_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
 
                 // Retrieve the arguments
@@ -738,9 +734,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 )?;
                 assert!(generics.trait_refs.is_empty());
 
-                // We need to find the trait clause which corresponds to
-                // this obligation.
-                let mut trait_id = self.find_trait_clause_for_param(trait_decl_id, &generics);
+                // If we are refering to a trait clause, we need to find the
+                // relevant one.
+                let mut trait_id = match &impl_source.r#impl {
+                    ImplExprAtom::SelfImpl { .. } => TraitInstanceId::SelfId,
+                    ImplExprAtom::LocalBound { .. } => {
+                        self.find_trait_clause_for_param(trait_decl_id, &generics)
+                    }
+                    _ => unreachable!(),
+                };
                 let mut current_trait_decl_id = trait_decl_id;
 
                 // Apply the path
