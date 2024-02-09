@@ -26,7 +26,7 @@ charon-tests: \
 	test-paper test-hashmap_main \
 	test-matches test-matches_duplicate test-external \
 	test-constants test-arrays test-arrays_const_generics test-traits \
-	test-closures test-bitwise
+	test-closures test-bitwise test-demo
 
 test-nested_borrows: OPTIONS += --no-code-duplication
 test-no_nested_borrows: OPTIONS += --no-code-duplication
@@ -46,6 +46,7 @@ test-traits:
 test-traits_special:
 test-closures:
 test-bitwise:
+test-demo:
 
 # =============================================================================
 # The tests.
