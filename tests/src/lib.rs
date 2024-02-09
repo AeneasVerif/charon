@@ -3,6 +3,7 @@ pub mod arrays_const_generics;
 pub mod bitwise;
 pub mod closures;
 pub mod constants;
+pub mod demo;
 pub mod external;
 pub mod hashmap;
 pub mod loops;
