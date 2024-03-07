@@ -18,17 +18,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
-name = "adt-into"
-version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits#669c9301b4723051dd8fd5d673ee0baaf8dfaf7b"
-dependencies = [
- "itertools 0.11.0",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "ahash"
 version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -287,6 +276,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "ext-trait"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d772df1c1a777963712fb68e014235e80863d6a91a85c4e06ba2d16243a310e5"
+dependencies = [
+ "ext-trait-proc_macros",
+]
+
+[[package]]
+name = "ext-trait-proc_macros"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ab7934152eaf26aa5aa9f7371408ad5af4c31357073c9e84c3b9d7f11ad639a"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "extension-traits"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a296e5a895621edf9fa8329c83aa1cb69a964643e36cf54d8d7a69b789089537"
+dependencies = [
+ "ext-trait",
+]
+
+[[package]]
 name = "fixedbitset"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -334,13 +352,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "hax-frontend-exporter"
-version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits#669c9301b4723051dd8fd5d673ee0baaf8dfaf7b"
+name = "hax-adt-into"
+version = "0.1.0-pre.1"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits_merge#b8c69e796642aada65164276c4cd3a72a104924b"
 dependencies = [
- "adt-into",
+ "itertools 0.11.0",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "hax-frontend-exporter"
+version = "0.1.0-pre.1"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits_merge#b8c69e796642aada65164276c4cd3a72a104924b"
+dependencies = [
+ "extension-traits",
+ "hax-adt-into",
  "hax-frontend-exporter-options",
  "itertools 0.11.0",
+ "lazy_static",
  "paste",
  "schemars",
  "serde",
@@ -350,8 +381,8 @@ dependencies = [
 
 [[package]]
 name = "hax-frontend-exporter-options"
-version = "0.1.0"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits#669c9301b4723051dd8fd5d673ee0baaf8dfaf7b"
+version = "0.1.0-pre.1"
+source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon_traits_merge#b8c69e796642aada65164276c4cd3a72a104924b"
 dependencies = [
  "schemars",
  "serde",
