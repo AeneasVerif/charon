@@ -342,19 +342,25 @@ pub fn list_nth_shared_mut_loop_pair_merge<'a, T>(
 
 // We do not use the input borrow inside the loop
 #[allow(clippy::empty_loop)]
-pub fn ignore_input_mut_borrow(_a: &mut u32) {
-    loop {}
+pub fn ignore_input_mut_borrow(_a: &mut u32, mut i: u32) {
+    while i > 0 {
+        i -= 1;
+    }
 }
 
 // We do not use the input borrow inside the loop
 #[allow(clippy::empty_loop)]
-pub fn incr_ignore_input_mut_borrow(a: &mut u32) {
+pub fn incr_ignore_input_mut_borrow(a: &mut u32, mut i: u32) {
     *a += 1;
-    loop {}
+    while i > 0 {
+        i -= 1;
+    }
 }
 
 // We do not use the input borrow inside the loop
 #[allow(clippy::empty_loop)]
-pub fn ignore_input_shared_borrow(_a: &mut u32) {
-    loop {}
+pub fn ignore_input_shared_borrow(_a: &mut u32, mut i: u32) {
+    while i > 0 {
+        i -= 1;
+    }
 }
