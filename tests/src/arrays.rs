@@ -299,3 +299,30 @@ pub fn ite() {
         index_mut_slice_u32_0(&mut y);
     }
 }
+
+pub fn zero_slice(a: &mut [u8]) {
+    let mut i: usize = 0;
+    let len = a.len();
+    while i < len {
+        a[i] = 0;
+        i += 1;
+    }
+}
+
+pub fn iter_mut_slice(a: &mut [u8]) {
+    let len = a.len();
+    let mut i = 0;
+    while i < len {
+        i += 1;
+    }
+}
+
+pub fn sum_mut_slice(a: &mut [u32]) -> u32 {
+    let mut i = 0;
+    let mut s = 0;
+    while i < a.len() {
+        s += a[i];
+        i += 1;
+    }
+    s
+}
