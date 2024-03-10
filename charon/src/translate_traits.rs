@@ -115,7 +115,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             pred.value
         {
             if self
-                .translate_trait_decl_id(*rspan, trait_pred.trait_ref.def_id.rust_def_id.unwrap())
+                .translate_trait_decl_id(*rspan, trait_pred.trait_ref.def_id.rust_def_id.unwrap())?
                 .is_some()
             {
                 trait_pred
@@ -222,12 +222,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Remark: this **doesn't** register the def id (on purpose)
-    pub(crate) fn translate_trait_item_name(&mut self, rust_id: DefId) -> TraitItemName {
+    pub(crate) fn translate_trait_item_name(
+        &mut self,
+        rust_id: DefId,
+    ) -> Result<TraitItemName, Error> {
         // Translate the name
-        let name = self.item_def_id_to_name(rust_id);
+        let name = self.item_def_id_to_name(rust_id)?;
         let (name, id) = name.name.last().unwrap().as_ident();
         assert!(id.is_zero());
-        TraitItemName(name.to_string())
+        Ok(TraitItemName(name.to_string()))
     }
 
     pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) {
@@ -251,7 +254,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn translate_trait_decl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
 
-        let def_id = self.translate_trait_decl_id(&None, rust_id);
+        let def_id = self.translate_trait_decl_id(&None, rust_id)?;
         // We may need to ignore the trait (happens if the trait is a marker
         // trait like [core::marker::Sized]
         if def_id.is_none() {
@@ -265,7 +268,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let name = bt_ctx
             .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
 
         // Translate the generic
         bt_ctx.translate_generic_params(rust_id)?;
@@ -298,7 +301,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             match &item.kind {
                 AssocKind::Fn => {
                     let span = tcx.def_span(rust_id);
-                    let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id);
+                    let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id)?;
                     // Skip the provided methods for the *external* trait declarations,
                     // but still remember their name.
                     if has_default_value {
@@ -458,7 +461,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn translate_trait_impl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
 
-        let def_id = self.translate_trait_impl_id(&None, rust_id);
+        let def_id = self.translate_trait_impl_id(&None, rust_id)?;
         // We may need to ignore the trait
         if def_id.is_none() {
             return Ok(());
@@ -472,7 +475,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         let name = bt_ctx
             .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
         let erase_regions = false;
 
         // Translate the generics
@@ -503,7 +506,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         ) = {
             // TODO: what is below duplicates a bit [add_trait_impl_self_trait_clause]
             let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
-            let trait_id = bt_ctx.translate_trait_decl_id(span, trait_rust_id);
+            let trait_id = bt_ctx.translate_trait_decl_id(span, trait_rust_id)?;
             // We already tested above whether the trait should be filtered
             let trait_id = trait_id.unwrap();
 
@@ -570,7 +573,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         for item in tcx.associated_items(rust_id).in_definition_order() {
             match &item.kind {
                 AssocKind::Fn => {
-                    let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id);
+                    let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id)?;
                     let fun_id = bt_ctx.translate_fun_decl_id(span, item.def_id);
 
                     // Check if we implement a required method or reimplement

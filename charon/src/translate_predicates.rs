@@ -100,13 +100,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    pub(crate) fn get_parent_params_info(&mut self, def_id: DefId) -> Option<ParamsInfo> {
+    pub(crate) fn get_parent_params_info(
+        &mut self,
+        def_id: DefId,
+    ) -> Result<Option<ParamsInfo>, Error> {
         let params_info =
             hax::get_parent_params_info(&self.hax_state, def_id).map(Self::convert_params_info);
 
         // Very annoying: because we may filter some marker traits (like [core::marker::Sized])
         // we have to recompute the number of trait clauses!
-        match params_info {
+        let info = match params_info {
             None => None,
             Some(mut params_info) => {
                 let tcx = self.t_ctx.tcx;
@@ -121,7 +124,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             .translate_trait_decl_id(
                                 span.rust_span,
                                 clause.trait_ref.def_id.rust_def_id.unwrap(),
-                            )
+                            )?
                             .is_some()
                         {
                             num_trait_clauses += 1;
@@ -131,7 +134,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 params_info.num_trait_clauses = num_trait_clauses;
                 Some(params_info)
             }
-        }
+        };
+        Ok(info)
     }
 
     pub(crate) fn get_predicates_of(
@@ -396,6 +400,33 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(())
     }
 
+    /// Returns an [Option] because we may filter trait refs about builtin or
+    /// auto traits like [core::marker::Sized] and [core::marker::Sync].
+    pub(crate) fn translate_trait_decl_ref(
+        &mut self,
+        span: rustc_span::Span,
+        erase_regions: bool,
+        trait_ref: &hax::TraitRef,
+    ) -> Result<Option<TraitDeclRef>, Error> {
+        let trait_id = self.translate_trait_decl_id(span, trait_ref.def_id.rust_def_id.unwrap())?;
+        // We might have to ignore the trait
+        let trait_id = if let Some(trait_id) = trait_id {
+            trait_id
+        } else {
+            return Ok(None);
+        };
+
+        let parent_trait_refs = Vec::new();
+        let generics = self.translate_substs_and_trait_refs(
+            span,
+            erase_regions,
+            None,
+            &trait_ref.generic_args,
+            &parent_trait_refs,
+        )?;
+        Ok(Some(TraitDeclRef { trait_id, generics }))
+    }
+
     /// Returns an [Option] because we may filter clauses about builtin or
     /// auto traits like [core::marker::Sized] and [core::marker::Sync].
     ///
@@ -416,7 +447,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = false;
 
         let trait_ref = &trait_pred.trait_ref;
-        let trait_id = self.translate_trait_decl_id(span, trait_ref.def_id.rust_def_id.unwrap());
+        let trait_id = self.translate_trait_decl_id(span, trait_ref.def_id.rust_def_id.unwrap())?;
         // We might have to ignore the trait
         let trait_id = if let Some(trait_id) = trait_id {
             trait_id
@@ -633,26 +664,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         impl_source: &hax::ImplSource,
     ) -> Result<Option<TraitRef>, Error> {
-        let trait_decl_ref = {
-            let trait_ref = &impl_source.trait_ref;
-            let trait_id =
-                self.translate_trait_decl_id(span, trait_ref.def_id.rust_def_id.unwrap());
-            let trait_id = if let Some(trait_id) = trait_id {
-                trait_id
-            } else {
-                return Ok(None);
+        let trait_decl_ref =
+            match self.translate_trait_decl_ref(span, erase_regions, &impl_source.trait_ref)? {
+                None => return Ok(None),
+                Some(tr) => tr,
             };
-
-            let parent_trait_refs = Vec::new();
-            let generics = self.translate_substs_and_trait_refs(
-                span,
-                erase_regions,
-                None,
-                &trait_ref.generic_args,
-                &parent_trait_refs,
-            )?;
-            TraitDeclRef { trait_id, generics }
-        };
 
         match self.translate_trait_impl_source_aux(
             span,
@@ -692,7 +708,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let trait_ref = match &impl_source.kind {
             ImplSourceKind::UserDefined(data) => {
                 let def_id = data.impl_def_id.rust_def_id.unwrap();
-                let trait_id = self.translate_trait_impl_id(span, def_id);
+                let trait_id = self.translate_trait_impl_id(span, def_id)?;
                 // We already tested above whether the trait should be filtered
                 let trait_id = trait_id.unwrap();
                 let trait_id = TraitInstanceId::TraitImpl(trait_id);
@@ -724,7 +740,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.translate_trait_decl_id(span, def_id).unwrap();
+                let trait_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
 
                 // Retrieve the arguments
                 let generics = self.translate_substs_and_trait_refs(
@@ -758,7 +774,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = trait_ref.def_id.rust_def_id.unwrap();
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.translate_trait_decl_id(span, def_id).unwrap();
+                let trait_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
 
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
                 let generics = self.translate_substs_and_trait_refs(
@@ -778,7 +794,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = data.trait_def_id.rust_def_id.unwrap();
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.translate_trait_decl_id(span, def_id).unwrap();
+                let trait_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
 
                 TraitRef {

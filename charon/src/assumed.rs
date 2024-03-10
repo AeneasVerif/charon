@@ -108,8 +108,8 @@ fn get_fun_id_from_name_full(name: &Name) -> Option<FunId> {
         match name.name.as_slice() {
             [Ident(alloc, _), Ident(boxed, _), Impl(impl_elem), Ident(new, _)] => {
                 if alloc == "alloc" && boxed == "boxed" && new == "new" {
-                    match &impl_elem.ty {
-                        Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
+                    match &impl_elem.kind {
+                        ImplElemKind::Ty(Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics)) => {
                             let GenericArgs {
                                 regions,
                                 types,
