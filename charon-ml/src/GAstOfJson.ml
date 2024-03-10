@@ -558,22 +558,33 @@ let predicates_of_json (js : json) : (predicates, string) result =
         Ok { regions_outlive; types_outlive; trait_type_constraints }
     | _ -> Error "")
 
+let impl_elem_kind_of_json (js : json) : (impl_elem_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Ty", ty) ] ->
+        let* ty = ty_of_json ty in
+        Ok (ImplElemTy ty)
+    | `Assoc [ ("Trait", tr) ] ->
+        let* tr = trait_decl_ref_of_json tr in
+        Ok (ImplElemTrait tr)
+    | _ -> Error "")
+
 let impl_elem_of_json (id_to_file : id_to_file_map) (js : json) :
     (impl_elem, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
         [
+          ("disambiguator", disambiguator);
           ("generics", generics);
           ("preds", preds);
-          ("ty", ty);
-          ("disambiguator", disambiguator);
+          ("kind", kind);
         ] ->
+        let* disambiguator = Disambiguator.id_of_json disambiguator in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
-        let* ty = ty_of_json ty in
-        let* disambiguator = Disambiguator.id_of_json disambiguator in
-        Ok { generics; preds; ty; disambiguator }
+        let* kind = impl_elem_kind_of_json kind in
+        Ok { disambiguator; generics; preds; kind }
     | _ -> Error "")
 
 let path_elem_of_json (id_to_file : id_to_file_map) (js : json) :

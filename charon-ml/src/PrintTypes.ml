@@ -240,6 +240,21 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
       ^ ")"
   | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
+and impl_elem_kind_to_string (env : ('a, 'b) fmt_env) (k : impl_elem_kind) :
+    string =
+  match k with
+  | ImplElemTy ty -> ty_to_string env ty
+  | ImplElemTrait tr ->
+      (* Put the first type argument aside (it gives the type for which we
+         implement the trait) *)
+      let { trait_decl_id; decl_generics } = tr in
+      let ty, types = Collections.List.pop decl_generics.types in
+      let decl_generics = { decl_generics with types } in
+      let ty = ty_to_string env ty in
+      let tr = { trait_decl_id; decl_generics } in
+      let tr = trait_decl_ref_to_string env tr in
+      "(" ^ tr ^ " for " ^ ty ^ ")"
+
 and impl_elem_to_string (env : ('a, 'b) fmt_env) (e : impl_elem) : string =
   (* Locally replace the generics and the predicates *)
   let env = fmt_env_update_generics_and_preds env e.generics e.preds in
@@ -247,8 +262,8 @@ and impl_elem_to_string (env : ('a, 'b) fmt_env) (e : impl_elem) : string =
     if e.disambiguator = Disambiguator.zero then ""
     else "#" ^ Disambiguator.to_string e.disambiguator
   in
-  let ty = ty_to_string env e.ty in
-  "{" ^ ty ^ d ^ "}"
+  let kind = impl_elem_kind_to_string env e.kind in
+  "{" ^ kind ^ d ^ "}"
 
 and path_elem_to_string (env : ('a, 'b) fmt_env) (e : path_elem) : string =
   match e with
