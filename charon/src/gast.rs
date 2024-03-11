@@ -43,19 +43,19 @@ pub struct GExprBody<T> {
     pub body: T,
 }
 
-/// Function kind: "regular" function, trait method declaration, etc.
+/// Item kind kind: "regular" item (not linked to a trait), trait item declaration, etc.
 ///
 /// Example:
 /// ========
 /// ```text
 /// trait Foo {
-///   fn bar(x : u32) -> u32; // trait method: declaration
+///   fn bar(x : u32) -> u32; // trait item: declaration (required)
 ///
-///   fn baz(x : bool) -> bool { x } // trait method: provided
+///   fn baz(x : bool) -> bool { x } // trait item: provided
 /// }
 ///
 /// impl Foo for ... {
-///   fn bar(x : u32) -> u32 { x } // trait method: implementation
+///   fn bar(x : u32) -> u32 { x } // trait item: implementation
 /// }
 ///
 /// fn test(...) { ... } // regular
@@ -65,25 +65,25 @@ pub struct GExprBody<T> {
 /// }
 /// ```
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub enum FunKind {
+pub enum ItemKind {
     /// A "normal" function
     Regular,
-    /// Trait method implementation
-    TraitMethodImpl {
+    /// Trait item implementation
+    TraitItemImpl {
         /// The trait implementation block the method belongs to
         impl_id: TraitImplId::Id,
         /// The id of the trait decl the method belongs to
         trait_id: TraitDeclId::Id,
-        /// The name of the method
-        method_name: TraitItemName,
-        /// True if this function re-implements a provided method
+        /// The name of the item
+        item_name: TraitItemName,
+        /// True if this item *re-implements* a provided item
         provided: bool,
     },
-    /// Trait method declaration
-    TraitMethodDecl(TraitDeclId::Id, TraitItemName),
-    /// Trait method provided function (trait method declaration which defines
+    /// Trait item declaration
+    TraitItemDecl(TraitDeclId::Id, TraitItemName),
+    /// Provided trait item (trait item declaration which defines
     /// a default implementation at the same time)
-    TraitMethodProvided(TraitDeclId::Id, TraitItemName),
+    TraitItemProvided(TraitDeclId::Id, TraitItemName),
 }
 
 /// A function definition
@@ -102,7 +102,7 @@ pub struct GFunDecl<T> {
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,
     /// The function kind: "regular" function, trait method declaration, etc.
-    pub kind: FunKind,
+    pub kind: ItemKind,
     /// The function body, in case the function is not opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.
@@ -122,6 +122,8 @@ pub struct GGlobalDecl<T> {
     pub is_local: bool,
     pub name: Name,
     pub ty: Ty,
+    /// The global kind: "regular" function, trait const declaration, etc.
+    pub kind: ItemKind,
     pub body: Option<GExprBody<T>>,
 }
 
