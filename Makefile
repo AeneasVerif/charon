@@ -33,11 +33,13 @@ generate-rust-toolchain-%:
 	echo "# update rust-toolchain.template in the top directory." >> $*/rust-toolchain
 	cat rust-toolchain.template >> $*/rust-toolchain
 
+# Build the project in release mode, after formatting the code
 .PHONY: build
 build: build-charon-rust build-charon-ml
 
-.PHONY: build-debug
-build-debug: build-charon-rust-debug build-charon-ml
+# Build in debug mode, without formatting the code
+.PHONY: build-dev
+build-dev: build-dev-charon-rust build-dev-charon-ml
 
 .PHONY: build-charon-rust
 build-charon-rust: generate-rust-toolchain
@@ -46,8 +48,8 @@ build-charon-rust: generate-rust-toolchain
 	cp -f charon/target/release/charon bin
 	cp -f charon/target/release/charon-driver bin
 
-.PHONY: build-charon-rust-debug
-build-charon-rust-debug: generate-rust-toolchain
+.PHONY: build-dev-charon-rust
+build-dev-charon-rust: generate-rust-toolchain
 	cd charon && cargo build
 	mkdir -p bin
 	cp -f charon/target/debug/charon bin
@@ -56,6 +58,10 @@ build-charon-rust-debug: generate-rust-toolchain
 .PHONY: build-charon-ml
 build-charon-ml:
 	cd charon-ml && $(MAKE)
+
+.PHONY: build-dev-charon-ml
+build-dev-charon-ml:
+	cd charon-ml && $(MAKE) build-dev
 
 # Build the tests crate, and run the cargo tests
 .PHONY: build-tests
@@ -68,8 +74,8 @@ build-tests-polonius:
 	cd tests-polonius && $(MAKE) build && $(MAKE) cargo-tests
 
 # Build and run the tests
-.PHONY: tests
-tests: build-tests build-tests-polonius charon-tests charon-ml-tests
+.PHONY: test
+test: build-tests build-tests-polonius charon-tests charon-ml-tests
 
 # Run Charon on various test files
 .PHONY: charon-tests
