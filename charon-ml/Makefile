@@ -1,5 +1,10 @@
+# Build, after formatting the code
 .PHONY: build
-build:
+build: format build-dev
+
+# Build, without formatting the code
+.PHONY: build-dev
+build-dev:
 	dune build && dune build @doc
 
 # The tests.

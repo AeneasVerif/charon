@@ -9,8 +9,12 @@ NOT_ALL_TESTS ?=
 all: build tests
 
 .PHONY: build
-build:
+build: format
 	cargo build
+
+.PHONY: format
+format:
+	cargo fmt
 
 .PHONY: tests
 tests: cargo-tests charon-tests

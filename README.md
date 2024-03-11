@@ -78,7 +78,7 @@ opam install ppx_deriving visitors easy_logging zarith yojson core_unix odoc men
 
 You can then run `make build-charon-ml` to build the ML library, or even simply
 `make` to build the whole project (Rust and OCaml). Finally, you can run the
-tests with `make tests`.
+tests with `make test`.
 
 ## Documentation
 

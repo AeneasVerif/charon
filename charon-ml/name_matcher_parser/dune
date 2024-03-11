@@ -1,4 +1,5 @@
 (ocamllex Lexer)
+
 (menhir
  (modules Parser)
  (flags --explain --inspection --table --dump))
@@ -6,7 +7,8 @@
 (library
  (name name_matcher_parser)
  (public_name name_matcher_parser)
- (preprocess (pps ppx_deriving.show ppx_deriving.ord visitors.ppx))
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord visitors.ppx))
  (libraries zarith menhirLib)
  (flags
   ; menhir generates instances of the "unused rec flag" warning

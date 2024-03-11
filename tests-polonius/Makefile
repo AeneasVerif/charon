@@ -8,8 +8,12 @@ NOT_ALL_TESTS ?=
 all: build tests
 
 .PHONY: build
-build:
+build: format
 	cargo rustc -- -Zpolonius
+
+.PHONY: format
+format:
+	cargo fmt
 
 .PHONY: tests
 tests: cargo-tests charon-tests

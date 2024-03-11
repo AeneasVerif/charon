@@ -2,8 +2,12 @@
 all: build
 
 .PHONY: build
-build:
+build: format
 	cargo build --release
+
+.PHONY: format
+format:
+	cargo fmt
 
 .PHONY: test
 test:
