@@ -112,17 +112,21 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn get_fun_kind(&mut self, src: &Option<DepSource>, rust_id: DefId) -> FunKind {
+    pub(crate) fn get_item_kind(
+        &mut self,
+        src: &Option<DepSource>,
+        rust_id: DefId,
+    ) -> Result<ItemKind, Error> {
         trace!("rust_id: {:?}", rust_id);
         let tcx = self.tcx;
         if let Some(assoc) = tcx.opt_associated_item(rust_id) {
-            match assoc.container {
+            let kind = match assoc.container {
                 ty::AssocItemContainer::ImplContainer => {
-                    // This method is defined in an impl block.
-                    // It can be a regular function in an impl block or a trait
-                    // method implementation.
+                    // This item is defined in an impl block.
+                    // It can be a regular item in an impl block or a trait
+                    // item implementation.
                     //
-                    // Ex.:
+                    // Ex.: (with methods)
                     // ====
                     // ```
                     // impl<T> List<T> {
@@ -134,8 +138,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // }
                     // ```
 
-                    // Check if there is a trait item (if yes, it is a trait method
-                    // implementation, if no it is a regular function).
+                    // Check if there is a trait item (if yes, it is a trait item
+                    // implementation, if no it is a regular item).
                     // Remark: this trait item is the id of the item associated
                     // in the trait. For instance:
                     // ```
@@ -148,10 +152,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     //   fn bar() { ... } // trait_item_def_id: Some(Foo_bar)
                     // }
                     match assoc.trait_item_def_id {
-                        None => FunKind::Regular,
-                        Some(trait_method_id) => {
-                            let trait_id = tcx.trait_of_item(trait_method_id).unwrap();
-                            let trait_id = self.translate_trait_decl_id(src, trait_id);
+                        None => ItemKind::Regular,
+                        Some(trait_item_id) => {
+                            let trait_id = tcx.trait_of_item(trait_item_id).unwrap();
+                            let trait_id = self.translate_trait_decl_id(src, trait_id)?;
                             // The trait id should be Some(...): trait markers (that we
                             // may eliminate) don't have methods.
                             let trait_id = trait_id.unwrap();
@@ -161,33 +165,33 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                                 .translate_trait_impl_id(
                                     src,
                                     tcx.predicates_of(rust_id).parent.unwrap(),
-                                )
+                                )?
                                 .unwrap();
 
-                            let method_name = self.translate_trait_item_name(trait_method_id);
+                            let item_name = self.translate_trait_item_name(trait_item_id)?;
 
                             // Check if the current function implements a provided method.
                             // We do so by retrieving the def id of the method which is
                             // implemented, and checking its kind.
-                            let provided = match self.get_fun_kind(src, trait_method_id) {
-                                FunKind::TraitMethodDecl(..) => false,
-                                FunKind::TraitMethodProvided(..) => true,
-                                FunKind::Regular | FunKind::TraitMethodImpl { .. } => {
+                            let provided = match self.get_item_kind(src, trait_item_id)? {
+                                ItemKind::TraitItemDecl(..) => false,
+                                ItemKind::TraitItemProvided(..) => true,
+                                ItemKind::Regular | ItemKind::TraitItemImpl { .. } => {
                                     unreachable!()
                                 }
                             };
 
-                            FunKind::TraitMethodImpl {
+                            ItemKind::TraitItemImpl {
                                 impl_id,
                                 trait_id,
-                                method_name,
+                                item_name,
                                 provided,
                             }
                         }
                     }
                 }
                 ty::AssocItemContainer::TraitContainer => {
-                    // This method is the *declaration* of a trait method
+                    // This method is the *declaration* of a trait item
                     // Ex.:
                     // ====
                     // ```
@@ -196,30 +200,31 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // }
                     // ```
 
-                    // Yet, this could be a default method implementation, in which
+                    // Yet, this could be a default item implementation, in which
                     // case there is a body: we need to check that.
 
-                    // In order to check if this is a provided method, we check
-                    // the defaultness (i.e., whether the method has a default value):
+                    // In order to check if this is a provided item, we check
+                    // the defaultness (i.e., whether the item has a default value):
                     let is_provided = tcx.impl_defaultness(rust_id).has_value();
 
                     // Compute additional information
-                    let method_name = self.translate_trait_item_name(rust_id);
+                    let item_name = self.translate_trait_item_name(rust_id)?;
                     let trait_id = tcx.trait_of_item(rust_id).unwrap();
-                    let trait_id = self.translate_trait_decl_id(src, trait_id);
+                    let trait_id = self.translate_trait_decl_id(src, trait_id)?;
                     // The trait id should be Some(...): trait markers (that we
-                    // may eliminate) don't have methods.
+                    // may eliminate) don't have associated items.
                     let trait_id = trait_id.unwrap();
 
                     if is_provided {
-                        FunKind::TraitMethodProvided(trait_id, method_name)
+                        ItemKind::TraitItemProvided(trait_id, item_name)
                     } else {
-                        FunKind::TraitMethodDecl(trait_id, method_name)
+                        ItemKind::TraitItemDecl(trait_id, item_name)
                     }
                 }
-            }
+            };
+            Ok(kind)
         } else {
-            FunKind::Regular
+            Ok(ItemKind::Regular)
         }
     }
 }
@@ -777,7 +782,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             trait_refs,
                         )?;
 
-                        let type_id = self.translate_type_id(span, adt_id);
+                        let type_id = self.translate_type_id(span, adt_id)?;
                         // Sanity check
                         matches!(&type_id, TypeId::Adt(_));
 
@@ -846,7 +851,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_info: &Option<hax::TraitInfo>,
     ) -> Result<SubstFunIdOrPanic, Error> {
         let rust_id = def_id.rust_def_id.unwrap();
-        let name = self.t_ctx.def_id_to_name(def_id);
+        let name = self.t_ctx.def_id_to_name(def_id)?;
         let is_local = rust_id.is_local();
 
         // Check if this function is a actually `panic`
@@ -977,7 +982,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         trace!("{:?}", rust_id);
 
                         let trait_method_fun_id = self.translate_fun_decl_id(span, rust_id);
-                        let method_name = self.t_ctx.translate_trait_item_name(rust_id);
+                        let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
 
                         // Compute the concatenation of all the generic arguments which were given to
                         // the function (trait arguments + method arguments).
@@ -1682,17 +1687,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let signature = signature.value;
 
         self.set_first_bound_regions_group(bvar_names);
-        let fun_kind = &self.t_ctx.get_fun_kind(&dep_src, def_id);
+        let fun_kind = &self.t_ctx.get_item_kind(&dep_src, def_id)?;
 
         // Add the trait clauses
         self.while_registering_trait_clauses(move |ctx| {
             // Add the ctx trait clause if it is a trait decl item
             match fun_kind {
-                FunKind::Regular => (),
-                FunKind::TraitMethodImpl { impl_id, .. } => {
+                ItemKind::Regular => (),
+                ItemKind::TraitItemImpl { impl_id, .. } => {
                     ctx.add_trait_impl_self_trait_clause(*impl_id)?;
                 }
-                FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..) => {
+                ItemKind::TraitItemProvided(..) | ItemKind::TraitItemDecl(..) => {
                     // This is a trait decl item
                     let trait_id = tcx.trait_of_item(def_id).unwrap();
                     ctx.add_self_trait_clause(trait_id)?;
@@ -1701,11 +1706,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the predicates (in particular, the trait clauses)
             match &fun_kind {
-                FunKind::Regular | FunKind::TraitMethodImpl { .. } => {
+                ItemKind::Regular | ItemKind::TraitItemImpl { .. } => {
                     ctx.translate_predicates_of(None, def_id)?;
                 }
-                FunKind::TraitMethodProvided(trait_decl_id, ..)
-                | FunKind::TraitMethodDecl(trait_decl_id, ..) => {
+                ItemKind::TraitItemProvided(trait_decl_id, ..)
+                | ItemKind::TraitItemDecl(trait_decl_id, ..) => {
                     ctx.translate_predicates_of(Some(*trait_decl_id), def_id)?;
                 }
             }
@@ -1747,11 +1752,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             None
         };
 
-        let mut parent_params_info = self.get_function_parent_params_info(&dep_src, def_id);
+        let mut parent_params_info = self.get_function_parent_params_info(&dep_src, def_id)?;
         // If this is a trait decl method, we need to adjust the number of parent clauses
         if matches!(
             fun_kind,
-            FunKind::TraitMethodProvided(..) | FunKind::TraitMethodDecl(..)
+            ItemKind::TraitItemProvided(..) | ItemKind::TraitItemDecl(..)
         ) {
             if let Some(info) = &mut parent_params_info {
                 // All the trait clauses are registered as parent (of Self)
@@ -1776,16 +1781,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         src: &Option<DepSource>,
         def_id: DefId,
-    ) -> Option<ParamsInfo> {
-        let kind = self.t_ctx.get_fun_kind(src, def_id);
-        match kind {
-            FunKind::Regular => None,
-            FunKind::TraitMethodImpl { .. }
-            | FunKind::TraitMethodDecl { .. }
-            | FunKind::TraitMethodProvided { .. } => {
-                Some(self.get_parent_params_info(def_id).unwrap())
+    ) -> Result<Option<ParamsInfo>, Error> {
+        let kind = self.t_ctx.get_item_kind(src, def_id)?;
+        let info = match kind {
+            ItemKind::Regular => None,
+            ItemKind::TraitItemImpl { .. }
+            | ItemKind::TraitItemDecl { .. }
+            | ItemKind::TraitItemProvided { .. } => {
+                Some(self.get_parent_params_info(def_id)?.unwrap())
             }
-        }
+        };
+        Ok(info)
     }
 }
 
@@ -1812,7 +1818,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     pub fn translate_function_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_id = self.translate_fun_decl_id(&None, rust_id);
-        let is_transparent = self.id_is_transparent(rust_id);
+        let is_transparent = self.id_is_transparent(rust_id)?;
         let def_span = self.tcx.def_span(rust_id);
 
         // Compute the meta information
@@ -1824,18 +1830,18 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Translate the function name
         let name = bt_ctx
             .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
         let kind = bt_ctx
             .t_ctx
-            .get_fun_kind(&DepSource::make(rust_id, def_span), rust_id);
+            .get_item_kind(&DepSource::make(rust_id, def_span), rust_id)?;
         let is_trait_method_decl = match &kind {
-            FunKind::Regular
-            | FunKind::TraitMethodImpl { .. }
-            | FunKind::TraitMethodProvided(..) => false,
-            FunKind::TraitMethodDecl(..) => true,
+            ItemKind::Regular
+            | ItemKind::TraitItemImpl { .. }
+            | ItemKind::TraitItemProvided(..) => false,
+            ItemKind::TraitItemDecl(..) => true,
         };
 
         // Translate the function signature
@@ -1902,7 +1908,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
-        let is_transparent = self.id_is_transparent(rust_id);
+        let is_transparent = self.id_is_transparent(rust_id)?;
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -1911,12 +1917,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Translate the global name
         let name = bt_ctx
             .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(hax_state));
+            .extended_def_id_to_name(&rust_id.sinto(hax_state))?;
 
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
         let erase_regions = false; // This doesn't matter: there shouldn't be any regions
         let ty = bt_ctx.translate_ty(span, erase_regions, &mir_ty.sinto(hax_state))?;
+
+        // Retrieve the kind
+        let kind = bt_ctx
+            .t_ctx
+            .get_item_kind(&DepSource::make(rust_id, span), rust_id)?;
 
         let body = if rust_id.is_local() && is_transparent {
             // It's a local and transparent global: we extract its body as for functions.
@@ -1942,6 +1953,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 is_local: rust_id.is_local(),
                 name,
                 ty,
+                kind,
                 body,
             },
         );

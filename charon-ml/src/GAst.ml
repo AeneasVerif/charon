@@ -105,20 +105,22 @@ type fun_sig = {
 }
 [@@deriving show]
 
-type fun_kind =
-  | RegularKind  (** A "normal" function *)
-  | TraitMethodImpl of trait_impl_id * trait_decl_id * string * bool
-      (** Trait method implementation.
+type item_kind =
+  | RegularKind
+      (** A "normal" item (either defined at the top-level, or inside
+          a type impl block). *)
+  | TraitItemImpl of trait_impl_id * trait_decl_id * string * bool
+      (** Trait item implementation.
 
           Fields:
           - [trait impl id]
           - [trait_id]
-          - [method_name]
-          - [provided]: true if this function re-implements a provided method
+          - [item_name]
+          - [provided]: true if this item *re-implements* a provided item
         *)
-  | TraitMethodDecl of trait_decl_id * string  (** A trait method declaration *)
-  | TraitMethodProvided of trait_decl_id * string
-      (** Trait method provided function (trait method declaration which defines a
+  | TraitItemDecl of trait_decl_id * string  (** A trait item declaration *)
+  | TraitItemProvided of trait_decl_id * string
+      (** Provided trait item (trait item declaration which defines a
           default implementation at the same time *)
 [@@deriving show]
 
@@ -140,7 +142,7 @@ type 'body gfun_decl = {
   is_local : bool;
   name : name;
   signature : fun_sig;
-  kind : fun_kind;
+  kind : item_kind;
   body : 'body gexpr_body option;
   is_global_decl_body : bool;
 }
@@ -200,6 +202,7 @@ type 'body gglobal_decl = {
   is_local : bool;
   name : name;
   ty : ty;
+  kind : item_kind;
   body : 'body;
 }
 [@@deriving show]

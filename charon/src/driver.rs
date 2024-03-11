@@ -156,7 +156,11 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
     // # Translate the declarations in the crate.
     // We translate the declarations in an ad-hoc order, and do not group
     // the mutually recursive groups - we do this in the next step.
-    let mut ctx = translate_crate_to_ullbc::translate(crate_info, options, sess, tcx, mir_level);
+    let mut ctx =
+        match translate_crate_to_ullbc::translate(crate_info, options, sess, tcx, mir_level) {
+            Ok(ctx) => ctx,
+            Err(_) => return Err(()),
+        };
 
     trace!("# After translation from MIR:\n\n{}\n", ctx);
 

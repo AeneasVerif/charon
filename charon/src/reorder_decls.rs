@@ -294,10 +294,10 @@ impl Deps {
                 //
                 // The declaration may not be present if we encountered errors.
                 if let Some(decl) = ctx.fun_decls.get(id) {
-                    if let FunKind::TraitMethodImpl {
+                    if let ItemKind::TraitItemImpl {
                         impl_id,
                         trait_id: _,
-                        method_name: _,
+                        item_name: _,
                         provided: _,
                     } = &decl.kind
                     {

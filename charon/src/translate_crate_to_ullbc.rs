@@ -1,4 +1,5 @@
 use crate::cli_options::CliOpts;
+use crate::common::*;
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
 use crate::meta;
 use crate::translate_ctx::*;
@@ -69,7 +70,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// This is useful for debugging purposes, to check how we reached a point
     /// (in particular if we want to figure out where we failed to consider a
     /// definition as opaque).
-    fn register_local_hir_item(&mut self, top_item: bool, item: &Item) {
+    fn register_local_hir_item(&mut self, top_item: bool, item: &Item) -> Result<(), Error> {
         trace!("{:?}", item);
 
         // The annoying thing is that when iterating over the items in a crate, we
@@ -80,16 +81,16 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // item (not an item transitively reachable from an item which is not
         // opaque) and inside an opaque module (or sub-module), we ignore it.
         if top_item {
-            match self.hir_item_to_name(item) {
+            match self.hir_item_to_name(item)? {
                 Option::None => {
                     // This kind of item is to be ignored
                     trace!("Ignoring {:?} (ignoring item kind)", item.item_id());
-                    return;
+                    return Ok(());
                 }
                 Option::Some(item_name) => {
                     if self.crate_info.is_opaque_decl(&item_name) {
                         trace!("Ignoring {:?} (marked as opaque)", item.item_id());
-                        return;
+                        return Ok(());
                     }
                     // Continue
                 }
@@ -102,19 +103,23 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         match &item.kind {
             ItemKind::TyAlias(_, _) => {
                 // We ignore the type aliases - it seems they are inlined
+                Ok(())
             }
             ItemKind::OpaqueTy(_) => unimplemented!(),
             ItemKind::Union(..) => unimplemented!(),
             ItemKind::Enum(..) | ItemKind::Struct(_, _) => {
                 let _ = self.translate_type_decl_id(&None, def_id);
+                Ok(())
             }
             ItemKind::Fn(_, _, _) => {
                 let _ = self.translate_fun_decl_id(&None, def_id);
+                Ok(())
             }
             ItemKind::Trait(..) => {
                 let _ = self.translate_trait_decl_id(&None, def_id);
                 // We don't need to explore the associated items: we will
                 // explore them when translating the trait
+                Ok(())
             }
             ItemKind::Const(..) | ItemKind::Static(..) => {
                 // We ignore the anonymous constants, which are introduced
@@ -137,6 +142,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         // Avoid registering globals in optimized MIR (they will be inlined)
                     }
                 }
+                Ok(())
             }
 
             ItemKind::Impl(impl_block) => {
@@ -158,12 +164,15 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
                     self.register_local_hir_impl_item(false, impl_item);
                 }
+                Ok(())
             }
             ItemKind::Use(_, _) => {
                 // Ignore
+                Ok(())
             }
             ItemKind::ExternCrate(_) => {
                 // Ignore
+                Ok(())
             }
             ItemKind::Mod(module) => {
                 trace!("module");
@@ -173,7 +182,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 // to check that all the opaque modules given as arguments actually
                 // exist
                 trace!("{:?}", def_id);
-                let opaque = self.id_is_opaque(def_id);
+                let opaque = self.id_is_opaque(def_id)?;
                 if opaque {
                     // Ignore
                     trace!("Ignoring module [{:?}] because marked as opaque", def_id);
@@ -183,14 +192,16 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     for item_id in module.item_ids {
                         // Lookup and register the item
                         let item = hir_map.item(*item_id);
-                        self.register_local_hir_item(false, item);
+                        self.register_local_hir_item(false, item)?;
                     }
                 }
+                Ok(())
             }
             ItemKind::Macro(..) => {
                 // We ignore macro definitions. Note that when a macro is applied,
                 // we directly see the result of its expansion by the Rustc compiler,
                 // which is why we don't have to care about them.
+                Ok(())
             }
             _ => {
                 unimplemented!("{:?}", item.kind);
@@ -206,7 +217,7 @@ pub fn translate<'tcx, 'ctx>(
     session: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
-) -> TransCtx<'tcx, 'ctx> {
+) -> Result<TransCtx<'tcx, 'ctx>, Error> {
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -270,7 +281,7 @@ pub fn translate<'tcx, 'ctx>(
             rustc_hir::Node::Item(item) => item,
             _ => unreachable!(),
         };
-        ctx.register_local_hir_item(true, item);
+        ctx.register_local_hir_item(true, item)?;
     }
 
     trace!("Stack after we explored the crate:\n{:?}", &ctx.stack);
@@ -296,5 +307,5 @@ pub fn translate<'tcx, 'ctx>(
     }
 
     // Return the context
-    ctx
+    Ok(ctx)
 }

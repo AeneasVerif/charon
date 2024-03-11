@@ -2,9 +2,11 @@
 //!
 //! For now, we have one function per object kind (type, trait, function,
 //! module): many of them could be factorized (will do).
+use crate::common::*;
 use crate::formatter::AstFormatter;
 use crate::names::*;
 use crate::translate_ctx::*;
+use crate::types::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::{Item, ItemKind};
@@ -37,6 +39,30 @@ impl PathElem {
     }
 }
 
+impl ImplElemKind {
+    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
+    where
+        C: AstFormatter,
+    {
+        match self {
+            ImplElemKind::Ty(ty) => ty.fmt_with_ctx(ctx),
+            ImplElemKind::Trait(tr) => {
+                // We need to put the first type parameter aside: it is
+                // the type for which we implement the trait.
+                // This is not very clean because it's hard to move the
+                // first element out of a vector...
+                let TraitDeclRef { trait_id, generics } = tr;
+                let (ty, generics) = generics.pop_first_type_arg();
+                let tr = TraitDeclRef {
+                    trait_id: *trait_id,
+                    generics,
+                };
+                format!("impl {} for {}", tr.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
+            }
+        }
+    }
+}
+
 impl ImplElem {
     pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
     where
@@ -49,7 +75,7 @@ impl ImplElem {
         };
         let ctx = ctx.set_generics(&self.generics);
         // Just printing the generics (not the predicates)
-        format!("{{{}{d}}}", self.ty.fmt_with_ctx(&ctx),)
+        format!("{{{}{d}}}", self.kind.fmt_with_ctx(&ctx),)
     }
 }
 
@@ -127,7 +153,7 @@ impl Name {
 
 impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Retrieve an item name from a [DefId].
-    pub fn extended_def_id_to_name(&mut self, def_id: &hax::ExtendedDefId) -> Name {
+    pub fn extended_def_id_to_name(&mut self, def_id: &hax::ExtendedDefId) -> Result<Name, Error> {
         trace!("{:?}", def_id);
         let span = self.tcx.def_span(def_id.rust_def_id.unwrap());
 
@@ -237,13 +263,36 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         .unwrap();
                     bt_ctx.translate_predicates_of(None, id).unwrap();
                     let erase_regions = false;
-                    let ty = bt_ctx.translate_ty(span, erase_regions, ty).unwrap();
+
+                    // Two cases, depending on whether the impl block is
+                    // a "regular" impl block (`impl Foo { ... }`) or a trait
+                    // implementation (`impl Bar for Foo { ... }`).
+                    let kind = match bt_ctx.t_ctx.tcx.impl_trait_ref(id) {
+                        None => {
+                            // Inherent impl ("regular" impl)
+                            let ty = bt_ctx.translate_ty(span, erase_regions, ty).unwrap();
+                            ImplElemKind::Ty(ty)
+                        }
+                        Some(trait_ref) => {
+                            // Trait implementation
+                            let trait_ref = trait_ref.sinto(&bt_ctx.hax_state);
+                            let erase_regions = false;
+                            let trait_ref =
+                                bt_ctx.translate_trait_decl_ref(span, erase_regions, &trait_ref)?;
+                            match trait_ref {
+                                None => error_or_panic!(self, span, "The trait reference was ignored while we need it to compute the name"),
+                                Some(trait_ref) => {
+                                    ImplElemKind::Trait(trait_ref)
+                                }
+                            }
+                        }
+                    };
 
                     name.push(PathElem::Impl(ImplElem {
+                        disambiguator,
                         generics: bt_ctx.get_generics(),
                         preds: bt_ctx.get_predicates(),
-                        ty,
-                        disambiguator,
+                        kind,
                     }));
                 }
                 ExtendedDefPathItem::ImplTrait => {
@@ -281,7 +330,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
 
         trace!("{:?}", name);
-        Name { name }
+        Ok(Name { name })
     }
 
     pub(crate) fn make_hax_state_with_id(
@@ -308,12 +357,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     ///
     /// Rk.: this function is only used by [crate::register], and implemented with this
     /// context in mind.
-    pub fn hir_item_to_name(&mut self, item: &Item) -> Option<Name> {
+    pub fn hir_item_to_name(&mut self, item: &Item) -> Result<Option<Name>, Error> {
         // We have to create a hax state, which is annoying...
         let state = self.make_hax_state_with_id(item.owner_id.to_def_id());
         let def_id = item.owner_id.to_def_id().sinto(&state);
 
-        match &item.kind {
+        let name = match &item.kind {
             ItemKind::OpaqueTy(_) => unimplemented!(),
             ItemKind::Union(_, _) => unimplemented!(),
             ItemKind::ExternCrate(_) => {
@@ -334,20 +383,24 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             | ItemKind::Const(_, _)
             | ItemKind::Static(_, _, _)
             | ItemKind::Macro(_, _)
-            | ItemKind::Trait(..) => Option::Some(self.extended_def_id_to_name(&def_id)),
+            | ItemKind::Trait(..) => Option::Some(self.extended_def_id_to_name(&def_id)?),
             _ => {
                 unimplemented!("{:?}", item.kind);
             }
-        }
+        };
+        Ok(name)
     }
 
     // TODO: remove
-    pub fn item_def_id_to_name(&mut self, def_id: rustc_span::def_id::DefId) -> Name {
+    pub fn item_def_id_to_name(
+        &mut self,
+        def_id: rustc_span::def_id::DefId,
+    ) -> Result<Name, Error> {
         let state = self.make_hax_state_with_id(def_id);
         self.extended_def_id_to_name(&def_id.sinto(&state))
     }
 
-    pub fn def_id_to_name(&mut self, def_id: &hax::DefId) -> Name {
+    pub fn def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
         // We have to create a hax state, which is annoying...
         let state = self.make_hax_state_with_id(def_id.rust_def_id.unwrap());
         self.extended_def_id_to_name(&def_id.rust_def_id.unwrap().sinto(&state))

@@ -558,22 +558,33 @@ let predicates_of_json (js : json) : (predicates, string) result =
         Ok { regions_outlive; types_outlive; trait_type_constraints }
     | _ -> Error "")
 
+let impl_elem_kind_of_json (js : json) : (impl_elem_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Ty", ty) ] ->
+        let* ty = ty_of_json ty in
+        Ok (ImplElemTy ty)
+    | `Assoc [ ("Trait", tr) ] ->
+        let* tr = trait_decl_ref_of_json tr in
+        Ok (ImplElemTrait tr)
+    | _ -> Error "")
+
 let impl_elem_of_json (id_to_file : id_to_file_map) (js : json) :
     (impl_elem, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
         [
+          ("disambiguator", disambiguator);
           ("generics", generics);
           ("preds", preds);
-          ("ty", ty);
-          ("disambiguator", disambiguator);
+          ("kind", kind);
         ] ->
+        let* disambiguator = Disambiguator.id_of_json disambiguator in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
-        let* ty = ty_of_json ty in
-        let* disambiguator = Disambiguator.id_of_json disambiguator in
-        Ok { generics; preds; ty; disambiguator }
+        let* kind = impl_elem_kind_of_json kind in
+        Ok { disambiguator; generics; preds; kind }
     | _ -> Error "")
 
 let path_elem_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -1009,18 +1020,18 @@ let gexpr_body_of_json (body_of_json : json -> ('body, string) result)
         Ok { meta; arg_count; locals; body }
     | _ -> Error "")
 
-let fun_kind_of_json (js : json) : (fun_kind, string) result =
+let item_kind_of_json (js : json) : (item_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Regular" -> Ok RegularKind
     | `Assoc
         [
-          ( "TraitMethodImpl",
+          ( "TraitItemImpl",
             `Assoc
               [
                 ("impl_id", impl_id);
                 ("trait_id", trait_id);
-                ("method_name", method_name);
+                ("item_name", method_name);
                 ("provided", provided);
               ] );
         ] ->
@@ -1028,15 +1039,15 @@ let fun_kind_of_json (js : json) : (fun_kind, string) result =
         let* trait_id = TraitDeclId.id_of_json trait_id in
         let* method_name = string_of_json method_name in
         let* provided = bool_of_json provided in
-        Ok (TraitMethodImpl (impl_id, trait_id, method_name, provided))
-    | `Assoc [ ("TraitMethodDecl", `List [ trait_id; item_name ]) ] ->
+        Ok (TraitItemImpl (impl_id, trait_id, method_name, provided))
+    | `Assoc [ ("TraitItemDecl", `List [ trait_id; item_name ]) ] ->
         let* trait_id = TraitDeclId.id_of_json trait_id in
         let* item_name = string_of_json item_name in
-        Ok (TraitMethodDecl (trait_id, item_name))
-    | `Assoc [ ("TraitMethodProvided", `List [ trait_id; item_name ]) ] ->
+        Ok (TraitItemDecl (trait_id, item_name))
+    | `Assoc [ ("TraitItemProvided", `List [ trait_id; item_name ]) ] ->
         let* trait_id = TraitDeclId.id_of_json trait_id in
         let* item_name = string_of_json item_name in
-        Ok (TraitMethodProvided (trait_id, item_name))
+        Ok (TraitItemProvided (trait_id, item_name))
     | _ -> Error "")
 
 let gfun_decl_of_json (body_of_json : json -> ('body, string) result)
@@ -1059,7 +1070,7 @@ let gfun_decl_of_json (body_of_json : json -> ('body, string) result)
         let* is_local = bool_of_json is_local in
         let* name = name_of_json id_to_file name in
         let* signature = fun_sig_of_json id_to_file signature in
-        let* kind = fun_kind_of_json kind in
+        let* kind = item_kind_of_json kind in
         let* body =
           option_of_json (gexpr_body_of_json body_of_json id_to_file) body
         in
@@ -1088,6 +1099,7 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
           ("is_local", is_local);
           ("name", name);
           ("ty", ty);
+          ("kind", kind);
           ("body", body);
         ] ->
         let* global_id = GlobalDeclId.id_of_json def_id in
@@ -1098,7 +1110,10 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
         let* body =
           option_of_json (gexpr_body_of_json body_of_json id_to_file) body
         in
-        let global = { def_id = global_id; meta; body; is_local; name; ty } in
+        let* kind = item_kind_of_json kind in
+        let global =
+          { def_id = global_id; meta; body; is_local; name; ty; kind }
+        in
         Ok global
     | _ -> Error "")
 

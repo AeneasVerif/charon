@@ -483,12 +483,17 @@ and predicates = {
         polymorphic = false;
       }]
 
+(** In implementation path elements we distinguish inherent impls (impl blocks
+    for types) from trait impls *)
+type impl_elem_kind = ImplElemTy of ty | ImplElemTrait of trait_decl_ref
+[@@deriving show, ord]
+
 (** An impl path element for [name] *)
 type impl_elem = {
+  disambiguator : Disambiguator.id;
   generics : generic_params;
   preds : predicates;
-  ty : ty;
-  disambiguator : Disambiguator.id;
+  kind : impl_elem_kind;
 }
 [@@deriving show, ord]
 

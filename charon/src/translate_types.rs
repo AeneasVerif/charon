@@ -226,7 +226,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let used_params = if adt_did.is_local() {
                     Option::None
                 } else {
-                    let name = self.t_ctx.def_id_to_name(def_id);
+                    let name = self.t_ctx.def_id_to_name(def_id)?;
                     assumed::type_to_used_params(&name)
                 };
 
@@ -240,7 +240,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 )?;
 
                 // Retrieve the ADT identifier
-                let def_id = self.translate_type_id(span, def_id);
+                let def_id = self.translate_type_id(span, def_id)?;
 
                 // Return the instantiated ADT
                 Ok(Ty::Adt(def_id, generics))
@@ -485,25 +485,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         def_id: &hax::DefId,
-    ) -> TypeId {
+    ) -> Result<TypeId, Error> {
         trace!("{:?}", def_id);
         let rust_id = def_id.rust_def_id.unwrap();
         if rust_id.is_local() {
-            TypeId::Adt(self.translate_type_decl_id(span, rust_id))
+            Ok(TypeId::Adt(self.translate_type_decl_id(span, rust_id)))
         } else {
             // Non-local: check if the type has primitive support
 
             // Retrieve the type name
-            let name = self.t_ctx.def_id_to_name(def_id);
+            let name = self.t_ctx.def_id_to_name(def_id)?;
 
             match assumed::get_type_id_from_name(&name) {
                 Option::Some(id) => {
                     // The type has primitive support
-                    TypeId::Assumed(id)
+                    Ok(TypeId::Assumed(id))
                 }
                 Option::None => {
                     // The type is external
-                    TypeId::Adt(self.translate_type_decl_id(span, rust_id))
+                    Ok(TypeId::Adt(self.translate_type_decl_id(span, rust_id)))
                 }
             }
         }
@@ -728,7 +728,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Auxliary helper to properly handle errors, see [translate_type].
     fn translate_type_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         let trans_id = self.translate_type_decl_id(&None, rust_id);
-        let is_transparent = self.id_is_transparent(rust_id);
+        let is_transparent = self.id_is_transparent(rust_id)?;
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
@@ -759,7 +759,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Register the type
         let name = bt_ctx
             .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state));
+            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
         let generics = bt_ctx.get_generics();
 
         // Translate the span information

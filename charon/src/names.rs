@@ -16,10 +16,30 @@ pub enum PathElem {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ImplElem {
+    pub disambiguator: Disambiguator::Id,
     pub generics: GenericParams,
     pub preds: Predicates,
-    pub ty: Ty,
-    pub disambiguator: Disambiguator::Id,
+    pub kind: ImplElemKind,
+}
+
+/// There are two kinds of `impl` blocks:
+/// - impl blocks linked to a type ("inherent" impl blocks following Rust terminology):
+///   ```text
+///   impl<T> List<T> { ...}
+///   ```
+/// - trait impl blocks:
+///   ```text
+///   impl<T> PartialEq for List<T> { ...}
+///   ```
+/// We distinguish the two.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub enum ImplElemKind {
+    Ty(Ty),
+    /// Remark: the first type argument in the trait ref gives the type for
+    /// which we implement the trait.
+    /// For instance: `PartialEq<List<T>>` means: the `PartialEq` instance
+    /// for `List<T>`.
+    Trait(TraitDeclRef),
 }
 
 /// An item name/path

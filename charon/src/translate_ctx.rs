@@ -1,4 +1,5 @@
 //! The translation contexts.
+use crate::common::*;
 use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
@@ -478,13 +479,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn id_is_opaque(&mut self, id: DefId) -> bool {
-        let name = self.item_def_id_to_name(id);
-        self.crate_info.is_opaque_decl(&name)
+    pub(crate) fn id_is_opaque(&mut self, id: DefId) -> Result<bool, Error> {
+        let name = self.item_def_id_to_name(id)?;
+        Ok(self.crate_info.is_opaque_decl(&name))
     }
 
-    pub(crate) fn id_is_transparent(&mut self, id: DefId) -> bool {
-        !self.id_is_opaque(id)
+    pub(crate) fn id_is_transparent(&mut self, id: DefId) -> Result<bool, Error> {
+        Ok(!(self.id_is_opaque(id)?))
     }
 
     pub(crate) fn push_id(&mut self, _rust_id: DefId, id: OrdRustId, trans_id: AnyTransId) {
@@ -562,23 +563,23 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> Option<ast::TraitDeclId::Id> {
+    ) -> Result<Option<ast::TraitDeclId::Id>, Error> {
         use crate::assumed;
         if assumed::IGNORE_BUILTIN_MARKER_TRAITS {
-            let name = self.item_def_id_to_name(id);
+            let name = self.item_def_id_to_name(id)?;
             if assumed::is_marker_trait(&name) {
-                return None;
+                return Ok(None);
             }
         }
 
         self.register_dep_source(src, id);
         match self.trait_decl_id_map.get(&id) {
-            Option::Some(id) => Some(id),
+            Option::Some(id) => Ok(Some(id)),
             Option::None => {
                 let rid = OrdRustId::TraitDecl(id);
                 let trans_id = self.trait_decl_id_map.insert(id);
                 self.push_id(id, rid, AnyTransId::TraitDecl(trans_id));
-                Some(trans_id)
+                Ok(Some(trans_id))
             }
         }
     }
@@ -589,7 +590,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         rust_id: DefId,
-    ) -> Option<ast::TraitImplId::Id> {
+    ) -> Result<Option<ast::TraitImplId::Id>, Error> {
         // Check if we need to filter
         {
             // Retrieve the id of the implemented trait decl
@@ -598,7 +599,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
 
         self.register_dep_source(src, rust_id);
-        match self.trait_impl_id_map.get(&rust_id) {
+        let id = match self.trait_impl_id_map.get(&rust_id) {
             Option::Some(id) => Some(id),
             Option::None => {
                 let rid = OrdRustId::TraitImpl(rust_id);
@@ -607,7 +608,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 self.push_id(rust_id, rid, AnyTransId::TraitImpl(trans_id));
                 Some(trans_id)
             }
-        }
+        };
+        Ok(id)
     }
 
     pub(crate) fn translate_fun_decl_id(
@@ -624,7 +626,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> Option<ast::TraitDeclId::Id> {
+    ) -> Result<Option<ast::TraitDeclId::Id>, Error> {
         self.register_trait_decl_id(src, id)
     }
 
@@ -634,7 +636,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> Option<ast::TraitImplId::Id> {
+    ) -> Result<Option<ast::TraitImplId::Id>, Error> {
         self.register_trait_impl_id(src, id)
     }
 
@@ -786,7 +788,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> Option<ast::TraitDeclId::Id> {
+    ) -> Result<Option<ast::TraitDeclId::Id>, Error> {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_trait_decl_id(&src, id)
     }
@@ -797,7 +799,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> Option<ast::TraitImplId::Id> {
+    ) -> Result<Option<ast::TraitImplId::Id>, Error> {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_trait_impl_id(&src, id)
     }

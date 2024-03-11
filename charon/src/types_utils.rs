@@ -333,6 +333,31 @@ impl GenericArgs {
         }
     }
 
+    /// Return the same generics, but where we pop the first type arguments.
+    /// This is useful for trait references (for pretty printing for instance),
+    /// because the first type argument is the type for which the trait is
+    /// implemented.
+    pub fn pop_first_type_arg(&self) -> (Ty, Self) {
+        let GenericArgs {
+            regions,
+            types,
+            const_generics,
+            trait_refs,
+        } = self;
+        let mut it = types.iter();
+        let ty = it.next().unwrap().clone();
+        let types = it.cloned().collect();
+        (
+            ty,
+            GenericArgs {
+                regions: regions.clone(),
+                types,
+                const_generics: const_generics.clone(),
+                trait_refs: trait_refs.clone(),
+            },
+        )
+    }
+
     pub(crate) fn fmt_with_ctx_no_brackets<C>(&self, ctx: &C) -> String
     where
         C: AstFormatter,

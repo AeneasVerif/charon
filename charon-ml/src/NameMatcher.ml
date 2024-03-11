@@ -387,8 +387,9 @@ let match_literal (pl : literal) (l : Values.literal) : bool =
   | LChar pv, VChar v -> pv = v
   | _ -> false
 
-let rec match_name_with_generics (ctx : ctx) (c : match_config) (p : pattern)
-    (n : T.name) (g : T.generic_args) : bool =
+let rec match_name_with_generics (ctx : ctx) (c : match_config)
+    ?(m : maps = mk_empty_maps ()) (p : pattern) (n : T.name)
+    (g : T.generic_args) : bool =
   match (p, n) with
   | [], [] ->
       raise
@@ -402,17 +403,35 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config) (p : pattern)
          ^ "\n- id: " ^ id));
       (* We reached the end: match the generics.
          We have to generate an empty map. *)
-      pid = id && match_generic_args ctx c (mk_empty_maps ()) pg g
-  | [ PImpl pty ], [ PeImpl impl ] ->
+      pid = id && match_generic_args ctx c m pg g
+  | [ PImpl pty ], [ PeImpl impl ] -> (
       (* We can get there when matching a prefix of the name with a pattern *)
-      match_expr_with_ty ctx c (mk_empty_maps ()) pty impl.ty
-      && g = TypesUtils.empty_generic_args
+      (* We have to distinguish two cases:
+         - the impl is an inherent impl (linked to a type)
+         - the impl is a trait impl
+      *)
+      match impl.kind with
+      | ImplElemTy ty ->
+          match_expr_with_ty ctx c (mk_empty_maps ()) pty ty
+          && g = TypesUtils.empty_generic_args
+      | ImplElemTrait tr ->
+          match_expr_with_trait_decl_ref ctx c pty tr
+          && g = TypesUtils.empty_generic_args)
   | PIdent (pid, pg) :: p, PeIdent (id, _) :: n ->
       (* This is not the end: check that the generics are empty *)
       pid = id && pg = [] && match_name_with_generics ctx c p n g
-  | PImpl pty :: p, PeImpl impl :: n ->
-      match_expr_with_ty ctx c (mk_empty_maps ()) pty impl.ty
-      && match_name_with_generics ctx c p n g
+  | PImpl pty :: p, PeImpl impl :: n -> (
+      (* We have to distinguish two cases:
+         - the impl is an inherent impl (linked to a type)
+         - the impl is a trait impl
+      *)
+      match impl.kind with
+      | ImplElemTy ty ->
+          match_expr_with_ty ctx c (mk_empty_maps ()) pty ty
+          && match_name_with_generics ctx c p n g
+      | ImplElemTrait tr ->
+          match_expr_with_trait_decl_ref ctx c pty tr
+          && match_name_with_generics ctx c p n g)
   | _ -> false
 
 and match_name (ctx : ctx) (c : match_config) (p : pattern) (n : T.name) : bool
@@ -425,7 +444,7 @@ and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
   | TAdtId id ->
       (* Lookup the type decl and match the name *)
       let d = T.TypeDeclId.Map.find id ctx.type_decls in
-      match_name_with_generics ctx c pid d.name generics
+      match_name_with_generics ctx c ~m pid d.name generics
   | TTuple -> false
   | TAssumed id -> (
       match (id, pid) with
@@ -480,6 +499,15 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
   | ERawPtr (Not, pty), TRawPtr (ty, RShared) ->
       match_expr_with_ty ctx c m pty ty
   | _ -> false
+
+and match_expr_with_trait_decl_ref (ctx : ctx) (c : match_config) (ptr : expr)
+    (tr : T.trait_decl_ref) : bool =
+  (* Lookup the trait declaration *)
+  let d = T.TraitDeclId.Map.find tr.trait_decl_id ctx.trait_decls in
+  (* Match *)
+  match ptr with
+  | EComp pid -> match_name_with_generics ctx c pid d.name tr.decl_generics
+  | EPrimAdt _ | ERef _ | EVar _ | EArrow _ | ERawPtr _ -> false
 
 and match_trait_ref (ctx : ctx) (c : match_config) (pid : pattern)
     (tr : T.trait_ref) : bool =
@@ -769,7 +797,19 @@ and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
 
 and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
     pattern_elem =
-  PImpl (ty_to_pattern ctx c impl.generics impl.ty)
+  match impl.kind with
+  | ImplElemTy ty -> PImpl (ty_to_pattern ctx c impl.generics ty)
+  | ImplElemTrait tr -> PImpl (trait_decl_ref_to_pattern ctx c impl.generics tr)
+
+and trait_decl_ref_to_pattern (ctx : ctx) (c : to_pat_config)
+    (params : T.generic_params) (tr : T.trait_decl_ref) : expr =
+  (* Compute the constraints map *)
+  let m = compute_constraints_map params in
+  let { T.trait_decl_id; decl_generics } = tr in
+  let generics = generic_args_to_pattern ctx c m decl_generics in
+  (* Lookup the declaration *)
+  let d = T.TraitDeclId.Map.find trait_decl_id ctx.trait_decls in
+  EComp (name_with_generic_args_to_pattern_aux ctx c d.name (Some generics))
 
 and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
     (ty : T.ty) : expr =
