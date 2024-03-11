@@ -51,16 +51,17 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                     _ => unreachable!(),
                 };
 
-                let Switch::SwitchInt(Operand::Move(op_p), int_ty, targets, otherwise) = switch
+                let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) = switch
                 else { unreachable!() };
-                assert!(int_ty.is_isize());
+                // Remark: the discriminant can be of any *signed* integer type
+                // (`isize` of course, but also `i8`, etc.).
                 assert!(op_p.projection.is_empty() && op_p.var_id == dest.var_id);
 
                 let targets = Vec::from_iter(targets.into_iter().map(|(v, e)| {
                     (
                         Vec::from_iter(
                             v.into_iter()
-                                .map(|x| VariantId::Id::new(*x.as_isize() as usize)),
+                                .map(|x| VariantId::Id::new(x.as_int().unwrap() as usize)),
                         ),
                         e,
                     )
