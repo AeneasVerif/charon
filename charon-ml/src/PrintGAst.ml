@@ -30,6 +30,8 @@ let assertion_to_string (env : ('a, 'b) fmt_env) (indent : string)
 let fun_sig_with_name_to_string (env : ('a, 'b) fmt_env) (indent : string)
     (indent_incr : string) (attribute : string option) (name : string option)
     (args : var list option) (sg : fun_sig) : string =
+  (* Locally update the generics and the predicates *)
+  let env = fmt_env_update_generics_and_preds env sg.generics sg.preds in
   let ty_to_string = ty_to_string env in
 
   (* Unsafe keyword *)
