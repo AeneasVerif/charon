@@ -1987,6 +1987,8 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalD
         meta: src_def.meta,
         is_local: src_def.is_local,
         name: src_def.name.clone(),
+        generics: src_def.generics.clone(),
+        preds: src_def.preds.clone(),
         ty: src_def.ty.clone(),
         kind: src_def.kind.clone(),
         body: src_def

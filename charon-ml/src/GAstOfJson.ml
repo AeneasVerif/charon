@@ -1082,6 +1082,8 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
           ("meta", meta);
           ("is_local", is_local);
           ("name", name);
+          ("generics", generics);
+          ("preds", preds);
           ("ty", ty);
           ("kind", kind);
           ("body", body);
@@ -1090,13 +1092,25 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
         let* meta = meta_of_json id_to_file meta in
         let* is_local = bool_of_json is_local in
         let* name = name_of_json id_to_file name in
+        let* generics = generic_params_of_json id_to_file generics in
+        let* preds = predicates_of_json preds in
         let* ty = ty_of_json ty in
         let* body =
           option_of_json (gexpr_body_of_json body_of_json id_to_file) body
         in
         let* kind = item_kind_of_json kind in
         let global =
-          { def_id = global_id; meta; body; is_local; name; ty; kind }
+          {
+            def_id = global_id;
+            meta;
+            body;
+            is_local;
+            name;
+            generics;
+            preds;
+            ty;
+            kind;
+          }
         in
         Ok global
     | _ -> Error "")

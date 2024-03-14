@@ -279,6 +279,24 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>,
     /// A hax state with an owner id
     pub hax_state: hax::State<hax::Base<'tcx>, (), (), rustc_hir::def_id::DefId>,
+    /// The user type annotations (this fields comes from [rustc_middle::mir::Body]).
+    /// Those are used for constants: some constants may have generics, and as
+    /// a consequence may require type annotations to disambiguate where they
+    /// come from. For instance:
+    /// ```text
+    /// struct V<const N: usize, T> {
+    ///   x: [T; N],
+    /// }
+    ///
+    /// impl<const N: usize, T> V<N, T> {
+    ///   const LEN: usize = N;
+    /// }
+    ///
+    /// fn use_v<const N: usize, T>(v: V<N, T>) {
+    ///   let l = V::<N, T>::LEN; // HERE
+    /// }
+    /// ```
+    pub user_type_annotations: Option<rustc_middle::ty::CanonicalUserTypeAnnotations<'tcx>>,
     /// The regions.
     /// We use DeBruijn indices, so we have a stack of regions.
     /// See the comments for [Region::BVar].
@@ -705,6 +723,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             def_id,
             t_ctx,
             hax_state,
+            user_type_annotations: None,
             region_vars: im::vector![RegionId::Vector::new()],
             free_region_vars: std::collections::BTreeMap::new(),
             bound_region_var_id_generator: RegionId::Generator::new(),

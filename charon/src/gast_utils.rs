@@ -396,10 +396,23 @@ impl<T> GGlobalDecl<T> {
     where
         C: AstFormatter,
         C: for<'a> SetLocals<'a>,
-        for<'a> <C as SetLocals<'a>>::C: AstFormatter,
-        for<'a, 'b> <C as SetLocals<'a>>::C: AstFormatter + Formatter<&'b T>,
+        for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
+        for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
+        for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C:
+            AstFormatter + Formatter<&'c T>,
     {
-        // No need to update the context: global definitions don't have generics
+        // Update the context with the generics
+        let ctx = &ctx.set_generics(&self.generics);
+
+        // Translate the parameters and the trait clauses
+        let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        // Predicates
+        let eq_space = if trait_clauses.is_empty() && self.preds.is_empty() {
+            " ".to_string()
+        } else {
+            "\n ".to_string()
+        };
+        let preds = fmt_where_clauses_with_ctx(ctx, "  ", &None, trait_clauses, &self.preds);
 
         // Decl name
         let name = self.name.fmt_with_ctx(ctx);
@@ -408,7 +421,7 @@ impl<T> GGlobalDecl<T> {
         match &self.body {
             Option::None => {
                 // Put everything together
-                format!("{tab}global {name}")
+                format!("{tab}global {name}{params}{preds}{eq_space}")
             }
             Option::Some(body) => {
                 // Body
@@ -416,7 +429,7 @@ impl<T> GGlobalDecl<T> {
                 let body = body.fmt_with_ctx(&body_tab, ctx);
 
                 // Put everything together
-                format!("{tab}global {name} {{\n{body}\n{tab}}}")
+                format!("{tab}global {name}{params}{preds}{eq_space} {{\n{body}\n{tab}}}")
             }
         }
     }
