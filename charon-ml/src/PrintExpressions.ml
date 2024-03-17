@@ -146,7 +146,9 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
       operand_to_string env op1 ^ " " ^ binop_to_string binop ^ " "
       ^ operand_to_string env op2
   | Discriminant (p, _) -> "discriminant(" ^ place_to_string env p ^ ")"
-  | Global gid -> "global " ^ global_decl_id_to_string env gid
+  | Global (gid, generics) ->
+      let generics = generic_args_to_string env generics in
+      "global " ^ global_decl_id_to_string env gid ^ generics
   | Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string env) ops in
       match akind with

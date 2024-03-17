@@ -876,9 +876,10 @@ let rvalue_of_json (js : json) : (rvalue, string) result =
         let* place = place_of_json place in
         let* adt_id = TypeDeclId.id_of_json adt_id in
         Ok (Discriminant (place, adt_id))
-    | `Assoc [ ("Global", gid) ] ->
+    | `Assoc [ ("Global", `List [ gid; generics ]) ] ->
         let* gid = GlobalDeclId.id_of_json gid in
-        Ok (Global gid : rvalue)
+        let* generics = generic_args_of_json generics in
+        Ok (Global (gid, generics) : rvalue)
     | `Assoc [ ("Aggregate", `List [ aggregate_kind; ops ]) ] ->
         let* aggregate_kind = aggregate_kind_of_json aggregate_kind in
         let* ops = list_of_json operand_of_json ops in
