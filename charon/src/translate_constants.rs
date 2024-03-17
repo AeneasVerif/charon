@@ -101,10 +101,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let name = TraitItemName(name.clone());
                 RawConstantExpr::TraitConst(trait_ref, name)
             }
-            ConstantExprKind::GlobalName { id } => {
-                RawConstantExpr::Global(self.translate_global_decl_id(span, DefId::from(id)))
-            }
-            ConstantExprKind::GlobalName { id } => {
+            ConstantExprKind::GlobalName {
+                id,
+                generics,
+                trait_refs,
+            } => {
+                println!("generics: {:?}", generics);
+                println!("trait_refs: {:?}", trait_refs);
+                let erase_regions = true;
+                let used_params = None;
+                let generics = self.translate_substs_and_trait_refs(
+                    span,
+                    erase_regions,
+                    used_params,
+                    &generics,
+                    &trait_refs,
+                )?;
+
+                /*
                 // The constant might have generics, in which case they are
                 // provided by the user-provided annotations
                 println!("constant.user_ty: {:?}", user_ty);
@@ -251,12 +265,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 } else {
                     GenericArgs::empty()
-                };
+                };*/
 
-                RawConstantExpr::Global(
-                    self.translate_global_decl_id(span, id.rust_def_id.unwrap()),
-                    substs,
-                )
+                let global_decl_id = self.translate_global_decl_id(span, DefId::from(id));
+                RawConstantExpr::Global(global_decl_id, generics)
             }
             ConstantExprKind::Borrow(be) => {
                 let be = self.translate_constant_expr_to_constant_expr(span, user_ty, be)?;

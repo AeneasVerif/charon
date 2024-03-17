@@ -161,17 +161,13 @@ impl RawConstantExpr {
                     generics.fmt_with_ctx_split_trait_refs(ctx)
                 )
             }
-            RawConstantExpr::TraitConst(trait_ref, generics, name) => {
-                format!(
-                    "{}{}::{name}",
-                    trait_ref.fmt_with_ctx(ctx),
-                    generics.fmt_with_ctx_split_trait_refs(ctx)
-                )
+            RawConstantExpr::TraitConst(trait_ref, name) => {
+                format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
             RawConstantExpr::Ref(cv) => {
                 format!("&{}", cv.fmt_with_ctx(ctx))
             }
-            RawConstantExpr::Var(id) => format!("const {}", ctx.format_object(*id)),
+            RawConstantExpr::Var(id) => format!("{}", ctx.format_object(*id)),
             RawConstantExpr::FnPtr(f) => {
                 format!("{}", f.fmt_with_ctx(ctx),)
             }
@@ -396,7 +392,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
                 self.visit_global_decl_id(id);
                 self.visit_generic_args(generics);
             }
-            TraitConst(trait_ref, generics, _name) => {
+            TraitConst(trait_ref, _name) => {
                 self.visit_trait_ref(trait_ref);
             }
             Ref(cv) => self.visit_constant_expr(cv),
