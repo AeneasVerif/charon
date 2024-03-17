@@ -281,7 +281,22 @@ pub enum RawConstantExpr {
     /// The value is a top-level value.
     ///
     /// We eliminate this case in a micro-pass.
-    Global(GlobalDeclId::Id),
+    ///
+    /// Remark: constants can actually have generic parameters.
+    /// ```text
+    /// struct V<const N: usize, T> {
+    ///   x: [T; N],
+    /// }
+    ///
+    /// impl<const N: usize, T> V<N, T> {
+    ///   const LEN: usize = N; // This has generics <N, T>
+    /// }
+    ///
+    /// fn use_v<const N: usize, T>(v: V<N, T>) {
+    ///   let l = V::<N, T>::LEN; // We need to provided a substitution here
+    /// }
+    /// ```
+    Global(GlobalDeclId::Id, GenericArgs),
     ///
     /// A trait constant.
     ///
@@ -348,8 +363,10 @@ pub enum Rvalue {
     /// together with its state.
     Aggregate(AggregateKind, Vec<Operand>),
     /// Not present in MIR: we introduce it when replacing constant variables
-    /// in operands in [extract_global_assignments.rs]
-    Global(GlobalDeclId::Id),
+    /// in operands in [extract_global_assignments.rs].
+    ///
+    /// Note that globals *can* have generic parameters.
+    Global(GlobalDeclId::Id, GenericArgs),
     /// Length of a memory location. The run-time length of e.g. a vector or a slice is
     /// represented differently (but pretty-prints the same, FIXME).
     /// Should be seen as a function of signature:
