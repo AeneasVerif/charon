@@ -482,7 +482,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn id_is_opaque(&mut self, id: DefId) -> Result<bool, Error> {
-        let name = self.def_id_to_name(id);
+        let name = self.def_id_to_name(id)?;
         Ok(self.crate_info.is_opaque_decl(&name))
     }
 

@@ -116,7 +116,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }) = pred.value
         {
             if self
-                .translate_trait_decl_id(*rspan, trait_pred.trait_ref.def_id.rust_def_id.unwrap())?
+                .translate_trait_decl_id(*rspan, DefId::from(&trait_pred.trait_ref.def_id))?
                 .is_some()
             {
                 trait_pred

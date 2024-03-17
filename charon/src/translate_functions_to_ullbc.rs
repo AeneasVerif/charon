@@ -850,8 +850,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_refs: &Vec<hax::ImplExpr>,
         trait_info: &Option<hax::ImplExpr>,
     ) -> Result<SubstFunIdOrPanic, Error> {
-        let rust_id = def_id.rust_def_id.unwrap();
-        let name = self.t_ctx.def_id_to_name(def_id)?;
+        let rust_id = DefId::from(def_id);
+        let name = self.t_ctx.hax_def_id_to_name(def_id)?;
         let is_local = rust_id.is_local();
 
         // Check if this function is a actually `panic`

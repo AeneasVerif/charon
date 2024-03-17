@@ -295,7 +295,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let kind = match bt_ctx.t_ctx.tcx.impl_trait_ref(id) {
                         None => {
                             // Inherent impl ("regular" impl)
-                            let ty = bt_ctx.translate_ty(span, erase_regions, ty).unwrap();
+                            let ty = bt_ctx.translate_ty(span, erase_regions, &ty).unwrap();
                             ImplElemKind::Ty(ty)
                         }
                         Some(trait_ref) => {
@@ -380,9 +380,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Rk.: this function is only used by [crate::register], and implemented with this
     /// context in mind.
     pub fn hir_item_to_name(&mut self, item: &Item) -> Result<Option<Name>, Error> {
-        // We have to create a hax state, which is annoying...
-        let state = self.make_hax_state_with_id(item.owner_id.to_def_id());
-        let def_id = item.owner_id.to_def_id().sinto(&state);
+        let def_id = item.owner_id.to_def_id();
 
         let name = match &item.kind {
             ItemKind::OpaqueTy(_) => unimplemented!(),
@@ -411,5 +409,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             }
         };
         Ok(name)
+    }
+
+    pub fn hax_def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
+        // We have to create a hax state, which is annoying...
+        self.def_id_to_name(DefId::from(def_id))
     }
 }

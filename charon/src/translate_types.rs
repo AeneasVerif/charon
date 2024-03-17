@@ -214,7 +214,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let used_params = if adt_did.is_local() {
                     Option::None
                 } else {
-                    let name = self.t_ctx.def_id_to_name(def_id)?;
+                    let name = self.t_ctx.def_id_to_name(DefId::from(def_id))?;
                     assumed::type_to_used_params(&name)
                 };
 
@@ -479,7 +479,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Non-local: check if the type has primitive support
 
             // Retrieve the type name
-            let name = self.t_ctx.def_id_to_name(def_id)?;
+            let name = self.t_ctx.hax_def_id_to_name(def_id)?;
             match assumed::get_type_id_from_name(&name) {
                 Option::Some(id) => {
                     // The type has primitive support

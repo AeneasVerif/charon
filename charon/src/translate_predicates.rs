@@ -126,8 +126,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     {
                         if self
                             .translate_trait_decl_id(
-                                span.rust_span,
-                                clause.trait_ref.def_id.rust_def_id.unwrap(),
+                                span.rust_span_data.unwrap().span(),
+                                DefId::from(&clause.trait_ref.def_id),
                             )?
                             .is_some()
                         {
@@ -421,7 +421,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         trait_ref: &hax::TraitRef,
     ) -> Result<Option<TraitDeclRef>, Error> {
-        let trait_id = self.translate_trait_decl_id(span, trait_ref.def_id.rust_def_id.unwrap())?;
+        let trait_id = self.translate_trait_decl_id(span, DefId::from(&trait_ref.def_id))?;
         // We might have to ignore the trait
         let trait_id = if let Some(trait_id) = trait_id {
             trait_id
@@ -460,7 +460,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = false;
 
         let trait_ref = &trait_pred.trait_ref;
-        let trait_id = self.translate_trait_decl_id(span, trait_ref.def_id.rust_def_id.unwrap())?;
+        let trait_id = self.translate_trait_decl_id(span, DefId::from(&trait_ref.def_id))?;
         // We might have to ignore the trait
         let trait_id = if let Some(trait_id) = trait_id {
             trait_id
@@ -633,7 +633,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         impl_expr: &hax::ImplExpr,
     ) -> Result<Option<TraitRef>, Error> {
         let trait_decl_ref =
-            match self.translate_trait_decl_ref(span, erase_regions, &impl_source.trait_ref)? {
+            match self.translate_trait_decl_ref(span, erase_regions, &impl_expr.r#trait)? {
                 None => return Ok(None),
                 Some(tr) => tr,
             };
@@ -764,7 +764,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 .translate_trait_decl_id(
                                     span,
                                     DefId::from(&predicate.trait_ref.def_id),
-                                )
+                                )?
                                 .unwrap();
                         }
                         Parent { predicate, index } => {
@@ -777,7 +777,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 .translate_trait_decl_id(
                                     span,
                                     DefId::from(&predicate.trait_ref.def_id),
-                                )
+                                )?
                                 .unwrap();
                         }
                     }
