@@ -1453,9 +1453,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Retrive the body
         let body = get_mir_for_def_id_and_level(tcx, local_id, self.t_ctx.mir_level);
 
-        // Retrieve the user type annotations
-        self.user_type_annotations = Some(body.user_type_annotations.clone());
-
         // Here, we have to create a MIR state, which contains the body
         let state = hax::state::State::new_from_mir(
             tcx,
