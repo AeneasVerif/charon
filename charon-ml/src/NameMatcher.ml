@@ -483,9 +483,8 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
       && match_expr_with_ty ctx c m pty ty
       && match_ref_kind prk rk
   | EVar v, _ -> opt_update_tmap c m v ty
-  | EComp pid, TTraitType (trait_ref, generics, type_name) ->
-      generics = TypesUtils.empty_generic_args
-      && match_trait_type ctx c pid trait_ref type_name
+  | EComp pid, TTraitType (trait_ref, type_name) ->
+      match_trait_type ctx c pid trait_ref type_name
   | EArrow (pinputs, pout), TArrow (_, inputs, out) -> (
       (* Push a region group in the map *)
       let m = maps_push_bound_regions_group m in
@@ -834,8 +833,7 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
         ( region_to_pattern m r,
           ty_to_pattern_aux ctx c m ty,
           ref_kind_to_pattern rk )
-  | TTraitType (trait_ref, generics, type_name) ->
-      assert (generics = TypesUtils.empty_generic_args);
+  | TTraitType (trait_ref, type_name) ->
       let name =
         trait_ref_item_with_generics_to_pattern ctx c m trait_ref type_name
           TypesUtils.empty_generic_args

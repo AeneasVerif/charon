@@ -146,10 +146,9 @@ and ty_to_string (env : ('a, 'b) fmt_env) (ty : ty) : string =
   | TVar tv -> type_var_id_to_string env tv
   | TNever -> "!"
   | TLiteral lit_ty -> literal_type_to_string lit_ty
-  | TTraitType (trait_ref, generics, type_name) ->
+  | TTraitType (trait_ref, type_name) ->
       let trait_ref = trait_ref_to_string env trait_ref in
-      let generics = generic_args_to_string env generics in
-      trait_ref ^ generics ^ "::" ^ type_name
+      trait_ref ^ "::" ^ type_name
   | TRef (r, rty, ref_kind) -> (
       match ref_kind with
       | RMut ->
@@ -309,10 +308,10 @@ let variant_to_string env (v : variant) : string =
 
 let trait_type_constraint_to_string (env : ('a, 'b) fmt_env)
     (ttc : trait_type_constraint) : string =
-  let trait_ref = trait_ref_to_string env ttc.trait_ref in
-  let generics = generic_args_to_string env ttc.generics in
-  let ty = ty_to_string env ttc.ty in
-  trait_ref ^ generics ^ " = " ^ ty
+  let { trait_ref; type_name; ty } = ttc in
+  let trait_ref = trait_ref_to_string env trait_ref in
+  let ty = ty_to_string env ty in
+  trait_ref ^ "::" ^ type_name ^ " = " ^ ty
 
 (** Helper to format "where" clauses *)
 let clauses_to_string (indent : string) (indent_incr : string)

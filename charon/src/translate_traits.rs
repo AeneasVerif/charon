@@ -60,8 +60,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             {
                 let trait_ref = rustc_middle::ty::Binder::dummy(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
-                let trait_ref =
-                    self.translate_trait_impl_source(span, erase_regions, &trait_ref)?;
+                let trait_ref = self.translate_trait_impl_expr(span, erase_regions, &trait_ref)?;
                 if let Some(trait_ref) = trait_ref {
                     trait_refs.push(trait_ref);
                 }
@@ -111,11 +110,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Convert to a clause
         assert!(pred.bound_vars.is_empty());
-        let self_pred = if let hax::PredicateKind::Clause(hax::Clause::Trait(trait_pred)) =
-            pred.value
+        let self_pred = if let hax::PredicateKind::Clause(hax::Clause {
+            kind: hax::ClauseKind::Trait(trait_pred),
+            ..
+        }) = pred.value
         {
             if self
-                .translate_trait_decl_id(*rspan, trait_pred.trait_ref.def_id.rust_def_id.unwrap())?
+                .translate_trait_decl_id(*rspan, DefId::from(&trait_pred.trait_ref.def_id))?
                 .is_some()
             {
                 trait_pred
@@ -227,7 +228,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         rust_id: DefId,
     ) -> Result<TraitItemName, Error> {
         // Translate the name
-        let name = self.item_def_id_to_name(rust_id)?;
+        let name = self.def_id_to_name(rust_id)?;
         let (name, id) = name.name.last().unwrap().as_ident();
         assert!(id.is_zero());
         Ok(TraitItemName(name.to_string()))
@@ -265,10 +266,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         trace!("Trait decl id:\n{:?}", def_id);
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
-
-        let name = bt_ctx
-            .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
+        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         // Translate the generic
         bt_ctx.translate_generic_params(rust_id)?;
@@ -473,9 +471,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let span = tcx.def_span(rust_id);
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        let name = bt_ctx
-            .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
+        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
         let erase_regions = false;
 
         // Translate the generics
@@ -524,7 +520,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 None,
             );
             let parent_trait_refs: Vec<TraitRef> =
-                bt_ctx.translate_trait_impl_sources(span, erase_regions, &parent_trait_refs)?;
+                bt_ctx.translate_trait_impl_exprs(span, erase_regions, &parent_trait_refs)?;
             let parent_trait_refs: TraitClauseId::Vector<TraitRef> =
                 TraitClauseId::Vector::from(parent_trait_refs);
 

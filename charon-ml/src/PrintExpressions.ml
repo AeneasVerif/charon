@@ -119,10 +119,9 @@ let constant_expr_to_string (env : ('a, 'b) fmt_env) (cv : constant_expr) :
   | CLiteral lit ->
       "(" ^ literal_to_string lit ^ " : " ^ ty_to_string env cv.ty ^ ")"
   | CVar vid -> const_generic_var_id_to_string env vid
-  | CTraitConst (trait_ref, generics, const_name) ->
+  | CTraitConst (trait_ref, const_name) ->
       let trait_ref = trait_ref_to_string env trait_ref in
-      let generics = generic_args_to_string env generics in
-      trait_ref ^ generics ^ const_name
+      trait_ref ^ const_name
   | CFnPtr fn_ptr -> fn_ptr_to_string env fn_ptr
 
 let operand_to_string (env : ('a, 'b) fmt_env) (op : operand) : string =

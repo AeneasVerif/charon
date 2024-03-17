@@ -155,12 +155,8 @@ impl RawConstantExpr {
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
             RawConstantExpr::Global(id) => ctx.format_object(*id),
-            RawConstantExpr::TraitConst(trait_ref, substs, name) => {
-                format!(
-                    "{}{}::{name}",
-                    trait_ref.fmt_with_ctx(ctx),
-                    substs.fmt_with_ctx_split_trait_refs(ctx)
-                )
+            RawConstantExpr::TraitConst(trait_ref, name) => {
+                format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
             RawConstantExpr::Ref(cv) => {
                 format!("&{}", cv.fmt_with_ctx(ctx))
@@ -381,9 +377,8 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Literal(lit) => self.visit_literal(lit),
             Adt(oid, ops) => self.visit_constant_expr_adt(oid, ops),
             Global(id) => self.visit_global_decl_id(id),
-            TraitConst(trait_ref, generics, _name) => {
+            TraitConst(trait_ref, _name) => {
                 self.visit_trait_ref(trait_ref);
-                self.visit_generic_args(generics);
             }
             Ref(cv) => self.visit_constant_expr(cv),
             Var(id) => self.visit_const_generic_var_id(id),
@@ -508,15 +503,9 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
     }
 
     fn visit_fn_ptr(&mut self, fn_ptr: &FnPtr) {
-        let FnPtr { func, generics, trait_and_method_generic_args } = fn_ptr;
+        let FnPtr { func, generics } = fn_ptr;
         self.visit_fun_id_or_trait_ref(func);
         self.visit_generic_args(generics);
-        match trait_and_method_generic_args {
-            None => (),
-            Some(generics) => {
-                self.visit_generic_args(generics);
-            }
-        }
     }
 
     fn visit_fn_operand(&mut self, fn_op: &FnOperand) {

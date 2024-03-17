@@ -188,26 +188,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Ty::Never => Ok(Ty::Never),
 
             hax::Ty::Alias(alias_kind) => match alias_kind {
-                hax::AliasKind::Projection {
-                    impl_source,
-                    substs,
-                    name,
-                } => {
+                hax::AliasKind::Projection { impl_expr, name } => {
                     let trait_ref =
-                        self.translate_trait_impl_source(span, erase_regions, impl_source)?;
+                        self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
                     // This should succeed because no marker trait (that we may
                     // ignore) has associated types.
                     let trait_ref = trait_ref.unwrap();
-                    let (regions, types, const_generics) =
-                        self.translate_substs(span, erase_regions, None, substs)?;
-                    let generics = GenericArgs {
-                        regions,
-                        types,
-                        const_generics,
-                        trait_refs: Vec::new(),
-                    };
                     let name = TraitItemName(name.clone());
-                    Ok(Ty::TraitType(trait_ref, generics, name))
+                    Ok(Ty::TraitType(trait_ref, name))
                 }
                 _ => {
                     error_or_panic!(self, span, format!("Unimplemented: {:?}", ty))
@@ -219,14 +207,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_refs,
                 def_id,
             } => {
-                let adt_did = def_id.rust_def_id.unwrap();
+                let adt_did: DefId = def_id.into();
                 trace!("Adt: {:?}", adt_did);
 
                 // Retrieve the list of used arguments
                 let used_params = if adt_did.is_local() {
                     Option::None
                 } else {
-                    let name = self.t_ctx.def_id_to_name(def_id)?;
+                    let name = self.t_ctx.def_id_to_name(DefId::from(def_id))?;
                     assumed::type_to_used_params(&name)
                 };
 
@@ -333,10 +321,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 error_or_panic!(
                     self,
                     span,
-                    format!(
-                        "Unsupported type: foreign type: {:?}",
-                        id.rust_def_id.unwrap()
-                    )
+                    format!("Unsupported type: foreign type: {:?}", DefId::from(id))
                 )
             }
             hax::Ty::Infer(_) => {
@@ -467,11 +452,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         used_params: Option<Vec<bool>>,
         substs: &[hax::GenericArg],
-        trait_refs: &[hax::ImplSource],
+        trait_refs: &[hax::ImplExpr],
     ) -> Result<GenericArgs, Error> {
         let (regions, types, const_generics) =
             self.translate_substs(span, erase_regions, used_params, substs)?;
-        let trait_refs = self.translate_trait_impl_sources(span, erase_regions, trait_refs)?;
+        let trait_refs = self.translate_trait_impl_exprs(span, erase_regions, trait_refs)?;
         Ok(GenericArgs {
             regions,
             types,
@@ -487,15 +472,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         def_id: &hax::DefId,
     ) -> Result<TypeId, Error> {
         trace!("{:?}", def_id);
-        let rust_id = def_id.rust_def_id.unwrap();
+        let rust_id: DefId = def_id.into();
         if rust_id.is_local() {
             Ok(TypeId::Adt(self.translate_type_decl_id(span, rust_id)))
         } else {
             // Non-local: check if the type has primitive support
 
             // Retrieve the type name
-            let name = self.t_ctx.def_id_to_name(def_id)?;
-
+            let name = self.t_ctx.hax_def_id_to_name(def_id)?;
             match assumed::get_type_id_from_name(&name) {
                 Option::Some(id) => {
                     // The type has primitive support
@@ -521,7 +505,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         adt: hax::AdtDef,
     ) -> Result<TypeDeclKind, Error> {
         trace!("{}", trans_id);
-        let def_span = self.t_ctx.tcx.def_span(adt.did.rust_def_id.unwrap());
+        let def_span = self.t_ctx.tcx.def_span(DefId::from(&adt.did));
 
         // In case the type is external, check if we should consider the type as
         // transparent (i.e., extract its body). If it is an enumeration, then yes
@@ -561,7 +545,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let mut have_names: Option<bool> = Option::None;
             for field_def in var_def.fields.into_iter() {
                 trace!("variant {}: field {}: {:?}", var_id, field_id, field_def);
-                let field_span = field_def.span.rust_span;
+                let field_span = field_def.span.rust_span_data.unwrap().span();
 
                 // Translate the field type
                 let ty = self.translate_ty(field_span, erase_regions, &field_def.ty)?;
@@ -612,7 +596,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
             AdtKind::Enum => TypeDeclKind::Enum(VariantId::Vector::from(variants)),
             AdtKind::Union => {
-                let span = self.t_ctx.tcx.def_span(adt.did.rust_def_id.unwrap());
+                let span = self.t_ctx.tcx.def_span(DefId::from(&adt.did));
                 error_or_panic!(self, span, "Union types are not supported")
             }
         };
@@ -757,9 +741,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Register the type
-        let name = bt_ctx
-            .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
+        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
         let generics = bt_ctx.get_generics();
 
         // Translate the span information

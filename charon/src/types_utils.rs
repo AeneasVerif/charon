@@ -93,7 +93,7 @@ impl GenericParams {
             regions: RegionId::Vector::new(),
             types: TypeVarId::Vector::new(),
             const_generics: ConstGenericVarId::Vector::new(),
-            trait_clauses: TraitClauseId::Vector::new(),
+            trait_clauses: Vec::new(),
         }
     }
 
@@ -204,9 +204,8 @@ impl TraitTypeConstraint {
         C: AstFormatter,
     {
         let trait_ref = self.trait_ref.fmt_with_ctx(ctx);
-        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         let ty = self.ty.fmt_with_ctx(ctx);
-        format!("{}{}::{} = {}", trait_ref, generics, self.type_name, ty)
+        format!("{}::{} = {}", trait_ref, self.type_name, ty)
     }
 }
 
@@ -907,12 +906,8 @@ impl Ty {
                 RefKind::Mut => format!("*const {}", ty.fmt_with_ctx(ctx)),
                 RefKind::Shared => format!("*mut {}", ty.fmt_with_ctx(ctx)),
             },
-            Ty::TraitType(trait_ref, substs, name) => {
-                format!(
-                    "{}{}::{name}",
-                    trait_ref.fmt_with_ctx(ctx),
-                    substs.fmt_with_ctx_split_trait_refs(ctx)
-                )
+            Ty::TraitType(trait_ref, name) => {
+                format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
             Ty::Arrow(regions, inputs, box output) => {
                 // Update the bound regions
@@ -987,12 +982,12 @@ impl Ty {
     pub fn contains_never(&self) -> bool {
         match self {
             Ty::Never => true,
-            Ty::TraitType(_, args, _) | Ty::Adt(_, args) => {
+            Ty::Adt(_, args) => {
                 // For the trait type case: we are checking the projected type,
                 // so we don't need to explore the trait ref
                 args.types.iter().any(|ty| ty.contains_never())
             }
-            Ty::TypeVar(_) | Ty::Literal(_) => false,
+            Ty::TraitType(..) | Ty::TypeVar(_) | Ty::Literal(_) => false,
             Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => ty.contains_never(),
             Ty::Arrow(_, inputs, box output) => {
                 inputs.iter().any(|ty| ty.contains_never()) || output.contains_never()
@@ -1219,9 +1214,8 @@ pub trait TypeVisitor {
             Never => self.visit_ty_never(),
             Ref(r, ty, rk) => self.visit_ty_ref(r, ty, rk),
             RawPtr(ty, rk) => self.visit_ty_raw_ptr(ty, rk),
-            TraitType(trait_ref, generics, _name) => {
+            TraitType(trait_ref, _name) => {
                 self.visit_trait_ref(trait_ref);
-                self.visit_generic_args(generics);
             }
             Arrow(regions, inputs, box output) => self.visit_arrow(regions, inputs, output),
         }
@@ -1432,13 +1426,11 @@ pub trait TypeVisitor {
         }
         for TraitTypeConstraint {
             trait_ref,
-            generics,
             type_name: _,
             ty,
         } in trait_type_constraints
         {
             self.visit_trait_ref(trait_ref);
-            self.visit_generic_args(generics);
             self.visit_ty(ty);
         }
     }
@@ -1479,9 +1471,8 @@ pub trait TypeVisitor {
     }
 
     fn visit_trait_type_constraint(&mut self, x : &TraitTypeConstraint) {
-        let TraitTypeConstraint { trait_ref, generics, type_name: _, ty } = x;
+        let TraitTypeConstraint { trait_ref, type_name: _, ty } = x;
         self.visit_trait_ref(trait_ref);
-        self.visit_generic_args(generics);
         self.visit_ty(ty);
     }
 

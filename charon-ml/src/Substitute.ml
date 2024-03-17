@@ -299,12 +299,11 @@ let fun_body_substitute_in_body (subst : subst) (body : fun_body) :
 
 let trait_type_constraint_substitute (subst : subst)
     (ttc : trait_type_constraint) : trait_type_constraint =
-  let { trait_ref; generics; type_name; ty } = ttc in
+  let { trait_ref; type_name; ty } = ttc in
   let visitor = st_substitute_visitor subst in
   let trait_ref = visitor#visit_trait_ref subst trait_ref in
-  let generics = visitor#visit_generic_args subst generics in
   let ty = visitor#visit_ty subst ty in
-  { trait_ref; generics; type_name; ty }
+  { trait_ref; type_name; ty }
 
 (** Substitute variable identifiers in a type *)
 let statement_substitute_ids (ty_subst : TypeVarId.id -> TypeVarId.id)

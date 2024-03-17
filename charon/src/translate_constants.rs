@@ -5,6 +5,7 @@ use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::*;
 use hax_frontend_exporter as hax;
+use rustc_hir::def_id::DefId;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_constant_literal_to_raw_constant_expr(
@@ -62,16 +63,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ConstantExprKind::Literal(lit) => {
                 self.translate_constant_literal_to_raw_constant_expr(span, lit)?
             }
-            ConstantExprKind::Adt {
-                info: _,
-                vid,
-                fields,
-            } => {
+            ConstantExprKind::Adt { info, fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
                     .map(|f| self.translate_constant_expr_to_constant_expr(span, &f.value))
                     .try_collect()?;
-                let vid = vid.map(VariantId::Id::new);
+                let vid = if info.typ_is_struct {
+                    None
+                } else {
+                    Some(VariantId::Id::new(info.variant_index))
+                };
                 RawConstantExpr::Adt(vid, fields)
             }
             ConstantExprKind::Array { .. } => {
@@ -84,31 +85,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .try_collect()?;
                 RawConstantExpr::Adt(Option::None, fields)
             }
-            ConstantExprKind::TraitConst {
-                impl_source,
-                substs,
-                name,
-            } => {
-                let trait_ref =
-                    self.translate_trait_impl_source(span, erase_regions, impl_source)?;
+            ConstantExprKind::TraitConst { impl_expr, name } => {
+                let trait_ref = self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
                 // The trait ref should be Some(...): trait markers (that we
                 // may eliminate) don't have constants.
                 let trait_ref = trait_ref.unwrap();
-
-                let (regions, types, const_generics) =
-                    self.translate_substs(span, erase_regions, None, substs)?;
-                let generics = GenericArgs {
-                    regions,
-                    types,
-                    const_generics,
-                    trait_refs: Vec::new(),
-                };
                 let name = TraitItemName(name.clone());
-                RawConstantExpr::TraitConst(trait_ref, generics, name)
+                RawConstantExpr::TraitConst(trait_ref, name)
             }
-            ConstantExprKind::GlobalName { id } => RawConstantExpr::Global(
-                self.translate_global_decl_id(span, id.rust_def_id.unwrap()),
-            ),
+            ConstantExprKind::GlobalName { id } => {
+                RawConstantExpr::Global(self.translate_global_decl_id(span, DefId::from(id)))
+            }
             ConstantExprKind::Borrow(be) => {
                 let be = self.translate_constant_expr_to_constant_expr(span, be)?;
                 RawConstantExpr::Ref(Box::new(be))

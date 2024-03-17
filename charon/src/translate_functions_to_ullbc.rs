@@ -241,7 +241,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the type
             let erase_regions = true;
-            let span = var.source_info.span.rust_span;
+            let span = var.source_info.span.rust_span_data.unwrap().span();
             let ty = self.translate_ty(span, erase_regions, &var.ty)?;
 
             // Add the variable to the environment
@@ -813,7 +813,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             trait_refs,
                         )?;
 
-                        let def_id = self.translate_fun_decl_id(span, def_id.rust_def_id.unwrap());
+                        let def_id = self.translate_fun_decl_id(span, DefId::from(def_id));
                         let akind = AggregateKind::Closure(def_id, generics);
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
@@ -847,11 +847,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         def_id: &hax::DefId,
         substs: &Vec<hax::GenericArg>,
         args: Option<&Vec<hax::Operand>>,
-        trait_refs: &Vec<hax::ImplSource>,
-        trait_info: &Option<hax::TraitInfo>,
+        trait_refs: &Vec<hax::ImplExpr>,
+        trait_info: &Option<hax::ImplExpr>,
     ) -> Result<SubstFunIdOrPanic, Error> {
-        let rust_id = def_id.rust_def_id.unwrap();
-        let name = self.t_ctx.def_id_to_name(def_id)?;
+        let rust_id = DefId::from(def_id);
+        let name = self.t_ctx.hax_def_id_to_name(def_id)?;
         let is_local = rust_id.is_local();
 
         // Check if this function is a actually `panic`
@@ -899,7 +899,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let func = FnPtr {
                 func: FunIdOrTraitMethodRef::mk_assumed(AssumedFunId::BoxFree),
                 generics: GenericArgs::new_from_types(vec![t_ty]),
-                trait_and_method_generic_args: None,
             };
             let sfid = SubstFunId { func, args };
             Ok(SubstFunIdOrPanic::Fun(sfid))
@@ -959,81 +958,30 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // "Regular" function call
                         let def_id = self.translate_fun_decl_id(span, rust_id);
                         let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
-                        let func = FnPtr {
-                            func,
-                            generics,
-                            trait_and_method_generic_args: None,
-                        };
+                        let func = FnPtr { func, generics };
                         let sfid = SubstFunId { func, args };
                         Ok(SubstFunIdOrPanic::Fun(sfid))
                     }
                     Option::Some(trait_info) => {
                         // Trait method
-                        let rust_id = def_id.rust_def_id.unwrap();
-                        let impl_source = self.translate_trait_impl_source(
-                            span,
-                            erase_regions,
-                            &trait_info.impl_source,
-                        )?;
+                        let rust_id = DefId::from(def_id);
+                        let impl_expr =
+                            self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
                         // The impl source should be Some(...): trait markers (that we may
                         // eliminate) don't have methods.
-                        let impl_source = impl_source.unwrap();
+                        let impl_expr = impl_expr.unwrap();
 
                         trace!("{:?}", rust_id);
 
                         let trait_method_fun_id = self.translate_fun_decl_id(span, rust_id);
                         let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
 
-                        // Compute the concatenation of all the generic arguments which were given to
-                        // the function (trait arguments + method arguments).
-                        let trait_and_method_generic_args = {
-                            let (regions, types, const_generics) = self.translate_substs(
-                                span,
-                                erase_regions,
-                                None,
-                                &trait_info.all_generics,
-                            )?;
-
-                            // When concatenating the trait refs we have to be careful:
-                            // - if we refer to an implementation, we must concatenate the
-                            //   trait references given to the impl source
-                            // - if we refer to a clause, we must retrieve the
-                            //   parent trait clauses.
-                            let trait_refs = match &impl_source.trait_id {
-                                TraitInstanceId::TraitImpl(_) => impl_source
-                                    .generics
-                                    .trait_refs
-                                    .iter()
-                                    .chain(generics.trait_refs.iter())
-                                    .cloned()
-                                    .collect(),
-                                _ => impl_source
-                                    .trait_decl_ref
-                                    .generics
-                                    .trait_refs
-                                    .iter()
-                                    .chain(generics.trait_refs.iter())
-                                    .cloned()
-                                    .collect(),
-                            };
-                            Some(GenericArgs {
-                                regions,
-                                types,
-                                const_generics,
-                                trait_refs,
-                            })
-                        };
-
                         let func = FunIdOrTraitMethodRef::Trait(
-                            impl_source,
+                            impl_expr,
                             method_name,
                             trait_method_fun_id,
                         );
-                        let func = FnPtr {
-                            func,
-                            generics,
-                            trait_and_method_generic_args,
-                        };
+                        let func = FnPtr { func, generics };
                         let sfid = SubstFunId { func, args };
                         Ok(SubstFunIdOrPanic::Fun(sfid))
                     }
@@ -1088,7 +1036,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let func = FnPtr {
                     func: FunIdOrTraitMethodRef::Fun(FunId::Assumed(aid)),
                     generics,
-                    trait_and_method_generic_args: None,
                 };
                 let sfid = SubstFunId { func, args };
                 Ok(SubstFunIdOrPanic::Fun(sfid))
@@ -1105,7 +1052,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         statement: &hax::Statement,
     ) -> Result<Option<Statement>, Error> {
         trace!("About to translate statement (MIR) {:?}", statement);
-        let span = statement.source_info.span.rust_span;
+        let span = statement.source_info.span.rust_span_data.unwrap().span();
 
         use std::ops::Deref;
 
@@ -1114,8 +1061,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             StatementKind::Assign(assign) => {
                 let (place, rvalue) = assign.deref();
                 let t_place = self.translate_place(span, place)?;
-                let t_rvalue =
-                    self.translate_rvalue(statement.source_info.span.rust_span, rvalue)?;
+                let t_rvalue = self.translate_rvalue(
+                    statement.source_info.span.rust_span_data.unwrap().span(),
+                    rvalue,
+                )?;
 
                 Some(RawStatement::Assign(t_place, t_rvalue))
             }
@@ -1202,7 +1151,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         terminator: &hax::Terminator,
     ) -> Result<Terminator, Error> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
-        let span = terminator.source_info.span.rust_span;
+        let span = terminator.source_info.span.rust_span_data.unwrap().span();
 
         // Compute the meta information beforehand (we might need it to introduce
         // intermediate statements - we desugar some terminators)
@@ -1368,8 +1317,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         args: &Vec<hax::Operand>,
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
-        trait_refs: &Vec<hax::ImplSource>,
-        trait_info: &Option<hax::TraitInfo>,
+        trait_refs: &Vec<hax::ImplExpr>,
+        trait_info: &Option<hax::ImplExpr>,
     ) -> Result<RawTerminator, Error> {
         trace!();
         // There are two cases, depending on whether this is a "regular"
@@ -1378,7 +1327,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         match fun {
             hax::FunOperand::Id(def_id) => {
                 // Regular function call
-                let rust_id = def_id.rust_def_id.unwrap();
+                let rust_id = DefId::from(def_id);
 
                 // Translate the function operand - should be a constant: we don't
                 // support closures for now
@@ -1828,9 +1777,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         // Translate the function name
-        let name = bt_ctx
-            .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(&bt_ctx.hax_state))?;
+        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
@@ -1915,9 +1862,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let hax_state = &bt_ctx.hax_state;
 
         // Translate the global name
-        let name = bt_ctx
-            .t_ctx
-            .extended_def_id_to_name(&rust_id.sinto(hax_state))?;
+        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();

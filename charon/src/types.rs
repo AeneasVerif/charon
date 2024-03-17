@@ -262,7 +262,6 @@ pub type TypeOutlives = OutlivesPred<Ty, Region>;
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct TraitTypeConstraint {
     pub trait_ref: TraitRef,
-    pub generics: GenericArgs,
     pub type_name: TraitItemName,
     pub ty: Ty,
 }
@@ -300,7 +299,10 @@ pub struct GenericParams {
     pub types: TypeVarId::Vector<TypeVar>,
     pub const_generics: ConstGenericVarId::Vector<ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
-    pub trait_clauses: TraitClauseId::Vector<TraitClause>,
+    // Remark: we use a regular [Vec], not a [TraitClauseId::Vector], because due to the
+    // filtering of some trait clauses (for the marker traits for instance) the indexation
+    // is not contiguous (e.g., we may have [clause 0; clause 3; clause 4]).
+    pub trait_clauses: Vec<TraitClause>,
 }
 
 generate_index_type!(TraitClauseId);
@@ -542,7 +544,7 @@ pub enum Ty {
     ///   type Bar; // type associated to the trait Foo
     /// }
     /// ```
-    TraitType(TraitRef, GenericArgs, TraitItemName),
+    TraitType(TraitRef, TraitItemName),
     /// Arrow type, used in particular for the local function pointers.
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters

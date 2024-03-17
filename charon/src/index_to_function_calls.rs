@@ -96,7 +96,6 @@ impl<'a> Transform<'a> {
                 let func = FnOperand::Regular(FnPtr {
                     func: index_id,
                     generics,
-                    trait_and_method_generic_args: None,
                 });
                 let index_call = Call {
                     func,

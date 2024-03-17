@@ -157,16 +157,11 @@ and unop =
 and raw_constant_expr =
   | CLiteral of literal
   | CVar of const_generic_var_id
-  | CTraitConst of trait_ref * generic_args * string
+  | CTraitConst of trait_ref * string
   | CFnPtr of fn_ptr
 
 and constant_expr = { value : raw_constant_expr; ty : ty }
-
-and fn_ptr = {
-  func : fun_id_or_trait_method_ref;
-  generics : generic_args;
-  trait_and_method_generic_args : generic_args option;
-}
+and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
 
 and fun_id_or_trait_method_ref =
   | FunId of fun_id

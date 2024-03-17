@@ -332,6 +332,8 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// We initialize it so that it generates ids for local clauses.
     pub trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
     /// All the trait clauses accessible from the current environment
+    /// TODO: we don't need something as generic anymore because most of the
+    /// work of solving the trait obligations is now done in hax.
     pub trait_clauses: OrdMap<TraitInstanceId, NonLocalTraitClause>,
     /// If [true] it means we are currently registering trait clauses in the
     /// local context. As a consequence, we allow not solving all the trait
@@ -433,7 +435,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             file_id,
             beg,
             end,
-            rust_span: rspan.rust_span,
+            rust_span: rspan.rust_span_data.unwrap().span(),
         }
     }
 
@@ -480,7 +482,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn id_is_opaque(&mut self, id: DefId) -> Result<bool, Error> {
-        let name = self.item_def_id_to_name(id)?;
+        let name = self.def_id_to_name(id)?;
         Ok(self.crate_info.is_opaque_decl(&name))
     }
 
@@ -566,7 +568,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     ) -> Result<Option<ast::TraitDeclId::Id>, Error> {
         use crate::assumed;
         if assumed::IGNORE_BUILTIN_MARKER_TRAITS {
-            let name = self.item_def_id_to_name(id)?;
+            let name = self.def_id_to_name(id)?;
             if assumed::is_marker_trait(&name) {
                 return Ok(None);
             }
@@ -953,14 +955,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Retrieve the *local* trait clauses available in the current environment
     /// (we filter the parent of those clauses, etc.).
-    pub(crate) fn get_local_trait_clauses(&self) -> TraitClauseId::Vector<TraitClause> {
-        let clauses: TraitClauseId::Vector<TraitClause> = self
+    pub(crate) fn get_local_trait_clauses(&self) -> Vec<TraitClause> {
+        let clauses: Vec<TraitClause> = self
             .trait_clauses
             .iter()
             .filter_map(|(_, x)| x.to_local_trait_clause())
             .collect();
         // Sanity check
-        assert!(clauses.iter_indexed_values().all(|(i, c)| c.clause_id == i));
+        if !crate::assumed::IGNORE_BUILTIN_MARKER_TRAITS {
+            use crate::id_vector::ToUsize;
+            assert!(clauses
+                .iter()
+                .enumerate()
+                .all(|(i, c)| c.clause_id.to_usize() == i));
+        }
+        // Return
         clauses
     }
 
