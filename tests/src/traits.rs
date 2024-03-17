@@ -305,3 +305,28 @@ pub trait GetTrait {
 pub fn test_get_trait<T: GetTrait>(x: &T) -> T::W {
     x.get_w()
 }
+
+// Constants with generics
+pub trait Trait {
+    const LEN: usize;
+}
+
+impl<const N: usize, T> Trait for [T; N] {
+    const LEN: usize = N;
+}
+
+impl<T: Trait> Trait for Wrapper<T> {
+    const LEN: usize = 0;
+}
+
+pub fn use_wrapper_len<T: Trait>() -> usize {
+    Wrapper::<T>::LEN
+}
+
+impl<T: Trait> Wrapper<T> {
+    const FOO: Result<T, i32> = Err(0);
+}
+
+pub fn use_wrapper_foo<T: Trait, U>() -> Result<T, i32> {
+    Wrapper::<T>::FOO
+}
