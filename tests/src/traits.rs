@@ -323,10 +323,19 @@ pub fn use_wrapper_len<T: Trait>() -> usize {
     Wrapper::<T>::LEN
 }
 
-impl<T: Trait> Wrapper<T> {
-    const FOO: Result<T, i32> = Err(0);
+pub struct Foo<T, U> {
+    pub x: T,
+    pub y: U,
 }
 
-pub fn use_wrapper_foo<T: Trait, U>() -> Result<T, i32> {
-    Wrapper::<T>::FOO
+impl<T: Trait, U> Foo<T, U> {
+    pub const FOO: Result<T, i32> = Err(0);
+}
+
+pub fn use_foo1<T: Trait, U>() -> Result<T, i32> {
+    Foo::<T, U>::FOO
+}
+
+pub fn use_foo2<T, U: Trait>() -> Result<U, i32> {
+    Foo::<U, T>::FOO
 }
