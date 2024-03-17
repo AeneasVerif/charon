@@ -116,8 +116,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     span,
                     erase_regions,
                     used_params,
-                    &generics,
-                    &trait_refs,
+                    generics,
+                    trait_refs,
                 )?;
 
                 let global_decl_id = self.translate_global_decl_id(span, DefId::from(id));
