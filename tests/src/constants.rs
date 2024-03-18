@@ -81,3 +81,16 @@ pub static S1: u32 = 6;
 pub static S2: u32 = incr(S1);
 pub static S3: Pair<u32, u32> = P3;
 pub static S4: Pair<u32, u32> = mk_pair1(7, 8);
+
+// Constants with generics
+pub struct V<const N: usize, T> {
+    pub x: [T; N],
+}
+
+impl<const N: usize, T> V<N, T> {
+    pub const LEN: usize = N;
+}
+
+pub fn use_v<const N: usize, T>() -> usize {
+    V::<N, T>::LEN
+}

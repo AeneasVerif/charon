@@ -201,6 +201,8 @@ type 'body gglobal_decl = {
   def_id : GlobalDeclId.id;
   is_local : bool;
   name : name;
+  generics : generic_params;
+  preds : predicates;
   ty : ty;
   kind : item_kind;
   body : 'body;

@@ -1859,6 +1859,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
+
+        // Check and translate the generics - globals *can* have generics
+        // Ex.:
+        // ```
+        // impl<const N : usize> Foo<N> {
+        //   const LEN : usize = N;
+        // }
+        // ```
+        bt_ctx.translate_generic_params(rust_id)?;
+        bt_ctx.translate_predicates_solve_trait_obligations_of(None, rust_id)?;
+
         let hax_state = &bt_ctx.hax_state;
 
         // Translate the global name
@@ -1873,6 +1884,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let kind = bt_ctx
             .t_ctx
             .get_item_kind(&DepSource::make(rust_id, span), rust_id)?;
+
+        let generics = bt_ctx.get_generics();
+        let preds = bt_ctx.get_predicates();
 
         let body = if rust_id.is_local() && is_transparent {
             // It's a local and transparent global: we extract its body as for functions.
@@ -1897,6 +1911,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 meta,
                 is_local: rust_id.is_local(),
                 name,
+                generics,
+                preds,
                 ty,
                 kind,
                 body,

@@ -47,12 +47,12 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId::Id>(
             // it as a function call, like for globals.
             Operand::Const(val)
         }
-        RawConstantExpr::Global(global_id) => {
+        RawConstantExpr::Global(global_id, substs) => {
             // Introduce an intermediate statement
             let var_id = make_new_var(val.ty.clone());
             nst.push(Statement::new(
                 *meta,
-                RawStatement::Assign(Place::new(var_id), Rvalue::Global(global_id)),
+                RawStatement::Assign(Place::new(var_id), Rvalue::Global(global_id, substs)),
             ));
             Operand::Move(Place::new(var_id))
         }

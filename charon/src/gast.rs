@@ -121,6 +121,8 @@ pub struct GGlobalDecl<T> {
     /// an external crate.
     pub is_local: bool,
     pub name: Name,
+    pub generics: GenericParams,
+    pub preds: Predicates,
     pub ty: Ty,
     /// The global kind: "regular" function, trait const declaration, etc.
     pub kind: ItemKind,

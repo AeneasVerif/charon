@@ -51,21 +51,27 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(RawConstantExpr::Literal(lit))
     }
 
-    pub(crate) fn translate_constant_expr_kind_to_constant_expr(
+    /// Remark: [hax::ConstantExpr] contains span information, but it is often
+    /// the default span (i.e., it is useless), hence the additional span argument.
+    /// TODO: the user_ty might be None because hax doesn't extract it (because
+    /// we are translating a [ConstantExpr] instead of a [Constant]. We need to
+    /// update hax.
+    pub(crate) fn translate_constant_expr_to_constant_expr(
         &mut self,
         span: rustc_span::Span,
-        ty: &hax::Ty,
-        v: &hax::ConstantExprKind,
+        v: &hax::ConstantExpr,
     ) -> Result<ConstantExpr, Error> {
         use hax::ConstantExprKind;
+        let ty = &v.ty;
         let erase_regions = true;
-        let value = match v {
+        let value = match &(*v.contents) {
             ConstantExprKind::Literal(lit) => {
                 self.translate_constant_literal_to_raw_constant_expr(span, lit)?
             }
             ConstantExprKind::Adt { info, fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
+                    // TODO: the user_ty is not always None
                     .map(|f| self.translate_constant_expr_to_constant_expr(span, &f.value))
                     .try_collect()?;
                 let vid = if info.typ_is_struct {
@@ -81,6 +87,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
+                    // TODO: the user_ty is not always None
                     .map(|f| self.translate_constant_expr_to_constant_expr(span, f))
                     .try_collect()?;
                 RawConstantExpr::Adt(Option::None, fields)
@@ -93,8 +100,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let name = TraitItemName(name.clone());
                 RawConstantExpr::TraitConst(trait_ref, name)
             }
-            ConstantExprKind::GlobalName { id } => {
-                RawConstantExpr::Global(self.translate_global_decl_id(span, DefId::from(id)))
+            ConstantExprKind::GlobalName {
+                id,
+                generics,
+                trait_refs,
+            } => {
+                trace!(
+                    "\n- generics: {:?}\n- trait_resf: {:?}\n",
+                    generics,
+                    trait_refs
+                );
+                let erase_regions = true;
+                let used_params = None;
+                let generics = self.translate_substs_and_trait_refs(
+                    span,
+                    erase_regions,
+                    used_params,
+                    generics,
+                    trait_refs,
+                )?;
+
+                let global_decl_id = self.translate_global_decl_id(span, DefId::from(id));
+                RawConstantExpr::Global(global_decl_id, generics)
             }
             ConstantExprKind::Borrow(be) => {
                 let be = self.translate_constant_expr_to_constant_expr(span, be)?;
@@ -142,27 +169,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Remark: [hax::ConstantExpr] contains span information, but it is often
     /// the default span (i.e., it is useless), hence the additional span argument.
-    pub(crate) fn translate_constant_expr_to_constant_expr(
-        &mut self,
-        span: rustc_span::Span,
-        v: &hax::ConstantExpr,
-    ) -> Result<ConstantExpr, Error> {
-        self.translate_constant_expr_kind_to_constant_expr(span, &v.ty, &v.contents)
-    }
-
-    /// Remark: [hax::ConstantExpr] contains span information, but it is often
-    /// the default span (i.e., it is useless), hence the additional span argument.
     pub(crate) fn translate_constant_expr_to_const_generic(
         &mut self,
         span: rustc_span::Span,
         v: &hax::ConstantExpr,
     ) -> Result<ConstGeneric, Error> {
+        // Remark: we can't user globals as constant generics (meaning
+        // the user provided type annotation should always be none).
         let value = self
             .translate_constant_expr_to_constant_expr(span, v)?
             .value;
         match value {
             RawConstantExpr::Literal(v) => Ok(ConstGeneric::Value(v)),
-            RawConstantExpr::Global(v) => Ok(ConstGeneric::Global(v)),
+            RawConstantExpr::Global(id, substs) => {
+                error_assert!(self, span, substs.is_empty());
+                Ok(ConstGeneric::Global(id))
+            }
             RawConstantExpr::Adt(..)
             | RawConstantExpr::TraitConst { .. }
             | RawConstantExpr::Ref(_)

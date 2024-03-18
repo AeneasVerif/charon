@@ -154,14 +154,20 @@ impl RawConstantExpr {
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
-            RawConstantExpr::Global(id) => ctx.format_object(*id),
+            RawConstantExpr::Global(id, generics) => {
+                format!(
+                    "{}{}",
+                    ctx.format_object(*id),
+                    generics.fmt_with_ctx_split_trait_refs(ctx)
+                )
+            }
             RawConstantExpr::TraitConst(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
             RawConstantExpr::Ref(cv) => {
                 format!("&{}", cv.fmt_with_ctx(ctx))
             }
-            RawConstantExpr::Var(id) => format!("const {}", ctx.format_object(*id)),
+            RawConstantExpr::Var(id) => format!("{}", ctx.format_object(*id)),
             RawConstantExpr::FnPtr(f) => {
                 format!("{}", f.fmt_with_ctx(ctx),)
             }
@@ -282,7 +288,13 @@ impl Rvalue {
                     }
                 }
             }
-            Rvalue::Global(gid) => ctx.format_object(*gid),
+            Rvalue::Global(gid, generics) => {
+                format!(
+                    "{}{}",
+                    ctx.format_object(*gid),
+                    generics.fmt_with_ctx_split_trait_refs(ctx)
+                )
+            }
             Rvalue::Len(place, ..) => format!("len({})", place.fmt_with_ctx(ctx)),
             Rvalue::Repeat(op, _ty, cg) => {
                 format!("[{}; {}]", op.fmt_with_ctx(ctx), cg.fmt_with_ctx(ctx))
@@ -376,7 +388,10 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         match expr {
             Literal(lit) => self.visit_literal(lit),
             Adt(oid, ops) => self.visit_constant_expr_adt(oid, ops),
-            Global(id) => self.visit_global_decl_id(id),
+            Global(id, generics) => {
+                self.visit_global_decl_id(id);
+                self.visit_generic_args(generics);
+            }
             TraitConst(trait_ref, _name) => {
                 self.visit_trait_ref(trait_ref);
             }
@@ -402,7 +417,10 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             Rvalue::BinaryOp(op, o1, o2) => self.visit_binary_op(op, o1, o2),
             Rvalue::Discriminant(p, adt_id) => self.visit_discriminant(p, adt_id),
             Rvalue::Aggregate(kind, ops) => self.visit_aggregate(kind, ops),
-            Rvalue::Global(gid) => self.visit_global(gid),
+            Rvalue::Global(gid, generics) => {
+                self.visit_global(gid);
+                self.visit_generic_args(generics);
+            }
             Rvalue::Len(p, ty, cg) => self.visit_len(p, ty, cg),
             Rvalue::Repeat(op, ty, cg) => self.visit_repeat(op, ty, cg),
         }

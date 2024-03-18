@@ -203,7 +203,7 @@ impl BlockData {
             Rvalue::Repeat(op, _, _) => {
                 f(meta, nst, op);
             }
-            Rvalue::Global(_) | Rvalue::Discriminant(..) | Rvalue::Ref(_, _) | Rvalue::Len(..) => {
+            Rvalue::Global(..) | Rvalue::Discriminant(..) | Rvalue::Ref(_, _) | Rvalue::Len(..) => {
                 // No operands: nothing to do
             }
         }

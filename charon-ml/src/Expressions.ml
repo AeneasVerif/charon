@@ -243,7 +243,7 @@ and rvalue =
   | BinaryOp of binop * operand * operand
   | Discriminant of place * type_decl_id
   | Aggregate of aggregate_kind * operand list
-  | Global of global_decl_id
+  | Global of global_decl_id * generic_args
 [@@deriving
   show,
     visitors

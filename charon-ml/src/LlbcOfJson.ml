@@ -134,7 +134,17 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
      let* global =
        gglobal_decl_of_json (statement_of_json id_to_file) id_to_file js
      in
-     let { def_id = global_id; meta; body; is_local; name; ty; kind } =
+     let {
+       def_id = global_id;
+       meta;
+       body;
+       is_local;
+       name;
+       generics;
+       preds;
+       ty;
+       kind;
+     } =
        global
      in
      (* Decompose into a global and a function *)
@@ -145,15 +155,25 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
          is_unsafe = false;
          is_closure = false;
          closure_info = None;
-         generics = TypesUtils.empty_generic_params;
-         preds = TypesUtils.empty_predicates;
+         generics;
+         preds;
          parent_params_info = None;
          inputs = [];
          output = ty;
        }
      in
      let global_decl : global_decl =
-       { def_id = global_id; meta; body = fun_id; is_local; name; ty; kind }
+       {
+         def_id = global_id;
+         meta;
+         body = fun_id;
+         is_local;
+         name;
+         generics;
+         preds;
+         ty;
+         kind;
+       }
      in
      let fun_decl : fun_decl =
        {

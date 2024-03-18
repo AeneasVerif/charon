@@ -876,9 +876,10 @@ let rvalue_of_json (js : json) : (rvalue, string) result =
         let* place = place_of_json place in
         let* adt_id = TypeDeclId.id_of_json adt_id in
         Ok (Discriminant (place, adt_id))
-    | `Assoc [ ("Global", gid) ] ->
+    | `Assoc [ ("Global", `List [ gid; generics ]) ] ->
         let* gid = GlobalDeclId.id_of_json gid in
-        Ok (Global gid : rvalue)
+        let* generics = generic_args_of_json generics in
+        Ok (Global (gid, generics) : rvalue)
     | `Assoc [ ("Aggregate", `List [ aggregate_kind; ops ]) ] ->
         let* aggregate_kind = aggregate_kind_of_json aggregate_kind in
         let* ops = list_of_json operand_of_json ops in
@@ -1082,6 +1083,8 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
           ("meta", meta);
           ("is_local", is_local);
           ("name", name);
+          ("generics", generics);
+          ("preds", preds);
           ("ty", ty);
           ("kind", kind);
           ("body", body);
@@ -1090,13 +1093,25 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
         let* meta = meta_of_json id_to_file meta in
         let* is_local = bool_of_json is_local in
         let* name = name_of_json id_to_file name in
+        let* generics = generic_params_of_json id_to_file generics in
+        let* preds = predicates_of_json preds in
         let* ty = ty_of_json ty in
         let* body =
           option_of_json (gexpr_body_of_json body_of_json id_to_file) body
         in
         let* kind = item_kind_of_json kind in
         let global =
-          { def_id = global_id; meta; body; is_local; name; ty; kind }
+          {
+            def_id = global_id;
+            meta;
+            body;
+            is_local;
+            name;
+            generics;
+            preds;
+            ty;
+            kind;
+          }
         in
         Ok global
     | _ -> Error "")

@@ -118,7 +118,17 @@ module Ast = struct
 
   let global_decl_to_string (env : fmt_env) (indent : string)
       (_indent_incr : string) (def : global_decl) : string =
-    (* No need to locally update the environment *)
+    (* Locally update the generics and the predicates *)
+    let env = fmt_env_update_generics_and_preds env def.generics def.preds in
+    let params, trait_clauses = generic_params_to_strings env def.generics in
+    let clauses =
+      predicates_and_trait_clauses_to_string env "" "  " None trait_clauses
+        def.preds
+    in
+    let params =
+      if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
+    in
+
     (* Global name *)
     let name = name_to_string env def.name in
 
@@ -126,7 +136,7 @@ module Ast = struct
     let ty = ty_to_string env def.ty in
 
     let body_id = fun_decl_id_to_string env def.body in
-    indent ^ "global " ^ name ^ " : " ^ ty ^ " = " ^ body_id
+    indent ^ "global " ^ name ^ params ^ clauses ^ " : " ^ ty ^ " = " ^ body_id
 end
 
 (** Pretty-printing for ASTs (functions based on a declaration context) *)
