@@ -22,6 +22,13 @@ pub fn incr<'a>(x: &'a mut u32) {
     *x += 1;
 }
 
+pub fn use_incr() {
+    let mut x = 0;
+    incr(&mut x);
+    incr(&mut x);
+    incr(&mut x);
+}
+
 /* Recursion, loops */
 
 pub enum CList<T> {
@@ -75,6 +82,13 @@ pub fn i32_id(i: i32) -> i32 {
         0
     } else {
         i32_id(i - 1) + 1
+    }
+}
+
+pub fn list_tail<'a, T>(l: &'a mut CList<T>) -> &'a mut CList<T> {
+    match l {
+        CList::CCons(_, tl) => list_tail(tl),
+        CList::CNil => l,
     }
 }
 
