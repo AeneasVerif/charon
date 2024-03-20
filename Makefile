@@ -7,7 +7,7 @@ endif
 default: build-charon-rust
 
 .PHONY: all
-all: build tests nix
+all: build test nix
 
 # We use Rust nightly in order to:
 # - be able to write a Rustc plugin
