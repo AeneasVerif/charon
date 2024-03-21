@@ -147,6 +147,15 @@
           inherit charon charon-ml;
           default = charon;
         };
+        devShells.default = pkgs.mkShell {
+          # To prevent Charon to add the `+nightly` identifier
+          # which works only with `rustup`.
+          CARGO_NO_RUST_VERSION = 1;
+
+          inputsFrom = [
+            self.packages.${system}.charon
+          ];
+        };
         checks = { inherit tests tests-polonius charon-ml-tests; };
       });
 }
