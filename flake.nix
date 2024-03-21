@@ -152,8 +152,14 @@
           # which works only with `rustup`.
           CARGO_NO_RUST_VERSION = 1;
 
+          packages = [
+            pkgs.ocamlPackages.menhir
+            pkgs.ocamlPackages.odoc
+          ];
+
           inputsFrom = [
             self.packages.${system}.charon
+            self.packages.${system}.charon-ml
           ];
         };
         checks = { inherit tests tests-polonius charon-ml-tests; };
