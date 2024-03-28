@@ -67,9 +67,10 @@ and raw_statement_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc [ ("Switch", tgt) ] ->
         let* switch = switch_of_json id_to_file tgt in
         Ok (Switch switch)
-    | `Assoc [ ("Loop", st) ] ->
+    | `Assoc [ ("Loop", `List [ loop_id; st ]) ] ->
+        let* loop_id = LoopId.id_of_json loop_id in
         let* st = statement_of_json id_to_file st in
-        Ok (Loop st)
+        Ok (Loop (loop_id, st))
     | _ -> Error "")
 
 and switch_of_json (id_to_file : id_to_file_map) (js : json) :

@@ -15,6 +15,9 @@ use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
 
+// Loop identifier
+generate_index_type!(LoopId);
+
 /// Asserts are special constructs introduced by Rust to perform dynamic
 /// checks, to detect out-of-bounds accesses or divisions by zero for
 /// instance. We eliminate the assertions in [crate::remove_dynamic_checks],
@@ -57,7 +60,7 @@ pub enum RawStatement {
     /// To ensure that, use [crate::llbc_ast_utils::new_sequence] to build sequences.
     Sequence(Box<Statement>, Box<Statement>),
     Switch(Switch),
-    Loop(Box<Statement>),
+    Loop(LoopId::Id, Box<Statement>),
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -1,8 +1,26 @@
 include GAst
+open Identifiers
 open Types
 open Values
 open Expressions
 open Meta
+module LoopId = IdGen ()
+
+type loop_id = LoopId.id [@@deriving show]
+
+(** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} iter visitors *)
+class ['self] iter_statement_base =
+  object (_self : 'self)
+    inherit [_] GAst.iter_statement_base
+    method visit_loop_id : 'env -> loop_id -> unit = fun _ _ -> ()
+  end
+
+(** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} map visitors *)
+class ['self] map_statement_base =
+  object (_self : 'self)
+    inherit [_] GAst.map_statement_base
+    method visit_loop_id : 'env -> loop_id -> loop_id = fun _ x -> x
+  end
 
 type statement = {
   meta : meta;  (** The statement meta-data *)
@@ -30,7 +48,7 @@ and raw_statement =
   | Nop
   | Sequence of statement * statement
   | Switch of switch
-  | Loop of statement
+  | Loop of loop_id * statement
 
 and switch =
   | If of operand * statement * statement
