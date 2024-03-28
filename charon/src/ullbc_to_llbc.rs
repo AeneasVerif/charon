@@ -726,7 +726,9 @@ fn compute_loop_exit_candidates(
 /// pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize {
 ///     let mut s = 0;
 ///
-///     for _ in 0..128 { // We don't want this loop to be nested with the loops below
+///     // We don't want this loop to be nested with the loops below.
+///     // It would be sound, but would lead to code more complex than it should.
+///     for _ in 0..128 {
 ///         s += 1;
 ///     }
 ///

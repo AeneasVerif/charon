@@ -103,8 +103,8 @@ module Ast = struct
             in
             let branches = branches ^ otherwise in
             indent ^ "match (" ^ p ^ ") {\n" ^ branches ^ "\n" ^ indent ^ "}")
-    | Loop loop_st ->
-        indent ^ "loop {\n"
+    | Loop (loop_id, loop_st) ->
+        indent ^ "loop " ^ LoopId.to_string loop_id ^ "{\n"
         ^ statement_to_string env (indent ^ indent_incr) indent_incr loop_st
         ^ "\n" ^ indent ^ "}"
 
