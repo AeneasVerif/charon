@@ -1774,7 +1774,7 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
             .get_targets()
             .iter()
             .all(|tgt_st| is_terminal_explore(num_loops, tgt_st)),
-        tgt::RawStatement::Loop(loop_st) => is_terminal_explore(num_loops + 1, loop_st),
+        tgt::RawStatement::Loop(_, loop_st) => is_terminal_explore(num_loops + 1, loop_st),
     }
 }
 
@@ -1867,7 +1867,13 @@ fn translate_block(
 
         // Put the whole loop body inside a `Loop` wrapper
         let exp = exp.unwrap();
-        let exp = Box::new(tgt::Statement::new(exp.meta, tgt::RawStatement::Loop(exp)));
+        use crate::id_vector::Zero;
+        let exp = Box::new(tgt::Statement::new(
+            exp.meta,
+            // Using a dummy id for now - we compute it later: we want to be sure
+            // that we use a proper order to numerotate the loops.
+            tgt::RawStatement::Loop(tgt::LoopId::Id::zero(), exp),
+        ));
 
         // Add the exit block
         if let Some(exit_block_id) = next_block {
@@ -1939,11 +1945,22 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
         assert!(explored.contains(&bid));
     }
 
+    // Compute proper loop ids
+    let mut body = *stmt;
+    let mut loop_id_gen = tgt::LoopId::Generator::new();
+    body.transform(&mut |st| {
+        if let tgt::RawStatement::Loop(lp_id, _) = &mut st.content {
+            *lp_id = loop_id_gen.fresh_id();
+        }
+        None
+    });
+
+    // Aggregate
     tgt::ExprBody {
         meta: src_body.meta,
         arg_count: src_body.arg_count,
         locals: src_body.locals.clone(),
-        body: *stmt,
+        body,
     }
 }
 
