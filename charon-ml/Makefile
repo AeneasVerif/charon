@@ -17,7 +17,7 @@ tests: build copy-tests
 # Reformat the code
 .PHONY: format
 format:
-	dune promote
+	dune build @fmt --auto-promote
 
 .PHONY: copy-tests
 copy-tests:
