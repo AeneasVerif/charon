@@ -3,7 +3,7 @@
 use crate::common::*;
 use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
 use crate::formatter::{AstFormatter, Formatter};
-use crate::llbc_ast::{Assert, FunDecl, GlobalDecl, RawStatement, Statement, Switch};
+use crate::llbc_ast::*;
 use crate::meta;
 use crate::meta::Meta;
 use crate::types::*;
@@ -238,11 +238,12 @@ impl Statement {
                     )
                 }
             },
-            RawStatement::Loop(body) => {
+            RawStatement::Loop(lp_id, body) => {
                 let inner_tab = format!("{tab}{TAB_INCR}");
                 format!(
-                    "{}loop {{\n{}\n{}}}",
+                    "{}loop {} {{\n{}\n{}}}",
                     tab,
+                    lp_id,
                     body.fmt_with_ctx(&inner_tab, ctx),
                     tab
                 )
@@ -338,7 +339,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
             RawStatement::Nop => self.visit_nop(),
             RawStatement::Sequence(st1, st2) => self.visit_sequence(st1, st2),
             RawStatement::Switch(s) => self.visit_switch(s),
-            RawStatement::Loop(lp) => self.visit_loop(lp),
+            RawStatement::Loop(loop_id, lp) => self.visit_loop(loop_id, lp),
         }
     }
 
@@ -434,7 +435,10 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         self.merge();
     }
 
-    fn visit_loop(&mut self, lp: &Statement) {
+    fn visit_loop_id(&mut self, _lp_id:&LoopId::Id) {}
+
+    fn visit_loop(&mut self, lp_id:&LoopId::Id, lp: &Statement) {
+        self.visit_loop_id(lp_id);
         self.visit_statement(lp)
     }
 }

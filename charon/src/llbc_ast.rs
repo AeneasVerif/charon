@@ -12,7 +12,9 @@ use crate::meta::Meta;
 use crate::types::*;
 pub use crate::ullbc_ast::{Call, FunDeclId, GlobalDeclId, Var};
 use crate::values::*;
-use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
+use macros::{
+    generate_index_type, EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName,
+};
 use serde::Serialize;
 
 // Loop identifier
