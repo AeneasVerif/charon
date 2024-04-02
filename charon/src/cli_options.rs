@@ -98,7 +98,7 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     /// This is for Nix: outside of Nix, we use Rustup to call the proper version
     /// of Cargo (and thus need this argument), but within Nix we build and call a very
     /// specific version of Cargo.
-    #[structopt(long = "cargo-no-rust-version", env = "CARGO_NO_RUST_VERSION")]
+    #[structopt(long = "cargo-no-rust-version")]
     pub cargo_no_rust_version: bool,
     /// Panic on the first error. This is useful for debugging.
     #[structopt(long = "abort-on-error")]
