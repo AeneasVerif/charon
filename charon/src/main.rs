@@ -98,7 +98,9 @@ fn process(options: &CliOpts) -> Result<(), i32> {
     cmd.env("RUSTC_WORKSPACE_WRAPPER", path());
     cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
 
-    if !options.cargo_no_rust_version {
+    if !options.cargo_no_rust_version
+        && std::env::var("CARGO_NO_RUST_VERSION") != Ok("1".to_string())
+    {
         cmd.arg(rust_version);
     }
 
