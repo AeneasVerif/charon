@@ -153,6 +153,8 @@
           CARGO_NO_RUST_VERSION = 1;
 
           packages = [
+            pkgs.ocamlPackages.ocaml
+            pkgs.ocamlPackages.ocamlformat
             pkgs.ocamlPackages.menhir
             pkgs.ocamlPackages.odoc
           ];
