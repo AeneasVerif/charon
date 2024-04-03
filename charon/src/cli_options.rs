@@ -1,7 +1,7 @@
+use clap::StructOpt;
 /// The options received as input by cargo-charon
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 // This structure is used to store the command-line instructions.
 // We automatically derive a command-line parser based on this structure.
