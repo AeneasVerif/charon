@@ -14,20 +14,20 @@ use std::path::PathBuf;
 #[derive(Serialize)]
 #[serde(rename = "Crate")]
 pub struct GCrateData<FD, GD> {
-    name: String,
+    pub name: String,
     /// The `id_to_file` map is serialized as a vector.
     /// We use this map for the spans: the spans only store the file ids, not
     /// the file names, in order to save space.
-    id_to_file: Vec<(FileId::Id, FileName)>,
-    declarations: Vec<DeclarationGroup>,
-    types: Vec<TypeDecl>,
-    functions: Vec<FD>,
-    globals: Vec<GD>,
-    trait_decls: Vec<TraitDecl>,
-    trait_impls: Vec<TraitImpl>,
+    pub id_to_file: Vec<(FileId::Id, FileName)>,
+    pub declarations: Vec<DeclarationGroup>,
+    pub types: Vec<TypeDecl>,
+    pub functions: Vec<FD>,
+    pub globals: Vec<GD>,
+    pub trait_decls: Vec<TraitDecl>,
+    pub trait_impls: Vec<TraitImpl>,
     #[serde(skip_serializing)]
     /// If there were errors, this contains only a partial description of the input crate.
-    has_errors: bool,
+    pub has_errors: bool,
 }
 
 impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
