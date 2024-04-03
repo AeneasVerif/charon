@@ -9,21 +9,60 @@ use serde::Serialize;
 use std::fs::File;
 use std::path::PathBuf;
 
-/// A generic crate, which implements the [Serialize] trait
+/// The data of a generic crate. We serialize this to pass it to `charon-ml`, so this must be as
+/// stable as possible. This is used for both ULLBC and LLBC.
 #[derive(Serialize)]
 #[serde(rename = "Crate")]
-struct GCrateSerializer<'a, FD, GD> {
+pub struct GCrateData<FD, GD> {
     name: String,
     /// The `id_to_file` map is serialized as a vector.
     /// We use this map for the spans: the spans only store the file ids, not
     /// the file names, in order to save space.
-    id_to_file: &'a Vec<(FileId::Id, FileName)>,
-    declarations: &'a Vec<DeclarationGroup>,
+    id_to_file: Vec<(FileId::Id, FileName)>,
+    declarations: Vec<DeclarationGroup>,
     types: Vec<TypeDecl>,
     functions: Vec<FD>,
     globals: Vec<GD>,
     trait_decls: Vec<TraitDecl>,
     trait_impls: Vec<TraitImpl>,
+}
+
+impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
+    fn new(
+        ctx: &TransCtx,
+        crate_name: String,
+        fun_decls: &FunDeclId::Map<FD>,
+        global_decls: &GlobalDeclId::Map<GD>,
+    ) -> Self {
+        // Transform the map file id -> file into a vector.
+        // Sort the vector to make the serialized file as stable as possible.
+        let id_to_file = &ctx.id_to_file;
+        let mut file_ids: Vec<FileId::Id> = id_to_file.keys().copied().collect();
+        file_ids.sort();
+        let id_to_file: Vec<(FileId::Id, FileName)> = file_ids
+            .into_iter()
+            .map(|id| (id, id_to_file.get(&id).unwrap().clone()))
+            .collect();
+
+        // Note that we replace the maps with vectors (the declarations contain
+        // their ids, so it is easy to reconstruct the maps from there).
+        let declarations = ctx.ordered_decls.clone().unwrap();
+        let types = ctx.type_decls.iter().cloned().collect();
+        let functions = fun_decls.iter().cloned().collect();
+        let globals = global_decls.iter().cloned().collect();
+        let trait_decls = ctx.trait_decls.iter().cloned().collect();
+        let trait_impls = ctx.trait_impls.iter().cloned().collect();
+        GCrateData {
+            name: crate_name,
+            id_to_file,
+            declarations,
+            types,
+            functions,
+            globals,
+            trait_decls,
+            trait_impls,
+        }
+    }
 }
 
 /// Export the translated definitions to a JSON file.
@@ -32,12 +71,11 @@ struct GCrateSerializer<'a, FD, GD> {
 #[allow(clippy::result_unit_err)]
 pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     ctx: &TransCtx,
-    crate_name: String,
-    fun_decls: &FunDeclId::Map<FD>,
-    global_decls: &GlobalDeclId::Map<GD>,
+    crate_data: GCrateData<FD, GD>,
     dest_dir: &Option<PathBuf>,
     extension: &str,
 ) -> Result<(), ()> {
+    let crate_name = &crate_data.name;
     // Generate the destination file - we use the crate name for the file name
     let mut target_filename = dest_dir
         .as_deref()
@@ -45,36 +83,6 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
     target_filename.push(format!("{crate_name}.{extension}"));
 
     trace!("Target file: {:?}", target_filename);
-
-    // Transform the map file id -> file into a vector.
-    // Sort the vector to make the serialized file as stable as possible.
-    let id_to_file = &ctx.id_to_file;
-    let mut file_ids: Vec<FileId::Id> = id_to_file.keys().copied().collect();
-    file_ids.sort();
-    let id_to_file: Vec<(FileId::Id, FileName)> = file_ids
-        .into_iter()
-        .map(|id| (id, id_to_file.get(&id).unwrap().clone()))
-        .collect();
-    let id_to_file = &id_to_file;
-
-    // Serialize
-    // Note that we replace the maps with vectors (the declarations contain
-    // their ids, so it is easy to reconstruct the maps from there).
-    let types = ctx.type_decls.iter().cloned().collect();
-    let functions = fun_decls.iter().cloned().collect();
-    let globals = global_decls.iter().cloned().collect();
-    let trait_decls = ctx.trait_decls.iter().cloned().collect();
-    let trait_impls = ctx.trait_impls.iter().cloned().collect();
-    let crate_serializer = GCrateSerializer {
-        name: crate_name,
-        id_to_file,
-        declarations: ctx.ordered_decls.as_ref().unwrap(),
-        types,
-        functions,
-        globals,
-        trait_decls,
-        trait_impls,
-    };
 
     // Create the directory, if necessary (note that if the target directory
     // is not specified, there is no need to create it: otherwise we
@@ -92,7 +100,7 @@ pub fn gexport<FD: Serialize + Clone, GD: Serialize + Clone>(
 
     // Write to the file
     match File::create(target_filename.clone()) {
-        std::io::Result::Ok(outfile) => match serde_json::to_writer(&outfile, &crate_serializer) {
+        std::io::Result::Ok(outfile) => match serde_json::to_writer(&outfile, &crate_data) {
             std::result::Result::Ok(()) => {
                 // We canonicalize (i.e., make absolute) the path before printing it:
                 // this makes it clearer to the user where to find the file.
@@ -128,7 +136,8 @@ pub fn export_ullbc(
     global_decls: &ullbc_ast::GlobalDecls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<(), ()> {
-    gexport(ctx, crate_name, fun_decls, global_decls, dest_dir, "ullbc")
+    let crate_data = GCrateData::new(ctx, crate_name, fun_decls, global_decls);
+    gexport(ctx, crate_data, dest_dir, "ullbc")
 }
 
 /// Export the translated LLBC definitions to a JSON file.
@@ -140,5 +149,6 @@ pub fn export_llbc(
     global_decls: &llbc_ast::GlobalDecls,
     dest_dir: &Option<PathBuf>,
 ) -> Result<(), ()> {
-    gexport(ctx, crate_name, fun_decls, global_decls, dest_dir, "llbc")
+    let crate_data = GCrateData::new(ctx, crate_name, fun_decls, global_decls);
+    gexport(ctx, crate_data, dest_dir, "llbc")
 }
