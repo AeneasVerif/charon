@@ -51,3 +51,45 @@ fn type_decl() -> Result<(), Box<dyn Error>> {
     );
     Ok(())
 }
+
+#[test]
+fn attributes() -> Result<(), Box<dyn Error>> {
+    // Use the `clippy::` prefix because it's ignored by rustc.
+    let crate_data = translate(
+        r#"
+        #[clippy::foo]
+        #[clippy::foo(arg)]
+        #[clippy::foo = "arg"]
+        struct Struct;
+
+        #[non_exhaustive]
+        enum Enum {}
+
+        #[clippy::foo]
+        trait Trait {}
+
+        #[clippy::foo]
+        impl Trait for Struct {}
+
+        #[clippy::foo]
+        const FOO: () = ();
+
+        #[clippy::foo]
+        static BAR: () = ();
+
+        #[inline(never)]
+        fn main() {}
+        "#,
+    )?;
+    assert_eq!(
+        crate_data.types[0].attributes,
+        vec!["clippy::foo", "clippy::foo(arg)", "clippy::foo = \"arg\""]
+    );
+    assert_eq!(crate_data.types[1].attributes, vec!["non_exhaustive"]);
+    assert_eq!(crate_data.trait_decls[0].attributes, vec!["clippy::foo"]);
+    assert_eq!(crate_data.trait_impls[0].attributes, vec!["clippy::foo"]);
+    assert_eq!(crate_data.globals[0].attributes, vec!["clippy::foo"]);
+    assert_eq!(crate_data.globals[1].attributes, vec!["clippy::foo"]);
+    assert_eq!(crate_data.functions[0].attributes, vec!["inline(never)"]);
+    Ok(())
+}

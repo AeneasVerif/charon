@@ -97,6 +97,8 @@ pub struct GFunDecl<T> {
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
+    /// Attributes (`#[...]`).
+    pub attributes: Vec<Attribute>,
     pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
@@ -120,6 +122,8 @@ pub struct GGlobalDecl<T> {
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
+    /// Attributes (`#[...]`).
+    pub attributes: Vec<Attribute>,
     pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,
@@ -131,6 +135,8 @@ pub struct GGlobalDecl<T> {
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TraitItemName(pub String);
+
+pub type Attribute = String;
 
 /// A trait **declaration**.
 ///
@@ -171,8 +177,10 @@ pub struct TraitDecl {
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
-    pub name: Name,
     pub meta: Meta,
+    /// Attributes (`#[...]`).
+    pub attributes: Vec<Attribute>,
+    pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// The "parent" clauses: the supertraits.
@@ -230,6 +238,8 @@ pub struct TraitImpl {
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
+    /// Attributes (`#[...]`).
+    pub attributes: Vec<Attribute>,
     pub name: Name,
     pub meta: Meta,
     /// The information about the implemented trait.

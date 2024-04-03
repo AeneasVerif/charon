@@ -1,4 +1,4 @@
-pub use crate::gast::{FunDeclId, TraitItemName};
+pub use crate::gast::{Attribute, FunDeclId, TraitItemName};
 use crate::meta::Meta;
 use crate::names::Name;
 pub use crate::types_utils::*;
@@ -344,6 +344,8 @@ pub struct TypeDecl {
     /// [true] if the type decl is a local type decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
+    /// Attributes (`#[...]`).
+    pub attributes: Vec<Attribute>,
     pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,
