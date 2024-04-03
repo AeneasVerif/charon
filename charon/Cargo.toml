@@ -19,7 +19,7 @@ path = "src/charon-driver.rs"
 [dependencies]
 backtrace = "0.3.69"
 bumpalo = "3.11.1" # We constrain the version of [bumpalo] because of a vulnerability
-clap = { version = "3.0", features = ["derive"] }
+clap = { version = "3.0", features = ["derive", "env"] }
 colored = "2.0.4"
 derivative = "2.2.0"
 env_logger = "0.8.4"
