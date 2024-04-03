@@ -108,8 +108,10 @@ fn main() {
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
     // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
-    let options: cli_options::CliOpts =
-        serde_json::from_str(std::env::var(cli_options::CHARON_ARGS).unwrap().as_str()).unwrap();
+    let options: cli_options::CliOpts = match std::env::var(cli_options::CHARON_ARGS) {
+        Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
+        Err(_) => Default::default(),
+    };
 
     // Compute the sysroot (the path to the executable of the compiler):
     // - if it is already in the command line arguments, just retrieve it from there
@@ -211,11 +213,15 @@ fn main() {
     // instead of the Charon callback: because there is nothing to build, Rustc will
     // take care of everything and actually not call us back.
     let errors_as_warnings = options.errors_as_warnings;
-    let mut callback = CharonCallbacks {
-        options,
-        error_count: 0,
-    };
-    let res = RunCompiler::new(&compiler_args, &mut callback).run();
+    let mut callback = CharonCallbacks::new(options);
+    let mut res = RunCompiler::new(&compiler_args, &mut callback)
+        .run()
+        .map_err(|_| ());
+    if let Some(crate_data) = &callback.crate_data {
+        // # Final step: generate the files.
+        // `crate_data` is `None` on the first call of the driver.
+        res = res.and_then(|()| crate_data.serialize_to_file(&callback.options.dest_dir));
+    }
 
     match res {
         Ok(()) => {

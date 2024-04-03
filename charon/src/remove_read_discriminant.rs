@@ -92,7 +92,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                                     // We shouldn't get there
                                     register_error_or_panic!(
                                         self.ctx,
-                                        st.meta.span.rust_span,
+                                        st.meta.span.rust_span_data.span(),
                                         "Unreachable case"
                                     );
                                     false

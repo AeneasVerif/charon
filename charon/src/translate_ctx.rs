@@ -78,7 +78,7 @@ macro_rules! error_assert_then {
     ($ctx:expr, $span: expr, $b: expr, $then: expr) => {
         if !$b {
             let msg = format!("assertion failure: {:?}", stringify!($b));
-            $ctx.span_err($span, &msg);
+            $ctx.span_err($span.rust_span_data.span(), &msg);
             if $ctx.continue_on_failure() {
                 {
                     $then
@@ -90,7 +90,7 @@ macro_rules! error_assert_then {
     };
     ($ctx:expr, $span: expr, $b: expr, $then: expr, $msg:expr) => {
         if !$b {
-            $ctx.span_err($span, &$msg);
+            $ctx.span_err($span.rust_span_data.span(), &$msg);
             if $ctx.continue_on_failure() {
                 {
                     $then
@@ -435,7 +435,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             file_id,
             beg,
             end,
-            rust_span: rspan.rust_span_data.unwrap().span(),
+            rust_span_data: rspan.rust_span_data.unwrap(),
         }
     }
 
