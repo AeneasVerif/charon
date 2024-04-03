@@ -11,7 +11,7 @@ use structopt::StructOpt;
 // Note that because we need to transmit the options to the charon driver,
 // we store them in a file before calling this driver (hence the `Serialize`,
 // `Deserialize` options).
-#[derive(StructOpt, Serialize, Deserialize)]
+#[derive(StructOpt, Default, Serialize, Deserialize)]
 #[structopt(name = "Charon")]
 pub struct CliOpts {
     /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)

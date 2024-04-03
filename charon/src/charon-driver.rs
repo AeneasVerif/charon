@@ -108,8 +108,10 @@ fn main() {
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
     // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
-    let options: cli_options::CliOpts =
-        serde_json::from_str(std::env::var(cli_options::CHARON_ARGS).unwrap().as_str()).unwrap();
+    let options: cli_options::CliOpts = match std::env::var(cli_options::CHARON_ARGS) {
+        Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
+        Err(_) => Default::default(),
+    };
 
     // Compute the sysroot (the path to the executable of the compiler):
     // - if it is already in the command line arguments, just retrieve it from there
