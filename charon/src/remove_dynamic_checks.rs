@@ -232,7 +232,7 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                         // This should be the addition/subtraction/etc. case
                         error_assert_then!(
                             self.ctx,
-                            s0.meta.span.rust_span,
+                            s0.meta.span,
                             matches!(binop, BinOp::Add | BinOp::Sub | BinOp::Mul),
                             // TODO: we could replace the whole statement with an "ERROR" statement
                             // A simplification should have happened but was missed:
@@ -311,7 +311,7 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
             // Make sure we eliminated all the asserts and all the `len`
             error_assert_then!(
                 self.ctx,
-                s.meta.span.rust_span,
+                s.meta.span,
                 !s.content.is_assert(),
                 // Return so as to stop the exploration
                 return,
@@ -321,7 +321,7 @@ impl<'tcx, 'ctx, 'a> MutAstVisitor for RemoveDynChecks<'tcx, 'ctx, 'a> {
                 let (_, rv) = s.content.as_assign();
                 error_assert_then!(
                     self.ctx,
-                    s.meta.span.rust_span,
+                    s.meta.span,
                     !rv.is_len(),
                     // Return so as to stop the exploration
                     return,
