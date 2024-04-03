@@ -213,11 +213,15 @@ fn main() {
     // instead of the Charon callback: because there is nothing to build, Rustc will
     // take care of everything and actually not call us back.
     let errors_as_warnings = options.errors_as_warnings;
-    let mut callback = CharonCallbacks {
-        options,
-        error_count: 0,
-    };
-    let res = RunCompiler::new(&compiler_args, &mut callback).run();
+    let mut callback = CharonCallbacks::new(options);
+    let mut res = RunCompiler::new(&compiler_args, &mut callback)
+        .run()
+        .map_err(|_| ());
+    if let Some(crate_data) = &callback.crate_data {
+        // # Final step: generate the files.
+        // `crate_data` is `None` on the first call of the driver.
+        res = res.and_then(|()| crate_data.serialize_to_file(&callback.options.dest_dir));
+    }
 
     match res {
         Ok(()) => {

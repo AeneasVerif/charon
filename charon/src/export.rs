@@ -31,7 +31,7 @@ pub struct GCrateData<FD, GD> {
 }
 
 impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
-    fn new(
+    pub fn new(
         ctx: &TransCtx,
         crate_name: String,
         fun_decls: &FunDeclId::Map<FD>,
@@ -119,26 +119,37 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
     }
 }
 
-/// Export the translated ULLBC definitions to a JSON file.
-#[allow(clippy::result_unit_err)]
-pub fn export_ullbc(
-    ctx: &TransCtx,
-    crate_name: String,
-    fun_decls: &ullbc_ast::FunDecls,
-    global_decls: &ullbc_ast::GlobalDecls,
-    dest_dir: &Option<PathBuf>,
-) -> Result<(), ()> {
-    GCrateData::new(ctx, crate_name, fun_decls, global_decls).serialize_to_file(dest_dir, "ullbc")
+/// The two kinds of crate data we construct.
+pub enum CrateData {
+    ULLBC(GCrateData<ullbc_ast::FunDecl, ullbc_ast::GlobalDecl>),
+    LLBC(GCrateData<llbc_ast::FunDecl, llbc_ast::GlobalDecl>),
 }
 
-/// Export the translated LLBC definitions to a JSON file.
-#[allow(clippy::result_unit_err)]
-pub fn export_llbc(
-    ctx: &TransCtx,
-    crate_name: String,
-    fun_decls: &llbc_ast::FunDecls,
-    global_decls: &llbc_ast::GlobalDecls,
-    dest_dir: &Option<PathBuf>,
-) -> Result<(), ()> {
-    GCrateData::new(ctx, crate_name, fun_decls, global_decls).serialize_to_file(dest_dir, "llbc")
+impl CrateData {
+    pub fn new_ullbc(
+        ctx: &TransCtx,
+        crate_name: String,
+        fun_decls: &FunDeclId::Map<ullbc_ast::FunDecl>,
+        global_decls: &GlobalDeclId::Map<ullbc_ast::GlobalDecl>,
+    ) -> Self {
+        Self::ULLBC(GCrateData::new(ctx, crate_name, fun_decls, global_decls))
+    }
+
+    pub fn new_llbc(
+        ctx: &TransCtx,
+        crate_name: String,
+        fun_decls: &FunDeclId::Map<llbc_ast::FunDecl>,
+        global_decls: &GlobalDeclId::Map<llbc_ast::GlobalDecl>,
+    ) -> Self {
+        Self::LLBC(GCrateData::new(ctx, crate_name, fun_decls, global_decls))
+    }
+
+    /// Export the translated definitions to a JSON file.
+    #[allow(clippy::result_unit_err)]
+    pub fn serialize_to_file(&self, dest_dir: &Option<PathBuf>) -> Result<(), ()> {
+        match self {
+            CrateData::ULLBC(crate_data) => crate_data.serialize_to_file(dest_dir, "ullbc"),
+            CrateData::LLBC(crate_data) => crate_data.serialize_to_file(dest_dir, "llbc"),
+        }
+    }
 }

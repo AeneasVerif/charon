@@ -29,7 +29,18 @@ use std::ops::Deref;
 pub struct CharonCallbacks {
     pub options: cli_options::CliOpts,
     /// This is to be filled during the extraction
+    pub crate_data: Option<export::CrateData>,
     pub error_count: usize,
+}
+
+impl CharonCallbacks {
+    pub fn new(options: cli_options::CliOpts) -> Self {
+        Self {
+            options,
+            crate_data: None,
+            error_count: 0,
+        }
+    }
 }
 
 impl Callbacks for CharonCallbacks {
@@ -50,7 +61,9 @@ impl Callbacks for CharonCallbacks {
             .get_mut()
             .enter(|tcx| {
                 let session = c.session();
-                translate(session, tcx, self)
+                let crate_data = translate(session, tcx, self)?;
+                self.crate_data = Some(crate_data);
+                Ok::<(), ()>(())
             })
             .unwrap();
         Compilation::Stop
@@ -117,7 +130,11 @@ pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize>
 ///
 /// This function is a callback function for the Rust compiler.
 #[allow(clippy::result_unit_err)]
-pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) -> Result<(), ()> {
+pub fn translate(
+    sess: &Session,
+    tcx: TyCtxt,
+    internal: &mut CharonCallbacks,
+) -> Result<export::CrateData, ()> {
     trace!();
     let options = &internal.options;
 
@@ -192,15 +209,8 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
     // - or they want the structured LLBC, in which case we reconstruct the
     //   control-flow and apply micro-passes
 
-    if options.ullbc {
-        // # Extract the files
-        export::export_ullbc(
-            &ctx,
-            crate_name,
-            &ctx.fun_decls,
-            &ctx.global_decls,
-            &options.dest_dir,
-        )?;
+    let crate_data = if options.ullbc {
+        export::CrateData::new_ullbc(&ctx, crate_name, &ctx.fun_decls, &ctx.global_decls)
     } else {
         // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing
         // the control flow.
@@ -295,19 +305,12 @@ pub fn translate(sess: &Session, tcx: TyCtxt, internal: &mut CharonCallbacks) ->
         // Display an error report about the external dependencies, if necessary
         ctx.report_external_deps_errors();
 
-        // # Final step: generate the files.
-        export::export_llbc(
-            &ctx,
-            crate_name,
-            &llbc_funs,
-            &llbc_globals,
-            &options.dest_dir,
-        )?;
-    }
+        export::CrateData::new_llbc(&ctx, crate_name, &llbc_funs, &llbc_globals)
+    };
     trace!("Done");
 
     // Update the error count
     internal.error_count = ctx.error_count;
 
-    Ok(())
+    Ok(crate_data)
 }
