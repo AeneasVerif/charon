@@ -561,6 +561,7 @@ type type_decl = {
   def_id : TypeDeclId.id;
   meta : meta;
   is_local : bool;
+  attributes : string list;
   name : name;
   generics : generic_params;
   preds : predicates;

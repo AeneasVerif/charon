@@ -481,6 +481,38 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
+    /// Returns the attributes (`#[...]`) of this item.
+    pub(crate) fn item_attributes(&self, id: DefId) -> &[rustc_ast::Attribute] {
+        use rustc_hir::hir_id::HirId;
+        id.as_local()
+            .map(|local_def_id| self.tcx.hir().attrs(HirId::make_owner(local_def_id)))
+            .unwrap_or_default()
+    }
+
+    /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
+    /// encodes them as attributes). For now we use `String`s for `Attributes`.
+    pub(crate) fn translate_attribute(&self, attr: &rustc_ast::Attribute) -> Option<Attribute> {
+        use rustc_ast::ast::AttrKind;
+        use rustc_ast_pretty::pprust;
+        match &attr.kind {
+            AttrKind::Normal(normal_attr) => {
+                // Use `pprust` to render the attribute like it is written in the source.
+                use pprust::PrintState;
+                Some(pprust::State::to_string(|s| {
+                    s.print_attr_item(&normal_attr.item, attr.span)
+                }))
+            }
+            AttrKind::DocComment(..) => None,
+        }
+    }
+
+    pub(crate) fn translate_attributes_from_rid(&self, id: DefId) -> Vec<Attribute> {
+        self.item_attributes(id)
+            .iter()
+            .filter_map(|attr| self.translate_attribute(attr))
+            .collect()
+    }
+
     pub(crate) fn id_is_opaque(&mut self, id: DefId) -> Result<bool, Error> {
         let name = self.def_id_to_name(id)?;
         Ok(self.crate_info.is_opaque_decl(&name))

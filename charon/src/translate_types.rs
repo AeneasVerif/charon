@@ -747,6 +747,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // Translate the span information
         let meta = bt_ctx.translate_meta_from_rid(rust_id);
 
+        let attributes = bt_ctx.t_ctx.translate_attributes_from_rid(rust_id);
+
         let type_def = TypeDecl {
             def_id: trans_id,
             meta,
@@ -755,6 +757,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             generics,
             preds: bt_ctx.get_predicates(),
             kind,
+            attributes,
         };
 
         trace!("translate_type: preds: {:?}", &type_def.preds);
