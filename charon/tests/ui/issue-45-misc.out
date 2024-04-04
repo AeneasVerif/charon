@@ -1,0 +1,565 @@
+[ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
+
+fn issue_45_misc::map::closure<'_0>(@1: &'_0 mut (()), @2: (i32)) -> i32
+{
+    let @0: i32; // return
+    let state@1: &'_0 mut (()); // arg #1
+    let v@2: i32; // arg #2
+
+    @0 := copy (v@2)
+    return
+}
+
+trait core::ops::function::FnOnce<Self, Args>
+{
+    type Output
+    fn call_once : core::ops::function::FnOnce::call_once
+}
+
+trait core::ops::function::FnMut<Self, Args>
+{
+    parent_clause_0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
+    fn call_mut : core::ops::function::FnMut::call_mut
+}
+
+fn core::array::{Array<T, const N : usize>#23}::map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
+where
+    [@TraitClause0]: core::ops::function::FnMut<F, (T)>,
+    (parents((parents(@TraitClause0)::[@TraitClause3]))::[@TraitClause0])::Output = U,
+
+fn issue_45_misc::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
+{
+    let @0: Array<i32, 256 : usize>; // return
+    let x@1: Array<i32, 256 : usize>; // arg #1
+    let @2: Array<i32, 256 : usize>; // anonymous local
+    let @3: fn(i32) -> i32; // anonymous local
+
+    @2 := copy (x@1)
+    @3 := {issue_45_misc::map::closure} {}
+    @0 := core::array::{Array<T, const N : usize>#23}::map<i32, fn(i32) -> i32, i32, 256 : usize>[(closure:issue_45_misc::map::closure)](move (@2), move (@3))
+    drop @3
+    drop @2
+    return
+}
+
+fn issue_45_misc::array<const LEN : usize>() -> Array<u8, const LEN : usize>
+{
+    let @0: Array<u8, const LEN : usize>; // return
+
+    @0 := @ArrayRepeat<'_, u8, const LEN : usize>(const (0 : u8))
+    return
+}
+
+struct core::ops::range::Range<Idx> =
+{
+  start: Idx,
+  end: Idx
+}
+
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
+
+
+trait core::iter::traits::iterator::Iterator<Self>
+{
+    type Item
+    fn next : core::iter::traits::iterator::Iterator::next
+    fn next_chunk
+    fn size_hint
+    fn count
+    fn last
+    fn advance_by
+    fn nth
+    fn step_by
+    fn chain
+    fn zip
+    fn intersperse
+    fn intersperse_with
+    fn map
+    fn for_each
+    fn filter
+    fn filter_map
+    fn enumerate
+    fn peekable
+    fn skip_while
+    fn take_while
+    fn map_while
+    fn skip
+    fn take
+    fn scan
+    fn flat_map
+    fn flatten
+    fn fuse
+    fn inspect
+    fn by_ref
+    fn collect
+    fn try_collect
+    fn collect_into
+    fn partition
+    fn partition_in_place
+    fn is_partitioned
+    fn try_fold
+    fn try_for_each
+    fn fold
+    fn reduce
+    fn try_reduce
+    fn all
+    fn any
+    fn find
+    fn find_map
+    fn try_find
+    fn position
+    fn rposition
+    fn max
+    fn min
+    fn max_by_key
+    fn max_by
+    fn min_by_key
+    fn min_by
+    fn rev
+    fn unzip
+    fn copied
+    fn cloned
+    fn cycle
+    fn array_chunks
+    fn sum
+    fn product
+    fn cmp
+    fn cmp_by
+    fn partial_cmp
+    fn partial_cmp_by
+    fn eq
+    fn eq_by
+    fn ne
+    fn lt
+    fn le
+    fn gt
+    fn ge
+    fn is_sorted
+    fn is_sorted_by
+    fn is_sorted_by_key
+    fn __iterator_get_unchecked
+}
+
+trait core::iter::traits::collect::IntoIterator<Self>
+{
+    type Item
+    type IntoIter
+        where
+            [@TraitClause0]: core::iter::traits::iterator::Iterator<Self::IntoIter>,
+    fn into_iter : core::iter::traits::collect::IntoIterator::into_iter
+}
+
+fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(@1: I) -> I
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
+
+impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<I> : core::iter::traits::collect::IntoIterator<I>
+where
+    [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
+{
+    type Item = @TraitClause0::Item with []
+    type IntoIter = I with [@TraitClause0]
+    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter
+}
+
+trait core::clone::Clone<Self>
+{
+    fn clone : core::clone::Clone::clone
+    fn clone_from
+}
+
+trait core::cmp::PartialEq<Self, Rhs>
+{
+    fn eq : core::cmp::PartialEq::eq
+    fn ne
+}
+
+enum core::cmp::Ordering =
+|  Less()
+|  Equal()
+|  Greater()
+
+
+trait core::cmp::PartialOrd<Self, Rhs>
+{
+    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
+    fn partial_cmp : core::cmp::PartialOrd::partial_cmp
+    fn lt
+    fn le
+    fn gt
+    fn ge
+}
+
+trait core::iter::range::Step<Self>
+{
+    parent_clause_0 : [@TraitClause0]: core::clone::Clone<Self>
+    parent_clause_1 : [@TraitClause1]: core::cmp::PartialOrd<Self, Self>
+    fn steps_between : core::iter::range::Step::steps_between
+    fn forward_checked : core::iter::range::Step::forward_checked
+    fn backward_checked : core::iter::range::Step::backward_checked
+    fn forward
+    fn forward_unchecked
+    fn backward
+    fn backward_unchecked
+}
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::next<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>)) -> core::option::Option<A>
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::size_hint<'_0, A>(@1: &'_0 (core::ops::range::Range<A>)) -> (usize, core::option::Option<usize>)
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::nth<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::option::Option<A>
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::last<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
+
+trait core::cmp::Eq<Self>
+{
+    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    fn assert_receiver_is_total_eq
+}
+
+trait core::cmp::Ord<Self>
+{
+    parent_clause_0 : [@TraitClause0]: core::cmp::Eq<Self>
+    parent_clause_1 : [@TraitClause1]: core::cmp::PartialOrd<Self, Self>
+    fn cmp : core::cmp::Ord::cmp
+    fn max
+    fn min
+    fn clamp
+}
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::min<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
+    // Local clauses:
+    [@TraitClause1]: core::cmp::Ord<A>,
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::max<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
+    // Local clauses:
+    [@TraitClause1]: core::cmp::Ord<A>,
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::is_sorted<A>(@1: core::ops::range::Range<A>) -> bool
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
+
+enum core::result::Result<T, E> =
+|  Ok(T)
+|  Err(E)
+
+
+opaque type core::num::nonzero::NonZeroUsize
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZeroUsize>
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
+
+trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
+{
+    const MAY_HAVE_SIDE_EFFECT : bool
+    fn size
+}
+
+unsafe fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::__iterator_get_unchecked<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<A>[@TraitClause0]::Item
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
+    // Local clauses:
+    [@TraitClause1]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<core::ops::range::Range<A>>,
+
+impl<A> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<A> : core::iter::traits::iterator::Iterator<core::ops::range::Range<A>>
+where
+    [@TraitClause0]: core::iter::range::Step<A>,
+{
+    type Item = A with []
+    fn next = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::next
+    fn size_hint = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::size_hint
+    fn nth = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::nth
+    fn last = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::last
+    fn min = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::min
+    fn max = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::max
+    fn is_sorted = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::is_sorted
+    fn advance_by = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::advance_by
+    fn __iterator_get_unchecked = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::__iterator_get_unchecked
+}
+
+fn core::clone::impls::{impl core::clone::Clone for u8#6}::clone<'_0>(@1: &'_0 (u8)) -> u8
+
+impl core::clone::impls::{impl core::clone::Clone for u8#6} : core::clone::Clone<u8>
+{
+    fn clone = core::clone::impls::{impl core::clone::Clone for u8#6}::clone
+}
+
+fn core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+
+fn core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::ne<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+
+impl core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22} : core::cmp::PartialEq<u8, u8>
+{
+    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::eq
+    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::ne
+}
+
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::partial_cmp<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> core::option::Option<core::cmp::Ordering>
+
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::lt<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::le<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::ge<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::gt<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+
+impl core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56} : core::cmp::PartialOrd<u8, u8>
+{
+    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}
+    fn partial_cmp = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::partial_cmp
+    fn lt = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::lt
+    fn le = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::le
+    fn ge = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::ge
+    fn gt = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::gt
+}
+
+fn core::iter::range::{impl core::iter::range::Step for u8#29}::steps_between<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> core::option::Option<usize>
+
+fn core::iter::range::{impl core::iter::range::Step for u8#29}::forward_checked(@1: u8, @2: usize) -> core::option::Option<u8>
+
+fn core::iter::range::{impl core::iter::range::Step for u8#29}::backward_checked(@1: u8, @2: usize) -> core::option::Option<u8>
+
+unsafe fn core::iter::range::{impl core::iter::range::Step for u8#29}::forward_unchecked(@1: u8, @2: usize) -> u8
+
+unsafe fn core::iter::range::{impl core::iter::range::Step for u8#29}::backward_unchecked(@1: u8, @2: usize) -> u8
+
+fn core::iter::range::{impl core::iter::range::Step for u8#29}::forward(@1: u8, @2: usize) -> u8
+
+fn core::iter::range::{impl core::iter::range::Step for u8#29}::backward(@1: u8, @2: usize) -> u8
+
+impl core::iter::range::{impl core::iter::range::Step for u8#29} : core::iter::range::Step<u8>
+{
+    parent_clause0 = core::clone::impls::{impl core::clone::Clone for u8#6}
+    parent_clause1 = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}
+    fn steps_between = core::iter::range::{impl core::iter::range::Step for u8#29}::steps_between
+    fn forward_checked = core::iter::range::{impl core::iter::range::Step for u8#29}::forward_checked
+    fn backward_checked = core::iter::range::{impl core::iter::range::Step for u8#29}::backward_checked
+    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for u8#29}::forward_unchecked
+    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for u8#29}::backward_unchecked
+    fn forward = core::iter::range::{impl core::iter::range::Step for u8#29}::forward
+    fn backward = core::iter::range::{impl core::iter::range::Step for u8#29}::backward
+}
+
+fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
+
+fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>
+
+fn issue_45_misc::cbd(@1: Array<u8, 33 : usize>)
+{
+    let @0: (); // return
+    let prf_input@1: Array<u8, 33 : usize>; // arg #1
+    let @2: core::ops::range::Range<u8>; // anonymous local
+    let @3: core::ops::range::Range<u8>; // anonymous local
+    let iter@4: core::ops::range::Range<u8>; // local
+    let @5: (); // anonymous local
+    let @6: (); // anonymous local
+    let @7: core::option::Option<u8>; // anonymous local
+    let @8: &'_ mut (core::ops::range::Range<u8>); // anonymous local
+    let @9: &'_ mut (core::ops::range::Range<u8>); // anonymous local
+    let i@10: u8; // local
+    let @11: u8; // anonymous local
+    let @12: usize; // anonymous local
+    let @13: (); // anonymous local
+    let @14: (); // anonymous local
+    let @15: (); // anonymous local
+    let @16: &'_ mut (Array<u8, 33 : usize>); // anonymous local
+    let @17: &'_ mut (u8); // anonymous local
+
+    @3 := core::ops::range::Range { start: const (0 : u8), end: const (3 : u8) }
+    @2 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<u8>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<u8>[core::iter::range::{impl core::iter::range::Step for u8#29}]]::into_iter(move (@3))
+    drop @3
+    @fake_read(@2)
+    iter@4 := move (@2)
+    loop {
+        @9 := &mut iter@4
+        @8 := &two-phase-mut *(@9)
+        @7 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<u8>[core::iter::range::{impl core::iter::range::Step for u8#29}]::next(move (@8))
+        drop @8
+        @fake_read(@7)
+        match @7 {
+            0 => {
+                break 0
+            },
+            1 => {
+                i@10 := copy ((@7 as variant @1).0)
+                @11 := copy (i@10)
+                @12 := const (0 : usize)
+                @16 := &mut prf_input@1
+                @17 := @ArrayIndexMut<'_, u8, 33 : usize>(move (@16), copy (@12))
+                *(@17) := move (@11)
+                drop @11
+                drop @12
+                @14 := ()
+                @6 := move (@14)
+                drop i@10
+                drop @9
+                drop @7
+                drop @6
+                @15 := ()
+                @5 := move (@15)
+                continue 0
+            }
+        }
+    }
+    @13 := ()
+    @0 := move (@13)
+    drop @9
+    drop @7
+    drop @6
+    drop iter@4
+    drop @2
+    @0 := ()
+    return
+}
+
+enum core::panicking::AssertKind =
+|  Eq()
+|  Ne()
+|  Match()
+
+
+opaque type core::fmt::Arguments<'a>
+  where
+      'a : 'a,
+
+fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+
+fn issue_45_misc::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
+{
+    let @0: (); // return
+    let lhs@1: &'_ (Slice<u8>); // arg #1
+    let rhs@2: &'_ (Slice<u8>); // arg #2
+    let @3: (); // anonymous local
+    let @4: bool; // anonymous local
+    let @5: (); // anonymous local
+    let @6: (&'_ (usize), &'_ (usize)); // anonymous local
+    let @7: &'_ (usize); // anonymous local
+    let @8: usize; // anonymous local
+    let @9: &'_ (Slice<u8>); // anonymous local
+    let @10: &'_ (usize); // anonymous local
+    let @11: usize; // anonymous local
+    let @12: &'_ (Slice<u8>); // anonymous local
+    let left_val@13: &'_ (usize); // local
+    let right_val@14: &'_ (usize); // local
+    let @15: bool; // anonymous local
+    let @16: bool; // anonymous local
+    let @17: usize; // anonymous local
+    let @18: usize; // anonymous local
+    let kind@19: core::panicking::AssertKind; // local
+    let @20: core::panicking::AssertKind; // anonymous local
+    let @21: &'_ (usize); // anonymous local
+    let @22: &'_ (usize); // anonymous local
+    let @23: &'_ (usize); // anonymous local
+    let @24: &'_ (usize); // anonymous local
+    let @25: core::option::Option<core::fmt::Arguments<'_>>; // anonymous local
+    let @26: (); // anonymous local
+    let @27: (); // anonymous local
+    let @28: (); // anonymous local
+    let @29: (); // anonymous local
+
+    @4 := const (true)
+    if move (@4) {
+        @9 := &*(lhs@1)
+        @8 := core::slice::{Slice<T>}::len<u8>(move (@9))
+        drop @9
+        @7 := &@8
+        @12 := &*(rhs@2)
+        @11 := core::slice::{Slice<T>}::len<u8>(move (@12))
+        drop @12
+        @10 := &@11
+        @6 := (move (@7), move (@10))
+        drop @10
+        drop @7
+        @fake_read(@6)
+        left_val@13 := copy ((@6).0)
+        right_val@14 := copy ((@6).1)
+        @17 := copy (*(left_val@13))
+        @18 := copy (*(right_val@14))
+        @16 := move (@17) == move (@18)
+        drop @18
+        drop @17
+        @15 := ~(move (@16))
+        drop @16
+        if move (@15) {
+            kind@19 := core::panicking::AssertKind::Eq {  }
+            @fake_read(kind@19)
+            @20 := move (kind@19)
+            @22 := &*(left_val@13)
+            @21 := &*(@22)
+            @24 := &*(right_val@14)
+            @23 := &*(@24)
+            @25 := core::option::Option::None {  }
+            panic
+        }
+        else {
+            @28 := ()
+            @5 := move (@28)
+            drop @15
+            drop right_val@14
+            drop left_val@13
+            drop @11
+            drop @8
+            drop @6
+            drop @5
+            @29 := ()
+            @3 := move (@29)
+        }
+    }
+    else {
+        @26 := ()
+        @3 := move (@26)
+    }
+    drop @4
+    drop @3
+    @27 := ()
+    @0 := move (@27)
+    @0 := ()
+    return
+}
+
+fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> (parents(Self)::[@TraitClause0])::Output
+
+fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::option::Option<usize>
+
+fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> core::option::Option<Self>
+
+fn core::iter::range::Step::backward_checked<Self>(@1: Self, @2: usize) -> core::option::Option<Self>
+
+fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>
+
+fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+
+fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
+
+
+

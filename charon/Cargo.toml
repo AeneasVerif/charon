@@ -49,7 +49,12 @@ hax-frontend-exporter-options = { git = "https://github.com/hacspec/hacspec-v2.g
 macros = { path = "./macros" }
 
 [dev-dependencies]
+anyhow = "1.0.81"
 assert_cmd = "1.0.8"
+ignore = "0.4"
+indoc = "2"
+libtest-mimic = "0.4"
+snapbox = "0.3"
 tempfile = "3"
 
 [package.metadata.rust-analyzer]
