@@ -64,15 +64,22 @@ let to_snake_case (s : string) : string =
   (* Note that we rebuild the string in reverse order *)
   let apply ((prev_is_low, prev_is_digit, acc) : bool * bool * char list)
       (c : char) : bool * bool * char list =
+    (* Note that we have a special treatment for the character "'", which
+       we treat as a lowercase letter.
+       This character is sometimes used for backward functions because of
+       lifetime names *)
+    let is_special c = c = '\'' in
     let acc =
       if c = '_' then acc
       else if prev_is_digit then if is_letter_ascii c then '_' :: acc else acc
       else if prev_is_low then
-        if (is_lowercase_ascii c || is_digit_ascii c) && c <> '_' then acc
+        if
+          (is_lowercase_ascii c || is_digit_ascii c || is_special c) && c <> '_'
+        then acc
         else '_' :: acc
       else acc
     in
-    let prev_is_low = is_lowercase_ascii c in
+    let prev_is_low = is_lowercase_ascii c || is_special c in
     let prev_is_digit = is_digit_ascii c in
     let c = lowercase_ascii c in
     (prev_is_low, prev_is_digit, c :: acc)

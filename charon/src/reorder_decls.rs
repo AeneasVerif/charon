@@ -16,7 +16,7 @@ use std::vec::Vec;
 
 /// A (group of) top-level declaration(s), properly reordered.
 /// "G" stands for "generic"
-#[derive(Debug, VariantIndexArity, VariantName, Serialize)]
+#[derive(Debug, Clone, VariantIndexArity, VariantName, Serialize)]
 pub enum GDeclarationGroup<Id> {
     /// A non-recursive declaration
     NonRec(Id),
@@ -25,7 +25,7 @@ pub enum GDeclarationGroup<Id> {
 }
 
 /// A (group of) top-level declaration(s), properly reordered.
-#[derive(Debug, VariantIndexArity, VariantName, Serialize)]
+#[derive(Debug, Clone, VariantIndexArity, VariantName, Serialize)]
 pub enum DeclarationGroup {
     /// A type declaration group
     Type(GDeclarationGroup<TypeDeclId::Id>),

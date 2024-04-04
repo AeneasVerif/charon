@@ -1,7 +1,7 @@
+use clap::StructOpt;
 /// The options received as input by cargo-charon
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 // This structure is used to store the command-line instructions.
 // We automatically derive a command-line parser based on this structure.
@@ -11,7 +11,7 @@ use structopt::StructOpt;
 // Note that because we need to transmit the options to the charon driver,
 // we store them in a file before calling this driver (hence the `Serialize`,
 // `Deserialize` options).
-#[derive(StructOpt, Serialize, Deserialize)]
+#[derive(StructOpt, Default, Serialize, Deserialize)]
 #[structopt(name = "Charon")]
 pub struct CliOpts {
     /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)
@@ -98,7 +98,7 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     /// This is for Nix: outside of Nix, we use Rustup to call the proper version
     /// of Cargo (and thus need this argument), but within Nix we build and call a very
     /// specific version of Cargo.
-    #[structopt(long = "cargo-no-rust-version")]
+    #[structopt(long = "cargo-no-rust-version", env = "CARGO_NO_RUST_VERSION")]
     pub cargo_no_rust_version: bool,
     /// Panic on the first error. This is useful for debugging.
     #[structopt(long = "abort-on-error")]

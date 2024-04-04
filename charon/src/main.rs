@@ -37,12 +37,12 @@ extern crate rustc_tools_util;
 mod cli_options;
 mod logger;
 
+use clap::StructOpt;
 use cli_options::{CliOpts, CHARON_ARGS};
 use log::trace;
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
-use structopt::StructOpt;
 
 const RUST_VERSION: &str = macros::rust_version!();
 

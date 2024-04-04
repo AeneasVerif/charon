@@ -48,7 +48,12 @@ pub fn combine_meta(m0: &Meta, m1: &Meta) -> Meta {
             file_id: m0.span.file_id,
             beg: Loc::min(&m0.span.beg, &m1.span.beg),
             end: Loc::max(&m0.span.end, &m1.span.end),
-            rust_span: m0.span.rust_span.to(m1.span.rust_span),
+            rust_span_data: m0
+                .span
+                .rust_span_data
+                .span()
+                .to(m1.span.rust_span_data.span())
+                .data(),
         };
 
         // We don't attempt to merge the "generated from" spans: they might
