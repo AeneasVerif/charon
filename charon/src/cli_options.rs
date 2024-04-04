@@ -126,6 +126,14 @@ Report the errors as warnings
     #[serde(default)]
     pub errors_as_warnings: bool,
     #[structopt(
+        long = "no-serialize-llbc",
+        help = "
+Don't serialize the final LLBC to a file.
+"
+    )]
+    #[serde(default)]
+    pub no_serialize_llbc: bool,
+    #[structopt(
         long = "print-ullbc",
         help = "
 Print the ULLBC immediately after extraction from MIR.

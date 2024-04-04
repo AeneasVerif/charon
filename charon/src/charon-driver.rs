@@ -218,9 +218,11 @@ fn main() {
         .run()
         .map_err(|_| ());
     if let Some(crate_data) = &callback.crate_data {
-        // # Final step: generate the files.
-        // `crate_data` is `None` on the first call of the driver.
-        res = res.and_then(|()| crate_data.serialize_to_file(&callback.options.dest_dir));
+        if !callback.options.no_serialize_llbc {
+            // # Final step: generate the files.
+            // `crate_data` is `None` on the first call of the driver.
+            res = res.and_then(|()| crate_data.serialize_to_file(&callback.options.dest_dir));
+        }
     }
 
     match res {
