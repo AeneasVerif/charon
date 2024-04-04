@@ -37,12 +37,12 @@ extern crate rustc_tools_util;
 mod cli_options;
 mod logger;
 
+use clap::StructOpt;
 use cli_options::{CliOpts, CHARON_ARGS};
 use log::trace;
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
-use structopt::StructOpt;
 
 const RUST_VERSION: &str = macros::rust_version!();
 
@@ -98,9 +98,7 @@ fn process(options: &CliOpts) -> Result<(), i32> {
     cmd.env("RUSTC_WORKSPACE_WRAPPER", path());
     cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
 
-    if !options.cargo_no_rust_version
-        && std::env::var("CARGO_NO_RUST_VERSION") != Ok("1".to_string())
-    {
+    if !options.cargo_no_rust_version {
         cmd.arg(rust_version);
     }
 

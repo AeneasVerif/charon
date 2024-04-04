@@ -17,35 +17,36 @@ name = "charon-driver"
 path = "src/charon-driver.rs"
 
 [dependencies]
-pretty = "0.10.0"
+backtrace = "0.3.69"
+bumpalo = "3.11.1" # We constrain the version of [bumpalo] because of a vulnerability
+clap = { version = "3.0", features = ["derive", "env"] }
+colored = "2.0.4"
+derivative = "2.2.0"
+env_logger = "0.8.4"
+hashlink = "0.7.0"
+heck = "0.3.3"
 im = "15.1.0"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
-walkdir = "2.3.2"
-heck = "0.3.3"
+linked_hash_set = "0.1.4"
+log = "0.4.17"
+multimap = "0.8.3"
+petgraph = "0.6.2"
+pretty = "0.10.0"
 regex = "1.7.1"
+rustc_tools_util = "0.2.1"
 serde_json = "1.0.91"
 serde = { version = "1.0.152", features = ["derive"] }
-toml = "0.5.10"
-linked_hash_set = "0.1.4"
-hashlink = "0.7.0"
-log = "0.4.17"
-env_logger = "0.8.4"
-petgraph = "0.6.2"
-multimap = "0.8.3"
 serial_test = "0.5.1"
-structopt = "0.3.26"
-macros = { path = "./macros" }
 take_mut = "0.2.2"
-rustc_tools_util = "0.2.1"
-bumpalo = "3.11.1" # We constrain the version of [bumpalo] because of a vulnerability
+toml = "0.5.10"
+walkdir = "2.3.2"
+
 hax-frontend-exporter = { git = "https://github.com/hacspec/hacspec-v2.git", branch = "charon/globals" }
 hax-frontend-exporter-options = { git = "https://github.com/hacspec/hacspec-v2.git", branch = "charon/globals" }
 #hax-frontend-exporter = { path = "../../hacspec-v2/frontend/exporter" }
 #hax-frontend-exporter-options = { path = "../../hacspec-v2/frontend/exporter/options" }
-colored = "2.0.4"
-derivative = "2.2.0"
-backtrace = "0.3.69"
+macros = { path = "./macros" }
 
 [dev-dependencies]
 assert_cmd = "1.0.8"
