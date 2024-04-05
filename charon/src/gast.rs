@@ -2,7 +2,7 @@
 pub use crate::expressions::*;
 pub use crate::gast_utils::*;
 use crate::generate_index_type;
-use crate::meta::Meta;
+use crate::meta::{ItemMeta, Meta};
 use crate::names::Name;
 pub use crate::types::GlobalDeclId;
 pub use crate::types::TraitClauseId;
@@ -93,12 +93,10 @@ pub struct GFunDecl<T> {
     #[serde(skip)]
     pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
-    pub meta: Meta,
+    pub item_meta: ItemMeta,
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
-    /// Attributes (`#[...]`).
-    pub attributes: Vec<Attribute>,
     pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
@@ -118,12 +116,10 @@ pub struct GGlobalDecl<T> {
     #[serde(skip)]
     pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
-    pub meta: Meta,
+    pub item_meta: ItemMeta,
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
-    /// Attributes (`#[...]`).
-    pub attributes: Vec<Attribute>,
     pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,
@@ -135,8 +131,6 @@ pub struct GGlobalDecl<T> {
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TraitItemName(pub String);
-
-pub type Attribute = String;
 
 /// A trait **declaration**.
 ///
@@ -177,9 +171,7 @@ pub struct TraitDecl {
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
-    pub meta: Meta,
-    /// Attributes (`#[...]`).
-    pub attributes: Vec<Attribute>,
+    pub item_meta: ItemMeta,
     pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,
@@ -238,10 +230,8 @@ pub struct TraitImpl {
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
-    /// Attributes (`#[...]`).
-    pub attributes: Vec<Attribute>,
     pub name: Name,
-    pub meta: Meta,
+    pub item_meta: ItemMeta,
     /// The information about the implemented trait.
     /// Note that this contains the instantiation of the "parent"
     /// clauses.

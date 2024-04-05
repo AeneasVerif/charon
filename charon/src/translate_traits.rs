@@ -423,9 +423,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let trait_decl = ast::TraitDecl {
             def_id,
             is_local: rust_id.is_local(),
-            attributes: bt_ctx.t_ctx.translate_attributes_from_rid(rust_id),
             name,
-            meta: self.translate_meta_from_rid(rust_id),
+            item_meta: self.translate_item_meta_from_rid(rust_id),
             generics,
             preds,
             parent_clauses,
@@ -648,9 +647,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let trait_impl = ast::TraitImpl {
             def_id,
             is_local: rust_id.is_local(),
-            attributes: bt_ctx.t_ctx.translate_attributes_from_rid(rust_id),
             name,
-            meta: bt_ctx.t_ctx.translate_meta_from_rid(rust_id),
+            item_meta: bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id),
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),
             preds: bt_ctx.get_predicates(),

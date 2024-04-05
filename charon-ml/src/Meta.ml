@@ -43,3 +43,9 @@ type meta = {
       (** Where the code actually comes from, in case of macro expansion/inlining/etc. *)
 }
 [@@deriving show, ord]
+
+type item_meta = {
+  meta : meta;  (** Attributes (`#[...]`). **)
+  attributes : string list;
+}
+[@@deriving show, ord]

@@ -4,7 +4,7 @@ use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::llbc_ast;
-use crate::meta;
+use crate::meta::{self, Attribute, ItemMeta};
 use crate::meta::{FileId, FileName, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::{AnyTransId, DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
@@ -418,6 +418,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.translate_meta_from_rspan(rspan)
     }
 
+    /// Compute the meta information for a Rust item identified by its id.
+    pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
+        ItemMeta {
+            meta: self.translate_meta_from_rid(def_id),
+            attributes: self.translate_attributes_from_rid(def_id),
+        }
+    }
+
     pub fn translate_span(&mut self, rspan: hax::Span) -> meta::Span {
         let filename = meta::convert_filename(&rspan.filename);
         let file_id = match &filename {
@@ -773,10 +781,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
         self.t_ctx.span_err(span, msg)
-    }
-
-    pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
-        self.t_ctx.translate_meta_from_rid(def_id)
     }
 
     pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {

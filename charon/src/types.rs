@@ -1,5 +1,5 @@
-pub use crate::gast::{Attribute, FunDeclId, TraitItemName};
-use crate::meta::Meta;
+pub use crate::gast::{FunDeclId, TraitItemName};
+use crate::meta::{ItemMeta, Meta};
 use crate::names::Name;
 pub use crate::types_utils::*;
 use crate::values::Literal;
@@ -340,12 +340,10 @@ impl Eq for TraitClause {}
 pub struct TypeDecl {
     pub def_id: TypeDeclId::Id,
     /// Meta information associated with the type.
-    pub meta: Meta,
+    pub item_meta: ItemMeta,
     /// [true] if the type decl is a local type decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
-    /// Attributes (`#[...]`).
-    pub attributes: Vec<Attribute>,
     pub name: Name,
     pub generics: GenericParams,
     pub preds: Predicates,

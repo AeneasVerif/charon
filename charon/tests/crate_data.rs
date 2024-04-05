@@ -82,14 +82,32 @@ fn attributes() -> Result<(), Box<dyn Error>> {
         "#,
     )?;
     assert_eq!(
-        crate_data.types[0].attributes,
+        crate_data.types[0].item_meta.attributes,
         vec!["clippy::foo", "clippy::foo(arg)", "clippy::foo = \"arg\""]
     );
-    assert_eq!(crate_data.types[1].attributes, vec!["non_exhaustive"]);
-    assert_eq!(crate_data.trait_decls[0].attributes, vec!["clippy::foo"]);
-    assert_eq!(crate_data.trait_impls[0].attributes, vec!["clippy::foo"]);
-    assert_eq!(crate_data.globals[0].attributes, vec!["clippy::foo"]);
-    assert_eq!(crate_data.globals[1].attributes, vec!["clippy::foo"]);
-    assert_eq!(crate_data.functions[0].attributes, vec!["inline(never)"]);
+    assert_eq!(
+        crate_data.types[1].item_meta.attributes,
+        vec!["non_exhaustive"]
+    );
+    assert_eq!(
+        crate_data.trait_decls[0].item_meta.attributes,
+        vec!["clippy::foo"]
+    );
+    assert_eq!(
+        crate_data.trait_impls[0].item_meta.attributes,
+        vec!["clippy::foo"]
+    );
+    assert_eq!(
+        crate_data.globals[0].item_meta.attributes,
+        vec!["clippy::foo"]
+    );
+    assert_eq!(
+        crate_data.globals[1].item_meta.attributes,
+        vec!["clippy::foo"]
+    );
+    assert_eq!(
+        crate_data.functions[0].item_meta.attributes,
+        vec!["inline(never)"]
+    );
     Ok(())
 }

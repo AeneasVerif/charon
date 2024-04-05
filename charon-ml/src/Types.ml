@@ -559,9 +559,8 @@ type type_decl_kind =
 
 type type_decl = {
   def_id : TypeDeclId.id;
-  meta : meta;
+  item_meta : item_meta;
   is_local : bool;
-  attributes : string list;
   name : name;
   generics : generic_params;
   preds : predicates;

@@ -70,6 +70,17 @@ pub struct Meta {
     pub generated_from_span: Option<Span>,
 }
 
+/// Attributes (`#[...]`). For now we store just the string representation.
+pub type Attribute = String;
+
+/// Meta information about an item (function, trait decl, trait impl, type decl, global).
+#[derive(Debug, Clone, Serialize)]
+pub struct ItemMeta {
+    pub meta: Meta,
+    /// Attributes (`#[...]`).
+    pub attributes: Vec<Attribute>,
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize)]
 pub struct FileInfo {}
 

@@ -117,6 +117,16 @@ let meta_of_json (id_to_file : id_to_file_map) (js : json) :
         Ok { span; generated_from_span }
     | _ -> Error "")
 
+let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
+    (item_meta, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("meta", meta); ("attributes", attributes) ] ->
+        let* meta = meta_of_json id_to_file meta in
+        let* attributes = list_of_json string_of_json attributes in
+        Ok { meta; attributes }
+    | _ -> Error "")
+
 let type_var_of_json (js : json) : (type_var, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -605,23 +615,21 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc
         [
           ("def_id", def_id);
-          ("meta", meta);
+          ("item_meta", item_meta);
           ("is_local", is_local);
-          ("attributes", attributes);
           ("name", name);
           ("generics", generics);
           ("preds", preds);
           ("kind", kind);
         ] ->
         let* def_id = TypeDeclId.id_of_json def_id in
-        let* meta = meta_of_json id_to_file meta in
+        let* item_meta = item_meta_of_json id_to_file item_meta in
         let* is_local = bool_of_json is_local in
-        let* attributes = list_of_json string_of_json attributes in
         let* name = name_of_json id_to_file name in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* kind = type_decl_kind_of_json id_to_file kind in
-        Ok { def_id; meta; is_local; attributes; name; generics; preds; kind }
+        Ok { def_id; item_meta; is_local; name; generics; preds; kind }
     | _ -> Error "")
 
 let var_of_json (js : json) : (var, string) result =
@@ -1045,18 +1053,16 @@ let gfun_decl_of_json (body_of_json : json -> ('body, string) result)
     | `Assoc
         [
           ("def_id", def_id);
-          ("meta", meta);
+          ("item_meta", item_meta);
           ("is_local", is_local);
-          ("attributes", attributes);
           ("name", name);
           ("signature", signature);
           ("kind", kind);
           ("body", body);
         ] ->
         let* def_id = FunDeclId.id_of_json def_id in
-        let* meta = meta_of_json id_to_file meta in
+        let* item_meta = item_meta_of_json id_to_file item_meta in
         let* is_local = bool_of_json is_local in
-        let* attributes = list_of_json string_of_json attributes in
         let* name = name_of_json id_to_file name in
         let* signature = fun_sig_of_json id_to_file signature in
         let* kind = item_kind_of_json kind in
@@ -1066,9 +1072,8 @@ let gfun_decl_of_json (body_of_json : json -> ('body, string) result)
         Ok
           {
             def_id;
-            meta;
+            item_meta;
             is_local;
-            attributes;
             name;
             signature;
             kind;
@@ -1085,9 +1090,8 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
     | `Assoc
         [
           ("def_id", def_id);
-          ("meta", meta);
+          ("item_meta", item_meta);
           ("is_local", is_local);
-          ("attributes", attributes);
           ("name", name);
           ("generics", generics);
           ("preds", preds);
@@ -1096,9 +1100,8 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
           ("body", body);
         ] ->
         let* global_id = GlobalDeclId.id_of_json def_id in
-        let* meta = meta_of_json id_to_file meta in
+        let* item_meta = item_meta_of_json id_to_file item_meta in
         let* is_local = bool_of_json is_local in
-        let* attributes = list_of_json string_of_json attributes in
         let* name = name_of_json id_to_file name in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
@@ -1110,9 +1113,8 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
         let global =
           {
             def_id = global_id;
-            meta;
+            item_meta;
             is_local;
-            attributes;
             name;
             body;
             generics;
@@ -1132,8 +1134,7 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         [
           ("def_id", def_id);
           ("is_local", is_local);
-          ("meta", meta);
-          ("attributes", attributes);
+          ("item_meta", item_meta);
           ("name", name);
           ("generics", generics);
           ("preds", preds);
@@ -1145,9 +1146,8 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         ] ->
         let* def_id = TraitDeclId.id_of_json def_id in
         let* is_local = bool_of_json is_local in
-        let* attributes = list_of_json string_of_json attributes in
         let* name = name_of_json id_to_file name in
-        let* meta = meta_of_json id_to_file meta in
+        let* item_meta = item_meta_of_json id_to_file item_meta in
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* parent_clauses =
@@ -1181,9 +1181,8 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         Ok
           {
             def_id;
-            meta;
+            item_meta;
             is_local;
-            attributes;
             name;
             generics;
             preds;
@@ -1203,9 +1202,8 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
         [
           ("def_id", def_id);
           ("is_local", is_local);
-          ("attributes", attributes);
           ("name", name);
-          ("meta", meta);
+          ("item_meta", item_meta);
           ("impl_trait", impl_trait);
           ("generics", generics);
           ("preds", preds);
@@ -1216,9 +1214,8 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("provided_methods", provided_methods);
         ] ->
         let* def_id = TraitImplId.id_of_json def_id in
-        let* meta = meta_of_json id_to_file meta in
+        let* item_meta = item_meta_of_json id_to_file item_meta in
         let* is_local = bool_of_json is_local in
-        let* attributes = list_of_json string_of_json attributes in
         let* name = name_of_json id_to_file name in
         let* impl_trait = trait_decl_ref_of_json impl_trait in
         let* generics = generic_params_of_json id_to_file generics in
@@ -1246,9 +1243,8 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
         Ok
           ({
              def_id;
-             meta;
+             item_meta;
              is_local;
-             attributes;
              name;
              impl_trait;
              generics;

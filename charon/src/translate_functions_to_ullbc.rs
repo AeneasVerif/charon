@@ -1774,10 +1774,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let def_span = self.tcx.def_span(rust_id);
 
         // Compute the meta information
-        let meta = self.translate_meta_from_rid(rust_id);
-
-        // Translate the function attributes.
-        let attributes = self.translate_attributes_from_rid(rust_id);
+        let item_meta = self.translate_item_meta_from_rid(rust_id);
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -1819,8 +1816,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             FunDecl {
                 def_id,
                 rust_id,
-                meta,
-                attributes,
+                item_meta,
                 is_local: rust_id.is_local(),
                 name,
                 signature,
@@ -1858,10 +1854,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let def_id = self.translate_global_decl_id(&None, rust_id);
 
         // Compute the meta information
-        let meta = self.translate_meta_from_rid(rust_id);
-
-        // Translate the attributes.
-        let attributes = self.translate_attributes_from_rid(rust_id);
+        let item_meta = self.translate_item_meta_from_rid(rust_id);
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -1908,8 +1901,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             GlobalDecl {
                 def_id,
                 rust_id,
-                meta,
-                attributes,
+                item_meta,
                 is_local: rust_id.is_local(),
                 name,
                 generics,
