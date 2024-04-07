@@ -80,9 +80,3 @@ pub fn use_counter<'a, T: Counter>(cnt: &'a mut T) -> usize {
     let _ = cnt.incr();
     cnt.incr()
 }
-
-use std::ops::Index;
-
-pub fn use_vec_index(i: usize, v: &Vec<u32>) -> u32 {
-    *(v.index(i))
-}
