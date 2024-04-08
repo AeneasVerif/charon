@@ -5,7 +5,7 @@ use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::llbc_ast;
 use crate::meta::{self, Attribute, ItemMeta};
-use crate::meta::{FileId, FileName, LocalFileId, Meta, VirtualFileId};
+use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::{AnyTransId, DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
 use crate::translate_predicates::NonLocalTraitClause;
@@ -423,6 +423,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         ItemMeta {
             meta: self.translate_meta_from_rid(def_id),
             attributes: self.translate_attributes_from_rid(def_id),
+            inline: self.translate_inline_from_rid(def_id),
         }
     }
 
@@ -520,6 +521,19 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             .iter()
             .filter_map(|attr| self.translate_attribute(attr))
             .collect()
+    }
+
+    pub(crate) fn translate_inline_from_rid(&self, id: DefId) -> Option<InlineAttr> {
+        use rustc_attr as rustc;
+        if !self.tcx.def_kind(id).has_codegen_attrs() {
+            return None;
+        }
+        match self.tcx.codegen_fn_attrs(id).inline {
+            rustc::InlineAttr::None => None,
+            rustc::InlineAttr::Hint => Some(InlineAttr::Hint),
+            rustc::InlineAttr::Never => Some(InlineAttr::Never),
+            rustc::InlineAttr::Always => Some(InlineAttr::Always),
+        }
     }
 
     /// Whether this item is in an `extern { .. }` block, in which case it has no body.

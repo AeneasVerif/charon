@@ -44,8 +44,15 @@ type meta = {
 }
 [@@deriving show, ord]
 
+type inline_attr =
+  | Hint  (** `#[inline]` **)
+  | Never  (** `#[inline(never)]` **)
+  | Always  (** `#[inline(always)]` **)
+[@@deriving show, ord]
+
 type item_meta = {
-  meta : meta;  (** Attributes (`#[...]`). **)
-  attributes : string list;
+  meta : meta;
+  attributes : string list;  (** Attributes (`#[...]`). **)
+  inline : inline_attr option;
 }
 [@@deriving show, ord]

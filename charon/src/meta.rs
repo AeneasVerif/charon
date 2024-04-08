@@ -73,12 +73,25 @@ pub struct Meta {
 /// Attributes (`#[...]`). For now we store just the string representation.
 pub type Attribute = String;
 
+/// `#[inline]` built-in attribute.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]
+pub enum InlineAttr {
+    /// `#[inline]`
+    Hint,
+    /// `#[inline(never)]`
+    Never,
+    /// `#[inline(always)]`
+    Always,
+}
+
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
 #[derive(Debug, Clone, Serialize)]
 pub struct ItemMeta {
     pub meta: Meta,
     /// Attributes (`#[...]`).
     pub attributes: Vec<Attribute>,
+    /// Inline hints (on functions only).
+    pub inline: Option<InlineAttr>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize)]

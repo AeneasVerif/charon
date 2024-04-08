@@ -2,7 +2,7 @@
 
 use std::{error::Error, fs::File};
 
-use charon_lib::{export::GCrateData, llbc_ast};
+use charon_lib::{export::GCrateData, llbc_ast, meta::InlineAttr};
 
 fn translate(
     code: impl std::fmt::Display,
@@ -108,6 +108,10 @@ fn attributes() -> Result<(), Box<dyn Error>> {
     assert_eq!(
         crate_data.functions[0].item_meta.attributes,
         vec!["inline(never)"]
+    );
+    assert_eq!(
+        crate_data.functions[0].item_meta.inline,
+        Some(InlineAttr::Never)
     );
     Ok(())
 }
