@@ -92,6 +92,9 @@ pub struct ItemMeta {
     pub attributes: Vec<Attribute>,
     /// Inline hints (on functions only).
     pub inline: Option<InlineAttr>,
+    /// Whether this item is public. Note that this considers pub-in-priv items to be public.
+    /// Computing actual reachability is harder.
+    pub public: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize)]

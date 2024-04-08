@@ -1,8 +1,14 @@
 #![feature(rustc_private)]
 
+use itertools::Itertools;
 use std::{error::Error, fs::File};
 
-use charon_lib::{export::GCrateData, llbc_ast, meta::InlineAttr};
+use charon_lib::{
+    export::GCrateData,
+    llbc_ast,
+    meta::InlineAttr,
+    names::{Name, PathElem},
+};
 
 fn translate(
     code: impl std::fmt::Display,
@@ -37,6 +43,17 @@ fn translate(
     Ok(crate_data)
 }
 
+/// `Name` is a complex datastructure; to inspect it we serialize it.
+fn repr_name(n: &Name) -> String {
+    n.name
+        .iter()
+        .map(|path_elem| match path_elem {
+            PathElem::Ident(i, _) => i,
+            PathElem::Impl(_) => "<impl>",
+        })
+        .join("::")
+}
+
 #[test]
 fn type_decl() -> Result<(), Box<dyn Error>> {
     let crate_data = translate(
@@ -45,10 +62,7 @@ fn type_decl() -> Result<(), Box<dyn Error>> {
         fn main() {}
         ",
     )?;
-    assert_eq!(
-        serde_json::to_string(&crate_data.types[0].name.name).unwrap(),
-        r#"[{"Ident":["test_crate",0]},{"Ident":["Struct",0]}]"#,
-    );
+    assert_eq!(repr_name(&crate_data.types[0].name), "test_crate::Struct");
     Ok(())
 }
 
@@ -113,5 +127,31 @@ fn attributes() -> Result<(), Box<dyn Error>> {
         crate_data.functions[0].item_meta.inline,
         Some(InlineAttr::Never)
     );
+    Ok(())
+}
+
+#[test]
+fn visibility() -> Result<(), Box<dyn Error>> {
+    let crate_data = translate(
+        r#"
+        pub struct Pub;
+        struct Priv;
+
+        mod private {
+            pub struct PubInPriv;
+        }
+        "#,
+    )?;
+    assert_eq!(repr_name(&crate_data.types[0].name), "test_crate::Pub");
+    assert!(crate_data.types[0].item_meta.public);
+    assert_eq!(repr_name(&crate_data.types[1].name), "test_crate::Priv");
+    assert!(!crate_data.types[1].item_meta.public);
+    // Note how we think `PubInPriv` is public. It kind of is but there is no path to it. This is
+    // probably fine.
+    assert_eq!(
+        repr_name(&crate_data.types[2].name),
+        "test_crate::private::PubInPriv"
+    );
+    assert!(crate_data.types[2].item_meta.public);
     Ok(())
 }

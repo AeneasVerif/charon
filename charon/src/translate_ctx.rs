@@ -424,6 +424,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             meta: self.translate_meta_from_rid(def_id),
             attributes: self.translate_attributes_from_rid(def_id),
             inline: self.translate_inline_from_rid(def_id),
+            public: self.translate_visibility_from_rid(def_id),
         }
     }
 
@@ -533,6 +534,45 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             rustc::InlineAttr::Hint => Some(InlineAttr::Hint),
             rustc::InlineAttr::Never => Some(InlineAttr::Never),
             rustc::InlineAttr::Always => Some(InlineAttr::Always),
+        }
+    }
+
+    pub(crate) fn translate_visibility_from_rid(&self, id: DefId) -> bool {
+        use rustc_hir::def::DefKind::*;
+        match self.tcx.def_kind(id) {
+            AssocConst
+            | AssocFn
+            | Const
+            | Enum
+            | Field
+            | Fn
+            | ForeignTy
+            | Macro { .. }
+            | Mod
+            | Static { .. }
+            | Struct
+            | Trait
+            | TraitAlias
+            | TyAlias
+            | Union
+            | Use => self.tcx.visibility(id).is_public(),
+            // These defs don't have visibility modifiers, which would cause `visibility` to panic.
+            AnonConst
+            | AssocTy
+            | Closure
+            | ConstParam
+            | Ctor { .. }
+            | ExternCrate
+            | ForeignMod
+            | Generator
+            | GlobalAsm
+            | Impl { .. }
+            | ImplTraitPlaceholder
+            | InlineConst
+            | LifetimeParam
+            | OpaqueTy
+            | TyParam
+            | Variant => false,
         }
     }
 

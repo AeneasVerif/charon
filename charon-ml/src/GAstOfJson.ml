@@ -129,12 +129,18 @@ let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
     (item_meta, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("meta", meta); ("attributes", attributes); ("inline", inline) ]
-      ->
+    | `Assoc
+        [
+          ("meta", meta);
+          ("attributes", attributes);
+          ("inline", inline);
+          ("public", public);
+        ] ->
         let* meta = meta_of_json id_to_file meta in
         let* attributes = list_of_json string_of_json attributes in
         let* inline = option_of_json inline_attr_of_json inline in
-        Ok { meta; attributes; inline }
+        let* public = bool_of_json public in
+        Ok { meta; attributes; inline; public }
     | _ -> Error "")
 
 let type_var_of_json (js : json) : (type_var, string) result =
