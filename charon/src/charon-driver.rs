@@ -86,7 +86,9 @@ mod update_closure_signatures;
 mod values;
 mod values_utils;
 
-use crate::driver::{arg_value, get_args_crate_index, get_args_source_index, CharonCallbacks};
+use crate::driver::{
+    arg_value, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
+};
 
 fn main() {
     // Initialize the logger
@@ -211,7 +213,11 @@ fn main() {
         if !callback.options.no_serialize_llbc {
             // # Final step: generate the files.
             // `crate_data` is `None` on the first call of the driver.
-            res = res.and_then(|()| crate_data.serialize_to_file(&callback.options.dest_dir));
+            res = res.and_then(|()| {
+                crate_data
+                    .serialize_to_file(&callback.options.dest_dir)
+                    .map_err(|()| CharonFailure::Serialize)
+            });
         }
     }
 
@@ -222,6 +228,10 @@ fn main() {
                 let msg = format!("The extraction generated {} warnings", callback.error_count);
                 log::warn!("{}", msg);
             }
+        }
+        Err(CharonFailure::Panic) => {
+            // Standard rust panic error code.
+            std::process::exit(101);
         }
         Err(_) => {
             assert!(!errors_as_warnings);

@@ -22,8 +22,10 @@ use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::collections::HashSet;
+use std::fmt;
 use std::iter::FromIterator;
 use std::ops::Deref;
+use std::panic::{self, AssertUnwindSafe};
 
 /// The callbacks for Charon
 pub struct CharonCallbacks {
@@ -31,6 +33,25 @@ pub struct CharonCallbacks {
     /// This is to be filled during the extraction
     pub crate_data: Option<export::CrateData>,
     pub error_count: usize,
+}
+
+pub enum CharonFailure {
+    RustcError(usize),
+    Panic,
+    Serialize,
+}
+
+impl fmt::Display for CharonFailure {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            CharonFailure::RustcError(error_count) => {
+                write!(f, "Compilation encountered {} errors", error_count)?
+            }
+            CharonFailure::Panic => write!(f, "Compilation panicked")?,
+            CharonFailure::Serialize => write!(f, "Could not serialize output file")?,
+        }
+        Ok(())
+    }
 }
 
 impl CharonCallbacks {
@@ -44,14 +65,17 @@ impl CharonCallbacks {
 
     /// Run rustc with our custom callbacks. `args` is the arguments passed to `rustc`'s
     /// command-line.
-    #[allow(clippy::result_unit_err)]
-    pub fn run_compiler(&mut self, mut args: Vec<String>) -> Result<(), ()> {
+    pub fn run_compiler(&mut self, mut args: Vec<String>) -> Result<(), CharonFailure> {
         // Arguments list always start with the executable name. We put a silly value to ensure
         // it's not used for anything.
         args.insert(0, "__CHARON_MYSTERIOUS_FIRST_ARG__".to_string());
-        rustc_driver::RunCompiler::new(&args, self)
-            .run()
-            .map_err(|_| ())
+        let mut this = AssertUnwindSafe(self);
+        panic::catch_unwind(move || {
+            let res = rustc_driver::RunCompiler::new(&args, *this).run();
+            res.map_err(|_| CharonFailure::RustcError(this.error_count))
+        })
+        .map_err(|_| CharonFailure::Panic)??;
+        Ok(())
     }
 }
 
