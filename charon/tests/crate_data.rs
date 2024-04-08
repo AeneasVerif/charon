@@ -4,24 +4,14 @@ use std::{error::Error, fs::File};
 
 use charon_lib::{export::GCrateData, llbc_ast};
 
-extern crate log;
-extern crate rustc_driver;
-
 fn translate(
     code: impl std::fmt::Display,
 ) -> Result<GCrateData<llbc_ast::FunDecl, llbc_ast::GlobalDecl>, Box<dyn Error>> {
     use charon_lib::driver::CharonCallbacks;
-    use charon_lib::*;
-    use rustc_driver::RunCompiler;
+    use charon_lib::{export, logger};
 
     // Initialize the logger
     logger::initialize_logger();
-
-    let mut compiler_args: Vec<String> = Vec::new();
-
-    // Arguments list always start with the executable name. We put a silly value to ensure it's
-    // not used for anything.
-    compiler_args.push("__MYSTERIOUS_FIRST_ARG__".to_string());
 
     // Write the code to a temporary file.
     use std::io::Write;
@@ -32,11 +22,11 @@ fn translate(
         write!(tmp_file, "{}", code)?;
         drop(tmp_file);
     }
-    compiler_args.push(file_path.to_string_lossy().into_owned());
 
     // Call the Rust compiler with our custom callback.
     let mut callback = CharonCallbacks::new(Default::default());
-    let res = RunCompiler::new(&compiler_args, &mut callback).run();
+    let args = vec![file_path.to_string_lossy().into_owned()];
+    let res = callback.run_compiler(args);
     // Extract the computed crate data.
     assert_eq!(callback.error_count, 0);
     assert!(res.is_ok());

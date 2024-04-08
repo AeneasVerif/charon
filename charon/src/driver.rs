@@ -41,6 +41,18 @@ impl CharonCallbacks {
             error_count: 0,
         }
     }
+
+    /// Run rustc with our custom callbacks. `args` is the arguments passed to `rustc`'s
+    /// command-line.
+    #[allow(clippy::result_unit_err)]
+    pub fn run_compiler(&mut self, mut args: Vec<String>) -> Result<(), ()> {
+        // Arguments list always start with the executable name. We put a silly value to ensure
+        // it's not used for anything.
+        args.insert(0, "__CHARON_MYSTERIOUS_FIRST_ARG__".to_string());
+        rustc_driver::RunCompiler::new(&args, self)
+            .run()
+            .map_err(|_| ())
+    }
 }
 
 impl Callbacks for CharonCallbacks {
