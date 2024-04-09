@@ -1,7 +1,7 @@
 [ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
 
 enum issue_92_nonpositive_variant_indices::Ordering =
-|  Lesser()
+|  Less()
 |  Equal()
 |  Greater()
 
@@ -12,17 +12,25 @@ fn issue_92_nonpositive_variant_indices::main()
     let @1: issue_92_nonpositive_variant_indices::Ordering; // anonymous local
     let @2: (); // anonymous local
     let @3: (); // anonymous local
+    let @4: (); // anonymous local
 
-    @1 := issue_92_nonpositive_variant_indices::Ordering::Lesser {  }
+    @1 := issue_92_nonpositive_variant_indices::Ordering::Less {  }
     @fake_read(@1)
     match @1 {
         18446744073709551615 => {
             @3 := ()
             @0 := move (@3)
         },
-        _ => {
+        0 => {
+            @4 := ()
+            @0 := move (@4)
+        },
+        1 => {
             @2 := ()
             @0 := move (@2)
+        },
+        _ => {
+            panic
         }
     }
     drop @1

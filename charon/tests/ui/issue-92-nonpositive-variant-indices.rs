@@ -1,13 +1,14 @@
 //@ output=pretty-llbc
 enum Ordering {
-    Lesser = -1,
+    Less = -1,
     Equal = 0,
     Greater = 1,
 }
 
 fn main() {
-    match Ordering::Lesser {
-        Ordering::Lesser => {}
-        _ => {}
+    match Ordering::Less {
+        Ordering::Less => {}
+        Ordering::Equal => {}
+        Ordering::Greater => {}
     }
 }
