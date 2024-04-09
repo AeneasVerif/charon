@@ -37,7 +37,7 @@ extern crate rustc_tools_util;
 mod cli_options;
 mod logger;
 
-use clap::StructOpt;
+use clap::Parser;
 use cli_options::{CliOpts, CHARON_ARGS};
 use log::trace;
 use std::env;
@@ -51,7 +51,7 @@ pub fn main() {
     logger::initialize_logger();
 
     // Parse the command-line
-    let options = CliOpts::from_args();
+    let options = CliOpts::parse();
     trace!("Arguments: {:?}", std::env::args());
 
     // Check that the options are meaningful

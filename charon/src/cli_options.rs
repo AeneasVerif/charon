@@ -1,4 +1,4 @@
-use clap::StructOpt;
+use clap::Parser;
 /// The options received as input by cargo-charon
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -11,51 +11,51 @@ use std::path::PathBuf;
 // Note that because we need to transmit the options to the charon driver,
 // we store them in a file before calling this driver (hence the `Serialize`,
 // `Deserialize` options).
-#[derive(StructOpt, Default, Serialize, Deserialize)]
-#[structopt(name = "Charon")]
+#[derive(Parser, Default, Serialize, Deserialize)]
+#[clap(name = "Charon")]
 pub struct CliOpts {
     /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)
-    #[structopt(long = "ullbc")]
+    #[clap(long = "ullbc")]
     #[serde(default)]
     pub ullbc: bool,
     /// Compile the package's library
-    #[structopt(long = "lib")]
+    #[clap(long = "lib")]
     #[serde(default)]
     pub lib: bool,
     /// Compile the specified binary
-    #[structopt(long = "bin")]
+    #[clap(long = "bin")]
     #[serde(default)]
     pub bin: Option<String>,
     /// Extract the promoted MIR instead of the built MIR
-    #[structopt(long = "mir_promoted")]
+    #[clap(long = "mir_promoted")]
     #[serde(default)]
     pub mir_promoted: bool,
     /// Extract the optimized MIR instead of the built MIR
-    #[structopt(long = "mir_optimized")]
+    #[clap(long = "mir_optimized")]
     #[serde(default)]
     pub mir_optimized: bool,
     /// Provide a custom name for the compiled crate (ignore the name computed
     /// by Cargo)
-    #[structopt(long = "crate")]
+    #[clap(long = "crate")]
     #[serde(default)]
     pub crate_name: Option<String>,
     /// The input file (the entry point of the crate to extract).
     /// This is needed if you want to define a custom entry point (to only
     /// extract part of a crate for instance).
-    #[structopt(long = "input", parse(from_os_str))]
+    #[clap(long = "input", parse(from_os_str))]
     #[serde(default)]
     pub input_file: Option<PathBuf>,
     /// The destination directory, if we don't want to generate the output
     /// .llbc files in the same directory as the input .rs files.
-    #[structopt(long = "dest", parse(from_os_str))]
+    #[clap(long = "dest", parse(from_os_str))]
     #[serde(default)]
     pub dest_dir: Option<PathBuf>,
     /// If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
     /// Otherwise, use the standard borrow checker.
-    #[structopt(long = "polonius")]
+    #[clap(long = "polonius")]
     #[serde(default)]
     pub use_polonius: bool,
-    #[structopt(
+    #[clap(
         long = "no-code-duplication",
         help = "Check that no code duplication happens during control-flow reconstruction
 of the MIR code.
@@ -102,22 +102,22 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     /// A list of modules of the extracted crate that we consider as opaque: we
     /// extract only the signature information, without the definition content
     /// (of the functions, types, etc.).
-    #[structopt(long = "opaque")]
+    #[clap(long = "opaque")]
     #[serde(default)]
     pub opaque_modules: Vec<String>,
     /// Do not provide a Rust version argument to Cargo (e.g., `+nightly-2022-01-29`).
     /// This is for Nix: outside of Nix, we use Rustup to call the proper version
     /// of Cargo (and thus need this argument), but within Nix we build and call a very
     /// specific version of Cargo.
-    #[structopt(long = "cargo-no-rust-version", env = "CARGO_NO_RUST_VERSION")]
+    #[clap(long = "cargo-no-rust-version", env = "CARGO_NO_RUST_VERSION")]
     #[serde(default)]
     pub cargo_no_rust_version: bool,
     /// Panic on the first error. This is useful for debugging.
-    #[structopt(long = "abort-on-error")]
+    #[clap(long = "abort-on-error")]
     #[serde(default)]
     pub abort_on_error: bool,
     /// Print the errors as warnings
-    #[structopt(
+    #[clap(
         long = "errors-as-warnings",
         help = "
 Report the errors as warnings
@@ -125,7 +125,7 @@ Report the errors as warnings
     )]
     #[serde(default)]
     pub errors_as_warnings: bool,
-    #[structopt(
+    #[clap(
         long = "no-serialize",
         help = "
 Don't serialize the final (U)LLBC to a file.
@@ -133,7 +133,7 @@ Don't serialize the final (U)LLBC to a file.
     )]
     #[serde(default)]
     pub no_serialize: bool,
-    #[structopt(
+    #[clap(
         long = "print-ullbc",
         help = "
 Print the ULLBC immediately after extraction from MIR.
@@ -141,7 +141,7 @@ Print the ULLBC immediately after extraction from MIR.
     )]
     #[serde(default)]
     pub print_ullbc: bool,
-    #[structopt(
+    #[clap(
         long = "print-built-llbc",
         help = "
 Print the LLBC just after we built it (i.e., immediately after loop reconstruction).
@@ -149,7 +149,7 @@ Print the LLBC just after we built it (i.e., immediately after loop reconstructi
     )]
     #[serde(default)]
     pub print_built_llbc: bool,
-    #[structopt(
+    #[clap(
         long = "print-llbc",
         help = "
 Print the final LLBC (after all the cleaning micro-passes).
