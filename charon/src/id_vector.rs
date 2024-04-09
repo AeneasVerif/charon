@@ -9,29 +9,30 @@
 //!
 //! TODO: Rustc already provides an `index_vector`. Use it?
 
+use index_vec::Idx;
 use serde::{Serialize, Serializer};
 use std::iter::{FromIterator, IntoIterator};
 
 pub use std::collections::hash_map::Iter as IterAll;
 pub use std::collections::hash_map::IterMut as IterAllMut;
 
-pub trait ToUsize {
-    fn to_usize(&self) -> usize;
-}
-
 pub trait Increment {
     fn incr(&mut self);
 }
 
-pub trait Zero {
-    fn zero() -> Self;
+impl<T: Idx> Increment for T {
+    fn incr(&mut self) {
+        // Overflows are extremely unlikely, but we do want to make sure we panick whenever there
+        // is one.
+        *self = Self::from_usize(self.index().checked_add(1).unwrap());
+    }
 }
 
 /// Indexed vector
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Vector<I, T>
 where
-    I: ToUsize,
+    I: Idx,
     T: Clone,
 {
     pub vector: im::Vector<T>,
@@ -43,7 +44,7 @@ where
 #[derive(Debug)]
 pub struct IndexValueImmutIterator<'a, I, T>
 where
-    I: ToUsize + Increment,
+    I: Idx,
     T: Clone,
 {
     vector: &'a Vector<I, T>,
@@ -52,13 +53,13 @@ where
 
 impl<'a, I, T> Iterator for IndexValueImmutIterator<'a, I, T>
 where
-    I: ToUsize + Increment + Copy,
+    I: Idx,
     T: Clone,
 {
     type Item = (I, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index.to_usize() < self.vector.len() {
+        if self.index.index() < self.vector.len() {
             let index = self.index;
             let obj = self.vector.get(self.index).unwrap();
             self.index.incr();
@@ -71,13 +72,13 @@ where
 
 impl<I, T> Vector<I, T>
 where
-    I: ToUsize + Increment + Copy + Zero,
+    I: Idx,
     T: Clone,
 {
     pub fn iter_indexed_values(&self) -> IndexValueImmutIterator<'_, I, T> {
         IndexValueImmutIterator {
             vector: self,
-            index: I::zero(),
+            index: I::from_usize(0),
         }
     }
 }
@@ -86,7 +87,7 @@ where
 #[derive(Debug)]
 pub struct IndexIterator<I>
 where
-    I: ToUsize + Increment + Copy,
+    I: Idx,
 {
     len: usize,
     index: I,
@@ -94,12 +95,12 @@ where
 
 impl<I> Iterator for IndexIterator<I>
 where
-    I: ToUsize + Increment + Copy,
+    I: Idx,
 {
     type Item = I;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index.to_usize() < self.len {
+        if self.index.index() < self.len {
             let index = self.index;
             self.index.incr();
             Some(index)
@@ -111,20 +112,20 @@ where
 
 impl<I, T> Vector<I, T>
 where
-    I: ToUsize + Increment + Copy + Zero,
+    I: Idx,
     T: Clone,
 {
     pub fn iter_indices(&self) -> IndexIterator<I> {
         IndexIterator {
             len: self.vector.len(),
-            index: I::zero(),
+            index: I::from_usize(0),
         }
     }
 }
 
 impl<I, T> Vector<I, T>
 where
-    I: ToUsize,
+    I: Idx,
     T: Clone,
 {
     pub fn new() -> Self {
@@ -135,19 +136,19 @@ where
     }
 
     pub fn get(&self, i: I) -> Option<&T> {
-        self.vector.get(i.to_usize())
+        self.vector.get(i.index())
     }
 
     pub fn get_mut(&mut self, i: I) -> Option<&mut T> {
-        self.vector.get_mut(i.to_usize())
+        self.vector.get_mut(i.index())
     }
 
     pub fn set(&mut self, i: I, x: T) {
-        self.vector.set(i.to_usize(), x);
+        self.vector.set(i.index(), x);
     }
 
     pub fn insert(&mut self, i: I, x: T) {
-        self.vector.insert(i.to_usize(), x);
+        self.vector.insert(i.index(), x);
     }
 
     pub fn is_empty(&self) -> bool {
@@ -183,7 +184,7 @@ where
     }
 }
 
-impl<I: ToUsize, T: Clone> Default for Vector<I, T> {
+impl<I: Idx, T: Clone> Default for Vector<I, T> {
     fn default() -> Self {
         Self::new()
     }
@@ -191,7 +192,7 @@ impl<I: ToUsize, T: Clone> Default for Vector<I, T> {
 
 impl<'a, I, T> IntoIterator for &'a Vector<I, T>
 where
-    I: ToUsize,
+    I: Idx,
     T: Clone,
 {
     type Item = &'a T;
@@ -204,7 +205,7 @@ where
 
 impl<I, T> IntoIterator for Vector<I, T>
 where
-    I: ToUsize,
+    I: Idx,
     T: Clone,
 {
     type Item = T;
@@ -217,7 +218,7 @@ where
 
 impl<I, T> FromIterator<T> for Vector<I, T>
 where
-    I: ToUsize,
+    I: Idx,
     T: Clone,
 {
     #[inline]
@@ -231,7 +232,7 @@ where
 
 impl<I, T> From<Vec<T>> for Vector<I, T>
 where
-    I: ToUsize,
+    I: Idx,
     T: Clone,
 {
     fn from(v: Vec<T>) -> Self {
@@ -244,7 +245,7 @@ where
 
 impl<I, T> From<im::Vector<T>> for Vector<I, T>
 where
-    I: ToUsize,
+    I: Idx,
     T: Clone,
 {
     fn from(v: im::Vector<T>) -> Self {
@@ -255,7 +256,7 @@ where
     }
 }
 
-impl<I: ToUsize, T: Clone + Serialize> Serialize for Vector<I, T> {
+impl<I: Idx, T: Clone + Serialize> Serialize for Vector<I, T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,

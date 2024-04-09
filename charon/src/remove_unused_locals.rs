@@ -4,7 +4,6 @@
 //! remaining afterwards.
 use crate::expressions::{MutExprVisitor, SharedExprVisitor};
 use crate::formatter::{Formatter, IntoFormatter};
-use crate::id_vector::ToUsize;
 use crate::llbc_ast::{FunDecls, GlobalDecls, MutAstVisitor, SharedAstVisitor, Statement};
 use crate::translate_ctx::TransCtx;
 use crate::types::{MutTypeVisitor, SharedTypeVisitor};
@@ -112,7 +111,7 @@ fn update_locals(
             let new_id = var_id_counter.fresh_id();
             var.index = new_id;
             vids_map.insert(old_id, new_id);
-            assert!(new_id.to_usize() == locals.len());
+            assert!(new_id.index() == locals.len());
             locals.push_back(var);
         }
     }

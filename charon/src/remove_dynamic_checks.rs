@@ -258,8 +258,7 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                                     ProjectionElem::Field(FieldProjKind::Tuple(..), fid1),
                                 ) = (&move_p.projection[0], &move_p1.projection[0])
                                 {
-                                    use crate::id_vector::ToUsize;
-                                    if fid0.to_usize() == 1 && fid1.to_usize() == 0 {
+                                    if fid0.index() == 1 && fid1.index() == 0 {
                                         // Collapse into one assignment
                                         take(s, |s| {
                                             let (s0, s1) = s.content.to_sequence();

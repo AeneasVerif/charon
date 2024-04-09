@@ -258,8 +258,7 @@ impl<T> GExprBody<T> {
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
         for v in &self.locals {
-            use crate::id_vector::ToUsize;
-            let index = v.index.to_usize();
+            let index = v.index.index();
             let comment = if index == 0 {
                 "// return".to_string()
             } else if index <= self.arg_count {

@@ -26,6 +26,7 @@ env_logger = "0.8.4"
 hashlink = "0.7.0"
 heck = "0.3.3"
 im = "15.1.0"
+index_vec = { version = "0.1.3", features = ["serde"] }
 itertools = "0.10.5"
 lazy_static = "1.4.0"
 linked_hash_set = "0.1.4"

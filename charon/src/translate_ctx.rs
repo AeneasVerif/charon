@@ -824,12 +824,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         r: hax::Region,
         name: Option<String>,
     ) -> RegionId::Id {
-        use crate::id_vector::ToUsize;
         // Check that there are no late-bound regions
         assert!(self.bound_region_vars.is_empty());
         let rid = self.bound_region_var_id_generator.fresh_id();
         self.free_region_vars.insert(r, rid);
-        assert!(rid.to_usize() == self.region_vars[0].len());
+        assert!(rid.index() == self.region_vars[0].len());
         let var = RegionVar { index: rid, name };
         self.region_vars[0].insert(rid, var);
         rid
@@ -837,7 +836,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Set the first bound regions group
     pub(crate) fn set_first_bound_regions_group(&mut self, names: Vec<Option<String>>) {
-        use crate::id_vector::ToUsize;
         assert!(self.bound_region_vars.is_empty());
 
         // Register the variables
@@ -845,7 +843,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .into_iter()
             .map(|name| {
                 let rid = self.bound_region_var_id_generator.fresh_id();
-                assert!(rid.to_usize() == self.region_vars[0].len());
+                assert!(rid.index() == self.region_vars[0].len());
                 let var = RegionVar { index: rid, name };
                 self.region_vars[0].insert(rid, var);
                 rid
@@ -869,7 +867,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     where
         F: FnOnce(&mut Self) -> T,
     {
-        use crate::id_vector::ToUsize;
         assert!(!self.region_vars.is_empty());
         self.region_vars.push_front(RegionId::Vector::new());
         // Reinitialize the counter
@@ -883,7 +880,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .into_iter()
             .map(|name| {
                 let rid = self.bound_region_var_id_generator.fresh_id();
-                assert!(rid.to_usize() == self.region_vars[0].len());
+                assert!(rid.index() == self.region_vars[0].len());
                 let var = RegionVar { index: rid, name };
                 self.region_vars[0].insert(rid, var);
                 rid
@@ -906,9 +903,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId::Id {
-        use crate::id_vector::ToUsize;
         let var_id = self.type_vars_map.insert(rindex);
-        assert!(var_id.to_usize() == self.type_vars.len());
+        assert!(var_id.index() == self.type_vars.len());
         let var = TypeVar {
             index: var_id,
             name,
@@ -918,9 +914,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
-        use crate::id_vector::ToUsize;
         let var_id = self.vars_map.insert(rid);
-        assert!(var_id.to_usize() == self.vars.len());
+        assert!(var_id.index() == self.vars.len());
         let var = ast::Var {
             index: var_id,
             name,
@@ -930,9 +925,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
-        use crate::id_vector::ToUsize;
         let var_id = self.const_generic_vars_map.insert(rid);
-        assert!(var_id.to_usize() == self.const_generic_vars.len());
+        assert!(var_id.index() == self.const_generic_vars.len());
         let var = ConstGenericVar {
             index: var_id,
             name,
@@ -972,11 +966,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .collect();
         // Sanity check
         if !crate::assumed::IGNORE_BUILTIN_MARKER_TRAITS {
-            use crate::id_vector::ToUsize;
             assert!(clauses
                 .iter()
                 .enumerate()
-                .all(|(i, c)| c.clause_id.to_usize() == i));
+                .all(|(i, c)| c.clause_id.index() == i));
         }
         // Return
         clauses

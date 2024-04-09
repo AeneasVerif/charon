@@ -148,11 +148,10 @@ where
     let block_tab = format!("{tab}{TAB_INCR}");
     let mut blocks: Vec<String> = Vec::new();
     for (bid, block) in body.iter_indexed_values() {
-        use crate::id_vector::ToUsize;
         blocks.push(
             format!(
                 "{tab}bb{}: {{\n{}\n{tab}}}\n",
-                bid.to_usize(),
+                bid.index(),
                 block.fmt_with_ctx(&block_tab, ctx),
             )
             .to_string(),

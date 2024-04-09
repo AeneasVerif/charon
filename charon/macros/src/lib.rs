@@ -30,12 +30,10 @@ macro_rules! index_generic_code {
     () => {
         "
 pub mod {} {{
-    #[derive(std::fmt::Debug, std::clone::Clone, std::marker::Copy,
-             std::hash::Hash, std::cmp::PartialEq, std::cmp::Eq,
-             std::cmp::PartialOrd, std::cmp::Ord)]
-    pub struct Id {{
+    index_vec::define_index_type! {{
+        pub struct Id = usize;
         // Must fit in an u32 for serialization.
-        index: usize,
+        MAX_INDEX = std::u32::MAX as usize;
     }}
 
     #[derive(std::fmt::Debug, std::clone::Clone, std::marker::Copy)]
@@ -47,63 +45,27 @@ pub mod {} {{
     pub type Map<T> = crate::id_map::Map<Id,T>;
 
     impl Id {{
-        pub fn new(init: usize) -> Id {{
-            // We need to fit in an u32 for serialization.
-            assert!(init <= std::u32::MAX as usize);
-            Id {{ index: init }}
-        }}
-        
         pub fn is_zero(&self) -> bool {{
-            self.index == 0
+            self.index() == 0
         }}
 
         pub fn incr(&mut self) {{
             // Overflows are extremely unlikely, but we do want to make sure
             // we panick whenever there is one.
-            self.index = self.index.checked_add(1).unwrap();
-            assert!(self.index <= std::u32::MAX as usize);
+            *self = Self::new(self.index().checked_add(1).unwrap());
         }}
     }}
 
-    pub static ZERO: Id = Id {{ index: 0 }};
-    pub static ONE: Id = Id {{ index: 1 }};
-
-    impl crate::id_vector::ToUsize for Id {{
-        fn to_usize(&self) -> usize {{
-            self.index
-        }}
-    }}
-
-    impl crate::id_vector::Increment for Id {{
-        fn incr(&mut self) {{
-            self.incr();
-        }}
-    }}
-
-    impl crate::id_vector::Zero for Id {{
-        fn zero() -> Self {{
-            Id::new(0)
-        }}
-    }}
+    pub static ZERO: Id = Id {{ _raw: 0 }};
+    pub static ONE: Id = Id {{ _raw: 1 }};
 
     impl std::fmt::Display for Id {{
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) ->
           std::result::Result<(), std::fmt::Error> {{
-            f.write_str(self.index.to_string().as_str())
+            f.write_str(self.index().to_string().as_str())
         }}
     }}
     
-    impl serde::Serialize for Id {{
-        fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer,
-        {{
-            // usize is not necessarily contained in u32
-            assert!(self.index <= std::u32::MAX as usize);
-            serializer.serialize_u32(self.index as u32)
-        }}
-    }}
- 
     impl Generator {{
         pub fn new() -> Generator {{
             Generator {{ counter: 0 }}
