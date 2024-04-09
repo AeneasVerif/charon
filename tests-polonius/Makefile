@@ -43,6 +43,7 @@ test-betree_main: OPTIONS += --opaque=betree_utils
 # =============================================================================
 
 .PHONY: test-%
+# Call `charon` instead of `charon-driver` because we have dependencies in `Cargo.toml`.
 test-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
 test-%: build
 

@@ -103,14 +103,6 @@ fn main() {
     );
     trace!("original arguments (computed by cargo): {:?}", origin_args);
 
-    // Retrieve the Charon options by deserializing them from the environment variable
-    // (cargo-charon serialized the arguments and stored them in a specific environment
-    // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
-    let options: cli_options::CliOpts = match std::env::var(cli_options::CHARON_ARGS) {
-        Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
-        Err(_) => Default::default(),
-    };
-
     // Compute the sysroot (the path to the executable of the compiler):
     // - if it is already in the command line arguments, just retrieve it from there
     // - otherwise retrieve the sysroot from a call to rustc
@@ -134,6 +126,24 @@ fn main() {
     // Rem.: the second argument is "rustc" (passed by Cargo because RUSTC_WRAPPER is set).
     assert!(origin_args[1].ends_with("rustc"));
     let mut compiler_args: Vec<String> = origin_args[2..].to_vec();
+
+    // Retrieve the Charon options by deserializing them from the environment variable
+    // (cargo-charon serialized the arguments and stored them in a specific environment
+    // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
+    let options: cli_options::CliOpts = match std::env::var(cli_options::CHARON_ARGS) {
+        Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
+        Err(_) => {
+            // Parse any arguments after `--` as charon arguments.
+            if let Some((i, _)) = compiler_args.iter().enumerate().find(|(_, s)| *s == "--") {
+                use clap::Parser;
+                let mut charon_args = compiler_args.split_off(i);
+                charon_args[0] = origin_args[0].clone(); // Replace `--` with the name of the binary
+                cli_options::CliOpts::parse_from(charon_args)
+            } else {
+                Default::default()
+            }
+        }
+    };
 
     if !has_sysroot_arg {
         compiler_args.extend(vec!["--sysroot".to_string(), sysroot]);
