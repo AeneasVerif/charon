@@ -1,0 +1,41 @@
+[ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
+
+trait issue_97_missing_parent_item_clause::Ord<Self>
+
+struct issue_97_missing_parent_item_clause::AVLTree<T> =
+{
+  x: T
+}
+
+fn issue_97_missing_parent_item_clause::{issue_97_missing_parent_item_clause::AVLTree<T>}::insert<'_0, T>(@1: &'_0 mut (issue_97_missing_parent_item_clause::AVLTree<T>))
+where
+    [@TraitClause0]: issue_97_missing_parent_item_clause::Ord<T>,
+{
+    let @0: (); // return
+    let self@1: &'_ mut (issue_97_missing_parent_item_clause::AVLTree<T>); // arg #1
+
+    panic
+}
+
+impl issue_97_missing_parent_item_clause::{impl issue_97_missing_parent_item_clause::Ord for u32#1} : issue_97_missing_parent_item_clause::Ord<u32>
+
+fn issue_97_missing_parent_item_clause::test(@1: issue_97_missing_parent_item_clause::AVLTree<u32>)
+{
+    let @0: (); // return
+    let tree@1: issue_97_missing_parent_item_clause::AVLTree<u32>; // arg #1
+    let @2: (); // anonymous local
+    let @3: &'_ mut (issue_97_missing_parent_item_clause::AVLTree<u32>); // anonymous local
+    let @4: (); // anonymous local
+
+    @3 := &two-phase-mut tree@1
+    @2 := issue_97_missing_parent_item_clause::{issue_97_missing_parent_item_clause::AVLTree<T>}::insert<u32>(move (@3))
+    drop @3
+    drop @2
+    @4 := ()
+    @0 := move (@4)
+    @0 := ()
+    return
+}
+
+
+

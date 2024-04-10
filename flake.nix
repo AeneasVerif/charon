@@ -52,6 +52,7 @@
           in craneLibWithExt.buildPackage {
             src = ./charon;
             inherit cargoArtifacts;
+            IN_CI = 1; # Check the `ui_llbc` files are correct instead of overwriting them.
           };
         tests =
           let cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./tests; };

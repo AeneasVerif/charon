@@ -3,6 +3,14 @@ extern crate env_logger;
 /// Initialize the logger. We use a custom initialization to add some
 /// useful debugging information, including the line number in the file.
 pub fn initialize_logger() {
+    {
+        // Initialize the logger only once (useful when running the driver in tests).
+        use std::sync::atomic::{AtomicBool, Ordering};
+        static LOGGER_INITIALIZED: AtomicBool = AtomicBool::new(false);
+        if LOGGER_INITIALIZED.swap(true, Ordering::SeqCst) {
+            return;
+        }
+    }
     use env_logger::fmt::Color;
     use env_logger::{Builder, Env};
     use std::io::Write;

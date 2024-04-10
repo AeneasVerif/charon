@@ -75,7 +75,7 @@ build-tests-polonius:
 
 # Build and run the tests
 .PHONY: test
-test: build-dev build-tests build-tests-polonius charon-tests charon-ml-tests
+test: build-dev charon-tests charon-ml-tests
 
 # Run Charon on various test files
 .PHONY: charon-tests

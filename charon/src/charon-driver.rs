@@ -86,8 +86,9 @@ mod update_closure_signatures;
 mod values;
 mod values_utils;
 
-use crate::driver::{arg_value, get_args_crate_index, get_args_source_index, CharonCallbacks};
-use rustc_driver::RunCompiler;
+use crate::driver::{
+    arg_value, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
+};
 
 fn main() {
     // Initialize the logger
@@ -101,9 +102,6 @@ fn main() {
         "Impossible: zero arguments on the command-line!"
     );
     trace!("original arguments (computed by cargo): {:?}", origin_args);
-
-    // The execution path (the path to the current binary) is the first argument
-    let exec_path = origin_args[0].clone();
 
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
@@ -131,15 +129,11 @@ fn main() {
     };
 
     // Compute the compiler arguments for Rustc.
-    // We first use all the arguments received by charon-driver, except the first
-    // one (the first one is the path to the charon-driver executable).
-    // Rem.: the second argument is "rustc" (passed by Cargo because RUSTC_WRAPPER
-    // is set). It seems not to work when we remove it...
-    let mut compiler_args: Vec<String> = origin_args[1..].to_vec();
-
-    // The first argument should be "rustc": replace it with the current executable
-    assert!(compiler_args[0].ends_with("rustc"));
-    compiler_args[0] = exec_path;
+    // We first use all the arguments received by charon-driver, except the first two.
+    // Rem.: the first argument is the path to the charon-driver executable.
+    // Rem.: the second argument is "rustc" (passed by Cargo because RUSTC_WRAPPER is set).
+    assert!(origin_args[1].ends_with("rustc"));
+    let mut compiler_args: Vec<String> = origin_args[2..].to_vec();
 
     if !has_sysroot_arg {
         compiler_args.extend(vec!["--sysroot".to_string(), sysroot]);
@@ -214,13 +208,17 @@ fn main() {
     // take care of everything and actually not call us back.
     let errors_as_warnings = options.errors_as_warnings;
     let mut callback = CharonCallbacks::new(options);
-    let mut res = RunCompiler::new(&compiler_args, &mut callback)
-        .run()
-        .map_err(|_| ());
+    let mut res = callback.run_compiler(compiler_args);
     if let Some(crate_data) = &callback.crate_data {
-        // # Final step: generate the files.
-        // `crate_data` is `None` on the first call of the driver.
-        res = res.and_then(|()| crate_data.serialize_to_file(&callback.options.dest_dir));
+        if !callback.options.no_serialize {
+            // # Final step: generate the files.
+            // `crate_data` is `None` on the first call of the driver.
+            res = res.and_then(|()| {
+                crate_data
+                    .serialize_to_file(&callback.options.dest_dir)
+                    .map_err(|()| CharonFailure::Serialize)
+            });
+        }
     }
 
     match res {
@@ -231,7 +229,11 @@ fn main() {
                 log::warn!("{}", msg);
             }
         }
-        Err(_) => {
+        Err(CharonFailure::Panic) => {
+            // Standard rust panic error code.
+            std::process::exit(101);
+        }
+        Err(CharonFailure::RustcError(_) | CharonFailure::Serialize) => {
             assert!(!errors_as_warnings);
             let msg = format!("The extraction encountered {} errors", callback.error_count);
             log::error!("{}", msg);

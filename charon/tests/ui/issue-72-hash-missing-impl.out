@@ -1,0 +1,69 @@
+[ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
+
+trait issue_72_hash_missing_impl::Hasher<Self>
+
+struct issue_72_hash_missing_impl::DefaultHasher = {}
+
+impl issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hasher for issue_72_hash_missing_impl::DefaultHasher} : issue_72_hash_missing_impl::Hasher<issue_72_hash_missing_impl::DefaultHasher>
+
+trait issue_72_hash_missing_impl::Hash<Self>
+{
+    fn hash : issue_72_hash_missing_impl::Hash::hash
+}
+
+fn issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hash for u32#1}::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
+where
+    [@TraitClause0]: issue_72_hash_missing_impl::Hasher<H>,
+{
+    let @0: (); // return
+    let self@1: &'_ (u32); // arg #1
+    let _state@2: &'_ mut (H); // arg #2
+    let @3: (); // anonymous local
+
+    @3 := ()
+    @0 := move (@3)
+    @0 := ()
+    return
+}
+
+impl issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hash for u32#1} : issue_72_hash_missing_impl::Hash<u32>
+{
+    fn hash = issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hash for u32#1}::hash
+}
+
+fn issue_72_hash_missing_impl::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
+where
+    [@TraitClause0]: issue_72_hash_missing_impl::Hasher<H>,
+
+fn issue_72_hash_missing_impl::main()
+{
+    let @0: (); // return
+    let hasher@1: issue_72_hash_missing_impl::DefaultHasher; // local
+    let @2: (); // anonymous local
+    let @3: &'_ (u32); // anonymous local
+    let @4: u32; // anonymous local
+    let @5: &'_ mut (issue_72_hash_missing_impl::DefaultHasher); // anonymous local
+    let @6: &'_ mut (issue_72_hash_missing_impl::DefaultHasher); // anonymous local
+    let @7: (); // anonymous local
+
+    hasher@1 := issue_72_hash_missing_impl::DefaultHasher {  }
+    @fake_read(hasher@1)
+    @4 := const (0 : u32)
+    @3 := &@4
+    @6 := &mut hasher@1
+    @5 := &two-phase-mut *(@6)
+    @2 := issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hash for u32#1}::hash<issue_72_hash_missing_impl::DefaultHasher>[issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hasher for issue_72_hash_missing_impl::DefaultHasher}](move (@3), move (@5))
+    drop @5
+    drop @3
+    drop @6
+    drop @4
+    drop @2
+    @7 := ()
+    @0 := move (@7)
+    drop hasher@1
+    @0 := ()
+    return
+}
+
+
+
