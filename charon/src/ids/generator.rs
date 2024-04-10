@@ -1,5 +1,5 @@
 use index_vec::Idx;
-use std::{hash::Hash, marker::PhantomData};
+use std::{collections::HashMap, hash::Hash, marker::PhantomData};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Generator<I: Idx> {
@@ -32,28 +32,20 @@ impl<I: Idx> Generator<I> {
 
 #[derive(Debug, Clone)]
 pub struct MapGenerator<K: Eq + Hash + Ord, I: Idx> {
-    pub counter: Generator<I>,
-    // We use a btree map so that the bindings are sorted by key
-    pub map: std::collections::BTreeMap<K, I>,
+    counter: Generator<I>,
+    map: HashMap<K, I>,
 }
 
 impl<K: Eq + Hash + Ord, I: Idx> MapGenerator<K, I> {
     pub fn new() -> Self {
         MapGenerator {
             counter: Generator::new(),
-            map: std::collections::BTreeMap::new(),
+            map: HashMap::new(),
         }
     }
 
     pub fn insert(&mut self, k: K) -> I {
-        match self.map.get(&k) {
-            Option::Some(id) => *id,
-            Option::None => {
-                let id = self.counter.fresh_id();
-                self.map.insert(k, id);
-                id
-            }
-        }
+        *self.map.entry(k).or_insert_with(|| self.counter.fresh_id())
     }
 
     pub fn get(&self, k: &K) -> Option<I> {
