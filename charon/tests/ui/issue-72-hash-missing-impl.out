@@ -1,19 +1,19 @@
 [ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
 
-trait issue_72_hash_missing_impl::Hasher<Self>
+trait test_crate::Hasher<Self>
 
-struct issue_72_hash_missing_impl::DefaultHasher = {}
+struct test_crate::DefaultHasher = {}
 
-impl issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hasher for issue_72_hash_missing_impl::DefaultHasher} : issue_72_hash_missing_impl::Hasher<issue_72_hash_missing_impl::DefaultHasher>
+impl test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher} : test_crate::Hasher<test_crate::DefaultHasher>
 
-trait issue_72_hash_missing_impl::Hash<Self>
+trait test_crate::Hash<Self>
 {
-    fn hash : issue_72_hash_missing_impl::Hash::hash
+    fn hash : test_crate::Hash::hash
 }
 
-fn issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hash for u32#1}::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
+fn test_crate::{impl test_crate::Hash for u32#1}::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
 where
-    [@TraitClause0]: issue_72_hash_missing_impl::Hasher<H>,
+    [@TraitClause0]: test_crate::Hasher<H>,
 {
     let @0: (); // return
     let self@1: &'_ (u32); // arg #1
@@ -26,33 +26,33 @@ where
     return
 }
 
-impl issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hash for u32#1} : issue_72_hash_missing_impl::Hash<u32>
+impl test_crate::{impl test_crate::Hash for u32#1} : test_crate::Hash<u32>
 {
-    fn hash = issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hash for u32#1}::hash
+    fn hash = test_crate::{impl test_crate::Hash for u32#1}::hash
 }
 
-fn issue_72_hash_missing_impl::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
+fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
-    [@TraitClause0]: issue_72_hash_missing_impl::Hasher<H>,
+    [@TraitClause0]: test_crate::Hasher<H>,
 
-fn issue_72_hash_missing_impl::main()
+fn test_crate::main()
 {
     let @0: (); // return
-    let hasher@1: issue_72_hash_missing_impl::DefaultHasher; // local
+    let hasher@1: test_crate::DefaultHasher; // local
     let @2: (); // anonymous local
     let @3: &'_ (u32); // anonymous local
     let @4: u32; // anonymous local
-    let @5: &'_ mut (issue_72_hash_missing_impl::DefaultHasher); // anonymous local
-    let @6: &'_ mut (issue_72_hash_missing_impl::DefaultHasher); // anonymous local
+    let @5: &'_ mut (test_crate::DefaultHasher); // anonymous local
+    let @6: &'_ mut (test_crate::DefaultHasher); // anonymous local
     let @7: (); // anonymous local
 
-    hasher@1 := issue_72_hash_missing_impl::DefaultHasher {  }
+    hasher@1 := test_crate::DefaultHasher {  }
     @fake_read(hasher@1)
     @4 := const (0 : u32)
     @3 := &@4
     @6 := &mut hasher@1
     @5 := &two-phase-mut *(@6)
-    @2 := issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hash for u32#1}::hash<issue_72_hash_missing_impl::DefaultHasher>[issue_72_hash_missing_impl::{impl issue_72_hash_missing_impl::Hasher for issue_72_hash_missing_impl::DefaultHasher}](move (@3), move (@5))
+    @2 := test_crate::{impl test_crate::Hash for u32#1}::hash<test_crate::DefaultHasher>[test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher}](move (@3), move (@5))
     drop @5
     drop @3
     drop @6

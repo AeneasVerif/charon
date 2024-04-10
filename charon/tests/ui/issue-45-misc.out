@@ -1,6 +1,6 @@
 [ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
 
-fn issue_45_misc::map::closure<'_0>(@1: &'_0 mut (()), @2: (i32)) -> i32
+fn test_crate::map::closure<'_0>(@1: &'_0 mut (()), @2: (i32)) -> i32
 {
     let @0: i32; // return
     let state@1: &'_0 mut (()); // arg #1
@@ -27,7 +27,7 @@ where
     [@TraitClause0]: core::ops::function::FnMut<F, (T)>,
     (parents((parents(@TraitClause0)::[@TraitClause3]))::[@TraitClause0])::Output = U,
 
-fn issue_45_misc::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
+fn test_crate::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
 {
     let @0: Array<i32, 256 : usize>; // return
     let x@1: Array<i32, 256 : usize>; // arg #1
@@ -35,14 +35,14 @@ fn issue_45_misc::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
     let @3: fn(i32) -> i32; // anonymous local
 
     @2 := copy (x@1)
-    @3 := {issue_45_misc::map::closure} {}
-    @0 := core::array::{Array<T, const N : usize>#23}::map<i32, fn(i32) -> i32, i32, 256 : usize>[(closure:issue_45_misc::map::closure)](move (@2), move (@3))
+    @3 := {test_crate::map::closure} {}
+    @0 := core::array::{Array<T, const N : usize>#23}::map<i32, fn(i32) -> i32, i32, 256 : usize>[(closure:test_crate::map::closure)](move (@2), move (@3))
     drop @3
     drop @2
     return
 }
 
-fn issue_45_misc::array<const LEN : usize>() -> Array<u8, const LEN : usize>
+fn test_crate::array<const LEN : usize>() -> Array<u8, const LEN : usize>
 {
     let @0: Array<u8, const LEN : usize>; // return
 
@@ -370,7 +370,7 @@ fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self:
 
 fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>
 
-fn issue_45_misc::cbd(@1: Array<u8, 33 : usize>)
+fn test_crate::cbd(@1: Array<u8, 33 : usize>)
 {
     let @0: (); // return
     let prf_input@1: Array<u8, 33 : usize>; // arg #1
@@ -450,7 +450,7 @@ opaque type core::fmt::Arguments<'a>
 
 fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 
-fn issue_45_misc::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
+fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
 {
     let @0: (); // return
     let lhs@1: &'_ (Slice<u8>); // arg #1

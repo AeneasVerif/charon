@@ -1,10 +1,10 @@
 [ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
 
-unsafe fn issue_73_extern::foo(@1: i32)
+unsafe fn test_crate::foo(@1: i32)
 
-global issue_73_extern::CONST 
+global test_crate::CONST 
 
-opaque type issue_73_extern::Type
+opaque type test_crate::Type
 
 
 

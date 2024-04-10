@@ -92,7 +92,7 @@ impl core::array::{impl core::fmt::Debug for core::array::TryFromSliceError#26} 
     fn fmt = core::array::{impl core::fmt::Debug for core::array::TryFromSliceError#26}::fmt
 }
 
-fn issue_4_traits::trait_error<'_0>(@1: &'_0 (Slice<u8>))
+fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
 {
     let @0: (); // return
     let s@1: &'_ (Slice<u8>); // arg #1
