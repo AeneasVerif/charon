@@ -210,7 +210,7 @@ fn main() {
     let mut callback = CharonCallbacks::new(options);
     let mut res = callback.run_compiler(compiler_args);
     if let Some(crate_data) = &callback.crate_data {
-        if !callback.options.no_serialize_llbc {
+        if !callback.options.no_serialize {
             // # Final step: generate the files.
             // `crate_data` is `None` on the first call of the driver.
             res = res.and_then(|()| {
@@ -233,7 +233,7 @@ fn main() {
             // Standard rust panic error code.
             std::process::exit(101);
         }
-        Err(_) => {
+        Err(CharonFailure::RustcError(_) | CharonFailure::Serialize) => {
             assert!(!errors_as_warnings);
             let msg = format!("The extraction encountered {} errors", callback.error_count);
             log::error!("{}", msg);

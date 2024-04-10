@@ -3,7 +3,7 @@
 //! will ensure these stay up-to-date.
 //!
 //! Files can start with special comments that affect the test behavior. Supported magic comments:
-//! see `HELP_STRING`.
+//! see [`HELP_STRING`].
 use anyhow::bail;
 use assert_cmd::prelude::CommandCargoExt;
 use indoc::indoc as unindent;
@@ -47,7 +47,6 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
             kind = TestKind::KnownPanic;
         } else if line == "output=pretty-llbc" {
             kind = TestKind::PrettyLlbc;
-        } else {
         }
     }
     Ok(MagicComments { test_kind: kind })
@@ -89,7 +88,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     // Call the charon driver.
     let mut options = CliOpts::default();
     options.print_llbc = true;
-    options.no_serialize_llbc = true;
+    options.no_serialize = true;
     let output = Command::cargo_bin("charon-driver")?
         .arg("rustc")
         .arg(test_case.input_path.to_string_lossy().into_owned())

@@ -126,13 +126,13 @@ Report the errors as warnings
     #[serde(default)]
     pub errors_as_warnings: bool,
     #[structopt(
-        long = "no-serialize-llbc",
+        long = "no-serialize",
         help = "
-Don't serialize the final LLBC to a file.
+Don't serialize the final (U)LLBC to a file.
 "
     )]
     #[serde(default)]
-    pub no_serialize_llbc: bool,
+    pub no_serialize: bool,
     #[structopt(
         long = "print-ullbc",
         help = "
