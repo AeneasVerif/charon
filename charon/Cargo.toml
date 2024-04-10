@@ -2,7 +2,7 @@
 name = "charon"
 version = "0.1.0"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 name = "charon_lib"

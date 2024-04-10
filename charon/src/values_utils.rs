@@ -149,7 +149,6 @@ impl ScalarValue {
     }
 
     pub fn from_le_bytes(ty: IntegerTy, b: [u8; 16]) -> ScalarValue {
-        use std::convert::TryInto;
         match ty {
             IntegerTy::Isize => {
                 let b: [u8; 8] = b[0..8].try_into().unwrap();
