@@ -59,9 +59,6 @@ pub mod gast;
 pub mod gast_utils;
 pub mod get_mir;
 pub mod graphs;
-pub mod id_generator;
-pub mod id_map;
-pub mod id_vector;
 #[macro_use]
 pub mod ids;
 pub mod index_to_function_calls;

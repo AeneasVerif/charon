@@ -1,3 +1,7 @@
+pub mod generator;
+pub mod map;
+pub mod vector;
+
 /// Generate an `Index` module which contains an index type and a generator
 /// for fresh indices. We use it because we need manipulate
 /// a lot of different indices (for various kinds of declarations, variables, blocks,
@@ -19,10 +23,10 @@ macro_rules! generate_index_type {
                 MAX_INDEX = std::u32::MAX as usize;
             }
 
-            pub type Vector<T> = crate::id_vector::Vector<Id, T>;
-            pub type Map<T> = crate::id_map::Map<Id, T>;
-            pub type Generator = crate::id_generator::Generator<Id>;
-            pub type MapGenerator<K> = crate::id_generator::MapGenerator<K, Id>;
+            pub type Vector<T> = crate::ids::vector::Vector<Id, T>;
+            pub type Map<T> = crate::ids::map::Map<Id, T>;
+            pub type Generator = crate::ids::generator::Generator<Id>;
+            pub type MapGenerator<K> = crate::ids::generator::MapGenerator<K, Id>;
 
             impl Id {
                 pub fn is_zero(&self) -> bool {
