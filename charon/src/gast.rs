@@ -1,6 +1,7 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 pub use crate::expressions::*;
 pub use crate::gast_utils::*;
+use crate::generate_index_type;
 use crate::meta::Meta;
 use crate::names::Name;
 pub use crate::types::GlobalDeclId;
@@ -9,7 +10,6 @@ use crate::types::*;
 pub use crate::types::{
     GenericArgs, GenericParams, TraitDeclId, TraitImplId, TraitInstanceId, TraitRef,
 };
-use macros::generate_index_type;
 use serde::Serialize;
 
 generate_index_type!(FunDeclId);

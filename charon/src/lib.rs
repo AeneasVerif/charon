@@ -62,6 +62,8 @@ pub mod graphs;
 pub mod id_generator;
 pub mod id_map;
 pub mod id_vector;
+#[macro_use]
+pub mod ids;
 pub mod index_to_function_calls;
 pub mod insert_assign_return_unit;
 pub mod llbc_ast;

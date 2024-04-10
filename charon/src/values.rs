@@ -2,7 +2,7 @@
 
 pub use crate::values_utils::*;
 use core::hash::Hash;
-use macros::{generate_index_type, EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
 
 // We need to manipulate a lot of indices for the types, variables, definitions,

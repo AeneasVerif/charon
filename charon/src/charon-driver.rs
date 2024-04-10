@@ -53,6 +53,8 @@ mod graphs;
 mod id_generator;
 mod id_map;
 mod id_vector;
+#[macro_use]
+mod ids;
 mod index_to_function_calls;
 mod insert_assign_return_unit;
 mod llbc_ast;

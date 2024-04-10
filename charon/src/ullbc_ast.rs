@@ -6,7 +6,6 @@ pub use crate::types::GlobalDeclId;
 use crate::types::*;
 pub use crate::ullbc_ast_utils::*;
 use crate::values::*;
-use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
 

@@ -1,7 +1,6 @@
 //! Defines some utilities for the variables
 pub use crate::names_utils::*;
 use crate::types::*;
-use macros::generate_index_type;
 use macros::{EnumAsGetters, EnumIsA};
 use serde::Serialize;
 

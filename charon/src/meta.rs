@@ -1,7 +1,7 @@
 //! Meta-information about programs (spans, etc.).
 
 pub use crate::meta_utils::*;
-use macros::{generate_index_type, EnumAsGetters, EnumIsA};
+use macros::{EnumAsGetters, EnumIsA};
 use serde::Serialize;
 
 generate_index_type!(LocalFileId);

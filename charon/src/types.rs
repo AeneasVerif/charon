@@ -4,9 +4,7 @@ use crate::names::Name;
 pub use crate::types_utils::*;
 use crate::values::Literal;
 use derivative::Derivative;
-use macros::{
-    generate_index_type, EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName,
-};
+use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
 
 pub type FieldName = String;
