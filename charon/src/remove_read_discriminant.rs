@@ -42,13 +42,29 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                 let (meta2, switch, st3_opt) = match st2.content {
                     RawStatement::Sequence(
                         box Statement {
-                            content: RawStatement::Switch(switch),
+                            content: RawStatement::Switch(switch @ Switch::SwitchInt(..)),
                             meta: meta2,
                         },
                         box st3,
                     ) => (meta2, switch, Some(st3)),
-                    RawStatement::Switch(switch) => (st2.meta, switch, None),
-                    _ => unreachable!("A discriminant read must be followed by a `Switch`"),
+                    RawStatement::Switch(switch @ Switch::SwitchInt(..)) => {
+                        (st2.meta, switch, None)
+                    }
+                    _ => {
+                        register_error_or_panic!(
+                            self.ctx,
+                            st.meta.span.rust_span_data.span(),
+                            "A discriminant read must be followed by a `SwitchInt`"
+                        );
+                        // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
+                        // `Nop` the whole statement sequence.
+                        // FIXME: add `RawStatement::Error` for cases like this.
+                        *st = Statement {
+                            content: RawStatement::Nop,
+                            meta: st.meta,
+                        };
+                        return;
+                    }
                 };
 
                 let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) = switch
@@ -98,14 +114,16 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                     .map(|(v, e)| {
                         (
                             v.into_iter()
-                                .map(|x| {
+                                .filter_map(|x| {
                                     let discr = x.to_bits();
                                     covered_discriminants.insert(discr);
-                                    discr_to_id.get(&discr).unwrap_or_else(|| {
-                                        panic!(
-                                            "Found incorrect discriminant {discr} for enum {}",
-                                            adt_id
-                                        )
+                                    discr_to_id.get(&discr).or_else(|| {
+                                        register_error_or_panic!(
+                                            self.ctx,
+                                            st.meta.span.rust_span_data.span(),
+                                            "Found incorrect discriminant {discr} for enum {adt_id}"
+                                        );
+                                        None
                                     })
                                 })
                                 .copied()
