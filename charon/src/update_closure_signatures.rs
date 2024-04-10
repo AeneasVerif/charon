@@ -7,7 +7,6 @@ use crate::translate_ctx::TransCtx;
 use crate::types::*;
 
 struct InsertRegions<'a> {
-    gen: RegionId::Generator,
     regions: &'a mut RegionId::Vector<RegionVar>,
     /// The number of region groups we dived into (we don't count the regions
     /// at the declaration level). We use this for the DeBruijn indices.
@@ -18,8 +17,9 @@ impl<'a> MutTypeVisitor for InsertRegions<'a> {
     fn visit_region(&mut self, r: &mut Region) {
         if r == &Region::Erased {
             // Insert a fresh region
-            let index = self.gen.fresh_id();
-            self.regions.push_back(RegionVar { index, name: None });
+            let index = self
+                .regions
+                .push_with(|index| RegionVar { index, name: None });
             *r = Region::BVar(DeBruijnId::new(self.depth), index);
         }
     }
@@ -76,8 +76,6 @@ fn transform_function(_ctx: &TransCtx, def: &mut FunDecl) -> Result<(), Error> {
         // However, we introduce fresh regions for the state (in particular
         // because it is easy to do so).
 
-        let gen = RegionId::Generator::new_with_init_value(generics.regions.len());
-
         // Group the types into a tuple
         let num_fields = info.state.len();
         let state = Ty::Adt(
@@ -105,7 +103,6 @@ fn transform_function(_ctx: &TransCtx, def: &mut FunDecl) -> Result<(), Error> {
         // Explore the state and introduce fresh regions for the erased
         // regions we find.
         let mut visitor = InsertRegions {
-            gen,
             regions: &mut generics.regions,
             depth: 0,
         };
@@ -145,7 +142,7 @@ fn transform_function(_ctx: &TransCtx, def: &mut FunDecl) -> Result<(), Error> {
 
             // Update the type of the local 1 (which is the closure)
             assert!(body.locals.len() > 1);
-            let state_var = &mut body.locals.vector[1];
+            let state_var = &mut body.locals[1];
             state_var.ty = state;
             state_var.name = Some("state".to_string());
 

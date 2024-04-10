@@ -1482,9 +1482,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // We clone things while we could move them...
         let mut blocks = BlockId::Vector::new();
         for (id, block) in self.blocks {
+            let new_id = blocks.push(block);
             // Sanity check to make sure we don't mess with the indices
-            assert!(id.index() == blocks.len());
-            blocks.push_back(block);
+            assert!(id == new_id);
         }
 
         // Create the body

@@ -7,12 +7,12 @@
 //! Note that this data structure is implemented by using persistent vectors.
 //! This makes the clone operation almost a no-op.
 
-use index_vec::{Idx, IndexVec};
+use index_vec::{Idx, IdxSliceIndex, IndexVec};
 use serde::{Serialize, Serializer};
-use std::iter::{FromIterator, IntoIterator};
-
-pub use std::collections::hash_map::Iter as IterAll;
-pub use std::collections::hash_map::IterMut as IterAllMut;
+use std::{
+    iter::{FromIterator, IntoIterator},
+    ops::{Index, IndexMut},
+};
 
 /// Indexed vector
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -20,7 +20,7 @@ pub struct Vector<I, T>
 where
     I: Idx,
 {
-    pub vector: IndexVec<I, T>,
+    vector: IndexVec<I, T>,
 }
 
 impl<I, T> Vector<I, T>
@@ -37,10 +37,6 @@ where
         self.vector.get(i)
     }
 
-    pub fn insert(&mut self, i: I, x: T) {
-        self.vector.insert(i, x);
-    }
-
     pub fn is_empty(&self) -> bool {
         self.vector.is_empty()
     }
@@ -49,8 +45,16 @@ where
         self.vector.len()
     }
 
-    pub fn push_back(&mut self, x: T) {
-        self.vector.push(x);
+    pub fn next_id(&self) -> I {
+        self.vector.next_idx()
+    }
+
+    pub fn push(&mut self, x: T) -> I {
+        self.vector.push(x)
+    }
+
+    pub fn push_with(&mut self, f: impl FnOnce(I) -> T) -> I {
+        self.push(f(self.next_id()))
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &T> {
@@ -70,9 +74,30 @@ where
     }
 }
 
-impl<I: Idx, T: Clone> Default for Vector<I, T> {
+impl<I: Idx, T> Default for Vector<I, T> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl<I, R, T> Index<R> for Vector<I, T>
+where
+    I: Idx,
+    R: IdxSliceIndex<I, T>,
+{
+    type Output = R::Output;
+    fn index(&self, index: R) -> &Self::Output {
+        &self.vector[index]
+    }
+}
+
+impl<I, R, T> IndexMut<R> for Vector<I, T>
+where
+    I: Idx,
+    R: IdxSliceIndex<I, T>,
+{
+    fn index_mut(&mut self, index: R) -> &mut Self::Output {
+        &mut self.vector[index]
     }
 }
 

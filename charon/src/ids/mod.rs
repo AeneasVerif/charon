@@ -32,16 +32,9 @@ macro_rules! generate_index_type {
                 pub fn is_zero(&self) -> bool {
                     self.index() == 0
                 }
-
-                pub fn incr(&mut self) {
-                    // Overflows are extremely unlikely, but we do want to make sure
-                    // we panick whenever there is one.
-                    *self = Self::new(self.index().checked_add(1).unwrap());
-                }
             }
 
             pub static ZERO: Id = Id { _raw: 0 };
-            pub static ONE: Id = Id { _raw: 1 };
 
             impl std::fmt::Display for Id {
                 fn fmt(
