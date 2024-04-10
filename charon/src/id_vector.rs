@@ -6,149 +6,39 @@
 //!
 //! Note that this data structure is implemented by using persistent vectors.
 //! This makes the clone operation almost a no-op.
-//!
-//! TODO: Rustc already provides an `index_vector`. Use it?
 
-use index_vec::Idx;
+use index_vec::{Idx, IndexVec};
 use serde::{Serialize, Serializer};
 use std::iter::{FromIterator, IntoIterator};
 
 pub use std::collections::hash_map::Iter as IterAll;
 pub use std::collections::hash_map::IterMut as IterAllMut;
 
-pub trait Increment {
-    fn incr(&mut self);
-}
-
-impl<T: Idx> Increment for T {
-    fn incr(&mut self) {
-        // Overflows are extremely unlikely, but we do want to make sure we panick whenever there
-        // is one.
-        *self = Self::from_usize(self.index().checked_add(1).unwrap());
-    }
-}
-
 /// Indexed vector
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Vector<I, T>
 where
     I: Idx,
-    T: Clone,
 {
-    pub vector: im::Vector<T>,
-    /// This is a bit annoying, but we need to use `I` somewhere.
-    phantom: std::marker::PhantomData<I>,
-}
-
-/// Immutable iterator for indexed vectors, to iter over pairs of (index, value)
-#[derive(Debug)]
-pub struct IndexValueImmutIterator<'a, I, T>
-where
-    I: Idx,
-    T: Clone,
-{
-    vector: &'a Vector<I, T>,
-    index: I,
-}
-
-impl<'a, I, T> Iterator for IndexValueImmutIterator<'a, I, T>
-where
-    I: Idx,
-    T: Clone,
-{
-    type Item = (I, &'a T);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.index.index() < self.vector.len() {
-            let index = self.index;
-            let obj = self.vector.get(self.index).unwrap();
-            self.index.incr();
-            Some((index, obj))
-        } else {
-            None
-        }
-    }
+    pub vector: IndexVec<I, T>,
 }
 
 impl<I, T> Vector<I, T>
 where
     I: Idx,
-    T: Clone,
-{
-    pub fn iter_indexed_values(&self) -> IndexValueImmutIterator<'_, I, T> {
-        IndexValueImmutIterator {
-            vector: self,
-            index: I::from_usize(0),
-        }
-    }
-}
-
-/// Iterator to iterate over the indices in an id vector
-#[derive(Debug)]
-pub struct IndexIterator<I>
-where
-    I: Idx,
-{
-    len: usize,
-    index: I,
-}
-
-impl<I> Iterator for IndexIterator<I>
-where
-    I: Idx,
-{
-    type Item = I;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.index.index() < self.len {
-            let index = self.index;
-            self.index.incr();
-            Some(index)
-        } else {
-            None
-        }
-    }
-}
-
-impl<I, T> Vector<I, T>
-where
-    I: Idx,
-    T: Clone,
-{
-    pub fn iter_indices(&self) -> IndexIterator<I> {
-        IndexIterator {
-            len: self.vector.len(),
-            index: I::from_usize(0),
-        }
-    }
-}
-
-impl<I, T> Vector<I, T>
-where
-    I: Idx,
-    T: Clone,
 {
     pub fn new() -> Self {
         Vector {
-            vector: im::Vector::new(),
-            phantom: std::marker::PhantomData,
+            vector: IndexVec::new(),
         }
     }
 
     pub fn get(&self, i: I) -> Option<&T> {
-        self.vector.get(i.index())
-    }
-
-    pub fn get_mut(&mut self, i: I) -> Option<&mut T> {
-        self.vector.get_mut(i.index())
-    }
-
-    pub fn set(&mut self, i: I, x: T) {
-        self.vector.set(i.index(), x);
+        self.vector.get(i)
     }
 
     pub fn insert(&mut self, i: I, x: T) {
-        self.vector.insert(i.index(), x);
+        self.vector.insert(i, x);
     }
 
     pub fn is_empty(&self) -> bool {
@@ -160,27 +50,23 @@ where
     }
 
     pub fn push_back(&mut self, x: T) {
-        self.vector.push_back(x);
+        self.vector.push(x);
     }
 
-    pub fn pop_back(&mut self) -> Option<T> {
-        self.vector.pop_back()
-    }
-
-    pub fn push_front(&mut self, x: T) {
-        self.vector.push_front(x);
-    }
-
-    pub fn pop_front(&mut self) -> Option<T> {
-        self.vector.pop_front()
-    }
-
-    pub fn iter(&self) -> im::vector::Iter<T> {
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.vector.iter()
     }
 
-    pub fn iter_mut(&mut self) -> im::vector::IterMut<T> {
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
         self.vector.iter_mut()
+    }
+
+    pub fn iter_indexed_values(&self) -> impl Iterator<Item = (I, &T)> {
+        self.vector.iter_enumerated()
+    }
+
+    pub fn iter_indices(&self) -> impl Iterator<Item = I> {
+        self.vector.indices()
     }
 }
 
@@ -193,25 +79,23 @@ impl<I: Idx, T: Clone> Default for Vector<I, T> {
 impl<'a, I, T> IntoIterator for &'a Vector<I, T>
 where
     I: Idx,
-    T: Clone,
 {
     type Item = &'a T;
-    type IntoIter = im::vector::Iter<'a, T>;
+    type IntoIter = <&'a IndexVec<I, T> as IntoIterator>::IntoIter;
 
-    fn into_iter(self) -> im::vector::Iter<'a, T> {
-        self.vector.iter()
+    fn into_iter(self) -> <&'a IndexVec<I, T> as IntoIterator>::IntoIter {
+        (&self.vector).into_iter()
     }
 }
 
 impl<I, T> IntoIterator for Vector<I, T>
 where
     I: Idx,
-    T: Clone,
 {
     type Item = T;
-    type IntoIter = im::vector::ConsumingIter<T>;
+    type IntoIter = <IndexVec<I, T> as IntoIterator>::IntoIter;
 
-    fn into_iter(self) -> im::vector::ConsumingIter<T> {
+    fn into_iter(self) -> <IndexVec<I, T> as IntoIterator>::IntoIter {
         self.vector.into_iter()
     }
 }
@@ -219,13 +103,11 @@ where
 impl<I, T> FromIterator<T> for Vector<I, T>
 where
     I: Idx,
-    T: Clone,
 {
     #[inline]
     fn from_iter<It: IntoIterator<Item = T>>(iter: It) -> Vector<I, T> {
         Vector {
-            vector: im::Vector::from_iter(iter),
-            phantom: std::marker::PhantomData,
+            vector: IndexVec::from_iter(iter),
         }
     }
 }
@@ -233,40 +115,19 @@ where
 impl<I, T> From<Vec<T>> for Vector<I, T>
 where
     I: Idx,
-    T: Clone,
 {
     fn from(v: Vec<T>) -> Self {
         Vector {
-            vector: im::Vector::from(v),
-            phantom: std::marker::PhantomData,
+            vector: IndexVec::from(v),
         }
     }
 }
 
-impl<I, T> From<im::Vector<T>> for Vector<I, T>
-where
-    I: Idx,
-    T: Clone,
-{
-    fn from(v: im::Vector<T>) -> Self {
-        Vector {
-            vector: v,
-            phantom: std::marker::PhantomData,
-        }
-    }
-}
-
-impl<I: Idx, T: Clone + Serialize> Serialize for Vector<I, T> {
+impl<I: Idx, T: Serialize> Serialize for Vector<I, T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        use serde::ser::SerializeSeq;
-
-        let mut seq = serializer.serialize_seq(Some(self.len()))?;
-        for e in self {
-            seq.serialize_element(e)?;
-        }
-        seq.end()
+        self.vector.serialize(serializer)
     }
 }
