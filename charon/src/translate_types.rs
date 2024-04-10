@@ -502,27 +502,30 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         is_local: bool,
         trans_id: TypeDeclId::Id,
-        adt: hax::AdtDef,
+        rust_id: DefId,
     ) -> Result<TypeDeclKind, Error> {
+        use rustc_middle::ty::AdtKind;
+        let def_span = self.t_ctx.tcx.def_span(rust_id);
+        // Don't use `hax::AdtDef` because it loses `VariantIdx` information.
+        let adt: rustc_middle::ty::AdtDef = self.t_ctx.tcx.adt_def(rust_id);
         trace!("{}", trans_id);
-        let def_span = self.t_ctx.tcx.def_span(DefId::from(&adt.did));
 
         // In case the type is external, check if we should consider the type as
         // transparent (i.e., extract its body). If it is an enumeration, then yes
         // (because the variants of public enumerations are public, together with their
         // fields). If it is a structure, we check if all the fields are public.
         let is_transparent = is_local
-            || match &adt.adt_kind {
-                hax::AdtKind::Enum => true,
-                hax::AdtKind::Struct => {
+            || match adt.adt_kind() {
+                AdtKind::Enum => true,
+                AdtKind::Struct => {
                     // Check the unique variant
-                    error_assert!(self, def_span, adt.variants.raw.len() == 1);
-                    adt.variants.raw[0]
+                    error_assert!(self, def_span, adt.variants().len() == 1);
+                    adt.variants()[rustc_target::abi::FIRST_VARIANT]
                         .fields
                         .iter()
-                        .all(|f| matches!(f.vis, hax::Visibility::Public))
+                        .all(|f| f.vis.is_public())
                 }
-                hax::AdtKind::Union => {
+                AdtKind::Union => {
                     error_or_panic!(self, def_span, "Unions are not supported")
                 }
             };
@@ -532,19 +535,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // The type is transparent: explore the variants
-        let mut var_id = VariantId::Id::new(0); // Variant index
         let mut variants: Vec<Variant> = vec![];
         let erase_regions = false;
-        for var_def in adt.variants.raw {
-            trace!("variant {}: {:?}", var_id, var_def);
+        for (i, var_def) in adt.variants().iter().enumerate() {
+            let var_def: hax::VariantDef = var_def.sinto(&self.hax_state);
+            trace!("variant {}: {:?}", i, var_def);
 
             let mut fields: Vec<Field> = vec![];
-            let mut field_id = FieldId::Id::new(0);
             /* This is for sanity: check that either all the fields have names, or
              * none of them has */
             let mut have_names: Option<bool> = Option::None;
-            for field_def in var_def.fields.into_iter() {
-                trace!("variant {}: field {}: {:?}", var_id, field_id, field_def);
+            for (j, field_def) in var_def.fields.into_iter().enumerate() {
+                trace!("variant {}: field {}: {:?}", i, j, field_def);
                 let field_span = field_def.span.rust_span_data.unwrap().span();
 
                 // Translate the field type
@@ -575,8 +577,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     ty,
                 };
                 fields.push(field);
-
-                field_id.incr();
             }
 
             let meta = self.translate_meta_from_rspan(var_def.span);
@@ -586,18 +586,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 name: variant_name,
                 fields: FieldId::Vector::from(fields),
             });
-
-            var_id.incr();
         }
 
         // Register the type
-        use hax::AdtKind;
-        let type_def_kind: TypeDeclKind = match adt.adt_kind {
+        let type_def_kind: TypeDeclKind = match adt.adt_kind() {
             AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
             AdtKind::Enum => TypeDeclKind::Enum(VariantId::Vector::from(variants)),
             AdtKind::Union => {
-                let span = self.t_ctx.tcx.def_span(DefId::from(&adt.did));
-                error_or_panic!(self, span, "Union types are not supported")
+                error_or_panic!(self, def_span, "Union types are not supported")
             }
         };
 
@@ -733,8 +729,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let kind = if !is_transparent {
             TypeDeclKind::Opaque
         } else {
-            let adt = bt_ctx.t_ctx.tcx.adt_def(rust_id).sinto(&bt_ctx.hax_state);
-            match bt_ctx.translate_type_body(is_local, trans_id, adt) {
+            match bt_ctx.translate_type_body(is_local, trans_id, rust_id) {
                 Ok(kind) => kind,
                 Err(err) => TypeDeclKind::Error(err.msg),
             }
