@@ -7,7 +7,7 @@ use crate::ullbc_ast;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDecl, TraitImpl};
 use serde::Serialize;
 use std::fs::File;
-use std::path::PathBuf;
+use std::path::Path;
 
 /// The data of a generic crate. We serialize this to pass it to `charon-ml`, so this must be as
 /// stable as possible. This is used for both ULLBC and LLBC.
@@ -70,28 +70,17 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
 
     /// Export the translated definitions to a JSON file.
     #[allow(clippy::result_unit_err)]
-    pub fn serialize_to_file(&self, dest_dir: &Option<PathBuf>, extension: &str) -> Result<(), ()> {
-        // Generate the destination file - we use the crate name for the file name
-        let mut target_filename = dest_dir
-            .as_deref()
-            .map_or_else(PathBuf::new, |d| d.to_path_buf());
-        let crate_name = &self.name;
-        target_filename.push(format!("{crate_name}.{extension}"));
-
-        trace!("Target file: {:?}", target_filename);
-
+    pub fn serialize_to_file(&self, target_filename: &Path) -> Result<(), ()> {
         // Create the directory, if necessary (note that if the target directory
         // is not specified, there is no need to create it: otherwise we
         // couldn't have read the input file in the first place).
-        match dest_dir {
-            Option::None => (),
-            Option::Some(dest_dir) => match std::fs::create_dir_all(dest_dir) {
-                std::result::Result::Ok(()) => (),
-                std::result::Result::Err(_) => {
-                    error!("Could not create the directory: {:?}", dest_dir);
-                    return Err(());
-                }
-            },
+        let target_dir = target_filename.parent().unwrap();
+        match std::fs::create_dir_all(target_dir) {
+            std::result::Result::Ok(()) => (),
+            std::result::Result::Err(_) => {
+                error!("Could not create the directory: {:?}", target_dir);
+                return Err(());
+            }
         };
 
         // Create the file.
@@ -104,16 +93,17 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
             error!("Could not write to: {:?}", target_filename);
             return Err(());
         };
-        // We canonicalize (i.e., make absolute) the path before printing it: this makes it clearer
+
+        // We canonicalize (i.e., make absolute) the path before printing it; this makes it clearer
         // to the user where to find the file.
-        let path = std::fs::canonicalize(target_filename).unwrap();
+        let target_filename = std::fs::canonicalize(target_filename).unwrap();
         if self.has_errors {
             info!(
                 "Generated the partial (because we encountered errors) file: {}",
-                path.to_str().unwrap()
+                target_filename.to_str().unwrap()
             );
         } else {
-            info!("Generated the file: {}", path.to_str().unwrap());
+            info!("Generated the file: {}", target_filename.to_str().unwrap());
         }
         Ok(())
     }
@@ -146,10 +136,10 @@ impl CrateData {
 
     /// Export the translated definitions to a JSON file.
     #[allow(clippy::result_unit_err)]
-    pub fn serialize_to_file(&self, dest_dir: &Option<PathBuf>) -> Result<(), ()> {
+    pub fn serialize_to_file(&self, dest_file: &Path) -> Result<(), ()> {
         match self {
-            CrateData::ULLBC(crate_data) => crate_data.serialize_to_file(dest_dir, "ullbc"),
-            CrateData::LLBC(crate_data) => crate_data.serialize_to_file(dest_dir, "llbc"),
+            CrateData::ULLBC(crate_data) => crate_data.serialize_to_file(dest_file),
+            CrateData::LLBC(crate_data) => crate_data.serialize_to_file(dest_file),
         }
     }
 }

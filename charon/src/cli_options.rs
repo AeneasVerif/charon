@@ -45,11 +45,10 @@ pub struct CliOpts {
     #[clap(long = "input", parse(from_os_str))]
     #[serde(default)]
     pub input_file: Option<PathBuf>,
-    /// The destination directory, if we don't want to generate the output
-    /// .llbc files in the same directory as the input .rs files.
-    #[clap(long = "dest", parse(from_os_str))]
+    /// The destination file. By default `<crate_name>.llbc`.
+    #[clap(long = "dest-file", parse(from_os_str))]
     #[serde(default)]
-    pub dest_dir: Option<PathBuf>,
+    pub dest_file: Option<PathBuf>,
     /// If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
     /// Otherwise, use the standard borrow checker.
     #[clap(long = "polonius")]

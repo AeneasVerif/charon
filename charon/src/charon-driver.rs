@@ -89,6 +89,7 @@ mod values_utils;
 use crate::driver::{
     arg_value, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
 };
+use crate::export::CrateData;
 
 fn main() {
     // Initialize the logger
@@ -220,12 +221,20 @@ fn main() {
     let mut callback = CharonCallbacks::new(options);
     let mut res = callback.run_compiler(compiler_args);
     if let Some(crate_data) = &callback.crate_data {
+        // `crate_data` is `None` on the first call of the driver.
         if !callback.options.no_serialize {
             // # Final step: generate the files.
-            // `crate_data` is `None` on the first call of the driver.
             res = res.and_then(|()| {
+                let dest_file = callback.options.dest_file.clone().unwrap_or_else(|| {
+                    let (crate_name, extension) = match crate_data {
+                        CrateData::ULLBC(d) => (&d.name, "ullbc"),
+                        CrateData::LLBC(d) => (&d.name, "llbc"),
+                    };
+                    format!("{crate_name}.{extension}").into()
+                });
+                trace!("Target file: {:?}", dest_file);
                 crate_data
-                    .serialize_to_file(&callback.options.dest_dir)
+                    .serialize_to_file(&dest_file)
                     .map_err(|()| CharonFailure::Serialize)
             });
         }
