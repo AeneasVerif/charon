@@ -50,6 +50,7 @@ mod gast;
 mod gast_utils;
 mod get_mir;
 mod graphs;
+mod id_generator;
 mod id_map;
 mod id_vector;
 mod index_to_function_calls;

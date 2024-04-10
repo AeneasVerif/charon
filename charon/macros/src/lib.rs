@@ -36,13 +36,10 @@ pub mod {} {{
         MAX_INDEX = std::u32::MAX as usize;
     }}
 
-    #[derive(std::fmt::Debug, std::clone::Clone, std::marker::Copy)]
-    pub struct Generator {{
-        counter: usize,
-    }}
-
-    pub type Vector<T> = crate::id_vector::Vector<Id,T>;
+    pub type Vector<T> = crate::id_vector::Vector<Id, T>;
     pub type Map<T> = crate::id_map::Map<Id,T>;
+    pub type Generator = crate::id_generator::Generator<Id>;
+    pub type MapGenerator<K> = crate::id_generator::MapGenerator<K, Id>;
 
     impl Id {{
         pub fn is_zero(&self) -> bool {{
@@ -64,60 +61,6 @@ pub mod {} {{
           std::result::Result<(), std::fmt::Error> {{
             f.write_str(self.index().to_string().as_str())
         }}
-    }}
-    
-    impl Generator {{
-        pub fn new() -> Generator {{
-            Generator {{ counter: 0 }}
-        }}
-
-        pub fn new_with_init_value(counter: usize) -> Generator {{
-            Generator {{ counter }}
-        }}
-
-        pub fn fresh_id(&mut self) -> Id {{
-            // The release version of the code doesn't check for overflows.
-            // As the max usize is very large, overflows are extremely
-            // unlikely. Still, it is extremely important for our code that
-            // no overflows happen on the index counters.
-            let index = Id::new(self.counter);
-            self.counter = self.counter.checked_add(1).unwrap();
-            index
-        }}
-    }}
-
-    // TODO: factor this out in a specific file, make it an immutable map to have O(1) clone
-    #[derive(std::fmt::Debug, std::clone::Clone)]
-    pub struct MapGenerator<K : std::cmp::Eq + std::hash::Hash + std::cmp::Ord> {{
-      pub counter : Generator,
-      // We use a btree map so that the bindings are sorted by key
-      pub map : std::collections::BTreeMap<K, Id>,
-    }}
-
-    impl<K : std::cmp::Eq + std::hash::Hash + std::cmp::Ord> MapGenerator<K> {{
-      pub fn new() -> Self {{
-        MapGenerator {{ counter: Generator::new(), map: std::collections::BTreeMap::new() }}
-      }}
-
-      pub fn insert(&mut self, k: K) -> Id {{
-        match self.map.get(&k) {{
-          Option::Some(id) => *id,
-          Option::None => {{
-            let id = self.counter.fresh_id();
-            self.map.insert(k, id);
-            id
-          }}
-        }}
-      }}
-
-      pub fn get(&self, k: &K) -> Option<Id> {{
-        self.map.get(k).map(|id| *id)
-      }}
-
-      // We may need to generate fresh ids without inserting a value in the map
-      pub fn fresh_id(&mut self) -> Id {{
-        self.counter.fresh_id()
-      }}
     }}
 }}"
     };
