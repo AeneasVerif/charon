@@ -371,6 +371,10 @@ pub struct Variant {
     pub meta: Meta,
     pub name: String,
     pub fields: FieldId::Vector<Field>,
+    #[serde(skip)]
+    /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
+    /// `SwitchInt` targets with the corresponding `Variant`.
+    pub discriminant: u128,
 }
 
 #[derive(Debug, Clone, Serialize)]

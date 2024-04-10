@@ -8,8 +8,8 @@ use crate::llbc_ast::*;
 use crate::meta::combine_meta;
 use crate::translate_ctx::*;
 use crate::types::*;
-use std::collections::HashSet;
-use std::iter::FromIterator;
+use itertools::Itertools;
+use std::collections::{HashMap, HashSet};
 
 struct Visitor<'a, 'tcx, 'ctx> {
     ctx: &'a mut TransCtx<'tcx, 'ctx>,
@@ -42,73 +42,98 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                 let (meta2, switch, st3_opt) = match st2.content {
                     RawStatement::Sequence(
                         box Statement {
-                            content: RawStatement::Switch(switch),
+                            content: RawStatement::Switch(switch @ Switch::SwitchInt(..)),
                             meta: meta2,
                         },
                         box st3,
                     ) => (meta2, switch, Some(st3)),
-                    RawStatement::Switch(switch) => (st2.meta, switch, None),
-                    _ => unreachable!(),
+                    RawStatement::Switch(switch @ Switch::SwitchInt(..)) => {
+                        (st2.meta, switch, None)
+                    }
+                    _ => {
+                        register_error_or_panic!(
+                            self.ctx,
+                            st.meta.span.rust_span_data.span(),
+                            "A discriminant read must be followed by a `SwitchInt`"
+                        );
+                        // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
+                        // `Nop` the whole statement sequence.
+                        // FIXME: add `RawStatement::Error` for cases like this.
+                        *st = Statement {
+                            content: RawStatement::Nop,
+                            meta: st.meta,
+                        };
+                        return;
+                    }
                 };
 
                 let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) = switch
                 else { unreachable!() };
-                // Remark: the discriminant can be of any *signed* integer type
-                // (`isize` of course, but also `i8`, etc.).
                 assert!(op_p.projection.is_empty() && op_p.var_id == dest.var_id);
 
-                let targets = Vec::from_iter(targets.into_iter().map(|(v, e)| {
-                    (
-                        Vec::from_iter(
-                            v.into_iter()
-                                .map(|x| VariantId::Id::new(x.as_int().unwrap() as usize)),
-                        ),
-                        e,
-                    )
-                }));
-                // Filter the otherwise branch, if it is not necessary.
-                use crate::id_vector::ToUsize;
-                let covered_variants: HashSet<usize> =
-                    targets.iter().fold(HashSet::new(), |mut hs, (ids, _)| {
-                        ids.iter().for_each(|id| {
-                            let _ = hs.insert(id.to_usize());
-                        });
-                        hs
-                    });
-                let covers_all = {
-                    // Lookup the type of the scrutinee
-                    match self.ctx.type_decls.get(*adt_id) {
-                        None => {
-                            // This can happen if there was an error while
-                            // extracting the definitions
-                            assert!(self.ctx.error_count > 0);
-                            // For safety, we consider that not all the patterns
-                            // were covered
-                            false
-                        }
-                        Some(d) => {
-                            match &d.kind {
-                                TypeDeclKind::Struct(_) | TypeDeclKind::Opaque => {
-                                    // We shouldn't get there
-                                    register_error_or_panic!(
-                                        self.ctx,
-                                        st.meta.span.rust_span_data.span(),
-                                        "Unreachable case"
-                                    );
-                                    false
-                                }
-                                TypeDeclKind::Error(_) => false,
-                                TypeDeclKind::Enum(variants) => {
-                                    // Check that all the variants are covered
-                                    variants
-                                        .iter()
-                                        .enumerate()
-                                        .all(|(i, _)| covered_variants.contains(&i))
-                                }
+                // Lookup the type of the scrutinee
+                let variants = match self.ctx.type_decls.get(*adt_id) {
+                    // This can happen if there was an error while extracting the definitions
+                    None => None,
+                    Some(d) => {
+                        match &d.kind {
+                            TypeDeclKind::Struct(_) | TypeDeclKind::Opaque => {
+                                // We shouldn't get there
+                                register_error_or_panic!(
+                                    self.ctx,
+                                    st.meta.span.rust_span_data.span(),
+                                    "Unreachable case"
+                                );
+                                None
                             }
+                            TypeDeclKind::Error(_) => None,
+                            TypeDeclKind::Enum(variants) => Some(variants),
                         }
                     }
                 };
+                let Some(variants) = variants else {
+                    // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
+                    // `Nop` the whole statement sequence.
+                    assert!(self.ctx.error_count > 0);
+                    *st = Statement {
+                        content: RawStatement::Nop,
+                        meta: st.meta,
+                    };
+                    return
+                };
+
+                // Convert between discriminants and variant indices. Remark: the discriminant can
+                // be of any *signed* integer type (`isize`, `i8`, etc.).
+                let discr_to_id: HashMap<u128, VariantId::Id> = variants
+                    .iter_indexed_values()
+                    .map(|(id, variant)| (variant.discriminant, id))
+                    .collect();
+                let mut covered_discriminants: HashSet<u128> = HashSet::default();
+                let targets = targets
+                    .into_iter()
+                    .map(|(v, e)| {
+                        (
+                            v.into_iter()
+                                .filter_map(|x| {
+                                    let discr = x.to_bits();
+                                    covered_discriminants.insert(discr);
+                                    discr_to_id.get(&discr).or_else(|| {
+                                        register_error_or_panic!(
+                                            self.ctx,
+                                            st.meta.span.rust_span_data.span(),
+                                            "Found incorrect discriminant {discr} for enum {adt_id}"
+                                        );
+                                        None
+                                    })
+                                })
+                                .copied()
+                                .collect_vec(),
+                            e,
+                        )
+                    })
+                    .collect_vec();
+                // Filter the otherwise branch if it is not necessary.
+                let covers_all = covered_discriminants.len() == discr_to_id.len();
                 let otherwise = if covers_all { None } else { Some(otherwise) };
 
                 let switch = RawStatement::Switch(Switch::Match(p.clone(), targets, otherwise));
