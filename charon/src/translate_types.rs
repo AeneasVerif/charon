@@ -537,9 +537,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // The type is transparent: explore the variants
         let mut variants: Vec<Variant> = vec![];
         let erase_regions = false;
-        for (i, var_def) in adt.variants().iter().enumerate() {
+        for (i, (rust_var_id, var_def)) in adt.variants().iter_enumerated().enumerate() {
             let var_def: hax::VariantDef = var_def.sinto(&self.hax_state);
             trace!("variant {}: {:?}", i, var_def);
+
+            let discriminant: u128 = if adt.is_enum() {
+                adt.discriminant_for_variant(self.t_ctx.tcx, rust_var_id)
+                    .val
+            } else {
+                0
+            };
 
             let mut fields: Vec<Field> = vec![];
             /* This is for sanity: check that either all the fields have names, or
@@ -585,6 +592,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 meta,
                 name: variant_name,
                 fields: FieldId::Vector::from(fields),
+                discriminant,
             });
         }
 

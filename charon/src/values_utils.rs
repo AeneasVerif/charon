@@ -201,6 +201,24 @@ impl ScalarValue {
         }
     }
 
+    /// Most integers are represented as `u128` by rustc. We must be careful not to sign-extend.
+    pub fn to_bits(&self) -> u128 {
+        match *self {
+            ScalarValue::Usize(v) => v as u128,
+            ScalarValue::U8(v) => v as u128,
+            ScalarValue::U16(v) => v as u128,
+            ScalarValue::U32(v) => v as u128,
+            ScalarValue::U64(v) => v as u128,
+            ScalarValue::U128(v) => v,
+            ScalarValue::Isize(v) => v as usize as u128,
+            ScalarValue::I8(v) => v as u8 as u128,
+            ScalarValue::I16(v) => v as u16 as u128,
+            ScalarValue::I32(v) => v as u32 as u128,
+            ScalarValue::I64(v) => v as u64 as u128,
+            ScalarValue::I128(v) => v as u128,
+        }
+    }
+
     /// **Warning**: most constants are stored as u128 by rustc. When converting
     /// to i128, it is not correct to do `v as i128`, we must reinterpret the
     /// bits (see [ScalarValue::from_le_bytes]).

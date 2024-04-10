@@ -34,6 +34,7 @@ pub mod {} {{
              std::hash::Hash, std::cmp::PartialEq, std::cmp::Eq,
              std::cmp::PartialOrd, std::cmp::Ord)]
     pub struct Id {{
+        // Must fit in an u32 for serialization.
         index: usize,
     }}
 
@@ -47,6 +48,8 @@ pub mod {} {{
 
     impl Id {{
         pub fn new(init: usize) -> Id {{
+            // We need to fit in an u32 for serialization.
+            assert!(init <= std::u32::MAX as usize);
             Id {{ index: init }}
         }}
         
@@ -58,6 +61,7 @@ pub mod {} {{
             // Overflows are extremely unlikely, but we do want to make sure
             // we panick whenever there is one.
             self.index = self.index.checked_add(1).unwrap();
+            assert!(self.index <= std::u32::MAX as usize);
         }}
     }}
 

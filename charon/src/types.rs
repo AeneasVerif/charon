@@ -371,6 +371,9 @@ pub struct Variant {
     pub meta: Meta,
     pub name: String,
     pub fields: FieldId::Vector<Field>,
+    #[serde(skip)]
+    /// The discriminant used at runtime.
+    pub discriminant: u128,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -17,20 +17,17 @@ fn issue_92_nonpositive_variant_indices::main()
     @1 := issue_92_nonpositive_variant_indices::Ordering::Less {  }
     @fake_read(@1)
     match @1 {
-        18446744073709551615 => {
+        0 => {
             @3 := ()
             @0 := move (@3)
         },
-        0 => {
+        1 => {
             @4 := ()
             @0 := move (@4)
         },
-        1 => {
+        2 => {
             @2 := ()
             @0 := move (@2)
-        },
-        _ => {
-            panic
         }
     }
     drop @1
