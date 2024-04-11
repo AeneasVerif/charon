@@ -4,8 +4,27 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Minimum permissions required by skip-duplicate-actions
+permissions:
+  actions: write
+  contents: read
+
 jobs:
+  # Avoid `push` and `pull_request` running the same job twice
+  skip_duplicate_job:
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: 'same_content_newer'
+          skip_after_successful_duplicate: 'true'
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+
   nix:
+    needs: skip_duplicate_job
+    if: needs.skip_duplicate_job.outputs.should_skip != 'true'
     #runs-on: ubuntu-latest
     runs-on: [self-hosted, linux, nix]
     steps:
