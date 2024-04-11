@@ -1,0 +1,110 @@
+[ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
+
+struct issue_118_generic_copy::Foo = {}
+
+trait core::clone::Clone<Self>
+{
+    fn clone : core::clone::Clone::clone
+    fn clone_from
+}
+
+fn issue_118_generic_copy::{impl core::clone::Clone for issue_118_generic_copy::Foo}::clone<'_0>(@1: &'_0 (issue_118_generic_copy::Foo)) -> issue_118_generic_copy::Foo
+{
+    let @0: issue_118_generic_copy::Foo; // return
+    let self@1: &'_ (issue_118_generic_copy::Foo); // arg #1
+
+    @0 := copy (*(self@1))
+    return
+}
+
+impl issue_118_generic_copy::{impl core::clone::Clone for issue_118_generic_copy::Foo} : core::clone::Clone<issue_118_generic_copy::Foo>
+{
+    fn clone = issue_118_generic_copy::{impl core::clone::Clone for issue_118_generic_copy::Foo}::clone
+}
+
+trait core::marker::Copy<Self>
+{
+    parent_clause_0 : [@TraitClause0]: core::clone::Clone<Self>
+}
+
+impl issue_118_generic_copy::{impl core::marker::Copy for issue_118_generic_copy::Foo#1} : core::marker::Copy<issue_118_generic_copy::Foo>
+{
+    parent_clause0 = issue_118_generic_copy::{impl core::clone::Clone for issue_118_generic_copy::Foo}
+}
+
+fn issue_118_generic_copy::copy_foo(@1: issue_118_generic_copy::Foo)
+{
+    let @0: (); // return
+    let x@1: issue_118_generic_copy::Foo; // arg #1
+    let y@2: issue_118_generic_copy::Foo; // local
+    let z@3: issue_118_generic_copy::Foo; // local
+    let @4: (); // anonymous local
+
+    y@2 := copy (x@1)
+    @fake_read(y@2)
+    z@3 := copy (x@1)
+    @fake_read(z@3)
+    @4 := ()
+    @0 := move (@4)
+    drop z@3
+    drop y@2
+    @0 := ()
+    return
+}
+
+fn issue_118_generic_copy::copy_generic<T>(@1: T)
+where
+    [@TraitClause0]: core::marker::Copy<T>,
+{
+    let @0: (); // return
+    let x@1: T; // arg #1
+    let y@2: T; // local
+    let z@3: T; // local
+    let @4: (); // anonymous local
+
+    y@2 := copy (x@1)
+    @fake_read(y@2)
+    z@3 := copy (x@1)
+    @fake_read(z@3)
+    @4 := ()
+    @0 := move (@4)
+    drop z@3
+    drop y@2
+    @0 := ()
+    return
+}
+
+trait issue_118_generic_copy::Trait<Self>
+{
+    type Ty
+        where
+            [@TraitClause0]: core::marker::Copy<Self::Ty>,
+            [@TraitClause1]: core::clone::Clone<Self::Ty>,
+}
+
+fn issue_118_generic_copy::copy_assoc_ty<T>(@1: @TraitClause0::Ty)
+where
+    [@TraitClause0]: issue_118_generic_copy::Trait<T>,
+{
+    let @0: (); // return
+    let x@1: @TraitClause0::Ty; // arg #1
+    let y@2: @TraitClause0::Ty; // local
+    let z@3: @TraitClause0::Ty; // local
+    let @4: (); // anonymous local
+
+    y@2 := copy (x@1)
+    @fake_read(y@2)
+    z@3 := copy (x@1)
+    @fake_read(z@3)
+    @4 := ()
+    @0 := move (@4)
+    drop z@3
+    drop y@2
+    @0 := ()
+    return
+}
+
+fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+
+

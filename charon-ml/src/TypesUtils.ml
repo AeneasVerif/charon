@@ -202,29 +202,10 @@ let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
     false
   with Found -> true
 
-(** Return true if a type is "primitively copyable".
+(** Checks that a type is copyable.
   *
-  * "Primitively copyable" means that copying instances of this type doesn't
-  * require calling dedicated functions defined through the [Copy] trait. It
-  * is the case for types like integers, shared borrows, etc.
-  *
-  * Generally, ADTs are not primitively copyable. But some ADTs from the standard
-  * library like [Option] are. As it is not easy to check which external ADTs
-  * are primitively copyable (we would need to perform a lookup of the ADT
-  * definition and check its name, for instance) we don't fully check it.
+  * This used to recursively traverse the type to ensure all its fields were
+  * `Copy`. Instead we trust rustc's typechecking like we do for other marker
+  * traits.
   *)
-let rec ty_is_primitively_copyable (ty : ty) : bool =
-  match ty with
-  | TAdt (TAdtId _, generics) ->
-      List.for_all ty_is_primitively_copyable generics.types
-  | TAdt (TAssumed (TBox | TStr | TSlice), _) -> false
-  | TAdt ((TTuple | TAssumed TArray), generics) ->
-      List.for_all ty_is_primitively_copyable generics.types
-  | TVar _ | TNever -> false
-  | TLiteral (TBool | TChar | TInteger _) -> true
-  | TTraitType _ | TArrow (_, _, _) -> false
-  | TRef (_, _, RMut) -> false
-  | TRef (_, _, RShared) -> true
-  | TRawPtr (_, _) ->
-      (* Not sure what to do here, so being conservative *)
-      false
+let rec ty_is_copyable (_ty : ty) : bool = true
