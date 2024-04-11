@@ -212,16 +212,14 @@ fn main() {
     // on Cargo, the charon-driver is only called on the target (and not its
     // dependencies).
     //
-    // Note that the first call to the driver is with "--crate-name ___" and no
-    // source file, for Cargo to retrieve some information about the crate.
-    // We don't need to check this case in order to use the default Rustc callbacks
-    // instead of the Charon callback: because there is nothing to build, Rustc will
-    // take care of everything and actually not call us back.
+    // Cargo calls the driver twice. The first call to the driver is with "--crate-name ___" and no
+    // source file, for Cargo to retrieve some information about the crate. The compiler
+    // infrastructure will give cargo what it needs without calling any of our callbacks. In that
+    // case `callback.crate_data` stays `None`.
     let errors_as_warnings = options.errors_as_warnings;
     let mut callback = CharonCallbacks::new(options);
     let mut res = callback.run_compiler(compiler_args);
     if let Some(crate_data) = &callback.crate_data {
-        // `crate_data` is `None` on the first call of the driver.
         if !callback.options.no_serialize {
             // # Final step: generate the files.
             res = res.and_then(|()| {
