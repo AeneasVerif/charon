@@ -45,7 +45,13 @@ pub struct CliOpts {
     #[clap(long = "input", parse(from_os_str))]
     #[serde(default)]
     pub input_file: Option<PathBuf>,
-    /// The destination file. By default `<crate_name>.llbc`.
+    /// The destination directory. Files fill be generated as `<dest_dir>/<crate_name>.llbc`,
+    /// unless `dest_file` is set. `dest_dir` defaults to the current directory.
+    #[clap(long = "dest", parse(from_os_str))]
+    #[serde(default)]
+    pub dest_dir: Option<PathBuf>,
+    /// The destination file. By default `<dest_dir>/<crate_name>.llbc`. If this is set we gnore
+    /// `dest_dir`.
     #[clap(long = "dest-file", parse(from_os_str))]
     #[serde(default)]
     pub dest_file: Option<PathBuf>,

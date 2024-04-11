@@ -223,13 +223,19 @@ fn main() {
         if !callback.options.no_serialize {
             // # Final step: generate the files.
             res = res.and_then(|()| {
-                let dest_file = callback.options.dest_file.clone().unwrap_or_else(|| {
-                    let (crate_name, extension) = match crate_data {
-                        CrateData::ULLBC(d) => (&d.name, "ullbc"),
-                        CrateData::LLBC(d) => (&d.name, "llbc"),
-                    };
-                    format!("{crate_name}.{extension}").into()
-                });
+                let dest_file = match callback.options.dest_file.clone() {
+                    Some(f) => f,
+                    None => {
+                        let mut target_filename =
+                            callback.options.dest_dir.clone().unwrap_or_default();
+                        let (crate_name, extension) = match crate_data {
+                            CrateData::ULLBC(d) => (&d.name, "ullbc"),
+                            CrateData::LLBC(d) => (&d.name, "llbc"),
+                        };
+                        target_filename.push(format!("{crate_name}.{extension}"));
+                        target_filename
+                    }
+                };
                 trace!("Target file: {:?}", dest_file);
                 crate_data
                     .serialize_to_file(&dest_file)

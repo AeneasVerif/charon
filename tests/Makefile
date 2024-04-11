@@ -59,7 +59,7 @@ test-demo:
 # =============================================================================
 
 .PHONY: test-%
-# The opt-level is set byy default by cargo; some tests need it.
+# The opt-level is set by default by cargo; some tests need it.
 test-%: CHARON_CMD = $(CHARON_DRIVER) rustc src/$*.rs -C opt-level=3 -- --crate $* $(OPTIONS)
 test-%: build
 
@@ -73,17 +73,17 @@ clean:
 ifeq (, $(NOT_ALL_TESTS))
 
 test-%:
-	$(CHARON_CMD) --dest-file $(DEST)/llbc/$*.llbc
-#	$(CHARON_CMD) --dest-file $(DEST)/ullbc/$*.ullbc --ullbc
+	$(CHARON_CMD) --dest $(DEST)/llbc
+#	$(CHARON_CMD) --dest $(DEST)/ullbc --ullbc
 # TODO: this fails for now (it seems some closures are turned into globals,
 # and I don't know how to handle them).
-#	$(CHARON_CMD) --dest-file $(DEST)/llbc_prom/$*.llbc --mir_promoted
+#	$(CHARON_CMD) --dest $(DEST)/llbc_prom --mir_promoted
 # TODO: this fails for now (there is some very low-level desugaring happening)
-#	$(CHARON_CMD) --dest-file $(DEST)/llbc_opt/$*.llbc --mir_optimized
+#	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
 
 else
 
 test-%:
-	$(CHARON_CMD) --dest-file $(DEST)/llbc/$*.llbc
+	$(CHARON_CMD) --dest $(DEST)/llbc
 
 endif
