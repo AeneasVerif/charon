@@ -339,6 +339,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // (i.e., we shouldn't have to introduce top-level let-bindings).
                     name.push(PathElem::Ident("closure".to_string(), disambiguator))
                 }
+                DefPathData::ForeignMod => {
+                    // Do nothing, functions in `extern` blocks are in the same namespace as the
+                    // block.
+                }
                 _ => {
                     error!("Unexpected DefPathData: {:?}", data);
                     unreachable!("Unexpected DefPathData: {:?}", data);
@@ -400,6 +404,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             | ItemKind::Fn(_, _, _)
             | ItemKind::Impl(_)
             | ItemKind::Mod(_)
+            | ItemKind::ForeignMod { .. }
             | ItemKind::Const(_, _)
             | ItemKind::Static(_, _, _)
             | ItemKind::Macro(_, _)

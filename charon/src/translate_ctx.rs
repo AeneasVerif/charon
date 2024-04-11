@@ -19,6 +19,7 @@ use linked_hash_set::LinkedHashSet;
 use macros::VariantIndexArity;
 use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
+use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::cmp::{Ord, Ordering, PartialOrd};
@@ -481,9 +482,17 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
+    /// Whether this item is in an `extern { .. }` block, in which case it has no body.
+    pub(crate) fn id_is_extern_item(&mut self, id: DefId) -> bool {
+        id.as_local().is_some_and(|local_def_id| {
+            let node = self.tcx.hir().find_by_def_id(local_def_id);
+            matches!(node, Some(HirNode::ForeignItem(_)))
+        })
+    }
+
     pub(crate) fn id_is_opaque(&mut self, id: DefId) -> Result<bool, Error> {
         let name = self.def_id_to_name(id)?;
-        Ok(self.crate_info.is_opaque_decl(&name))
+        Ok(self.crate_info.is_opaque_decl(&name) || self.id_is_extern_item(id))
     }
 
     pub(crate) fn id_is_transparent(&mut self, id: DefId) -> Result<bool, Error> {

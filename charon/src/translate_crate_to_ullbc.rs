@@ -9,7 +9,7 @@ use crate::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use linked_hash_set::LinkedHashSet;
-use rustc_hir::{Defaultness, ImplItem, ImplItemKind, Item, ItemKind};
+use rustc_hir::{Defaultness, ForeignItemKind, ImplItem, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -193,6 +193,27 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         // Lookup and register the item
                         let item = hir_map.item(*item_id);
                         self.register_local_hir_item(false, item)?;
+                    }
+                }
+                Ok(())
+            }
+            ItemKind::ForeignMod { items, .. } => {
+                trace!("Diving into `extern` block [{:?}]", def_id);
+                let hir_map = self.tcx.hir();
+                for item in *items {
+                    // Lookup and register the item
+                    let item = hir_map.foreign_item(item.id);
+                    let def_id = item.owner_id.to_def_id();
+                    match item.kind {
+                        ForeignItemKind::Fn(..) => {
+                            let _ = self.translate_fun_decl_id(&None, def_id);
+                        }
+                        ForeignItemKind::Static(..) => {
+                            let _ = self.translate_global_decl_id(&None, def_id);
+                        }
+                        ForeignItemKind::Type => {
+                            let _ = self.translate_type_decl_id(&None, def_id);
+                        }
                     }
                 }
                 Ok(())
