@@ -28,7 +28,7 @@ fn issue_97_missing_parent_item_clause::test(@1: issue_97_missing_parent_item_cl
     let @4: (); // anonymous local
 
     @3 := &two-phase-mut tree@1
-    @2 := issue_97_missing_parent_item_clause::{issue_97_missing_parent_item_clause::AVLTree<T>}::insert<u32>(move (@3))
+    @2 := issue_97_missing_parent_item_clause::{issue_97_missing_parent_item_clause::AVLTree<T>}::insert<u32>[issue_97_missing_parent_item_clause::{impl issue_97_missing_parent_item_clause::Ord for u32#1}](move (@3))
     drop @3
     drop @2
     @4 := ()

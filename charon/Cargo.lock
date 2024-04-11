@@ -467,7 +467,7 @@ dependencies = [
 [[package]]
 name = "hax-adt-into"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon/globals#5d700e3d119995e1cf75695153f6e95bfd677537"
+source = "git+https://github.com/Nadrieril/hax?branch=fix-parent-item-clauses#fdccc197b51731b57beb628387ecc2e1879bacdf"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -478,7 +478,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon/globals#5d700e3d119995e1cf75695153f6e95bfd677537"
+source = "git+https://github.com/Nadrieril/hax?branch=fix-parent-item-clauses#fdccc197b51731b57beb628387ecc2e1879bacdf"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -495,7 +495,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hacspec-v2.git?branch=charon/globals#5d700e3d119995e1cf75695153f6e95bfd677537"
+source = "git+https://github.com/Nadrieril/hax?branch=fix-parent-item-clauses#fdccc197b51731b57beb628387ecc2e1879bacdf"
 dependencies = [
  "schemars",
  "serde",

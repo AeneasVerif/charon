@@ -42,8 +42,8 @@ take_mut = "0.2.2"
 toml = "0.5.10"
 walkdir = "2.3.2"
 
-hax-frontend-exporter = { git = "https://github.com/hacspec/hacspec-v2.git", branch = "charon/globals" }
-hax-frontend-exporter-options = { git = "https://github.com/hacspec/hacspec-v2.git", branch = "charon/globals" }
+hax-frontend-exporter = { git = "https://github.com/Nadrieril/hax", branch = "fix-parent-item-clauses" }
+hax-frontend-exporter-options = { git = "https://github.com/Nadrieril/hax", branch = "fix-parent-item-clauses" }
 #hax-frontend-exporter = { path = "../../hacspec-v2/frontend/exporter" }
 #hax-frontend-exporter-options = { path = "../../hacspec-v2/frontend/exporter/options" }
 macros = { path = "./macros" }
