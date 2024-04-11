@@ -208,4 +208,4 @@ let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
   * `Copy`. Instead we trust rustc's typechecking like we do for other marker
   * traits.
   *)
-let rec ty_is_copyable (_ty : ty) : bool = true
+let ty_is_copyable (_ty : ty) : bool = true
