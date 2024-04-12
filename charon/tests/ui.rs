@@ -29,7 +29,10 @@ enum TestKind {
 
 struct MagicComments {
     test_kind: TestKind,
+    /// The options with which to run charon.
     cli_opts: CliOpts,
+    /// Whether we should store the test output in a file and check it.
+    check_output: bool,
 }
 
 static HELP_STRING: &str = unindent!(
@@ -40,6 +43,8 @@ static HELP_STRING: &str = unindent!(
     
     Other comments can be used to control the behavior of charon:
     - `//@ charon-args=<charon cli options>`
+    - `//@ no-check-output`: don't store the output in a file; useful if the output is unstable or
+         differs between debug and release mode.
     "
 );
 
@@ -48,6 +53,7 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
     let mut comments = MagicComments {
         test_kind: TestKind::Unspecified,
         cli_opts: CliOpts::default(),
+        check_output: true,
     };
     for line in read_to_string(input_path)?.lines() {
         let Some(line) = line.strip_prefix("//@") else { break };
@@ -58,6 +64,8 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
             comments.test_kind = TestKind::KnownFailure;
         } else if line == "output=pretty-llbc" {
             comments.test_kind = TestKind::PrettyLlbc;
+        } else if line == "no-check-output" {
+            comments.check_output = false;
         } else if let Some(charon_opts) = line.strip_prefix("charon-args=") {
             use clap::Parser;
             // The first arg is normally the command name.
@@ -134,9 +142,6 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 };
                 bail!("Compilation was expected to panic but instead {status}: {stderr}");
             }
-            // We don't commit the panic message to a file because it can differ between debug and
-            // release modes.
-            return Ok(());
         }
         TestKind::KnownFailure => {
             if output.status.code() != Some(1) {
@@ -155,10 +160,17 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
         }
         TestKind::Unspecified => unreachable!(),
     }
-    let actual = snapbox::Data::text(stderr).map_text(snapbox::utils::normalize_lines);
-    match action {
-        Action::Verify => expect_file_contents(&test_case.expected, actual)?,
-        Action::Overwrite => actual.write_to(&test_case.expected)?,
+    if test_case.magic_comments.check_output {
+        let actual = snapbox::Data::text(stderr).map_text(snapbox::utils::normalize_lines);
+        match action {
+            Action::Verify => expect_file_contents(&test_case.expected, actual)?,
+            Action::Overwrite => actual.write_to(&test_case.expected)?,
+        }
+    } else {
+        // Remove the `out` file if there's one from a previous run.
+        if test_case.expected.exists() {
+            std::fs::remove_file(&test_case.expected)?;
+        }
     }
 
     Ok(())
