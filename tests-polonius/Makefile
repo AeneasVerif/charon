@@ -1,4 +1,5 @@
 CURRENT_DIR = $(shell pwd)
+# Call `charon` instead of `charon-driver` because we have dependencies in `Cargo.toml`.
 CHARON ?= $(CURRENT_DIR)/../bin/charon
 DEST ?= .
 OPTIONS += --polonius

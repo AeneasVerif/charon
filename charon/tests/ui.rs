@@ -85,16 +85,20 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     if matches!(test_case.magic_comments.test_kind, TestKind::Unspecified) {
         bail!(HELP_STRING);
     }
+
     // Call the charon driver.
     let mut options = CliOpts::default();
     options.print_llbc = true;
     options.no_serialize = true;
+    options.crate_name = Some("test_crate".into());
+
     let output = Command::cargo_bin("charon-driver")?
         .arg("rustc")
         .arg(test_case.input_path.to_string_lossy().into_owned())
         .env(CHARON_ARGS, serde_json::to_string(&options).unwrap())
         .output()?;
     let stderr = String::from_utf8(output.stderr.clone())?;
+
     if matches!(test_case.magic_comments.test_kind, TestKind::KnownPanic) {
         if output.status.code() != Some(101) {
             let status = if output.status.success() {

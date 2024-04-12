@@ -89,6 +89,7 @@ mod values_utils;
 use crate::driver::{
     arg_value, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
 };
+use crate::export::CrateData;
 
 fn main() {
     // Initialize the logger
@@ -102,14 +103,6 @@ fn main() {
         "Impossible: zero arguments on the command-line!"
     );
     trace!("original arguments (computed by cargo): {:?}", origin_args);
-
-    // Retrieve the Charon options by deserializing them from the environment variable
-    // (cargo-charon serialized the arguments and stored them in a specific environment
-    // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
-    let options: cli_options::CliOpts = match std::env::var(cli_options::CHARON_ARGS) {
-        Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
-        Err(_) => Default::default(),
-    };
 
     // Compute the sysroot (the path to the executable of the compiler):
     // - if it is already in the command line arguments, just retrieve it from there
@@ -134,6 +127,24 @@ fn main() {
     // Rem.: the second argument is "rustc" (passed by Cargo because RUSTC_WRAPPER is set).
     assert!(origin_args[1].ends_with("rustc"));
     let mut compiler_args: Vec<String> = origin_args[2..].to_vec();
+
+    // Retrieve the Charon options by deserializing them from the environment variable
+    // (cargo-charon serialized the arguments and stored them in a specific environment
+    // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
+    let options: cli_options::CliOpts = match std::env::var(cli_options::CHARON_ARGS) {
+        Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
+        Err(_) => {
+            // Parse any arguments after `--` as charon arguments.
+            if let Some((i, _)) = compiler_args.iter().enumerate().find(|(_, s)| *s == "--") {
+                use clap::Parser;
+                let mut charon_args = compiler_args.split_off(i);
+                charon_args[0] = origin_args[0].clone(); // Replace `--` with the name of the binary
+                cli_options::CliOpts::parse_from(charon_args)
+            } else {
+                Default::default()
+            }
+        }
+    };
 
     if !has_sysroot_arg {
         compiler_args.extend(vec!["--sysroot".to_string(), sysroot]);
@@ -201,21 +212,33 @@ fn main() {
     // on Cargo, the charon-driver is only called on the target (and not its
     // dependencies).
     //
-    // Note that the first call to the driver is with "--crate-name ___" and no
-    // source file, for Cargo to retrieve some information about the crate.
-    // We don't need to check this case in order to use the default Rustc callbacks
-    // instead of the Charon callback: because there is nothing to build, Rustc will
-    // take care of everything and actually not call us back.
+    // Cargo calls the driver twice. The first call to the driver is with "--crate-name ___" and no
+    // source file, for Cargo to retrieve some information about the crate. The compiler
+    // infrastructure will give cargo what it needs without calling any of our callbacks. In that
+    // case `callback.crate_data` stays `None`.
     let errors_as_warnings = options.errors_as_warnings;
     let mut callback = CharonCallbacks::new(options);
     let mut res = callback.run_compiler(compiler_args);
     if let Some(crate_data) = &callback.crate_data {
         if !callback.options.no_serialize {
             // # Final step: generate the files.
-            // `crate_data` is `None` on the first call of the driver.
             res = res.and_then(|()| {
+                let dest_file = match callback.options.dest_file.clone() {
+                    Some(f) => f,
+                    None => {
+                        let mut target_filename =
+                            callback.options.dest_dir.clone().unwrap_or_default();
+                        let (crate_name, extension) = match crate_data {
+                            CrateData::ULLBC(d) => (&d.name, "ullbc"),
+                            CrateData::LLBC(d) => (&d.name, "llbc"),
+                        };
+                        target_filename.push(format!("{crate_name}.{extension}"));
+                        target_filename
+                    }
+                };
+                trace!("Target file: {:?}", dest_file);
                 crate_data
-                    .serialize_to_file(&callback.options.dest_dir)
+                    .serialize_to_file(&dest_file)
                     .map_err(|()| CharonFailure::Serialize)
             });
         }

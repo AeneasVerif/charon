@@ -1,5 +1,5 @@
 CURRENT_DIR = $(shell pwd)
-CHARON ?= $(CURRENT_DIR)/../bin/charon
+CHARON_DRIVER ?= $(CURRENT_DIR)/../bin/charon-driver
 DEST ?= .
 OPTIONS ?=
 CHARON_CMD :=
@@ -59,7 +59,8 @@ test-demo:
 # =============================================================================
 
 .PHONY: test-%
-test-%: CHARON_CMD = $(CHARON) --crate $* --input src/$*.rs $(OPTIONS)
+# The opt-level is set by default by cargo; some tests need it.
+test-%: CHARON_CMD = $(CHARON_DRIVER) rustc src/$*.rs -C opt-level=3 -- --crate $* $(OPTIONS)
 test-%: build
 
 .PHONY: clean

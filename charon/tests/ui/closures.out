@@ -1,6 +1,6 @@
 [ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
 
-fn closures::incr_u32(@1: u32) -> u32
+fn test_crate::incr_u32(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -37,7 +37,7 @@ enum core::option::Option<T> =
 
 fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> (parents((parents((parents(Self)::[@TraitClause0]))::[@TraitClause3]))::[@TraitClause0])::Output
 
-fn closures::map_option<T, F>(@1: core::option::Option<T>, @2: F) -> core::option::Option<T>
+fn test_crate::map_option<T, F>(@1: core::option::Option<T>, @2: F) -> core::option::Option<T>
 where
     [@TraitClause0]: core::ops::function::Fn<F, (T)>,
     (parents((parents((parents((parents(@TraitClause0)::[@TraitClause3]))::[@TraitClause0]))::[@TraitClause3]))::[@TraitClause0])::Output = T,
@@ -78,7 +78,7 @@ where
     return
 }
 
-fn closures::map_option_pointer_ref<'a, T, F>(@1: &'a (core::option::Option<T>), @2: fn<'_0>(&'_0 (T)) -> T) -> core::option::Option<T>
+fn test_crate::map_option_pointer_ref<'a, T, F>(@1: &'a (core::option::Option<T>), @2: fn<'_0>(&'_0 (T)) -> T) -> core::option::Option<T>
 {
     let @0: core::option::Option<T>; // return
     let x@1: &'_ (core::option::Option<T>); // arg #1
@@ -109,19 +109,19 @@ fn closures::map_option_pointer_ref<'a, T, F>(@1: &'a (core::option::Option<T>),
     return
 }
 
-fn closures::test_map_option1(@1: core::option::Option<u32>) -> core::option::Option<u32>
+fn test_crate::test_map_option1(@1: core::option::Option<u32>) -> core::option::Option<u32>
 {
     let @0: core::option::Option<u32>; // return
     let x@1: core::option::Option<u32>; // arg #1
     let @2: core::option::Option<u32>; // anonymous local
 
     @2 := copy (x@1)
-    @0 := closures::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@2), const (closures::incr_u32))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@2), const (test_crate::incr_u32))
     drop @2
     return
 }
 
-fn closures::test_closure_u32::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
+fn test_crate::test_closure_u32::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
 {
     let @0: u32; // return
     let state@1: &'_0 (()); // arg #1
@@ -131,7 +131,7 @@ fn closures::test_closure_u32::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
     return
 }
 
-fn closures::test_closure_u32(@1: u32) -> u32
+fn test_crate::test_closure_u32(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -140,7 +140,7 @@ fn closures::test_closure_u32(@1: u32) -> u32
     let @4: fn(u32) -> u32; // anonymous local
     let @5: u32; // anonymous local
 
-    @3 := {closures::test_closure_u32::closure} {}
+    @3 := {test_crate::test_closure_u32::closure} {}
     f@2 := cast<fn(u32) -> u32,fn(u32) -> u32>(move (@3))
     drop @3
     @fake_read(f@2)
@@ -153,7 +153,7 @@ fn closures::test_closure_u32(@1: u32) -> u32
     return
 }
 
-fn closures::test_closure_ref_u32::closure<'_0, '_1>(@1: &'_1 (()), @2: (&'_0 (u32))) -> &'_0 (u32)
+fn test_crate::test_closure_ref_u32::closure<'_0, '_1>(@1: &'_1 (()), @2: (&'_0 (u32))) -> &'_0 (u32)
 {
     let @0: &'_ (u32); // return
     let state@1: &'_1 (()); // arg #1
@@ -163,7 +163,7 @@ fn closures::test_closure_ref_u32::closure<'_0, '_1>(@1: &'_1 (()), @2: (&'_0 (u
     return
 }
 
-fn closures::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
+fn test_crate::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
 {
     let @0: &'_ (u32); // return
     let x@1: &'_ (u32); // arg #1
@@ -173,7 +173,7 @@ fn closures::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
     let @5: fn<'_0>(&'_0 (u32)) -> &'_0 (u32); // anonymous local
     let @6: &'_ (u32); // anonymous local
 
-    @3 := {closures::test_closure_ref_u32::closure} {}
+    @3 := {test_crate::test_closure_ref_u32::closure} {}
     f@2 := cast<fn<'_0>(&'_0 (u32)) -> &'_0 (u32),fn<'_0>(&'_0 (u32)) -> &'_0 (u32)>(move (@3))
     drop @3
     @fake_read(f@2)
@@ -188,7 +188,7 @@ fn closures::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
     return
 }
 
-fn closures::test_closure_ref_param::closure<'_0, '_1, T>(@1: &'_1 (()), @2: (&'_0 (T))) -> &'_0 (T)
+fn test_crate::test_closure_ref_param::closure<'_0, '_1, T>(@1: &'_1 (()), @2: (&'_0 (T))) -> &'_0 (T)
 {
     let @0: &'_ (T); // return
     let state@1: &'_1 (()); // arg #1
@@ -198,7 +198,7 @@ fn closures::test_closure_ref_param::closure<'_0, '_1, T>(@1: &'_1 (()), @2: (&'
     return
 }
 
-fn closures::test_closure_ref_param<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
+fn test_crate::test_closure_ref_param<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
 {
     let @0: &'_ (T); // return
     let x@1: &'_ (T); // arg #1
@@ -208,7 +208,7 @@ fn closures::test_closure_ref_param<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
     let @5: fn<'_0>(&'_0 (T)) -> &'_0 (T); // anonymous local
     let @6: &'_ (T); // anonymous local
 
-    @3 := {closures::test_closure_ref_param::closure<T>} {}
+    @3 := {test_crate::test_closure_ref_param::closure<T>} {}
     f@2 := cast<fn<'_0>(&'_0 (T)) -> &'_0 (T),fn<'_0>(&'_0 (T)) -> &'_0 (T)>(move (@3))
     drop @3
     @fake_read(f@2)
@@ -223,7 +223,7 @@ fn closures::test_closure_ref_param<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
     return
 }
 
-fn closures::test_map_option2::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
+fn test_crate::test_map_option2::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
 {
     let @0: u32; // return
     let state@1: &'_0 (()); // arg #1
@@ -236,7 +236,7 @@ fn closures::test_map_option2::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
     return
 }
 
-fn closures::test_map_option2(@1: core::option::Option<u32>) -> core::option::Option<u32>
+fn test_crate::test_map_option2(@1: core::option::Option<u32>) -> core::option::Option<u32>
 {
     let @0: core::option::Option<u32>; // return
     let x@1: core::option::Option<u32>; // arg #1
@@ -245,20 +245,20 @@ fn closures::test_map_option2(@1: core::option::Option<u32>) -> core::option::Op
     let @4: core::option::Option<u32>; // anonymous local
     let @5: fn(u32) -> u32; // anonymous local
 
-    @3 := {closures::test_map_option2::closure} {}
+    @3 := {test_crate::test_map_option2::closure} {}
     f@2 := cast<fn(u32) -> u32,fn(u32) -> u32>(move (@3))
     drop @3
     @fake_read(f@2)
     @4 := copy (x@1)
     @5 := copy (f@2)
-    @0 := closures::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@4), move (@5))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@4), move (@5))
     drop @5
     drop @4
     drop f@2
     return
 }
 
-fn closures::id<T>(@1: T) -> T
+fn test_crate::id<T>(@1: T) -> T
 {
     let @0: T; // return
     let x@1: T; // arg #1
@@ -268,19 +268,19 @@ fn closures::id<T>(@1: T) -> T
     return
 }
 
-fn closures::test_map_option_id1(@1: core::option::Option<u32>) -> core::option::Option<u32>
+fn test_crate::test_map_option_id1(@1: core::option::Option<u32>) -> core::option::Option<u32>
 {
     let @0: core::option::Option<u32>; // return
     let x@1: core::option::Option<u32>; // arg #1
     let @2: core::option::Option<u32>; // anonymous local
 
     @2 := copy (x@1)
-    @0 := closures::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@2), const (closures::id<u32>))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@2), const (test_crate::id<u32>))
     drop @2
     return
 }
 
-fn closures::test_map_option_id2(@1: core::option::Option<u32>) -> core::option::Option<u32>
+fn test_crate::test_map_option_id2(@1: core::option::Option<u32>) -> core::option::Option<u32>
 {
     let @0: core::option::Option<u32>; // return
     let x@1: core::option::Option<u32>; // arg #1
@@ -288,11 +288,11 @@ fn closures::test_map_option_id2(@1: core::option::Option<u32>) -> core::option:
     let @3: core::option::Option<u32>; // anonymous local
     let @4: fn(u32) -> u32; // anonymous local
 
-    f@2 := const (closures::id<u32>)
+    f@2 := const (test_crate::id<u32>)
     @fake_read(f@2)
     @3 := copy (x@1)
     @4 := copy (f@2)
-    @0 := closures::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@3), move (@4))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@3), move (@4))
     drop @4
     drop @3
     drop f@2
@@ -307,7 +307,7 @@ trait core::clone::Clone<Self>
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-fn closures::id_clone<T>(@1: T) -> T
+fn test_crate::id_clone<T>(@1: T) -> T
 where
     [@TraitClause0]: core::clone::Clone<T>,
 {
@@ -329,7 +329,7 @@ impl core::clone::impls::{impl core::clone::Clone for u32#8} : core::clone::Clon
     fn clone = core::clone::impls::{impl core::clone::Clone for u32#8}::clone
 }
 
-fn closures::test_id_clone(@1: u32) -> u32
+fn test_crate::test_id_clone(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -337,7 +337,7 @@ fn closures::test_id_clone(@1: u32) -> u32
     let @3: fn(u32) -> u32; // anonymous local
     let @4: u32; // anonymous local
 
-    f@2 := cast<fn(u32) -> u32,fn(u32) -> u32>(const (closures::id_clone<u32>[core::clone::impls::{impl core::clone::Clone for u32#8}]))
+    f@2 := cast<fn(u32) -> u32,fn(u32) -> u32>(const (test_crate::id_clone<u32>[core::clone::impls::{impl core::clone::Clone for u32#8}]))
     @fake_read(f@2)
     @3 := copy (f@2)
     @4 := copy (x@1)
@@ -348,7 +348,7 @@ fn closures::test_id_clone(@1: u32) -> u32
     return
 }
 
-fn closures::test_id_clone_param<T>(@1: T) -> T
+fn test_crate::test_id_clone_param<T>(@1: T) -> T
 where
     [@TraitClause0]: core::clone::Clone<T>,
 {
@@ -358,7 +358,7 @@ where
     let @3: fn(T) -> T; // anonymous local
     let @4: T; // anonymous local
 
-    f@2 := cast<fn(T) -> T,fn(T) -> T>(const (closures::id_clone<T>[@TraitClause0]))
+    f@2 := cast<fn(T) -> T,fn(T) -> T>(const (test_crate::id_clone<T>[@TraitClause0]))
     @fake_read(f@2)
     @3 := copy (f@2)
     @4 := move (x@1)
@@ -370,19 +370,19 @@ where
     return
 }
 
-fn closures::test_map_option_id_clone(@1: core::option::Option<u32>) -> core::option::Option<u32>
+fn test_crate::test_map_option_id_clone(@1: core::option::Option<u32>) -> core::option::Option<u32>
 {
     let @0: core::option::Option<u32>; // return
     let x@1: core::option::Option<u32>; // arg #1
     let @2: core::option::Option<u32>; // anonymous local
 
     @2 := copy (x@1)
-    @0 := closures::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@2), const (closures::id_clone<u32>[core::clone::impls::{impl core::clone::Clone for u32#8}]))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@2), const (test_crate::id_clone<u32>[core::clone::impls::{impl core::clone::Clone for u32#8}]))
     drop @2
     return
 }
 
-fn closures::test_map_option3::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
+fn test_crate::test_map_option3::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
 {
     let @0: u32; // return
     let state@1: &'_0 (()); // arg #1
@@ -395,7 +395,7 @@ fn closures::test_map_option3::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
     return
 }
 
-fn closures::test_map_option3(@1: core::option::Option<u32>) -> core::option::Option<u32>
+fn test_crate::test_map_option3(@1: core::option::Option<u32>) -> core::option::Option<u32>
 {
     let @0: core::option::Option<u32>; // return
     let x@1: core::option::Option<u32>; // arg #1
@@ -403,14 +403,14 @@ fn closures::test_map_option3(@1: core::option::Option<u32>) -> core::option::Op
     let @3: fn(u32) -> u32; // anonymous local
 
     @2 := copy (x@1)
-    @3 := {closures::test_map_option3::closure} {}
-    @0 := closures::map_option<u32, fn(u32) -> u32>[(closure:closures::test_map_option3::closure)](move (@2), move (@3))
+    @3 := {test_crate::test_map_option3::closure} {}
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(closure:test_crate::test_map_option3::closure)](move (@2), move (@3))
     drop @3
     drop @2
     return
 }
 
-fn closures::test_regions::closure<'_0, '_1>(@1: &'_1 (()), @2: (&'_0 (&'_ (u32)))) -> u32
+fn test_crate::test_regions::closure<'_0, '_1>(@1: &'_1 (()), @2: (&'_0 (&'_ (u32)))) -> u32
 {
     let @0: u32; // return
     let state@1: &'_1 (()); // arg #1
@@ -420,7 +420,7 @@ fn closures::test_regions::closure<'_0, '_1>(@1: &'_1 (()), @2: (&'_0 (&'_ (u32)
     return
 }
 
-fn closures::test_regions<'a>(@1: &'a (u32)) -> u32
+fn test_crate::test_regions<'a>(@1: &'a (u32)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ (u32); // arg #1
@@ -430,7 +430,7 @@ fn closures::test_regions<'a>(@1: &'a (u32)) -> u32
     let @5: &'_ (&'_ (u32)); // anonymous local
     let @6: &'_ (&'_ (u32)); // anonymous local
 
-    @3 := {closures::test_regions::closure} {}
+    @3 := {test_crate::test_regions::closure} {}
     f@2 := cast<fn<'_0>(&'_0 (&'_ (u32))) -> u32,fn<'_0>(&'_0 (&'_ (u32))) -> u32>(move (@3))
     drop @3
     @fake_read(f@2)
@@ -445,7 +445,7 @@ fn closures::test_regions<'a>(@1: &'a (u32)) -> u32
     return
 }
 
-fn closures::test_closure_capture::closure<'_0, '_1, '_2>(@1: &'_0 ((&'_1 (u32), &'_2 (u32))), @2: (u32)) -> u32
+fn test_crate::test_closure_capture::closure<'_0, '_1, '_2>(@1: &'_0 ((&'_1 (u32), &'_2 (u32))), @2: (u32)) -> u32
 {
     let @0: u32; // return
     let state@1: &'_0 ((&'_1 (u32), &'_2 (u32))); // arg #1
@@ -467,7 +467,7 @@ fn closures::test_closure_capture::closure<'_0, '_1, '_2>(@1: &'_0 ((&'_1 (u32),
     return
 }
 
-fn closures::test_closure_capture(@1: u32, @2: u32) -> u32
+fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -481,14 +481,14 @@ fn closures::test_closure_capture(@1: u32, @2: u32) -> u32
 
     @5 := &x@1
     @6 := &y@2
-    @4 := {closures::test_closure_capture::closure} {move (@5), move (@6)}
+    @4 := {test_crate::test_closure_capture::closure} {move (@5), move (@6)}
     drop @6
     drop @5
     f@3 := &@4
     @fake_read(f@3)
     @7 := &*(f@3)
     @8 := (const (0 : u32))
-    @0 := (closure:closures::test_closure_capture::closure)::call(move (@7), move (@8))
+    @0 := (closure:test_crate::test_closure_capture::closure)::call(move (@7), move (@8))
     drop @8
     drop @7
     drop @4
@@ -496,7 +496,7 @@ fn closures::test_closure_capture(@1: u32, @2: u32) -> u32
     return
 }
 
-fn closures::test_closure_clone::closure<'_0, T>(@1: &'_0 (()), @2: (T)) -> T
+fn test_crate::test_closure_clone::closure<'_0, T>(@1: &'_0 (()), @2: (T)) -> T
 where
     [@TraitClause0]: core::clone::Clone<T>,
 {
@@ -512,7 +512,7 @@ where
     return
 }
 
-fn closures::test_closure_clone<T>(@1: T) -> T
+fn test_crate::test_closure_clone<T>(@1: T) -> T
 where
     [@TraitClause0]: core::clone::Clone<T>,
 {
@@ -524,13 +524,13 @@ where
     let @5: (T); // anonymous local
     let @6: T; // anonymous local
 
-    @3 := {closures::test_closure_clone::closure<T>[@TraitClause0]} {}
+    @3 := {test_crate::test_closure_clone::closure<T>[@TraitClause0]} {}
     f@2 := &@3
     @fake_read(f@2)
     @4 := &*(f@2)
     @6 := move (x@1)
     @5 := (move (@6))
-    @0 := (closure:closures::test_closure_clone::closure<T>)::call(move (@4), move (@5))
+    @0 := (closure:test_crate::test_closure_clone::closure<T>)::call(move (@4), move (@5))
     drop @6
     drop @6
     drop @5
@@ -541,7 +541,7 @@ where
     return
 }
 
-fn closures::test_array_map::closure<'_0>(@1: &'_0 mut (()), @2: (i32)) -> i32
+fn test_crate::test_array_map::closure<'_0>(@1: &'_0 mut (()), @2: (i32)) -> i32
 {
     let @0: i32; // return
     let state@1: &'_0 mut (()); // arg #1
@@ -556,7 +556,7 @@ where
     [@TraitClause0]: core::ops::function::FnMut<F, (T)>,
     (parents((parents(@TraitClause0)::[@TraitClause3]))::[@TraitClause0])::Output = U,
 
-fn closures::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
+fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
 {
     let @0: Array<i32, 256 : usize>; // return
     let x@1: Array<i32, 256 : usize>; // arg #1
@@ -564,8 +564,8 @@ fn closures::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usi
     let @3: fn(i32) -> i32; // anonymous local
 
     @2 := copy (x@1)
-    @3 := {closures::test_array_map::closure} {}
-    @0 := core::array::{Array<T, const N : usize>#23}::map<i32, fn(i32) -> i32, i32, 256 : usize>[(closure:closures::test_array_map::closure)](move (@2), move (@3))
+    @3 := {test_crate::test_array_map::closure} {}
+    @0 := core::array::{Array<T, const N : usize>#23}::map<i32, fn(i32) -> i32, i32, 256 : usize>[(closure:test_crate::test_array_map::closure)](move (@2), move (@3))
     drop @3
     drop @2
     return

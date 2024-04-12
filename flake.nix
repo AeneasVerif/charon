@@ -62,7 +62,7 @@
             inherit cargoArtifacts;
             buildPhase = ''
               # Run the tests for Charon
-              DEST=$out CHARON="${charon}/bin/charon --cargo-no-rust-version" \
+              DEST=$out CARGO_NO_RUST_VERSION=1 CHARON_DRIVER="${charon}/bin/charon-driver" \
               make charon-tests
             '';
             doCheck = false;
