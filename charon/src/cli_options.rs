@@ -11,7 +11,7 @@ use std::path::PathBuf;
 // Note that because we need to transmit the options to the charon driver,
 // we store them in a file before calling this driver (hence the `Serialize`,
 // `Deserialize` options).
-#[derive(Parser, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Parser, Serialize, Deserialize)]
 #[clap(name = "Charon")]
 pub struct CliOpts {
     /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)

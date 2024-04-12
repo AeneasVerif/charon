@@ -28,30 +28,42 @@ enum TestKind {
 
 struct MagicComments {
     test_kind: TestKind,
+    cli_opts: CliOpts,
 }
 
 static HELP_STRING: &str = unindent!(
     "Test must start with a magic comment that determines its kind. Options are:
     - `//@ output=pretty-llbc`: record the pretty-printed llbc;
     - `//@ known-panic`: a test that is expected to panic.
+    
+    Other comments can be used to control the behavior of charon:
+    - `//@ charon-args=<charon cli options>`
     "
 );
 
 fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicComments> {
     // Parse the magic comments.
-    let mut kind = TestKind::Unspecified;
+    let mut comments = MagicComments {
+        test_kind: TestKind::Unspecified,
+        cli_opts: CliOpts::default(),
+    };
     for line in read_to_string(input_path)?.lines() {
-        if !line.starts_with("//@") {
-            break;
-        }
-        let line = line[3..].trim();
+        let Some(line) = line.strip_prefix("//@") else { break };
+        let line = line.trim();
         if line == "known-panic" {
-            kind = TestKind::KnownPanic;
+            comments.test_kind = TestKind::KnownPanic;
         } else if line == "output=pretty-llbc" {
-            kind = TestKind::PrettyLlbc;
+            comments.test_kind = TestKind::PrettyLlbc;
+        } else if let Some(charon_opts) = line.strip_prefix("charon-args=") {
+            use clap::Parser;
+            // The first arg is normally the command name.
+            let args = ["dummy"].into_iter().chain(charon_opts.split_whitespace());
+            comments.cli_opts.update_from(args);
+        } else {
+            bail!(HELP_STRING);
         }
     }
-    Ok(MagicComments { test_kind: kind })
+    Ok(comments)
 }
 
 struct Case {
@@ -96,7 +108,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     }
 
     // Call the charon driver.
-    let mut options = CliOpts::default();
+    let mut options = test_case.magic_comments.cli_opts.clone();
     options.print_llbc = true;
     options.no_serialize = true;
     options.crate_name = Some("test_crate".into());
