@@ -25,7 +25,6 @@ enum TestKind {
     KnownFailure,
     KnownPanic,
     Skip,
-    Unspecified,
 }
 
 struct MagicComments {
@@ -40,7 +39,7 @@ struct MagicComments {
 
 static HELP_STRING: &str = unindent!(
     "Options are:
-    - `//@ output=pretty-llbc`: record the pretty-printed llbc;
+    - `//@ output=pretty-llbc`: record the pretty-printed llbc (default);
     - `//@ known-failure`: a test that is expected to fail.
     - `//@ known-panic`: a test that is expected to panic.
     - `//@ skip`: skip the test.
@@ -56,7 +55,7 @@ static HELP_STRING: &str = unindent!(
 fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicComments> {
     // Parse the magic comments.
     let mut comments = MagicComments {
-        test_kind: TestKind::Unspecified,
+        test_kind: TestKind::PrettyLlbc,
         cli_opts: CliOpts::default(),
         check_output: true,
         auxiliary_crates: Vec::new(),
@@ -141,10 +140,6 @@ fn path_to_crate_name(path: &Path) -> Option<String> {
 }
 
 fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
-    if matches!(test_case.magic_comments.test_kind, TestKind::Unspecified) {
-        bail!("Test must start with a magic comment that determines its kind. {HELP_STRING}");
-    }
-
     // Dependencies
     // Vec of (crate name, path to crate.rs, path to libcrate.rlib).
     let deps: Vec<(String, PathBuf, String)> = test_case
@@ -216,7 +211,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 bail!("Compilation failed: {stderr}")
             }
         }
-        TestKind::Skip | TestKind::Unspecified => unreachable!(),
+        TestKind::Skip => unreachable!(),
     }
     if test_case.magic_comments.check_output {
         let actual = snapbox::Data::text(stderr).map_text(snapbox::utils::normalize_lines);

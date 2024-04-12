@@ -1,4 +1,3 @@
-//@ output=pretty-llbc
 #![allow(unused)]
 
 #[derive(Clone, Copy)]

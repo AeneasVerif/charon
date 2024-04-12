@@ -1,4 +1,3 @@
-//@ output=pretty-llbc
 pub trait Hasher {}
 
 pub struct DefaultHasher;

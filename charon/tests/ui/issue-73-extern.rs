@@ -1,4 +1,3 @@
-//@ output=pretty-llbc
 #![feature(extern_types)]
 extern "C" {
     fn foo(x: i32);

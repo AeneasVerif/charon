@@ -1,4 +1,3 @@
-//@ output=pretty-llbc
 pub trait Ord {}
 
 pub struct AVLTree<T> {
