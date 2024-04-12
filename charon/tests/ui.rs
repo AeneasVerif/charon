@@ -4,7 +4,7 @@
 //!
 //! Files can start with special comments that affect the test behavior. Supported magic comments:
 //! see [`HELP_STRING`].
-use anyhow::bail;
+use anyhow::{anyhow, bail};
 use assert_cmd::prelude::CommandCargoExt;
 use indoc::indoc as unindent;
 use libtest_mimic::{Outcome, Test};
@@ -24,6 +24,7 @@ enum TestKind {
     PrettyLlbc,
     KnownFailure,
     KnownPanic,
+    Skip,
     Unspecified,
 }
 
@@ -36,10 +37,11 @@ struct MagicComments {
 }
 
 static HELP_STRING: &str = unindent!(
-    "Test must start with a magic comment that determines its kind. Options are:
+    "Options are:
     - `//@ output=pretty-llbc`: record the pretty-printed llbc;
     - `//@ known-failure`: a test that is expected to fail.
     - `//@ known-panic`: a test that is expected to panic.
+    - `//@ skip`: skip the test.
     
     Other comments can be used to control the behavior of charon:
     - `//@ charon-args=<charon cli options>`
@@ -64,6 +66,8 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
             comments.test_kind = TestKind::KnownFailure;
         } else if line == "output=pretty-llbc" {
             comments.test_kind = TestKind::PrettyLlbc;
+        } else if line == "skip" {
+            comments.test_kind = TestKind::Skip;
         } else if line == "no-check-output" {
             comments.check_output = false;
         } else if let Some(charon_opts) = line.strip_prefix("charon-args=") {
@@ -72,7 +76,12 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
             let args = ["dummy"].into_iter().chain(charon_opts.split_whitespace());
             comments.cli_opts.update_from(args);
         } else {
-            bail!(HELP_STRING);
+            return Err(
+                anyhow!("Unknown magic comment: `{line}`. {HELP_STRING}").context(format!(
+                    "While processing file {}",
+                    input_path.to_string_lossy()
+                )),
+            );
         }
     }
     Ok(comments)
@@ -98,7 +107,7 @@ fn setup_test(input_path: PathBuf) -> anyhow::Result<Test<Case>> {
     Ok(Test {
         name: name.clone(),
         kind: "".into(),
-        is_ignored: false,
+        is_ignored: matches!(magic_comments.test_kind, TestKind::Skip),
         is_bench: false,
         data: Case {
             input_path,
@@ -116,7 +125,7 @@ enum Action {
 
 fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     if matches!(test_case.magic_comments.test_kind, TestKind::Unspecified) {
-        bail!(HELP_STRING);
+        bail!("Test must start with a magic comment that determines its kind. {HELP_STRING}");
     }
 
     // Call the charon driver.
@@ -158,7 +167,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 bail!("Compilation failed: {stderr}")
             }
         }
-        TestKind::Unspecified => unreachable!(),
+        TestKind::Skip | TestKind::Unspecified => unreachable!(),
     }
     if test_case.magic_comments.check_output {
         let actual = snapbox::Data::text(stderr).map_text(snapbox::utils::normalize_lines);
