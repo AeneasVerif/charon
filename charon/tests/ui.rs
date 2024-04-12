@@ -18,6 +18,8 @@ use walkdir::{DirEntry, WalkDir};
 
 use charon_lib::cli_options::{CliOpts, CHARON_ARGS};
 
+static TESTS_DIR: &str = "tests/ui";
+
 enum TestKind {
     PrettyLlbc,
     KnownPanic,
@@ -59,7 +61,14 @@ struct Case {
 }
 
 fn setup_test(input_path: PathBuf) -> anyhow::Result<Test<Case>> {
-    let name = input_path.file_name().unwrap().to_str().unwrap().to_owned();
+    let name = input_path
+        .to_str()
+        .unwrap()
+        .strip_prefix(TESTS_DIR)
+        .unwrap()
+        .strip_prefix("/")
+        .unwrap()
+        .to_owned();
     let expected = input_path.with_extension("out");
     let magic_comments = parse_magic_comments(&input_path)?;
     Ok(Test {
@@ -155,13 +164,15 @@ fn ui() -> Result<(), Box<dyn Error>> {
         Action::Overwrite
     };
 
-    let root: PathBuf = "tests/ui".into();
+    let root: PathBuf = TESTS_DIR.into();
     let file_filter = |e: &DirEntry| e.file_name().to_str().is_some_and(|s| s.ends_with(".rs"));
     let tests: Vec<_> = WalkDir::new(root)
         .min_depth(1)
-        .max_depth(1)
         .into_iter()
-        .filter_entry(file_filter)
+        .filter_map(|entry| match entry {
+            Ok(entry) if !file_filter(&entry) => None,
+            res => Some(res),
+        })
         .map(|entry| {
             let entry = entry?;
             let test = setup_test(entry.into_path())?;
