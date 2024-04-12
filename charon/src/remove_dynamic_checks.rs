@@ -210,7 +210,9 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                 {
                     // We don't check that the second operand is 0 in
                     // case we are in the division/remainder case
-                    if matches!(binop, BinOp::Eq) && is_assert_move(dest_p, s1, false) {
+                    if matches!(binop, BinOp::Eq | BinOp::BitAnd)
+                        && is_assert_move(dest_p, s1, false)
+                    {
                         // This should be the division/remainder case
                         // Eliminate the first two statements
                         take(s, |s| {
