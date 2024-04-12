@@ -500,11 +500,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// struct with only public fields).
     fn translate_type_body(
         &mut self,
-        is_local: bool,
         trans_id: TypeDeclId::Id,
         rust_id: DefId,
     ) -> Result<TypeDeclKind, Error> {
         use rustc_middle::ty::AdtKind;
+        let is_local = rust_id.is_local();
         let def_span = self.t_ctx.tcx.def_span(rust_id);
         // Don't use `hax::AdtDef` because it loses `VariantIdx` information.
         let adt: rustc_middle::ty::AdtDef = self.t_ctx.tcx.adt_def(rust_id);
@@ -514,7 +514,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // transparent (i.e., extract its body). If it is an enumeration, then yes
         // (because the variants of public enumerations are public, together with their
         // fields). If it is a structure, we check if all the fields are public.
-        let is_transparent = is_local
+        let is_transparent = self.t_ctx.extract_opaque_bodies
+            || is_local
             || match adt.adt_kind() {
                 AdtKind::Enum => true,
                 AdtKind::Struct => {
@@ -717,7 +718,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn translate_type_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         let trans_id = self.translate_type_decl_id(&None, rust_id);
         let is_transparent = self.id_is_transparent(rust_id)?;
-
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         // Check and translate the generics
@@ -733,11 +733,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // For instance, because `core::option::Option` is public, we can
         // manipulate its variants. If we encounter this type, we must retrieve
         // its definition.
-        let is_local = rust_id.is_local();
         let kind = if !is_transparent {
             TypeDeclKind::Opaque
         } else {
-            match bt_ctx.translate_type_body(is_local, trans_id, rust_id) {
+            match bt_ctx.translate_type_body(trans_id, rust_id) {
                 Ok(kind) => kind,
                 Err(err) => TypeDeclKind::Error(err.msg),
             }
@@ -753,7 +752,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let type_def = TypeDecl {
             def_id: trans_id,
             meta,
-            is_local,
+            is_local: rust_id.is_local(),
             name,
             generics,
             preds: bt_ctx.get_predicates(),

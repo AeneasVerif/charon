@@ -304,7 +304,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // but still remember their name.
                     if has_default_value {
                         // This is a *provided* method
-                        if rust_id.is_local() {
+                        if rust_id.is_local() || bt_ctx.t_ctx.extract_opaque_bodies {
                             let fun_id = bt_ctx.translate_fun_decl_id(span, item.def_id);
                             provided_methods.push((method_name, Some(fun_id)));
                         } else {

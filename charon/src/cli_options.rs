@@ -110,6 +110,11 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     #[clap(long = "opaque")]
     #[serde(default)]
     pub opaque_modules: Vec<String>,
+    /// Usually we skip the bodies of foreign methods and structs with private fields. When this
+    /// flag is on, we don't.
+    #[clap(long = "extract-opaque-bodies")]
+    #[serde(default)]
+    pub extract_opaque_bodies: bool,
     /// Do not provide a Rust version argument to Cargo (e.g., `+nightly-2022-01-29`).
     /// This is for Nix: outside of Nix, we use Rustup to call the proper version
     /// of Cargo (and thus need this argument), but within Nix we build and call a very

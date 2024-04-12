@@ -1,0 +1,42 @@
+error: A discriminant read must be followed by a `SwitchInt`
+ --> /rustc/d59363ad0b6391b7fc5bbb02c9ccf9300eef3753/library/core/src/option.rs:598:5
+
+[ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
+
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
+
+
+fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (core::option::Option<T>); // arg #1
+
+    nop
+}
+
+fn test_crate::my_is_some<T>(@1: core::option::Option<T>) -> bool
+{
+    let @0: bool; // return
+    let opt@1: core::option::Option<T>; // arg #1
+    let @2: &'_ (core::option::Option<T>); // anonymous local
+
+    @2 := &opt@1
+    @0 := core::option::{core::option::Option<T>}::is_some<T>(move (@2))
+    drop @2
+    drop opt@1
+    return
+}
+
+
+
+error: The external definition DefId(2:7981 ~ core[6c80]::option::{impl#0}::is_some) triggered errors. It is (transitively) used at the following location(s):
+ --> tests/ui/unsupported/option-is_some.rs:6:5
+  |
+6 |     opt.is_some()
+  |     ^^^^^^^^^^^^^
+
+error: aborting due to 2 previous errors
+
+[ ERROR charon_driver:262] The extraction encountered 1 errors

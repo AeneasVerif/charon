@@ -15,7 +15,7 @@ use crate::ullbc_ast::*;
 use crate::values::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
-use rustc_hir::def_id::{DefId, LocalDefId};
+use rustc_hir::def_id::DefId;
 use rustc_middle::mir::START_BLOCK;
 use rustc_middle::ty;
 use translate_types::translate_bound_region_kind_name;
@@ -1429,16 +1429,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let mut t_args: Vec<Operand> = Vec::new();
         for arg in args {
-            // There should only be moved arguments, or constants
-            match arg {
-                hax::Operand::Move(_) | hax::Operand::Constant(_) => {
-                    // OK
-                }
-                hax::Operand::Copy(_) => {
-                    unreachable!();
-                }
-            }
-
             // Translate
             let op = self.translate_operand(span, arg)?;
             t_args.push(op);
@@ -1447,11 +1437,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(t_args)
     }
 
-    fn translate_body(mut self, local_id: LocalDefId, arg_count: usize) -> Result<ExprBody, Error> {
+    fn translate_body(
+        mut self,
+        rust_id: DefId,
+        arg_count: usize,
+    ) -> Result<Option<ExprBody>, Error> {
         let tcx = self.t_ctx.tcx;
 
+        if !rust_id.is_local() && !self.t_ctx.extract_opaque_bodies {
+            // We only extract non-local bodies if the `extract_opaque_bodies` option is set.
+            return Ok(None);
+        }
+
         // Retrive the body
-        let body = get_mir_for_def_id_and_level(tcx, local_id, self.t_ctx.mir_level);
+        let Some(body) = get_mir_for_def_id_and_level(tcx, rust_id, self.t_ctx.mir_level)
+        else { return Ok(None) };
 
         // Here, we have to create a MIR state, which contains the body
         let state = hax::state::State::new_from_mir(
@@ -1462,7 +1462,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Yes, we have to clone, this is annoying: we end up cloning the body twice
             body.clone(),
             // Owner id
-            local_id.to_def_id(),
+            rust_id,
         );
         // Translate
         let body: hax::MirBody<()> = body.sinto(&state);
@@ -1488,12 +1488,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Create the body
-        Ok(ExprBody {
+        Ok(Some(ExprBody {
             meta,
             arg_count,
             locals: self.vars,
             body: blocks,
-        })
+        }))
     }
 
     /// Translate a function's signature, and initialize a body translation context
@@ -1795,18 +1795,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let signature = bt_ctx.translate_function_signature(rust_id)?;
 
         // Check if the type is opaque or transparent
-        let is_local = rust_id.is_local();
-
-        let body = if !is_transparent || !is_local || is_trait_method_decl {
-            None
-        } else {
-            match bt_ctx.translate_body(rust_id.expect_local(), signature.inputs.len()) {
-                Ok(body) => Some(body),
-                Err(_) => {
-                    // Error case: we could have a variant for this
-                    None
-                }
+        let body = if is_transparent && !is_trait_method_decl {
+            match bt_ctx.translate_body(rust_id, signature.inputs.len()) {
+                Ok(body) => body,
+                // Error case: we could have a variant for this
+                Err(_) => None,
             }
+        } else {
+            None
         };
 
         // Save the new function
@@ -1816,7 +1812,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 meta,
                 def_id,
                 rust_id,
-                is_local,
+                is_local: rust_id.is_local(),
                 name,
                 signature,
                 kind,
@@ -1887,14 +1883,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let generics = bt_ctx.get_generics();
         let preds = bt_ctx.get_predicates();
 
-        let body = if rust_id.is_local() && is_transparent {
-            // It's a local and transparent global: we extract its body as for functions.
-            match bt_ctx.translate_body(rust_id.expect_local(), 0) {
-                Err(_) => {
-                    // Error case: we could have a specific variant
-                    None
-                }
-                Ok(body) => Some(body),
+        let body = if is_transparent {
+            // It's a transparent global: we extract its body as for functions.
+            match bt_ctx.translate_body(rust_id, 0) {
+                Ok(body) => body,
+                // Error case: we could have a specific variant
+                Err(_) => None,
             }
         } else {
             // Otherwise do nothing
