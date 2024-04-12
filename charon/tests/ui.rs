@@ -5,7 +5,7 @@
 //! Files can start with special comments that affect the test behavior. Supported magic comments:
 //! see [`HELP_STRING`].
 use anyhow::{anyhow, bail};
-use assert_cmd::prelude::CommandCargoExt;
+use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use indoc::indoc as unindent;
 use libtest_mimic::{Outcome, Test};
 use std::{
@@ -34,6 +34,8 @@ struct MagicComments {
     cli_opts: CliOpts,
     /// Whether we should store the test output in a file and check it.
     check_output: bool,
+    /// A list of paths to files that must be compiled as dependencies for this test.
+    auxiliary_crates: Vec<PathBuf>,
 }
 
 static HELP_STRING: &str = unindent!(
@@ -47,6 +49,7 @@ static HELP_STRING: &str = unindent!(
     - `//@ charon-args=<charon cli options>`
     - `//@ no-check-output`: don't store the output in a file; useful if the output is unstable or
          differs between debug and release mode.
+    - `//@ aux-crate=<file path>`: compile this file as a crate dependency.
     "
 );
 
@@ -56,6 +59,7 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
         test_kind: TestKind::Unspecified,
         cli_opts: CliOpts::default(),
         check_output: true,
+        auxiliary_crates: Vec::new(),
     };
     for line in read_to_string(input_path)?.lines() {
         let Some(line) = line.strip_prefix("//@") else { break };
@@ -75,6 +79,10 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
             // The first arg is normally the command name.
             let args = ["dummy"].into_iter().chain(charon_opts.split_whitespace());
             comments.cli_opts.update_from(args);
+        } else if let Some(crate_path) = line.strip_prefix("aux-crate=") {
+            let crate_path: PathBuf = crate_path.into();
+            let crate_path = input_path.parent().unwrap().join(crate_path);
+            comments.auxiliary_crates.push(crate_path)
         } else {
             return Err(
                 anyhow!("Unknown magic comment: `{line}`. {HELP_STRING}").context(format!(
@@ -123,9 +131,46 @@ enum Action {
     Overwrite,
 }
 
+fn path_to_crate_name(path: &Path) -> Option<String> {
+    Some(
+        path.file_name()?
+            .to_str()?
+            .strip_suffix(".rs")?
+            .replace(['-'], "_"),
+    )
+}
+
 fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     if matches!(test_case.magic_comments.test_kind, TestKind::Unspecified) {
         bail!("Test must start with a magic comment that determines its kind. {HELP_STRING}");
+    }
+
+    // Dependencies
+    // Vec of (crate name, path to crate.rs, path to libcrate.rlib).
+    let deps: Vec<(String, PathBuf, String)> = test_case
+        .magic_comments
+        .auxiliary_crates
+        .iter()
+        .cloned()
+        .map(|path| {
+            let crate_name = path_to_crate_name(&path).unwrap();
+            let rlib_file_name = format!("lib{crate_name}.rlib"); // yep it must start with "lib"
+            let rlib_path = path.parent().unwrap().join(rlib_file_name);
+            let rlib_path = rlib_path.to_str().unwrap().to_owned();
+            (crate_name, path, rlib_path)
+        })
+        .collect();
+    for (crate_name, rs_path, rlib_path) in deps.iter() {
+        Command::new("rustc")
+            .arg("--crate-type=rlib")
+            .arg(format!("--crate-name={crate_name}"))
+            .arg("-o")
+            .arg(rlib_path)
+            .arg(rs_path)
+            .output()?
+            .assert()
+            .try_success()
+            .map_err(|e| anyhow!(e.to_string()))?;
     }
 
     // Call the charon driver.
@@ -134,11 +179,15 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     options.no_serialize = true;
     options.crate_name = Some("test_crate".into());
 
-    let output = Command::cargo_bin("charon-driver")?
-        .arg("rustc")
-        .arg(test_case.input_path.to_string_lossy().into_owned())
-        .env(CHARON_ARGS, serde_json::to_string(&options).unwrap())
-        .output()?;
+    let mut cmd = Command::cargo_bin("charon-driver")?;
+    cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
+    cmd.arg("rustc");
+    cmd.arg(test_case.input_path.to_string_lossy().into_owned());
+    cmd.arg("--edition=2021"); // To avoid needing `extern crate`
+    for (crate_name, _, rlib_path) in deps {
+        cmd.arg(format!("--extern={crate_name}={rlib_path}"));
+    }
+    let output = cmd.output()?;
     let stderr = String::from_utf8(output.stderr.clone())?;
 
     match test_case.magic_comments.test_kind {
