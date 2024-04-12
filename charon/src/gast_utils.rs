@@ -7,7 +7,6 @@ use crate::names::Name;
 use crate::types::*;
 use crate::values::*;
 use rustc_hir::def_id::DefId;
-use std::cmp::max;
 
 /// Iterate on the declarations' non-empty bodies with their corresponding name and type.
 /// TODO: generalize this with visitors
@@ -35,16 +34,12 @@ pub fn iter_global_bodies<T>(
 /// Makes a lambda that generates a new variable id, pushes a new variable in
 /// the body locals with the given type and returns its id.
 pub fn make_locals_generator(locals: &mut VarId::Vector<Var>) -> impl FnMut(Ty) -> VarId::Id + '_ {
-    let mut next_id = locals.iter().fold(VarId::ZERO, |id, v| max(id, v.index));
     move |ty| {
-        next_id.incr();
-        let id = next_id;
-        locals.push_back(Var {
-            index: id,
+        locals.push_with(|index| Var {
+            index,
             name: None,
             ty,
-        });
-        id
+        })
     }
 }
 
@@ -63,14 +58,6 @@ impl std::string::ToString for Var {
             Some(name) => format!("{name}{id}"),
             None => id,
         }
-    }
-}
-
-impl VarId::Vector<Var> {
-    pub fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> VarId::Id {
-        let index = VarId::Id::new(self.len());
-        self.push_back(Var { index, name, ty });
-        index
     }
 }
 
@@ -258,8 +245,7 @@ impl<T> GExprBody<T> {
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
         for v in &self.locals {
-            use crate::id_vector::ToUsize;
-            let index = v.index.to_usize();
+            let index = v.index.index();
             let comment = if index == 0 {
                 "// return".to_string()
             } else if index <= self.arg_count {

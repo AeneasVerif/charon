@@ -43,13 +43,6 @@ impl TypeVar {
     pub fn new(index: TypeVarId::Id, name: String) -> TypeVar {
         TypeVar { index, name }
     }
-
-    pub fn fresh(name: String, gen: &mut TypeVarId::Generator) -> TypeVar {
-        TypeVar {
-            index: gen.fresh_id(),
-            name,
-        }
-    }
 }
 
 impl std::string::ToString for TypeVar {

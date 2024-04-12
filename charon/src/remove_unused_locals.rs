@@ -4,7 +4,6 @@
 //! remaining afterwards.
 use crate::expressions::{MutExprVisitor, SharedExprVisitor};
 use crate::formatter::{Formatter, IntoFormatter};
-use crate::id_vector::ToUsize;
 use crate::llbc_ast::{FunDecls, GlobalDecls, MutAstVisitor, SharedAstVisitor, Statement};
 use crate::translate_ctx::TransCtx;
 use crate::types::{MutTypeVisitor, SharedTypeVisitor};
@@ -105,15 +104,11 @@ fn update_locals(
     // their indices so as not to have "holes"
     let mut vids_map: HashMap<VarId::Id, VarId::Id> = HashMap::new();
     let mut locals: VarId::Vector<Var> = VarId::Vector::new();
-    let mut var_id_counter = VarId::Generator::new();
-    for mut var in old_locals {
+    for var in old_locals {
         if used_locals.contains(&var.index) {
             let old_id = var.index;
-            let new_id = var_id_counter.fresh_id();
-            var.index = new_id;
+            let new_id = locals.push_with(|index| Var { index, ..var });
             vids_map.insert(old_id, new_id);
-            assert!(new_id.to_usize() == locals.len());
-            locals.push_back(var);
         }
     }
 

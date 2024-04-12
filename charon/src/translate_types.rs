@@ -535,11 +535,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // The type is transparent: explore the variants
-        let mut variants: Vec<Variant> = vec![];
+        let mut variants: VariantId::Vector<Variant> = Default::default();
         let erase_regions = false;
         for (i, (rust_var_id, var_def)) in adt.variants().iter_enumerated().enumerate() {
             let var_def: hax::VariantDef = var_def.sinto(&self.hax_state);
-            trace!("variant {}: {:?}", i, var_def);
+            trace!("variant {i}: {var_def:?}");
 
             let discriminant: u128 = if adt.is_enum() {
                 adt.discriminant_for_variant(self.t_ctx.tcx, rust_var_id)
@@ -548,12 +548,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 0
             };
 
-            let mut fields: Vec<Field> = vec![];
+            let mut fields: FieldId::Vector<Field> = Default::default();
             /* This is for sanity: check that either all the fields have names, or
              * none of them has */
             let mut have_names: Option<bool> = Option::None;
             for (j, field_def) in var_def.fields.into_iter().enumerate() {
-                trace!("variant {}: field {}: {:?}", i, j, field_def);
+                trace!("variant {i}: field {j}: {field_def:?}");
                 let field_span = field_def.span.rust_span_data.unwrap().span();
 
                 // Translate the field type
@@ -591,7 +591,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             variants.push(Variant {
                 meta,
                 name: variant_name,
-                fields: FieldId::Vector::from(fields),
+                fields,
                 discriminant,
             });
         }
@@ -599,7 +599,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Register the type
         let type_def_kind: TypeDeclKind = match adt.adt_kind() {
             AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
-            AdtKind::Enum => TypeDeclKind::Enum(VariantId::Vector::from(variants)),
+            AdtKind::Enum => TypeDeclKind::Enum(variants),
             AdtKind::Union => {
                 error_or_panic!(self, def_span, "Union types are not supported")
             }

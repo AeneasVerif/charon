@@ -26,6 +26,10 @@ struct Transform<'a> {
 }
 
 impl<'a> Transform<'a> {
+    fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> VarId::Id {
+        self.locals.push_with(|index| Var { index, name, ty })
+    }
+
     fn visit_transform_place(&mut self, mut_access: bool, p: &mut Place) {
         // Explore the place from the **end** to the beginning
         let mut var_id = p.var_id;
@@ -67,7 +71,7 @@ impl<'a> Transform<'a> {
                 // Push the statement:
                 //`tmp0 = & proj`
                 let buf_borrow_ty = Ty::Ref(Region::Erased, Box::new(buf_ty), ref_kind);
-                let buf_borrow_var = self.locals.fresh_var(Option::None, buf_borrow_ty);
+                let buf_borrow_var = self.fresh_var(Option::None, buf_borrow_ty);
                 let borrow_st = RawStatement::Assign(
                     Place::new(buf_borrow_var),
                     Rvalue::Ref(
@@ -87,7 +91,7 @@ impl<'a> Transform<'a> {
                 // Push the statement:
                 // `tmp1 = Array{Mut,Shared}Index(move tmp0, copy i)`
                 let elem_borrow_ty = Ty::Ref(Region::Erased, Box::new(elem_ty.clone()), ref_kind);
-                let elem_borrow_var = self.locals.fresh_var(Option::None, elem_borrow_ty);
+                let elem_borrow_var = self.fresh_var(Option::None, elem_borrow_ty);
                 let arg_buf = Operand::Move(Place::new(buf_borrow_var));
                 let arg_index = Operand::Copy(Place::new(index_var_id));
                 let index_dest = Place::new(elem_borrow_var);

@@ -299,8 +299,6 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The [bound_region_vars] field below takes care of the regions which
     /// are bound in the Rustc representation.
     pub free_region_vars: std::collections::BTreeMap<hax::Region, RegionId::Id>,
-    /// The generator for bound region indices
-    pub bound_region_var_id_generator: RegionId::Generator,
     ///
     /// The stack of late-bound parameters (can only be lifetimes for now), which
     /// use DeBruijn indices (the other parameters use free variables).
@@ -716,7 +714,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax_state,
             region_vars: im::vector![RegionId::Vector::new()],
             free_region_vars: std::collections::BTreeMap::new(),
-            bound_region_var_id_generator: RegionId::Generator::new(),
             bound_region_vars: im::Vector::new(),
             type_vars: TypeVarId::Vector::new(),
             type_vars_map: TypeVarId::MapGenerator::new(),
@@ -824,38 +821,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         r: hax::Region,
         name: Option<String>,
     ) -> RegionId::Id {
-        use crate::id_vector::ToUsize;
         // Check that there are no late-bound regions
         assert!(self.bound_region_vars.is_empty());
-        let rid = self.bound_region_var_id_generator.fresh_id();
+        let rid = self.region_vars[0].push_with(|index| RegionVar { index, name });
         self.free_region_vars.insert(r, rid);
-        assert!(rid.to_usize() == self.region_vars[0].len());
-        let var = RegionVar { index: rid, name };
-        self.region_vars[0].insert(rid, var);
         rid
     }
 
     /// Set the first bound regions group
     pub(crate) fn set_first_bound_regions_group(&mut self, names: Vec<Option<String>>) {
-        use crate::id_vector::ToUsize;
         assert!(self.bound_region_vars.is_empty());
 
         // Register the variables
         let var_ids: im::Vector<RegionId::Id> = names
             .into_iter()
-            .map(|name| {
-                let rid = self.bound_region_var_id_generator.fresh_id();
-                assert!(rid.to_usize() == self.region_vars[0].len());
-                let var = RegionVar { index: rid, name };
-                self.region_vars[0].insert(rid, var);
-                rid
-            })
+            .map(|name| self.region_vars[0].push_with(|index| RegionVar { index, name }))
             .collect();
 
         // Push the group
         self.bound_region_vars.push_front(var_ids);
-        // Reinitialize the counter
-        self.bound_region_var_id_generator = RegionId::Generator::new();
     }
 
     /// Push a group of bound regions and call the continuation.
@@ -869,25 +853,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     where
         F: FnOnce(&mut Self) -> T,
     {
-        use crate::id_vector::ToUsize;
         assert!(!self.region_vars.is_empty());
         self.region_vars.push_front(RegionId::Vector::new());
-        // Reinitialize the counter
-        let old_gen = std::mem::replace(
-            &mut self.bound_region_var_id_generator,
-            RegionId::Generator::new(),
-        );
 
         // Register the variables
         let var_ids: im::Vector<RegionId::Id> = names
             .into_iter()
-            .map(|name| {
-                let rid = self.bound_region_var_id_generator.fresh_id();
-                assert!(rid.to_usize() == self.region_vars[0].len());
-                let var = RegionVar { index: rid, name };
-                self.region_vars[0].insert(rid, var);
-                rid
-            })
+            .map(|name| self.region_vars[0].push_with(|index| RegionVar { index, name }))
             .collect();
 
         // Push the group
@@ -897,7 +869,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let res = f(self);
 
         // Reset
-        self.bound_region_var_id_generator = old_gen;
         self.bound_region_vars.pop_front();
         self.region_vars.pop_front();
 
@@ -906,39 +877,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId::Id {
-        use crate::id_vector::ToUsize;
         let var_id = self.type_vars_map.insert(rindex);
-        assert!(var_id.to_usize() == self.type_vars.len());
-        let var = TypeVar {
-            index: var_id,
-            name,
-        };
-        self.type_vars.insert(var_id, var);
-        var_id
+        assert!(var_id == self.type_vars.next_id());
+        self.type_vars.push_with(|index| TypeVar { index, name })
     }
 
     pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
-        use crate::id_vector::ToUsize;
         let var_id = self.vars_map.insert(rid);
-        assert!(var_id.to_usize() == self.vars.len());
-        let var = ast::Var {
-            index: var_id,
-            name,
-            ty,
-        };
-        self.vars.insert(var_id, var);
+        assert!(var_id == self.vars.next_id());
+        self.vars.push_with(|index| ast::Var { index, name, ty });
     }
 
     pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
-        use crate::id_vector::ToUsize;
         let var_id = self.const_generic_vars_map.insert(rid);
-        assert!(var_id.to_usize() == self.const_generic_vars.len());
-        let var = ConstGenericVar {
-            index: var_id,
-            name,
-            ty,
-        };
-        self.const_generic_vars.insert(var_id, var);
+        assert!(var_id == self.const_generic_vars.next_id());
+        self.const_generic_vars
+            .push_with(|index| (ConstGenericVar { index, name, ty }));
     }
 
     pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId::Id {
@@ -972,11 +926,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .collect();
         // Sanity check
         if !crate::assumed::IGNORE_BUILTIN_MARKER_TRAITS {
-            use crate::id_vector::ToUsize;
             assert!(clauses
                 .iter()
                 .enumerate()
-                .all(|(i, c)| c.clause_id.to_usize() == i));
+                .all(|(i, c)| c.clause_id.index() == i));
         }
         // Return
         clauses
