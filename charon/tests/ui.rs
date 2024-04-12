@@ -22,6 +22,7 @@ static TESTS_DIR: &str = "tests/ui";
 
 enum TestKind {
     PrettyLlbc,
+    KnownFailure,
     KnownPanic,
     Unspecified,
 }
@@ -34,6 +35,7 @@ struct MagicComments {
 static HELP_STRING: &str = unindent!(
     "Test must start with a magic comment that determines its kind. Options are:
     - `//@ output=pretty-llbc`: record the pretty-printed llbc;
+    - `//@ known-failure`: a test that is expected to fail.
     - `//@ known-panic`: a test that is expected to panic.
     
     Other comments can be used to control the behavior of charon:
@@ -52,6 +54,8 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
         let line = line.trim();
         if line == "known-panic" {
             comments.test_kind = TestKind::KnownPanic;
+        } else if line == "known-failure" {
+            comments.test_kind = TestKind::KnownFailure;
         } else if line == "output=pretty-llbc" {
             comments.test_kind = TestKind::PrettyLlbc;
         } else if let Some(charon_opts) = line.strip_prefix("charon-args=") {
@@ -120,26 +124,41 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
         .output()?;
     let stderr = String::from_utf8(output.stderr.clone())?;
 
-    if matches!(test_case.magic_comments.test_kind, TestKind::KnownPanic) {
-        if output.status.code() != Some(101) {
-            let status = if output.status.success() {
-                "succeeded"
-            } else {
-                "errored"
-            };
-            bail!("Compilation was expected to panic but instead {status}: {stderr}");
+    match test_case.magic_comments.test_kind {
+        TestKind::KnownPanic => {
+            if output.status.code() != Some(101) {
+                let status = if output.status.success() {
+                    "succeeded"
+                } else {
+                    "errored"
+                };
+                bail!("Compilation was expected to panic but instead {status}: {stderr}");
+            }
             // We don't commit the panic message to a file because it can differ between debug and
             // release modes.
+            return Ok(());
         }
-    } else {
-        if !output.status.success() {
-            bail!("Compilation failed: {stderr}")
+        TestKind::KnownFailure => {
+            if output.status.code() != Some(1) {
+                let status = if output.status.success() {
+                    "succeeded"
+                } else {
+                    "panicked"
+                };
+                bail!("Compilation was expected to fail but instead {status}: {stderr}");
+            }
         }
-        let actual = snapbox::Data::text(stderr).map_text(snapbox::utils::normalize_lines);
-        match action {
-            Action::Verify => expect_file_contents(&test_case.expected, actual)?,
-            Action::Overwrite => actual.write_to(&test_case.expected)?,
+        TestKind::PrettyLlbc => {
+            if !output.status.success() {
+                bail!("Compilation failed: {stderr}")
+            }
         }
+        TestKind::Unspecified => unreachable!(),
+    }
+    let actual = snapbox::Data::text(stderr).map_text(snapbox::utils::normalize_lines);
+    match action {
+        Action::Verify => expect_file_contents(&test_case.expected, actual)?,
+        Action::Overwrite => actual.write_to(&test_case.expected)?,
     }
 
     Ok(())
