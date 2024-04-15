@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   # Avoid `push` and `pull_request` running the same job twice
-  skip_duplicate_job:
+  check_if_skip_duplicate_job:
     runs-on: [self-hosted, linux, nix]
     steps:
       - id: skip_check
@@ -23,8 +23,8 @@ jobs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
 
   nix:
-    needs: skip_duplicate_job
-    if: needs.skip_duplicate_job.outputs.should_skip != 'true'
+    needs: check_if_skip_duplicate_job
+    if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
     #runs-on: ubuntu-latest
     runs-on: [self-hosted, linux, nix]
     steps:
