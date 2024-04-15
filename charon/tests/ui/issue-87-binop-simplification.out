@@ -85,24 +85,20 @@ fn test_crate::div_signed_to_slice<'_0>(@1: &'_0 mut (Slice<i32>), @2: i32)
     let result@1: &'_ mut (Slice<i32>); // arg #1
     let x@2: i32; // arg #2
     let @3: i32; // anonymous local
-    let @4: bool; // anonymous local
-    let @5: bool; // anonymous local
-    let @6: usize; // anonymous local
-    let @7: (); // anonymous local
-    let @8: &'_ mut (Slice<i32>); // anonymous local
-    let @9: &'_ mut (i32); // anonymous local
+    let @4: usize; // anonymous local
+    let @5: (); // anonymous local
+    let @6: &'_ mut (Slice<i32>); // anonymous local
+    let @7: &'_ mut (i32); // anonymous local
 
     @3 := copy (x@2)
-    @4 := const (3329 : i32) == const (-1 : i32)
-    @5 := copy (@3) == const (-2147483648 : i32)
-    @6 := const (0 : usize)
-    @8 := &mut *(result@1)
-    @9 := @SliceIndexMut<'_, i32>(move (@8), copy (@6))
-    *(@9) := move (@3) / const (3329 : i32)
+    @4 := const (0 : usize)
+    @6 := &mut *(result@1)
+    @7 := @SliceIndexMut<'_, i32>(move (@6), copy (@4))
+    *(@7) := move (@3) / const (3329 : i32)
     drop @3
-    drop @6
-    @7 := ()
-    @0 := move (@7)
+    drop @4
+    @5 := ()
+    @0 := move (@5)
     @0 := ()
     return
 }
