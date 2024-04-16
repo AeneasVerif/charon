@@ -301,7 +301,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let span = tcx.def_span(rust_id);
                     let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id)?;
                     // Skip the provided methods for the *external* trait declarations,
-                    // but still remember their name.
+                    // but still remember their name (unless `extract_opaque_bodies` is set).
                     if has_default_value {
                         // This is a *provided* method
                         if rust_id.is_local() || bt_ctx.t_ctx.extract_opaque_bodies {

@@ -1437,6 +1437,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(t_args)
     }
 
+    /// Translate a function body if we can (it has MIR) and we want to (we don't translate bodies
+    /// declared opaque, and only translate non-local bodies if `extract_opaque_bodies` is set).
     fn translate_body(
         mut self,
         rust_id: DefId,
@@ -1444,6 +1446,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<Option<ExprBody>, Error> {
         let tcx = self.t_ctx.tcx;
 
+        if !self.t_ctx.id_is_transparent(rust_id)? {
+            return Ok(None);
+        }
         if !rust_id.is_local() && !self.t_ctx.extract_opaque_bodies {
             // We only extract non-local bodies if the `extract_opaque_bodies` option is set.
             return Ok(None);
@@ -1766,7 +1771,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     pub fn translate_function_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_id = self.translate_fun_decl_id(&None, rust_id);
-        let is_transparent = self.id_is_transparent(rust_id)?;
         let def_span = self.tcx.def_span(rust_id);
 
         // Compute the meta information
@@ -1794,8 +1798,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         trace!("Translating function signature");
         let signature = bt_ctx.translate_function_signature(rust_id)?;
 
-        // Check if the type is opaque or transparent
-        let body = if is_transparent && !is_trait_method_decl {
+        let body = if !is_trait_method_decl {
+            // Translate the body. This returns `None` if we can't/decide not to translate this
+            // body.
             match bt_ctx.translate_body(rust_id, signature.inputs.len()) {
                 Ok(body) => body,
                 // Error case: we could have a variant for this
@@ -1850,7 +1855,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // Compute the meta information
         let meta = self.translate_meta_from_rid(rust_id);
-        let is_transparent = self.id_is_transparent(rust_id)?;
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -1883,16 +1887,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let generics = bt_ctx.get_generics();
         let preds = bt_ctx.get_predicates();
 
-        let body = if is_transparent {
-            // It's a transparent global: we extract its body as for functions.
-            match bt_ctx.translate_body(rust_id, 0) {
-                Ok(body) => body,
-                // Error case: we could have a specific variant
-                Err(_) => None,
-            }
-        } else {
-            // Otherwise do nothing
-            None
+        // Translate its body like the body of a function. This returns `None` if we can't/decide
+        // not to translate this body.
+        let body = match bt_ctx.translate_body(rust_id, 0) {
+            Ok(body) => body,
+            // Error case: we could have a specific variant
+            Err(_) => None,
         };
 
         // Save the new global
