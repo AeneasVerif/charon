@@ -420,11 +420,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     /// Compute the meta information for a Rust item identified by its id.
     pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
+        // Default to `false` for impl blocks and closures.
+        let public = self.translate_visibility_from_rid(def_id).unwrap_or(false);
         ItemMeta {
             meta: self.translate_meta_from_rid(def_id),
             attributes: self.translate_attributes_from_rid(def_id),
             inline: self.translate_inline_from_rid(def_id),
-            public: self.translate_visibility_from_rid(def_id),
+            public,
         }
     }
 
@@ -537,9 +539,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn translate_visibility_from_rid(&self, id: DefId) -> bool {
+    /// Returns the visibility of the item/field/etc. Returns `None` for items that don't have a
+    /// visibility, like impl blocks.
+    pub(crate) fn translate_visibility_from_rid(&self, id: DefId) -> Option<bool> {
         use rustc_hir::def::DefKind::*;
-        match self.tcx.def_kind(id) {
+        let def_kind = self.tcx.def_kind(id);
+        match def_kind {
             AssocConst
             | AssocFn
             | Const
@@ -555,24 +560,24 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             | TraitAlias
             | TyAlias
             | Union
-            | Use => self.tcx.visibility(id).is_public(),
-            // These defs don't have visibility modifiers, which would cause `visibility` to panic.
+            | Use => Some(self.tcx.visibility(id).is_public()),
+            // These kinds don't have visibility modifiers (which would cause `visibility` to panic).
+            Closure | Impl { .. } => None,
+            // Kinds we shouldn't be calling this function on.
             AnonConst
             | AssocTy
-            | Closure
             | ConstParam
             | Ctor { .. }
             | ExternCrate
             | ForeignMod
             | Generator
             | GlobalAsm
-            | Impl { .. }
             | ImplTraitPlaceholder
             | InlineConst
             | LifetimeParam
             | OpaqueTy
             | TyParam
-            | Variant => false,
+            | Variant => panic!("Called `translate_visibility_from_rid` on `{def_kind:?}`"),
         }
     }
 
