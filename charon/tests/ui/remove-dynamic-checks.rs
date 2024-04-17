@@ -12,6 +12,10 @@ pub fn add_u32(x: u32, y: u32) -> u32 {
     x + y
 }
 
+pub fn incr(x: &mut u32) {
+    *x += 1;
+}
+
 /// Testing binop simplification
 /// In debug mode, rust inserts an assertion after the substraction
 pub fn subs_u32(x: u32, y: u32) -> u32 {
@@ -72,6 +76,14 @@ pub fn mix_arith_u32(x: u32, y: u32, z: u32) -> u32 {
 
 pub fn mix_arith_i32(x: i32, y: i32, z: i32) -> i32 {
     ((x + y) * (x / y) + (x - (z % y))) % (x + y + z)
+}
+
+fn shl(x: u32, y: u32) -> u32 {
+    x << y
+}
+
+fn shr(x: u32, y: u32) -> u32 {
+    x >> y
 }
 
 /* Checking the simplification of binop operations *inside* global constants.

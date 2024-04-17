@@ -78,7 +78,7 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
     /// ========
     /// ```text
     /// x := ...;
-    /// b := move x < const 32; // or another constant
+    /// b := copy x < const 32; // or another constant
     /// assert(move b == true);
     /// ```
     fn simplify(&mut self, s: &mut Statement) -> bool {
@@ -117,7 +117,7 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                     // s1 should be: `b := copy x < const ...`
                     RawStatement::Assign(
                         dest_b_p,
-                        Rvalue::BinaryOp(BinOp::Lt, Operand::Move(x_place), Operand::Const(..)),
+                        Rvalue::BinaryOp(BinOp::Lt, Operand::Copy(x_place), Operand::Const(..)),
                     ),
                     RawStatement::Sequence(s2, _),
                 ) = (&s0.content, &s1.content, &s2.content)
