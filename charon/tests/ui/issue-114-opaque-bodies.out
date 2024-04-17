@@ -1,0 +1,229 @@
+[ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
+
+fn issue_114_opaque_bodies_aux::inline_always() -> u32
+{
+    let @0: u32; // return
+
+    @0 := const (42 : u32)
+    return
+}
+
+fn issue_114_opaque_bodies_aux::inline_sometimes() -> u32
+{
+    let @0: u32; // return
+
+    @0 := const (42 : u32)
+    return
+}
+
+fn issue_114_opaque_bodies_aux::inline_never() -> u32
+
+fn issue_114_opaque_bodies_aux::inline_generic<T>() -> u32
+{
+    let @0: u32; // return
+
+    @0 := const (42 : u32)
+    return
+}
+
+fn test_crate::use_inlines() -> u32
+{
+    let @0: u32; // return
+    let @1: u32; // anonymous local
+    let @2: u32; // anonymous local
+    let @3: u32; // anonymous local
+    let @4: u32; // anonymous local
+    let @5: u32; // anonymous local
+    let @6: u32; // anonymous local
+
+    @3 := issue_114_opaque_bodies_aux::inline_always()
+    @4 := issue_114_opaque_bodies_aux::inline_sometimes()
+    @2 := copy (@3) + copy (@4)
+    drop @4
+    drop @3
+    @5 := issue_114_opaque_bodies_aux::inline_never()
+    @1 := copy (@2) + copy (@5)
+    drop @5
+    drop @2
+    @6 := issue_114_opaque_bodies_aux::inline_generic<bool>()
+    @0 := copy (@1) + copy (@6)
+    drop @6
+    drop @1
+    return
+}
+
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
+
+
+fn core::bool::{bool}::then_some<T>(@1: bool, @2: T) -> core::option::Option<T>
+{
+    let @0: core::option::Option<T>; // return
+    let self@1: bool; // arg #1
+    let t@2: T; // arg #2
+    let @3: T; // anonymous local
+    let @4: bool; // anonymous local
+
+    @4 := const (true)
+    if copy (self@1) {
+        @3 := move (t@2)
+        @0 := core::option::Option::Some { 0: move (@3) }
+        drop @3
+    }
+    else {
+        @0 := core::option::Option::None {  }
+        if copy (@4) {
+            drop t@2
+        }
+        else {
+            nop
+        }
+    }
+    return
+}
+
+fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<()>
+{
+    let @0: core::option::Option<()>; // return
+    let b@1: bool; // arg #1
+    let @2: bool; // anonymous local
+    let @3: (); // anonymous local
+
+    @2 := copy (b@1)
+    @3 := ()
+    @0 := core::bool::{bool}::then_some<()>(move (@2), move (@3))
+    drop @3
+    drop @2
+    return
+}
+
+trait core::convert::From<Self, T>
+{
+    fn from : core::convert::From::from
+}
+
+fn core::convert::num::{impl core::convert::From<i32> for i64#59}::from(@1: i32) -> i64
+{
+    let @0: i64; // return
+    let small@1: i32; // arg #1
+
+    @0 := cast<i32,i64>(copy (small@1))
+    return
+}
+
+impl core::convert::num::{impl core::convert::From<i32> for i64#59} : core::convert::From<i64, i32>
+{
+    fn from = core::convert::num::{impl core::convert::From<i32> for i64#59}::from
+}
+
+fn core::convert::From::from<Self, T>(@1: T) -> Self
+
+fn test_crate::convert(@1: i32) -> i64
+{
+    let @0: i64; // return
+    let x@1: i32; // arg #1
+    let @2: i32; // anonymous local
+
+    @2 := copy (x@1)
+    @0 := core::convert::num::{impl core::convert::From<i32> for i64#59}::from(move (@2))
+    drop @2
+    return
+}
+
+struct core::ptr::non_null::NonNull<T> =
+{
+  pointer: *mut T
+}
+
+struct core::marker::PhantomData<T> = {}
+
+struct core::ptr::unique::Unique<T> =
+{
+  pointer: core::ptr::non_null::NonNull<T>,
+  _marker: core::marker::PhantomData<T>
+}
+
+struct alloc::raw_vec::RawVec<T, A> =
+{
+  ptr: core::ptr::unique::Unique<T>,
+  cap: usize,
+  alloc: A
+}
+
+struct alloc::vec::Vec<T, A> =
+{
+  buf: alloc::raw_vec::RawVec<T, A>,
+  len: usize
+}
+
+struct alloc::alloc::Global = {}
+
+fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>)
+{
+    let @0: (); // return
+    let _x@1: alloc::vec::Vec<u32, alloc::alloc::Global>; // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    drop _x@1
+    @0 := ()
+    return
+}
+
+global core::num::{usize#11}::MAX  {
+    let @0: usize; // return
+
+    @0 := const (18446744073709551615 : usize)
+    return
+}
+
+fn test_crate::max() -> usize
+{
+    let @0: usize; // return
+    let @1: usize; // anonymous local
+
+    @1 := core::num::{usize#11}::MAX
+    @0 := move (@1)
+    return
+}
+
+trait core::cmp::PartialEq<Self, Rhs>
+{
+    fn eq : core::cmp::PartialEq::eq
+    fn ne : core::cmp::PartialEq::ne
+}
+
+fn test_crate::partial_eq<T>(@1: T)
+where
+    [@TraitClause0]: core::cmp::PartialEq<T, T>,
+{
+    let @0: (); // return
+    let _x@1: T; // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    drop _x@1
+    @0 := ()
+    return
+}
+
+fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+
+fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (Self); // arg #1
+    let other@2: &'_ (Rhs); // arg #2
+    let @3: bool; // anonymous local
+
+    @3 := Self::eq(copy (self@1), copy (other@2))
+    @0 := ~(move (@3))
+    drop @3
+    return
+}
+
+
+

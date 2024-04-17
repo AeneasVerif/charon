@@ -218,6 +218,8 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// reconstruction (note that because several patterns in a match may lead
     /// to the same branch, it is node always possible not to duplicate code).
     pub no_code_duplication: bool,
+    /// Whether to extract the bodies of foreign methods and structs with private fields.
+    pub extract_opaque_bodies: bool,
     /// All the ids, in the order in which we encountered them
     pub all_ids: LinkedHashSet<AnyTransId>,
     /// The declarations we came accross and which we haven't translated yet.

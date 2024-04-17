@@ -1,4 +1,3 @@
-//@ output=pretty-llbc
 pub fn map(x: [i32; 256]) -> [i32; 256] {
     x.map(|v| v)
 }

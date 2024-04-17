@@ -255,6 +255,7 @@ pub fn translate<'tcx, 'ctx>(
         errors_as_warnings: options.errors_as_warnings,
         error_count: 0,
         no_code_duplication: options.no_code_duplication,
+        extract_opaque_bodies: options.extract_opaque_bodies,
         all_ids: LinkedHashSet::new(),
         stack: BTreeSet::new(),
         def_id: None,
