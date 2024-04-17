@@ -26,19 +26,25 @@ use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
 use std::fmt;
 
-/// Macro to either panic or return on error, depending on the CLI options
-macro_rules! error_or_panic {
+macro_rules! register_error_or_panic {
     ($ctx:expr, $span: expr, $msg: expr) => {{
         $ctx.span_err($span, &$msg);
-        if $ctx.continue_on_failure() {
-            let e = crate::common::Error {
-                span: $span,
-                msg: $msg.to_string(),
-            };
-            return (Err(e));
-        } else {
+        if !$ctx.continue_on_failure() {
             panic!("{}", $msg);
         }
+    }};
+}
+pub(crate) use register_error_or_panic;
+
+/// Macro to either panic or return on error, depending on the CLI options
+macro_rules! error_or_panic {
+    ($ctx:expr, $span:expr, $msg:expr) => {{
+        $crate::translate_ctx::register_error_or_panic!($ctx, $span, $msg);
+        let e = crate::common::Error {
+            span: $span,
+            msg: $msg.to_string(),
+        };
+        return Err(e);
     }};
 }
 pub(crate) use error_or_panic;
@@ -48,27 +54,12 @@ macro_rules! error_assert {
     ($ctx:expr, $span: expr, $b: expr) => {
         if !$b {
             let msg = format!("assertion failure: {:?}", stringify!($b));
-            $ctx.span_err($span, &msg);
-            if $ctx.continue_on_failure() {
-                let e = crate::common::Error { span: $span, msg };
-                return (Err(e));
-            } else {
-                panic!("{}", msg);
-            }
+            $crate::translate_ctx::error_or_panic!($ctx, $span, msg);
         }
     };
     ($ctx:expr, $span: expr, $b: expr, $msg: expr) => {
         if !$b {
-            $ctx.span_err($span, &$msg);
-            if $ctx.continue_on_failure() {
-                let e = crate::common::Error {
-                    span: $span,
-                    msg: $msg.to_string(),
-                };
-                return (Err(e));
-            } else {
-                panic!("{}", $msg);
-            }
+            $crate::translate_ctx::error_or_panic!($ctx, $span, $msg);
         }
     };
 }
@@ -79,43 +70,18 @@ macro_rules! error_assert_then {
     ($ctx:expr, $span: expr, $b: expr, $then: expr) => {
         if !$b {
             let msg = format!("assertion failure: {:?}", stringify!($b));
-            $ctx.span_err($span.rust_span_data.span(), &msg);
-            if $ctx.continue_on_failure() {
-                {
-                    $then
-                }
-            } else {
-                panic!("{}", msg);
-            }
+            $crate::translate_ctx::register_error_or_panic!($ctx, $span, msg);
+            $then;
         }
     };
     ($ctx:expr, $span: expr, $b: expr, $then: expr, $msg:expr) => {
         if !$b {
-            $ctx.span_err($span.rust_span_data.span(), &$msg);
-            if $ctx.continue_on_failure() {
-                {
-                    $then
-                }
-            } else {
-                panic!("{}", $msg);
-            }
+            $crate::translate_ctx::register_error_or_panic!($ctx, $span, $msg);
+            $then;
         }
     };
 }
 pub(crate) use error_assert_then;
-
-macro_rules! register_error_or_panic {
-    ($ctx:expr, $span: expr, $msg: expr) => {{
-        $ctx.span_err($span, &$msg);
-        if $ctx.continue_on_failure() {
-            // Nothing to do
-            ();
-        } else {
-            panic!("{}", $msg);
-        }
-    }};
-}
-pub(crate) use register_error_or_panic;
 
 /// We use this to save the origin of an id. This is useful for the external
 /// dependencies, especially if some external dependencies don't extract:
