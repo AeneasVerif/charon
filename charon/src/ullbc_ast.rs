@@ -77,6 +77,8 @@ pub enum RawTerminator {
         call: Call,
         target: BlockId::Id,
     },
+    /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
+    /// checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
     Assert {
         cond: Operand,
         expected: bool,

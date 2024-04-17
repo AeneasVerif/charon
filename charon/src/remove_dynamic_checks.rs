@@ -135,61 +135,53 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                         return true;
                     }
                 }
-                // Signed division and remainder
-                // TODO: check x_op and y_op
+                // Overflow checks for signed division and remainder. They look like:
+                //   is_neg_1 := y == (-1)
+                //   is_min := x == INT::min
+                //   has_overflow := move (is_neg_1) & move (is_min)
+                //   assert(move has_overflow == false)
+                // TODO: check `_minus_1` and `_min_op`.
                 else if let (
-                    // b_y_p := y == (-1)
+                    // is_neg_1 := y == -1
                     RawStatement::Assign(
-                        b_y_p,
+                        is_neg_1,
                         Rvalue::BinaryOp(
                             BinOp::Eq,
                             _y_op,
                             Operand::Const(ConstantExpr {
-                                value: RawConstantExpr::Literal(Literal::Scalar(_)),
+                                value: RawConstantExpr::Literal(Literal::Scalar(_minus_1)),
                                 ty: _,
                             }),
                         ),
                     ),
-                    // b_x_p := x == INT::min
-                    // TODO: check min_op
-                    RawStatement::Assign(b_x_p, Rvalue::BinaryOp(BinOp::Eq, _x_op, _min_op)),
+                    // is_min := x == INT::min
+                    RawStatement::Assign(is_min, Rvalue::BinaryOp(BinOp::Eq, _x_op, _min_op)),
                     // s2
                     // s3
                     RawStatement::Sequence(s2, s3),
                 ) = (&s0.content, &s1.content, &s2.content)
                 {
-                    if let RawStatement::Sequence(s3, s4) = &s3.content {
+                    if let RawStatement::Sequence(s3, _) = &s3.content {
                         if let (
-                            // b := move (b_y) & move (b_x)
+                            // has_overflow := move (is_neg_1) & move (is_min)
                             RawStatement::Assign(
-                                b_p,
+                                has_overflow,
                                 Rvalue::BinaryOp(
                                     BinOp::BitAnd,
-                                    Operand::Move(b_y_p1),
-                                    Operand::Move(b_x_p1),
+                                    Operand::Move(has_overflow_op_1),
+                                    Operand::Move(has_overflow_op_2),
                                 ),
                             ),
                             // assert(move b == false)
                             RawStatement::Assert(Assert {
-                                cond: Operand::Move(b_p_1),
+                                cond: Operand::Move(asserted),
                                 expected: false,
                             }),
-                            // z := x / y;
-                            // ...
-                            RawStatement::Sequence(s4, _),
-                        ) = (&s2.content, &s3.content, &s4.content)
+                        ) = (&s2.content, &s3.content)
                         {
-                            if b_x_p == b_x_p1
-                                && b_y_p1 == b_y_p
-                                && b_p == b_p_1
-                                // x := x / y
-                                && matches!(
-                                    &s4.content,
-                                    RawStatement::Assign(
-                                        _,
-                                        Rvalue::BinaryOp(BinOp::Div | BinOp::Rem, _, _)
-                                    )
-                                )
+                            if is_neg_1 == has_overflow_op_1
+                                && is_min == has_overflow_op_2
+                                && asserted == has_overflow
                             {
                                 // Eliminate the first 4 statements
                                 take(s, |s| {
@@ -210,7 +202,9 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                 {
                     // We don't check that the second operand is 0 in
                     // case we are in the division/remainder case
-                    if matches!(binop, BinOp::Eq) && is_assert_move(dest_p, s1, false) {
+                    if matches!(binop, BinOp::Eq | BinOp::BitAnd)
+                        && is_assert_move(dest_p, s1, false)
+                    {
                         // This should be the division/remainder case
                         // Eliminate the first two statements
                         take(s, |s| {
