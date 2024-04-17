@@ -1,0 +1,11 @@
+pub mod index_to_function_calls;
+pub mod insert_assign_return_unit;
+pub mod ops_to_function_calls;
+pub mod reconstruct_asserts;
+pub mod remove_drop_never;
+pub mod remove_dynamic_checks;
+pub mod remove_nops;
+pub mod remove_read_discriminant;
+pub mod remove_unused_locals;
+pub mod simplify_constants;
+pub mod update_closure_signatures;

@@ -1,4 +1,4 @@
-[ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
+[ INFO charon_driver::driver:332] [translate]: # Final LLBC before serialization:
 
 trait test_crate::Hasher<Self>
 
