@@ -1,87 +1,13 @@
 //! The Charon driver, which calls Rustc with callbacks to compile some Rust
 //! crate to LLBC.
 
-#![allow(dead_code)]
-#![feature(rustc_private, register_tool)]
-#![feature(box_patterns)]
-#![feature(cell_leak)] // For Ref::leak
-// For rustdoc: prevents overflows
-#![recursion_limit = "256"]
-#![feature(trait_alias)]
-#![feature(let_chains)]
-#![feature(iterator_try_collect)]
-#![feature(associated_type_defaults)]
-
-extern crate hashlink;
-extern crate im;
-extern crate linked_hash_set;
-extern crate log;
-extern crate rustc_abi;
-extern crate rustc_ast;
-extern crate rustc_ast_pretty;
-extern crate rustc_attr;
-extern crate rustc_borrowck;
-extern crate rustc_const_eval;
-extern crate rustc_driver;
-extern crate rustc_error_messages;
-extern crate rustc_errors;
-extern crate rustc_hir;
-extern crate rustc_index;
-extern crate rustc_interface;
-extern crate rustc_middle;
-extern crate rustc_mir_dataflow;
-extern crate rustc_mir_transform;
-extern crate rustc_monomorphize;
-extern crate rustc_resolve;
-extern crate rustc_session;
-extern crate rustc_span;
-extern crate rustc_target;
-extern crate take_mut;
-
-#[macro_use]
-mod common;
-mod assumed;
-mod cli_options;
-mod deps_errors;
-mod driver;
-mod export;
-mod expressions;
-mod expressions_utils;
-mod formatter;
-mod gast;
-mod gast_utils;
-mod get_mir;
-mod graphs;
-#[macro_use]
-mod ids;
-mod llbc_ast;
-mod llbc_ast_utils;
-mod logger;
-mod meta;
-mod meta_utils;
-mod names;
-mod names_utils;
-mod reorder_decls;
-mod transform;
-mod translate_constants;
-mod translate_crate_to_ullbc;
-mod translate_ctx;
-mod translate_functions_to_ullbc;
-mod translate_predicates;
-mod translate_traits;
-mod translate_types;
-mod types;
-mod types_utils;
-mod ullbc_ast;
-mod ullbc_ast_utils;
-mod ullbc_to_llbc;
-mod values;
-mod values_utils;
-
-use crate::driver::{
+use charon_lib::cli_options;
+use charon_lib::driver::{
     arg_value, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
 };
-use crate::export::CrateData;
+use charon_lib::export::CrateData;
+use charon_lib::logger;
+use charon_lib::trace;
 
 fn main() {
     // Initialize the logger

@@ -66,6 +66,7 @@ pub fn write_vec<T>(
 /// We adapted it from:
 /// <https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust>
 /// Note that we can't define it in macros due to technical reasons
+#[macro_export]
 macro_rules! function_name {
     () => {{
         fn f() {}
@@ -91,37 +92,40 @@ macro_rules! function_name {
 }
 
 /// A custom log trace macro. Uses the log crate.
+#[macro_export]
 macro_rules! trace {
     ($($arg:tt)+) => {{
         use colored::Colorize;
         let msg = format!($($arg)+);
-        log::trace!("[{}]:\n{}", function_name!().yellow(), msg)
+        log::trace!("[{}]:\n{}", $crate::function_name!().yellow(), msg)
     }};
     () => {{
         use colored::Colorize;
-        log::trace!("[{}]", function_name!().yellow())
+        log::trace!("[{}]", $crate::function_name!().yellow())
     }};
 }
 
 /// A custom log error macro. Uses the log crate.
+#[macro_export]
 macro_rules! error {
     ($($arg:tt)+) => {{
         use colored::Colorize;
         let msg = format!($($arg)+);
-        log::error!("[{}]:\n{}", function_name!().red(), msg)
+        log::error!("[{}]:\n{}", $crate::function_name!().red(), msg)
     }};
 }
 
 /// A custom log info macro. Uses the log crate.
+#[macro_export]
 macro_rules! info {
     ($($arg:tt)+) => {{
         use colored::Colorize;
         let msg = format!($($arg)+);
         // As for info we generally output simple messages, we don't insert
         // a breakline
-        log::info!("[{}]: {}", function_name!().yellow(), msg)
+        log::info!("[{}]: {}", $crate::function_name!().yellow(), msg)
     }};
     () => {{
-        log::info!("[{}]", function_name!().yellow())
+        log::info!("[{}]", $crate::function_name!().yellow())
     }};
 }

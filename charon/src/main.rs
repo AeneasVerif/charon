@@ -32,13 +32,9 @@
 
 #![cfg_attr(feature = "deny-warnings", deny(warnings))]
 
-extern crate rustc_tools_util;
-
-mod cli_options;
-mod logger;
-
+use charon_lib::cli_options::{CliOpts, CHARON_ARGS};
+use charon_lib::logger;
 use clap::Parser;
-use cli_options::{CliOpts, CHARON_ARGS};
 use log::trace;
 use std::env;
 use std::path::PathBuf;
