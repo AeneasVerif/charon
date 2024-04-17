@@ -33,9 +33,10 @@ extern crate rustc_span;
 extern crate rustc_target;
 
 #[macro_use]
-pub mod common;
+pub mod logger;
 pub mod assumed;
 pub mod cli_options;
+pub mod common;
 pub mod deps_errors;
 pub mod driver;
 pub mod export;
@@ -50,7 +51,6 @@ pub mod graphs;
 pub mod ids;
 pub mod llbc_ast;
 pub mod llbc_ast_utils;
-pub mod logger;
 pub mod meta;
 pub mod meta_utils;
 pub mod names;
