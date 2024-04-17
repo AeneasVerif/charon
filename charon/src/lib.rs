@@ -13,39 +13,24 @@
 
 #![feature(rustc_private, register_tool)]
 #![feature(box_patterns)]
-#![feature(cell_leak)] // For Ref::leak
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
 #![feature(trait_alias)]
 #![feature(let_chains)]
 #![feature(iterator_try_collect)]
-#![feature(associated_type_defaults)]
 
-extern crate hashlink;
-extern crate im;
-extern crate linked_hash_set;
-extern crate log;
-extern crate rustc_abi;
 extern crate rustc_ast;
 extern crate rustc_ast_pretty;
 extern crate rustc_attr;
-extern crate rustc_borrowck;
-extern crate rustc_const_eval;
 extern crate rustc_driver;
 extern crate rustc_error_messages;
-extern crate rustc_errors;
 extern crate rustc_hir;
 extern crate rustc_index;
 extern crate rustc_interface;
 extern crate rustc_middle;
-extern crate rustc_mir_dataflow;
-extern crate rustc_mir_transform;
-extern crate rustc_monomorphize;
-extern crate rustc_resolve;
 extern crate rustc_session;
 extern crate rustc_span;
 extern crate rustc_target;
-extern crate take_mut;
 
 #[macro_use]
 pub mod common;
