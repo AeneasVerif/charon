@@ -37,40 +37,6 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                     },
                 );
 
-                // A discriminant read must be immediately followed by a switch int.
-                // Note that it may be contained in a sequence, of course.
-                let (meta2, switch, st3_opt) = match st2.content {
-                    RawStatement::Sequence(
-                        box Statement {
-                            content: RawStatement::Switch(switch @ Switch::SwitchInt(..)),
-                            meta: meta2,
-                        },
-                        box st3,
-                    ) => (meta2, switch, Some(st3)),
-                    RawStatement::Switch(switch @ Switch::SwitchInt(..)) => {
-                        (st2.meta, switch, None)
-                    }
-                    _ => {
-                        register_error_or_panic!(
-                            self.ctx,
-                            st.meta.span.rust_span_data.span(),
-                            "A discriminant read must be followed by a `SwitchInt`"
-                        );
-                        // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
-                        // `Nop` the whole statement sequence.
-                        // FIXME: add `RawStatement::Error` for cases like this.
-                        *st = Statement {
-                            content: RawStatement::Nop,
-                            meta: st.meta,
-                        };
-                        return;
-                    }
-                };
-
-                let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) = switch
-                else { unreachable!() };
-                assert!(op_p.projection.is_empty() && op_p.var_id == dest.var_id);
-
                 // Lookup the type of the scrutinee
                 let variants = match self.ctx.type_decls.get(*adt_id) {
                     // This can happen if there was an error while extracting the definitions
@@ -102,53 +68,93 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                     return
                 };
 
-                // Convert between discriminants and variant indices. Remark: the discriminant can
-                // be of any *signed* integer type (`isize`, `i8`, etc.).
-                let discr_to_id: HashMap<u128, VariantId::Id> = variants
-                    .iter_indexed_values()
-                    .map(|(id, variant)| (variant.discriminant, id))
-                    .collect();
-                let mut covered_discriminants: HashSet<u128> = HashSet::default();
-                let targets = targets
-                    .into_iter()
-                    .map(|(v, e)| {
-                        (
-                            v.into_iter()
-                                .filter_map(|x| {
-                                    let discr = x.to_bits();
-                                    covered_discriminants.insert(discr);
-                                    discr_to_id.get(&discr).or_else(|| {
-                                        register_error_or_panic!(
-                                            self.ctx,
-                                            st.meta.span.rust_span_data.span(),
-                                            "Found incorrect discriminant {discr} for enum {adt_id}"
-                                        );
-                                        None
-                                    })
-                                })
-                                .copied()
-                                .collect_vec(),
-                            e,
-                        )
-                    })
-                    .collect_vec();
-                // Filter the otherwise branch if it is not necessary.
-                let covers_all = covered_discriminants.len() == discr_to_id.len();
-                let otherwise = if covers_all { None } else { Some(otherwise) };
-
-                let switch = RawStatement::Switch(Switch::Match(p.clone(), targets, otherwise));
-
-                // Add the next statement if there is one
-                st.content = if let Some(st3) = st3_opt {
-                    let meta = combine_meta(meta1, &meta2);
-                    let switch = Statement {
-                        meta,
-                        content: switch,
-                    };
-                    new_sequence(switch, st3).content
-                } else {
-                    switch
+                // We look for a `SwitchInt` just after the discriminant read.
+                // Note that it may be contained in a sequence, of course.
+                let maybe_switch = match st2.content {
+                    RawStatement::Sequence(
+                        box Statement {
+                            content: RawStatement::Switch(switch @ Switch::SwitchInt(..)),
+                            meta: meta2,
+                        },
+                        box st3,
+                    ) => Ok((meta2, switch, Some(st3))),
+                    RawStatement::Switch(switch @ Switch::SwitchInt(..)) => {
+                        Ok((st2.meta, switch, None))
+                    }
+                    _ => Err(()),
                 };
+
+                match maybe_switch {
+                    Ok((meta2, switch, st3_opt)) => {
+                        let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) = switch
+                        else { unreachable!() };
+                        assert!(op_p.projection.is_empty() && op_p.var_id == dest.var_id);
+
+                        // Convert between discriminants and variant indices. Remark: the discriminant can
+                        // be of any *signed* integer type (`isize`, `i8`, etc.).
+                        let discr_to_id: HashMap<u128, VariantId::Id> = variants
+                            .iter_indexed_values()
+                            .map(|(id, variant)| (variant.discriminant, id))
+                            .collect();
+                        let mut covered_discriminants: HashSet<u128> = HashSet::default();
+                        let targets = targets
+                            .into_iter()
+                            .map(|(v, e)| {
+                                (
+                                    v.into_iter()
+                                        .filter_map(|x| {
+                                            let discr = x.to_bits();
+                                            covered_discriminants.insert(discr);
+                                            discr_to_id.get(&discr).or_else(|| {
+                                                register_error_or_panic!(
+                                                    self.ctx,
+                                                    st.meta.span.rust_span_data.span(),
+                                                    "Found incorrect discriminant {discr} for enum {adt_id}"
+                                                );
+                                                None
+                                            })
+                                        })
+                                        .copied()
+                                        .collect_vec(),
+                                    e,
+                                )
+                            })
+                            .collect_vec();
+                        // Filter the otherwise branch if it is not necessary.
+                        let covers_all = covered_discriminants.len() == discr_to_id.len();
+                        let otherwise = if covers_all { None } else { Some(otherwise) };
+
+                        let switch =
+                            RawStatement::Switch(Switch::Match(p.clone(), targets, otherwise));
+
+                        // Add the next statement if there is one
+                        st.content = if let Some(st3) = st3_opt {
+                            let meta = combine_meta(meta1, &meta2);
+                            let switch = Statement {
+                                meta,
+                                content: switch,
+                            };
+                            new_sequence(switch, st3).content
+                        } else {
+                            switch
+                        };
+                    }
+                    Err(_) => {
+                        // A discriminant read must be immediately followed by a switch int.
+                        register_error_or_panic!(
+                            self.ctx,
+                            st.meta.span.rust_span_data.span(),
+                            "A discriminant read must be followed by a `SwitchInt`"
+                        );
+                        // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
+                        // `Nop` the whole statement sequence.
+                        // FIXME: add `RawStatement::Error` for cases like this.
+                        *st = Statement {
+                            content: RawStatement::Nop,
+                            meta: st.meta,
+                        };
+                    }
+                }
             }
             RawStatement::Assign(_, Rvalue::Discriminant(_, _)) => {
                 // We failed to remove a [Discriminant]
