@@ -31,6 +31,8 @@ struct MagicComments {
     test_kind: TestKind,
     /// The options with which to run charon.
     cli_opts: CliOpts,
+    /// The options to pass to rustc.
+    rustc_opts: Vec<String>,
     /// Whether we should store the test output in a file and check it.
     check_output: bool,
     /// A list of paths to files that must be compiled as dependencies for this test.
@@ -46,6 +48,7 @@ static HELP_STRING: &str = unindent!(
     
     Other comments can be used to control the behavior of charon:
     - `//@ charon-args=<charon cli options>`
+    - `//@ rustc-args=<rustc cli options>`
     - `//@ no-check-output`: don't store the output in a file; useful if the output is unstable or
          differs between debug and release mode.
     - `//@ aux-crate=<file path>`: compile this file as a crate dependency.
@@ -57,6 +60,7 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
     let mut comments = MagicComments {
         test_kind: TestKind::PrettyLlbc,
         cli_opts: CliOpts::default(),
+        rustc_opts: Vec::new(),
         check_output: true,
         auxiliary_crates: Vec::new(),
     };
@@ -78,6 +82,10 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
             // The first arg is normally the command name.
             let args = ["dummy"].into_iter().chain(charon_opts.split_whitespace());
             comments.cli_opts.update_from(args);
+        } else if let Some(rustc_opts) = line.strip_prefix("rustc-args=") {
+            comments
+                .rustc_opts
+                .extend(rustc_opts.split_whitespace().map(|s| s.to_string()));
         } else if let Some(crate_path) = line.strip_prefix("aux-crate=") {
             let crate_path: PathBuf = crate_path.into();
             let crate_path = input_path.parent().unwrap().join(crate_path);
@@ -181,6 +189,9 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.arg("--edition=2021"); // To avoid needing `extern crate`
     for (crate_name, _, rlib_path) in deps {
         cmd.arg(format!("--extern={crate_name}={rlib_path}"));
+    }
+    for arg in &test_case.magic_comments.rustc_opts {
+        cmd.arg(arg);
     }
     let output = cmd.output()?;
     let stderr = String::from_utf8(output.stderr.clone())?;
