@@ -43,6 +43,12 @@ pub struct Span {
     pub rust_span_data: rustc_span::SpanData,
 }
 
+impl From<Span> for rustc_error_messages::MultiSpan {
+    fn from(span: Span) -> Self {
+        span.rust_span_data.span().into()
+    }
+}
+
 /// Meta information about a piece of code (block, statement, etc.)
 #[derive(Debug, Copy, Clone, Serialize)]
 pub struct Meta {
@@ -68,6 +74,55 @@ pub struct Meta {
     pub span: Span,
     /// Where the code actually comes from, in case of macro expansion/inlining/etc.
     pub generated_from_span: Option<Span>,
+}
+
+impl From<Meta> for rustc_error_messages::MultiSpan {
+    fn from(meta: Meta) -> Self {
+        meta.span.into()
+    }
+}
+
+/// Attributes (`#[...]`). For now we store just the string representation.
+pub type Attribute = String;
+
+/// `#[inline]` built-in attribute.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]
+pub enum InlineAttr {
+    /// `#[inline]`
+    Hint,
+    /// `#[inline(never)]`
+    Never,
+    /// `#[inline(always)]`
+    Always,
+}
+
+/// Meta information about an item (function, trait decl, trait impl, type decl, global).
+#[derive(Debug, Clone, Serialize)]
+pub struct ItemMeta {
+    pub meta: Meta,
+    /// Attributes (`#[...]`).
+    pub attributes: Vec<Attribute>,
+    /// Inline hints (on functions only).
+    pub inline: Option<InlineAttr>,
+    /// Whether this item is declared public. Impl blocks and closures don't have visibility
+    /// modifiers; we arbitrarily set this to `false` for them.
+    ///
+    /// Note that this is different from being part of the crate's public API: to be part of the
+    /// public API, an item has to also be reachable from public items in the crate root. For
+    /// example:
+    /// ```rust,ignore
+    /// mod foo {
+    ///     pub struct X;
+    /// }
+    /// mod bar {
+    ///     pub fn something(_x: super::foo::X) {}
+    /// }
+    /// pub use bar::something; // exposes `X`
+    /// ```
+    /// Without the `pub use ...`, neither `X` nor `something` would be part of the crate's public
+    /// API (this is called "pub-in-priv" items). With or without the `pub use`, we set `public =
+    /// true`; computing item reachability is harder.
+    pub public: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize)]

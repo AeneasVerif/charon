@@ -43,3 +43,17 @@ type meta = {
       (** Where the code actually comes from, in case of macro expansion/inlining/etc. *)
 }
 [@@deriving show, ord]
+
+type inline_attr =
+  | Hint  (** `#[inline]` **)
+  | Never  (** `#[inline(never)]` **)
+  | Always  (** `#[inline(always)]` **)
+[@@deriving show, ord]
+
+type item_meta = {
+  meta : meta;
+  attributes : string list;  (** Attributes (`#[...]`). **)
+  inline : inline_attr option;
+  public : bool;
+}
+[@@deriving show, ord]

@@ -39,4 +39,4 @@ error: The external definition DefId(2:7981 ~ core[6c80]::option::{impl#0}::is_s
 
 error: aborting due to 2 previous errors
 
-[ ERROR charon_driver:262] The extraction encountered 1 errors
+[ ERROR charon_driver:264] The extraction encountered 1 errors

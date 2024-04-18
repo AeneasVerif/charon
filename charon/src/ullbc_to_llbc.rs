@@ -1959,7 +1959,7 @@ fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl
     tgt::FunDecl {
         def_id: src_def.def_id,
         rust_id: src_def.rust_id,
-        meta: src_def.meta,
+        item_meta: src_def.item_meta.clone(),
         is_local: src_def.is_local,
         name: src_def.name.clone(),
         signature: src_def.signature.clone(),
@@ -1984,7 +1984,7 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalD
     tgt::GlobalDecl {
         def_id: src_def.def_id,
         rust_id: src_def.rust_id,
-        meta: src_def.meta,
+        item_meta: src_def.item_meta.clone(),
         is_local: src_def.is_local,
         name: src_def.name.clone(),
         generics: src_def.generics.clone(),

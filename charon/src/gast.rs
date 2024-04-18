@@ -2,7 +2,7 @@
 pub use crate::expressions::*;
 pub use crate::gast_utils::*;
 use crate::generate_index_type;
-use crate::meta::Meta;
+use crate::meta::{ItemMeta, Meta};
 use crate::names::Name;
 pub use crate::types::GlobalDeclId;
 pub use crate::types::TraitClauseId;
@@ -93,7 +93,7 @@ pub struct GFunDecl<T> {
     #[serde(skip)]
     pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
-    pub meta: Meta,
+    pub item_meta: ItemMeta,
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
@@ -116,7 +116,7 @@ pub struct GGlobalDecl<T> {
     #[serde(skip)]
     pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
-    pub meta: Meta,
+    pub item_meta: ItemMeta,
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
@@ -171,8 +171,8 @@ pub struct TraitDecl {
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
+    pub item_meta: ItemMeta,
     pub name: Name,
-    pub meta: Meta,
     pub generics: GenericParams,
     pub preds: Predicates,
     /// The "parent" clauses: the supertraits.
@@ -231,7 +231,7 @@ pub struct TraitImpl {
     /// an external crate.
     pub is_local: bool,
     pub name: Name,
-    pub meta: Meta,
+    pub item_meta: ItemMeta,
     /// The information about the implemented trait.
     /// Note that this contains the instantiation of the "parent"
     /// clauses.

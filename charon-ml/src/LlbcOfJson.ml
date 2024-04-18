@@ -136,7 +136,7 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
      in
      let {
        def_id = global_id;
-       meta;
+       item_meta;
        body;
        is_local;
        name;
@@ -165,7 +165,7 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
      let global_decl : global_decl =
        {
          def_id = global_id;
-         meta;
+         item_meta;
          body = fun_id;
          is_local;
          name;
@@ -178,7 +178,7 @@ let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
      let fun_decl : fun_decl =
        {
          def_id = fun_id;
-         meta;
+         item_meta;
          is_local;
          name;
          signature;

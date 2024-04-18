@@ -4,8 +4,8 @@ use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::llbc_ast;
-use crate::meta;
-use crate::meta::{FileId, FileName, LocalFileId, Meta, VirtualFileId};
+use crate::meta::{self, Attribute, ItemMeta, Span};
+use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::{AnyTransId, DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
 use crate::translate_predicates::NonLocalTraitClause;
@@ -418,6 +418,21 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         self.translate_meta_from_rspan(rspan)
     }
 
+    /// Compute the meta information for a Rust item identified by its id.
+    pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
+        let meta = self.translate_meta_from_rid(def_id);
+        // Default to `false` for impl blocks and closures.
+        let public = self
+            .translate_visibility_from_rid(def_id, meta.span)
+            .unwrap_or(false);
+        ItemMeta {
+            meta,
+            attributes: self.translate_attributes_from_rid(def_id),
+            inline: self.translate_inline_from_rid(def_id),
+            public,
+        }
+    }
+
     pub fn translate_span(&mut self, rspan: hax::Span) -> meta::Span {
         let filename = meta::convert_filename(&rspan.filename);
         let file_id = match &filename {
@@ -479,6 +494,100 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         Meta {
             span,
             generated_from_span: None,
+        }
+    }
+
+    /// Returns the attributes (`#[...]`) of this item.
+    pub(crate) fn item_attributes(&self, id: DefId) -> &[rustc_ast::Attribute] {
+        use rustc_hir::hir_id::HirId;
+        id.as_local()
+            .map(|local_def_id| self.tcx.hir().attrs(HirId::make_owner(local_def_id)))
+            .unwrap_or_default()
+    }
+
+    /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
+    /// encodes them as attributes). For now we use `String`s for `Attributes`.
+    pub(crate) fn translate_attribute(&self, attr: &rustc_ast::Attribute) -> Option<Attribute> {
+        use rustc_ast::ast::AttrKind;
+        use rustc_ast_pretty::pprust;
+        match &attr.kind {
+            AttrKind::Normal(normal_attr) => {
+                // Use `pprust` to render the attribute like it is written in the source.
+                use pprust::PrintState;
+                Some(pprust::State::to_string(|s| {
+                    s.print_attr_item(&normal_attr.item, attr.span)
+                }))
+            }
+            AttrKind::DocComment(..) => None,
+        }
+    }
+
+    pub(crate) fn translate_attributes_from_rid(&self, id: DefId) -> Vec<Attribute> {
+        self.item_attributes(id)
+            .iter()
+            .filter_map(|attr| self.translate_attribute(attr))
+            .collect()
+    }
+
+    pub(crate) fn translate_inline_from_rid(&self, id: DefId) -> Option<InlineAttr> {
+        use rustc_attr as rustc;
+        if !self.tcx.def_kind(id).has_codegen_attrs() {
+            return None;
+        }
+        match self.tcx.codegen_fn_attrs(id).inline {
+            rustc::InlineAttr::None => None,
+            rustc::InlineAttr::Hint => Some(InlineAttr::Hint),
+            rustc::InlineAttr::Never => Some(InlineAttr::Never),
+            rustc::InlineAttr::Always => Some(InlineAttr::Always),
+        }
+    }
+
+    /// Returns the visibility of the item/field/etc. Returns `None` for items that don't have a
+    /// visibility, like impl blocks.
+    pub(crate) fn translate_visibility_from_rid(&mut self, id: DefId, span: Span) -> Option<bool> {
+        use rustc_hir::def::DefKind::*;
+        let def_kind = self.tcx.def_kind(id);
+        match def_kind {
+            AssocConst
+            | AssocFn
+            | Const
+            | Enum
+            | Field
+            | Fn
+            | ForeignTy
+            | Macro { .. }
+            | Mod
+            | Static { .. }
+            | Struct
+            | Trait
+            | TraitAlias
+            | TyAlias
+            | Union
+            | Use => Some(self.tcx.visibility(id).is_public()),
+            // These kinds don't have visibility modifiers (which would cause `visibility` to panic).
+            Closure | Impl { .. } => None,
+            // Kinds we shouldn't be calling this function on.
+            AnonConst
+            | AssocTy
+            | ConstParam
+            | Ctor { .. }
+            | ExternCrate
+            | ForeignMod
+            | Generator
+            | GlobalAsm
+            | ImplTraitPlaceholder
+            | InlineConst
+            | LifetimeParam
+            | OpaqueTy
+            | TyParam
+            | Variant => {
+                register_error_or_panic!(
+                    self,
+                    span,
+                    "Called `translate_visibility_from_rid` on `{def_kind:?}`"
+                );
+                None
+            }
         }
     }
 
@@ -741,10 +850,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
         self.t_ctx.span_err(span, msg)
-    }
-
-    pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
-        self.t_ctx.translate_meta_from_rid(def_id)
     }
 
     pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
