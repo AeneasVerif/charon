@@ -4,7 +4,7 @@ use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::llbc_ast;
-use crate::meta::{self, Attribute, ItemMeta};
+use crate::meta::{self, Attribute, ItemMeta, Span};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::{AnyTransId, DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
@@ -420,10 +420,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     /// Compute the meta information for a Rust item identified by its id.
     pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
+        let meta = self.translate_meta_from_rid(def_id);
         // Default to `false` for impl blocks and closures.
-        let public = self.translate_visibility_from_rid(def_id).unwrap_or(false);
+        let public = self
+            .translate_visibility_from_rid(def_id, meta.span)
+            .unwrap_or(false);
         ItemMeta {
-            meta: self.translate_meta_from_rid(def_id),
+            meta,
             attributes: self.translate_attributes_from_rid(def_id),
             inline: self.translate_inline_from_rid(def_id),
             public,
@@ -541,7 +544,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     /// Returns the visibility of the item/field/etc. Returns `None` for items that don't have a
     /// visibility, like impl blocks.
-    pub(crate) fn translate_visibility_from_rid(&self, id: DefId) -> Option<bool> {
+    pub(crate) fn translate_visibility_from_rid(&mut self, id: DefId, span: Span) -> Option<bool> {
         use rustc_hir::def::DefKind::*;
         let def_kind = self.tcx.def_kind(id);
         match def_kind {
@@ -577,7 +580,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             | LifetimeParam
             | OpaqueTy
             | TyParam
-            | Variant => panic!("Called `translate_visibility_from_rid` on `{def_kind:?}`"),
+            | Variant => {
+                register_error_or_panic!(
+                    self,
+                    span,
+                    "Called `translate_visibility_from_rid` on `{def_kind:?}`"
+                );
+                None
+            }
         }
     }
 

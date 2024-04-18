@@ -43,6 +43,12 @@ pub struct Span {
     pub rust_span_data: rustc_span::SpanData,
 }
 
+impl From<Span> for rustc_error_messages::MultiSpan {
+    fn from(span: Span) -> Self {
+        span.rust_span_data.span().into()
+    }
+}
+
 /// Meta information about a piece of code (block, statement, etc.)
 #[derive(Debug, Copy, Clone, Serialize)]
 pub struct Meta {
@@ -68,6 +74,12 @@ pub struct Meta {
     pub span: Span,
     /// Where the code actually comes from, in case of macro expansion/inlining/etc.
     pub generated_from_span: Option<Span>,
+}
+
+impl From<Meta> for rustc_error_messages::MultiSpan {
+    fn from(meta: Meta) -> Self {
+        meta.span.into()
+    }
 }
 
 /// Attributes (`#[...]`). For now we store just the string representation.
