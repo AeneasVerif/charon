@@ -104,9 +104,24 @@ pub struct ItemMeta {
     pub attributes: Vec<Attribute>,
     /// Inline hints (on functions only).
     pub inline: Option<InlineAttr>,
-    /// Whether this item is public. Note that this considers pub-in-priv items to be public;
-    /// computing actual reachability is harder. Impl blocks and closures don't have visibility
-    /// modifiers; we arbitrarily set `public` to `false` for them.
+    /// Whether this item is declared public. Impl blocks and closures don't have visibility
+    /// modifiers; we arbitrarily set this to `false` for them.
+    ///
+    /// Note that this is different from being part of the crate's public API: to be part of the
+    /// public API, an item has to also be reachable from public items in the crate root. For
+    /// example:
+    /// ```rust,ignore
+    /// mod foo {
+    ///     pub struct X;
+    /// }
+    /// mod bar {
+    ///     pub fn something(_x: super::foo::X) {}
+    /// }
+    /// pub use bar::something; // exposes `X`
+    /// ```
+    /// Without the `pub use ...`, neither `X` nor `something` would be part of the crate's public
+    /// API (this is called "pub-in-priv" items). With or without the `pub use`, we set `public =
+    /// true`; computing item reachability is harder.
     pub public: bool,
 }
 
