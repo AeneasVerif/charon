@@ -140,8 +140,9 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                         };
                     }
                     Err(st2) => {
-                        // The discriminant read is not followed by a `SwitchInt`. We replace `_x =
-                        // Discr(_y)` with `match _y { 0 => { _x = 0 }, 1 => { _x = 1; }, .. }`.
+                        // The discriminant read is not followed by a `SwitchInt`. This can happen
+                        // in optimized MIR. We replace `_x = Discr(_y)` with `match _y { 0 => { _x
+                        // = 0 }, 1 => { _x = 1; }, .. }`.
                         let targets = variants
                             .iter_indexed_values()
                             .map(|(id, variant)| {

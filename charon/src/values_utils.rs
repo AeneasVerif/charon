@@ -218,6 +218,7 @@ impl ScalarValue {
             ScalarValue::I128(v) => v as u128,
         }
     }
+
     pub fn from_bits(ty: IntegerTy, bits: u128) -> Self {
         Self::from_le_bytes(ty, bits.to_le_bytes())
     }
