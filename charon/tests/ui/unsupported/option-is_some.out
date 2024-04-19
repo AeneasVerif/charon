@@ -1,7 +1,7 @@
 error: A discriminant read must be followed by a `SwitchInt`
  --> /rustc/d59363ad0b6391b7fc5bbb02c9ccf9300eef3753/library/core/src/option.rs:598:5
 
-[ INFO charon_driver::driver:338] [translate]: # Final LLBC before serialization:
+[ INFO charon_lib::driver:332] [translate]: # Final LLBC before serialization:
 
 enum core::option::Option<T> =
 |  None()
@@ -39,4 +39,4 @@ error: The external definition DefId(2:7981 ~ core[6c80]::option::{impl#0}::is_s
 
 error: aborting due to 2 previous errors
 
-[ ERROR charon_driver:264] The extraction encountered 1 errors
+[ ERROR charon_driver:180] The extraction encountered 1 errors

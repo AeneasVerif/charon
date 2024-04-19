@@ -1,21 +1,15 @@
 use crate::cli_options;
 use crate::export;
 use crate::get_mir::MirLevel;
-use crate::index_to_function_calls;
-use crate::insert_assign_return_unit;
-use crate::ops_to_function_calls;
-use crate::reconstruct_asserts;
-use crate::remove_drop_never;
-use crate::remove_dynamic_checks;
-use crate::remove_nops;
-use crate::remove_read_discriminant;
-use crate::remove_unused_locals;
 use crate::reorder_decls;
-use crate::simplify_constants;
+use crate::transform::{
+    index_to_function_calls, insert_assign_return_unit, ops_to_function_calls, reconstruct_asserts,
+    remove_drop_never, remove_dynamic_checks, remove_nops, remove_read_discriminant,
+    remove_unused_locals, simplify_constants, update_closure_signatures,
+};
 use crate::translate_crate_to_ullbc;
 use crate::translate_ctx;
 use crate::ullbc_to_llbc;
-use crate::update_closure_signatures;
 use regex::Regex;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
