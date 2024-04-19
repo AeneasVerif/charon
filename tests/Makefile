@@ -1,7 +1,7 @@
 CURRENT_DIR = $(shell pwd)
 # Outside of CI, ensure the correct toolchain is available (for the dynamic libraries).
 # FIXME: don't hardcode the toolchain
-TOOLCHAIN := nightly-2023-06-02-x86_64-unknown-linux-gnu
+TOOLCHAIN := nightly-2023-06-02
 CHARON_DRIVER ?= rustup run $(TOOLCHAIN) $(CURRENT_DIR)/../bin/charon-driver
 DEST ?= .
 OPTIONS ?=
