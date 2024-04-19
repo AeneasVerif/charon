@@ -50,7 +50,11 @@
         charon =
           let cargoArtifacts = craneLibWithExt.buildDepsOnly { src = ./charon; };
           in craneLibWithExt.buildPackage {
-            src = ./charon;
+            src = pkgs.lib.cleanSourceWith {
+              src = ./charon;
+              # Don't include the `target` directory in the nix inputs.
+              filter = path: type: !pkgs.lib.hasPrefix (toString ./target) path;
+            };
             inherit cargoArtifacts;
             # Check the `ui_llbc` files are correct instead of overwriting them.
             cargoTestCommand = "IN_CI=1 cargo test --profile release";
@@ -90,6 +94,65 @@
           '';
           dontInstall = true;
         };
+
+        # Runs charon on the whole rustc ui test suite. This returns the tests
+        # directory with a bunch of `<file>.rs.charon-output` files that store
+        # the charon output when it failed. It also adds a `charon-results`
+        # file that records `success|expected-failure|failure|panic|timeout`
+        # for each file we processed.
+        rustc-tests = let
+          analyze_test_file = pkgs.writeScript "charon-analyze-test-file" ''
+            #!${pkgs.bash}/bin/bash
+            FILE="$1"
+            echo -n "$FILE: "
+
+            ${pkgs.coreutils}/bin/timeout 5s ${charon}/bin/charon-driver rustc "$FILE" -- --no-serialize > "$FILE.charon-output" 2>&1
+            status=$?
+            if [ $status -eq 124 ]; then
+                result=timeout
+            elif [ $status -eq 101 ]; then
+                result=panic
+            elif [ $status -eq 0 ]; then
+                result=success
+                # Only keep the informative outputs.
+                rm "$FILE.charon-output"
+            elif [ -f ${"$"}{FILE%.rs}.stderr ]; then
+                result=expected-failure
+                # Only keep the informative outputs.
+                rm "$FILE.charon-output"
+            else
+                result=failure
+            fi
+            echo $result
+          '';
+          run_ui_tests = pkgs.writeScript "charon-analyze-test-file" ''
+            PARALLEL="${pkgs.parallel}/bin/parallel"
+            PV="${pkgs.pv}/bin/pv"
+            FD="${pkgs.fd}/bin/fd"
+
+            SIZE="$($FD -e rs | wc -l)"
+            echo "Running $SIZE tests..."
+            $FD -e rs \
+                | $PARALLEL ${analyze_test_file} \
+                | $PV -l -s "$SIZE" \
+                > charon-results
+          '';
+        in pkgs.runCommand "charon-rustc-tests" {
+          src = pkgs.fetchFromGitHub {
+            owner = "rust-lang";
+            repo = "rust";
+            # The commit that corresponds to our nightly-2023-06-02 pin.
+            rev = "d59363ad0b6391b7fc5bbb02c9ccf9300eef3753";
+            sha256 = "sha256-fpPMSzKc/Dd1nXAX7RocM/p22zuFoWtIL6mVw7XTBDo=";
+          };
+          buildInputs = [ rustToolchainWithExt ];
+        } ''
+          mkdir $out
+          cp -r $src/tests/ui/* $out
+          chmod -R u+w $out
+          cd $out
+          ${run_ui_tests}
+        '';
 
         ocamlPackages = pkgs.ocamlPackages;
         easy_logging = ocamlPackages.buildDunePackage rec {
@@ -146,7 +209,7 @@
         charon-ml-tests = mk-charon-ml true;
       in {
         packages = {
-          inherit charon charon-ml;
+          inherit charon charon-ml rustc-tests;
           default = charon;
         };
         devShells.default = pkgs.mkShell {

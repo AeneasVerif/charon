@@ -87,6 +87,13 @@ charon-tests: charon-tests-regular charon-tests-polonius
 charon-ml-tests: build-charon-ml charon-tests
 	cd charon-ml && make tests
 
+# Run Charon on rustc's ui test suite
+.PHONY: rustc-tests
+rustc-tests:
+	nix build -L '.#rustc-tests'
+	@echo "Summary of the results:"
+	@cat result/charon-results | cut -d' ' -f 2 | sort | uniq -c
+
 # Run Charon on the files in the tests crate
 .PHONY: charon-tests-regular
 charon-tests-regular: build-tests
