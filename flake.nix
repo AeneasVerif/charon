@@ -106,23 +106,38 @@
             FILE="$1"
             echo -n "$FILE: "
 
+            has_magic_comment() {
+              # Checks for `// magic-comment` and `//@ magic-comment` instructions in files.
+              grep -q "^// \?@\? \?$1:" "$2"
+            }
+
             ${pkgs.coreutils}/bin/timeout 5s ${charon}/bin/charon-driver rustc "$FILE" -- --no-serialize > "$FILE.charon-output" 2>&1
             status=$?
             if [ $status -eq 124 ]; then
                 result=timeout
+            elif has_magic_comment 'aux-build' "$FILE" \
+              || has_magic_comment 'compile-flags' "$FILE" \
+              || has_magic_comment 'revisions' "$FILE" \
+              || has_magic_comment 'known-bug' "$FILE" \
+              || has_magic_comment 'edition' "$FILE"; then
+                # We can't handle these for now
+                result=unsupported-build-settings
             elif [ $status -eq 101 ]; then
                 result=panic
             elif [ $status -eq 0 ]; then
                 result=success
-                # Only keep the informative outputs.
-                rm "$FILE.charon-output"
             elif [ -f ${"$"}{FILE%.rs}.stderr ]; then
+                # This is a test that should fail
                 result=expected-failure
-                # Only keep the informative outputs.
-                rm "$FILE.charon-output"
             else
                 result=failure
             fi
+
+            # Only keep the informative outputs.
+            if [[ $result != "panic" ]] && [[ $result != "failure" ]]; then
+                rm "$FILE.charon-output"
+            fi
+
             echo $result
           '';
           run_ui_tests = pkgs.writeScript "charon-analyze-test-file" ''
