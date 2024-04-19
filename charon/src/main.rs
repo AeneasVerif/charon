@@ -32,10 +32,13 @@
 
 #![cfg_attr(feature = "deny-warnings", deny(warnings))]
 
-use charon_lib::cli_options::{CliOpts, CHARON_ARGS};
-use charon_lib::logger;
+// Don't link with the `charon_lib` crate so that the `charon` binary doesn't have to dynamically
+// link to `librustc_driver.so` etc.
+mod cli_options;
+mod logger;
+
 use clap::Parser;
-use log::trace;
+use cli_options::{CliOpts, CHARON_ARGS};
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
