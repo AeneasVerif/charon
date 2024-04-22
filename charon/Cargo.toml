@@ -42,6 +42,7 @@ serial_test = "0.5.1"
 take_mut = "0.2.2"
 toml = "0.5.10"
 walkdir = "2.3.2"
+which = "6.0.1"
 
 hax-frontend-exporter = { git = "https://github.com/Nadrieril/hax", branch = "fix-parent-item-clauses" }
 hax-frontend-exporter-options = { git = "https://github.com/Nadrieril/hax", branch = "fix-parent-item-clauses" }

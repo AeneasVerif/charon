@@ -42,6 +42,13 @@
         charon = craneLib.buildPackage (craneArgs // {
           # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
           cargoArtifacts = craneLib.buildDepsOnly craneArgs;
+          # Hardcode the path to cargo into the built binary. Nix will ensure the path keeps existing.
+          postPatch = ''
+            substituteInPlace src/main.rs \
+              --replace \
+              'static NIX_CARGO_OVERRIDE: Option<&str> = None;'\
+              'static NIX_CARGO_OVERRIDE: Option<&str> = Some("${rustToolchain}/bin/cargo");'\
+          '';
           # Check the `ui_llbc` files are correct instead of overwriting them.
           cargoTestCommand = "IN_CI=1 cargo test --profile release";
         });
@@ -57,8 +64,7 @@
             inherit cargoArtifacts;
             buildPhase = ''
               # Run the tests for Charon
-              DEST=$out CARGO_NO_RUST_VERSION=1 CHARON_DRIVER="${charon}/bin/charon-driver" \
-              make charon-tests
+              DEST=$out CHARON_DRIVER="${charon}/bin/charon-driver" make charon-tests
             '';
             doCheck = false;
             dontInstall = true;
@@ -76,8 +82,7 @@
           doCheck = false;
           buildPhase = ''
             # Run the tests for Charon
-            DEST=$out CHARON="${charon}/bin/charon --cargo-no-rust-version" \
-            make charon-tests
+            DEST=$out CHARON="${charon}/bin/charon" make charon-tests
 
             # Nix doesn't run the cargo tests, so run them by hand
             make cargo-tests
@@ -236,9 +241,8 @@
           default = charon;
         };
         devShells.default = pkgs.mkShell {
-          # To prevent Charon to add the `+nightly` identifier
-          # which works only with `rustup`.
-          CARGO_NO_RUST_VERSION = 1;
+          # Provide the path to cargo since we don't have rustup around to give it.
+          NIX_CHARON_CARGO_PATH = "${rustToolchain}/bin/cargo";
 
           packages = [
             pkgs.ocamlPackages.ocaml

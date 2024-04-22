@@ -66,6 +66,9 @@ fn get_pinned_toolchain() -> Toolchain {
     file_contents.toolchain
 }
 
+// Nix overrides this with a path to the correct cargo.
+static NIX_CARGO_OVERRIDE: Option<&str> = None;
+
 pub fn main() {
     // Initialize the logger
     logger::initialize_logger();
@@ -95,7 +98,7 @@ pub fn main() {
     }
 }
 
-fn path() -> PathBuf {
+fn driver_path() -> PathBuf {
     let mut path = env::current_exe()
         .expect("current executable path invalid")
         .with_file_name("charon-driver");
@@ -109,20 +112,42 @@ fn path() -> PathBuf {
 
 fn process(options: &CliOpts) -> Result<(), i32> {
     let toolchain = get_pinned_toolchain();
-    let rust_version = toolchain.channel;
+    // FIXME: when using rustup, ensure the toolchain has the right components installed.
+    let use_rustup = which::which("rustup").is_ok();
+    let driver_path = driver_path();
+    // For developping on nix, the flake dev env sets `NIX_CHARON_CARGO_PATH` to know where the right cargo is.
+    let cargo_path_override = NIX_CARGO_OVERRIDE
+        .map(|s| s.to_string())
+        .or_else(|| env::var("NIX_CHARON_CARGO_PATH").ok());
+
+    if !use_rustup && cargo_path_override.is_none() {
+        panic!(
+            "Can't find `rustup`; please install it with your system package manager \
+            or from https://rustup.rs . \
+            If you are using nix, make sure to be in the flake-defined environment \
+            using `nix develop`.",
+        )
+    }
+
+    let mut cmd;
+    if let Some(cargo_path) = cargo_path_override {
+        trace!("Using overriden cargo path: {cargo_path}");
+        cmd = Command::new(cargo_path);
+    } else {
+        assert!(use_rustup); // Otherwise we panicked earlier.
+        trace!("Using rustup-provided `cargo`.");
+        cmd = Command::new("rustup");
+        cmd.arg("run");
+        cmd.arg(toolchain.channel);
+        cmd.arg("cargo");
+    }
+
+    cmd.env("RUSTC_WORKSPACE_WRAPPER", driver_path);
+    cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
 
     // Compute the arguments of the command to call cargo
     //let cargo_subcommand = "build";
     let cargo_subcommand = "rustc";
-
-    let mut cmd = Command::new("cargo");
-    cmd.env("RUSTC_WORKSPACE_WRAPPER", path());
-    cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
-
-    if !options.cargo_no_rust_version {
-        cmd.arg(rust_version);
-    }
-
     cmd.arg(cargo_subcommand);
 
     if options.lib {

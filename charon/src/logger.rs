@@ -106,6 +106,16 @@ macro_rules! error {
     }};
 }
 
+/// A custom log warn macro. Uses the log crate.
+#[macro_export]
+macro_rules! warn {
+    ($($arg:tt)+) => {{
+        use colored::Colorize;
+        let msg = format!($($arg)+);
+        log::warn!("[{}]:\n{}", $crate::function_name!().yellow(), msg)
+    }};
+}
+
 /// A custom log info macro. Uses the log crate.
 #[macro_export]
 macro_rules! info {
