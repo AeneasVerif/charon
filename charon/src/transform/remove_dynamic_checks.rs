@@ -114,7 +114,7 @@ impl<'tcx, 'ctx, 'a> RemoveDynChecks<'tcx, 'ctx, 'a> {
                 else if let (
                     // s0 should be an assignment
                     RawStatement::Assign(dest_x_p, _),
-                    // s1 should be: `b := copy x < const ...`
+                    // s1 should be: `b := copy x < const ...`lfjdlsk
                     RawStatement::Assign(
                         dest_b_p,
                         Rvalue::BinaryOp(BinOp::Lt, Operand::Move(x_place), Operand::Const(..)),
