@@ -25,11 +25,11 @@ jobs:
   nix:
     needs: check_if_skip_duplicate_job
     if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
-    #runs-on: ubuntu-latest
-    runs-on: [self-hosted, linux, nix]
+    runs-on: ubuntu-latest
     steps:
-      #- uses: cachix/install-nix-action@v22
       - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - run: nix build -L .#charon
       - run: nix build -L .#checks.x86_64-linux.tests
       - run: nix build -L .#checks.x86_64-linux.tests-polonius
