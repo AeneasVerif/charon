@@ -87,6 +87,23 @@ charon-tests: charon-tests-regular charon-tests-polonius
 charon-ml-tests: build-charon-ml charon-tests
 	cd charon-ml && make tests
 
+# Run Charon on rustc's ui test suite
+.PHONY: rustc-tests
+rustc-tests:
+	nix build -L '.#rustc-tests'
+	@echo "Summary of the results:"
+	@cat result/charon-results | cut -d' ' -f 2 | sort | uniq -c
+
+# Prints a summary of the most common test errors.
+.PHONY: analyze-rustc-tests
+analyze-rustc-tests: rustc-tests
+	find result/ -name '*.charon-output' \
+		| xargs cat \
+		| grep '^error: ' \
+		| sed 's/^error: \([^:]*\).*/\1/' \
+		| grep -v 'aborting due to .* error' \
+		| sort | uniq -c | sort -h
+
 # Run Charon on the files in the tests crate
 .PHONY: charon-tests-regular
 charon-tests-regular: build-tests
