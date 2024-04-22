@@ -64,7 +64,7 @@
             inherit cargoArtifacts;
             buildPhase = ''
               # Run the tests for Charon
-              DEST=$out CHARON_DRIVER="${charon}/bin/charon-driver" make charon-tests
+              DEST=$out CHARON="${charon}/bin/charon" make charon-tests
             '';
             doCheck = false;
             dontInstall = true;

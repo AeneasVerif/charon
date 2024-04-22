@@ -129,46 +129,78 @@ fn process(options: &CliOpts) -> Result<(), i32> {
         )
     }
 
-    let mut cmd;
-    if let Some(cargo_path) = cargo_path_override {
-        trace!("Using overriden cargo path: {cargo_path}");
-        cmd = Command::new(cargo_path);
+    let exit_status = if options.no_cargo {
+        // Run just the driver.
+        let mut cmd;
+        if cargo_path_override.is_some() {
+            trace!("We appear to have been built with nix; the driver should be correctly linked.");
+            cmd = Command::new(driver_path);
+        } else {
+            assert!(use_rustup); // Otherwise we panicked earlier.
+            trace!("Calling the driver via `rustup`");
+            // If rustup is there, use it to set up the right library paths so that `charon-driver`
+            // can run correctly.
+            cmd = Command::new("rustup");
+            cmd.arg("run");
+            cmd.arg(toolchain.channel);
+            cmd.arg(driver_path);
+        }
+
+        cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
+        // The driver expects the first arg to be "rustc" because that's how cargo calls it.
+        cmd.arg("rustc");
+        if let Some(input_file) = &options.input_file {
+            cmd.arg(input_file);
+        }
+
+        // The opt-level is set by default by cargo; some tests need it.
+        cmd.arg("-Copt-level=3");
+
+        cmd.spawn()
+            .expect("could not run charon-driver")
+            .wait()
+            .expect("failed to wait for charon-driver?")
     } else {
-        assert!(use_rustup); // Otherwise we panicked earlier.
-        trace!("Using rustup-provided `cargo`.");
-        cmd = Command::new("rustup");
-        cmd.arg("run");
-        cmd.arg(toolchain.channel);
-        cmd.arg("cargo");
-    }
+        let mut cmd;
+        if let Some(cargo_path) = cargo_path_override {
+            trace!("Using overriden cargo path: {cargo_path}");
+            cmd = Command::new(cargo_path);
+        } else {
+            assert!(use_rustup); // Otherwise we panicked earlier.
+            trace!("Using rustup-provided `cargo`.");
+            cmd = Command::new("rustup");
+            cmd.arg("run");
+            cmd.arg(toolchain.channel);
+            cmd.arg("cargo");
+        }
 
-    cmd.env("RUSTC_WORKSPACE_WRAPPER", driver_path);
-    cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
+        cmd.env("RUSTC_WORKSPACE_WRAPPER", driver_path);
+        cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
 
-    // Compute the arguments of the command to call cargo
-    //let cargo_subcommand = "build";
-    let cargo_subcommand = "rustc";
-    cmd.arg(cargo_subcommand);
+        // Compute the arguments of the command to call cargo
+        //let cargo_subcommand = "build";
+        let cargo_subcommand = "rustc";
+        cmd.arg(cargo_subcommand);
 
-    if options.lib {
-        cmd.arg("--lib");
-    }
+        if options.lib {
+            cmd.arg("--lib");
+        }
 
-    if options.bin.is_some() {
-        cmd.arg("--bin");
-        cmd.arg(options.bin.as_ref().unwrap().clone());
-    }
+        if options.bin.is_some() {
+            cmd.arg("--bin");
+            cmd.arg(options.bin.as_ref().unwrap().clone());
+        }
 
-    // Always compile in release mode: in effect, we want to analyze the released
-    // code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
-    // have to clean.
-    cmd.arg("--release");
+        // Always compile in release mode: in effect, we want to analyze the released
+        // code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
+        // have to clean.
+        cmd.arg("--release");
 
-    let exit_status = cmd
-        .spawn()
-        .expect("could not run cargo")
-        .wait()
-        .expect("failed to wait for cargo?");
+        cmd.spawn()
+            .expect("could not run cargo")
+            .wait()
+            .expect("failed to wait for cargo?")
+    };
 
     if exit_status.success() {
         Ok(())

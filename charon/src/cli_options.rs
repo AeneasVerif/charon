@@ -115,6 +115,11 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     #[clap(long = "extract-opaque-bodies")]
     #[serde(default)]
     pub extract_opaque_bodies: bool,
+    /// Do not run cargo; instead, run the driver directly.
+    // FIXME: use a subcommand instead, when we update clap to support flattening.
+    #[clap(long = "no-cargo")]
+    #[serde(default)]
+    pub no_cargo: bool,
     /// Panic on the first error. This is useful for debugging.
     #[clap(long = "abort-on-error")]
     #[serde(default)]
