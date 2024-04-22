@@ -39,11 +39,32 @@ mod logger;
 
 use clap::Parser;
 use cli_options::{CliOpts, CHARON_ARGS};
+use serde::Deserialize;
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-const RUST_VERSION: &str = macros::rust_version!();
+// Store the toolchain details directly in the binary.
+static PINNED_TOOLCHAIN: &str = include_str!("../rust-toolchain");
+
+/// This struct is used to deserialize the "rust-toolchain" file.
+#[derive(Deserialize)]
+struct ToolchainFile {
+    toolchain: Toolchain,
+}
+
+#[derive(Deserialize)]
+struct Toolchain {
+    channel: String,
+    #[allow(dead_code)]
+    // FIXME: ensure the right components are installed.
+    components: Vec<String>,
+}
+
+fn get_pinned_toolchain() -> Toolchain {
+    let file_contents: ToolchainFile = toml::from_str(PINNED_TOOLCHAIN).unwrap();
+    file_contents.toolchain
+}
 
 pub fn main() {
     // Initialize the logger
@@ -87,11 +108,12 @@ fn path() -> PathBuf {
 }
 
 fn process(options: &CliOpts) -> Result<(), i32> {
+    let toolchain = get_pinned_toolchain();
+    let rust_version = toolchain.channel;
+
     // Compute the arguments of the command to call cargo
     //let cargo_subcommand = "build";
     let cargo_subcommand = "rustc";
-
-    let rust_version = RUST_VERSION;
 
     let mut cmd = Command::new("cargo");
     cmd.env("RUSTC_WORKSPACE_WRAPPER", path());

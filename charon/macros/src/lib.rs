@@ -6,9 +6,6 @@ extern crate proc_macro;
 extern crate syn;
 use proc_macro::{Span, TokenStream};
 use quote::ToTokens;
-use serde::Deserialize;
-use std::fs::File;
-use std::io::Read;
 use std::vec::Vec;
 use syn::punctuated::Punctuated;
 use syn::token::{Add, Comma};
@@ -857,32 +854,6 @@ pub fn derive_enum_as_getters(item: TokenStream) -> TokenStream {
 #[proc_macro_derive(EnumToGetters)]
 pub fn derive_enum_to_getters(item: TokenStream) -> TokenStream {
     derive_enum_variant_method(item, EnumMethodKind::EnumToGetters)
-}
-
-/// This struct is used to deserialize the "rust-toolchain" file.
-#[derive(Deserialize)]
-struct RustToolchain {
-    toolchain: Toolchain,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-struct Toolchain {
-    channel: String,
-    components: Vec<String>,
-}
-
-/// The following macro retrieves the rust compiler version from the
-/// "rust-toolchain" file at compile time. We need it at exactly one place.
-#[proc_macro]
-pub fn rust_version(_item: TokenStream) -> TokenStream {
-    let mut file = File::open("rust-toolchain").unwrap();
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).unwrap();
-    let toolchain: RustToolchain = toml::from_str(&contents).unwrap();
-    format!("\"+{}\"", toolchain.toolchain.channel)
-        .parse()
-        .unwrap()
 }
 
 #[test]
