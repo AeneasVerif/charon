@@ -48,13 +48,19 @@
           (crane.mkLib pkgs).overrideToolchain rustToolchainWithExt;
         craneLibNoExt = (crane.mkLib pkgs).overrideToolchain rustToolchainNoExt;
         charon =
-          let cargoArtifacts = craneLibWithExt.buildDepsOnly { src = ./charon; };
-          in craneLibWithExt.buildPackage {
-            src = pkgs.lib.cleanSourceWith {
+          let
+            # Clean up the source directory.
+            sourceFilter = path: type:
+            (craneLibWithExt.filterCargoSources path type)
+              || (pkgs.lib.hasPrefix (toString ./charon/tests) path)
+              || (path == toString ./charon/rust-toolchain);
+            cleanedUpSrc = pkgs.lib.cleanSourceWith {
               src = ./charon;
-              # Don't include the `target` directory in the nix inputs.
-              filter = path: type: !pkgs.lib.hasPrefix (toString ./target) path;
+              filter = sourceFilter;
             };
+            cargoArtifacts = craneLibWithExt.buildDepsOnly { src = cleanedUpSrc; };
+          in craneLibWithExt.buildPackage {
+            src = cleanedUpSrc;
             inherit cargoArtifacts;
             # Check the `ui_llbc` files are correct instead of overwriting them.
             cargoTestCommand = "IN_CI=1 cargo test --profile release";
