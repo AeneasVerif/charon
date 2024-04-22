@@ -17,6 +17,7 @@
 #![recursion_limit = "256"]
 #![feature(trait_alias)]
 #![feature(let_chains)]
+#![feature(if_let_guard)]
 #![feature(iterator_try_collect)]
 
 extern crate rustc_ast;

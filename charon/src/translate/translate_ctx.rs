@@ -65,24 +65,6 @@ macro_rules! error_assert {
 }
 pub(crate) use error_assert;
 
-/// Custom assert to either panic or return an error
-macro_rules! error_assert_then {
-    ($ctx:expr, $span: expr, $b: expr, $then: expr) => {
-        if !$b {
-            let msg = format!("assertion failure: {:?}", stringify!($b));
-            $crate::translate_ctx::register_error_or_panic!($ctx, $span, msg);
-            $then;
-        }
-    };
-    ($ctx:expr, $span: expr, $b: expr, $then: expr, $msg:expr) => {
-        if !$b {
-            $crate::translate_ctx::register_error_or_panic!($ctx, $span, $msg);
-            $then;
-        }
-    };
-}
-pub(crate) use error_assert_then;
-
 /// We use this to save the origin of an id. This is useful for the external
 /// dependencies, especially if some external dependencies don't extract:
 /// we use this information to tell the user what is the code which
