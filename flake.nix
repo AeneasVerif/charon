@@ -24,50 +24,29 @@
           overlays = [ (import rust-overlay) ];
         };
 
-        # Small issue here:
-        # =================
-        # We need extensions to build Charon.
-        # However, the dependencies don't build if we use extensions.
-        #
-        # More precisely, `petgraph` doesn't build because for some reason,
-        # when building the dependencies in the Nix derivation, Rustc builds
-        # it while considering there is no std library available.
-        # As a consequence, in `indexmap` (used by `petgraph`), Rustc uses this
-        # definition of `IndexMap` (notice the absence of default value for `S`):
-        # [https://github.com/bluss/indexmap/blob/eedabaca9f84e520eab01325b305c08f3773e66c/src/map.rs#L82]
-        # while it should use this one:
-        # [https://github.com/bluss/indexmap/blob/eedabaca9f84e520eab01325b305c08f3773e66c/src/map.rs#L77]
-        #
-        # We solve the issue by using extensions only to build Charon (and
-        # in particular, not its dependencies).
-        rustToolchainWithExt =
-          pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.template;
-        rustToolchainNoExt =
-          rustToolchainWithExt.override { extensions = [ ]; };
-        craneLibWithExt =
-          (crane.mkLib pkgs).overrideToolchain rustToolchainWithExt;
-        craneLibNoExt = (crane.mkLib pkgs).overrideToolchain rustToolchainNoExt;
+        rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.template;
+        craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
         charon =
           let
             # Clean up the source directory.
             sourceFilter = path: type:
-            (craneLibWithExt.filterCargoSources path type)
+            (craneLib.filterCargoSources path type)
               || (pkgs.lib.hasPrefix (toString ./charon/tests) path)
               || (path == toString ./charon/rust-toolchain);
             cleanedUpSrc = pkgs.lib.cleanSourceWith {
               src = ./charon;
               filter = sourceFilter;
             };
-            cargoArtifacts = craneLibWithExt.buildDepsOnly { src = cleanedUpSrc; };
-          in craneLibWithExt.buildPackage {
+            cargoArtifacts = craneLib.buildDepsOnly { src = cleanedUpSrc; };
+          in craneLib.buildPackage {
             src = cleanedUpSrc;
             inherit cargoArtifacts;
             # Check the `ui_llbc` files are correct instead of overwriting them.
             cargoTestCommand = "IN_CI=1 cargo test --profile release";
           };
         tests =
-          let cargoArtifacts = craneLibNoExt.buildDepsOnly { src = ./tests; };
-          in craneLibNoExt.buildPackage {
+          let cargoArtifacts = craneLib.buildDepsOnly { src = ./tests; };
+          in craneLib.buildPackage {
             name = "tests";
             src = ./tests;
             inherit cargoArtifacts;
@@ -82,8 +61,8 @@
 
         tests-polonius = let
           cargoArtifacts =
-            craneLibNoExt.buildDepsOnly { src = ./tests-polonius; };
-        in craneLibNoExt.buildPackage {
+            craneLib.buildDepsOnly { src = ./tests-polonius; };
+        in craneLib.buildPackage {
           name = "tests-polonius";
           src = ./tests-polonius;
           inherit cargoArtifacts;
@@ -166,7 +145,7 @@
             rev = "d59363ad0b6391b7fc5bbb02c9ccf9300eef3753";
             sha256 = "sha256-fpPMSzKc/Dd1nXAX7RocM/p22zuFoWtIL6mVw7XTBDo=";
           };
-          buildInputs = [ rustToolchainWithExt ];
+          buildInputs = [ rustToolchain ];
         } ''
           mkdir $out
           cp -r $src/tests/ui/* $out
