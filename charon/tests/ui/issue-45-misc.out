@@ -483,7 +483,7 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     let @28: (); // anonymous local
     let @29: (); // anonymous local
 
-    @4 := const (true)
+    @4 := const (false)
     if move (@4) {
         @9 := &*(lhs@1)
         @8 := core::slice::{Slice<T>}::len<u8>(move (@9))

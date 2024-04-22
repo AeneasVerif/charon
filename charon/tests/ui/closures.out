@@ -7,7 +7,7 @@ fn test_crate::incr_u32(@1: u32) -> u32
     let @2: u32; // anonymous local
 
     @2 := copy (x@1)
-    @0 := copy (@2) + const (1 : u32)
+    @0 := move (@2) + const (1 : u32)
     drop @2
     return
 }
@@ -231,7 +231,7 @@ fn test_crate::test_map_option2::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
     let @3: u32; // anonymous local
 
     @3 := copy (x@2)
-    @0 := copy (@3) + const (1 : u32)
+    @0 := move (@3) + const (1 : u32)
     drop @3
     return
 }
@@ -390,7 +390,7 @@ fn test_crate::test_map_option3::closure<'_0>(@1: &'_0 (()), @2: (u32)) -> u32
     let @3: u32; // anonymous local
 
     @3 := copy (x@2)
-    @0 := copy (@3) + const (1 : u32)
+    @0 := move (@3) + const (1 : u32)
     drop @3
     return
 }
@@ -457,11 +457,11 @@ fn test_crate::test_closure_capture::closure<'_0, '_1, '_2>(@1: &'_0 ((&'_1 (u32
 
     @4 := copy (*((*(state@1)).0))
     @5 := copy (*((*(state@1)).1))
-    @3 := copy (@4) + copy (@5)
+    @3 := move (@4) + move (@5)
     drop @5
     drop @4
     @6 := copy (z@2)
-    @0 := copy (@3) + copy (@6)
+    @0 := move (@3) + move (@6)
     drop @6
     drop @3
     return

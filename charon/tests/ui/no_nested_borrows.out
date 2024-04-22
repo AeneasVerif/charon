@@ -168,7 +168,7 @@ fn test_crate::test2()
     @fake_read(y@2)
     @4 := copy (x@1)
     @5 := copy (y@2)
-    z@3 := copy (@4) + copy (@5)
+    z@3 := move (@4) + move (@5)
     drop @5
     drop @4
     @fake_read(z@3)
@@ -452,7 +452,7 @@ fn test_crate::even(@1: u32) -> bool
     }
     else {
         @5 := copy (x@1)
-        @4 := copy (@5) - const (1 : u32)
+        @4 := move (@5) - const (1 : u32)
         drop @5
         @0 := test_crate::odd(move (@4))
         drop @4
@@ -478,7 +478,7 @@ fn test_crate::odd(@1: u32) -> bool
     }
     else {
         @5 := copy (x@1)
-        @4 := copy (@5) - const (1 : u32)
+        @4 := move (@5) - const (1 : u32)
         drop @5
         @0 := test_crate::even(move (@4))
         drop @4
