@@ -375,7 +375,7 @@ global test_crate::CONST0  {
     let @0: usize; // return
     let @1: (usize, bool); // anonymous local
 
-    @1 := const (1 : usize) + const (1 : usize)
+    @1 := const (1 : usize) checked.+ const (1 : usize)
     assert(move ((@1).1) == false)
     @0 := move ((@1).0)
     return
@@ -385,7 +385,7 @@ global test_crate::CONST1  {
     let @0: usize; // return
     let @1: (usize, bool); // anonymous local
 
-    @1 := const (2 : usize) * const (2 : usize)
+    @1 := const (2 : usize) checked.* const (2 : usize)
     assert(move ((@1).1) == false)
     @0 := move ((@1).0)
     return

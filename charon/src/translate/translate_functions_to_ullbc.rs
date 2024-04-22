@@ -685,12 +685,26 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 }
             }
-            hax::Rvalue::BinaryOp(binop, operands)
-            | hax::Rvalue::CheckedBinaryOp(binop, operands) => {
-                // We merge checked and unchecked binary operations
+            hax::Rvalue::BinaryOp(binop, operands) => {
                 let (left, right) = operands.deref();
                 Ok(Rvalue::BinaryOp(
                     self.t_ctx.translate_binaryop_kind(span, *binop)?,
+                    self.translate_operand(span, left)?,
+                    self.translate_operand(span, right)?,
+                ))
+            }
+            hax::Rvalue::CheckedBinaryOp(binop, operands) => {
+                let binop = match binop {
+                    hax::BinOp::Add => BinOp::CheckedAdd,
+                    hax::BinOp::Sub => BinOp::CheckedSub,
+                    hax::BinOp::Mul => BinOp::CheckedMul,
+                    _ => {
+                        error_or_panic!(self, span, "Only Add, Sub and Mul are supported as checked binary operations, found {binop:?}");
+                    }
+                };
+                let (left, right) = operands.deref();
+                Ok(Rvalue::BinaryOp(
+                    binop,
                     self.translate_operand(span, left)?,
                     self.translate_operand(span, right)?,
                 ))

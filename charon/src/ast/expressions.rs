@@ -150,6 +150,14 @@ pub enum BinOp {
     Sub,
     /// Can overflow
     Mul,
+    /// Returns `(result, did_overflow)`, where `result` is the result of the operation with
+    /// wrapping semantics, and `did_overflow` is a boolean that indicates whether the operation
+    /// overflowed.
+    CheckedAdd,
+    /// Like `CheckedAdd`.
+    CheckedSub,
+    /// Like `CheckedAdd`.
+    CheckedMul,
     /// Can fail if the shift is too big
     Shl,
     /// Can fail if the shift is too big

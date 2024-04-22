@@ -749,6 +749,9 @@ let binop_of_json (js : json) : (binop, string) result =
   | `String "Add" -> Ok Add
   | `String "Sub" -> Ok Sub
   | `String "Mul" -> Ok Mul
+  | `String "CheckedAdd" -> Ok CheckedAdd
+  | `String "CheckedSub" -> Ok CheckedSub
+  | `String "CheckedMul" -> Ok CheckedMul
   | `String "Shl" -> Ok Shl
   | `String "Shr" -> Ok Shr
   | _ -> Error ("binop_of_json failed on:" ^ show js)
