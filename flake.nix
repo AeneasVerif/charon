@@ -17,7 +17,7 @@
   };
 
   outputs = { self, flake-utils, nixpkgs, rust-overlay, crane, flake-compat }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
+    flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
@@ -40,6 +40,7 @@
         };
 
         charon = craneLib.buildPackage (craneArgs // {
+          buildInputs = [ pkgs.zlib ];
           # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
           cargoArtifacts = craneLib.buildDepsOnly craneArgs;
           # Check the `ui_llbc` files are correct instead of overwriting them.
