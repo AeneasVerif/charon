@@ -1,7 +1,7 @@
 error: A discriminant read must be followed by a `SwitchInt`
  --> /rustc/d59363ad0b6391b7fc5bbb02c9ccf9300eef3753/library/core/src/option.rs:598:5
 
-[ INFO charon_lib::driver:332] [translate]: # Final LLBC before serialization:
+# Final LLBC before serialization:
 
 enum core::option::Option<T> =
 |  None()
@@ -31,7 +31,7 @@ fn test_crate::my_is_some<T>(@1: core::option::Option<T>) -> bool
 
 
 
-error: The external definition DefId(2:7981 ~ core[6c80]::option::{impl#0}::is_some) triggered errors. It is (transitively) used at the following location(s):
+error: The external definition `core::option::{impl#0}::is_some` triggered errors. It is (transitively) used at the following location(s):
  --> tests/ui/unsupported/option-is_some.rs:6:5
   |
 6 |     opt.is_some()

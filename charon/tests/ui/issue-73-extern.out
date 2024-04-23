@@ -1,4 +1,4 @@
-[ INFO charon_lib::driver:332] [translate]: # Final LLBC before serialization:
+# Final LLBC before serialization:
 
 unsafe fn test_crate::foo(@1: i32)
 

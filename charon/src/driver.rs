@@ -73,6 +73,28 @@ impl CharonCallbacks {
     }
 }
 
+/// Custom `DefId` debug routine that doesn't print unstable values like ids and hashes.
+fn def_id_debug(def_id: rustc_hir::def_id::DefId, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    rustc_middle::ty::tls::with_opt(|opt_tcx| {
+        if let Some(tcx) = opt_tcx {
+            let crate_name = if def_id.is_local() {
+                tcx.crate_name(rustc_hir::def_id::LOCAL_CRATE)
+            } else {
+                tcx.cstore_untracked().crate_name(def_id.krate)
+            };
+            write!(
+                f,
+                "{}{}",
+                crate_name,
+                tcx.def_path(def_id).to_string_no_crate_verbose()
+            )?;
+        } else {
+            write!(f, "<can't access `tcx` to print `DefId` path>")?;
+        }
+        Ok(())
+    })
+}
+
 impl Callbacks for CharonCallbacks {
     /// We have to be careful here: we can plug ourselves at several places
     /// (after parsing, after expansion, after analysis). However, the MIR is
@@ -85,6 +107,10 @@ impl Callbacks for CharonCallbacks {
     /// phases of the compilation process, we query the context as early as
     /// possible (i.e., after parsing). See [crate::get_mir].
     fn after_parsing<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
+        // Set up our own `DefId` debug routine.
+        rustc_hir::def_id::DEF_ID_DEBUG
+            .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
+
         queries
             .global_ctxt()
             .unwrap()
@@ -329,7 +355,7 @@ pub fn translate(
         };
         trace!("# About to export:\n\n{}\n", llbc_ctx);
         if options.print_llbc {
-            info!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
+            eprintln!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
         }
 
         // Display an error report about the external dependencies, if necessary
