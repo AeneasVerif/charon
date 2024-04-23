@@ -329,7 +329,7 @@ pub fn translate(
         };
         trace!("# About to export:\n\n{}\n", llbc_ctx);
         if options.print_llbc {
-            info!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
+            eprintln!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
         }
 
         // Display an error report about the external dependencies, if necessary

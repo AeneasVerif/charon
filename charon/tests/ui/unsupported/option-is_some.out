@@ -1,7 +1,7 @@
 error: A discriminant read must be followed by a `SwitchInt`
  --> /rustc/d59363ad0b6391b7fc5bbb02c9ccf9300eef3753/library/core/src/option.rs:598:5
 
-[ INFO charon_lib::driver:332] [translate]: # Final LLBC before serialization:
+# Final LLBC before serialization:
 
 enum core::option::Option<T> =
 |  None()
