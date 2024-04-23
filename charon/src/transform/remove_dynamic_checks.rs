@@ -90,7 +90,7 @@ fn remove_dynamic_checks(ctx: &mut TransCtx, block: &mut BlockData) {
         //   r := x checked.+ y;
         //   assert(move r.1 == false);
         // They only happen in constants because we compile with `-C opt-level=3`. They're tricky
-        // to remove so we leave them.
+        // to remove so we leave them for now.
         [.., Statement {
             content:
                 RawStatement::Assign(result, Rvalue::BinaryOp(BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul, ..)),

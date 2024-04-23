@@ -276,6 +276,8 @@ pub fn translate(
     // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a
     // special "assert" construct. Because of this, it must happen *before* the
     // [reconstruct_asserts] pass. See the comments in [crate::remove_dynamic_checks].
+    // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
+    // it must happen before passes that insert statements like [simplify_constants].
     remove_dynamic_checks::transform(&mut ctx);
 
     // # Micro-pass: desugar the constants to other values/operands as much
