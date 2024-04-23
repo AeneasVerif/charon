@@ -36,10 +36,12 @@
         };
         craneArgs = {
           src = cleanedUpSrc;
-          cargoArtifacts = craneLib.buildDepsOnly { src = cleanedUpSrc; };
+          RUSTFLAGS="-D warnings"; # Turn all warnings into errors.
         };
 
         charon = craneLib.buildPackage (craneArgs // {
+          # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
+          cargoArtifacts = craneLib.buildDepsOnly craneArgs;
           # Check the `ui_llbc` files are correct instead of overwriting them.
           cargoTestCommand = "IN_CI=1 cargo test --profile release";
         });
@@ -190,6 +192,7 @@
             pname = "charon";
             version = "0.1.0";
             duneVersion = "3";
+            OCAMLPARAM="_,warn-error=+A"; # Turn all warnings into errors.
             preCheck = if doCheck then ''
               mkdir -p tests/serialized
               cp ${tests}/llbc/* tests/serialized
