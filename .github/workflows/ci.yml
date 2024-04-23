@@ -31,7 +31,5 @@ jobs:
       #- uses: cachix/install-nix-action@v22
       - uses: actions/checkout@v4
       - run: nix build -L .#charon
-      - run: nix build -L .#checks.x86_64-linux.tests
-      - run: nix build -L .#checks.x86_64-linux.tests-polonius
       - run: nix build -L .#charon-ml
-      - run: nix build -L .#checks.x86_64-linux.charon-ml-tests
+      - run: nix flake check -L
