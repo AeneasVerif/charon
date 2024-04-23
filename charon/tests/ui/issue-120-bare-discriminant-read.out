@@ -1,0 +1,48 @@
+# Final LLBC before serialization:
+
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
+
+
+fn test_crate::call_is_some<T>(@1: core::option::Option<T>) -> bool
+{
+    let @0: bool; // return
+    let opt@1: core::option::Option<T>; // arg #1
+    let self@2: &'_ (core::option::Option<T>); // local
+    let @3: isize; // anonymous local
+
+    self@2 := &opt@1
+    match *(self@2) {
+        0 => {
+            @3 := const (0 : isize)
+        },
+        1 => {
+            @3 := const (1 : isize)
+        }
+    }
+    @0 := copy (@3) == const (1 : isize)
+    drop self@2
+    drop opt@1
+    return
+}
+
+fn test_crate::my_is_some<T>(@1: core::option::Option<T>) -> isize
+{
+    let @0: isize; // return
+    let opt@1: core::option::Option<T>; // arg #1
+
+    match opt@1 {
+        0 => {
+            @0 := const (0 : isize)
+        },
+        1 => {
+            @0 := const (1 : isize)
+        }
+    }
+    drop opt@1
+    return
+}
+
+
+

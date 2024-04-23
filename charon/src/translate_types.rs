@@ -4,6 +4,7 @@ use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::translate_ctx::*;
 use crate::types::*;
+use crate::values::ScalarValue;
 use core::convert::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -542,11 +543,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let var_def: hax::VariantDef = var_def.sinto(&self.hax_state);
             trace!("variant {i}: {var_def:?}");
 
-            let discriminant: u128 = if adt.is_enum() {
-                adt.discriminant_for_variant(self.t_ctx.tcx, rust_var_id)
-                    .val
+            let discriminant = if adt.is_enum() {
+                let discr = adt.discriminant_for_variant(self.t_ctx.tcx, rust_var_id);
+                let bits = discr.val;
+                let ty = discr.ty.sinto(&self.hax_state);
+                let ty = self.translate_ty(def_span, true, &ty)?;
+                let int_ty = *ty.as_literal().as_integer();
+                ScalarValue::from_bits(int_ty, bits)
             } else {
-                0
+                ScalarValue::Isize(0)
             };
 
             let mut fields: FieldId::Vector<Field> = Default::default();
