@@ -9,6 +9,11 @@ default: build-charon-rust
 .PHONY: all
 all: build test nix
 
+.PHONY: format
+format:
+	cd charon && $(MAKE) format
+	cd charon-ml && $(MAKE) format
+
 # We use Rust nightly in order to:
 # - be able to write a Rustc plugin
 # - use Polonius in some tests

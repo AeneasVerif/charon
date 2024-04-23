@@ -26,24 +26,29 @@
 
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.template;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
-        charon =
-          let
-            # Clean up the source directory.
-            sourceFilter = path: type:
+
+        cleanedUpSrc = pkgs.lib.cleanSourceWith {
+          src = ./charon;
+          filter = path: type:
             (craneLib.filterCargoSources path type)
               || (pkgs.lib.hasPrefix (toString ./charon/tests) path)
               || (path == toString ./charon/rust-toolchain);
-            cleanedUpSrc = pkgs.lib.cleanSourceWith {
-              src = ./charon;
-              filter = sourceFilter;
-            };
-            cargoArtifacts = craneLib.buildDepsOnly { src = cleanedUpSrc; };
-          in craneLib.buildPackage {
-            src = cleanedUpSrc;
-            inherit cargoArtifacts;
-            # Check the `ui_llbc` files are correct instead of overwriting them.
-            cargoTestCommand = "IN_CI=1 cargo test --profile release";
-          };
+        };
+        craneArgs = {
+          src = cleanedUpSrc;
+          RUSTFLAGS="-D warnings"; # Turn all warnings into errors.
+        };
+
+        charon = craneLib.buildPackage (craneArgs // {
+          # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
+          cargoArtifacts = craneLib.buildDepsOnly craneArgs;
+          # Check the `ui_llbc` files are correct instead of overwriting them.
+          cargoTestCommand = "IN_CI=1 cargo test --profile release";
+        });
+
+        # Check rust files are correctly formatted.
+        charon-check-fmt = craneLib.cargoFmt craneArgs;
+
         tests =
           let cargoArtifacts = craneLib.buildDepsOnly { src = ./tests; };
           in craneLib.buildPackage {
@@ -187,6 +192,7 @@
             pname = "charon";
             version = "0.1.0";
             duneVersion = "3";
+            OCAMLPARAM="_,warn-error=+A"; # Turn all warnings into errors.
             preCheck = if doCheck then ''
               mkdir -p tests/serialized
               cp ${tests}/llbc/* tests/serialized
@@ -207,6 +213,23 @@
           };
         charon-ml = mk-charon-ml false;
         charon-ml-tests = mk-charon-ml true;
+
+        charon-ml-check-fmt = pkgs.stdenv.mkDerivation {
+          name = "charon-ml-check-fmt";
+          src = ./charon-ml;
+          buildInputs = [
+            ocamlPackages.dune_3
+            ocamlPackages.ocaml
+            ocamlPackages.ocamlformat
+          ];
+          buildPhase = ''
+            if ! dune build @fmt; then
+              echo 'ERROR: Ocaml code is not formatted. Run `make format` to format the project files'.
+              exit 1
+            fi
+          '';
+          installPhase = "touch $out";
+        };
       in {
         packages = {
           inherit charon charon-ml rustc-tests;
@@ -229,6 +252,6 @@
             self.packages.${system}.charon-ml
           ];
         };
-        checks = { inherit tests tests-polonius charon-ml-tests; };
+        checks = { inherit tests tests-polonius charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
       });
 }
