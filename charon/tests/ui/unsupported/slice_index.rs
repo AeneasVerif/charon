@@ -1,4 +1,4 @@
-//@ known-panic
+//@ known-failure
 //@ no-check-output
 //@ charon-args=--extract-opaque-bodies
 

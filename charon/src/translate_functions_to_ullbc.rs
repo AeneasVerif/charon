@@ -3,6 +3,9 @@
 //! us to handle, and easier to maintain - rustc's representation can evolve
 //! independently.
 
+use std::mem;
+use std::panic;
+
 use crate::assumed;
 use crate::common::*;
 use crate::expressions::*;
@@ -1444,6 +1447,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         rust_id: DefId,
         arg_count: usize,
     ) -> Result<Option<ExprBody>, Error> {
+        // Stopgap measure because there are still many panics in charon and hax.
+        let mut this = panic::AssertUnwindSafe(&mut self);
+        let res = panic::catch_unwind(move || this.translate_body_aux(rust_id, arg_count));
+        match res {
+            Ok(Ok(body)) => Ok(body),
+            Ok(Err(e)) => Err(e),
+            Err(_) => {
+                let span = self.t_ctx.tcx.def_span(rust_id);
+                error_or_panic!(self, span, "Thread panicked when extracting body.");
+            }
+        }
+    }
+
+    fn translate_body_aux(
+        &mut self,
+        rust_id: DefId,
+        arg_count: usize,
+    ) -> Result<Option<ExprBody>, Error> {
         let tcx = self.t_ctx.tcx;
 
         if !self.t_ctx.id_is_transparent(rust_id)? {
@@ -1486,7 +1507,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // We need to convert the blocks map to an index vector
         // We clone things while we could move them...
         let mut blocks = BlockId::Vector::new();
-        for (id, block) in self.blocks {
+        for (id, block) in mem::take(&mut self.blocks) {
             let new_id = blocks.push(block);
             // Sanity check to make sure we don't mess with the indices
             assert!(id == new_id);
@@ -1496,7 +1517,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(Some(ExprBody {
             meta,
             arg_count,
-            locals: self.vars,
+            locals: mem::take(&mut self.vars),
             body: blocks,
         }))
     }
