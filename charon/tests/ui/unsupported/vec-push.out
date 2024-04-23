@@ -16,7 +16,7 @@ error[HaxFront]: Supposely unreachable place in the Rust AST. The label is "Plac
 error: Thread panicked when extracting body.
  --> /rustc/d59363ad0b6391b7fc5bbb02c9ccf9300eef3753/library/alloc/src/vec/mod.rs:1824:5
 
-[ INFO charon_lib::driver:332] [translate]: # Final LLBC before serialization:
+# Final LLBC before serialization:
 
 struct core::ptr::non_null::NonNull<T> =
 {
@@ -63,7 +63,7 @@ fn test_crate::vec<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Global>
 
 
 
-error: The external definition DefId(5:6777 ~ alloc[6cf4]::vec::{impl#1}::push) triggered errors. It is (transitively) used at the following location(s):
+error: The external definition `alloc::vec::{impl#1}::push` triggered errors. It is (transitively) used at the following location(s):
  --> tests/ui/unsupported/vec-push.rs:5:5
   |
 5 |     x.push(42)
