@@ -2,7 +2,7 @@ pub use crate::gast::{FunDeclId, TraitItemName};
 use crate::meta::{ItemMeta, Meta};
 use crate::names::Name;
 pub use crate::types_utils::*;
-use crate::values::Literal;
+use crate::values::{Literal, ScalarValue};
 use derivative::Derivative;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::Serialize;
@@ -369,10 +369,10 @@ pub struct Variant {
     pub meta: Meta,
     pub name: String,
     pub fields: FieldId::Vector<Field>,
-    #[serde(skip)]
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
     /// `SwitchInt` targets with the corresponding `Variant`.
-    pub discriminant: u128,
+    #[serde(skip)]
+    pub discriminant: ScalarValue,
 }
 
 #[derive(Debug, Clone, Serialize)]

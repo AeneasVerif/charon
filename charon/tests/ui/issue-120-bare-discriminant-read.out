@@ -1,6 +1,3 @@
-error: A discriminant read must be followed by a `SwitchInt`
- --> /rustc/d59363ad0b6391b7fc5bbb02c9ccf9300eef3753/library/core/src/option.rs:598:5
-
 # Final LLBC before serialization:
 
 enum core::option::Option<T> =
@@ -13,9 +10,21 @@ fn test_crate::call_is_some<T>(@1: core::option::Option<T>) -> bool
     let @0: bool; // return
     let opt@1: core::option::Option<T>; // arg #1
     let self@2: &'_ (core::option::Option<T>); // local
+    let @3: isize; // anonymous local
 
     self@2 := &opt@1
-    nop
+    match *(self@2) {
+        0 => {
+            @3 := const (0 : isize)
+        },
+        1 => {
+            @3 := const (1 : isize)
+        }
+    }
+    @0 := copy (@3) == const (1 : isize)
+    drop self@2
+    drop opt@1
+    return
 }
 
 fn test_crate::my_is_some<T>(@1: core::option::Option<T>) -> isize
@@ -37,6 +46,3 @@ fn test_crate::my_is_some<T>(@1: core::option::Option<T>) -> isize
 
 
 
-error: aborting due to previous error
-
-[ ERROR charon_driver:180] The extraction encountered 1 errors

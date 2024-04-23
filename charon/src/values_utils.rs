@@ -218,6 +218,9 @@ impl ScalarValue {
             ScalarValue::I128(v) => v as u128,
         }
     }
+    pub fn from_bits(ty: IntegerTy, bits: u128) -> Self {
+        Self::from_le_bytes(ty, bits.to_le_bytes())
+    }
 
     /// **Warning**: most constants are stored as u128 by rustc. When converting
     /// to i128, it is not correct to do `v as i128`, we must reinterpret the

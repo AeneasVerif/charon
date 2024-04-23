@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--extract-opaque-bodies
 //@ charon-args=--mir_optimized
 //@ rustc-args=-C opt-level=3

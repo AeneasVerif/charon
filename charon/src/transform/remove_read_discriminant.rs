@@ -8,6 +8,7 @@ use crate::llbc_ast::*;
 use crate::meta::combine_meta;
 use crate::translate_ctx::*;
 use crate::types::*;
+use crate::values::{Literal, ScalarValue};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
@@ -81,7 +82,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                     RawStatement::Switch(switch @ Switch::SwitchInt(..)) => {
                         Ok((st2.meta, switch, None))
                     }
-                    _ => Err(()),
+                    _ => Err(st2),
                 };
 
                 match maybe_switch {
@@ -92,18 +93,17 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
 
                         // Convert between discriminants and variant indices. Remark: the discriminant can
                         // be of any *signed* integer type (`isize`, `i8`, etc.).
-                        let discr_to_id: HashMap<u128, VariantId::Id> = variants
+                        let discr_to_id: HashMap<ScalarValue, VariantId::Id> = variants
                             .iter_indexed_values()
                             .map(|(id, variant)| (variant.discriminant, id))
                             .collect();
-                        let mut covered_discriminants: HashSet<u128> = HashSet::default();
+                        let mut covered_discriminants: HashSet<ScalarValue> = HashSet::default();
                         let targets = targets
                             .into_iter()
                             .map(|(v, e)| {
                                 (
                                     v.into_iter()
-                                        .filter_map(|x| {
-                                            let discr = x.to_bits();
+                                        .filter_map(|discr| {
                                             covered_discriminants.insert(discr);
                                             discr_to_id.get(&discr).or_else(|| {
                                                 register_error_or_panic!(
@@ -139,20 +139,34 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                             switch
                         };
                     }
-                    Err(_) => {
-                        // A discriminant read must be immediately followed by a switch int.
-                        register_error_or_panic!(
-                            self.ctx,
-                            st.meta.span.rust_span_data.span(),
-                            "A discriminant read must be followed by a `SwitchInt`"
-                        );
-                        // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
-                        // `Nop` the whole statement sequence.
-                        // FIXME: add `RawStatement::Error` for cases like this.
-                        *st = Statement {
-                            content: RawStatement::Nop,
-                            meta: st.meta,
+                    Err(st2) => {
+                        // The discriminant read is not followed by a `SwitchInt`. We replace `_x =
+                        // Discr(_y)` with `match _y { 0 => { _x = 0 }, 1 => { _x = 1; }, .. }`.
+                        let targets = variants
+                            .iter_indexed_values()
+                            .map(|(id, variant)| {
+                                let value = variant.discriminant;
+                                let int_ty = value.get_integer_ty();
+                                let konst = ConstantExpr {
+                                    value: RawConstantExpr::Literal(Literal::Scalar(value)),
+                                    ty: Ty::Literal(LiteralTy::Integer(int_ty)),
+                                };
+                                let statement = Statement {
+                                    meta: *meta1,
+                                    content: RawStatement::Assign(
+                                        dest.clone(),
+                                        Rvalue::Use(Operand::Const(konst)),
+                                    ),
+                                };
+                                (vec![id], statement)
+                            })
+                            .collect();
+                        let switch = RawStatement::Switch(Switch::Match(p.clone(), targets, None));
+                        let switch = Statement {
+                            meta: *meta1,
+                            content: switch,
                         };
+                        st.content = new_sequence(switch, st2).content
                     }
                 }
             }
