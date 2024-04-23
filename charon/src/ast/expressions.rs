@@ -140,27 +140,27 @@ pub enum BinOp {
     Ne,
     Ge,
     Gt,
-    /// Can fail if the divisor is 0.
+    /// Fails if the divisor is 0, or if the operation is `int::MIN / -1`.
     Div,
-    /// Can fail if the divisor is 0.
+    /// Fails if the divisor is 0, or if the operation is `int::MIN % -1`.
     Rem,
-    /// Can overflow
+    /// Fails on overflow.
     Add,
-    /// Can overflow
+    /// Fails on overflow.
     Sub,
-    /// Can overflow
+    /// Fails on overflow.
     Mul,
     /// Returns `(result, did_overflow)`, where `result` is the result of the operation with
     /// wrapping semantics, and `did_overflow` is a boolean that indicates whether the operation
-    /// overflowed.
+    /// overflowed. This operation does not fail.
     CheckedAdd,
     /// Like `CheckedAdd`.
     CheckedSub,
     /// Like `CheckedAdd`.
     CheckedMul,
-    /// Can fail if the shift is too big
+    /// Fails if the shift is bigger than the bit-size of the type.
     Shl,
-    /// Can fail if the shift is too big
+    /// Fails if the shift is bigger than the bit-size of the type.
     Shr,
     // No Offset binary operation: this is an operation on raw pointers
 }
