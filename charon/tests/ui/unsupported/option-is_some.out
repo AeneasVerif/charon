@@ -31,7 +31,7 @@ fn test_crate::my_is_some<T>(@1: core::option::Option<T>) -> bool
 
 
 
-error: The external definition DefId(2:7981 ~ core[6c80]::option::{impl#0}::is_some) triggered errors. It is (transitively) used at the following location(s):
+error: The external definition `core::option::{impl#0}::is_some` triggered errors. It is (transitively) used at the following location(s):
  --> tests/ui/unsupported/option-is_some.rs:6:5
   |
 6 |     opt.is_some()

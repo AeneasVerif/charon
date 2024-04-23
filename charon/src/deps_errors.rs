@@ -104,7 +104,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
                 // Display the error message
                 let span = MultiSpan::from_spans(reachable);
-                let msg = format!("The external definition {:?} triggered errors. It is (transitively) used at the following location(s):",
+                let msg = format!("The external definition `{:?}` triggered errors. It is (transitively) used at the following location(s):",
                 *id,
                 );
                 self.span_err_no_register(span, &msg);
