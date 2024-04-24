@@ -9,10 +9,15 @@ name = "charon_lib"
 path = "src/lib.rs"
 
 [[bin]]
+# The main entrypoint. This is a wrapper that handles toolchain and cargo
+# management and calls `charon-driver` for the real work.
 name = "charon"
 path = "src/main.rs"
 
 [[bin]]
+# The rustc driver. The resulting binary dynamically links to rust dylibs
+# including `librustc_driver.so`. Do not call directly, call charon instead to
+# let it set up the right paths.
 name = "charon-driver"
 path = "src/charon-driver.rs"
 
@@ -42,6 +47,7 @@ serial_test = "0.5.1"
 take_mut = "0.2.2"
 toml = "0.5.10"
 walkdir = "2.3.2"
+which = "6.0.1"
 
 hax-frontend-exporter = { git = "https://github.com/Nadrieril/hax", branch = "fix-parent-item-clauses" }
 hax-frontend-exporter-options = { git = "https://github.com/Nadrieril/hax", branch = "fix-parent-item-clauses" }

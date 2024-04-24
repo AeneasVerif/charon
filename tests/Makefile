@@ -1,8 +1,5 @@
 CURRENT_DIR = $(shell pwd)
-# Outside of CI, ensure the correct toolchain is available (for the dynamic libraries).
-# FIXME: don't hardcode the toolchain
-TOOLCHAIN := nightly-2023-06-02
-CHARON_DRIVER ?= rustup run $(TOOLCHAIN) $(CURRENT_DIR)/../bin/charon-driver
+CHARON ?= $(CURRENT_DIR)/../bin/charon
 DEST ?= .
 OPTIONS ?=
 CHARON_CMD :=
@@ -62,8 +59,7 @@ test-demo:
 # =============================================================================
 
 .PHONY: test-%
-# The opt-level is set by default by cargo; some tests need it.
-test-%: CHARON_CMD = $(CHARON_DRIVER) rustc src/$*.rs -C opt-level=3 -- --crate $* $(OPTIONS)
+test-%: CHARON_CMD = $(CHARON) --no-cargo --input src/$*.rs --crate $* $(OPTIONS)
 test-%: build
 
 .PHONY: clean
