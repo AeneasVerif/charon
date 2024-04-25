@@ -3,7 +3,6 @@ CHARON ?= $(CURRENT_DIR)/../bin/charon
 DEST ?= .
 OPTIONS ?=
 CHARON_CMD :=
-NOT_ALL_TESTS ?=
 
 .PHONY: all
 all: build tests
@@ -54,8 +53,6 @@ test-demo:
 
 # =============================================================================
 # The tests.
-# We use the NOT_ALL_TESTS variable to switch between the full test suite and a
-# smaller one.
 # =============================================================================
 
 .PHONY: test-%
@@ -64,25 +61,7 @@ test-%: build
 
 .PHONY: clean
 clean:
-	rm -f $(DEST)/llbc/* \
-	rm -f $(DEST)/ullbc/* \
-	rm -f $(DEST)/llbc_prom/* \
-	rm -f $(DEST)/llbc_opt/*
-
-ifeq (, $(NOT_ALL_TESTS))
+	rm -f $(DEST)/llbc/*
 
 test-%:
 	$(CHARON_CMD) --dest $(DEST)/llbc
-#	$(CHARON_CMD) --dest $(DEST)/ullbc --ullbc
-# TODO: this fails for now (it seems some closures are turned into globals,
-# and I don't know how to handle them).
-#	$(CHARON_CMD) --dest $(DEST)/llbc_prom --mir_promoted
-# TODO: this fails for now (there is some very low-level desugaring happening)
-#	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
-
-else
-
-test-%:
-	$(CHARON_CMD) --dest $(DEST)/llbc
-
-endif
