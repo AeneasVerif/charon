@@ -22,46 +22,38 @@ tests: cargo-tests charon-tests
 cargo-tests: build
 	cargo test
 
-.PHONY: charon-tests
-charon-tests: \
-	test-nested_borrows test-no_nested_borrows \
-	test-loops test-loops_cfg test-hashmap \
-	test-paper test-hashmap_main \
-	test-matches test-matches_duplicate test-external \
-	test-constants test-arrays test-arrays_const_generics test-traits \
-	test-closures test-bitwise test-demo
-
-test-nested_borrows: OPTIONS += --no-code-duplication
-test-no_nested_borrows: OPTIONS += --no-code-duplication
-test-loops:
-test-loops_cfg:
-test-hashmap:
-test-hashmap_main: OPTIONS += --opaque=hashmap_utils
-test-paper: OPTIONS += --no-code-duplication
-test-constants: OPTIONS += --no-code-duplication
-# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-test-matches:
-test-external: OPTIONS += --no-code-duplication
-test-matches_duplicate:
-test-arrays:
-test-arrays_const_generics:
-test-traits:
-test-traits_special:
-test-closures:
-test-bitwise:
-test-demo:
-
 # =============================================================================
 # The tests.
 # =============================================================================
 
+#  List the `.rs` files in `src/`
+RUST_SRCS = $(wildcard src/*.rs)
+# We test all rust files except these.
+RUST_SRCS := $(filter-out src/lib.rs, $(RUST_SRCS))
+RUST_SRCS := $(filter-out src/hashmap_utils.rs, $(RUST_SRCS))
+RUST_SRCS := $(filter-out src/test_borrows.rs, $(RUST_SRCS))
+RUST_SRCS := $(filter-out src/traits_special.rs, $(RUST_SRCS))
+
+# This depends on `llbc/<file>.llbc` for each `src/<file>.rs` we care about
+.PHONY: charon-tests
+charon-tests: $(subst src/,$(DEST)/llbc/,$(patsubst %.rs,%.llbc,$(RUST_SRCS)))
+
+$(DEST)/llbc/hashmap_main.llbc: OPTIONS += --opaque=hashmap_utils
+$(DEST)/llbc/nested_borrows.llbc: OPTIONS += --no-code-duplication
+$(DEST)/llbc/no_nested_borrows.llbc: OPTIONS += --no-code-duplication
+$(DEST)/llbc/paper.llbc: OPTIONS += --no-code-duplication
+$(DEST)/llbc/constants.llbc: OPTIONS += --no-code-duplication
+# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
+$(DEST)/llbc/matches.llbc:
+$(DEST)/llbc/external.llbc: OPTIONS += --no-code-duplication
+
+$(DEST)/llbc/%.llbc: build
+	$(CHARON) --no-cargo --input src/$*.rs --crate $* $(OPTIONS) --dest $(DEST)/llbc
+
 .PHONY: test-%
-test-%: CHARON_CMD = $(CHARON) --no-cargo --input src/$*.rs --crate $* $(OPTIONS)
-test-%: build
+test-%: $(DEST)/llbc/%.llbc
+	@true
 
 .PHONY: clean
 clean:
 	rm -f $(DEST)/llbc/*
-
-test-%:
-	$(CHARON_CMD) --dest $(DEST)/llbc

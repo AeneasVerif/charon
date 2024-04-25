@@ -26,20 +26,25 @@ cargo-tests: build-tests
 build-tests:
 	cargo rustc -- --test -Zpolonius
 
-.PHONY: charon-tests
-charon-tests: \
-	test-polonius_list test-betree_main
-
-# test-polonius_list: OPTIONS += --no-code-duplication
-test-polonius_list:
-# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-# test-betree_main: OPTIONS += --no-code-duplication
-test-betree_main: OPTIONS += --opaque=betree_utils
-
 # =============================================================================
 # The tests.
 # =============================================================================
 
-.PHONY: test-%
-test-%: build
+# We only test these two files
+TESTS = polonius_list betree_main
+RUST_SRCS = $(addprefix src/,$(addsuffix .rs,$(TESTS)))
+
+# This depends on `llbc/<file>.llbc` for each `src/<file>.rs` we care about
+.PHONY: charon-tests
+charon-tests: $(subst src/,$(DEST)/llbc/,$(patsubst %.rs,%.llbc,$(RUST_SRCS)))
+
+# llbc/polonius_list.llbc: OPTIONS += --no-code-duplication
+# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
+# llbc/betree_main.llbc: OPTIONS += --no-code-duplication
+$(DEST)/llbc/betree_main.llbc: OPTIONS += --opaque=betree_utils
+
+$(DEST)/llbc/%.llbc: build
 	$(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --dest $(DEST)/llbc
+
+.PHONY: test-%
+test-%: $(DEST)/llbc/%.llbc
