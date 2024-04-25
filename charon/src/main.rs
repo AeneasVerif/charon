@@ -132,9 +132,30 @@ fn process(options: &CliOpts) -> Result<(), i32> {
     let exit_status = if options.no_cargo {
         // Run just the driver.
         let mut cmd;
-        if cargo_path_override.is_some() {
-            trace!("We appear to have been built with nix; the driver should be correctly linked.");
+        if let Some(cargo_path) = cargo_path_override {
             cmd = Command::new(driver_path);
+            if cfg!(target_os = "macos") {
+                let toolchain_path = PathBuf::from(cargo_path)
+                    .parent()
+                    .unwrap()
+                    .parent()
+                    .unwrap()
+                    .to_owned();
+                // Inspired from what rustup does.
+                const MAC_LOADER_PATH: &str = "DYLD_FALLBACK_LIBRARY_PATH";
+                let mut path_components = if let Some(path) = env::var_os(MAC_LOADER_PATH) {
+                    env::split_paths(&path).collect::<Vec<_>>()
+                } else {
+                    vec![]
+                };
+                path_components.insert(0, toolchain_path.join("lib"));
+                let new_path = env::join_paths(path_components).unwrap();
+                cmd.env(MAC_LOADER_PATH, new_path);
+            } else {
+                trace!(
+                    "We appear to have been built with nix; the driver should be correctly linked."
+                );
+            }
         } else {
             assert!(use_rustup); // Otherwise we panicked earlier.
             trace!("Calling the driver via `rustup`");
