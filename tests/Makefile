@@ -56,4 +56,5 @@ test-%: $(DEST)/llbc/%.llbc
 
 .PHONY: clean
 clean:
+	cargo clean
 	rm -f $(DEST)/llbc/*

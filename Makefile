@@ -128,12 +128,8 @@ clean:
 	cd charon/attributes && cargo clean
 	cd charon && cargo clean
 	cd charon/macros && cargo clean
-	cd tests && cargo clean
-	cd tests-polonius && cargo clean
-	rm -rf tests/ullbc
-	rm -rf tests-polonius/ullbc
-	rm -rf tests/llbc
-	rm -rf tests-polonius/llbc
+	cd tests && make clean
+	cd tests-polonius && make clean
 
 # Build the Nix packages
 .PHONY: nix
