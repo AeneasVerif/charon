@@ -107,7 +107,7 @@
               grep -q "^// \?@\? \?$1:" "$2"
             }
 
-            ${pkgs.coreutils}/bin/timeout 5s ${charon}/bin/charon-driver rustc "$FILE" -- --no-serialize > "$FILE.charon-output" 2>&1
+            ${pkgs.coreutils}/bin/timeout 5s ${charon}/bin/charon --no-cargo --input "$FILE" --no-serialize > "$FILE.charon-output" 2>&1
             status=$?
             if [ $status -eq 124 ]; then
                 result=timeout
