@@ -533,7 +533,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // ```
                         let hax::ProjectionPredicate {
                             impl_expr,
-                            type_name,
+                            assoc_item,
                             ty,
                         } = p;
 
@@ -543,7 +543,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // we may filter) don't have associated types.
                         let trait_ref = trait_ref.unwrap();
                         let ty = self.translate_ty(span, erase_regions, ty).unwrap();
-                        let type_name = TraitItemName(type_name.clone());
+                        let type_name = TraitItemName(assoc_item.name.clone().into());
                         Ok(Some(Predicate::TraitType(TraitTypeConstraint {
                             trait_ref,
                             type_name,
@@ -753,6 +753,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             item,
                             predicate,
                             index,
+                            clause_id: _,
                         } => {
                             trait_id = TraitInstanceId::ItemClause(
                                 Box::new(trait_id),
@@ -767,7 +768,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 )?
                                 .unwrap();
                         }
-                        Parent { predicate, index } => {
+                        Parent {
+                            predicate,
+                            index,
+                            clause_id: _,
+                        } => {
                             trait_id = TraitInstanceId::ParentClause(
                                 Box::new(trait_id),
                                 current_trait_decl_id,
@@ -834,7 +839,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ImplExprAtom::Closure {
                 closure_def_id,
                 parent_substs,
-                sig: _,
+                signature: _,
             } => {
                 // Remark: a closure is always a function defined locally in the
                 // body of the caller, which means it can't be an assumed function
@@ -860,7 +865,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplExprAtom::Error(msg) | ImplExprAtom::Todo(msg) => {
+            ImplExprAtom::Todo(msg) => {
                 let error = format!("Error during trait resolution: {}", msg);
                 self.span_err(span, &error);
                 if !self.t_ctx.continue_on_failure {

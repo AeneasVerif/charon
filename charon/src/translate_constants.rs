@@ -17,6 +17,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::ConstantLiteral::ByteStr(..) => {
                 error_or_panic!(self, span, "byte str constants are not supported yet");
             }
+            hax::ConstantLiteral::Str(..) => {
+                error_or_panic!(self, span, "str constants are not supported yet");
+            }
             hax::ConstantLiteral::Char(c) => Literal::Char(*c),
             hax::ConstantLiteral::Bool(b) => Literal::Bool(*b),
             hax::ConstantLiteral::Int(i) => {
@@ -142,7 +145,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     )
                 }
             }
-            ConstantExprKind::FnPtr(fn_id, substs, trait_refs, trait_info) => {
+            ConstantExprKind::FnPtr {
+                def_id: fn_id,
+                generics: substs,
+                generics_impls: trait_refs,
+                method_impl: trait_info,
+            } => {
                 use crate::translate_functions_to_ullbc::SubstFunIdOrPanic;
                 let erase_regions = true; // TODO: not sure
                 let fn_id = self.translate_fun_decl_id_with_args(
