@@ -34,37 +34,37 @@ jobs:
       - run: nix build -L .#charon-ml
       - run: nix flake check -L
 
-  kyber:
+  eurydice:
     needs: [check_if_skip_duplicate_job, nix]
     if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
     runs-on: [self-hosted, linux, nix]
     steps:
-      - name: checkout charon
+      - run: nix build -L github:aeneasverif/eurydice --override-input charon github:aeneasverif/charon/${{ github.ref }}
+
+  kyber:
+    needs: [check_if_skip_duplicate_job, eurydice]
+    if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      - name: checkout libcrux
         uses: actions/checkout@v4
         with:
-          path: charon
+          repository: cryspen/libcrux
       - name: checkout eurydice
         uses: actions/checkout@v4
         with:
           repository: aeneasverif/eurydice
           path: eurydice
-      - name: checkout libcrux
-        uses: actions/checkout@v4
-        with:
-          repository: cryspen/libcrux
-          path: libcrux
-      - name: build eurydice
-        run: |
-          nix build ./charon -o charon/result # should be a noop
-          nix build ./eurydice -L -o eurydice/result --override-input charon $(pwd)/charon
-          ln -s $(pwd)/eurydice/result/bin/eurydice $(pwd)/eurydice/eurydice
       - name: setup
         run: |
+          nix build github:aeneasverif/charon/${{ github.ref }} -o charon
+          nix build ./eurydice -o eurydice/result --override-input charon github:aeneasverif/charon/${{ github.ref }}
+          ln -s $(pwd)/eurydice/result/bin/eurydice $(pwd)/eurydice/eurydice
           nix build github:hacl-star/hacl-nix#fstar -o fstar
           nix build github:hacl-star/hacl-nix#karamel.home -o karamel
+          echo CHARON_HOME=$(pwd)/charon >> $GITHUB_ENV
+          echo EURYDICE_HOME=$(pwd)/eurydice >> $GITHUB_ENV
           echo FSTAR_HOME=$(pwd)/fstar >> $GITHUB_ENV
           echo KRML_HOME=$(pwd)/karamel >> $GITHUB_ENV
-          echo CHARON_HOME=$(pwd)/charon/result >> $GITHUB_ENV
-          echo EURYDICE_HOME=$(pwd)/eurydice >> $GITHUB_ENV
       - name: build kyber
-        run: nix develop ./charon --command bash -c "cd libcrux && bash kyber-crate.sh"
+        run: nix develop github:aeneasverif/charon/${{ github.ref }} --command bash kyber-crate.sh
