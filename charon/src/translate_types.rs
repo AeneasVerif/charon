@@ -121,7 +121,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                     for (rk, rid) in self.free_region_vars.iter() {
                         if let hax::RegionKind::ReEarlyBound(eb) = &rk.kind {
-                            if eb.index == re_var.index {
+                            if eb.index as usize == *re_var {
                                 // Note that the DeBruijn index depends
                                 // on the current stack of bound region groups.
                                 let db_id = self.region_vars.len() - 1;
@@ -188,14 +188,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::Ty::Never => Ok(Ty::Never),
 
-            hax::Ty::Alias(alias_kind) => match alias_kind {
-                hax::AliasKind::Projection { impl_expr, name } => {
+            hax::Ty::Alias(alias) => match &alias.kind {
+                hax::AliasKind::Projection {
+                    impl_expr,
+                    assoc_item,
+                } => {
                     let trait_ref =
                         self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
                     // This should succeed because no marker trait (that we may
                     // ignore) has associated types.
                     let trait_ref = trait_ref.unwrap();
-                    let name = TraitItemName(name.clone());
+                    let name = TraitItemName(assoc_item.name.clone().into());
                     Ok(Ty::TraitType(trait_ref, name))
                 }
                 _ => {
