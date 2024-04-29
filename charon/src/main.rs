@@ -109,11 +109,11 @@ fn driver_path() -> PathBuf {
 
 fn process(options: &CliOpts) -> Result<(), i32> {
     let toolchain = get_pinned_toolchain();
+    let driver_path = driver_path();
     // FIXME: when using rustup, ensure the toolchain has the right components installed.
     let use_rustup = which::which("rustup").is_ok();
-    let driver_path = driver_path();
     // This is set by the nix develop environment and the nix builder; in both cases the toolchain
-    // is set up in `$PATH`.
+    // is set up in `$PATH` and the driver should be correctly dynamically linked.
     let correct_toolchain_is_in_path = env::var("CHARON_TOOLCHAIN_IS_IN_PATH").is_ok();
 
     if !use_rustup && !correct_toolchain_is_in_path {
@@ -129,30 +129,8 @@ fn process(options: &CliOpts) -> Result<(), i32> {
         // Run just the driver.
         let mut cmd;
         if correct_toolchain_is_in_path {
+            trace!("We appear to have been built with nix; the driver should be correctly linked.");
             cmd = Command::new(driver_path);
-            if cfg!(target_os = "macos") {
-                let cargo_path = which::which("cargo").unwrap();
-                let toolchain_path = PathBuf::from(cargo_path)
-                    .parent()
-                    .unwrap()
-                    .parent()
-                    .unwrap()
-                    .to_owned();
-                // Inspired from what rustup does.
-                const MAC_LOADER_PATH: &str = "DYLD_FALLBACK_LIBRARY_PATH";
-                let mut path_components = if let Some(path) = env::var_os(MAC_LOADER_PATH) {
-                    env::split_paths(&path).collect::<Vec<_>>()
-                } else {
-                    vec![]
-                };
-                path_components.insert(0, toolchain_path.join("lib"));
-                let new_path = env::join_paths(path_components).unwrap();
-                cmd.env(MAC_LOADER_PATH, new_path);
-            } else {
-                trace!(
-                    "We appear to have been built with nix; the driver should be correctly linked."
-                );
-            }
         } else {
             assert!(use_rustup); // Otherwise we panicked earlier.
             trace!("Calling the driver via `rustup`");
@@ -180,7 +158,7 @@ fn process(options: &CliOpts) -> Result<(), i32> {
             .expect("failed to wait for charon-driver?")
     } else {
         let mut cmd;
-        if let correct_toolchain_is_in_path {
+        if correct_toolchain_is_in_path {
             trace!("Using nix-provided toolchain");
             cmd = Command::new("cargo");
         } else {

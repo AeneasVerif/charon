@@ -41,15 +41,22 @@
 
         charon = craneLib.buildPackage (craneArgs // {
           buildInputs = [ pkgs.makeWrapper pkgs.zlib ];
+          # For `install_name_tool`.
+          nativeBuildInputs = pkgs.lib.optionals (pkgs.stdenv.isDarwin) [pkgs.bintools];
           # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
           cargoArtifacts = craneLib.buildDepsOnly craneArgs;
           # Make sure the toolchain is in $PATH so that `cargo` can work
-          # properly.
+          # properly. On mac we also have to tell `charon-driver` where to find
+          # the rustc_driver dynamic library; this is done automatically on
+          # linux.
           postFixup = ''
             wrapProgram $out/bin/charon \
               --set CHARON_TOOLCHAIN_IS_IN_PATH 1 \
               --prefix PATH : "${pkgs.lib.makeBinPath [ rustToolchain ]}"
-          '';
+          '' + (pkgs.lib.optionalString pkgs.stdenv.isDarwin ''
+            # Ensures `charon-driver` finds the dylibs correctly.
+            install_name_tool -add_rpath "${rustToolchain}/lib" "$out/bin/charon-driver"
+          '');
           # Check the `ui_llbc` files are correct instead of overwriting them.
           cargoTestCommand = "IN_CI=1 cargo test --profile release";
         });
