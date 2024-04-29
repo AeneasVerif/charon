@@ -40,7 +40,7 @@
         };
 
         charon = craneLib.buildPackage (craneArgs // {
-          buildInputs = [ pkgs.zlib ];
+          buildInputs = [ pkgs.makeWrapper pkgs.zlib ];
           # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
           cargoArtifacts = craneLib.buildDepsOnly craneArgs;
           # Hardcode the path to cargo into the built binary. Nix will ensure the path keeps existing.
@@ -49,6 +49,12 @@
               --replace \
               'static NIX_CARGO_OVERRIDE: Option<&str> = None;'\
               'static NIX_CARGO_OVERRIDE: Option<&str> = Some("${rustToolchain}/bin/cargo");'\
+          '';
+          # Make sure the toolchain is in $PATH so that `cargo` can work
+          # properly.
+          postFixup = ''
+            wrapProgram $out/bin/charon \
+              --prefix PATH : "${pkgs.lib.makeBinPath [ rustToolchain ]}"
           '';
           # Check the `ui_llbc` files are correct instead of overwriting them.
           cargoTestCommand = "IN_CI=1 cargo test --profile release";
