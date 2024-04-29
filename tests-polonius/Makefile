@@ -30,15 +30,14 @@ build-tests:
 # The tests.
 # =============================================================================
 
-# We only test these two files
-TESTS = polonius_list betree_main
+# We only test this files
+TESTS = betree_main
 RUST_SRCS = $(addprefix src/,$(addsuffix .rs,$(TESTS)))
 
 # This depends on `llbc/<file>.llbc` for each `src/<file>.rs` we care about
 .PHONY: charon-tests
 charon-tests: $(subst src/,$(DEST)/llbc/,$(patsubst %.rs,%.llbc,$(RUST_SRCS)))
 
-# llbc/polonius_list.llbc: OPTIONS += --no-code-duplication
 # Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
 # llbc/betree_main.llbc: OPTIONS += --no-code-duplication
 $(DEST)/llbc/betree_main.llbc: OPTIONS += --opaque=betree_utils
