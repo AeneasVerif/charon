@@ -43,17 +43,11 @@
           buildInputs = [ pkgs.makeWrapper pkgs.zlib ];
           # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
           cargoArtifacts = craneLib.buildDepsOnly craneArgs;
-          # Hardcode the path to cargo into the built binary. Nix will ensure the path keeps existing.
-          postPatch = ''
-            substituteInPlace src/main.rs \
-              --replace \
-              'static NIX_CARGO_OVERRIDE: Option<&str> = None;'\
-              'static NIX_CARGO_OVERRIDE: Option<&str> = Some("${rustToolchain}/bin/cargo");'\
-          '';
           # Make sure the toolchain is in $PATH so that `cargo` can work
           # properly.
           postFixup = ''
             wrapProgram $out/bin/charon \
+              --set CHARON_TOOLCHAIN_IS_IN_PATH 1 \
               --prefix PATH : "${pkgs.lib.makeBinPath [ rustToolchain ]}"
           '';
           # Check the `ui_llbc` files are correct instead of overwriting them.
@@ -248,8 +242,8 @@
           default = charon;
         };
         devShells.default = pkgs.mkShell {
-          # Provide the path to cargo since we don't have rustup around to give it.
-          NIX_CHARON_CARGO_PATH = "${rustToolchain}/bin/cargo";
+          # Tell charon that the right toolchain is in PATH. It is added to PATH by the `charon` in `inputsFrom`.
+          CHARON_TOOLCHAIN_IS_IN_PATH = 1;
 
           packages = [
             pkgs.ocamlPackages.ocaml

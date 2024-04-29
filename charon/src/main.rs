@@ -66,9 +66,6 @@ fn get_pinned_toolchain() -> Toolchain {
     file_contents.toolchain
 }
 
-// Nix overrides this with a path to the correct cargo.
-static NIX_CARGO_OVERRIDE: Option<&str> = None;
-
 pub fn main() {
     // Initialize the logger
     logger::initialize_logger();
@@ -115,12 +112,11 @@ fn process(options: &CliOpts) -> Result<(), i32> {
     // FIXME: when using rustup, ensure the toolchain has the right components installed.
     let use_rustup = which::which("rustup").is_ok();
     let driver_path = driver_path();
-    // For developping on nix, the flake dev env sets `NIX_CHARON_CARGO_PATH` to know where the right cargo is.
-    let cargo_path_override = NIX_CARGO_OVERRIDE
-        .map(|s| s.to_string())
-        .or_else(|| env::var("NIX_CHARON_CARGO_PATH").ok());
+    // This is set by the nix develop environment and the nix builder; in both cases the toolchain
+    // is set up in `$PATH`.
+    let correct_toolchain_is_in_path = env::var("CHARON_TOOLCHAIN_IS_IN_PATH").is_ok();
 
-    if !use_rustup && cargo_path_override.is_none() {
+    if !use_rustup && !correct_toolchain_is_in_path {
         panic!(
             "Can't find `rustup`; please install it with your system package manager \
             or from https://rustup.rs . \
@@ -132,9 +128,10 @@ fn process(options: &CliOpts) -> Result<(), i32> {
     let exit_status = if options.no_cargo {
         // Run just the driver.
         let mut cmd;
-        if let Some(cargo_path) = cargo_path_override {
+        if correct_toolchain_is_in_path {
             cmd = Command::new(driver_path);
             if cfg!(target_os = "macos") {
+                let cargo_path = which::which("cargo").unwrap();
                 let toolchain_path = PathBuf::from(cargo_path)
                     .parent()
                     .unwrap()
@@ -183,9 +180,9 @@ fn process(options: &CliOpts) -> Result<(), i32> {
             .expect("failed to wait for charon-driver?")
     } else {
         let mut cmd;
-        if let Some(cargo_path) = cargo_path_override {
-            trace!("Using overriden cargo path: {cargo_path}");
-            cmd = Command::new(cargo_path);
+        if let correct_toolchain_is_in_path {
+            trace!("Using nix-provided toolchain");
+            cmd = Command::new("cargo");
         } else {
             assert!(use_rustup); // Otherwise we panicked earlier.
             trace!("Using rustup-provided `cargo`.");
