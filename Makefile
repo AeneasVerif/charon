@@ -28,7 +28,6 @@ format:
 .PHONY: generate-rust-toolchain
 generate-rust-toolchain: \
 	generate-rust-toolchain-charon \
-	generate-rust-toolchain-tests \
 	generate-rust-toolchain-tests-polonius
 
 .PHONY: generate-rust-toolchain-%
@@ -68,11 +67,6 @@ build-charon-ml:
 build-dev-charon-ml:
 	cd charon-ml && $(MAKE) build-dev
 
-# Build the tests crate, and run the cargo tests
-.PHONY: build-tests
-build-tests:
-	cd tests && $(MAKE) build && $(MAKE) cargo-tests
-
 # Build the tests-polonius crate, and run the cargo tests
 .PHONY: build-tests-polonius
 build-tests-polonius:
@@ -111,7 +105,7 @@ analyze-rustc-tests: rustc-tests
 
 # Run Charon on the files in the tests crate
 .PHONY: charon-tests-regular
-charon-tests-regular: build-tests
+charon-tests-regular:
 	echo "# Starting the regular tests"
 	cd tests && make charon-tests
 	echo "# Finished the regular tests"

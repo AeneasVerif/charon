@@ -64,19 +64,15 @@
         # Check rust files are correctly formatted.
         charon-check-fmt = craneLib.cargoFmt craneArgs;
 
-        tests =
-          let cargoArtifacts = craneLib.buildDepsOnly { src = ./tests; };
-          in craneLib.buildPackage {
-            name = "tests";
+        tests = pkgs.runCommand "charon-tests" {
             src = ./tests;
-            inherit cargoArtifacts;
-            buildPhase = ''
-              # Run the tests for Charon
-              DEST=$out CHARON="${charon}/bin/charon" make charon-tests
-            '';
-            doCheck = false;
-            dontInstall = true;
-          };
+            buildInputs = [ rustToolchain charon ];
+          } ''
+            cp -r $src tests
+            cd tests
+            # Run the tests for Charon
+            DEST=$out CHARON="charon" make charon-tests
+          '';
 
         tests-polonius = let
           cargoArtifacts =

@@ -5,22 +5,14 @@ OPTIONS ?=
 CHARON_CMD :=
 
 .PHONY: all
-all: build tests
-
-.PHONY: build
-build: format
-	cargo build
+all: tests
 
 .PHONY: format
 format:
-	cargo fmt
+	rustfmt src/*.rs
 
 .PHONY: tests
-tests: cargo-tests charon-tests
-
-.PHONY: cargo-tests
-cargo-tests: build
-	cargo test
+tests: charon-tests
 
 # =============================================================================
 # The tests.
@@ -29,7 +21,6 @@ cargo-tests: build
 #  List the `.rs` files in `src/`
 RUST_SRCS = $(wildcard src/*.rs)
 # We test all rust files except these.
-RUST_SRCS := $(filter-out src/lib.rs, $(RUST_SRCS))
 RUST_SRCS := $(filter-out src/hashmap_utils.rs, $(RUST_SRCS))
 RUST_SRCS := $(filter-out src/test_borrows.rs, $(RUST_SRCS))
 RUST_SRCS := $(filter-out src/traits_special.rs, $(RUST_SRCS))
@@ -47,7 +38,7 @@ $(DEST)/llbc/constants.llbc: OPTIONS += --no-code-duplication
 $(DEST)/llbc/matches.llbc:
 $(DEST)/llbc/external.llbc: OPTIONS += --no-code-duplication
 
-$(DEST)/llbc/%.llbc: build
+$(DEST)/llbc/%.llbc: format
 	$(CHARON) --no-cargo --input src/$*.rs --crate $* $(OPTIONS) --dest $(DEST)/llbc
 
 .PHONY: test-%
@@ -56,5 +47,5 @@ test-%: $(DEST)/llbc/%.llbc
 
 .PHONY: clean
 clean:
-	cargo clean
+	rm -rf target/
 	rm -f $(DEST)/llbc/*
