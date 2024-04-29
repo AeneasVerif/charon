@@ -74,24 +74,27 @@
             DEST=$out CHARON="charon" make charon-tests
           '';
 
-        tests-polonius = let
-          cargoArtifacts =
-            craneLib.buildDepsOnly { src = ./tests-polonius; };
-        in craneLib.buildPackage {
-          name = "tests-polonius";
-          src = ./tests-polonius;
-          inherit cargoArtifacts;
-          # We deactivate the tests performed with Cargo (`cargo test`) as
-          # they will fail because we need Polonius
-          doCheck = false;
-          buildPhase = ''
-            # Run the tests for Charon
-            DEST=$out CHARON="${charon}/bin/charon" make charon-tests
+        # A utility that extracts the llbc of a crate using charon. This uses
+        # `crane` to handle dependencies and toolchain management.
+        extractCrateWithCharon = { name, src, charonFlags ? "", craneExtraArgs ? {} }:
+          craneLib.buildPackage ({
+            inherit src name;
+            cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
+            buildPhase = ''
+              ${charon}/bin/charon ${charonFlags} --dest $out/llbc
+            '';
+            dontInstall = true;
+          } // craneExtraArgs);
 
-            # Nix doesn't run the cargo tests, so run them by hand
-            make cargo-tests
+        tests-polonius = extractCrateWithCharon {
+          name = "betree";
+          # FIXME: rename the directory eventually
+          src = ./tests-polonius;
+          charonFlags = "--polonius --opaque=betree_utils --crate betree_main";
+          craneExtraArgs.checkPhaseCargoCommand = ''
+            cargo rustc -- --test -Zpolonius
+            ./target/debug/betree
           '';
-          dontInstall = true;
         };
 
         # Runs charon on the whole rustc ui test suite. This returns the tests
@@ -261,5 +264,10 @@
           ];
         };
         checks = { inherit tests tests-polonius charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
+
+        # Export this function so that users of charon can use it in nix. This
+        # fits in none of the standard flake output categories hace why it is
+        # exported directly like that.
+        inherit extractCrateWithCharon;
       });
 }

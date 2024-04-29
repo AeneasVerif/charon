@@ -1,8 +1,6 @@
 CURRENT_DIR = $(shell pwd)
-# Call `charon` instead of `charon-driver` because we have dependencies in `Cargo.toml`.
 CHARON ?= $(CURRENT_DIR)/../bin/charon
 DEST ?= .
-OPTIONS += --polonius
 
 .PHONY: all
 all: build tests
@@ -19,34 +17,23 @@ format:
 tests: cargo-tests charon-tests
 
 .PHONY: cargo-tests
-cargo-tests: build-tests
-	cd target/debug/ && ./tests
-
-.PHONY: build-tests
-build-tests:
+cargo-tests:
 	cargo rustc -- --test -Zpolonius
+	cd target/debug/ && ./betree
 
 # =============================================================================
 # The tests.
 # =============================================================================
 
-# We only test this files
-TESTS = betree_main
-RUST_SRCS = $(addprefix src/,$(addsuffix .rs,$(TESTS)))
-
-# This depends on `llbc/<file>.llbc` for each `src/<file>.rs` we care about
 .PHONY: charon-tests
-charon-tests: $(subst src/,$(DEST)/llbc/,$(patsubst %.rs,%.llbc,$(RUST_SRCS)))
+charon-tests: $(DEST)/llbc/betree.llbc
 
-# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-# llbc/betree_main.llbc: OPTIONS += --no-code-duplication
-$(DEST)/llbc/betree_main.llbc: OPTIONS += --opaque=betree_utils
+# Possible to add `--no-code-duplication` if we use the optimized MIR
+$(DEST)/llbc/betree.llbc: build
+	$(CHARON) --polonius --opaque=betree_utils --crate betree_main --dest $(DEST)/llbc
 
-$(DEST)/llbc/%.llbc: build
-	$(CHARON) --crate $* --input src/$*.rs $(OPTIONS) --dest $(DEST)/llbc
-
-.PHONY: test-%
-test-%: $(DEST)/llbc/%.llbc
+.PHONY: test-betree
+test-betree: $(DEST)/llbc/betree.llbc
 
 .PHONY: clean
 clean:
