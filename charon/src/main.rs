@@ -66,9 +66,6 @@ fn get_pinned_toolchain() -> Toolchain {
     file_contents.toolchain
 }
 
-// Nix overrides this with a path to the correct cargo.
-static NIX_CARGO_OVERRIDE: Option<&str> = None;
-
 pub fn main() {
     // Initialize the logger
     logger::initialize_logger();
@@ -112,15 +109,14 @@ fn driver_path() -> PathBuf {
 
 fn process(options: &CliOpts) -> Result<(), i32> {
     let toolchain = get_pinned_toolchain();
+    let driver_path = driver_path();
     // FIXME: when using rustup, ensure the toolchain has the right components installed.
     let use_rustup = which::which("rustup").is_ok();
-    let driver_path = driver_path();
-    // For developping on nix, the flake dev env sets `NIX_CHARON_CARGO_PATH` to know where the right cargo is.
-    let cargo_path_override = NIX_CARGO_OVERRIDE
-        .map(|s| s.to_string())
-        .or_else(|| env::var("NIX_CHARON_CARGO_PATH").ok());
+    // This is set by the nix develop environment and the nix builder; in both cases the toolchain
+    // is set up in `$PATH` and the driver should be correctly dynamically linked.
+    let correct_toolchain_is_in_path = env::var("CHARON_TOOLCHAIN_IS_IN_PATH").is_ok();
 
-    if !use_rustup && cargo_path_override.is_none() {
+    if !use_rustup && !correct_toolchain_is_in_path {
         panic!(
             "Can't find `rustup`; please install it with your system package manager \
             or from https://rustup.rs . \
@@ -132,30 +128,9 @@ fn process(options: &CliOpts) -> Result<(), i32> {
     let exit_status = if options.no_cargo {
         // Run just the driver.
         let mut cmd;
-        if let Some(cargo_path) = cargo_path_override {
+        if correct_toolchain_is_in_path {
+            trace!("We appear to have been built with nix; the driver should be correctly linked.");
             cmd = Command::new(driver_path);
-            if cfg!(target_os = "macos") {
-                let toolchain_path = PathBuf::from(cargo_path)
-                    .parent()
-                    .unwrap()
-                    .parent()
-                    .unwrap()
-                    .to_owned();
-                // Inspired from what rustup does.
-                const MAC_LOADER_PATH: &str = "DYLD_FALLBACK_LIBRARY_PATH";
-                let mut path_components = if let Some(path) = env::var_os(MAC_LOADER_PATH) {
-                    env::split_paths(&path).collect::<Vec<_>>()
-                } else {
-                    vec![]
-                };
-                path_components.insert(0, toolchain_path.join("lib"));
-                let new_path = env::join_paths(path_components).unwrap();
-                cmd.env(MAC_LOADER_PATH, new_path);
-            } else {
-                trace!(
-                    "We appear to have been built with nix; the driver should be correctly linked."
-                );
-            }
         } else {
             assert!(use_rustup); // Otherwise we panicked earlier.
             trace!("Calling the driver via `rustup`");
@@ -183,9 +158,9 @@ fn process(options: &CliOpts) -> Result<(), i32> {
             .expect("failed to wait for charon-driver?")
     } else {
         let mut cmd;
-        if let Some(cargo_path) = cargo_path_override {
-            trace!("Using overriden cargo path: {cargo_path}");
-            cmd = Command::new(cargo_path);
+        if correct_toolchain_is_in_path {
+            trace!("Using nix-provided toolchain");
+            cmd = Command::new("cargo");
         } else {
             assert!(use_rustup); // Otherwise we panicked earlier.
             trace!("Using rustup-provided `cargo`.");
