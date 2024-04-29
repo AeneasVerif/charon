@@ -20,10 +20,8 @@ tests: charon-tests
 
 #  List the `.rs` files in `src/`
 RUST_SRCS = $(wildcard src/*.rs)
-# We test all rust files except these.
+# We test all rust files except this one.
 RUST_SRCS := $(filter-out src/hashmap_utils.rs, $(RUST_SRCS))
-RUST_SRCS := $(filter-out src/test_borrows.rs, $(RUST_SRCS))
-RUST_SRCS := $(filter-out src/traits_special.rs, $(RUST_SRCS))
 
 # This depends on `llbc/<file>.llbc` for each `src/<file>.rs` we care about
 .PHONY: charon-tests
@@ -34,11 +32,8 @@ $(DEST)/llbc/nested_borrows.llbc: OPTIONS += --no-code-duplication
 $(DEST)/llbc/no_nested_borrows.llbc: OPTIONS += --no-code-duplication
 $(DEST)/llbc/paper.llbc: OPTIONS += --no-code-duplication
 $(DEST)/llbc/constants.llbc: OPTIONS += --no-code-duplication
-# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-$(DEST)/llbc/matches.llbc:
 $(DEST)/llbc/external.llbc: OPTIONS += --no-code-duplication
 $(DEST)/llbc/polonius_list.llbc: OPTIONS += --polonius
-$(DEST)/llbc/polonius_map.llbc: OPTIONS += --polonius
 
 $(DEST)/llbc/%.llbc: format
 	$(CHARON) --no-cargo --input src/$*.rs --crate $* $(OPTIONS) --dest $(DEST)/llbc

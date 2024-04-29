@@ -1,0 +1,35 @@
+# Final LLBC before serialization:
+
+enum core::result::Result<T, E> =
+|  Ok(T)
+|  Err(E)
+
+
+trait test_crate::From<Self, T>
+{
+    type Error
+    fn from : test_crate::From::from
+}
+
+fn test_crate::{impl test_crate::From<&'_0 (bool)> for bool}::from<'_0, '_1>(@1: &'_1 (bool)) -> core::result::Result<bool, test_crate::{impl test_crate::From<&'_0 (bool)> for bool}<'_>::Error>
+{
+    let @0: core::result::Result<bool, ()>; // return
+    let v@1: &'_ (bool); // arg #1
+    let @2: bool; // anonymous local
+
+    @2 := copy (*(v@1))
+    @0 := core::result::Result::Ok { 0: move (@2) }
+    drop @2
+    return
+}
+
+impl<'_0> test_crate::{impl test_crate::From<&'_0 (bool)> for bool}<'_0> : test_crate::From<bool, &'_0 (bool)>
+{
+    type Error = () with []
+    fn from = test_crate::{impl test_crate::From<&'_0 (bool)> for bool}::from
+}
+
+fn test_crate::From::from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>
+
+
+

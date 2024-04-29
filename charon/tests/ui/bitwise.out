@@ -1,0 +1,52 @@
+# Final LLBC before serialization:
+
+fn test_crate::xor_u32(@1: u32, @2: u32) -> u32
+{
+    let @0: u32; // return
+    let a@1: u32; // arg #1
+    let b@2: u32; // arg #2
+    let @3: u32; // anonymous local
+    let @4: u32; // anonymous local
+
+    @3 := copy (a@1)
+    @4 := copy (b@2)
+    @0 := move (@3) ^ move (@4)
+    drop @4
+    drop @3
+    return
+}
+
+fn test_crate::or_u32(@1: u32, @2: u32) -> u32
+{
+    let @0: u32; // return
+    let a@1: u32; // arg #1
+    let b@2: u32; // arg #2
+    let @3: u32; // anonymous local
+    let @4: u32; // anonymous local
+
+    @3 := copy (a@1)
+    @4 := copy (b@2)
+    @0 := move (@3) | move (@4)
+    drop @4
+    drop @3
+    return
+}
+
+fn test_crate::and_u32(@1: u32, @2: u32) -> u32
+{
+    let @0: u32; // return
+    let a@1: u32; // arg #1
+    let b@2: u32; // arg #2
+    let @3: u32; // anonymous local
+    let @4: u32; // anonymous local
+
+    @3 := copy (a@1)
+    @4 := copy (b@2)
+    @0 := move (@3) & move (@4)
+    drop @4
+    drop @3
+    return
+}
+
+
+

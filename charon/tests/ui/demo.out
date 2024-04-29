@@ -1,0 +1,406 @@
+# Final LLBC before serialization:
+
+fn test_crate::choose<'a, T>(@1: bool, @2: &'a mut (T), @3: &'a mut (T)) -> &'a mut (T)
+{
+    let @0: &'_ mut (T); // return
+    let b@1: bool; // arg #1
+    let x@2: &'_ mut (T); // arg #2
+    let y@3: &'_ mut (T); // arg #3
+    let @4: &'_ mut (T); // anonymous local
+    let @5: &'_ mut (T); // anonymous local
+    let @6: bool; // anonymous local
+    let @7: &'_ mut (T); // anonymous local
+
+    @6 := copy (b@1)
+    if move (@6) {
+        @7 := &mut *(x@2)
+        @5 := &mut *(@7)
+        drop @7
+    }
+    else {
+        @5 := &mut *(y@3)
+    }
+    @4 := &mut *(@5)
+    drop @6
+    @0 := &mut *(@4)
+    drop @5
+    drop @4
+    return
+}
+
+fn test_crate::mul2_add1(@1: u32) -> u32
+{
+    let @0: u32; // return
+    let x@1: u32; // arg #1
+    let @2: u32; // anonymous local
+    let @3: u32; // anonymous local
+    let @4: u32; // anonymous local
+
+    @3 := copy (x@1)
+    @4 := copy (x@1)
+    @2 := copy (@3) + copy (@4)
+    drop @4
+    drop @3
+    @0 := copy (@2) + const (1 : u32)
+    drop @2
+    return
+}
+
+fn test_crate::use_mul2_add1(@1: u32, @2: u32) -> u32
+{
+    let @0: u32; // return
+    let x@1: u32; // arg #1
+    let y@2: u32; // arg #2
+    let @3: u32; // anonymous local
+    let @4: u32; // anonymous local
+    let @5: u32; // anonymous local
+
+    @4 := copy (x@1)
+    @3 := test_crate::mul2_add1(move (@4))
+    drop @4
+    @5 := copy (y@2)
+    @0 := copy (@3) + copy (@5)
+    drop @5
+    drop @3
+    return
+}
+
+fn test_crate::incr<'a>(@1: &'a mut (u32))
+{
+    let @0: (); // return
+    let x@1: &'_ mut (u32); // arg #1
+    let @2: (); // anonymous local
+
+    *(x@1) := copy (*(x@1)) + const (1 : u32)
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
+fn test_crate::use_incr()
+{
+    let @0: (); // return
+    let x@1: u32; // local
+    let @2: (); // anonymous local
+    let @3: &'_ mut (u32); // anonymous local
+    let @4: &'_ mut (u32); // anonymous local
+    let @5: (); // anonymous local
+    let @6: &'_ mut (u32); // anonymous local
+    let @7: &'_ mut (u32); // anonymous local
+    let @8: (); // anonymous local
+    let @9: &'_ mut (u32); // anonymous local
+    let @10: &'_ mut (u32); // anonymous local
+    let @11: (); // anonymous local
+
+    x@1 := const (0 : u32)
+    @fake_read(x@1)
+    @4 := &mut x@1
+    @3 := &two-phase-mut *(@4)
+    @2 := test_crate::incr(move (@3))
+    drop @3
+    drop @4
+    drop @2
+    @7 := &mut x@1
+    @6 := &two-phase-mut *(@7)
+    @5 := test_crate::incr(move (@6))
+    drop @6
+    drop @7
+    drop @5
+    @10 := &mut x@1
+    @9 := &two-phase-mut *(@10)
+    @8 := test_crate::incr(move (@9))
+    drop @9
+    drop @10
+    drop @8
+    @11 := ()
+    @0 := move (@11)
+    drop x@1
+    @0 := ()
+    return
+}
+
+enum test_crate::CList<T> =
+|  CCons(T, alloc::boxed::Box<test_crate::CList<T>>)
+|  CNil()
+
+
+fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (T)
+{
+    let @0: &'_ (T); // return
+    let l@1: &'_ (test_crate::CList<T>); // arg #1
+    let i@2: u32; // arg #2
+    let x@3: &'_ (T); // local
+    let tl@4: &'_ (alloc::boxed::Box<test_crate::CList<T>>); // local
+    let @5: bool; // anonymous local
+    let @6: u32; // anonymous local
+    let @7: &'_ (T); // anonymous local
+    let @8: &'_ (test_crate::CList<T>); // anonymous local
+    let @9: u32; // anonymous local
+    let @10: u32; // anonymous local
+
+    @fake_read(l@1)
+    match *(l@1) {
+        0 => {
+            nop
+        },
+        1 => {
+            panic
+        }
+    }
+    x@3 := &(*(l@1) as variant @0).0
+    tl@4 := &(*(l@1) as variant @0).1
+    @6 := copy (i@2)
+    @5 := move (@6) == const (0 : u32)
+    drop @6
+    if move (@5) {
+        @0 := &*(x@3)
+    }
+    else {
+        @8 := &deref_box (*(tl@4))
+        @10 := copy (i@2)
+        @9 := copy (@10) - const (1 : u32)
+        drop @10
+        @7 := test_crate::list_nth<T>(move (@8), move (@9))
+        @0 := &*(@7)
+        drop @9
+        drop @8
+        drop @7
+    }
+    drop @5
+    drop tl@4
+    drop x@3
+    return
+}
+
+fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) -> &'a mut (T)
+{
+    let @0: &'_ mut (T); // return
+    let l@1: &'_ mut (test_crate::CList<T>); // arg #1
+    let i@2: u32; // arg #2
+    let @3: &'_ mut (T); // anonymous local
+    let @4: &'_ mut (T); // anonymous local
+    let x@5: &'_ mut (T); // local
+    let tl@6: &'_ mut (alloc::boxed::Box<test_crate::CList<T>>); // local
+    let @7: &'_ mut (T); // anonymous local
+    let @8: &'_ mut (T); // anonymous local
+    let @9: bool; // anonymous local
+    let @10: u32; // anonymous local
+    let @11: &'_ mut (T); // anonymous local
+    let @12: &'_ mut (T); // anonymous local
+    let @13: &'_ mut (test_crate::CList<T>); // anonymous local
+    let @14: u32; // anonymous local
+    let @15: u32; // anonymous local
+
+    @fake_read(l@1)
+    match *(l@1) {
+        0 => {
+            nop
+        },
+        1 => {
+            panic
+        }
+    }
+    x@5 := &mut (*(l@1) as variant @0).0
+    tl@6 := &mut (*(l@1) as variant @0).1
+    @10 := copy (i@2)
+    @9 := move (@10) == const (0 : u32)
+    drop @10
+    if move (@9) {
+        @11 := &mut *(x@5)
+        @8 := &mut *(@11)
+        drop @11
+    }
+    else {
+        @13 := &two-phase-mut deref_box (*(tl@6))
+        @15 := copy (i@2)
+        @14 := copy (@15) - const (1 : u32)
+        drop @15
+        @12 := test_crate::list_nth_mut<T>(move (@13), move (@14))
+        @8 := &mut *(@12)
+        drop @14
+        drop @13
+        drop @12
+    }
+    @7 := &mut *(@8)
+    drop @9
+    @4 := &mut *(@7)
+    drop @8
+    drop @7
+    drop tl@6
+    drop x@5
+    @3 := &mut *(@4)
+    @0 := &mut *(@3)
+    drop @4
+    drop @3
+    return
+}
+
+fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) -> &'a mut (T)
+{
+    let @0: &'_ mut (T); // return
+    let l@1: &'_ mut (test_crate::CList<T>); // arg #1
+    let i@2: u32; // arg #2
+    let @3: (); // anonymous local
+    let @4: (); // anonymous local
+    let x@5: &'_ mut (T); // local
+    let tl@6: &'_ mut (alloc::boxed::Box<test_crate::CList<T>>); // local
+    let @7: (); // anonymous local
+    let @8: bool; // anonymous local
+    let @9: u32; // anonymous local
+    let @10: &'_ mut (test_crate::CList<T>); // anonymous local
+    let @11: (); // anonymous local
+    let @12: (); // anonymous local
+    let @13: (); // anonymous local
+    let @14: (); // anonymous local
+
+    loop {
+        @fake_read(l@1)
+        match *(l@1) {
+            0 => {
+                nop
+            },
+            _ => {
+                @12 := ()
+                @3 := move (@12)
+                drop @11
+                drop @3
+                panic
+            }
+        }
+        x@5 := &mut (*(l@1) as variant @0).0
+        tl@6 := &mut (*(l@1) as variant @0).1
+        @9 := copy (i@2)
+        @8 := move (@9) == const (0 : u32)
+        drop @9
+        if move (@8) {
+            nop
+        }
+        else {
+            @13 := ()
+            @7 := move (@13)
+            drop @8
+            drop @7
+            i@2 := copy (i@2) - const (1 : u32)
+            @10 := &mut deref_box (*(tl@6))
+            l@1 := move (@10)
+            drop @10
+            @14 := ()
+            @4 := move (@14)
+            drop tl@6
+            drop x@5
+            continue 0
+        }
+        @0 := &mut *(x@5)
+        drop @8
+        drop @7
+        drop tl@6
+        drop x@5
+        drop @3
+        return
+    }
+}
+
+fn test_crate::i32_id(@1: i32) -> i32
+{
+    let @0: i32; // return
+    let i@1: i32; // arg #1
+    let @2: bool; // anonymous local
+    let @3: i32; // anonymous local
+    let @4: i32; // anonymous local
+    let @5: i32; // anonymous local
+    let @6: i32; // anonymous local
+
+    @3 := copy (i@1)
+    @2 := move (@3) == const (0 : i32)
+    drop @3
+    if move (@2) {
+        @0 := const (0 : i32)
+    }
+    else {
+        @6 := copy (i@1)
+        @5 := copy (@6) - const (1 : i32)
+        drop @6
+        @4 := test_crate::i32_id(move (@5))
+        drop @5
+        @0 := copy (@4) + const (1 : i32)
+        drop @4
+    }
+    drop @2
+    return
+}
+
+fn test_crate::list_tail<'a, T>(@1: &'a mut (test_crate::CList<T>)) -> &'a mut (test_crate::CList<T>)
+{
+    let @0: &'_ mut (test_crate::CList<T>); // return
+    let l@1: &'_ mut (test_crate::CList<T>); // arg #1
+    let @2: &'_ mut (test_crate::CList<T>); // anonymous local
+    let @3: &'_ mut (test_crate::CList<T>); // anonymous local
+    let tl@4: &'_ mut (alloc::boxed::Box<test_crate::CList<T>>); // local
+    let @5: &'_ mut (test_crate::CList<T>); // anonymous local
+    let @6: &'_ mut (test_crate::CList<T>); // anonymous local
+
+    @fake_read(l@1)
+    match *(l@1) {
+        0 => {
+            tl@4 := &mut (*(l@1) as variant @0).1
+            @6 := &two-phase-mut deref_box (*(tl@4))
+            @5 := test_crate::list_tail<T>(move (@6))
+            @3 := &mut *(@5)
+            drop @6
+            drop @5
+            drop tl@4
+        },
+        1 => {
+            @3 := move (l@1)
+        }
+    }
+    @2 := &mut *(@3)
+    @0 := &mut *(@2)
+    drop @3
+    drop @2
+    return
+}
+
+trait test_crate::Counter<Self>
+{
+    fn incr : test_crate::Counter::incr
+}
+
+fn test_crate::{impl test_crate::Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
+{
+    let @0: usize; // return
+    let self@1: &'_ mut (usize); // arg #1
+    let x@2: usize; // local
+
+    x@2 := copy (*(self@1))
+    @fake_read(x@2)
+    *(self@1) := copy (*(self@1)) + const (1 : usize)
+    @0 := copy (x@2)
+    drop x@2
+    return
+}
+
+impl test_crate::{impl test_crate::Counter for usize} : test_crate::Counter<usize>
+{
+    fn incr = test_crate::{impl test_crate::Counter for usize}::incr
+}
+
+fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
+
+fn test_crate::use_counter<'a, T>(@1: &'a mut (T)) -> usize
+where
+    [@TraitClause0]: test_crate::Counter<T>,
+{
+    let @0: usize; // return
+    let cnt@1: &'_ mut (T); // arg #1
+    let @2: &'_ mut (T); // anonymous local
+
+    @2 := &two-phase-mut *(cnt@1)
+    @0 := @TraitClause0::incr(move (@2))
+    drop @2
+    return
+}
+
+
+

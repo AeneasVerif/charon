@@ -182,3 +182,66 @@ pub fn loop_inside_if(b: bool, n: u32) -> u32 {
         0
     }
 }
+
+pub fn sum(max: u32) -> u32 {
+    let mut i = 0;
+    let mut s = 0;
+    while i < max {
+        s += i;
+        i += 1;
+    }
+
+    s *= 2;
+    s
+}
+
+pub fn sum_array<const N: usize>(a: [u32; N]) -> u32 {
+    let mut i = 0;
+    let mut s = 0;
+    while i < N {
+        s += a[i];
+        i += 1;
+    }
+    s
+}
+
+pub fn clear(v: &mut Vec<u32>) {
+    let mut i = 0;
+    while i < v.len() {
+        v[i] = 0;
+        i += 1;
+    }
+}
+
+pub enum List<T> {
+    Cons(T, Box<List<T>>),
+    Nil,
+}
+
+pub fn get_elem_mut(mut ls: &mut List<usize>, x: usize) -> &mut usize {
+    loop {
+        match ls {
+            List::Nil => panic!(),
+            List::Cons(y, tl) => {
+                if *y == x {
+                    return y;
+                } else {
+                    ls = tl;
+                }
+            }
+        }
+    }
+}
+
+/// Small variation
+pub fn list_nth_mut_loop_with_id<T>(mut ls: &mut List<T>, mut i: u32) -> &mut T {
+    while let List::Cons(x, tl) = ls {
+        if i == 0 {
+            return x;
+        } else {
+            ls = tl;
+            i -= 1;
+        }
+    }
+    panic!()
+}

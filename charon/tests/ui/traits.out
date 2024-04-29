@@ -1,0 +1,853 @@
+# Final LLBC before serialization:
+
+trait test_crate::BoolTrait<Self>
+{
+    fn get_bool : test_crate::BoolTrait::get_bool
+    fn ret_true : test_crate::BoolTrait::ret_true
+}
+
+fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (bool); // arg #1
+
+    @0 := copy (*(self@1))
+    return
+}
+
+impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<bool>
+{
+    fn get_bool = test_crate::{impl test_crate::BoolTrait for bool}::get_bool
+}
+
+fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
+
+fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (Self); // arg #1
+
+    @0 := const (true)
+    return
+}
+
+fn test_crate::test_bool_trait_bool(@1: bool) -> bool
+{
+    let @0: bool; // return
+    let x@1: bool; // arg #1
+    let @2: bool; // anonymous local
+    let @3: &'_ (bool); // anonymous local
+    let @4: bool; // anonymous local
+    let @5: &'_ (bool); // anonymous local
+
+    @3 := &x@1
+    @2 := test_crate::{impl test_crate::BoolTrait for bool}::get_bool(move (@3))
+    drop @3
+    if move (@2) {
+        @5 := &x@1
+        @4 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true(move (@5))
+        drop @5
+        @0 := move (@4)
+    }
+    else {
+        @0 := const (false)
+    }
+    drop @4
+    drop @2
+    return
+}
+
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
+
+
+fn test_crate::{impl test_crate::BoolTrait for core::option::Option<T>#1}::get_bool<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (core::option::Option<T>); // arg #1
+
+    @fake_read(self@1)
+    match *(self@1) {
+        0 => {
+            @0 := const (false)
+        },
+        1 => {
+            @0 := const (true)
+        }
+    }
+    return
+}
+
+impl<T> test_crate::{impl test_crate::BoolTrait for core::option::Option<T>#1}<T> : test_crate::BoolTrait<core::option::Option<T>>
+{
+    fn get_bool = test_crate::{impl test_crate::BoolTrait for core::option::Option<T>#1}::get_bool
+}
+
+fn test_crate::test_bool_trait_option<T>(@1: core::option::Option<T>) -> bool
+{
+    let @0: bool; // return
+    let x@1: core::option::Option<T>; // arg #1
+    let @2: bool; // anonymous local
+    let @3: &'_ (core::option::Option<T>); // anonymous local
+    let @4: bool; // anonymous local
+    let @5: &'_ (core::option::Option<T>); // anonymous local
+
+    @3 := &x@1
+    @2 := test_crate::{impl test_crate::BoolTrait for core::option::Option<T>#1}<T>::get_bool(move (@3))
+    drop @3
+    if move (@2) {
+        @5 := &x@1
+        @4 := test_crate::{impl test_crate::BoolTrait for core::option::Option<T>#1}<T>::ret_true(move (@5))
+        drop @5
+        @0 := move (@4)
+    }
+    else {
+        @0 := const (false)
+    }
+    drop @4
+    drop @2
+    drop x@1
+    return
+}
+
+fn test_crate::test_bool_trait<T>(@1: T) -> bool
+where
+    [@TraitClause0]: test_crate::BoolTrait<T>,
+{
+    let @0: bool; // return
+    let x@1: T; // arg #1
+    let @2: &'_ (T); // anonymous local
+
+    @2 := &x@1
+    @0 := @TraitClause0::get_bool(move (@2))
+    drop @2
+    drop x@1
+    return
+}
+
+trait test_crate::ToU64<Self>
+{
+    fn to_u64 : test_crate::ToU64::to_u64
+}
+
+fn test_crate::{impl test_crate::ToU64 for u64#2}::to_u64(@1: u64) -> u64
+{
+    let @0: u64; // return
+    let self@1: u64; // arg #1
+
+    @0 := copy (self@1)
+    return
+}
+
+impl test_crate::{impl test_crate::ToU64 for u64#2} : test_crate::ToU64<u64>
+{
+    fn to_u64 = test_crate::{impl test_crate::ToU64 for u64#2}::to_u64
+}
+
+fn test_crate::ToU64::to_u64<Self>(@1: Self) -> u64
+
+fn test_crate::{impl test_crate::ToU64 for (A, A)#3}::to_u64<A>(@1: (A, A)) -> u64
+where
+    // Inherited clauses:
+    [@TraitClause0]: test_crate::ToU64<A>,
+{
+    let @0: u64; // return
+    let self@1: (A, A); // arg #1
+    let @2: u64; // anonymous local
+    let @3: A; // anonymous local
+    let @4: u64; // anonymous local
+    let @5: A; // anonymous local
+
+    @3 := move ((self@1).0)
+    @2 := @TraitClause0::to_u64(move (@3))
+    drop @3
+    @5 := move ((self@1).1)
+    @4 := @TraitClause0::to_u64(move (@5))
+    drop @5
+    @0 := copy (@2) + copy (@4)
+    drop @4
+    drop @2
+    drop self@1
+    return
+}
+
+impl<A> test_crate::{impl test_crate::ToU64 for (A, A)#3}<A> : test_crate::ToU64<(A, A)>
+where
+    [@TraitClause0]: test_crate::ToU64<A>,
+{
+    fn to_u64 = test_crate::{impl test_crate::ToU64 for (A, A)#3}::to_u64
+}
+
+fn test_crate::f<T>(@1: (T, T)) -> u64
+where
+    [@TraitClause0]: test_crate::ToU64<T>,
+{
+    let @0: u64; // return
+    let x@1: (T, T); // arg #1
+    let @2: (T, T); // anonymous local
+
+    @2 := move (x@1)
+    @0 := test_crate::{impl test_crate::ToU64 for (A, A)#3}<T>[@TraitClause0]::to_u64(move (@2))
+    drop @2
+    drop x@1
+    return
+}
+
+fn test_crate::g<T>(@1: (T, T)) -> u64
+where
+    [@TraitClause0]: test_crate::ToU64<(T, T)>,
+{
+    let @0: u64; // return
+    let x@1: (T, T); // arg #1
+    let @2: (T, T); // anonymous local
+
+    @2 := move (x@1)
+    @0 := @TraitClause0::to_u64(move (@2))
+    drop @2
+    drop x@1
+    return
+}
+
+fn test_crate::h0(@1: u64) -> u64
+{
+    let @0: u64; // return
+    let x@1: u64; // arg #1
+    let @2: u64; // anonymous local
+
+    @2 := copy (x@1)
+    @0 := test_crate::{impl test_crate::ToU64 for u64#2}::to_u64(move (@2))
+    drop @2
+    return
+}
+
+struct test_crate::Wrapper<T> =
+{
+  x: T
+}
+
+fn test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>#4}::to_u64<T>(@1: test_crate::Wrapper<T>) -> u64
+where
+    // Inherited clauses:
+    [@TraitClause0]: test_crate::ToU64<T>,
+{
+    let @0: u64; // return
+    let self@1: test_crate::Wrapper<T>; // arg #1
+    let @2: T; // anonymous local
+
+    @2 := move ((self@1).x)
+    @0 := @TraitClause0::to_u64(move (@2))
+    drop @2
+    drop self@1
+    return
+}
+
+impl<T> test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>#4}<T> : test_crate::ToU64<test_crate::Wrapper<T>>
+where
+    [@TraitClause0]: test_crate::ToU64<T>,
+{
+    fn to_u64 = test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>#4}::to_u64
+}
+
+fn test_crate::h1(@1: test_crate::Wrapper<u64>) -> u64
+{
+    let @0: u64; // return
+    let x@1: test_crate::Wrapper<u64>; // arg #1
+    let @2: test_crate::Wrapper<u64>; // anonymous local
+
+    @2 := move (x@1)
+    @0 := test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>#4}<u64>[test_crate::{impl test_crate::ToU64 for u64#2}]::to_u64(move (@2))
+    drop @2
+    return
+}
+
+fn test_crate::h2<T>(@1: test_crate::Wrapper<T>) -> u64
+where
+    [@TraitClause0]: test_crate::ToU64<T>,
+{
+    let @0: u64; // return
+    let x@1: test_crate::Wrapper<T>; // arg #1
+    let @2: test_crate::Wrapper<T>; // anonymous local
+
+    @2 := move (x@1)
+    @0 := test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>#4}<T>[@TraitClause0]::to_u64(move (@2))
+    drop @2
+    drop x@1
+    return
+}
+
+trait test_crate::ToType<Self, T>
+{
+    fn to_type : test_crate::ToType::to_type
+}
+
+fn test_crate::{impl test_crate::ToType<bool> for u64#5}::to_type(@1: u64) -> bool
+{
+    let @0: bool; // return
+    let self@1: u64; // arg #1
+    let @2: u64; // anonymous local
+
+    @2 := copy (self@1)
+    @0 := move (@2) > const (0 : u64)
+    drop @2
+    return
+}
+
+impl test_crate::{impl test_crate::ToType<bool> for u64#5} : test_crate::ToType<u64, bool>
+{
+    fn to_type = test_crate::{impl test_crate::ToType<bool> for u64#5}::to_type
+}
+
+trait test_crate::OfType<Self>
+{
+    fn of_type : test_crate::OfType::of_type
+}
+
+fn test_crate::OfType::of_type<Self, T>(@1: T) -> Self
+where
+    [@TraitClause0]: test_crate::ToType<T, Self>,
+
+fn test_crate::h3<T1, T2>(@1: T2) -> T1
+where
+    [@TraitClause0]: test_crate::OfType<T1>,
+    [@TraitClause1]: test_crate::ToType<T2, T1>,
+{
+    let @0: T1; // return
+    let y@1: T2; // arg #1
+    let @2: T2; // anonymous local
+
+    @2 := move (y@1)
+    @0 := @TraitClause0::of_type<T2>[@TraitClause1](move (@2))
+    drop @2
+    drop y@1
+    return
+}
+
+trait test_crate::OfTypeBis<Self, T>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::ToType<T, Self>
+    fn of_type : test_crate::OfTypeBis::of_type
+}
+
+fn test_crate::OfTypeBis::of_type<Self, T>(@1: T) -> Self
+
+fn test_crate::h4<T1, T2>(@1: T2) -> T1
+where
+    [@TraitClause0]: test_crate::OfTypeBis<T1, T2>,
+    [@TraitClause1]: test_crate::ToType<T2, T1>,
+{
+    let @0: T1; // return
+    let y@1: T2; // arg #1
+    let @2: T2; // anonymous local
+
+    @2 := move (y@1)
+    @0 := @TraitClause0::of_type(move (@2))
+    drop @2
+    drop y@1
+    return
+}
+
+struct test_crate::TestType<T> =
+{
+  T
+}
+
+struct test_crate::{test_crate::TestType<T>#6}::test::TestType1 =
+{
+  u64
+}
+
+trait test_crate::{test_crate::TestType<T>#6}::test::TestTrait<Self>
+{
+    fn test : test_crate::{test_crate::TestType<T>#6}::test::TestTrait::test
+}
+
+fn test_crate::{test_crate::TestType<T>#6}::test::{impl test_crate::{test_crate::TestType<T>#6}::test::TestTrait for test_crate::{test_crate::TestType<T>#6}::test::TestType1}::test<'_0>(@1: &'_0 (test_crate::{test_crate::TestType<T>#6}::test::TestType1)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (test_crate::{test_crate::TestType<T>#6}::test::TestType1); // arg #1
+    let @2: u64; // anonymous local
+
+    @2 := copy ((*(self@1)).0)
+    @0 := move (@2) > const (1 : u64)
+    drop @2
+    return
+}
+
+impl test_crate::{test_crate::TestType<T>#6}::test::{impl test_crate::{test_crate::TestType<T>#6}::test::TestTrait for test_crate::{test_crate::TestType<T>#6}::test::TestType1} : test_crate::{test_crate::TestType<T>#6}::test::TestTrait<test_crate::{test_crate::TestType<T>#6}::test::TestType1>
+{
+    fn test = test_crate::{test_crate::TestType<T>#6}::test::{impl test_crate::{test_crate::TestType<T>#6}::test::TestTrait for test_crate::{test_crate::TestType<T>#6}::test::TestType1}::test
+}
+
+fn test_crate::{test_crate::TestType<T>#6}::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool
+
+fn test_crate::{test_crate::TestType<T>#6}::test<'_0, T>(@1: &'_0 (test_crate::TestType<T>), @2: T) -> bool
+where
+    [@TraitClause0]: test_crate::ToU64<T>,
+{
+    let @0: bool; // return
+    let self@1: &'_ (test_crate::TestType<T>); // arg #1
+    let x@2: T; // arg #2
+    let x@3: u64; // local
+    let @4: T; // anonymous local
+    let y@5: test_crate::{test_crate::TestType<T>#6}::test::TestType1; // local
+    let @6: bool; // anonymous local
+    let @7: u64; // anonymous local
+    let @8: bool; // anonymous local
+    let @9: &'_ (test_crate::{test_crate::TestType<T>#6}::test::TestType1); // anonymous local
+
+    @4 := move (x@2)
+    x@3 := @TraitClause0::to_u64(move (@4))
+    drop @4
+    @fake_read(x@3)
+    y@5 := test_crate::{test_crate::TestType<T>#6}::test::TestType1 { 0: const (0 : u64) }
+    @fake_read(y@5)
+    @7 := copy (x@3)
+    @6 := move (@7) > const (0 : u64)
+    drop @7
+    if move (@6) {
+        @9 := &y@5
+        @8 := test_crate::{test_crate::TestType<T>#6}::test::{impl test_crate::{test_crate::TestType<T>#6}::test::TestTrait for test_crate::{test_crate::TestType<T>#6}::test::TestType1}::test(move (@9))
+        drop @9
+        @0 := move (@8)
+    }
+    else {
+        @0 := const (false)
+    }
+    drop @8
+    drop @6
+    drop y@5
+    drop x@3
+    drop x@2
+    return
+}
+
+struct test_crate::BoolWrapper =
+{
+  bool
+}
+
+fn test_crate::ToType::to_type<Self, T>(@1: Self) -> T
+
+fn test_crate::{impl test_crate::ToType<T> for test_crate::BoolWrapper#7}::to_type<T>(@1: test_crate::BoolWrapper) -> T
+where
+    // Inherited clauses:
+    [@TraitClause0]: test_crate::ToType<bool, T>,
+{
+    let @0: T; // return
+    let self@1: test_crate::BoolWrapper; // arg #1
+    let @2: bool; // anonymous local
+
+    @2 := copy ((self@1).0)
+    @0 := @TraitClause0::to_type(move (@2))
+    drop @2
+    return
+}
+
+impl<T> test_crate::{impl test_crate::ToType<T> for test_crate::BoolWrapper#7}<T> : test_crate::ToType<test_crate::BoolWrapper, T>
+where
+    [@TraitClause0]: test_crate::ToType<bool, T>,
+{
+    fn to_type = test_crate::{impl test_crate::ToType<T> for test_crate::BoolWrapper#7}::to_type
+}
+
+global test_crate::WithConstTy::LEN2<Self, const LEN : usize>  {
+    let @0: usize; // return
+
+    @0 := const (32 : usize)
+    return
+}
+
+trait test_crate::WithConstTy<Self, const LEN : usize>
+{
+    const LEN1 : usize
+    const LEN2 : usize = test_crate::WithConstTy::LEN2
+    type V
+    type W
+        where
+            [@TraitClause0]: test_crate::ToU64<Self::W>,
+    fn f : test_crate::WithConstTy::f
+}
+
+global test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::LEN1  {
+    let @0: usize; // return
+
+    @0 := const (12 : usize)
+    return
+}
+
+fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::f<'_0, '_1>(@1: &'_0 mut (test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::W), @2: &'_1 (Array<u8, 32 : usize>))
+{
+    let @0: (); // return
+    let @1: &'_ mut (u64); // arg #1
+    let @2: &'_ (Array<u8, 32 : usize>); // arg #2
+    let @3: (); // anonymous local
+
+    @3 := ()
+    @0 := move (@3)
+    @0 := ()
+    return
+}
+
+impl test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8} : test_crate::WithConstTy<bool, 32 : usize>
+{
+    const LEN1 : usize = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::LEN1
+    const LEN2 : usize = test_crate::WithConstTy::LEN2
+    type V = u8 with []
+    type W = u64 with [test_crate::{impl test_crate::ToU64 for u64#2}]
+    fn f = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::f
+}
+
+fn test_crate::use_with_const_ty1<H, const LEN : usize>() -> usize
+where
+    [@TraitClause0]: test_crate::WithConstTy<H, const LEN : usize>,
+{
+    let @0: usize; // return
+
+    @0 := const (@TraitClause0::LEN1)
+    return
+}
+
+fn test_crate::use_with_const_ty2<H, const LEN : usize>(@1: @TraitClause0::W)
+where
+    [@TraitClause0]: test_crate::WithConstTy<H, const LEN : usize>,
+{
+    let @0: (); // return
+    let @1: @TraitClause0::W; // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    drop @1
+    @0 := ()
+    return
+}
+
+fn test_crate::use_with_const_ty3<H, const LEN : usize>(@1: @TraitClause0::W) -> u64
+where
+    [@TraitClause0]: test_crate::WithConstTy<H, const LEN : usize>,
+{
+    let @0: u64; // return
+    let x@1: @TraitClause0::W; // arg #1
+    let @2: @TraitClause0::W; // anonymous local
+
+    @2 := move (x@1)
+    @0 := (@TraitClause0::W::[@TraitClause0])::to_u64(move (@2))
+    drop @2
+    drop x@1
+    return
+}
+
+fn test_crate::test_where1<'a, T>(@1: &'a (T))
+where
+    T : 'a,
+{
+    let @0: (); // return
+    let _x@1: &'_ (T); // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
+fn test_crate::test_where2<T>(@1: @TraitClause0::V)
+where
+    [@TraitClause0]: test_crate::WithConstTy<T, 32 : usize>,
+    @TraitClause0::V = u32,
+{
+    let @0: (); // return
+    let _x@1: u32; // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
+opaque type alloc::string::String
+
+trait test_crate::ParentTrait0<Self>
+{
+    type W
+    fn get_name : test_crate::ParentTrait0::get_name
+    fn get_w : test_crate::ParentTrait0::get_w
+}
+
+trait test_crate::ParentTrait1<Self>
+
+trait test_crate::ChildTrait<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::ParentTrait0<Self>
+    parent_clause_1 : [@TraitClause1]: test_crate::ParentTrait1<Self>
+}
+
+fn test_crate::ParentTrait0::get_name<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
+
+fn test_crate::test_child_trait1<'_0, T>(@1: &'_0 (T)) -> alloc::string::String
+where
+    [@TraitClause0]: test_crate::ChildTrait<T>,
+{
+    let @0: alloc::string::String; // return
+    let x@1: &'_ (T); // arg #1
+    let @2: &'_ (T); // anonymous local
+
+    @2 := &*(x@1)
+    @0 := (parents(@TraitClause0)::[@TraitClause0])::get_name(move (@2))
+    drop @2
+    return
+}
+
+fn test_crate::ParentTrait0::get_w<'_0, Self>(@1: &'_0 (Self)) -> Self::W
+
+fn test_crate::test_child_trait2<'_0, T>(@1: &'_0 (T)) -> (parents(@TraitClause0)::[@TraitClause0])::W
+where
+    [@TraitClause0]: test_crate::ChildTrait<T>,
+{
+    let @0: (parents(@TraitClause0)::[@TraitClause0])::W; // return
+    let x@1: &'_ (T); // arg #1
+    let @2: &'_ (T); // anonymous local
+
+    @2 := &*(x@1)
+    @0 := (parents(@TraitClause0)::[@TraitClause0])::get_w(move (@2))
+    drop @2
+    return
+}
+
+fn test_crate::order1<T, U>()
+where
+    [@TraitClause0]: test_crate::ParentTrait0<T>,
+    [@TraitClause1]: test_crate::ParentTrait0<U>,
+    @TraitClause0::W = @TraitClause1::W,
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+trait test_crate::ChildTrait1<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::ParentTrait1<Self>
+}
+
+impl test_crate::{impl test_crate::ParentTrait1 for usize#9} : test_crate::ParentTrait1<usize>
+
+impl test_crate::{impl test_crate::ChildTrait1 for usize#10} : test_crate::ChildTrait1<usize>
+{
+    parent_clause0 = test_crate::{impl test_crate::ParentTrait1 for usize#9}
+}
+
+trait test_crate::Iterator<Self>
+{
+    type Item
+}
+
+trait test_crate::IntoIterator<Self>
+{
+    type Item
+    type IntoIter
+        where
+            [@TraitClause0]: test_crate::Iterator<Self::IntoIter>,
+    fn into_iter : test_crate::IntoIterator::into_iter
+}
+
+trait test_crate::FromResidual<Self, T>
+
+trait test_crate::Try<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::FromResidual<Self, Self::Residual>
+    type Residual
+}
+
+trait test_crate::WithTarget<Self>
+{
+    type Target
+}
+
+trait test_crate::ParentTrait2<Self>
+{
+    type U
+        where
+            [@TraitClause0]: test_crate::WithTarget<Self::U>,
+}
+
+trait test_crate::ChildTrait2<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::ParentTrait2<Self>
+    fn convert : test_crate::ChildTrait2::convert
+}
+
+impl test_crate::{impl test_crate::WithTarget for u32#11} : test_crate::WithTarget<u32>
+{
+    type Target = u32 with []
+}
+
+impl test_crate::{impl test_crate::ParentTrait2 for u32#12} : test_crate::ParentTrait2<u32>
+{
+    type U = u32 with [test_crate::{impl test_crate::WithTarget for u32#11}]
+}
+
+fn test_crate::{impl test_crate::ChildTrait2 for u32#13}::convert(@1: u32) -> u32
+{
+    let @0: u32; // return
+    let x@1: u32; // arg #1
+
+    @0 := copy (x@1)
+    return
+}
+
+impl test_crate::{impl test_crate::ChildTrait2 for u32#13} : test_crate::ChildTrait2<u32>
+{
+    parent_clause0 = test_crate::{impl test_crate::ParentTrait2 for u32#12}
+    fn convert = test_crate::{impl test_crate::ChildTrait2 for u32#13}::convert
+}
+
+trait test_crate::CFnOnce<Self, Args>
+{
+    type Output
+    fn call_once : test_crate::CFnOnce::call_once
+}
+
+trait test_crate::CFnMut<Self, Args>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::CFnOnce<Self, Args>
+    fn call_mut : test_crate::CFnMut::call_mut
+}
+
+trait test_crate::CFn<Self, Args>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::CFnMut<Self, Args>
+    fn call : test_crate::CFn::call
+}
+
+trait test_crate::GetTrait<Self>
+{
+    type W
+    fn get_w : test_crate::GetTrait::get_w
+}
+
+fn test_crate::GetTrait::get_w<'_0, Self>(@1: &'_0 (Self)) -> Self::W
+
+fn test_crate::test_get_trait<'_0, T>(@1: &'_0 (T)) -> @TraitClause0::W
+where
+    [@TraitClause0]: test_crate::GetTrait<T>,
+{
+    let @0: @TraitClause0::W; // return
+    let x@1: &'_ (T); // arg #1
+    let @2: &'_ (T); // anonymous local
+
+    @2 := &*(x@1)
+    @0 := @TraitClause0::get_w(move (@2))
+    drop @2
+    return
+}
+
+trait test_crate::Trait<Self>
+{
+    const LEN : usize
+}
+
+global test_crate::{impl test_crate::Trait for Array<T, const N : usize>#14}::LEN<T, const N : usize>  {
+    let @0: usize; // return
+
+    @0 := const (const N : usize)
+    return
+}
+
+impl<T, const N : usize> test_crate::{impl test_crate::Trait for Array<T, const N : usize>#14}<T, const N : usize> : test_crate::Trait<Array<T, const N : usize>>
+{
+    const LEN : usize = test_crate::{impl test_crate::Trait for Array<T, const N : usize>#14}::LEN
+}
+
+global test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>#15}::LEN<T>
+  where
+      [@TraitClause0]: test_crate::Trait<T>,
+  {
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+impl<T> test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>#15}<T> : test_crate::Trait<test_crate::Wrapper<T>>
+where
+    [@TraitClause0]: test_crate::Trait<T>,
+{
+    const LEN : usize = test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>#15}::LEN
+}
+
+fn test_crate::use_wrapper_len<T>() -> usize
+where
+    [@TraitClause0]: test_crate::Trait<T>,
+{
+    let @0: usize; // return
+
+    @0 := const (test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>#15}<T>[@TraitClause0]::LEN)
+    return
+}
+
+struct test_crate::Foo<T, U> =
+{
+  x: T,
+  y: U
+}
+
+enum core::result::Result<T, E> =
+|  Ok(T)
+|  Err(E)
+
+
+global test_crate::{test_crate::Foo<T, U>#16}::FOO<T, U>
+  where
+      [@TraitClause0]: test_crate::Trait<T>,
+  {
+    let @0: core::result::Result<T, i32>; // return
+
+    @0 := core::result::Result::Err { 0: const (0 : i32) }
+    return
+}
+
+fn test_crate::use_foo1<T, U>() -> core::result::Result<T, i32>
+where
+    [@TraitClause0]: test_crate::Trait<T>,
+{
+    let @0: core::result::Result<T, i32>; // return
+    let @1: core::result::Result<T, i32>; // anonymous local
+
+    @1 := test_crate::{test_crate::Foo<T, U>#16}::FOO<T, U>[@TraitClause0]
+    @0 := move (@1)
+    return
+}
+
+fn test_crate::use_foo2<T, U>() -> core::result::Result<U, i32>
+where
+    [@TraitClause0]: test_crate::Trait<U>,
+{
+    let @0: core::result::Result<U, i32>; // return
+    let @1: core::result::Result<U, i32>; // anonymous local
+
+    @1 := test_crate::{test_crate::Foo<T, U>#16}::FOO<U, T>[@TraitClause0]
+    @0 := move (@1)
+    return
+}
+
+fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (Self::W), @2: &'_1 (Array<u8, const LEN : usize>))
+
+fn test_crate::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
+
+fn test_crate::ChildTrait2::convert<Self>(@1: (parents(Self)::[@TraitClause0])::U) -> ((parents(Self)::[@TraitClause0])::U::[@TraitClause0])::Target
+
+fn test_crate::CFnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> (parents(Self)::[@TraitClause0])::Output
+
+fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> (parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])::Output
+
+
+
