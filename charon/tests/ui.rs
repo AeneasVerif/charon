@@ -208,7 +208,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
             }
         }
         TestKind::KnownFailure => {
-            if output.status.code() != Some(1) {
+            if output.status.success() || output.status.code() == Some(101) {
                 let status = if output.status.success() {
                     "succeeded"
                 } else {

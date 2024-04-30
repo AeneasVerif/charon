@@ -23,6 +23,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "betree"
+version = "0.1.0"
+dependencies = [
+ "env_logger",
+ "log",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -185,16 +195,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be55cf8942feac5c765c2c993422806843c9a9a45d4d5c407ad6dd2ea95eb9b6"
 dependencies = [
  "winapi-util",
-]
-
-[[package]]
-name = "tests"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "log",
- "serde",
- "serde_json",
 ]
 
 [[package]]

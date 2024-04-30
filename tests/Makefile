@@ -3,86 +3,46 @@ CHARON ?= $(CURRENT_DIR)/../bin/charon
 DEST ?= .
 OPTIONS ?=
 CHARON_CMD :=
-NOT_ALL_TESTS ?=
 
 .PHONY: all
-all: build tests
-
-.PHONY: build
-build: format
-	cargo build
+all: tests
 
 .PHONY: format
 format:
-	cargo fmt
+	rustfmt src/*.rs
 
 .PHONY: tests
-tests: cargo-tests charon-tests
-
-.PHONY: cargo-tests
-cargo-tests: build
-	cargo test
-
-.PHONY: charon-tests
-charon-tests: \
-	test-nested_borrows test-no_nested_borrows \
-	test-loops test-loops_cfg test-hashmap \
-	test-paper test-hashmap_main \
-	test-matches test-matches_duplicate test-external \
-	test-constants test-arrays test-arrays_const_generics test-traits \
-	test-closures test-bitwise test-demo
-
-test-nested_borrows: OPTIONS += --no-code-duplication
-test-no_nested_borrows: OPTIONS += --no-code-duplication
-test-loops:
-test-loops_cfg:
-test-hashmap:
-test-hashmap_main: OPTIONS += --opaque=hashmap_utils
-test-paper: OPTIONS += --no-code-duplication
-test-constants: OPTIONS += --no-code-duplication
-# Possible to add `OPTIONS += --no-code-duplication` if we use the optimized MIR
-test-matches:
-test-external: OPTIONS += --no-code-duplication
-test-matches_duplicate:
-test-arrays:
-test-arrays_const_generics:
-test-traits:
-test-traits_special:
-test-closures:
-test-bitwise:
-test-demo:
+tests: charon-tests
 
 # =============================================================================
 # The tests.
-# We use the NOT_ALL_TESTS variable to switch between the full test suite and a
-# smaller one.
 # =============================================================================
 
+#  List the `.rs` files in `src/`
+RUST_SRCS = $(wildcard src/*.rs)
+# We test all rust files except this one.
+RUST_SRCS := $(filter-out src/hashmap_utils.rs, $(RUST_SRCS))
+
+# This depends on `llbc/<file>.llbc` for each `src/<file>.rs` we care about
+.PHONY: charon-tests
+charon-tests: $(subst src/,$(DEST)/llbc/,$(patsubst %.rs,%.llbc,$(RUST_SRCS)))
+
+$(DEST)/llbc/hashmap_main.llbc: OPTIONS += --opaque=hashmap_utils
+$(DEST)/llbc/nested_borrows.llbc: OPTIONS += --no-code-duplication
+$(DEST)/llbc/no_nested_borrows.llbc: OPTIONS += --no-code-duplication
+$(DEST)/llbc/paper.llbc: OPTIONS += --no-code-duplication
+$(DEST)/llbc/constants.llbc: OPTIONS += --no-code-duplication
+$(DEST)/llbc/external.llbc: OPTIONS += --no-code-duplication
+$(DEST)/llbc/polonius_list.llbc: OPTIONS += --polonius
+
+$(DEST)/llbc/%.llbc: format
+	$(CHARON) --no-cargo --input src/$*.rs --crate $* $(OPTIONS) --dest $(DEST)/llbc
+
 .PHONY: test-%
-test-%: CHARON_CMD = $(CHARON) --no-cargo --input src/$*.rs --crate $* $(OPTIONS)
-test-%: build
+test-%: $(DEST)/llbc/%.llbc
+	@true
 
 .PHONY: clean
 clean:
-	rm -f $(DEST)/llbc/* \
-	rm -f $(DEST)/ullbc/* \
-	rm -f $(DEST)/llbc_prom/* \
-	rm -f $(DEST)/llbc_opt/*
-
-ifeq (, $(NOT_ALL_TESTS))
-
-test-%:
-	$(CHARON_CMD) --dest $(DEST)/llbc
-#	$(CHARON_CMD) --dest $(DEST)/ullbc --ullbc
-# TODO: this fails for now (it seems some closures are turned into globals,
-# and I don't know how to handle them).
-#	$(CHARON_CMD) --dest $(DEST)/llbc_prom --mir_promoted
-# TODO: this fails for now (there is some very low-level desugaring happening)
-#	$(CHARON_CMD) --dest $(DEST)/llbc_opt --mir_optimized
-
-else
-
-test-%:
-	$(CHARON_CMD) --dest $(DEST)/llbc
-
-endif
+	rm -rf target/
+	rm -f $(DEST)/llbc/*

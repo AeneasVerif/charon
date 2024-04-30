@@ -1,5 +1,5 @@
 [package]
-name = "tests"
+name = "betree"
 version = "0.1.0"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2018"

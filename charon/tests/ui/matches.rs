@@ -5,9 +5,7 @@ pub enum E1 {
     V2,
     V3,
 }
-
-/// Testing matches where several branches are "fused".
-/// We attempt to detect this when the option `--no-code-duplication` is activated,
+/// Testing matches where several branches are "fused". We attempt to detect this when the option `--no-code-duplication` is activated,
 /// so as not to fail because the same block of code is duplicated, but it can be tricky
 /// because depending on the MIR pass we take as input, some intermediate blocks may be
 /// in the control flow or not.
@@ -39,4 +37,34 @@ pub fn test1(x: E1) -> bool {
         E1::V1 | E1::V2 => true,
         E1::V3 => false,
     }
+}
+
+pub fn id<T>(x: T) -> T {
+    x
+}
+
+pub enum E2 {
+    V1(u32),
+    V2(u32),
+    V3,
+}
+
+/// Testing matches where several branches are "fused".
+/// The following leads to code-duplication (we must thus deactivate
+/// code-duplication detection).
+pub fn test2(x: E2) -> u32 {
+    match x {
+        E2::V1(n) | E2::V2(n) => n,
+        E2::V3 => 0,
+    }
+}
+
+/// Similar to test2
+pub fn test3(x: E2) -> u32 {
+    let y = match x {
+        E2::V1(n) | E2::V2(n) => n,
+        E2::V3 => 0,
+    };
+    let z = id(3);
+    return y + z;
 }

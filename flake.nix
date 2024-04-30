@@ -64,38 +64,37 @@
         # Check rust files are correctly formatted.
         charon-check-fmt = craneLib.cargoFmt craneArgs;
 
-        tests =
-          let cargoArtifacts = craneLib.buildDepsOnly { src = ./tests; };
-          in craneLib.buildPackage {
-            name = "tests";
+        tests = pkgs.runCommand "charon-tests" {
             src = ./tests;
-            inherit cargoArtifacts;
-            buildPhase = ''
-              # Run the tests for Charon
-              DEST=$out CHARON="${charon}/bin/charon" make charon-tests
-            '';
-            doCheck = false;
-            dontInstall = true;
-          };
-
-        tests-polonius = let
-          cargoArtifacts =
-            craneLib.buildDepsOnly { src = ./tests-polonius; };
-        in craneLib.buildPackage {
-          name = "tests-polonius";
-          src = ./tests-polonius;
-          inherit cargoArtifacts;
-          # We deactivate the tests performed with Cargo (`cargo test`) as
-          # they will fail because we need Polonius
-          doCheck = false;
-          buildPhase = ''
+            buildInputs = [ rustToolchain charon ];
+          } ''
+            cp -r $src tests
+            cd tests
             # Run the tests for Charon
-            DEST=$out CHARON="${charon}/bin/charon" make charon-tests
-
-            # Nix doesn't run the cargo tests, so run them by hand
-            make cargo-tests
+            DEST=$out CHARON="charon" make charon-tests
           '';
-          dontInstall = true;
+
+        # A utility that extracts the llbc of a crate using charon. This uses
+        # `crane` to handle dependencies and toolchain management.
+        extractCrateWithCharon = { name, src, charonFlags ? "", craneExtraArgs ? {} }:
+          craneLib.buildPackage ({
+            inherit src name;
+            cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
+            buildPhase = ''
+              ${charon}/bin/charon ${charonFlags} --dest $out/llbc
+            '';
+            dontInstall = true;
+          } // craneExtraArgs);
+
+        tests-polonius = extractCrateWithCharon {
+          name = "betree";
+          # FIXME: rename the directory eventually
+          src = ./tests-polonius;
+          charonFlags = "--polonius --opaque=betree_utils --crate betree_main";
+          craneExtraArgs.checkPhaseCargoCommand = ''
+            cargo rustc -- --test -Zpolonius
+            ./target/debug/betree
+          '';
         };
 
         # Runs charon on the whole rustc ui test suite. This returns the tests
@@ -265,5 +264,10 @@
           ];
         };
         checks = { inherit tests tests-polonius charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
+
+        # Export this function so that users of charon can use it in nix. This
+        # fits in none of the standard flake output categories hace why it is
+        # exported directly like that.
+        inherit extractCrateWithCharon;
       });
 }
