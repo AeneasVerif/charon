@@ -1,6 +1,5 @@
 use crate::common::*;
 use crate::formatter::{AstFormatter, Formatter, IntoFormatter};
-use crate::gast::*;
 use crate::graphs::*;
 use crate::translate_ctx::TransCtx;
 use crate::types::*;

@@ -33,41 +33,30 @@ extern crate rustc_span;
 extern crate rustc_target;
 
 #[macro_use]
+pub mod ids;
+#[macro_use]
 pub mod logger;
 pub mod assumed;
+pub mod ast;
 pub mod cli_options;
 pub mod common;
 pub mod deps_errors;
 pub mod driver;
 pub mod export;
-pub mod expressions;
-pub mod expressions_utils;
 pub mod formatter;
-pub mod gast;
-pub mod gast_utils;
 pub mod get_mir;
 pub mod graphs;
-#[macro_use]
-pub mod ids;
-pub mod llbc_ast;
-pub mod llbc_ast_utils;
-pub mod meta;
-pub mod meta_utils;
-pub mod names;
-pub mod names_utils;
 pub mod reorder_decls;
 pub mod transform;
-pub mod translate_constants;
-pub mod translate_crate_to_ullbc;
-pub mod translate_ctx;
-pub mod translate_functions_to_ullbc;
-pub mod translate_predicates;
-pub mod translate_traits;
-pub mod translate_types;
-pub mod types;
-pub mod types_utils;
-pub mod ullbc_ast;
-pub mod ullbc_ast_utils;
+pub mod translate;
 pub mod ullbc_to_llbc;
-pub mod values;
-pub mod values_utils;
+
+// Re-export all the ast modules so we can keep the old import structure.
+pub use ast::{
+    expressions, expressions_utils, gast, gast_utils, llbc_ast, llbc_ast_utils, meta, meta_utils,
+    names, names_utils, types, types_utils, ullbc_ast, ullbc_ast_utils, values, values_utils,
+};
+pub use translate::{
+    translate_constants, translate_crate_to_ullbc, translate_ctx, translate_functions_to_ullbc,
+    translate_predicates, translate_traits, translate_types,
+};
