@@ -170,8 +170,15 @@ fn process(options: &CliOpts) -> Result<(), i32> {
             cmd.arg("cargo");
         }
 
-        cmd.env("RUSTC_WORKSPACE_WRAPPER", driver_path);
         cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
+        // Tell cargo to use the driver for all the crates in the workspace. There's no option for
+        // "run only on the selected crate" so the driver might be called on a crate dependency
+        // within the workspace. The driver will detect that case and run rustc normally then.
+        cmd.env("RUSTC_WORKSPACE_WRAPPER", driver_path);
+        // Tell the driver that we're being called by cargo.
+        cmd.env("CHARON_USING_CARGO", "1");
+        // Make sure we don't inherit this variable from the outside. Cargo sets this itself.
+        cmd.env_remove("CARGO_PRIMARY_PACKAGE");
 
         // Compute the arguments of the command to call cargo
         //let cargo_subcommand = "build";

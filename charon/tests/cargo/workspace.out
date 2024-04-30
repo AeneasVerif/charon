@@ -1,0 +1,23 @@
+# Final LLBC before serialization:
+
+fn crate1::random_number() -> u32
+{
+    let @0: u32; // return
+
+    @0 := const (4 : u32)
+    return
+}
+
+fn crate2::extra_random_number() -> u32
+{
+    let @0: u32; // return
+    let @1: u32; // anonymous local
+
+    @1 := crate1::random_number()
+    @0 := move (@1) + const (1 : u32)
+    drop @1
+    return
+}
+
+
+

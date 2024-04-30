@@ -6,6 +6,7 @@ charon/target
 charon/attributes/target
 charon/macros/target
 charon/tests/cargo/dependencies/target
+charon/tests/cargo/workspace/target
 tests/target
 tests-polonius/target
 

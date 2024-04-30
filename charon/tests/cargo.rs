@@ -16,14 +16,24 @@ struct Case {
     dir: PathBuf,
     /// Path of the output pretty-llbc file.
     expected: PathBuf,
+    /// Extra arguments to pass to charon.
+    charon_args: Vec<String>,
 }
 
 fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
+    // Clean the cargo cache to avoid caching issues.
+    Command::new("cargo")
+        .arg("clean")
+        .current_dir(&test_case.dir)
+        .status()?;
     // Call charon
     let mut cmd = Command::cargo_bin("charon")?;
     cmd.current_dir(&test_case.dir);
     cmd.arg("--print-llbc");
     cmd.arg("--no-serialize");
+    for arg in &test_case.charon_args {
+        cmd.arg(arg);
+    }
     let output = cmd.output()?;
 
     if output.status.success() {
@@ -46,16 +56,25 @@ fn cargo() -> Result<(), Box<dyn Error>> {
     };
 
     let root: PathBuf = TESTS_DIR.into();
-    let tests = vec![Test {
-        name: "dependencies".to_owned(),
+    let mktest = |name: &str, dir: PathBuf, charon_args: &[String]| Test {
+        name: name.to_owned(),
         kind: "".into(),
         is_ignored: false,
         is_bench: false,
         data: Case {
-            dir: root.join("dependencies"),
-            expected: root.join("dependencies.out"),
+            dir,
+            expected: root.join(format!("{name}.out")),
+            charon_args: charon_args.to_vec(),
         },
-    }];
+    };
+    let tests = vec![
+        mktest("dependencies", root.join("dependencies"), &[]),
+        mktest(
+            "workspace",
+            root.join("workspace").join("crate2"),
+            &["--extract-opaque-bodies".to_owned()],
+        ),
+    ];
 
     let args = libtest_mimic::Arguments::from_args();
     libtest_mimic::run_tests(&args, tests, move |t| match perform_test(&t.data, action) {
