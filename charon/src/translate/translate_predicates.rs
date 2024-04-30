@@ -67,16 +67,6 @@ impl NonLocalTraitClause {
             generics: self.generics.clone(),
         })
     }
-
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        let clause_id = self.clause_id.fmt_with_ctx(ctx);
-        let trait_id = ctx.format_object(self.trait_id);
-        let generics = self.generics.fmt_with_ctx(ctx);
-        format!("[{clause_id}]: {trait_id}{generics}")
-    }
 }
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, EnumToGetters)]

@@ -1,5 +1,5 @@
 use crate::common::*;
-use crate::formatter::{AstFormatter, Formatter, IntoFormatter};
+use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::graphs::*;
 use crate::translate_ctx::TransCtx;
 use crate::types::*;
@@ -44,26 +44,6 @@ impl<Id: Copy> GDeclarationGroup<Id> {
         match self {
             NonRec(id) => vec![*id],
             Rec(ids) => ids.clone(),
-        }
-    }
-}
-
-impl<Id: Copy> GDeclarationGroup<Id> {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter + Formatter<Id>,
-    {
-        use GDeclarationGroup::*;
-        match self {
-            NonRec(id) => format!("Non rec: {}", ctx.format_object(*id)),
-            Rec(ids) => {
-                let ids = ids
-                    .iter()
-                    .map(|id| ctx.format_object(*id))
-                    .collect::<Vec<String>>()
-                    .join(", ");
-                format!("Rec: {}", ids)
-            }
         }
     }
 }
@@ -139,20 +119,6 @@ impl DeclarationGroup {
                 .join("\n")
         );
         DeclarationGroup::TraitImpl(GDeclarationGroup::NonRec(gr[0]))
-    }
-
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        use DeclarationGroup::*;
-        match self {
-            Type(g) => format!("Type decls group: {}", g.fmt_with_ctx(ctx)),
-            Fun(g) => format!("Fun decls group: {}", g.fmt_with_ctx(ctx)),
-            Global(g) => format!("Global decls group: {}", g.fmt_with_ctx(ctx)),
-            TraitDecl(g) => format!("Trait decls group: {}", g.fmt_with_ctx(ctx)),
-            TraitImpl(g) => format!("Trait impls group: {}", g.fmt_with_ctx(ctx)),
-        }
     }
 }
 

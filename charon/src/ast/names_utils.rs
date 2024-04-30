@@ -3,10 +3,8 @@
 //! For now, we have one function per object kind (type, trait, function,
 //! module): many of them could be factorized (will do).
 use crate::common::*;
-use crate::formatter::AstFormatter;
 use crate::names::*;
 use crate::translate_ctx::*;
-use crate::types::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::{Item, ItemKind};
@@ -19,77 +17,6 @@ impl PathElem {
             PathElem::Ident(s, d) => s == id && d.is_zero(),
             PathElem::Impl(_) => false,
         }
-    }
-
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        match self {
-            PathElem::Ident(s, d) => {
-                let d = if d.is_zero() {
-                    "".to_string()
-                } else {
-                    format!("#{}", d)
-                };
-                format!("{s}{d}")
-            }
-            PathElem::Impl(impl_elem) => impl_elem.fmt_with_ctx(ctx),
-        }
-    }
-}
-
-impl ImplElemKind {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        match self {
-            ImplElemKind::Ty(ty) => ty.fmt_with_ctx(ctx),
-            ImplElemKind::Trait(tr) => {
-                // We need to put the first type parameter aside: it is
-                // the type for which we implement the trait.
-                // This is not very clean because it's hard to move the
-                // first element out of a vector...
-                let TraitDeclRef { trait_id, generics } = tr;
-                let (ty, generics) = generics.pop_first_type_arg();
-                let tr = TraitDeclRef {
-                    trait_id: *trait_id,
-                    generics,
-                };
-                format!("impl {} for {}", tr.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
-            }
-        }
-    }
-}
-
-impl ImplElem {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        let d = if self.disambiguator.is_zero() {
-            "".to_string()
-        } else {
-            format!("#{}", self.disambiguator)
-        };
-        let ctx = ctx.set_generics(&self.generics);
-        // Just printing the generics (not the predicates)
-        format!("{{{}{d}}}", self.kind.fmt_with_ctx(&ctx),)
-    }
-}
-
-impl Name {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        let name = self
-            .name
-            .iter()
-            .map(|x| x.fmt_with_ctx(ctx))
-            .collect::<Vec<String>>();
-        name.join("::")
     }
 }
 

@@ -1,4 +1,4 @@
 thread 'rustc' panicked at 'Invalid trait decl group:
 test_crate::Trait1
-test_crate::Trait2', src/reorder_decls.rs:115:9
+test_crate::Trait2', src/reorder_decls.rs:95:9
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

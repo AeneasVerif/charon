@@ -2,6 +2,7 @@ use crate::common::TAB_INCR;
 use crate::gast;
 use crate::llbc_ast;
 use crate::llbc_ast::*;
+use crate::pretty::fmt_with_ctx;
 use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast as ast;
@@ -481,7 +482,7 @@ impl<'a> Formatter<&llbc_ast::Statement> for FmtCtx<'a> {
 
 impl<'a> Formatter<&ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>> for FmtCtx<'a> {
     fn format_object(&self, x: &ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>) -> String {
-        ullbc_ast::fmt_body_blocks_with_ctx(x, TAB_INCR, self)
+        fmt_with_ctx::fmt_body_blocks_with_ctx(x, TAB_INCR, self)
     }
 }
 

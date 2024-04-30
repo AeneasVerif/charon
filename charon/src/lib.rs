@@ -43,15 +43,16 @@ pub mod common;
 pub mod deps_errors;
 pub mod driver;
 pub mod export;
-pub mod formatter;
 pub mod get_mir;
 pub mod graphs;
+pub mod pretty;
 pub mod reorder_decls;
 pub mod transform;
 pub mod translate;
 pub mod ullbc_to_llbc;
 
 // Re-export all the ast modules so we can keep the old import structure.
+pub use crate::pretty::formatter;
 pub use ast::{
     expressions, expressions_utils, gast, gast_utils, llbc_ast, llbc_ast_utils, meta, meta_utils,
     names, names_utils, types, types_utils, ullbc_ast, ullbc_ast_utils, values, values_utils,
