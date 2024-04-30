@@ -1647,66 +1647,6 @@ impl std::string::ToString for Variant {
     }
 }
 
-impl FunDeclId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@Fun{self}")
-    }
-}
-
-impl TypeVarId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@T{self}")
-    }
-}
-
-impl TypeDeclId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@Adt{self}")
-    }
-}
-
-impl VariantId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@Variant{self}")
-    }
-}
-
-impl FieldId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@Field{self}")
-    }
-}
-
-impl ConstGenericVarId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@Const{self}")
-    }
-}
-
-impl GlobalDeclId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@Global{self}")
-    }
-}
-
-impl TraitClauseId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@TraitClause{self}")
-    }
-}
-
-impl TraitDeclId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@TraitDecl{self}")
-    }
-}
-
-impl TraitImplId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@TraitImpl{self}")
-    }
-}
-
 /// Format a function call.
 /// We return the pair: (function call, comment)
 pub fn fmt_call<C>(ctx: &C, call: &Call) -> (String, Option<String>)

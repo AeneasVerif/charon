@@ -3,12 +3,6 @@ use crate::types::*;
 use crate::values::*;
 use serde::{Serialize, Serializer};
 
-impl VarId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@{self}")
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum ScalarError {
     /// Attempt to use a signed scalar as an unsigned scalar or vice-versa
