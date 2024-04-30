@@ -26,10 +26,11 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.arg("--no-serialize");
     let output = cmd.output()?;
 
-    let stderr = String::from_utf8(output.stderr.clone())?;
     if output.status.success() {
-        compare_or_overwrite(action, stderr, &test_case.expected)?;
+        let stdout = String::from_utf8(output.stdout.clone())?;
+        compare_or_overwrite(action, stdout, &test_case.expected)?;
     } else {
+        let stderr = String::from_utf8(output.stderr.clone())?;
         bail!("Compilation failed: {stderr}")
     }
 

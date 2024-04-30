@@ -192,8 +192,9 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     }
     let output = cmd.output()?;
     let stderr = String::from_utf8(output.stderr.clone())?;
+    let stdout = String::from_utf8(output.stdout.clone())?;
 
-    match test_case.magic_comments.test_kind {
+    let test_output = match test_case.magic_comments.test_kind {
         TestKind::KnownPanic => {
             if output.status.code() != Some(101) {
                 let status = if output.status.success() {
@@ -203,6 +204,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 };
                 bail!("Compilation was expected to panic but instead {status}: {stderr}");
             }
+            stderr
         }
         TestKind::KnownFailure => {
             if output.status.success() || output.status.code() == Some(101) {
@@ -213,16 +215,18 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 };
                 bail!("Compilation was expected to fail but instead {status}: {stderr}");
             }
+            stderr
         }
         TestKind::PrettyLlbc => {
             if !output.status.success() {
                 bail!("Compilation failed: {stderr}")
             }
+            stdout
         }
         TestKind::Skip => unreachable!(),
-    }
+    };
     if test_case.magic_comments.check_output {
-        compare_or_overwrite(action, stderr, &test_case.expected)?;
+        compare_or_overwrite(action, test_output, &test_case.expected)?;
     } else {
         // Remove the `out` file if there's one from a previous run.
         if test_case.expected.exists() {

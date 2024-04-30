@@ -1,4 +1,3 @@
-   Compiling test-cargo-dependencies v0.1.0 (/home/nadrieril/wip/work/charon/charon/tests/cargo/dependencies)
 # Final LLBC before serialization:
 
 fn test_cargo_dependencies::silly_incr::closure(@1: (), @2: (u32)) -> u32
@@ -146,4 +145,3 @@ fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Sel
 
 
 
-    Finished release [optimized] target(s) in 0.05s
