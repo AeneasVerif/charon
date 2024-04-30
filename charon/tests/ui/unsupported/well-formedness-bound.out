@@ -12,12 +12,6 @@ error: Ignoring the following function due to an error: test_crate::get
 4 | |     &'a ():,
   | |____________^
 
-# Final LLBC before serialization:
-
-Unknown decl: 0
-
-
-
 error: aborting due to 2 previous errors
 
-[ ERROR charon_driver:180] The extraction encountered 2 errors
+[ ERROR charon_driver:192] The extraction encountered 2 errors

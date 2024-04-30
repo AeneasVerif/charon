@@ -126,6 +126,21 @@ impl Callbacks for CharonCallbacks {
     }
 }
 
+/// Dummy callbacks used to run the compiler normally when we shouldn't be analyzing the crate.
+pub struct RunCompilerNormallyCallbacks;
+impl Callbacks for RunCompilerNormallyCallbacks {}
+impl RunCompilerNormallyCallbacks {
+    /// Run rustc normally. `args` is the arguments passed to `rustc`'s command-line.
+    pub fn run_compiler(&mut self, mut args: Vec<String>) -> Result<(), ()> {
+        // Arguments list always start with the executable name. We put a silly value to ensure
+        // it's not used for anything.
+        args.insert(0, "__CHARON_MYSTERIOUS_FIRST_ARG__".to_string());
+        rustc_driver::RunCompiler::new(&args, self)
+            .run()
+            .map_err(|_| ())
+    }
+}
+
 /// If a command-line option matches `find_arg`, then apply the predicate `pred` on its value. If
 /// true, then return it. The parameter is assumed to be either `--arg=value` or `--arg value`.
 /// Rem.: this function comes from Clippy <https://github.com/rust-lang/rust-clippy/blob/42bdfa23d33041642a32950cb39ad92be501a18d/src/driver.rs#L30>.
@@ -355,7 +370,7 @@ pub fn translate(
         };
         trace!("# About to export:\n\n{}\n", llbc_ctx);
         if options.print_llbc {
-            eprintln!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
+            println!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
         }
 
         // Display an error report about the external dependencies, if necessary

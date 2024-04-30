@@ -17,6 +17,9 @@ use std::{
 use walkdir::{DirEntry, WalkDir};
 
 use charon_lib::cli_options::{CliOpts, CHARON_ARGS};
+use util::{compare_or_overwrite, Action};
+
+mod util;
 
 static TESTS_DIR: &str = "tests/ui";
 
@@ -132,12 +135,6 @@ fn setup_test(input_path: PathBuf) -> anyhow::Result<Test<Case>> {
     })
 }
 
-#[derive(Clone, Copy)]
-enum Action {
-    Verify,
-    Overwrite,
-}
-
 fn path_to_crate_name(path: &Path) -> Option<String> {
     Some(
         path.file_name()?
@@ -195,8 +192,9 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     }
     let output = cmd.output()?;
     let stderr = String::from_utf8(output.stderr.clone())?;
+    let stdout = String::from_utf8(output.stdout.clone())?;
 
-    match test_case.magic_comments.test_kind {
+    let test_output = match test_case.magic_comments.test_kind {
         TestKind::KnownPanic => {
             if output.status.code() != Some(101) {
                 let status = if output.status.success() {
@@ -206,6 +204,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 };
                 bail!("Compilation was expected to panic but instead {status}: {stderr}");
             }
+            stderr
         }
         TestKind::KnownFailure => {
             if output.status.success() || output.status.code() == Some(101) {
@@ -216,20 +215,18 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 };
                 bail!("Compilation was expected to fail but instead {status}: {stderr}");
             }
+            stderr
         }
         TestKind::PrettyLlbc => {
             if !output.status.success() {
                 bail!("Compilation failed: {stderr}")
             }
+            stdout
         }
         TestKind::Skip => unreachable!(),
-    }
+    };
     if test_case.magic_comments.check_output {
-        let actual = snapbox::Data::text(stderr).map_text(snapbox::utils::normalize_lines);
-        match action {
-            Action::Verify => expect_file_contents(&test_case.expected, actual)?,
-            Action::Overwrite => actual.write_to(&test_case.expected)?,
-        }
+        compare_or_overwrite(action, test_output, &test_case.expected)?;
     } else {
         // Remove the `out` file if there's one from a previous run.
         if test_case.expected.exists() {
@@ -238,29 +235,6 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     }
 
     Ok(())
-}
-
-/// Compare the file contents with the provided string and error ith a diff if they differ.
-fn expect_file_contents(path: &Path, actual: snapbox::Data) -> snapbox::Result<()> {
-    let expected = snapbox::Data::read_from(path, Some(snapbox::DataFormat::Text))?
-        .map_text(snapbox::utils::normalize_lines);
-
-    if expected != actual {
-        let mut buf = String::new();
-        let palette = snapbox::report::Palette::auto();
-        snapbox::report::write_diff(
-            &mut buf,
-            &expected,
-            &actual,
-            Some(&path.display()),
-            Some(&"charon output"),
-            palette,
-        )
-        .map_err(|e| e.to_string())?;
-        Err(buf.into())
-    } else {
-        Ok(())
-    }
 }
 
 #[test]
