@@ -57,8 +57,7 @@
             # Ensures `charon-driver` finds the dylibs correctly.
             install_name_tool -add_rpath "${rustToolchain}/lib" "$out/bin/charon-driver"
           '');
-          # Check the `ui_llbc` files are correct instead of overwriting them.
-          cargoTestCommand = "IN_CI=1 cargo test --profile release";
+          cargoTestCommand = "CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release";
         });
 
         # Check rust files are correctly formatted.
