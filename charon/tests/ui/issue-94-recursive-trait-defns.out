@@ -1,0 +1,17 @@
+# Final LLBC before serialization:
+
+trait test_crate::Trait1<Self>
+{
+    type T
+        where
+            [@TraitClause0]: test_crate::Trait2<Self::T>,
+            [@TraitClause1]: test_crate::Trait1<Self::T>,
+}
+
+trait test_crate::Trait2<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::Trait1<Self>
+}
+
+
+
