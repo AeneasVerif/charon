@@ -30,7 +30,8 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     let mut cmd = Command::cargo_bin("charon")?;
     cmd.current_dir(&test_case.dir);
     cmd.arg("--print-llbc");
-    cmd.arg("--no-serialize");
+    cmd.arg("--dest-file");
+    cmd.arg(test_case.expected.canonicalize()?.with_extension("llbc"));
     for arg in &test_case.charon_args {
         cmd.arg(arg);
     }

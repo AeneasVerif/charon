@@ -25,4 +25,4 @@ format:
 copy-tests:
 	mkdir -p tests/serialized
 	rm -f tests/serialized/*
-	cp ../tests/llbc/* tests/serialized
+	cp ../charon/tests/**/*.llbc tests/serialized

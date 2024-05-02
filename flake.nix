@@ -31,7 +31,8 @@
           src = ./charon;
           filter = path: type:
             (craneLib.filterCargoSources path type)
-              || (pkgs.lib.hasPrefix (toString ./charon/tests) path)
+              || (pkgs.lib.hasPrefix (toString ./charon/tests) path
+                  && !pkgs.lib.hasSuffix ".llbc" path)
               || (path == toString ./charon/rust-toolchain);
         };
         craneArgs = {
@@ -57,7 +58,12 @@
             # Ensures `charon-driver` finds the dylibs correctly.
             install_name_tool -add_rpath "${rustToolchain}/lib" "$out/bin/charon-driver"
           '');
-          cargoTestCommand = "CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release";
+          checkPhaseCargoCommand = ''
+            CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked
+            # While running tests we also outputted llbc files. We export them for charon-ml tests.
+            mkdir -p $out/tests-llbc
+            cp tests/**/*.llbc $out/tests-llbc
+          '';
         });
 
         # Check rust files are correctly formatted.
@@ -210,7 +216,7 @@
             OCAMLPARAM="_,warn-error=+A"; # Turn all warnings into errors.
             preCheck = if doCheck then ''
               mkdir -p tests/serialized
-              cp ${tests}/llbc/* tests/serialized
+              cp ${charon}/tests-llbc/* tests/serialized
             '' else
               "";
             propagatedBuildInputs = with ocamlPackages; [
