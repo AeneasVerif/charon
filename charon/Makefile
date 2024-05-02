@@ -19,3 +19,8 @@ test:
 doc:
 	cargo doc --no-deps -p macros --document-private-items
 	cargo doc --no-deps --document-private-items
+
+.PHONY: clean
+clean:
+	rm -rf target
+	rm -f tests/**/*.llbc

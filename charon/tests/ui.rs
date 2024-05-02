@@ -176,7 +176,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     // Call the charon driver.
     let mut options = test_case.magic_comments.cli_opts.clone();
     options.print_llbc = true;
-    options.no_serialize = true;
+    options.dest_file = Some(test_case.input_path.with_extension("llbc"));
     options.crate_name = Some("test_crate".into());
 
     let mut cmd = Command::cargo_bin("charon-driver")?;
