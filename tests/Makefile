@@ -39,6 +39,9 @@ INDIVIDUAL_LLBCS := $(subst src/,$(DEST)/llbc/,$(patsubst %.rs,%.llbc,$(INDIVIDU
 .PHONY: charon-tests
 charon-tests: $(INDIVIDUAL_LLBCS) $(DEST)/llbc/betree_main.llbc
 
+# Ensure we always rebuild the llbc files even when the rust file haven't changed.
+.PHONY: $(DEST)/llbc/%.llbc
+
 $(DEST)/llbc/hashmap_main.llbc: OPTIONS += --opaque=hashmap_utils
 $(DEST)/llbc/nested_borrows.llbc: OPTIONS += --no-code-duplication
 $(DEST)/llbc/no_nested_borrows.llbc: OPTIONS += --no-code-duplication
