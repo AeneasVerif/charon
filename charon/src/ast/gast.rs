@@ -10,12 +10,21 @@ use crate::types::*;
 pub use crate::types::{
     GenericArgs, GenericParams, TraitDeclId, TraitImplId, TraitInstanceId, TraitRef,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 generate_index_type!(FunDeclId, "Fun");
 
+/// For use when deserializing.
+fn dummy_def_id() -> rustc_hir::def_id::DefId {
+    use rustc_hir::def_id::*;
+    DefId {
+        krate: CrateNum::MAX,
+        index: DefIndex::MAX,
+    }
+}
+
 /// A variable
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Var {
     /// Unique index identifying the variable
     pub index: VarId::Id,
@@ -29,7 +38,7 @@ pub struct Var {
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GExprBody<T> {
     pub meta: Meta,
     /// The number of local variables used for the input arguments.
@@ -64,7 +73,7 @@ pub struct GExprBody<T> {
 ///   fn test(...) { ... } // regular
 /// }
 /// ```
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ItemKind {
     /// A "normal" function
     Regular,
@@ -87,10 +96,11 @@ pub enum ItemKind {
 }
 
 /// A function definition
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GFunDecl<T> {
     pub def_id: FunDeclId::Id,
     #[serde(skip)]
+    #[serde(default = "dummy_def_id")]
     pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
@@ -110,10 +120,11 @@ pub struct GFunDecl<T> {
 }
 
 /// A global variable definition, either opaque or transparent.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GGlobalDecl<T> {
     pub def_id: GlobalDeclId::Id,
     #[serde(skip)]
+    #[serde(default = "dummy_def_id")]
     pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
@@ -129,7 +140,7 @@ pub struct GGlobalDecl<T> {
     pub body: Option<GExprBody<T>>,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TraitItemName(pub String);
 
 /// A trait **declaration**.
@@ -165,7 +176,7 @@ pub struct TraitItemName(pub String);
 /// Of course, this forbids other useful use cases such as visitors implemented
 /// by means of traits.
 #[allow(clippy::type_complexity)]
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId::Id,
     /// [true] if the decl is a local decl, [false] if it comes from
@@ -224,7 +235,7 @@ pub struct TraitDecl {
 ///   fn baz(...) { ... }
 /// }
 /// ```
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TraitImpl {
     pub def_id: TraitImplId::Id,
     /// [true] if the decl is a local decl, [false] if it comes from
@@ -253,7 +264,7 @@ pub struct TraitImpl {
 /// A function operand is used in function calls.
 /// It either designates a top-level function, or a place in case
 /// we are using function pointers stored in local variables.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum FnOperand {
     /// Regular case: call to a top-level function, trait method, etc.
     Regular(FnPtr),
@@ -261,7 +272,7 @@ pub enum FnOperand {
     Move(Place),
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Call {
     pub func: FnOperand,
     pub args: Vec<Operand>,
