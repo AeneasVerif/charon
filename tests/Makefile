@@ -8,9 +8,14 @@ IN_CI ?=
 .PHONY: all
 all: tests
 
+ifdef IN_CI
+# In CI, error if formatting is not done.
+format: RUSTFMT_FLAGS := --check
+endif
+
 .PHONY: format
 format:
-	rustfmt src/*.rs
+	rustfmt $(RUSTFMT_FLAGS) src/*.rs
 	cd src/betree && $(MAKE) format
 
 .PHONY: tests

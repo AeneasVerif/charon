@@ -9,9 +9,14 @@ all: build tests
 build: format
 	cargo rustc -- -Zpolonius
 
+ifdef IN_CI
+# In CI, error if formatting is not done.
+format: RUSTFMT_FLAGS := --check
+endif
+
 .PHONY: format
 format:
-	cargo fmt
+	cargo fmt $(RUSTFMT_FLAGS)
 
 .PHONY: test
 test:

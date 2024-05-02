@@ -246,7 +246,7 @@
         };
       in {
         packages = {
-          inherit charon charon-ml rustc-tests;
+          inherit charon charon-ml rustc-tests rustToolchain;
           default = charon;
         };
         devShells.default = pkgs.mkShell {
