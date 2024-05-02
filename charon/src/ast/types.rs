@@ -371,7 +371,6 @@ pub struct Variant {
     pub fields: FieldId::Vector<Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
     /// `SwitchInt` targets with the corresponding `Variant`.
-    #[serde(skip)]
     pub discriminant: ScalarValue,
 }
 
