@@ -63,16 +63,6 @@
         # Check rust files are correctly formatted.
         charon-check-fmt = craneLib.cargoFmt craneArgs;
 
-        tests = pkgs.runCommand "charon-tests" {
-            src = ./tests;
-            buildInputs = [ rustToolchain charon ];
-          } ''
-            cp -r $src tests
-            cd tests
-            # Run the tests for Charon
-            DEST=$out CHARON="charon" make charon-tests
-          '';
-
         # A utility that extracts the llbc of a crate using charon. This uses
         # `crane` to handle dependencies and toolchain management.
         extractCrateWithCharon = { name, src, charonFlags ? "", craneExtraArgs ? {} }:
@@ -85,16 +75,30 @@
             dontInstall = true;
           } // craneExtraArgs);
 
-        tests-polonius = extractCrateWithCharon {
+        # Build this test separately to manage cargo dependencies.
+        test-betree = extractCrateWithCharon {
           name = "betree";
-          # FIXME: rename the directory eventually
-          src = ./tests-polonius;
+          src = ./tests/src/betree;
           charonFlags = "--polonius --opaque=betree_utils --crate betree_main";
           craneExtraArgs.checkPhaseCargoCommand = ''
             cargo rustc -- --test -Zpolonius
             ./target/debug/betree
           '';
         };
+
+        tests = pkgs.runCommand "charon-tests" {
+            src = ./tests;
+            buildInputs = [ rustToolchain charon ];
+          } ''
+            # Copy the betree output file
+            mkdir -p $out/llbc
+            cp ${test-betree}/llbc/betree_main.llbc $out/llbc
+
+            cp -r $src tests
+            cd tests
+            # Run the tests for Charon
+            IN_CI=1 DEST=$out CHARON="charon" make charon-tests
+          '';
 
         # Runs charon on the whole rustc ui test suite. This returns the tests
         # directory with a bunch of `<file>.rs.charon-output` files that store
@@ -207,7 +211,6 @@
             preCheck = if doCheck then ''
               mkdir -p tests/serialized
               cp ${tests}/llbc/* tests/serialized
-              cp ${tests-polonius}/llbc/* tests/serialized
             '' else
               "";
             propagatedBuildInputs = with ocamlPackages; [
@@ -262,7 +265,7 @@
             self.packages.${system}.charon-ml
           ];
         };
-        checks = { inherit tests tests-polonius charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
+        checks = { inherit tests charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
 
         # Export this function so that users of charon can use it in nix. This
         # fits in none of the standard flake output categories hace why it is
