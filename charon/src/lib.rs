@@ -61,3 +61,6 @@ pub use translate::{
     translate_constants, translate_crate_to_ullbc, translate_ctx, translate_functions_to_ullbc,
     translate_predicates, translate_traits, translate_types,
 };
+
+/// The version of the crate, as defined in `Cargo.toml`.
+const VERSION: &str = env!("CARGO_PKG_VERSION");

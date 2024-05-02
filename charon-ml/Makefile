@@ -17,7 +17,8 @@ tests: build copy-tests
 # Reformat the code
 .PHONY: format
 format:
-	dune fmt
+	@# `dune fmt` returns false if it had to change code; we don't care about that.
+	dune fmt || true
 
 # WARNING: This requires the llbc-building tests to have been run. Prefer using
 # `make test` in the root directory.

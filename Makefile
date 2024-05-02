@@ -39,6 +39,15 @@ generate-rust-toolchain-%:
 	echo "# update rust-toolchain.template in the top directory." >> $(DIR)/rust-toolchain
 	cat rust-toolchain.template >> $(DIR)/rust-toolchain
 
+# Take the version written in `Cargo.toml` and export it to a ml variable, so
+# that charon-ml can error if it is ever given a llbc file with an incompatible
+# version.
+charon-ml/src/CharonVersion.ml: charon/Cargo.toml
+	echo '(* This is an automatically generated file, generated from `charon/Cargo.toml`. *)' > "$@"
+	echo '(* To re-generate this file, rune `make` in the root directory *)' >> "$@"
+	echo -n 'let supported_charon_version = ' >> "$@"
+	grep '^version =' charon/Cargo.toml | head -1 | sed 's/^version = \(".*"\)/\1/' >> "$@"
+
 # Build the project in release mode, after formatting the code
 .PHONY: build
 build: build-charon-rust build-charon-ml
@@ -62,11 +71,11 @@ build-dev-charon-rust: generate-rust-toolchain
 	cp -f charon/target/debug/charon-driver bin
 
 .PHONY: build-charon-ml
-build-charon-ml:
+build-charon-ml: charon-ml/src/CharonVersion.ml
 	cd charon-ml && $(MAKE)
 
 .PHONY: build-dev-charon-ml
-build-dev-charon-ml:
+build-dev-charon-ml: charon-ml/src/CharonVersion.ml
 	cd charon-ml && $(MAKE) build-dev
 
 # Build and run the tests

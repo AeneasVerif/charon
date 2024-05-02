@@ -14,6 +14,10 @@ use std::path::Path;
 #[derive(Serialize)]
 #[serde(rename = "Crate")]
 pub struct GCrateData<FD, GD> {
+    /// The version of charon currently being used. `charon-ml` inspects this and errors if it is
+    /// trying to read an incompatible version (for now we compare versions for equality).
+    pub charon_version: String,
+    /// Crate name.
     pub name: String,
     /// The `id_to_file` map is serialized as a vector.
     /// We use this map for the spans: the spans only store the file ids, not
@@ -56,6 +60,7 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
         let trait_decls = ctx.trait_decls.iter().cloned().collect();
         let trait_impls = ctx.trait_impls.iter().cloned().collect();
         GCrateData {
+            charon_version: crate::VERSION.to_owned(),
             name: crate_name,
             id_to_file,
             declarations,
