@@ -3,12 +3,6 @@ use crate::types::*;
 use crate::values::*;
 use serde::{Serialize, Serializer};
 
-impl VarId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@{self}")
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum ScalarError {
     /// Attempt to use a signed scalar as an unsigned scalar or vice-versa
@@ -231,35 +225,6 @@ impl ScalarValue {
             Err(ScalarError::OutOfBounds)
         } else {
             Ok(ScalarValue::from_unchecked_int(ty, v))
-        }
-    }
-}
-
-impl std::fmt::Display for ScalarValue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            ScalarValue::Isize(v) => write!(f, "{v} : isize"),
-            ScalarValue::I8(v) => write!(f, "{v} : i8"),
-            ScalarValue::I16(v) => write!(f, "{v} : i16"),
-            ScalarValue::I32(v) => write!(f, "{v} : i32"),
-            ScalarValue::I64(v) => write!(f, "{v} : i64"),
-            ScalarValue::I128(v) => write!(f, "{v} : i128"),
-            ScalarValue::Usize(v) => write!(f, "{v} : usize"),
-            ScalarValue::U8(v) => write!(f, "{v} : u8"),
-            ScalarValue::U16(v) => write!(f, "{v} : u16"),
-            ScalarValue::U32(v) => write!(f, "{v} : u32"),
-            ScalarValue::U64(v) => write!(f, "{v} : u64"),
-            ScalarValue::U128(v) => write!(f, "{v} : u128"),
-        }
-    }
-}
-
-impl std::fmt::Display for Literal {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            Literal::Scalar(v) => write!(f, "{v}"),
-            Literal::Bool(v) => write!(f, "{v}"),
-            Literal::Char(v) => write!(f, "{v}"),
         }
     }
 }

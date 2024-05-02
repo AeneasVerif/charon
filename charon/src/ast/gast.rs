@@ -12,7 +12,7 @@ pub use crate::types::{
 };
 use serde::Serialize;
 
-generate_index_type!(FunDeclId);
+generate_index_type!(FunDeclId, "Fun");
 
 /// A variable
 #[derive(Debug, Clone, Serialize)]

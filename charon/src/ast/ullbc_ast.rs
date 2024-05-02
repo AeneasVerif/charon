@@ -10,7 +10,7 @@ use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::Serialize;
 
 // Block identifier. Similar to rust's `BasicBlock`.
-generate_index_type!(BlockId);
+generate_index_type!(BlockId, "Block");
 
 // The entry block of a function is always the block with id 0
 pub static START_BLOCK_ID: BlockId::Id = BlockId::ZERO;
