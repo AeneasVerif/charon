@@ -22,7 +22,7 @@ fn test_crate::add_u32(@1: u32, @2: u32) -> u32
 
     @3 := copy (x@1)
     @4 := copy (y@2)
-    @0 := copy (@3) + copy (@4)
+    @0 := move (@3) + move (@4)
     drop @4
     drop @3
     return
@@ -38,7 +38,7 @@ fn test_crate::subs_u32(@1: u32, @2: u32) -> u32
 
     @3 := copy (x@1)
     @4 := copy (y@2)
-    @0 := copy (@3) - copy (@4)
+    @0 := move (@3) - move (@4)
     drop @4
     drop @3
     return
@@ -98,7 +98,7 @@ fn test_crate::mul_u32(@1: u32, @2: u32) -> u32
 
     @3 := copy (x@1)
     @4 := copy (y@2)
-    @0 := copy (@3) * copy (@4)
+    @0 := move (@3) * move (@4)
     drop @4
     drop @3
     return
@@ -114,7 +114,7 @@ fn test_crate::add_i32(@1: i32, @2: i32) -> i32
 
     @3 := copy (x@1)
     @4 := copy (y@2)
-    @0 := copy (@3) + copy (@4)
+    @0 := move (@3) + move (@4)
     drop @4
     drop @3
     return
@@ -130,7 +130,7 @@ fn test_crate::subs_i32(@1: i32, @2: i32) -> i32
 
     @3 := copy (x@1)
     @4 := copy (y@2)
-    @0 := copy (@3) - copy (@4)
+    @0 := move (@3) - move (@4)
     drop @4
     drop @3
     return
@@ -190,7 +190,7 @@ fn test_crate::mul_i32(@1: i32, @2: i32) -> i32
 
     @3 := copy (x@1)
     @4 := copy (y@2)
-    @0 := copy (@3) * copy (@4)
+    @0 := move (@3) * move (@4)
     drop @4
     drop @3
     return
@@ -223,7 +223,7 @@ fn test_crate::mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
 
     @7 := copy (x@1)
     @8 := copy (y@2)
-    @6 := copy (@7) + copy (@8)
+    @6 := move (@7) + move (@8)
     drop @8
     drop @7
     @10 := copy (x@1)
@@ -231,7 +231,7 @@ fn test_crate::mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
     @9 := move (@10) / move (@11)
     drop @11
     drop @10
-    @5 := copy (@6) * copy (@9)
+    @5 := move (@6) * move (@9)
     drop @9
     drop @6
     @13 := copy (x@1)
@@ -240,19 +240,19 @@ fn test_crate::mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
     @14 := move (@15) % move (@16)
     drop @16
     drop @15
-    @12 := copy (@13) - copy (@14)
+    @12 := move (@13) - move (@14)
     drop @14
     drop @13
-    @4 := copy (@5) + copy (@12)
+    @4 := move (@5) + move (@12)
     drop @12
     drop @5
     @19 := copy (x@1)
     @20 := copy (y@2)
-    @18 := copy (@19) + copy (@20)
+    @18 := move (@19) + move (@20)
     drop @20
     drop @19
     @21 := copy (z@3)
-    @17 := copy (@18) + copy (@21)
+    @17 := move (@18) + move (@21)
     drop @21
     drop @18
     @0 := move (@4) % move (@17)
@@ -288,7 +288,7 @@ fn test_crate::mix_arith_i32(@1: i32, @2: i32, @3: i32) -> i32
 
     @7 := copy (x@1)
     @8 := copy (y@2)
-    @6 := copy (@7) + copy (@8)
+    @6 := move (@7) + move (@8)
     drop @8
     drop @7
     @10 := copy (x@1)
@@ -296,7 +296,7 @@ fn test_crate::mix_arith_i32(@1: i32, @2: i32, @3: i32) -> i32
     @9 := move (@10) / move (@11)
     drop @11
     drop @10
-    @5 := copy (@6) * copy (@9)
+    @5 := move (@6) * move (@9)
     drop @9
     drop @6
     @13 := copy (x@1)
@@ -305,19 +305,19 @@ fn test_crate::mix_arith_i32(@1: i32, @2: i32, @3: i32) -> i32
     @14 := move (@15) % move (@16)
     drop @16
     drop @15
-    @12 := copy (@13) - copy (@14)
+    @12 := move (@13) - move (@14)
     drop @14
     drop @13
-    @4 := copy (@5) + copy (@12)
+    @4 := move (@5) + move (@12)
     drop @12
     drop @5
     @19 := copy (x@1)
     @20 := copy (y@2)
-    @18 := copy (@19) + copy (@20)
+    @18 := move (@19) + move (@20)
     drop @20
     drop @19
     @21 := copy (z@3)
-    @17 := copy (@18) + copy (@21)
+    @17 := move (@18) + move (@21)
     drop @21
     drop @18
     @0 := move (@4) % move (@17)

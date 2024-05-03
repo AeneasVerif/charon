@@ -20,7 +20,10 @@ doc:
 	cargo doc --no-deps -p macros --document-private-items
 	cargo doc --no-deps --document-private-items
 
-.PHONY: clean
-clean:
-	rm -rf target
+.PHONY: clean-generated
+clean-generated:
 	rm -f tests/**/*.llbc
+
+.PHONY: clean
+clean: clean-generated
+	rm -rf target

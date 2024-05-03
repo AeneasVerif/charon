@@ -98,7 +98,7 @@ fn test_crate::test3(@1: test_crate::E2) -> u32
     @fake_read(z@4)
     @5 := copy (y@2)
     @6 := copy (z@4)
-    @0 := copy (@5) + copy (@6)
+    @0 := move (@5) + move (@6)
     drop @6
     drop @5
     drop z@4

@@ -45,14 +45,14 @@ jobs:
     if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
     runs-on: [self-hosted, linux, nix]
     steps:
-      - run: nix build -L github:aeneasverif/aeneas --override-input charon github:aeneasverif/charon/${{ github.ref }}
+      - run: nix build -L github:aeneasverif/aeneas --override-input charon github:aeneasverif/charon/${{ github.sha }}
 
   eurydice:
     needs: [check_if_skip_duplicate_job, nix]
     if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
     runs-on: [self-hosted, linux, nix]
     steps:
-      - run: nix build -L github:aeneasverif/eurydice --override-input charon github:aeneasverif/charon/${{ github.ref }}
+      - run: nix build -L github:aeneasverif/eurydice --override-input charon github:aeneasverif/charon/${{ github.sha }}
 
   kyber:
     needs: [check_if_skip_duplicate_job, eurydice]
@@ -72,8 +72,8 @@ jobs:
           path: eurydice
       - name: setup
         run: |
-          nix build github:aeneasverif/charon/${{ github.ref }} -o charon
-          nix build ./eurydice -o eurydice/result --override-input charon github:aeneasverif/charon/${{ github.ref }}
+          nix build github:aeneasverif/charon/${{ github.sha }} -o charon
+          nix build ./eurydice -o eurydice/result --override-input charon github:aeneasverif/charon/${{ github.sha }}
           ln -s $(pwd)/eurydice/result/bin/eurydice $(pwd)/eurydice/eurydice
           nix build github:hacl-star/hacl-nix#fstar -o fstar
           nix build github:hacl-star/hacl-nix#karamel.home -o karamel
@@ -82,4 +82,4 @@ jobs:
           echo FSTAR_HOME=$(pwd)/fstar >> $GITHUB_ENV
           echo KRML_HOME=$(pwd)/karamel >> $GITHUB_ENV
       - name: build kyber
-        run: nix develop github:aeneasverif/charon/${{ github.ref }} --command bash kyber-crate.sh
+        run: nix develop github:aeneasverif/charon/${{ github.sha }} --command bash kyber-crate.sh

@@ -24,7 +24,7 @@
           overlays = [ (import rust-overlay) ];
         };
 
-        rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.template;
+        rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
         cleanedUpSrc = pkgs.lib.cleanSourceWith {
@@ -32,11 +32,15 @@
           filter = path: type:
             (craneLib.filterCargoSources path type)
               || (pkgs.lib.hasPrefix (toString ./charon/tests) path
-                  && !pkgs.lib.hasSuffix ".llbc" path)
-              || (path == toString ./charon/rust-toolchain);
+                  && !pkgs.lib.hasSuffix ".llbc" path);
         };
         craneArgs = {
-          src = cleanedUpSrc;
+          # Copy the `rust-toolchain` file because charon reads it at build time.
+          src = pkgs.runCommand "charon-clean-src" {} ''
+            mkdir $out
+            cp -r ${cleanedUpSrc}/* $out/
+            cp ${./rust-toolchain} $out/rust-toolchain
+          '';
           RUSTFLAGS="-D warnings"; # Turn all warnings into errors.
         };
 
@@ -73,7 +77,11 @@
         # `crane` to handle dependencies and toolchain management.
         extractCrateWithCharon = { name, src, charonFlags ? "", craneExtraArgs ? {} }:
           craneLib.buildPackage ({
-            inherit src name;
+            inherit name;
+            src = pkgs.lib.cleanSourceWith {
+              inherit src;
+              filter = path: type: (craneLib.filterCargoSources path type);
+            };
             cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
             buildPhase = ''
               ${charon}/bin/charon ${charonFlags} --dest $out/llbc

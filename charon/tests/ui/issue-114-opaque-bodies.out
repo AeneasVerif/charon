@@ -38,15 +38,15 @@ fn test_crate::use_inlines() -> u32
 
     @3 := issue_114_opaque_bodies_aux::inline_always()
     @4 := issue_114_opaque_bodies_aux::inline_sometimes()
-    @2 := copy (@3) + copy (@4)
+    @2 := move (@3) + move (@4)
     drop @4
     drop @3
     @5 := issue_114_opaque_bodies_aux::inline_never()
-    @1 := copy (@2) + copy (@5)
+    @1 := move (@2) + move (@5)
     drop @5
     drop @2
     @6 := issue_114_opaque_bodies_aux::inline_generic<bool>()
-    @0 := copy (@1) + copy (@6)
+    @0 := move (@1) + move (@6)
     drop @6
     drop @1
     return

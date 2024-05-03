@@ -843,14 +843,14 @@ fn test_crate::index_all() -> u32
     @12 := copy (x@1)
     @11 := test_crate::index_array(move (@12))
     drop @12
-    @8 := copy (@9) + copy (@11)
+    @8 := move (@9) + move (@11)
     drop @11
     drop @9
     @15 := &x@1
     @14 := &*(@15)
     @13 := test_crate::index_array_borrow(move (@14))
     drop @14
-    @7 := copy (@8) + copy (@13)
+    @7 := move (@8) + move (@13)
     drop @13
     drop @8
     @19 := &x@1
@@ -859,7 +859,7 @@ fn test_crate::index_all() -> u32
     drop @18
     @16 := test_crate::index_slice_u32_0(move (@17))
     drop @17
-    @6 := copy (@7) + copy (@16)
+    @6 := move (@7) + move (@16)
     drop @16
     drop @7
     @23 := &mut x@1
@@ -868,7 +868,7 @@ fn test_crate::index_all() -> u32
     drop @22
     @20 := test_crate::index_mut_slice_u32_0(move (@21))
     drop @21
-    @0 := copy (@6) + copy (@20)
+    @0 := move (@6) + move (@20)
     drop @20
     drop @6
     drop x@1
@@ -1140,17 +1140,17 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         @15 := &*(s@1)
         @16 := @SliceIndexShared<'_, u32>(move (@15), copy (@11))
         @10 := copy (*(@16))
-        sum@2 := copy (sum@2) + copy (@10)
+        sum@2 := copy (sum@2) + move (@10)
         drop @10
         drop @11
         i@3 := copy (i@3) + const (1 : usize)
-        @14 := ()
-        @5 := move (@14)
+        @13 := ()
+        @5 := move (@13)
         drop @6
         continue 0
     }
-    @13 := ()
-    @4 := move (@13)
+    @14 := ()
+    @4 := move (@14)
     drop @12
     drop @6
     drop @4
@@ -1239,10 +1239,10 @@ fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u
             @27 := &*(s2@2)
             @28 := @SliceIndexShared<'_, u32>(move (@27), copy (@22))
             @21 := copy (*(@28))
-            @18 := copy (@19) + copy (@21)
+            @18 := move (@19) + move (@21)
             drop @21
             drop @19
-            sum@3 := copy (sum@3) + copy (@18)
+            sum@3 := copy (sum@3) + move (@18)
             drop @18
             drop @22
             drop @20
@@ -1529,13 +1529,13 @@ fn test_crate::zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
         *(@14) := const (0 : u8)
         drop @9
         i@2 := copy (i@2) + const (1 : usize)
-        @12 := ()
-        @5 := move (@12)
+        @11 := ()
+        @5 := move (@11)
         drop @6
         continue 0
     }
-    @11 := ()
-    @0 := move (@11)
+    @12 := ()
+    @0 := move (@12)
     drop @10
     drop @6
     drop len@3
@@ -1635,17 +1635,17 @@ fn test_crate::sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
         @15 := &*(a@1)
         @16 := @SliceIndexShared<'_, u32>(move (@15), copy (@11))
         @10 := copy (*(@16))
-        s@3 := copy (s@3) + copy (@10)
+        s@3 := copy (s@3) + move (@10)
         drop @10
         drop @11
         i@2 := copy (i@2) + const (1 : usize)
-        @14 := ()
-        @5 := move (@14)
+        @13 := ()
+        @5 := move (@13)
         drop @6
         continue 0
     }
-    @13 := ()
-    @4 := move (@13)
+    @14 := ()
+    @4 := move (@14)
     drop @12
     drop @6
     drop @4
