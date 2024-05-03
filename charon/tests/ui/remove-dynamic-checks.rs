@@ -86,13 +86,27 @@ fn shr(x: u32, y: u32) -> u32 {
     x >> y
 }
 
-/* Checking the simplification of binop operations *inside* global constants.
+// Checking the simplification of binop operations *inside* global constants.
+// Even in release mode, rustc inserts additional checks inside constant bodies.
+pub const _: isize = 1 + 1;
+pub const _: isize = 1 - 1;
+pub const _: isize = -1;
+pub const _: isize = 2 * 2;
+pub const _: isize = 2 >> 2;
+pub const _: isize = 2 << 2;
+pub const _: isize = 2 % 2;
+pub const _: isize = 2 / 2;
 
-   In release mode, the Rust compiler inserts additional checks inside constant
-   bodies.
-*/
-pub const CONST0: usize = 1 + 1;
-pub const CONST1: usize = 2 * 2;
+// When the operand is a bare const it sometimes gets inlined, which trips up our simplification
+// pass. I used `u32` here because other types use a `cast` and thus aren't inlined.
+pub const FOO: u32 = 10;
+pub const _: u32 = 1 + FOO;
+pub const _: u32 = 1 - FOO;
+pub const _: u32 = 2 * FOO;
+pub const _: u32 = 2 >> FOO;
+pub const _: u32 = 2 << FOO;
+pub const _: u32 = 2 % FOO;
+pub const _: u32 = 2 / FOO;
 
 fn div_signed_with_constant() -> i32 {
     const FOO: i32 = 42;

@@ -371,23 +371,147 @@ fn test_crate::shr(@1: u32, @2: u32) -> u32
     return
 }
 
-global test_crate::CONST0  {
-    let @0: usize; // return
-    let @1: (usize, bool); // anonymous local
+global test_crate::_  {
+    let @0: isize; // return
+    let @1: (isize, bool); // anonymous local
 
-    @1 := const (1 : usize) checked.+ const (1 : usize)
+    @1 := const (1 : isize) checked.+ const (1 : isize)
     assert(move ((@1).1) == false)
     @0 := move ((@1).0)
     return
 }
 
-global test_crate::CONST1  {
-    let @0: usize; // return
-    let @1: (usize, bool); // anonymous local
+global test_crate::_#1  {
+    let @0: isize; // return
+    let @1: (isize, bool); // anonymous local
 
-    @1 := const (2 : usize) checked.* const (2 : usize)
+    @1 := const (1 : isize) checked.- const (1 : isize)
     assert(move ((@1).1) == false)
     @0 := move ((@1).0)
+    return
+}
+
+global test_crate::_#2  {
+    let @0: isize; // return
+
+    @0 := const (-1 : isize)
+    return
+}
+
+global test_crate::_#3  {
+    let @0: isize; // return
+    let @1: (isize, bool); // anonymous local
+
+    @1 := const (2 : isize) checked.* const (2 : isize)
+    assert(move ((@1).1) == false)
+    @0 := move ((@1).0)
+    return
+}
+
+global test_crate::_#4  {
+    let @0: isize; // return
+
+    @0 := const (2 : isize) >> const (2 : i32)
+    return
+}
+
+global test_crate::_#5  {
+    let @0: isize; // return
+
+    @0 := const (2 : isize) << const (2 : i32)
+    return
+}
+
+global test_crate::_#6  {
+    let @0: isize; // return
+
+    @0 := const (2 : isize) % const (2 : isize)
+    return
+}
+
+global test_crate::_#7  {
+    let @0: isize; // return
+
+    @0 := const (2 : isize) / const (2 : isize)
+    return
+}
+
+global test_crate::FOO  {
+    let @0: u32; // return
+
+    @0 := const (10 : u32)
+    return
+}
+
+global test_crate::_#8  {
+    let @0: u32; // return
+    let @1: (u32, bool); // anonymous local
+    let @2: u32; // anonymous local
+
+    @2 := test_crate::FOO
+    @1 := const (1 : u32) checked.+ move (@2)
+    assert(move ((@1).1) == false)
+    @0 := move ((@1).0)
+    return
+}
+
+global test_crate::_#9  {
+    let @0: u32; // return
+    let @1: (u32, bool); // anonymous local
+    let @2: u32; // anonymous local
+
+    @2 := test_crate::FOO
+    @1 := const (1 : u32) checked.- move (@2)
+    assert(move ((@1).1) == false)
+    @0 := move ((@1).0)
+    return
+}
+
+global test_crate::_#10  {
+    let @0: u32; // return
+    let @1: (u32, bool); // anonymous local
+    let @2: u32; // anonymous local
+
+    @2 := test_crate::FOO
+    @1 := const (2 : u32) checked.* move (@2)
+    assert(move ((@1).1) == false)
+    @0 := move ((@1).0)
+    return
+}
+
+global test_crate::_#11  {
+    let @0: u32; // return
+    let @1: u32; // anonymous local
+
+    @1 := test_crate::FOO
+    @0 := const (2 : u32) >> move (@1)
+    return
+}
+
+global test_crate::_#12  {
+    let @0: u32; // return
+    let @1: u32; // anonymous local
+
+    @1 := test_crate::FOO
+    @0 := const (2 : u32) << move (@1)
+    return
+}
+
+global test_crate::_#13  {
+    let @0: u32; // return
+    let @1: u32; // anonymous local
+
+    @1 := test_crate::FOO
+    @0 := const (2 : u32) % move (@1)
+    return
+}
+
+global test_crate::_#14  {
+    let @0: u32; // return
+    let @1: u32; // anonymous local
+
+    @1 := test_crate::FOO
+    @0 := const (2 : u32) / move (@1)
     return
 }
 

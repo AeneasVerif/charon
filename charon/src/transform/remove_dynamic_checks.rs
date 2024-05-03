@@ -70,9 +70,9 @@ fn remove_dynamic_checks(ctx: &mut TransCtx, block: &mut BlockData) {
             rest
         }
 
-        // Overflow checks for left shift. They look like:
+        // Overflow checks for right/left shift. They can look like:
         //   x := ...;
-        //   b := copy x < const 32; // or another constant
+        //   b := move x < const 32; // or another constant
         //   assert(move b == true);
         [rest @ .., Statement {
             content: RawStatement::Assign(x, _),
@@ -81,10 +81,21 @@ fn remove_dynamic_checks(ctx: &mut TransCtx, block: &mut BlockData) {
             content:
                 RawStatement::Assign(
                     has_overflow,
-                    Rvalue::BinaryOp(BinOp::Lt, Operand::Copy(lt_op2), Operand::Const(..)),
+                    Rvalue::BinaryOp(BinOp::Lt, Operand::Move(lt_op2), Operand::Const(..)),
                 ),
             ..
         }] if lt_op2 == x && cond == has_overflow && *expected == true => rest,
+        // They can also look like:
+        //   b := const c < const 32; // or another constant
+        //   assert(move b == true);
+        [rest @ .., Statement {
+            content:
+                RawStatement::Assign(
+                    has_overflow,
+                    Rvalue::BinaryOp(BinOp::Lt, Operand::Const(..), Operand::Const(..)),
+                ),
+            ..
+        }] if cond == has_overflow && *expected == true => rest,
 
         // Overflow checks for addition/subtraction/multiplication. They look like:
         //   r := x checked.+ y;
@@ -109,10 +120,12 @@ fn remove_dynamic_checks(ctx: &mut TransCtx, block: &mut BlockData) {
             // This can happen for the dynamic checks we don't handle, corresponding to the
             // `rustc_middle::mir::AssertKind` variants `ResumedAfterReturn`, `ResumedAfterPanic`
             // and `MisalignedPointerDereference`.
+            let fmt_ctx = ctx.into_fmt();
+            let msg = format!("Found an `assert` we don't recognize:\n{}", block.fmt_with_ctx("", &fmt_ctx));
             register_error_or_panic!(
                 ctx,
                 block.terminator.meta.span,
-                format!("Found an `assert` we don't recognize: {block:?}")
+                msg
             );
             return
         }
