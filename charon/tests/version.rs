@@ -1,5 +1,6 @@
 //! Detect breaking changes to the llbc format. We commit the output of charon run on an example
-//! file, and if this file changes we make sure the version of charon also changed.
+//! file, and if this file changes we make sure the version of charon also changed. This is
+//! best-effort, it will have false positives and negatives.
 use assert_cmd::prelude::CommandCargoExt;
 use serde::Deserialize;
 use serde_json::Value;
@@ -43,14 +44,18 @@ fn check_version() -> anyhow::Result<()> {
     // Compare the generated file against the stored one.
     let generated_crate_data = read_crate_data(&tmp_file_path)?;
     let expected_crate_data = read_crate_data(&output_file)?;
+    let force_update = std::env::var("FORCE_UPDATE_VERSION_TEST").is_ok();
     if generated_crate_data != expected_crate_data {
-        if generated_crate_data.charon_version == expected_crate_data.charon_version {
-            // Not the this can also happen if the input file changed. In that case the update must
-            // be done manually, or it's easy to cheat with version numbers.
-            anyhow::bail!("The llbc file format appears to have changed, yet the crate version was not updated. Please update the crate version in `Cargo.toml`.")
-        } else {
-            // The crate version was changed; update the committed file output.
+        if generated_crate_data.charon_version != expected_crate_data.charon_version || force_update
+        {
+            // The crate version was changed (or we forced the update); update the committed file output.
             std::fs::rename(tmp_file_path, output_file)?;
+        } else {
+            // Note that this can also happen if the input file changed. In that case the update
+            // must be done manually.
+            anyhow::bail!("The llbc file format appears to have changed, yet the crate version was not updated. \
+                Please update the crate version in `Cargo.toml` \
+                or call `FORCE_UPDATE_VERSION_TEST=1 cargo test --test version`.")
         }
     }
     Ok(())
