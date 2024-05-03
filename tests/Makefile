@@ -67,8 +67,11 @@ endif
 test-%: $(DEST)/llbc/%.llbc
 	@true
 
-.PHONY: clean
-clean:
-	rm -rf target/
+.PHONY: clean-generated
+clean-generated:
 	rm -rf $(DEST)/llbc
+
+.PHONY: clean
+clean: clean-generated
+	rm -rf target/
 	cd src/betree && $(MAKE) clean

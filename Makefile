@@ -117,7 +117,12 @@ charon-tests-regular:
 	cd tests && $(MAKE) charon-tests
 	echo "# Finished the regular tests"
 
-.PHONY: clean
+.PHONY: clean-generated
+clean-generated:
+	cd charon && make clean-generated
+	cd tests && make clean-generated
+
+.PHONY: clean-generated
 clean:
 	cd charon/attributes && cargo clean
 	cd charon && cargo clean
