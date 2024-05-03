@@ -63,6 +63,8 @@ let literal_to_string (c : print_config) (l : literal) : string =
           raise (Failure "TODO")
       | TkPretty -> "'" ^ String.make 1 x ^ "'"
       | TkName -> String.make 1 x)
+  | LStr s -> "\"" ^ s ^ "\""
+  | LByteStr bs -> "[" ^ String.concat ", " (List.map string_of_int bs) ^ "]"
 
 let region_var_to_string (c : print_config) (v : var option) : string =
   match c.tgt with
@@ -772,6 +774,8 @@ let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
   | VScalar sv -> LInt sv.value
   | VBool v -> LBool v
   | VChar v -> LChar v
+  | VStr v -> LStr v
+  | VByteStr v -> LByteStr v
 
 let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (c : to_pat_config)
     (n : T.name) (generics : generic_args option) : pattern =

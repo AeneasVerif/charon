@@ -751,7 +751,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             current_trait_decl_id = self
                                 .translate_trait_decl_id(
                                     span,
-                                    DefId::from(&predicate.trait_ref.def_id),
+                                    DefId::from(&predicate.value.trait_ref.def_id),
                                 )?
                                 .unwrap();
                         }
@@ -768,7 +768,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             current_trait_decl_id = self
                                 .translate_trait_decl_id(
                                     span,
-                                    DefId::from(&predicate.trait_ref.def_id),
+                                    DefId::from(&predicate.value.trait_ref.def_id),
                                 )?
                                 .unwrap();
                         }

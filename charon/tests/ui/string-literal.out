@@ -1,0 +1,66 @@
+# Final LLBC before serialization:
+
+global test_crate::FOO  {
+    let @0: &'_ (Str); // return
+
+    @0 := const ("hello")
+    return
+}
+
+global test_crate::BAR  {
+    let @0: &'_ (Slice<u8>); // return
+    let @1: &'_ (Array<u8, 5 : usize>); // anonymous local
+    let @2: &'_ (Array<u8, 5 : usize>); // anonymous local
+    let @3: Array<u8, 5 : usize>; // anonymous local
+    let @4: &'_ (Array<u8, 5 : usize>); // anonymous local
+
+    @3 := const ([104, 101, 108, 108, 111])
+    @4 := &@3
+    @2 := move (@4)
+    @1 := &*(@2)
+    @0 := @ArrayToSliceShared<'_, u8, 5 : usize>(move (@1))
+    drop @2
+    drop @1
+    return
+}
+
+opaque type alloc::string::String
+
+trait alloc::string::ToString<Self>
+{
+    fn to_string : alloc::string::ToString::to_string
+}
+
+fn alloc::string::{impl alloc::string::ToString for Str#47}::to_string<'_0>(@1: &'_0 (Str)) -> alloc::string::String
+
+impl alloc::string::{impl alloc::string::ToString for Str#47} : alloc::string::ToString<Str>
+{
+    fn to_string = alloc::string::{impl alloc::string::ToString for Str#47}::to_string
+}
+
+fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let _s@1: alloc::string::String; // local
+    let @2: &'_ (Str); // anonymous local
+    let @3: &'_ (Str); // anonymous local
+    let @4: (); // anonymous local
+
+    @3 := const ("Hello")
+    @2 := &*(@3)
+    _s@1 := alloc::string::{impl alloc::string::ToString for Str#47}::to_string(move (@2))
+    drop @2
+    @fake_read(_s@1)
+    drop @3
+    @4 := ()
+    @0 := move (@4)
+    drop _s@1
+    drop _s@1
+    @0 := ()
+    return
+}
+
+
+
