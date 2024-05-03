@@ -5,7 +5,7 @@ pub use crate::types_utils::*;
 use crate::values::{Literal, ScalarValue};
 use derivative::Derivative;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 pub type FieldName = String;
 
@@ -25,7 +25,7 @@ generate_index_type!(GlobalDeclId, "Global");
 /// Type variable.
 /// We make sure not to mix variables and type variables by having two distinct
 /// definitions.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TypeVar {
     /// Unique index identifying the variable
     pub index: TypeVarId::Id,
@@ -34,7 +34,7 @@ pub struct TypeVar {
 }
 
 /// Region variable.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash, PartialOrd, Ord)]
 pub struct RegionVar {
     /// Unique index identifying the variable
     pub index: RegionId::Id,
@@ -43,7 +43,7 @@ pub struct RegionVar {
 }
 
 /// Const Generic Variable
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ConstGenericVar {
     /// Unique index identifying the variable
     pub index: ConstGenericVarId::Id,
@@ -53,14 +53,25 @@ pub struct ConstGenericVar {
     pub ty: LiteralTy,
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct DeBruijnId {
     pub index: usize,
 }
 
 #[derive(
-    Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, EnumIsA, EnumAsGetters, Serialize,
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    EnumIsA,
+    EnumAsGetters,
+    Serialize,
+    Deserialize,
 )]
 pub enum Region {
     /// Static region
@@ -101,7 +112,7 @@ pub enum Region {
 /// definition. Note that every path designated by [TraitInstanceId] refers
 /// to a *trait instance*, which is why the [Clause] variant may seem redundant
 /// with some of the other variants.
-#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub enum TraitInstanceId {
     ///
     /// A specific implementation
@@ -221,7 +232,7 @@ pub enum TraitInstanceId {
 }
 
 /// A reference to a trait
-#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct TraitRef {
     pub trait_id: TraitInstanceId,
     pub generics: GenericArgs,
@@ -237,14 +248,14 @@ pub struct TraitRef {
 /// ```
 ///
 /// The substitution is: `[String, bool]`.
-#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct TraitDeclRef {
     pub trait_id: TraitDeclId::Id,
     pub generics: GenericArgs,
 }
 
 /// .0 outlives .1
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct OutlivesPred<T, U>(pub T, pub U);
 
 pub type RegionOutlives = OutlivesPred<Region, Region>;
@@ -257,7 +268,7 @@ pub type TypeOutlives = OutlivesPred<Ty, Region>;
 /// T : Foo<S = String>
 ///         ^^^^^^^^^^
 /// ```
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TraitTypeConstraint {
     pub trait_ref: TraitRef,
     pub type_name: TraitItemName,
@@ -265,7 +276,7 @@ pub struct TraitTypeConstraint {
 }
 
 /// The predicates which apply to a definition
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Predicates {
     /// The first region in the pair outlives the second region
     pub regions_outlive: Vec<RegionOutlives>,
@@ -275,7 +286,7 @@ pub struct Predicates {
     pub trait_type_constraints: Vec<TraitTypeConstraint>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd)]
 pub struct GenericArgs {
     pub regions: Vec<Region>,
     pub types: Vec<Ty>,
@@ -291,7 +302,7 @@ pub struct GenericArgs {
 /// be filled. We group in a different place the predicates which are not
 /// trait clauses, because those enforce constraints but do not need to
 /// be filled with witnesses/instances.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GenericParams {
     pub regions: RegionId::Vector<RegionVar>,
     pub types: TypeVarId::Vector<TypeVar>,
@@ -307,7 +318,7 @@ generate_index_type!(TraitClauseId, "TraitClause");
 generate_index_type!(TraitDeclId, "TraitDecl");
 generate_index_type!(TraitImplId, "TraitImpl");
 
-#[derive(Debug, Clone, Serialize, Derivative)]
+#[derive(Debug, Clone, Serialize, Deserialize, Derivative)]
 #[derivative(PartialEq)]
 pub struct TraitClause {
     /// We use this id when solving trait constraints, to be able to refer
@@ -336,7 +347,7 @@ impl Eq for TraitClause {}
 ///
 /// A type can only be an ADT (structure or enumeration), as type aliases are
 /// inlined in MIR.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TypeDecl {
     pub def_id: TypeDeclId::Id,
     /// Meta information associated with the type.
@@ -351,7 +362,7 @@ pub struct TypeDecl {
     pub kind: TypeDeclKind,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize)]
 pub enum TypeDeclKind {
     Struct(FieldId::Vector<Field>),
     Enum(VariantId::Vector<Variant>),
@@ -364,18 +375,17 @@ pub enum TypeDeclKind {
     Error(String),
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Variant {
     pub meta: Meta,
     pub name: String,
     pub fields: FieldId::Vector<Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
     /// `SwitchInt` targets with the corresponding `Variant`.
-    #[serde(skip)]
     pub discriminant: ScalarValue,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Field {
     pub meta: Meta,
     pub name: Option<String>,
@@ -383,7 +393,18 @@ pub struct Field {
 }
 
 #[derive(
-    Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize, Hash, Ord, PartialOrd,
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    EnumIsA,
+    VariantName,
+    Serialize,
+    Deserialize,
+    Hash,
+    Ord,
+    PartialOrd,
 )]
 pub enum IntegerTy {
     Isize,
@@ -401,7 +422,18 @@ pub enum IntegerTy {
 }
 
 #[derive(
-    Debug, PartialEq, Eq, Clone, Copy, Hash, VariantName, EnumIsA, Serialize, Ord, PartialOrd,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Copy,
+    Hash,
+    VariantName,
+    EnumIsA,
+    Serialize,
+    Deserialize,
+    Ord,
+    PartialOrd,
 )]
 pub enum RefKind {
     Mut,
@@ -421,6 +453,7 @@ pub enum RefKind {
     EnumAsGetters,
     EnumIsA,
     Serialize,
+    Deserialize,
     Hash,
     Ord,
     PartialOrd,
@@ -456,6 +489,7 @@ pub type TypeDecls = TypeDeclId::Map<TypeDecl>;
     EnumAsGetters,
     VariantIndexArity,
     Serialize,
+    Deserialize,
     Hash,
     Ord,
     PartialOrd,
@@ -477,6 +511,7 @@ pub enum LiteralTy {
     EnumAsGetters,
     VariantIndexArity,
     Serialize,
+    Deserialize,
     Hash,
     Ord,
     PartialOrd,
@@ -503,6 +538,7 @@ pub enum ConstGeneric {
     EnumToGetters,
     VariantIndexArity,
     Serialize,
+    Deserialize,
     Ord,
     PartialOrd,
 )]
@@ -574,6 +610,7 @@ pub enum Ty {
     EnumAsGetters,
     VariantName,
     Serialize,
+    Deserialize,
     Hash,
     Ord,
     PartialOrd,
@@ -636,7 +673,7 @@ pub enum AssumedTy {
 /// outer block. For this reason, when we need to store the information about
 /// the generics of the outer block(s), we need to do it only for one level
 /// (this definitely makes things simpler).
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ParamsInfo {
     pub num_region_params: usize,
     pub num_type_params: usize,
@@ -647,7 +684,7 @@ pub struct ParamsInfo {
     pub num_trait_type_constraints: usize,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ClosureKind {
     Fn,
     FnMut,
@@ -656,7 +693,7 @@ pub enum ClosureKind {
 
 /// Additional information for closures.
 /// We mostly use it in micro-passes like [crate::update_closure_signature].
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClosureInfo {
     pub kind: ClosureKind,
     /// Contains the types of the fields in the closure state.
@@ -674,7 +711,7 @@ pub struct ClosureInfo {
 }
 
 /// A function signature.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FunSig {
     /// Is the function unsafe or not
     pub is_unsafe: bool,

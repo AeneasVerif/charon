@@ -455,11 +455,18 @@ let variant_of_json (id_to_file : id_to_file_map) (js : json) :
     (variant, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("meta", meta); ("name", name); ("fields", fields) ] ->
+    | `Assoc
+        [
+          ("meta", meta);
+          ("name", name);
+          ("fields", fields);
+          ("discriminant", discriminant);
+        ] ->
         let* meta = meta_of_json id_to_file meta in
         let* name = string_of_json name in
         let* fields = list_of_json (field_of_json id_to_file) fields in
-        Ok { meta; variant_name = name; fields }
+        let* discriminant = scalar_value_of_json discriminant in
+        Ok { meta; variant_name = name; fields; discriminant }
     | _ -> Error "")
 
 let type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :

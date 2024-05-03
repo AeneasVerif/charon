@@ -13,20 +13,20 @@ use crate::types::*;
 pub use crate::ullbc_ast::{Call, FunDeclId, GlobalDeclId, Var};
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Asserts are special constructs introduced by Rust to perform dynamic
 /// checks, to detect out-of-bounds accesses or divisions by zero for
 /// instance. We eliminate the assertions in [crate::remove_dynamic_checks],
 /// then introduce other dynamic checks in [crate::reconstruct_asserts].
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Assert {
     pub cond: Operand,
     pub expected: bool,
 }
 
 /// A raw statement: a statement without meta data.
-#[derive(Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize)]
+#[derive(Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize)]
 pub enum RawStatement {
     Assign(Place, Rvalue),
     FakeRead(Place),
@@ -60,14 +60,22 @@ pub enum RawStatement {
     Loop(Box<Statement>),
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Statement {
     pub meta: Meta,
     pub content: RawStatement,
 }
 
 #[derive(
-    Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, VariantName, VariantIndexArity,
+    Debug,
+    Clone,
+    EnumIsA,
+    EnumToGetters,
+    EnumAsGetters,
+    Serialize,
+    Deserialize,
+    VariantName,
+    VariantIndexArity,
 )]
 pub enum Switch {
     /// Gives the `if` block and the `else` block

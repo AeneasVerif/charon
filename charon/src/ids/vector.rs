@@ -8,7 +8,7 @@
 //! This makes the clone operation almost a no-op.
 
 use index_vec::{Idx, IdxSliceIndex, IndexVec};
-use serde::{Serialize, Serializer};
+use serde::{Deserialize, Serialize, Serializer};
 use std::{
     iter::{FromIterator, IntoIterator},
     ops::{Index, IndexMut},
@@ -154,5 +154,16 @@ impl<I: Idx, T: Serialize> Serialize for Vector<I, T> {
         S: Serializer,
     {
         self.vector.serialize(serializer)
+    }
+}
+
+impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for Vector<I, T> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        Ok(Self {
+            vector: Deserialize::deserialize(deserializer)?,
+        })
     }
 }

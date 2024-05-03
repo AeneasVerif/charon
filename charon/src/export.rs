@@ -5,13 +5,13 @@ use crate::translate_ctx::*;
 use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDecl, TraitImpl};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::path::Path;
 
 /// The data of a generic crate. We serialize this to pass it to `charon-ml`, so this must be as
 /// stable as possible. This is used for both ULLBC and LLBC.
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename = "Crate")]
 pub struct GCrateData<FD, GD> {
     /// The version of charon currently being used. `charon-ml` inspects this and errors if it is
@@ -29,7 +29,7 @@ pub struct GCrateData<FD, GD> {
     pub globals: Vec<GD>,
     pub trait_decls: Vec<TraitDecl>,
     pub trait_impls: Vec<TraitImpl>,
-    #[serde(skip_serializing)]
+    #[serde(skip)]
     /// If there were errors, this contains only a partial description of the input crate.
     pub has_errors: bool,
 }

@@ -7,7 +7,7 @@ use crate::types::*;
 pub use crate::ullbc_ast_utils::*;
 use crate::values::*;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 // Block identifier. Similar to rust's `BasicBlock`.
 generate_index_type!(BlockId, "Block");
@@ -27,7 +27,7 @@ pub type TraitDecls = TraitDeclId::Map<TraitDecl>;
 pub type TraitImpls = TraitImplId::Map<TraitImpl>;
 
 /// A raw statement: a statement without meta data.
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize, Deserialize)]
 pub enum RawStatement {
     Assign(Place, Rvalue),
     FakeRead(Place),
@@ -38,13 +38,15 @@ pub enum RawStatement {
     Deinit(Place),
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Statement {
     pub meta: Meta,
     pub content: RawStatement,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Serialize)]
+#[derive(
+    Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Serialize, Deserialize,
+)]
 pub enum SwitchTargets {
     /// Gives the `if` block and the `else` block
     If(BlockId::Id, BlockId::Id),
@@ -55,7 +57,7 @@ pub enum SwitchTargets {
 }
 
 /// A raw terminator: a terminator without meta data.
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize)]
 pub enum RawTerminator {
     Goto {
         target: BlockId::Id,
@@ -86,13 +88,13 @@ pub enum RawTerminator {
     },
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Terminator {
     pub meta: Meta,
     pub content: RawTerminator,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlockData {
     pub statements: Vec<Statement>,
     pub terminator: Terminator,
