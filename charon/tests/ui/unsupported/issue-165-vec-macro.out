@@ -1,0 +1,11 @@
+error: Nullary operations are not supported
+ --> tests/ui/unsupported/issue-165-vec-macro.rs:3:14
+  |
+3 |     let _v = vec![1];
+  |              ^^^^^^^
+  |
+  = note: this error originates in the macro `vec` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: aborting due to previous error
+
+[ ERROR charon_driver:200] The extraction encountered 1 errors
