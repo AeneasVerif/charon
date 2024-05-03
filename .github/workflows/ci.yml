@@ -40,6 +40,13 @@ jobs:
       - run: nix build -L .#charon-ml
       - run: nix flake check -L
 
+  aeneas:
+    needs: [check_if_skip_duplicate_job, nix]
+    if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      - run: nix build -L github:aeneasverif/aeneas --override-input charon github:aeneasverif/charon/${{ github.ref }}
+
   eurydice:
     needs: [check_if_skip_duplicate_job, nix]
     if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
