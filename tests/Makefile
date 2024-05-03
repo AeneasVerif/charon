@@ -39,9 +39,6 @@ INDIVIDUAL_LLBCS := $(subst src/,$(DEST)/llbc/,$(patsubst %.rs,%.llbc,$(INDIVIDU
 .PHONY: charon-tests
 charon-tests: $(INDIVIDUAL_LLBCS) $(DEST)/llbc/betree_main.llbc
 
-# Ensure we always rebuild the llbc files even when the rust file haven't changed.
-.PHONY: $(DEST)/llbc/%.llbc
-
 $(DEST)/llbc/hashmap_main.llbc: OPTIONS += --opaque=hashmap_utils
 $(DEST)/llbc/nested_borrows.llbc: OPTIONS += --no-code-duplication
 $(DEST)/llbc/no_nested_borrows.llbc: OPTIONS += --no-code-duplication
@@ -58,7 +55,7 @@ ifndef IN_CI
 # Special rule for the whole-crate test.
 # Possible to add `--no-code-duplication` if we use the optimized MIR
 $(DEST)/llbc/betree_main.llbc: OPTIONS += --polonius --opaque=betree_utils --crate betree_main
-$(DEST)/llbc/betree_main.llbc:
+$(DEST)/llbc/betree_main.llbc: format
 	cd src/betree && $(CHARON) $(OPTIONS) --dest $(DEST)/llbc
 else
 $(DEST)/llbc/betree_main.llbc:
