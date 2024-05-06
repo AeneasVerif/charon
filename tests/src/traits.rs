@@ -339,7 +339,3 @@ pub fn use_foo1<T: Trait, U>() -> Result<T, i32> {
 pub fn use_foo2<T, U: Trait>() -> Result<U, i32> {
     Foo::<U, T>::FOO
 }
-
-/* Example of mutually recursive traits */
-trait T1<T: T2<Self>>: Sized {}
-trait T2<T: T1<Self>>: Sized {}
