@@ -2,6 +2,7 @@ pub mod index_to_function_calls;
 pub mod insert_assign_return_unit;
 pub mod ops_to_function_calls;
 pub mod reconstruct_asserts;
+pub mod remove_arithmetic_overflow_checks;
 pub mod remove_drop_never;
 pub mod remove_dynamic_checks;
 pub mod remove_nops;

@@ -100,8 +100,8 @@ fn remove_dynamic_checks(ctx: &mut TransCtx, block: &mut BlockData) {
         // Overflow checks for addition/subtraction/multiplication. They look like:
         //   r := x checked.+ y;
         //   assert(move r.1 == false);
-        // They only happen in constants because we compile with `-C opt-level=3`. They're tricky
-        // to remove so we leave them for now.
+        // They only happen in constants because we compile with `-C opt-level=3`. They span two
+        // blocks so we remove them in a later pass.
         [.., Statement {
             content:
                 RawStatement::Assign(result, Rvalue::BinaryOp(BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul, ..)),
@@ -112,7 +112,8 @@ fn remove_dynamic_checks(ctx: &mut TransCtx, block: &mut BlockData) {
             && p_id.index() == 1
             && *expected == false =>
         {
-            // We leave this assert intact.
+            // We leave this assert intact; it will be silplified in
+            // [`remove_arithmetic_overflow_checks`].
             return
         }
 
