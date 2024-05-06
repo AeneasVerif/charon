@@ -1,0 +1,74 @@
+# Final LLBC before serialization:
+
+trait test_crate::Trait1<Self>
+{
+    type T
+        where
+            [@TraitClause0]: test_crate::Trait2<Self::T>,
+            [@TraitClause1]: test_crate::Trait1<Self::T>,
+}
+
+trait test_crate::Trait2<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::Trait1<Self>
+}
+
+trait test_crate::T1<Self, T>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::T2<T, Self>
+}
+
+trait test_crate::T2<Self, T>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::T1<T, Self>
+}
+
+trait test_crate::T3<Self>
+{
+    type T
+        where
+            [@TraitClause0]: test_crate::T5<Self::T>,
+}
+
+trait test_crate::T5<Self>
+{
+    type T
+        where
+            [@TraitClause0]: test_crate::T4<Self::T>,
+            [@TraitClause1]: test_crate::T3<Self::T>,
+}
+
+trait test_crate::T4<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::T3<Self>
+}
+
+trait test_crate::T6<Self, T>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::T7<T>
+    fn f : test_crate::T6::f
+}
+
+trait test_crate::T7<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::T6<Self, Self>
+    fn g : test_crate::T7::g
+}
+
+fn test_crate::T7::g<Self>(@1: u64)
+
+fn test_crate::T6::f<Self, T>(@1: u64)
+{
+    let @0: (); // return
+    let x@1: u64; // arg #1
+    let @2: u64; // anonymous local
+
+    @2 := copy (x@1)
+    @0 := (parents(Self)::[@TraitClause0])::g(move (@2))
+    drop @2
+    @0 := ()
+    return
+}
+
+
+

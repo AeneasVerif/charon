@@ -1312,12 +1312,9 @@ let global_declaration_group_of_json (js : json) :
      | RecGroup _ -> Error "got mutually dependent globals")
 
 let trait_declaration_group_of_json (js : json) :
-    (TraitDeclId.id, string) result =
+    (trait_declaration_group, string) result =
   combine_error_msgs js __FUNCTION__
-    (let* decl = g_declaration_group_of_json TraitDeclId.id_of_json js in
-     match decl with
-     | NonRecGroup id -> Ok id
-     | RecGroup _ -> Error "got mutually dependent trait decls")
+    (g_declaration_group_of_json TraitDeclId.id_of_json js)
 
 let trait_implementation_group_of_json (js : json) :
     (TraitImplId.id, string) result =

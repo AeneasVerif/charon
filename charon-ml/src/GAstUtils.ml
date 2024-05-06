@@ -46,7 +46,7 @@ let split_declarations (decls : declaration_group list) :
     type_declaration_group list
     * fun_declaration_group list
     * GlobalDeclId.id list
-    * TraitDeclId.id list
+    * trait_declaration_group list
     * TraitImplId.id list =
   let rec split decls =
     match decls with
@@ -74,7 +74,7 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
     type_declaration_group TypeDeclId.Map.t
     * fun_declaration_group FunDeclId.Map.t
     * GlobalDeclId.Set.t
-    * TraitDeclId.Set.t
+    * trait_declaration_group TraitDeclId.Map.t
     * TraitImplId.Set.t =
   let module G (M : Map.S) = struct
     let add_group (map : M.key g_declaration_group M.t)
@@ -96,6 +96,7 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
   let module FG = G (FunDeclId.Map) in
   let funs = FG.create_map funs in
   let globals = GlobalDeclId.Set.of_list globals in
-  let trait_decls = TraitDeclId.Set.of_list trait_decls in
+  let module TDG = G (TraitDeclId.Map) in
+  let trait_decls = TDG.create_map trait_decls in
   let trait_impls = TraitImplId.Set.of_list trait_impls in
   (types, funs, globals, trait_decls, trait_impls)
