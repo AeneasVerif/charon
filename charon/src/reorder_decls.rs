@@ -1,6 +1,5 @@
 use crate::common::*;
-use crate::formatter::{AstFormatter, Formatter, IntoFormatter};
-use crate::gast::*;
+use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::graphs::*;
 use crate::translate_ctx::TransCtx;
 use crate::types::*;
@@ -10,13 +9,13 @@ use linked_hash_set::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display, Error};
 use std::vec::Vec;
 
 /// A (group of) top-level declaration(s), properly reordered.
 /// "G" stands for "generic"
-#[derive(Debug, Clone, VariantIndexArity, VariantName, Serialize)]
+#[derive(Debug, Clone, VariantIndexArity, VariantName, Serialize, Deserialize)]
 pub enum GDeclarationGroup<Id> {
     /// A non-recursive declaration
     NonRec(Id),
@@ -25,7 +24,7 @@ pub enum GDeclarationGroup<Id> {
 }
 
 /// A (group of) top-level declaration(s), properly reordered.
-#[derive(Debug, Clone, VariantIndexArity, VariantName, Serialize)]
+#[derive(Debug, Clone, VariantIndexArity, VariantName, Serialize, Deserialize)]
 pub enum DeclarationGroup {
     /// A type declaration group
     Type(GDeclarationGroup<TypeDeclId::Id>),
@@ -45,26 +44,6 @@ impl<Id: Copy> GDeclarationGroup<Id> {
         match self {
             NonRec(id) => vec![*id],
             Rec(ids) => ids.clone(),
-        }
-    }
-}
-
-impl<Id: Copy> GDeclarationGroup<Id> {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter + Formatter<Id>,
-    {
-        use GDeclarationGroup::*;
-        match self {
-            NonRec(id) => format!("Non rec: {}", ctx.format_object(*id)),
-            Rec(ids) => {
-                let ids = ids
-                    .iter()
-                    .map(|id| ctx.format_object(*id))
-                    .collect::<Vec<String>>()
-                    .join(", ");
-                format!("Rec: {}", ids)
-            }
         }
     }
 }
@@ -135,20 +114,6 @@ impl DeclarationGroup {
                 .join("\n")
         );
         DeclarationGroup::TraitImpl(GDeclarationGroup::NonRec(gr[0]))
-    }
-
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        use DeclarationGroup::*;
-        match self {
-            Type(g) => format!("Type decls group: {}", g.fmt_with_ctx(ctx)),
-            Fun(g) => format!("Fun decls group: {}", g.fmt_with_ctx(ctx)),
-            Global(g) => format!("Global decls group: {}", g.fmt_with_ctx(ctx)),
-            TraitDecl(g) => format!("Trait decls group: {}", g.fmt_with_ctx(ctx)),
-            TraitImpl(g) => format!("Trait impls group: {}", g.fmt_with_ctx(ctx)),
-        }
     }
 }
 

@@ -149,9 +149,6 @@ fn process(options: &CliOpts) -> Result<(), i32> {
             cmd.arg(input_file);
         }
 
-        // The opt-level is set by default by cargo; some tests need it.
-        cmd.arg("-Copt-level=3");
-
         cmd.spawn()
             .expect("could not run charon-driver")
             .wait()
@@ -193,11 +190,6 @@ fn process(options: &CliOpts) -> Result<(), i32> {
             cmd.arg("--bin");
             cmd.arg(options.bin.as_ref().unwrap().clone());
         }
-
-        // Always compile in release mode: in effect, we want to analyze the released
-        // code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
-        // have to clean.
-        cmd.arg("--release");
 
         cmd.spawn()
             .expect("could not run cargo")

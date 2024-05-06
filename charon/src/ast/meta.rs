@@ -2,7 +2,7 @@
 
 pub use crate::meta_utils::*;
 use macros::{EnumAsGetters, EnumIsA};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 generate_index_type!(LocalFileId);
 generate_index_type!(VirtualFileId);
@@ -12,7 +12,18 @@ pub mod FileId {
     use crate::meta::*;
 
     #[derive(
-        Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, EnumIsA, EnumAsGetters, Serialize,
+        Debug,
+        Clone,
+        Copy,
+        Hash,
+        PartialEq,
+        Eq,
+        PartialOrd,
+        Ord,
+        EnumIsA,
+        EnumAsGetters,
+        Serialize,
+        Deserialize,
     )]
     pub enum Id {
         LocalId(LocalFileId::Id),
@@ -20,7 +31,7 @@ pub mod FileId {
     }
 }
 
-#[derive(Debug, Copy, Clone, Serialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Loc {
     /// The (1-based) line number.
     pub line: usize,
@@ -28,8 +39,13 @@ pub struct Loc {
     pub col: usize,
 }
 
+/// For use when deserializing.
+fn dummy_span_data() -> rustc_span::SpanData {
+    rustc_span::DUMMY_SP.data()
+}
+
 /// Span information
-#[derive(Debug, Copy, Clone, Serialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Span {
     pub file_id: FileId::Id,
     pub beg: Loc,
@@ -40,6 +56,7 @@ pub struct Span {
     /// single-threaded (default on older versions). We need this to be `Send` because we pass this
     /// data out of the rustc callbacks in charon-driver.
     #[serde(skip)]
+    #[serde(default = "dummy_span_data")]
     pub rust_span_data: rustc_span::SpanData,
 }
 
@@ -50,7 +67,7 @@ impl From<Span> for rustc_error_messages::MultiSpan {
 }
 
 /// Meta information about a piece of code (block, statement, etc.)
-#[derive(Debug, Copy, Clone, Serialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Meta {
     /// The source code span.
     ///
@@ -86,7 +103,7 @@ impl From<Meta> for rustc_error_messages::MultiSpan {
 pub type Attribute = String;
 
 /// `#[inline]` built-in attribute.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum InlineAttr {
     /// `#[inline]`
     Hint,
@@ -97,7 +114,7 @@ pub enum InlineAttr {
 }
 
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ItemMeta {
     pub meta: Meta,
     /// Attributes (`#[...]`).
@@ -125,11 +142,11 @@ pub struct ItemMeta {
     pub public: bool,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct FileInfo {}
 
 /// A filename.
-#[derive(Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum FileName {
     /// A remapped path (namely paths into stdlib)
     Virtual(String),

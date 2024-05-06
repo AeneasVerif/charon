@@ -1,11 +1,12 @@
 #![feature(rustc_private)]
 
+use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use itertools::Itertools;
-use std::{error::Error, fs::File};
+use std::{error::Error, fs::File, io::BufReader, process::Command};
 
 use charon_lib::{
     export::GCrateData,
-    llbc_ast,
+    llbc_ast, logger,
     meta::InlineAttr,
     names::{Name, PathElem},
 };
@@ -13,37 +14,41 @@ use charon_lib::{
 fn translate(
     code: impl std::fmt::Display,
 ) -> Result<GCrateData<llbc_ast::FunDecl, llbc_ast::GlobalDecl>, Box<dyn Error>> {
-    use charon_lib::driver::CharonCallbacks;
-    use charon_lib::{export, logger};
-
     // Initialize the logger
     logger::initialize_logger();
 
     // Write the code to a temporary file.
     use std::io::Write;
     let tmp_dir = tempfile::TempDir::new()?;
-    let file_path = tmp_dir.path().join("test_crate.rs");
+    let input_path = tmp_dir.path().join("test_crate.rs");
     {
-        let mut tmp_file = File::create(&file_path)?;
+        let mut tmp_file = File::create(&input_path)?;
         write!(tmp_file, "{}", code)?;
         drop(tmp_file);
     }
 
-    // Call the Rust compiler with our custom callback.
-    let mut callback = CharonCallbacks::new(Default::default());
-    let args = vec![file_path.to_string_lossy().into_owned()];
-    let res = callback.run_compiler(args);
+    // Call charon
+    let output_path = tmp_dir.path().join("test_crate.llbc");
+    Command::cargo_bin("charon")?
+        .arg("--no-cargo")
+        .arg("--input")
+        .arg(input_path)
+        .arg("--dest-file")
+        .arg(&output_path)
+        .assert()
+        .try_success()?;
+
     // Extract the computed crate data.
-    assert_eq!(callback.error_count, 0);
-    assert!(res.is_ok());
-    let export::CrateData::LLBC(crate_data) = callback.crate_data.unwrap() else {
-        panic!("expected llbc data, got ullbc instead")
+    let crate_data: GCrateData<_, _> = {
+        let file = File::open(output_path)?;
+        let reader = BufReader::new(file);
+        serde_json::from_reader(reader)?
     };
 
     Ok(crate_data)
 }
 
-/// `Name` is a complex datastructure; to inspect it we serialize it.
+/// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
 fn repr_name(n: &Name) -> String {
     n.name
         .iter()

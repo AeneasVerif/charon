@@ -1,13 +1,7 @@
 //! Implementations for [crate::values]
 use crate::types::*;
 use crate::values::*;
-use serde::{Serialize, Serializer};
-
-impl VarId::Id {
-    pub fn to_pretty_string(self) -> String {
-        format!("@{self}")
-    }
-}
+use serde::{Deserialize, Serialize, Serializer};
 
 #[derive(Debug, Clone)]
 pub enum ScalarError {
@@ -235,35 +229,7 @@ impl ScalarValue {
     }
 }
 
-impl std::fmt::Display for ScalarValue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            ScalarValue::Isize(v) => write!(f, "{v} : isize"),
-            ScalarValue::I8(v) => write!(f, "{v} : i8"),
-            ScalarValue::I16(v) => write!(f, "{v} : i16"),
-            ScalarValue::I32(v) => write!(f, "{v} : i32"),
-            ScalarValue::I64(v) => write!(f, "{v} : i64"),
-            ScalarValue::I128(v) => write!(f, "{v} : i128"),
-            ScalarValue::Usize(v) => write!(f, "{v} : usize"),
-            ScalarValue::U8(v) => write!(f, "{v} : u8"),
-            ScalarValue::U16(v) => write!(f, "{v} : u16"),
-            ScalarValue::U32(v) => write!(f, "{v} : u32"),
-            ScalarValue::U64(v) => write!(f, "{v} : u64"),
-            ScalarValue::U128(v) => write!(f, "{v} : u128"),
-        }
-    }
-}
-
-impl std::fmt::Display for Literal {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            Literal::Scalar(v) => write!(f, "{v}"),
-            Literal::Bool(v) => write!(f, "{v}"),
-            Literal::Char(v) => write!(f, "{v}"),
-        }
-    }
-}
-
+/// Custom serializer that stores integers as strings to avoid overflow.
 impl Serialize for ScalarValue {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -287,5 +253,39 @@ impl Serialize for ScalarValue {
             ScalarValue::U128(i) => i.to_string(),
         };
         serializer.serialize_newtype_variant(enum_name, variant_index, variant_name, &v)
+    }
+}
+
+impl<'de> Deserialize<'de> for ScalarValue {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = ScalarValue;
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(f, "ScalarValue")
+            }
+            fn visit_map<A: serde::de::MapAccess<'de>>(
+                self,
+                mut map: A,
+            ) -> Result<Self::Value, A::Error> {
+                use serde::de::Error;
+                let (k, v): (String, String) = map.next_entry()?.expect("Malformed ScalarValue");
+                Ok(match k.as_str() {
+                    "U32" => ScalarValue::U32(v.parse().unwrap()),
+                    _ => {
+                        return Err(A::Error::custom(format!(
+                            "TODO: implement deserialization for ScalarValue::{k}"
+                        )));
+                        // return Err(A::Error::custom(format!(
+                        //     "{k} is not a valid type for a ScalarValue"
+                        // )))
+                    }
+                })
+            }
+        }
+        deserializer.deserialize_map(Visitor)
     }
 }

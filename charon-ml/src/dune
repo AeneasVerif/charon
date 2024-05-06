@@ -5,6 +5,7 @@
   (pps ppx_deriving.show ppx_deriving.ord visitors.ppx))
  (libraries yojson zarith easy_logging name_matcher_parser)
  (modules
+  CharonVersion
   Collections
   Expressions
   ExpressionsUtils

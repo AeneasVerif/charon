@@ -11,10 +11,14 @@ pub mod vector;
 /// easily derive those types, and the needed utilities (casts, vectors indexed
 /// by those opaque indices, etc.).
 ///
-/// The `ident` parameter should contain the name of the module to declare.
+/// The `name` parameter should contain the name of the module to declare. The `pretty_name`
+/// parameter is used to implement `Id::to_pretty_string`; if not provided, it defaults to `name`.
 #[macro_export]
 macro_rules! generate_index_type {
     ($name:ident) => {
+        $crate::generate_index_type!($name, stringify!($name));
+    };
+    ($name:ident, $pretty_name:expr) => {
         #[allow(non_snake_case)]
         pub mod $name {
             index_vec::define_index_type! {
@@ -31,6 +35,9 @@ macro_rules! generate_index_type {
             impl Id {
                 pub fn is_zero(&self) -> bool {
                     self.index() == 0
+                }
+                pub fn to_pretty_string(self) -> String {
+                    format!("@{}{}", $pretty_name, self)
                 }
             }
 

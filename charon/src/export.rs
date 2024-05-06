@@ -5,15 +5,19 @@ use crate::translate_ctx::*;
 use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDecl, TraitImpl};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::path::Path;
 
 /// The data of a generic crate. We serialize this to pass it to `charon-ml`, so this must be as
 /// stable as possible. This is used for both ULLBC and LLBC.
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename = "Crate")]
 pub struct GCrateData<FD, GD> {
+    /// The version of charon currently being used. `charon-ml` inspects this and errors if it is
+    /// trying to read an incompatible version (for now we compare versions for equality).
+    pub charon_version: String,
+    /// Crate name.
     pub name: String,
     /// The `id_to_file` map is serialized as a vector.
     /// We use this map for the spans: the spans only store the file ids, not
@@ -25,7 +29,7 @@ pub struct GCrateData<FD, GD> {
     pub globals: Vec<GD>,
     pub trait_decls: Vec<TraitDecl>,
     pub trait_impls: Vec<TraitImpl>,
-    #[serde(skip_serializing)]
+    #[serde(skip)]
     /// If there were errors, this contains only a partial description of the input crate.
     pub has_errors: bool,
 }
@@ -56,6 +60,7 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
         let trait_decls = ctx.trait_decls.iter().cloned().collect();
         let trait_impls = ctx.trait_impls.iter().cloned().collect();
         GCrateData {
+            charon_version: crate::VERSION.to_owned(),
             name: crate_name,
             id_to_file,
             declarations,

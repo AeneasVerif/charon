@@ -1,0 +1,19 @@
+[ ERROR charon_lib::ast::names_utils:274] [names_utils::<impl charon_lib::translate::translate_ctx::TransCtx>::def_id_to_name]:
+Unexpected DefPathData: DisambiguatedDefPathData { data: Ctor, disambiguator: 0 }
+thread 'rustc' panicked at 'internal error: entered unreachable code: Unexpected DefPathData: DisambiguatedDefPathData { data: Ctor, disambiguator: 0 }', src/ast/names_utils.rs:275:21
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting body.
+ --> tests/ui/unsupported/issue-167-self-constructors.rs:8:5
+  |
+8 |     pub fn b() -> Self {
+  |     ^^^^^^^^^^^^^^^^^^
+
+error: assertion failure: "user_annotation.is_none()"
+  --> tests/ui/unsupported/issue-167-self-constructors.rs:19:9
+   |
+19 |         Self { r }
+   |         ^^^^^^^^^^
+
+error: aborting due to 2 previous errors
+
+[ ERROR charon_driver:200] The extraction encountered 2 errors

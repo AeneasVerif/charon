@@ -539,6 +539,7 @@ type variant = {
 
           See {!Identifiers.Id.mapi} for instance.
        *)
+  discriminant : scalar_value;
 }
 [@@deriving show]
 

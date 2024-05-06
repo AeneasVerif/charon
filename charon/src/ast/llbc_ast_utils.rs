@@ -1,13 +1,10 @@
 //! Implementations for [crate::llbc_ast]
 
-use crate::common::*;
 use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
-use crate::formatter::{AstFormatter, Formatter};
-use crate::llbc_ast::{Assert, FunDecl, GlobalDecl, RawStatement, Statement, Switch};
+use crate::llbc_ast::{Assert, RawStatement, Statement, Switch};
 use crate::meta;
 use crate::meta::Meta;
 use crate::types::*;
-pub use crate::ullbc_ast::fmt_call;
 use crate::values::*;
 use macros::make_generic_in_borrows;
 use std::ops::DerefMut;
@@ -110,164 +107,6 @@ impl Switch {
 impl Statement {
     pub fn new(meta: Meta, content: RawStatement) -> Self {
         Statement { meta, content }
-    }
-
-    pub fn fmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        match &self.content {
-            RawStatement::Assign(place, rvalue) => format!(
-                "{}{} := {}",
-                tab,
-                place.fmt_with_ctx(ctx),
-                rvalue.fmt_with_ctx(ctx),
-            ),
-            RawStatement::FakeRead(place) => {
-                format!("{}@fake_read({})", tab, place.fmt_with_ctx(ctx))
-            }
-            RawStatement::SetDiscriminant(place, variant_id) => format!(
-                "{}@discriminant({}) := {}",
-                tab,
-                place.fmt_with_ctx(ctx),
-                variant_id
-            ),
-            RawStatement::Drop(place) => {
-                format!("{}drop {}", tab, place.fmt_with_ctx(ctx))
-            }
-            RawStatement::Assert(assert) => format!(
-                "{}assert({} == {})",
-                tab,
-                assert.cond.fmt_with_ctx(ctx),
-                assert.expected,
-            ),
-            RawStatement::Call(call) => {
-                let (call_s, _) = fmt_call(ctx, call);
-                format!("{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx),)
-            }
-            RawStatement::Panic => format!("{tab}panic"),
-            RawStatement::Return => format!("{tab}return"),
-            RawStatement::Break(index) => format!("{tab}break {index}"),
-            RawStatement::Continue(index) => format!("{tab}continue {index}"),
-            RawStatement::Nop => format!("{tab}nop"),
-            RawStatement::Sequence(st1, st2) => format!(
-                "{}\n{}",
-                st1.fmt_with_ctx(tab, ctx),
-                st2.fmt_with_ctx(tab, ctx)
-            ),
-            RawStatement::Switch(switch) => match switch {
-                Switch::If(discr, true_st, false_st) => {
-                    let inner_tab = format!("{tab}{TAB_INCR}");
-                    format!(
-                        "{}if {} {{\n{}\n{}}}\n{}else {{\n{}\n{}}}",
-                        tab,
-                        discr.fmt_with_ctx(ctx),
-                        true_st.fmt_with_ctx(&inner_tab, ctx),
-                        tab,
-                        tab,
-                        false_st.fmt_with_ctx(&inner_tab, ctx),
-                        tab,
-                    )
-                }
-                Switch::SwitchInt(discr, _ty, maps, otherwise) => {
-                    let inner_tab1 = format!("{tab}{TAB_INCR}");
-                    let inner_tab2 = format!("{inner_tab1}{TAB_INCR}");
-                    let mut maps: Vec<String> = maps
-                        .iter()
-                        .map(|(pvl, st)| {
-                            // Note that there may be several pattern values
-                            let pvl: Vec<String> = pvl.iter().map(|v| v.to_string()).collect();
-                            format!(
-                                "{}{} => {{\n{}\n{}}}",
-                                inner_tab1,
-                                pvl.join(" | "),
-                                st.fmt_with_ctx(&inner_tab2, ctx),
-                                inner_tab1
-                            )
-                        })
-                        .collect();
-                    maps.push(format!(
-                        "{}_ => {{\n{}\n{}}}",
-                        inner_tab1,
-                        otherwise.fmt_with_ctx(&inner_tab2, ctx),
-                        inner_tab1
-                    ));
-                    let maps = maps.join(",\n");
-
-                    format!(
-                        "{}switch {} {{\n{}\n{}}}",
-                        tab,
-                        discr.fmt_with_ctx(ctx),
-                        maps,
-                        tab
-                    )
-                }
-                Switch::Match(discr, maps, otherwise) => {
-                    let inner_tab1 = format!("{tab}{TAB_INCR}");
-                    let inner_tab2 = format!("{inner_tab1}{TAB_INCR}");
-                    let mut maps: Vec<String> = maps
-                        .iter()
-                        .map(|(pvl, st)| {
-                            // Note that there may be several pattern values
-                            let pvl: Vec<String> = pvl.iter().map(|v| v.to_string()).collect();
-                            format!(
-                                "{}{} => {{\n{}\n{}}}",
-                                inner_tab1,
-                                pvl.join(" | "),
-                                st.fmt_with_ctx(&inner_tab2, ctx),
-                                inner_tab1
-                            )
-                        })
-                        .collect();
-                    if let Some(otherwise) = otherwise {
-                        maps.push(format!(
-                            "{}_ => {{\n{}\n{}}}",
-                            inner_tab1,
-                            otherwise.fmt_with_ctx(&inner_tab2, ctx),
-                            inner_tab1
-                        ));
-                    };
-                    let maps = maps.join(",\n");
-
-                    format!(
-                        "{}match {} {{\n{}\n{}}}",
-                        tab,
-                        discr.fmt_with_ctx(ctx),
-                        maps,
-                        tab
-                    )
-                }
-            },
-            RawStatement::Loop(body) => {
-                let inner_tab = format!("{tab}{TAB_INCR}");
-                format!(
-                    "{}loop {{\n{}\n{}}}",
-                    tab,
-                    body.fmt_with_ctx(&inner_tab, ctx),
-                    tab
-                )
-            }
-        }
-    }
-}
-
-impl FunDecl {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-        for<'a> C: Formatter<&'a Statement>,
-    {
-        self.gfmt_with_ctx("", ctx)
-    }
-}
-
-impl GlobalDecl {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-        for<'a> C: Formatter<&'a Statement>,
-    {
-        self.gfmt_with_ctx("", ctx)
     }
 }
 

@@ -17,11 +17,13 @@ tests: build copy-tests
 # Reformat the code
 .PHONY: format
 format:
-	dune fmt
+	@# `dune fmt` returns false if it had to change code; we don't care about that.
+	dune fmt || true
 
+# WARNING: This requires the llbc-building tests to have been run. Prefer using
+# `make test` in the root directory.
 .PHONY: copy-tests
 copy-tests:
 	mkdir -p tests/serialized
 	rm -f tests/serialized/*
-	cp ../tests/llbc/* tests/serialized
-	cp ../tests-polonius/llbc/* tests/serialized
+	cp ../charon/tests/**/*.llbc tests/serialized
