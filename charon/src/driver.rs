@@ -2,6 +2,7 @@ use crate::cli_options;
 use crate::export;
 use crate::get_mir::MirLevel;
 use crate::reorder_decls;
+use crate::transform::remove_arithmetic_overflow_checks;
 use crate::transform::{
     index_to_function_calls, insert_assign_return_unit, ops_to_function_calls, reconstruct_asserts,
     remove_drop_never, remove_dynamic_checks, remove_nops, remove_read_discriminant,
@@ -312,6 +313,12 @@ pub fn translate(
         // closure itself. This is not consistent with the closure signature,
         // which ignores this first variable. This micro-pass updates this.
         update_closure_signatures::transform(&ctx, &mut llbc_funs);
+
+        // # Micro-pass: remove the dynamic checks we couldn't remove in [`remove_dynamic_checks`].
+        // **WARNING**: this pass uses the fact that the dynamic checks
+        // introduced by Rustc use a special "assert" construct. Because of
+        // this, it must happen *before* the [reconstruct_asserts] pass.
+        remove_arithmetic_overflow_checks::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: reconstruct the asserts
         reconstruct_asserts::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
