@@ -101,6 +101,9 @@ type binop =
   | Add
   | Sub
   | Mul
+  | CheckedAdd
+  | CheckedSub
+  | CheckedMul
   | Shl
   | Shr
 [@@deriving show, ord]

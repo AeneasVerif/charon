@@ -271,6 +271,15 @@ pub fn translate(
     // we simply apply some micro-passes to make the code cleaner, before
     // serializing the result.
 
+    // # Micro-pass: Remove overflow/div-by-zero/bounds checks since they are already part of the
+    // arithmetic/array operation in the semantics of (U)LLBC.
+    // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a
+    // special "assert" construct. Because of this, it must happen *before* the
+    // [reconstruct_asserts] pass. See the comments in [crate::remove_dynamic_checks].
+    // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
+    // it must happen before passes that insert statements like [simplify_constants].
+    remove_dynamic_checks::transform(&mut ctx);
+
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
     simplify_constants::transform(&mut ctx);
@@ -303,14 +312,6 @@ pub fn translate(
         // closure itself. This is not consistent with the closure signature,
         // which ignores this first variable. This micro-pass updates this.
         update_closure_signatures::transform(&ctx, &mut llbc_funs);
-
-        // # Micro-pass: remove the dynamic checks for array/slice bounds
-        // and division by zero.
-        // **WARNING**: this pass uses the fact that the dynamic checks
-        // introduced by Rustc use a special "assert" construct. Because of
-        // this, it must happen *before* the [reconstruct_asserts] pass.
-        // See the comments in [crate::remove_dynamic_checks].
-        remove_dynamic_checks::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
 
         // # Micro-pass: reconstruct the asserts
         reconstruct_asserts::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);

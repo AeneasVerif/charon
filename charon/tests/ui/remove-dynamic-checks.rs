@@ -12,6 +12,10 @@ pub fn add_u32(x: u32, y: u32) -> u32 {
     x + y
 }
 
+pub fn incr(x: &mut u32) {
+    *x += 1;
+}
+
 /// Testing binop simplification
 /// In debug mode, rust inserts an assertion after the substraction
 pub fn subs_u32(x: u32, y: u32) -> u32 {
@@ -74,13 +78,35 @@ pub fn mix_arith_i32(x: i32, y: i32, z: i32) -> i32 {
     ((x + y) * (x / y) + (x - (z % y))) % (x + y + z)
 }
 
-/* Checking the simplification of binop operations *inside* global constants.
+fn shl(x: u32, y: u32) -> u32 {
+    x << y
+}
 
-   In release mode, the Rust compiler inserts additional checks inside constant
-   bodies.
-*/
-pub const CONST0: usize = 1 + 1;
-pub const CONST1: usize = 2 * 2;
+fn shr(x: u32, y: u32) -> u32 {
+    x >> y
+}
+
+// Checking the simplification of binop operations *inside* global constants.
+// Even in release mode, rustc inserts additional checks inside constant bodies.
+pub const _: isize = 1 + 1;
+pub const _: isize = 1 - 1;
+pub const _: isize = -1;
+pub const _: isize = 2 * 2;
+pub const _: isize = 2 >> 2;
+pub const _: isize = 2 << 2;
+pub const _: isize = 2 % 2;
+pub const _: isize = 2 / 2;
+
+// When the operand is a bare const it sometimes gets inlined, which trips up our simplification
+// pass. I used `u32` here because other types use a `cast` and thus aren't inlined.
+pub const FOO: u32 = 10;
+pub const _: u32 = 1 + FOO;
+pub const _: u32 = 1 - FOO;
+pub const _: u32 = 2 * FOO;
+pub const _: u32 = 2 >> FOO;
+pub const _: u32 = 2 << FOO;
+pub const _: u32 = 2 % FOO;
+pub const _: u32 = 2 / FOO;
 
 fn div_signed_with_constant() -> i32 {
     const FOO: i32 = 42;

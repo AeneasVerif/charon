@@ -82,6 +82,9 @@ let binop_to_string (binop : binop) : string =
   | Add -> "+"
   | Sub -> "-"
   | Mul -> "*"
+  | CheckedAdd -> "checked.+"
+  | CheckedSub -> "checked.-"
+  | CheckedMul -> "checked.*"
   | Shl -> "<<"
   | Shr -> ">>"
 

@@ -1,0 +1,11 @@
+thread 'rustc' panicked at 'foreign_constant_aux does not have a "explicit_predicates_of"', compiler/rustc_metadata/src/rmeta/decoder/cstore_impl.rs:205:1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting body.
+ --> tests/ui/unsupported/foreign-constant.rs:4:1
+  |
+4 | const _: i32 = 1 << CONSTANT;
+  | ^^^^^^^^^^^^
+
+error: aborting due to previous error
+
+[ ERROR charon_driver:200] The extraction encountered 1 errors
