@@ -152,7 +152,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         impl_id: TraitImplId,
     ) -> Result<(), Error> {
-        let def_id = *self.t_ctx.trait_impl_id_to_def_id.get(&impl_id).unwrap();
+        let def_id = *self
+            .t_ctx
+            .reverse_id_map
+            .get(&AnyTransId::TraitImpl(impl_id))
+            .unwrap();
         trace!("id: {:?}", def_id);
 
         // Retrieve the trait ref representing "self"

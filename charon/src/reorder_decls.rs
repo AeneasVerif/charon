@@ -1,12 +1,13 @@
 use crate::common::*;
 use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::graphs::*;
+pub use crate::translate_ctx::AnyTransId;
 use crate::translate_ctx::TransCtx;
 use crate::types::*;
 use crate::ullbc_ast::*;
 use hashlink::linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use macros::{VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
 use serde::{Deserialize, Serialize};
@@ -115,28 +116,6 @@ impl DeclarationGroup {
         );
         DeclarationGroup::TraitImpl(GDeclarationGroup::NonRec(gr[0]))
     }
-}
-
-#[derive(
-    PartialEq,
-    Eq,
-    Hash,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    VariantIndexArity,
-    Copy,
-    Clone,
-    Debug,
-    PartialOrd,
-    Ord,
-)]
-pub enum AnyTransId {
-    Type(TypeDeclId),
-    Fun(FunDeclId),
-    Global(GlobalDeclId),
-    TraitDecl(TraitDeclId),
-    TraitImpl(TraitImplId),
 }
 
 #[derive(Clone, Copy)]

@@ -1,7 +1,7 @@
 use crate::cli_options::CliOpts;
 use crate::common::*;
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
-use crate::ids::{Generator, Map, MapGenerator};
+use crate::ids::{Generator, Map};
 use crate::translate_ctx::*;
 use crate::translate_functions_to_ullbc;
 
@@ -265,16 +265,17 @@ pub fn translate<'tcx, 'ctx>(
         dep_sources: HashMap::new(),
         decls_with_errors: HashSet::new(),
         ignored_failed_decls: HashSet::new(),
-        type_id_map: MapGenerator::new(),
+        id_map: HashMap::new(),
+        reverse_id_map: HashMap::new(),
+        type_id_gen: Generator::new(),
         type_decls: Map::new(),
-        fun_id_map: MapGenerator::new(),
+        fun_id_gen: Generator::new(),
         fun_decls: Map::new(),
-        global_id_map: MapGenerator::new(),
+        global_id_gen: Generator::new(),
         global_decls: Map::new(),
-        trait_decl_id_map: MapGenerator::new(),
+        trait_decl_id_gen: Generator::new(),
         trait_decls: Map::new(),
-        trait_impl_id_map: MapGenerator::new(),
-        trait_impl_id_to_def_id: HashMap::new(),
+        trait_impl_id_gen: Generator::new(),
         trait_impls: Map::new(),
         ordered_decls: None,
     };
