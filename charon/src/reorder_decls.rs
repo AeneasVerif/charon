@@ -131,10 +131,10 @@ impl DeclarationGroup {
     PartialOrd,
     Ord,
 )]
-pub enum AnyDeclId<TypeId, FunId, GlobalId, TraitDeclId, TraitImplId> {
-    Type(TypeId),
-    Fun(FunId),
-    Global(GlobalId),
+pub enum AnyTransId {
+    Type(TypeDeclId),
+    Fun(FunDeclId),
+    Global(GlobalDeclId),
     TraitDecl(TraitDeclId),
     TraitImpl(TraitImplId),
 }
@@ -174,8 +174,6 @@ impl Display for DeclarationGroup {
         }
     }
 }
-
-pub type AnyTransId = AnyDeclId<TypeDeclId, FunDeclId, GlobalDeclId, TraitDeclId, TraitImplId>;
 
 pub struct Deps {
     dgraph: DiGraphMap<AnyTransId, ()>,
@@ -242,7 +240,7 @@ impl Deps {
         self.current_id = Option::Some(id);
 
         // Add the id of the trait impl trait this item belongs to, if necessary
-        use AnyDeclId::*;
+        use AnyTransId::*;
         match id {
             TraitDecl(_) | TraitImpl(_) => (),
             Type(_) | Global(_) => {
@@ -297,12 +295,12 @@ impl Deps {
 
 impl SharedTypeVisitor for Deps {
     fn visit_type_decl_id(&mut self, id: &TypeDeclId) {
-        let id = AnyDeclId::Type(*id);
+        let id = AnyTransId::Type(*id);
         self.insert_edge(id);
     }
 
     fn visit_global_decl_id(&mut self, id: &GlobalDeclId) {
-        let id = AnyDeclId::Global(*id);
+        let id = AnyTransId::Global(*id);
         self.insert_edge(id);
     }
 
@@ -315,13 +313,13 @@ impl SharedTypeVisitor for Deps {
             // Ignore
         }
         else {
-            let id = AnyDeclId::TraitImpl(*id);
+            let id = AnyTransId::TraitImpl(*id);
             self.insert_edge(id);
         }
     }
 
     fn visit_trait_decl_id(&mut self, id: &TraitDeclId) {
-        let id = AnyDeclId::TraitDecl(*id);
+        let id = AnyTransId::TraitDecl(*id);
         self.insert_edge(id);
     }
 
@@ -340,7 +338,7 @@ impl SharedTypeVisitor for Deps {
     }
 
     fn visit_fun_decl_id(&mut self, id: &FunDeclId) {
-        let id = AnyDeclId::Fun(*id);
+        let id = AnyTransId::Fun(*id);
         self.insert_edge(id);
     }
 }
@@ -382,7 +380,7 @@ impl Deps {
 
 impl AnyTransId {
     fn fmt_with_ctx(&self, ctx: &TransCtx) -> String {
-        use AnyDeclId::*;
+        use AnyTransId::*;
         let ctx = ctx.into_fmt();
         match self {
             Type(id) => ctx.format_object(*id),
@@ -607,7 +605,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
                     .join("\n")
             );
         }
-        if let AnyDeclId::Global(_) = id0 {
+        if let AnyTransId::Global(_) = id0 {
             assert!(scc.len() == 1);
         }
 
@@ -622,26 +620,27 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
         // be pretty small.
         let is_rec = is_mutually_recursive || is_simply_recursive;
         let group: DeclarationGroup = match id0 {
-            AnyDeclId::Type(_) => DeclarationGroup::make_type_group(
+            AnyTransId::Type(_) => DeclarationGroup::make_type_group(
                 is_rec,
-                scc.iter().map(AnyDeclId::as_type).copied(),
+                scc.iter().map(AnyTransId::as_type).copied(),
             ),
-            AnyDeclId::Fun(_) => {
-                DeclarationGroup::make_fun_group(is_rec, scc.iter().map(AnyDeclId::as_fun).copied())
-            }
-            AnyDeclId::Global(_) => DeclarationGroup::make_global_group(
+            AnyTransId::Fun(_) => DeclarationGroup::make_fun_group(
                 is_rec,
-                scc.iter().map(AnyDeclId::as_global).copied(),
+                scc.iter().map(AnyTransId::as_fun).copied(),
             ),
-            AnyDeclId::TraitDecl(_) => DeclarationGroup::make_trait_decl_group(
+            AnyTransId::Global(_) => DeclarationGroup::make_global_group(
+                is_rec,
+                scc.iter().map(AnyTransId::as_global).copied(),
+            ),
+            AnyTransId::TraitDecl(_) => DeclarationGroup::make_trait_decl_group(
                 ctx,
                 is_rec,
-                scc.iter().map(AnyDeclId::as_trait_decl).copied(),
+                scc.iter().map(AnyTransId::as_trait_decl).copied(),
             ),
-            AnyDeclId::TraitImpl(_) => DeclarationGroup::make_trait_impl_group(
+            AnyTransId::TraitImpl(_) => DeclarationGroup::make_trait_impl_group(
                 ctx,
                 is_rec,
-                scc.iter().map(AnyDeclId::as_trait_impl).copied(),
+                scc.iter().map(AnyTransId::as_trait_impl).copied(),
             ),
         };
 
