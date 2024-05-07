@@ -31,7 +31,7 @@ pub struct Assert {
 pub enum RawStatement {
     Assign(Place, Rvalue),
     FakeRead(Place),
-    SetDiscriminant(Place, VariantId::Id),
+    SetDiscriminant(Place, VariantId),
     Drop(Place),
     Assert(Assert),
     Call(Call),
@@ -108,7 +108,7 @@ pub enum Switch {
     /// switch into a match).
     Match(
         Place,
-        Vec<(Vec<VariantId::Id>, Statement)>,
+        Vec<(Vec<VariantId>, Statement)>,
         Option<Box<Statement>>,
     ),
 }
@@ -116,7 +116,7 @@ pub enum Switch {
 pub type ExprBody = GExprBody<Statement>;
 
 pub type FunDecl = GFunDecl<Statement>;
-pub type FunDecls = Map<FunDeclId::Id, FunDecl>;
+pub type FunDecls = Map<FunDeclId, FunDecl>;
 
 pub type GlobalDecl = GGlobalDecl<Statement>;
-pub type GlobalDecls = Map<GlobalDeclId::Id, GlobalDecl>;
+pub type GlobalDecls = Map<GlobalDeclId, GlobalDecl>;

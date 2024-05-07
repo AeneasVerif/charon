@@ -14,27 +14,27 @@ use serde::{Deserialize, Serialize};
 generate_index_type!(BlockId, "Block");
 
 // The entry block of a function is always the block with id 0
-pub static START_BLOCK_ID: BlockId::Id = BlockId::ZERO;
+pub static START_BLOCK_ID: BlockId = BlockId::ZERO;
 
-pub type ExprBody = GExprBody<Vector<BlockId::Id, BlockData>>;
+pub type ExprBody = GExprBody<Vector<BlockId, BlockData>>;
 
-pub type FunDecl = GFunDecl<Vector<BlockId::Id, BlockData>>;
-pub type FunDecls = Map<FunDeclId::Id, FunDecl>;
+pub type FunDecl = GFunDecl<Vector<BlockId, BlockData>>;
+pub type FunDecls = Map<FunDeclId, FunDecl>;
 
-pub type GlobalDecl = GGlobalDecl<Vector<BlockId::Id, BlockData>>;
-pub type GlobalDecls = Map<GlobalDeclId::Id, GlobalDecl>;
+pub type GlobalDecl = GGlobalDecl<Vector<BlockId, BlockData>>;
+pub type GlobalDecls = Map<GlobalDeclId, GlobalDecl>;
 
-pub type TraitDecls = Map<TraitDeclId::Id, TraitDecl>;
-pub type TraitImpls = Map<TraitImplId::Id, TraitImpl>;
+pub type TraitDecls = Map<TraitDeclId, TraitDecl>;
+pub type TraitImpls = Map<TraitImplId, TraitImpl>;
 
 /// A raw statement: a statement without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize, Deserialize)]
 pub enum RawStatement {
     Assign(Place, Rvalue),
     FakeRead(Place),
-    SetDiscriminant(Place, VariantId::Id),
+    SetDiscriminant(Place, VariantId),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
-    StorageDead(VarId::Id),
+    StorageDead(VarId),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     Deinit(Place),
 }
@@ -50,18 +50,18 @@ pub struct Statement {
 )]
 pub enum SwitchTargets {
     /// Gives the `if` block and the `else` block
-    If(BlockId::Id, BlockId::Id),
+    If(BlockId, BlockId),
     /// Gives the integer type, a map linking values to switch branches, and the
     /// otherwise block. Note that matches over enumerations are performed by
     /// switching over the discriminant, which is an integer.
-    SwitchInt(IntegerTy, Vec<(ScalarValue, BlockId::Id)>, BlockId::Id),
+    SwitchInt(IntegerTy, Vec<(ScalarValue, BlockId)>, BlockId),
 }
 
 /// A raw terminator: a terminator without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize)]
 pub enum RawTerminator {
     Goto {
-        target: BlockId::Id,
+        target: BlockId,
     },
     Switch {
         discr: Operand,
@@ -72,20 +72,20 @@ pub enum RawTerminator {
     Unreachable,
     Drop {
         place: Place,
-        target: BlockId::Id,
+        target: BlockId,
     },
     /// Function call.
     /// For now, we only accept calls to top-level functions.
     Call {
         call: Call,
-        target: BlockId::Id,
+        target: BlockId,
     },
     /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
     /// checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
     Assert {
         cond: Operand,
         expected: bool,
-        target: BlockId::Id,
+        target: BlockId,
     },
 }
 

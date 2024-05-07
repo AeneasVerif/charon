@@ -505,7 +505,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// struct with only public fields).
     fn translate_type_body(
         &mut self,
-        trans_id: TypeDeclId::Id,
+        trans_id: TypeDeclId,
         rust_id: DefId,
     ) -> Result<TypeDeclKind, Error> {
         use rustc_middle::ty::AdtKind;
@@ -541,7 +541,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // The type is transparent: explore the variants
-        let mut variants: Vector<VariantId::Id, Variant> = Default::default();
+        let mut variants: Vector<VariantId, Variant> = Default::default();
         let erase_regions = false;
         for (i, (rust_var_id, var_def)) in adt.variants().iter_enumerated().enumerate() {
             let var_def: hax::VariantDef = var_def.sinto(&self.hax_state);
@@ -558,7 +558,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 ScalarValue::Isize(0)
             };
 
-            let mut fields: Vector<FieldId::Id, Field> = Default::default();
+            let mut fields: Vector<FieldId, Field> = Default::default();
             /* This is for sanity: check that either all the fields have names, or
              * none of them has */
             let mut have_names: Option<bool> = Option::None;

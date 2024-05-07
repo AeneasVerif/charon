@@ -178,12 +178,12 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// The id of the definition we are exploring
     pub def_id: Option<DefId>,
     /// File names to ids and vice-versa
-    pub file_to_id: HashMap<FileName, FileId::Id>,
-    pub id_to_file: HashMap<FileId::Id, FileName>,
-    pub real_file_counter: Generator<LocalFileId::Id>,
-    pub virtual_file_counter: Generator<VirtualFileId::Id>,
+    pub file_to_id: HashMap<FileName, FileId>,
+    pub id_to_file: HashMap<FileId, FileName>,
+    pub real_file_counter: Generator<LocalFileId>,
+    pub virtual_file_counter: Generator<VirtualFileId>,
     /// The map from Rust type ids to translated type ids
-    pub type_id_map: MapGenerator<DefId, TypeDeclId::Id>,
+    pub type_id_map: MapGenerator<DefId, TypeDeclId>,
     /// The translated type definitions
     pub type_decls: TypeDecls,
     /// Dependency graph with sources. We use this for error reporting.
@@ -195,20 +195,20 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// and had to ignore.
     pub ignored_failed_decls: HashSet<DefId>,
     /// The map from Rust function ids to translated function ids
-    pub fun_id_map: MapGenerator<DefId, ast::FunDeclId::Id>,
+    pub fun_id_map: MapGenerator<DefId, ast::FunDeclId>,
     /// The translated function definitions
     pub fun_decls: ast::FunDecls,
     /// The map from Rust global ids to translated global ids
-    pub global_id_map: MapGenerator<DefId, ast::GlobalDeclId::Id>,
+    pub global_id_map: MapGenerator<DefId, ast::GlobalDeclId>,
     /// The translated global definitions
     pub global_decls: ast::GlobalDecls,
     /// The map from Rust trait decl ids to translated trait decl ids
-    pub trait_decl_id_map: MapGenerator<DefId, ast::TraitDeclId::Id>,
+    pub trait_decl_id_map: MapGenerator<DefId, ast::TraitDeclId>,
     /// The translated trait declarations
     pub trait_decls: ast::TraitDecls,
     /// The map from Rust trait impls ids to translated trait impls ids
-    pub trait_impl_id_map: MapGenerator<DefId, ast::TraitImplId::Id>,
-    pub trait_impl_id_to_def_id: HashMap<ast::TraitImplId::Id, DefId>,
+    pub trait_impl_id_map: MapGenerator<DefId, ast::TraitImplId>,
+    pub trait_impl_id_to_def_id: HashMap<ast::TraitImplId, DefId>,
     /// The translated trait declarations
     pub trait_impls: ast::TraitImpls,
     /// The re-ordered groups of declarations, initialized as empty.
@@ -234,7 +234,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The regions.
     /// We use DeBruijn indices, so we have a stack of regions.
     /// See the comments for [Region::BVar].
-    pub region_vars: im::Vector<Vector<RegionId::Id, RegionVar>>,
+    pub region_vars: im::Vector<Vector<RegionId, RegionVar>>,
     /// The map from rust (free) regions to translated region indices.
     /// This contains the early bound regions.
     ///
@@ -249,7 +249,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     /// The [bound_region_vars] field below takes care of the regions which
     /// are bound in the Rustc representation.
-    pub free_region_vars: std::collections::BTreeMap<hax::Region, RegionId::Id>,
+    pub free_region_vars: std::collections::BTreeMap<hax::Region, RegionId>,
     ///
     /// The stack of late-bound parameters (can only be lifetimes for now), which
     /// use DeBruijn indices (the other parameters use free variables).
@@ -263,21 +263,21 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// **Important**:
     /// ==============
     /// We use DeBruijn indices. See the comments for [Region::Var].
-    pub bound_region_vars: im::Vector<im::Vector<RegionId::Id>>,
+    pub bound_region_vars: im::Vector<im::Vector<RegionId>>,
     /// The type variables
-    pub type_vars: Vector<TypeVarId::Id, TypeVar>,
+    pub type_vars: Vector<TypeVarId, TypeVar>,
     /// The map from rust type variable indices to translated type variable
     /// indices.
-    pub type_vars_map: MapGenerator<u32, TypeVarId::Id>,
+    pub type_vars_map: MapGenerator<u32, TypeVarId>,
     /// The "regular" variables
-    pub vars: Vector<VarId::Id, ast::Var>,
+    pub vars: Vector<VarId, ast::Var>,
     /// The map from rust variable indices to translated variables indices.
-    pub vars_map: MapGenerator<usize, VarId::Id>,
+    pub vars_map: MapGenerator<usize, VarId>,
     /// The const generic variables
-    pub const_generic_vars: Vector<ConstGenericVarId::Id, ConstGenericVar>,
+    pub const_generic_vars: Vector<ConstGenericVarId, ConstGenericVar>,
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
-    pub const_generic_vars_map: MapGenerator<u32, ConstGenericVarId::Id>,
+    pub const_generic_vars_map: MapGenerator<u32, ConstGenericVarId>,
     /// A generator for trait instance ids.
     /// We initialize it so that it generates ids for local clauses.
     pub trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
@@ -297,14 +297,14 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub regions_outlive: Vec<RegionOutlives>,
     ///
     pub trait_type_constraints: Vec<TraitTypeConstraint>,
-    /// The translated blocks. We can't use `ast::Vector<BlockId::Id, ast::BlockData>`
+    /// The translated blocks. We can't use `ast::Vector<BlockId, ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
-    pub blocks: im::OrdMap<ast::BlockId::Id, ast::BlockData>,
+    pub blocks: im::OrdMap<ast::BlockId, ast::BlockData>,
     /// The map from rust blocks to translated blocks.
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
-    pub blocks_map: MapGenerator<hax::BasicBlock, ast::BlockId::Id>,
+    pub blocks_map: MapGenerator<hax::BasicBlock, ast::BlockId>,
     /// We register the blocks to translate in a stack, so as to avoid
     /// writing the translation functions as recursive functions. We do
     /// so because we had stack overflows in the past.
@@ -339,17 +339,15 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     /// Register a file if it is a "real" file and was not already registered
-    fn register_file(&mut self, filename: FileName) -> FileId::Id {
+    fn register_file(&mut self, filename: FileName) -> FileId {
         // Lookup the file if it was already registered
         match self.file_to_id.get(&filename) {
             Option::Some(id) => *id,
             Option::None => {
                 // Generate the fresh id
                 let id = match &filename {
-                    FileName::Local(_) => FileId::Id::LocalId(self.real_file_counter.fresh_id()),
-                    FileName::Virtual(_) => {
-                        FileId::Id::VirtualId(self.virtual_file_counter.fresh_id())
-                    }
+                    FileName::Local(_) => FileId::LocalId(self.real_file_counter.fresh_id()),
+                    FileName::Virtual(_) => FileId::VirtualId(self.virtual_file_counter.fresh_id()),
                     FileName::NotReal(_) => unimplemented!(),
                 };
                 self.file_to_id.insert(filename.clone(), id);
@@ -583,7 +581,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> TypeDeclId::Id {
+    ) -> TypeDeclId {
         self.register_dep_source(src, id);
         match self.type_id_map.get(&id) {
             Option::Some(id) => id,
@@ -600,7 +598,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> TypeDeclId::Id {
+    ) -> TypeDeclId {
         self.register_type_decl_id(src, id)
     }
 
@@ -609,7 +607,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> ast::FunDeclId::Id {
+    ) -> ast::FunDeclId {
         self.register_dep_source(src, id);
         match self.fun_id_map.get(&id) {
             Option::Some(tid) => tid,
@@ -632,7 +630,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> Result<Option<ast::TraitDeclId::Id>, Error> {
+    ) -> Result<Option<ast::TraitDeclId>, Error> {
         use crate::assumed;
         if assumed::IGNORE_BUILTIN_MARKER_TRAITS {
             let name = self.def_id_to_name(id)?;
@@ -659,7 +657,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         rust_id: DefId,
-    ) -> Result<Option<ast::TraitImplId::Id>, Error> {
+    ) -> Result<Option<ast::TraitImplId>, Error> {
         // Check if we need to filter
         {
             // Retrieve the id of the implemented trait decl
@@ -685,7 +683,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> ast::FunDeclId::Id {
+    ) -> ast::FunDeclId {
         self.register_fun_decl_id(src, id)
     }
 
@@ -695,7 +693,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> Result<Option<ast::TraitDeclId::Id>, Error> {
+    ) -> Result<Option<ast::TraitDeclId>, Error> {
         self.register_trait_decl_id(src, id)
     }
 
@@ -705,7 +703,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> Result<Option<ast::TraitImplId::Id>, Error> {
+    ) -> Result<Option<ast::TraitImplId>, Error> {
         self.register_trait_impl_id(src, id)
     }
 
@@ -713,7 +711,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> GlobalDeclId::Id {
+    ) -> GlobalDeclId {
         self.register_dep_source(src, id);
         match self.global_id_map.get(&id) {
             Option::Some(id) => id,
@@ -730,7 +728,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> ast::GlobalDeclId::Id {
+    ) -> ast::GlobalDeclId {
         self.register_global_decl_id(src, id)
     }
 
@@ -747,8 +745,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     pub(crate) fn iter_bodies<F, B>(
         &mut self,
-        funs: &mut Map<FunDeclId::Id, GFunDecl<B>>,
-        globals: &mut Map<GlobalDeclId::Id, GGlobalDecl<B>>,
+        funs: &mut Map<FunDeclId, GFunDecl<B>>,
+        globals: &mut Map<GlobalDeclId, GGlobalDecl<B>>,
         f: F,
     ) where
         F: Fn(&mut Self, &Name, &mut GExprBody<B>),
@@ -805,17 +803,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_meta_from_rspan(rspan)
     }
 
-    pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId::Id> {
+    pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId> {
         use rustc_index::Idx;
         self.vars_map.get(&local.index())
     }
 
     #[allow(dead_code)]
-    pub(crate) fn get_block_id_from_rid(&self, rid: hax::BasicBlock) -> Option<ast::BlockId::Id> {
+    pub(crate) fn get_block_id_from_rid(&self, rid: hax::BasicBlock) -> Option<ast::BlockId> {
         self.blocks_map.get(&rid)
     }
 
-    pub(crate) fn get_var_from_id(&self, var_id: VarId::Id) -> Option<&ast::Var> {
+    pub(crate) fn get_var_from_id(&self, var_id: VarId) -> Option<&ast::Var> {
         self.vars.get(var_id)
     }
 
@@ -823,7 +821,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> TypeDeclId::Id {
+    ) -> TypeDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_type_decl_id(&src, id)
     }
@@ -832,7 +830,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> ast::FunDeclId::Id {
+    ) -> ast::FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_fun_decl_id(&src, id)
     }
@@ -841,7 +839,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> ast::GlobalDeclId::Id {
+    ) -> ast::GlobalDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_global_decl_id(&src, id)
     }
@@ -852,7 +850,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> Result<Option<ast::TraitDeclId::Id>, Error> {
+    ) -> Result<Option<ast::TraitDeclId>, Error> {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_trait_decl_id(&src, id)
     }
@@ -863,7 +861,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> Result<Option<ast::TraitImplId::Id>, Error> {
+    ) -> Result<Option<ast::TraitImplId>, Error> {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_trait_impl_id(&src, id)
     }
@@ -872,11 +870,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     /// Important: we must push *all* the free regions (which are early-bound
     /// regions) before pushing any (late-)bound region.
-    pub(crate) fn push_free_region(
-        &mut self,
-        r: hax::Region,
-        name: Option<String>,
-    ) -> RegionId::Id {
+    pub(crate) fn push_free_region(&mut self, r: hax::Region, name: Option<String>) -> RegionId {
         // Check that there are no late-bound regions
         assert!(self.bound_region_vars.is_empty());
         let rid = self.region_vars[0].push_with(|index| RegionVar { index, name });
@@ -889,7 +883,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         assert!(self.bound_region_vars.is_empty());
 
         // Register the variables
-        let var_ids: im::Vector<RegionId::Id> = names
+        let var_ids: im::Vector<RegionId> = names
             .into_iter()
             .map(|name| self.region_vars[0].push_with(|index| RegionVar { index, name }))
             .collect();
@@ -913,7 +907,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.region_vars.push_front(Vector::new());
 
         // Register the variables
-        let var_ids: im::Vector<RegionId::Id> = names
+        let var_ids: im::Vector<RegionId> = names
             .into_iter()
             .map(|name| self.region_vars[0].push_with(|index| RegionVar { index, name }))
             .collect();
@@ -932,7 +926,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         res
     }
 
-    pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId::Id {
+    pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId {
         let var_id = self.type_vars_map.insert(rindex);
         assert!(var_id == self.type_vars.next_id());
         self.type_vars.push_with(|index| TypeVar { index, name })
@@ -951,14 +945,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .push_with(|index| (ConstGenericVar { index, name, ty }));
     }
 
-    pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId::Id {
+    pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId {
         // Push to the stack of blocks awaiting translation
         self.blocks_stack.push_back(rid);
         // Insert in the map
         self.blocks_map.insert(rid)
     }
 
-    pub(crate) fn push_block(&mut self, id: ast::BlockId::Id, block: ast::BlockData) {
+    pub(crate) fn push_block(&mut self, id: ast::BlockId, block: ast::BlockData) {
         self.blocks.insert(id, block);
     }
 
@@ -991,8 +985,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         clauses
     }
 
-    pub(crate) fn get_parent_trait_clauses(&self) -> Vector<TraitClauseId::Id, TraitClause> {
-        let clauses: Vector<TraitClauseId::Id, TraitClause> = self
+    pub(crate) fn get_parent_trait_clauses(&self) -> Vector<TraitClauseId, TraitClause> {
+        let clauses: Vector<TraitClauseId, TraitClause> = self
             .trait_clauses
             .iter()
             .filter_map(|(_, x)| {

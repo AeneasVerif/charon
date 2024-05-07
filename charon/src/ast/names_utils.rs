@@ -158,7 +158,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         for cur_id in parents {
             let data = tcx.def_key(cur_id).disambiguated_data;
             // Match over the key data
-            let disambiguator = Disambiguator::Id::new(data.disambiguator as usize);
+            let disambiguator = Disambiguator::new(data.disambiguator as usize);
             use rustc_hir::definitions::DefPathData;
             match &data.data {
                 DefPathData::TypeNs(symbol) => {
@@ -279,7 +279,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
         // We always add the crate name
         if !found_crate_name {
-            name.push(PathElem::Ident(crate_name, Disambiguator::Id::new(0)));
+            name.push(PathElem::Ident(crate_name, Disambiguator::new(0)));
         }
 
         trace!("{:?}", name);

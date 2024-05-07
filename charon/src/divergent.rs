@@ -5,7 +5,7 @@ use crate::ullbc_ast as ast;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &llbc::Statement) -> bool {
+fn statement_diverges(divergent: &HashMap<ast::FunDeclId, bool>, st: &llbc::Statement) -> bool {
     match &st.content {
         RawStatement::Assign(_, _)
         | RawStatement::FakeRead(_)
@@ -48,7 +48,7 @@ fn statement_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, st: &llbc::
     }
 }
 
-fn fun_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, def: &llbc::FunDecl) -> bool {
+fn fun_diverges(divergent: &HashMap<ast::FunDeclId, bool>, def: &llbc::FunDecl) -> bool {
     match &def.body {
         Option::Some(body) => statement_diverges(divergent, &body.body),
         Option::None => {
@@ -67,11 +67,11 @@ fn fun_diverges(divergent: &HashMap<ast::FunDeclId::Id, bool>, def: &llbc::FunDe
 pub fn compute_divergent_functions(
     decls: &OrderedDecls,
     defs: &llbc::FunDecls,
-) -> HashSet<ast::FunDeclId::Id> {
+) -> HashSet<ast::FunDeclId> {
     // For sanity, we use a map rather than a set, so that we can check
     // that we have indeed computed the divergence for the previous
     // declarations.
-    let mut divergent_map: HashMap<ast::FunDeclId::Id, bool> = HashMap::new();
+    let mut divergent_map: HashMap<ast::FunDeclId, bool> = HashMap::new();
 
     // The declarations in decls have been reordered so that the dependencies
     // of every group of declarations is either in the group itself (in case
@@ -97,7 +97,7 @@ pub fn compute_divergent_functions(
     }
 
     // Convert the map to a set
-    let divergent_set: HashSet<ast::FunDeclId::Id> = HashSet::from_iter(
+    let divergent_set: HashSet<ast::FunDeclId> = HashSet::from_iter(
         divergent_map
             .iter()
             .filter(|(_, div)| **div)

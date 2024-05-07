@@ -75,7 +75,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_const_from_trait_item(
         &mut self,
         item: &rustc_middle::ty::AssocItem,
-    ) -> Result<(TraitItemName, (Ty, GlobalDeclId::Id)), Error> {
+    ) -> Result<(TraitItemName, (Ty, GlobalDeclId)), Error> {
         let ty = self.translate_ty_from_trait_item(item)?;
         let name = TraitItemName(item.name.to_string());
         let span = self.t_ctx.tcx.def_span(self.def_id);
@@ -150,7 +150,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// We call this when translating trait impls and trait impl items.
     pub(crate) fn add_trait_impl_self_trait_clause(
         &mut self,
-        impl_id: TraitImplId::Id,
+        impl_id: TraitImplId,
     ) -> Result<(), Error> {
         let def_id = *self.t_ctx.trait_impl_id_to_def_id.get(&impl_id).unwrap();
         trace!("id: {:?}", def_id);
@@ -188,7 +188,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn with_parent_trait_clauses<T>(
         &mut self,
         clause_id: TraitInstanceId,
-        trait_decl_id: TraitDeclId::Id,
+        trait_decl_id: TraitDeclId,
         f: &mut dyn FnMut(&mut Self) -> T,
     ) -> T {
         let mut parent_clause_id_gen = Generator::new();
@@ -203,7 +203,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn with_item_trait_clauses<T>(
         &mut self,
         clause_id: TraitInstanceId,
-        trait_decl_id: TraitDeclId::Id,
+        trait_decl_id: TraitDeclId,
         item_name: String,
         f: &mut dyn FnMut(&mut Self) -> T,
     ) -> T {
@@ -522,8 +522,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             );
             let parent_trait_refs: Vec<TraitRef> =
                 bt_ctx.translate_trait_impl_exprs(span, erase_regions, &parent_trait_refs)?;
-            // FIXME: these ids are entirely wrong.
-            let parent_trait_refs: Vector<TraitClauseId::Id, TraitRef> = parent_trait_refs.into();
+            let parent_trait_refs: Vector<TraitClauseId, TraitRef> = parent_trait_refs.into();
 
             let generics = GenericArgs {
                 regions,

@@ -15,7 +15,7 @@ use take_mut::take;
 
 #[derive(Debug, Clone)]
 pub(crate) struct ComputeUsedLocals {
-    vars: im::HashMap<VarId::Id, usize>,
+    vars: im::HashMap<VarId, usize>,
 }
 
 impl ComputeUsedLocals {
@@ -25,7 +25,7 @@ impl ComputeUsedLocals {
         }
     }
 
-    pub(crate) fn compute_in_statement(st: &Statement) -> im::HashMap<VarId::Id, usize> {
+    pub(crate) fn compute_in_statement(st: &Statement) -> im::HashMap<VarId, usize> {
         let mut visitor = Self::new();
         visitor.visit_statement(st);
         visitor.vars
@@ -34,7 +34,7 @@ impl ComputeUsedLocals {
 
 impl SharedTypeVisitor for ComputeUsedLocals {}
 impl SharedExprVisitor for ComputeUsedLocals {
-    fn visit_var_id(&mut self, vid: &VarId::Id) {
+    fn visit_var_id(&mut self, vid: &VarId) {
         match self.vars.get_mut(vid) {
             Option::None => {
                 let _ = self.vars.insert(*vid, 1);
@@ -54,11 +54,11 @@ impl SharedAstVisitor for ComputeUsedLocals {
 
 #[derive(Debug, Clone)]
 struct UpdateUsedLocals {
-    vids_map: HashMap<VarId::Id, VarId::Id>,
+    vids_map: HashMap<VarId, VarId>,
 }
 
 impl UpdateUsedLocals {
-    fn update_statement(vids_map: HashMap<VarId::Id, VarId::Id>, st: &mut Statement) {
+    fn update_statement(vids_map: HashMap<VarId, VarId>, st: &mut Statement) {
         let mut v = UpdateUsedLocals { vids_map };
         v.visit_statement(st);
     }
@@ -66,7 +66,7 @@ impl UpdateUsedLocals {
 
 impl MutTypeVisitor for UpdateUsedLocals {}
 impl MutExprVisitor for UpdateUsedLocals {
-    fn visit_var_id(&mut self, vid: &mut VarId::Id) {
+    fn visit_var_id(&mut self, vid: &mut VarId) {
         *vid = *self.vids_map.get(vid).unwrap();
     }
 }
@@ -83,14 +83,14 @@ impl MutAstVisitor for UpdateUsedLocals {
 /// mapping from variable index to variable index.
 fn update_locals(
     num_inputs: usize,
-    old_locals: Vector<VarId::Id, Var>,
+    old_locals: Vector<VarId, Var>,
     st: &Statement,
-) -> (Vector<VarId::Id, Var>, HashMap<VarId::Id, VarId::Id>) {
+) -> (Vector<VarId, Var>, HashMap<VarId, VarId>) {
     // Compute the set of used locals
-    let mut used_locals: HashSet<VarId::Id> = HashSet::new();
+    let mut used_locals: HashSet<VarId> = HashSet::new();
     // We always register the return variable and the input arguments
     for i in 0..(num_inputs + 1) {
-        used_locals.insert(VarId::Id::new(i));
+        used_locals.insert(VarId::new(i));
     }
     // Explore the body
     let used_locals_cnt = ComputeUsedLocals::compute_in_statement(st);
@@ -103,8 +103,8 @@ fn update_locals(
 
     // Filter: only keep the variables which are used, and update
     // their indices so as not to have "holes"
-    let mut vids_map: HashMap<VarId::Id, VarId::Id> = HashMap::new();
-    let mut locals: Vector<VarId::Id, Var> = Vector::new();
+    let mut vids_map: HashMap<VarId, VarId> = HashMap::new();
+    let mut locals: Vector<VarId, Var> = Vector::new();
     for var in old_locals {
         if used_locals.contains(&var.index) {
             let old_id = var.index;

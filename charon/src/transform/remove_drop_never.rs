@@ -11,7 +11,7 @@ use crate::values::*;
 
 /// Filter the statement by replacing it with `Nop` if it is a `Drop(x)` where
 /// `x` has type `Never`. Otherwise leave it unchanged.
-fn transform_st(locals: &Vector<VarId::Id, Var>, st: &mut Statement) {
+fn transform_st(locals: &Vector<VarId, Var>, st: &mut Statement) {
     // Shall we filter the statement?
     let filter = match &mut st.content {
         RawStatement::Drop(p) => {

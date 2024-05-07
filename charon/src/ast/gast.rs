@@ -28,7 +28,7 @@ fn dummy_def_id() -> rustc_hir::def_id::DefId {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Var {
     /// Unique index identifying the variable
-    pub index: VarId::Id,
+    pub index: VarId,
     /// Variable name - may be `None` if the variable was introduced by Rust
     /// through desugaring.
     pub name: Option<String>,
@@ -49,7 +49,7 @@ pub struct GExprBody<T> {
     /// - the local used for the return value
     /// - the input arguments
     /// - the remaining locals, used for the intermediate computations
-    pub locals: Vector<VarId::Id, Var>,
+    pub locals: Vector<VarId, Var>,
     pub body: T,
 }
 
@@ -81,25 +81,25 @@ pub enum ItemKind {
     /// Trait item implementation
     TraitItemImpl {
         /// The trait implementation block the method belongs to
-        impl_id: TraitImplId::Id,
+        impl_id: TraitImplId,
         /// The id of the trait decl the method belongs to
-        trait_id: TraitDeclId::Id,
+        trait_id: TraitDeclId,
         /// The name of the item
         item_name: TraitItemName,
         /// True if this item *re-implements* a provided item
         provided: bool,
     },
     /// Trait item declaration
-    TraitItemDecl(TraitDeclId::Id, TraitItemName),
+    TraitItemDecl(TraitDeclId, TraitItemName),
     /// Provided trait item (trait item declaration which defines
     /// a default implementation at the same time)
-    TraitItemProvided(TraitDeclId::Id, TraitItemName),
+    TraitItemProvided(TraitDeclId, TraitItemName),
 }
 
 /// A function definition
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GFunDecl<T> {
-    pub def_id: FunDeclId::Id,
+    pub def_id: FunDeclId,
     #[serde(skip)]
     #[serde(default = "dummy_def_id")]
     pub rust_id: rustc_hir::def_id::DefId,
@@ -123,7 +123,7 @@ pub struct GFunDecl<T> {
 /// A global variable definition, either opaque or transparent.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GGlobalDecl<T> {
-    pub def_id: GlobalDeclId::Id,
+    pub def_id: GlobalDeclId,
     #[serde(skip)]
     #[serde(default = "dummy_def_id")]
     pub rust_id: rustc_hir::def_id::DefId,
@@ -179,7 +179,7 @@ pub struct TraitItemName(pub String);
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TraitDecl {
-    pub def_id: TraitDeclId::Id,
+    pub def_id: TraitDeclId,
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
@@ -199,23 +199,23 @@ pub struct TraitDecl {
     /// ```
     /// TODO: actually, as of today, we consider that all trait clauses of
     /// trait declarations are parent clauses.
-    pub parent_clauses: Vector<TraitClauseId::Id, TraitClause>,
+    pub parent_clauses: Vector<TraitClauseId, TraitClause>,
     /// The associated constants declared in the trait.
     ///
     /// The optional id is for the default value.
-    pub consts: Vec<(TraitItemName, (Ty, Option<GlobalDeclId::Id>))>,
+    pub consts: Vec<(TraitItemName, (Ty, Option<GlobalDeclId>))>,
     /// The associated types declared in the trait.
     pub types: Vec<(TraitItemName, (Vec<TraitClause>, Option<Ty>))>,
     /// The *required* methods.
     ///
     /// The required methods are the methods declared by the trait but with
     /// no default implementation.
-    pub required_methods: Vec<(TraitItemName, FunDeclId::Id)>,
+    pub required_methods: Vec<(TraitItemName, FunDeclId)>,
     /// The *provided* methods.
     ///
     /// The provided methods are the methods with a default implementation.
     ///
-    /// We include the [FunDeclId::Id] identifiers *only* for the local
+    /// We include the [FunDeclId] identifiers *only* for the local
     /// trait declarations. Otherwise, it would mean we extract *all* the
     /// provided methods, which is not something we want to do *yet* for
     /// the external traits.
@@ -223,7 +223,7 @@ pub struct TraitDecl {
     /// TODO: allow to optionnaly extract information. For instance: attempt
     /// to extract, and fail nicely if we don't succeed (definition not in
     /// the supported subset, etc.).
-    pub provided_methods: Vec<(TraitItemName, Option<FunDeclId::Id>)>,
+    pub provided_methods: Vec<(TraitItemName, Option<FunDeclId>)>,
 }
 
 /// A trait **implementation**.
@@ -238,7 +238,7 @@ pub struct TraitDecl {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TraitImpl {
-    pub def_id: TraitImplId::Id,
+    pub def_id: TraitImplId,
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
     pub is_local: bool,
@@ -251,15 +251,15 @@ pub struct TraitImpl {
     pub generics: GenericParams,
     pub preds: Predicates,
     /// The trait references for the parent clauses (see [TraitDecl]).
-    pub parent_trait_refs: Vector<TraitClauseId::Id, TraitRef>,
+    pub parent_trait_refs: Vector<TraitClauseId, TraitRef>,
     /// The associated constants declared in the trait.
-    pub consts: Vec<(TraitItemName, (Ty, GlobalDeclId::Id))>,
+    pub consts: Vec<(TraitItemName, (Ty, GlobalDeclId))>,
     /// The associated types declared in the trait.
     pub types: Vec<(TraitItemName, (Vec<TraitRef>, Ty))>,
     /// The implemented required methods
-    pub required_methods: Vec<(TraitItemName, FunDeclId::Id)>,
+    pub required_methods: Vec<(TraitItemName, FunDeclId)>,
     /// The re-implemented provided methods
-    pub provided_methods: Vec<(TraitItemName, FunDeclId::Id)>,
+    pub provided_methods: Vec<(TraitItemName, FunDeclId)>,
 }
 
 /// A function operand is used in function calls.

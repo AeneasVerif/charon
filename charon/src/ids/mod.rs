@@ -23,32 +23,28 @@ macro_rules! generate_index_type {
         $crate::generate_index_type!($name, stringify!($name));
     };
     ($name:ident, $pretty_name:expr) => {
-        #[allow(non_snake_case)]
-        pub mod $name {
-            index_vec::define_index_type! {
-                pub struct Id = usize;
-                // Must fit in an u32 for serialization.
-                MAX_INDEX = std::u32::MAX as usize;
+        index_vec::define_index_type! {
+            pub struct $name = usize;
+            // Must fit in an u32 for serialization.
+            MAX_INDEX = std::u32::MAX as usize;
+        }
+
+        impl $name {
+            pub const ZERO: Self = Self { _raw: 0 };
+            pub fn is_zero(&self) -> bool {
+                self.index() == 0
             }
-
-            impl Id {
-                pub fn is_zero(&self) -> bool {
-                    self.index() == 0
-                }
-                pub fn to_pretty_string(self) -> String {
-                    format!("@{}{}", $pretty_name, self)
-                }
+            pub fn to_pretty_string(self) -> String {
+                format!("@{}{}", $pretty_name, self)
             }
+        }
 
-            pub static ZERO: Id = Id { _raw: 0 };
-
-            impl std::fmt::Display for Id {
-                fn fmt(
-                    &self,
-                    f: &mut std::fmt::Formatter<'_>,
-                ) -> std::result::Result<(), std::fmt::Error> {
-                    f.write_str(self.index().to_string().as_str())
-                }
+        impl std::fmt::Display for $name {
+            fn fmt(
+                &self,
+                f: &mut std::fmt::Formatter<'_>,
+            ) -> std::result::Result<(), std::fmt::Error> {
+                f.write_str(self.index().to_string().as_str())
             }
         }
     };

@@ -8,7 +8,7 @@ use macros::make_generic_in_borrows;
 use take_mut::take;
 
 impl SwitchTargets {
-    pub fn get_targets(&self) -> Vec<BlockId::Id> {
+    pub fn get_targets(&self) -> Vec<BlockId> {
         match self {
             SwitchTargets::If(then_tgt, else_tgt) => {
                 vec![*then_tgt, *else_tgt]
@@ -140,7 +140,7 @@ impl BlockData {
 /// containing the operand. `f` should explore the operand it receives, and
 /// push statements to the vector it receives as input.
 pub fn body_transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand)>(
-    blocks: &mut Vector<BlockId::Id, BlockData>,
+    blocks: &mut Vector<BlockId, BlockData>,
     f: &mut F,
 ) {
     for block in blocks.iter_mut() {
@@ -199,11 +199,11 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         self.visit_place(p);
     }
 
-    fn visit_set_discriminant(&mut self, p: &Place, _vid: &VariantId::Id) {
+    fn visit_set_discriminant(&mut self, p: &Place, _vid: &VariantId) {
         self.visit_place(p);
     }
 
-    fn visit_storage_dead(&mut self, vid: &VarId::Id) {
+    fn visit_storage_dead(&mut self, vid: &VarId) {
         self.visit_var_id(vid);
     }
 
@@ -248,7 +248,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         self.default_visit_raw_terminator(st);
     }
 
-    fn visit_goto(&mut self, target: &BlockId::Id) {
+    fn visit_goto(&mut self, target: &BlockId) {
         self.visit_block_id(target)
     }
 
@@ -263,22 +263,22 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
 
     fn visit_unreachable(&mut self) {}
 
-    fn visit_drop(&mut self, place: &Place, target: &BlockId::Id) {
+    fn visit_drop(&mut self, place: &Place, target: &BlockId) {
         self.visit_place(place);
         self.visit_block_id(target);
     }
 
-    fn visit_call_statement(&mut self, call: &Call, target: &BlockId::Id) {
+    fn visit_call_statement(&mut self, call: &Call, target: &BlockId) {
         self.visit_call(call);
         self.visit_block_id(target);
     }
 
-    fn visit_assert(&mut self, cond: &Operand, expected: &bool, target: &BlockId::Id) {
+    fn visit_assert(&mut self, cond: &Operand, expected: &bool, target: &BlockId) {
         self.visit_operand(cond);
         self.visit_block_id(target);
     }
 
-    fn visit_block_id(&mut self, id: &BlockId::Id) {}
+    fn visit_block_id(&mut self, id: &BlockId) {}
 
     fn visit_switch_targets(&mut self, targets: &SwitchTargets) {
         use SwitchTargets::*;
@@ -290,7 +290,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         }
     }
 
-    fn visit_if(&mut self, then_id: &BlockId::Id, else_id: &BlockId::Id) {
+    fn visit_if(&mut self, then_id: &BlockId, else_id: &BlockId) {
         self.visit_block_id(then_id);
         self.visit_block_id(else_id);
     }
@@ -298,8 +298,8 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     fn visit_switch_int(
         &mut self,
         int_ty: &IntegerTy,
-        branches: &Vec<(ScalarValue, BlockId::Id)>,
-        otherwise: &BlockId::Id,
+        branches: &Vec<(ScalarValue, BlockId)>,
+        otherwise: &BlockId,
     ) {
         for (_, br) in branches {
             self.visit_block_id(br);

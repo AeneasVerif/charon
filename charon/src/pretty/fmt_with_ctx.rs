@@ -458,7 +458,7 @@ impl<T> GFunDecl<T> {
         let mut args: Vec<String> = Vec::new();
         for i in 0..self.signature.inputs.len() {
             // The input variables start at index 1
-            let id = VarId::Id::new(i + 1);
+            let id = VarId::new(i + 1);
             let arg_ty = &self.signature.inputs.get(i).unwrap();
             args.push(
                 format!("{}: {}", id.to_pretty_string(), arg_ty.fmt_with_ctx(ctx)).to_string(),
@@ -801,7 +801,7 @@ impl Rvalue {
                                 // Format every field
                                 let mut fields = vec![];
                                 for (i, op) in ops.iter().enumerate() {
-                                    let field_id = FieldId::Id::new(i);
+                                    let field_id = FieldId::new(i);
                                     let field_name =
                                         ctx.format_object((*def_id, *variant_id, field_id));
                                     fields.push(format!(
@@ -1184,7 +1184,7 @@ impl TraitImpl {
                 .iter()
                 .enumerate()
                 .map(|(i, clause)| {
-                    let i = TraitClauseId::Id::new(i);
+                    let i = TraitClauseId::new(i);
                     format!(
                         "{TAB_INCR}parent_clause{i} = {}\n",
                         clause.fmt_with_ctx(ctx)
@@ -1664,7 +1664,7 @@ where
 }
 
 pub(crate) fn fmt_body_blocks_with_ctx<C>(
-    body: &Vector<BlockId::Id, BlockData>,
+    body: &Vector<BlockId, BlockData>,
     tab: &str,
     ctx: &C,
 ) -> String

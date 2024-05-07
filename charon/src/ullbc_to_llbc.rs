@@ -42,7 +42,7 @@ use std::iter::FromIterator;
 pub type Defs = (tgt::FunDecls, tgt::GlobalDecls);
 
 /// Control-Flow Graph
-type Cfg = DiGraphMap<src::BlockId::Id, ()>;
+type Cfg = DiGraphMap<src::BlockId, ()>;
 
 /// Small utility
 struct BlockInfo<'a> {
@@ -54,10 +54,10 @@ struct BlockInfo<'a> {
     cfg: &'a CfgInfo,
     body: &'a src::ExprBody,
     exits_info: &'a ExitInfo,
-    explored: &'a mut HashSet<src::BlockId::Id>,
+    explored: &'a mut HashSet<src::BlockId>,
 }
 
-fn get_block_targets(body: &src::ExprBody, block_id: src::BlockId::Id) -> Vec<src::BlockId::Id> {
+fn get_block_targets(body: &src::ExprBody, block_id: src::BlockId) -> Vec<src::BlockId> {
     let block = body.body.get(block_id).unwrap();
 
     match &block.terminator.content {
@@ -89,13 +89,13 @@ struct CfgPartialInfo {
     pub cfg_no_be: Cfg,
     /// We consider the destination of the backward edges to be loop entries and
     /// store them here.
-    pub loop_entries: HashSet<src::BlockId::Id>,
+    pub loop_entries: HashSet<src::BlockId>,
     /// The backward edges
-    pub backward_edges: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
+    pub backward_edges: HashSet<(src::BlockId, src::BlockId)>,
     /// The blocks whose terminators are a switch are stored here.
-    pub switch_blocks: HashSet<src::BlockId::Id>,
+    pub switch_blocks: HashSet<src::BlockId>,
     /// The set of nodes from where we can only reach error nodes (panic, etc.)
-    pub only_reach_error: HashSet<src::BlockId::Id>,
+    pub only_reach_error: HashSet<src::BlockId>,
 }
 
 /// Similar to `CfgPartialInfo`, but with more information
@@ -103,17 +103,17 @@ struct CfgPartialInfo {
 struct CfgInfo {
     pub cfg: Cfg,
     pub cfg_no_be: Cfg,
-    pub loop_entries: HashSet<src::BlockId::Id>,
-    pub backward_edges: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
-    pub switch_blocks: HashSet<src::BlockId::Id>,
-    pub only_reach_error: HashSet<src::BlockId::Id>,
+    pub loop_entries: HashSet<src::BlockId>,
+    pub backward_edges: HashSet<(src::BlockId, src::BlockId)>,
+    pub switch_blocks: HashSet<src::BlockId>,
+    pub only_reach_error: HashSet<src::BlockId>,
     /// The reachability matrix:
     /// src can reach dest <==> (src, dest) in reachability
     ///
     /// TODO: this is not necessary anymore. There is a place where we use it
     /// as a test to shortcut some computations, but computing this matrix
     /// is actually probably too expensive for the shortcut to be useful...
-    pub reachability: HashSet<(src::BlockId::Id, src::BlockId::Id)>,
+    pub reachability: HashSet<(src::BlockId, src::BlockId)>,
 }
 
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
@@ -148,13 +148,13 @@ fn build_cfg_partial_info(body: &src::ExprBody) -> CfgPartialInfo {
     cfg
 }
 
-fn block_is_switch(body: &src::ExprBody, block_id: src::BlockId::Id) -> bool {
+fn block_is_switch(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     let block = body.body.get(block_id).unwrap();
     block.terminator.content.is_switch()
 }
 
 /// The terminator of the block is a panic, etc.
-fn block_is_error(body: &src::ExprBody, block_id: src::BlockId::Id) -> bool {
+fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     let block = body.body.get(block_id).unwrap();
     use src::RawTerminator::*;
     match &block.terminator.content {
@@ -167,10 +167,10 @@ fn block_is_error(body: &src::ExprBody, block_id: src::BlockId::Id) -> bool {
 
 fn build_cfg_partial_info_edges(
     cfg: &mut CfgPartialInfo,
-    ancestors: &im::HashSet<src::BlockId::Id>,
-    explored: &mut im::HashSet<src::BlockId::Id>,
+    ancestors: &im::HashSet<src::BlockId>,
+    explored: &mut im::HashSet<src::BlockId>,
     body: &src::ExprBody,
-    block_id: src::BlockId::Id,
+    block_id: src::BlockId,
 ) {
     // Check if we already explored the current node
     if explored.contains(&block_id) {
@@ -228,7 +228,7 @@ fn build_cfg_partial_info_edges(
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct OrdBlockId {
-    id: src::BlockId::Id,
+    id: src::BlockId,
     /// The rank in the topological order
     rank: usize,
 }
@@ -249,7 +249,7 @@ impl PartialOrd for OrdBlockId {
 ///
 /// We represent the reachability matrix as a set such R that:
 /// there exists a path from src to dest <==> (src, dest) in R
-fn compute_reachability(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId::Id, src::BlockId::Id)> {
+fn compute_reachability(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId, src::BlockId)> {
     // We simply use Floyd-Warshall.
     // We just need to be a little careful: we have to make sure the value we
     // use for infinity is never reached. That is to say, that there are
@@ -261,11 +261,11 @@ fn compute_reachability(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId::Id, src:
     // It it still good to keep it there, though.
     assert!(cfg.cfg.edge_count() < std::usize::MAX); // Making the comparison strict to avoid warnings...
 
-    let fw_matrix: HashMap<(src::BlockId::Id, src::BlockId::Id), usize> =
+    let fw_matrix: HashMap<(src::BlockId, src::BlockId), usize> =
         floyd_warshall(&cfg.cfg, &|_| 1).unwrap();
 
     // Convert the fw_matrix
-    let reachability: HashSet<(src::BlockId::Id, src::BlockId::Id)> =
+    let reachability: HashSet<(src::BlockId, src::BlockId)> =
         HashSet::from_iter(fw_matrix.into_iter().filter_map(|((src, dst), dest)| {
             if dest == std::usize::MAX {
                 None
@@ -340,8 +340,8 @@ struct LoopExitCandidateInfo {
 /// We use this to find candidates for loop exits.
 fn loop_entry_is_reachable_from_inner(
     cfg: &CfgInfo,
-    loop_entry: src::BlockId::Id,
-    block_id: src::BlockId::Id,
+    loop_entry: src::BlockId,
+    block_id: src::BlockId,
 ) -> bool {
     // Shortcut: the loop entry is not reachable at all
     if !cfg.reachability.contains(&(block_id, loop_entry)) {
@@ -357,8 +357,8 @@ fn loop_entry_is_reachable_from_inner(
     // more direct paths).
 
     // Explore the graph starting at block_id
-    let mut explored: HashSet<src::BlockId::Id> = HashSet::new();
-    let mut stack: VecDeque<src::BlockId::Id> = VecDeque::new();
+    let mut explored: HashSet<src::BlockId> = HashSet::new();
+    let mut stack: VecDeque<src::BlockId> = VecDeque::new();
     stack.push_back(block_id);
     while !stack.is_empty() {
         let bid = stack.pop_front().unwrap();
@@ -393,14 +393,14 @@ fn loop_entry_is_reachable_from_inner(
 }
 
 struct FilteredLoopParents {
-    remaining_parents: Vector<(src::BlockId::Id, usize)>,
-    removed_parents: Vector<(src::BlockId::Id, usize)>,
+    remaining_parents: Vector<(src::BlockId, usize)>,
+    removed_parents: Vector<(src::BlockId, usize)>,
 }
 
 fn filter_loop_parents(
     cfg: &CfgInfo,
-    parent_loops: &Vector<(src::BlockId::Id, usize)>,
-    block_id: src::BlockId::Id,
+    parent_loops: &Vector<(src::BlockId, usize)>,
+    block_id: src::BlockId,
 ) -> Option<FilteredLoopParents> {
     let mut eliminate: usize = 0;
     for (loop_id, _ldist) in parent_loops.iter().rev() {
@@ -439,9 +439,9 @@ fn filter_loop_parents(
 
 /// List the nodes reachable from a starting point.
 /// We list the nodes and the depth (in the AST) at which they were found.
-fn list_reachable(cfg: &Cfg, start: src::BlockId::Id) -> HashMap<src::BlockId::Id, usize> {
-    let mut reachable: HashMap<src::BlockId::Id, usize> = HashMap::new();
-    let mut stack: VecDeque<(src::BlockId::Id, usize)> = VecDeque::new();
+fn list_reachable(cfg: &Cfg, start: src::BlockId) -> HashMap<src::BlockId, usize> {
+    let mut reachable: HashMap<src::BlockId, usize> = HashMap::new();
+    let mut stack: VecDeque<(src::BlockId, usize)> = VecDeque::new();
     stack.push_back((start, 0));
 
     while !stack.is_empty() {
@@ -474,12 +474,9 @@ fn list_reachable(cfg: &Cfg, start: src::BlockId::Id) -> HashMap<src::BlockId::I
 /// parent loops.
 fn register_children_as_loop_exit_candidates(
     cfg: &CfgInfo,
-    loop_exits: &mut HashMap<
-        src::BlockId::Id,
-        LinkedHashMap<src::BlockId::Id, LoopExitCandidateInfo>,
-    >,
-    removed_parent_loops: &Vector<(src::BlockId::Id, usize)>,
-    block_id: src::BlockId::Id,
+    loop_exits: &mut HashMap<src::BlockId, LinkedHashMap<src::BlockId, LoopExitCandidateInfo>>,
+    removed_parent_loops: &Vector<(src::BlockId, usize)>,
+    block_id: src::BlockId,
 ) {
     // List the reachable nodes
     let reachable = list_reachable(&cfg.cfg_no_be, block_id);
@@ -522,17 +519,14 @@ fn register_children_as_loop_exit_candidates(
 /// store the candidates in a linked hash map.
 fn compute_loop_exit_candidates(
     cfg: &CfgInfo,
-    explored: &mut HashSet<src::BlockId::Id>,
-    ordered_loops: &mut Vec<src::BlockId::Id>,
-    loop_exits: &mut HashMap<
-        src::BlockId::Id,
-        LinkedHashMap<src::BlockId::Id, LoopExitCandidateInfo>,
-    >,
+    explored: &mut HashSet<src::BlockId>,
+    ordered_loops: &mut Vec<src::BlockId>,
+    loop_exits: &mut HashMap<src::BlockId, LinkedHashMap<src::BlockId, LoopExitCandidateInfo>>,
     // List of parent loops, with the distance to the entry of the loop (the distance
     // is the distance between the current node and the loop entry for the last parent,
     // and the distance between the parents for the others).
-    mut parent_loops: Vector<(src::BlockId::Id, usize)>,
-    block_id: src::BlockId::Id,
+    mut parent_loops: Vector<(src::BlockId, usize)>,
+    block_id: src::BlockId,
 ) {
     if explored.contains(&block_id) {
         return;
@@ -740,7 +734,7 @@ fn compute_loop_exit_candidates(
 ///     s
 /// }
 /// ```
-fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
+fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockId>> {
     let mut explored = HashSet::new();
     let mut ordered_loops = Vec::new();
     let mut loop_exits = HashMap::new();
@@ -770,8 +764,8 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
     }
 
     // Choose one candidate among the potential candidates.
-    let mut exits: HashSet<src::BlockId::Id> = HashSet::new();
-    let mut chosen_loop_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>> = HashMap::new();
+    let mut exits: HashSet<src::BlockId> = HashSet::new();
+    let mut chosen_loop_exits: HashMap<src::BlockId, Option<src::BlockId>> = HashMap::new();
     // For every loop
     for loop_id in ordered_loops {
         // Check the candidates.
@@ -817,7 +811,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId::Id, Option<src::Bl
         // We find the one with the highest occurrence and the smallest distance
         // from the entry of the loop (note that we take care of listing the exit
         // candidates in a deterministic order).
-        let mut best_exit: Option<src::BlockId::Id> = None;
+        let mut best_exit: Option<src::BlockId> = None;
         let mut best_occurrences = 0;
         let mut best_dist_sum = std::usize::MAX;
         for (candidate_id, occurrences, dist_sum) in loop_exits.iter() {
@@ -948,8 +942,8 @@ struct BlocksInfo {
 /// Create an [OrdBlockId] from a block id and a rank given by a map giving
 /// a sort (topological in our use cases) over the graph.
 fn make_ord_block_id(
-    block_id: src::BlockId::Id,
-    sort_map: &HashMap<src::BlockId::Id, usize>,
+    block_id: src::BlockId,
+    sort_map: &HashMap<src::BlockId, usize>,
 ) -> OrdBlockId {
     let rank = *sort_map.get(&block_id).unwrap();
     OrdBlockId { id: block_id, rank }
@@ -959,9 +953,9 @@ fn make_ord_block_id(
 /// This information is then used to compute the switch exits.
 fn compute_switch_exits_explore(
     cfg: &CfgInfo,
-    tsort_map: &HashMap<src::BlockId::Id, usize>,
-    memoized: &mut HashMap<src::BlockId::Id, BlocksInfo>,
-    block_id: src::BlockId::Id,
+    tsort_map: &HashMap<src::BlockId, usize>,
+    memoized: &mut HashMap<src::BlockId, BlocksInfo>,
+    block_id: src::BlockId,
 ) -> BlocksInfo {
     // Shortcut
     if let Some(res) = memoized.get(&block_id) {
@@ -969,7 +963,7 @@ fn compute_switch_exits_explore(
     }
 
     // Find the next blocks, and their successors
-    let children: Vec<src::BlockId::Id> = Vec::from_iter(cfg.cfg_no_be.neighbors(block_id));
+    let children: Vec<src::BlockId> = Vec::from_iter(cfg.cfg_no_be.neighbors(block_id));
     let mut children_succs: Vec<im::OrdSet<OrdBlockId>> = Vec::from_iter(
         children
             .iter()
@@ -1096,8 +1090,8 @@ fn compute_switch_exits_explore(
 /// to the outer switches.
 fn compute_switch_exits(
     cfg: &CfgInfo,
-    tsort_map: &HashMap<src::BlockId::Id, usize>,
-) -> HashMap<src::BlockId::Id, Option<src::BlockId::Id>> {
+    tsort_map: &HashMap<src::BlockId, usize>,
+) -> HashMap<src::BlockId, Option<src::BlockId>> {
     // Compute the successors info map, starting at the root node
     let mut succs_info_map = HashMap::new();
     let _ = compute_switch_exits_explore(cfg, tsort_map, &mut succs_info_map, src::BlockId::ZERO);
@@ -1198,7 +1192,7 @@ fn compute_switch_exits(
 #[derive(Debug, Clone)]
 struct ExitInfo {
     /// The loop exits
-    loop_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    loop_exits: HashMap<src::BlockId, Option<src::BlockId>>,
     /// Some loop exits actually belong to outer switches. We still need
     /// to track them in the loop exits, in order to know when we should
     /// insert a break. However, we need to make sure we don't add the
@@ -1223,10 +1217,10 @@ struct ExitInfo {
     /// };
     /// exit_blocks // the exit blocks are here
     /// ```
-    owned_loop_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    owned_loop_exits: HashMap<src::BlockId, Option<src::BlockId>>,
     /// The switch exits.
     /// Note that the switch exits are always owned.
-    owned_switch_exits: HashMap<src::BlockId::Id, Option<src::BlockId::Id>>,
+    owned_switch_exits: HashMap<src::BlockId, Option<src::BlockId>>,
 }
 
 /// Compute the exits for the loops and the switches (switch on integer and
@@ -1324,10 +1318,10 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
     // Use the CFG without backward edges to topologically sort the nodes.
     // Note that `toposort` returns `Err` if and only if it finds cycles (which
     // can't happen).
-    let tsorted: Vec<src::BlockId::Id> = toposort(&cfg_info.cfg_no_be, None).unwrap();
+    let tsorted: Vec<src::BlockId> = toposort(&cfg_info.cfg_no_be, None).unwrap();
 
     // Build the map: block id -> topological sort rank
-    let tsort_map: HashMap<src::BlockId::Id, usize> = HashMap::from_iter(
+    let tsort_map: HashMap<src::BlockId, usize> = HashMap::from_iter(
         tsorted
             .into_iter()
             .enumerate()
@@ -1448,9 +1442,9 @@ fn combine_statements_and_statement(
 
 fn get_goto_kind(
     exits_info: &ExitInfo,
-    parent_loops: &Vector<src::BlockId::Id>,
-    switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
-    next_block_id: src::BlockId::Id,
+    parent_loops: &Vector<src::BlockId>,
+    switch_exit_blocks: &im::HashSet<src::BlockId>,
+    next_block_id: src::BlockId,
 ) -> GotoKind {
     // First explore the parent loops in revert order
     let len = parent_loops.len();
@@ -1493,10 +1487,10 @@ enum GotoKind {
 /// We use the one for the parent terminator.
 fn translate_child_block(
     info: &mut BlockInfo<'_>,
-    parent_loops: &Vector<src::BlockId::Id>,
-    switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
+    parent_loops: &Vector<src::BlockId>,
+    switch_exit_blocks: &im::HashSet<src::BlockId>,
     parent_meta: Meta,
-    child_id: src::BlockId::Id,
+    child_id: src::BlockId,
 ) -> Option<Box<tgt::Statement>> {
     // Check if this is a backward call
     match get_goto_kind(info.exits_info, parent_loops, switch_exit_blocks, child_id) {
@@ -1552,8 +1546,8 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 
 fn translate_terminator(
     info: &mut BlockInfo<'_>,
-    parent_loops: &Vector<src::BlockId::Id>,
-    switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
+    parent_loops: &Vector<src::BlockId>,
+    switch_exit_blocks: &im::HashSet<src::BlockId>,
     terminator: &src::Terminator,
 ) -> Option<Box<tgt::Statement>> {
     let src_meta = terminator.meta;
@@ -1666,7 +1660,7 @@ fn translate_terminator(
                     // - vector of matched integer values
                     // - translated blocks
                     let mut branches: LinkedHashMap<
-                        src::BlockId::Id,
+                        src::BlockId,
                         (Vec<v::ScalarValue>, tgt::Statement),
                     > = LinkedHashMap::new();
 
@@ -1783,9 +1777,9 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
 /// to make this code constant space, but that would require a serious rewriting.
 fn translate_block(
     info: &mut BlockInfo<'_>,
-    parent_loops: &Vector<src::BlockId::Id>,
-    switch_exit_blocks: &im::HashSet<src::BlockId::Id>,
-    block_id: src::BlockId::Id,
+    parent_loops: &Vector<src::BlockId>,
+    switch_exit_blocks: &im::HashSet<src::BlockId>,
+    block_id: src::BlockId,
 ) -> Option<Box<tgt::Statement>> {
     // If the user activated this check: check that we didn't already translate
     // this block, and insert the block id in the set of already translated blocks.
@@ -1804,7 +1798,7 @@ fn translate_block(
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
     let is_loop = info.cfg.loop_entries.contains(&block_id);
-    let mut nparent_loops: Vector<src::BlockId::Id>;
+    let mut nparent_loops: Vector<src::BlockId>;
     let nparent_loops = if info.cfg.loop_entries.contains(&block_id) {
         nparent_loops = parent_loops.clone();
         nparent_loops.push_back(block_id);
@@ -1946,7 +1940,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     }
 }
 
-fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl {
+fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId) -> tgt::FunDecl {
     // Retrieve the function definition
     let src_def = ctx.fun_decls.get(src_def_id).unwrap();
     let fctx = ctx.into_fmt();
@@ -1972,7 +1966,7 @@ fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId::Id) -> tgt::FunDecl
     }
 }
 
-fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalDecl {
+fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId) -> tgt::GlobalDecl {
     // Retrieve the global definition
     let src_def = ctx.global_decls.get(global_id).unwrap();
     let fctx = ctx.into_fmt();

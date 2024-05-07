@@ -29,7 +29,7 @@ generate_index_type!(GlobalDeclId, "Global");
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TypeVar {
     /// Unique index identifying the variable
-    pub index: TypeVarId::Id,
+    pub index: TypeVarId,
     /// Variable name
     pub name: String,
 }
@@ -38,7 +38,7 @@ pub struct TypeVar {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash, PartialOrd, Ord)]
 pub struct RegionVar {
     /// Unique index identifying the variable
-    pub index: RegionId::Id,
+    pub index: RegionId,
     /// Region name
     pub name: Option<String>,
 }
@@ -47,7 +47,7 @@ pub struct RegionVar {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ConstGenericVar {
     /// Unique index identifying the variable
-    pub index: ConstGenericVarId::Id,
+    pub index: ConstGenericVarId,
     /// Const generic name
     pub name: String,
     /// Type of the const generic
@@ -99,7 +99,7 @@ pub enum Region {
     ///                                De Bruijn: 1
     ///                                   Var id: 1
     /// ```
-    BVar(DeBruijnId, RegionId::Id),
+    BVar(DeBruijnId, RegionId),
     /// Erased region
     Erased,
     /// For error reporting.
@@ -117,11 +117,11 @@ pub enum Region {
 pub enum TraitInstanceId {
     ///
     /// A specific implementation
-    TraitImpl(TraitImplId::Id),
+    TraitImpl(TraitImplId),
     ///
     /// A specific builtin trait implementation like [core::marker::Sized] or
     /// auto trait implementation like [core::marker::Syn].
-    BuiltinOrAuto(TraitDeclId::Id),
+    BuiltinOrAuto(TraitDeclId),
     ///
     /// One of the local clauses.
     ///
@@ -131,11 +131,11 @@ pub enum TraitInstanceId {
     ///                    ^^^^^^^
     ///                    Clause(0)
     /// ```
-    Clause(TraitClauseId::Id),
+    Clause(TraitClauseId),
     ///
     /// A parent clause
     ///
-    /// Remark: the [TraitDeclId::Id] gives the trait declaration which is
+    /// Remark: the [TraitDeclId] gives the trait declaration which is
     /// implemented by the instance id from which we take the parent clause
     /// (see example below). It is not necessary and included for convenience.
     ///
@@ -159,12 +159,12 @@ pub enum TraitInstanceId {
     ///              clause 0 implements Bar
     /// }
     /// ```
-    ParentClause(Box<TraitInstanceId>, TraitDeclId::Id, TraitClauseId::Id),
+    ParentClause(Box<TraitInstanceId>, TraitDeclId, TraitClauseId),
     ///
     /// A clause bound in a trait item (typically a trait clause in an
     /// associated type).
     ///
-    /// Remark: the [TraitDeclId::Id] gives the trait declaration which is
+    /// Remark: the [TraitDeclId] gives the trait declaration which is
     /// implemented by the trait implementation from which we take the item
     /// (see below). It is not necessary and provided for convenience.
     ///
@@ -190,9 +190,9 @@ pub enum TraitInstanceId {
     ///
     ItemClause(
         Box<TraitInstanceId>,
-        TraitDeclId::Id,
+        TraitDeclId,
         TraitItemName,
-        TraitClauseId::Id,
+        TraitClauseId,
     ),
     /// Happens when we use a function pointer as an object implementing a
     /// trait like `Fn` or `FnMut`.
@@ -211,7 +211,7 @@ pub enum TraitInstanceId {
     /// It is important to differentiate the cases, because closures have a
     /// state. Whenever we create a closure, we actually create an aggregated
     /// value with a function pointer and a state.
-    Closure(FunDeclId::Id, GenericArgs),
+    Closure(FunDeclId, GenericArgs),
     ///
     /// Self, in case of trait declarations/implementations.
     ///
@@ -226,7 +226,7 @@ pub enum TraitInstanceId {
     /// haven't been registered yet. This variant is purely internal: after we
     /// finished solving the trait obligations, all the remaining unsolved
     /// clauses (in case we don't fail hard on error) are converted to [Unknown].
-    Unsolved(TraitDeclId::Id, GenericArgs),
+    Unsolved(TraitDeclId, GenericArgs),
     /// For error reporting.
     /// Can appear only if the option [CliOpts::continue_on_failure] is used.
     Unknown(String),
@@ -251,7 +251,7 @@ pub struct TraitRef {
 /// The substitution is: `[String, bool]`.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct TraitDeclRef {
-    pub trait_id: TraitDeclId::Id,
+    pub trait_id: TraitDeclId,
     pub generics: GenericArgs,
 }
 
@@ -305,9 +305,9 @@ pub struct GenericArgs {
 /// be filled with witnesses/instances.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GenericParams {
-    pub regions: Vector<RegionId::Id, RegionVar>,
-    pub types: Vector<TypeVarId::Id, TypeVar>,
-    pub const_generics: Vector<ConstGenericVarId::Id, ConstGenericVar>,
+    pub regions: Vector<RegionId, RegionVar>,
+    pub types: Vector<TypeVarId, TypeVar>,
+    pub const_generics: Vector<ConstGenericVarId, ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
     // Remark: we use a regular [Vec], not a [TraitClauseId::Vector], because due to the
     // filtering of some trait clauses (for the marker traits for instance) the indexation
@@ -325,10 +325,10 @@ pub struct TraitClause {
     /// We use this id when solving trait constraints, to be able to refer
     /// to specific where clauses when the selected trait actually is linked
     /// to a parameter.
-    pub clause_id: TraitClauseId::Id,
+    pub clause_id: TraitClauseId,
     #[derivative(PartialEq = "ignore")]
     pub meta: Option<Meta>,
-    pub trait_id: TraitDeclId::Id,
+    pub trait_id: TraitDeclId,
     /// Remark: the trait refs list in the [generics] field should be empty.
     pub generics: GenericArgs,
 }
@@ -350,7 +350,7 @@ impl Eq for TraitClause {}
 /// inlined in MIR.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TypeDecl {
-    pub def_id: TypeDeclId::Id,
+    pub def_id: TypeDeclId,
     /// Meta information associated with the type.
     pub item_meta: ItemMeta,
     /// [true] if the type decl is a local type decl, [false] if it comes from
@@ -365,8 +365,8 @@ pub struct TypeDecl {
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize)]
 pub enum TypeDeclKind {
-    Struct(Vector<FieldId::Id, Field>),
-    Enum(Vector<VariantId::Id, Variant>),
+    Struct(Vector<FieldId, Field>),
+    Enum(Vector<VariantId, Variant>),
     /// An opaque type.
     ///
     /// Either a local type marked as opaque, or an external type.
@@ -380,7 +380,7 @@ pub enum TypeDeclKind {
 pub struct Variant {
     pub meta: Meta,
     pub name: String,
-    pub fields: Vector<FieldId::Id, Field>,
+    pub fields: Vector<FieldId, Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
     /// `SwitchInt` targets with the corresponding `Variant`.
     pub discriminant: ScalarValue,
@@ -464,7 +464,7 @@ pub enum TypeId {
     ///
     /// Includes transparent ADTs and opaque ADTs (local ADTs marked as opaque,
     /// and external ADTs).
-    Adt(TypeDeclId::Id),
+    Adt(TypeDeclId),
     Tuple,
     /// Assumed type. Either a primitive type like array or slice, or a
     /// non-primitive type coming from a standard library
@@ -476,7 +476,7 @@ pub enum TypeId {
     Assumed(AssumedTy),
 }
 
-pub type TypeDecls = Map<TypeDeclId::Id, TypeDecl>;
+pub type TypeDecls = Map<TypeDeclId, TypeDecl>;
 
 /// Types of primitive values. Either an integer, bool, char
 #[derive(
@@ -519,9 +519,9 @@ pub enum LiteralTy {
 )]
 pub enum ConstGeneric {
     /// A global constant
-    Global(GlobalDeclId::Id),
+    Global(GlobalDeclId),
     /// A const generic variable
-    Var(ConstGenericVarId::Id),
+    Var(ConstGenericVarId),
     /// A concrete value
     Value(Literal),
 }
@@ -552,7 +552,7 @@ pub enum Ty {
     /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
     /// The last list is used encode const generics, e.g., the size of an array
     Adt(TypeId, GenericArgs),
-    TypeVar(TypeVarId::Id),
+    TypeVar(TypeVarId),
     Literal(LiteralTy),
     /// The never type, for computations which don't return. It is sometimes
     /// necessary for intermediate variables. For instance, if we do (coming
@@ -588,7 +588,7 @@ pub enum Ty {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(Vector<RegionId::Id, RegionVar>, Vec<Ty>, Box<Ty>),
+    Arrow(Vector<RegionId, RegionVar>, Vec<Ty>, Box<Ty>),
 }
 
 /// Assumed types identifiers.

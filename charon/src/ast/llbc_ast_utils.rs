@@ -194,7 +194,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         self.visit_place(p);
     }
 
-    fn visit_set_discriminant(&mut self, p: &Place, _: &VariantId::Id) {
+    fn visit_set_discriminant(&mut self, p: &Place, _: &VariantId) {
         self.visit_place(p);
     }
 
@@ -260,7 +260,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     fn visit_match(
         &mut self,
         scrut: &Place,
-        branches: &Vec<(Vec<VariantId::Id>, Statement)>,
+        branches: &Vec<(Vec<VariantId>, Statement)>,
         otherwise: &Option<Box<Statement>>,
     ) {
         self.visit_place(scrut);

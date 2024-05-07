@@ -93,7 +93,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
 
                         // Convert between discriminants and variant indices. Remark: the discriminant can
                         // be of any *signed* integer type (`isize`, `i8`, etc.).
-                        let discr_to_id: HashMap<ScalarValue, VariantId::Id> = variants
+                        let discr_to_id: HashMap<ScalarValue, VariantId> = variants
                             .iter_indexed_values()
                             .map(|(id, variant)| (variant.discriminant, id))
                             .collect();

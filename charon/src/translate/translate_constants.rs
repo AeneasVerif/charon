@@ -80,7 +80,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let vid = if info.typ_is_struct {
                     None
                 } else {
-                    Some(VariantId::Id::new(info.variant_index))
+                    Some(VariantId::new(info.variant_index))
                 };
                 RawConstantExpr::Adt(vid, fields)
             }

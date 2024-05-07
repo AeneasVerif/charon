@@ -34,13 +34,13 @@ pub(crate) enum SubstFunIdOrPanic {
     Fun(SubstFunId),
 }
 
-fn translate_variant_id(id: hax::VariantIdx) -> VariantId::Id {
-    VariantId::Id::new(id)
+fn translate_variant_id(id: hax::VariantIdx) -> VariantId {
+    VariantId::new(id)
 }
 
-fn translate_field_id(id: hax::FieldIdx) -> FieldId::Id {
+fn translate_field_id(id: hax::FieldIdx) -> FieldId {
     use rustc_index::Idx;
-    FieldId::Id::new(id.index())
+    FieldId::new(id.index())
 }
 
 /// Translate a `BorrowKind`
@@ -278,7 +278,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate a basic block id and register it, if it hasn't been done.
-    fn translate_basic_block_id(&mut self, block_id: hax::BasicBlock) -> BlockId::Id {
+    fn translate_basic_block_id(&mut self, block_id: hax::BasicBlock) -> BlockId {
         match self.blocks_map.get(&block_id) {
             None => {
                 // Generate a fresh id - this also registers the block
@@ -354,7 +354,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         place: &hax::Place,
-    ) -> Result<(VarId::Id, Projection), Error> {
+    ) -> Result<(VarId, Projection), Error> {
         let erase_regions = true;
         match &place.kind {
             hax::PlaceKind::Local(local) => {
@@ -1308,7 +1308,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::SwitchTargets::SwitchInt(_, targets_map, otherwise) => {
                 let int_ty = *switch_ty.as_literal().as_integer();
-                let targets_map: Vec<(ScalarValue, BlockId::Id)> = targets_map
+                let targets_map: Vec<(ScalarValue, BlockId)> = targets_map
                     .iter()
                     .map(|(v, tgt)| {
                         let v = ScalarValue::from_le_bytes(int_ty, v.data_le_bytes);
