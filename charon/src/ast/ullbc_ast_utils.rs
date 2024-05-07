@@ -1,4 +1,5 @@
 //! Implementations for [crate::ullbc_ast]
+use crate::ids::Vector;
 use crate::meta::Meta;
 use crate::types::*;
 use crate::ullbc_ast::*;
@@ -139,7 +140,7 @@ impl BlockData {
 /// containing the operand. `f` should explore the operand it receives, and
 /// push statements to the vector it receives as input.
 pub fn body_transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand)>(
-    blocks: &mut BlockId::Vector<BlockData>,
+    blocks: &mut Vector<BlockId::Id, BlockData>,
     f: &mut F,
 ) {
     for block in blocks.iter_mut() {

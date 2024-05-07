@@ -22,6 +22,7 @@
 
 use crate::expressions::Place;
 use crate::formatter::{Formatter, IntoFormatter};
+use crate::ids::Map;
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_meta, Meta};
 use crate::translate_ctx::TransCtx;
@@ -2000,8 +2001,8 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId::Id) -> tgt::GlobalD
 
 /// Translate the functions by reconstructing the control-flow.
 pub fn translate_functions(ctx: &TransCtx) -> Defs {
-    let mut tgt_funs = FunDeclId::Map::new();
-    let mut tgt_globals = GlobalDeclId::Map::new();
+    let mut tgt_funs = Map::new();
+    let mut tgt_globals = Map::new();
 
     // Translate the bodies one at a time
     for (fun_id, _) in ctx.fun_decls.iter_indexed() {

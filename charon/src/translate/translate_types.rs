@@ -2,6 +2,7 @@ use crate::assumed;
 use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
+use crate::ids::Vector;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::ScalarValue;
@@ -540,7 +541,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // The type is transparent: explore the variants
-        let mut variants: VariantId::Vector<Variant> = Default::default();
+        let mut variants: Vector<VariantId::Id, Variant> = Default::default();
         let erase_regions = false;
         for (i, (rust_var_id, var_def)) in adt.variants().iter_enumerated().enumerate() {
             let var_def: hax::VariantDef = var_def.sinto(&self.hax_state);
@@ -557,7 +558,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 ScalarValue::Isize(0)
             };
 
-            let mut fields: FieldId::Vector<Field> = Default::default();
+            let mut fields: Vector<FieldId::Id, Field> = Default::default();
             /* This is for sanity: check that either all the fields have names, or
              * none of them has */
             let mut have_names: Option<bool> = Option::None;

@@ -2,6 +2,7 @@
 pub use crate::expressions::*;
 pub use crate::gast_utils::*;
 use crate::generate_index_type;
+use crate::ids::Vector;
 use crate::meta::{ItemMeta, Meta};
 use crate::names::Name;
 pub use crate::types::GlobalDeclId;
@@ -48,7 +49,7 @@ pub struct GExprBody<T> {
     /// - the local used for the return value
     /// - the input arguments
     /// - the remaining locals, used for the intermediate computations
-    pub locals: VarId::Vector<Var>,
+    pub locals: Vector<VarId::Id, Var>,
     pub body: T,
 }
 
@@ -198,7 +199,7 @@ pub struct TraitDecl {
     /// ```
     /// TODO: actually, as of today, we consider that all trait clauses of
     /// trait declarations are parent clauses.
-    pub parent_clauses: TraitClauseId::Vector<TraitClause>,
+    pub parent_clauses: Vector<TraitClauseId::Id, TraitClause>,
     /// The associated constants declared in the trait.
     ///
     /// The optional id is for the default value.
@@ -250,7 +251,7 @@ pub struct TraitImpl {
     pub generics: GenericParams,
     pub preds: Predicates,
     /// The trait references for the parent clauses (see [TraitDecl]).
-    pub parent_trait_refs: TraitClauseId::Vector<TraitRef>,
+    pub parent_trait_refs: Vector<TraitClauseId::Id, TraitRef>,
     /// The associated constants declared in the trait.
     pub consts: Vec<(TraitItemName, (Ty, GlobalDeclId::Id))>,
     /// The associated types declared in the trait.

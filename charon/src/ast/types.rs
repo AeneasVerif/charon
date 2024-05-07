@@ -1,4 +1,5 @@
 pub use crate::gast::{FunDeclId, TraitItemName};
+use crate::ids::{Map, Vector};
 use crate::meta::{ItemMeta, Meta};
 use crate::names::Name;
 pub use crate::types_utils::*;
@@ -304,9 +305,9 @@ pub struct GenericArgs {
 /// be filled with witnesses/instances.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GenericParams {
-    pub regions: RegionId::Vector<RegionVar>,
-    pub types: TypeVarId::Vector<TypeVar>,
-    pub const_generics: ConstGenericVarId::Vector<ConstGenericVar>,
+    pub regions: Vector<RegionId::Id, RegionVar>,
+    pub types: Vector<TypeVarId::Id, TypeVar>,
+    pub const_generics: Vector<ConstGenericVarId::Id, ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
     // Remark: we use a regular [Vec], not a [TraitClauseId::Vector], because due to the
     // filtering of some trait clauses (for the marker traits for instance) the indexation
@@ -364,8 +365,8 @@ pub struct TypeDecl {
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize)]
 pub enum TypeDeclKind {
-    Struct(FieldId::Vector<Field>),
-    Enum(VariantId::Vector<Variant>),
+    Struct(Vector<FieldId::Id, Field>),
+    Enum(Vector<VariantId::Id, Variant>),
     /// An opaque type.
     ///
     /// Either a local type marked as opaque, or an external type.
@@ -379,7 +380,7 @@ pub enum TypeDeclKind {
 pub struct Variant {
     pub meta: Meta,
     pub name: String,
-    pub fields: FieldId::Vector<Field>,
+    pub fields: Vector<FieldId::Id, Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
     /// `SwitchInt` targets with the corresponding `Variant`.
     pub discriminant: ScalarValue,
@@ -475,7 +476,7 @@ pub enum TypeId {
     Assumed(AssumedTy),
 }
 
-pub type TypeDecls = TypeDeclId::Map<TypeDecl>;
+pub type TypeDecls = Map<TypeDeclId::Id, TypeDecl>;
 
 /// Types of primitive values. Either an integer, bool, char
 #[derive(
@@ -587,7 +588,7 @@ pub enum Ty {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(RegionId::Vector<RegionVar>, Vec<Ty>, Box<Ty>),
+    Arrow(Vector<RegionId::Id, RegionVar>, Vec<Ty>, Box<Ty>),
 }
 
 /// Assumed types identifiers.

@@ -4,6 +4,7 @@
 //! remaining afterwards.
 use crate::expressions::{MutExprVisitor, SharedExprVisitor};
 use crate::formatter::{Formatter, IntoFormatter};
+use crate::ids::Vector;
 use crate::llbc_ast::{FunDecls, GlobalDecls, MutAstVisitor, SharedAstVisitor, Statement};
 use crate::translate_ctx::TransCtx;
 use crate::types::{MutTypeVisitor, SharedTypeVisitor};
@@ -82,9 +83,9 @@ impl MutAstVisitor for UpdateUsedLocals {
 /// mapping from variable index to variable index.
 fn update_locals(
     num_inputs: usize,
-    old_locals: VarId::Vector<Var>,
+    old_locals: Vector<VarId::Id, Var>,
     st: &Statement,
-) -> (VarId::Vector<Var>, HashMap<VarId::Id, VarId::Id>) {
+) -> (Vector<VarId::Id, Var>, HashMap<VarId::Id, VarId::Id>) {
     // Compute the set of used locals
     let mut used_locals: HashSet<VarId::Id> = HashSet::new();
     // We always register the return variable and the input arguments
@@ -103,7 +104,7 @@ fn update_locals(
     // Filter: only keep the variables which are used, and update
     // their indices so as not to have "holes"
     let mut vids_map: HashMap<VarId::Id, VarId::Id> = HashMap::new();
-    let mut locals: VarId::Vector<Var> = VarId::Vector::new();
+    let mut locals: Vector<VarId::Id, Var> = Vector::new();
     for var in old_locals {
         if used_locals.contains(&var.index) {
             let old_id = var.index;

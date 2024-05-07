@@ -3,6 +3,7 @@
 use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::gast::{Call, GenericArgs, Var};
+use crate::ids::Vector;
 use crate::llbc_ast::*;
 use crate::meta::Meta;
 use crate::translate_ctx::TransCtx;
@@ -19,7 +20,7 @@ use std::mem::replace;
 /// store the new statements inside the visitor. Once we've finished exploring
 /// the statement, we insert those before the statement.
 struct Transform<'a> {
-    locals: &'a mut VarId::Vector<Var>,
+    locals: &'a mut Vector<VarId::Id, Var>,
     statements: Vec<Statement>,
     /// Meta information of the outer statement
     meta: Option<Meta>,
@@ -222,7 +223,7 @@ impl<'a> MutAstVisitor for Transform<'a> {
     }
 }
 
-fn transform_st(locals: &mut VarId::Vector<Var>, s: &mut Statement) -> Option<Vec<Statement>> {
+fn transform_st(locals: &mut Vector<VarId::Id, Var>, s: &mut Statement) -> Option<Vec<Statement>> {
     // Explore the places/operands
     let mut visitor = Transform {
         locals,

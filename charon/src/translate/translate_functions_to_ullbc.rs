@@ -11,6 +11,7 @@ use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
+use crate::ids::Vector;
 use crate::translate_ctx::*;
 use crate::translate_types;
 use crate::types::*;
@@ -1520,7 +1521,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // We need to convert the blocks map to an index vector
         // We clone things while we could move them...
-        let mut blocks = BlockId::Vector::new();
+        let mut blocks = Vector::new();
         for (id, block) in mem::take(&mut self.blocks) {
             let new_id = blocks.push(block);
             // Sanity check to make sure we don't mess with the indices

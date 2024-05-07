@@ -7,6 +7,7 @@
 //! from MIR to use Statement only.
 
 pub use crate::gast::*;
+use crate::ids::Map;
 pub use crate::llbc_ast_utils::*;
 use crate::meta::Meta;
 use crate::types::*;
@@ -115,7 +116,7 @@ pub enum Switch {
 pub type ExprBody = GExprBody<Statement>;
 
 pub type FunDecl = GFunDecl<Statement>;
-pub type FunDecls = FunDeclId::Map<FunDecl>;
+pub type FunDecls = Map<FunDeclId::Id, FunDecl>;
 
 pub type GlobalDecl = GGlobalDecl<Statement>;
-pub type GlobalDecls = GlobalDeclId::Map<GlobalDecl>;
+pub type GlobalDecls = Map<GlobalDeclId::Id, GlobalDecl>;

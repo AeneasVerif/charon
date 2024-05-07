@@ -3,6 +3,7 @@ use crate::{
     assumed::get_name_from_type_id,
     common::TAB_INCR,
     formatter::*,
+    ids::Vector,
     llbc_ast::{self as llbc, *},
     names::*,
     reorder_decls::*,
@@ -1663,7 +1664,7 @@ where
 }
 
 pub(crate) fn fmt_body_blocks_with_ctx<C>(
-    body: &BlockId::Vector<BlockData>,
+    body: &Vector<BlockId::Id, BlockData>,
     tab: &str,
     ctx: &C,
 ) -> String

@@ -1,5 +1,6 @@
 use crate::common::TAB_INCR;
 use crate::gast;
+use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::llbc_ast::*;
 use crate::pretty::fmt_with_ctx;
@@ -105,13 +106,13 @@ impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
 pub trait SetLocals<'a> {
     type C: 'a + AstFormatter;
 
-    fn set_locals(&'a self, locals: &'a VarId::Vector<ast::Var>) -> Self::C;
+    fn set_locals(&'a self, locals: &'a Vector<VarId::Id, ast::Var>) -> Self::C;
 }
 
 impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
-    fn set_locals(&'a self, locals: &'a VarId::Vector<ast::Var>) -> Self::C {
+    fn set_locals(&'a self, locals: &'a Vector<VarId::Id, ast::Var>) -> Self::C {
         let FmtCtx {
             type_decls,
             fun_decls,
@@ -149,13 +150,13 @@ impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
 pub trait PushBoundRegions<'a> {
     type C: 'a + AstFormatter;
 
-    fn push_bound_regions(&'a self, regions: &RegionId::Vector<RegionVar>) -> Self::C;
+    fn push_bound_regions(&'a self, regions: &Vector<RegionId::Id, RegionVar>) -> Self::C;
 }
 
 impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
-    fn push_bound_regions(&'a self, regions: &RegionId::Vector<RegionVar>) -> Self::C {
+    fn push_bound_regions(&'a self, regions: &Vector<RegionId::Id, RegionVar>) -> Self::C {
         let FmtCtx {
             type_decls,
             fun_decls,
@@ -204,7 +205,7 @@ pub trait AstFormatter = Formatter<TypeVarId::Id>
     + Formatter<VarId::Id>
     + Formatter<(TypeDeclId::Id, VariantId::Id)>
     + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-    + for<'a> Formatter<&'a ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>>
+    + for<'a> Formatter<&'a Vector<ullbc_ast::BlockId::Id, ullbc_ast::BlockData>>
     + for<'a> Formatter<&'a llbc_ast::Statement>
     + for<'a> SetGenerics<'a>
     + for<'a> SetLocals<'a>
@@ -227,10 +228,10 @@ pub struct FmtCtx<'a> {
     pub trait_decls: Option<&'a ast::TraitDecls>,
     pub trait_impls: Option<&'a ast::TraitImpls>,
     /// The region variables are not an option, because we need to be able to push/pop
-    pub region_vars: im::Vector<RegionId::Vector<RegionVar>>,
-    pub type_vars: Option<&'a TypeVarId::Vector<TypeVar>>,
-    pub const_generic_vars: Option<&'a ConstGenericVarId::Vector<ConstGenericVar>>,
-    pub locals: Option<&'a VarId::Vector<ast::Var>>,
+    pub region_vars: im::Vector<Vector<RegionId::Id, RegionVar>>,
+    pub type_vars: Option<&'a Vector<TypeVarId::Id, TypeVar>>,
+    pub const_generic_vars: Option<&'a Vector<ConstGenericVarId::Id, ConstGenericVar>>,
+    pub locals: Option<&'a Vector<VarId::Id, ast::Var>>,
 }
 
 impl<'a> IntoFormatter for FmtCtx<'a> {
@@ -480,8 +481,8 @@ impl<'a> Formatter<&llbc_ast::Statement> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<&ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>> for FmtCtx<'a> {
-    fn format_object(&self, x: &ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>) -> String {
+impl<'a> Formatter<&Vector<ullbc_ast::BlockId::Id, ullbc_ast::BlockData>> for FmtCtx<'a> {
+    fn format_object(&self, x: &Vector<ullbc_ast::BlockId::Id, ullbc_ast::BlockData>) -> String {
         fmt_with_ctx::fmt_body_blocks_with_ctx(x, TAB_INCR, self)
     }
 }

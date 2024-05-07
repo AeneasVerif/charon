@@ -1,6 +1,7 @@
 use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
+use crate::ids::{Generator, Vector};
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::ullbc_ast as ast;
@@ -190,7 +191,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_decl_id: TraitDeclId::Id,
         f: &mut dyn FnMut(&mut Self) -> T,
     ) -> T {
-        let mut parent_clause_id_gen = TraitClauseId::Generator::new();
+        let mut parent_clause_id_gen = Generator::new();
         let parent_trait_instance_id_gen = Box::new(move || {
             let fresh_id = parent_clause_id_gen.fresh_id();
             TraitInstanceId::ParentClause(Box::new(clause_id.clone()), trait_decl_id, fresh_id)
@@ -206,7 +207,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         item_name: String,
         f: &mut dyn FnMut(&mut Self) -> T,
     ) -> T {
-        let mut item_clause_id_gen = TraitClauseId::Generator::new();
+        let mut item_clause_id_gen = Generator::new();
         let item_clause_id_gen = Box::new(move || {
             let fresh_id = item_clause_id_gen.fresh_id();
             TraitInstanceId::ItemClause(
@@ -521,8 +522,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             );
             let parent_trait_refs: Vec<TraitRef> =
                 bt_ctx.translate_trait_impl_exprs(span, erase_regions, &parent_trait_refs)?;
-            let parent_trait_refs: TraitClauseId::Vector<TraitRef> =
-                TraitClauseId::Vector::from(parent_trait_refs);
+            // FIXME: these ids are entirely wrong.
+            let parent_trait_refs: Vector<TraitClauseId::Id, TraitRef> = parent_trait_refs.into();
 
             let generics = GenericArgs {
                 regions,

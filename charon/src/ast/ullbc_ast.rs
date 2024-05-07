@@ -1,6 +1,7 @@
 //! "Unstructured LLBC" ast (ULLBC). This is LLBC before the control-flow
 //! reconstruction. In effect, this is a cleaned up version of MIR.
 pub use crate::gast::*;
+use crate::ids::{Map, Vector};
 use crate::meta::Meta;
 pub use crate::types::GlobalDeclId;
 use crate::types::*;
@@ -15,16 +16,16 @@ generate_index_type!(BlockId, "Block");
 // The entry block of a function is always the block with id 0
 pub static START_BLOCK_ID: BlockId::Id = BlockId::ZERO;
 
-pub type ExprBody = GExprBody<BlockId::Vector<BlockData>>;
+pub type ExprBody = GExprBody<Vector<BlockId::Id, BlockData>>;
 
-pub type FunDecl = GFunDecl<BlockId::Vector<BlockData>>;
-pub type FunDecls = FunDeclId::Map<FunDecl>;
+pub type FunDecl = GFunDecl<Vector<BlockId::Id, BlockData>>;
+pub type FunDecls = Map<FunDeclId::Id, FunDecl>;
 
-pub type GlobalDecl = GGlobalDecl<BlockId::Vector<BlockData>>;
-pub type GlobalDecls = GlobalDeclId::Map<GlobalDecl>;
+pub type GlobalDecl = GGlobalDecl<Vector<BlockId::Id, BlockData>>;
+pub type GlobalDecls = Map<GlobalDeclId::Id, GlobalDecl>;
 
-pub type TraitDecls = TraitDeclId::Map<TraitDecl>;
-pub type TraitImpls = TraitImplId::Map<TraitImpl>;
+pub type TraitDecls = Map<TraitDeclId::Id, TraitDecl>;
+pub type TraitImpls = Map<TraitImplId::Id, TraitImpl>;
 
 /// A raw statement: a statement without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize, Deserialize)]

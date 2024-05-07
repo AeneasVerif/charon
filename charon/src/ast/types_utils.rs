@@ -1,4 +1,5 @@
 //! This file groups everything which is linked to implementations about [crate::types]
+use crate::ids::Vector;
 use crate::types::*;
 use crate::values::*;
 use hax_frontend_exporter as hax;
@@ -45,9 +46,9 @@ impl GenericParams {
 
     pub fn empty() -> Self {
         GenericParams {
-            regions: RegionId::Vector::new(),
-            types: TypeVarId::Vector::new(),
-            const_generics: ConstGenericVarId::Vector::new(),
+            regions: Vector::new(),
+            types: Vector::new(),
+            const_generics: Vector::new(),
             trait_clauses: Vec::new(),
         }
     }
@@ -144,7 +145,7 @@ impl TypeDecl {
     pub fn get_fields(
         &self,
         variant_id: Option<VariantId::Id>,
-    ) -> Result<&FieldId::Vector<Field>, ()> {
+    ) -> Result<&Vector<FieldId::Id, Field>, ()> {
         match &self.kind {
             TypeDeclKind::Enum(variants) => Ok(&variants.get(variant_id.unwrap()).unwrap().fields),
             TypeDeclKind::Struct(fields) => {
@@ -506,11 +507,11 @@ make_generic_in_borrows! {
 // TODO: we should use traits with default implementations to allow overriding
 // the default behavior (that would also prevent problems with naming collisions)
 pub trait TypeVisitor {
-    fn default_enter_region_group(&mut self, regions: &RegionId::Vector<RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
+    fn default_enter_region_group(&mut self, regions: &Vector<RegionId::Id, RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
         visitor(self)
     }
 
-    fn enter_region_group(&mut self, regions: &RegionId::Vector<RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
+    fn enter_region_group(&mut self, regions: &Vector<RegionId::Id, RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
         self.default_enter_region_group(regions, visitor)
     }
 
@@ -545,7 +546,7 @@ pub trait TypeVisitor {
 
     fn visit_region_bvar(&mut self, _grid: &DeBruijnId, _rid: &RegionId::Id) {}
 
-    fn visit_arrow(&mut self, regions: &RegionId::Vector<RegionVar>, inputs: &Vec<Ty>, output: &Ty) {
+    fn visit_arrow(&mut self, regions: &Vector<RegionId::Id, RegionVar>, inputs: &Vec<Ty>, output: &Ty) {
         for r in regions.iter() {
             self.visit_region_var(r);
         }

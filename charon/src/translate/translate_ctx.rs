@@ -3,6 +3,7 @@ use crate::common::*;
 use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
+use crate::ids::{Generator, Map, MapGenerator, Vector};
 use crate::llbc_ast;
 use crate::meta::{self, Attribute, ItemMeta, Span};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Meta, VirtualFileId};
@@ -179,10 +180,10 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// File names to ids and vice-versa
     pub file_to_id: HashMap<FileName, FileId::Id>,
     pub id_to_file: HashMap<FileId::Id, FileName>,
-    pub real_file_counter: LocalFileId::Generator,
-    pub virtual_file_counter: VirtualFileId::Generator,
+    pub real_file_counter: Generator<LocalFileId::Id>,
+    pub virtual_file_counter: Generator<VirtualFileId::Id>,
     /// The map from Rust type ids to translated type ids
-    pub type_id_map: TypeDeclId::MapGenerator<DefId>,
+    pub type_id_map: MapGenerator<DefId, TypeDeclId::Id>,
     /// The translated type definitions
     pub type_decls: TypeDecls,
     /// Dependency graph with sources. We use this for error reporting.
@@ -194,19 +195,19 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// and had to ignore.
     pub ignored_failed_decls: HashSet<DefId>,
     /// The map from Rust function ids to translated function ids
-    pub fun_id_map: ast::FunDeclId::MapGenerator<DefId>,
+    pub fun_id_map: MapGenerator<DefId, ast::FunDeclId::Id>,
     /// The translated function definitions
     pub fun_decls: ast::FunDecls,
     /// The map from Rust global ids to translated global ids
-    pub global_id_map: ast::GlobalDeclId::MapGenerator<DefId>,
+    pub global_id_map: MapGenerator<DefId, ast::GlobalDeclId::Id>,
     /// The translated global definitions
     pub global_decls: ast::GlobalDecls,
     /// The map from Rust trait decl ids to translated trait decl ids
-    pub trait_decl_id_map: ast::TraitDeclId::MapGenerator<DefId>,
+    pub trait_decl_id_map: MapGenerator<DefId, ast::TraitDeclId::Id>,
     /// The translated trait declarations
     pub trait_decls: ast::TraitDecls,
     /// The map from Rust trait impls ids to translated trait impls ids
-    pub trait_impl_id_map: ast::TraitImplId::MapGenerator<DefId>,
+    pub trait_impl_id_map: MapGenerator<DefId, ast::TraitImplId::Id>,
     pub trait_impl_id_to_def_id: HashMap<ast::TraitImplId::Id, DefId>,
     /// The translated trait declarations
     pub trait_impls: ast::TraitImpls,
@@ -233,7 +234,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The regions.
     /// We use DeBruijn indices, so we have a stack of regions.
     /// See the comments for [Region::BVar].
-    pub region_vars: im::Vector<RegionId::Vector<RegionVar>>,
+    pub region_vars: im::Vector<Vector<RegionId::Id, RegionVar>>,
     /// The map from rust (free) regions to translated region indices.
     /// This contains the early bound regions.
     ///
@@ -264,19 +265,19 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// We use DeBruijn indices. See the comments for [Region::Var].
     pub bound_region_vars: im::Vector<im::Vector<RegionId::Id>>,
     /// The type variables
-    pub type_vars: TypeVarId::Vector<TypeVar>,
+    pub type_vars: Vector<TypeVarId::Id, TypeVar>,
     /// The map from rust type variable indices to translated type variable
     /// indices.
-    pub type_vars_map: TypeVarId::MapGenerator<u32>,
+    pub type_vars_map: MapGenerator<u32, TypeVarId::Id>,
     /// The "regular" variables
-    pub vars: VarId::Vector<ast::Var>,
+    pub vars: Vector<VarId::Id, ast::Var>,
     /// The map from rust variable indices to translated variables indices.
-    pub vars_map: VarId::MapGenerator<usize>,
+    pub vars_map: MapGenerator<usize, VarId::Id>,
     /// The const generic variables
-    pub const_generic_vars: ConstGenericVarId::Vector<ConstGenericVar>,
+    pub const_generic_vars: Vector<ConstGenericVarId::Id, ConstGenericVar>,
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
-    pub const_generic_vars_map: ConstGenericVarId::MapGenerator<u32>,
+    pub const_generic_vars_map: MapGenerator<u32, ConstGenericVarId::Id>,
     /// A generator for trait instance ids.
     /// We initialize it so that it generates ids for local clauses.
     pub trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
@@ -296,14 +297,14 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub regions_outlive: Vec<RegionOutlives>,
     ///
     pub trait_type_constraints: Vec<TraitTypeConstraint>,
-    /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
+    /// The translated blocks. We can't use `ast::Vector<BlockId::Id, ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
     pub blocks: im::OrdMap<ast::BlockId::Id, ast::BlockData>,
     /// The map from rust blocks to translated blocks.
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
-    pub blocks_map: ast::BlockId::MapGenerator<hax::BasicBlock>,
+    pub blocks_map: MapGenerator<hax::BasicBlock, ast::BlockId::Id>,
     /// We register the blocks to translate in a stack, so as to avoid
     /// writing the translation functions as recursive functions. We do
     /// so because we had stack overflows in the past.
@@ -746,8 +747,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     pub(crate) fn iter_bodies<F, B>(
         &mut self,
-        funs: &mut FunDeclId::Map<GFunDecl<B>>,
-        globals: &mut GlobalDeclId::Map<GGlobalDecl<B>>,
+        funs: &mut Map<FunDeclId::Id, GFunDecl<B>>,
+        globals: &mut Map<GlobalDeclId::Id, GGlobalDecl<B>>,
         f: F,
     ) where
         F: Fn(&mut Self, &Name, &mut GExprBody<B>),
@@ -762,7 +763,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>) -> Self {
         let hax_state = t_ctx.make_hax_state_with_id(def_id);
-        let mut trait_clauses_counter = TraitClauseId::Generator::new();
+        let mut trait_clauses_counter = Generator::new();
         let trait_instance_id_gen = Box::new(move || {
             let id = trait_clauses_counter.fresh_id();
             TraitInstanceId::Clause(id)
@@ -771,15 +772,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             def_id,
             t_ctx,
             hax_state,
-            region_vars: im::vector![RegionId::Vector::new()],
+            region_vars: im::vector![Vector::new()],
             free_region_vars: std::collections::BTreeMap::new(),
             bound_region_vars: im::Vector::new(),
-            type_vars: TypeVarId::Vector::new(),
-            type_vars_map: TypeVarId::MapGenerator::new(),
-            vars: VarId::Vector::new(),
-            vars_map: VarId::MapGenerator::new(),
-            const_generic_vars: ConstGenericVarId::Vector::new(),
-            const_generic_vars_map: ConstGenericVarId::MapGenerator::new(),
+            type_vars: Vector::new(),
+            type_vars_map: MapGenerator::new(),
+            vars: Vector::new(),
+            vars_map: MapGenerator::new(),
+            const_generic_vars: Vector::new(),
+            const_generic_vars_map: MapGenerator::new(),
             trait_instance_id_gen,
             trait_clauses: OrdMap::new(),
             registering_trait_clauses: false,
@@ -787,7 +788,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             types_outlive: Vec::new(),
             trait_type_constraints: Vec::new(),
             blocks: im::OrdMap::new(),
-            blocks_map: ast::BlockId::MapGenerator::new(),
+            blocks_map: MapGenerator::new(),
             blocks_stack: VecDeque::new(),
         }
     }
@@ -909,7 +910,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         F: FnOnce(&mut Self) -> T,
     {
         assert!(!self.region_vars.is_empty());
-        self.region_vars.push_front(RegionId::Vector::new());
+        self.region_vars.push_front(Vector::new());
 
         // Register the variables
         let var_ids: im::Vector<RegionId::Id> = names
@@ -990,8 +991,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         clauses
     }
 
-    pub(crate) fn get_parent_trait_clauses(&self) -> TraitClauseId::Vector<TraitClause> {
-        let clauses: TraitClauseId::Vector<TraitClause> = self
+    pub(crate) fn get_parent_trait_clauses(&self) -> Vector<TraitClauseId::Id, TraitClause> {
+        let clauses: Vector<TraitClauseId::Id, TraitClause> = self
             .trait_clauses
             .iter()
             .filter_map(|(_, x)| {

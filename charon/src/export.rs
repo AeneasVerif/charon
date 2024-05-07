@@ -1,3 +1,4 @@
+use crate::ids::Map;
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
 use crate::reorder_decls::DeclarationGroup;
@@ -38,8 +39,8 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
     pub fn new(
         ctx: &TransCtx,
         crate_name: String,
-        fun_decls: &FunDeclId::Map<FD>,
-        global_decls: &GlobalDeclId::Map<GD>,
+        fun_decls: &Map<FunDeclId::Id, FD>,
+        global_decls: &Map<GlobalDeclId::Id, GD>,
     ) -> Self {
         // Transform the map file id -> file into a vector.
         // Sort the vector to make the serialized file as stable as possible.
@@ -124,8 +125,8 @@ impl CrateData {
     pub fn new_ullbc(
         ctx: &TransCtx,
         crate_name: String,
-        fun_decls: &FunDeclId::Map<ullbc_ast::FunDecl>,
-        global_decls: &GlobalDeclId::Map<ullbc_ast::GlobalDecl>,
+        fun_decls: &Map<FunDeclId::Id, ullbc_ast::FunDecl>,
+        global_decls: &Map<GlobalDeclId::Id, ullbc_ast::GlobalDecl>,
     ) -> Self {
         Self::ULLBC(GCrateData::new(ctx, crate_name, fun_decls, global_decls))
     }
@@ -133,8 +134,8 @@ impl CrateData {
     pub fn new_llbc(
         ctx: &TransCtx,
         crate_name: String,
-        fun_decls: &FunDeclId::Map<llbc_ast::FunDecl>,
-        global_decls: &GlobalDeclId::Map<llbc_ast::GlobalDecl>,
+        fun_decls: &Map<FunDeclId::Id, llbc_ast::FunDecl>,
+        global_decls: &Map<GlobalDeclId::Id, llbc_ast::GlobalDecl>,
     ) -> Self {
         Self::LLBC(GCrateData::new(ctx, crate_name, fun_decls, global_decls))
     }
