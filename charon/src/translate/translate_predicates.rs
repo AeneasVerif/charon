@@ -56,16 +56,13 @@ impl NonLocalTraitClause {
         }
     }
 
-    pub(crate) fn to_trait_clause_with_id(
-        &self,
-        get_id: &dyn Fn(&TraitInstanceId) -> Option<TraitClauseId>,
-    ) -> Option<TraitClause> {
-        get_id(&self.clause_id).map(|clause_id| TraitClause {
+    pub(crate) fn to_trait_clause_with_id(&self, clause_id: TraitClauseId) -> TraitClause {
+        TraitClause {
             clause_id,
             meta: self.meta,
             trait_id: self.trait_id,
             generics: self.generics.clone(),
-        })
+        }
     }
 }
 

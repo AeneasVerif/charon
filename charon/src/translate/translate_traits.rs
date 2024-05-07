@@ -358,22 +358,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let item_trait_clauses: Vec<_> = bt_ctx
                         .trait_clauses
                         .values()
-                        .filter_map(|c| {
-                            c.to_trait_clause_with_id(&|id| match id {
-                                TraitInstanceId::ItemClause(
-                                    box TraitInstanceId::SelfId,
-                                    _,
-                                    TraitItemName(item_name),
-                                    clause_id,
-                                ) => {
-                                    if item_name == &name {
-                                        Some(*clause_id)
-                                    } else {
-                                        None
-                                    }
-                                }
-                                _ => None,
-                            })
+                        .filter_map(|c| match &c.clause_id {
+                            TraitInstanceId::ItemClause(
+                                box TraitInstanceId::SelfId,
+                                _,
+                                TraitItemName(item_name),
+                                clause_id,
+                            ) if item_name == &name => Some(c.to_trait_clause_with_id(*clause_id)),
+                            _ => None,
                         })
                         .collect();
 

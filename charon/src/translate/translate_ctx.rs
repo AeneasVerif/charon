@@ -989,11 +989,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let clauses: Vector<TraitClauseId, TraitClause> = self
             .trait_clauses
             .iter()
-            .filter_map(|(_, x)| {
-                x.to_trait_clause_with_id(&|id| match id {
-                    TraitInstanceId::ParentClause(box TraitInstanceId::SelfId, _, id) => Some(*id),
-                    _ => None,
-                })
+            .filter_map(|(_, x)| match &x.clause_id {
+                TraitInstanceId::ParentClause(box TraitInstanceId::SelfId, _, clause_id) => {
+                    Some(x.to_trait_clause_with_id(*clause_id))
+                }
+                _ => None,
             })
             .collect();
         // Sanity check
