@@ -291,18 +291,14 @@ pub fn translate(
     //   control-flow and apply micro-passes
 
     let crate_data = if options.ullbc {
-        export::CrateData::new_ullbc(&ctx, crate_name, &ctx.translated.fun_decls, &ctx.translated.global_decls)
+        export::CrateData::new_ullbc(&ctx, crate_name)
     } else {
         // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing
         // the control flow.
-        let (mut llbc_funs, mut llbc_globals) = ullbc_to_llbc::translate_functions(&ctx);
+        ullbc_to_llbc::translate_functions(&mut ctx);
 
         if options.print_built_llbc {
-            let llbc_ctx = crate::translate_ctx::LlbcTransCtx {
-                ctx: &ctx,
-                llbc_globals: &llbc_globals,
-                llbc_funs: &llbc_funs,
-            };
+            let llbc_ctx = crate::translate_ctx::LlbcTransCtx { ctx: &ctx };
             info!(
                 "# LLBC resulting from control-flow reconstruction:\n\n{}\n",
                 llbc_ctx
@@ -312,20 +308,20 @@ pub fn translate(
         // # Micro-pass: the first local variable of closures is the
         // closure itself. This is not consistent with the closure signature,
         // which ignores this first variable. This micro-pass updates this.
-        update_closure_signatures::transform(&ctx, &mut llbc_funs);
+        update_closure_signatures::transform(&mut ctx);
 
         // # Micro-pass: remove the dynamic checks we couldn't remove in [`remove_dynamic_checks`].
         // **WARNING**: this pass uses the fact that the dynamic checks
         // introduced by Rustc use a special "assert" construct. Because of
         // this, it must happen *before* the [reconstruct_asserts] pass.
-        remove_arithmetic_overflow_checks::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_arithmetic_overflow_checks::transform(&mut ctx);
 
         // # Micro-pass: reconstruct the asserts
-        reconstruct_asserts::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
+        reconstruct_asserts::transform(&mut ctx);
 
         // TODO: we should mostly use the TransCtx to format declarations
         use crate::formatter::{Formatter, IntoFormatter};
-        for (_, def) in &llbc_funs {
+        for (_, def) in &ctx.translated.structured_fun_decls {
             trace!(
                 "# After asserts reconstruction:\n{}\n",
                 ctx.into_fmt().format_object(def)
@@ -334,15 +330,15 @@ pub fn translate(
 
         // # Micro-pass: replace some unops/binops and the array aggregates with
         // function calls (introduces: ArrayToSlice, etc.)
-        ops_to_function_calls::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
+        ops_to_function_calls::transform(&mut ctx);
 
         // # Micro-pass: replace the arrays/slices index operations with function
         // calls.
         // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
-        index_to_function_calls::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
+        index_to_function_calls::transform(&mut ctx);
 
         // # Micro-pass: Remove the discriminant reads (merge them with the switches)
-        remove_read_discriminant::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_read_discriminant::transform(&mut ctx);
 
         // # Micro-pass: add the missing assignments to the return value.
         // When the function return type is unit, the generated MIR doesn't
@@ -352,30 +348,26 @@ pub fn translate(
         // an extra assignment just before returning.
         // This also applies to globals (for checking or executing code before
         // the main or at compile-time).
-        insert_assign_return_unit::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
+        insert_assign_return_unit::transform(&mut ctx);
 
         // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
         // is in preparation of the next transformation.
-        remove_drop_never::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_drop_never::transform(&mut ctx);
 
         // # Micro-pass: remove the locals which are never used. After doing so, we
         // check that there are no remaining locals with type `Never`.
-        remove_unused_locals::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_unused_locals::transform(&mut ctx);
 
         // # Micro-pass (not necessary, but good for cleaning): remove the
         // useless no-ops.
-        remove_nops::transform(&mut ctx, &mut llbc_funs, &mut llbc_globals);
+        remove_nops::transform(&mut ctx);
 
         trace!("# Final LLBC:\n");
-        for (_, def) in &llbc_funs {
+        for (_, def) in &ctx.translated.structured_fun_decls {
             trace!("#{}\n", ctx.into_fmt().format_object(def));
         }
 
-        let llbc_ctx = crate::translate_ctx::LlbcTransCtx {
-            ctx: &ctx,
-            llbc_globals: &llbc_globals,
-            llbc_funs: &llbc_funs,
-        };
+        let llbc_ctx = crate::translate_ctx::LlbcTransCtx { ctx: &ctx };
         trace!("# About to export:\n\n{}\n", llbc_ctx);
         if options.print_llbc {
             println!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
@@ -384,7 +376,7 @@ pub fn translate(
         // Display an error report about the external dependencies, if necessary
         ctx.report_external_deps_errors();
 
-        export::CrateData::new_llbc(&ctx, crate_name, &llbc_funs, &llbc_globals)
+        export::CrateData::new_llbc(&ctx, crate_name)
     };
     trace!("Done");
 

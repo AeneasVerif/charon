@@ -117,11 +117,7 @@ fn transform_operand<F: FnMut(Ty) -> VarId>(
 }
 
 pub fn transform(ctx: &mut TransCtx) {
-    // Slightly annoying: we have to clone because of borrowing issues
-    let mut fun_decls = ctx.translated.fun_decls.clone();
-    let mut global_decls = ctx.translated.global_decls.clone();
-
-    ctx.iter_bodies(&mut fun_decls, &mut global_decls, |ctx, name, b| {
+    ctx.iter_unstructured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to simplify constants in function: {}:\n{}",
@@ -134,7 +130,4 @@ pub fn transform(ctx: &mut TransCtx) {
             transform_operand(meta, nst, op, &mut f)
         });
     });
-
-    ctx.translated.fun_decls = fun_decls;
-    ctx.translated.global_decls = global_decls;
 }

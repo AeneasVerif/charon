@@ -158,9 +158,11 @@ fn transform_function(_ctx: &TransCtx, def: &mut FunDecl) -> Result<(), Error> {
     }
 }
 
-pub fn transform(ctx: &TransCtx, funs: &mut FunDecls) {
-    // Ignore the errors, which should have been reported
-    funs.iter_mut().for_each(|d| {
-        let _ = transform_function(ctx, d);
-    });
+pub fn transform(ctx: &mut TransCtx) {
+    ctx.with_mut_structured_fun_decls(|ctx, fun_decls| {
+        fun_decls.iter_mut().for_each(|d| {
+            // Ignore the errors, which should have been reported
+            let _ = transform_function(ctx, d);
+        });
+    })
 }

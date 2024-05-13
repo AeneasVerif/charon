@@ -122,22 +122,22 @@ pub enum CrateData {
 }
 
 impl CrateData {
-    pub fn new_ullbc(
-        ctx: &TransCtx,
-        crate_name: String,
-        fun_decls: &Map<FunDeclId, ullbc_ast::FunDecl>,
-        global_decls: &Map<GlobalDeclId, ullbc_ast::GlobalDecl>,
-    ) -> Self {
-        Self::ULLBC(GCrateData::new(ctx, crate_name, fun_decls, global_decls))
+    pub fn new_ullbc(ctx: &TransCtx, crate_name: String) -> Self {
+        Self::ULLBC(GCrateData::new(
+            ctx,
+            crate_name,
+            &ctx.translated.fun_decls,
+            &ctx.translated.global_decls,
+        ))
     }
 
-    pub fn new_llbc(
-        ctx: &TransCtx,
-        crate_name: String,
-        fun_decls: &Map<FunDeclId, llbc_ast::FunDecl>,
-        global_decls: &Map<GlobalDeclId, llbc_ast::GlobalDecl>,
-    ) -> Self {
-        Self::LLBC(GCrateData::new(ctx, crate_name, fun_decls, global_decls))
+    pub fn new_llbc(ctx: &TransCtx, crate_name: String) -> Self {
+        Self::LLBC(GCrateData::new(
+            ctx,
+            crate_name,
+            &ctx.translated.structured_fun_decls,
+            &ctx.translated.structured_global_decls,
+        ))
     }
 
     /// Export the translated definitions to a JSON file.

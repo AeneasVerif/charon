@@ -294,8 +294,8 @@ fn transform_st(locals: &mut Vector<VarId, Var>, s: &mut Statement) -> Option<Ve
 ///   tmp1 : &mut T = ArrayIndexMut(move y, i)
 ///   *tmp1 = x
 /// ```
-pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    ctx.iter_bodies(funs, globals, |ctx, name, b| {
+pub fn transform(ctx: &mut TransCtx) {
+    ctx.iter_structured_bodies(|ctx, name, b| {
         let ctx = ctx.into_fmt();
         trace!(
             "# About to transform array/slice index operations to function calls: {}:\n{}",

@@ -7,7 +7,7 @@
 use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{
-    ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
+    ExprBody, FunDecl, GlobalDecl, RawStatement, Statement,
 };
 use crate::names::Name;
 use crate::translate_ctx::TransCtx;
@@ -58,7 +58,15 @@ fn transform_global(ctx: &mut TransCtx, def: &mut GlobalDecl) {
     }
 }
 
-pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    funs.iter_mut().for_each(|d| transform_function(ctx, d));
-    globals.iter_mut().for_each(|d| transform_global(ctx, d));
+pub fn transform(ctx: &mut TransCtx) {
+    ctx.with_mut_structured_fun_decls(|ctx, fun_decls| {
+        fun_decls
+            .iter_mut()
+            .for_each(|d| transform_function(ctx, d));
+    });
+    ctx.with_mut_structured_global_decls(|ctx, global_decls| {
+        global_decls
+            .iter_mut()
+            .for_each(|d| transform_global(ctx, d));
+    });
 }

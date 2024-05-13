@@ -22,7 +22,6 @@
 
 use crate::expressions::Place;
 use crate::formatter::{Formatter, IntoFormatter};
-use crate::ids::Map;
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_meta, Meta};
 use crate::translate_ctx::TransCtx;
@@ -1994,35 +1993,33 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId) -> tgt::GlobalDecl 
 }
 
 /// Translate the functions by reconstructing the control-flow.
-pub fn translate_functions(ctx: &TransCtx) -> Defs {
-    let mut tgt_funs = Map::new();
-    let mut tgt_globals = Map::new();
-
+pub fn translate_functions(ctx: &mut TransCtx) {
     // Translate the bodies one at a time
     for (fun_id, _) in ctx.translated.fun_decls.iter_indexed() {
-        tgt_funs.insert(*fun_id, translate_function(ctx, *fun_id));
+        let fundecl = translate_function(ctx, *fun_id);
+        ctx.translated.structured_fun_decls.insert(*fun_id, fundecl);
     }
     for (global_id, _) in ctx.translated.global_decls.iter_indexed() {
-        tgt_globals.insert(*global_id, translate_global(ctx, *global_id));
+        ctx.translated
+            .structured_global_decls
+            .insert(*global_id, translate_global(ctx, *global_id));
     }
 
     // Print the functions
-    let ctx = ctx.into_fmt();
-    for (_, fun) in &tgt_funs {
+    let fmt_ctx = ctx.into_fmt();
+    for (_, fun) in &ctx.translated.structured_fun_decls {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            ctx.format_object(&fun.signature),
-            ctx.format_object(fun),
+            fmt_ctx.format_object(&fun.signature),
+            fmt_ctx.format_object(fun),
         );
     }
     // Print the global variables
-    for (_, global) in &tgt_globals {
+    for (_, global) in &ctx.translated.structured_global_decls {
         trace!(
             "# Type:\n{}\n\n# Global definition:\n{}\n",
-            ctx.format_object(&global.ty),
-            ctx.format_object(global)
+            fmt_ctx.format_object(&global.ty),
+            fmt_ctx.format_object(global)
         );
     }
-
-    (tgt_funs, tgt_globals)
 }
