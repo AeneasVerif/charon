@@ -1116,11 +1116,7 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TransCtx<'tcx, 'ctx> {
 
     fn into_fmt(self) -> Self::C {
         FmtCtx {
-            type_decls: Some(&self.translated.type_decls),
-            fun_decls: Some(&self.translated.fun_decls),
-            global_decls: Some(&self.translated.global_decls),
-            trait_decls: Some(&self.translated.trait_decls),
-            trait_impls: Some(&self.translated.trait_impls),
+            translated: Some(&self.translated),
             region_vars: im::Vector::new(),
             type_vars: None,
             const_generic_vars: None,
@@ -1134,11 +1130,7 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
 
     fn into_fmt(self) -> Self::C {
         FmtCtx {
-            type_decls: Some(&self.t_ctx.translated.type_decls),
-            fun_decls: Some(&self.t_ctx.translated.fun_decls),
-            global_decls: Some(&self.t_ctx.translated.global_decls),
-            trait_decls: Some(&self.t_ctx.translated.trait_decls),
-            trait_impls: Some(&self.t_ctx.translated.trait_impls),
+            translated: Some(&self.t_ctx.translated),
             region_vars: self.region_vars.clone(),
             type_vars: Some(&self.type_vars),
             const_generic_vars: Some(&self.const_generic_vars),
