@@ -874,6 +874,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Check if this function is a actually `panic`
         if name.equals_ref_name(&assumed::PANIC_NAME)
+            || name.equals_ref_name(&assumed::PANIC_FMT_NAME)
             || name.equals_ref_name(&assumed::BEGIN_PANIC_NAME)
             || name.equals_ref_name(&assumed::ASSERT_FAILED_NAME)
         {
