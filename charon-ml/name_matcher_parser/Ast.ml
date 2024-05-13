@@ -22,14 +22,7 @@ class ['self] map_pattern_base =
   end
 
 type var = VarName of string | VarIndex of int
-
-and literal =
-  | LInt of big_int
-  | LBool of bool
-  | LChar of char
-  | LStr of string
-  | LByteStr of int list
-
+and literal = LInt of big_int | LBool of bool | LChar of char
 and ref_kind = RMut | RShared
 and region = RVar of var option | RStatic
 and primitive_adt = TTuple | TArray | TSlice
