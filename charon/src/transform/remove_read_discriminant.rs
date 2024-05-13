@@ -61,7 +61,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                 let Some(variants) = variants else {
                     // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
                     // `Nop` the whole statement sequence.
-                    assert!(self.ctx.error_count > 0);
+                    assert!(self.ctx.has_errors());
                     *st = Statement {
                         content: RawStatement::Nop,
                         meta: st.meta,

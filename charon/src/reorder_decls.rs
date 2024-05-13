@@ -242,7 +242,7 @@ impl Deps {
                     }
                 } else {
                     // Sanity check
-                    assert!(ctx.error_count > 0);
+                    assert!(ctx.has_errors());
                 }
             }
         }
@@ -423,7 +423,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
                     }
                 } else {
                     // There may have been errors
-                    assert!(ctx.error_count > 0);
+                    assert!(ctx.has_errors());
                 }
             }
             AnyTransId::Fun(id) => {
@@ -440,7 +440,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
                     graph.visit_body(&d.body);
                 } else {
                     // There may have been errors
-                    assert!(ctx.error_count > 0);
+                    assert!(ctx.has_errors());
                 }
             }
             AnyTransId::Global(id) => {
@@ -449,7 +449,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
                     graph.visit_body(&d.body);
                 } else {
                     // There may have been errors
-                    assert!(ctx.error_count > 0);
+                    assert!(ctx.has_errors());
                 }
             }
             AnyTransId::TraitDecl(id) => {
@@ -500,7 +500,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
                     }
                 } else {
                     // There may have been errors
-                    assert!(ctx.error_count > 0);
+                    assert!(ctx.has_errors());
                 }
             }
             AnyTransId::TraitImpl(id) => {
@@ -535,7 +535,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
                     }
                 } else {
                     // There may have been errors
-                    assert!(ctx.error_count > 0);
+                    assert!(ctx.has_errors());
                 }
             }
         }

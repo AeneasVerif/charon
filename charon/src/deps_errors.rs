@@ -56,7 +56,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// to the user which dependencies were problematic, and where they
     /// are used in the code.
     pub(crate) fn report_external_deps_errors(&self) {
-        if self.error_count == 0 {
+        if !self.has_errors() {
             return;
         }
 

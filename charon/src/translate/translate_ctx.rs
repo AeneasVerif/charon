@@ -384,6 +384,9 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn increment_error_count(&mut self) {
         self.error_count += 1;
     }
+    pub(crate) fn has_errors(&self) -> bool {
+        self.error_count > 0
+    }
 
     /// Register a file if it is a "real" file and was not already registered
     fn register_file(&mut self, filename: FileName) -> FileId {

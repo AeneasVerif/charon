@@ -70,7 +70,7 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
             globals,
             trait_decls,
             trait_impls,
-            has_errors: ctx.error_count > 0,
+            has_errors: ctx.has_errors(),
         }
     }
 
