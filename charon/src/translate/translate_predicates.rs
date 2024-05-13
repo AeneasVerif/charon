@@ -633,7 +633,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         ) {
             Ok(res) => Ok(res),
             Err(err) => {
-                if !self.t_ctx.continue_on_failure {
+                if !self.t_ctx.continue_on_failure() {
                     panic!("Error during trait resolution: {}", err.msg)
                 } else {
                     let msg = format!("Error during trait resolution: {}", &err.msg);
@@ -855,7 +855,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ImplExprAtom::Todo(msg) => {
                 let error = format!("Error during trait resolution: {}", msg);
                 self.span_err(span, &error);
-                if !self.t_ctx.continue_on_failure {
+                if !self.t_ctx.continue_on_failure() {
                     panic!("{}", error)
                 } else {
                     let trait_id = TraitInstanceId::Unknown(msg.clone());
@@ -943,7 +943,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 .map(|x| x.fmt_with_ctx(&fmt_ctx))
                 .collect();
 
-            if !self.t_ctx.continue_on_failure {
+            if !self.t_ctx.continue_on_failure() {
                 let clauses = clauses.join("\n");
                 unreachable!(
                     "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
@@ -1122,7 +1122,7 @@ impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
                     .collect::<Vec<String>>()
                     .join("\n");
 
-                if !self.ctx.t_ctx.continue_on_failure {
+                if !self.ctx.t_ctx.continue_on_failure() {
                     unreachable!(
                         "Could not find clauses for trait obligations:{}\n\nAvailable clauses:\n{}\n- context: {:?}",
                         unsolved, clauses, self.ctx.def_id

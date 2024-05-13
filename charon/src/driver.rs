@@ -291,7 +291,7 @@ pub fn translate(
     //   control-flow and apply micro-passes
 
     let crate_data = if options.ullbc {
-        export::CrateData::new_ullbc(&ctx, crate_name, &ctx.fun_decls, &ctx.global_decls)
+        export::CrateData::new_ullbc(&ctx, crate_name, &ctx.translated.fun_decls, &ctx.translated.global_decls)
     } else {
         // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing
         // the control flow.

@@ -375,7 +375,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             }
                             Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
                                 // This case only happens in some MIR levels
-                                assert!(!boxes_are_desugared(self.t_ctx.mir_level));
+                                assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
                                 assert!(generics.regions.is_empty());
                                 assert!(generics.types.len() == 1);
                                 assert!(generics.const_generics.is_empty());
@@ -422,7 +422,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
                                     Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
-                                        assert!(!boxes_are_desugared(self.t_ctx.mir_level));
+                                        assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
 
                                         // Some more sanity checks
                                         assert!(generics.regions.is_empty());
@@ -1486,13 +1486,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         if !self.t_ctx.id_is_transparent(rust_id)? {
             return Ok(None);
         }
-        if !rust_id.is_local() && !self.t_ctx.extract_opaque_bodies {
+        if !rust_id.is_local() && !self.t_ctx.options.extract_opaque_bodies {
             // We only extract non-local bodies if the `extract_opaque_bodies` option is set.
             return Ok(None);
         }
 
         // Retrive the body
-        let Some(body) = get_mir_for_def_id_and_level(tcx, rust_id, self.t_ctx.mir_level)
+        let Some(body) = get_mir_for_def_id_and_level(tcx, rust_id, self.t_ctx.options.mir_level)
         else { return Ok(None) };
 
         // Here, we have to create a MIR state, which contains the body
@@ -1799,7 +1799,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     ),
                 );
                 // Save the definition
-                let _ = ctx.ignored_failed_decls.insert(rust_id);
+                let _ = ctx.translated.ignored_failed_decls.insert(rust_id);
             }
         });
     }
@@ -1848,7 +1848,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Save the new function
-        self.fun_decls.insert(
+        self.translated.fun_decls.insert(
             def_id,
             FunDecl {
                 def_id,
@@ -1878,7 +1878,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     ),
                 );
                 // Save the definition
-                let _ = ctx.ignored_failed_decls.insert(rust_id);
+                let _ = ctx.translated.ignored_failed_decls.insert(rust_id);
             }
         });
     }
@@ -1933,7 +1933,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Save the new global
-        self.global_decls.insert(
+        self.translated.global_decls.insert(
             def_id,
             GlobalDecl {
                 def_id,

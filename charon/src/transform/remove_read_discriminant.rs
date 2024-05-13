@@ -39,7 +39,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                 );
 
                 // Lookup the type of the scrutinee
-                let variants = match self.ctx.type_decls.get(*adt_id) {
+                let variants = match self.ctx.translated.type_decls.get(*adt_id) {
                     // This can happen if there was an error while extracting the definitions
                     None => None,
                     Some(d) => {

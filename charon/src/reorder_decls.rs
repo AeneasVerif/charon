@@ -229,7 +229,7 @@ impl Deps {
                 // Lookup the function declaration.
                 //
                 // The declaration may not be present if we encountered errors.
-                if let Some(decl) = ctx.fun_decls.get(id) {
+                if let Some(decl) = ctx.translated.fun_decls.get(id) {
                     if let ItemKind::TraitItemImpl {
                         impl_id,
                         trait_id: _,
@@ -352,7 +352,7 @@ impl Deps {
 
     /// Lookup a function and visit its signature
     fn visit_fun_signature_from_trait(&mut self, ctx: &TransCtx, fid: FunDeclId) {
-        let decl = ctx.fun_decls.get(fid).unwrap();
+        let decl = ctx.translated.fun_decls.get(fid).unwrap();
         self.visit_fun_sig(&decl.signature);
     }
 }
@@ -395,11 +395,11 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
 
     // Step 1: explore the declarations to build the graph
     let mut graph = Deps::new();
-    for id in &ctx.all_ids {
+    for id in &ctx.translated.all_ids {
         graph.set_current_id(ctx, *id);
         match id {
             AnyTransId::Type(id) => {
-                if let Some(d) = ctx.type_decls.get(*id) {
+                if let Some(d) = ctx.translated.type_decls.get(*id) {
                     use TypeDeclKind::*;
 
                     // Visit the generics and the predicates
@@ -427,7 +427,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
                 }
             }
             AnyTransId::Fun(id) => {
-                if let Some(d) = ctx.fun_decls.get(*id) {
+                if let Some(d) = ctx.translated.fun_decls.get(*id) {
                     // Explore the signature
                     let sig = &d.signature;
                     graph.visit_generics_and_preds(&sig.generics, &sig.preds);
@@ -444,7 +444,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
                 }
             }
             AnyTransId::Global(id) => {
-                if let Some(d) = ctx.global_decls.get(*id) {
+                if let Some(d) = ctx.translated.global_decls.get(*id) {
                     // Explore the body
                     graph.visit_body(&d.body);
                 } else {
@@ -453,7 +453,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
                 }
             }
             AnyTransId::TraitDecl(id) => {
-                if let Some(d) = ctx.trait_decls.get(*id) {
+                if let Some(d) = ctx.translated.trait_decls.get(*id) {
                     // Visit the generics and the predicates
                     graph.visit_generics_and_preds(&d.generics, &d.preds);
 
@@ -504,7 +504,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
                 }
             }
             AnyTransId::TraitImpl(id) => {
-                if let Some(d) = ctx.trait_impls.get(*id) {
+                if let Some(d) = ctx.translated.trait_impls.get(*id) {
                     // Visit the generics and the predicates
                     graph.visit_generics_and_preds(&d.generics, &d.preds);
 
@@ -628,7 +628,7 @@ pub fn reorder_declarations(ctx: &mut TransCtx) {
 
     trace!("{:?}", reordered_decls);
 
-    ctx.ordered_decls = Some(reordered_decls);
+    ctx.translated.ordered_decls = Some(reordered_decls);
 }
 
 #[cfg(test)]

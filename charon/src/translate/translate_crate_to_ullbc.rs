@@ -135,7 +135,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 // disappear completely.
                 let trans_id: hax::DefId = def_id.sinto(&self.hax_state);
                 if trans_id.path.last().unwrap().data != hax::DefPathItem::AnonConst {
-                    if extract_constants_at_top_level(self.mir_level) {
+                    if extract_constants_at_top_level(self.options.mir_level) {
                         let _ = self.translate_global_decl_id(&None, def_id);
                     } else {
                         // Avoid registering globals in optimized MIR (they will be inlined)
@@ -248,36 +248,40 @@ pub fn translate<'tcx, 'ctx>(
         session,
         tcx,
         hax_state,
-        mir_level,
         crate_info,
-        continue_on_failure: !options.abort_on_error,
-        errors_as_warnings: options.errors_as_warnings,
+        options: TransOptions {
+            mir_level,
+            continue_on_failure: !options.abort_on_error,
+            errors_as_warnings: options.errors_as_warnings,
+            no_code_duplication: options.no_code_duplication,
+            extract_opaque_bodies: options.extract_opaque_bodies,
+        },
+        translated: TranslatedCrate {
+            all_ids: LinkedHashSet::new(),
+            file_to_id: HashMap::new(),
+            id_to_file: HashMap::new(),
+            real_file_counter: Generator::new(),
+            virtual_file_counter: Generator::new(),
+            dep_sources: HashMap::new(),
+            decls_with_errors: HashSet::new(),
+            ignored_failed_decls: HashSet::new(),
+            id_map: HashMap::new(),
+            reverse_id_map: HashMap::new(),
+            type_id_gen: Generator::new(),
+            type_decls: Map::new(),
+            fun_id_gen: Generator::new(),
+            fun_decls: Map::new(),
+            global_id_gen: Generator::new(),
+            global_decls: Map::new(),
+            trait_decl_id_gen: Generator::new(),
+            trait_decls: Map::new(),
+            trait_impl_id_gen: Generator::new(),
+            trait_impls: Map::new(),
+            ordered_decls: None,
+        },
         error_count: 0,
-        no_code_duplication: options.no_code_duplication,
-        extract_opaque_bodies: options.extract_opaque_bodies,
-        all_ids: LinkedHashSet::new(),
         stack: BTreeSet::new(),
         def_id: None,
-        file_to_id: HashMap::new(),
-        id_to_file: HashMap::new(),
-        real_file_counter: Generator::new(),
-        virtual_file_counter: Generator::new(),
-        dep_sources: HashMap::new(),
-        decls_with_errors: HashSet::new(),
-        ignored_failed_decls: HashSet::new(),
-        id_map: HashMap::new(),
-        reverse_id_map: HashMap::new(),
-        type_id_gen: Generator::new(),
-        type_decls: Map::new(),
-        fun_id_gen: Generator::new(),
-        fun_decls: Map::new(),
-        global_id_gen: Generator::new(),
-        global_decls: Map::new(),
-        trait_decl_id_gen: Generator::new(),
-        trait_decls: Map::new(),
-        trait_impl_id_gen: Generator::new(),
-        trait_impls: Map::new(),
-        ordered_decls: None,
     };
 
     // First push all the items in the stack of items to translate.

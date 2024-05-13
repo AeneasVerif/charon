@@ -1942,7 +1942,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
 
 fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId) -> tgt::FunDecl {
     // Retrieve the function definition
-    let src_def = ctx.fun_decls.get(src_def_id).unwrap();
+    let src_def = ctx.translated.fun_decls.get(src_def_id).unwrap();
     let fctx = ctx.into_fmt();
     trace!(
         "# About to reconstruct: {}\n\n{}",
@@ -1962,13 +1962,13 @@ fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId) -> tgt::FunDecl {
         body: src_def
             .body
             .as_ref()
-            .map(|b| translate_body(ctx.no_code_duplication, b)),
+            .map(|b| translate_body(ctx.options.no_code_duplication, b)),
     }
 }
 
 fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId) -> tgt::GlobalDecl {
     // Retrieve the global definition
-    let src_def = ctx.global_decls.get(global_id).unwrap();
+    let src_def = ctx.translated.global_decls.get(global_id).unwrap();
     let fctx = ctx.into_fmt();
     trace!(
         "# About to reconstruct: {}\n\n{}",
@@ -1989,7 +1989,7 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId) -> tgt::GlobalDecl 
         body: src_def
             .body
             .as_ref()
-            .map(|b| translate_body(ctx.no_code_duplication, b)),
+            .map(|b| translate_body(ctx.options.no_code_duplication, b)),
     }
 }
 
@@ -1999,10 +1999,10 @@ pub fn translate_functions(ctx: &TransCtx) -> Defs {
     let mut tgt_globals = Map::new();
 
     // Translate the bodies one at a time
-    for (fun_id, _) in ctx.fun_decls.iter_indexed() {
+    for (fun_id, _) in ctx.translated.fun_decls.iter_indexed() {
         tgt_funs.insert(*fun_id, translate_function(ctx, *fun_id));
     }
-    for (global_id, _) in ctx.global_decls.iter_indexed() {
+    for (global_id, _) in ctx.translated.global_decls.iter_indexed() {
         tgt_globals.insert(*global_id, translate_global(ctx, *global_id));
     }
 

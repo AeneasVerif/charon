@@ -140,8 +140,8 @@ fn remove_dynamic_checks(ctx: &mut TransCtx, block: &mut BlockData) {
 
 pub fn transform(ctx: &mut TransCtx) {
     // Slightly annoying: we have to clone because of borrowing issues
-    let mut fun_decls = ctx.fun_decls.clone();
-    let mut global_decls = ctx.global_decls.clone();
+    let mut fun_decls = ctx.translated.fun_decls.clone();
+    let mut global_decls = ctx.translated.global_decls.clone();
 
     ctx.iter_bodies(&mut fun_decls, &mut global_decls, |ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
@@ -163,6 +163,6 @@ pub fn transform(ctx: &mut TransCtx) {
         );
     });
 
-    ctx.fun_decls = fun_decls;
-    ctx.global_decls = global_decls;
+    ctx.translated.fun_decls = fun_decls;
+    ctx.translated.global_decls = global_decls;
 }
