@@ -79,6 +79,35 @@
         # file that records `success|expected-failure|failure|panic|timeout`
         # for each file we processed.
         rustc-tests = let
+          # The commit that corresponds to our nightly pin.
+          toolchain_commit = pkgs.runCommand "get-rustc-commit" {} ''
+            # This is sad but I don't know a better way.
+            cat ${rustToolchain}/share/doc/rust/html/version_info.html \
+              | grep 'github.com' \
+              | sed 's#.*"https://github.com/rust-lang/rust/commit/\([^"]*\)".*#\1#' \
+              > $out
+          '';
+          # The rustc commit we use to get the tests. This should stay equal to `toolchain_commit`.
+          tests_commit = "d59363ad0b6391b7fc5bbb02c9ccf9300eef3753";
+          rustc_tests = pkgs.runCommand "rustc-tests" {
+            src = pkgs.fetchFromGitHub {
+              owner = "rust-lang";
+              repo = "rust";
+              rev = tests_commit;
+              sha256 = "sha256-fpPMSzKc/Dd1nXAX7RocM/p22zuFoWtIL6mVw7XTBDo=";
+            };
+          } ''
+            # Check we're using the correct commit for tests.
+            TOOLCHAIN_COMMIT="$(cat ${toolchain_commit})"
+            TESTS_COMMIT="${tests_commit}"
+            if [ "$TOOLCHAIN_COMMIT" != "$TESTS_COMMIT" ]; then
+              echo "Error: the commit used for tests is incorrect" 1>&2
+              echo 'Please set `tests_commit = "'"$TOOLCHAIN_COMMIT"'";` in flake.nix' 1>&2
+              exit 1
+            fi
+            ln -s $src $out
+          '';
+
           analyze_test_file = pkgs.writeScript "charon-analyze-test-file" ''
             #!${pkgs.bash}/bin/bash
             FILE="$1"
@@ -131,13 +160,7 @@
                 > charon-results
           '';
         in pkgs.runCommand "charon-rustc-tests" {
-          src = pkgs.fetchFromGitHub {
-            owner = "rust-lang";
-            repo = "rust";
-            # The commit that corresponds to our nightly-2023-06-02 pin.
-            rev = "d59363ad0b6391b7fc5bbb02c9ccf9300eef3753";
-            sha256 = "sha256-fpPMSzKc/Dd1nXAX7RocM/p22zuFoWtIL6mVw7XTBDo=";
-          };
+          src = rustc_tests;
           buildInputs = [ rustToolchain ];
         } ''
           mkdir $out
