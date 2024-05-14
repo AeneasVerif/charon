@@ -36,6 +36,7 @@ pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
 // Assumed functions
 //
 pub static PANIC_NAME: [&str; 3] = ["core", "panicking", "panic"];
+pub static PANIC_FMT_NAME: [&str; 3] = ["core", "panicking", "panic_fmt"];
 pub static BEGIN_PANIC_NAME: [&str; 3] = ["std", "panicking", "begin_panic"];
 pub static ASSERT_FAILED_NAME: [&str; 3] = ["core", "panicking", "assert_failed"];
 

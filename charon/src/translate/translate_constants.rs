@@ -10,16 +10,11 @@ use rustc_hir::def_id::DefId;
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_constant_literal_to_raw_constant_expr(
         &mut self,
-        span: rustc_span::Span,
         v: &hax::ConstantLiteral,
     ) -> Result<RawConstantExpr, Error> {
         let lit = match v {
-            hax::ConstantLiteral::ByteStr(..) => {
-                error_or_panic!(self, span, "byte str constants are not supported yet");
-            }
-            hax::ConstantLiteral::Str(..) => {
-                error_or_panic!(self, span, "str constants are not supported yet");
-            }
+            hax::ConstantLiteral::ByteStr(bs, _) => Literal::ByteStr(bs.clone()),
+            hax::ConstantLiteral::Str(s, _) => Literal::Str(s.clone()),
             hax::ConstantLiteral::Char(c) => Literal::Char(*c),
             hax::ConstantLiteral::Bool(b) => Literal::Bool(*b),
             hax::ConstantLiteral::Int(i) => {
@@ -69,7 +64,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = true;
         let value = match &(*v.contents) {
             ConstantExprKind::Literal(lit) => {
-                self.translate_constant_literal_to_raw_constant_expr(span, lit)?
+                self.translate_constant_literal_to_raw_constant_expr(lit)?
             }
             ConstantExprKind::Adt { info, fields } => {
                 let fields: Vec<ConstantExpr> = fields

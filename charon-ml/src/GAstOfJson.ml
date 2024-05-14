@@ -768,6 +768,12 @@ let literal_of_json (js : json) : (literal, string) result =
     | `Assoc [ ("Char", v) ] ->
         let* v = char_of_json v in
         Ok (VChar v)
+    | `Assoc [ ("Str", v) ] ->
+        let* v = string_of_json v in
+        Ok (VStr v)
+    | `Assoc [ ("ByteStr", v) ] ->
+        let* v = list_of_json int_of_json v in
+        Ok (VByteStr v)
     | _ -> Error "")
 
 let assumed_fun_id_of_json (js : json) : (assumed_fun_id, string) result =

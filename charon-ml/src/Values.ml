@@ -79,7 +79,12 @@ and scalar_value = { value : big_int; int_ty : integer_type }
     Can be used by operands (in which case it represents a constant) or by
     the interpreter to represent a concrete, literal value.
  *)
-and literal = VScalar of scalar_value | VBool of bool | VChar of char
+and literal =
+  | VScalar of scalar_value
+  | VBool of bool
+  | VChar of char
+  | VStr of string
+  | VByteStr of int list
 [@@deriving
   show,
     ord,

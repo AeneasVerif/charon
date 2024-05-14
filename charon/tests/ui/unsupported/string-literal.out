@@ -1,9 +1,0 @@
-error: Unsupported constant: "ConstValue::Slice: Slice { data: ConstAllocation { .. }, start: 0, end: 5 }"
- --> tests/ui/unsupported/string-literal.rs:2:20
-  |
-2 | static FOO: &str = "hello";
-  |                    ^^^^^^^
-
-error: aborting due to previous error
-
-[ ERROR charon_driver:200] The extraction encountered 1 errors

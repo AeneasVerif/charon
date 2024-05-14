@@ -34,6 +34,8 @@ pub enum Literal {
     Scalar(ScalarValue),
     Bool(bool),
     Char(char),
+    ByteStr(Vec<u8>),
+    Str(String),
 }
 
 /// It might be a good idea to use a structure:
