@@ -2,7 +2,7 @@
 
 First off, thanks for taking the time to contribute!
 
-All types of contributions are encouraged. See the [Table of Contents](#table-of-contents) for different ways to help. Please make sure to read the relevant section before making your contribution. We look forward to your contributions.
+All types of contributions are encouraged. See the [Table of Contents](#table-of-contents) for different ways to help. Please make sure to read the relevant section before making your contribution. We look forward to your contributions!
 
 ## Table of Contents
 
@@ -22,8 +22,8 @@ All types of contributions are encouraged. See the [Table of Contents](#table-of
 Before you ask a question, it is best to search for existing [Issues](https://github.com/AeneasVerif/charon/issues) that might help you. In case you have found a suitable issue and still need clarification, you can write your question in this issue.
 
 If you then still feel the need to ask a question and need clarification, you can either:
-- open an [Issue](https://github.com/AeneasVerif/charon/issues/new) (see [below](#reporting-bugs) for how to report a bug);
-- or ask your question on our [Zulip](https://aeneas-verif.zulipchat.com/).
+- ask your question on our [Zulip](https://aeneas-verif.zulipchat.com/);
+- or open an [Issue](https://github.com/AeneasVerif/charon/issues/new) (see [below](#reporting-bugs) for how to report a bug).
 
 ## How To Contribute
 
@@ -61,7 +61,7 @@ You can the submit an issue to our [issue tracker][] with all this information.
 
 You may also suggest features and enhancements to Charon. You can submit these to our [issue tracker][] as well. As for bugs, ensure there isn't already an issue for this feature.
 
-We may close the issue if we feel this idea does not fit within the scope of the project. Keep in mind that we want features that will be useful to the majority of our users. If you're just targeting a minority of users, consider writing an separate library (support for external rust consumers of Charon is tracked [here](https://github.com/AeneasVerif/charon/issues/178). You can also make an OCaml library using `chaorn-ml`).
+We may close the issue if we feel this idea does not fit within the scope of the project. Keep in mind that we want features that will be useful to the majority of our users. If you're just targeting a minority of users, consider writing an separate library (support for external rust consumers of Charon is tracked [here](https://github.com/AeneasVerif/charon/issues/178). You can also make an OCaml library by using the Charon ML library (in the folder `charon-ml/`).
 
 ### Contributing Code
 
@@ -71,7 +71,7 @@ Note: this section is incomplete.
 
 Charon is structured into two projects:
 
-- `charon/` contains rust code that build the `charon` and `charon-driver` binaries. These take rust code and generate a `<name>.llbc` file, which is a json serialization of the extracted crate contents;
+- `charon/` contains rust code that builds the `charon` and `charon-driver` binaries. These take rust code and generate a `<name>.llbc` file, which is a json serialization of the extracted crate contents;
 - `charon-ml/` contains an OCaml library that deserializes the `.llbc` files. It mostly follows the structure of the corresponding rust types.
 
 The two projects must be kept in sync. This means that any change to the structure of the json file must be reflected in `charon-ml`.
@@ -80,8 +80,8 @@ Any change to the json serialization must also increment the version in `charon/
 
 #### Tests
 
-Any non-trivial change to the project must add relevant tests. Tests reside in `charon/tests` (the `tests/` is legacy and will soon be moved). There are a few kinds:
-- UI tests in `tests/ui`: this is the most common kind. Just add a `<file>.rs` file in the folder and it will be tested in `cargo test`. Tests support special comments, look at other tests for examples or at `ui.rs` for documentation. Most tests generate a `<file>.out` file which must also be committed;
+Any non-trivial change to the project must add relevant tests. Tests reside in `charon/tests` (the `tests/` folder is legacy and will soon be moved). There are a few kinds:
+- UI tests in `tests/ui`: this is the most common kind. Just add a `<file>.rs` file in the folder and it will be tested by `cargo test`. Tests support special comments, for instance to specify negative tests; look at other tests for examples or at `ui.rs` for documentation. Most tests generate a `<file>.out` file which must also be committed;
 - Cargo tests in `tests/cargo`: tests that require running Charon via `cargo`, e.g. because they require dependencies or multiple crates. Note that ui tests support a limited form of multi-crate tests using the `//@ aux-crate` comment.
 - Crate data tests in `tests/crate_data.rs`: these verify details of the llbc output that don't show up in the ui output.
 
@@ -96,8 +96,8 @@ Charon runs checks in CI for each pull request. There are two kinds:
 - The `aeneas`, `eurydice` and `kyber` checks correspond to projects that use Charon that we endeavor to break as little as possible.
 
 Sometimes breakage is unavoidable however. In this case we can merge changes with these checks not passing. Before that:
-- For `aeneas`, we fix the issue ourselves. This involves making a PR to [Aeneas][] that fixes compilation on a best-effort basis (e.g. adding `raise` branches if there are new enum variants) and bumps their pin of charon (using `make update-charon-pin`). We request that the Aeneas change (excepting the pin update) be ready before we merge the change to Charon.
-- For `eurydice` and `kyber`, we discuss with their maintainers.
+- For `aeneas`, we have to manually fix the issue. This involves making a PR to [Aeneas][] that fixes compilation on a best-effort basis (e.g. adding `raise` branches if there are new enum variants) and bumps their pin of charon (using `make update-charon-pin`). We request that the changes to Aeneas (excepting the pin update) be ready before we merge the changes to Charon.
+- For `eurydice` and `kyber`, we (the maintainers of Charon) will discuss with their maintainers.
 
 ## Attribution
 
