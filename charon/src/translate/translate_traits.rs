@@ -55,11 +55,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Solve the predicate bounds
         let mut trait_refs = Vec::new();
         for bound in bounds {
-            if let rustc_middle::ty::PredicateKind::Clause(rustc_middle::ty::Clause::Trait(
-                trait_pred,
-            )) = bound.kind().skip_binder()
-            {
-                let trait_ref = rustc_middle::ty::Binder::dummy(trait_pred.trait_ref);
+            if let rustc_middle::ty::ClauseKind::Trait(trait_pred) = bound.kind().skip_binder() {
+                let trait_ref = bound.kind().rebind(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
                 let trait_ref = self.translate_trait_impl_expr(span, erase_regions, &trait_ref)?;
                 if let Some(trait_ref) = trait_ref {
@@ -105,17 +102,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("predicates: {:?}", predicates);
 
         // Get the last predicate
-        let (pred, rspan) = predicates.predicates.iter().next_back().unwrap();
-        let pred = pred.sinto(&self.hax_state);
+        let (clause, rspan) = predicates.predicates.iter().next_back().unwrap();
+        let clause: hax::Clause = clause.sinto(&self.hax_state);
         let span = rspan.sinto(&self.hax_state);
 
         // Convert to a clause
-        assert!(pred.bound_vars.is_empty());
-        let self_pred = if let hax::PredicateKind::Clause(hax::Clause {
-            kind: hax::ClauseKind::Trait(trait_pred),
-            ..
-        }) = pred.value
-        {
+        assert!(clause.kind.bound_vars.is_empty());
+        let self_pred = if let hax::ClauseKind::Trait(trait_pred) = clause.kind.value {
             if self
                 .translate_trait_decl_id(*rspan, DefId::from(&trait_pred.trait_ref.def_id))?
                 .is_some()
@@ -345,7 +338,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         let bounds = tcx.item_bounds(item.def_id).subst_identity();
                         use crate::rustc_middle::query::Key;
                         let span = bounds.default_span(tcx);
-                        let bounds: Vec<_> = bounds.into_iter().map(|x| (x, span)).collect();
+                        let bounds: Vec<_> = bounds
+                            .into_iter()
+                            .map(|x| (x.as_predicate(), span))
+                            .collect();
                         let bounds = bounds.sinto(&bt_ctx.hax_state);
 
                         // Register the trait clauses as item trait clauses

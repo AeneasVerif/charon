@@ -1,0 +1,16 @@
+# Final LLBC before serialization:
+
+struct test_crate::V<T, const N : usize> =
+{
+  x: Array<T, const N : usize>
+}
+
+global test_crate::{test_crate::V<T, const N : usize>}::LEN<T, const N : usize>  {
+    let @0: usize; // return
+
+    @0 := const (const N : usize)
+    return
+}
+
+
+

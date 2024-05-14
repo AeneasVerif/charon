@@ -88,7 +88,7 @@
               > $out
           '';
           # The rustc commit we use to get the tests. This should stay equal to `toolchain_commit`.
-          tests_commit = "d59363ad0b6391b7fc5bbb02c9ccf9300eef3753";
+          tests_commit = "5ea66686467d3ec5f8c81570e7f0f16ad8dd8cc3";
           rustc_tests = pkgs.runCommand "rustc-tests" {
             src = pkgs.fetchFromGitHub {
               owner = "rust-lang";

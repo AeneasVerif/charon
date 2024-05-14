@@ -67,18 +67,19 @@ fn core::bool::{bool}::then_some<T>(@1: bool, @2: T) -> core::option::Option<T>
 
     @4 := const (true)
     if copy (self@1) {
+        @4 := const (false)
         @3 := move (t@2)
         @0 := core::option::Option::Some { 0: move (@3) }
         drop @3
     }
     else {
         @0 := core::option::Option::None {  }
-        if copy (@4) {
-            drop t@2
-        }
-        else {
-            nop
-        }
+    }
+    if copy (@4) {
+        drop t@2
+    }
+    else {
+        nop
     }
     return
 }

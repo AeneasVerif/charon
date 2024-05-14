@@ -99,7 +99,7 @@ impl core::clone::impls::{impl core::clone::Clone for u32#8} : core::clone::Clon
     fn clone = core::clone::impls::{impl core::clone::Clone for u32#8}::clone
 }
 
-impl core::marker::{impl core::marker::Copy for u32#40} : core::marker::Copy<u32>
+impl core::marker::{impl core::marker::Copy for u32#61} : core::marker::Copy<u32>
 {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u32#8}
 }
@@ -111,7 +111,7 @@ fn test_crate::use_get<'_0>(@1: &'_0 (core::cell::Cell<u32>)) -> u32
     let @2: &'_ (core::cell::Cell<u32>); // anonymous local
 
     @2 := &*(rc@1)
-    @0 := core::cell::{core::cell::Cell<T>#10}::get<u32>[core::marker::{impl core::marker::Copy for u32#40}](move (@2))
+    @0 := core::cell::{core::cell::Cell<T>#10}::get<u32>[core::marker::{impl core::marker::Copy for u32#61}](move (@2))
     drop @2
     return
 }

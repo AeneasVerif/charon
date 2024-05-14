@@ -47,18 +47,11 @@ fn translate_field_id(id: hax::FieldIdx) -> FieldId {
 fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
     match borrow_kind {
         hax::BorrowKind::Shared => BorrowKind::Shared,
-        hax::BorrowKind::Mut {
-            allow_two_phase_borrow,
-        } => {
-            if allow_two_phase_borrow {
-                BorrowKind::TwoPhaseMut
-            } else {
-                BorrowKind::Mut
-            }
-        }
-        hax::BorrowKind::Unique => {
-            unimplemented!();
-        }
+        hax::BorrowKind::Mut { kind } => match kind {
+            hax::MutBorrowKind::Default => BorrowKind::Mut,
+            hax::MutBorrowKind::TwoPhaseBorrow => BorrowKind::TwoPhaseMut,
+            hax::MutBorrowKind::ClosureCapture => unimplemented!(),
+        },
         hax::BorrowKind::Shallow => BorrowKind::Shallow,
     }
 }
@@ -209,7 +202,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
                     // In order to check if this is a provided item, we check
                     // the defaultness (i.e., whether the item has a default value):
-                    let is_provided = tcx.impl_defaultness(rust_id).has_value();
+                    let is_provided = tcx.defaultness(rust_id).has_value();
 
                     // Compute additional information
                     let item_name = self.translate_trait_item_name(rust_id)?;
@@ -876,6 +869,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         if name.equals_ref_name(&assumed::PANIC_NAME)
             || name.equals_ref_name(&assumed::PANIC_FMT_NAME)
             || name.equals_ref_name(&assumed::BEGIN_PANIC_NAME)
+            || name.equals_ref_name(&assumed::BEGIN_PANIC_RT_NAME)
             || name.equals_ref_name(&assumed::ASSERT_FAILED_NAME)
         {
             return Ok(SubstFunIdOrPanic::Panic);
@@ -1220,7 +1214,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_refs,
                 trait_info,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
-                from_hir_call: _,
+                call_source: _,
                 fn_span: _,
             } => self.translate_function_call(
                 span,
