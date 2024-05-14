@@ -1,5 +1,6 @@
 use crate::common::TAB_INCR;
 use crate::gast;
+use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::llbc_ast::*;
 use crate::pretty::fmt_with_ctx;
@@ -14,7 +15,7 @@ use crate::values::*;
 /// context. For instance, because values use value ids to point to other values,
 /// we need a context to give us the mapping from value ids to values when pretty
 /// printing. As the `EvalContext` data structure handles such a mapping, we
-/// implement the `Formatter<ValueId::Id>` trait for it.
+/// implement the `Formatter<ValueId>` trait for it.
 ///
 /// Our way of implementing pretty-printing for data-structures while factorizing
 /// the code is as follows:
@@ -105,13 +106,13 @@ impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
 pub trait SetLocals<'a> {
     type C: 'a + AstFormatter;
 
-    fn set_locals(&'a self, locals: &'a VarId::Vector<ast::Var>) -> Self::C;
+    fn set_locals(&'a self, locals: &'a Vector<VarId, ast::Var>) -> Self::C;
 }
 
 impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
-    fn set_locals(&'a self, locals: &'a VarId::Vector<ast::Var>) -> Self::C {
+    fn set_locals(&'a self, locals: &'a Vector<VarId, ast::Var>) -> Self::C {
         let FmtCtx {
             type_decls,
             fun_decls,
@@ -149,13 +150,13 @@ impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
 pub trait PushBoundRegions<'a> {
     type C: 'a + AstFormatter;
 
-    fn push_bound_regions(&'a self, regions: &RegionId::Vector<RegionVar>) -> Self::C;
+    fn push_bound_regions(&'a self, regions: &Vector<RegionId, RegionVar>) -> Self::C;
 }
 
 impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
-    fn push_bound_regions(&'a self, regions: &RegionId::Vector<RegionVar>) -> Self::C {
+    fn push_bound_regions(&'a self, regions: &Vector<RegionId, RegionVar>) -> Self::C {
         let FmtCtx {
             type_decls,
             fun_decls,
@@ -192,19 +193,19 @@ impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     }
 }
 
-pub trait AstFormatter = Formatter<TypeVarId::Id>
-    + Formatter<TypeDeclId::Id>
-    + Formatter<ConstGenericVarId::Id>
-    + Formatter<FunDeclId::Id>
-    + Formatter<GlobalDeclId::Id>
-    + Formatter<TraitDeclId::Id>
-    + Formatter<TraitImplId::Id>
-    + Formatter<TraitClauseId::Id>
-    + Formatter<(DeBruijnId, RegionId::Id)>
-    + Formatter<VarId::Id>
-    + Formatter<(TypeDeclId::Id, VariantId::Id)>
-    + Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)>
-    + for<'a> Formatter<&'a ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>>
+pub trait AstFormatter = Formatter<TypeVarId>
+    + Formatter<TypeDeclId>
+    + Formatter<ConstGenericVarId>
+    + Formatter<FunDeclId>
+    + Formatter<GlobalDeclId>
+    + Formatter<TraitDeclId>
+    + Formatter<TraitImplId>
+    + Formatter<TraitClauseId>
+    + Formatter<(DeBruijnId, RegionId)>
+    + Formatter<VarId>
+    + Formatter<(TypeDeclId, VariantId)>
+    + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
+    + for<'a> Formatter<&'a Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>>
     + for<'a> Formatter<&'a llbc_ast::Statement>
     + for<'a> SetGenerics<'a>
     + for<'a> SetLocals<'a>
@@ -227,10 +228,10 @@ pub struct FmtCtx<'a> {
     pub trait_decls: Option<&'a ast::TraitDecls>,
     pub trait_impls: Option<&'a ast::TraitImpls>,
     /// The region variables are not an option, because we need to be able to push/pop
-    pub region_vars: im::Vector<RegionId::Vector<RegionVar>>,
-    pub type_vars: Option<&'a TypeVarId::Vector<TypeVar>>,
-    pub const_generic_vars: Option<&'a ConstGenericVarId::Vector<ConstGenericVar>>,
-    pub locals: Option<&'a VarId::Vector<ast::Var>>,
+    pub region_vars: im::Vector<Vector<RegionId, RegionVar>>,
+    pub type_vars: Option<&'a Vector<TypeVarId, TypeVar>>,
+    pub const_generic_vars: Option<&'a Vector<ConstGenericVarId, ConstGenericVar>>,
+    pub locals: Option<&'a Vector<VarId, ast::Var>>,
 }
 
 impl<'a> IntoFormatter for FmtCtx<'a> {
@@ -263,8 +264,8 @@ impl<'a> Default for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<TypeDeclId::Id> for FmtCtx<'a> {
-    fn format_object(&self, id: TypeDeclId::Id) -> String {
+impl<'a> Formatter<TypeDeclId> for FmtCtx<'a> {
+    fn format_object(&self, id: TypeDeclId) -> String {
         match &self.type_decls {
             None => id.to_pretty_string(),
             Some(type_decls) => match type_decls.get(id) {
@@ -275,8 +276,8 @@ impl<'a> Formatter<TypeDeclId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<GlobalDeclId::Id> for FmtCtx<'a> {
-    fn format_object(&self, id: GlobalDeclId::Id) -> String {
+impl<'a> Formatter<GlobalDeclId> for FmtCtx<'a> {
+    fn format_object(&self, id: GlobalDeclId) -> String {
         match &self.global_decls {
             None => id.to_pretty_string(),
             Some(global_decls) => match global_decls.get(id) {
@@ -287,8 +288,8 @@ impl<'a> Formatter<GlobalDeclId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<ast::FunDeclId::Id> for FmtCtx<'a> {
-    fn format_object(&self, id: ast::FunDeclId::Id) -> String {
+impl<'a> Formatter<ast::FunDeclId> for FmtCtx<'a> {
+    fn format_object(&self, id: ast::FunDeclId) -> String {
         match &self.fun_decls {
             None => id.to_pretty_string(),
             Some(fun_decls) => match fun_decls.get(id) {
@@ -299,8 +300,8 @@ impl<'a> Formatter<ast::FunDeclId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<ast::TraitDeclId::Id> for FmtCtx<'a> {
-    fn format_object(&self, id: ast::TraitDeclId::Id) -> String {
+impl<'a> Formatter<ast::TraitDeclId> for FmtCtx<'a> {
+    fn format_object(&self, id: ast::TraitDeclId) -> String {
         match &self.trait_decls {
             None => id.to_pretty_string(),
             Some(trait_decls) => match trait_decls.get(id) {
@@ -311,8 +312,8 @@ impl<'a> Formatter<ast::TraitDeclId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<ast::TraitImplId::Id> for FmtCtx<'a> {
-    fn format_object(&self, id: ast::TraitImplId::Id) -> String {
+impl<'a> Formatter<ast::TraitImplId> for FmtCtx<'a> {
+    fn format_object(&self, id: ast::TraitImplId) -> String {
         match &self.trait_impls {
             None => id.to_pretty_string(),
             Some(trait_impls) => match trait_impls.get(id) {
@@ -323,8 +324,8 @@ impl<'a> Formatter<ast::TraitImplId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<(DeBruijnId, RegionId::Id)> for FmtCtx<'a> {
-    fn format_object(&self, (grid, id): (DeBruijnId, RegionId::Id)) -> String {
+impl<'a> Formatter<(DeBruijnId, RegionId)> for FmtCtx<'a> {
+    fn format_object(&self, (grid, id): (DeBruijnId, RegionId)) -> String {
         match self.region_vars.get(grid.index) {
             None => bound_region_var_to_pretty_string(grid, id),
             Some(gr) => match gr.get(id) {
@@ -335,8 +336,8 @@ impl<'a> Formatter<(DeBruijnId, RegionId::Id)> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<TypeVarId::Id> for FmtCtx<'a> {
-    fn format_object(&self, id: TypeVarId::Id) -> String {
+impl<'a> Formatter<TypeVarId> for FmtCtx<'a> {
+    fn format_object(&self, id: TypeVarId) -> String {
         match &self.type_vars {
             None => id.to_pretty_string(),
             Some(vars) => match vars.get(id) {
@@ -347,8 +348,8 @@ impl<'a> Formatter<TypeVarId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<ConstGenericVarId::Id> for FmtCtx<'a> {
-    fn format_object(&self, id: ConstGenericVarId::Id) -> String {
+impl<'a> Formatter<ConstGenericVarId> for FmtCtx<'a> {
+    fn format_object(&self, id: ConstGenericVarId) -> String {
         match &self.const_generic_vars {
             None => id.to_pretty_string(),
             Some(vars) => match vars.get(id) {
@@ -359,15 +360,15 @@ impl<'a> Formatter<ConstGenericVarId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<ast::TraitClauseId::Id> for FmtCtx<'a> {
-    fn format_object(&self, id: ast::TraitClauseId::Id) -> String {
+impl<'a> Formatter<ast::TraitClauseId> for FmtCtx<'a> {
+    fn format_object(&self, id: ast::TraitClauseId) -> String {
         id.to_pretty_string()
     }
 }
 
 /// For enum values: `List::Cons`
-impl<'a> Formatter<(TypeDeclId::Id, VariantId::Id)> for FmtCtx<'a> {
-    fn format_object(&self, id: (TypeDeclId::Id, VariantId::Id)) -> String {
+impl<'a> Formatter<(TypeDeclId, VariantId)> for FmtCtx<'a> {
+    fn format_object(&self, id: (TypeDeclId, VariantId)) -> String {
         let (def_id, variant_id) = id;
         match &self.type_decls {
             None => format!(
@@ -399,8 +400,8 @@ impl<'a> Formatter<(TypeDeclId::Id, VariantId::Id)> for FmtCtx<'a> {
 }
 
 /// For struct/enum values: retrieve a field name
-impl<'a> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)> for FmtCtx<'a> {
-    fn format_object(&self, id: (TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)) -> String {
+impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
+    fn format_object(&self, id: (TypeDeclId, Option<VariantId>, FieldId)) -> String {
         let (def_id, opt_variant_id, field_id) = id;
         match &self.type_decls {
             None => match opt_variant_id {
@@ -462,8 +463,8 @@ impl<'a> Formatter<(TypeDeclId::Id, Option<VariantId::Id>, FieldId::Id)> for Fmt
     }
 }
 
-impl<'a> Formatter<VarId::Id> for FmtCtx<'a> {
-    fn format_object(&self, id: VarId::Id) -> String {
+impl<'a> Formatter<VarId> for FmtCtx<'a> {
+    fn format_object(&self, id: VarId) -> String {
         match &self.locals {
             None => id.to_pretty_string(),
             Some(vars) => match vars.get(id) {
@@ -480,8 +481,8 @@ impl<'a> Formatter<&llbc_ast::Statement> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<&ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>> for FmtCtx<'a> {
-    fn format_object(&self, x: &ullbc_ast::BlockId::Vector<ullbc_ast::BlockData>) -> String {
+impl<'a> Formatter<&Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>> for FmtCtx<'a> {
+    fn format_object(&self, x: &Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>) -> String {
         fmt_with_ctx::fmt_body_blocks_with_ctx(x, TAB_INCR, self)
     }
 }
@@ -552,8 +553,8 @@ impl<'a> Formatter<&gast::TraitImpl> for FmtCtx<'a> {
     }
 }
 
-impl<'a> DeclFormatter<TypeDeclId::Id> for FmtCtx<'a> {
-    fn format_decl(&self, id: TypeDeclId::Id) -> String {
+impl<'a> DeclFormatter<TypeDeclId> for FmtCtx<'a> {
+    fn format_decl(&self, id: TypeDeclId) -> String {
         match &self.type_decls {
             None => format!("Unknown decl: {:?}", id),
             Some(decls) => match decls.get(id) {
@@ -566,8 +567,8 @@ impl<'a> DeclFormatter<TypeDeclId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> DeclFormatter<GlobalDeclId::Id> for FmtCtx<'a> {
-    fn format_decl(&self, id: GlobalDeclId::Id) -> String {
+impl<'a> DeclFormatter<GlobalDeclId> for FmtCtx<'a> {
+    fn format_decl(&self, id: GlobalDeclId) -> String {
         match &self.global_decls {
             None => format!("Unknown decl: {:?}", id),
             Some(decls) => match decls.get(id) {
@@ -580,8 +581,8 @@ impl<'a> DeclFormatter<GlobalDeclId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> DeclFormatter<FunDeclId::Id> for FmtCtx<'a> {
-    fn format_decl(&self, id: FunDeclId::Id) -> String {
+impl<'a> DeclFormatter<FunDeclId> for FmtCtx<'a> {
+    fn format_decl(&self, id: FunDeclId) -> String {
         match &self.fun_decls {
             None => format!("Unknown decl: {:?}", id),
             Some(decls) => match decls.get(id) {
@@ -594,8 +595,8 @@ impl<'a> DeclFormatter<FunDeclId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> DeclFormatter<TraitDeclId::Id> for FmtCtx<'a> {
-    fn format_decl(&self, id: TraitDeclId::Id) -> String {
+impl<'a> DeclFormatter<TraitDeclId> for FmtCtx<'a> {
+    fn format_decl(&self, id: TraitDeclId) -> String {
         match &self.trait_decls {
             None => format!("Unknown decl: {:?}", id),
             Some(decls) => match decls.get(id) {
@@ -608,8 +609,8 @@ impl<'a> DeclFormatter<TraitDeclId::Id> for FmtCtx<'a> {
     }
 }
 
-impl<'a> DeclFormatter<TraitImplId::Id> for FmtCtx<'a> {
-    fn format_decl(&self, id: TraitImplId::Id) -> String {
+impl<'a> DeclFormatter<TraitImplId> for FmtCtx<'a> {
+    fn format_decl(&self, id: TraitImplId) -> String {
         match &self.trait_impls {
             None => format!("Unknown impl: {:?}", id),
             Some(decls) => match decls.get(id) {

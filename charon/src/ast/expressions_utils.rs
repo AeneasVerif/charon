@@ -8,7 +8,7 @@ use macros::make_generic_in_borrows;
 use std::vec::Vec;
 
 impl Place {
-    pub fn new(var_id: VarId::Id) -> Place {
+    pub fn new(var_id: VarId) -> Place {
         Place {
             var_id,
             projection: Vec::new(),
@@ -30,7 +30,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         self.visit_projection(&p.projection);
     }
 
-    fn visit_var_id(&mut self, _: &VarId::Id) {}
+    fn visit_var_id(&mut self, _: &VarId) {}
 
     fn visit_projection(&mut self, p: &Projection) {
         for pe in p.iter() {
@@ -55,7 +55,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
     fn visit_deref(&mut self) {}
     fn visit_deref_box(&mut self) {}
     fn visit_deref_raw_ptr(&mut self) {}
-    fn visit_projection_field(&mut self, _: &FieldProjKind, _: &FieldId::Id) {}
+    fn visit_projection_field(&mut self, _: &FieldProjKind, _: &FieldId) {}
 
     fn default_visit_operand(&mut self, o: &Operand) {
         match o {
@@ -110,7 +110,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         }
     }
 
-    fn visit_constant_expr_adt(&mut self, _oid: &Option<VariantId::Id>, ops: &Vec<ConstantExpr>) {
+    fn visit_constant_expr_adt(&mut self, _oid: &Option<VariantId>, ops: &Vec<ConstantExpr>) {
         for op in ops {
             self.visit_constant_expr(op)
         }
@@ -165,7 +165,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         self.visit_operand(o2);
     }
 
-    fn visit_discriminant(&mut self, p: &Place, adt_id: &TypeDeclId::Id) {
+    fn visit_discriminant(&mut self, p: &Place, adt_id: &TypeDeclId) {
         self.visit_place(p);
         self.visit_type_decl_id(adt_id);
     }
@@ -197,7 +197,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
         }
     }
 
-    fn visit_global(&mut self, _: &GlobalDeclId::Id) {}
+    fn visit_global(&mut self, _: &GlobalDeclId) {}
 
     fn visit_len(&mut self, p: &Place, ty: &Ty, cg: &Option<ConstGeneric>) {
         self.visit_place(p);

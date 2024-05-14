@@ -125,6 +125,7 @@ where
     }
 }
 
+// FIXME: this impl is a footgun
 impl<I, T> FromIterator<T> for Vector<I, T>
 where
     I: Idx,
@@ -137,6 +138,7 @@ where
     }
 }
 
+// FIXME: this impl is a footgun
 impl<I, T> From<Vec<T>> for Vector<I, T>
 where
     I: Idx,

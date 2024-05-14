@@ -1,3 +1,4 @@
+use crate::ids::Map;
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
 use crate::reorder_decls::DeclarationGroup;
@@ -22,7 +23,7 @@ pub struct GCrateData<FD, GD> {
     /// The `id_to_file` map is serialized as a vector.
     /// We use this map for the spans: the spans only store the file ids, not
     /// the file names, in order to save space.
-    pub id_to_file: Vec<(FileId::Id, FileName)>,
+    pub id_to_file: Vec<(FileId, FileName)>,
     pub declarations: Vec<DeclarationGroup>,
     pub types: Vec<TypeDecl>,
     pub functions: Vec<FD>,
@@ -38,15 +39,15 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
     pub fn new(
         ctx: &TransCtx,
         crate_name: String,
-        fun_decls: &FunDeclId::Map<FD>,
-        global_decls: &GlobalDeclId::Map<GD>,
+        fun_decls: &Map<FunDeclId, FD>,
+        global_decls: &Map<GlobalDeclId, GD>,
     ) -> Self {
         // Transform the map file id -> file into a vector.
         // Sort the vector to make the serialized file as stable as possible.
         let id_to_file = &ctx.id_to_file;
-        let mut file_ids: Vec<FileId::Id> = id_to_file.keys().copied().collect();
+        let mut file_ids: Vec<FileId> = id_to_file.keys().copied().collect();
         file_ids.sort();
-        let id_to_file: Vec<(FileId::Id, FileName)> = file_ids
+        let id_to_file: Vec<(FileId, FileName)> = file_ids
             .into_iter()
             .map(|id| (id, id_to_file.get(&id).unwrap().clone()))
             .collect();
@@ -124,8 +125,8 @@ impl CrateData {
     pub fn new_ullbc(
         ctx: &TransCtx,
         crate_name: String,
-        fun_decls: &FunDeclId::Map<ullbc_ast::FunDecl>,
-        global_decls: &GlobalDeclId::Map<ullbc_ast::GlobalDecl>,
+        fun_decls: &Map<FunDeclId, ullbc_ast::FunDecl>,
+        global_decls: &Map<GlobalDeclId, ullbc_ast::GlobalDecl>,
     ) -> Self {
         Self::ULLBC(GCrateData::new(ctx, crate_name, fun_decls, global_decls))
     }
@@ -133,8 +134,8 @@ impl CrateData {
     pub fn new_llbc(
         ctx: &TransCtx,
         crate_name: String,
-        fun_decls: &FunDeclId::Map<llbc_ast::FunDecl>,
-        global_decls: &GlobalDeclId::Map<llbc_ast::GlobalDecl>,
+        fun_decls: &Map<FunDeclId, llbc_ast::FunDecl>,
+        global_decls: &Map<GlobalDeclId, llbc_ast::GlobalDecl>,
     ) -> Self {
         Self::LLBC(GCrateData::new(ctx, crate_name, fun_decls, global_decls))
     }

@@ -3,11 +3,12 @@ use crate::common::*;
 use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
+use crate::ids::{Generator, Map, MapGenerator, Vector};
 use crate::llbc_ast;
 use crate::meta::{self, Attribute, ItemMeta, Span};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
-use crate::reorder_decls::{AnyTransId, DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
+use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
 use crate::translate_predicates::NonLocalTraitClause;
 use crate::types::*;
 use crate::ullbc_ast as ast;
@@ -16,7 +17,7 @@ use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use im::OrdMap;
 use linked_hash_set::LinkedHashSet;
-use macros::VariantIndexArity;
+use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
@@ -95,6 +96,29 @@ impl CrateInfo {
     pub(crate) fn is_transparent_decl(&self, name: &Name) -> bool {
         !self.is_opaque_decl(name)
     }
+}
+
+/// The id of a translated item.
+#[derive(
+    PartialEq,
+    Eq,
+    Hash,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    VariantIndexArity,
+    Copy,
+    Clone,
+    Debug,
+    PartialOrd,
+    Ord,
+)]
+pub enum AnyTransId {
+    Type(TypeDeclId),
+    Fun(FunDeclId),
+    Global(GlobalDeclId),
+    TraitDecl(TraitDeclId),
+    TraitImpl(TraitImplId),
 }
 
 /// We use a special type to store the Rust identifiers in the stack, to
@@ -177,14 +201,10 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// The id of the definition we are exploring
     pub def_id: Option<DefId>,
     /// File names to ids and vice-versa
-    pub file_to_id: HashMap<FileName, FileId::Id>,
-    pub id_to_file: HashMap<FileId::Id, FileName>,
-    pub real_file_counter: LocalFileId::Generator,
-    pub virtual_file_counter: VirtualFileId::Generator,
-    /// The map from Rust type ids to translated type ids
-    pub type_id_map: TypeDeclId::MapGenerator<DefId>,
-    /// The translated type definitions
-    pub type_decls: TypeDecls,
+    pub file_to_id: HashMap<FileName, FileId>,
+    pub id_to_file: HashMap<FileId, FileName>,
+    pub real_file_counter: Generator<LocalFileId>,
+    pub virtual_file_counter: Generator<VirtualFileId>,
     /// Dependency graph with sources. We use this for error reporting.
     /// See [DepSource].
     pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
@@ -193,21 +213,30 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// The ids of the declarations we completely failed to extract
     /// and had to ignore.
     pub ignored_failed_decls: HashSet<DefId>,
-    /// The map from Rust function ids to translated function ids
-    pub fun_id_map: ast::FunDeclId::MapGenerator<DefId>,
+
+    /// The map from rustc id to translated id.
+    pub id_map: HashMap<DefId, AnyTransId>,
+    /// The reverse map of ids.
+    pub reverse_id_map: HashMap<AnyTransId, DefId>,
+    /// Generator of translated type ids
+    pub type_id_gen: Generator<TypeDeclId>,
+    /// Generator of translated function ids.
+    pub fun_id_gen: Generator<ast::FunDeclId>,
+    /// Generator of translated global ids.
+    pub global_id_gen: Generator<ast::GlobalDeclId>,
+    /// Generator of translated trait decl ids
+    pub trait_decl_id_gen: Generator<ast::TraitDeclId>,
+    /// Generator of translated trait impls ids
+    pub trait_impl_id_gen: Generator<ast::TraitImplId>,
+
+    /// The translated type definitions
+    pub type_decls: TypeDecls,
     /// The translated function definitions
     pub fun_decls: ast::FunDecls,
-    /// The map from Rust global ids to translated global ids
-    pub global_id_map: ast::GlobalDeclId::MapGenerator<DefId>,
     /// The translated global definitions
     pub global_decls: ast::GlobalDecls,
-    /// The map from Rust trait decl ids to translated trait decl ids
-    pub trait_decl_id_map: ast::TraitDeclId::MapGenerator<DefId>,
     /// The translated trait declarations
     pub trait_decls: ast::TraitDecls,
-    /// The map from Rust trait impls ids to translated trait impls ids
-    pub trait_impl_id_map: ast::TraitImplId::MapGenerator<DefId>,
-    pub trait_impl_id_to_def_id: HashMap<ast::TraitImplId::Id, DefId>,
     /// The translated trait declarations
     pub trait_impls: ast::TraitImpls,
     /// The re-ordered groups of declarations, initialized as empty.
@@ -233,7 +262,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The regions.
     /// We use DeBruijn indices, so we have a stack of regions.
     /// See the comments for [Region::BVar].
-    pub region_vars: im::Vector<RegionId::Vector<RegionVar>>,
+    pub region_vars: im::Vector<Vector<RegionId, RegionVar>>,
     /// The map from rust (free) regions to translated region indices.
     /// This contains the early bound regions.
     ///
@@ -248,7 +277,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     /// The [bound_region_vars] field below takes care of the regions which
     /// are bound in the Rustc representation.
-    pub free_region_vars: std::collections::BTreeMap<hax::Region, RegionId::Id>,
+    pub free_region_vars: std::collections::BTreeMap<hax::Region, RegionId>,
     ///
     /// The stack of late-bound parameters (can only be lifetimes for now), which
     /// use DeBruijn indices (the other parameters use free variables).
@@ -262,21 +291,21 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// **Important**:
     /// ==============
     /// We use DeBruijn indices. See the comments for [Region::Var].
-    pub bound_region_vars: im::Vector<im::Vector<RegionId::Id>>,
+    pub bound_region_vars: im::Vector<im::Vector<RegionId>>,
     /// The type variables
-    pub type_vars: TypeVarId::Vector<TypeVar>,
+    pub type_vars: Vector<TypeVarId, TypeVar>,
     /// The map from rust type variable indices to translated type variable
     /// indices.
-    pub type_vars_map: TypeVarId::MapGenerator<u32>,
+    pub type_vars_map: MapGenerator<u32, TypeVarId>,
     /// The "regular" variables
-    pub vars: VarId::Vector<ast::Var>,
+    pub vars: Vector<VarId, ast::Var>,
     /// The map from rust variable indices to translated variables indices.
-    pub vars_map: VarId::MapGenerator<usize>,
+    pub vars_map: MapGenerator<usize, VarId>,
     /// The const generic variables
-    pub const_generic_vars: ConstGenericVarId::Vector<ConstGenericVar>,
+    pub const_generic_vars: Vector<ConstGenericVarId, ConstGenericVar>,
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
-    pub const_generic_vars_map: ConstGenericVarId::MapGenerator<u32>,
+    pub const_generic_vars_map: MapGenerator<u32, ConstGenericVarId>,
     /// A generator for trait instance ids.
     /// We initialize it so that it generates ids for local clauses.
     pub trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
@@ -296,14 +325,14 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub regions_outlive: Vec<RegionOutlives>,
     ///
     pub trait_type_constraints: Vec<TraitTypeConstraint>,
-    /// The translated blocks. We can't use `ast::BlockId::Vector<ast::BlockData>`
+    /// The translated blocks. We can't use `ast::Vector<BlockId, ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
-    pub blocks: im::OrdMap<ast::BlockId::Id, ast::BlockData>,
+    pub blocks: im::OrdMap<ast::BlockId, ast::BlockData>,
     /// The map from rust blocks to translated blocks.
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
-    pub blocks_map: ast::BlockId::MapGenerator<hax::BasicBlock>,
+    pub blocks_map: MapGenerator<hax::BasicBlock, ast::BlockId>,
     /// We register the blocks to translate in a stack, so as to avoid
     /// writing the translation functions as recursive functions. We do
     /// so because we had stack overflows in the past.
@@ -338,17 +367,15 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     /// Register a file if it is a "real" file and was not already registered
-    fn register_file(&mut self, filename: FileName) -> FileId::Id {
+    fn register_file(&mut self, filename: FileName) -> FileId {
         // Lookup the file if it was already registered
         match self.file_to_id.get(&filename) {
             Option::Some(id) => *id,
             Option::None => {
                 // Generate the fresh id
                 let id = match &filename {
-                    FileName::Local(_) => FileId::Id::LocalId(self.real_file_counter.fresh_id()),
-                    FileName::Virtual(_) => {
-                        FileId::Id::VirtualId(self.virtual_file_counter.fresh_id())
-                    }
+                    FileName::Local(_) => FileId::LocalId(self.real_file_counter.fresh_id()),
+                    FileName::Virtual(_) => FileId::VirtualId(self.virtual_file_counter.fresh_id()),
                     FileName::NotReal(_) => unimplemented!(),
                 };
                 self.file_to_id.insert(filename.clone(), id);
@@ -556,12 +583,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         Ok(!(self.id_is_opaque(id)?))
     }
 
-    pub(crate) fn push_id(&mut self, _rust_id: DefId, id: OrdRustId, trans_id: AnyTransId) {
-        // Add the id to the stack of declarations to translate
-        self.stack.insert(id);
-        self.all_ids.insert(trans_id);
-    }
-
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
     pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
         if let Some(src) = src {
@@ -578,18 +599,30 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn register_type_decl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: DefId,
-    ) -> TypeDeclId::Id {
-        self.register_dep_source(src, id);
-        match self.type_id_map.get(&id) {
-            Option::Some(id) => id,
-            Option::None => {
-                let rid = OrdRustId::Type(id);
-                let trans_id = self.type_id_map.insert(id);
-                self.push_id(id, rid, AnyTransId::Type(trans_id));
+    pub(crate) fn register_id(&mut self, src: &Option<DepSource>, id: OrdRustId) -> AnyTransId {
+        let rust_id = id.get_id();
+        self.register_dep_source(src, rust_id);
+        match self.id_map.get(&rust_id) {
+            Some(tid) => *tid,
+            None => {
+                // Add the id to the stack of declarations to translate
+                self.stack.insert(id);
+                let trans_id = match id {
+                    OrdRustId::Type(_) => AnyTransId::Type(self.type_id_gen.fresh_id()),
+                    OrdRustId::TraitDecl(_) => {
+                        AnyTransId::TraitDecl(self.trait_decl_id_gen.fresh_id())
+                    }
+                    OrdRustId::TraitImpl(_) => {
+                        AnyTransId::TraitImpl(self.trait_impl_id_gen.fresh_id())
+                    }
+                    OrdRustId::Global(_) => AnyTransId::Global(self.global_id_gen.fresh_id()),
+                    OrdRustId::ConstFun(_) | OrdRustId::Fun(_) => {
+                        AnyTransId::Fun(self.fun_id_gen.fresh_id())
+                    }
+                };
+                self.id_map.insert(id.get_id(), trans_id);
+                self.reverse_id_map.insert(trans_id, id.get_id());
+                self.all_ids.insert(trans_id);
                 trans_id
             }
         }
@@ -599,93 +632,22 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> TypeDeclId::Id {
-        self.register_type_decl_id(src, id)
-    }
-
-    // TODO: factor out all the "register_..." functions
-    pub(crate) fn register_fun_decl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: DefId,
-    ) -> ast::FunDeclId::Id {
-        self.register_dep_source(src, id);
-        match self.fun_id_map.get(&id) {
-            Option::Some(tid) => tid,
-            Option::None => {
-                let rid = if self.tcx.is_const_fn_raw(id) {
-                    OrdRustId::ConstFun(id)
-                } else {
-                    OrdRustId::Fun(id)
-                };
-                let trans_id = self.fun_id_map.insert(id);
-                self.push_id(id, rid, AnyTransId::Fun(trans_id));
-                trans_id
-            }
-        }
-    }
-
-    /// Returns an [Option] because we may ignore some builtin or auto traits
-    /// like [core::marker::Sized] or [core::marker::Sync].
-    pub(crate) fn register_trait_decl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: DefId,
-    ) -> Result<Option<ast::TraitDeclId::Id>, Error> {
-        use crate::assumed;
-        if assumed::IGNORE_BUILTIN_MARKER_TRAITS {
-            let name = self.def_id_to_name(id)?;
-            if assumed::is_marker_trait(&name) {
-                return Ok(None);
-            }
-        }
-
-        self.register_dep_source(src, id);
-        match self.trait_decl_id_map.get(&id) {
-            Option::Some(id) => Ok(Some(id)),
-            Option::None => {
-                let rid = OrdRustId::TraitDecl(id);
-                let trans_id = self.trait_decl_id_map.insert(id);
-                self.push_id(id, rid, AnyTransId::TraitDecl(trans_id));
-                Ok(Some(trans_id))
-            }
-        }
-    }
-
-    /// Returns an [Option] because we may ignore some builtin or auto traits
-    /// like [core::marker::Sized] or [core::marker::Sync].
-    pub(crate) fn register_trait_impl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        rust_id: DefId,
-    ) -> Result<Option<ast::TraitImplId::Id>, Error> {
-        // Check if we need to filter
-        {
-            // Retrieve the id of the implemented trait decl
-            let id = self.tcx.trait_id_of_impl(rust_id).unwrap();
-            let _ = self.register_trait_decl_id(src, id)?;
-        }
-
-        self.register_dep_source(src, rust_id);
-        let id = match self.trait_impl_id_map.get(&rust_id) {
-            Option::Some(id) => Some(id),
-            Option::None => {
-                let rid = OrdRustId::TraitImpl(rust_id);
-                let trans_id = self.trait_impl_id_map.insert(rust_id);
-                self.trait_impl_id_to_def_id.insert(trans_id, rust_id);
-                self.push_id(rust_id, rid, AnyTransId::TraitImpl(trans_id));
-                Some(trans_id)
-            }
-        };
-        Ok(id)
+    ) -> TypeDeclId {
+        *self.register_id(src, OrdRustId::Type(id)).as_type()
     }
 
     pub(crate) fn translate_fun_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> ast::FunDeclId::Id {
-        self.register_fun_decl_id(src, id)
+    ) -> ast::FunDeclId {
+        // FIXME: cache this or even better let hax handle this
+        let id = if self.tcx.is_const_fn_raw(id) {
+            OrdRustId::ConstFun(id)
+        } else {
+            OrdRustId::Fun(id)
+        };
+        *self.register_id(src, id).as_fun()
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
@@ -694,8 +656,18 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> Result<Option<ast::TraitDeclId::Id>, Error> {
-        self.register_trait_decl_id(src, id)
+    ) -> Result<Option<ast::TraitDeclId>, Error> {
+        use crate::assumed;
+        if assumed::IGNORE_BUILTIN_MARKER_TRAITS {
+            let name = self.def_id_to_name(id)?;
+            if assumed::is_marker_trait(&name) {
+                return Ok(None);
+            }
+        }
+
+        let id = OrdRustId::TraitDecl(id);
+        let trait_decl_id = *self.register_id(src, id).as_trait_decl();
+        Ok(Some(trait_decl_id))
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
@@ -703,34 +675,26 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_trait_impl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: DefId,
-    ) -> Result<Option<ast::TraitImplId::Id>, Error> {
-        self.register_trait_impl_id(src, id)
-    }
-
-    pub(crate) fn register_global_decl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: DefId,
-    ) -> GlobalDeclId::Id {
-        self.register_dep_source(src, id);
-        match self.global_id_map.get(&id) {
-            Option::Some(id) => id,
-            Option::None => {
-                let rid = OrdRustId::Global(id);
-                let trans_id = self.global_id_map.insert(id);
-                self.push_id(id, rid, AnyTransId::Global(trans_id));
-                trans_id
-            }
+        rust_id: DefId,
+    ) -> Result<Option<ast::TraitImplId>, Error> {
+        // Check if we need to filter
+        {
+            // Retrieve the id of the implemented trait decl
+            let id = self.tcx.trait_id_of_impl(rust_id).unwrap();
+            let _ = self.translate_trait_decl_id(src, id)?;
         }
+
+        let id = OrdRustId::TraitImpl(rust_id);
+        let trait_impl_id = *self.register_id(src, id).as_trait_impl();
+        Ok(Some(trait_impl_id))
     }
 
     pub(crate) fn translate_global_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> ast::GlobalDeclId::Id {
-        self.register_global_decl_id(src, id)
+    ) -> ast::GlobalDeclId {
+        *self.register_id(src, OrdRustId::Global(id)).as_global()
     }
 
     pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, f: F) -> T
@@ -746,8 +710,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     pub(crate) fn iter_bodies<F, B>(
         &mut self,
-        funs: &mut FunDeclId::Map<GFunDecl<B>>,
-        globals: &mut GlobalDeclId::Map<GGlobalDecl<B>>,
+        funs: &mut Map<FunDeclId, GFunDecl<B>>,
+        globals: &mut Map<GlobalDeclId, GGlobalDecl<B>>,
         f: F,
     ) where
         F: Fn(&mut Self, &Name, &mut GExprBody<B>),
@@ -762,7 +726,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>) -> Self {
         let hax_state = t_ctx.make_hax_state_with_id(def_id);
-        let mut trait_clauses_counter = TraitClauseId::Generator::new();
+        let mut trait_clauses_counter = Generator::new();
         let trait_instance_id_gen = Box::new(move || {
             let id = trait_clauses_counter.fresh_id();
             TraitInstanceId::Clause(id)
@@ -771,15 +735,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             def_id,
             t_ctx,
             hax_state,
-            region_vars: im::vector![RegionId::Vector::new()],
+            region_vars: im::vector![Vector::new()],
             free_region_vars: std::collections::BTreeMap::new(),
             bound_region_vars: im::Vector::new(),
-            type_vars: TypeVarId::Vector::new(),
-            type_vars_map: TypeVarId::MapGenerator::new(),
-            vars: VarId::Vector::new(),
-            vars_map: VarId::MapGenerator::new(),
-            const_generic_vars: ConstGenericVarId::Vector::new(),
-            const_generic_vars_map: ConstGenericVarId::MapGenerator::new(),
+            type_vars: Vector::new(),
+            type_vars_map: MapGenerator::new(),
+            vars: Vector::new(),
+            vars_map: MapGenerator::new(),
+            const_generic_vars: Vector::new(),
+            const_generic_vars_map: MapGenerator::new(),
             trait_instance_id_gen,
             trait_clauses: OrdMap::new(),
             registering_trait_clauses: false,
@@ -787,7 +751,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             types_outlive: Vec::new(),
             trait_type_constraints: Vec::new(),
             blocks: im::OrdMap::new(),
-            blocks_map: ast::BlockId::MapGenerator::new(),
+            blocks_map: MapGenerator::new(),
             blocks_stack: VecDeque::new(),
         }
     }
@@ -804,17 +768,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.translate_meta_from_rspan(rspan)
     }
 
-    pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId::Id> {
+    pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId> {
         use rustc_index::Idx;
         self.vars_map.get(&local.index())
     }
 
     #[allow(dead_code)]
-    pub(crate) fn get_block_id_from_rid(&self, rid: hax::BasicBlock) -> Option<ast::BlockId::Id> {
+    pub(crate) fn get_block_id_from_rid(&self, rid: hax::BasicBlock) -> Option<ast::BlockId> {
         self.blocks_map.get(&rid)
     }
 
-    pub(crate) fn get_var_from_id(&self, var_id: VarId::Id) -> Option<&ast::Var> {
+    pub(crate) fn get_var_from_id(&self, var_id: VarId) -> Option<&ast::Var> {
         self.vars.get(var_id)
     }
 
@@ -822,7 +786,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> TypeDeclId::Id {
+    ) -> TypeDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_type_decl_id(&src, id)
     }
@@ -831,7 +795,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> ast::FunDeclId::Id {
+    ) -> ast::FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_fun_decl_id(&src, id)
     }
@@ -840,7 +804,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> ast::GlobalDeclId::Id {
+    ) -> ast::GlobalDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_global_decl_id(&src, id)
     }
@@ -851,7 +815,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> Result<Option<ast::TraitDeclId::Id>, Error> {
+    ) -> Result<Option<ast::TraitDeclId>, Error> {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_trait_decl_id(&src, id)
     }
@@ -862,7 +826,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> Result<Option<ast::TraitImplId::Id>, Error> {
+    ) -> Result<Option<ast::TraitImplId>, Error> {
         let src = self.make_dep_source(span);
         self.t_ctx.translate_trait_impl_id(&src, id)
     }
@@ -871,11 +835,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     /// Important: we must push *all* the free regions (which are early-bound
     /// regions) before pushing any (late-)bound region.
-    pub(crate) fn push_free_region(
-        &mut self,
-        r: hax::Region,
-        name: Option<String>,
-    ) -> RegionId::Id {
+    pub(crate) fn push_free_region(&mut self, r: hax::Region, name: Option<String>) -> RegionId {
         // Check that there are no late-bound regions
         assert!(self.bound_region_vars.is_empty());
         let rid = self.region_vars[0].push_with(|index| RegionVar { index, name });
@@ -888,7 +848,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         assert!(self.bound_region_vars.is_empty());
 
         // Register the variables
-        let var_ids: im::Vector<RegionId::Id> = names
+        let var_ids: im::Vector<RegionId> = names
             .into_iter()
             .map(|name| self.region_vars[0].push_with(|index| RegionVar { index, name }))
             .collect();
@@ -909,10 +869,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         F: FnOnce(&mut Self) -> T,
     {
         assert!(!self.region_vars.is_empty());
-        self.region_vars.push_front(RegionId::Vector::new());
+        self.region_vars.push_front(Vector::new());
 
         // Register the variables
-        let var_ids: im::Vector<RegionId::Id> = names
+        let var_ids: im::Vector<RegionId> = names
             .into_iter()
             .map(|name| self.region_vars[0].push_with(|index| RegionVar { index, name }))
             .collect();
@@ -931,7 +891,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         res
     }
 
-    pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId::Id {
+    pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId {
         let var_id = self.type_vars_map.insert(rindex);
         assert!(var_id == self.type_vars.next_id());
         self.type_vars.push_with(|index| TypeVar { index, name })
@@ -950,14 +910,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .push_with(|index| (ConstGenericVar { index, name, ty }));
     }
 
-    pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId::Id {
+    pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId {
         // Push to the stack of blocks awaiting translation
         self.blocks_stack.push_back(rid);
         // Insert in the map
         self.blocks_map.insert(rid)
     }
 
-    pub(crate) fn push_block(&mut self, id: ast::BlockId::Id, block: ast::BlockData) {
+    pub(crate) fn push_block(&mut self, id: ast::BlockId, block: ast::BlockData) {
         self.blocks.insert(id, block);
     }
 
@@ -990,15 +950,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         clauses
     }
 
-    pub(crate) fn get_parent_trait_clauses(&self) -> TraitClauseId::Vector<TraitClause> {
-        let clauses: TraitClauseId::Vector<TraitClause> = self
+    pub(crate) fn get_parent_trait_clauses(&self) -> Vector<TraitClauseId, TraitClause> {
+        let clauses: Vector<TraitClauseId, TraitClause> = self
             .trait_clauses
             .iter()
-            .filter_map(|(_, x)| {
-                x.to_trait_clause_with_id(&|id| match id {
-                    TraitInstanceId::ParentClause(box TraitInstanceId::SelfId, _, id) => Some(*id),
-                    _ => None,
-                })
+            .filter_map(|(_, x)| match &x.clause_id {
+                TraitInstanceId::ParentClause(box TraitInstanceId::SelfId, _, clause_id) => {
+                    Some(x.to_trait_clause_with_id(*clause_id))
+                }
+                _ => None,
             })
             .collect();
         // Sanity check

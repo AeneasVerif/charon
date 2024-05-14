@@ -7,28 +7,23 @@ use serde::{Deserialize, Serialize};
 generate_index_type!(LocalFileId);
 generate_index_type!(VirtualFileId);
 
-#[allow(non_snake_case)]
-pub mod FileId {
-    use crate::meta::*;
-
-    #[derive(
-        Debug,
-        Clone,
-        Copy,
-        Hash,
-        PartialEq,
-        Eq,
-        PartialOrd,
-        Ord,
-        EnumIsA,
-        EnumAsGetters,
-        Serialize,
-        Deserialize,
-    )]
-    pub enum Id {
-        LocalId(LocalFileId::Id),
-        VirtualId(VirtualFileId::Id),
-    }
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    Hash,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    EnumIsA,
+    EnumAsGetters,
+    Serialize,
+    Deserialize,
+)]
+pub enum FileId {
+    LocalId(LocalFileId),
+    VirtualId(VirtualFileId),
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
@@ -47,7 +42,7 @@ fn dummy_span_data() -> rustc_span::SpanData {
 /// Span information
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Span {
-    pub file_id: FileId::Id,
+    pub file_id: FileId,
     pub beg: Loc,
     pub end: Loc,
     /// We keep the rust span so as to be able to leverage Rustc to print

@@ -38,7 +38,7 @@ pub(crate) struct NonLocalTraitClause {
     /// [Some] if this is the top clause, [None] if this is about a parent/
     /// associated type clause.
     pub meta: Option<Meta>,
-    pub trait_id: TraitDeclId::Id,
+    pub trait_id: TraitDeclId,
     pub generics: GenericArgs,
 }
 
@@ -56,16 +56,13 @@ impl NonLocalTraitClause {
         }
     }
 
-    pub(crate) fn to_trait_clause_with_id(
-        &self,
-        get_id: &dyn Fn(&TraitInstanceId) -> Option<TraitClauseId::Id>,
-    ) -> Option<TraitClause> {
-        get_id(&self.clause_id).map(|clause_id| TraitClause {
+    pub(crate) fn to_trait_clause_with_id(&self, clause_id: TraitClauseId) -> TraitClause {
+        TraitClause {
             clause_id,
             meta: self.meta,
             trait_id: self.trait_id,
             generics: self.generics.clone(),
-        })
+        }
     }
 }
 
@@ -281,7 +278,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// of the parent must be registered as parent clauses.
     pub(crate) fn translate_predicates_of(
         &mut self,
-        parent_trait_id: Option<TraitDeclId::Id>,
+        parent_trait_id: Option<TraitDeclId>,
         def_id: DefId,
     ) -> Result<(), Error> {
         trace!("def_id: {:?}", def_id);
@@ -347,7 +344,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// in the registered trait clauses.
     pub(crate) fn translate_predicates_solve_trait_obligations_of(
         &mut self,
-        parent_trait_id: Option<TraitDeclId::Id>,
+        parent_trait_id: Option<TraitDeclId>,
         def_id: DefId,
     ) -> Result<(), Error> {
         let span = self.t_ctx.tcx.def_span(def_id);
@@ -749,7 +746,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 Box::new(trait_id),
                                 current_trait_decl_id,
                                 TraitItemName(item.name.clone()),
-                                TraitClauseId::Id::new(*index),
+                                TraitClauseId::new(*index),
                             );
                             current_trait_decl_id = self
                                 .translate_trait_decl_id(
@@ -766,7 +763,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             trait_id = TraitInstanceId::ParentClause(
                                 Box::new(trait_id),
                                 current_trait_decl_id,
-                                TraitClauseId::Id::new(*index),
+                                TraitClauseId::new(*index),
                             );
                             current_trait_decl_id = self
                                 .translate_trait_decl_id(
@@ -875,7 +872,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     fn match_trait_clauses(
         &self,
-        trait_id: TraitDeclId::Id,
+        trait_id: TraitDeclId,
         generics: &GenericArgs,
         clause: &NonLocalTraitClause,
     ) -> bool {
@@ -912,7 +909,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// TODO: having to do this is very annoying. Isn't there a better way?
     fn find_trait_clause_for_param(
         &self,
-        trait_id: TraitDeclId::Id,
+        trait_id: TraitDeclId,
         generics: &GenericArgs,
     ) -> TraitInstanceId {
         trace!(
@@ -975,7 +972,7 @@ struct TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
     /// some instances).
     pub unsolved_count: usize,
     /// The unsolved clauses.
-    pub unsolved: Vec<(TraitDeclId::Id, GenericArgs)>,
+    pub unsolved: Vec<(TraitDeclId, GenericArgs)>,
     /// For error messages
     pub span: rustc_span::Span,
     /// The current context

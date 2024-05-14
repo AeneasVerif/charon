@@ -4,13 +4,14 @@
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
 
 use crate::formatter::{Formatter, IntoFormatter};
+use crate::ids::Vector;
 use crate::llbc_ast::{FunDecls, GlobalDecls, RawStatement, Statement, Var};
 use crate::translate_ctx::TransCtx;
 use crate::values::*;
 
 /// Filter the statement by replacing it with `Nop` if it is a `Drop(x)` where
 /// `x` has type `Never`. Otherwise leave it unchanged.
-fn transform_st(locals: &VarId::Vector<Var>, st: &mut Statement) {
+fn transform_st(locals: &Vector<VarId, Var>, st: &mut Statement) {
     // Shall we filter the statement?
     let filter = match &mut st.content {
         RawStatement::Drop(p) => {

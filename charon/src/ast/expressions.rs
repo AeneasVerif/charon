@@ -12,7 +12,7 @@ use std::vec::Vec;
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Place {
     // TODO: update to transform to a recursive type
-    pub var_id: VarId::Id,
+    pub var_id: VarId,
     pub projection: Projection,
 }
 
@@ -61,19 +61,19 @@ pub enum ProjectionElem {
     /// (adt identifier, variant id, etc.). This information can be valuable
     /// (for pretty printing for instance). We retrieve it through
     /// type-checking.
-    Field(FieldProjKind, FieldId::Id),
+    Field(FieldProjKind, FieldId),
     /// MIR imposes that the argument to an index projection be a local variable, meaning
     /// that even constant indices into arrays are let-bound as separate variables.
     /// We also keep the type of the array/slice that we index for convenience purposes
     /// (this is not necessary).
     /// We **eliminate** this variant in a micro-pass.
-    Index(VarId::Id, Ty),
+    Index(VarId, Ty),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize)]
 pub enum FieldProjKind {
     #[serde(rename = "ProjAdt")]
-    Adt(TypeDeclId::Id, Option<VariantId::Id>),
+    Adt(TypeDeclId, Option<VariantId>),
     /// If we project from a tuple, the projection kind gives the arity of the tuple.
     #[serde(rename = "ProjTuple")]
     Tuple(usize),
@@ -191,7 +191,7 @@ pub enum Operand {
 pub enum FunId {
     /// A "regular" function (function local to the crate, external function
     /// not treated as a primitive one).
-    Regular(FunDeclId::Id),
+    Regular(FunDeclId),
     /// A primitive function, coming from a standard library (for instance:
     /// `alloc::boxed::Box::new`).
     /// TODO: rename to "Primitive"
@@ -260,7 +260,7 @@ pub enum FunIdOrTraitMethodRef {
     /// If a trait: the reference to the trait and the id of the trait method.
     /// The fun decl id is not really necessary - we put it here for convenience
     /// purposes.
-    Trait(TraitRef, TraitItemName, FunDeclId::Id),
+    Trait(TraitRef, TraitItemName, FunDeclId),
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
@@ -308,7 +308,7 @@ pub enum RawConstantExpr {
     /// Less frequently: arbitrary ADT values.
     ///
     /// We eliminate this case in a micro-pass.
-    Adt(Option<VariantId::Id>, Vec<ConstantExpr>),
+    Adt(Option<VariantId>, Vec<ConstantExpr>),
     ///
     /// The value is a top-level value.
     ///
@@ -328,7 +328,7 @@ pub enum RawConstantExpr {
     ///   let l = V::<N, T>::LEN; // We need to provided a substitution here
     /// }
     /// ```
-    Global(GlobalDeclId::Id, GenericArgs),
+    Global(GlobalDeclId, GenericArgs),
     ///
     /// A trait constant.
     ///
@@ -348,7 +348,7 @@ pub enum RawConstantExpr {
     /// We eliminate this case in a micro-pass.
     Ref(Box<ConstantExpr>),
     /// A const generic var
-    Var(ConstGenericVarId::Id),
+    Var(ConstGenericVarId),
     /// Function pointer
     FnPtr(FnPtr),
 }
@@ -374,7 +374,7 @@ pub enum Rvalue {
     /// of the type from which we read the discriminant.
     ///
     /// This case is filtered in [crate::remove_read_discriminant]
-    Discriminant(Place, TypeDeclId::Id),
+    Discriminant(Place, TypeDeclId),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text
     /// l = List::Cons { value:x, tail:tl };
@@ -398,7 +398,7 @@ pub enum Rvalue {
     /// in operands in [extract_global_assignments.rs].
     ///
     /// Note that globals *can* have generic parameters.
-    Global(GlobalDeclId::Id, GenericArgs),
+    Global(GlobalDeclId, GenericArgs),
     /// Length of a memory location. The run-time length of e.g. a vector or a slice is
     /// represented differently (but pretty-prints the same, FIXME).
     /// Should be seen as a function of signature:
@@ -420,12 +420,12 @@ pub enum Rvalue {
 
 #[derive(Debug, Clone, VariantIndexArity, Serialize, Deserialize)]
 pub enum AggregateKind {
-    Adt(TypeId, Option<VariantId::Id>, GenericArgs),
+    Adt(TypeId, Option<VariantId>, GenericArgs),
     /// We don't put this with the ADT cas because this is the only assumed type
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.
     Array(Ty, ConstGeneric),
     /// Aggregated values for closures group the function id together with its
     /// state.
-    Closure(FunDeclId::Id, GenericArgs),
+    Closure(FunDeclId, GenericArgs),
 }

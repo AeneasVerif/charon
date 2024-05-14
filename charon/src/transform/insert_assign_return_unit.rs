@@ -17,7 +17,7 @@ use crate::values::*;
 fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     if let RawStatement::Return = &mut st.content {
         let ret_place = Place {
-            var_id: VarId::Id::new(0),
+            var_id: VarId::new(0),
             projection: Projection::new(),
         };
         let unit_value = Rvalue::Aggregate(

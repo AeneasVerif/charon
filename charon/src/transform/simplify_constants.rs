@@ -19,7 +19,7 @@ use crate::ullbc_ast::{make_locals_generator, RawStatement, Statement};
 use crate::ullbc_ast_utils::body_transform_operands;
 use crate::values::VarId;
 
-fn make_aggregate_kind(ty: &Ty, var_index: Option<VariantId::Id>) -> AggregateKind {
+fn make_aggregate_kind(ty: &Ty, var_index: Option<VariantId>) -> AggregateKind {
     let (id, generics) = ty.as_adt();
     AggregateKind::Adt(*id, var_index, generics.clone())
 }
@@ -30,7 +30,7 @@ fn make_aggregate_kind(ty: &Ty, var_index: Option<VariantId::Id>) -> AggregateKi
 ///
 /// Goes fom e.g. `f(T::A(x, y))` to `let a = T::A(x, y); f(a)`.
 /// The function is recursively called on the aggregate fields (e.g. here x and y).
-fn transform_constant_expr<F: FnMut(Ty) -> VarId::Id>(
+fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
     meta: &Meta,
     nst: &mut Vec<Statement>,
     val: ConstantExpr,
@@ -100,7 +100,7 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId::Id>(
     }
 }
 
-fn transform_operand<F: FnMut(Ty) -> VarId::Id>(
+fn transform_operand<F: FnMut(Ty) -> VarId>(
     meta: &Meta,
     nst: &mut Vec<Statement>,
     op: &mut Operand,

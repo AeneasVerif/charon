@@ -1,6 +1,7 @@
 use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
+use crate::ids::{Generator, Vector};
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::ullbc_ast as ast;
@@ -74,7 +75,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_const_from_trait_item(
         &mut self,
         item: &rustc_middle::ty::AssocItem,
-    ) -> Result<(TraitItemName, (Ty, GlobalDeclId::Id)), Error> {
+    ) -> Result<(TraitItemName, (Ty, GlobalDeclId)), Error> {
         let ty = self.translate_ty_from_trait_item(item)?;
         let name = TraitItemName(item.name.to_string());
         let span = self.t_ctx.tcx.def_span(self.def_id);
@@ -149,9 +150,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// We call this when translating trait impls and trait impl items.
     pub(crate) fn add_trait_impl_self_trait_clause(
         &mut self,
-        impl_id: TraitImplId::Id,
+        impl_id: TraitImplId,
     ) -> Result<(), Error> {
-        let def_id = *self.t_ctx.trait_impl_id_to_def_id.get(&impl_id).unwrap();
+        let def_id = *self
+            .t_ctx
+            .reverse_id_map
+            .get(&AnyTransId::TraitImpl(impl_id))
+            .unwrap();
         trace!("id: {:?}", def_id);
 
         // Retrieve the trait ref representing "self"
@@ -187,10 +192,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn with_parent_trait_clauses<T>(
         &mut self,
         clause_id: TraitInstanceId,
-        trait_decl_id: TraitDeclId::Id,
+        trait_decl_id: TraitDeclId,
         f: &mut dyn FnMut(&mut Self) -> T,
     ) -> T {
-        let mut parent_clause_id_gen = TraitClauseId::Generator::new();
+        let mut parent_clause_id_gen = Generator::new();
         let parent_trait_instance_id_gen = Box::new(move || {
             let fresh_id = parent_clause_id_gen.fresh_id();
             TraitInstanceId::ParentClause(Box::new(clause_id.clone()), trait_decl_id, fresh_id)
@@ -202,11 +207,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn with_item_trait_clauses<T>(
         &mut self,
         clause_id: TraitInstanceId,
-        trait_decl_id: TraitDeclId::Id,
+        trait_decl_id: TraitDeclId,
         item_name: String,
         f: &mut dyn FnMut(&mut Self) -> T,
     ) -> T {
-        let mut item_clause_id_gen = TraitClauseId::Generator::new();
+        let mut item_clause_id_gen = Generator::new();
         let item_clause_id_gen = Box::new(move || {
             let fresh_id = item_clause_id_gen.fresh_id();
             TraitInstanceId::ItemClause(
@@ -357,22 +362,14 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     let item_trait_clauses: Vec<_> = bt_ctx
                         .trait_clauses
                         .values()
-                        .filter_map(|c| {
-                            c.to_trait_clause_with_id(&|id| match id {
-                                TraitInstanceId::ItemClause(
-                                    box TraitInstanceId::SelfId,
-                                    _,
-                                    TraitItemName(item_name),
-                                    clause_id,
-                                ) => {
-                                    if item_name == &name {
-                                        Some(*clause_id)
-                                    } else {
-                                        None
-                                    }
-                                }
-                                _ => None,
-                            })
+                        .filter_map(|c| match &c.clause_id {
+                            TraitInstanceId::ItemClause(
+                                box TraitInstanceId::SelfId,
+                                _,
+                                TraitItemName(item_name),
+                                clause_id,
+                            ) if item_name == &name => Some(c.to_trait_clause_with_id(*clause_id)),
+                            _ => None,
                         })
                         .collect();
 
@@ -521,8 +518,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             );
             let parent_trait_refs: Vec<TraitRef> =
                 bt_ctx.translate_trait_impl_exprs(span, erase_regions, &parent_trait_refs)?;
-            let parent_trait_refs: TraitClauseId::Vector<TraitRef> =
-                TraitClauseId::Vector::from(parent_trait_refs);
+            let parent_trait_refs: Vector<TraitClauseId, TraitRef> = parent_trait_refs.into();
 
             let generics = GenericArgs {
                 regions,

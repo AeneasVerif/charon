@@ -1,4 +1,5 @@
 //! This file groups everything which is linked to implementations about [crate::types]
+use crate::ids::Vector;
 use crate::types::*;
 use crate::values::*;
 use hax_frontend_exporter as hax;
@@ -23,7 +24,7 @@ impl DeBruijnId {
 }
 
 impl TypeVar {
-    pub fn new(index: TypeVarId::Id, name: String) -> TypeVar {
+    pub fn new(index: TypeVarId, name: String) -> TypeVar {
         TypeVar { index, name }
     }
 }
@@ -45,9 +46,9 @@ impl GenericParams {
 
     pub fn empty() -> Self {
         GenericParams {
-            regions: RegionId::Vector::new(),
-            types: TypeVarId::Vector::new(),
-            const_generics: ConstGenericVarId::Vector::new(),
+            regions: Vector::new(),
+            types: Vector::new(),
+            const_generics: Vector::new(),
             trait_clauses: Vec::new(),
         }
     }
@@ -141,10 +142,7 @@ impl TypeDecl {
     /// The variant id should be `None` if it is a structure and `Some` if it
     /// is an enumeration.
     #[allow(clippy::result_unit_err)]
-    pub fn get_fields(
-        &self,
-        variant_id: Option<VariantId::Id>,
-    ) -> Result<&FieldId::Vector<Field>, ()> {
+    pub fn get_fields(&self, variant_id: Option<VariantId>) -> Result<&Vector<FieldId, Field>, ()> {
         match &self.kind {
             TypeDeclKind::Enum(variants) => Ok(&variants.get(variant_id.unwrap()).unwrap().fields),
             TypeDeclKind::Struct(fields) => {
@@ -220,7 +218,7 @@ impl IntegerTy {
     }
 }
 
-pub fn bound_region_var_to_pretty_string(grid: DeBruijnId, rid: RegionId::Id) -> String {
+pub fn bound_region_var_to_pretty_string(grid: DeBruijnId, rid: RegionId) -> String {
     format!("'_{}_{}", grid.index, rid.to_string())
 }
 
@@ -315,8 +313,8 @@ pub struct TySubst {
     /// In case the regions are not erased, we must be careful with the
     /// static region.
     pub regions_map: HashMap<Region, Region>,
-    pub type_vars_map: HashMap<TypeVarId::Id, Ty>,
-    pub const_generics_map: HashMap<ConstGenericVarId::Id, ConstGeneric>,
+    pub type_vars_map: HashMap<TypeVarId, Ty>,
+    pub const_generics_map: HashMap<ConstGenericVarId, ConstGeneric>,
 }
 
 macro_rules! check_ok_return {
@@ -457,8 +455,8 @@ impl TySubst {
 impl TySubst {
     #[allow(clippy::result_unit_err)]
     pub fn unify_args_with_fixed(
-        fixed_type_vars: impl std::iter::Iterator<Item = TypeVarId::Id>,
-        fixed_const_generic_vars: impl std::iter::Iterator<Item = ConstGenericVarId::Id>,
+        fixed_type_vars: impl std::iter::Iterator<Item = TypeVarId>,
+        fixed_const_generic_vars: impl std::iter::Iterator<Item = ConstGenericVarId>,
         src: &crate::gast::GenericArgs,
         tgt: &crate::gast::GenericArgs,
     ) -> Result<Self, ()> {
@@ -506,11 +504,11 @@ make_generic_in_borrows! {
 // TODO: we should use traits with default implementations to allow overriding
 // the default behavior (that would also prevent problems with naming collisions)
 pub trait TypeVisitor {
-    fn default_enter_region_group(&mut self, regions: &RegionId::Vector<RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
+    fn default_enter_region_group(&mut self, regions: &Vector<RegionId, RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
         visitor(self)
     }
 
-    fn enter_region_group(&mut self, regions: &RegionId::Vector<RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
+    fn enter_region_group(&mut self, regions: &Vector<RegionId, RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
         self.default_enter_region_group(regions, visitor)
     }
 
@@ -543,9 +541,9 @@ pub trait TypeVisitor {
         }
     }
 
-    fn visit_region_bvar(&mut self, _grid: &DeBruijnId, _rid: &RegionId::Id) {}
+    fn visit_region_bvar(&mut self, _grid: &DeBruijnId, _rid: &RegionId) {}
 
-    fn visit_arrow(&mut self, regions: &RegionId::Vector<RegionVar>, inputs: &Vec<Ty>, output: &Ty) {
+    fn visit_arrow(&mut self, regions: &Vector<RegionId, RegionVar>, inputs: &Vec<Ty>, output: &Ty) {
         for r in regions.iter() {
             self.visit_region_var(r);
         }
@@ -572,7 +570,7 @@ pub trait TypeVisitor {
 
     fn visit_region_var(&mut self, r: &RegionVar) {}
 
-    fn visit_ty_type_var(&mut self, vid: &TypeVarId::Id) {
+    fn visit_ty_type_var(&mut self, vid: &TypeVarId) {
         self.visit_type_var_id(vid);
     }
 
@@ -598,7 +596,7 @@ pub trait TypeVisitor {
         }
     }
 
-    fn visit_type_decl_id(&mut self, _: &TypeDeclId::Id) {}
+    fn visit_type_decl_id(&mut self, _: &TypeDeclId) {}
 
     fn visit_assumed_ty(&mut self, _: &AssumedTy) {}
 
@@ -621,9 +619,9 @@ pub trait TypeVisitor {
         // Ignoring the name and type
     }
 
-    fn visit_global_decl_id(&mut self, _: &GlobalDeclId::Id) {}
-    fn visit_type_var_id(&mut self, _: &TypeVarId::Id) {}
-    fn visit_const_generic_var_id(&mut self, _: &ConstGenericVarId::Id) {}
+    fn visit_global_decl_id(&mut self, _: &GlobalDeclId) {}
+    fn visit_type_var_id(&mut self, _: &TypeVarId) {}
+    fn visit_const_generic_var_id(&mut self, _: &ConstGenericVarId) {}
 
     fn visit_literal(&mut self, _: &Literal) {}
 
@@ -647,9 +645,9 @@ pub trait TypeVisitor {
         self.visit_generic_args(generics);
     }
 
-    fn visit_trait_decl_id(&mut self, _: &TraitDeclId::Id) {}
-    fn visit_trait_impl_id(&mut self, _: &TraitImplId::Id) {}
-    fn visit_trait_clause_id(&mut self, _: &TraitClauseId::Id) {}
+    fn visit_trait_decl_id(&mut self, _: &TraitDeclId) {}
+    fn visit_trait_impl_id(&mut self, _: &TraitImplId) {}
+    fn visit_trait_clause_id(&mut self, _: &TraitClauseId) {}
 
     fn default_visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
         match id {
@@ -789,7 +787,7 @@ pub trait TypeVisitor {
         self.visit_ty(ty);
     }
 
-    fn visit_fun_decl_id(&mut self, _: &FunDeclId::Id) {}
+    fn visit_fun_decl_id(&mut self, _: &FunDeclId) {}
 }
 
 } // make_generic_in_borrows

@@ -2,12 +2,13 @@
 //! closure itself. This is not consistent with the closure signature,
 //! which ignores this first variable. This micro-pass updates this.
 use crate::common::*;
+use crate::ids::Vector;
 use crate::llbc_ast::*;
 use crate::translate_ctx::TransCtx;
 use crate::types::*;
 
 struct InsertRegions<'a> {
-    regions: &'a mut RegionId::Vector<RegionVar>,
+    regions: &'a mut Vector<RegionId, RegionVar>,
     /// The number of region groups we dived into (we don't count the regions
     /// at the declaration level). We use this for the DeBruijn indices.
     depth: usize,
@@ -26,7 +27,7 @@ impl<'a> MutTypeVisitor for InsertRegions<'a> {
 
     fn enter_region_group(
         &mut self,
-        _regions: &mut RegionId::Vector<RegionVar>,
+        _regions: &mut Vector<RegionId, RegionVar>,
         visitor: &mut dyn FnMut(&mut Self),
     ) {
         self.depth += 1;
@@ -87,7 +88,7 @@ fn transform_function(_ctx: &TransCtx, def: &mut FunDecl) -> Result<(), Error> {
             ClosureKind::FnOnce => state,
             ClosureKind::Fn | ClosureKind::FnMut => {
                 // We introduce an erased region, that we replace later
-                //let index = RegionId::Id::new(generics.regions.len());
+                //let index = RegionId::new(generics.regions.len());
                 //generics.regions.push_back(RegionVar { index, name: None });
 
                 let mutability = if info.kind == ClosureKind::Fn {
