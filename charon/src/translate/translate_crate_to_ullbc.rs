@@ -87,7 +87,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     return Ok(());
                 }
                 Option::Some(item_name) => {
-                    if self.crate_info.is_opaque_decl(&item_name) {
+                    if self.is_opaque_name(&item_name) {
                         trace!("Ignoring {:?} (marked as opaque)", item.item_id());
                         return Ok(());
                     }
@@ -232,7 +232,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
 /// Translate all the declarations in the crate.
 pub fn translate<'tcx, 'ctx>(
-    crate_info: CrateInfo,
+    crate_name: String,
     options: &CliOpts,
     session: &'ctx Session,
     tcx: TyCtxt<'tcx>,
@@ -247,11 +247,11 @@ pub fn translate<'tcx, 'ctx>(
     let mut ctx = TransCtx {
         tcx,
         hax_state,
-        crate_info,
         options: TransOptions {
             mir_level,
             no_code_duplication: options.no_code_duplication,
             extract_opaque_bodies: options.extract_opaque_bodies,
+            opaque_mods: HashSet::from_iter(options.opaque_modules.iter().cloned()),
         },
         errors: ErrorCtx {
             continue_on_failure: !options.abort_on_error,
@@ -264,6 +264,7 @@ pub fn translate<'tcx, 'ctx>(
             error_count: 0,
         },
         translated: TranslatedCrate {
+            crate_name,
             all_ids: LinkedHashSet::new(),
             file_to_id: HashMap::new(),
             id_to_file: HashMap::new(),

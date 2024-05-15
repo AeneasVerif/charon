@@ -9,16 +9,13 @@ use crate::transform::{
     remove_unused_locals, simplify_constants, update_closure_signatures,
 };
 use crate::translate_crate_to_ullbc;
-use crate::translate_ctx;
 use crate::ullbc_to_llbc;
 use regex::Regex;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
-use std::collections::HashSet;
 use std::fmt;
-use std::iter::FromIterator;
 use std::ops::Deref;
 use std::panic::{self, AssertUnwindSafe};
 
@@ -237,16 +234,11 @@ pub fn translate(
     // - whenever there is a `mod MODULE` in a file (for instance, in the
     //   "main.rs" file), it becomes a Module HIR item
 
-    let crate_info = translate_ctx::CrateInfo {
-        crate_name: crate_name.clone(),
-        opaque_mods: HashSet::from_iter(options.opaque_modules.clone().into_iter()),
-    };
-
     // # Translate the declarations in the crate.
     // We translate the declarations in an ad-hoc order, and do not group
     // the mutually recursive groups - we do this in the next step.
     let mut ctx =
-        match translate_crate_to_ullbc::translate(crate_info, options, sess, tcx, mir_level) {
+        match translate_crate_to_ullbc::translate(crate_name, options, sess, tcx, mir_level) {
             Ok(ctx) => ctx,
             Err(_) => return Err(()),
         };
@@ -291,7 +283,7 @@ pub fn translate(
     //   control-flow and apply micro-passes
 
     let crate_data = if options.ullbc {
-        export::CrateData::new_ullbc(&ctx, crate_name)
+        export::CrateData::new_ullbc(&ctx)
     } else {
         // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing
         // the control flow.
@@ -380,7 +372,7 @@ pub fn translate(
         // Display an error report about the external dependencies, if necessary
         ctx.errors.report_external_deps_errors();
 
-        export::CrateData::new_llbc(&ctx, crate_name)
+        export::CrateData::new_llbc(&ctx)
     };
     trace!("Done");
 

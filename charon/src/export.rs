@@ -38,7 +38,6 @@ pub struct GCrateData<FD, GD> {
 impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
     pub fn new(
         ctx: &TransCtx,
-        crate_name: String,
         fun_decls: &Map<FunDeclId, FD>,
         global_decls: &Map<GlobalDeclId, GD>,
     ) -> Self {
@@ -62,7 +61,7 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
         let trait_impls = ctx.translated.trait_impls.iter().cloned().collect();
         GCrateData {
             charon_version: crate::VERSION.to_owned(),
-            name: crate_name,
+            name: ctx.translated.crate_name.clone(),
             id_to_file,
             declarations,
             types,
@@ -122,19 +121,17 @@ pub enum CrateData {
 }
 
 impl CrateData {
-    pub fn new_ullbc(ctx: &TransCtx, crate_name: String) -> Self {
+    pub fn new_ullbc(ctx: &TransCtx) -> Self {
         Self::ULLBC(GCrateData::new(
             ctx,
-            crate_name,
             &ctx.translated.fun_decls,
             &ctx.translated.global_decls,
         ))
     }
 
-    pub fn new_llbc(ctx: &TransCtx, crate_name: String) -> Self {
+    pub fn new_llbc(ctx: &TransCtx) -> Self {
         Self::LLBC(GCrateData::new(
             ctx,
-            crate_name,
             &ctx.translated.structured_fun_decls,
             &ctx.translated.structured_global_decls,
         ))

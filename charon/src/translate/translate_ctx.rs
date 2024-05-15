@@ -82,22 +82,6 @@ impl DepSource {
     }
 }
 
-pub struct CrateInfo {
-    pub crate_name: String,
-    pub opaque_mods: HashSet<String>,
-}
-
-impl CrateInfo {
-    pub(crate) fn is_opaque_decl(&self, name: &Name) -> bool {
-        name.is_in_modules(&self.crate_name, &self.opaque_mods)
-    }
-
-    #[allow(dead_code)]
-    pub(crate) fn is_transparent_decl(&self, name: &Name) -> bool {
-        !self.is_opaque_decl(name)
-    }
-}
-
 /// The id of a translated item.
 #[derive(
     PartialEq,
@@ -178,10 +162,15 @@ pub struct TransOptions {
     pub no_code_duplication: bool,
     /// Whether to extract the bodies of foreign methods and structs with private fields.
     pub extract_opaque_bodies: bool,
+    /// Modules to consider opaque.
+    pub opaque_mods: HashSet<String>,
 }
 
 /// The data of a translated crate.
 pub struct TranslatedCrate {
+    /// The name of the crate.
+    pub crate_name: String,
+
     /// File names to ids and vice-versa
     pub file_to_id: HashMap<FileName, FileId>,
     pub id_to_file: HashMap<FileId, FileName>,
@@ -251,8 +240,6 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// The Hax context
     pub hax_state: hax::State<hax::Base<'tcx>, (), (), ()>,
 
-    /// The name of the crate and list of modules that should be counted as opaque.
-    pub crate_info: CrateInfo,
     /// The options that control translation.
     pub options: TransOptions,
     /// The translated data.
@@ -635,9 +622,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         })
     }
 
+    pub(crate) fn is_opaque_name(&self, name: &Name) -> bool {
+        name.is_in_modules(&self.translated.crate_name, &self.options.opaque_mods)
+    }
+
     pub(crate) fn id_is_opaque(&mut self, id: DefId) -> Result<bool, Error> {
         let name = self.def_id_to_name(id)?;
-        Ok(self.crate_info.is_opaque_decl(&name) || self.id_is_extern_item(id))
+        Ok(self.is_opaque_name(&name) || self.id_is_extern_item(id))
     }
 
     pub(crate) fn id_is_transparent(&mut self, id: DefId) -> Result<bool, Error> {
