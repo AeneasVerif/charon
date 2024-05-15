@@ -30,6 +30,16 @@ impl<I: Idx> Generator<I> {
     }
 }
 
+// Manual impl to avoid the `I: Default` bound.
+impl<I: Idx> Default for Generator<I> {
+    fn default() -> Self {
+        Self {
+            counter: Default::default(),
+            phantom: Default::default(),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct MapGenerator<K: Eq + Hash + Ord, I: Idx> {
     counter: Generator<I>,
@@ -55,5 +65,15 @@ impl<K: Eq + Hash + Ord, I: Idx> MapGenerator<K, I> {
     // We may need to generate fresh ids without inserting a value in the map
     pub fn fresh_id(&mut self) -> I {
         self.counter.fresh_id()
+    }
+}
+
+// Manual impl to avoid unnecessary `Default` bounds.
+impl<K: Eq + Hash + Ord, I: Idx> Default for MapGenerator<K, I> {
+    fn default() -> Self {
+        Self {
+            counter: Default::default(),
+            map: Default::default(),
+        }
     }
 }

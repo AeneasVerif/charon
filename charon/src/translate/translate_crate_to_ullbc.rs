@@ -1,13 +1,11 @@
 use crate::cli_options::CliOpts;
 use crate::common::*;
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
-use crate::ids::{Generator, Map};
 use crate::translate_ctx::*;
 use crate::translate_functions_to_ullbc;
 
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
-use linked_hash_set::LinkedHashSet;
 use rustc_hir::{Defaultness, ForeignItemKind, ImplItem, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
@@ -265,26 +263,7 @@ pub fn translate<'tcx, 'ctx>(
         },
         translated: TranslatedCrate {
             crate_name,
-            all_ids: LinkedHashSet::new(),
-            file_to_id: HashMap::new(),
-            id_to_file: HashMap::new(),
-            real_file_counter: Generator::new(),
-            virtual_file_counter: Generator::new(),
-            id_map: HashMap::new(),
-            reverse_id_map: HashMap::new(),
-            type_id_gen: Generator::new(),
-            type_decls: Map::new(),
-            fun_id_gen: Generator::new(),
-            fun_decls: Map::new(),
-            structured_fun_decls: Map::new(),
-            global_id_gen: Generator::new(),
-            global_decls: Map::new(),
-            structured_global_decls: Map::new(),
-            trait_decl_id_gen: Generator::new(),
-            trait_decls: Map::new(),
-            trait_impl_id_gen: Generator::new(),
-            trait_impls: Map::new(),
-            ordered_decls: None,
+            ..TranslatedCrate::default()
         },
         stack: BTreeSet::new(),
     };

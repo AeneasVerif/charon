@@ -167,6 +167,7 @@ pub struct TransOptions {
 }
 
 /// The data of a translated crate.
+#[derive(Default)]
 pub struct TranslatedCrate {
     /// The name of the crate.
     pub crate_name: String,
