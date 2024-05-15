@@ -46,6 +46,9 @@ serde = { version = "1.0.152", features = ["derive"] }
 serial_test = "0.5.1"
 take_mut = "0.2.2"
 toml = "0.5.10"
+tracing-subscriber = { version = "0.3", features = [ "env-filter", "std", "fmt" ] }
+tracing-tree = "^0.2"
+tracing = { version = "0.1", features = [ "max_level_trace", "release_max_level_warn" ] }
 walkdir = "2.3.2"
 which = "6.0.1"
 

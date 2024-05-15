@@ -51,6 +51,18 @@ pub fn initialize_logger() {
     });
 
     builder.init();
+
+    // Also set up `tracing` so we get tracing data from `hax`.
+    use tracing_subscriber::prelude::*;
+    let subscriber = tracing_subscriber::Registry::default()
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(
+            tracing_tree::HierarchicalLayer::new(2)
+                .with_ansi(true)
+                .with_indent_amount(1)
+                .with_indent_lines(true),
+        );
+    tracing::subscriber::set_global_default(subscriber).unwrap();
 }
 
 /// This macro computes the name of the function in which it is called.
