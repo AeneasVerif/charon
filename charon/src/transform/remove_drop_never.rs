@@ -6,7 +6,7 @@
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::ids::Vector;
 use crate::llbc_ast::{RawStatement, Statement, Var};
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 use crate::values::*;
 
 /// Filter the statement by replacing it with `Nop` if it is a `Drop(x)` where
@@ -31,7 +31,7 @@ fn transform_st(locals: &Vector<VarId, Var>, st: &mut Statement) {
     }
 }
 
-pub fn transform(ctx: &mut TransCtx) {
+pub fn transform(ctx: &mut TransformCtx) {
     ctx.iter_structured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(

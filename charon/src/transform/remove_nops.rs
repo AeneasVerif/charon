@@ -3,7 +3,7 @@
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{RawStatement, Statement};
 use crate::meta::combine_meta;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 use take_mut::take;
 
 fn transform_st(s: &mut Statement) {
@@ -20,7 +20,7 @@ fn transform_st(s: &mut Statement) {
     }
 }
 
-pub fn transform(ctx: &mut TransCtx) {
+pub fn transform(ctx: &mut TransformCtx) {
     ctx.iter_structured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(

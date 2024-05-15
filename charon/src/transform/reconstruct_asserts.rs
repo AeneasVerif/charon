@@ -7,7 +7,7 @@ use take_mut::take;
 
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 
 fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     if let RawStatement::Switch(Switch::If(_, st1, _)) = &mut st.content {
@@ -32,7 +32,7 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     None
 }
 
-pub fn transform(ctx: &mut TransCtx) {
+pub fn transform(ctx: &mut TransformCtx) {
     ctx.iter_structured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(

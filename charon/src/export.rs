@@ -37,7 +37,7 @@ pub struct GCrateData<FD, GD> {
 
 impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
     pub fn new(
-        ctx: &TransCtx,
+        ctx: &TransformCtx,
         fun_decls: &Map<FunDeclId, FD>,
         global_decls: &Map<GlobalDeclId, GD>,
     ) -> Self {
@@ -121,7 +121,7 @@ pub enum CrateData {
 }
 
 impl CrateData {
-    pub fn new_ullbc(ctx: &TransCtx) -> Self {
+    pub fn new_ullbc(ctx: &TransformCtx) -> Self {
         Self::ULLBC(GCrateData::new(
             ctx,
             &ctx.translated.fun_decls,
@@ -129,7 +129,7 @@ impl CrateData {
         ))
     }
 
-    pub fn new_llbc(ctx: &TransCtx) -> Self {
+    pub fn new_llbc(ctx: &TransformCtx) -> Self {
         Self::LLBC(GCrateData::new(
             ctx,
             &ctx.translated.structured_fun_decls,

@@ -13,7 +13,7 @@
 use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::meta::Meta;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 use crate::types::*;
 use crate::ullbc_ast::{make_locals_generator, RawStatement, Statement};
 use crate::ullbc_ast_utils::body_transform_operands;
@@ -116,7 +116,7 @@ fn transform_operand<F: FnMut(Ty) -> VarId>(
     })
 }
 
-pub fn transform(ctx: &mut TransCtx) {
+pub fn transform(ctx: &mut TransformCtx) {
     ctx.iter_unstructured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(

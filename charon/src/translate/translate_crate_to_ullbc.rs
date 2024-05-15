@@ -237,7 +237,7 @@ pub fn translate<'tcx, 'ctx>(
     session: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
-) -> Result<TransCtx<'tcx, 'ctx>, Error> {
+) -> Result<TransformCtx<'ctx>, Error> {
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -337,6 +337,11 @@ pub fn translate<'tcx, 'ctx>(
         }
     }
 
-    // Return the context
+    // Return the context, dropping the hax state and rustc `tcx`.
+    let ctx = TransformCtx {
+        options: ctx.options,
+        translated: ctx.translated,
+        errors: ctx.errors,
+    };
     Ok(ctx)
 }

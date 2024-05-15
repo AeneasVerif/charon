@@ -6,7 +6,7 @@ use crate::gast::{Call, GenericArgs, Var};
 use crate::ids::Vector;
 use crate::llbc_ast::*;
 use crate::meta::Meta;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 use crate::types::*;
 use crate::values::VarId;
 use std::mem::replace;
@@ -294,7 +294,7 @@ fn transform_st(locals: &mut Vector<VarId, Var>, s: &mut Statement) -> Option<Ve
 ///   tmp1 : &mut T = ArrayIndexMut(move y, i)
 ///   *tmp1 = x
 /// ```
-pub fn transform(ctx: &mut TransCtx) {
+pub fn transform(ctx: &mut TransformCtx) {
     ctx.iter_structured_bodies(|ctx, name, b| {
         let ctx = ctx.into_fmt();
         trace!(

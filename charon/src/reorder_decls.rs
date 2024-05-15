@@ -2,7 +2,7 @@ use crate::common::*;
 use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::graphs::*;
 pub use crate::translate_ctx::AnyTransId;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 use crate::types::*;
 use crate::ullbc_ast::*;
 use hashlink::linked_hash_map::LinkedHashMap;
@@ -81,7 +81,7 @@ impl DeclarationGroup {
     }
 
     fn make_trait_decl_group(
-        _ctx: &TransCtx,
+        _ctx: &TransformCtx,
         _is_rec: bool,
         gr: impl Iterator<Item = TraitDeclId>,
     ) -> Self {
@@ -100,7 +100,7 @@ impl DeclarationGroup {
     }
 
     fn make_trait_impl_group(
-        ctx: &TransCtx,
+        ctx: &TransformCtx,
         is_rec: bool,
         gr: impl Iterator<Item = TraitImplId>,
     ) -> Self {
@@ -214,7 +214,7 @@ impl Deps {
         }
     }
 
-    fn set_current_id(&mut self, ctx: &TransCtx, id: AnyTransId) {
+    fn set_current_id(&mut self, ctx: &TransformCtx, id: AnyTransId) {
         self.insert_node(id);
         self.current_id = Option::Some(id);
 
@@ -351,14 +351,14 @@ impl Deps {
     }
 
     /// Lookup a function and visit its signature
-    fn visit_fun_signature_from_trait(&mut self, ctx: &TransCtx, fid: FunDeclId) {
+    fn visit_fun_signature_from_trait(&mut self, ctx: &TransformCtx, fid: FunDeclId) {
         let decl = ctx.translated.fun_decls.get(fid).unwrap();
         self.visit_fun_sig(&decl.signature);
     }
 }
 
 impl AnyTransId {
-    fn fmt_with_ctx(&self, ctx: &TransCtx) -> String {
+    fn fmt_with_ctx(&self, ctx: &TransformCtx) -> String {
         use AnyTransId::*;
         let ctx = ctx.into_fmt();
         match self {
@@ -372,7 +372,7 @@ impl AnyTransId {
 }
 
 impl Deps {
-    fn fmt_with_ctx(&self, ctx: &TransCtx) -> String {
+    fn fmt_with_ctx(&self, ctx: &TransformCtx) -> String {
         self.dgraph
             .nodes()
             .map(|node| {
@@ -390,7 +390,7 @@ impl Deps {
     }
 }
 
-pub fn reorder_declarations(ctx: &mut TransCtx) {
+pub fn reorder_declarations(ctx: &mut TransformCtx) {
     trace!();
 
     // Step 1: explore the declarations to build the graph

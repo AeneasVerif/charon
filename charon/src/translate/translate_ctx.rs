@@ -233,7 +233,7 @@ pub struct ErrorCtx<'ctx> {
     pub error_count: usize,
 }
 
-/// Translation context containing the top-level definitions.
+/// Translation context used while translating the crate data into our representation.
 pub struct TransCtx<'tcx, 'ctx> {
     /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
@@ -349,6 +349,17 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub blocks_stack: VecDeque<hax::BasicBlock>,
 }
 
+/// Simpler context used for rustc-independent code transformation. This only depends on rustc for
+/// its error reporting machinery.
+pub struct TransformCtx<'ctx> {
+    /// The options that control translation.
+    pub options: TransOptions,
+    /// The translated data.
+    pub translated: TranslatedCrate,
+    /// Context for tracking and reporting errors.
+    pub errors: ErrorCtx<'ctx>,
+}
+
 impl ErrorCtx<'_> {
     pub(crate) fn continue_on_failure(&self) -> bool {
         self.continue_on_failure
@@ -405,9 +416,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     /// Span an error and register the error.
     pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
         self.errors.span_err(span, msg)
-    }
-    pub(crate) fn has_errors(&self) -> bool {
-        self.errors.has_errors()
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -738,6 +746,31 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         id: DefId,
     ) -> ast::GlobalDeclId {
         *self.register_id(src, OrdRustId::Global(id)).as_global()
+    }
+
+    pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, f: F) -> T
+    where
+        F: FnOnce(&mut Self) -> T,
+    {
+        let current_def_id = self.errors.def_id;
+        self.errors.def_id = Some(def_id);
+        let ret = f(self);
+        self.errors.def_id = current_def_id;
+        ret
+    }
+}
+
+impl<'ctx> TransformCtx<'ctx> {
+    pub(crate) fn continue_on_failure(&self) -> bool {
+        self.errors.continue_on_failure()
+    }
+    pub(crate) fn has_errors(&self) -> bool {
+        self.errors.has_errors()
+    }
+
+    /// Span an error and register the error.
+    pub(crate) fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+        self.errors.span_err(span, msg)
     }
 
     pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, f: F) -> T
@@ -1131,6 +1164,14 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TransCtx<'tcx, 'ctx> {
     }
 }
 
+impl<'a> IntoFormatter for &'a TransformCtx<'_> {
+    type C = FmtCtx<'a>;
+
+    fn into_fmt(self) -> Self::C {
+        self.translated.into_fmt()
+    }
+}
+
 impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
     type C = FmtCtx<'a>;
 
@@ -1176,6 +1217,12 @@ impl<'a> FmtCtx<'a> {
 }
 
 impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.translated.fmt_with_ullbc_defs(f)
+    }
+}
+
+impl fmt::Display for TransformCtx<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.translated.fmt_with_ullbc_defs(f)
     }

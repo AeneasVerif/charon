@@ -24,7 +24,7 @@ use crate::expressions::Place;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_meta, Meta};
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 use crate::ullbc_ast::FunDeclId;
 use crate::ullbc_ast::{self as src, GlobalDeclId};
 use crate::values as v;
@@ -1939,7 +1939,7 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     }
 }
 
-fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId) -> tgt::FunDecl {
+fn translate_function(ctx: &TransformCtx, src_def_id: FunDeclId) -> tgt::FunDecl {
     // Retrieve the function definition
     let src_def = ctx.translated.fun_decls.get(src_def_id).unwrap();
     let fctx = ctx.into_fmt();
@@ -1965,7 +1965,7 @@ fn translate_function(ctx: &TransCtx, src_def_id: FunDeclId) -> tgt::FunDecl {
     }
 }
 
-fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId) -> tgt::GlobalDecl {
+fn translate_global(ctx: &TransformCtx, global_id: GlobalDeclId) -> tgt::GlobalDecl {
     // Retrieve the global definition
     let src_def = ctx.translated.global_decls.get(global_id).unwrap();
     let fctx = ctx.into_fmt();
@@ -1993,7 +1993,7 @@ fn translate_global(ctx: &TransCtx, global_id: GlobalDeclId) -> tgt::GlobalDecl 
 }
 
 /// Translate the functions by reconstructing the control-flow.
-pub fn translate_functions(ctx: &mut TransCtx) {
+pub fn translate_functions(ctx: &mut TransformCtx) {
     // Translate the bodies one at a time
     for (fun_id, _) in ctx.translated.fun_decls.iter_indexed() {
         let fundecl = translate_function(ctx, *fun_id);
