@@ -172,10 +172,6 @@ impl Ord for OrdRustId {
 pub struct TransOptions {
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
-    /// Do not abort on the first error and attempt to extract as much as possible.
-    pub continue_on_failure: bool,
-    /// Print the errors as warnings, and do not
-    pub errors_as_warnings: bool,
     /// Error out if some code ends up being duplicated by the control-flow
     /// reconstruction (note that because several patterns in a match may lead
     /// to the same branch, it is node always possible not to duplicate code).
@@ -191,15 +187,6 @@ pub struct TranslatedCrate {
     pub id_to_file: HashMap<FileId, FileName>,
     pub real_file_counter: Generator<LocalFileId>,
     pub virtual_file_counter: Generator<VirtualFileId>,
-
-    /// The ids of the declarations for which extraction we encountered errors.
-    pub decls_with_errors: HashSet<DefId>,
-    /// The ids of the declarations we completely failed to extract
-    /// and had to ignore.
-    pub ignored_failed_decls: HashSet<DefId>,
-    /// Dependency graph with sources. We use this for error reporting.
-    /// See [DepSource].
-    pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
 
     /// All the ids, in the order in which we encountered them
     pub all_ids: LinkedHashSet<AnyTransId>,
@@ -236,10 +223,29 @@ pub struct TranslatedCrate {
     pub ordered_decls: Option<DeclarationsGroups>,
 }
 
+/// The context for tracking and reporting errors.
+pub struct ErrorCtx<'ctx> {
+    /// If true, do not abort on the first error and attempt to extract as much as possible.
+    pub continue_on_failure: bool,
+    /// If true, print the errors as warnings, and do not abort.
+    pub errors_as_warnings: bool,
+
+    /// The compiler session, used for displaying errors.
+    pub session: &'ctx Session,
+    /// The ids of the declarations for which extraction we encountered errors.
+    pub decls_with_errors: HashSet<DefId>,
+    /// The ids of the declarations we completely failed to extract and had to ignore.
+    pub ignored_failed_decls: HashSet<DefId>,
+    /// Dependency graph with sources. See [DepSource].
+    pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
+    /// The id of the definition we are exploring, used to track the source of errors.
+    pub def_id: Option<DefId>,
+    /// The number of errors encountered so far.
+    pub error_count: usize,
+}
+
 /// Translation context containing the top-level definitions.
 pub struct TransCtx<'tcx, 'ctx> {
-    /// The compiler session
-    pub session: &'ctx Session,
     /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
     /// The Hax context
@@ -252,14 +258,12 @@ pub struct TransCtx<'tcx, 'ctx> {
     /// The translated data.
     pub translated: TranslatedCrate,
 
-    /// The number of errors encountered so far.
-    pub error_count: usize,
+    /// Context for tracking and reporting errors.
+    pub errors: ErrorCtx<'ctx>,
     /// The declarations we came accross and which we haven't translated yet.
     /// We use an ordered set to make sure we translate them in a specific
     /// order (this avoids stealing issues when querying the MIR bodies).
     pub stack: BTreeSet<OrdRustId>,
-    /// The id of the definition we are exploring
-    pub def_id: Option<DefId>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -358,34 +362,65 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub blocks_stack: VecDeque<hax::BasicBlock>,
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
-    pub fn continue_on_failure(&self) -> bool {
-        self.options.continue_on_failure
+impl ErrorCtx<'_> {
+    pub(crate) fn continue_on_failure(&self) -> bool {
+        self.continue_on_failure
+    }
+    pub(crate) fn has_errors(&self) -> bool {
+        self.error_count > 0
     }
 
-    pub fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
+    /// Report an error without registering anything.
+    pub(crate) fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
         let msg = msg.to_string();
-        if self.options.errors_as_warnings {
+        if self.errors_as_warnings {
             self.session.span_warn(span, msg);
         } else {
             self.session.span_err(span, msg);
         }
     }
 
-    /// Span an error and register the error.
+    /// Report and register an error.
     pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
         self.span_err_no_register(span, msg);
-        self.increment_error_count();
+        self.error_count += 1;
         if let Some(id) = self.def_id {
-            let _ = self.translated.decls_with_errors.insert(id);
+            let _ = self.decls_with_errors.insert(id);
         }
     }
 
-    fn increment_error_count(&mut self) {
-        self.error_count += 1;
+    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
+    pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
+        if let Some(src) = src {
+            if src.src_id != id {
+                match self.dep_sources.get_mut(&id) {
+                    None => {
+                        let _ = self.dep_sources.insert(id, HashSet::from([*src]));
+                    }
+                    Some(srcs) => {
+                        let _ = srcs.insert(*src);
+                    }
+                }
+            }
+        }
+    }
+
+    pub(crate) fn ignore_failed_decl(&mut self, id: DefId) {
+        self.ignored_failed_decls.insert(id);
+    }
+}
+
+impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+    pub fn continue_on_failure(&self) -> bool {
+        self.errors.continue_on_failure()
+    }
+
+    /// Span an error and register the error.
+    pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+        self.errors.span_err(span, msg)
     }
     pub(crate) fn has_errors(&self) -> bool {
-        self.error_count > 0
+        self.errors.has_errors()
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -611,21 +646,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
     pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
-        if let Some(src) = src {
-            if src.src_id != id {
-                match self.translated.dep_sources.get_mut(&id) {
-                    None => {
-                        let _ = self
-                            .translated
-                            .dep_sources
-                            .insert(id, HashSet::from([*src]));
-                    }
-                    Some(srcs) => {
-                        let _ = srcs.insert(*src);
-                    }
-                }
-            }
-        }
+        self.errors.register_dep_source(src, id)
     }
 
     pub(crate) fn register_id(&mut self, src: &Option<DepSource>, id: OrdRustId) -> AnyTransId {
@@ -732,10 +753,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self) -> T,
     {
-        let current_def_id = self.def_id;
-        self.def_id = Some(def_id);
+        let current_def_id = self.errors.def_id;
+        self.errors.def_id = Some(def_id);
         let ret = f(self);
-        self.def_id = current_def_id;
+        self.errors.def_id = current_def_id;
         ret
     }
 

@@ -1798,8 +1798,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         rust_id
                     ),
                 );
-                // Save the definition
-                let _ = ctx.translated.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }
@@ -1877,8 +1876,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         rust_id
                     ),
                 );
-                // Save the definition
-                let _ = ctx.translated.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }

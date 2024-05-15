@@ -245,16 +245,23 @@ pub fn translate<'tcx, 'ctx>(
         },
     );
     let mut ctx = TransCtx {
-        session,
         tcx,
         hax_state,
         crate_info,
         options: TransOptions {
             mir_level,
-            continue_on_failure: !options.abort_on_error,
-            errors_as_warnings: options.errors_as_warnings,
             no_code_duplication: options.no_code_duplication,
             extract_opaque_bodies: options.extract_opaque_bodies,
+        },
+        errors: ErrorCtx {
+            continue_on_failure: !options.abort_on_error,
+            errors_as_warnings: options.errors_as_warnings,
+            session,
+            decls_with_errors: HashSet::new(),
+            ignored_failed_decls: HashSet::new(),
+            dep_sources: HashMap::new(),
+            def_id: None,
+            error_count: 0,
         },
         translated: TranslatedCrate {
             all_ids: LinkedHashSet::new(),
@@ -262,9 +269,6 @@ pub fn translate<'tcx, 'ctx>(
             id_to_file: HashMap::new(),
             real_file_counter: Generator::new(),
             virtual_file_counter: Generator::new(),
-            dep_sources: HashMap::new(),
-            decls_with_errors: HashSet::new(),
-            ignored_failed_decls: HashSet::new(),
             id_map: HashMap::new(),
             reverse_id_map: HashMap::new(),
             type_id_gen: Generator::new(),
@@ -281,9 +285,7 @@ pub fn translate<'tcx, 'ctx>(
             trait_impls: Map::new(),
             ordered_decls: None,
         },
-        error_count: 0,
         stack: BTreeSet::new(),
-        def_id: None,
     };
 
     // First push all the items in the stack of items to translate.

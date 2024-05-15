@@ -50,7 +50,7 @@ impl Graph {
     }
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl ErrorCtx<'_> {
     /// In case errors happened when extracting the definitions coming from
     /// the external dependencies, print a detailed report to explain
     /// to the user which dependencies were problematic, and where they
@@ -68,8 +68,8 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // - from local def to external def
         let mut graph = Graph::new();
 
-        trace!("dep_sources:\n{:?}", self.translated.dep_sources);
-        for (id, srcs) in &self.translated.dep_sources {
+        trace!("dep_sources:\n{:?}", self.dep_sources);
+        for (id, srcs) in &self.dep_sources {
             // Only insert dependencies from external defs
             if !id.is_local() {
                 let node = Node::External(*id);
@@ -89,7 +89,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         // We need to compute the reachability graph. An easy way is simply
         // to use Dijkstra on every external definition which triggered an
         // error.
-        for id in &self.translated.decls_with_errors {
+        for id in &self.decls_with_errors {
             if !id.is_local() {
                 let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
                 trace!("id: {:?}\nreachable:\n{:?}", id, reachable);

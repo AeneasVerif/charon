@@ -717,8 +717,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     span,
                     &format!("Ignoring the following type due to an error: {:?}", rust_id),
                 );
-                // Save the definition
-                let _ = ctx.translated.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }

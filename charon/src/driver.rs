@@ -378,14 +378,14 @@ pub fn translate(
         }
 
         // Display an error report about the external dependencies, if necessary
-        ctx.report_external_deps_errors();
+        ctx.errors.report_external_deps_errors();
 
         export::CrateData::new_llbc(&ctx, crate_name)
     };
     trace!("Done");
 
     // Update the error count
-    internal.error_count = ctx.error_count;
+    internal.error_count = ctx.errors.error_count;
 
     Ok(crate_data)
 }
