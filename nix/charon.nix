@@ -1,5 +1,6 @@
 {
   bintools,
+  cargoLock ? ../charon/Cargo.lock,
   craneLib,
   lib,
   makeWrapper,
@@ -20,6 +21,7 @@ let
   };
 
   craneArgs = {
+    inherit cargoLock;
     # Copy the `rust-toolchain` file because charon reads it at build time.
     src = runCommand "charon-clean-src" { } ''
       mkdir $out
