@@ -13,7 +13,7 @@
 use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::meta::Meta;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 use crate::types::*;
 use crate::ullbc_ast::{make_locals_generator, RawStatement, Statement};
 use crate::ullbc_ast_utils::body_transform_operands;
@@ -116,12 +116,8 @@ fn transform_operand<F: FnMut(Ty) -> VarId>(
     })
 }
 
-pub fn transform(ctx: &mut TransCtx) {
-    // Slightly annoying: we have to clone because of borrowing issues
-    let mut fun_decls = ctx.fun_decls.clone();
-    let mut global_decls = ctx.global_decls.clone();
-
-    ctx.iter_bodies(&mut fun_decls, &mut global_decls, |ctx, name, b| {
+pub fn transform(ctx: &mut TransformCtx) {
+    ctx.iter_unstructured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to simplify constants in function: {}:\n{}",
@@ -134,7 +130,4 @@ pub fn transform(ctx: &mut TransCtx) {
             transform_operand(meta, nst, op, &mut f)
         });
     });
-
-    ctx.fun_decls = fun_decls;
-    ctx.global_decls = global_decls;
 }

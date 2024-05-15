@@ -519,7 +519,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // transparent (i.e., extract its body). If it is an enumeration, then yes
         // (because the variants of public enumerations are public, together with their
         // fields). If it is a structure, we check if all the fields are public.
-        let is_transparent = self.t_ctx.extract_opaque_bodies
+        let is_transparent = self.t_ctx.options.extract_opaque_bodies
             || is_local
             || match adt.adt_kind() {
                 AdtKind::Enum => true,
@@ -703,7 +703,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Translate a type definition.
     ///
     /// Note that we translate the types one by one: we don't need to take into
@@ -717,8 +717,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     span,
                     &format!("Ignoring the following type due to an error: {:?}", rust_id),
                 );
-                // Save the definition
-                let _ = ctx.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }
@@ -776,7 +775,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             type_def.fmt_with_ctx(&self.into_fmt())
         );
 
-        self.type_decls.insert(trans_id, type_def);
+        self.translated.type_decls.insert(trans_id, type_def);
 
         Ok(())
     }

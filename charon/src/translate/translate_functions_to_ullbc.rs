@@ -87,7 +87,7 @@ pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
     assert!(impl_item.constness == Constness::NotConst);
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn translate_binaryop_kind(
         &mut self,
         span: rustc_span::Span,
@@ -375,7 +375,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             }
                             Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
                                 // This case only happens in some MIR levels
-                                assert!(!boxes_are_desugared(self.t_ctx.mir_level));
+                                assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
                                 assert!(generics.regions.is_empty());
                                 assert!(generics.types.len() == 1);
                                 assert!(generics.const_generics.is_empty());
@@ -422,7 +422,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
                                     Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
-                                        assert!(!boxes_are_desugared(self.t_ctx.mir_level));
+                                        assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
 
                                         // Some more sanity checks
                                         assert!(generics.regions.is_empty());
@@ -1486,13 +1486,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         if !self.t_ctx.id_is_transparent(rust_id)? {
             return Ok(None);
         }
-        if !rust_id.is_local() && !self.t_ctx.extract_opaque_bodies {
+        if !rust_id.is_local() && !self.t_ctx.options.extract_opaque_bodies {
             // We only extract non-local bodies if the `extract_opaque_bodies` option is set.
             return Ok(None);
         }
 
         // Retrive the body
-        let Some(body) = get_mir_for_def_id_and_level(tcx, rust_id, self.t_ctx.mir_level)
+        let Some(body) = get_mir_for_def_id_and_level(tcx, rust_id, self.t_ctx.options.mir_level)
         else { return Ok(None) };
 
         // Here, we have to create a MIR state, which contains the body
@@ -1785,7 +1785,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Translate one function.
     pub(crate) fn translate_function(&mut self, rust_id: DefId) {
         self.with_def_id(rust_id, |ctx| {
@@ -1798,8 +1798,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         rust_id
                     ),
                 );
-                // Save the definition
-                let _ = ctx.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }
@@ -1848,7 +1847,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Save the new function
-        self.fun_decls.insert(
+        self.translated.fun_decls.insert(
             def_id,
             FunDecl {
                 def_id,
@@ -1877,8 +1876,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         rust_id
                     ),
                 );
-                // Save the definition
-                let _ = ctx.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }
@@ -1933,7 +1931,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         };
 
         // Save the new global
-        self.global_decls.insert(
+        self.translated.global_decls.insert(
             def_id,
             GlobalDecl {
                 def_id,

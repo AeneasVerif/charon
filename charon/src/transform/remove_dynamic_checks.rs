@@ -6,12 +6,12 @@
 
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{BinOp, FieldProjKind, Operand, ProjectionElem, Rvalue};
-use crate::translate_ctx::{register_error_or_panic, TransCtx};
+use crate::translate_ctx::{register_error_or_panic, TransformCtx};
 use crate::ullbc_ast::{BlockData, RawStatement, RawTerminator, Statement};
 
 /// Rustc inserts dybnamic checks during MIR lowering. They all end in an `Assert` terminator (and
 /// this is the only use of this terminator).
-fn remove_dynamic_checks(ctx: &mut TransCtx, block: &mut BlockData) {
+fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
     let RawTerminator::Assert {
         cond: Operand::Move(cond),
         expected,
@@ -138,12 +138,8 @@ fn remove_dynamic_checks(ctx: &mut TransCtx, block: &mut BlockData) {
     block.terminator.content = RawTerminator::Goto { target: *target };
 }
 
-pub fn transform(ctx: &mut TransCtx) {
-    // Slightly annoying: we have to clone because of borrowing issues
-    let mut fun_decls = ctx.fun_decls.clone();
-    let mut global_decls = ctx.global_decls.clone();
-
-    ctx.iter_bodies(&mut fun_decls, &mut global_decls, |ctx, name, b| {
+pub fn transform(ctx: &mut TransformCtx) {
+    ctx.iter_unstructured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove the dynamic checks: {}:\n{}",
@@ -162,7 +158,4 @@ pub fn transform(ctx: &mut TransCtx) {
             fmt_ctx.format_object(&*b)
         );
     });
-
-    ctx.fun_decls = fun_decls;
-    ctx.global_decls = global_decls;
 }

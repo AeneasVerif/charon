@@ -15,6 +15,14 @@ pub struct Map<Id, T> {
     pub map: std::collections::BTreeMap<Id, T>,
 }
 
+impl<Id, T> Default for Map<Id, T> {
+    fn default() -> Self {
+        Self {
+            map: Default::default(),
+        }
+    }
+}
+
 impl<Id: std::cmp::Ord, T> Map<Id, T> {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {

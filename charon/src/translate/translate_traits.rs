@@ -154,6 +154,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<(), Error> {
         let def_id = *self
             .t_ctx
+            .translated
             .reverse_id_map
             .get(&AnyTransId::TraitImpl(impl_id))
             .unwrap();
@@ -226,7 +227,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Remark: this **doesn't** register the def id (on purpose)
     pub(crate) fn translate_trait_item_name(
         &mut self,
@@ -250,8 +251,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         rust_id
                     ),
                 );
-                // Save the definition
-                let _ = ctx.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }
@@ -309,7 +309,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // but still remember their name (unless `extract_opaque_bodies` is set).
                     if has_default_value {
                         // This is a *provided* method
-                        if rust_id.is_local() || bt_ctx.t_ctx.extract_opaque_bodies {
+                        if rust_id.is_local() || bt_ctx.t_ctx.options.extract_opaque_bodies {
                             let fun_id = bt_ctx.translate_fun_decl_id(span, item.def_id);
                             provided_methods.push((method_name, Some(fun_id)));
                         } else {
@@ -430,7 +430,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             required_methods,
             provided_methods,
         };
-        self.trait_decls.insert(def_id, trait_decl);
+        self.translated.trait_decls.insert(def_id, trait_decl);
 
         Ok(())
     }
@@ -446,8 +446,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         rust_id
                     ),
                 );
-                // Save the definition
-                let _ = ctx.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }
@@ -654,7 +653,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             required_methods,
             provided_methods,
         };
-        self.trait_impls.insert(def_id, trait_impl);
+        self.translated.trait_impls.insert(def_id, trait_impl);
 
         Ok(())
     }

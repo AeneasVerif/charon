@@ -12,11 +12,11 @@ use crate::values::{Literal, ScalarValue};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
-struct Visitor<'a, 'tcx, 'ctx> {
-    ctx: &'a mut TransCtx<'tcx, 'ctx>,
+struct Visitor<'a, 'ctx> {
+    ctx: &'a mut TransformCtx<'ctx>,
 }
 
-impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
+impl<'a, 'ctx> Visitor<'a, 'ctx> {
     fn update_statement(&mut self, st: &mut Statement) {
         match &mut st.content {
             RawStatement::Sequence(
@@ -39,7 +39,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                 );
 
                 // Lookup the type of the scrutinee
-                let variants = match self.ctx.type_decls.get(*adt_id) {
+                let variants = match self.ctx.translated.type_decls.get(*adt_id) {
                     // This can happen if there was an error while extracting the definitions
                     None => None,
                     Some(d) => {
@@ -61,7 +61,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                 let Some(variants) = variants else {
                     // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
                     // `Nop` the whole statement sequence.
-                    assert!(self.ctx.error_count > 0);
+                    assert!(self.ctx.has_errors());
                     *st = Statement {
                         content: RawStatement::Nop,
                         meta: st.meta,
@@ -180,9 +180,9 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
     }
 }
 
-impl<'a, 'tcx, 'ctx> MutTypeVisitor for Visitor<'a, 'tcx, 'ctx> {}
-impl<'a, 'tcx, 'ctx> MutExprVisitor for Visitor<'a, 'tcx, 'ctx> {}
-impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
+impl<'a, 'ctx> MutTypeVisitor for Visitor<'a, 'ctx> {}
+impl<'a, 'ctx> MutExprVisitor for Visitor<'a, 'ctx> {}
+impl<'a, 'ctx> MutAstVisitor for Visitor<'a, 'ctx> {
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
         visitor(self)
     }
@@ -199,8 +199,8 @@ impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
     }
 }
 
-pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    ctx.iter_bodies(funs, globals, |ctx, name, b| {
+pub fn transform(ctx: &mut TransformCtx) {
+    ctx.iter_structured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove [ReadDiscriminant] occurrences in decl: {}:\n{}",

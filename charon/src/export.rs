@@ -37,14 +37,13 @@ pub struct GCrateData<FD, GD> {
 
 impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
     pub fn new(
-        ctx: &TransCtx,
-        crate_name: String,
+        ctx: &TransformCtx,
         fun_decls: &Map<FunDeclId, FD>,
         global_decls: &Map<GlobalDeclId, GD>,
     ) -> Self {
         // Transform the map file id -> file into a vector.
         // Sort the vector to make the serialized file as stable as possible.
-        let id_to_file = &ctx.id_to_file;
+        let id_to_file = &ctx.translated.id_to_file;
         let mut file_ids: Vec<FileId> = id_to_file.keys().copied().collect();
         file_ids.sort();
         let id_to_file: Vec<(FileId, FileName)> = file_ids
@@ -54,15 +53,15 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
 
         // Note that we replace the maps with vectors (the declarations contain
         // their ids, so it is easy to reconstruct the maps from there).
-        let declarations = ctx.ordered_decls.clone().unwrap();
-        let types = ctx.type_decls.iter().cloned().collect();
+        let declarations = ctx.translated.ordered_decls.clone().unwrap();
+        let types = ctx.translated.type_decls.iter().cloned().collect();
         let functions = fun_decls.iter().cloned().collect();
         let globals = global_decls.iter().cloned().collect();
-        let trait_decls = ctx.trait_decls.iter().cloned().collect();
-        let trait_impls = ctx.trait_impls.iter().cloned().collect();
+        let trait_decls = ctx.translated.trait_decls.iter().cloned().collect();
+        let trait_impls = ctx.translated.trait_impls.iter().cloned().collect();
         GCrateData {
             charon_version: crate::VERSION.to_owned(),
-            name: crate_name,
+            name: ctx.translated.crate_name.clone(),
             id_to_file,
             declarations,
             types,
@@ -70,7 +69,7 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
             globals,
             trait_decls,
             trait_impls,
-            has_errors: ctx.error_count > 0,
+            has_errors: ctx.has_errors(),
         }
     }
 
@@ -122,22 +121,20 @@ pub enum CrateData {
 }
 
 impl CrateData {
-    pub fn new_ullbc(
-        ctx: &TransCtx,
-        crate_name: String,
-        fun_decls: &Map<FunDeclId, ullbc_ast::FunDecl>,
-        global_decls: &Map<GlobalDeclId, ullbc_ast::GlobalDecl>,
-    ) -> Self {
-        Self::ULLBC(GCrateData::new(ctx, crate_name, fun_decls, global_decls))
+    pub fn new_ullbc(ctx: &TransformCtx) -> Self {
+        Self::ULLBC(GCrateData::new(
+            ctx,
+            &ctx.translated.fun_decls,
+            &ctx.translated.global_decls,
+        ))
     }
 
-    pub fn new_llbc(
-        ctx: &TransCtx,
-        crate_name: String,
-        fun_decls: &Map<FunDeclId, llbc_ast::FunDecl>,
-        global_decls: &Map<GlobalDeclId, llbc_ast::GlobalDecl>,
-    ) -> Self {
-        Self::LLBC(GCrateData::new(ctx, crate_name, fun_decls, global_decls))
+    pub fn new_llbc(ctx: &TransformCtx) -> Self {
+        Self::LLBC(GCrateData::new(
+            ctx,
+            &ctx.translated.structured_fun_decls,
+            &ctx.translated.structured_global_decls,
+        ))
     }
 
     /// Export the translated definitions to a JSON file.
