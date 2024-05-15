@@ -87,7 +87,7 @@ pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
     assert!(impl_item.constness == Constness::NotConst);
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn translate_binaryop_kind(
         &mut self,
         span: rustc_span::Span,
@@ -1785,7 +1785,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Translate one function.
     pub(crate) fn translate_function(&mut self, rust_id: DefId) {
         self.with_def_id(rust_id, |ctx| {

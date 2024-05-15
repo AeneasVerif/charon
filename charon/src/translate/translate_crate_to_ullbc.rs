@@ -11,7 +11,7 @@ use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn register_local_hir_impl_item(&mut self, _top_item: bool, impl_item: &ImplItem) {
         // TODO: make a proper error message
         assert!(impl_item.defaultness == Defaultness::Final);
@@ -242,7 +242,7 @@ pub fn translate<'tcx, 'ctx>(
             inline_macro_calls: Vec::new(),
         },
     );
-    let mut ctx = TransCtx {
+    let mut ctx = TranslateCtx {
         tcx,
         hax_state,
         options: TransOptions {

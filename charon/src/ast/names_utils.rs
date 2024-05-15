@@ -78,7 +78,7 @@ impl Name {
     }
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Retrieve an item name from a [DefId].
     pub fn def_id_to_name(&mut self, def_id: DefId) -> Result<Name, Error> {
         trace!("{:?}", def_id);

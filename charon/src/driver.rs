@@ -313,7 +313,7 @@ pub fn translate(
         // # Micro-pass: reconstruct the asserts
         reconstruct_asserts::transform(&mut ctx);
 
-        // TODO: we should mostly use the TransCtx to format declarations
+        // TODO: we should mostly use the TranslateCtx to format declarations
         use crate::formatter::{Formatter, IntoFormatter};
         for (_, def) in &ctx.translated.structured_fun_decls {
             trace!(

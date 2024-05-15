@@ -1,4 +1,4 @@
-[ ERROR charon_lib::ast::names_utils:274] [names_utils::<impl charon_lib::translate::translate_ctx::TransCtx>::def_id_to_name]:
+[ ERROR charon_lib::ast::names_utils:274] [names_utils::<impl charon_lib::translate::translate_ctx::TranslateCtx>::def_id_to_name]:
 Unexpected DefPathData: DisambiguatedDefPathData { data: Ctor, disambiguator: 0 }
 thread 'rustc' panicked at 'internal error: entered unreachable code: Unexpected DefPathData: DisambiguatedDefPathData { data: Ctor, disambiguator: 0 }', src/ast/names_utils.rs:275:21
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

@@ -235,7 +235,7 @@ pub struct ErrorCtx<'ctx> {
 }
 
 /// Translation context used while translating the crate data into our representation.
-pub struct TransCtx<'tcx, 'ctx> {
+pub struct TranslateCtx<'tcx, 'ctx> {
     /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
     /// The Hax context
@@ -255,7 +255,7 @@ pub struct TransCtx<'tcx, 'ctx> {
 }
 
 /// A translation context for type/global/function bodies.
-/// Simply augments the [TransCtx] with local variables.
+/// Simply augments the [TranslateCtx] with local variables.
 ///
 /// Remark: for now we don't really need to use collections from the [im] crate,
 /// because we don't need the O(1) clone operation, but we may need it once we
@@ -264,10 +264,10 @@ pub struct TransCtx<'tcx, 'ctx> {
 /// us to use those collections.
 pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The definition we are currently extracting.
-    /// TODO: this duplicates the field of [TransCtx]
+    /// TODO: this duplicates the field of [TranslateCtx]
     pub def_id: DefId,
     /// The translation context containing the top-level definitions/ids.
-    pub t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>,
+    pub t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
     /// A hax state with an owner id
     pub hax_state: hax::State<hax::Base<'tcx>, (), (), rustc_hir::def_id::DefId>,
     /// The regions.
@@ -409,7 +409,7 @@ impl ErrorCtx<'_> {
     }
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub fn continue_on_failure(&self) -> bool {
         self.errors.continue_on_failure()
     }
@@ -861,7 +861,7 @@ impl<'ctx> TransformCtx<'ctx> {
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
-    pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>) -> Self {
+    pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>) -> Self {
         let hax_state = t_ctx.make_hax_state_with_id(def_id);
         let mut trait_clauses_counter = Generator::new();
         let trait_instance_id_gen = Box::new(move || {
@@ -1157,7 +1157,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx, 'ctx> {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
@@ -1217,7 +1217,7 @@ impl<'a> FmtCtx<'a> {
     }
 }
 
-impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx, 'ctx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.translated.fmt_with_ullbc_defs(f)
     }
