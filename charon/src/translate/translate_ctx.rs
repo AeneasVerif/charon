@@ -1115,8 +1115,16 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TransCtx<'tcx, 'ctx> {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
+        self.translated.into_fmt()
+    }
+}
+
+impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
+    type C = FmtCtx<'a>;
+
+    fn into_fmt(self) -> Self::C {
         FmtCtx {
-            translated: Some(&self.translated),
+            translated: Some(self),
             region_vars: im::Vector::new(),
             type_vars: None,
             const_generic_vars: None,
@@ -1157,28 +1165,34 @@ impl<'a> FmtCtx<'a> {
 
 impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.translated.fmt_with_ullbc_defs(f)
+    }
+}
+
+impl TranslatedCrate {
+    fn fmt_with_ullbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fmt: FmtCtx = self.into_fmt();
 
-        match &self.translated.ordered_decls {
+        match &self.ordered_decls {
             None => {
                 // We do simple: types, globals, traits, functions
-                for (_, d) in &self.translated.type_decls {
+                for (_, d) in &self.type_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.translated.global_decls {
+                for (_, d) in &self.global_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.translated.trait_decls {
+                for (_, d) in &self.trait_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.translated.trait_impls {
+                for (_, d) in &self.trait_impls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.translated.fun_decls {
+                for (_, d) in &self.fun_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
             }
@@ -1198,18 +1212,16 @@ impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
 
         fmt::Result::Ok(())
     }
-}
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     fn fmt_with_llbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fmt: FmtCtx = self.into_fmt();
-        let llbc_globals = &self.translated.structured_global_decls;
-        let llbc_funs = &self.translated.structured_fun_decls;
+        let llbc_globals = &self.structured_global_decls;
+        let llbc_funs = &self.structured_fun_decls;
 
-        match &self.translated.ordered_decls {
+        match &self.ordered_decls {
             None => {
                 // We do simple: types, globals, traits, functions
-                for (_, d) in &self.translated.type_decls {
+                for (_, d) in &self.type_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
@@ -1217,11 +1229,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.translated.trait_decls {
+                for (_, d) in &self.trait_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.translated.trait_impls {
+                for (_, d) in &self.trait_impls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
@@ -1261,12 +1273,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 }
 
-pub(crate) struct LlbcTransCtx<'a, 'tcx, 'ctx> {
-    pub ctx: &'a TransCtx<'tcx, 'ctx>,
+pub(crate) struct LlbcFmtCtx<'a> {
+    pub translated: &'a TranslatedCrate,
 }
 
-impl<'a, 'tcx, 'ctx> fmt::Display for LlbcTransCtx<'a, 'tcx, 'ctx> {
+impl<'a> fmt::Display for LlbcFmtCtx<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.ctx.fmt_with_llbc_defs(f)
+        self.translated.fmt_with_llbc_defs(f)
     }
 }

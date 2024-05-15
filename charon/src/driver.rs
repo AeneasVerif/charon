@@ -298,7 +298,9 @@ pub fn translate(
         ullbc_to_llbc::translate_functions(&mut ctx);
 
         if options.print_built_llbc {
-            let llbc_ctx = crate::translate_ctx::LlbcTransCtx { ctx: &ctx };
+            let llbc_ctx = crate::translate_ctx::LlbcFmtCtx {
+                translated: &ctx.translated,
+            };
             info!(
                 "# LLBC resulting from control-flow reconstruction:\n\n{}\n",
                 llbc_ctx
@@ -367,7 +369,9 @@ pub fn translate(
             trace!("#{}\n", ctx.into_fmt().format_object(def));
         }
 
-        let llbc_ctx = crate::translate_ctx::LlbcTransCtx { ctx: &ctx };
+        let llbc_ctx = crate::translate_ctx::LlbcFmtCtx {
+            translated: &ctx.translated,
+        };
         trace!("# About to export:\n\n{}\n", llbc_ctx);
         if options.print_llbc {
             println!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
