@@ -66,7 +66,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                         content: RawStatement::Nop,
                         meta: st.meta,
                     };
-                    return
+                    return;
                 };
 
                 // We look for a `SwitchInt` just after the discriminant read.
@@ -87,8 +87,11 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
 
                 match maybe_switch {
                     Ok((meta2, switch, st3_opt)) => {
-                        let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) = switch
-                        else { unreachable!() };
+                        let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) =
+                            switch
+                        else {
+                            unreachable!()
+                        };
                         assert!(op_p.projection.is_empty() && op_p.var_id == dest.var_id);
 
                         // Convert between discriminants and variant indices. Remark: the discriminant can

@@ -91,7 +91,7 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
         // Create the file.
         let std::io::Result::Ok(outfile) = File::create(target_filename.clone()) else {
             error!("Could not open: {:?}", target_filename);
-            return Err(())
+            return Err(());
         };
         // Write to the file.
         let std::result::Result::Ok(()) = serde_json::to_writer(&outfile, self) else {
