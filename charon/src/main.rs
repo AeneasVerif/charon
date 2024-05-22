@@ -107,9 +107,52 @@ fn driver_path() -> PathBuf {
     path
 }
 
-fn process(options: &CliOpts) -> Result<(), i32> {
+fn driver_cmd() -> Command {
     let toolchain = get_pinned_toolchain();
     let driver_path = driver_path();
+    // This is set by the nix develop environment and the nix builder; in both cases the toolchain
+    // is set up in `$PATH` and the driver should be correctly dynamically linked.
+    let correct_toolchain_is_in_path = env::var("CHARON_TOOLCHAIN_IS_IN_PATH").is_ok();
+
+    let mut cmd;
+    if correct_toolchain_is_in_path {
+        trace!("We appear to have been built with nix; the driver should be correctly linked.");
+        cmd = Command::new(driver_path);
+    } else {
+        trace!("Calling the driver via `rustup`");
+        // If rustup is there, use it to set up the right library paths so that `charon-driver`
+        // can run correctly.
+        cmd = Command::new("rustup");
+        cmd.arg("run");
+        cmd.arg(toolchain.channel);
+        cmd.arg(driver_path);
+    }
+    // The driver expects the first arg to be "rustc" because that's how cargo calls it.
+    cmd.arg("rustc");
+    cmd
+}
+
+fn cargo_cmd() -> Command {
+    let toolchain = get_pinned_toolchain();
+    // This is set by the nix develop environment and the nix builder; in both cases the toolchain
+    // is set up in `$PATH` and the driver should be correctly dynamically linked.
+    let correct_toolchain_is_in_path = env::var("CHARON_TOOLCHAIN_IS_IN_PATH").is_ok();
+
+    let mut cmd;
+    if correct_toolchain_is_in_path {
+        trace!("Using nix-provided toolchain");
+        cmd = Command::new("cargo");
+    } else {
+        trace!("Using rustup-provided `cargo`.");
+        cmd = Command::new("rustup");
+        cmd.arg("run");
+        cmd.arg(toolchain.channel);
+        cmd.arg("cargo");
+    }
+    cmd
+}
+
+fn process(options: &CliOpts) -> Result<(), i32> {
     // FIXME: when using rustup, ensure the toolchain has the right components installed.
     let use_rustup = which::which("rustup").is_ok();
     // This is set by the nix develop environment and the nix builder; in both cases the toolchain
@@ -127,24 +170,10 @@ fn process(options: &CliOpts) -> Result<(), i32> {
 
     let exit_status = if options.no_cargo {
         // Run just the driver.
-        let mut cmd;
-        if correct_toolchain_is_in_path {
-            trace!("We appear to have been built with nix; the driver should be correctly linked.");
-            cmd = Command::new(driver_path);
-        } else {
-            assert!(use_rustup); // Otherwise we panicked earlier.
-            trace!("Calling the driver via `rustup`");
-            // If rustup is there, use it to set up the right library paths so that `charon-driver`
-            // can run correctly.
-            cmd = Command::new("rustup");
-            cmd.arg("run");
-            cmd.arg(toolchain.channel);
-            cmd.arg(driver_path);
-        }
+        let mut cmd = driver_cmd();
 
         cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
-        // The driver expects the first arg to be "rustc" because that's how cargo calls it.
-        cmd.arg("rustc");
+
         if let Some(input_file) = &options.input_file {
             cmd.arg(input_file);
         }
@@ -154,28 +183,18 @@ fn process(options: &CliOpts) -> Result<(), i32> {
             .wait()
             .expect("failed to wait for charon-driver?")
     } else {
-        let mut cmd;
-        if correct_toolchain_is_in_path {
-            trace!("Using nix-provided toolchain");
-            cmd = Command::new("cargo");
-        } else {
-            assert!(use_rustup); // Otherwise we panicked earlier.
-            trace!("Using rustup-provided `cargo`.");
-            cmd = Command::new("rustup");
-            cmd.arg("run");
-            cmd.arg(toolchain.channel);
-            cmd.arg("cargo");
-        }
+        let mut cmd = cargo_cmd();
 
-        cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
         // Tell cargo to use the driver for all the crates in the workspace. There's no option for
         // "run only on the selected crate" so the driver might be called on a crate dependency
         // within the workspace. The driver will detect that case and run rustc normally then.
-        cmd.env("RUSTC_WORKSPACE_WRAPPER", driver_path);
+        cmd.env("RUSTC_WORKSPACE_WRAPPER", driver_path());
         // Tell the driver that we're being called by cargo.
         cmd.env("CHARON_USING_CARGO", "1");
         // Make sure we don't inherit this variable from the outside. Cargo sets this itself.
         cmd.env_remove("CARGO_PRIMARY_PACKAGE");
+
+        cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
 
         // Compute the arguments of the command to call cargo
         //let cargo_subcommand = "build";
