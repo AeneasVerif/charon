@@ -6,4 +6,4 @@ error: Unsupported statement kind: intrinsic
 
 error: aborting due to previous error
 
-[ ERROR charon_driver:200] The extraction encountered 1 errors
+[ ERROR charon_driver:204] The extraction encountered 1 errors

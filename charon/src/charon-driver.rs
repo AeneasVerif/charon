@@ -152,6 +152,10 @@ fn main() {
         }
     }
 
+    for extra_flag in options.rustc_flags.iter().cloned() {
+        compiler_args.push(extra_flag);
+    }
+
     trace!("Compiler arguments: {:?}", compiler_args);
 
     // Call the Rust compiler with our custom callback.
