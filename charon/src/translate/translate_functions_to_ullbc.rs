@@ -603,7 +603,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         ))
                     }
                     (
-                        hax::CastKind::Pointer(hax::PointerCast::Unsize),
+                        hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize),
                         Ty::Ref(_, t1, kind1),
                         Ty::Ref(_, t2, kind2),
                     ) => {
@@ -643,7 +643,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         }
                     }
                     (
-                        hax::CastKind::Pointer(hax::PointerCast::ClosureFnPointer(unsafety)),
+                        hax::CastKind::PointerCoercion(hax::PointerCoercion::ClosureFnPointer(
+                            unsafety,
+                        )),
                         src_ty @ Ty::Arrow(..),
                         tgt_ty @ Ty::Arrow(..),
                     ) => {
@@ -656,7 +658,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         ))
                     }
                     (
-                        hax::CastKind::Pointer(hax::PointerCast::ReifyFnPointer),
+                        hax::CastKind::PointerCoercion(hax::PointerCoercion::ReifyFnPointer),
                         src_ty @ Ty::Arrow(..),
                         tgt_ty @ Ty::Arrow(..),
                     ) => {
@@ -1207,7 +1209,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             },
             TerminatorKind::Call {
                 fun,
-                substs,
+                generics,
                 args,
                 destination,
                 target,
@@ -1219,7 +1221,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             } => self.translate_function_call(
                 span,
                 fun,
-                substs,
+                generics,
                 args,
                 destination,
                 target,
@@ -1326,7 +1328,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         fun: &hax::FunOperand,
-        substs: &Vec<hax::GenericArg>,
+        generics: &Vec<hax::GenericArg>,
         args: &Vec<hax::Operand>,
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
@@ -1352,7 +1354,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     span,
                     erase_regions,
                     def_id,
-                    substs,
+                    generics,
                     Some(args),
                     trait_refs,
                     trait_info,
@@ -1369,7 +1371,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                     SubstFunIdOrPanic::Fun(fid) => {
                         let next_block = target.unwrap_or_else(|| {
-                            panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", rust_id, substs, args)
+                            panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", rust_id, generics, args)
                         });
 
                         // Translate the target
@@ -1396,7 +1398,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Translate the target
                 let next_block = target.unwrap_or_else(|| {
-                    panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", p, substs, args)
+                    panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", p, generics, args)
                 });
                 let lval = self.translate_place(span, destination)?;
                 let next_block = self.translate_basic_block_id(next_block);
@@ -1487,7 +1489,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Retrive the body
         let Some(body) = get_mir_for_def_id_and_level(tcx, rust_id, self.t_ctx.options.mir_level)
-        else { return Ok(None) };
+        else {
+            return Ok(None);
+        };
 
         // Here, we have to create a MIR state, which contains the body
         let state = hax::state::State::new_from_mir(
@@ -1561,7 +1565,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         ) = if is_closure {
             // Closures have a peculiar handling in Rust: we can't call
             // `TyCtxt::fn_sig`.
-            let fun_type = tcx.type_of(def_id).subst_identity();
+            let fun_type = tcx.type_of(def_id).instantiate_identity();
             let rsubsts = match fun_type.kind() {
                 ty::TyKind::Closure(_def_id, substs_ref) => substs_ref,
                 _ => {
@@ -1575,7 +1579,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Importantly, the type parameters necessarily come from the parents:
             // the closure can't itself be polymorphic, and the signature of
             // the closure only quantifies lifetimes.
-            let substs = closure.parent_substs();
+            let substs = closure.parent_args();
             trace!("closure.parent_substs: {:?}", substs);
             let sig = closure.sig();
             trace!("closure.sig: {:?}", sig);
@@ -1617,10 +1621,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // There is an early binder for the early-bound regions, that
             // we ignore, and a binder for the late-bound regions, that we
             // keep.
-            let fn_sig = fn_sig.subst_identity();
+            let fn_sig = fn_sig.instantiate_identity();
 
             // Retrieve the early-bound parameters
-            let fun_type = tcx.type_of(def_id).subst_identity();
+            let fun_type = tcx.type_of(def_id).instantiate_identity();
             let substs: Vec<hax::GenericArg> = match fun_type.kind() {
                 ty::TyKind::FnDef(_def_id, substs_ref) => substs_ref.sinto(&self.hax_state),
                 ty::TyKind::Closure(_, _) => {
@@ -1904,7 +1908,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         trace!("Translating global type");
-        let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).subst_identity();
+        let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).instantiate_identity();
         let erase_regions = false; // This doesn't matter: there shouldn't be any regions
         let ty = bt_ctx.translate_ty(span, erase_regions, &mir_ty.sinto(hax_state))?;
 

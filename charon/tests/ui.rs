@@ -68,7 +68,9 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
         auxiliary_crates: Vec::new(),
     };
     for line in read_to_string(input_path)?.lines() {
-        let Some(line) = line.strip_prefix("//@") else { break };
+        let Some(line) = line.strip_prefix("//@") else {
+            break;
+        };
         let line = line.trim();
         if line == "known-panic" {
             comments.test_kind = TestKind::KnownPanic;

@@ -607,7 +607,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | ForeignMod
             | Generator
             | GlobalAsm
-            | ImplTraitPlaceholder
             | InlineConst
             | LifetimeParam
             | OpaqueTy

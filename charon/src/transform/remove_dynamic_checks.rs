@@ -16,7 +16,10 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
         cond: Operand::Move(cond),
         expected,
         target,
-    } = &block.terminator.content else { return };
+    } = &block.terminator.content
+    else {
+        return;
+    };
 
     // We return the statements we want to keep, which must be a prefix of `block.statements`.
     let statements_to_keep = match block.statements.as_mut_slice() {
