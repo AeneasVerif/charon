@@ -8,4 +8,4 @@ error: Nullary operations are not supported
 
 error: aborting due to previous error
 
-[ ERROR charon_driver:212] The extraction encountered 1 errors
+[ ERROR charon_driver:214] The extraction encountered 1 errors
