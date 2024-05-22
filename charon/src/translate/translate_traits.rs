@@ -21,7 +21,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             tcx.def_span(item.def_id),
             erase_regions,
             &tcx.type_of(item.def_id)
-                .subst_identity()
+                .instantiate_identity()
                 .sinto(&self.hax_state),
         )
     }
@@ -46,7 +46,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let span = tcx.def_span(trait_impl_def_id);
 
         // Lookup the trait clauses and substitute - TODO: not sure about the substitution
-        let subst = rust_impl_trait_ref.substs;
+        let subst = rust_impl_trait_ref.args;
         let bounds = tcx.item_bounds(decl_item.def_id);
         let param_env = tcx.param_env(trait_impl_def_id);
         let bounds = tcx.subst_and_normalize_erasing_regions(subst, param_env, bounds);
@@ -156,7 +156,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Retrieve the trait ref representing "self"
         let tcx = self.t_ctx.tcx;
         let rustc_middle::ty::ImplSubject::Trait(trait_ref) =
-            tcx.impl_subject(def_id).subst_identity() else { unreachable!() };
+            tcx.impl_subject(def_id).instantiate_identity()
+        else {
+            unreachable!()
+        };
 
         // Wrap it in a [TraitPredicate] so that when calling [sinto] we retrieve
         // the parent and item predicates.
@@ -335,7 +338,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // Translating the predicates
                     {
                         // TODO: this is an ugly manip
-                        let bounds = tcx.item_bounds(item.def_id).subst_identity();
+                        let bounds = tcx.item_bounds(item.def_id).instantiate_identity();
                         use crate::rustc_middle::query::Key;
                         let span = bounds.default_span(tcx);
                         let bounds: Vec<_> = bounds
@@ -499,7 +502,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let trait_id = trait_id.unwrap();
 
             let rustc_middle::ty::ImplSubject::Trait(rust_trait_ref) =
-                    tcx.impl_subject(rust_id).subst_identity() else { unreachable!() };
+                tcx.impl_subject(rust_id).instantiate_identity()
+            else {
+                unreachable!()
+            };
             let trait_ref = rust_trait_ref.sinto(&bt_ctx.hax_state);
             let (regions, types, const_generics) =
                 bt_ctx.translate_substs(span, erase_regions, None, &trait_ref.generic_args)?;
@@ -508,7 +514,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 &bt_ctx.hax_state,
                 tcx.param_env(rust_id),
                 rust_trait_ref.def_id,
-                rust_trait_ref.substs,
+                rust_trait_ref.args,
                 None,
             );
             let parent_trait_refs: Vec<TraitRef> =

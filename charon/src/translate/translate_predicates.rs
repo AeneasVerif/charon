@@ -516,9 +516,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // directly? For now we just ignore it.
                         Ok(None)
                     }
-                    ClauseKind::WellFormed(_)
-                    | ClauseKind::ConstEvaluatable(_)
-                    | ClauseKind::TypeWellFormedFromEnv(_) => {
+                    ClauseKind::WellFormed(_) | ClauseKind::ConstEvaluatable(_) => {
                         error_or_panic!(self, span, format!("Unsupported clause: {:?}", kind))
                     }
                 }

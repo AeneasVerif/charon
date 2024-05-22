@@ -197,8 +197,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // Translate to hax types
                     let s1 = &hax::State::new_from_state_and_id(&self.hax_state, id);
                     let substs =
-                        rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, id)
-                            .sinto(s1);
+                        rustc_middle::ty::GenericArgs::identity_for_item(tcx, id).sinto(s1);
                     // TODO: use the bounds
                     let _bounds: Vec<hax::Clause> = tcx
                         .predicates_of(id)
@@ -206,7 +205,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         .iter()
                         .map(|(x, _)| x.sinto(s1))
                         .collect();
-                    let ty = tcx.type_of(id).subst_identity().sinto(s1);
+                    let ty = tcx.type_of(id).instantiate_identity().sinto(s1);
 
                     // Translate from hax to LLBC
                     let mut bt_ctx = BodyTransCtx::new(id, self);

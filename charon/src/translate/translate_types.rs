@@ -655,8 +655,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // We could use: TyCtxt::generics_of(DefId)
         // But using the identity substitution is simpler. For instance, we can
         // easily retrieve the type for the const parameters.
-        let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, def_id)
-            .sinto(&self.hax_state);
+        let substs =
+            rustc_middle::ty::GenericArgs::identity_for_item(tcx, def_id).sinto(&self.hax_state);
 
         self.translate_generic_params_from_hax(span, &substs)
     }
