@@ -38,6 +38,7 @@ pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
 pub static PANIC_NAME: [&str; 3] = ["core", "panicking", "panic"];
 pub static PANIC_FMT_NAME: [&str; 3] = ["core", "panicking", "panic_fmt"];
 pub static BEGIN_PANIC_NAME: [&str; 3] = ["std", "panicking", "begin_panic"];
+pub static BEGIN_PANIC_RT_NAME: [&str; 3] = ["std", "rt", "begin_panic"];
 pub static ASSERT_FAILED_NAME: [&str; 3] = ["core", "panicking", "assert_failed"];
 
 // Boxes - remark: there misses `Box::new` which has an impl block (TODO: remove?)
@@ -99,7 +100,8 @@ pub fn get_name_from_type_id(id: AssumedTy) -> Vec<String> {
 fn get_fun_id_from_name_full(name: &Name) -> Option<FunId> {
     if name.equals_ref_name(&PANIC_NAME) {
         Option::Some(FunId::Panic)
-    } else if name.equals_ref_name(&BEGIN_PANIC_NAME) {
+    } else if name.equals_ref_name(&BEGIN_PANIC_NAME) || name.equals_ref_name(&BEGIN_PANIC_RT_NAME)
+    {
         Option::Some(FunId::BeginPanic)
     } else if name.equals_ref_name(&BOX_FREE_NAME) {
         Option::Some(FunId::BoxFree)

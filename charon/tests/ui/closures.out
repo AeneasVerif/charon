@@ -116,7 +116,7 @@ fn test_crate::test_map_option1(@1: core::option::Option<u32>) -> core::option::
     let @2: core::option::Option<u32>; // anonymous local
 
     @2 := copy (x@1)
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@2), const (test_crate::incr_u32))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::ops::function::Fn<fn(u32) -> u32, (u32)>](move (@2), const (test_crate::incr_u32))
     drop @2
     return
 }
@@ -251,7 +251,7 @@ fn test_crate::test_map_option2(@1: core::option::Option<u32>) -> core::option::
     @fake_read(f@2)
     @4 := copy (x@1)
     @5 := copy (f@2)
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@4), move (@5))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::ops::function::Fn<fn(u32) -> u32, (u32)>](move (@4), move (@5))
     drop @5
     drop @4
     drop f@2
@@ -275,7 +275,7 @@ fn test_crate::test_map_option_id1(@1: core::option::Option<u32>) -> core::optio
     let @2: core::option::Option<u32>; // anonymous local
 
     @2 := copy (x@1)
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@2), const (test_crate::id<u32>))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::ops::function::Fn<fn(u32) -> u32, (u32)>](move (@2), const (test_crate::id<u32>))
     drop @2
     return
 }
@@ -292,7 +292,7 @@ fn test_crate::test_map_option_id2(@1: core::option::Option<u32>) -> core::optio
     @fake_read(f@2)
     @3 := copy (x@1)
     @4 := copy (f@2)
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@3), move (@4))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::ops::function::Fn<fn(u32) -> u32, (u32)>](move (@3), move (@4))
     drop @4
     drop @3
     drop f@2
@@ -377,7 +377,7 @@ fn test_crate::test_map_option_id_clone(@1: core::option::Option<u32>) -> core::
     let @2: core::option::Option<u32>; // anonymous local
 
     @2 := copy (x@1)
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(fn_ptr:fn(u32) -> u32)](move (@2), const (test_crate::id_clone<u32>[core::clone::impls::{impl core::clone::Clone for u32#8}]))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::ops::function::Fn<fn(u32) -> u32, (u32)>](move (@2), const (test_crate::id_clone<u32>[core::clone::impls::{impl core::clone::Clone for u32#8}]))
     drop @2
     return
 }
@@ -404,7 +404,7 @@ fn test_crate::test_map_option3(@1: core::option::Option<u32>) -> core::option::
 
     @2 := copy (x@1)
     @3 := {test_crate::test_map_option3::closure} {}
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[(closure:test_crate::test_map_option3::closure)](move (@2), move (@3))
+    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::ops::function::Fn<fn(u32) -> u32, (u32)>](move (@2), move (@3))
     drop @3
     drop @2
     return
@@ -488,7 +488,7 @@ fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
     @fake_read(f@3)
     @7 := &*(f@3)
     @8 := (const (0 : u32))
-    @0 := (closure:test_crate::test_closure_capture::closure)::call(move (@7), move (@8))
+    @0 := core::ops::function::Fn<fn(u32) -> u32, (u32)>::call(move (@7), move (@8))
     drop @8
     drop @7
     drop @4
@@ -530,7 +530,7 @@ where
     @4 := &*(f@2)
     @6 := move (x@1)
     @5 := (move (@6))
-    @0 := (closure:test_crate::test_closure_clone::closure<T>)::call(move (@4), move (@5))
+    @0 := core::ops::function::Fn<fn(T) -> T, (T)>::call(move (@4), move (@5))
     drop @6
     drop @6
     drop @5
@@ -565,7 +565,7 @@ fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : u
 
     @2 := copy (x@1)
     @3 := {test_crate::test_array_map::closure} {}
-    @0 := core::array::{Array<T, const N : usize>#23}::map<i32, fn(i32) -> i32, i32, 256 : usize>[(closure:test_crate::test_array_map::closure)](move (@2), move (@3))
+    @0 := core::array::{Array<T, const N : usize>#23}::map<i32, fn(i32) -> i32, i32, 256 : usize>[core::ops::function::FnMut<fn(i32) -> i32, (i32)>](move (@2), move (@3))
     drop @3
     drop @2
     return

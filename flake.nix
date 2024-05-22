@@ -34,7 +34,7 @@
 
         # A utility that extracts the llbc of a crate using charon. This uses
         # `crane` to handle dependencies and toolchain management.
-        extractCrateWithCharon = { name, src, charonFlags ? "", craneExtraArgs ? {} }:
+        extractCrateWithCharon = { name, src, charonFlags ? "", craneExtraArgs ? { } }:
           craneLib.buildPackage ({
             inherit name;
             src = pkgs.lib.cleanSourceWith {
@@ -59,93 +59,121 @@
           '';
         };
 
-        tests = pkgs.runCommand "charon-tests" {
+        tests = pkgs.runCommand "charon-tests"
+          {
             src = ./tests;
             buildInputs = [ rustToolchain charon ];
           } ''
-            # Copy the betree output file
-            mkdir -p $out/llbc
-            cp ${test-betree}/llbc/betree_main.llbc $out/llbc
+          # Copy the betree output file
+          mkdir -p $out/llbc
+          cp ${test-betree}/llbc/betree_main.llbc $out/llbc
 
-            cp -r $src tests
-            cd tests
-            # Run the tests for Charon
-            IN_CI=1 DEST=$out CHARON="charon" make charon-tests
-          '';
+          cp -r $src tests
+          cd tests
+          # Run the tests for Charon
+          IN_CI=1 DEST=$out CHARON="charon" make charon-tests
+        '';
 
         # Runs charon on the whole rustc ui test suite. This returns the tests
         # directory with a bunch of `<file>.rs.charon-output` files that store
         # the charon output when it failed. It also adds a `charon-results`
         # file that records `success|expected-failure|failure|panic|timeout`
         # for each file we processed.
-        rustc-tests = let
-          analyze_test_file = pkgs.writeScript "charon-analyze-test-file" ''
-            #!${pkgs.bash}/bin/bash
-            FILE="$1"
-            echo -n "$FILE: "
+        rustc-tests =
+          let
+            # The commit that corresponds to our nightly pin.
+            toolchain_commit = pkgs.runCommand "get-rustc-commit" { } ''
+              # This is sad but I don't know a better way.
+              cat ${rustToolchain}/share/doc/rust/html/version_info.html \
+                | grep 'github.com' \
+                | sed 's#.*"https://github.com/rust-lang/rust/commit/\([^"]*\)".*#\1#' \
+                > $out
+            '';
+            # The rustc commit we use to get the tests. This should stay equal to `toolchain_commit`.
+            tests_commit = "5ea66686467d3ec5f8c81570e7f0f16ad8dd8cc3";
+            rustc_tests = pkgs.runCommand "rustc-tests"
+              {
+                src = pkgs.fetchFromGitHub {
+                  owner = "rust-lang";
+                  repo = "rust";
+                  rev = tests_commit;
+                  sha256 = "sha256-fpPMSzKc/Dd1nXAX7RocM/p22zuFoWtIL6mVw7XTBDo=";
+                };
+              } ''
+              # Check we're using the correct commit for tests.
+              TOOLCHAIN_COMMIT="$(cat ${toolchain_commit})"
+              TESTS_COMMIT="${tests_commit}"
+              if [ "$TOOLCHAIN_COMMIT" != "$TESTS_COMMIT" ]; then
+                echo "Error: the commit used for tests is incorrect" 1>&2
+                echo 'Please set `tests_commit = "'"$TOOLCHAIN_COMMIT"'";` in flake.nix' 1>&2
+                exit 1
+              fi
+              ln -s $src $out
+            '';
 
-            has_magic_comment() {
-              # Checks for `// magic-comment` and `//@ magic-comment` instructions in files.
-              grep -q "^// \?@\? \?$1:" "$2"
-            }
+            analyze_test_file = pkgs.writeScript "charon-analyze-test-file" ''
+              #!${pkgs.bash}/bin/bash
+              FILE="$1"
+              echo -n "$FILE: "
 
-            ${pkgs.coreutils}/bin/timeout 5s ${charon}/bin/charon --no-cargo --input "$FILE" --no-serialize > "$FILE.charon-output" 2>&1
-            status=$?
-            if [ $status -eq 124 ]; then
-                result=timeout
-            elif has_magic_comment 'aux-build' "$FILE" \
-              || has_magic_comment 'compile-flags' "$FILE" \
-              || has_magic_comment 'revisions' "$FILE" \
-              || has_magic_comment 'known-bug' "$FILE" \
-              || has_magic_comment 'edition' "$FILE"; then
-                # We can't handle these for now
-                result=unsupported-build-settings
-            elif [ $status -eq 101 ]; then
-                result=panic
-            elif [ $status -eq 0 ]; then
-                result=success
-            elif [ -f ${"$"}{FILE%.rs}.stderr ]; then
-                # This is a test that should fail
-                result=expected-failure
-            else
-                result=failure
-            fi
+              has_magic_comment() {
+                # Checks for `// magic-comment` and `//@ magic-comment` instructions in files.
+                grep -q "^// \?@\? \?$1:" "$2"
+              }
 
-            # Only keep the informative outputs.
-            if [[ $result != "panic" ]] && [[ $result != "failure" ]]; then
-                rm "$FILE.charon-output"
-            fi
+              ${pkgs.coreutils}/bin/timeout 5s ${charon}/bin/charon --no-cargo --input "$FILE" --no-serialize > "$FILE.charon-output" 2>&1
+              status=$?
+              if [ $status -eq 124 ]; then
+                  result=timeout
+              elif has_magic_comment 'aux-build' "$FILE" \
+                || has_magic_comment 'compile-flags' "$FILE" \
+                || has_magic_comment 'revisions' "$FILE" \
+                || has_magic_comment 'known-bug' "$FILE" \
+                || has_magic_comment 'edition' "$FILE"; then
+                  # We can't handle these for now
+                  result=unsupported-build-settings
+              elif [ $status -eq 101 ]; then
+                  result=panic
+              elif [ $status -eq 0 ]; then
+                  result=success
+              elif [ -f ${"$"}{FILE%.rs}.stderr ]; then
+                  # This is a test that should fail
+                  result=expected-failure
+              else
+                  result=failure
+              fi
 
-            echo $result
+              # Only keep the informative outputs.
+              if [[ $result != "panic" ]] && [[ $result != "failure" ]]; then
+                  rm "$FILE.charon-output"
+              fi
+
+              echo $result
+            '';
+            run_ui_tests = pkgs.writeScript "charon-analyze-test-file" ''
+              PARALLEL="${pkgs.parallel}/bin/parallel"
+              PV="${pkgs.pv}/bin/pv"
+              FD="${pkgs.fd}/bin/fd"
+
+              SIZE="$($FD -e rs | wc -l)"
+              echo "Running $SIZE tests..."
+              $FD -e rs \
+                  | $PARALLEL ${analyze_test_file} \
+                  | $PV -l -s "$SIZE" \
+                  > charon-results
+            '';
+          in
+          pkgs.runCommand "charon-rustc-tests"
+            {
+              src = rustc_tests;
+              buildInputs = [ rustToolchain ];
+            } ''
+            mkdir $out
+            cp -r $src/tests/ui/* $out
+            chmod -R u+w $out
+            cd $out
+            ${run_ui_tests}
           '';
-          run_ui_tests = pkgs.writeScript "charon-analyze-test-file" ''
-            PARALLEL="${pkgs.parallel}/bin/parallel"
-            PV="${pkgs.pv}/bin/pv"
-            FD="${pkgs.fd}/bin/fd"
-
-            SIZE="$($FD -e rs | wc -l)"
-            echo "Running $SIZE tests..."
-            $FD -e rs \
-                | $PARALLEL ${analyze_test_file} \
-                | $PV -l -s "$SIZE" \
-                > charon-results
-          '';
-        in pkgs.runCommand "charon-rustc-tests" {
-          src = pkgs.fetchFromGitHub {
-            owner = "rust-lang";
-            repo = "rust";
-            # The commit that corresponds to our nightly-2023-06-02 pin.
-            rev = "d59363ad0b6391b7fc5bbb02c9ccf9300eef3753";
-            sha256 = "sha256-fpPMSzKc/Dd1nXAX7RocM/p22zuFoWtIL6mVw7XTBDo=";
-          };
-          buildInputs = [ rustToolchain ];
-        } ''
-          mkdir $out
-          cp -r $src/tests/ui/* $out
-          chmod -R u+w $out
-          cd $out
-          ${run_ui_tests}
-        '';
 
         ocamlPackages = pkgs.ocamlPackages;
         easy_logging = ocamlPackages.buildDunePackage rec {
@@ -180,12 +208,13 @@
             pname = "charon";
             version = "0.1.0";
             duneVersion = "3";
-            OCAMLPARAM="_,warn-error=+A"; # Turn all warnings into errors.
-            preCheck = if doCheck then ''
-              mkdir -p tests/serialized
-              cp ${charon}/tests-llbc/* tests/serialized
-            '' else
-              "";
+            OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
+            preCheck =
+              if doCheck then ''
+                mkdir -p tests/serialized
+                cp ${charon}/tests-llbc/* tests/serialized
+              '' else
+                "";
             propagatedBuildInputs = with ocamlPackages; [
               ppx_deriving
               visitors
@@ -217,7 +246,8 @@
           '';
           installPhase = "touch $out";
         };
-      in {
+      in
+      {
         packages = {
           inherit charon charon-ml rustc-tests rustToolchain;
           default = charon;

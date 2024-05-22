@@ -200,7 +200,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, id)
                             .sinto(s1);
                     // TODO: use the bounds
-                    let _bounds: Vec<hax::Predicate> = tcx
+                    let _bounds: Vec<hax::Clause> = tcx
                         .predicates_of(id)
                         .predicates
                         .iter()
