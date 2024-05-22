@@ -168,11 +168,22 @@ fn process(options: &CliOpts) -> Result<(), i32> {
         )
     }
 
+    let rustc_version =
+        rustc_version::VersionMeta::for_command(driver_cmd()).unwrap_or_else(|err| {
+            panic!("failed to determine underlying rustc version of Charon:\n{err:?}",)
+        });
+    let host = &rustc_version.host;
+
     let exit_status = if options.no_cargo {
         // Run just the driver.
         let mut cmd = driver_cmd();
 
         cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
+
+        // Make sure the build target is explicitly set. This is needed to detect which crates are
+        // proc-macro/build-script in `charon-driver`.
+        cmd.arg("--target");
+        cmd.arg(host);
 
         if let Some(input_file) = &options.input_file {
             cmd.arg(input_file);
@@ -200,6 +211,11 @@ fn process(options: &CliOpts) -> Result<(), i32> {
         //let cargo_subcommand = "build";
         let cargo_subcommand = "rustc";
         cmd.arg(cargo_subcommand);
+
+        // Make sure the build target is explicitly set. This is needed to detect which crates are
+        // proc-macro/build-script in `charon-driver`.
+        cmd.arg("--target");
+        cmd.arg(host);
 
         if options.lib {
             cmd.arg("--lib");

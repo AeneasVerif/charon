@@ -40,7 +40,7 @@ multimap = "0.8.3"
 petgraph = "0.6.2"
 pretty = "0.10.0"
 regex = "1.7.1"
-rustc_tools_util = "0.2.1"
+rustc_version = "0.2"
 serde_json = "1.0.91"
 serde = { version = "1.0.152", features = ["derive"] }
 serial_test = "0.5.1"

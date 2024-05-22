@@ -1,0 +1,22 @@
+# Final LLBC before serialization:
+
+global test_cargo_build_script::FOO  {
+    let @0: u8; // return
+
+    @0 := const (42 : u8)
+    return
+}
+
+fn test_cargo_build_script::main()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+
+

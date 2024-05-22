@@ -27,4 +27,4 @@ error: Ignoring the following function due to an error: test_crate::get
 error: aborting due to 3 previous errors
 
 For more information about this error, try `rustc --explain E0261`.
-[ ERROR charon_driver:204] The extraction encountered 2 errors
+[ ERROR charon_driver:212] The extraction encountered 2 errors
