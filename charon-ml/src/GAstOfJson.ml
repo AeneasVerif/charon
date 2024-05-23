@@ -105,8 +105,8 @@ let raw_span_of_json (id_to_file : id_to_file_map) (js : json) :
         Ok { file; beg_loc; end_loc }
     | _ -> Error "")
 
-let meta_of_json (id_to_file : id_to_file_map) (js : json) :
-    (meta, string) result =
+let span_of_json (id_to_file : id_to_file_map) (js : json) :
+    (span, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("span", span); ("generated_from_span", generated_from_span) ] ->
@@ -131,16 +131,16 @@ let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | `Assoc
         [
-          ("meta", meta);
+          ("span", span);
           ("attributes", attributes);
           ("inline", inline);
           ("public", public);
         ] ->
-        let* meta = meta_of_json id_to_file meta in
+        let* span = span_of_json id_to_file span in
         let* attributes = list_of_json string_of_json attributes in
         let* inline = option_of_json inline_attr_of_json inline in
         let* public = bool_of_json public in
-        Ok { meta; attributes; inline; public }
+        Ok { span; attributes; inline; public }
     | _ -> Error "")
 
 let type_var_of_json (js : json) : (type_var, string) result =
@@ -444,11 +444,11 @@ let field_of_json (id_to_file : id_to_file_map) (js : json) :
     (field, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("meta", meta); ("name", name); ("ty", ty) ] ->
-        let* meta = meta_of_json id_to_file meta in
+    | `Assoc [ ("span", span); ("name", name); ("ty", ty) ] ->
+        let* span = span_of_json id_to_file span in
         let* name = option_of_json string_of_json name in
         let* ty = ty_of_json ty in
-        Ok { meta; field_name = name; field_ty = ty }
+        Ok { span; field_name = name; field_ty = ty }
     | _ -> Error "")
 
 let variant_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -457,16 +457,16 @@ let variant_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | `Assoc
         [
-          ("meta", meta);
+          ("span", span);
           ("name", name);
           ("fields", fields);
           ("discriminant", discriminant);
         ] ->
-        let* meta = meta_of_json id_to_file meta in
+        let* span = span_of_json id_to_file span in
         let* name = string_of_json name in
         let* fields = list_of_json (field_of_json id_to_file) fields in
         let* discriminant = scalar_value_of_json discriminant in
-        Ok { meta; variant_name = name; fields; discriminant }
+        Ok { span; variant_name = name; fields; discriminant }
     | _ -> Error "")
 
 let type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -502,15 +502,15 @@ let trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc
         [
           ("clause_id", clause_id);
-          ("meta", meta);
+          ("span", span);
           ("trait_id", trait_id);
           ("generics", generics);
         ] ->
         let* clause_id = TraitClauseId.id_of_json clause_id in
-        let* meta = option_of_json (meta_of_json id_to_file) meta in
+        let* span = option_of_json (span_of_json id_to_file) span in
         let* trait_id = TraitDeclId.id_of_json trait_id in
         let* clause_generics = generic_args_of_json generics in
-        Ok ({ clause_id; meta; trait_id; clause_generics } : trait_clause)
+        Ok ({ clause_id; span; trait_id; clause_generics } : trait_clause)
     | _ -> Error "")
 
 let generic_params_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -1035,16 +1035,16 @@ let gexpr_body_of_json (body_of_json : json -> ('body, string) result)
     (match js with
     | `Assoc
         [
-          ("meta", meta);
+          ("span", span);
           ("arg_count", arg_count);
           ("locals", locals);
           ("body", body);
         ] ->
-        let* meta = meta_of_json id_to_file meta in
+        let* span = span_of_json id_to_file span in
         let* arg_count = int_of_json arg_count in
         let* locals = list_of_json var_of_json locals in
         let* body = body_of_json body in
-        Ok { meta; arg_count; locals; body }
+        Ok { span; arg_count; locals; body }
     | _ -> Error "")
 
 let item_kind_of_json (js : json) : (item_kind, string) result =

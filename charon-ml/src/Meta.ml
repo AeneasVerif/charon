@@ -17,7 +17,7 @@ type file_name =
 type raw_span = { file : file_name; beg_loc : loc; end_loc : loc }
 [@@deriving show, ord]
 
-type meta = {
+type span = {
   span : raw_span;
       (** The source code span.
 
@@ -51,7 +51,7 @@ type inline_attr =
 [@@deriving show, ord]
 
 type item_meta = {
-  meta : meta;
+  span : span;
   attributes : string list;  (** Attributes (`#[...]`). **)
   inline : inline_attr option;
   public : bool;
