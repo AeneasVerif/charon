@@ -3,7 +3,7 @@
 
 use charon_lib::cli_options;
 use charon_lib::driver::{
-    arg_value, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
+    arg_values, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
     RunCompilerNormallyCallbacks,
 };
 use charon_lib::export::CrateData;
@@ -26,7 +26,7 @@ fn main() {
     // Compute the sysroot (the path to the executable of the compiler):
     // - if it is already in the command line arguments, just retrieve it from there
     // - otherwise retrieve the sysroot from a call to rustc
-    let sysroot_arg = arg_value(&origin_args, "--sysroot", |_| true);
+    let sysroot_arg = arg_values(&origin_args, "--sysroot").next();
     let has_sysroot_arg = sysroot_arg.is_some();
     let sysroot = if has_sysroot_arg {
         sysroot_arg.unwrap().to_string()
@@ -74,7 +74,9 @@ fn main() {
 
     // Cargo calls the driver twice. The first call to the driver is with "--crate-name ___" and no
     // source file, for Cargo to retrieve some information about the crate.
-    let is_dry_run = arg_value(&origin_args, "--crate-name", |s| s == "___").is_some();
+    let is_dry_run = arg_values(&origin_args, "--crate-name")
+        .find(|s| *s == "___")
+        .is_some();
     // When called using cargo, we tell cargo to use `charon-driver` by setting the
     // `RUSTC_WORKSPACE_WRAPPER` env var. This uses `charon-driver` for all the crates in the
     // workspace. We may however not want to be calling charon on all crates;
@@ -82,8 +84,16 @@ fn main() {
     // dependency.
     let is_workspace_dependency = std::env::var("CHARON_USING_CARGO").is_ok()
         && !std::env::var("CARGO_PRIMARY_PACKAGE").is_ok();
+    // Determines if we are being invoked to build a crate for the "target" architecture, in
+    // contrast to the "host" architecture. Host crates are for build scripts and proc macros and
+    // still need to be built like normal; target crates need to be processed by Charon.
+    //
+    // Currently, we detect this by checking for "--target=", which is never set for host crates.
+    // This matches what Miri does, which hopefully makes it reliable enough. This relies on us
+    // always invoking cargo itself with `--target`, which `charon` ensures.
+    let is_target = arg_values(&origin_args, "--target").next().is_some();
 
-    if is_dry_run || is_workspace_dependency {
+    if is_dry_run || is_workspace_dependency || !is_target {
         trace!("Skipping charon; running compiler normally instead.");
         // In this case we run the compiler normally.
         RunCompilerNormallyCallbacks
@@ -150,6 +160,10 @@ fn main() {
                 compiler_args.push(options.crate_name.as_ref().unwrap().clone());
             }
         }
+    }
+
+    for extra_flag in options.rustc_flags.iter().cloned() {
+        compiler_args.push(extra_flag);
     }
 
     trace!("Compiler arguments: {:?}", compiler_args);
