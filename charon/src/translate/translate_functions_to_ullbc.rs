@@ -1146,15 +1146,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         };
 
-        // Add the meta information
+        // Add the span information
         match t_statement {
             None => Ok(None),
             Some(t_statement) => {
-                let meta = self
+                let span = self
                     .t_ctx
-                    .translate_meta_from_source_info(&body.source_scopes, &statement.source_info);
+                    .translate_span_from_source_info(&body.source_scopes, &statement.source_info);
 
-                Ok(Some(Statement::new(meta, t_statement)))
+                Ok(Some(Statement::new(span, t_statement)))
             }
         }
     }
@@ -1166,13 +1166,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         terminator: &hax::Terminator,
     ) -> Result<Terminator, Error> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
-        let span = terminator.source_info.span.rust_span_data.unwrap().span();
+        let rustc_span = terminator.source_info.span.rust_span_data.unwrap().span();
 
-        // Compute the meta information beforehand (we might need it to introduce
+        // Compute the span information beforehand (we might need it to introduce
         // intermediate statements - we desugar some terminators)
-        let meta = self
+        let span = self
             .t_ctx
-            .translate_meta_from_source_info(&body.source_scopes, &terminator.source_info);
+            .translate_span_from_source_info(&body.source_scopes, &terminator.source_info);
 
         // Translate the terminator
         use hax::TerminatorKind;
@@ -1183,7 +1183,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             TerminatorKind::SwitchInt { discr, targets } => {
                 // Translate the operand which gives the discriminant
-                let (discr, discr_ty) = self.translate_operand_with_type(span, discr)?;
+                let (discr, discr_ty) = self.translate_operand_with_type(rustc_span, discr)?;
 
                 // Translate the switch targets
                 let targets = self.translate_switch_targets(&discr_ty, targets)?;
@@ -1193,7 +1193,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             TerminatorKind::Resume => {
                 // This is used to correctly unwind. We shouldn't get there: if
                 // we panic, the state gets stuck.
-                error_or_panic!(self, span, "Unexpected terminator: resume");
+                error_or_panic!(self, rustc_span, "Unexpected terminator: resume");
             }
             TerminatorKind::Return => RawTerminator::Return,
             TerminatorKind::Unreachable => RawTerminator::Unreachable,
@@ -1204,7 +1204,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 replace: _,
             } => RawTerminator::Drop {
-                place: self.translate_place(span, place)?,
+                place: self.translate_place(rustc_span, place)?,
                 target: self.translate_basic_block_id(*target),
             },
             TerminatorKind::Call {
@@ -1219,7 +1219,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 call_source: _,
                 fn_span: _,
             } => self.translate_function_call(
-                span,
+                rustc_span,
                 fun,
                 generics,
                 args,
@@ -1235,7 +1235,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 target,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
             } => {
-                let cond = self.translate_operand(span, cond)?;
+                let cond = self.translate_operand(rustc_span, cond)?;
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Assert {
                     cond,
@@ -1249,10 +1249,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 resume_arg: _,
                 drop: _,
             } => {
-                error_or_panic!(self, span, "Unsupported terminator: yield");
+                error_or_panic!(self, rustc_span, "Unsupported terminator: yield");
             }
             TerminatorKind::GeneratorDrop => {
-                error_or_panic!(self, span, "Unsupported terminator: generator drop");
+                error_or_panic!(self, rustc_span, "Unsupported terminator: generator drop");
             }
             TerminatorKind::FalseEdge {
                 real_target,
@@ -1282,12 +1282,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 RawTerminator::Goto { target }
             }
             TerminatorKind::InlineAsm { .. } => {
-                error_or_panic!(self, span, "Inline assembly is not supported");
+                error_or_panic!(self, rustc_span, "Inline assembly is not supported");
             }
         };
 
-        // Add the meta information
-        Ok(Terminator::new(meta, t_terminator))
+        // Add the span information
+        Ok(Terminator::new(span, t_terminator))
     }
 
     /// Translate switch targets
@@ -1515,8 +1515,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("Translating the expression body");
         self.translate_transparent_expression_body(&body)?;
 
-        // Compute the meta information
-        let meta = self.translate_meta_from_rspan(body.span);
+        // Compute the span information
+        let span = self.translate_span_from_rspan(body.span);
 
         // We need to convert the blocks map to an index vector
         // We clone things while we could move them...
@@ -1529,7 +1529,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Create the body
         Ok(Some(ExprBody {
-            meta,
+            span,
             arg_count,
             locals: mem::take(&mut self.vars),
             body: blocks,

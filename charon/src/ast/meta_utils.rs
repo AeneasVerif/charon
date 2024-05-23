@@ -39,9 +39,9 @@ impl Loc {
     }
 }
 
-/// Combine some meta information (useful when we need to compute the
-/// meta-information of, say, a sequence).
-pub fn combine_meta(m0: &Meta, m1: &Meta) -> Meta {
+/// Combine some span information (useful when we need to compute the
+/// span-information of, say, a sequence).
+pub fn combine_span(m0: &Span, m1: &Span) -> Span {
     // Merge the spans
     if m0.span.file_id == m1.span.file_id {
         let span = RawSpan {
@@ -59,7 +59,7 @@ pub fn combine_meta(m0: &Meta, m1: &Meta) -> Meta {
         // We don't attempt to merge the "generated from" spans: they might
         // come from different files, and even if they come from the same files
         // they might come from different macros, etc.
-        Meta {
+        Span {
             span,
             generated_from_span: None,
         }
@@ -70,12 +70,12 @@ pub fn combine_meta(m0: &Meta, m1: &Meta) -> Meta {
     }
 }
 
-/// Combine all the meta information in a slice.
-pub fn combine_meta_iter<'a, T: Iterator<Item = &'a Meta>>(mut ms: T) -> Meta {
+/// Combine all the span information in a slice.
+pub fn combine_span_iter<'a, T: Iterator<Item = &'a Span>>(mut ms: T) -> Span {
     // The iterator should have a next element
-    let mut mc: Meta = *ms.next().unwrap();
+    let mut mc: Span = *ms.next().unwrap();
     for m in ms {
-        mc = combine_meta(&mc, m);
+        mc = combine_span(&mc, m);
     }
 
     mc

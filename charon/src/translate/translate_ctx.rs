@@ -6,7 +6,7 @@ use crate::get_mir::MirLevel;
 use crate::ids::{Generator, MapGenerator, Vector};
 use crate::llbc_ast;
 use crate::meta::{self, Attribute, ItemMeta, RawSpan};
-use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Meta, VirtualFileId};
+use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Span, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
 use crate::translate_predicates::NonLocalTraitClause;
@@ -442,23 +442,23 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Compute the meta information for a Rust definition identified by its id.
-    pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
+    /// Compute the span information for a Rust definition identified by its id.
+    pub(crate) fn translate_span_from_rid(&mut self, def_id: DefId) -> Span {
         // Retrieve the span from the def id
         let rspan = meta::get_rspan_from_def_id(self.tcx, def_id);
         let rspan = rspan.sinto(&self.hax_state);
-        self.translate_meta_from_rspan(rspan)
+        self.translate_span_from_rspan(rspan)
     }
 
     /// Compute the meta information for a Rust item identified by its id.
     pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
-        let meta = self.translate_meta_from_rid(def_id);
+        let span = self.translate_span_from_rid(def_id);
         // Default to `false` for impl blocks and closures.
         let public = self
-            .translate_visibility_from_rid(def_id, meta.span)
+            .translate_visibility_from_rid(def_id, span.span)
             .unwrap_or(false);
         ItemMeta {
-            meta,
+            span,
             attributes: self.translate_attributes_from_rid(def_id),
             inline: self.translate_inline_from_rid(def_id),
             public,
@@ -487,12 +487,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Compute meta data from a Rust source scope
-    pub fn translate_meta_from_source_info(
+    /// Compute span data from a Rust source scope
+    pub fn translate_span_from_source_info(
         &mut self,
         source_scopes: &hax::IndexVec<hax::SourceScope, hax::SourceScopeData>,
         source_info: &hax::SourceInfo,
-    ) -> Meta {
+    ) -> Span {
         // Translate the span
         let mut scope_data = source_scopes.get(source_info.scope).unwrap();
         let span = self.translate_span(scope_data.span.clone());
@@ -506,12 +506,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
             let parent_span = self.translate_span(scope_data.span.clone());
 
-            Meta {
+            Span {
                 span: parent_span,
                 generated_from_span: Some(span),
             }
         } else {
-            Meta {
+            Span {
                 span,
                 generated_from_span: None,
             }
@@ -519,11 +519,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     // TODO: rename
-    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
+    pub(crate) fn translate_span_from_rspan(&mut self, rspan: hax::Span) -> Span {
         // Translate the span
         let span = self.translate_span(rspan);
 
-        Meta {
+        Span {
             span,
             generated_from_span: None,
         }
@@ -904,8 +904,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.span_err(span, msg)
     }
 
-    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
-        self.t_ctx.translate_meta_from_rspan(rspan)
+    pub(crate) fn translate_span_from_rspan(&mut self, rspan: hax::Span) -> Span {
+        self.t_ctx.translate_span_from_rspan(rspan)
     }
 
     pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId> {

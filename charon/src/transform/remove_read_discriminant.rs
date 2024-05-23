@@ -5,7 +5,7 @@
 
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
-use crate::meta::combine_meta;
+use crate::meta::combine_span;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::{Literal, ScalarValue};
@@ -22,7 +22,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
             RawStatement::Sequence(
                 box Statement {
                     content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
-                    meta: meta1,
+                    span: span1,
                 },
                 box st2,
             ) => {
@@ -34,7 +34,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                     st2,
                     Statement {
                         content: RawStatement::Nop,
-                        meta: st2.meta,
+                        span: st2.span,
                     },
                 );
 
@@ -48,7 +48,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                                 // We shouldn't get there
                                 register_error_or_panic!(
                                     self.ctx,
-                                    st.meta.span.rust_span_data.span(),
+                                    st.span.span.rust_span_data.span(),
                                     "Unreachable case"
                                 );
                                 None
@@ -64,7 +64,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                     assert!(self.ctx.has_errors());
                     *st = Statement {
                         content: RawStatement::Nop,
-                        meta: st.meta,
+                        span: st.span,
                     };
                     return;
                 };
@@ -75,18 +75,18 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                     RawStatement::Sequence(
                         box Statement {
                             content: RawStatement::Switch(switch @ Switch::SwitchInt(..)),
-                            meta: meta2,
+                            span: span2,
                         },
                         box st3,
-                    ) => Ok((meta2, switch, Some(st3))),
+                    ) => Ok((span2, switch, Some(st3))),
                     RawStatement::Switch(switch @ Switch::SwitchInt(..)) => {
-                        Ok((st2.meta, switch, None))
+                        Ok((st2.span, switch, None))
                     }
                     _ => Err(st2),
                 };
 
                 match maybe_switch {
-                    Ok((meta2, switch, st3_opt)) => {
+                    Ok((span2, switch, st3_opt)) => {
                         let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) =
                             switch
                         else {
@@ -111,7 +111,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                                             discr_to_id.get(&discr).or_else(|| {
                                                 register_error_or_panic!(
                                                     self.ctx,
-                                                    st.meta.span.rust_span_data.span(),
+                                                    st.span.span.rust_span_data.span(),
                                                     "Found incorrect discriminant {discr} for enum {adt_id}"
                                                 );
                                                 None
@@ -132,9 +132,9 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
 
                         // Add the next statement if there is one
                         st.content = if let Some(st3) = st3_opt {
-                            let meta = combine_meta(meta1, &meta2);
+                            let span = combine_span(span1, &span2);
                             let switch = Statement {
-                                meta,
+                                span,
                                 content: switch,
                             };
                             new_sequence(switch, st3).content
@@ -156,7 +156,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                                     ty: Ty::Literal(LiteralTy::Integer(int_ty)),
                                 };
                                 let statement = Statement {
-                                    meta: *meta1,
+                                    span: *span1,
                                     content: RawStatement::Assign(
                                         dest.clone(),
                                         Rvalue::Use(Operand::Const(konst)),
@@ -167,7 +167,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                             .collect();
                         let switch = RawStatement::Switch(Switch::Match(p.clone(), targets, None));
                         let switch = Statement {
-                            meta: *meta1,
+                            span: *span1,
                             content: switch,
                         };
                         st.content = new_sequence(switch, st2).content

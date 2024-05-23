@@ -27,7 +27,7 @@ fn transform_st(locals: &Vector<VarId, Var>, st: &mut Statement) {
 
     // If we filter the statement, we simply replace it with `nop`
     if filter {
-        *st = Statement::new(st.meta, RawStatement::Nop);
+        *st = Statement::new(st.span, RawStatement::Nop);
     }
 }
 

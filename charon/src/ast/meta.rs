@@ -63,7 +63,7 @@ impl From<RawSpan> for rustc_error_messages::MultiSpan {
 
 /// Meta information about a piece of code (block, statement, etc.)
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub struct Meta {
+pub struct Span {
     /// The source code span.
     ///
     /// If this meta information is for a statement/terminator coming from a macro
@@ -88,9 +88,9 @@ pub struct Meta {
     pub generated_from_span: Option<RawSpan>,
 }
 
-impl From<Meta> for rustc_error_messages::MultiSpan {
-    fn from(meta: Meta) -> Self {
-        meta.span.into()
+impl From<Span> for rustc_error_messages::MultiSpan {
+    fn from(span: Span) -> Self {
+        span.span.into()
     }
 }
 
@@ -111,7 +111,7 @@ pub enum InlineAttr {
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ItemMeta {
-    pub meta: Meta,
+    pub span: Span,
     /// Attributes (`#[...]`).
     pub attributes: Vec<Attribute>,
     /// Inline hints (on functions only).

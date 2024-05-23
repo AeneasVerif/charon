@@ -1,6 +1,6 @@
 //! Implementations for [crate::ullbc_ast]
 use crate::ids::Vector;
-use crate::meta::Meta;
+use crate::meta::Span;
 use crate::types::*;
 use crate::ullbc_ast::*;
 use crate::values::*;
@@ -26,14 +26,14 @@ impl SwitchTargets {
 }
 
 impl Statement {
-    pub fn new(meta: Meta, content: RawStatement) -> Self {
-        Statement { meta, content }
+    pub fn new(span: Span, content: RawStatement) -> Self {
+        Statement { span, content }
     }
 }
 
 impl Terminator {
-    pub fn new(meta: Meta, content: RawTerminator) -> Self {
-        Terminator { meta, content }
+    pub fn new(span: Span, content: RawTerminator) -> Self {
+        Terminator { span, content }
     }
 }
 
@@ -41,25 +41,25 @@ impl BlockData {
     /// Visit the operands in an rvalue and generate statements.
     /// Used below in [BlockData::transform_operands].
     /// TODO: use visitors
-    fn transform_rvalue_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand)>(
-        meta: &Meta,
+    fn transform_rvalue_operands<F: FnMut(&Span, &mut Vec<Statement>, &mut Operand)>(
+        span: &Span,
         nst: &mut Vec<Statement>,
         rval: &mut Rvalue,
         f: &mut F,
     ) {
         match rval {
-            Rvalue::Use(op) | Rvalue::UnaryOp(_, op) => f(meta, nst, op),
+            Rvalue::Use(op) | Rvalue::UnaryOp(_, op) => f(span, nst, op),
             Rvalue::BinaryOp(_, o1, o2) => {
-                f(meta, nst, o1);
-                f(meta, nst, o2);
+                f(span, nst, o1);
+                f(span, nst, o2);
             }
             Rvalue::Aggregate(_, ops) => {
                 for op in ops {
-                    f(meta, nst, op);
+                    f(span, nst, op);
                 }
             }
             Rvalue::Repeat(op, _, _) => {
-                f(meta, nst, op);
+                f(span, nst, op);
             }
             Rvalue::Global(..) | Rvalue::Discriminant(..) | Rvalue::Ref(_, _) | Rvalue::Len(..) => {
                 // No operands: nothing to do
@@ -68,7 +68,7 @@ impl BlockData {
     }
 
     /// See [body_transform_operands]
-    pub fn transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand)>(
+    pub fn transform_operands<F: FnMut(&Span, &mut Vec<Statement>, &mut Operand)>(
         mut self,
         f: &mut F,
     ) -> Self {
@@ -77,10 +77,10 @@ impl BlockData {
 
         // Explore the operands in the statements
         for mut st in self.statements {
-            let meta = &st.meta;
+            let span = &st.span;
             match &mut st.content {
                 RawStatement::Assign(_, rvalue) => {
-                    BlockData::transform_rvalue_operands(meta, &mut nst, rvalue, f);
+                    BlockData::transform_rvalue_operands(span, &mut nst, rvalue, f);
                 }
                 RawStatement::FakeRead(_)
                 | RawStatement::SetDiscriminant(_, _)
@@ -94,14 +94,14 @@ impl BlockData {
         }
 
         // Explore the terminator
-        let meta = &self.terminator.meta;
+        let span = &self.terminator.span;
         match &mut self.terminator.content {
             RawTerminator::Switch { discr, targets: _ } => {
-                f(meta, &mut nst, discr);
+                f(span, &mut nst, discr);
             }
             RawTerminator::Call { call, target: _ } => {
                 for arg in &mut call.args {
-                    f(meta, &mut nst, arg);
+                    f(span, &mut nst, arg);
                 }
             }
             RawTerminator::Assert {
@@ -109,7 +109,7 @@ impl BlockData {
                 expected: _,
                 target: _,
             } => {
-                f(meta, &mut nst, cond);
+                f(span, &mut nst, cond);
             }
             RawTerminator::Panic
             | RawTerminator::Return
@@ -136,10 +136,10 @@ impl BlockData {
 /// block.
 /// Useful to implement a pass on operands (see e.g., [crate::extract_global_assignments]).
 ///
-/// The meta argument given to `f` is the meta argument of the [Terminator]
+/// The span argument given to `f` is the span argument of the [Terminator]
 /// containing the operand. `f` should explore the operand it receives, and
 /// push statements to the vector it receives as input.
-pub fn body_transform_operands<F: FnMut(&Meta, &mut Vec<Statement>, &mut Operand)>(
+pub fn body_transform_operands<F: FnMut(&Span, &mut Vec<Statement>, &mut Operand)>(
     blocks: &mut Vector<BlockId, BlockData>,
     f: &mut F,
 ) {
@@ -171,7 +171,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     }
 
     fn visit_statement(&mut self, st: &Statement) {
-        self.visit_meta(&st.meta);
+        self.visit_span(&st.span);
         self.visit_raw_statement(&st.content);
     }
 
@@ -212,11 +212,11 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     }
 
     fn visit_terminator(&mut self, st: &Terminator) {
-        self.visit_meta(&st.meta);
+        self.visit_span(&st.span);
         self.visit_raw_terminator(&st.content);
     }
 
-    fn visit_meta(&mut self, st: &Meta) {}
+    fn visit_span(&mut self, st: &Span) {}
 
     fn default_visit_raw_terminator(&mut self, st: &RawTerminator) {
         use RawTerminator::*;

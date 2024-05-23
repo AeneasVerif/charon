@@ -128,7 +128,7 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
             let msg = format!("Found an `assert` we don't recognize:\n{}", block.fmt_with_ctx("", &fmt_ctx));
             register_error_or_panic!(
                 ctx,
-                block.terminator.meta.span,
+                block.terminator.span.span,
                 msg
             );
             return

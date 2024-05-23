@@ -2,7 +2,7 @@
 //! reconstruction. In effect, this is a cleaned up version of MIR.
 pub use crate::gast::*;
 use crate::ids::{Map, Vector};
-use crate::meta::Meta;
+use crate::meta::Span;
 pub use crate::types::GlobalDeclId;
 use crate::types::*;
 pub use crate::ullbc_ast_utils::*;
@@ -41,7 +41,7 @@ pub enum RawStatement {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Statement {
-    pub meta: Meta,
+    pub span: Span,
     pub content: RawStatement,
 }
 
@@ -91,7 +91,7 @@ pub enum RawTerminator {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Terminator {
-    pub meta: Meta,
+    pub span: Span,
     pub content: RawTerminator,
 }
 
