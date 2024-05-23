@@ -44,7 +44,7 @@ impl Loc {
 pub fn combine_meta(m0: &Meta, m1: &Meta) -> Meta {
     // Merge the spans
     if m0.span.file_id == m1.span.file_id {
-        let span = Span {
+        let span = RawSpan {
             file_id: m0.span.file_id,
             beg: Loc::min(&m0.span.beg, &m1.span.beg),
             end: Loc::max(&m0.span.end, &m1.span.end),

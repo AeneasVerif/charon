@@ -93,8 +93,8 @@ let loc_of_json (js : json) : (loc, string) result =
         Ok { line; col }
     | _ -> Error "")
 
-let span_of_json (id_to_file : id_to_file_map) (js : json) :
-    (span, string) result =
+let raw_span_of_json (id_to_file : id_to_file_map) (js : json) :
+    (raw_span, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("file_id", file_id); ("beg", beg_loc); ("end", end_loc) ] ->
@@ -110,9 +110,9 @@ let meta_of_json (id_to_file : id_to_file_map) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("span", span); ("generated_from_span", generated_from_span) ] ->
-        let* span = span_of_json id_to_file span in
+        let* span = raw_span_of_json id_to_file span in
         let* generated_from_span =
-          option_of_json (span_of_json id_to_file) generated_from_span
+          option_of_json (raw_span_of_json id_to_file) generated_from_span
         in
         Ok { span; generated_from_span }
     | _ -> Error "")

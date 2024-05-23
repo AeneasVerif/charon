@@ -5,7 +5,7 @@ use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::ids::{Generator, MapGenerator, Vector};
 use crate::llbc_ast;
-use crate::meta::{self, Attribute, ItemMeta, Span};
+use crate::meta::{self, Attribute, ItemMeta, RawSpan};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Meta, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
@@ -465,7 +465,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    pub fn translate_span(&mut self, rspan: hax::Span) -> meta::Span {
+    pub fn translate_span(&mut self, rspan: hax::Span) -> meta::RawSpan {
         let filename = meta::convert_filename(&rspan.filename);
         let file_id = match &filename {
             FileName::NotReal(_) => {
@@ -479,7 +479,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let end = meta::convert_loc(rspan.hi);
 
         // Put together
-        meta::Span {
+        meta::RawSpan {
             file_id,
             beg,
             end,
@@ -576,7 +576,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Returns the visibility of the item/field/etc. Returns `None` for items that don't have a
     /// visibility, like impl blocks.
-    pub(crate) fn translate_visibility_from_rid(&mut self, id: DefId, span: Span) -> Option<bool> {
+    pub(crate) fn translate_visibility_from_rid(
+        &mut self,
+        id: DefId,
+        span: RawSpan,
+    ) -> Option<bool> {
         use rustc_hir::def::DefKind::*;
         let def_kind = self.tcx.def_kind(id);
         match def_kind {
