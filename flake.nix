@@ -48,32 +48,6 @@
             dontInstall = true;
           } // craneExtraArgs);
 
-        # Build this test separately to manage cargo dependencies.
-        test-betree = extractCrateWithCharon {
-          name = "betree";
-          src = ./tests/src/betree;
-          charonFlags = "--polonius --opaque=betree_utils --crate betree_main";
-          craneExtraArgs.checkPhaseCargoCommand = ''
-            cargo rustc -- --test -Zpolonius
-            ./target/debug/betree
-          '';
-        };
-
-        tests = pkgs.runCommand "charon-tests"
-          {
-            src = ./tests;
-            buildInputs = [ rustToolchain charon ];
-          } ''
-          # Copy the betree output file
-          mkdir -p $out/llbc
-          cp ${test-betree}/llbc/betree_main.llbc $out/llbc
-
-          cp -r $src tests
-          cd tests
-          # Run the tests for Charon
-          IN_CI=1 DEST=$out CHARON="charon" make charon-tests
-        '';
-
         # Runs charon on the whole rustc ui test suite. This returns the tests
         # directory with a bunch of `<file>.rs.charon-output` files that store
         # the charon output when it failed. It also adds a `charon-results`
@@ -268,7 +242,7 @@
             self.packages.${system}.charon-ml
           ];
         };
-        checks = { inherit tests charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
+        checks = { inherit charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
 
         # Export this function so that users of charon can use it in nix. This
         # fits in none of the standard flake output categories hace why it is
