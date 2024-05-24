@@ -26,7 +26,7 @@ class ['self] map_statement_base =
   end
 
 type statement = {
-  meta : meta;  (** The statement meta-data *)
+  span : span;  (** The statement span *)
   content : raw_statement;  (** The statement itself *)
 }
 
@@ -78,7 +78,7 @@ type switch =
       }]
 
 type terminator = {
-  meta : meta;  (** The terminator meta-data *)
+  span : span;  (** The terminator span *)
   content : raw_terminator;  (** The terminator itself *)
 }
 

@@ -5,7 +5,7 @@ open Expressions
 open Meta
 
 type statement = {
-  meta : meta;  (** The statement meta-data *)
+  span : span;  (** The statement span *)
   content : raw_statement;  (** The statement itself *)
 }
 

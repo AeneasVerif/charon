@@ -13,10 +13,10 @@ let rec statement_of_json (id_to_file : id_to_file_map) (js : json) :
     (statement, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("meta", meta); ("content", content) ] ->
-        let* meta = meta_of_json id_to_file meta in
+    | `Assoc [ ("span", span); ("content", content) ] ->
+        let* span = span_of_json id_to_file span in
         let* content = raw_statement_of_json content in
-        Ok ({ meta; content } : statement)
+        Ok ({ span; content } : statement)
     | _ -> Error "")
 
 and raw_statement_of_json (js : json) : (raw_statement, string) result =
@@ -73,10 +73,10 @@ let rec terminator_of_json (id_to_file : id_to_file_map) (js : json) :
     (terminator, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("meta", meta); ("content", content) ] ->
-        let* meta = meta_of_json id_to_file meta in
+    | `Assoc [ ("span", span); ("content", content) ] ->
+        let* span = span_of_json id_to_file span in
         let* content = raw_terminator_of_json content in
-        Ok ({ meta; content } : terminator)
+        Ok ({ span; content } : terminator)
     | _ -> Error "")
 
 and raw_terminator_of_json (js : json) : (raw_terminator, string) result =

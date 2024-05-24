@@ -585,21 +585,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
 
                 // Translate the span information
-                let meta = self.translate_meta_from_rspan(field_def.span);
+                let span = self.translate_span_from_rspan(field_def.span);
 
                 // Store the field
                 let field = Field {
-                    meta,
+                    span,
                     name: field_name.clone(),
                     ty,
                 };
                 fields.push(field);
             }
 
-            let meta = self.translate_meta_from_rspan(var_def.span);
+            let span = self.translate_span_from_rspan(var_def.span);
             let variant_name = var_def.name;
             variants.push(Variant {
-                meta,
+                span,
                 name: variant_name,
                 fields,
                 discriminant,

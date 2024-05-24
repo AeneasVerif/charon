@@ -2,7 +2,7 @@
 
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{RawStatement, Statement};
-use crate::meta::combine_meta;
+use crate::meta::combine_span;
 use crate::translate_ctx::TransformCtx;
 use take_mut::take;
 
@@ -13,7 +13,7 @@ fn transform_st(s: &mut Statement) {
                 let (s1, s2) = s.content.to_sequence();
                 Statement {
                     content: s2.content,
-                    meta: combine_meta(&s1.meta, &s2.meta),
+                    span: combine_span(&s1.span, &s2.span),
                 }
             })
         }

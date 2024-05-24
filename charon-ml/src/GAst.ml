@@ -125,7 +125,7 @@ type item_kind =
 [@@deriving show]
 
 type 'body gexpr_body = {
-  meta : meta;
+  span : span;
   arg_count : int;
   locals : var list;
       (** The locals can be indexed with {!Expressions.VarId.id}.

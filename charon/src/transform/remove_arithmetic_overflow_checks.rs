@@ -73,7 +73,7 @@ impl RemoveDynChecks {
                                     let (_s1, s2) = s1.content.to_sequence();
                                     let (_s2, s3) = s2.content.to_sequence();
                                     Statement {
-                                        meta: s0.meta,
+                                        span: s0.span,
                                         content: RawStatement::Sequence(s0, s3),
                                     }
                                 });

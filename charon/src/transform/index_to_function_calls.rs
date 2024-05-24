@@ -5,7 +5,7 @@ use crate::formatter::{Formatter, IntoFormatter};
 use crate::gast::{Call, GenericArgs, Var};
 use crate::ids::Vector;
 use crate::llbc_ast::*;
-use crate::meta::Meta;
+use crate::meta::Span;
 use crate::translate_ctx::TransformCtx;
 use crate::types::*;
 use crate::values::VarId;
@@ -22,8 +22,8 @@ use std::mem::replace;
 struct Transform<'a> {
     locals: &'a mut Vector<VarId, Var>,
     statements: Vec<Statement>,
-    /// Meta information of the outer statement
-    meta: Option<Meta>,
+    /// Span information of the outer statement
+    span: Option<Span>,
 }
 
 impl<'a> Transform<'a> {
@@ -85,7 +85,7 @@ impl<'a> Transform<'a> {
                 );
                 let borrow_st = Statement {
                     content: borrow_st,
-                    meta: self.meta.unwrap(),
+                    span: self.span.unwrap(),
                 };
                 self.statements.push(borrow_st);
 
@@ -109,7 +109,7 @@ impl<'a> Transform<'a> {
                 };
                 let index_st = Statement {
                     content: RawStatement::Call(index_call),
-                    meta: self.meta.unwrap(),
+                    span: self.span.unwrap(),
                 };
                 self.statements.push(index_st);
 
@@ -188,10 +188,10 @@ impl<'a> MutAstVisitor for Transform<'a> {
     fn merge(&mut self) {}
 
     fn visit_statement(&mut self, st: &mut Statement) {
-        // Retrieve the meta-information
-        self.meta = Option::Some(st.meta);
+        // Retrieve the span information
+        self.span = Option::Some(st.span);
         self.visit_raw_statement(&mut st.content);
-        self.meta = Option::None;
+        self.span = Option::None;
     }
 
     fn visit_raw_statement(&mut self, st: &mut RawStatement) {
@@ -228,7 +228,7 @@ fn transform_st(locals: &mut Vector<VarId, Var>, s: &mut Statement) -> Option<Ve
     let mut visitor = Transform {
         locals,
         statements: Vec::new(),
-        meta: Option::None,
+        span: Option::None,
     };
     visitor.visit_statement(s);
 

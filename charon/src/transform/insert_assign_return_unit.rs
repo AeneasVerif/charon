@@ -22,8 +22,8 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
             AggregateKind::Adt(TypeId::Tuple, None, GenericArgs::empty()),
             Vec::new(),
         );
-        let assign_st = Statement::new(st.meta, RawStatement::Assign(ret_place, unit_value));
-        let ret_st = Statement::new(st.meta, RawStatement::Return);
+        let assign_st = Statement::new(st.span, RawStatement::Assign(ret_place, unit_value));
+        let ret_st = Statement::new(st.span, RawStatement::Return);
         st.content = RawStatement::Sequence(Box::new(assign_st), Box::new(ret_st));
     };
     None

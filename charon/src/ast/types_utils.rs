@@ -715,7 +715,7 @@ pub trait TypeVisitor {
     }
 
     fn visit_trait_clause(&mut self, c: &TraitClause) {
-        let TraitClause { clause_id, meta: _, trait_id, generics } = c;
+        let TraitClause { clause_id, span: _, trait_id, generics } = c;
         self.visit_trait_clause_id(clause_id);
         self.visit_trait_decl_id(trait_id);
         self.visit_generic_args(generics);

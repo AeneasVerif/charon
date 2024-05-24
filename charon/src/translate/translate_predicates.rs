@@ -2,7 +2,7 @@ use crate::common::*;
 use crate::formatter::AstFormatter;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
-use crate::meta::Meta;
+use crate::meta::Span;
 use crate::translate_ctx::*;
 use crate::types::*;
 use hax_frontend_exporter as hax;
@@ -37,7 +37,7 @@ pub(crate) struct NonLocalTraitClause {
     pub clause_id: TraitInstanceId,
     /// [Some] if this is the top clause, [None] if this is about a parent/
     /// associated type clause.
-    pub meta: Option<Meta>,
+    pub span: Option<Span>,
     pub trait_id: TraitDeclId,
     pub generics: GenericArgs,
 }
@@ -47,7 +47,7 @@ impl NonLocalTraitClause {
         if let TraitInstanceId::Clause(id) = &self.clause_id {
             Some(TraitClause {
                 clause_id: *id,
-                meta: self.meta,
+                span: self.span,
                 trait_id: self.trait_id,
                 generics: self.generics.clone(),
             })
@@ -59,7 +59,7 @@ impl NonLocalTraitClause {
     pub(crate) fn to_trait_clause_with_id(&self, clause_id: TraitClauseId) -> TraitClause {
         TraitClause {
             clause_id,
-            meta: self.meta,
+            span: self.span,
             trait_id: self.trait_id,
             generics: self.generics.clone(),
         }
@@ -435,13 +435,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Compute the current clause id
         let clause_id = (self.trait_instance_id_gen)();
-        let meta = self.translate_meta_from_rspan(hspan.clone());
+        let span = self.translate_span_from_rspan(hspan.clone());
 
         // Immediately register the clause (we may need to refer to it in the parent/
         // item clauses)
         let trait_clause = NonLocalTraitClause {
             clause_id,
-            meta: Some(meta),
+            span: Some(span),
             trait_id,
             generics,
         };

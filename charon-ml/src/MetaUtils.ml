@@ -11,7 +11,7 @@ let loc_max (l0 : loc) (l1 : loc) : loc =
   else l1
 
 (** See the comments in [meta_utils.rs] in Charon. *)
-let combine_meta (m0 : meta) (m1 : meta) : meta =
+let combine_span (m0 : span) (m1 : span) : span =
   assert (m0.span.file = m1.span.file);
   let span =
     {
