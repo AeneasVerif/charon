@@ -31,7 +31,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.current_dir(&test_case.dir);
     cmd.arg("--print-llbc");
     cmd.arg("--dest-file");
-    cmd.arg(test_case.expected.canonicalize()?.with_extension("llbc"));
+    cmd.arg(test_case.expected.with_extension("llbc"));
     for arg in &test_case.charon_args {
         cmd.arg(arg);
     }
@@ -56,7 +56,7 @@ fn cargo() -> Result<(), Box<dyn Error>> {
         Action::Overwrite
     };
 
-    let root: PathBuf = TESTS_DIR.into();
+    let root: PathBuf = PathBuf::from(TESTS_DIR).canonicalize()?;
     let mktest = |name: &str, dir: PathBuf, charon_args: &[String]| Test {
         name: name.to_owned(),
         kind: "".into(),
@@ -69,6 +69,7 @@ fn cargo() -> Result<(), Box<dyn Error>> {
         },
     };
     let tests = vec![
+        mktest("build-script", root.join("build-script"), &[]),
         mktest("dependencies", root.join("dependencies"), &[]),
         mktest(
             "workspace",

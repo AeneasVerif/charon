@@ -5,8 +5,7 @@
 charon/target
 charon/attributes/target
 charon/macros/target
-charon/tests/cargo/dependencies/target
-charon/tests/cargo/workspace/target
+charon/tests/cargo/*/target
 tests/target
 tests/src/betree/target
 

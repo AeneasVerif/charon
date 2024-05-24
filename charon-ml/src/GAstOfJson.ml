@@ -438,6 +438,13 @@ and trait_instance_id_of_json (js : json) : (trait_instance_id, string) result =
         let* fid = FunDeclId.id_of_json fid in
         let* generics = generic_args_of_json generics in
         Ok (Closure (fid, generics))
+    | `Assoc [ ("Unsolved", `List [ decl_id; generics ]) ] ->
+        let* decl_id = TraitDeclId.id_of_json decl_id in
+        let* generics = generic_args_of_json generics in
+        Ok (Unsolved (decl_id, generics))
+    | `Assoc [ ("Unknown", str) ] ->
+        let* str = string_of_json str in
+        Ok (UnknownTrait str)
     | _ -> Error "")
 
 let field_of_json (id_to_file : id_to_file_map) (js : json) :

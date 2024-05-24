@@ -330,6 +330,7 @@ and trait_instance_id =
        *)
   | FnPointer of ty
   | Closure of fun_decl_id * generic_args
+  | Unsolved of trait_decl_id * generic_args
   | UnknownTrait of string
       (** Not present in the Rust version of Charon.
 

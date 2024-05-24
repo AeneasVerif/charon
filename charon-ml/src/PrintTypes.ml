@@ -237,6 +237,11 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
       ^ fun_decl_id_to_string env fid
       ^ generic_args_to_string env generics
       ^ ")"
+  | Unsolved (decl_id, generics) ->
+      "unsolved("
+      ^ trait_decl_id_to_string env decl_id
+      ^ generic_args_to_string env generics
+      ^ ")"
   | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
 and impl_elem_kind_to_string (env : ('a, 'b) fmt_env) (k : impl_elem_kind) :

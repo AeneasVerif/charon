@@ -139,27 +139,37 @@ impl RunCompilerNormallyCallbacks {
     }
 }
 
-/// If a command-line option matches `find_arg`, then apply the predicate `pred` on its value. If
-/// true, then return it. The parameter is assumed to be either `--arg=value` or `--arg value`.
-/// Rem.: this function comes from Clippy <https://github.com/rust-lang/rust-clippy/blob/42bdfa23d33041642a32950cb39ad92be501a18d/src/driver.rs#L30>.
-pub fn arg_value<'a, T: Deref<Target = str>>(
+/// Returns the values of the command-line options that match `find_arg`. The options are assumed
+/// to be of the form `--arg=value` or `--arg value`.
+pub fn arg_values<'a, T: Deref<Target = str>>(
     args: &'a [T],
-    find_arg: &str,
-    pred: impl Fn(&str) -> bool,
-) -> Option<&'a str> {
-    let mut args = args.iter().map(Deref::deref);
-    while let Some(arg) = args.next() {
-        let mut arg = arg.splitn(2, '=');
-        if arg.next() != Some(find_arg) {
-            continue;
-        }
-
-        match arg.next().or_else(|| args.next()) {
-            Some(v) if pred(v) => return Some(v),
-            _ => {}
+    needle: &'a str,
+) -> impl Iterator<Item = &'a str> {
+    struct ArgFilter<'a, T> {
+        args: std::slice::Iter<'a, T>,
+        needle: &'a str,
+    }
+    impl<'a, T: Deref<Target = str>> Iterator for ArgFilter<'a, T> {
+        type Item = &'a str;
+        fn next(&mut self) -> Option<Self::Item> {
+            while let Some(arg) = self.args.next() {
+                let mut split_arg = arg.splitn(2, '=');
+                if split_arg.next() == Some(self.needle) {
+                    return match split_arg.next() {
+                        // `--arg=value` form
+                        arg @ Some(_) => arg,
+                        // `--arg value` form
+                        None => self.args.next().map(|x| x.deref()),
+                    };
+                }
+            }
+            None
         }
     }
-    None
+    ArgFilter {
+        args: args.iter(),
+        needle,
+    }
 }
 
 /// Given a list of arguments, return the index of the source rust file.
