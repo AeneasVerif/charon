@@ -1,0 +1,79 @@
+# Final LLBC before serialization:
+
+trait test_crate::Ops<Self, const K : usize>
+{
+    fn of_usize = test_crate::Ops::of_usize<Self, const K : usize>
+}
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+fn test_crate::Ops::of_usize<Self, const K : usize>(@1: usize) -> Self
+
+fn test_crate::test::closure<'_0, T, const K : usize>(@1: &'_0 mut (()), @2: usize) -> T
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::Ops<T, const K : usize>,
+{
+    let @0: T; // return
+    let state@1: &'_0 mut (()); // arg #1
+    let i@2: usize; // arg #2
+    let @3: usize; // anonymous local
+
+    storage_live(@3)
+    @3 := copy (i@2)
+    @0 := @TraitClause1::of_usize(move (@3))
+    storage_dead(@3)
+    return
+}
+
+#[lang_item("tuple_trait")]
+pub trait core::marker::Tuple<Self>
+
+#[lang_item("fn_once")]
+pub trait core::ops::function::FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    type Output
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
+}
+
+#[lang_item("fn_mut")]
+pub trait core::ops::function::FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
+}
+
+pub fn core::array::from_fn<T, F, const N : usize>(@1: F) -> Array<T, const N : usize>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<F>,
+    [@TraitClause2]: core::ops::function::FnMut<F, (usize)>,
+    @TraitClause2::parent_clause0::Output = T,
+
+fn test_crate::test<T, const K : usize>() -> Array<T, 1 : usize>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::Ops<T, const K : usize>,
+{
+    let @0: Array<T, 1 : usize>; // return
+    let @1: test_crate::test::closure; // anonymous local
+
+    storage_live(@1)
+    @1 := {test_crate::test::closure<T, const K : usize>[@TraitClause0, @TraitClause1]} {}
+    @0 := core::array::from_fn<T, test_crate::test::closure, 1 : usize>[@TraitClause0, core::marker::Sized<test_crate::test::closure>, core::ops::function::FnMut<test_crate::test::closure, (usize)>](move (@1))
+    storage_dead(@1)
+    return
+}
+
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+
+
