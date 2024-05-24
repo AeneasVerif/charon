@@ -147,19 +147,12 @@ pub fn test_map_option3(x: Option<u32>) -> Option<u32> {
     let f: fn(u32) -> u32 = |x| x + 1;
     map_option(x, f)
 }*/
-
 pub fn test_array_map(x: [i32; 256]) -> [i32; 256] {
     x.map(|v| v)
 }
 
-struct Foo<'a, T>(&'a T);
-
-impl<'a, T> Foo<'a, T>
-where
-    T: Clone,
-{
-    pub fn test_nested_closures<'b>(x: &'a &'b T) -> T {
-        let clo = || || || (*x).clone();
-        clo()()()
-    }
+fn test_fnmut_with_ref() {
+    let mut sum = 0_usize;
+    let mut closure = |x: &usize| sum += *x;
+    closure(&15);
 }

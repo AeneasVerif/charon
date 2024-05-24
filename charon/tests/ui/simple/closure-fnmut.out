@@ -1,0 +1,99 @@
+# Final LLBC before serialization:
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+#[lang_item("tuple_trait")]
+pub trait core::marker::Tuple<Self>
+
+#[lang_item("fn_once")]
+pub trait core::ops::function::FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    type Output
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
+}
+
+#[lang_item("fn_mut")]
+pub trait core::ops::function::FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
+}
+
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+
+fn test_crate::apply_to_zero_mut<impl FnMut(u8) -> u8>(@1: impl FnMut(u8) -> u8) -> u8
+where
+    [@TraitClause0]: core::marker::Sized<impl FnMut(u8) -> u8>,
+    [@TraitClause1]: core::ops::function::FnMut<impl FnMut(u8) -> u8, (u8)>,
+    @TraitClause1::parent_clause0::Output = u8,
+{
+    let @0: u8; // return
+    let f@1: impl FnMut(u8) -> u8; // arg #1
+    let @2: &'_ mut (impl FnMut(u8) -> u8); // anonymous local
+    let @3: (u8); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut f@1
+    storage_live(@3)
+    @3 := (const (0 : u8))
+    @0 := @TraitClause1::call_mut<'_>(move (@2), move (@3))
+    storage_dead(@3)
+    storage_dead(@2)
+    drop f@1
+    return
+}
+
+fn test_crate::main::closure<'_0, '_1>(@1: &'_0 mut ((&'_1 mut (u8))), @2: u8) -> u8
+{
+    let @0: u8; // return
+    let state@1: &'_0 mut ((&'_1 mut (u8))); // arg #1
+    let x@2: u8; // arg #2
+    let @3: u8; // anonymous local
+    let @4: u8; // anonymous local
+
+    *((*(state@1)).0) := copy (*((*(state@1)).0)) + const (1 : u8)
+    storage_live(@3)
+    @3 := copy (x@2)
+    storage_live(@4)
+    @4 := copy (*((*(state@1)).0))
+    @0 := copy (@3) + copy (@4)
+    storage_dead(@4)
+    storage_dead(@3)
+    return
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let z@1: u8; // local
+    let @2: u8; // anonymous local
+    let @3: test_crate::main::closure; // anonymous local
+    let @4: &'_ mut (u8); // anonymous local
+
+    storage_live(z@1)
+    z@1 := const (3 : u8)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    @4 := &mut z@1
+    @3 := {test_crate::main::closure} {move (@4)}
+    storage_dead(@4)
+    @2 := test_crate::apply_to_zero_mut<test_crate::main::closure>[core::marker::Sized<test_crate::main::closure>, core::ops::function::FnMut<test_crate::main::closure, (u8)>](move (@3))
+    storage_dead(@3)
+    storage_dead(@2)
+    @0 := ()
+    storage_dead(z@1)
+    @0 := ()
+    return
+}
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+
+

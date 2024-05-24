@@ -1,0 +1,94 @@
+# Final LLBC before serialization:
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+#[lang_item("tuple_trait")]
+pub trait core::marker::Tuple<Self>
+
+#[lang_item("fn_once")]
+pub trait core::ops::function::FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    type Output
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
+}
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+fn test_crate::apply_to_zero_once<impl FnOnce(u8) -> u8>(@1: impl FnOnce(u8) -> u8) -> u8
+where
+    [@TraitClause0]: core::marker::Sized<impl FnOnce(u8) -> u8>,
+    [@TraitClause1]: core::ops::function::FnOnce<impl FnOnce(u8) -> u8, (u8)>,
+    @TraitClause1::Output = u8,
+{
+    let @0: u8; // return
+    let f@1: impl FnOnce(u8) -> u8; // arg #1
+    let @2: impl FnOnce(u8) -> u8; // anonymous local
+    let @3: (u8); // anonymous local
+
+    storage_live(@2)
+    @2 := move (f@1)
+    storage_live(@3)
+    @3 := (const (0 : u8))
+    @0 := @TraitClause1::call_once(move (@2), move (@3))
+    storage_dead(@3)
+    storage_dead(@2)
+    drop f@1
+    return
+}
+
+struct test_crate::NotCopy = {}
+
+#[lang_item("mem_drop")]
+pub fn core::mem::drop<T>(@1: T)
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+
+fn test_crate::main::closure(@1: (test_crate::NotCopy), @2: u8) -> u8
+{
+    let @0: u8; // return
+    let state@1: (test_crate::NotCopy); // arg #1
+    let x@2: u8; // arg #2
+    let @3: (); // anonymous local
+    let @4: test_crate::NotCopy; // anonymous local
+    let @5: u8; // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    @4 := move ((state@1).0)
+    @3 := core::mem::drop<test_crate::NotCopy>[core::marker::Sized<test_crate::NotCopy>](move (@4))
+    storage_dead(@4)
+    storage_dead(@3)
+    storage_live(@5)
+    @5 := copy (x@2)
+    @0 := copy (@5) + const (1 : u8)
+    storage_dead(@5)
+    return
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let z@1: test_crate::NotCopy; // local
+    let @2: u8; // anonymous local
+    let @3: test_crate::main::closure; // anonymous local
+
+    storage_live(z@1)
+    z@1 := test_crate::NotCopy {  }
+    storage_live(@2)
+    storage_live(@3)
+    @3 := {test_crate::main::closure} {move (z@1)}
+    @2 := test_crate::apply_to_zero_once<test_crate::main::closure>[core::marker::Sized<test_crate::main::closure>, core::ops::function::FnOnce<test_crate::main::closure, (u8)> where Output  = u8](move (@3))
+    storage_dead(@3)
+    storage_dead(@2)
+    @0 := ()
+    storage_dead(z@1)
+    @0 := ()
+    return
+}
+
+
+
