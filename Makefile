@@ -20,7 +20,7 @@ format:
 charon-ml/src/CharonVersion.ml: charon/Cargo.toml
 	echo '(* This is an automatically generated file, generated from `charon/Cargo.toml`. *)' > "$@"
 	echo '(* To re-generate this file, rune `make` in the root directory *)' >> "$@"
-	echo -n 'let supported_charon_version = ' >> "$@"
+	printf 'let supported_charon_version = ' >> "$@"
 	grep '^version =' charon/Cargo.toml | head -1 | sed 's/^version = \(".*"\)/\1/' >> "$@"
 
 # Build the project in release mode, after formatting the code
