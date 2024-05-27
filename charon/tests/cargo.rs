@@ -71,6 +71,7 @@ fn cargo() -> Result<(), Box<dyn Error>> {
     let tests = vec![
         mktest("build-script", root.join("build-script"), &[]),
         mktest("dependencies", root.join("dependencies"), &[]),
+        mktest("toml", root.join("toml"), &[]),
         mktest(
             "workspace",
             root.join("workspace").join("crate2"),

@@ -38,6 +38,7 @@
 mod cli_options;
 #[path = "../../logger.rs"]
 mod logger;
+mod toml_config;
 
 use anyhow::bail;
 use clap::Parser;
@@ -131,24 +132,9 @@ pub fn main() -> anyhow::Result<()> {
     logger::initialize_logger();
 
     // Parse the command-line
-    let options = CliOpts::parse();
+    let mut options = CliOpts::parse();
     trace!("Arguments: {:?}", std::env::args());
-
-    // Check that the options are meaningful
-    assert!(
-        !options.lib || options.bin.is_none(),
-        "Can't use --lib and --bin at the same time"
-    );
-
-    assert!(
-        !options.mir_promoted || !options.mir_optimized,
-        "Can't use --mir_promoted and --mir_optimized at the same time"
-    );
-
-    assert!(
-        !options.abort_on_error || !options.errors_as_warnings,
-        "Can't use --abort-on-error and --errors-as-warnings at the same time"
-    );
+    options.validate();
 
     // FIXME: when using rustup, ensure the toolchain has the right components installed.
     let use_rustup = which::which("rustup").is_ok();
@@ -191,6 +177,10 @@ pub fn main() -> anyhow::Result<()> {
             .wait()
             .expect("failed to wait for charon-driver?")
     } else {
+        if let Some(toml) = toml_config::read_toml() {
+            options = toml.apply(options);
+            options.validate();
+        }
         let mut cmd = cargo_cmd();
 
         // Tell cargo to use the driver for all the crates in the workspace. There's no option for
