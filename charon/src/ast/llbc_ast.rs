@@ -9,7 +9,7 @@
 pub use crate::gast::*;
 use crate::ids::Map;
 pub use crate::llbc_ast_utils::*;
-use crate::meta::Meta;
+use crate::meta::Span;
 use crate::types::*;
 pub use crate::ullbc_ast::{Call, FunDeclId, GlobalDeclId, Var};
 use crate::values::*;
@@ -63,7 +63,7 @@ pub enum RawStatement {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Statement {
-    pub meta: Meta,
+    pub span: Span,
     pub content: RawStatement,
 }
 

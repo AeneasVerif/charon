@@ -50,13 +50,13 @@ impl Graph {
     }
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl ErrorCtx<'_> {
     /// In case errors happened when extracting the definitions coming from
     /// the external dependencies, print a detailed report to explain
     /// to the user which dependencies were problematic, and where they
     /// are used in the code.
     pub(crate) fn report_external_deps_errors(&self) {
-        if self.error_count == 0 {
+        if !self.has_errors() {
             return;
         }
 

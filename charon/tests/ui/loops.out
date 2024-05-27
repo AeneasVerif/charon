@@ -1588,30 +1588,30 @@ trait core::ops::index::IndexMut<Self, Idx>
     fn index_mut : core::ops::index::IndexMut::index_mut
 }
 
-fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#13}::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>), @2: I) -> &'_0 (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#13}<T, I, A>[@TraitClause0]::Output)
+fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>), @2: I) -> &'_0 (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A>[@TraitClause0]::Output)
 where
     // Inherited clauses:
     [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 
-impl<T, I, A> alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#13}<T, I, A> : core::ops::index::Index<alloc::vec::Vec<T, A>, I>
+impl<T, I, A> alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A> : core::ops::index::Index<alloc::vec::Vec<T, A>, I>
 where
     [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
     type Output = @TraitClause0::Output with []
-    fn index = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#13}::index
+    fn index = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}::index
 }
 
-fn alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#14}::index_mut<'_0, T, I, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>), @2: I) -> &'_0 mut (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#13}<T, I, A>[@TraitClause0]::Output)
+fn alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#13}::index_mut<'_0, T, I, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>), @2: I) -> &'_0 mut (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A>[@TraitClause0]::Output)
 where
     // Inherited clauses:
     [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 
-impl<T, I, A> alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#14}<T, I, A> : core::ops::index::IndexMut<alloc::vec::Vec<T, A>, I>
+impl<T, I, A> alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#13}<T, I, A> : core::ops::index::IndexMut<alloc::vec::Vec<T, A>, I>
 where
     [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#13}<T, I, A>[@TraitClause0]
-    fn index_mut = alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#14}::index_mut
+    parent_clause0 = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A>[@TraitClause0]
+    fn index_mut = alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#13}::index_mut
 }
 
 impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for usize} : core::slice::index::private_slice_index::Sealed<usize>
@@ -1677,7 +1677,7 @@ fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Globa
         }
         @9 := &mut *(v@1)
         @10 := copy (i@2)
-        @8 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#14}<u32, usize, alloc::alloc::Global>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize#2}<u32>]::index_mut(move (@9), move (@10))
+        @8 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#13}<u32, usize, alloc::alloc::Global>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize#2}<u32>]::index_mut(move (@9), move (@10))
         drop @10
         drop @9
         *(@8) := const (0 : u32)

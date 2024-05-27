@@ -2,7 +2,7 @@ use crate::common::*;
 use crate::formatter::AstFormatter;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
-use crate::meta::Meta;
+use crate::meta::Span;
 use crate::translate_ctx::*;
 use crate::types::*;
 use hax_frontend_exporter as hax;
@@ -37,7 +37,7 @@ pub(crate) struct NonLocalTraitClause {
     pub clause_id: TraitInstanceId,
     /// [Some] if this is the top clause, [None] if this is about a parent/
     /// associated type clause.
-    pub meta: Option<Meta>,
+    pub span: Option<Span>,
     pub trait_id: TraitDeclId,
     pub generics: GenericArgs,
 }
@@ -47,7 +47,7 @@ impl NonLocalTraitClause {
         if let TraitInstanceId::Clause(id) = &self.clause_id {
             Some(TraitClause {
                 clause_id: *id,
-                meta: self.meta,
+                span: self.span,
                 trait_id: self.trait_id,
                 generics: self.generics.clone(),
             })
@@ -59,7 +59,7 @@ impl NonLocalTraitClause {
     pub(crate) fn to_trait_clause_with_id(&self, clause_id: TraitClauseId) -> TraitClause {
         TraitClause {
             clause_id,
-            meta: self.meta,
+            span: self.span,
             trait_id: self.trait_id,
             generics: self.generics.clone(),
         }
@@ -106,10 +106,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // **IMPORTANT**: we do NOT want to use [TyCtxt::predicates_of].
                 let preds = tcx.predicates_defined_on(parent_id).sinto(&self.hax_state);
                 for (pred, span) in preds.predicates {
-                    if let hax::PredicateKind::Clause(hax::Clause {
-                        kind: hax::ClauseKind::Trait(clause),
-                        ..
-                    }) = &pred.value
+                    if let hax::PredicateKind::Clause(hax::ClauseKind::Trait(clause)) =
+                        &pred.kind.value
                     {
                         if self
                             .translate_trait_decl_id(
@@ -174,80 +172,53 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // normalize them before.
             let predicates = tcx.predicates_defined_on(def_id);
             parent = predicates.parent.sinto(&self.hax_state);
-            let predicates: Vec<_> = predicates.predicates.iter().collect();
+            let clauses: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> =
+                predicates.predicates.iter().collect();
             trace!(
                 "TyCtxt::predicates_defined_on({:?}):\n{:?}",
                 def_id,
-                predicates
+                clauses
             );
 
-            let trait_clauses: Vec<&(rustc_middle::ty::Predicate<'_>, rustc_span::Span)> =
-                predicates
-                    .into_iter()
-                    .filter(|x| {
-                        matches!(
-                            &x.0.kind().skip_binder(),
-                            rustc_middle::ty::PredicateKind::Clause(
-                                rustc_middle::ty::Clause::Trait(_)
-                            )
-                        )
-                    })
-                    .collect();
-
-            let trait_clauses: Vec<(rustc_middle::ty::TraitPredicate<'_>, rustc_span::Span)> =
-                trait_clauses
-                    .into_iter()
-                    .map(|(pred, span)| {
-                        if let Some(pred) = &pred.kind().no_bound_vars() {
-                            if let rustc_middle::ty::PredicateKind::Clause(
-                                rustc_middle::ty::Clause::Trait(tr),
-                            ) = pred
-                            {
-                                // Normalize the trait clause
-                                let tr = tcx.normalize_erasing_regions(param_env, *tr);
-                                Ok((tr, *span))
-                            } else {
-                                unreachable!();
-                            }
-                        } else {
-                            // Report an error
-                            error_or_panic!(self, *span, "Predicates with bound regions (i.e., `for<'a> ...`) are not supported yet")
-                        }
-                    })
-                    .try_collect()?;
-
-            let trait_preds: Vec<_> = trait_clauses
-                .iter()
-                .map(|(tr, span)| {
-                    let value = hax::PredicateKind::Clause(hax::Clause {
-                        kind: hax::ClauseKind::Trait(tr.sinto(&self.hax_state)),
-                        // Remark: we introduce a dummy id...
-                        id: 0,
-                    });
-                    let pred = hax::Binder {
-                        value,
-                        bound_vars: Vec::new(),
-                    };
-                    (pred, span.sinto(&self.hax_state))
+            let trait_clauses: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> = clauses
+                .into_iter()
+                .filter(|x| {
+                    matches!(
+                        &x.0.kind().skip_binder(),
+                        rustc_middle::ty::ClauseKind::Trait(_)
+                    )
                 })
                 .collect();
+
+            let trait_preds: Vec<(hax::Predicate, hax::Span)> = trait_clauses
+                .into_iter()
+                .map(|(clause, span)| {
+                    if clause.kind().no_bound_vars().is_none() {
+                        // Report an error
+                        error_or_panic!(self, *span, "Predicates with bound regions (i.e., `for<'a> ...`) are not supported yet")
+                    }
+                    // Normalize the trait clause
+                    let pred = tcx.normalize_erasing_regions(param_env, clause.as_predicate());
+                    Ok((pred.sinto(&self.hax_state), span.sinto(&self.hax_state)))
+                })
+                .try_collect()?;
+
             trait_preds
         };
 
         let non_trait_preds = {
             let predicates = tcx.predicates_of(def_id);
-            let predicates: Vec<_> = predicates.predicates.iter().collect();
+            let predicates: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> =
+                predicates.predicates.iter().collect();
             trace!("TyCtxt::predicates_of({:?}):\n{:?}", def_id, predicates);
 
-            let non_trait_preds: Vec<&(rustc_middle::ty::Predicate<'_>, rustc_span::Span)> =
+            let non_trait_preds: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> =
                 predicates
                     .into_iter()
                     .filter(|x| {
                         !(matches!(
                             &x.0.kind().skip_binder(),
-                            rustc_middle::ty::PredicateKind::Clause(
-                                rustc_middle::ty::Clause::Trait(_)
-                            )
+                            rustc_middle::ty::ClauseKind::Trait(_)
                         ))
                     })
                     .collect();
@@ -258,7 +229,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             );
             let non_trait_preds: Vec<_> = non_trait_preds
                 .iter()
-                .map(|(pred, span)| (pred.sinto(&self.hax_state), span.sinto(&self.hax_state)))
+                .map(|(pred, span)| {
+                    (
+                        pred.as_predicate().sinto(&self.hax_state),
+                        span.sinto(&self.hax_state),
+                    )
+                })
                 .collect();
             non_trait_preds
         };
@@ -371,14 +347,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // which introduce trait clauses *before* translating the other predicates
         // (because in order to translate the latters we might need to solve
         // trait parameters which need the formers).
-        use hax::{Clause, ClauseKind, PredicateKind};
+        use hax::{ClauseKind, PredicateKind};
         let (preds_traits, preds): (Vec<_>, Vec<_>) = preds.iter().partition(|(pred, _)| {
             matches!(
-                &pred.value,
-                PredicateKind::Clause(Clause {
-                    kind: ClauseKind::Trait(_),
-                    ..
-                })
+                &pred.kind.value,
+                PredicateKind::Clause(ClauseKind::Trait(_))
             )
         });
         let preds: Vec<_> = preds_traits.into_iter().chain(preds.into_iter()).collect();
@@ -462,13 +435,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Compute the current clause id
         let clause_id = (self.trait_instance_id_gen)();
-        let meta = self.translate_meta_from_rspan(hspan.clone());
+        let span = self.translate_span_from_rspan(hspan.clone());
 
         // Immediately register the clause (we may need to refer to it in the parent/
         // item clauses)
         let trait_clause = NonLocalTraitClause {
             clause_id,
-            meta: Some(meta),
+            span: Some(span),
             trait_id,
             generics,
         };
@@ -493,10 +466,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Skip the binder (which lists the quantified variables).
         // By doing so, we allow the predicates to contain DeBruijn indices,
         // but it is ok because we only do a simple check.
-        let pred_kind = &pred.value;
-        use hax::{Clause, ClauseKind, PredicateKind};
+        let pred_kind = &pred.kind.value;
+        use hax::{ClauseKind, PredicateKind};
         match pred_kind {
-            PredicateKind::Clause(Clause { kind, .. }) => {
+            PredicateKind::Clause(kind) => {
                 match kind {
                     ClauseKind::Trait(trait_pred) => Ok(self
                         .translate_trait_clause(hspan, trait_pred)?
@@ -543,54 +516,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // directly? For now we just ignore it.
                         Ok(None)
                     }
+                    ClauseKind::WellFormed(_) | ClauseKind::ConstEvaluatable(_) => {
+                        error_or_panic!(self, span, format!("Unsupported clause: {:?}", kind))
+                    }
                 }
             }
-            PredicateKind::WellFormed(_) => error_or_panic!(
-                self,
-                span,
-                format!("Unsupported predicate: {:?}", pred_kind)
-            ),
-            PredicateKind::ObjectSafe(_) => error_or_panic!(
-                self,
-                span,
-                format!("Unsupported predicate: {:?}", pred_kind)
-            ),
-            PredicateKind::ClosureKind(_, _, _) => error_or_panic!(
-                self,
-                span,
-                format!("Unsupported predicate: {:?}", pred_kind)
-            ),
-            PredicateKind::Subtype(_) => error_or_panic!(
-                self,
-                span,
-                format!("Unsupported predicate: {:?}", pred_kind)
-            ),
-            PredicateKind::Coerce(_) => error_or_panic!(
-                self,
-                span,
-                format!("Unsupported predicate: {:?}", pred_kind)
-            ),
-            PredicateKind::ConstEvaluatable(_) => error_or_panic!(
-                self,
-                span,
-                format!("Unsupported predicate: {:?}", pred_kind)
-            ),
-            PredicateKind::ConstEquate(_, _) => error_or_panic!(
-                self,
-                span,
-                format!("Unsupported predicate: {:?}", pred_kind)
-            ),
-            PredicateKind::TypeWellFormedFromEnv(_) => error_or_panic!(
-                self,
-                span,
-                format!("Unsupported predicate: {:?}", pred_kind)
-            ),
-            PredicateKind::Ambiguous => error_or_panic!(
-                self,
-                span,
-                format!("Unsupported predicate: {:?}", pred_kind)
-            ),
-            PredicateKind::AliasRelate(..) => error_or_panic!(
+            PredicateKind::AliasRelate(..)
+            | PredicateKind::Ambiguous
+            | PredicateKind::ClosureKind(_, _, _)
+            | PredicateKind::Coerce(_)
+            | PredicateKind::ConstEquate(_, _)
+            | PredicateKind::ObjectSafe(_)
+            | PredicateKind::Subtype(_) => error_or_panic!(
                 self,
                 span,
                 format!("Unsupported predicate: {:?}", pred_kind)
@@ -633,7 +570,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         ) {
             Ok(res) => Ok(res),
             Err(err) => {
-                if !self.t_ctx.continue_on_failure {
+                if !self.t_ctx.continue_on_failure() {
                     panic!("Error during trait resolution: {}", err.msg)
                 } else {
                     let msg = format!("Error during trait resolution: {}", &err.msg);
@@ -691,7 +628,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 path,
             }
             | ImplExprAtom::LocalBound {
-                clause_id: _,
+                predicate_id: _,
                 r#trait: trait_ref,
                 path,
             } => {
@@ -740,7 +677,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             item,
                             predicate,
                             index,
-                            clause_id: _,
+                            predicate_id: _,
                         } => {
                             trait_id = TraitInstanceId::ItemClause(
                                 Box::new(trait_id),
@@ -758,7 +695,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         Parent {
                             predicate,
                             index,
-                            clause_id: _,
+                            predicate_id: _,
                         } => {
                             trait_id = TraitInstanceId::ParentClause(
                                 Box::new(trait_id),
@@ -806,56 +743,56 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplExprAtom::FnPointer { fn_ty } => {
-                let ty = self.translate_ty(span, erase_regions, fn_ty)?;
-                let trait_id = TraitInstanceId::FnPointer(Box::new(ty));
-                let trait_refs =
-                    self.translate_trait_impl_exprs(span, erase_regions, &impl_source.args)?;
-                let generics = GenericArgs {
-                    regions: vec![],
-                    types: vec![],
-                    const_generics: vec![],
-                    trait_refs,
-                };
-                TraitRef {
-                    trait_id,
-                    generics,
-                    trait_decl_ref,
-                }
-            }
-            ImplExprAtom::Closure {
-                closure_def_id,
-                parent_substs,
-                signature: _,
-            } => {
-                // Remark: a closure is always a function defined locally in the
-                // body of the caller, which means it can't be an assumed function
-                // (there is a very limited number of assumed functions, and they
-                // are all top-level).
-                let fn_id = self.translate_fun_decl_id(span, DefId::from(closure_def_id));
-                let erased_regions = false;
-                let (regions, types, const_generics) =
-                    self.translate_substs(span, erased_regions, None, parent_substs)?;
-                let parent_substs = GenericArgs::new(regions, types, const_generics, Vec::new());
-                // TODO: translate the signature
-                let trait_refs = self.translate_trait_impl_exprs(span, erase_regions, nested)?;
-                let trait_id = TraitInstanceId::Closure(fn_id, parent_substs);
-                let generics = GenericArgs {
-                    regions: vec![],
-                    types: vec![],
-                    const_generics: vec![],
-                    trait_refs,
-                };
-                TraitRef {
-                    trait_id,
-                    generics,
-                    trait_decl_ref,
-                }
-            }
+            // ImplExprAtom::FnPointer { fn_ty } => {
+            //     let ty = self.translate_ty(span, erase_regions, fn_ty)?;
+            //     let trait_id = TraitInstanceId::FnPointer(Box::new(ty));
+            //     let trait_refs =
+            //         self.translate_trait_impl_exprs(span, erase_regions, &impl_source.args)?;
+            //     let generics = GenericArgs {
+            //         regions: vec![],
+            //         types: vec![],
+            //         const_generics: vec![],
+            //         trait_refs,
+            //     };
+            //     TraitRef {
+            //         trait_id,
+            //         generics,
+            //         trait_decl_ref,
+            //     }
+            // }
+            // ImplExprAtom::Closure {
+            //     closure_def_id,
+            //     parent_substs,
+            //     signature: _,
+            // } => {
+            //     // Remark: a closure is always a function defined locally in the
+            //     // body of the caller, which means it can't be an assumed function
+            //     // (there is a very limited number of assumed functions, and they
+            //     // are all top-level).
+            //     let fn_id = self.translate_fun_decl_id(span, DefId::from(closure_def_id));
+            //     let erased_regions = false;
+            //     let (regions, types, const_generics) =
+            //         self.translate_substs(span, erased_regions, None, parent_substs)?;
+            //     let parent_substs = GenericArgs::new(regions, types, const_generics, Vec::new());
+            //     // TODO: translate the signature
+            //     let trait_refs = self.translate_trait_impl_exprs(span, erase_regions, nested)?;
+            //     let trait_id = TraitInstanceId::Closure(fn_id, parent_substs);
+            //     let generics = GenericArgs {
+            //         regions: vec![],
+            //         types: vec![],
+            //         const_generics: vec![],
+            //         trait_refs,
+            //     };
+            //     TraitRef {
+            //         trait_id,
+            //         generics,
+            //         trait_decl_ref,
+            //     }
+            // }
             ImplExprAtom::Todo(msg) => {
                 let error = format!("Error during trait resolution: {}", msg);
                 self.span_err(span, &error);
-                if !self.t_ctx.continue_on_failure {
+                if !self.t_ctx.continue_on_failure() {
                     panic!("{}", error)
                 } else {
                     let trait_id = TraitInstanceId::Unknown(msg.clone());
@@ -943,7 +880,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 .map(|x| x.fmt_with_ctx(&fmt_ctx))
                 .collect();
 
-            if !self.t_ctx.continue_on_failure {
+            if !self.t_ctx.continue_on_failure() {
                 let clauses = clauses.join("\n");
                 unreachable!(
                     "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
@@ -1122,7 +1059,7 @@ impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
                     .collect::<Vec<String>>()
                     .join("\n");
 
-                if !self.ctx.t_ctx.continue_on_failure {
+                if !self.ctx.t_ctx.continue_on_failure() {
                     unreachable!(
                         "Could not find clauses for trait obligations:{}\n\nAvailable clauses:\n{}\n- context: {:?}",
                         unsolved, clauses, self.ctx.def_id

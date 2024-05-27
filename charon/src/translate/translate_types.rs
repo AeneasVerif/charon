@@ -519,7 +519,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // transparent (i.e., extract its body). If it is an enumeration, then yes
         // (because the variants of public enumerations are public, together with their
         // fields). If it is a structure, we check if all the fields are public.
-        let is_transparent = self.t_ctx.extract_opaque_bodies
+        let is_transparent = self.t_ctx.options.extract_opaque_bodies
             || is_local
             || match adt.adt_kind() {
                 AdtKind::Enum => true,
@@ -585,21 +585,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
 
                 // Translate the span information
-                let meta = self.translate_meta_from_rspan(field_def.span);
+                let span = self.translate_span_from_rspan(field_def.span);
 
                 // Store the field
                 let field = Field {
-                    meta,
+                    span,
                     name: field_name.clone(),
                     ty,
                 };
                 fields.push(field);
             }
 
-            let meta = self.translate_meta_from_rspan(var_def.span);
+            let span = self.translate_span_from_rspan(var_def.span);
             let variant_name = var_def.name;
             variants.push(Variant {
-                meta,
+                span,
                 name: variant_name,
                 fields,
                 discriminant,
@@ -655,8 +655,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // We could use: TyCtxt::generics_of(DefId)
         // But using the identity substitution is simpler. For instance, we can
         // easily retrieve the type for the const parameters.
-        let substs = rustc_middle::ty::subst::InternalSubsts::identity_for_item(tcx, def_id)
-            .sinto(&self.hax_state);
+        let substs =
+            rustc_middle::ty::GenericArgs::identity_for_item(tcx, def_id).sinto(&self.hax_state);
 
         self.translate_generic_params_from_hax(span, &substs)
     }
@@ -703,7 +703,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Translate a type definition.
     ///
     /// Note that we translate the types one by one: we don't need to take into
@@ -717,8 +717,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     span,
                     &format!("Ignoring the following type due to an error: {:?}", rust_id),
                 );
-                // Save the definition
-                let _ = ctx.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }
@@ -776,7 +775,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             type_def.fmt_with_ctx(&self.into_fmt())
         );
 
-        self.type_decls.insert(trans_id, type_def);
+        self.translated.type_decls.insert(trans_id, type_def);
 
         Ok(())
     }

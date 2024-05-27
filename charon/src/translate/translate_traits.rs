@@ -21,7 +21,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             tcx.def_span(item.def_id),
             erase_regions,
             &tcx.type_of(item.def_id)
-                .subst_identity()
+                .instantiate_identity()
                 .sinto(&self.hax_state),
         )
     }
@@ -46,7 +46,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let span = tcx.def_span(trait_impl_def_id);
 
         // Lookup the trait clauses and substitute - TODO: not sure about the substitution
-        let subst = rust_impl_trait_ref.substs;
+        let subst = rust_impl_trait_ref.args;
         let bounds = tcx.item_bounds(decl_item.def_id);
         let param_env = tcx.param_env(trait_impl_def_id);
         let bounds = tcx.subst_and_normalize_erasing_regions(subst, param_env, bounds);
@@ -55,11 +55,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Solve the predicate bounds
         let mut trait_refs = Vec::new();
         for bound in bounds {
-            if let rustc_middle::ty::PredicateKind::Clause(rustc_middle::ty::Clause::Trait(
-                trait_pred,
-            )) = bound.kind().skip_binder()
-            {
-                let trait_ref = rustc_middle::ty::Binder::dummy(trait_pred.trait_ref);
+            if let rustc_middle::ty::ClauseKind::Trait(trait_pred) = bound.kind().skip_binder() {
+                let trait_ref = bound.kind().rebind(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
                 let trait_ref = self.translate_trait_impl_expr(span, erase_regions, &trait_ref)?;
                 if let Some(trait_ref) = trait_ref {
@@ -105,17 +102,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("predicates: {:?}", predicates);
 
         // Get the last predicate
-        let (pred, rspan) = predicates.predicates.iter().next_back().unwrap();
-        let pred = pred.sinto(&self.hax_state);
+        let (clause, rspan) = predicates.predicates.iter().next_back().unwrap();
+        let clause: hax::Clause = clause.sinto(&self.hax_state);
         let span = rspan.sinto(&self.hax_state);
 
         // Convert to a clause
-        assert!(pred.bound_vars.is_empty());
-        let self_pred = if let hax::PredicateKind::Clause(hax::Clause {
-            kind: hax::ClauseKind::Trait(trait_pred),
-            ..
-        }) = pred.value
-        {
+        assert!(clause.kind.bound_vars.is_empty());
+        let self_pred = if let hax::ClauseKind::Trait(trait_pred) = clause.kind.value {
             if self
                 .translate_trait_decl_id(*rspan, DefId::from(&trait_pred.trait_ref.def_id))?
                 .is_some()
@@ -154,6 +147,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<(), Error> {
         let def_id = *self
             .t_ctx
+            .translated
             .reverse_id_map
             .get(&AnyTransId::TraitImpl(impl_id))
             .unwrap();
@@ -162,7 +156,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Retrieve the trait ref representing "self"
         let tcx = self.t_ctx.tcx;
         let rustc_middle::ty::ImplSubject::Trait(trait_ref) =
-            tcx.impl_subject(def_id).subst_identity() else { unreachable!() };
+            tcx.impl_subject(def_id).instantiate_identity()
+        else {
+            unreachable!()
+        };
 
         // Wrap it in a [TraitPredicate] so that when calling [sinto] we retrieve
         // the parent and item predicates.
@@ -226,7 +223,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Remark: this **doesn't** register the def id (on purpose)
     pub(crate) fn translate_trait_item_name(
         &mut self,
@@ -250,8 +247,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         rust_id
                     ),
                 );
-                // Save the definition
-                let _ = ctx.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }
@@ -309,7 +305,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // but still remember their name (unless `extract_opaque_bodies` is set).
                     if has_default_value {
                         // This is a *provided* method
-                        if rust_id.is_local() || bt_ctx.t_ctx.extract_opaque_bodies {
+                        if rust_id.is_local() || bt_ctx.t_ctx.options.extract_opaque_bodies {
                             let fun_id = bt_ctx.translate_fun_decl_id(span, item.def_id);
                             provided_methods.push((method_name, Some(fun_id)));
                         } else {
@@ -342,10 +338,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     // Translating the predicates
                     {
                         // TODO: this is an ugly manip
-                        let bounds = tcx.item_bounds(item.def_id).subst_identity();
+                        let bounds = tcx.item_bounds(item.def_id).instantiate_identity();
                         use crate::rustc_middle::query::Key;
                         let span = bounds.default_span(tcx);
-                        let bounds: Vec<_> = bounds.into_iter().map(|x| (x, span)).collect();
+                        let bounds: Vec<_> = bounds
+                            .into_iter()
+                            .map(|x| (x.as_predicate(), span))
+                            .collect();
                         let bounds = bounds.sinto(&bt_ctx.hax_state);
 
                         // Register the trait clauses as item trait clauses
@@ -430,7 +429,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             required_methods,
             provided_methods,
         };
-        self.trait_decls.insert(def_id, trait_decl);
+        self.translated.trait_decls.insert(def_id, trait_decl);
 
         Ok(())
     }
@@ -446,8 +445,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                         rust_id
                     ),
                 );
-                // Save the definition
-                let _ = ctx.ignored_failed_decls.insert(rust_id);
+                ctx.errors.ignore_failed_decl(rust_id);
             }
         });
     }
@@ -504,7 +502,10 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             let trait_id = trait_id.unwrap();
 
             let rustc_middle::ty::ImplSubject::Trait(rust_trait_ref) =
-                    tcx.impl_subject(rust_id).subst_identity() else { unreachable!() };
+                tcx.impl_subject(rust_id).instantiate_identity()
+            else {
+                unreachable!()
+            };
             let trait_ref = rust_trait_ref.sinto(&bt_ctx.hax_state);
             let (regions, types, const_generics) =
                 bt_ctx.translate_substs(span, erase_regions, None, &trait_ref.generic_args)?;
@@ -513,7 +514,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 &bt_ctx.hax_state,
                 tcx.param_env(rust_id),
                 rust_trait_ref.def_id,
-                rust_trait_ref.substs,
+                rust_trait_ref.args,
                 None,
             );
             let parent_trait_refs: Vec<TraitRef> =
@@ -654,7 +655,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             required_methods,
             provided_methods,
         };
-        self.trait_impls.insert(def_id, trait_impl);
+        self.translated.trait_impls.insert(def_id, trait_impl);
 
         Ok(())
     }

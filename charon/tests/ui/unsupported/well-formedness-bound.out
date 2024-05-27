@@ -1,4 +1,4 @@
-error: Unsupported predicate: WellFormed(Type(Ref(Region { kind: ReEarlyBound(EarlyBoundRegion { def_id: DefId { krate: "test_crate", path: [DisambiguatedDefPathItem { data: ValueNs("get"), disambiguator: 0 }, DisambiguatedDefPathItem { data: LifetimeNs("'a"), disambiguator: 0 }], index: (0, 4) }, index: 0, name: "'a" }) }, Tuple([]), false)))
+error: Unsupported clause: WellFormed(Type(Ref(Region { kind: ReEarlyBound(EarlyBoundRegion { def_id: DefId { krate: "test_crate", path: [DisambiguatedDefPathItem { data: ValueNs("get"), disambiguator: 0 }, DisambiguatedDefPathItem { data: LifetimeNs("'a"), disambiguator: 0 }], index: (0, 4) }, index: 0, name: "'a" }) }, Tuple([]), false)))
  --> tests/ui/unsupported/well-formedness-bound.rs:4:5
   |
 4 |     &'a ():,
@@ -14,4 +14,4 @@ error: Ignoring the following function due to an error: test_crate::get
 
 error: aborting due to 2 previous errors
 
-[ ERROR charon_driver:200] The extraction encountered 2 errors
+[ ERROR charon_driver:214] The extraction encountered 2 errors

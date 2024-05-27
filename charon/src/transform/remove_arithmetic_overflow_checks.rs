@@ -2,7 +2,7 @@
 //! [`remove_dynamic_checks`]. See comments there for more details.
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 use crate::types::*;
 use take_mut::take;
 
@@ -73,7 +73,7 @@ impl RemoveDynChecks {
                                     let (_s1, s2) = s1.content.to_sequence();
                                     let (_s2, s3) = s2.content.to_sequence();
                                     Statement {
-                                        meta: s0.meta,
+                                        span: s0.span,
                                         content: RawStatement::Sequence(s0, s3),
                                     }
                                 });
@@ -104,8 +104,8 @@ impl MutAstVisitor for RemoveDynChecks {
     }
 }
 
-pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    ctx.iter_bodies(funs, globals, |ctx, name, b| {
+pub fn transform(ctx: &mut TransformCtx) {
+    ctx.iter_structured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove the remaining overflow checks: {}:\n{}",

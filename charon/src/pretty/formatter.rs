@@ -4,6 +4,7 @@ use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::llbc_ast::*;
 use crate::pretty::fmt_with_ctx;
+use crate::translate_ctx::TranslatedCrate;
 use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast as ast;
@@ -70,29 +71,17 @@ impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
 
     fn set_generics(&'a self, generics: &'a GenericParams) -> Self::C {
         let FmtCtx {
-            type_decls,
-            fun_decls,
-            global_decls,
-            trait_decls,
-            trait_impls,
+            translated,
             region_vars: _,
             type_vars: _,
             const_generic_vars: _,
             locals,
         } = self;
 
-        let type_decls = type_decls.as_deref();
-        let fun_decls = fun_decls.as_deref();
-        let global_decls = global_decls.as_deref();
-        let trait_decls = trait_decls.as_deref();
-        let trait_impls = trait_impls.as_deref();
+        let translated = translated.as_deref();
         let locals = locals.as_deref();
         FmtCtx {
-            type_decls,
-            fun_decls,
-            global_decls,
-            trait_decls,
-            trait_impls,
+            translated,
             region_vars: im::vector![generics.regions.clone()],
             type_vars: Some(&generics.types),
             const_generic_vars: Some(&generics.const_generics),
@@ -114,30 +103,18 @@ impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
 
     fn set_locals(&'a self, locals: &'a Vector<VarId, ast::Var>) -> Self::C {
         let FmtCtx {
-            type_decls,
-            fun_decls,
-            global_decls,
-            trait_decls,
-            trait_impls,
+            translated,
             region_vars,
             type_vars,
             const_generic_vars,
             locals: _,
         } = self;
 
-        let type_decls = type_decls.as_deref();
-        let fun_decls = fun_decls.as_deref();
-        let global_decls = global_decls.as_deref();
-        let trait_decls = trait_decls.as_deref();
-        let trait_impls = trait_impls.as_deref();
+        let translated = translated.as_deref();
         let type_vars = type_vars.as_deref();
         let const_generic_vars = const_generic_vars.as_deref();
         FmtCtx {
-            type_decls,
-            fun_decls,
-            global_decls,
-            trait_decls,
-            trait_impls,
+            translated,
             region_vars: region_vars.clone(),
             type_vars,
             const_generic_vars,
@@ -158,33 +135,21 @@ impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
 
     fn push_bound_regions(&'a self, regions: &Vector<RegionId, RegionVar>) -> Self::C {
         let FmtCtx {
-            type_decls,
-            fun_decls,
-            global_decls,
-            trait_decls,
-            trait_impls,
+            translated,
             region_vars,
             type_vars,
             const_generic_vars,
             locals,
         } = self;
 
-        let type_decls = type_decls.as_deref();
-        let fun_decls = fun_decls.as_deref();
-        let global_decls = global_decls.as_deref();
-        let trait_decls = trait_decls.as_deref();
-        let trait_impls = trait_impls.as_deref();
+        let translated = translated.as_deref();
         let type_vars = type_vars.as_deref();
         let const_generic_vars = const_generic_vars.as_deref();
         let locals = locals.as_deref();
         let mut region_vars = region_vars.clone();
         region_vars.push_front(regions.clone());
         FmtCtx {
-            type_decls,
-            fun_decls,
-            global_decls,
-            trait_decls,
-            trait_impls,
+            translated,
             region_vars,
             type_vars,
             const_generic_vars,
@@ -222,11 +187,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
 /// need to update those. We can think of a smarter way of doing this, but
 /// for now it is simple and efficient enough.
 pub struct FmtCtx<'a> {
-    pub type_decls: Option<&'a TypeDecls>,
-    pub fun_decls: Option<&'a ast::FunDecls>,
-    pub global_decls: Option<&'a ast::GlobalDecls>,
-    pub trait_decls: Option<&'a ast::TraitDecls>,
-    pub trait_impls: Option<&'a ast::TraitImpls>,
+    pub translated: Option<&'a TranslatedCrate>,
     /// The region variables are not an option, because we need to be able to push/pop
     pub region_vars: im::Vector<Vector<RegionId, RegionVar>>,
     pub type_vars: Option<&'a Vector<TypeVarId, TypeVar>>,
@@ -245,11 +206,7 @@ impl<'a> IntoFormatter for FmtCtx<'a> {
 impl<'a> FmtCtx<'a> {
     pub fn new() -> Self {
         FmtCtx {
-            type_decls: None,
-            fun_decls: None,
-            global_decls: None,
-            trait_decls: None,
-            trait_impls: None,
+            translated: None,
             region_vars: im::Vector::new(),
             type_vars: None,
             const_generic_vars: None,
@@ -266,9 +223,9 @@ impl<'a> Default for FmtCtx<'a> {
 
 impl<'a> Formatter<TypeDeclId> for FmtCtx<'a> {
     fn format_object(&self, id: TypeDeclId) -> String {
-        match &self.type_decls {
+        match &self.translated {
             None => id.to_pretty_string(),
-            Some(type_decls) => match type_decls.get(id) {
+            Some(translated) => match translated.type_decls.get(id) {
                 None => id.to_pretty_string(),
                 Some(d) => d.name.fmt_with_ctx(self),
             },
@@ -278,9 +235,9 @@ impl<'a> Formatter<TypeDeclId> for FmtCtx<'a> {
 
 impl<'a> Formatter<GlobalDeclId> for FmtCtx<'a> {
     fn format_object(&self, id: GlobalDeclId) -> String {
-        match &self.global_decls {
+        match &self.translated {
             None => id.to_pretty_string(),
-            Some(global_decls) => match global_decls.get(id) {
+            Some(translated) => match translated.global_decls.get(id) {
                 None => id.to_pretty_string(),
                 Some(d) => d.name.fmt_with_ctx(self),
             },
@@ -290,9 +247,9 @@ impl<'a> Formatter<GlobalDeclId> for FmtCtx<'a> {
 
 impl<'a> Formatter<ast::FunDeclId> for FmtCtx<'a> {
     fn format_object(&self, id: ast::FunDeclId) -> String {
-        match &self.fun_decls {
+        match &self.translated {
             None => id.to_pretty_string(),
-            Some(fun_decls) => match fun_decls.get(id) {
+            Some(translated) => match translated.fun_decls.get(id) {
                 None => id.to_pretty_string(),
                 Some(d) => d.name.fmt_with_ctx(self),
             },
@@ -302,9 +259,9 @@ impl<'a> Formatter<ast::FunDeclId> for FmtCtx<'a> {
 
 impl<'a> Formatter<ast::TraitDeclId> for FmtCtx<'a> {
     fn format_object(&self, id: ast::TraitDeclId) -> String {
-        match &self.trait_decls {
+        match &self.translated {
             None => id.to_pretty_string(),
-            Some(trait_decls) => match trait_decls.get(id) {
+            Some(translated) => match translated.trait_decls.get(id) {
                 None => id.to_pretty_string(),
                 Some(d) => d.name.fmt_with_ctx(self),
             },
@@ -314,9 +271,9 @@ impl<'a> Formatter<ast::TraitDeclId> for FmtCtx<'a> {
 
 impl<'a> Formatter<ast::TraitImplId> for FmtCtx<'a> {
     fn format_object(&self, id: ast::TraitImplId) -> String {
-        match &self.trait_impls {
+        match &self.translated {
             None => id.to_pretty_string(),
-            Some(trait_impls) => match trait_impls.get(id) {
+            Some(translated) => match translated.trait_impls.get(id) {
                 None => id.to_pretty_string(),
                 Some(d) => d.name.fmt_with_ctx(self),
             },
@@ -370,16 +327,16 @@ impl<'a> Formatter<ast::TraitClauseId> for FmtCtx<'a> {
 impl<'a> Formatter<(TypeDeclId, VariantId)> for FmtCtx<'a> {
     fn format_object(&self, id: (TypeDeclId, VariantId)) -> String {
         let (def_id, variant_id) = id;
-        match &self.type_decls {
+        match &self.translated {
             None => format!(
                 "{}::{}",
                 def_id.to_pretty_string(),
                 variant_id.to_pretty_string()
             ),
-            Some(type_decls) => {
+            Some(translated) => {
                 // The definition may not be available yet, especially if we print-debug
                 // while translating the crate
-                match type_decls.get(def_id) {
+                match translated.type_decls.get(def_id) {
                     Option::None => format!(
                         "{}::{}",
                         def_id.to_pretty_string(),
@@ -403,7 +360,7 @@ impl<'a> Formatter<(TypeDeclId, VariantId)> for FmtCtx<'a> {
 impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
     fn format_object(&self, id: (TypeDeclId, Option<VariantId>, FieldId)) -> String {
         let (def_id, opt_variant_id, field_id) = id;
-        match &self.type_decls {
+        match &self.translated {
             None => match opt_variant_id {
                 Option::None => format!(
                     "{}::{}",
@@ -417,11 +374,11 @@ impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
                     field_id.to_pretty_string()
                 ),
             },
-            Some(type_decls) =>
+            Some(translated) =>
             // The definition may not be available yet, especially if we
             // print-debug while translating the crate
             {
-                match type_decls.get(def_id) {
+                match translated.type_decls.get(def_id) {
                     Option::None => match opt_variant_id {
                         Option::None => format!(
                             "{}::{}",
@@ -555,9 +512,9 @@ impl<'a> Formatter<&gast::TraitImpl> for FmtCtx<'a> {
 
 impl<'a> DeclFormatter<TypeDeclId> for FmtCtx<'a> {
     fn format_decl(&self, id: TypeDeclId) -> String {
-        match &self.type_decls {
+        match &self.translated {
             None => format!("Unknown decl: {:?}", id),
-            Some(decls) => match decls.get(id) {
+            Some(translated) => match translated.type_decls.get(id) {
                 None => {
                     format!("Unknown decl: {:?}", id)
                 }
@@ -569,9 +526,9 @@ impl<'a> DeclFormatter<TypeDeclId> for FmtCtx<'a> {
 
 impl<'a> DeclFormatter<GlobalDeclId> for FmtCtx<'a> {
     fn format_decl(&self, id: GlobalDeclId) -> String {
-        match &self.global_decls {
+        match &self.translated {
             None => format!("Unknown decl: {:?}", id),
-            Some(decls) => match decls.get(id) {
+            Some(translated) => match translated.global_decls.get(id) {
                 None => {
                     format!("Unknown decl: {:?}", id)
                 }
@@ -583,9 +540,9 @@ impl<'a> DeclFormatter<GlobalDeclId> for FmtCtx<'a> {
 
 impl<'a> DeclFormatter<FunDeclId> for FmtCtx<'a> {
     fn format_decl(&self, id: FunDeclId) -> String {
-        match &self.fun_decls {
+        match &self.translated {
             None => format!("Unknown decl: {:?}", id),
-            Some(decls) => match decls.get(id) {
+            Some(translated) => match translated.fun_decls.get(id) {
                 None => {
                     format!("Unknown decl: {:?}", id)
                 }
@@ -597,9 +554,9 @@ impl<'a> DeclFormatter<FunDeclId> for FmtCtx<'a> {
 
 impl<'a> DeclFormatter<TraitDeclId> for FmtCtx<'a> {
     fn format_decl(&self, id: TraitDeclId) -> String {
-        match &self.trait_decls {
+        match &self.translated {
             None => format!("Unknown decl: {:?}", id),
-            Some(decls) => match decls.get(id) {
+            Some(translated) => match translated.trait_decls.get(id) {
                 None => {
                     format!("Unknown decl: {:?}", id)
                 }
@@ -611,9 +568,9 @@ impl<'a> DeclFormatter<TraitDeclId> for FmtCtx<'a> {
 
 impl<'a> DeclFormatter<TraitImplId> for FmtCtx<'a> {
     fn format_decl(&self, id: TraitImplId) -> String {
-        match &self.trait_impls {
+        match &self.translated {
             None => format!("Unknown impl: {:?}", id),
-            Some(decls) => match decls.get(id) {
+            Some(translated) => match translated.trait_impls.get(id) {
                 None => {
                     format!("Unknown impl: {:?}", id)
                 }

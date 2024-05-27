@@ -1,9 +1,9 @@
 //! Remove the useless no-ops.
 
 use crate::formatter::{Formatter, IntoFormatter};
-use crate::llbc_ast::{FunDecls, GlobalDecls, RawStatement, Statement};
-use crate::meta::combine_meta;
-use crate::translate_ctx::TransCtx;
+use crate::llbc_ast::{RawStatement, Statement};
+use crate::meta::combine_span;
+use crate::translate_ctx::TransformCtx;
 use take_mut::take;
 
 fn transform_st(s: &mut Statement) {
@@ -13,15 +13,15 @@ fn transform_st(s: &mut Statement) {
                 let (s1, s2) = s.content.to_sequence();
                 Statement {
                     content: s2.content,
-                    meta: combine_meta(&s1.meta, &s2.meta),
+                    span: combine_span(&s1.span, &s2.span),
                 }
             })
         }
     }
 }
 
-pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    ctx.iter_bodies(funs, globals, |ctx, name, b| {
+pub fn transform(ctx: &mut TransformCtx) {
+    ctx.iter_structured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove useless no-ops in decl: {}:\n{}",

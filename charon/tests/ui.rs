@@ -16,7 +16,6 @@ use std::{
 };
 use walkdir::{DirEntry, WalkDir};
 
-use charon_lib::cli_options::{CliOpts, CHARON_ARGS};
 use util::{compare_or_overwrite, Action};
 
 mod util;
@@ -33,7 +32,7 @@ enum TestKind {
 struct MagicComments {
     test_kind: TestKind,
     /// The options with which to run charon.
-    cli_opts: CliOpts,
+    charon_opts: Vec<String>,
     /// The options to pass to rustc.
     rustc_opts: Vec<String>,
     /// Whether we should store the test output in a file and check it.
@@ -62,13 +61,15 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
     // Parse the magic comments.
     let mut comments = MagicComments {
         test_kind: TestKind::PrettyLlbc,
-        cli_opts: CliOpts::default(),
+        charon_opts: Vec::new(),
         rustc_opts: Vec::new(),
         check_output: true,
         auxiliary_crates: Vec::new(),
     };
     for line in read_to_string(input_path)?.lines() {
-        let Some(line) = line.strip_prefix("//@") else { break };
+        let Some(line) = line.strip_prefix("//@") else {
+            break;
+        };
         let line = line.trim();
         if line == "known-panic" {
             comments.test_kind = TestKind::KnownPanic;
@@ -81,10 +82,9 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
         } else if line == "no-check-output" {
             comments.check_output = false;
         } else if let Some(charon_opts) = line.strip_prefix("charon-args=") {
-            use clap::Parser;
-            // The first arg is normally the command name.
-            let args = ["dummy"].into_iter().chain(charon_opts.split_whitespace());
-            comments.cli_opts.update_from(args);
+            comments
+                .charon_opts
+                .extend(charon_opts.split_whitespace().map(|s| s.to_string()));
         } else if let Some(rustc_opts) = line.strip_prefix("rustc-args=") {
             comments
                 .rustc_opts
@@ -173,23 +173,28 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
             .map_err(|e| anyhow!(e.to_string()))?;
     }
 
-    // Call the charon driver.
-    let mut options = test_case.magic_comments.cli_opts.clone();
-    options.print_llbc = true;
-    options.dest_file = Some(test_case.input_path.with_extension("llbc"));
-    options.crate_name = Some("test_crate".into());
+    // Run Charon.
+    let mut cmd = Command::cargo_bin("charon")?;
+    cmd.arg("--no-cargo");
 
-    let mut cmd = Command::cargo_bin("charon-driver")?;
-    cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
-    cmd.arg("rustc");
-    cmd.arg(test_case.input_path.to_string_lossy().into_owned());
-    cmd.arg("--edition=2021"); // To avoid needing `extern crate`
+    cmd.arg("--print-llbc");
+    cmd.arg("--crate=test_crate");
+    cmd.arg("--input");
+    cmd.arg(&test_case.input_path);
+    cmd.arg("--dest-file");
+    cmd.arg(test_case.input_path.with_extension("llbc"));
+
+    cmd.arg("--rustc-flag=--edition=2021");
     for (crate_name, _, rlib_path) in deps {
-        cmd.arg(format!("--extern={crate_name}={rlib_path}"));
+        cmd.arg(format!("--rustc-flag=--extern={crate_name}={rlib_path}"));
     }
     for arg in &test_case.magic_comments.rustc_opts {
+        cmd.arg(format!("--rustc-flag={arg}"));
+    }
+    for arg in &test_case.magic_comments.charon_opts {
         cmd.arg(arg);
     }
+
     let output = cmd.output()?;
     let stderr = String::from_utf8(output.stderr.clone())?;
     let stdout = String::from_utf8(output.stdout.clone())?;

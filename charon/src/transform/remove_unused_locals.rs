@@ -5,8 +5,8 @@
 use crate::expressions::{MutExprVisitor, SharedExprVisitor};
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::ids::Vector;
-use crate::llbc_ast::{FunDecls, GlobalDecls, MutAstVisitor, SharedAstVisitor, Statement};
-use crate::translate_ctx::TransCtx;
+use crate::llbc_ast::{MutAstVisitor, SharedAstVisitor, Statement};
+use crate::translate_ctx::TransformCtx;
 use crate::types::{MutTypeVisitor, SharedTypeVisitor};
 use crate::ullbc_ast::Var;
 use crate::values::*;
@@ -120,8 +120,8 @@ fn update_locals(
     (locals, vids_map)
 }
 
-pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    ctx.iter_bodies(funs, globals, |ctx, name, b| {
+pub fn transform(ctx: &mut TransformCtx) {
+    ctx.iter_structured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove unused locals in decl: {}:\n{}",

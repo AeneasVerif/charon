@@ -41,7 +41,7 @@ fn dummy_span_data() -> rustc_span::SpanData {
 
 /// Span information
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub struct Span {
+pub struct RawSpan {
     pub file_id: FileId,
     pub beg: Loc,
     pub end: Loc,
@@ -55,15 +55,15 @@ pub struct Span {
     pub rust_span_data: rustc_span::SpanData,
 }
 
-impl From<Span> for rustc_error_messages::MultiSpan {
-    fn from(span: Span) -> Self {
+impl From<RawSpan> for rustc_error_messages::MultiSpan {
+    fn from(span: RawSpan) -> Self {
         span.rust_span_data.span().into()
     }
 }
 
 /// Meta information about a piece of code (block, statement, etc.)
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub struct Meta {
+pub struct Span {
     /// The source code span.
     ///
     /// If this meta information is for a statement/terminator coming from a macro
@@ -83,14 +83,14 @@ pub struct Meta {
     ///     macro!(); // <-- `span` refers to this location
     /// }
     /// ```
-    pub span: Span,
+    pub span: RawSpan,
     /// Where the code actually comes from, in case of macro expansion/inlining/etc.
-    pub generated_from_span: Option<Span>,
+    pub generated_from_span: Option<RawSpan>,
 }
 
-impl From<Meta> for rustc_error_messages::MultiSpan {
-    fn from(meta: Meta) -> Self {
-        meta.span.into()
+impl From<Span> for rustc_error_messages::MultiSpan {
+    fn from(span: Span) -> Self {
+        span.span.into()
     }
 }
 
@@ -111,7 +111,7 @@ pub enum InlineAttr {
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ItemMeta {
-    pub meta: Meta,
+    pub span: Span,
     /// Attributes (`#[...]`).
     pub attributes: Vec<Attribute>,
     /// Inline hints (on functions only).

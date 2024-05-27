@@ -14,11 +14,11 @@ type file_name =
 [@@deriving show, ord]
 
 (** Span data *)
-type span = { file : file_name; beg_loc : loc; end_loc : loc }
+type raw_span = { file : file_name; beg_loc : loc; end_loc : loc }
 [@@deriving show, ord]
 
-type meta = {
-  span : span;
+type span = {
+  span : raw_span;
       (** The source code span.
 
           If this meta information is for a statement/terminator coming from a macro
@@ -39,7 +39,7 @@ type meta = {
             }
           ]}
        *)
-  generated_from_span : span option;
+  generated_from_span : raw_span option;
       (** Where the code actually comes from, in case of macro expansion/inlining/etc. *)
 }
 [@@deriving show, ord]
@@ -51,7 +51,7 @@ type inline_attr =
 [@@deriving show, ord]
 
 type item_meta = {
-  meta : meta;
+  span : span;
   attributes : string list;  (** Attributes (`#[...]`). **)
   inline : inline_attr option;
   public : bool;

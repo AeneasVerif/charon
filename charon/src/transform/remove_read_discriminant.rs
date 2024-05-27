@@ -5,24 +5,24 @@
 
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
-use crate::meta::combine_meta;
+use crate::meta::combine_span;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::{Literal, ScalarValue};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
-struct Visitor<'a, 'tcx, 'ctx> {
-    ctx: &'a mut TransCtx<'tcx, 'ctx>,
+struct Visitor<'a, 'ctx> {
+    ctx: &'a mut TransformCtx<'ctx>,
 }
 
-impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
+impl<'a, 'ctx> Visitor<'a, 'ctx> {
     fn update_statement(&mut self, st: &mut Statement) {
         match &mut st.content {
             RawStatement::Sequence(
                 box Statement {
                     content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
-                    meta: meta1,
+                    span: span1,
                 },
                 box st2,
             ) => {
@@ -34,12 +34,12 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                     st2,
                     Statement {
                         content: RawStatement::Nop,
-                        meta: st2.meta,
+                        span: st2.span,
                     },
                 );
 
                 // Lookup the type of the scrutinee
-                let variants = match self.ctx.type_decls.get(*adt_id) {
+                let variants = match self.ctx.translated.type_decls.get(*adt_id) {
                     // This can happen if there was an error while extracting the definitions
                     None => None,
                     Some(d) => {
@@ -48,7 +48,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                                 // We shouldn't get there
                                 register_error_or_panic!(
                                     self.ctx,
-                                    st.meta.span.rust_span_data.span(),
+                                    st.span.span.rust_span_data.span(),
                                     "Unreachable case"
                                 );
                                 None
@@ -61,12 +61,12 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                 let Some(variants) = variants else {
                     // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
                     // `Nop` the whole statement sequence.
-                    assert!(self.ctx.error_count > 0);
+                    assert!(self.ctx.has_errors());
                     *st = Statement {
                         content: RawStatement::Nop,
-                        meta: st.meta,
+                        span: st.span,
                     };
-                    return
+                    return;
                 };
 
                 // We look for a `SwitchInt` just after the discriminant read.
@@ -75,20 +75,23 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                     RawStatement::Sequence(
                         box Statement {
                             content: RawStatement::Switch(switch @ Switch::SwitchInt(..)),
-                            meta: meta2,
+                            span: span2,
                         },
                         box st3,
-                    ) => Ok((meta2, switch, Some(st3))),
+                    ) => Ok((span2, switch, Some(st3))),
                     RawStatement::Switch(switch @ Switch::SwitchInt(..)) => {
-                        Ok((st2.meta, switch, None))
+                        Ok((st2.span, switch, None))
                     }
                     _ => Err(st2),
                 };
 
                 match maybe_switch {
-                    Ok((meta2, switch, st3_opt)) => {
-                        let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) = switch
-                        else { unreachable!() };
+                    Ok((span2, switch, st3_opt)) => {
+                        let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) =
+                            switch
+                        else {
+                            unreachable!()
+                        };
                         assert!(op_p.projection.is_empty() && op_p.var_id == dest.var_id);
 
                         // Convert between discriminants and variant indices. Remark: the discriminant can
@@ -108,7 +111,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                                             discr_to_id.get(&discr).or_else(|| {
                                                 register_error_or_panic!(
                                                     self.ctx,
-                                                    st.meta.span.rust_span_data.span(),
+                                                    st.span.span.rust_span_data.span(),
                                                     "Found incorrect discriminant {discr} for enum {adt_id}"
                                                 );
                                                 None
@@ -129,9 +132,9 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
 
                         // Add the next statement if there is one
                         st.content = if let Some(st3) = st3_opt {
-                            let meta = combine_meta(meta1, &meta2);
+                            let span = combine_span(span1, &span2);
                             let switch = Statement {
-                                meta,
+                                span,
                                 content: switch,
                             };
                             new_sequence(switch, st3).content
@@ -153,7 +156,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                                     ty: Ty::Literal(LiteralTy::Integer(int_ty)),
                                 };
                                 let statement = Statement {
-                                    meta: *meta1,
+                                    span: *span1,
                                     content: RawStatement::Assign(
                                         dest.clone(),
                                         Rvalue::Use(Operand::Const(konst)),
@@ -164,7 +167,7 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
                             .collect();
                         let switch = RawStatement::Switch(Switch::Match(p.clone(), targets, None));
                         let switch = Statement {
-                            meta: *meta1,
+                            span: *span1,
                             content: switch,
                         };
                         st.content = new_sequence(switch, st2).content
@@ -180,9 +183,9 @@ impl<'a, 'tcx, 'ctx> Visitor<'a, 'tcx, 'ctx> {
     }
 }
 
-impl<'a, 'tcx, 'ctx> MutTypeVisitor for Visitor<'a, 'tcx, 'ctx> {}
-impl<'a, 'tcx, 'ctx> MutExprVisitor for Visitor<'a, 'tcx, 'ctx> {}
-impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
+impl<'a, 'ctx> MutTypeVisitor for Visitor<'a, 'ctx> {}
+impl<'a, 'ctx> MutExprVisitor for Visitor<'a, 'ctx> {}
+impl<'a, 'ctx> MutAstVisitor for Visitor<'a, 'ctx> {
     fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
         visitor(self)
     }
@@ -199,8 +202,8 @@ impl<'a, 'tcx, 'ctx> MutAstVisitor for Visitor<'a, 'tcx, 'ctx> {
     }
 }
 
-pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    ctx.iter_bodies(funs, globals, |ctx, name, b| {
+pub fn transform(ctx: &mut TransformCtx) {
+    ctx.iter_structured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to remove [ReadDiscriminant] occurrences in decl: {}:\n{}",

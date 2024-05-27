@@ -3,10 +3,10 @@ use crate::common::*;
 use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
-use crate::ids::{Generator, Map, MapGenerator, Vector};
+use crate::ids::{Generator, MapGenerator, Vector};
 use crate::llbc_ast;
-use crate::meta::{self, Attribute, ItemMeta, Span};
-use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Meta, VirtualFileId};
+use crate::meta::{self, Attribute, ItemMeta, RawSpan};
+use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Span, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
 use crate::translate_predicates::NonLocalTraitClause;
@@ -82,22 +82,6 @@ impl DepSource {
     }
 }
 
-pub struct CrateInfo {
-    pub crate_name: String,
-    pub opaque_mods: HashSet<String>,
-}
-
-impl CrateInfo {
-    pub(crate) fn is_opaque_decl(&self, name: &Name) -> bool {
-        name.is_in_modules(&self.crate_name, &self.opaque_mods)
-    }
-
-    #[allow(dead_code)]
-    pub(crate) fn is_transparent_decl(&self, name: &Name) -> bool {
-        !self.is_opaque_decl(name)
-    }
-}
-
 /// The id of a translated item.
 #[derive(
     PartialEq,
@@ -168,52 +152,34 @@ impl Ord for OrdRustId {
     }
 }
 
-/// Translation context containing the top-level definitions.
-pub struct TransCtx<'tcx, 'ctx> {
-    /// The compiler session
-    pub session: &'ctx Session,
-    /// The Rust compiler type context
-    pub tcx: TyCtxt<'tcx>,
-    /// The Hax context
-    pub hax_state: hax::State<hax::Base<'tcx>, (), (), ()>,
+/// The options that control translation.
+pub struct TransOptions {
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
-    ///
-    pub crate_info: CrateInfo,
-    /// Do not abort on the first error and attempt to extract as much as possible.
-    pub continue_on_failure: bool,
-    /// Print the errors as warnings, and do not
-    pub errors_as_warnings: bool,
-    /// The number of errors encountered so far.
-    pub error_count: usize,
     /// Error out if some code ends up being duplicated by the control-flow
     /// reconstruction (note that because several patterns in a match may lead
     /// to the same branch, it is node always possible not to duplicate code).
     pub no_code_duplication: bool,
     /// Whether to extract the bodies of foreign methods and structs with private fields.
     pub extract_opaque_bodies: bool,
-    /// All the ids, in the order in which we encountered them
-    pub all_ids: LinkedHashSet<AnyTransId>,
-    /// The declarations we came accross and which we haven't translated yet.
-    /// We use an ordered set to make sure we translate them in a specific
-    /// order (this avoids stealing issues when querying the MIR bodies).
-    pub stack: BTreeSet<OrdRustId>,
-    /// The id of the definition we are exploring
-    pub def_id: Option<DefId>,
+    /// Modules to consider opaque.
+    pub opaque_mods: HashSet<String>,
+}
+
+/// The data of a translated crate.
+#[derive(Default)]
+pub struct TranslatedCrate {
+    /// The name of the crate.
+    pub crate_name: String,
+
     /// File names to ids and vice-versa
     pub file_to_id: HashMap<FileName, FileId>,
     pub id_to_file: HashMap<FileId, FileName>,
     pub real_file_counter: Generator<LocalFileId>,
     pub virtual_file_counter: Generator<VirtualFileId>,
-    /// Dependency graph with sources. We use this for error reporting.
-    /// See [DepSource].
-    pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
-    /// The ids of the declarations for which extraction we encountered errors.
-    pub decls_with_errors: HashSet<DefId>,
-    /// The ids of the declarations we completely failed to extract
-    /// and had to ignore.
-    pub ignored_failed_decls: HashSet<DefId>,
 
+    /// All the ids, in the order in which we encountered them
+    pub all_ids: LinkedHashSet<AnyTransId>,
     /// The map from rustc id to translated id.
     pub id_map: HashMap<DefId, AnyTransId>,
     /// The reverse map of ids.
@@ -233,8 +199,12 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub type_decls: TypeDecls,
     /// The translated function definitions
     pub fun_decls: ast::FunDecls,
+    /// The translated and reconstructed function definitions
+    pub structured_fun_decls: llbc_ast::FunDecls,
     /// The translated global definitions
     pub global_decls: ast::GlobalDecls,
+    /// The translated and reconstructed global definitions
+    pub structured_global_decls: llbc_ast::GlobalDecls,
     /// The translated trait declarations
     pub trait_decls: ast::TraitDecls,
     /// The translated trait declarations
@@ -243,8 +213,49 @@ pub struct TransCtx<'tcx, 'ctx> {
     pub ordered_decls: Option<DeclarationsGroups>,
 }
 
+/// The context for tracking and reporting errors.
+pub struct ErrorCtx<'ctx> {
+    /// If true, do not abort on the first error and attempt to extract as much as possible.
+    pub continue_on_failure: bool,
+    /// If true, print the errors as warnings, and do not abort.
+    pub errors_as_warnings: bool,
+
+    /// The compiler session, used for displaying errors.
+    pub session: &'ctx Session,
+    /// The ids of the declarations for which extraction we encountered errors.
+    pub decls_with_errors: HashSet<DefId>,
+    /// The ids of the declarations we completely failed to extract and had to ignore.
+    pub ignored_failed_decls: HashSet<DefId>,
+    /// Dependency graph with sources. See [DepSource].
+    pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
+    /// The id of the definition we are exploring, used to track the source of errors.
+    pub def_id: Option<DefId>,
+    /// The number of errors encountered so far.
+    pub error_count: usize,
+}
+
+/// Translation context used while translating the crate data into our representation.
+pub struct TranslateCtx<'tcx, 'ctx> {
+    /// The Rust compiler type context
+    pub tcx: TyCtxt<'tcx>,
+    /// The Hax context
+    pub hax_state: hax::State<hax::Base<'tcx>, (), (), ()>,
+
+    /// The options that control translation.
+    pub options: TransOptions,
+    /// The translated data.
+    pub translated: TranslatedCrate,
+
+    /// Context for tracking and reporting errors.
+    pub errors: ErrorCtx<'ctx>,
+    /// The declarations we came accross and which we haven't translated yet.
+    /// We use an ordered set to make sure we translate them in a specific
+    /// order (this avoids stealing issues when querying the MIR bodies).
+    pub stack: BTreeSet<OrdRustId>,
+}
+
 /// A translation context for type/global/function bodies.
-/// Simply augments the [TransCtx] with local variables.
+/// Simply augments the [TranslateCtx] with local variables.
 ///
 /// Remark: for now we don't really need to use collections from the [im] crate,
 /// because we don't need the O(1) clone operation, but we may need it once we
@@ -253,10 +264,10 @@ pub struct TransCtx<'tcx, 'ctx> {
 /// us to use those collections.
 pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The definition we are currently extracting.
-    /// TODO: this duplicates the field of [TransCtx]
+    /// TODO: this duplicates the field of [TranslateCtx]
     pub def_id: DefId,
     /// The translation context containing the top-level definitions/ids.
-    pub t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>,
+    pub t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
     /// A hax state with an owner id
     pub hax_state: hax::State<hax::Base<'tcx>, (), (), rustc_hir::def_id::DefId>,
     /// The regions.
@@ -339,12 +350,27 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub blocks_stack: VecDeque<hax::BasicBlock>,
 }
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
-    pub fn continue_on_failure(&self) -> bool {
+/// Simpler context used for rustc-independent code transformation. This only depends on rustc for
+/// its error reporting machinery.
+pub struct TransformCtx<'ctx> {
+    /// The options that control translation.
+    pub options: TransOptions,
+    /// The translated data.
+    pub translated: TranslatedCrate,
+    /// Context for tracking and reporting errors.
+    pub errors: ErrorCtx<'ctx>,
+}
+
+impl ErrorCtx<'_> {
+    pub(crate) fn continue_on_failure(&self) -> bool {
         self.continue_on_failure
     }
+    pub(crate) fn has_errors(&self) -> bool {
+        self.error_count > 0
+    }
 
-    pub fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
+    /// Report an error without registering anything.
+    pub(crate) fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
         let msg = msg.to_string();
         if self.errors_as_warnings {
             self.session.span_warn(span, msg);
@@ -353,62 +379,93 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Span an error and register the error.
+    /// Report and register an error.
     pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
         self.span_err_no_register(span, msg);
-        self.increment_error_count();
+        self.error_count += 1;
         if let Some(id) = self.def_id {
             let _ = self.decls_with_errors.insert(id);
         }
     }
 
-    fn increment_error_count(&mut self) {
-        self.error_count += 1;
+    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
+    pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
+        if let Some(src) = src {
+            if src.src_id != id {
+                match self.dep_sources.get_mut(&id) {
+                    None => {
+                        let _ = self.dep_sources.insert(id, HashSet::from([*src]));
+                    }
+                    Some(srcs) => {
+                        let _ = srcs.insert(*src);
+                    }
+                }
+            }
+        }
+    }
+
+    pub(crate) fn ignore_failed_decl(&mut self, id: DefId) {
+        self.ignored_failed_decls.insert(id);
+    }
+}
+
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
+    pub fn continue_on_failure(&self) -> bool {
+        self.errors.continue_on_failure()
+    }
+
+    /// Span an error and register the error.
+    pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+        self.errors.span_err(span, msg)
     }
 
     /// Register a file if it is a "real" file and was not already registered
     fn register_file(&mut self, filename: FileName) -> FileId {
         // Lookup the file if it was already registered
-        match self.file_to_id.get(&filename) {
+        match self.translated.file_to_id.get(&filename) {
             Option::Some(id) => *id,
             Option::None => {
                 // Generate the fresh id
                 let id = match &filename {
-                    FileName::Local(_) => FileId::LocalId(self.real_file_counter.fresh_id()),
-                    FileName::Virtual(_) => FileId::VirtualId(self.virtual_file_counter.fresh_id()),
+                    FileName::Local(_) => {
+                        FileId::LocalId(self.translated.real_file_counter.fresh_id())
+                    }
+                    FileName::Virtual(_) => {
+                        FileId::VirtualId(self.translated.virtual_file_counter.fresh_id())
+                    }
                     FileName::NotReal(_) => unimplemented!(),
                 };
-                self.file_to_id.insert(filename.clone(), id);
-                self.id_to_file.insert(id, filename);
+                self.translated.file_to_id.insert(filename.clone(), id);
+                self.translated.id_to_file.insert(id, filename);
                 id
             }
         }
     }
 
-    /// Compute the meta information for a Rust definition identified by its id.
-    pub(crate) fn translate_meta_from_rid(&mut self, def_id: DefId) -> Meta {
+    /// Compute the span information for a Rust definition identified by its id.
+    pub(crate) fn translate_span_from_rid(&mut self, def_id: DefId) -> Span {
         // Retrieve the span from the def id
         let rspan = meta::get_rspan_from_def_id(self.tcx, def_id);
         let rspan = rspan.sinto(&self.hax_state);
-        self.translate_meta_from_rspan(rspan)
+        self.translate_span_from_rspan(rspan)
     }
 
     /// Compute the meta information for a Rust item identified by its id.
     pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
-        let meta = self.translate_meta_from_rid(def_id);
+        let span = self.translate_span_from_rid(def_id);
         // Default to `false` for impl blocks and closures.
         let public = self
-            .translate_visibility_from_rid(def_id, meta.span)
+            .translate_visibility_from_rid(def_id, span.span)
             .unwrap_or(false);
         ItemMeta {
-            meta,
+            span,
             attributes: self.translate_attributes_from_rid(def_id),
             inline: self.translate_inline_from_rid(def_id),
             public,
         }
     }
 
-    pub fn translate_span(&mut self, rspan: hax::Span) -> meta::Span {
+    pub fn translate_span(&mut self, rspan: hax::Span) -> meta::RawSpan {
         let filename = meta::convert_filename(&rspan.filename);
         let file_id = match &filename {
             FileName::NotReal(_) => {
@@ -422,7 +479,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         let end = meta::convert_loc(rspan.hi);
 
         // Put together
-        meta::Span {
+        meta::RawSpan {
             file_id,
             beg,
             end,
@@ -430,12 +487,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Compute meta data from a Rust source scope
-    pub fn translate_meta_from_source_info(
+    /// Compute span data from a Rust source scope
+    pub fn translate_span_from_source_info(
         &mut self,
         source_scopes: &hax::IndexVec<hax::SourceScope, hax::SourceScopeData>,
         source_info: &hax::SourceInfo,
-    ) -> Meta {
+    ) -> Span {
         // Translate the span
         let mut scope_data = source_scopes.get(source_info.scope).unwrap();
         let span = self.translate_span(scope_data.span.clone());
@@ -449,12 +506,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
             let parent_span = self.translate_span(scope_data.span.clone());
 
-            Meta {
+            Span {
                 span: parent_span,
                 generated_from_span: Some(span),
             }
         } else {
-            Meta {
+            Span {
                 span,
                 generated_from_span: None,
             }
@@ -462,11 +519,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 
     // TODO: rename
-    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
+    pub(crate) fn translate_span_from_rspan(&mut self, rspan: hax::Span) -> Span {
         // Translate the span
         let span = self.translate_span(rspan);
 
-        Meta {
+        Span {
             span,
             generated_from_span: None,
         }
@@ -519,7 +576,11 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     /// Returns the visibility of the item/field/etc. Returns `None` for items that don't have a
     /// visibility, like impl blocks.
-    pub(crate) fn translate_visibility_from_rid(&mut self, id: DefId, span: Span) -> Option<bool> {
+    pub(crate) fn translate_visibility_from_rid(
+        &mut self,
+        id: DefId,
+        span: RawSpan,
+    ) -> Option<bool> {
         use rustc_hir::def::DefKind::*;
         let def_kind = self.tcx.def_kind(id);
         match def_kind {
@@ -550,7 +611,6 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
             | ForeignMod
             | Generator
             | GlobalAsm
-            | ImplTraitPlaceholder
             | InlineConst
             | LifetimeParam
             | OpaqueTy
@@ -574,9 +634,13 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
         })
     }
 
+    pub(crate) fn is_opaque_name(&self, name: &Name) -> bool {
+        name.is_in_modules(&self.translated.crate_name, &self.options.opaque_mods)
+    }
+
     pub(crate) fn id_is_opaque(&mut self, id: DefId) -> Result<bool, Error> {
         let name = self.def_id_to_name(id)?;
-        Ok(self.crate_info.is_opaque_decl(&name) || self.id_is_extern_item(id))
+        Ok(self.is_opaque_name(&name) || self.id_is_extern_item(id))
     }
 
     pub(crate) fn id_is_transparent(&mut self, id: DefId) -> Result<bool, Error> {
@@ -585,44 +649,35 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
     pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
-        if let Some(src) = src {
-            if src.src_id != id {
-                match self.dep_sources.get_mut(&id) {
-                    None => {
-                        let _ = self.dep_sources.insert(id, HashSet::from([*src]));
-                    }
-                    Some(srcs) => {
-                        let _ = srcs.insert(*src);
-                    }
-                }
-            }
-        }
+        self.errors.register_dep_source(src, id)
     }
 
     pub(crate) fn register_id(&mut self, src: &Option<DepSource>, id: OrdRustId) -> AnyTransId {
         let rust_id = id.get_id();
         self.register_dep_source(src, rust_id);
-        match self.id_map.get(&rust_id) {
+        match self.translated.id_map.get(&rust_id) {
             Some(tid) => *tid,
             None => {
                 // Add the id to the stack of declarations to translate
                 self.stack.insert(id);
                 let trans_id = match id {
-                    OrdRustId::Type(_) => AnyTransId::Type(self.type_id_gen.fresh_id()),
+                    OrdRustId::Type(_) => AnyTransId::Type(self.translated.type_id_gen.fresh_id()),
                     OrdRustId::TraitDecl(_) => {
-                        AnyTransId::TraitDecl(self.trait_decl_id_gen.fresh_id())
+                        AnyTransId::TraitDecl(self.translated.trait_decl_id_gen.fresh_id())
                     }
                     OrdRustId::TraitImpl(_) => {
-                        AnyTransId::TraitImpl(self.trait_impl_id_gen.fresh_id())
+                        AnyTransId::TraitImpl(self.translated.trait_impl_id_gen.fresh_id())
                     }
-                    OrdRustId::Global(_) => AnyTransId::Global(self.global_id_gen.fresh_id()),
+                    OrdRustId::Global(_) => {
+                        AnyTransId::Global(self.translated.global_id_gen.fresh_id())
+                    }
                     OrdRustId::ConstFun(_) | OrdRustId::Fun(_) => {
-                        AnyTransId::Fun(self.fun_id_gen.fresh_id())
+                        AnyTransId::Fun(self.translated.fun_id_gen.fresh_id())
                     }
                 };
-                self.id_map.insert(id.get_id(), trans_id);
-                self.reverse_id_map.insert(trans_id, id.get_id());
-                self.all_ids.insert(trans_id);
+                self.translated.id_map.insert(id.get_id(), trans_id);
+                self.translated.reverse_id_map.insert(trans_id, id.get_id());
+                self.translated.all_ids.insert(trans_id);
                 trans_id
             }
         }
@@ -701,30 +756,115 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self) -> T,
     {
-        let current_def_id = self.def_id;
-        self.def_id = Some(def_id);
+        let current_def_id = self.errors.def_id;
+        self.errors.def_id = Some(def_id);
         let ret = f(self);
-        self.def_id = current_def_id;
+        self.errors.def_id = current_def_id;
+        ret
+    }
+}
+
+impl<'ctx> TransformCtx<'ctx> {
+    pub(crate) fn continue_on_failure(&self) -> bool {
+        self.errors.continue_on_failure()
+    }
+    pub(crate) fn has_errors(&self) -> bool {
+        self.errors.has_errors()
+    }
+
+    /// Span an error and register the error.
+    pub(crate) fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+        self.errors.span_err(span, msg)
+    }
+
+    pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, f: F) -> T
+    where
+        F: FnOnce(&mut Self) -> T,
+    {
+        let current_def_id = self.errors.def_id;
+        self.errors.def_id = Some(def_id);
+        let ret = f(self);
+        self.errors.def_id = current_def_id;
         ret
     }
 
-    pub(crate) fn iter_bodies<F, B>(
+    /// Get mutable access to both the ctx and the function declarations.
+    pub(crate) fn with_mut_unstructured_fun_decls<R>(
         &mut self,
-        funs: &mut Map<FunDeclId, GFunDecl<B>>,
-        globals: &mut Map<GlobalDeclId, GGlobalDecl<B>>,
-        f: F,
-    ) where
-        F: Fn(&mut Self, &Name, &mut GExprBody<B>),
+        f: impl FnOnce(&mut Self, &mut ast::FunDecls) -> R,
+    ) -> R {
+        let mut fun_decls = std::mem::take(&mut self.translated.fun_decls);
+        let ret = f(self, &mut fun_decls);
+        self.translated.fun_decls = fun_decls;
+        ret
+    }
+    /// Get mutable access to both the ctx and the global declarations.
+    pub(crate) fn with_mut_unstructured_global_decls<R>(
+        &mut self,
+        f: impl FnOnce(&mut Self, &mut ast::GlobalDecls) -> R,
+    ) -> R {
+        let mut global_decls = std::mem::take(&mut self.translated.global_decls);
+        let ret = f(self, &mut global_decls);
+        self.translated.global_decls = global_decls;
+        ret
+    }
+    /// Get mutable access to both the ctx and the function declarations.
+    pub(crate) fn with_mut_structured_fun_decls<R>(
+        &mut self,
+        f: impl FnOnce(&mut Self, &mut llbc_ast::FunDecls) -> R,
+    ) -> R {
+        let mut fun_decls = std::mem::take(&mut self.translated.structured_fun_decls);
+        let ret = f(self, &mut fun_decls);
+        self.translated.structured_fun_decls = fun_decls;
+        ret
+    }
+    /// Get mutable access to both the ctx and the global declarations.
+    pub(crate) fn with_mut_structured_global_decls<R>(
+        &mut self,
+        f: impl FnOnce(&mut Self, &mut llbc_ast::GlobalDecls) -> R,
+    ) -> R {
+        let mut global_decls = std::mem::take(&mut self.translated.structured_global_decls);
+        let ret = f(self, &mut global_decls);
+        self.translated.structured_global_decls = global_decls;
+        ret
+    }
+
+    pub(crate) fn iter_unstructured_bodies<F>(&mut self, f: F)
+    where
+        F: Fn(&mut Self, &Name, &mut ast::ExprBody),
     {
-        for (id, name, b) in iter_function_bodies(funs).chain(iter_global_bodies(globals)) {
-            self.with_def_id(id, |ctx| f(ctx, name, b))
-        }
+        self.with_mut_unstructured_fun_decls(|ctx, fun_decls| {
+            ctx.with_mut_unstructured_global_decls(|ctx, global_decls| {
+                let bodies: Vec<_> = iter_function_bodies(fun_decls)
+                    .chain(iter_global_bodies(global_decls))
+                    .collect();
+                for (id, name, b) in bodies {
+                    ctx.with_def_id(id, |ctx| f(ctx, name, b))
+                }
+            })
+        })
+    }
+
+    pub(crate) fn iter_structured_bodies<F>(&mut self, f: F)
+    where
+        F: Fn(&mut Self, &Name, &mut llbc_ast::ExprBody),
+    {
+        self.with_mut_structured_fun_decls(|ctx, fun_decls| {
+            ctx.with_mut_structured_global_decls(|ctx, global_decls| {
+                let bodies: Vec<_> = iter_function_bodies(fun_decls)
+                    .chain(iter_global_bodies(global_decls))
+                    .collect();
+                for (id, name, b) in bodies {
+                    ctx.with_def_id(id, |ctx| f(ctx, name, b))
+                }
+            })
+        })
     }
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
-    pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TransCtx<'tcx, 'ctx1>) -> Self {
+    pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>) -> Self {
         let hax_state = t_ctx.make_hax_state_with_id(def_id);
         let mut trait_clauses_counter = Generator::new();
         let trait_instance_id_gen = Box::new(move || {
@@ -764,8 +904,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.span_err(span, msg)
     }
 
-    pub(crate) fn translate_meta_from_rspan(&mut self, rspan: hax::Span) -> Meta {
-        self.t_ctx.translate_meta_from_rspan(rspan)
+    pub(crate) fn translate_span_from_rspan(&mut self, rspan: hax::Span) -> Span {
+        self.t_ctx.translate_span_from_rspan(rspan)
     }
 
     pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId> {
@@ -1020,16 +1160,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx, 'ctx> {
+    type C = FmtCtx<'a>;
+
+    fn into_fmt(self) -> Self::C {
+        self.translated.into_fmt()
+    }
+}
+
+impl<'a> IntoFormatter for &'a TransformCtx<'_> {
+    type C = FmtCtx<'a>;
+
+    fn into_fmt(self) -> Self::C {
+        self.translated.into_fmt()
+    }
+}
+
+impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
         FmtCtx {
-            type_decls: Some(&self.type_decls),
-            fun_decls: Some(&self.fun_decls),
-            global_decls: Some(&self.global_decls),
-            trait_decls: Some(&self.trait_decls),
-            trait_impls: Some(&self.trait_impls),
+            translated: Some(self),
             region_vars: im::Vector::new(),
             type_vars: None,
             const_generic_vars: None,
@@ -1043,11 +1195,7 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
 
     fn into_fmt(self) -> Self::C {
         FmtCtx {
-            type_decls: Some(&self.t_ctx.type_decls),
-            fun_decls: Some(&self.t_ctx.fun_decls),
-            global_decls: Some(&self.t_ctx.global_decls),
-            trait_decls: Some(&self.t_ctx.trait_decls),
-            trait_impls: Some(&self.t_ctx.trait_impls),
+            translated: Some(&self.t_ctx.translated),
             region_vars: self.region_vars.clone(),
             type_vars: Some(&self.type_vars),
             const_generic_vars: Some(&self.const_generic_vars),
@@ -1072,8 +1220,20 @@ impl<'a> FmtCtx<'a> {
     }
 }
 
-impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx, 'ctx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.translated.fmt_with_ullbc_defs(f)
+    }
+}
+
+impl fmt::Display for TransformCtx<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.translated.fmt_with_ullbc_defs(f)
+    }
+}
+
+impl TranslatedCrate {
+    fn fmt_with_ullbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fmt: FmtCtx = self.into_fmt();
 
         match &self.ordered_decls {
@@ -1115,16 +1275,11 @@ impl<'tcx, 'ctx> fmt::Display for TransCtx<'tcx, 'ctx> {
 
         fmt::Result::Ok(())
     }
-}
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
-    fn fmt_with_llbc_defs(
-        &self,
-        f: &mut fmt::Formatter,
-        llbc_globals: &llbc_ast::GlobalDecls,
-        llbc_funs: &llbc_ast::FunDecls,
-    ) -> fmt::Result {
+    fn fmt_with_llbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fmt: FmtCtx = self.into_fmt();
+        let llbc_globals = &self.structured_global_decls;
+        let llbc_funs = &self.structured_fun_decls;
 
         match &self.ordered_decls {
             None => {
@@ -1181,15 +1336,12 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
     }
 }
 
-pub(crate) struct LlbcTransCtx<'a, 'tcx, 'ctx> {
-    pub ctx: &'a TransCtx<'tcx, 'ctx>,
-    pub llbc_globals: &'a llbc_ast::GlobalDecls,
-    pub llbc_funs: &'a llbc_ast::FunDecls,
+pub(crate) struct LlbcFmtCtx<'a> {
+    pub translated: &'a TranslatedCrate,
 }
 
-impl<'a, 'tcx, 'ctx> fmt::Display for LlbcTransCtx<'a, 'tcx, 'ctx> {
+impl<'a> fmt::Display for LlbcFmtCtx<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.ctx
-            .fmt_with_llbc_defs(f, self.llbc_globals, self.llbc_funs)
+        self.translated.fmt_with_llbc_defs(f)
     }
 }

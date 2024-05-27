@@ -1,6 +1,6 @@
 pub use crate::gast::{FunDeclId, TraitItemName};
 use crate::ids::{Map, Vector};
-use crate::meta::{ItemMeta, Meta};
+use crate::meta::{ItemMeta, Span};
 use crate::names::Name;
 pub use crate::types_utils::*;
 use crate::values::{Literal, ScalarValue};
@@ -327,7 +327,7 @@ pub struct TraitClause {
     /// to a parameter.
     pub clause_id: TraitClauseId,
     #[derivative(PartialEq = "ignore")]
-    pub meta: Option<Meta>,
+    pub span: Option<Span>,
     pub trait_id: TraitDeclId,
     /// Remark: the trait refs list in the [generics] field should be empty.
     pub generics: GenericArgs,
@@ -378,7 +378,7 @@ pub enum TypeDeclKind {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Variant {
-    pub meta: Meta,
+    pub span: Span,
     pub name: String,
     pub fields: Vector<FieldId, Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
@@ -388,7 +388,7 @@ pub struct Variant {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Field {
-    pub meta: Meta,
+    pub span: Span,
     pub name: Option<String>,
     pub ty: Ty,
 }

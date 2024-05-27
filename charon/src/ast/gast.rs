@@ -3,7 +3,7 @@ pub use crate::expressions::*;
 pub use crate::gast_utils::*;
 use crate::generate_index_type;
 use crate::ids::Vector;
-use crate::meta::{ItemMeta, Meta};
+use crate::meta::{ItemMeta, Span};
 use crate::names::Name;
 pub use crate::types::GlobalDeclId;
 pub use crate::types::TraitClauseId;
@@ -41,7 +41,7 @@ pub struct Var {
 ///       the print is obfuscated and Aeneas may need some refactoring.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GExprBody<T> {
-    pub meta: Meta,
+    pub span: Span,
     /// The number of local variables used for the input arguments.
     pub arg_count: usize,
     /// The local variables.

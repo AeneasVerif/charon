@@ -157,7 +157,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_refs,
                     trait_info,
                 )?;
-                let SubstFunIdOrPanic::Fun(fn_id) = fn_id else  { unreachable!() };
+                let SubstFunIdOrPanic::Fun(fn_id) = fn_id else {
+                    unreachable!()
+                };
                 RawConstantExpr::FnPtr(fn_id.func)
             }
             ConstantExprKind::Todo(msg) => {

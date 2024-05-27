@@ -1,19 +1,17 @@
 use crate::cli_options::CliOpts;
 use crate::common::*;
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
-use crate::ids::{Generator, Map};
 use crate::translate_ctx::*;
 use crate::translate_functions_to_ullbc;
 
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
-use linked_hash_set::LinkedHashSet;
 use rustc_hir::{Defaultness, ForeignItemKind, ImplItem, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
-impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn register_local_hir_impl_item(&mut self, _top_item: bool, impl_item: &ImplItem) {
         // TODO: make a proper error message
         assert!(impl_item.defaultness == Defaultness::Final);
@@ -87,7 +85,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                     return Ok(());
                 }
                 Option::Some(item_name) => {
-                    if self.crate_info.is_opaque_decl(&item_name) {
+                    if self.is_opaque_name(&item_name) {
                         trace!("Ignoring {:?} (marked as opaque)", item.item_id());
                         return Ok(());
                     }
@@ -135,7 +133,7 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
                 // disappear completely.
                 let trans_id: hax::DefId = def_id.sinto(&self.hax_state);
                 if trans_id.path.last().unwrap().data != hax::DefPathItem::AnonConst {
-                    if extract_constants_at_top_level(self.mir_level) {
+                    if extract_constants_at_top_level(self.options.mir_level) {
                         let _ = self.translate_global_decl_id(&None, def_id);
                     } else {
                         // Avoid registering globals in optimized MIR (they will be inlined)
@@ -232,52 +230,42 @@ impl<'tcx, 'ctx> TransCtx<'tcx, 'ctx> {
 
 /// Translate all the declarations in the crate.
 pub fn translate<'tcx, 'ctx>(
-    crate_info: CrateInfo,
+    crate_name: String,
     options: &CliOpts,
     session: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
-) -> Result<TransCtx<'tcx, 'ctx>, Error> {
+) -> Result<TransformCtx<'ctx>, Error> {
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
             inline_macro_calls: Vec::new(),
         },
     );
-    let mut ctx = TransCtx {
-        session,
+    let mut ctx = TranslateCtx {
         tcx,
         hax_state,
-        mir_level,
-        crate_info,
-        continue_on_failure: !options.abort_on_error,
-        errors_as_warnings: options.errors_as_warnings,
-        error_count: 0,
-        no_code_duplication: options.no_code_duplication,
-        extract_opaque_bodies: options.extract_opaque_bodies,
-        all_ids: LinkedHashSet::new(),
+        options: TransOptions {
+            mir_level,
+            no_code_duplication: options.no_code_duplication,
+            extract_opaque_bodies: options.extract_opaque_bodies,
+            opaque_mods: HashSet::from_iter(options.opaque_modules.iter().cloned()),
+        },
+        errors: ErrorCtx {
+            continue_on_failure: !options.abort_on_error,
+            errors_as_warnings: options.errors_as_warnings,
+            session,
+            decls_with_errors: HashSet::new(),
+            ignored_failed_decls: HashSet::new(),
+            dep_sources: HashMap::new(),
+            def_id: None,
+            error_count: 0,
+        },
+        translated: TranslatedCrate {
+            crate_name,
+            ..TranslatedCrate::default()
+        },
         stack: BTreeSet::new(),
-        def_id: None,
-        file_to_id: HashMap::new(),
-        id_to_file: HashMap::new(),
-        real_file_counter: Generator::new(),
-        virtual_file_counter: Generator::new(),
-        dep_sources: HashMap::new(),
-        decls_with_errors: HashSet::new(),
-        ignored_failed_decls: HashSet::new(),
-        id_map: HashMap::new(),
-        reverse_id_map: HashMap::new(),
-        type_id_gen: Generator::new(),
-        type_decls: Map::new(),
-        fun_id_gen: Generator::new(),
-        fun_decls: Map::new(),
-        global_id_gen: Generator::new(),
-        global_decls: Map::new(),
-        trait_decl_id_gen: Generator::new(),
-        trait_decls: Map::new(),
-        trait_impl_id_gen: Generator::new(),
-        trait_impls: Map::new(),
-        ordered_decls: None,
     };
 
     // First push all the items in the stack of items to translate.
@@ -328,6 +316,11 @@ pub fn translate<'tcx, 'ctx>(
         }
     }
 
-    // Return the context
+    // Return the context, dropping the hax state and rustc `tcx`.
+    let ctx = TransformCtx {
+        options: ctx.options,
+        translated: ctx.translated,
+        errors: ctx.errors,
+    };
     Ok(ctx)
 }

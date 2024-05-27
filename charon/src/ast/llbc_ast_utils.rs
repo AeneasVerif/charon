@@ -3,7 +3,7 @@
 use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
 use crate::llbc_ast::{Assert, RawStatement, Statement, Switch};
 use crate::meta;
-use crate::meta::Meta;
+use crate::meta::Span;
 use crate::types::*;
 use crate::values::*;
 use macros::make_generic_in_borrows;
@@ -14,8 +14,8 @@ use take_mut::take;
 pub fn chain_statements(firsts: Vec<Statement>, last: Statement) -> Statement {
     firsts.into_iter().rev().fold(last, |cont, bind| {
         assert!(!bind.content.is_sequence());
-        let meta = meta::combine_meta(&bind.meta, &cont.meta);
-        Statement::new(meta, RawStatement::Sequence(Box::new(bind), Box::new(cont)))
+        let span = meta::combine_span(&bind.span, &cont.span);
+        Statement::new(span, RawStatement::Sequence(Box::new(bind), Box::new(cont)))
     })
 }
 
@@ -30,8 +30,8 @@ fn append_rightmost(seq: &mut Statement, r: Box<Statement>) {
         append_rightmost(l2, r);
     } else {
         take(l2.deref_mut(), move |l2| {
-            let meta = meta::combine_meta(&l2.meta, &r.meta);
-            Statement::new(meta, RawStatement::Sequence(Box::new(l2), r))
+            let span = meta::combine_span(&l2.span, &r.span);
+            Statement::new(span, RawStatement::Sequence(Box::new(l2), r))
         });
     }
 }
@@ -41,7 +41,7 @@ fn append_rightmost(seq: &mut Statement, r: Box<Statement>) {
 /// Must be used instead of the raw [RawStatement::Sequence] constructor,
 /// unless you're sure that the left statement is not a sequence.
 pub fn new_sequence(mut l: Statement, r: Statement) -> Statement {
-    let meta = meta::combine_meta(&l.meta, &r.meta);
+    let span = meta::combine_span(&l.span, &r.span);
 
     let r = Box::new(r);
     let nst = match l.content {
@@ -49,26 +49,26 @@ pub fn new_sequence(mut l: Statement, r: Statement) -> Statement {
             append_rightmost(&mut l, r);
             l.content
         }
-        lc => RawStatement::Sequence(Box::new(Statement::new(l.meta, lc)), r),
+        lc => RawStatement::Sequence(Box::new(Statement::new(l.span, lc)), r),
     };
 
-    Statement::new(meta, nst)
+    Statement::new(span, nst)
 }
 
-/// Combine the meta information from a [Switch]
-pub fn combine_switch_targets_meta(targets: &Switch) -> Meta {
+/// Combine the span information from a [Switch]
+pub fn combine_switch_targets_span(targets: &Switch) -> Span {
     match targets {
-        Switch::If(_, st1, st2) => meta::combine_meta(&st1.meta, &st2.meta),
+        Switch::If(_, st1, st2) => meta::combine_span(&st1.span, &st2.span),
         Switch::SwitchInt(_, _, branches, otherwise) => {
-            let branches = branches.iter().map(|b| &b.1.meta);
-            let mbranches = meta::combine_meta_iter(branches);
-            meta::combine_meta(&mbranches, &otherwise.meta)
+            let branches = branches.iter().map(|b| &b.1.span);
+            let mbranches = meta::combine_span_iter(branches);
+            meta::combine_span(&mbranches, &otherwise.span)
         }
         Switch::Match(_, branches, otherwise) => {
-            let branches = branches.iter().map(|b| &b.1.meta);
-            let mbranches = meta::combine_meta_iter(branches);
+            let branches = branches.iter().map(|b| &b.1.span);
+            let mbranches = meta::combine_span_iter(branches);
             if let Some(otherwise) = otherwise {
-                meta::combine_meta(&mbranches, &otherwise.meta)
+                meta::combine_span(&mbranches, &otherwise.span)
             } else {
                 mbranches
             }
@@ -105,8 +105,8 @@ impl Switch {
 }
 
 impl Statement {
-    pub fn new(meta: Meta, content: RawStatement) -> Self {
-        Statement { meta, content }
+    pub fn new(span: Span, content: RawStatement) -> Self {
+        Statement { span, content }
     }
 }
 
@@ -134,7 +134,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     fn merge(&mut self);
 
     fn default_visit_statement(&mut self, st: &Statement) {
-        self.visit_meta(&st.meta);
+        self.visit_span(&st.span);
         self.visit_raw_statement(&st.content)
     }
 
@@ -142,7 +142,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         self.default_visit_statement(st)
     }
 
-    fn visit_meta(&mut self, st: &Meta) {}
+    fn visit_span(&mut self, st: &Span) {}
 
     fn default_visit_raw_statement(&mut self, st: &RawStatement) {
         match st {

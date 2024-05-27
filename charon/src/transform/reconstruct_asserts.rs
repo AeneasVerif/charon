@@ -7,7 +7,7 @@ use take_mut::take;
 
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 
 fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     if let RawStatement::Switch(Switch::If(_, st1, _)) = &mut st.content {
@@ -18,7 +18,7 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
             take(&mut st.content, |st| {
                 let (op, st1, st2) = st.to_switch().to_if();
                 let st1 = Statement::new(
-                    st1.meta,
+                    st1.span,
                     RawStatement::Assert(Assert {
                         cond: op,
                         expected: false,
@@ -32,8 +32,8 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     None
 }
 
-pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    ctx.iter_bodies(funs, globals, |ctx, name, b| {
+pub fn transform(ctx: &mut TransformCtx) {
+    ctx.iter_structured_bodies(|ctx, name, b| {
         let fmt_ctx = ctx.into_fmt();
         trace!(
             "# About to reconstruct asserts in decl: {}\n{}",

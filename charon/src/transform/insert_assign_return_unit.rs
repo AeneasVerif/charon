@@ -6,11 +6,9 @@
 
 use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
-use crate::llbc_ast::{
-    ExprBody, FunDecl, FunDecls, GlobalDecl, GlobalDecls, RawStatement, Statement,
-};
+use crate::llbc_ast::{ExprBody, FunDecl, GlobalDecl, RawStatement, Statement};
 use crate::names::Name;
-use crate::translate_ctx::TransCtx;
+use crate::translate_ctx::TransformCtx;
 use crate::types::*;
 use crate::values::*;
 
@@ -24,14 +22,14 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
             AggregateKind::Adt(TypeId::Tuple, None, GenericArgs::empty()),
             Vec::new(),
         );
-        let assign_st = Statement::new(st.meta, RawStatement::Assign(ret_place, unit_value));
-        let ret_st = Statement::new(st.meta, RawStatement::Return);
+        let assign_st = Statement::new(st.span, RawStatement::Assign(ret_place, unit_value));
+        let ret_st = Statement::new(st.span, RawStatement::Return);
         st.content = RawStatement::Sequence(Box::new(assign_st), Box::new(ret_st));
     };
     None
 }
 
-fn transform_body(ctx: &TransCtx, name: &Name, body: &mut Option<ExprBody>) {
+fn transform_body(ctx: &TransformCtx, name: &Name, body: &mut Option<ExprBody>) {
     let ctx = ctx.into_fmt();
     if let Some(b) = body.as_mut() {
         trace!(
@@ -43,14 +41,14 @@ fn transform_body(ctx: &TransCtx, name: &Name, body: &mut Option<ExprBody>) {
     }
 }
 
-fn transform_function(ctx: &mut TransCtx, def: &mut FunDecl) {
+fn transform_function(ctx: &mut TransformCtx, def: &mut FunDecl) {
     if def.signature.output.is_unit() {
         ctx.with_def_id(def.rust_id, |ctx| {
             transform_body(ctx, &def.name, &mut def.body)
         });
     }
 }
-fn transform_global(ctx: &mut TransCtx, def: &mut GlobalDecl) {
+fn transform_global(ctx: &mut TransformCtx, def: &mut GlobalDecl) {
     if def.ty.is_unit() {
         ctx.with_def_id(def.rust_id, |ctx| {
             transform_body(ctx, &def.name, &mut def.body)
@@ -58,7 +56,15 @@ fn transform_global(ctx: &mut TransCtx, def: &mut GlobalDecl) {
     }
 }
 
-pub fn transform(ctx: &mut TransCtx, funs: &mut FunDecls, globals: &mut GlobalDecls) {
-    funs.iter_mut().for_each(|d| transform_function(ctx, d));
-    globals.iter_mut().for_each(|d| transform_global(ctx, d));
+pub fn transform(ctx: &mut TransformCtx) {
+    ctx.with_mut_structured_fun_decls(|ctx, fun_decls| {
+        fun_decls
+            .iter_mut()
+            .for_each(|d| transform_function(ctx, d));
+    });
+    ctx.with_mut_structured_global_decls(|ctx, global_decls| {
+        global_decls
+            .iter_mut()
+            .for_each(|d| transform_global(ctx, d));
+    });
 }

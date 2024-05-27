@@ -330,6 +330,7 @@ and trait_instance_id =
        *)
   | FnPointer of ty
   | Closure of fun_decl_id * generic_args
+  | Unsolved of trait_decl_id * generic_args
   | UnknownTrait of string
       (** Not present in the Rust version of Charon.
 
@@ -376,7 +377,7 @@ and region =
 class ['self] iter_predicates_base =
   object (self : 'self)
     inherit [_] iter_ty
-    method visit_meta : 'env -> meta -> unit = fun _ _ -> ()
+    method visit_span : 'env -> span -> unit = fun _ _ -> ()
 
     method visit_type_var : 'env -> type_var -> unit =
       fun env x ->
@@ -396,7 +397,7 @@ class ['self] iter_predicates_base =
 class virtual ['self] map_predicates_base =
   object (self : 'self)
     inherit [_] map_ty
-    method visit_meta : 'env -> meta -> meta = fun _ x -> x
+    method visit_span : 'env -> span -> span = fun _ x -> x
 
     method visit_type_var : 'env -> type_var -> type_var =
       fun env x ->
@@ -423,7 +424,7 @@ and rty = ty
 
 and trait_clause = {
   clause_id : trait_clause_id;
-  meta : meta option;
+  span : span option;
   trait_id : trait_decl_id;
   clause_generics : generic_args;
 }
@@ -528,11 +529,11 @@ type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
 
 type region_var_groups = region_var_group list [@@deriving show]
 
-type field = { meta : meta; field_name : string option; field_ty : ty }
+type field = { span : span; field_name : string option; field_ty : ty }
 [@@deriving show]
 
 type variant = {
-  meta : meta;
+  span : span;
   variant_name : string;
   fields : field list;
       (** The fields can be indexed with {!FieldId.id}.
