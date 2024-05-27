@@ -12,14 +12,14 @@ path = "src/lib.rs"
 # The main entrypoint. This is a wrapper that handles toolchain and cargo
 # management and calls `charon-driver` for the real work.
 name = "charon"
-path = "src/main.rs"
+path = "src/bin/charon.rs"
 
 [[bin]]
 # The rustc driver. The resulting binary dynamically links to rust dylibs
 # including `librustc_driver.so`. Do not call directly, call charon instead to
 # let it set up the right paths.
 name = "charon-driver"
-path = "src/charon-driver.rs"
+path = "src/bin/charon-driver.rs"
 
 [dependencies]
 backtrace = "0.3.69"
