@@ -88,8 +88,8 @@ analyze-rustc-tests: rustc-tests
 clean-generated:
 	cd charon && make clean-generated
 
-.PHONY: clean-generated
-clean:
+.PHONY: clean
+clean: clean-generated
 	cd charon/attributes && cargo clean
 	cd charon && cargo clean
 	cd charon/macros && cargo clean
