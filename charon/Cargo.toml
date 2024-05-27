@@ -22,6 +22,7 @@ name = "charon-driver"
 path = "src/bin/charon-driver/main.rs"
 
 [dependencies]
+anyhow = "1.0.81"
 backtrace = "0.3.69"
 bumpalo = "3.11.1" # We constrain the version of [bumpalo] because of a vulnerability
 clap = { version = "3.0", features = ["derive", "env"] }
@@ -59,7 +60,6 @@ hax-frontend-exporter-options = { git = "https://github.com/hacspec/hax", branch
 macros = { path = "./macros" }
 
 [dev-dependencies]
-anyhow = "1.0.81"
 assert_cmd = "1.0.8"
 ignore = "0.4"
 indoc = "2"

@@ -39,6 +39,7 @@ mod cli_options;
 #[path = "../../logger.rs"]
 mod logger;
 
+use anyhow::bail;
 use clap::Parser;
 use cli_options::{CliOpts, CHARON_ARGS};
 use serde::Deserialize;
@@ -66,35 +67,6 @@ struct Toolchain {
 fn get_pinned_toolchain() -> Toolchain {
     let file_contents: ToolchainFile = toml::from_str(PINNED_TOOLCHAIN).unwrap();
     file_contents.toolchain
-}
-
-pub fn main() {
-    // Initialize the logger
-    logger::initialize_logger();
-
-    // Parse the command-line
-    let options = CliOpts::parse();
-    trace!("Arguments: {:?}", std::env::args());
-
-    // Check that the options are meaningful
-    assert!(
-        !options.lib || options.bin.is_none(),
-        "Can't use --lib and --bin at the same time"
-    );
-
-    assert!(
-        !options.mir_promoted || !options.mir_optimized,
-        "Can't use --mir_promoted and --mir_optimized at the same time"
-    );
-
-    assert!(
-        !options.abort_on_error || !options.errors_as_warnings,
-        "Can't use --abort-on-error and --errors-as-warnings at the same time"
-    );
-
-    if let Err(code) = process(&options) {
-        std::process::exit(code);
-    }
 }
 
 fn driver_path() -> PathBuf {
@@ -154,7 +126,30 @@ fn cargo_cmd() -> Command {
     cmd
 }
 
-fn process(options: &CliOpts) -> Result<(), i32> {
+pub fn main() -> anyhow::Result<()> {
+    // Initialize the logger
+    logger::initialize_logger();
+
+    // Parse the command-line
+    let options = CliOpts::parse();
+    trace!("Arguments: {:?}", std::env::args());
+
+    // Check that the options are meaningful
+    assert!(
+        !options.lib || options.bin.is_none(),
+        "Can't use --lib and --bin at the same time"
+    );
+
+    assert!(
+        !options.mir_promoted || !options.mir_optimized,
+        "Can't use --mir_promoted and --mir_optimized at the same time"
+    );
+
+    assert!(
+        !options.abort_on_error || !options.errors_as_warnings,
+        "Can't use --abort-on-error and --errors-as-warnings at the same time"
+    );
+
     // FIXME: when using rustup, ensure the toolchain has the right components installed.
     let use_rustup = which::which("rustup").is_ok();
     // This is set by the nix develop environment and the nix builder; in both cases the toolchain
@@ -237,6 +232,7 @@ fn process(options: &CliOpts) -> Result<(), i32> {
     if exit_status.success() {
         Ok(())
     } else {
-        Err(exit_status.code().unwrap_or(-1))
+        let code = exit_status.code().unwrap_or(-1);
+        bail!("Charon driver exited with code {code}")
     }
 }

@@ -28,3 +28,4 @@ error: aborting due to 3 previous errors
 
 For more information about this error, try `rustc --explain E0261`.
 [ ERROR charon_driver:214] The extraction encountered 2 errors
+Error: Charon driver exited with code 1
