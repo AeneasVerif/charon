@@ -34,7 +34,9 @@
 
 // Don't link with the `charon_lib` crate so that the `charon` binary doesn't have to dynamically
 // link to `librustc_driver.so` etc.
+#[path = "../cli_options.rs"]
 mod cli_options;
+#[path = "../logger.rs"]
 mod logger;
 
 use clap::Parser;
@@ -45,7 +47,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 // Store the toolchain details directly in the binary.
-static PINNED_TOOLCHAIN: &str = include_str!("../rust-toolchain");
+static PINNED_TOOLCHAIN: &str = include_str!("../../rust-toolchain");
 
 /// This struct is used to deserialize the "rust-toolchain" file.
 #[derive(Deserialize)]
