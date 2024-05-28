@@ -45,6 +45,7 @@ use clap::Parser;
 use cli_options::{CliOpts, CHARON_ARGS};
 use serde::Deserialize;
 use std::env;
+use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -82,48 +83,34 @@ fn driver_path() -> PathBuf {
     path
 }
 
-fn driver_cmd() -> Command {
+/// Build a command that calls the given binary in the correct toolchain environment. This uses
+/// rustup to provide the correct toolchain, unless we're in a nix context where the toolchain is
+/// already in PATH.
+fn in_toolchain(program: impl AsRef<OsStr>) -> Command {
     let toolchain = get_pinned_toolchain();
-    let driver_path = driver_path();
     // This is set by the nix develop environment and the nix builder; in both cases the toolchain
     // is set up in `$PATH` and the driver should be correctly dynamically linked.
     let correct_toolchain_is_in_path = env::var("CHARON_TOOLCHAIN_IS_IN_PATH").is_ok();
 
     let mut cmd;
     if correct_toolchain_is_in_path {
-        trace!("We appear to have been built with nix; the driver should be correctly linked.");
-        cmd = Command::new(driver_path);
+        trace!("We appear to have been built with nix; using the rust toolchain in PATH.");
+        cmd = Command::new(program);
     } else {
-        trace!("Calling the driver via `rustup`");
-        // If rustup is there, use it to set up the right library paths so that `charon-driver`
-        // can run correctly.
+        trace!("Using rustup-provided toolchain.");
         cmd = Command::new("rustup");
         cmd.arg("run");
         cmd.arg(toolchain.channel);
-        cmd.arg(driver_path);
+        cmd.arg(program);
     }
-    // The driver expects the first arg to be "rustc" because that's how cargo calls it.
-    cmd.arg("rustc");
     cmd
 }
 
-fn cargo_cmd() -> Command {
-    let toolchain = get_pinned_toolchain();
-    // This is set by the nix develop environment and the nix builder; in both cases the toolchain
-    // is set up in `$PATH` and the driver should be correctly dynamically linked.
-    let correct_toolchain_is_in_path = env::var("CHARON_TOOLCHAIN_IS_IN_PATH").is_ok();
-
-    let mut cmd;
-    if correct_toolchain_is_in_path {
-        trace!("Using nix-provided toolchain");
-        cmd = Command::new("cargo");
-    } else {
-        trace!("Using rustup-provided `cargo`.");
-        cmd = Command::new("rustup");
-        cmd.arg("run");
-        cmd.arg(toolchain.channel);
-        cmd.arg("cargo");
-    }
+fn driver_cmd() -> Command {
+    // We need `in_toolchain` to get the right library paths.
+    let mut cmd = in_toolchain(driver_path());
+    // The driver expects the first arg to be "rustc" because that's how cargo calls it.
+    cmd.arg("rustc");
     cmd
 }
 
@@ -181,7 +168,7 @@ pub fn main() -> anyhow::Result<()> {
             options = toml.apply(options);
             options.validate();
         }
-        let mut cmd = cargo_cmd();
+        let mut cmd = in_toolchain("cargo");
 
         // Tell cargo to use the driver for all the crates in the workspace. There's no option for
         // "run only on the selected crate" so the driver might be called on a crate dependency
