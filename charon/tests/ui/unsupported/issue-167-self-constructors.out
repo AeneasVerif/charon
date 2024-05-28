@@ -7,3 +7,4 @@ error: assertion failure: "user_annotation.is_none()"
 error: aborting due to previous error
 
 [ ERROR charon_driver:214] The extraction encountered 1 errors
+Error: Charon driver exited with code 1

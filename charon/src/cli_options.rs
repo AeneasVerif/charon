@@ -3,6 +3,10 @@ use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+/// The name of the environment variable we use to save the serialized Cli options
+/// when calling charon-driver from cargo-charon.
+pub const CHARON_ARGS: &str = "CHARON_ARGS";
+
 // This structure is used to store the command-line instructions.
 // We automatically derive a command-line parser based on this structure.
 // Note that the doc comments are used to generate the help message when using
@@ -171,6 +175,22 @@ Print the final LLBC (after all the cleaning micro-passes).
     pub print_llbc: bool,
 }
 
-/// The name of the environment variable we use to save the serialized Cli options
-/// when calling charon-driver from cargo-charon.
-pub const CHARON_ARGS: &str = "CHARON_ARGS";
+impl CliOpts {
+    /// Check that the options are meaningful
+    pub fn validate(&self) {
+        assert!(
+            !self.lib || self.bin.is_none(),
+            "Can't use --lib and --bin at the same time"
+        );
+
+        assert!(
+            !self.mir_promoted || !self.mir_optimized,
+            "Can't use --mir_promoted and --mir_optimized at the same time"
+        );
+
+        assert!(
+            !self.abort_on_error || !self.errors_as_warnings,
+            "Can't use --abort-on-error and --errors-as-warnings at the same time"
+        );
+    }
+}
