@@ -61,9 +61,40 @@ struct ToolchainFile {
 #[derive(Deserialize)]
 struct Toolchain {
     channel: String,
-    #[allow(dead_code)]
-    // FIXME: ensure the right components are installed.
     components: Vec<String>,
+}
+
+impl Toolchain {
+    fn is_installed(&self) -> anyhow::Result<bool> {
+        // FIXME: check if the right components are installed.
+        let output = self.run("echo").output()?;
+        Ok(output.status.success())
+    }
+
+    fn install(&self) -> anyhow::Result<()> {
+        Command::new("rustup")
+            .arg("install")
+            .arg(&self.channel)
+            .status()?;
+        for component in &self.components {
+            Command::new("rustup")
+                .arg("component")
+                .arg("add")
+                .arg("--toolchain")
+                .arg(&self.channel)
+                .arg(component)
+                .status()?;
+        }
+        Ok(())
+    }
+
+    fn run(&self, program: impl AsRef<OsStr>) -> Command {
+        let mut cmd = Command::new("rustup");
+        cmd.arg("run");
+        cmd.arg(&self.channel);
+        cmd.arg(program);
+        cmd
+    }
 }
 
 fn get_pinned_toolchain() -> Toolchain {
@@ -86,32 +117,32 @@ fn driver_path() -> PathBuf {
 /// Build a command that calls the given binary in the correct toolchain environment. This uses
 /// rustup to provide the correct toolchain, unless we're in a nix context where the toolchain is
 /// already in PATH.
-fn in_toolchain(program: impl AsRef<OsStr>) -> Command {
+fn in_toolchain(program: impl AsRef<OsStr>) -> anyhow::Result<Command> {
     let toolchain = get_pinned_toolchain();
     // This is set by the nix develop environment and the nix builder; in both cases the toolchain
     // is set up in `$PATH` and the driver should be correctly dynamically linked.
     let correct_toolchain_is_in_path = env::var("CHARON_TOOLCHAIN_IS_IN_PATH").is_ok();
 
-    let mut cmd;
-    if correct_toolchain_is_in_path {
+    let cmd = if correct_toolchain_is_in_path {
         trace!("We appear to have been built with nix; using the rust toolchain in PATH.");
-        cmd = Command::new(program);
+        Command::new(program)
     } else {
         trace!("Using rustup-provided toolchain.");
-        cmd = Command::new("rustup");
-        cmd.arg("run");
-        cmd.arg(toolchain.channel);
-        cmd.arg(program);
-    }
-    cmd
+        if !toolchain.is_installed()? {
+            println!("The required toolchain is not installed. Installing...");
+            toolchain.install()?;
+        }
+        toolchain.run(program)
+    };
+    Ok(cmd)
 }
 
-fn driver_cmd() -> Command {
+fn driver_cmd() -> anyhow::Result<Command> {
     // We need `in_toolchain` to get the right library paths.
-    let mut cmd = in_toolchain(driver_path());
+    let mut cmd = in_toolchain(driver_path())?;
     // The driver expects the first arg to be "rustc" because that's how cargo calls it.
     cmd.arg("rustc");
-    cmd
+    Ok(cmd)
 }
 
 pub fn main() -> anyhow::Result<()> {
@@ -139,14 +170,14 @@ pub fn main() -> anyhow::Result<()> {
     }
 
     let rustc_version =
-        rustc_version::VersionMeta::for_command(driver_cmd()).unwrap_or_else(|err| {
+        rustc_version::VersionMeta::for_command(driver_cmd()?).unwrap_or_else(|err| {
             panic!("failed to determine underlying rustc version of Charon:\n{err:?}",)
         });
     let host = &rustc_version.host;
 
     let exit_status = if options.no_cargo {
         // Run just the driver.
-        let mut cmd = driver_cmd();
+        let mut cmd = driver_cmd()?;
 
         cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
 
@@ -168,7 +199,7 @@ pub fn main() -> anyhow::Result<()> {
             options = toml.apply(options);
             options.validate();
         }
-        let mut cmd = in_toolchain("cargo");
+        let mut cmd = in_toolchain("cargo")?;
 
         // Tell cargo to use the driver for all the crates in the workspace. There's no option for
         // "run only on the selected crate" so the driver might be called on a crate dependency
