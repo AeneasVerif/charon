@@ -67,7 +67,7 @@ fn translate_unaryop_kind(binop: hax::UnOp) -> UnOp {
 /// Small utility
 pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
     // TODO: make proper error messages
-    use rustc_hir::{Constness, Defaultness, ImplPolarity, Unsafety};
+    use rustc_hir::{Defaultness, ImplPolarity, Unsafety};
     assert!(impl_item.unsafety == Unsafety::Normal);
     // About polarity:
     // [https://doc.rust-lang.org/beta/unstable-book/language-features/negative-impls.html]
@@ -75,10 +75,8 @@ pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
     // This seems useful to enforce some discipline on the user-side, but not
     // necessary for analysis purposes.
     assert!(impl_item.polarity == ImplPolarity::Positive);
-    // Note sure what this is about
+    // Not sure what this is about
     assert!(impl_item.defaultness == Defaultness::Final);
-    // Note sure what this is about
-    assert!(impl_item.constness == Constness::NotConst);
 }
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
@@ -552,7 +550,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: rustc_span::Span,
         rvalue: &hax::Rvalue,
     ) -> Result<Rvalue, Error> {
-        use std::ops::Deref;
         let erase_regions = true;
         match rvalue {
             hax::Rvalue::Use(operand) => Ok(Rvalue::Use(self.translate_operand(span, operand)?)),
@@ -697,15 +694,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 }
             }
-            hax::Rvalue::BinaryOp(binop, operands) => {
-                let (left, right) = operands.deref();
-                Ok(Rvalue::BinaryOp(
-                    self.t_ctx.translate_binaryop_kind(span, *binop)?,
-                    self.translate_operand(span, left)?,
-                    self.translate_operand(span, right)?,
-                ))
-            }
-            hax::Rvalue::CheckedBinaryOp(binop, operands) => {
+            hax::Rvalue::BinaryOp(binop, (left, right)) => Ok(Rvalue::BinaryOp(
+                self.t_ctx.translate_binaryop_kind(span, *binop)?,
+                self.translate_operand(span, left)?,
+                self.translate_operand(span, right)?,
+            )),
+            hax::Rvalue::CheckedBinaryOp(binop, (left, right)) => {
                 let binop = match binop {
                     hax::BinOp::Add => BinOp::CheckedAdd,
                     hax::BinOp::Sub => BinOp::CheckedSub,
@@ -714,7 +708,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         error_or_panic!(self, span, "Only Add, Sub and Mul are supported as checked binary operations, found {binop:?}");
                     }
                 };
-                let (left, right) = operands.deref();
                 Ok(Rvalue::BinaryOp(
                     binop,
                     self.translate_operand(span, left)?,
@@ -767,7 +760,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .map(|op| self.translate_operand(span, op))
                     .try_collect()?;
 
-                match aggregate_kind.deref() {
+                match aggregate_kind {
                     hax::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_ty(span, erase_regions, ty)?;
                         let cg = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
@@ -1082,12 +1075,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("About to translate statement (MIR) {:?}", statement);
         let span = statement.source_info.span.rust_span_data.unwrap().span();
 
-        use std::ops::Deref;
-
         use hax::StatementKind;
         let t_statement: Option<RawStatement> = match &*statement.kind {
-            StatementKind::Assign(assign) => {
-                let (place, rvalue) = assign.deref();
+            StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
                 let t_rvalue = self.translate_rvalue(
                     statement.source_info.span.rust_span_data.unwrap().span(),
@@ -1096,8 +1086,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 Some(RawStatement::Assign(t_place, t_rvalue))
             }
-            StatementKind::FakeRead(info) => {
-                let (_read_cause, place) = info.deref();
+            StatementKind::FakeRead((_read_cause, place)) => {
                 let t_place = self.translate_place(span, place)?;
 
                 Some(RawStatement::FakeRead(t_place))
@@ -1203,14 +1192,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 RawTerminator::Switch { discr, targets }
             }
-            TerminatorKind::Resume => {
+            TerminatorKind::UnwindResume => {
                 // This is used to correctly unwind. We shouldn't get there: if
                 // we panic, the state gets stuck.
-                error_or_panic!(self, rustc_span, "Unexpected terminator: resume");
+                error_or_panic!(self, rustc_span, "Unexpected terminator: UnwindResume");
+            }
+            TerminatorKind::UnwindTerminate { .. } => {
+                error_or_panic!(self, rustc_span, "Unexpected terminator: UnwindTerminate")
             }
             TerminatorKind::Return => RawTerminator::Return,
             TerminatorKind::Unreachable => RawTerminator::Unreachable,
-            TerminatorKind::Terminate => unimplemented!(),
             TerminatorKind::Drop {
                 place,
                 target,
@@ -1574,7 +1565,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let (substs, signature, closure_info): (
             Vec<hax::GenericArg>,
             rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>>,
-            Option<(ClosureKind, Vec<rustc_middle::ty::Ty<'tcx>>)>,
+            Option<(ClosureKind, &ty::List<rustc_middle::ty::Ty<'tcx>>)>,
         ) = if is_closure {
             // Closures have a peculiar handling in Rust: we can't call
             // `TyCtxt::fn_sig`.
@@ -1604,8 +1595,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 rustc_middle::ty::ClosureKind::FnOnce => ClosureKind::FnOnce,
             };
 
-            // Retrieve the type of the captured stated
-            let state: Vec<rustc_middle::ty::Ty<'tcx>> = closure.upvar_tys().collect();
+            // Retrieve the type of the captured state
+            let state: &ty::List<rustc_middle::ty::Ty<'tcx>> = closure.upvar_tys();
 
             let substs = substs.sinto(&self.hax_state);
 

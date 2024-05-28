@@ -215,12 +215,14 @@ fn test_crate::get_max(@1: u32, @2: u32) -> u32
     @4 := copy (x@1)
     @5 := copy (y@2)
     @3 := move (@4) >= move (@5)
-    drop @5
-    drop @4
     if move (@3) {
+        drop @5
+        drop @4
         @0 := copy (x@1)
     }
     else {
+        drop @5
+        drop @4
         @0 := copy (y@2)
     }
     drop @3
@@ -294,10 +296,9 @@ fn test_crate::test_box1()
     let @5: &'_ (alloc::boxed::Box<i32>); // anonymous local
     let @6: (); // anonymous local
     let @7: bool; // anonymous local
-    let @8: bool; // anonymous local
-    let @9: i32; // anonymous local
+    let @8: i32; // anonymous local
+    let @9: (); // anonymous local
     let @10: (); // anonymous local
-    let @11: (); // anonymous local
 
     b@1 := @BoxNew<i32>(const (0 : i32))
     @fake_read(b@1)
@@ -310,29 +311,28 @@ fn test_crate::test_box1()
     x@4 := alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}<i32, alloc::alloc::Global>::deref(move (@5))
     drop @5
     @fake_read(x@4)
-    @9 := copy (*(x@4))
-    @8 := move (@9) == const (1 : i32)
-    drop @9
-    @7 := ~(move (@8))
-    drop @8
+    @8 := copy (*(x@4))
+    @7 := move (@8) == const (1 : i32)
     if move (@7) {
         nop
     }
     else {
-        @10 := ()
-        @6 := move (@10)
-        drop @7
-        drop @6
-        @11 := ()
-        @0 := move (@11)
-        drop x@4
-        drop x@2
-        drop b@1
-        drop b@1
-        @0 := ()
-        return
+        drop @8
+        panic
     }
-    panic
+    drop @8
+    @9 := ()
+    @6 := move (@9)
+    drop @7
+    drop @6
+    @10 := ()
+    @0 := move (@10)
+    drop x@4
+    drop x@2
+    drop b@1
+    drop b@1
+    @0 := ()
+    return
 }
 
 fn test_crate::copy_int(@1: i32) -> i32
@@ -446,11 +446,12 @@ fn test_crate::even(@1: u32) -> bool
 
     @3 := copy (x@1)
     @2 := move (@3) == const (0 : u32)
-    drop @3
     if move (@2) {
+        drop @3
         @0 := const (true)
     }
     else {
+        drop @3
         @5 := copy (x@1)
         @4 := move (@5) - const (1 : u32)
         drop @5
@@ -472,11 +473,12 @@ fn test_crate::odd(@1: u32) -> bool
 
     @3 := copy (x@1)
     @2 := move (@3) == const (0 : u32)
-    drop @3
     if move (@2) {
+        drop @3
         @0 := const (false)
     }
     else {
+        drop @3
         @5 := copy (x@1)
         @4 := move (@5) - const (1 : u32)
         drop @5
@@ -492,78 +494,66 @@ fn test_crate::test_even_odd()
     let @0: (); // return
     let @1: (); // anonymous local
     let @2: bool; // anonymous local
-    let @3: bool; // anonymous local
-    let @4: (); // anonymous local
-    let @5: bool; // anonymous local
+    let @3: (); // anonymous local
+    let @4: bool; // anonymous local
+    let @5: (); // anonymous local
     let @6: bool; // anonymous local
     let @7: (); // anonymous local
     let @8: bool; // anonymous local
-    let @9: bool; // anonymous local
+    let @9: (); // anonymous local
     let @10: (); // anonymous local
-    let @11: bool; // anonymous local
-    let @12: bool; // anonymous local
+    let @11: (); // anonymous local
+    let @12: (); // anonymous local
     let @13: (); // anonymous local
-    let @14: (); // anonymous local
-    let @15: (); // anonymous local
-    let @16: (); // anonymous local
-    let @17: (); // anonymous local
 
-    @3 := test_crate::even(const (0 : u32))
-    @2 := ~(move (@3))
-    drop @3
+    @2 := test_crate::even(const (0 : u32))
     if move (@2) {
         nop
     }
     else {
-        @13 := ()
-        @1 := move (@13)
-        drop @2
-        drop @1
-        @6 := test_crate::even(const (4 : u32))
-        @5 := ~(move (@6))
-        drop @6
-        if move (@5) {
-            nop
-        }
-        else {
-            @14 := ()
-            @4 := move (@14)
-            drop @5
-            drop @4
-            @9 := test_crate::odd(const (1 : u32))
-            @8 := ~(move (@9))
-            drop @9
-            if move (@8) {
-                nop
-            }
-            else {
-                @15 := ()
-                @7 := move (@15)
-                drop @8
-                drop @7
-                @12 := test_crate::odd(const (5 : u32))
-                @11 := ~(move (@12))
-                drop @12
-                if move (@11) {
-                    nop
-                }
-                else {
-                    @16 := ()
-                    @10 := move (@16)
-                    drop @11
-                    drop @10
-                    @17 := ()
-                    @0 := move (@17)
-                    @0 := ()
-                    return
-                }
-                panic
-            }
-            panic
-        }
         panic
     }
-    panic
+    @9 := ()
+    @1 := move (@9)
+    drop @2
+    drop @1
+    @4 := test_crate::even(const (4 : u32))
+    if move (@4) {
+        nop
+    }
+    else {
+        panic
+    }
+    @10 := ()
+    @3 := move (@10)
+    drop @4
+    drop @3
+    @6 := test_crate::odd(const (1 : u32))
+    if move (@6) {
+        nop
+    }
+    else {
+        panic
+    }
+    @11 := ()
+    @5 := move (@11)
+    drop @6
+    drop @5
+    @8 := test_crate::odd(const (5 : u32))
+    if move (@8) {
+        nop
+    }
+    else {
+        panic
+    }
+    @12 := ()
+    @7 := move (@12)
+    drop @8
+    drop @7
+    @13 := ()
+    @0 := move (@13)
+    @0 := ()
+    return
 }
 
 struct test_crate::StructWithTuple<T1, T2> =

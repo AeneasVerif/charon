@@ -64,14 +64,14 @@
                 > $out
             '';
             # The rustc commit we use to get the tests. This should stay equal to `toolchain_commit`.
-            tests_commit = "ad963232d9b987d66a6f8e6ec4141f672b8b9900";
+            tests_commit = "65ea825f4021eaf77f1b25139969712d65b435a4";
             rustc_tests = pkgs.runCommand "rustc-tests"
               {
                 src = pkgs.fetchFromGitHub {
                   owner = "rust-lang";
                   repo = "rust";
                   rev = tests_commit;
-                  sha256 = "sha256-fpPMSzKc/Dd1nXAX7RocM/p22zuFoWtIL6mVw7XTBDo=";
+                  sha256 = "sha256-0dsWuGcWjQpj/N4iG6clCzM8kjrDjE+dQfyL3iuBGiY=";
                 };
               } ''
               # Check we're using the correct commit for tests.

@@ -24,14 +24,14 @@ fn test_crate::test_loop1(@1: u32) -> u32
         @7 := copy (i@2)
         @8 := copy (max@1)
         @6 := move (@7) < move (@8)
-        drop @8
-        drop @7
         if move (@6) {
             nop
         }
         else {
             break 0
         }
+        drop @8
+        drop @7
         @9 := copy (i@2)
         s@3 := copy (s@3) + move (@9)
         drop @9
@@ -41,6 +41,8 @@ fn test_crate::test_loop1(@1: u32) -> u32
         drop @6
         continue 0
     }
+    drop @8
+    drop @7
     @12 := ()
     @4 := move (@12)
     drop @10
@@ -82,13 +84,13 @@ fn test_crate::test_loop2(@1: u32) -> u32
         @7 := copy (i@2)
         @8 := copy (max@1)
         @6 := move (@7) < move (@8)
-        drop @8
-        drop @7
         if move (@6) {
+            drop @8
+            drop @7
             @11 := copy (i@2)
             @10 := move (@11) == const (17 : u32)
-            drop @11
             if move (@10) {
+                drop @11
                 @14 := ()
                 @4 := move (@14)
                 drop @10
@@ -96,6 +98,7 @@ fn test_crate::test_loop2(@1: u32) -> u32
                 break 0
             }
             else {
+                drop @11
                 @16 := ()
                 @9 := move (@16)
                 drop @10
@@ -111,6 +114,8 @@ fn test_crate::test_loop2(@1: u32) -> u32
             }
         }
         else {
+            drop @8
+            drop @7
             @15 := ()
             @4 := move (@15)
             drop @13
@@ -165,37 +170,37 @@ fn test_crate::test_loop3(@1: u32) -> u32
         @8 := copy (i@2)
         @9 := copy (max@1)
         @7 := move (@8) < move (@9)
-        drop @9
-        drop @8
         if move (@7) {
             nop
         }
         else {
             break 0
         }
+        drop @9
+        drop @8
         loop {
             @12 := copy (j@3)
             @13 := copy (max@1)
             @11 := move (@12) < move (@13)
-            drop @13
-            drop @12
             if move (@11) {
                 nop
             }
             else {
                 break 0
             }
+            drop @13
+            drop @12
             @17 := copy (i@2)
             @18 := copy (j@3)
             @16 := move (@17) + move (@18)
             drop @18
             drop @17
             @15 := move (@16) == const (17 : u32)
-            drop @16
             if move (@15) {
                 nop
             }
             else {
+                drop @16
                 @25 := ()
                 @14 := move (@25)
                 drop @15
@@ -209,11 +214,14 @@ fn test_crate::test_loop3(@1: u32) -> u32
                 drop @7
                 continue 1
             }
+            drop @16
             drop @15
             drop @14
             drop @11
             continue 0
         }
+        drop @13
+        drop @12
         @24 := ()
         @10 := move (@24)
         drop @20
@@ -229,6 +237,8 @@ fn test_crate::test_loop3(@1: u32) -> u32
         drop @7
         continue 0
     }
+    drop @9
+    drop @8
     @23 := ()
     @5 := move (@23)
     drop @22
@@ -282,30 +292,31 @@ fn test_crate::test_loop4(@1: u32) -> u32
         @8 := copy (i@2)
         @9 := copy (max@1)
         @7 := move (@8) < move (@9)
-        drop @9
-        drop @8
         if move (@7) {
+            drop @9
+            drop @8
             loop {
                 @12 := copy (j@3)
                 @13 := copy (max@1)
                 @11 := move (@12) < move (@13)
-                drop @13
-                drop @12
                 if move (@11) {
+                    drop @13
+                    drop @12
                     @17 := copy (i@2)
                     @18 := copy (j@3)
                     @16 := move (@17) + move (@18)
                     drop @18
                     drop @17
                     @15 := move (@16) == const (17 : u32)
-                    drop @16
                     if move (@15) {
+                        drop @16
                         drop @15
                         drop @14
                         drop @11
                         continue 0
                     }
                     else {
+                        drop @16
                         @25 := ()
                         @14 := move (@25)
                         drop @15
@@ -325,6 +336,8 @@ fn test_crate::test_loop4(@1: u32) -> u32
                     break 0
                 }
             }
+            drop @13
+            drop @12
             @24 := ()
             @10 := move (@24)
             drop @20
@@ -341,6 +354,8 @@ fn test_crate::test_loop4(@1: u32) -> u32
             continue 0
         }
         else {
+            drop @9
+            drop @8
             @23 := ()
             @5 := move (@23)
             drop @22
@@ -391,26 +406,26 @@ fn test_crate::test_loop5(@1: u32) -> u32
         @8 := copy (i@2)
         @9 := copy (max@1)
         @7 := move (@8) < move (@9)
-        drop @9
-        drop @8
         if move (@7) {
             nop
         }
         else {
             break 0
         }
+        drop @9
+        drop @8
         loop {
             @12 := copy (j@3)
             @13 := copy (max@1)
             @11 := move (@12) < move (@13)
-            drop @13
-            drop @12
             if move (@11) {
                 nop
             }
             else {
                 break 0
             }
+            drop @13
+            drop @12
             @14 := copy (j@3)
             s@4 := copy (s@4) + move (@14)
             drop @14
@@ -420,6 +435,8 @@ fn test_crate::test_loop5(@1: u32) -> u32
             drop @11
             continue 0
         }
+        drop @13
+        drop @12
         @20 := ()
         @10 := move (@20)
         drop @15
@@ -434,6 +451,8 @@ fn test_crate::test_loop5(@1: u32) -> u32
         drop @7
         continue 0
     }
+    drop @9
+    drop @8
     @18 := ()
     @5 := move (@18)
     drop @17
@@ -475,13 +494,13 @@ fn test_crate::test_loop6(@1: u32) -> u32
         @7 := copy (i@2)
         @8 := copy (max@1)
         @6 := move (@7) < move (@8)
-        drop @8
-        drop @7
         if move (@6) {
+            drop @8
+            drop @7
             @11 := copy (i@2)
             @10 := move (@11) > const (3 : u32)
-            drop @11
             if move (@10) {
+                drop @11
                 @14 := ()
                 @4 := move (@14)
                 drop @10
@@ -489,6 +508,7 @@ fn test_crate::test_loop6(@1: u32) -> u32
                 break 0
             }
             else {
+                drop @11
                 @16 := ()
                 @9 := move (@16)
                 drop @10
@@ -504,6 +524,8 @@ fn test_crate::test_loop6(@1: u32) -> u32
             }
         }
         else {
+            drop @8
+            drop @7
             @15 := ()
             @4 := move (@15)
             drop @13
@@ -551,20 +573,20 @@ fn test_crate::test_loop7(@1: u32) -> u32
     @6 := copy (i@2)
     @7 := copy (max@1)
     @5 := move (@6) < move (@7)
-    drop @7
-    drop @6
     if move (@5) {
+        drop @7
+        drop @6
         loop {
             @10 := copy (i@2)
             @11 := copy (max@1)
             @9 := move (@10) < move (@11)
-            drop @11
-            drop @10
             if move (@9) {
+                drop @11
+                drop @10
                 @14 := copy (i@2)
                 @13 := move (@14) > const (3 : u32)
-                drop @14
                 if move (@13) {
+                    drop @14
                     @18 := ()
                     @4 := move (@18)
                     drop @13
@@ -572,6 +594,7 @@ fn test_crate::test_loop7(@1: u32) -> u32
                     break 0
                 }
                 else {
+                    drop @14
                     @20 := ()
                     @12 := move (@20)
                     drop @13
@@ -587,6 +610,8 @@ fn test_crate::test_loop7(@1: u32) -> u32
                 }
             }
             else {
+                drop @11
+                drop @10
                 @19 := ()
                 @4 := move (@19)
                 drop @16
@@ -596,6 +621,8 @@ fn test_crate::test_loop7(@1: u32) -> u32
         drop @9
     }
     else {
+        drop @7
+        drop @6
         s@3 := const (2 : u32)
         @17 := ()
         @4 := move (@17)
@@ -615,153 +642,141 @@ fn test_crate::test_loops()
     let x@1: u32; // local
     let @2: (); // anonymous local
     let @3: bool; // anonymous local
-    let @4: bool; // anonymous local
-    let @5: u32; // anonymous local
-    let x@6: u32; // local
-    let @7: (); // anonymous local
-    let @8: bool; // anonymous local
-    let @9: bool; // anonymous local
-    let @10: u32; // anonymous local
-    let x@11: u32; // local
-    let @12: (); // anonymous local
-    let @13: bool; // anonymous local
-    let @14: bool; // anonymous local
-    let @15: u32; // anonymous local
-    let x@16: u32; // local
-    let @17: (); // anonymous local
-    let @18: bool; // anonymous local
+    let @4: u32; // anonymous local
+    let x@5: u32; // local
+    let @6: (); // anonymous local
+    let @7: bool; // anonymous local
+    let @8: u32; // anonymous local
+    let x@9: u32; // local
+    let @10: (); // anonymous local
+    let @11: bool; // anonymous local
+    let @12: u32; // anonymous local
+    let x@13: u32; // local
+    let @14: (); // anonymous local
+    let @15: bool; // anonymous local
+    let @16: u32; // anonymous local
+    let x@17: u32; // local
+    let @18: (); // anonymous local
     let @19: bool; // anonymous local
     let @20: u32; // anonymous local
     let x@21: u32; // local
     let @22: (); // anonymous local
     let @23: bool; // anonymous local
-    let @24: bool; // anonymous local
-    let @25: u32; // anonymous local
-    let x@26: u32; // local
+    let @24: u32; // anonymous local
+    let @25: (); // anonymous local
+    let @26: (); // anonymous local
     let @27: (); // anonymous local
-    let @28: bool; // anonymous local
-    let @29: bool; // anonymous local
-    let @30: u32; // anonymous local
+    let @28: (); // anonymous local
+    let @29: (); // anonymous local
+    let @30: (); // anonymous local
     let @31: (); // anonymous local
-    let @32: (); // anonymous local
-    let @33: (); // anonymous local
-    let @34: (); // anonymous local
-    let @35: (); // anonymous local
-    let @36: (); // anonymous local
-    let @37: (); // anonymous local
 
     x@1 := test_crate::test_loop1(const (2 : u32))
     @fake_read(x@1)
-    @5 := copy (x@1)
-    @4 := move (@5) == const (2 : u32)
-    drop @5
-    @3 := ~(move (@4))
-    drop @4
+    @4 := copy (x@1)
+    @3 := move (@4) == const (2 : u32)
     if move (@3) {
         nop
     }
     else {
-        @31 := ()
-        @2 := move (@31)
-        drop @3
-        drop @2
-        x@6 := test_crate::test_loop2(const (2 : u32))
-        @fake_read(x@6)
-        @10 := copy (x@6)
-        @9 := move (@10) == const (1 : u32)
-        drop @10
-        @8 := ~(move (@9))
-        drop @9
-        if move (@8) {
-            nop
-        }
-        else {
-            @32 := ()
-            @7 := move (@32)
-            drop @8
-            drop @7
-            x@11 := test_crate::test_loop3(const (2 : u32))
-            @fake_read(x@11)
-            @15 := copy (x@11)
-            @14 := move (@15) == const (3 : u32)
-            drop @15
-            @13 := ~(move (@14))
-            drop @14
-            if move (@13) {
-                nop
-            }
-            else {
-                @33 := ()
-                @12 := move (@33)
-                drop @13
-                drop @12
-                x@16 := test_crate::test_loop4(const (20 : u32))
-                @fake_read(x@16)
-                @20 := copy (x@16)
-                @19 := move (@20) == const (1 : u32)
-                drop @20
-                @18 := ~(move (@19))
-                drop @19
-                if move (@18) {
-                    nop
-                }
-                else {
-                    @34 := ()
-                    @17 := move (@34)
-                    drop @18
-                    drop @17
-                    x@21 := test_crate::test_loop5(const (2 : u32))
-                    @fake_read(x@21)
-                    @25 := copy (x@21)
-                    @24 := move (@25) == const (2 : u32)
-                    drop @25
-                    @23 := ~(move (@24))
-                    drop @24
-                    if move (@23) {
-                        nop
-                    }
-                    else {
-                        @35 := ()
-                        @22 := move (@35)
-                        drop @23
-                        drop @22
-                        x@26 := test_crate::test_loop6(const (2 : u32))
-                        @fake_read(x@26)
-                        @30 := copy (x@26)
-                        @29 := move (@30) == const (2 : u32)
-                        drop @30
-                        @28 := ~(move (@29))
-                        drop @29
-                        if move (@28) {
-                            nop
-                        }
-                        else {
-                            @36 := ()
-                            @27 := move (@36)
-                            drop @28
-                            drop @27
-                            @37 := ()
-                            @0 := move (@37)
-                            drop x@26
-                            drop x@21
-                            drop x@16
-                            drop x@11
-                            drop x@6
-                            drop x@1
-                            @0 := ()
-                            return
-                        }
-                        panic
-                    }
-                    panic
-                }
-                panic
-            }
-            panic
-        }
+        drop @4
         panic
     }
-    panic
+    drop @4
+    @25 := ()
+    @2 := move (@25)
+    drop @3
+    drop @2
+    x@5 := test_crate::test_loop2(const (2 : u32))
+    @fake_read(x@5)
+    @8 := copy (x@5)
+    @7 := move (@8) == const (1 : u32)
+    if move (@7) {
+        nop
+    }
+    else {
+        drop @8
+        panic
+    }
+    drop @8
+    @26 := ()
+    @6 := move (@26)
+    drop @7
+    drop @6
+    x@9 := test_crate::test_loop3(const (2 : u32))
+    @fake_read(x@9)
+    @12 := copy (x@9)
+    @11 := move (@12) == const (3 : u32)
+    if move (@11) {
+        nop
+    }
+    else {
+        drop @12
+        panic
+    }
+    drop @12
+    @27 := ()
+    @10 := move (@27)
+    drop @11
+    drop @10
+    x@13 := test_crate::test_loop4(const (20 : u32))
+    @fake_read(x@13)
+    @16 := copy (x@13)
+    @15 := move (@16) == const (1 : u32)
+    if move (@15) {
+        nop
+    }
+    else {
+        drop @16
+        panic
+    }
+    drop @16
+    @28 := ()
+    @14 := move (@28)
+    drop @15
+    drop @14
+    x@17 := test_crate::test_loop5(const (2 : u32))
+    @fake_read(x@17)
+    @20 := copy (x@17)
+    @19 := move (@20) == const (2 : u32)
+    if move (@19) {
+        nop
+    }
+    else {
+        drop @20
+        panic
+    }
+    drop @20
+    @29 := ()
+    @18 := move (@29)
+    drop @19
+    drop @18
+    x@21 := test_crate::test_loop6(const (2 : u32))
+    @fake_read(x@21)
+    @24 := copy (x@21)
+    @23 := move (@24) == const (2 : u32)
+    if move (@23) {
+        nop
+    }
+    else {
+        drop @24
+        panic
+    }
+    drop @24
+    @30 := ()
+    @22 := move (@30)
+    drop @23
+    drop @22
+    @31 := ()
+    @0 := move (@31)
+    drop x@21
+    drop x@17
+    drop x@13
+    drop x@9
+    drop x@5
+    drop x@1
+    @0 := ()
+    return
 }
 
 struct core::ops::range::Range<Idx> =
@@ -804,6 +819,7 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn scan
     fn flat_map
     fn flatten
+    fn map_windows
     fn fuse
     fn inspect
     fn by_ref
@@ -920,22 +936,27 @@ trait core::iter::range::Step<Self>
     fn backward_unchecked
 }
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::next<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>)) -> core::option::Option<A>
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::next<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>)) -> core::option::Option<A>
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::size_hint<'_0, A>(@1: &'_0 (core::ops::range::Range<A>)) -> (usize, core::option::Option<usize>)
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::size_hint<'_0, A>(@1: &'_0 (core::ops::range::Range<A>)) -> (usize, core::option::Option<usize>)
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::nth<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::option::Option<A>
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::count<A>(@1: core::ops::range::Range<A>) -> usize
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::last<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::nth<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::option::Option<A>
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::last<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
@@ -956,21 +977,21 @@ trait core::cmp::Ord<Self>
     fn clamp
 }
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::min<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::min<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
     // Local clauses:
     [@TraitClause1]: core::cmp::Ord<A>,
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::max<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::max<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
     // Local clauses:
     [@TraitClause1]: core::cmp::Ord<A>,
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::is_sorted<A>(@1: core::ops::range::Range<A>) -> bool
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::is_sorted<A>(@1: core::ops::range::Range<A>) -> bool
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
@@ -982,7 +1003,7 @@ enum core::result::Result<T, E> =
 
 opaque type core::num::nonzero::NonZeroUsize
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZeroUsize>
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZeroUsize>
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
@@ -993,27 +1014,28 @@ trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
     fn size
 }
 
-unsafe fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::__iterator_get_unchecked<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<A>[@TraitClause0]::Item
+unsafe fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::__iterator_get_unchecked<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<A>[@TraitClause0]::Item
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
     // Local clauses:
     [@TraitClause1]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<core::ops::range::Range<A>>,
 
-impl<A> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<A> : core::iter::traits::iterator::Iterator<core::ops::range::Range<A>>
+impl<A> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<A> : core::iter::traits::iterator::Iterator<core::ops::range::Range<A>>
 where
     [@TraitClause0]: core::iter::range::Step<A>,
 {
     type Item = A with []
-    fn next = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::next
-    fn size_hint = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::size_hint
-    fn nth = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::nth
-    fn last = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::last
-    fn min = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::min
-    fn max = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::max
-    fn is_sorted = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::is_sorted
-    fn advance_by = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::advance_by
-    fn __iterator_get_unchecked = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}::__iterator_get_unchecked
+    fn next = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::next
+    fn size_hint = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::size_hint
+    fn count = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::count
+    fn nth = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::nth
+    fn last = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::last
+    fn min = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::min
+    fn max = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::max
+    fn is_sorted = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::is_sorted
+    fn advance_by = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::advance_by
+    fn __iterator_get_unchecked = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::__iterator_get_unchecked
 }
 
 fn core::clone::impls::{impl core::clone::Clone for i32#14}::clone<'_0>(@1: &'_0 (i32)) -> i32
@@ -1053,31 +1075,31 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32#72} : core::cmp:
     fn gt = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32#72}::gt
 }
 
-fn core::iter::range::{impl core::iter::range::Step for i32#34}::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<usize>
+fn core::iter::range::{impl core::iter::range::Step for i32#40}::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<usize>
 
-fn core::iter::range::{impl core::iter::range::Step for i32#34}::forward_checked(@1: i32, @2: usize) -> core::option::Option<i32>
+fn core::iter::range::{impl core::iter::range::Step for i32#40}::forward_checked(@1: i32, @2: usize) -> core::option::Option<i32>
 
-fn core::iter::range::{impl core::iter::range::Step for i32#34}::backward_checked(@1: i32, @2: usize) -> core::option::Option<i32>
+fn core::iter::range::{impl core::iter::range::Step for i32#40}::backward_checked(@1: i32, @2: usize) -> core::option::Option<i32>
 
-unsafe fn core::iter::range::{impl core::iter::range::Step for i32#34}::forward_unchecked(@1: i32, @2: usize) -> i32
+unsafe fn core::iter::range::{impl core::iter::range::Step for i32#40}::forward_unchecked(@1: i32, @2: usize) -> i32
 
-unsafe fn core::iter::range::{impl core::iter::range::Step for i32#34}::backward_unchecked(@1: i32, @2: usize) -> i32
+unsafe fn core::iter::range::{impl core::iter::range::Step for i32#40}::backward_unchecked(@1: i32, @2: usize) -> i32
 
-fn core::iter::range::{impl core::iter::range::Step for i32#34}::forward(@1: i32, @2: usize) -> i32
+fn core::iter::range::{impl core::iter::range::Step for i32#40}::forward(@1: i32, @2: usize) -> i32
 
-fn core::iter::range::{impl core::iter::range::Step for i32#34}::backward(@1: i32, @2: usize) -> i32
+fn core::iter::range::{impl core::iter::range::Step for i32#40}::backward(@1: i32, @2: usize) -> i32
 
-impl core::iter::range::{impl core::iter::range::Step for i32#34} : core::iter::range::Step<i32>
+impl core::iter::range::{impl core::iter::range::Step for i32#40} : core::iter::range::Step<i32>
 {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for i32#14}
     parent_clause1 = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32#72}
-    fn steps_between = core::iter::range::{impl core::iter::range::Step for i32#34}::steps_between
-    fn forward_checked = core::iter::range::{impl core::iter::range::Step for i32#34}::forward_checked
-    fn backward_checked = core::iter::range::{impl core::iter::range::Step for i32#34}::backward_checked
-    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for i32#34}::forward_unchecked
-    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for i32#34}::backward_unchecked
-    fn forward = core::iter::range::{impl core::iter::range::Step for i32#34}::forward
-    fn backward = core::iter::range::{impl core::iter::range::Step for i32#34}::backward
+    fn steps_between = core::iter::range::{impl core::iter::range::Step for i32#40}::steps_between
+    fn forward_checked = core::iter::range::{impl core::iter::range::Step for i32#40}::forward_checked
+    fn backward_checked = core::iter::range::{impl core::iter::range::Step for i32#40}::backward_checked
+    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for i32#40}::forward_unchecked
+    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for i32#40}::backward_unchecked
+    fn forward = core::iter::range::{impl core::iter::range::Step for i32#40}::forward
+    fn backward = core::iter::range::{impl core::iter::range::Step for i32#40}::backward
 }
 
 fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
@@ -1121,31 +1143,31 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize#54} : core::
     fn gt = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize#54}::gt
 }
 
-fn core::iter::range::{impl core::iter::range::Step for usize#37}::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> core::option::Option<usize>
+fn core::iter::range::{impl core::iter::range::Step for usize#43}::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> core::option::Option<usize>
 
-fn core::iter::range::{impl core::iter::range::Step for usize#37}::forward_checked(@1: usize, @2: usize) -> core::option::Option<usize>
+fn core::iter::range::{impl core::iter::range::Step for usize#43}::forward_checked(@1: usize, @2: usize) -> core::option::Option<usize>
 
-fn core::iter::range::{impl core::iter::range::Step for usize#37}::backward_checked(@1: usize, @2: usize) -> core::option::Option<usize>
+fn core::iter::range::{impl core::iter::range::Step for usize#43}::backward_checked(@1: usize, @2: usize) -> core::option::Option<usize>
 
-unsafe fn core::iter::range::{impl core::iter::range::Step for usize#37}::forward_unchecked(@1: usize, @2: usize) -> usize
+unsafe fn core::iter::range::{impl core::iter::range::Step for usize#43}::forward_unchecked(@1: usize, @2: usize) -> usize
 
-unsafe fn core::iter::range::{impl core::iter::range::Step for usize#37}::backward_unchecked(@1: usize, @2: usize) -> usize
+unsafe fn core::iter::range::{impl core::iter::range::Step for usize#43}::backward_unchecked(@1: usize, @2: usize) -> usize
 
-fn core::iter::range::{impl core::iter::range::Step for usize#37}::forward(@1: usize, @2: usize) -> usize
+fn core::iter::range::{impl core::iter::range::Step for usize#43}::forward(@1: usize, @2: usize) -> usize
 
-fn core::iter::range::{impl core::iter::range::Step for usize#37}::backward(@1: usize, @2: usize) -> usize
+fn core::iter::range::{impl core::iter::range::Step for usize#43}::backward(@1: usize, @2: usize) -> usize
 
-impl core::iter::range::{impl core::iter::range::Step for usize#37} : core::iter::range::Step<usize>
+impl core::iter::range::{impl core::iter::range::Step for usize#43} : core::iter::range::Step<usize>
 {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for usize#5}
     parent_clause1 = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize#54}
-    fn steps_between = core::iter::range::{impl core::iter::range::Step for usize#37}::steps_between
-    fn forward_checked = core::iter::range::{impl core::iter::range::Step for usize#37}::forward_checked
-    fn backward_checked = core::iter::range::{impl core::iter::range::Step for usize#37}::backward_checked
-    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for usize#37}::forward_unchecked
-    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for usize#37}::backward_unchecked
-    fn forward = core::iter::range::{impl core::iter::range::Step for usize#37}::forward
-    fn backward = core::iter::range::{impl core::iter::range::Step for usize#37}::backward
+    fn steps_between = core::iter::range::{impl core::iter::range::Step for usize#43}::steps_between
+    fn forward_checked = core::iter::range::{impl core::iter::range::Step for usize#43}::forward_checked
+    fn backward_checked = core::iter::range::{impl core::iter::range::Step for usize#43}::backward_checked
+    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for usize#43}::forward_unchecked
+    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for usize#43}::backward_unchecked
+    fn forward = core::iter::range::{impl core::iter::range::Step for usize#43}::forward
+    fn backward = core::iter::range::{impl core::iter::range::Step for usize#43}::backward
 }
 
 fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
@@ -1192,14 +1214,14 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     s@3 := const (0 : usize)
     @fake_read(s@3)
     @6 := core::ops::range::Range { start: const (0 : i32), end: const (128 : i32) }
-    @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<i32>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<i32>[core::iter::range::{impl core::iter::range::Step for i32#34}]]::into_iter(move (@6))
+    @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<i32>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<i32>[core::iter::range::{impl core::iter::range::Step for i32#40}]]::into_iter(move (@6))
     drop @6
     @fake_read(@5)
     iter@7 := move (@5)
     loop {
         @12 := &mut iter@7
         @11 := &two-phase-mut *(@12)
-        @10 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<i32>[core::iter::range::{impl core::iter::range::Step for i32#34}]::next(move (@11))
+        @10 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<i32>[core::iter::range::{impl core::iter::range::Step for i32#40}]::next(move (@11))
         drop @11
         @fake_read(@10)
         match @10 {
@@ -1230,14 +1252,14 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     @16 := copy (step_out@1)
     @15 := core::ops::range::Range { start: const (0 : usize), end: move (@16) }
     drop @16
-    @14 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<usize>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<usize>[core::iter::range::{impl core::iter::range::Step for usize#37}]]::into_iter(move (@15))
+    @14 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<usize>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<usize>[core::iter::range::{impl core::iter::range::Step for usize#43}]]::into_iter(move (@15))
     drop @15
     @fake_read(@14)
     iter@17 := move (@14)
     loop {
         @21 := &mut iter@17
         @20 := &two-phase-mut *(@21)
-        @19 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<usize>[core::iter::range::{impl core::iter::range::Step for usize#37}]::next(move (@20))
+        @19 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<usize>[core::iter::range::{impl core::iter::range::Step for usize#43}]::next(move (@20))
         drop @20
         @fake_read(@19)
         match @19 {
@@ -1248,14 +1270,14 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
                 @24 := copy (step_in@2)
                 @23 := core::ops::range::Range { start: const (0 : usize), end: move (@24) }
                 drop @24
-                @22 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<usize>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<usize>[core::iter::range::{impl core::iter::range::Step for usize#37}]]::into_iter(move (@23))
+                @22 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<usize>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<usize>[core::iter::range::{impl core::iter::range::Step for usize#43}]]::into_iter(move (@23))
                 drop @23
                 @fake_read(@22)
                 iter@25 := move (@22)
                 loop {
                     @29 := &mut iter@25
                     @28 := &two-phase-mut *(@29)
-                    @27 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<usize>[core::iter::range::{impl core::iter::range::Step for usize#37}]::next(move (@28))
+                    @27 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<usize>[core::iter::range::{impl core::iter::range::Step for usize#43}]::next(move (@28))
                     drop @28
                     @fake_read(@27)
                     match @27 {
@@ -1341,31 +1363,31 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32#60} : core::cmp:
     fn gt = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32#60}::gt
 }
 
-fn core::iter::range::{impl core::iter::range::Step for u32#33}::steps_between<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<usize>
+fn core::iter::range::{impl core::iter::range::Step for u32#39}::steps_between<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<usize>
 
-fn core::iter::range::{impl core::iter::range::Step for u32#33}::forward_checked(@1: u32, @2: usize) -> core::option::Option<u32>
+fn core::iter::range::{impl core::iter::range::Step for u32#39}::forward_checked(@1: u32, @2: usize) -> core::option::Option<u32>
 
-fn core::iter::range::{impl core::iter::range::Step for u32#33}::backward_checked(@1: u32, @2: usize) -> core::option::Option<u32>
+fn core::iter::range::{impl core::iter::range::Step for u32#39}::backward_checked(@1: u32, @2: usize) -> core::option::Option<u32>
 
-unsafe fn core::iter::range::{impl core::iter::range::Step for u32#33}::forward_unchecked(@1: u32, @2: usize) -> u32
+unsafe fn core::iter::range::{impl core::iter::range::Step for u32#39}::forward_unchecked(@1: u32, @2: usize) -> u32
 
-unsafe fn core::iter::range::{impl core::iter::range::Step for u32#33}::backward_unchecked(@1: u32, @2: usize) -> u32
+unsafe fn core::iter::range::{impl core::iter::range::Step for u32#39}::backward_unchecked(@1: u32, @2: usize) -> u32
 
-fn core::iter::range::{impl core::iter::range::Step for u32#33}::forward(@1: u32, @2: usize) -> u32
+fn core::iter::range::{impl core::iter::range::Step for u32#39}::forward(@1: u32, @2: usize) -> u32
 
-fn core::iter::range::{impl core::iter::range::Step for u32#33}::backward(@1: u32, @2: usize) -> u32
+fn core::iter::range::{impl core::iter::range::Step for u32#39}::backward(@1: u32, @2: usize) -> u32
 
-impl core::iter::range::{impl core::iter::range::Step for u32#33} : core::iter::range::Step<u32>
+impl core::iter::range::{impl core::iter::range::Step for u32#39} : core::iter::range::Step<u32>
 {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u32#8}
     parent_clause1 = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32#60}
-    fn steps_between = core::iter::range::{impl core::iter::range::Step for u32#33}::steps_between
-    fn forward_checked = core::iter::range::{impl core::iter::range::Step for u32#33}::forward_checked
-    fn backward_checked = core::iter::range::{impl core::iter::range::Step for u32#33}::backward_checked
-    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for u32#33}::forward_unchecked
-    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for u32#33}::backward_unchecked
-    fn forward = core::iter::range::{impl core::iter::range::Step for u32#33}::forward
-    fn backward = core::iter::range::{impl core::iter::range::Step for u32#33}::backward
+    fn steps_between = core::iter::range::{impl core::iter::range::Step for u32#39}::steps_between
+    fn forward_checked = core::iter::range::{impl core::iter::range::Step for u32#39}::forward_checked
+    fn backward_checked = core::iter::range::{impl core::iter::range::Step for u32#39}::backward_checked
+    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for u32#39}::forward_unchecked
+    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for u32#39}::backward_unchecked
+    fn forward = core::iter::range::{impl core::iter::range::Step for u32#39}::forward
+    fn backward = core::iter::range::{impl core::iter::range::Step for u32#39}::backward
 }
 
 fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
@@ -1398,14 +1420,14 @@ fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
         @8 := copy (n@2)
         @7 := core::ops::range::Range { start: const (0 : u32), end: move (@8) }
         drop @8
-        @6 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<u32>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<u32>[core::iter::range::{impl core::iter::range::Step for u32#33}]]::into_iter(move (@7))
+        @6 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<u32>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<u32>[core::iter::range::{impl core::iter::range::Step for u32#39}]]::into_iter(move (@7))
         drop @7
         @fake_read(@6)
         iter@9 := move (@6)
         loop {
             @14 := &mut iter@9
             @13 := &two-phase-mut *(@14)
-            @12 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#3}<u32>[core::iter::range::{impl core::iter::range::Step for u32#33}]::next(move (@13))
+            @12 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<u32>[core::iter::range::{impl core::iter::range::Step for u32#39}]::next(move (@13))
             drop @13
             @fake_read(@12)
             match @12 {
@@ -1471,14 +1493,14 @@ fn test_crate::sum(@1: u32) -> u32
         @7 := copy (i@2)
         @8 := copy (max@1)
         @6 := move (@7) < move (@8)
-        drop @8
-        drop @7
         if move (@6) {
             nop
         }
         else {
             break 0
         }
+        drop @8
+        drop @7
         @9 := copy (i@2)
         s@3 := copy (s@3) + move (@9)
         drop @9
@@ -1488,6 +1510,8 @@ fn test_crate::sum(@1: u32) -> u32
         drop @6
         continue 0
     }
+    drop @8
+    drop @7
     @12 := ()
     @4 := move (@12)
     drop @10
@@ -1525,13 +1549,13 @@ fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u3
     loop {
         @7 := copy (i@2)
         @6 := move (@7) < const (const N : usize)
-        drop @7
         if move (@6) {
             nop
         }
         else {
             break 0
         }
+        drop @7
         @9 := copy (i@2)
         @13 := &a@1
         @14 := @ArrayIndexShared<'_, u32, const N : usize>(move (@13), copy (@9))
@@ -1545,6 +1569,7 @@ fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u3
         drop @6
         continue 0
     }
+    drop @7
     @12 := ()
     @4 := move (@12)
     drop @10
@@ -1667,14 +1692,14 @@ fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Globa
         @6 := alloc::vec::{alloc::vec::Vec<T, A>#1}::len<u32, alloc::alloc::Global>(move (@7))
         drop @7
         @4 := move (@5) < move (@6)
-        drop @6
-        drop @5
         if move (@4) {
             nop
         }
         else {
             break 0
         }
+        drop @6
+        drop @5
         @9 := &mut *(v@1)
         @10 := copy (i@2)
         @8 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#13}<u32, usize, alloc::alloc::Global>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize#2}<u32>]::index_mut(move (@9), move (@10))
@@ -1688,6 +1713,8 @@ fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Globa
         drop @4
         continue 0
     }
+    drop @6
+    drop @5
     @13 := ()
     @0 := move (@13)
     drop @11
@@ -1731,12 +1758,12 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
         @7 := copy (*(y@4))
         @8 := copy (x@2)
         @6 := move (@7) == move (@8)
-        drop @8
-        drop @7
         if move (@6) {
             nop
         }
         else {
+            drop @8
+            drop @7
             @9 := &mut deref_box (*(tl@5))
             ls@1 := move (@9)
             drop @9
@@ -1747,6 +1774,8 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
             drop y@4
             continue 0
         }
+        drop @8
+        drop @7
         @0 := &mut *(y@4)
         drop @6
         drop tl@5
@@ -1790,11 +1819,11 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
         tl@6 := &mut (*(ls@1) as variant @0).1
         @8 := copy (i@2)
         @7 := move (@8) == const (0 : u32)
-        drop @8
         if move (@7) {
             nop
         }
         else {
+            drop @8
             @9 := &mut deref_box (*(tl@6))
             ls@1 := move (@9)
             drop @9
@@ -1806,6 +1835,7 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
             drop x@5
             continue 0
         }
+        drop @8
         @0 := &mut *(x@5)
         drop @7
         drop tl@6

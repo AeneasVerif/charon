@@ -166,8 +166,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // the parent and item predicates.
         let trait_pred = rustc_middle::ty::TraitPredicate {
             trait_ref,
-            // Not really necessary (dummy value)
-            constness: rustc_middle::ty::BoundConstness::NotConst,
             // Not really necessary
             polarity: rustc_middle::ty::ImplPolarity::Positive,
         };

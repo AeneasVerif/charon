@@ -101,7 +101,11 @@ impl Callbacks for CharonCallbacks {
     /// For this reason, and as we may want to plug ourselves at different
     /// phases of the compilation process, we query the context as early as
     /// possible (i.e., after parsing). See [charon_lib::get_mir].
-    fn after_parsing<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
+    fn after_crate_root_parsing<'tcx>(
+        &mut self,
+        c: &Compiler,
+        queries: &'tcx Queries<'tcx>,
+    ) -> Compilation {
         // Set up our own `DefId` debug routine.
         rustc_hir::def_id::DEF_ID_DEBUG
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
