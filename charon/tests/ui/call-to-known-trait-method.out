@@ -1,0 +1,94 @@
+# Final LLBC before serialization:
+
+struct test_crate::Struct<A> =
+{
+  A
+}
+
+trait core::default::Default<Self>
+{
+    fn default : core::default::Default::default
+}
+
+fn core::default::Default::default<Self>() -> Self
+
+fn test_crate::{impl core::default::Default for test_crate::Struct<A>#1}::default<A>() -> test_crate::Struct<A>
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::default::Default<A>,
+{
+    let @0: test_crate::Struct<A>; // return
+    let @1: A; // anonymous local
+
+    @1 := @TraitClause0::default()
+    @0 := test_crate::Struct { 0: move (@1) }
+    drop @1
+    drop @1
+    return
+}
+
+impl<A> test_crate::{impl core::default::Default for test_crate::Struct<A>#1}<A> : core::default::Default<test_crate::Struct<A>>
+where
+    [@TraitClause0]: core::default::Default<A>,
+{
+    fn default = test_crate::{impl core::default::Default for test_crate::Struct<A>#1}::default
+}
+
+trait test_crate::Trait<Self, B>
+{
+    type Item
+    fn method : test_crate::Trait::method
+}
+
+fn test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>}::method<A, B, C>()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+impl<A, B> test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>}<A, B> : test_crate::Trait<test_crate::Struct<A>, B>
+{
+    type Item = (A, B) with []
+    fn method = test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>}::method
+}
+
+fn core::default::{impl core::default::Default for bool#1}::default() -> bool
+
+impl core::default::{impl core::default::Default for bool#1} : core::default::Default<bool>
+{
+    fn default = core::default::{impl core::default::Default for bool#1}::default
+}
+
+fn test_crate::Trait::method<Self, B, C>()
+
+opaque type alloc::string::String
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let _x@1: (u8, bool); // local
+    let _y@2: test_crate::Struct<bool>; // local
+    let @3: (); // anonymous local
+    let @4: (); // anonymous local
+
+    _x@1 := (const (0 : u8), const (false))
+    @fake_read(_x@1)
+    _y@2 := test_crate::{impl core::default::Default for test_crate::Struct<A>#1}<bool>[core::default::{impl core::default::Default for bool#1}]::default()
+    @fake_read(_y@2)
+    @3 := test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>}<u8, bool>::method<alloc::string::String>()
+    drop @3
+    @4 := ()
+    @0 := move (@4)
+    drop _y@2
+    drop _x@1
+    @0 := ()
+    return
+}
+
+
+
