@@ -873,6 +873,9 @@ impl ullbc::Statement {
             RawStatement::Deinit(place) => {
                 format!("@deinit({})", place.fmt_with_ctx(ctx))
             }
+            RawStatement::Error => {
+                format!("@Error()")
+            }
         }
     }
 }
@@ -1014,7 +1017,7 @@ impl llbc::Statement {
                     tab
                 )
             }
-            RawStatement::Error => format!("{tab}panic"),
+            RawStatement::Error => format!("{tab}error"),
         }
     }
 }

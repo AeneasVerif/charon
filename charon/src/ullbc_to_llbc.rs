@@ -1539,6 +1539,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
             // We translate a deinit as a drop
             tgt::RawStatement::Drop(place.clone())
         }
+        src::RawStatement::Error => tgt::RawStatement::Error,
     };
     Some(tgt::Statement::new(src_span, st))
 }

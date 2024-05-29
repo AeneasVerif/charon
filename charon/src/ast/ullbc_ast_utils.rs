@@ -85,7 +85,8 @@ impl BlockData {
                 RawStatement::FakeRead(_)
                 | RawStatement::SetDiscriminant(_, _)
                 | RawStatement::StorageDead(_)
-                | RawStatement::Deinit(_) => {
+                | RawStatement::Deinit(_)
+                | RawStatement::Error => {
                     // No operands: nothing to do
                 }
             }
@@ -187,6 +188,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
             SetDiscriminant(p, vid) => self.visit_set_discriminant(p, vid),
             StorageDead(vid) => self.visit_storage_dead(vid),
             Deinit(p) => self.visit_deinit(p),
+            Error => self.visit_error(),
         }
     }
 
@@ -210,6 +212,8 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     fn visit_deinit(&mut self, p: &Place) {
         self.visit_place(p);
     }
+
+    fn visit_error (&mut self) {}
 
     fn visit_terminator(&mut self, st: &Terminator) {
         self.visit_span(&st.span);

@@ -37,6 +37,7 @@ pub enum RawStatement {
     StorageDead(VarId),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     Deinit(Place),
+    Error,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
