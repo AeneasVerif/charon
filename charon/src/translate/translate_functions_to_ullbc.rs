@@ -460,7 +460,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         projection.push(ProjectionElem::Index(offset, current_ty));
                     }
                     hax::ProjectionElem::ConstantIndex { .. } => {
-                        // Those don't seem to occur in MIR built
+                        // This is not supported yet, see `tests/ui/unsupported/projection-index-from-end.rs`
                         error_or_panic!(self, span, "Unexpected ProjectionElem::ConstantIndex");
                     }
                     hax::ProjectionElem::Subslice { .. } => {
