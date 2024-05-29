@@ -1,0 +1,46 @@
+# Final LLBC before serialization:
+
+trait test_crate::Ops<Self>
+{
+    fn ZERO : test_crate::Ops::ZERO
+    fn ntt_multiply : test_crate::Ops::ntt_multiply
+}
+
+struct test_crate::Portable = {}
+
+fn test_crate::{impl test_crate::Ops for test_crate::Portable}::ZERO() -> test_crate::Portable
+{
+    let @0: test_crate::Portable; // return
+
+    @0 := test_crate::Portable {  }
+    return
+}
+
+fn test_crate::ntt_multiply() -> test_crate::Portable
+{
+    let @0: test_crate::Portable; // return
+
+    @0 := test_crate::{impl test_crate::Ops for test_crate::Portable}::ZERO()
+    return
+}
+
+fn test_crate::{impl test_crate::Ops for test_crate::Portable}::ntt_multiply() -> test_crate::Portable
+{
+    let @0: test_crate::Portable; // return
+
+    @0 := test_crate::ntt_multiply()
+    return
+}
+
+impl test_crate::{impl test_crate::Ops for test_crate::Portable} : test_crate::Ops<test_crate::Portable>
+{
+    fn ZERO = test_crate::{impl test_crate::Ops for test_crate::Portable}::ZERO
+    fn ntt_multiply = test_crate::{impl test_crate::Ops for test_crate::Portable}::ntt_multiply
+}
+
+fn test_crate::Ops::ZERO<Self>() -> Self
+
+fn test_crate::Ops::ntt_multiply<Self>() -> Self
+
+
+

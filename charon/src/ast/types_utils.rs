@@ -136,6 +136,16 @@ impl GenericArgs {
             },
         )
     }
+
+    /// Concatenate this set of arguments with another one. Use with care, you must manage the
+    /// order of arguments correctly.
+    pub fn concat(mut self, other: Self) -> Self {
+        self.regions.extend(other.regions);
+        self.types.extend(other.types);
+        self.const_generics.extend(other.const_generics);
+        self.trait_refs.extend(other.trait_refs);
+        self
+    }
 }
 
 impl TypeDecl {

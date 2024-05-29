@@ -234,24 +234,10 @@ trait core::slice::index::SliceIndex<Self, T>
     fn index_mut : core::slice::index::SliceIndex::index_mut
 }
 
-trait core::ops::index::Index<Self, Idx>
-{
-    type Output
-    fn index : core::ops::index::Index::index
-}
-
 fn core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause0::Output)
 where
     // Inherited clauses:
     [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
-
-impl<T, I> core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I> : core::ops::index::Index<Slice<T>, I>
-where
-    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
-{
-    type Output = @TraitClause0::Output with []
-    fn index = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index
-}
 
 impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>#1} : core::slice::index::private_slice_index::Sealed<core::ops::range::Range<usize>>
 
@@ -279,8 +265,6 @@ impl<T> core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for c
     fn index_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}::index_mut
 }
 
-fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
-
 fn test_crate::slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize, @3: usize) -> &'_0 (Slice<u32>)
 {
     let @0: &'_ (Slice<u32>); // return
@@ -300,7 +284,7 @@ fn test_crate::slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize, @3:
     @7 := core::ops::range::Range { start: move (@8), end: move (@9) }
     drop @9
     drop @8
-    @5 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>]::index(move (@6), move (@7))
+    @5 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>](move (@6), move (@7))
     drop @7
     drop @6
     @4 := &*(@5)
@@ -310,26 +294,10 @@ fn test_crate::slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize, @3:
     return
 }
 
-trait core::ops::index::IndexMut<Self, Idx>
-{
-    parent_clause_0 : [@TraitClause0]: core::ops::index::Index<Self, Idx>
-    fn index_mut : core::ops::index::IndexMut::index_mut
-}
-
 fn core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}::index_mut<'_0, T, I>(@1: &'_0 mut (Slice<T>), @2: I) -> &'_0 mut (@TraitClause0::Output)
 where
     // Inherited clauses:
     [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
-
-impl<T, I> core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}<T, I> : core::ops::index::IndexMut<Slice<T>, I>
-where
-    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
-{
-    parent_clause0 = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I>[@TraitClause0]
-    fn index_mut = core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}::index_mut
-}
-
-fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut ((parents(Self)::[@TraitClause0])::Output)
 
 fn test_crate::slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize, @3: usize) -> &'_0 mut (Slice<u32>)
 {
@@ -351,7 +319,7 @@ fn test_crate::slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize, @3
     @8 := core::ops::range::Range { start: move (@9), end: move (@10) }
     drop @10
     drop @9
-    @6 := core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>]::index_mut(move (@7), move (@8))
+    @6 := core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}::index_mut<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>](move (@7), move (@8))
     drop @8
     drop @7
     @5 := &mut *(@6)
@@ -390,17 +358,23 @@ fn test_crate::array_to_slice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>)) -
     return
 }
 
+trait core::ops::index::Index<Self, Idx>
+{
+    type Output
+    fn index : core::ops::index::Index::index
+}
+
 fn core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}::index<'_0, T, I, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}<T, I, const N : usize>[@TraitClause0]::Output)
 where
     // Inherited clauses:
     [@TraitClause0]: core::ops::index::Index<Slice<T>, I>,
 
-impl<T, I, const N : usize> core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}<T, I, const N : usize> : core::ops::index::Index<Array<T, const N : usize>, I>
+impl<T, I> core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I> : core::ops::index::Index<Slice<T>, I>
 where
-    [@TraitClause0]: core::ops::index::Index<Slice<T>, I>,
+    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
     type Output = @TraitClause0::Output with []
-    fn index = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}::index
+    fn index = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index
 }
 
 fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 (Slice<u32>)
@@ -422,7 +396,7 @@ fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2
     @7 := core::ops::range::Range { start: move (@8), end: move (@9) }
     drop @9
     drop @8
-    @5 := core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}<u32, core::ops::range::Range<usize>, 32 : usize>[core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>]]::index(move (@6), move (@7))
+    @5 := core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}::index<u32, core::ops::range::Range<usize>, 32 : usize>[core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>]](move (@6), move (@7))
     drop @7
     drop @6
     @4 := &*(@5)
@@ -432,17 +406,31 @@ fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2
     return
 }
 
+trait core::ops::index::IndexMut<Self, Idx>
+{
+    parent_clause_0 : [@TraitClause0]: core::ops::index::Index<Self, Idx>
+    fn index_mut : core::ops::index::IndexMut::index_mut
+}
+
+impl<T, I, const N : usize> core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}<T, I, const N : usize> : core::ops::index::Index<Array<T, const N : usize>, I>
+where
+    [@TraitClause0]: core::ops::index::Index<Slice<T>, I>,
+{
+    type Output = @TraitClause0::Output with []
+    fn index = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}::index
+}
+
 fn core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>#16}::index_mut<'_0, T, I, const N : usize>(@1: &'_0 mut (Array<T, const N : usize>), @2: I) -> &'_0 mut (core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}<T, I, const N : usize>[(parents(@TraitClause0)::[@TraitClause0])]::Output)
 where
     // Inherited clauses:
     [@TraitClause0]: core::ops::index::IndexMut<Slice<T>, I>,
 
-impl<T, I, const N : usize> core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>#16}<T, I, const N : usize> : core::ops::index::IndexMut<Array<T, const N : usize>, I>
+impl<T, I> core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}<T, I> : core::ops::index::IndexMut<Slice<T>, I>
 where
-    [@TraitClause0]: core::ops::index::IndexMut<Slice<T>, I>,
+    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}<T, I, const N : usize>[(parents(@TraitClause0)::[@TraitClause0])]
-    fn index_mut = core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>#16}::index_mut
+    parent_clause0 = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I>[@TraitClause0]
+    fn index_mut = core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}::index_mut
 }
 
 fn test_crate::array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 mut (Slice<u32>)
@@ -465,7 +453,7 @@ fn test_crate::array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>), @
     @8 := core::ops::range::Range { start: move (@9), end: move (@10) }
     drop @10
     drop @9
-    @6 := core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>#16}<u32, core::ops::range::Range<usize>, 32 : usize>[core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>]]::index_mut(move (@7), move (@8))
+    @6 := core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>#16}::index_mut<u32, core::ops::range::Range<usize>, 32 : usize>[core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>]](move (@7), move (@8))
     drop @8
     drop @7
     @5 := &mut *(@6)
@@ -1002,7 +990,7 @@ fn test_crate::range_all()
     @fake_read(x@1)
     @6 := &mut x@1
     @7 := core::ops::range::Range { start: const (1 : usize), end: const (3 : usize) }
-    @5 := core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>#16}<u32, core::ops::range::Range<usize>, 4 : usize>[core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>]]::index_mut(move (@6), move (@7))
+    @5 := core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>#16}::index_mut<u32, core::ops::range::Range<usize>, 4 : usize>[core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>#1}<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>]](move (@6), move (@7))
     drop @7
     drop @6
     @4 := &mut *(@5)
@@ -1354,7 +1342,7 @@ fn test_crate::f4<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usize) 
     @7 := core::ops::range::Range { start: move (@8), end: move (@9) }
     drop @9
     drop @8
-    @5 := core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}<u32, core::ops::range::Range<usize>, 32 : usize>[core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>]]::index(move (@6), move (@7))
+    @5 := core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}::index<u32, core::ops::range::Range<usize>, 32 : usize>[core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<u32>]](move (@6), move (@7))
     drop @7
     drop @6
     @4 := &*(@5)
@@ -1767,6 +1755,8 @@ fn test_crate::slice_pattern_4<'_0>(@1: &'_0 (Slice<()>))
     return
 }
 
+fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
+
 fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self::Output)>
 
 fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> core::option::Option<&'_0 mut (Self::Output)>
@@ -1778,6 +1768,16 @@ unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @
 fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (Self::Output)
 
 fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (Self::Output)
+
+fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut ((parents(Self)::[@TraitClause0])::Output)
+
+impl<T, I, const N : usize> core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>#16}<T, I, const N : usize> : core::ops::index::IndexMut<Array<T, const N : usize>, I>
+where
+    [@TraitClause0]: core::ops::index::IndexMut<Slice<T>, I>,
+{
+    parent_clause0 = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}<T, I, const N : usize>[(parents(@TraitClause0)::[@TraitClause0])]
+    fn index_mut = core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>#16}::index_mut
+}
 
 
 

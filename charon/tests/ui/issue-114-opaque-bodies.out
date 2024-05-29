@@ -99,11 +99,6 @@ fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<()>
     return
 }
 
-trait core::convert::From<Self, T>
-{
-    fn from : core::convert::From::from
-}
-
 fn core::convert::num::{impl core::convert::From<i32> for i64#59}::from(@1: i32) -> i64
 {
     let @0: i64; // return
@@ -112,13 +107,6 @@ fn core::convert::num::{impl core::convert::From<i32> for i64#59}::from(@1: i32)
     @0 := cast<i32,i64>(copy (small@1))
     return
 }
-
-impl core::convert::num::{impl core::convert::From<i32> for i64#59} : core::convert::From<i64, i32>
-{
-    fn from = core::convert::num::{impl core::convert::From<i32> for i64#59}::from
-}
-
-fn core::convert::From::from<Self, T>(@1: T) -> Self
 
 fn test_crate::convert(@1: i32) -> i64
 {
@@ -203,6 +191,18 @@ where
     @0 := ()
     return
 }
+
+trait core::convert::From<Self, T>
+{
+    fn from : core::convert::From::from
+}
+
+impl core::convert::num::{impl core::convert::From<i32> for i64#59} : core::convert::From<i64, i32>
+{
+    fn from = core::convert::num::{impl core::convert::From<i32> for i64#59}::from
+}
+
+fn core::convert::From::from<Self, T>(@1: T) -> Self
 
 global core::num::{usize#11}::MAX  {
     let @0: usize; // return

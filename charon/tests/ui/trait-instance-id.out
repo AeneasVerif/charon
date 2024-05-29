@@ -32,6 +32,8 @@ opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
+fn core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter<T, const N : usize>(@1: Array<T, const N : usize>) -> core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}<T, const N : usize>::IntoIter
+
 trait core::iter::traits::iterator::Iterator<Self>
 {
     type Item
@@ -114,14 +116,10 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn __iterator_get_unchecked
 }
 
-trait core::iter::traits::collect::IntoIterator<Self>
-{
-    type Item
-    type IntoIter
-        where
-            [@TraitClause0]: core::iter::traits::iterator::Iterator<Self::IntoIter>,
-    fn into_iter : core::iter::traits::collect::IntoIterator::into_iter
-}
+fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(@1: I) -> I
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
 
 fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::next<'_0, T, const N : usize>(@1: &'_0 mut (core::array::iter::IntoIter<T, const N : usize>)) -> core::option::Option<core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<T, const N : usize>::Item>
 
@@ -167,33 +165,6 @@ impl<T, const N : usize> core::array::iter::{impl core::iter::traits::iterator::
     fn last = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::last
     fn advance_by = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::advance_by
 }
-
-fn core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter<T, const N : usize>(@1: Array<T, const N : usize>) -> core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}<T, const N : usize>::IntoIter
-
-impl<T, const N : usize> core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}<T, const N : usize> : core::iter::traits::collect::IntoIterator<Array<T, const N : usize>>
-{
-    type Item = T with []
-    type IntoIter = core::array::iter::IntoIter<T, const N : usize> with [core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<T, const N : usize>]
-    fn into_iter = core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter
-}
-
-fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
-
-fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(@1: I) -> I
-where
-    // Inherited clauses:
-    [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
-
-impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<I> : core::iter::traits::collect::IntoIterator<I>
-where
-    [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
-{
-    type Item = @TraitClause0::Item with []
-    type IntoIter = I with [@TraitClause0]
-    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter
-}
-
-fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>
 
 fn core::slice::{Slice<T>}::iter<'_0, T>(@1: &'_0 (Slice<T>)) -> core::slice::iter::Iter<'_0, T>
 
@@ -291,19 +262,7 @@ impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for 
     fn is_sorted_by = @Fun43
 }
 
-trait core::ops::arith::AddAssign<Self, Rhs>
-{
-    fn add_assign : core::ops::arith::AddAssign::add_assign
-}
-
 fn core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32#319}::add_assign<'_0, '_1, '_2>(@1: &'_1 mut (i32), @2: &'_2 (i32))
-
-impl<'_0> core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32#319}<'_0> : core::ops::arith::AddAssign<i32, &'_0 (i32)>
-{
-    fn add_assign = core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32#319}::add_assign
-}
-
-fn core::ops::arith::AddAssign::add_assign<'_0, Self, Rhs>(@1: &'_0 mut (Self), @2: Rhs)
 
 fn core::slice::{Slice<T>}::chunks<'_0, T>(@1: &'_0 (Slice<T>), @2: usize) -> core::slice::iter::Chunks<'_0, T>
 
@@ -443,16 +402,16 @@ fn test_crate::main()
     i@2 := const (0 : i32)
     @fake_read(i@2)
     @6 := copy (a@1)
-    @5 := core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}<i32, 7 : usize>::into_iter(move (@6))
+    @5 := core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter<i32, 7 : usize>(move (@6))
     drop @6
-    @4 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::array::iter::IntoIter<i32, 7 : usize>>[core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<i32, 7 : usize>]::into_iter(move (@5))
+    @4 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::array::iter::IntoIter<i32, 7 : usize>>[core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<i32, 7 : usize>](move (@5))
     drop @5
     @fake_read(@4)
     iter@7 := move (@4)
     loop {
         @12 := &mut iter@7
         @11 := &two-phase-mut *(@12)
-        @10 := core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<i32, 7 : usize>::next(move (@11))
+        @10 := core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::next<i32, 7 : usize>(move (@11))
         drop @11
         @fake_read(@10)
         match @10 {
@@ -491,14 +450,14 @@ fn test_crate::main()
     drop @19
     @17 := core::slice::{Slice<T>}::iter<i32>(move (@18))
     drop @18
-    @16 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::slice::iter::Iter<'_, i32>>[core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}<'_, i32>]::into_iter(move (@17))
+    @16 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Iter<'_, i32>>[core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}<'_, i32>](move (@17))
     drop @17
     @fake_read(@16)
     iter@20 := move (@16)
     loop {
         @24 := &mut iter@20
         @23 := &two-phase-mut *(@24)
-        @22 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}<'_, i32>::next(move (@23))
+        @22 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}::next<'_, i32>(move (@23))
         drop @23
         @fake_read(@22)
         match @22 {
@@ -509,7 +468,7 @@ fn test_crate::main()
                 v@25 := copy ((@22 as variant @1).0)
                 @27 := &two-phase-mut i@2
                 @28 := copy (v@25)
-                @26 := core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32#319}<'_>::add_assign(move (@27), move (@28))
+                @26 := core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32#319}::add_assign<'_>(move (@27), move (@28))
                 drop @28
                 drop @27
                 drop @26
@@ -538,14 +497,14 @@ fn test_crate::main()
     drop @33
     @31 := core::slice::{Slice<T>}::chunks<i32>(move (@32), const (2 : usize))
     drop @32
-    @30 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::slice::iter::Chunks<'_, i32>>[core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>#70}<'_, i32>]::into_iter(move (@31))
+    @30 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Chunks<'_, i32>>[core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>#70}<'_, i32>](move (@31))
     drop @31
     @fake_read(@30)
     iter@34 := move (@30)
     loop {
         @38 := &mut iter@34
         @37 := &two-phase-mut *(@38)
-        @36 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>#70}<'_, i32>::next(move (@37))
+        @36 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>#70}::next<'_, i32>(move (@37))
         drop @37
         @fake_read(@36)
         match @36 {
@@ -578,14 +537,14 @@ fn test_crate::main()
     drop @43
     @41 := core::slice::{Slice<T>}::chunks_exact<i32>(move (@42), const (2 : usize))
     drop @42
-    @40 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::slice::iter::ChunksExact<'_, i32>>[core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>#89}<'_, i32>]::into_iter(move (@41))
+    @40 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::ChunksExact<'_, i32>>[core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>#89}<'_, i32>](move (@41))
     drop @41
     @fake_read(@40)
     iter@44 := move (@40)
     loop {
         @48 := &mut iter@44
         @47 := &two-phase-mut *(@48)
-        @46 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>#89}<'_, i32>::next(move (@47))
+        @46 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>#89}::next<'_, i32>(move (@47))
         drop @47
         @fake_read(@46)
         match @46 {
@@ -659,6 +618,47 @@ fn test_crate::main()
     @0 := ()
     return
 }
+
+trait core::iter::traits::collect::IntoIterator<Self>
+{
+    type Item
+    type IntoIter
+        where
+            [@TraitClause0]: core::iter::traits::iterator::Iterator<Self::IntoIter>,
+    fn into_iter : core::iter::traits::collect::IntoIterator::into_iter
+}
+
+impl<T, const N : usize> core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}<T, const N : usize> : core::iter::traits::collect::IntoIterator<Array<T, const N : usize>>
+{
+    type Item = T with []
+    type IntoIter = core::array::iter::IntoIter<T, const N : usize> with [core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<T, const N : usize>]
+    fn into_iter = core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter
+}
+
+fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
+
+impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<I> : core::iter::traits::collect::IntoIterator<I>
+where
+    [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
+{
+    type Item = @TraitClause0::Item with []
+    type IntoIter = I with [@TraitClause0]
+    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter
+}
+
+fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>
+
+trait core::ops::arith::AddAssign<Self, Rhs>
+{
+    fn add_assign : core::ops::arith::AddAssign::add_assign
+}
+
+impl<'_0> core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32#319}<'_0> : core::ops::arith::AddAssign<i32, &'_0 (i32)>
+{
+    fn add_assign = core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32#319}::add_assign
+}
+
+fn core::ops::arith::AddAssign::add_assign<'_0, Self, Rhs>(@1: &'_0 mut (Self), @2: Rhs)
 
 fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> (parents(Self)::[@TraitClause0])::Output
 

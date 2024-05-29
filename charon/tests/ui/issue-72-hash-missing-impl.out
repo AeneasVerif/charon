@@ -31,10 +31,6 @@ impl test_crate::{impl test_crate::Hash for u32#1} : test_crate::Hash<u32>
     fn hash = test_crate::{impl test_crate::Hash for u32#1}::hash
 }
 
-fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
-where
-    [@TraitClause0]: test_crate::Hasher<H>,
-
 fn test_crate::main()
 {
     let @0: (); // return
@@ -64,6 +60,10 @@ fn test_crate::main()
     @0 := ()
     return
 }
+
+fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
+where
+    [@TraitClause0]: test_crate::Hasher<H>,
 
 
 

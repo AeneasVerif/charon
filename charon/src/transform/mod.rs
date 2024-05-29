@@ -12,6 +12,7 @@ pub mod remove_read_discriminant;
 pub mod remove_unused_locals;
 pub mod reorder_decls;
 pub mod simplify_constants;
+pub mod skip_trait_refs_when_known;
 pub mod ullbc_to_llbc;
 pub mod update_closure_signatures;
 
@@ -29,6 +30,10 @@ pub static ULLBC_PASSES: &[&dyn ctx::UllbcPass] = &[
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
     &simplify_constants::Transform,
+    // # Micro-pass: whenever we call a trait method on a known type, refer to the method `FunDecl`
+    // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to remove
+    // some sources of mutual recursion.
+    &skip_trait_refs_when_known::Transform,
 ];
 
 pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[

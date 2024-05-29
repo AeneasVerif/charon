@@ -252,39 +252,11 @@ fn test_crate::test_list1()
     return
 }
 
-trait core::ops::deref::Deref<Self>
-{
-    type Target
-    fn deref : core::ops::deref::Deref::deref
-}
-
-trait core::ops::deref::DerefMut<Self>
-{
-    parent_clause_0 : [@TraitClause0]: core::ops::deref::Deref<Self>
-    fn deref_mut : core::ops::deref::DerefMut::deref_mut
-}
-
-fn alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>)) -> &'_0 (T)
-
-impl<T, A> alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}<T, A> : core::ops::deref::Deref<alloc::boxed::Box<T>>
-{
-    type Target = T with []
-    fn deref = alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}::deref
-}
-
 fn alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>#39}::deref_mut<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>)) -> &'_0 mut (T)
-
-impl<T, A> alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>#39}<T, A> : core::ops::deref::DerefMut<alloc::boxed::Box<T>>
-{
-    parent_clause0 = alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}<T, A>
-    fn deref_mut = alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>#39}::deref_mut
-}
 
 struct alloc::alloc::Global = {}
 
-fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut (Self)) -> &'_0 mut ((parents(Self)::[@TraitClause0])::Target)
-
-fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self::Target)
+fn alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>)) -> &'_0 (T)
 
 fn test_crate::test_box1()
 {
@@ -303,12 +275,12 @@ fn test_crate::test_box1()
     b@1 := @BoxNew<i32>(const (0 : i32))
     @fake_read(b@1)
     @3 := &two-phase-mut b@1
-    x@2 := alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>#39}<i32, alloc::alloc::Global>::deref_mut(move (@3))
+    x@2 := alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>#39}::deref_mut<i32, alloc::alloc::Global>(move (@3))
     drop @3
     @fake_read(x@2)
     *(x@2) := const (1 : i32)
     @5 := &b@1
-    x@4 := alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}<i32, alloc::alloc::Global>::deref(move (@5))
+    x@4 := alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}::deref<i32, alloc::alloc::Global>(move (@5))
     drop @5
     @fake_read(x@4)
     @8 := copy (*(x@4))
@@ -636,6 +608,34 @@ fn test_crate::read_then_incr<'_0>(@1: &'_0 mut (u32)) -> u32
     drop r@2
     return
 }
+
+trait core::ops::deref::Deref<Self>
+{
+    type Target
+    fn deref : core::ops::deref::Deref::deref
+}
+
+trait core::ops::deref::DerefMut<Self>
+{
+    parent_clause_0 : [@TraitClause0]: core::ops::deref::Deref<Self>
+    fn deref_mut : core::ops::deref::DerefMut::deref_mut
+}
+
+impl<T, A> alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}<T, A> : core::ops::deref::Deref<alloc::boxed::Box<T>>
+{
+    type Target = T with []
+    fn deref = alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}::deref
+}
+
+impl<T, A> alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>#39}<T, A> : core::ops::deref::DerefMut<alloc::boxed::Box<T>>
+{
+    parent_clause0 = alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}<T, A>
+    fn deref_mut = alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>#39}::deref_mut
+}
+
+fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut (Self)) -> &'_0 mut ((parents(Self)::[@TraitClause0])::Target)
+
+fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self::Target)
 
 
 
