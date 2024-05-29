@@ -1751,7 +1751,8 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
         | tgt::RawStatement::Drop(_)
         | tgt::RawStatement::Assert(_)
         | tgt::RawStatement::Call(_)
-        | tgt::RawStatement::Nop => false,
+        | tgt::RawStatement::Nop
+        | tgt::RawStatement::Error => false,
         tgt::RawStatement::Panic | tgt::RawStatement::Return => true,
         tgt::RawStatement::Break(index) => *index >= num_loops,
         tgt::RawStatement::Continue(_index) => true,

@@ -178,6 +178,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
             RawStatement::Sequence(st1, st2) => self.visit_sequence(st1, st2),
             RawStatement::Switch(s) => self.visit_switch(s),
             RawStatement::Loop(lp) => self.visit_loop(lp),
+            RawStatement::Error => self.visit_error(),
         }
     }
 
@@ -211,6 +212,8 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     fn visit_break(&mut self, _: &usize) {}
     fn visit_continue(&mut self, _: &usize) {}
     fn visit_nop(&mut self) {}
+    fn visit_error(&mut self) {}
+
 
     fn visit_sequence(&mut self, st1: &Statement, st2: &Statement) {
         self.visit_statement(st1);

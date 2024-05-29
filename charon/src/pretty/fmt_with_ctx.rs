@@ -1014,6 +1014,7 @@ impl llbc::Statement {
                     tab
                 )
             }
+            RawStatement::Error => format!("{tab}panic"),
         }
     }
 }

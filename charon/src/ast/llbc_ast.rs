@@ -59,6 +59,7 @@ pub enum RawStatement {
     Sequence(Box<Statement>, Box<Statement>),
     Switch(Switch),
     Loop(Box<Statement>),
+    Error,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
