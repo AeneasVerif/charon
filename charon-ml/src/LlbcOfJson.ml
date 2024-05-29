@@ -70,6 +70,7 @@ and raw_statement_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc [ ("Loop", st) ] ->
         let* st = statement_of_json id_to_file st in
         Ok (Loop st)
+    | `String "Error" -> Ok Error
     | _ -> Error "")
 
 and switch_of_json (id_to_file : id_to_file_map) (js : json) :
