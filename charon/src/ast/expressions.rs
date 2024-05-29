@@ -67,7 +67,7 @@ pub enum ProjectionElem {
     /// We also keep the type of the array/slice that we index for convenience purposes
     /// (this is not necessary).
     /// We **eliminate** this variant in a micro-pass.
-    Index(VarId, Ty),
+    Index(Operand, Ty),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize)]

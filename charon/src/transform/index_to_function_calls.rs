@@ -37,8 +37,26 @@ impl<'a> Transform<'a> {
         let mut proj = Vec::new();
         for pe in p.projection.clone().into_iter() {
             if pe.is_index() {
-                let (index_var_id, buf_ty) = pe.to_index();
-
+                let (operand, buf_ty) = pe.to_index();
+                let index_var_id = match &operand {
+                    // If we have a place, just use directly its identifier
+                    Operand::Copy(place) => place.var_id,
+                    // Otherwise, we push a new local and an `Assign` statement
+                    Operand::Const(ConstantExpr { ty, .. }) => {
+                        let var_id = self.fresh_var(None, ty.clone());
+                        let place = Place {
+                            var_id,
+                            projection: vec![],
+                        };
+                        let content = RawStatement::Assign(place, Rvalue::Use(operand));
+                        let span = self.span.unwrap();
+                        self.statements.push(Statement { span, content });
+                        var_id
+                    }
+                    Operand::Move(_) => {
+                        panic!("Unexpected `Oparand::Move` on a `ProjectionElem::Index`")
+                    }
+                };
                 let (id, generics) = buf_ty.as_adt();
                 let cgs: Vec<ConstGeneric> = generics.const_generics.to_vec();
                 let index_id = match id.as_assumed() {
