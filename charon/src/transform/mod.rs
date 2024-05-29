@@ -9,4 +9,5 @@ pub mod remove_nops;
 pub mod remove_read_discriminant;
 pub mod remove_unused_locals;
 pub mod simplify_constants;
+pub mod skip_trait_refs_when_known;
 pub mod update_closure_signatures;

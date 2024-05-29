@@ -186,8 +186,8 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
     let FnOperand::Regular(fn_ptr) = &call.func else {
         panic!()
     };
-    // For now this call goes through a trait ref. FIXME: call the function directly.
-    let FunIdOrTraitMethodRef::Trait(..) = &fn_ptr.func else {
+    // Assert that this call referes to the method directly, without using a trait ref.
+    let FunIdOrTraitMethodRef::Fun(..) = &fn_ptr.func else {
         panic!()
     };
     Ok(())

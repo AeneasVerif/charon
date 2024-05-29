@@ -23,7 +23,7 @@ impl<Id, T> Default for Map<Id, T> {
     }
 }
 
-impl<Id: std::cmp::Ord, T> Map<Id, T> {
+impl<Id: Ord, T> Map<Id, T> {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Map {
@@ -64,10 +64,15 @@ impl<Id: std::cmp::Ord, T> Map<Id, T> {
     }
 }
 
-impl<'a, Id, T> IntoIterator for &'a Map<Id, T>
-where
-    T: Clone,
-{
+impl<Id: Ord, T> std::ops::Index<Id> for Map<Id, T> {
+    type Output = T;
+
+    fn index(&self, index: Id) -> &Self::Output {
+        &self.map[&index]
+    }
+}
+
+impl<'a, Id, T> IntoIterator for &'a Map<Id, T> {
     type Item = (&'a Id, &'a T);
     type IntoIter = std::collections::btree_map::Iter<'a, Id, T>;
 

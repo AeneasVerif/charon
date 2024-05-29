@@ -26,19 +26,7 @@ global test_crate::BAR  {
 
 opaque type alloc::string::String
 
-trait alloc::string::ToString<Self>
-{
-    fn to_string : alloc::string::ToString::to_string
-}
-
 fn alloc::string::{impl alloc::string::ToString for Str#47}::to_string<'_0>(@1: &'_0 (Str)) -> alloc::string::String
-
-impl alloc::string::{impl alloc::string::ToString for Str#47} : alloc::string::ToString<Str>
-{
-    fn to_string = alloc::string::{impl alloc::string::ToString for Str#47}::to_string
-}
-
-fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
 
 fn test_crate::main()
 {
@@ -61,6 +49,18 @@ fn test_crate::main()
     @0 := ()
     return
 }
+
+trait alloc::string::ToString<Self>
+{
+    fn to_string : alloc::string::ToString::to_string
+}
+
+impl alloc::string::{impl alloc::string::ToString for Str#47} : alloc::string::ToString<Str>
+{
+    fn to_string = alloc::string::{impl alloc::string::ToString for Str#47}::to_string
+}
+
+fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
 
 
 
