@@ -36,26 +36,7 @@ impl<'a> Transform<'a> {
         let mut var_id = p.var_id;
         let mut proj = Vec::new();
         for pe in p.projection.clone().into_iter() {
-            if let ProjectionElem::Index(operand, buf_ty) = pe {
-                let index_var_id = match &operand {
-                    // If we have a place, just use directly its identifier
-                    Operand::Copy(place) => place.var_id,
-                    // Otherwise, we push a new local and an `Assign` statement
-                    Operand::Const(ConstantExpr { ty, .. }) => {
-                        let var_id = self.fresh_var(None, ty.clone());
-                        let place = Place {
-                            var_id,
-                            projection: vec![],
-                        };
-                        let content = RawStatement::Assign(place, Rvalue::Use(operand));
-                        let span = self.span.unwrap();
-                        self.statements.push(Statement { span, content });
-                        var_id
-                    }
-                    Operand::Move(_) => {
-                        panic!("Unexpected `Oparand::Move` on a `ProjectionElem::Index`")
-                    }
-                };
+            if let ProjectionElem::Index(arg_index, buf_ty) = pe {
                 let (id, generics) = buf_ty.as_adt();
                 let cgs: Vec<ConstGeneric> = generics.const_generics.to_vec();
                 let index_id = match id.as_assumed() {
@@ -111,7 +92,6 @@ impl<'a> Transform<'a> {
                 let elem_borrow_ty = Ty::Ref(Region::Erased, Box::new(elem_ty.clone()), ref_kind);
                 let elem_borrow_var = self.fresh_var(Option::None, elem_borrow_ty);
                 let arg_buf = Operand::Move(Place::new(buf_borrow_var));
-                let arg_index = Operand::Copy(Place::new(index_var_id));
                 let index_dest = Place::new(elem_borrow_var);
                 let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
                 let generics = GenericArgs::new(vec![Region::Erased], vec![elem_ty], cgs, vec![]);
