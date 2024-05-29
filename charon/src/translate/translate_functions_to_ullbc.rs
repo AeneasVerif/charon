@@ -440,7 +440,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                     hax::ProjectionElem::Index(local) => {
                         let local = self.get_local(local).unwrap();
-                        let operand = Operand::Copy(Place::new(local)});
+                        let operand = Operand::Copy(Place::new(local));
                         projection.push(ProjectionElem::Index(operand, current_ty));
                     }
                     hax::ProjectionElem::Downcast(..) => {
