@@ -37,8 +37,7 @@ impl<'a> Transform<'a> {
         let mut var_id = p.var_id;
         let mut proj = Vec::new();
         for pe in p.projection.clone().into_iter() {
-            if pe.is_index() {
-                let (operand, buf_ty) = pe.to_index();
+            if let ProjectionElem::Index(operand, buf_ty) = pe {
                 let index_var_id = match &operand {
                     // If we have a place, just use directly its identifier
                     Operand::Copy(place) => place.var_id,
