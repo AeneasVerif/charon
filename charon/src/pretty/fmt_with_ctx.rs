@@ -633,7 +633,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                         out = format!("({out}).@closure_state_field_{field_id}");
                     }
                 },
-                ProjectionElem::Index(i, _) => out = format!("({out})[{}]", ctx.format_object(*i)),
+                ProjectionElem::Index(operand, _) => out = format!("({out})[{}]", operand),
             }
         }
 

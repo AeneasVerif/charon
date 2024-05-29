@@ -440,16 +440,33 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         projection.push(proj_elem);
                     }
                     hax::ProjectionElem::Index(local) => {
-                        let local = self.get_local(local).unwrap();
-                        projection.push(ProjectionElem::Index(local, current_ty));
+                        let operand = Operand::Copy(Place {
+                            var_id: self.get_local(local).unwrap(),
+                            projection: vec![],
+                        });
+                        projection.push(ProjectionElem::Index(operand, current_ty));
                     }
                     hax::ProjectionElem::Downcast(..) => {
                         // We view it as a nop (the information from the
                         // downcast has been propagated to the other
                         // projection elements by Hax)
                     }
-                    hax::ProjectionElem::ConstantIndex { .. }
-                    | hax::ProjectionElem::Subslice { .. } => {
+                    hax::ProjectionElem::ConstantIndex {
+                        offset,
+                        min_length: _,
+                        from_end: false,
+                    } => {
+                        let ty = Ty::Literal(LiteralTy::Integer(IntegerTy::Usize));
+                        let value =
+                            RawConstantExpr::Literal(Literal::Scalar(ScalarValue::Usize(*offset)));
+                        let offset = Operand::Const(ConstantExpr { value, ty });
+                        projection.push(ProjectionElem::Index(offset, current_ty));
+                    }
+                    hax::ProjectionElem::ConstantIndex { .. } => {
+                        // Those don't seem to occur in MIR built
+                        error_or_panic!(self, span, "Unexpected ProjectionElem::ConstantIndex");
+                    }
+                    hax::ProjectionElem::Subslice { .. } => {
                         // Those don't seem to occur in MIR built
                         error_or_panic!(self, span, "Unexpected ProjectionElem::Subslice");
                     }
