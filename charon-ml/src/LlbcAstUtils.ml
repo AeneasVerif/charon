@@ -37,7 +37,7 @@ let rec chain_statements (st1 : statement) (st2 : statement) : statement =
       (* Simply create a sequence *)
       mk_sequence st1 st2
   | Nop -> (* Ignore the nop *) st2
-  | Break _ | Continue _ | Panic | Return ->
+  | Break _ | Continue _ | Panic | Return | Error ->
       (* Ignore the second statement, which won't be evaluated *) st1
   | Switch switch ->
       (* Insert inside the switch *)
