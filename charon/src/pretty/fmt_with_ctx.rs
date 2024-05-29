@@ -1017,7 +1017,7 @@ impl llbc::Statement {
                     tab
                 )
             }
-            RawStatement::Error => format!("{tab}error"),
+            RawStatement::Error => format!("{tab}/* charon error */"),
         }
     }
 }
