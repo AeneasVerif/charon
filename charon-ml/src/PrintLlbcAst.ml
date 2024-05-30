@@ -107,7 +107,7 @@ module Ast = struct
         indent ^ "loop {\n"
         ^ statement_to_string env (indent ^ indent_incr) indent_incr loop_st
         ^ "\n" ^ indent ^ "}"
-    | Error -> indent ^ "error"
+    | Error s -> indent ^ "error " ^ s
 
   let fun_sig_to_string (env : fmt_env) (indent : string) (indent_incr : string)
       (sg : fun_sig) : string =
