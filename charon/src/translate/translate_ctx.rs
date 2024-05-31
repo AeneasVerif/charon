@@ -1336,7 +1336,7 @@ impl TranslatedCrate {
     }
 }
 
-pub(crate) struct LlbcFmtCtx<'a> {
+pub struct LlbcFmtCtx<'a> {
     pub translated: &'a TranslatedCrate,
 }
 

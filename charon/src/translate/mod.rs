@@ -1,3 +1,4 @@
+pub mod get_mir;
 pub mod translate_constants;
 pub mod translate_crate_to_ullbc;
 pub mod translate_ctx;
