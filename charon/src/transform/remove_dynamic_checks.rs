@@ -6,6 +6,7 @@
 
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{BinOp, FieldProjKind, Operand, ProjectionElem, Rvalue};
+use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::{register_error_or_panic, TransformCtx};
 use crate::ullbc_ast::{BlockData, RawStatement, RawTerminator, Statement};
 
@@ -125,7 +126,7 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
             // `rustc_middle::mir::AssertKind` variants `ResumedAfterReturn`, `ResumedAfterPanic`
             // and `MisalignedPointerDereference`.
             let fmt_ctx = ctx.into_fmt();
-            let msg = format!("Found an `assert` we don't recognize:\n{}", block.fmt_with_ctx("", &fmt_ctx));
+            let msg = format!("Found an `assert` we don't recognize:\n{}", block.fmt_with_ctx(&fmt_ctx));
             register_error_or_panic!(
                 ctx,
                 block.terminator.span.span,

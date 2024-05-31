@@ -19,6 +19,7 @@
 #![feature(let_chains)]
 #![feature(if_let_guard)]
 #![feature(iterator_try_collect)]
+#![feature(return_position_impl_trait_in_trait)]
 
 extern crate rustc_ast;
 extern crate rustc_ast_pretty;

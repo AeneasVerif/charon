@@ -2,6 +2,7 @@
 //! [`remove_dynamic_checks`]. See comments there for more details.
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
+use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::TransformCtx;
 use crate::types::*;
 use take_mut::take;

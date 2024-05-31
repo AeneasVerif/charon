@@ -12,6 +12,7 @@ use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::ids::Vector;
+use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::translate_types;
 use crate::types::*;

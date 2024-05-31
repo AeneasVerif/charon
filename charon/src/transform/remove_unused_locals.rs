@@ -6,6 +6,7 @@ use crate::expressions::{MutExprVisitor, SharedExprVisitor};
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::ids::Vector;
 use crate::llbc_ast::{MutAstVisitor, SharedAstVisitor, Statement};
+use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::TransformCtx;
 use crate::types::{MutTypeVisitor, SharedTypeVisitor};
 use crate::ullbc_ast::Var;
