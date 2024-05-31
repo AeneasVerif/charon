@@ -7,7 +7,8 @@
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{BinOp, FieldProjKind, Operand, ProjectionElem, Rvalue};
 use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::{register_error_or_panic, TransformCtx};
+use crate::transform::TransformCtx;
+use crate::translate_ctx::register_error_or_panic;
 use crate::ullbc_ast::{BlockData, RawStatement, RawTerminator, Statement};
 
 /// Rustc inserts dybnamic checks during MIR lowering. They all end in an `Assert` terminator (and

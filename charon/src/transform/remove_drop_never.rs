@@ -7,7 +7,7 @@ use crate::formatter::{Formatter, IntoFormatter};
 use crate::ids::Vector;
 use crate::llbc_ast::{RawStatement, Statement, Var};
 use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::values::*;
 
 /// Filter the statement by replacing it with `Nop` if it is a `Drop(x)` where

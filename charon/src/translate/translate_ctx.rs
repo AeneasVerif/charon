@@ -351,17 +351,6 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub blocks_stack: VecDeque<hax::BasicBlock>,
 }
 
-/// Simpler context used for rustc-independent code transformation. This only depends on rustc for
-/// its error reporting machinery.
-pub struct TransformCtx<'ctx> {
-    /// The options that control translation.
-    pub options: TransOptions,
-    /// The translated data.
-    pub translated: TranslatedCrate,
-    /// Context for tracking and reporting errors.
-    pub errors: ErrorCtx<'ctx>,
-}
-
 impl ErrorCtx<'_> {
     pub(crate) fn continue_on_failure(&self) -> bool {
         self.continue_on_failure
@@ -765,104 +754,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'ctx> TransformCtx<'ctx> {
-    pub(crate) fn continue_on_failure(&self) -> bool {
-        self.errors.continue_on_failure()
-    }
-    pub(crate) fn has_errors(&self) -> bool {
-        self.errors.has_errors()
-    }
-
-    /// Span an error and register the error.
-    pub(crate) fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
-        self.errors.span_err(span, msg)
-    }
-
-    pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, f: F) -> T
-    where
-        F: FnOnce(&mut Self) -> T,
-    {
-        let current_def_id = self.errors.def_id;
-        self.errors.def_id = Some(def_id);
-        let ret = f(self);
-        self.errors.def_id = current_def_id;
-        ret
-    }
-
-    /// Get mutable access to both the ctx and the function declarations.
-    pub(crate) fn with_mut_unstructured_fun_decls<R>(
-        &mut self,
-        f: impl FnOnce(&mut Self, &mut ast::FunDecls) -> R,
-    ) -> R {
-        let mut fun_decls = std::mem::take(&mut self.translated.fun_decls);
-        let ret = f(self, &mut fun_decls);
-        self.translated.fun_decls = fun_decls;
-        ret
-    }
-    /// Get mutable access to both the ctx and the global declarations.
-    pub(crate) fn with_mut_unstructured_global_decls<R>(
-        &mut self,
-        f: impl FnOnce(&mut Self, &mut ast::GlobalDecls) -> R,
-    ) -> R {
-        let mut global_decls = std::mem::take(&mut self.translated.global_decls);
-        let ret = f(self, &mut global_decls);
-        self.translated.global_decls = global_decls;
-        ret
-    }
-    /// Get mutable access to both the ctx and the function declarations.
-    pub(crate) fn with_mut_structured_fun_decls<R>(
-        &mut self,
-        f: impl FnOnce(&mut Self, &mut llbc_ast::FunDecls) -> R,
-    ) -> R {
-        let mut fun_decls = std::mem::take(&mut self.translated.structured_fun_decls);
-        let ret = f(self, &mut fun_decls);
-        self.translated.structured_fun_decls = fun_decls;
-        ret
-    }
-    /// Get mutable access to both the ctx and the global declarations.
-    pub(crate) fn with_mut_structured_global_decls<R>(
-        &mut self,
-        f: impl FnOnce(&mut Self, &mut llbc_ast::GlobalDecls) -> R,
-    ) -> R {
-        let mut global_decls = std::mem::take(&mut self.translated.structured_global_decls);
-        let ret = f(self, &mut global_decls);
-        self.translated.structured_global_decls = global_decls;
-        ret
-    }
-
-    pub(crate) fn iter_unstructured_bodies<F>(&mut self, f: F)
-    where
-        F: Fn(&mut Self, &Name, &mut ast::ExprBody),
-    {
-        self.with_mut_unstructured_fun_decls(|ctx, fun_decls| {
-            ctx.with_mut_unstructured_global_decls(|ctx, global_decls| {
-                let bodies: Vec<_> = iter_function_bodies(fun_decls)
-                    .chain(iter_global_bodies(global_decls))
-                    .collect();
-                for (id, name, b) in bodies {
-                    ctx.with_def_id(id, |ctx| f(ctx, name, b))
-                }
-            })
-        })
-    }
-
-    pub(crate) fn iter_structured_bodies<F>(&mut self, f: F)
-    where
-        F: Fn(&mut Self, &Name, &mut llbc_ast::ExprBody),
-    {
-        self.with_mut_structured_fun_decls(|ctx, fun_decls| {
-            ctx.with_mut_structured_global_decls(|ctx, global_decls| {
-                let bodies: Vec<_> = iter_function_bodies(fun_decls)
-                    .chain(iter_global_bodies(global_decls))
-                    .collect();
-                for (id, name, b) in bodies {
-                    ctx.with_def_id(id, |ctx| f(ctx, name, b))
-                }
-            })
-        })
-    }
-}
-
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>) -> Self {
@@ -1169,14 +1060,6 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'a> IntoFormatter for &'a TransformCtx<'_> {
-    type C = FmtCtx<'a>;
-
-    fn into_fmt(self) -> Self::C {
-        self.translated.into_fmt()
-    }
-}
-
 impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
     type C = FmtCtx<'a>;
 
@@ -1227,14 +1110,8 @@ impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl fmt::Display for TransformCtx<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.translated.fmt_with_ullbc_defs(f)
-    }
-}
-
 impl TranslatedCrate {
-    fn fmt_with_ullbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    pub(crate) fn fmt_with_ullbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fmt: FmtCtx = self.into_fmt();
 
         match &self.ordered_decls {
@@ -1277,7 +1154,7 @@ impl TranslatedCrate {
         fmt::Result::Ok(())
     }
 
-    fn fmt_with_llbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    pub(crate) fn fmt_with_llbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fmt: FmtCtx = self.into_fmt();
         let llbc_globals = &self.structured_global_decls;
         let llbc_funs = &self.structured_fun_decls;

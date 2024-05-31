@@ -9,7 +9,7 @@ use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{ExprBody, FunDecl, GlobalDecl, RawStatement, Statement};
 use crate::names::Name;
 use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::types::*;
 use crate::values::*;
 

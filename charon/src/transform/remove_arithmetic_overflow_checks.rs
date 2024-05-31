@@ -3,7 +3,7 @@
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
 use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::types::*;
 use take_mut::take;
 

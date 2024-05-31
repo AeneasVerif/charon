@@ -14,7 +14,7 @@ use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::meta::Span;
 use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::types::*;
 use crate::ullbc_ast::{make_locals_generator, RawStatement, Statement};
 use crate::ullbc_ast_utils::body_transform_operands;

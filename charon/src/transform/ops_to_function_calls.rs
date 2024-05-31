@@ -6,7 +6,7 @@ use crate::expressions::{Rvalue, UnOp};
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
 use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::types::*;
 
 fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {

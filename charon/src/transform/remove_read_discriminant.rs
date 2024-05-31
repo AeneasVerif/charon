@@ -7,6 +7,7 @@ use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
 use crate::meta::combine_span;
 use crate::pretty::FmtWithCtx;
+use crate::transform::TransformCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::{Literal, ScalarValue};

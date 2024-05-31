@@ -8,7 +8,7 @@ use take_mut::take;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
 use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 
 fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     if let RawStatement::Switch(Switch::If(_, st1, _)) = &mut st.content {

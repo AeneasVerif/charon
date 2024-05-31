@@ -4,7 +4,7 @@
 use crate::common::*;
 use crate::ids::Vector;
 use crate::llbc_ast::*;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::types::*;
 
 struct InsertRegions<'a> {

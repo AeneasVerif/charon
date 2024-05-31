@@ -1,6 +1,7 @@
 use crate::cli_options::CliOpts;
 use crate::common::*;
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
+use crate::transform::TransformCtx;
 use crate::translate_ctx::*;
 use crate::translate_functions_to_ullbc;
 
