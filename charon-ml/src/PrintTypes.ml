@@ -408,6 +408,7 @@ let type_decl_to_string (env : ('a, 'b) fmt_env) (def : type_decl) : string =
       in
       let variants = String.concat "\n" variants in
       "enum " ^ name ^ params ^ clauses ^ "\n  =\n" ^ variants
+  | Alias ty -> "type " ^ name ^ params ^ clauses ^ " = " ^ ty_to_string env ty
   | Opaque -> "opaque type " ^ name ^ params ^ clauses
 
 let adt_variant_to_string (env : ('a, 'b) fmt_env) (def_id : TypeDeclId.id)
@@ -419,7 +420,7 @@ let adt_variant_to_string (env : ('a, 'b) fmt_env) (def_id : TypeDeclId.id)
       ^ variant_id_to_pretty_string variant_id
   | Some def -> (
       match def.kind with
-      | Struct _ | Opaque -> raise (Failure "Unreachable")
+      | Struct _ | Alias _ | Opaque -> raise (Failure "Unreachable")
       | Enum variants ->
           let variant = VariantId.nth variants variant_id in
           name_to_string env def.name ^ "::" ^ variant.variant_name)

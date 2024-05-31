@@ -486,6 +486,9 @@ let type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc [ ("Enum", variants) ] ->
         let* variants = list_of_json (variant_of_json id_to_file) variants in
         Ok (Enum variants)
+    | `Assoc [ ("Alias", ty) ] ->
+        let* ty = ty_of_json ty in
+        Ok (Alias ty)
     | `String "Opaque" -> Ok Opaque
     | _ -> Error "")
 

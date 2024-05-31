@@ -100,7 +100,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let def_id = item.owner_id.to_def_id();
         match &item.kind {
             ItemKind::TyAlias(_, _) => {
-                // We ignore the type aliases - it seems they are inlined
+                let _ = self.register_type_decl_id(&None, def_id);
                 Ok(())
             }
             ItemKind::OpaqueTy(_) => unimplemented!(),

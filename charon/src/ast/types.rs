@@ -371,6 +371,9 @@ pub enum TypeDeclKind {
     ///
     /// Either a local type marked as opaque, or an external type.
     Opaque,
+    /// An alias to another type. This only shows up in the top-level list of items, as rustc
+    /// inlines uses of type aliases everywhere else.
+    Alias(Ty),
     /// Used if an error happened during the extraction, and we don't panic
     /// on error.
     Error(String),

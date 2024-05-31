@@ -416,6 +416,7 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
                                 }
                             }
                         }
+                        Alias(ty) => graph.visit_ty(ty),
                         Opaque | Error(_) => (),
                     }
                 } else {
