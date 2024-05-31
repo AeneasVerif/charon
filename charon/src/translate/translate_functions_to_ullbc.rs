@@ -1832,7 +1832,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("Translating function signature");
         let signature = bt_ctx.translate_function_signature(rust_id)?;
 
-        let body = if !is_trait_method_decl {
+        let body = if !is_trait_method_decl && !item_meta.opaque {
             // Translate the body. This returns `None` if we can't/decide not to translate this
             // body.
             match bt_ctx.translate_body(rust_id, signature.inputs.len()) {
@@ -1922,10 +1922,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Translate its body like the body of a function. This returns `None` if we can't/decide
         // not to translate this body.
-        let body = match bt_ctx.translate_body(rust_id, 0) {
-            Ok(body) => body,
+        let body = match (bt_ctx.translate_body(rust_id, 0), item_meta.opaque) {
+            (Ok(body), false) => body,
             // Error case: we could have a specific variant
-            Err(_) => None,
+            (Ok(_), true) | (Err(_), _) => None,
         };
 
         // Save the new global

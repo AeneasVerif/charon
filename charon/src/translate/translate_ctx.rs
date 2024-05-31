@@ -462,6 +462,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             attributes: self.translate_attributes_from_rid(def_id),
             inline: self.translate_inline_from_rid(def_id),
             public,
+            opaque: self
+                .translate_attributes_from_rid(def_id)
+                .contains(&(String::from("charon::opaque"))),
         }
     }
 
