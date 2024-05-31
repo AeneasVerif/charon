@@ -6,9 +6,11 @@ use std::{error::Error, fs::File, io::BufReader, process::Command};
 
 use charon_lib::{
     export::GCrateData,
-    llbc_ast, logger,
+    llbc_ast::{self, RawStatement},
+    logger,
     meta::InlineAttr,
     names::{Name, PathElem},
+    ullbc_ast::{FnOperand, FunIdOrTraitMethodRef},
 };
 
 fn translate(
@@ -158,5 +160,35 @@ fn visibility() -> Result<(), Box<dyn Error>> {
         "test_crate::private::PubInPriv"
     );
     assert!(crate_data.types[2].item_meta.public);
+    Ok(())
+}
+
+#[test]
+fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
+    let crate_data = translate(
+        r#"
+        #[derive(Default)]
+        struct Struct;
+        fn use_default() -> Struct {
+            Struct::default()
+        }
+        "#,
+    )?;
+    let function = &crate_data.functions[1];
+    assert_eq!(repr_name(&function.name), "test_crate::use_default");
+    let body = &function.body.as_ref().unwrap().body;
+    let RawStatement::Sequence(first_stmt, _) = &body.content else {
+        panic!()
+    };
+    let RawStatement::Call(call) = &first_stmt.content else {
+        panic!()
+    };
+    let FnOperand::Regular(fn_ptr) = &call.func else {
+        panic!()
+    };
+    // Assert that this call referes to the method directly, without using a trait ref.
+    let FunIdOrTraitMethodRef::Fun(..) = &fn_ptr.func else {
+        panic!()
+    };
     Ok(())
 }

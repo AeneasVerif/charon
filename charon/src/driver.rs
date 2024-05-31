@@ -3,6 +3,7 @@ use crate::export;
 use crate::get_mir::MirLevel;
 use crate::reorder_decls;
 use crate::transform::remove_arithmetic_overflow_checks;
+use crate::transform::skip_trait_refs_when_known;
 use crate::transform::{
     index_to_function_calls, insert_assign_return_unit, ops_to_function_calls, reconstruct_asserts,
     remove_drop_never, remove_dynamic_checks, remove_nops, remove_read_discriminant,
@@ -258,6 +259,11 @@ pub fn translate(
     if options.print_ullbc {
         info!("# ULLBC after translation from MIR:\n\n{}\n", ctx);
     }
+
+    // # Micro-pass: whenever we call a trait method on a known type, refer to the method `FunDecl`
+    // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to remove
+    // some sources of mutual recursion.
+    skip_trait_refs_when_known::transform(&mut ctx);
 
     // # Reorder the graph of dependencies and compute the strictly
     // connex components to:

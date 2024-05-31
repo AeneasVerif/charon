@@ -135,12 +135,6 @@ where
     [@TraitClause1]: core::hash::Hash<K>,
     [@TraitClause2]: core::hash::BuildHasher<S>,
 
-trait core::ops::index::Index<Self, Idx>
-{
-    type Output
-    fn index : core::ops::index::Index::index
-}
-
 fn std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}::index<'_0, '_1, '_2, K, Q, V, S>(@1: &'_1 (std::collections::hash::map::HashMap<K, V, S>), @2: &'_2 (Q)) -> &'_1 (V)
 where
     // Inherited clauses:
@@ -150,21 +144,6 @@ where
     [@TraitClause3]: core::cmp::Eq<Q>,
     [@TraitClause4]: core::hash::Hash<Q>,
     [@TraitClause5]: core::hash::BuildHasher<S>,
-
-impl<'_0, K, Q, V, S> std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}<'_0, K, Q, V, S> : core::ops::index::Index<std::collections::hash::map::HashMap<K, V, S>, &'_0 (Q)>
-where
-    [@TraitClause0]: core::cmp::Eq<K>,
-    [@TraitClause1]: core::hash::Hash<K>,
-    [@TraitClause2]: core::borrow::Borrow<K, Q>,
-    [@TraitClause3]: core::cmp::Eq<Q>,
-    [@TraitClause4]: core::hash::Hash<Q>,
-    [@TraitClause5]: core::hash::BuildHasher<S>,
-{
-    type Output = V with []
-    fn index = std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}::index
-}
-
-fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 
 fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map::HashMap<u32, u32, std::collections::hash::map::RandomState>)) -> &'_0 (u32)
 {
@@ -203,7 +182,7 @@ fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map::Has
             @15 := const (22 : u32)
             @14 := &@15
             @13 := &*(@14)
-            @11 := std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}<'_, u32, u32, u32, std::collections::hash::map::RandomState>[core::cmp::impls::{impl core::cmp::Eq for u32#41}, core::hash::impls::{impl core::hash::Hash for u32#11}, core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::cmp::impls::{impl core::cmp::Eq for u32#41}, core::hash::impls::{impl core::hash::Hash for u32#11}, std::collections::hash::map::{impl core::hash::BuildHasher for std::collections::hash::map::RandomState#83}]::index(move (@12), move (@13))
+            @11 := std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}::index<'_, u32, u32, u32, std::collections::hash::map::RandomState>[core::cmp::impls::{impl core::cmp::Eq for u32#41}, core::hash::impls::{impl core::hash::Hash for u32#11}, core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::cmp::impls::{impl core::cmp::Eq for u32#41}, core::hash::impls::{impl core::hash::Hash for u32#11}, std::collections::hash::map::{impl core::hash::BuildHasher for std::collections::hash::map::RandomState#83}](move (@12), move (@13))
             drop @13
             drop @12
             @10 := &*(@11)
@@ -224,6 +203,27 @@ fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map::Has
     drop @2
     return
 }
+
+trait core::ops::index::Index<Self, Idx>
+{
+    type Output
+    fn index : core::ops::index::Index::index
+}
+
+impl<'_0, K, Q, V, S> std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}<'_0, K, Q, V, S> : core::ops::index::Index<std::collections::hash::map::HashMap<K, V, S>, &'_0 (Q)>
+where
+    [@TraitClause0]: core::cmp::Eq<K>,
+    [@TraitClause1]: core::hash::Hash<K>,
+    [@TraitClause2]: core::borrow::Borrow<K, Q>,
+    [@TraitClause3]: core::cmp::Eq<Q>,
+    [@TraitClause4]: core::hash::Hash<Q>,
+    [@TraitClause5]: core::hash::BuildHasher<S>,
+{
+    type Output = V with []
+    fn index = std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}::index
+}
+
+fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 
 fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
 
