@@ -90,12 +90,6 @@ impl MutTypeVisitor for RemoveDynChecks {}
 impl MutExprVisitor for RemoveDynChecks {}
 
 impl MutAstVisitor for RemoveDynChecks {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-
     fn visit_statement(&mut self, s: &mut Statement) {
         // Simplify this statement.
         self.simplify(s);

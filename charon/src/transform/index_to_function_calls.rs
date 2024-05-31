@@ -176,16 +176,14 @@ impl<'a> MutExprVisitor for Transform<'a> {
 }
 
 impl<'a> MutAstVisitor for Transform<'a> {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
+    fn visit_branch(&mut self, branch: &mut Statement) {
         #[allow(clippy::mem_replace_with_default)]
         let statements = replace(&mut self.statements, Vec::new());
-        visitor(self);
+        self.visit_statement(branch);
         // Make sure we didn't update the vector of statements
         assert!(self.statements.is_empty());
         let _ = replace(&mut self.statements, statements);
     }
-
-    fn merge(&mut self) {}
 
     fn visit_statement(&mut self, st: &mut Statement) {
         // Retrieve the span information

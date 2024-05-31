@@ -44,13 +44,7 @@ impl SharedExprVisitor for ComputeUsedLocals {
     }
 }
 
-impl SharedAstVisitor for ComputeUsedLocals {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-}
+impl SharedAstVisitor for ComputeUsedLocals {}
 
 #[derive(Debug, Clone)]
 struct UpdateUsedLocals {
@@ -71,13 +65,7 @@ impl MutExprVisitor for UpdateUsedLocals {
     }
 }
 
-impl MutAstVisitor for UpdateUsedLocals {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-}
+impl MutAstVisitor for UpdateUsedLocals {}
 
 /// Compute the set of used locals, filter the unused locals and compute a new
 /// mapping from variable index to variable index.

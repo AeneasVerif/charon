@@ -186,12 +186,6 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
 impl<'a, 'ctx> MutTypeVisitor for Visitor<'a, 'ctx> {}
 impl<'a, 'ctx> MutExprVisitor for Visitor<'a, 'ctx> {}
 impl<'a, 'ctx> MutAstVisitor for Visitor<'a, 'ctx> {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-
     fn visit_statement(&mut self, st: &mut Statement) {
         self.update_statement(st);
 
