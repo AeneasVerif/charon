@@ -4,12 +4,14 @@
 //! compiling for release). In our case, we take this into account in the semantics of our
 //! array/slice manipulation and arithmetic functions, on the verification side.
 
-use crate::formatter::{Formatter, IntoFormatter};
+use crate::formatter::IntoFormatter;
 use crate::llbc_ast::{BinOp, FieldProjKind, Operand, ProjectionElem, Rvalue};
 use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::translate_ctx::register_error_or_panic;
-use crate::ullbc_ast::{BlockData, RawStatement, RawTerminator, Statement};
+use crate::ullbc_ast::{BlockData, ExprBody, RawStatement, RawTerminator, Statement};
+
+use super::ctx::UllbcPass;
 
 /// Rustc inserts dybnamic checks during MIR lowering. They all end in an `Assert` terminator (and
 /// this is the only use of this terminator).
@@ -143,24 +145,11 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
     block.terminator.content = RawTerminator::Goto { target: *target };
 }
 
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.iter_unstructured_bodies(|ctx, name, b| {
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# About to remove the dynamic checks: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
-
+pub struct Transform;
+impl UllbcPass for Transform {
+    fn transform_body(&self, ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         for block in b.body.iter_mut() {
             remove_dynamic_checks(ctx, block);
         }
-
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# After we removed the dynamic checks: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
-    });
+    }
 }

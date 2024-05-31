@@ -3,16 +3,16 @@
 //! type `Never`. We actually check that there are no such local variables
 //! remaining afterwards.
 use crate::expressions::{MutExprVisitor, SharedExprVisitor};
-use crate::formatter::{Formatter, IntoFormatter};
 use crate::ids::Vector;
-use crate::llbc_ast::{MutAstVisitor, SharedAstVisitor, Statement};
-use crate::pretty::FmtWithCtx;
+use crate::llbc_ast::{ExprBody, MutAstVisitor, SharedAstVisitor, Statement};
 use crate::transform::TransformCtx;
 use crate::types::{MutTypeVisitor, SharedTypeVisitor};
 use crate::ullbc_ast::Var;
 use crate::values::*;
 use std::collections::{HashMap, HashSet};
 use take_mut::take;
+
+use super::ctx::LlbcPass;
 
 #[derive(Debug, Clone)]
 pub(crate) struct ComputeUsedLocals {
@@ -109,14 +109,9 @@ fn update_locals(
     (locals, vids_map)
 }
 
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.iter_structured_bodies(|ctx, name, b| {
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# About to remove unused locals in decl: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
+pub struct Transform;
+impl LlbcPass for Transform {
+    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         take(b, |mut b| {
             let (locals, vids_map) = update_locals(b.arg_count, b.locals, &b.body);
             b.locals = locals;
@@ -124,13 +119,7 @@ pub fn transform(ctx: &mut TransformCtx) {
             UpdateUsedLocals::update_statement(vids_map, &mut b.body);
             b
         });
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# After removing unused locals of: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
         // Check that there are no remaining locals with the type `Never`
         assert!(b.locals.iter().all(|v| !v.ty.is_never()));
-    })
+    }
 }

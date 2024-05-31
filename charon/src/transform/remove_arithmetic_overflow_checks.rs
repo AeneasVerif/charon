@@ -1,11 +1,11 @@
 //! # Micro-pass: remove the overflow checks for arithmetic operations we couldn't remove in
 //! [`remove_dynamic_checks`]. See comments there for more details.
-use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
-use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::types::*;
 use take_mut::take;
+
+use super::ctx::LlbcPass;
 
 struct RemoveDynChecks;
 
@@ -99,14 +99,9 @@ impl MutAstVisitor for RemoveDynChecks {
     }
 }
 
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.iter_structured_bodies(|ctx, name, b| {
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# About to remove the remaining overflow checks: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
+pub struct Transform;
+impl LlbcPass for Transform {
+    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         RemoveDynChecks.visit_statement(&mut b.body);
-    })
+    }
 }

@@ -3,16 +3,16 @@
 //! `drop(v)` where `v` has type `Never` (it can happen - this module does the
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
 
-use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
 use crate::meta::combine_span;
-use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::{Literal, ScalarValue};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
+
+use super::ctx::LlbcPass;
 
 struct Visitor<'a, 'ctx> {
     ctx: &'a mut TransformCtx<'ctx>,
@@ -198,16 +198,10 @@ impl<'a, 'ctx> MutAstVisitor for Visitor<'a, 'ctx> {
     }
 }
 
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.iter_structured_bodies(|ctx, name, b| {
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# About to remove [ReadDiscriminant] occurrences in decl: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
-
+pub struct Transform;
+impl LlbcPass for Transform {
+    fn transform_body(&self, ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         let mut visitor = Visitor { ctx };
         visitor.visit_statement(&mut b.body);
-    })
+    }
 }
