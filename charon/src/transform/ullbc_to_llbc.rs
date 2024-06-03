@@ -25,7 +25,7 @@ use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_span, Span};
 use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::ullbc_ast::FunDeclId;
 use crate::ullbc_ast::{self as src, GlobalDeclId};
 use crate::values as v;

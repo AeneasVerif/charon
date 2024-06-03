@@ -11,14 +11,14 @@
 //! handle the globals like function calls.
 
 use crate::expressions::*;
-use crate::formatter::{Formatter, IntoFormatter};
 use crate::meta::Span;
-use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::types::*;
-use crate::ullbc_ast::{make_locals_generator, RawStatement, Statement};
+use crate::ullbc_ast::{make_locals_generator, ExprBody, RawStatement, Statement};
 use crate::ullbc_ast_utils::body_transform_operands;
 use crate::values::VarId;
+
+use super::ctx::UllbcPass;
 
 fn make_aggregate_kind(ty: &Ty, var_index: Option<VariantId>) -> AggregateKind {
     let (id, generics) = ty.as_adt();
@@ -117,18 +117,12 @@ fn transform_operand<F: FnMut(Ty) -> VarId>(
     })
 }
 
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.iter_unstructured_bodies(|ctx, name, b| {
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# About to simplify constants in function: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
-
+pub struct Transform;
+impl UllbcPass for Transform {
+    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         let mut f = make_locals_generator(&mut b.locals);
         body_transform_operands(&mut b.body, &mut |span, nst, op| {
             transform_operand(span, nst, op, &mut f)
         });
-    });
+    }
 }

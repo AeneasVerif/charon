@@ -3,11 +3,11 @@
 //! This allows a more uniform treatment later on.
 //! TODO: actually transform all the unops and binops to function calls?
 use crate::expressions::{Rvalue, UnOp};
-use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
-use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::types::*;
+
+use super::ctx::LlbcPass;
 
 fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
     match &s.content {
@@ -60,19 +60,9 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
     }
 }
 
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.iter_structured_bodies(|ctx, name, b| {
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# About to transform some operations to function calls: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
+pub struct Transform;
+impl LlbcPass for Transform {
+    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         b.body.transform(&mut transform_st);
-        trace!(
-            "# After transforming some operations to function calls: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
-    })
+    }
 }
