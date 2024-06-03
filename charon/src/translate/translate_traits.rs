@@ -2,6 +2,7 @@ use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::ids::{Generator, Vector};
+use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::ullbc_ast as ast;

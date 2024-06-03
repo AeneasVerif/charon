@@ -55,7 +55,7 @@ impl ErrorCtx<'_> {
     /// the external dependencies, print a detailed report to explain
     /// to the user which dependencies were problematic, and where they
     /// are used in the code.
-    pub(crate) fn report_external_deps_errors(&self) {
+    pub fn report_external_deps_errors(&self) {
         if !self.has_errors() {
             return;
         }

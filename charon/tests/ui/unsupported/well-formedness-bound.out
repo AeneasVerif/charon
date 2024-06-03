@@ -14,5 +14,5 @@ error: Ignoring the following function due to an error: test_crate::get
 
 error: aborting due to 2 previous errors
 
-[ ERROR charon_driver:214] The extraction encountered 2 errors
+[ ERROR charon_driver:227] The extraction encountered 2 errors
 Error: Charon driver exited with code 1

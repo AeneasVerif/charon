@@ -1,8 +1,9 @@
 use crate::common::*;
-use crate::formatter::AstFormatter;
+use crate::formatter::Formatter;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::meta::Span;
+use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
 use hax_frontend_exporter as hax;

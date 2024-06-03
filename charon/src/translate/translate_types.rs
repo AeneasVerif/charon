@@ -3,6 +3,7 @@ use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::ids::Vector;
+use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::ScalarValue;
