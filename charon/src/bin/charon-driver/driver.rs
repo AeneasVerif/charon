@@ -2,7 +2,7 @@ use crate::cli_options;
 use charon_lib::export;
 use charon_lib::formatter::{Formatter, IntoFormatter};
 use charon_lib::get_mir::MirLevel;
-use charon_lib::reorder_decls;
+use charon_lib::reorder_decls::compute_reordered_decls;
 use charon_lib::transform::ctx::TransformPass;
 use charon_lib::transform::{LLBC_PASSES, ULLBC_PASSES};
 use charon_lib::translate_crate_to_ullbc;
@@ -261,7 +261,8 @@ pub fn translate(
     // - compute the order in which to extract the definitions
     // - find the recursive definitions
     // - group the mutually recursive definitions
-    reorder_decls::reorder_declarations(&mut ctx);
+    let reordered_decls = compute_reordered_decls(&mut ctx);
+    ctx.translated.ordered_decls = Some(reordered_decls);
 
     //
     // =================
