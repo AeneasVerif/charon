@@ -933,7 +933,7 @@ let rvalue_of_json (js : json) : (rvalue, string) result =
         let* place = place_of_json place in
         let* ty = ty_of_json ty in
         let* const_generics =
-          list_of_json const_generic_of_json const_generics
+          option_of_json const_generic_of_json const_generics
         in
         Ok (Len (place, ty, const_generics) : rvalue)
     | `Assoc [ ("Aggregate", `List [ aggregate_kind; ops ]) ] ->

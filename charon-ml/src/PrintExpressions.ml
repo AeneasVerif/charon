@@ -150,6 +150,9 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
       ^ operand_to_string env op2
   | Discriminant (p, _) -> "discriminant(" ^ place_to_string env p ^ ")"
   | Len (place, ty, const_generics) ->
+      let const_generics =
+        match const_generics with None -> [] | Some cg -> [ cg ]
+      in
       "len<"
       ^ String.concat ", "
           (ty_to_string env ty

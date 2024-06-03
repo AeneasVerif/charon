@@ -238,7 +238,7 @@ and aggregate_kind =
   | AggregatedClosure of fun_decl_id * generic_args
 
 (* TODO: move the aggregate kind to operands *)
-(* TODO: we should prefix the type variants with "T", this would avoid collisions *)
+(* TODO: we should prefix the type variants with "R" or "Rv", this would avoid collisions *)
 and rvalue =
   | Use of operand
   | RvRef of place * borrow_kind
@@ -246,7 +246,7 @@ and rvalue =
   | BinaryOp of binop * operand * operand
   | Discriminant of place * type_decl_id
   | Aggregate of aggregate_kind * operand list
-  | Len of place * ty * const_generic list
+  | Len of place * ty * const_generic option
   | Global of global_decl_id * generic_args
 [@@deriving
   show,

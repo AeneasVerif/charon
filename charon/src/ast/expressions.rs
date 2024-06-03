@@ -407,10 +407,20 @@ pub enum Rvalue {
     ///
     /// We store the type argument and the const generic (the latter only for arrays).
     ///
-    /// [Len] is introduced by rustc for the bound checks: we **eliminate it
-    /// together with the bounds checks**. Whenever the user writes `x.len()`
-    /// where `x` is a slice or an array, they actually call a non-primitive
-    /// function.
+    /// [Len] is automatically introduced by rustc, notably for the bound checks:
+    /// we eliminate it together with the bounds checks whenever possible.
+    /// There are however occurrences that we don't eliminate (yet).
+    /// For instance, for the following Rust code:
+    /// ```text
+    /// fn slice_pattern_4(x: &[()]) {
+    ///     match x {
+    ///         [_named] => (),
+    ///         _ => (),
+    ///     }
+    /// }
+    /// ```
+    /// rustc introduces a check that the length of the slice is exactly equal
+    /// to 1 and that we preserve.
     Len(Place, Ty, Option<ConstGeneric>),
     /// [Repeat(x, n)] creates an array where [x] is copied [n] times.
     ///
