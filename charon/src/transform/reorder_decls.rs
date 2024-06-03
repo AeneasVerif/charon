@@ -390,10 +390,7 @@ impl Deps {
     }
 }
 
-pub fn reorder_declarations(ctx: &mut TransformCtx) {
-    trace!();
-
-    // Step 1: explore the declarations to build the graph
+fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
     let mut graph = Deps::new();
     for id in &ctx.translated.all_ids {
         graph.set_current_id(ctx, *id);
@@ -541,31 +538,19 @@ pub fn reorder_declarations(ctx: &mut TransformCtx) {
         }
         graph.unset_current_id();
     }
+    graph
+}
 
-    trace!("Graph:\n{}\n", graph.fmt_with_ctx(ctx));
-
-    // Step 2: Apply Tarjan's SCC (Strongly Connected Components) algorithm
-    let sccs = tarjan_scc(&graph.dgraph);
-
-    // Step 3: Reorder the declarations in an order as close as possible to the one
-    // given by the user. To be more precise, if we don't need to move
-    // definitions, the order in which we generate the declarations should
-    // be the same as the one in which the user wrote them.
-    // Remark: the [get_id_dependencies] function will be called once per id, meaning
-    // it is ok if it is not very efficient and clones values.
-    let get_id_dependencies = &|id| graph.graph.get(&id).unwrap().iter().copied().collect();
-    let all_ids: Vec<AnyTransId> = graph.graph.keys().copied().collect();
-    let SCCs {
-        sccs: reordered_sccs,
-        scc_deps: _,
-    } = reorder_sccs::<AnyTransId>(get_id_dependencies, &all_ids, &sccs);
-
-    // Finally, generate the list of declarations
+fn group_declarations_from_scc(
+    ctx: &TransformCtx,
+    graph: Deps,
+    reordered_sccs: SCCs<AnyTransId>,
+) -> DeclarationsGroups {
+    let reordered_sccs = &reordered_sccs.sccs;
     let mut reordered_decls: DeclarationsGroups = Vec::new();
 
     // Iterate over the SCC ids in the proper order
     for scc in reordered_sccs.iter() {
-        // Retrieve the SCC
         assert!(!scc.is_empty());
 
         // Note that the length of an SCC should be at least 1.
@@ -625,10 +610,34 @@ pub fn reorder_declarations(ctx: &mut TransformCtx) {
 
         reordered_decls.push(group);
     }
+    reordered_decls
+}
+
+pub fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
+    trace!();
+
+    // Step 1: explore the declarations to build the graph
+    let graph = compute_declarations_graph(ctx);
+    trace!("Graph:\n{}\n", graph.fmt_with_ctx(ctx));
+
+    // Step 2: Apply Tarjan's SCC (Strongly Connected Components) algorithm
+    let sccs = tarjan_scc(&graph.dgraph);
+
+    // Step 3: Reorder the declarations in an order as close as possible to the one
+    // given by the user. To be more precise, if we don't need to move
+    // definitions, the order in which we generate the declarations should
+    // be the same as the one in which the user wrote them.
+    // Remark: the [get_id_dependencies] function will be called once per id, meaning
+    // it is ok if it is not very efficient and clones values.
+    let get_id_dependencies = &|id| graph.graph.get(&id).unwrap().iter().copied().collect();
+    let all_ids: Vec<AnyTransId> = graph.graph.keys().copied().collect();
+    let reordered_sccs = reorder_sccs::<AnyTransId>(get_id_dependencies, &all_ids, &sccs);
+
+    // Finally, generate the list of declarations
+    let reordered_decls = group_declarations_from_scc(ctx, graph, reordered_sccs);
 
     trace!("{:?}", reordered_decls);
-
-    ctx.translated.ordered_decls = Some(reordered_decls);
+    reordered_decls
 }
 
 #[cfg(test)]

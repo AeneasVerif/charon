@@ -121,7 +121,7 @@ pub enum OrdRustId {
 }
 
 impl OrdRustId {
-    fn get_id(&self) -> DefId {
+    pub(crate) fn get_id(&self) -> DefId {
         match self {
             OrdRustId::Global(id)
             | OrdRustId::ConstFun(id)
@@ -252,7 +252,7 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// The declarations we came accross and which we haven't translated yet.
     /// We use an ordered set to make sure we translate them in a specific
     /// order (this avoids stealing issues when querying the MIR bodies).
-    pub stack: BTreeSet<OrdRustId>,
+    pub priority_queue: BTreeSet<OrdRustId>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -649,7 +649,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             Some(tid) => *tid,
             None => {
                 // Add the id to the stack of declarations to translate
-                self.stack.insert(id);
+                self.priority_queue.insert(id);
                 let trans_id = match id {
                     OrdRustId::Type(_) => AnyTransId::Type(self.translated.type_id_gen.fresh_id()),
                     OrdRustId::TraitDecl(_) => {
@@ -673,7 +673,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn translate_type_decl_id(
+    pub(crate) fn register_type_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
@@ -681,7 +681,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         *self.register_id(src, OrdRustId::Type(id)).as_type()
     }
 
-    pub(crate) fn translate_fun_decl_id(
+    pub(crate) fn register_fun_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
@@ -697,7 +697,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
-    pub(crate) fn translate_trait_decl_id(
+    pub(crate) fn register_trait_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
@@ -717,7 +717,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
-    pub(crate) fn translate_trait_impl_id(
+    pub(crate) fn register_trait_impl_id(
         &mut self,
         src: &Option<DepSource>,
         rust_id: DefId,
@@ -726,7 +726,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         {
             // Retrieve the id of the implemented trait decl
             let id = self.tcx.trait_id_of_impl(rust_id).unwrap();
-            let _ = self.translate_trait_decl_id(src, id)?;
+            let _ = self.register_trait_decl_id(src, id)?;
         }
 
         let id = OrdRustId::TraitImpl(rust_id);
@@ -734,7 +734,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         Ok(Some(trait_impl_id))
     }
 
-    pub(crate) fn translate_global_decl_id(
+    pub(crate) fn register_global_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
@@ -814,53 +814,53 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.vars.get(var_id)
     }
 
-    pub(crate) fn translate_type_decl_id(
+    pub(crate) fn register_type_decl_id(
         &mut self,
         span: rustc_span::Span,
         id: DefId,
     ) -> TypeDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.translate_type_decl_id(&src, id)
+        self.t_ctx.register_type_decl_id(&src, id)
     }
 
-    pub(crate) fn translate_fun_decl_id(
+    pub(crate) fn register_fun_decl_id(
         &mut self,
         span: rustc_span::Span,
         id: DefId,
     ) -> ast::FunDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.translate_fun_decl_id(&src, id)
+        self.t_ctx.register_fun_decl_id(&src, id)
     }
 
-    pub(crate) fn translate_global_decl_id(
+    pub(crate) fn register_global_decl_id(
         &mut self,
         span: rustc_span::Span,
         id: DefId,
     ) -> ast::GlobalDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.translate_global_decl_id(&src, id)
+        self.t_ctx.register_global_decl_id(&src, id)
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
-    pub(crate) fn translate_trait_decl_id(
+    pub(crate) fn register_trait_decl_id(
         &mut self,
         span: rustc_span::Span,
         id: DefId,
     ) -> Result<Option<ast::TraitDeclId>, Error> {
         let src = self.make_dep_source(span);
-        self.t_ctx.translate_trait_decl_id(&src, id)
+        self.t_ctx.register_trait_decl_id(&src, id)
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
-    pub(crate) fn translate_trait_impl_id(
+    pub(crate) fn register_trait_impl_id(
         &mut self,
         span: rustc_span::Span,
         id: DefId,
     ) -> Result<Option<ast::TraitImplId>, Error> {
         let src = self.make_dep_source(span);
-        self.t_ctx.translate_trait_impl_id(&src, id)
+        self.t_ctx.register_trait_impl_id(&src, id)
     }
 
     /// Push a free region.
