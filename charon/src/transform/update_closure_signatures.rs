@@ -52,13 +52,7 @@ impl MutExprVisitor for ClosureStateAccess {
     }
 }
 
-impl MutAstVisitor for ClosureStateAccess {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-}
+impl MutAstVisitor for ClosureStateAccess {}
 
 fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Error> {
     let FunSig {

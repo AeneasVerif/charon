@@ -6,6 +6,7 @@ use crate::expressions::{MutExprVisitor, SharedExprVisitor};
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::ids::Vector;
 use crate::llbc_ast::{MutAstVisitor, SharedAstVisitor, Statement};
+use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::TransformCtx;
 use crate::types::{MutTypeVisitor, SharedTypeVisitor};
 use crate::ullbc_ast::Var;
@@ -44,13 +45,7 @@ impl SharedExprVisitor for ComputeUsedLocals {
     }
 }
 
-impl SharedAstVisitor for ComputeUsedLocals {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-}
+impl SharedAstVisitor for ComputeUsedLocals {}
 
 #[derive(Debug, Clone)]
 struct UpdateUsedLocals {
@@ -71,13 +66,7 @@ impl MutExprVisitor for UpdateUsedLocals {
     }
 }
 
-impl MutAstVisitor for UpdateUsedLocals {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-}
+impl MutAstVisitor for UpdateUsedLocals {}
 
 /// Compute the set of used locals, filter the unused locals and compute a new
 /// mapping from variable index to variable index.

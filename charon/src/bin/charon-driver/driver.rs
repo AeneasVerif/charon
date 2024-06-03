@@ -1,15 +1,15 @@
 use crate::cli_options;
-use crate::export;
-use crate::get_mir::MirLevel;
-use crate::reorder_decls;
-use crate::transform::remove_arithmetic_overflow_checks;
-use crate::transform::{
+use charon_lib::export;
+use charon_lib::get_mir::MirLevel;
+use charon_lib::reorder_decls;
+use charon_lib::transform::remove_arithmetic_overflow_checks;
+use charon_lib::transform::{
     index_to_function_calls, insert_assign_return_unit, ops_to_function_calls, reconstruct_asserts,
     remove_drop_never, remove_dynamic_checks, remove_nops, remove_read_discriminant,
     remove_unused_locals, simplify_constants, update_closure_signatures,
 };
-use crate::translate_crate_to_ullbc;
-use crate::ullbc_to_llbc;
+use charon_lib::translate_crate_to_ullbc;
+use charon_lib::ullbc_to_llbc;
 use regex::Regex;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
@@ -103,7 +103,7 @@ impl Callbacks for CharonCallbacks {
     /// the conversion to HIR to MIR) because it has been lost.
     /// For this reason, and as we may want to plug ourselves at different
     /// phases of the compilation process, we query the context as early as
-    /// possible (i.e., after parsing). See [crate::get_mir].
+    /// possible (i.e., after parsing). See [charon_lib::get_mir].
     fn after_parsing<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
         // Set up our own `DefId` debug routine.
         rustc_hir::def_id::DEF_ID_DEBUG
@@ -300,7 +300,7 @@ pub fn translate(
         ullbc_to_llbc::translate_functions(&mut ctx);
 
         if options.print_built_llbc {
-            let llbc_ctx = crate::translate_ctx::LlbcFmtCtx {
+            let llbc_ctx = charon_lib::translate_ctx::LlbcFmtCtx {
                 translated: &ctx.translated,
             };
             info!(
@@ -324,7 +324,7 @@ pub fn translate(
         reconstruct_asserts::transform(&mut ctx);
 
         // TODO: we should mostly use the TranslateCtx to format declarations
-        use crate::formatter::{Formatter, IntoFormatter};
+        use charon_lib::formatter::{Formatter, IntoFormatter};
         for (_, def) in &ctx.translated.structured_fun_decls {
             trace!(
                 "# After asserts reconstruction:\n{}\n",
@@ -371,7 +371,7 @@ pub fn translate(
             trace!("#{}\n", ctx.into_fmt().format_object(def));
         }
 
-        let llbc_ctx = crate::translate_ctx::LlbcFmtCtx {
+        let llbc_ctx = charon_lib::translate_ctx::LlbcFmtCtx {
             translated: &ctx.translated,
         };
         trace!("# About to export:\n\n{}\n", llbc_ctx);

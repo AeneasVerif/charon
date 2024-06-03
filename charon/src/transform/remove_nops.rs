@@ -3,6 +3,7 @@
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::{RawStatement, Statement};
 use crate::meta::combine_span;
+use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::TransformCtx;
 use take_mut::take;
 

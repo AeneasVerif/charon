@@ -126,12 +126,9 @@ make_generic_in_borrows! {
 /// TODO: implement macros to automatically derive visitors.
 /// TODO: explore all the types
 pub trait AstVisitor: crate::expressions::ExprVisitor {
-    /// Spawn the visitor (used for the branchings)
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self));
-
     /// We call this function right after we explored all the branches
     /// in a branching.
-    fn merge(&mut self);
+    fn merge(&mut self) {}
 
     fn default_visit_statement(&mut self, st: &Statement) {
         self.visit_span(&st.span);
@@ -235,10 +232,15 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         self.default_visit_switch(s)
     }
 
+    /// Generic visitor for branches.
+    fn visit_branch(&mut self, branch: &Statement) {
+        self.visit_statement(branch);
+    }
+
     fn visit_if(&mut self, scrut: &Operand, then_branch: &Statement, else_branch: &Statement) {
         self.visit_operand(scrut);
-        self.spawn(&mut |v| v.visit_statement(then_branch));
-        self.spawn(&mut |v| v.visit_statement(else_branch));
+        self.visit_branch(then_branch);
+        self.visit_branch(else_branch);
         self.merge();
     }
 
@@ -251,9 +253,9 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     ) {
         self.visit_operand(scrut);
         for (_, st) in branches {
-            self.spawn(&mut |v| v.visit_statement(st));
+            self.visit_branch(st);
         }
-        self.spawn(&mut |v| v.visit_statement(otherwise));
+        self.visit_branch(otherwise);
         self.merge();
     }
 
@@ -265,10 +267,10 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
     ) {
         self.visit_place(scrut);
         for (_, st) in branches {
-            self.spawn(&mut |v| v.visit_statement(st));
+            self.visit_branch(st);
         }
         if let Some(otherwise) = otherwise {
-            self.spawn(&mut |v| v.visit_statement(otherwise));
+            self.visit_branch(otherwise);
         }
         self.merge();
     }
@@ -323,12 +325,6 @@ impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutAstVisitor
             }
         }
     }
-
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
 }
 
 impl Statement {

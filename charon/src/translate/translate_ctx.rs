@@ -8,6 +8,7 @@ use crate::llbc_ast;
 use crate::meta::{self, Attribute, ItemMeta, RawSpan};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Span, VirtualFileId};
 use crate::names::Name;
+use crate::pretty::FmtWithCtx;
 use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
 use crate::translate_predicates::NonLocalTraitClause;
 use crate::types::*;
@@ -1336,7 +1337,7 @@ impl TranslatedCrate {
     }
 }
 
-pub(crate) struct LlbcFmtCtx<'a> {
+pub struct LlbcFmtCtx<'a> {
     pub translated: &'a TranslatedCrate,
 }
 

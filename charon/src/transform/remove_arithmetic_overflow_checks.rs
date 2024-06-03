@@ -2,6 +2,7 @@
 //! [`remove_dynamic_checks`]. See comments there for more details.
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
+use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::TransformCtx;
 use crate::types::*;
 use take_mut::take;
@@ -90,12 +91,6 @@ impl MutTypeVisitor for RemoveDynChecks {}
 impl MutExprVisitor for RemoveDynChecks {}
 
 impl MutAstVisitor for RemoveDynChecks {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-
     fn visit_statement(&mut self, s: &mut Statement) {
         // Simplify this statement.
         self.simplify(s);
