@@ -1,16 +1,16 @@
 //! Desugar array/slice index operations to function calls.
 
 use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
-use crate::formatter::{Formatter, IntoFormatter};
 use crate::gast::{Call, GenericArgs, Var};
 use crate::ids::Vector;
 use crate::llbc_ast::*;
 use crate::meta::Span;
-use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::types::*;
 use crate::values::VarId;
 use std::mem::replace;
+
+use super::ctx::LlbcPass;
 
 /// Visitor to transform the operands by introducing intermediate let
 /// statements.
@@ -20,14 +20,14 @@ use std::mem::replace;
 /// While we explore the places/operands present in a statement, We temporarily
 /// store the new statements inside the visitor. Once we've finished exploring
 /// the statement, we insert those before the statement.
-struct Transform<'a> {
+struct Visitor<'a> {
     locals: &'a mut Vector<VarId, Var>,
     statements: Vec<Statement>,
     /// Span information of the outer statement
     span: Option<Span>,
 }
 
-impl<'a> Transform<'a> {
+impl<'a> Visitor<'a> {
     fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> VarId {
         self.locals.push_with(|index| Var { index, name, ty })
     }
@@ -128,9 +128,9 @@ impl<'a> Transform<'a> {
     }
 }
 
-impl<'a> MutTypeVisitor for Transform<'a> {}
+impl<'a> MutTypeVisitor for Visitor<'a> {}
 
-impl<'a> MutExprVisitor for Transform<'a> {
+impl<'a> MutExprVisitor for Visitor<'a> {
     fn visit_place(&mut self, p: &mut Place) {
         // By default, places are used to access elements to mutate them.
         // We intercept the places where it is not the case.
@@ -173,7 +173,7 @@ impl<'a> MutExprVisitor for Transform<'a> {
     }
 }
 
-impl<'a> MutAstVisitor for Transform<'a> {
+impl<'a> MutAstVisitor for Visitor<'a> {
     fn visit_branch(&mut self, branch: &mut Statement) {
         #[allow(clippy::mem_replace_with_default)]
         let statements = replace(&mut self.statements, Vec::new());
@@ -221,7 +221,7 @@ impl<'a> MutAstVisitor for Transform<'a> {
 
 fn transform_st(locals: &mut Vector<VarId, Var>, s: &mut Statement) -> Option<Vec<Statement>> {
     // Explore the places/operands
-    let mut visitor = Transform {
+    let mut visitor = Visitor {
         locals,
         statements: Vec::new(),
         span: Option::None,
@@ -231,6 +231,8 @@ fn transform_st(locals: &mut Vector<VarId, Var>, s: &mut Statement) -> Option<Ve
     // Return the statements to insert before the current one
     Some(visitor.statements)
 }
+
+pub struct Transform;
 
 /// We do the following.
 ///
@@ -290,23 +292,9 @@ fn transform_st(locals: &mut Vector<VarId, Var>, s: &mut Statement) -> Option<Ve
 ///   tmp1 : &mut T = ArrayIndexMut(move y, i)
 ///   *tmp1 = x
 /// ```
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.iter_structured_bodies(|ctx, name, b| {
-        let ctx = ctx.into_fmt();
-        trace!(
-            "# About to transform array/slice index operations to function calls: {}:\n{}",
-            name.fmt_with_ctx(&ctx),
-            ctx.format_object(&*b)
-        );
-        let body = &mut b.body;
-        let locals = &mut b.locals;
-
-        let mut tr = |s: &mut Statement| transform_st(locals, s);
-        body.transform(&mut tr);
-        trace!(
-            "# After transforming array/slice index operations to function calls: {}:\n{}",
-            name.fmt_with_ctx(&ctx),
-            ctx.format_object(&*b)
-        );
-    });
+impl LlbcPass for Transform {
+    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+        b.body
+            .transform(&mut (|s: &mut Statement| transform_st(&mut b.locals, s)));
+    }
 }

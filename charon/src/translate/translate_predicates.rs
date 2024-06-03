@@ -111,7 +111,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         &pred.kind.value
                     {
                         if self
-                            .translate_trait_decl_id(
+                            .register_trait_decl_id(
                                 span.rust_span_data.unwrap().span(),
                                 DefId::from(&clause.trait_ref.def_id),
                             )?
@@ -382,7 +382,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         trait_ref: &hax::TraitRef,
     ) -> Result<Option<TraitDeclRef>, Error> {
-        let trait_id = self.translate_trait_decl_id(span, DefId::from(&trait_ref.def_id))?;
+        let trait_id = self.register_trait_decl_id(span, DefId::from(&trait_ref.def_id))?;
         // We might have to ignore the trait
         let trait_id = if let Some(trait_id) = trait_id {
             trait_id
@@ -421,7 +421,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = false;
 
         let trait_ref = &trait_pred.trait_ref;
-        let trait_id = self.translate_trait_decl_id(span, DefId::from(&trait_ref.def_id))?;
+        let trait_id = self.register_trait_decl_id(span, DefId::from(&trait_ref.def_id))?;
         // We might have to ignore the trait
         let trait_id = if let Some(trait_id) = trait_id {
             trait_id
@@ -605,7 +605,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 generics,
             } => {
                 let def_id = DefId::from(impl_def_id);
-                let trait_id = self.translate_trait_impl_id(span, def_id)?;
+                let trait_id = self.register_trait_impl_id(span, def_id)?;
                 // We already tested above whether the trait should be filtered
                 let trait_id = trait_id.unwrap();
                 let trait_id = TraitInstanceId::TraitImpl(trait_id);
@@ -647,7 +647,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = DefId::from(&trait_ref.def_id);
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait decl id should be Some(...).
-                let trait_decl_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
+                let trait_decl_id = self.register_trait_decl_id(span, def_id)?.unwrap();
 
                 // Retrieve the arguments
                 let generics = self.translate_substs_and_trait_refs(
@@ -687,7 +687,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 TraitClauseId::new(*index),
                             );
                             current_trait_decl_id = self
-                                .translate_trait_decl_id(
+                                .register_trait_decl_id(
                                     span,
                                     DefId::from(&predicate.value.trait_ref.def_id),
                                 )?
@@ -704,7 +704,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 TraitClauseId::new(*index),
                             );
                             current_trait_decl_id = self
-                                .translate_trait_decl_id(
+                                .register_trait_decl_id(
                                     span,
                                     DefId::from(&predicate.value.trait_ref.def_id),
                                 )?
@@ -728,7 +728,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let def_id = DefId::from(&trait_ref.def_id);
                 // Remark: we already filtered the marker traits when translating
                 // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.translate_trait_decl_id(span, def_id)?.unwrap();
+                let trait_id = self.register_trait_decl_id(span, def_id)?.unwrap();
 
                 let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
                 let generics = self.translate_substs_and_trait_refs(
@@ -770,7 +770,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             //     // body of the caller, which means it can't be an assumed function
             //     // (there is a very limited number of assumed functions, and they
             //     // are all top-level).
-            //     let fn_id = self.translate_fun_decl_id(span, DefId::from(closure_def_id));
+            //     let fn_id = self.register_fun_decl_id(span, DefId::from(closure_def_id));
             //     let erased_regions = false;
             //     let (regions, types, const_generics) =
             //         self.translate_substs(span, erased_regions, None, parent_substs)?;

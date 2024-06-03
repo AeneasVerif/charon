@@ -153,14 +153,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         None => ItemKind::Regular,
                         Some(trait_item_id) => {
                             let trait_id = tcx.trait_of_item(trait_item_id).unwrap();
-                            let trait_id = self.translate_trait_decl_id(src, trait_id)?;
+                            let trait_id = self.register_trait_decl_id(src, trait_id)?;
                             // The trait id should be Some(...): trait markers (that we
                             // may eliminate) don't have methods.
                             let trait_id = trait_id.unwrap();
 
                             // Retrieve the id of the impl block
                             let impl_id = self
-                                .translate_trait_impl_id(
+                                .register_trait_impl_id(
                                     src,
                                     tcx.predicates_of(rust_id).parent.unwrap(),
                                 )?
@@ -208,7 +208,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // Compute additional information
                     let item_name = self.translate_trait_item_name(rust_id)?;
                     let trait_id = tcx.trait_of_item(rust_id).unwrap();
-                    let trait_id = self.translate_trait_decl_id(src, trait_id)?;
+                    let trait_id = self.register_trait_decl_id(src, trait_id)?;
                     // The trait id should be Some(...): trait markers (that we
                     // may eliminate) don't have associated items.
                     let trait_id = trait_id.unwrap();
@@ -842,7 +842,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             trait_refs,
                         )?;
 
-                        let def_id = self.translate_fun_decl_id(span, DefId::from(def_id));
+                        let def_id = self.register_fun_decl_id(span, DefId::from(def_id));
                         let akind = AggregateKind::Closure(def_id, generics);
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
@@ -987,7 +987,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 match trait_info {
                     Option::None => {
                         // "Regular" function call
-                        let def_id = self.translate_fun_decl_id(span, rust_id);
+                        let def_id = self.register_fun_decl_id(span, rust_id);
                         let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
                         let func = FnPtr { func, generics };
                         let sfid = SubstFunId { func, args };
@@ -1004,7 +1004,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         trace!("{:?}", rust_id);
 
-                        let trait_method_fun_id = self.translate_fun_decl_id(span, rust_id);
+                        let trait_method_fun_id = self.register_fun_decl_id(span, rust_id);
                         let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
 
                         let func = FunIdOrTraitMethodRef::Trait(
@@ -1801,26 +1801,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Translate one function.
-    pub(crate) fn translate_function(&mut self, rust_id: DefId) {
-        self.with_def_id(rust_id, |ctx| {
-            if ctx.translate_function_aux(rust_id).is_err() {
-                let span = ctx.tcx.def_span(rust_id);
-                ctx.span_err(
-                    span,
-                    &format!(
-                        "Ignoring the following function due to an error: {:?}",
-                        rust_id
-                    ),
-                );
-                ctx.errors.ignore_failed_decl(rust_id);
-            }
-        });
+    pub(crate) fn translate_function(&mut self, rust_id: DefId) -> Result<(), Error> {
+        self.translate_function_aux(rust_id)
     }
 
     /// Auxliary helper to properly handle errors, see [translate_function].
     pub fn translate_function_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate function:\n{:?}", rust_id);
-        let def_id = self.translate_fun_decl_id(&None, rust_id);
+        let def_id = self.register_fun_decl_id(&None, rust_id);
         let def_span = self.tcx.def_span(rust_id);
 
         // Compute the meta information
@@ -1879,20 +1867,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Translate one global.
-    pub(crate) fn translate_global(&mut self, rust_id: DefId) {
-        self.with_def_id(rust_id, |ctx| {
-            if ctx.translate_global_aux(rust_id).is_err() {
-                let span = ctx.tcx.def_span(rust_id);
-                ctx.span_err(
-                    span,
-                    &format!(
-                        "Ignoring the following global due to an error: {:?}",
-                        rust_id
-                    ),
-                );
-                ctx.errors.ignore_failed_decl(rust_id);
-            }
-        });
+    pub(crate) fn translate_global(&mut self, rust_id: DefId) -> Result<(), Error> {
+        self.translate_global_aux(rust_id)
     }
 
     /// Auxliary helper to properly handle errors, see [translate_global].
@@ -1900,7 +1876,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("About to translate global:\n{:?}", rust_id);
         let span = self.tcx.def_span(rust_id);
 
-        let def_id = self.translate_global_decl_id(&None, rust_id);
+        let def_id = self.register_global_decl_id(&None, rust_id);
 
         // Compute the meta information
         let item_meta = self.translate_item_meta_from_rid(rust_id);
