@@ -287,7 +287,7 @@ pub fn translate<'tcx, 'ctx>(
             crate_name,
             ..TranslatedCrate::default()
         },
-        stack: BTreeSet::new(),
+        priority_queue: BTreeSet::new(),
     };
 
     // First push all the items in the stack of items to translate.
@@ -316,18 +316,21 @@ pub fn translate<'tcx, 'ctx>(
         ctx.register_local_hir_item(true, item)?;
     }
 
-    trace!("Stack after we explored the crate:\n{:?}", &ctx.stack);
+    trace!(
+        "Queue after we explored the crate:\n{:?}",
+        &ctx.priority_queue
+    );
 
     // Translate.
     //
-    // For as long as the stack of items to translate is not empty, we pop the top item and
+    // For as long as the queue of items to translate is not empty, we pop the top item and
     // translate it. If an item refers to non-translated (potentially external) items, we add them
-    // to the stack.
+    // to the queue.
     //
     // Note that the order in which we translate the definitions doesn't matter:
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
-    while let Some(id) = ctx.stack.pop_first() {
+    while let Some(id) = ctx.priority_queue.pop_first() {
         trace!("About to translate id: {:?}", id);
         ctx.translate_item(id);
     }

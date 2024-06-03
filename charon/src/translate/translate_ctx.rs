@@ -252,7 +252,7 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// The declarations we came accross and which we haven't translated yet.
     /// We use an ordered set to make sure we translate them in a specific
     /// order (this avoids stealing issues when querying the MIR bodies).
-    pub stack: BTreeSet<OrdRustId>,
+    pub priority_queue: BTreeSet<OrdRustId>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -649,7 +649,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             Some(tid) => *tid,
             None => {
                 // Add the id to the stack of declarations to translate
-                self.stack.insert(id);
+                self.priority_queue.insert(id);
                 let trans_id = match id {
                     OrdRustId::Type(_) => AnyTransId::Type(self.translated.type_id_gen.fresh_id()),
                     OrdRustId::TraitDecl(_) => {
