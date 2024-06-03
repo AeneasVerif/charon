@@ -37,9 +37,7 @@ impl<'a> Visitor<'a> {
         let mut var_id = p.var_id;
         let mut proj = Vec::new();
         for pe in p.projection.clone().into_iter() {
-            if pe.is_index() {
-                let (index_var_id, buf_ty) = pe.to_index();
-
+            if let ProjectionElem::Index(arg_index, buf_ty) = pe {
                 let (id, generics) = buf_ty.as_adt();
                 let cgs: Vec<ConstGeneric> = generics.const_generics.to_vec();
                 let index_id = match id.as_assumed() {
@@ -95,7 +93,6 @@ impl<'a> Visitor<'a> {
                 let elem_borrow_ty = Ty::Ref(Region::Erased, Box::new(elem_ty.clone()), ref_kind);
                 let elem_borrow_var = self.fresh_var(Option::None, elem_borrow_ty);
                 let arg_buf = Operand::Move(Place::new(buf_borrow_var));
-                let arg_index = Operand::Copy(Place::new(index_var_id));
                 let index_dest = Place::new(elem_borrow_var);
                 let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
                 let generics = GenericArgs::new(vec![Region::Erased], vec![elem_ty], cgs, vec![]);
