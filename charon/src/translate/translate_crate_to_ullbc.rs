@@ -32,7 +32,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 //   const C = 32; // HERE
                 // }
                 // ```
-                let _ = self.translate_global_decl_id(&None, def_id);
+                let _ = self.register_global_decl_id(&None, def_id);
             }
             ImplItemKind::Type(_) => {
                 // Trait type:
@@ -53,7 +53,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 assert!(tcx.associated_item(def_id).trait_item_def_id.is_some());
             }
             ImplItemKind::Fn(_, _) => {
-                let _ = self.translate_fun_decl_id(&None, def_id);
+                let _ = self.register_fun_decl_id(&None, def_id);
             }
         }
     }
@@ -106,15 +106,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             ItemKind::OpaqueTy(_) => unimplemented!(),
             ItemKind::Union(..) => unimplemented!(),
             ItemKind::Enum(..) | ItemKind::Struct(_, _) => {
-                let _ = self.translate_type_decl_id(&None, def_id);
+                let _ = self.register_type_decl_id(&None, def_id);
                 Ok(())
             }
             ItemKind::Fn(_, _, _) => {
-                let _ = self.translate_fun_decl_id(&None, def_id);
+                let _ = self.register_fun_decl_id(&None, def_id);
                 Ok(())
             }
             ItemKind::Trait(..) => {
-                let _ = self.translate_trait_decl_id(&None, def_id);
+                let _ = self.register_trait_decl_id(&None, def_id);
                 // We don't need to explore the associated items: we will
                 // explore them when translating the trait
                 Ok(())
@@ -135,7 +135,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let trans_id: hax::DefId = def_id.sinto(&self.hax_state);
                 if trans_id.path.last().unwrap().data != hax::DefPathItem::AnonConst {
                     if extract_constants_at_top_level(self.options.mir_level) {
-                        let _ = self.translate_global_decl_id(&None, def_id);
+                        let _ = self.register_global_decl_id(&None, def_id);
                     } else {
                         // Avoid registering globals in optimized MIR (they will be inlined)
                     }
@@ -150,7 +150,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
                 // If this is a trait implementation, register it
                 if self.tcx.trait_id_of_impl(def_id).is_some() {
-                    let _ = self.translate_trait_impl_id(&None, def_id);
+                    let _ = self.register_trait_impl_id(&None, def_id);
                 }
 
                 // Explore the items
@@ -204,13 +204,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     let def_id = item.owner_id.to_def_id();
                     match item.kind {
                         ForeignItemKind::Fn(..) => {
-                            let _ = self.translate_fun_decl_id(&None, def_id);
+                            let _ = self.register_fun_decl_id(&None, def_id);
                         }
                         ForeignItemKind::Static(..) => {
-                            let _ = self.translate_global_decl_id(&None, def_id);
+                            let _ = self.register_global_decl_id(&None, def_id);
                         }
                         ForeignItemKind::Type => {
-                            let _ = self.translate_type_decl_id(&None, def_id);
+                            let _ = self.register_type_decl_id(&None, def_id);
                         }
                     }
                 }

@@ -77,7 +77,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let ty = self.translate_ty_from_trait_item(item)?;
         let name = TraitItemName(item.name.to_string());
         let span = self.t_ctx.tcx.def_span(self.def_id);
-        let id = self.translate_global_decl_id(span, item.def_id);
+        let id = self.register_global_decl_id(span, item.def_id);
         Ok((name, (ty, id)))
     }
 
@@ -111,7 +111,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         assert!(clause.kind.bound_vars.is_empty());
         let self_pred = if let hax::ClauseKind::Trait(trait_pred) = clause.kind.value {
             if self
-                .translate_trait_decl_id(*rspan, DefId::from(&trait_pred.trait_ref.def_id))?
+                .register_trait_decl_id(*rspan, DefId::from(&trait_pred.trait_ref.def_id))?
                 .is_some()
             {
                 trait_pred
@@ -245,7 +245,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn translate_trait_decl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
 
-        let def_id = self.translate_trait_decl_id(&None, rust_id)?;
+        let def_id = self.register_trait_decl_id(&None, rust_id)?;
         // We may need to ignore the trait (happens if the trait is a marker
         // trait like [core::marker::Sized]
         if def_id.is_none() {
@@ -295,14 +295,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     if has_default_value {
                         // This is a *provided* method
                         if rust_id.is_local() || bt_ctx.t_ctx.options.extract_opaque_bodies {
-                            let fun_id = bt_ctx.translate_fun_decl_id(span, item.def_id);
+                            let fun_id = bt_ctx.register_fun_decl_id(span, item.def_id);
                             provided_methods.push((method_name, Some(fun_id)));
                         } else {
                             provided_methods.push((method_name, None));
                         }
                     } else {
                         // This is a required method (no default implementation)
-                        let fun_id = bt_ctx.translate_fun_decl_id(span, item.def_id);
+                        let fun_id = bt_ctx.register_fun_decl_id(span, item.def_id);
                         required_methods.push((method_name, fun_id));
                     }
                 }
@@ -431,7 +431,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn translate_trait_impl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
 
-        let def_id = self.translate_trait_impl_id(&None, rust_id)?;
+        let def_id = self.register_trait_impl_id(&None, rust_id)?;
         // We may need to ignore the trait
         if def_id.is_none() {
             return Ok(());
@@ -474,7 +474,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         ) = {
             // TODO: what is below duplicates a bit [add_trait_impl_self_trait_clause]
             let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
-            let trait_id = bt_ctx.translate_trait_decl_id(span, trait_rust_id)?;
+            let trait_id = bt_ctx.register_trait_decl_id(span, trait_rust_id)?;
             // We already tested above whether the trait should be filtered
             let trait_id = trait_id.unwrap();
 
@@ -544,7 +544,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             match &item.kind {
                 AssocKind::Fn => {
                     let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id)?;
-                    let fun_id = bt_ctx.translate_fun_decl_id(span, item.def_id);
+                    let fun_id = bt_ctx.register_fun_decl_id(span, item.def_id);
 
                     // Check if we implement a required method or reimplement
                     // a provided method

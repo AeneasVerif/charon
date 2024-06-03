@@ -480,7 +480,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("{:?}", def_id);
         let rust_id: DefId = def_id.into();
         if rust_id.is_local() {
-            Ok(TypeId::Adt(self.translate_type_decl_id(span, rust_id)))
+            Ok(TypeId::Adt(self.register_type_decl_id(span, rust_id)))
         } else {
             // Non-local: check if the type has primitive support
 
@@ -493,7 +493,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
                 Option::None => {
                     // The type is external
-                    Ok(TypeId::Adt(self.translate_type_decl_id(span, rust_id)))
+                    Ok(TypeId::Adt(self.register_type_decl_id(span, rust_id)))
                 }
             }
         }
@@ -716,7 +716,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Auxliary helper to properly handle errors, see [translate_type].
     fn translate_type_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
-        let trans_id = self.translate_type_decl_id(&None, rust_id);
+        let trans_id = self.register_type_decl_id(&None, rust_id);
         let is_transparent = self.id_is_transparent(rust_id)?;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
