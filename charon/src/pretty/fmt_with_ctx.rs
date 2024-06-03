@@ -26,7 +26,9 @@ pub trait FmtWithCtx<C> {
     }
 
     /// Returns a struct that implements `Display`. This allows the following:
+    /// ```text
     ///     println!("{}", self.with_ctx(ctx));
+    /// ```
     fn with_ctx<'a>(&'a self, ctx: &'a C) -> impl std::fmt::Display + 'a {
         pub struct WithCtx<'a, C, T: ?Sized> {
             val: &'a T,
