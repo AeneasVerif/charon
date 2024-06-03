@@ -12,34 +12,25 @@
 }:
 
 let
-  # The commit that corresponds to our nightly pin.
+  # The rustc commit we use to get the tests. We should update it every now and
+  # then to match the version of rustc we're using.
+  tests_commit = "65ea825f4021eaf77f1b25139969712d65b435a4";
+  tests_hash = "sha256-0dsWuGcWjQpj/N4iG6clCzM8kjrDjE+dQfyL3iuBGiY=";
+
+  rustc-test-suite = fetchFromGitHub {
+    owner = "rust-lang";
+    repo = "rust";
+    rev = tests_commit;
+    sha256 = tests_hash;
+  };
+
+  # The commit that corresponds to our nightly pin, for when we want to update the pinned commit.
   toolchain_commit = runCommand "get-rustc-commit" { } ''
     # This is sad but I don't know a better way.
     cat ${rustToolchain}/share/doc/rust/html/version_info.html \
       | grep 'github.com' \
       | sed 's#.*"https://github.com/rust-lang/rust/commit/\([^"]*\)".*#\1#' \
       > $out
-  '';
-  # The rustc commit we use to get the tests. This should stay equal to `toolchain_commit`.
-  tests_commit = "65ea825f4021eaf77f1b25139969712d65b435a4";
-  rustc_tests = runCommand "rustc-tests"
-    {
-      src = fetchFromGitHub {
-        owner = "rust-lang";
-        repo = "rust";
-        rev = tests_commit;
-        sha256 = "sha256-0dsWuGcWjQpj/N4iG6clCzM8kjrDjE+dQfyL3iuBGiY=";
-      };
-    } ''
-    # Check we're using the correct commit for tests.
-    TOOLCHAIN_COMMIT="$(cat ${toolchain_commit})"
-    TESTS_COMMIT="${tests_commit}"
-    if [ "$TOOLCHAIN_COMMIT" != "$TESTS_COMMIT" ]; then
-      echo "Error: the commit used for tests is incorrect" 1>&2
-      echo 'Please set `tests_commit = "'"$TOOLCHAIN_COMMIT"'";` in nix/rustc-tests.nix' 1>&2
-      exit 1
-    fi
-    ln -s $src $out
   '';
 
   analyze_test_file = writeScript "charon-analyze-test-file" ''
@@ -101,7 +92,7 @@ let
   # for each file we processed.
   rustc-tests = runCommand "charon-rustc-tests"
     {
-      src = rustc_tests;
+      src = rustc-test-suite;
       buildInputs = [ rustToolchain ];
     } ''
     mkdir $out
@@ -112,4 +103,6 @@ let
   '';
 
 in
-rustc-tests
+{
+  inherit toolchain_commit rustc-test-suite rustc-tests;
+}
