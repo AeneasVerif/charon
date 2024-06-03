@@ -710,16 +710,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Note that we translate the types one by one: we don't need to take into
     /// account the fact that some types are mutually recursive at this point
     /// (we will need to take that into account when generating the code in a file).
-    pub(crate) fn translate_type(
+    pub fn translate_type(
         &mut self,
         trans_id: TypeDeclId,
         rust_id: DefId,
-    ) -> Result<(), Error> {
-        self.translate_type_aux(trans_id, rust_id)
-    }
-
-    /// Auxliary helper to properly handle errors, see [translate_type].
-    fn translate_type_aux(&mut self, trans_id: TypeDeclId, rust_id: DefId) -> Result<(), Error> {
+    ) -> Result<TypeDecl, Error> {
         let is_transparent = self.id_is_transparent(rust_id)?;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
@@ -770,8 +765,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             type_def.fmt_with_ctx(&self.into_fmt())
         );
 
-        self.translated.type_decls.insert(trans_id, type_def);
-
-        Ok(())
+        Ok(type_def)
     }
 }

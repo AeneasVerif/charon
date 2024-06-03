@@ -235,20 +235,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         Ok(TraitItemName(name.to_string()))
     }
 
-    pub(crate) fn translate_trait_decl(
+    pub fn translate_trait_decl(
         &mut self,
         def_id: TraitDeclId,
         rust_id: DefId,
-    ) -> Result<(), Error> {
-        self.translate_trait_decl_aux(def_id, rust_id)
-    }
-
-    /// Auxliary helper to properly handle errors, see [translate_trait_decl].
-    fn translate_trait_decl_aux(
-        &mut self,
-        def_id: TraitDeclId,
-        rust_id: DefId,
-    ) -> Result<(), Error> {
+    ) -> Result<TraitDecl, Error> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
         trace!("Trait decl id:\n{:?}", def_id);
 
@@ -402,7 +393,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
         // check those, and lookup the relevant values.
-        let trait_decl = ast::TraitDecl {
+        Ok(ast::TraitDecl {
             def_id,
             is_local: rust_id.is_local(),
             name,
@@ -414,26 +405,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             types,
             required_methods,
             provided_methods,
-        };
-        self.translated.trait_decls.insert(def_id, trait_decl);
-
-        Ok(())
+        })
     }
 
-    pub(crate) fn translate_trait_impl(
+    pub fn translate_trait_impl(
         &mut self,
         def_id: TraitImplId,
         rust_id: DefId,
-    ) -> Result<(), Error> {
-        self.translate_trait_impl_aux(def_id, rust_id)
-    }
-
-    /// Auxliary helper to properly handle errors, see [translate_impl_decl].
-    fn translate_trait_impl_aux(
-        &mut self,
-        def_id: TraitImplId,
-        rust_id: DefId,
-    ) -> Result<(), Error> {
+    ) -> Result<TraitImpl, Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
         trace!("Trait impl id:\n{:?}", def_id);
 
@@ -616,7 +595,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
         }
 
-        let trait_impl = ast::TraitImpl {
+        Ok(ast::TraitImpl {
             def_id,
             is_local: rust_id.is_local(),
             name,
@@ -629,9 +608,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             types,
             required_methods,
             provided_methods,
-        };
-        self.translated.trait_impls.insert(def_id, trait_impl);
-
-        Ok(())
+        })
     }
 }

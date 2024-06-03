@@ -7,6 +7,7 @@ use crate::translate_functions_to_ullbc;
 
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
+use rustc_hir::def_id::DefId;
 use rustc_hir::{Defaultness, ForeignItemKind, ImplItem, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
@@ -231,13 +232,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub(crate) fn translate_item(&mut self, ord_id: OrdRustId, trans_id: AnyTransId) {
         let rust_id = ord_id.get_id();
         self.with_def_id(rust_id, |ctx| {
-            let res = match trans_id {
-                AnyTransId::Type(id) => ctx.translate_type(id, rust_id),
-                AnyTransId::Fun(id) => ctx.translate_function(id, rust_id),
-                AnyTransId::Global(id) => ctx.translate_global(id, rust_id),
-                AnyTransId::TraitDecl(id) => ctx.translate_trait_decl(id, rust_id),
-                AnyTransId::TraitImpl(id) => ctx.translate_trait_impl(id, rust_id),
-            };
+            let res = ctx.translate_item_aux(rust_id, trans_id);
             if res.is_err() {
                 let span = ctx.tcx.def_span(rust_id);
                 ctx.span_err(
@@ -247,6 +242,36 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 ctx.errors.ignore_failed_decl(rust_id);
             }
         })
+    }
+
+    pub(crate) fn translate_item_aux(
+        &mut self,
+        rust_id: DefId,
+        trans_id: AnyTransId,
+    ) -> Result<(), Error> {
+        match trans_id {
+            AnyTransId::Type(id) => {
+                let ty = self.translate_type(id, rust_id)?;
+                self.translated.type_decls.insert(id, ty);
+            }
+            AnyTransId::Fun(id) => {
+                let fun_decl = self.translate_function(id, rust_id)?;
+                self.translated.fun_decls.insert(id, fun_decl);
+            }
+            AnyTransId::Global(id) => {
+                let global_decl = self.translate_global(id, rust_id)?;
+                self.translated.global_decls.insert(id, global_decl);
+            }
+            AnyTransId::TraitDecl(id) => {
+                let trait_decl = self.translate_trait_decl(id, rust_id)?;
+                self.translated.trait_decls.insert(id, trait_decl);
+            }
+            AnyTransId::TraitImpl(id) => {
+                let trait_impl = self.translate_trait_impl(id, rust_id)?;
+                self.translated.trait_impls.insert(id, trait_impl);
+            }
+        }
+        Ok(())
     }
 }
 
