@@ -235,22 +235,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         Ok(TraitItemName(name.to_string()))
     }
 
-    pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) -> Result<(), Error> {
-        self.translate_trait_decl_aux(rust_id)
+    pub(crate) fn translate_trait_decl(
+        &mut self,
+        def_id: TraitDeclId,
+        rust_id: DefId,
+    ) -> Result<(), Error> {
+        self.translate_trait_decl_aux(def_id, rust_id)
     }
 
     /// Auxliary helper to properly handle errors, see [translate_trait_decl].
-    fn translate_trait_decl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
+    fn translate_trait_decl_aux(
+        &mut self,
+        def_id: TraitDeclId,
+        rust_id: DefId,
+    ) -> Result<(), Error> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
-
-        let def_id = self.register_trait_decl_id(&None, rust_id)?;
-        // We may need to ignore the trait (happens if the trait is a marker
-        // trait like [core::marker::Sized]
-        if def_id.is_none() {
-            return Ok(());
-        }
-        let def_id = def_id.unwrap();
-
         trace!("Trait decl id:\n{:?}", def_id);
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -421,20 +420,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         Ok(())
     }
 
-    pub(crate) fn translate_trait_impl(&mut self, rust_id: DefId) -> Result<(), Error> {
-        self.translate_trait_impl_aux(rust_id)
+    pub(crate) fn translate_trait_impl(
+        &mut self,
+        def_id: TraitImplId,
+        rust_id: DefId,
+    ) -> Result<(), Error> {
+        self.translate_trait_impl_aux(def_id, rust_id)
     }
 
     /// Auxliary helper to properly handle errors, see [translate_impl_decl].
-    fn translate_trait_impl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
+    fn translate_trait_impl_aux(
+        &mut self,
+        def_id: TraitImplId,
+        rust_id: DefId,
+    ) -> Result<(), Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
-
-        let def_id = self.register_trait_impl_id(&None, rust_id)?;
-        // We may need to ignore the trait
-        if def_id.is_none() {
-            return Ok(());
-        }
-        let def_id = def_id.unwrap();
         trace!("Trait impl id:\n{:?}", def_id);
 
         let tcx = self.tcx;

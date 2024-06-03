@@ -10,7 +10,7 @@ use hax_frontend_exporter::SInto;
 use rustc_hir::{Defaultness, ForeignItemKind, ImplItem, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn register_local_hir_impl_item(&mut self, _top_item: bool, impl_item: &ImplItem) {
@@ -228,15 +228,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn translate_item(&mut self, id: OrdRustId) {
-        let rust_id = id.get_id();
+    pub(crate) fn translate_item(&mut self, ord_id: OrdRustId, trans_id: AnyTransId) {
+        let rust_id = ord_id.get_id();
         self.with_def_id(rust_id, |ctx| {
-            let res = match id {
-                OrdRustId::Type(id) => ctx.translate_type(id),
-                OrdRustId::Fun(id) | OrdRustId::ConstFun(id) => ctx.translate_function(id),
-                OrdRustId::Global(id) => ctx.translate_global(id),
-                OrdRustId::TraitDecl(id) => ctx.translate_trait_decl(id),
-                OrdRustId::TraitImpl(id) => ctx.translate_trait_impl(id),
+            let res = match trans_id {
+                AnyTransId::Type(id) => ctx.translate_type(id, rust_id),
+                AnyTransId::Fun(id) => ctx.translate_function(id, rust_id),
+                AnyTransId::Global(id) => ctx.translate_global(id, rust_id),
+                AnyTransId::TraitDecl(id) => ctx.translate_trait_decl(id, rust_id),
+                AnyTransId::TraitImpl(id) => ctx.translate_trait_impl(id, rust_id),
             };
             if res.is_err() {
                 let span = ctx.tcx.def_span(rust_id);
@@ -287,7 +287,7 @@ pub fn translate<'tcx, 'ctx>(
             crate_name,
             ..TranslatedCrate::default()
         },
-        priority_queue: BTreeSet::new(),
+        priority_queue: Default::default(),
     };
 
     // First push all the items in the stack of items to translate.
@@ -330,9 +330,9 @@ pub fn translate<'tcx, 'ctx>(
     // Note that the order in which we translate the definitions doesn't matter:
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
-    while let Some(id) = ctx.priority_queue.pop_first() {
-        trace!("About to translate id: {:?}", id);
-        ctx.translate_item(id);
+    while let Some((ord_id, trans_id)) = ctx.priority_queue.pop_first() {
+        trace!("About to translate id: {:?}", ord_id);
+        ctx.translate_item(ord_id, trans_id);
     }
 
     // Return the context, dropping the hax state and rustc `tcx`.
