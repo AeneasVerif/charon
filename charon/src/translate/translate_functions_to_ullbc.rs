@@ -1786,20 +1786,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Translate one function.
-    pub(crate) fn translate_function(&mut self, rust_id: DefId) {
-        self.with_def_id(rust_id, |ctx| {
-            if ctx.translate_function_aux(rust_id).is_err() {
-                let span = ctx.tcx.def_span(rust_id);
-                ctx.span_err(
-                    span,
-                    &format!(
-                        "Ignoring the following function due to an error: {:?}",
-                        rust_id
-                    ),
-                );
-                ctx.errors.ignore_failed_decl(rust_id);
-            }
-        });
+    pub(crate) fn translate_function(&mut self, rust_id: DefId) -> Result<(), Error> {
+        self.translate_function_aux(rust_id)
     }
 
     /// Auxliary helper to properly handle errors, see [translate_function].
@@ -1864,20 +1852,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Translate one global.
-    pub(crate) fn translate_global(&mut self, rust_id: DefId) {
-        self.with_def_id(rust_id, |ctx| {
-            if ctx.translate_global_aux(rust_id).is_err() {
-                let span = ctx.tcx.def_span(rust_id);
-                ctx.span_err(
-                    span,
-                    &format!(
-                        "Ignoring the following global due to an error: {:?}",
-                        rust_id
-                    ),
-                );
-                ctx.errors.ignore_failed_decl(rust_id);
-            }
-        });
+    pub(crate) fn translate_global(&mut self, rust_id: DefId) -> Result<(), Error> {
+        self.translate_global_aux(rust_id)
     }
 
     /// Auxliary helper to properly handle errors, see [translate_global].

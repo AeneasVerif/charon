@@ -121,7 +121,7 @@ pub enum OrdRustId {
 }
 
 impl OrdRustId {
-    fn get_id(&self) -> DefId {
+    pub(crate) fn get_id(&self) -> DefId {
         match self {
             OrdRustId::Global(id)
             | OrdRustId::ConstFun(id)

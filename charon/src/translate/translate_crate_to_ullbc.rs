@@ -227,6 +227,27 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
         }
     }
+
+    pub(crate) fn translate_item(&mut self, id: OrdRustId) {
+        let rust_id = id.get_id();
+        self.with_def_id(rust_id, |ctx| {
+            let res = match id {
+                OrdRustId::Type(id) => ctx.translate_type(id),
+                OrdRustId::Fun(id) | OrdRustId::ConstFun(id) => ctx.translate_function(id),
+                OrdRustId::Global(id) => ctx.translate_global(id),
+                OrdRustId::TraitDecl(id) => ctx.translate_trait_decl(id),
+                OrdRustId::TraitImpl(id) => ctx.translate_trait_impl(id),
+            };
+            if res.is_err() {
+                let span = ctx.tcx.def_span(rust_id);
+                ctx.span_err(
+                    span,
+                    &format!("Ignoring the following item due to an error: {:?}", rust_id),
+                );
+                ctx.errors.ignore_failed_decl(rust_id);
+            }
+        })
+    }
 }
 
 /// Translate all the declarations in the crate.
@@ -299,22 +320,16 @@ pub fn translate<'tcx, 'ctx>(
 
     // Translate.
     //
-    // For as long as the stack of items to translate is not empty, we pop the top item
-    // and translate it. Note that we transitively translate items: if an item refers to
-    // non-translated (potentially external) items, we add them to the stack.
+    // For as long as the stack of items to translate is not empty, we pop the top item and
+    // translate it. If an item refers to non-translated (potentially external) items, we add them
+    // to the stack.
     //
     // Note that the order in which we translate the definitions doesn't matter:
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
     while let Some(id) = ctx.stack.pop_first() {
         trace!("About to translate id: {:?}", id);
-        match id {
-            OrdRustId::Type(id) => ctx.translate_type(id),
-            OrdRustId::Fun(id) | OrdRustId::ConstFun(id) => ctx.translate_function(id),
-            OrdRustId::Global(id) => ctx.translate_global(id),
-            OrdRustId::TraitDecl(id) => ctx.translate_trait_decl(id),
-            OrdRustId::TraitImpl(id) => ctx.translate_trait_impl(id),
-        }
+        ctx.translate_item(id);
     }
 
     // Return the context, dropping the hax state and rustc `tcx`.
