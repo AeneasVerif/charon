@@ -1,4 +1,3 @@
-// pub mod divergent;
 pub mod graphs;
 pub mod index_to_function_calls;
 pub mod insert_assign_return_unit;
