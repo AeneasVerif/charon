@@ -246,9 +246,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
 
         let def_id = self.register_trait_decl_id(&None, rust_id)?;
+
+        let item_meta = self.translate_item_meta_from_rid(rust_id);
+
         // We may need to ignore the trait (happens if the trait is a marker
         // trait like [core::marker::Sized]
-        if def_id.is_none() {
+        if def_id.is_none() || item_meta.opaque {
             return Ok(());
         }
         let def_id = def_id.unwrap();
@@ -409,7 +412,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             def_id,
             is_local: rust_id.is_local(),
             name,
-            item_meta: self.translate_item_meta_from_rid(rust_id),
+            item_meta: item_meta, // self.translate_item_meta_from_rid(rust_id),
             generics,
             preds,
             parent_clauses,
@@ -432,16 +435,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
 
         let def_id = self.register_trait_impl_id(&None, rust_id)?;
+        let tcx = self.tcx;
+        let span = tcx.def_span(rust_id);
+        let mut bt_ctx = BodyTransCtx::new(rust_id, self);
+        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
         // We may need to ignore the trait
-        if def_id.is_none() {
+        if def_id.is_none() || item_meta.opaque {
             return Ok(());
         }
         let def_id = def_id.unwrap();
         trace!("Trait impl id:\n{:?}", def_id);
-
-        let tcx = self.tcx;
-        let span = tcx.def_span(rust_id);
-        let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
         let erase_regions = false;
@@ -622,7 +625,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             def_id,
             is_local: rust_id.is_local(),
             name,
-            item_meta: bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id),
+            item_meta: item_meta,
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),
             preds: bt_ctx.get_predicates(),

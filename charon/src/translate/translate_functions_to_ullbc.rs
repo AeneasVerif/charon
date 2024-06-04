@@ -1911,12 +1911,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Translate its body like the body of a function. This returns `None` if we can't/decide
         // not to translate this body.
-        let body = match (bt_ctx.translate_body(rust_id, 0), item_meta.opaque) {
-            (Ok(body), false) => body,
-            // Error case: we could have a specific variant
-            (Ok(_), true) | (Err(_), _) => None,
+        let body = if item_meta.opaque {
+            None
+        } else {
+            match bt_ctx.translate_body(rust_id, 0) {
+                Ok(body) => body,
+                // Error case: we could have a specific variant
+                Err(_) => None,
+            }
         };
-
         // Save the new global
         self.translated.global_decls.insert(
             def_id,
