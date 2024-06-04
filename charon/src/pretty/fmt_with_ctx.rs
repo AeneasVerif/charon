@@ -790,7 +790,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 format!("@deinit({})", place.fmt_with_ctx(ctx))
             }
             RawStatement::Error(s) => {
-                format!("@Error{}", s)
+                format!("@Error({})", s)
             }
         }
     }
@@ -935,7 +935,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                     tab
                 )
             }
-            RawStatement::Error(s) => format!("{tab}{}", s),
+            RawStatement::Error(s) => format!("{tab}@ERROR({})", s),
         }
     }
 }
