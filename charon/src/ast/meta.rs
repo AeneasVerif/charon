@@ -136,6 +136,7 @@ pub struct ItemMeta {
     /// true`; computing item reachability is harder.
     pub public: bool,
     #[serde(skip_serializing)]
+    #[serde(default)]
     pub opaque: bool,
 }
 
