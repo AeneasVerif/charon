@@ -5,9 +5,10 @@
 
 use take_mut::take;
 
-use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast::*;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
+
+use super::ctx::LlbcPass;
 
 fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     if let RawStatement::Switch(Switch::If(_, st1, _)) = &mut st.content {
@@ -32,14 +33,9 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     None
 }
 
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.iter_structured_bodies(|ctx, name, b| {
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# About to reconstruct asserts in decl: {}\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
+pub struct Transform;
+impl LlbcPass for Transform {
+    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         b.body.transform(&mut transform_st);
-    })
+    }
 }

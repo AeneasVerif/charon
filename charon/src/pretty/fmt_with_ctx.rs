@@ -14,11 +14,43 @@ use crate::{
 };
 use hax_frontend_exporter as hax;
 
-impl BlockData {
-    pub fn fmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+/// Format the AST type as a string.
+pub trait FmtWithCtx<C> {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        // By default use no tab.
+        self.fmt_with_ctx_and_indent("", ctx)
+    }
+
+    fn fmt_with_ctx_and_indent(&self, _tab: &str, _ctx: &C) -> String {
+        panic!("This type does not know how to be formatted with indent")
+    }
+
+    /// Returns a struct that implements `Display`. This allows the following:
+    /// ```text
+    ///     println!("{}", self.with_ctx(ctx));
+    /// ```
+    fn with_ctx<'a>(&'a self, ctx: &'a C) -> impl std::fmt::Display + 'a {
+        pub struct WithCtx<'a, C, T: ?Sized> {
+            val: &'a T,
+            ctx: &'a C,
+        }
+
+        impl<'a, C, T: ?Sized> std::fmt::Display for WithCtx<'a, C, T>
+        where
+            T: FmtWithCtx<C>,
+        {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                let s = self.val.fmt_with_ctx(self.ctx);
+                f.write_str(&s)
+            }
+        }
+
+        WithCtx { val: self, ctx }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for BlockData {
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let mut out: Vec<String> = Vec::new();
 
         // Format the statements
@@ -34,11 +66,8 @@ impl BlockData {
     }
 }
 
-impl CastKind {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             CastKind::Scalar(src, tgt) => format!("cast<{src},{tgt}>"),
             CastKind::FnPtr(src, tgt) => {
@@ -48,20 +77,14 @@ impl CastKind {
     }
 }
 
-impl ConstantExpr {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         self.value.fmt_with_ctx(ctx)
     }
 }
 
-impl ConstGeneric {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for ConstGeneric {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             ConstGeneric::Var(id) => ctx.format_object(*id),
             ConstGeneric::Value(v) => v.to_string(),
@@ -70,11 +93,8 @@ impl ConstGeneric {
     }
 }
 
-impl DeclarationGroup {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         use DeclarationGroup::*;
         match self {
             Type(g) => format!("Type decls group: {}", g.fmt_with_ctx(ctx)),
@@ -86,11 +106,8 @@ impl DeclarationGroup {
     }
 }
 
-impl Field {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for Field {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match &self.name {
             Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
             Option::None => self.ty.fmt_with_ctx(ctx),
@@ -98,11 +115,8 @@ impl Field {
     }
 }
 
-impl FnOperand {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for FnOperand {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             FnOperand::Regular(func) => func.fmt_with_ctx(ctx),
             FnOperand::Move(p) => format!("(move {})", p.fmt_with_ctx(ctx)),
@@ -110,11 +124,8 @@ impl FnOperand {
     }
 }
 
-impl FnPtr {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         let f = match &self.func {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
@@ -131,30 +142,8 @@ impl FnPtr {
     }
 }
 
-impl ullbc::FunDecl {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        self.gfmt_with_ctx("", ctx)
-    }
-}
-
-impl llbc::FunDecl {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-        for<'a> C: Formatter<&'a llbc::Statement>,
-    {
-        self.gfmt_with_ctx("", ctx)
-    }
-}
-
-impl FunSig {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for FunSig {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let ctx = &ctx.set_generics(&self.generics);
 
         // Unsafe keyword
@@ -196,11 +185,8 @@ impl FunSig {
     }
 }
 
-impl<Id: Copy> GDeclarationGroup<Id> {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter + Formatter<Id>,
-    {
+impl<Id: Copy, C: AstFormatter + Formatter<Id>> FmtWithCtx<C> for GDeclarationGroup<Id> {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         use GDeclarationGroup::*;
         match self {
             NonRec(id) => format!("Non rec: {}", ctx.format_object(*id)),
@@ -243,17 +229,6 @@ impl GenericArgs {
         params.join(", ")
     }
 
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        if self.is_empty() {
-            "".to_string()
-        } else {
-            format!("<{}>", self.fmt_with_ctx_no_brackets(ctx),)
-        }
-    }
-
     pub fn fmt_with_ctx_split_trait_refs<C>(&self, ctx: &C) -> String
     where
         C: AstFormatter,
@@ -293,37 +268,17 @@ impl GenericArgs {
     }
 }
 
-impl GenericParams {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for GenericArgs {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         if self.is_empty() {
             "".to_string()
         } else {
-            let mut params = Vec::new();
-            let GenericParams {
-                regions,
-                types,
-                const_generics,
-                trait_clauses,
-            } = self;
-            for x in regions {
-                params.push(x.to_string());
-            }
-            for x in types {
-                params.push(x.to_string());
-            }
-            for x in const_generics {
-                params.push(x.to_string());
-            }
-            for x in trait_clauses {
-                params.push(x.fmt_with_ctx(ctx));
-            }
-            format!("<{}>", params.join(", "))
+            format!("<{}>", self.fmt_with_ctx_no_brackets(ctx),)
         }
     }
+}
 
+impl GenericParams {
     pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C) -> (String, Vec<String>)
     where
         C: AstFormatter,
@@ -358,20 +313,47 @@ impl GenericParams {
     }
 }
 
-impl<T> GExprBody<T> {
-    /// This is an auxiliary function for printing definitions. One may wonder
-    /// why we require a formatter to format, for instance, (type) var ids,
-    /// because the function definition already has the information to print
-    /// variables. The reason is that it is easier for us to write this very
-    /// generic auxiliary function, then apply it on an evaluation context
-    /// properly initialized (with the information contained in the function
-    /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn fmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
-    where
-        C: for<'a> SetLocals<'a>,
-        for<'a> <C as SetLocals<'a>>::C: AstFormatter,
-        for<'a, 'b> <C as SetLocals<'a>>::C: AstFormatter + Formatter<&'b T>,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for GenericParams {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        if self.is_empty() {
+            "".to_string()
+        } else {
+            let mut params = Vec::new();
+            let GenericParams {
+                regions,
+                types,
+                const_generics,
+                trait_clauses,
+            } = self;
+            for x in regions {
+                params.push(x.to_string());
+            }
+            for x in types {
+                params.push(x.to_string());
+            }
+            for x in const_generics {
+                params.push(x.to_string());
+            }
+            for x in trait_clauses {
+                params.push(x.fmt_with_ctx(ctx));
+            }
+            format!("<{}>", params.join(", "))
+        }
+    }
+}
+
+impl<T, C> FmtWithCtx<C> for GExprBody<T>
+where
+    C: for<'a> SetLocals<'a>,
+    for<'a> <C as SetLocals<'a>>::C: AstFormatter,
+    for<'a, 'b> <C as SetLocals<'a>>::C: AstFormatter + Formatter<&'b T>,
+{
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        // By default use a tab.
+        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
+    }
+
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         // Update the context
         let ctx = &ctx.set_locals(&self.locals);
 
@@ -419,25 +401,18 @@ impl<T> GExprBody<T> {
     }
 }
 
-impl<T> GFunDecl<T> {
-    /// This is an auxiliary function for printing definitions. One may wonder
-    /// why we require a formatter to format, for instance, (type) var ids,
-    /// because the function definition already has the information to print
-    /// variables. The reason is that it is easier for us to write this very
-    /// generic auxiliary function, then apply it on an evaluation context
-    /// properly initialized (with the information contained in the function
-    /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn gfmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
-    where
-        // For the signature
-        C: for<'a> SetGenerics<'a>,
-        for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
-        for<'a, 'b> <C as SetGenerics<'a>>::C: AstFormatter + Formatter<&'b T>,
-        // For the body
-        for<'a, 'b> <C as SetGenerics<'a>>::C: SetLocals<'b>,
-        for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
-        for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: Formatter<&'c T>,
-    {
+impl<T, C> FmtWithCtx<C> for GFunDecl<T>
+where
+    // For the signature
+    C: for<'a> SetGenerics<'a>,
+    for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
+    for<'a, 'b> <C as SetGenerics<'a>>::C: AstFormatter + Formatter<&'b T>,
+    // For the body
+    for<'a, 'b> <C as SetGenerics<'a>>::C: SetLocals<'b>,
+    for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
+    for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: Formatter<&'c T>,
+{
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         // Update the context
         let ctx = &ctx.set_generics(&self.signature.generics);
 
@@ -492,7 +467,7 @@ impl<T> GFunDecl<T> {
             Option::Some(body) => {
                 // Body
                 let body_tab = format!("{tab}{TAB_INCR}");
-                let body = body.fmt_with_ctx(&body_tab, ctx);
+                let body = body.fmt_with_ctx_and_indent(&body_tab, ctx);
 
                 // Put everything together
                 format!(
@@ -503,23 +478,16 @@ impl<T> GFunDecl<T> {
     }
 }
 
-impl<T> GGlobalDecl<T> {
-    /// This is an auxiliary function for printing definitions. One may wonder
-    /// why we require a formatter to format, for instance, (type) var ids,
-    /// because the global definition already has the information to print
-    /// variables. The reason is that it is easier for us to write this very
-    /// generic auxiliary function, then apply it on an evaluation context
-    /// properly initialized (with the information contained in the global
-    /// definition). See [`fmt_with_decls`](crate::ullbc_ast::FunDecl::fmt_with_decls).
-    pub fn gfmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
-    where
-        C: AstFormatter,
-        C: for<'a> SetLocals<'a>,
-        for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
-        for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
-        for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C:
-            AstFormatter + Formatter<&'c T>,
-    {
+impl<T, C> FmtWithCtx<C> for GGlobalDecl<T>
+where
+    C: AstFormatter,
+    C: for<'a> SetLocals<'a>,
+    for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
+    for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
+    for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C:
+        AstFormatter + Formatter<&'c T>,
+{
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         // Update the context with the generics
         let ctx = &ctx.set_generics(&self.generics);
 
@@ -545,7 +513,7 @@ impl<T> GGlobalDecl<T> {
             Option::Some(body) => {
                 // Body
                 let body_tab = format!("{tab}{TAB_INCR}");
-                let body = body.fmt_with_ctx(&body_tab, ctx);
+                let body = body.fmt_with_ctx_and_indent(&body_tab, ctx);
 
                 // Put everything together
                 format!("{tab}global {name}{params}{preds}{eq_space} {{\n{body}\n{tab}}}")
@@ -554,30 +522,8 @@ impl<T> GGlobalDecl<T> {
     }
 }
 
-impl ullbc::GlobalDecl {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        self.gfmt_with_ctx("", ctx)
-    }
-}
-
-impl llbc::GlobalDecl {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-        for<'a> C: Formatter<&'a llbc::Statement>,
-    {
-        self.gfmt_with_ctx("", ctx)
-    }
-}
-
-impl ImplElem {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let d = if self.disambiguator.is_zero() {
             "".to_string()
         } else {
@@ -589,11 +535,8 @@ impl ImplElem {
     }
 }
 
-impl ImplElemKind {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for ImplElemKind {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             ImplElemKind::Ty(ty) => ty.fmt_with_ctx(ctx),
             ImplElemKind::Trait(tr) => {
@@ -613,11 +556,8 @@ impl ImplElemKind {
     }
 }
 
-impl Name {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for Name {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let name = self
             .name
             .iter()
@@ -627,11 +567,8 @@ impl Name {
     }
 }
 
-impl NonLocalTraitClause {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let clause_id = self.clause_id.fmt_with_ctx(ctx);
         let trait_id = ctx.format_object(self.trait_id);
         let generics = self.generics.fmt_with_ctx(ctx);
@@ -639,11 +576,8 @@ impl NonLocalTraitClause {
     }
 }
 
-impl Operand {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for Operand {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             Operand::Copy(p) => format!("copy ({})", p.fmt_with_ctx(ctx)),
             Operand::Move(p) => format!("move ({})", p.fmt_with_ctx(ctx)),
@@ -652,11 +586,8 @@ impl Operand {
     }
 }
 
-impl PathElem {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             PathElem::Ident(s, d) => {
                 let d = if d.is_zero() {
@@ -671,11 +602,8 @@ impl PathElem {
     }
 }
 
-impl Place {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for Place {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let mut out = ctx.format_object(self.var_id);
 
         for p in &self.projection {
@@ -705,7 +633,7 @@ impl Place {
                         out = format!("({out}).@closure_state_field_{field_id}");
                     }
                 },
-                ProjectionElem::Index(i, _) => out = format!("({out})[{}]", ctx.format_object(*i)),
+                ProjectionElem::Index(operand, _) => out = format!("({out})[{}]", operand),
             }
         }
 
@@ -713,11 +641,8 @@ impl Place {
     }
 }
 
-impl RawConstantExpr {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             RawConstantExpr::Literal(c) => c.to_string(),
             RawConstantExpr::Adt(variant_id, values) => {
@@ -752,11 +677,8 @@ impl RawConstantExpr {
     }
 }
 
-impl Region {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for Region {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             Region::Static => "'static".to_string(),
             Region::BVar(grid, id) => ctx.format_object((*grid, *id)),
@@ -766,11 +688,8 @@ impl Region {
     }
 }
 
-impl Rvalue {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),
             Rvalue::Ref(place, borrow_kind) => match borrow_kind {
@@ -847,11 +766,8 @@ impl Rvalue {
     }
 }
 
-impl ullbc::Statement {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         use ullbc::RawStatement;
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(
@@ -877,11 +793,13 @@ impl ullbc::Statement {
     }
 }
 
-impl llbc::Statement {
-    pub fn fmt_with_ctx<C>(&self, tab: &str, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        // By default use a tab.
+        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
+    }
+
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         use llbc::RawStatement;
         match &self.content {
             RawStatement::Assign(place, rvalue) => format!(
@@ -919,8 +837,8 @@ impl llbc::Statement {
             RawStatement::Nop => format!("{tab}nop"),
             RawStatement::Sequence(st1, st2) => format!(
                 "{}\n{}",
-                st1.fmt_with_ctx(tab, ctx),
-                st2.fmt_with_ctx(tab, ctx)
+                st1.fmt_with_ctx_and_indent(tab, ctx),
+                st2.fmt_with_ctx_and_indent(tab, ctx)
             ),
             RawStatement::Switch(switch) => match switch {
                 Switch::If(discr, true_st, false_st) => {
@@ -929,10 +847,10 @@ impl llbc::Statement {
                         "{}if {} {{\n{}\n{}}}\n{}else {{\n{}\n{}}}",
                         tab,
                         discr.fmt_with_ctx(ctx),
-                        true_st.fmt_with_ctx(&inner_tab, ctx),
+                        true_st.fmt_with_ctx_and_indent(&inner_tab, ctx),
                         tab,
                         tab,
-                        false_st.fmt_with_ctx(&inner_tab, ctx),
+                        false_st.fmt_with_ctx_and_indent(&inner_tab, ctx),
                         tab,
                     )
                 }
@@ -948,7 +866,7 @@ impl llbc::Statement {
                                 "{}{} => {{\n{}\n{}}}",
                                 inner_tab1,
                                 pvl.join(" | "),
-                                st.fmt_with_ctx(&inner_tab2, ctx),
+                                st.fmt_with_ctx_and_indent(&inner_tab2, ctx),
                                 inner_tab1
                             )
                         })
@@ -956,7 +874,7 @@ impl llbc::Statement {
                     maps.push(format!(
                         "{}_ => {{\n{}\n{}}}",
                         inner_tab1,
-                        otherwise.fmt_with_ctx(&inner_tab2, ctx),
+                        otherwise.fmt_with_ctx_and_indent(&inner_tab2, ctx),
                         inner_tab1
                     ));
                     let maps = maps.join(",\n");
@@ -981,7 +899,7 @@ impl llbc::Statement {
                                 "{}{} => {{\n{}\n{}}}",
                                 inner_tab1,
                                 pvl.join(" | "),
-                                st.fmt_with_ctx(&inner_tab2, ctx),
+                                st.fmt_with_ctx_and_indent(&inner_tab2, ctx),
                                 inner_tab1
                             )
                         })
@@ -990,7 +908,7 @@ impl llbc::Statement {
                         maps.push(format!(
                             "{}_ => {{\n{}\n{}}}",
                             inner_tab1,
-                            otherwise.fmt_with_ctx(&inner_tab2, ctx),
+                            otherwise.fmt_with_ctx_and_indent(&inner_tab2, ctx),
                             inner_tab1
                         ));
                     };
@@ -1010,7 +928,7 @@ impl llbc::Statement {
                 format!(
                     "{}loop {{\n{}\n{}}}",
                     tab,
-                    body.fmt_with_ctx(&inner_tab, ctx),
+                    body.fmt_with_ctx_and_indent(&inner_tab, ctx),
                     tab
                 )
             }
@@ -1018,11 +936,8 @@ impl llbc::Statement {
     }
 }
 
-impl Terminator {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match &self.content {
             RawTerminator::Goto { target } => format!("goto bb{target}"),
             RawTerminator::Switch { discr, targets } => match targets {
@@ -1067,11 +982,8 @@ impl Terminator {
     }
 }
 
-impl TraitClause {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for TraitClause {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let clause_id = ctx.format_object(self.clause_id);
         let trait_id = ctx.format_object(self.trait_id);
         let generics = self.generics.fmt_with_ctx(ctx);
@@ -1079,11 +991,8 @@ impl TraitClause {
     }
 }
 
-impl TraitDecl {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
@@ -1155,22 +1064,16 @@ impl TraitDecl {
     }
 }
 
-impl TraitDeclRef {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let trait_id = ctx.format_object(self.trait_id);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         format!("{trait_id}{generics}")
     }
 }
 
-impl TraitImpl {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
@@ -1230,11 +1133,8 @@ impl TraitImpl {
     }
 }
 
-impl TraitInstanceId {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for TraitInstanceId {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             TraitInstanceId::SelfId => "Self".to_string(),
             TraitInstanceId::ParentClause(id, _decl_id, clause_id) => {
@@ -1278,38 +1178,24 @@ impl TraitInstanceId {
     }
 }
 
-impl TraitRef {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let trait_id = self.trait_id.fmt_with_ctx(ctx);
         let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
         format!("{trait_id}{generics}")
     }
 }
 
-impl TraitTypeConstraint {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for TraitTypeConstraint {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let trait_ref = self.trait_ref.fmt_with_ctx(ctx);
         let ty = self.ty.fmt_with_ctx(ctx);
         format!("{}::{} = {}", trait_ref, self.type_name, ty)
     }
 }
 
-impl Ty {
-    /// Format the type as a string.
-    ///
-    /// We take an optional type context to be able to implement the Display
-    /// trait, in which case there is no type context available and we print
-    /// the ADT ids rather than their names.
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for Ty {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             Ty::Adt(id, generics) => {
                 let adt_ident = id.fmt_with_ctx(ctx);
@@ -1373,11 +1259,8 @@ impl Ty {
     }
 }
 
-impl TypeDecl {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let ctx = &ctx.set_generics(&self.generics);
 
         let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -1432,11 +1315,8 @@ impl TypeDecl {
     }
 }
 
-impl TypeId {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             TypeId::Tuple => "".to_string(),
             TypeId::Adt(def_id) => ctx.format_object(*def_id),
@@ -1445,11 +1325,8 @@ impl TypeId {
     }
 }
 
-impl UnOp {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             UnOp::Not => "~".to_string(),
             UnOp::Neg => "-".to_string(),
@@ -1459,11 +1336,8 @@ impl UnOp {
     }
 }
 
-impl Variant {
-    pub fn fmt_with_ctx<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
+impl<C: AstFormatter> FmtWithCtx<C> for Variant {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
         let fields = fields.join(", ");
         format!("{}({})", self.name, fields)
@@ -1680,7 +1554,7 @@ where
             format!(
                 "{tab}bb{}: {{\n{}\n{tab}}}\n",
                 bid.index(),
-                block.fmt_with_ctx(&block_tab, ctx),
+                block.fmt_with_ctx_and_indent(&block_tab, ctx),
             )
             .to_string(),
         );

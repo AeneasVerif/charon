@@ -1,6 +1,7 @@
 use crate::cli_options::CliOpts;
 use crate::common::*;
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
+use crate::transform::TransformCtx;
 use crate::translate_ctx::*;
 use crate::translate_functions_to_ullbc;
 
@@ -31,7 +32,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 //   const C = 32; // HERE
                 // }
                 // ```
-                let _ = self.translate_global_decl_id(&None, def_id);
+                let _ = self.register_global_decl_id(&None, def_id);
             }
             ImplItemKind::Type(_) => {
                 // Trait type:
@@ -52,7 +53,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 assert!(tcx.associated_item(def_id).trait_item_def_id.is_some());
             }
             ImplItemKind::Fn(_, _) => {
-                let _ = self.translate_fun_decl_id(&None, def_id);
+                let _ = self.register_fun_decl_id(&None, def_id);
             }
         }
     }
@@ -105,15 +106,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             ItemKind::OpaqueTy(_) => unimplemented!(),
             ItemKind::Union(..) => unimplemented!(),
             ItemKind::Enum(..) | ItemKind::Struct(_, _) => {
-                let _ = self.translate_type_decl_id(&None, def_id);
+                let _ = self.register_type_decl_id(&None, def_id);
                 Ok(())
             }
             ItemKind::Fn(_, _, _) => {
-                let _ = self.translate_fun_decl_id(&None, def_id);
+                let _ = self.register_fun_decl_id(&None, def_id);
                 Ok(())
             }
             ItemKind::Trait(..) => {
-                let _ = self.translate_trait_decl_id(&None, def_id);
+                let _ = self.register_trait_decl_id(&None, def_id);
                 // We don't need to explore the associated items: we will
                 // explore them when translating the trait
                 Ok(())
@@ -134,7 +135,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let trans_id: hax::DefId = def_id.sinto(&self.hax_state);
                 if trans_id.path.last().unwrap().data != hax::DefPathItem::AnonConst {
                     if extract_constants_at_top_level(self.options.mir_level) {
-                        let _ = self.translate_global_decl_id(&None, def_id);
+                        let _ = self.register_global_decl_id(&None, def_id);
                     } else {
                         // Avoid registering globals in optimized MIR (they will be inlined)
                     }
@@ -149,7 +150,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
                 // If this is a trait implementation, register it
                 if self.tcx.trait_id_of_impl(def_id).is_some() {
-                    let _ = self.translate_trait_impl_id(&None, def_id);
+                    let _ = self.register_trait_impl_id(&None, def_id);
                 }
 
                 // Explore the items
@@ -203,13 +204,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     let def_id = item.owner_id.to_def_id();
                     match item.kind {
                         ForeignItemKind::Fn(..) => {
-                            let _ = self.translate_fun_decl_id(&None, def_id);
+                            let _ = self.register_fun_decl_id(&None, def_id);
                         }
                         ForeignItemKind::Static(..) => {
-                            let _ = self.translate_global_decl_id(&None, def_id);
+                            let _ = self.register_global_decl_id(&None, def_id);
                         }
                         ForeignItemKind::Type => {
-                            let _ = self.translate_type_decl_id(&None, def_id);
+                            let _ = self.register_type_decl_id(&None, def_id);
                         }
                     }
                 }
@@ -225,6 +226,27 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 unimplemented!("{:?}", item.kind);
             }
         }
+    }
+
+    pub(crate) fn translate_item(&mut self, id: OrdRustId) {
+        let rust_id = id.get_id();
+        self.with_def_id(rust_id, |ctx| {
+            let res = match id {
+                OrdRustId::Type(id) => ctx.translate_type(id),
+                OrdRustId::Fun(id) | OrdRustId::ConstFun(id) => ctx.translate_function(id),
+                OrdRustId::Global(id) => ctx.translate_global(id),
+                OrdRustId::TraitDecl(id) => ctx.translate_trait_decl(id),
+                OrdRustId::TraitImpl(id) => ctx.translate_trait_impl(id),
+            };
+            if res.is_err() {
+                let span = ctx.tcx.def_span(rust_id);
+                ctx.span_err(
+                    span,
+                    &format!("Ignoring the following item due to an error: {:?}", rust_id),
+                );
+                ctx.errors.ignore_failed_decl(rust_id);
+            }
+        })
     }
 }
 
@@ -265,7 +287,7 @@ pub fn translate<'tcx, 'ctx>(
             crate_name,
             ..TranslatedCrate::default()
         },
-        stack: BTreeSet::new(),
+        priority_queue: BTreeSet::new(),
     };
 
     // First push all the items in the stack of items to translate.
@@ -294,26 +316,23 @@ pub fn translate<'tcx, 'ctx>(
         ctx.register_local_hir_item(true, item)?;
     }
 
-    trace!("Stack after we explored the crate:\n{:?}", &ctx.stack);
+    trace!(
+        "Queue after we explored the crate:\n{:?}",
+        &ctx.priority_queue
+    );
 
     // Translate.
     //
-    // For as long as the stack of items to translate is not empty, we pop the top item
-    // and translate it. Note that we transitively translate items: if an item refers to
-    // non-translated (potentially external) items, we add them to the stack.
+    // For as long as the queue of items to translate is not empty, we pop the top item and
+    // translate it. If an item refers to non-translated (potentially external) items, we add them
+    // to the queue.
     //
     // Note that the order in which we translate the definitions doesn't matter:
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
-    while let Some(id) = ctx.stack.pop_first() {
+    while let Some(id) = ctx.priority_queue.pop_first() {
         trace!("About to translate id: {:?}", id);
-        match id {
-            OrdRustId::Type(id) => ctx.translate_type(id),
-            OrdRustId::Fun(id) | OrdRustId::ConstFun(id) => ctx.translate_function(id),
-            OrdRustId::Global(id) => ctx.translate_global(id),
-            OrdRustId::TraitDecl(id) => ctx.translate_trait_decl(id),
-            OrdRustId::TraitImpl(id) => ctx.translate_trait_impl(id),
-        }
+        ctx.translate_item(id);
     }
 
     // Return the context, dropping the hax state and rustc `tcx`.

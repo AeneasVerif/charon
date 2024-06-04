@@ -1,10 +1,11 @@
 //! Remove the useless no-ops.
 
-use crate::formatter::{Formatter, IntoFormatter};
-use crate::llbc_ast::{RawStatement, Statement};
+use crate::llbc_ast::{ExprBody, RawStatement, Statement};
 use crate::meta::combine_span;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use take_mut::take;
+
+use super::ctx::LlbcPass;
 
 fn transform_st(s: &mut Statement) {
     if let RawStatement::Sequence(s1, _) = &s.content {
@@ -20,19 +21,12 @@ fn transform_st(s: &mut Statement) {
     }
 }
 
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.iter_structured_bodies(|ctx, name, b| {
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# About to remove useless no-ops in decl: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
-
-        // Compute the set of local variables
+pub struct Transform;
+impl LlbcPass for Transform {
+    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         b.body.transform(&mut |st| {
             transform_st(st);
             None
         });
-    })
+    }
 }

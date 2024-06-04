@@ -4,8 +4,10 @@
 use crate::common::*;
 use crate::ids::Vector;
 use crate::llbc_ast::*;
-use crate::translate_ctx::TransformCtx;
+use crate::transform::TransformCtx;
 use crate::types::*;
+
+use super::ctx::LlbcPass;
 
 struct InsertRegions<'a> {
     regions: &'a mut Vector<RegionId, RegionVar>,
@@ -52,13 +54,7 @@ impl MutExprVisitor for ClosureStateAccess {
     }
 }
 
-impl MutAstVisitor for ClosureStateAccess {
-    fn spawn(&mut self, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn merge(&mut self) {}
-}
+impl MutAstVisitor for ClosureStateAccess {}
 
 fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Error> {
     let FunSig {
@@ -158,11 +154,10 @@ fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Erro
     }
 }
 
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.with_mut_structured_fun_decls(|ctx, fun_decls| {
-        fun_decls.iter_mut().for_each(|d| {
-            // Ignore the errors, which should have been reported
-            let _ = transform_function(ctx, d);
-        });
-    })
+pub struct Transform;
+impl LlbcPass for Transform {
+    fn transform_function(&self, ctx: &mut TransformCtx, def: &mut FunDecl) {
+        // Ignore the errors, which should have been reported
+        let _ = transform_function(ctx, def);
+    }
 }

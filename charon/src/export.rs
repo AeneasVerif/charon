@@ -2,7 +2,7 @@ use crate::ids::Map;
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
 use crate::reorder_decls::DeclarationGroup;
-use crate::translate_ctx::*;
+use crate::transform::TransformCtx;
 use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDecl, TraitImpl};

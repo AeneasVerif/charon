@@ -4,7 +4,7 @@ error: Unsupported clause: WellFormed(Type(Ref(Region { kind: ReEarlyBound(Early
 4 |     &'a ():,
   |     ^^^^^^
 
-error: Ignoring the following function due to an error: test_crate::get
+error: Ignoring the following item due to an error: test_crate::get
  --> tests/ui/unsupported/well-formedness-bound.rs:2:1
   |
 2 | / fn get<'a>(x: &'a u32) -> Option<&'a u32>
@@ -14,5 +14,5 @@ error: Ignoring the following function due to an error: test_crate::get
 
 error: aborting due to 2 previous errors
 
-[ ERROR charon_driver:214] The extraction encountered 2 errors
+[ ERROR charon_driver:227] The extraction encountered 2 errors
 Error: Charon driver exited with code 1

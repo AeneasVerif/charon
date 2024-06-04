@@ -1,0 +1,10 @@
+error: Unexpected ProjectionElem::ConstantIndex
+ --> tests/ui/unsupported/projection-index-from-end.rs:4:14
+  |
+4 |         [.., _named] => (),
+  |              ^^^^^^
+
+error: aborting due to previous error
+
+[ ERROR charon_driver:227] The extraction encountered 1 errors
+Error: Charon driver exited with code 1

@@ -1,15 +1,12 @@
 use crate::cli_options;
-use crate::export;
-use crate::get_mir::MirLevel;
-use crate::reorder_decls;
-use crate::transform::remove_arithmetic_overflow_checks;
-use crate::transform::{
-    index_to_function_calls, insert_assign_return_unit, ops_to_function_calls, reconstruct_asserts,
-    remove_drop_never, remove_dynamic_checks, remove_nops, remove_read_discriminant,
-    remove_unused_locals, simplify_constants, update_closure_signatures,
-};
-use crate::translate_crate_to_ullbc;
-use crate::ullbc_to_llbc;
+use charon_lib::export;
+use charon_lib::formatter::{Formatter, IntoFormatter};
+use charon_lib::get_mir::MirLevel;
+use charon_lib::reorder_decls::compute_reordered_decls;
+use charon_lib::transform::ctx::TransformPass;
+use charon_lib::transform::{LLBC_PASSES, ULLBC_PASSES};
+use charon_lib::translate_crate_to_ullbc;
+use charon_lib::ullbc_to_llbc;
 use regex::Regex;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
@@ -103,7 +100,7 @@ impl Callbacks for CharonCallbacks {
     /// the conversion to HIR to MIR) because it has been lost.
     /// For this reason, and as we may want to plug ourselves at different
     /// phases of the compilation process, we query the context as early as
-    /// possible (i.e., after parsing). See [crate::get_mir].
+    /// possible (i.e., after parsing). See [charon_lib::get_mir].
     fn after_parsing<'tcx>(&mut self, c: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
         // Set up our own `DefId` debug routine.
         rustc_hir::def_id::DEF_ID_DEBUG
@@ -264,7 +261,8 @@ pub fn translate(
     // - compute the order in which to extract the definitions
     // - find the recursive definitions
     // - group the mutually recursive definitions
-    reorder_decls::reorder_declarations(&mut ctx);
+    let reordered_decls = compute_reordered_decls(&mut ctx);
+    ctx.translated.ordered_decls = Some(reordered_decls);
 
     //
     // =================
@@ -274,18 +272,10 @@ pub fn translate(
     // we simply apply some micro-passes to make the code cleaner, before
     // serializing the result.
 
-    // # Micro-pass: Remove overflow/div-by-zero/bounds checks since they are already part of the
-    // arithmetic/array operation in the semantics of (U)LLBC.
-    // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a
-    // special "assert" construct. Because of this, it must happen *before* the
-    // [reconstruct_asserts] pass. See the comments in [crate::remove_dynamic_checks].
-    // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
-    // it must happen before passes that insert statements like [simplify_constants].
-    remove_dynamic_checks::transform(&mut ctx);
-
-    // # Micro-pass: desugar the constants to other values/operands as much
-    // as possible.
-    simplify_constants::transform(&mut ctx);
+    // Run the micro-passes that clean up bodies.
+    for pass in ULLBC_PASSES.iter() {
+        pass.transform_ctx(&mut ctx)
+    }
 
     // # There are two options:
     // - either the user wants the unstructured LLBC, in which case we stop there
@@ -300,7 +290,7 @@ pub fn translate(
         ullbc_to_llbc::translate_functions(&mut ctx);
 
         if options.print_built_llbc {
-            let llbc_ctx = crate::translate_ctx::LlbcFmtCtx {
+            let llbc_ctx = charon_lib::translate_ctx::LlbcFmtCtx {
                 translated: &ctx.translated,
             };
             info!(
@@ -309,69 +299,17 @@ pub fn translate(
             );
         }
 
-        // # Micro-pass: the first local variable of closures is the
-        // closure itself. This is not consistent with the closure signature,
-        // which ignores this first variable. This micro-pass updates this.
-        update_closure_signatures::transform(&mut ctx);
-
-        // # Micro-pass: remove the dynamic checks we couldn't remove in [`remove_dynamic_checks`].
-        // **WARNING**: this pass uses the fact that the dynamic checks
-        // introduced by Rustc use a special "assert" construct. Because of
-        // this, it must happen *before* the [reconstruct_asserts] pass.
-        remove_arithmetic_overflow_checks::transform(&mut ctx);
-
-        // # Micro-pass: reconstruct the asserts
-        reconstruct_asserts::transform(&mut ctx);
-
-        // TODO: we should mostly use the TranslateCtx to format declarations
-        use crate::formatter::{Formatter, IntoFormatter};
-        for (_, def) in &ctx.translated.structured_fun_decls {
-            trace!(
-                "# After asserts reconstruction:\n{}\n",
-                ctx.into_fmt().format_object(def)
-            );
+        // Run the micro-passes that clean up bodies.
+        for pass in LLBC_PASSES.iter() {
+            pass.transform_ctx(&mut ctx)
         }
-
-        // # Micro-pass: replace some unops/binops and the array aggregates with
-        // function calls (introduces: ArrayToSlice, etc.)
-        ops_to_function_calls::transform(&mut ctx);
-
-        // # Micro-pass: replace the arrays/slices index operations with function
-        // calls.
-        // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
-        index_to_function_calls::transform(&mut ctx);
-
-        // # Micro-pass: Remove the discriminant reads (merge them with the switches)
-        remove_read_discriminant::transform(&mut ctx);
-
-        // # Micro-pass: add the missing assignments to the return value.
-        // When the function return type is unit, the generated MIR doesn't
-        // set the return value to `()`. This can be a concern: in the case
-        // of Aeneas, it means the return variable contains ⊥ upon returning.
-        // For this reason, when the function has return type unit, we insert
-        // an extra assignment just before returning.
-        // This also applies to globals (for checking or executing code before
-        // the main or at compile-time).
-        insert_assign_return_unit::transform(&mut ctx);
-
-        // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
-        // is in preparation of the next transformation.
-        remove_drop_never::transform(&mut ctx);
-
-        // # Micro-pass: remove the locals which are never used. After doing so, we
-        // check that there are no remaining locals with type `Never`.
-        remove_unused_locals::transform(&mut ctx);
-
-        // # Micro-pass (not necessary, but good for cleaning): remove the
-        // useless no-ops.
-        remove_nops::transform(&mut ctx);
 
         trace!("# Final LLBC:\n");
         for (_, def) in &ctx.translated.structured_fun_decls {
             trace!("#{}\n", ctx.into_fmt().format_object(def));
         }
 
-        let llbc_ctx = crate::translate_ctx::LlbcFmtCtx {
+        let llbc_ctx = charon_lib::translate_ctx::LlbcFmtCtx {
             translated: &ctx.translated,
         };
         trace!("# About to export:\n\n{}\n", llbc_ctx);

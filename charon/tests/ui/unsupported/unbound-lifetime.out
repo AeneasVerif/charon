@@ -18,7 +18,7 @@ error: Could not find region: Region { kind: ReError(ErrorGuaranteed { todo: "Er
 4 | fn get(_x: &'a u32) {}
   | ^^^^^^^^^^^^^^^^^^^
 
-error: Ignoring the following function due to an error: test_crate::get
+error: Ignoring the following item due to an error: test_crate::get
  --> tests/ui/unsupported/unbound-lifetime.rs:4:1
   |
 4 | fn get(_x: &'a u32) {}
@@ -27,5 +27,5 @@ error: Ignoring the following function due to an error: test_crate::get
 error: aborting due to 3 previous errors
 
 For more information about this error, try `rustc --explain E0261`.
-[ ERROR charon_driver:214] The extraction encountered 2 errors
+[ ERROR charon_driver:227] The extraction encountered 2 errors
 Error: Charon driver exited with code 1

@@ -326,3 +326,23 @@ pub fn sum_mut_slice(a: &mut [u32]) -> u32 {
     }
     s
 }
+
+// From issue #203
+fn slice_pattern_1(x: [(); 1]) {
+    let [_named] = x;
+}
+
+fn slice_pattern_2<T>(x: [&mut T; 3]) {
+    let [_a, _b, _c] = x;
+}
+
+fn slice_pattern_3(x: &[(); 1]) {
+    let [_named] = x;
+}
+
+fn slice_pattern_4(x: &[()]) {
+    match x {
+        [_named] => (),
+        _ => (),
+    }
+}

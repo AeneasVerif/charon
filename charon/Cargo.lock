@@ -160,7 +160,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "charon"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -195,7 +195,7 @@ dependencies = [
  "snapbox",
  "take_mut",
  "tempfile",
- "toml 0.8.13",
+ "toml",
  "tracing",
  "tracing-subscriber",
  "tracing-tree",
@@ -727,9 +727,7 @@ name = "macros"
 version = "0.1.0"
 dependencies = [
  "quote",
- "serde",
  "syn 1.0.109",
- "toml 0.5.11",
 ]
 
 [[package]]
@@ -1318,15 +1316,6 @@ checksum = "8b9ef9bad013ada3808854ceac7b46812a6465ba368859a37e2100283d2d719c"
 dependencies = [
  "cfg-if",
  "once_cell",
-]
-
-[[package]]
-name = "toml"
-version = "0.5.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4f7f0dd8d50a853a531c426359045b1998f04219d88799810762cd4ad314234"
-dependencies = [
- "serde",
 ]
 
 [[package]]
