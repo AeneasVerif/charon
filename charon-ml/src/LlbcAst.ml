@@ -31,6 +31,7 @@ and raw_statement =
   | Sequence of statement * statement
   | Switch of switch
   | Loop of statement
+  | Error of string
 
 and switch =
   | If of operand * statement * statement

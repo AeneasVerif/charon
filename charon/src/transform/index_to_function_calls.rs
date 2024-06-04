@@ -201,7 +201,7 @@ impl<'a> MutAstVisitor for Visitor<'a> {
                 self.visit_transform_place(false, p);
             }
             Assign(..) | SetDiscriminant(..) | Drop(..) | Assert(..) | Call(..) | Panic
-            | Return | Break(..) | Continue(..) | Nop | Switch(..) | Loop(..) => {
+            | Return | Break(..) | Continue(..) | Nop | Switch(..) | Loop(..) | Error(..) => {
                 // Explore
                 self.default_visit_raw_statement(st)
             }

@@ -33,7 +33,7 @@ let mk_sequence (st1 : statement) (st2 : statement) : statement =
 let rec chain_statements (st1 : statement) (st2 : statement) : statement =
   match st1.content with
   | SetDiscriminant _ | Assert _ | Call _ | Assign _ | FakeRead _ | Drop _
-  | Loop _ ->
+  | Loop _ | Error _ ->
       (* Simply create a sequence *)
       mk_sequence st1 st2
   | Nop -> (* Ignore the nop *) st2
