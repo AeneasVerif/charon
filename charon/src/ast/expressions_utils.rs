@@ -44,7 +44,7 @@ pub trait ExprVisitor: crate::types::TypeVisitor {
             ProjectionElem::DerefBox => self.visit_deref_box(),
             ProjectionElem::DerefRawPtr => self.visit_deref_raw_ptr(),
             ProjectionElem::Field(proj_kind, fid) => self.visit_projection_field(proj_kind, fid),
-            ProjectionElem::Index(i, _) => self.visit_var_id(i),
+            ProjectionElem::Index(operand, _) => self.visit_operand(operand),
         }
     }
 

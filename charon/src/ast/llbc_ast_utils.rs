@@ -1,5 +1,6 @@
 //! Implementations for [crate::llbc_ast]
 
+use crate::common::ensure_sufficient_stack;
 use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
 use crate::llbc_ast::{Assert, RawStatement, Statement, Switch};
 use crate::meta;
@@ -132,7 +133,9 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
 
     fn default_visit_statement(&mut self, st: &Statement) {
         self.visit_span(&st.span);
-        self.visit_raw_statement(&st.content)
+        ensure_sufficient_stack(|| {
+            self.visit_raw_statement(&st.content)
+        })
     }
 
     fn visit_statement(&mut self, st: &Statement) {

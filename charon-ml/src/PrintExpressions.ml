@@ -149,6 +149,15 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
       operand_to_string env op1 ^ " " ^ binop_to_string binop ^ " "
       ^ operand_to_string env op2
   | Discriminant (p, _) -> "discriminant(" ^ place_to_string env p ^ ")"
+  | Len (place, ty, const_generics) ->
+      let const_generics =
+        match const_generics with None -> [] | Some cg -> [ cg ]
+      in
+      "len<"
+      ^ String.concat ", "
+          (ty_to_string env ty
+          :: List.map (const_generic_to_string env) const_generics)
+      ^ ">(" ^ place_to_string env place ^ ")"
   | Global (gid, generics) ->
       let generics = generic_args_to_string env generics in
       "global " ^ global_decl_id_to_string env gid ^ generics
