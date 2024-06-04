@@ -118,7 +118,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_refs,
                 )?;
 
-                let global_decl_id = self.translate_global_decl_id(span, DefId::from(id));
+                let global_decl_id = self.register_global_decl_id(span, DefId::from(id));
                 RawConstantExpr::Global(global_decl_id, generics)
             }
             ConstantExprKind::Borrow(be) => {

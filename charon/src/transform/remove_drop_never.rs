@@ -3,11 +3,12 @@
 //! `drop(v)` where `v` has type `Never` (it can happen - this module does the
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
 
-use crate::formatter::{Formatter, IntoFormatter};
 use crate::ids::Vector;
-use crate::llbc_ast::{RawStatement, Statement, Var};
-use crate::translate_ctx::TransformCtx;
+use crate::llbc_ast::{ExprBody, RawStatement, Statement, Var};
+use crate::transform::TransformCtx;
 use crate::values::*;
+
+use super::ctx::LlbcPass;
 
 /// Filter the statement by replacing it with `Nop` if it is a `Drop(x)` where
 /// `x` has type `Never`. Otherwise leave it unchanged.
@@ -31,20 +32,13 @@ fn transform_st(locals: &Vector<VarId, Var>, st: &mut Statement) {
     }
 }
 
-pub fn transform(ctx: &mut TransformCtx) {
-    ctx.iter_structured_bodies(|ctx, name, b| {
-        let fmt_ctx = ctx.into_fmt();
-        trace!(
-            "# About to remove drops of variables with type ! in decl: {}:\n{}",
-            name.fmt_with_ctx(&fmt_ctx),
-            fmt_ctx.format_object(&*b)
-        );
-
+pub struct Transform;
+impl LlbcPass for Transform {
+    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         let locals = &b.locals;
-
         b.body.transform(&mut |st| {
             transform_st(locals, st);
             None
         });
-    })
+    }
 }

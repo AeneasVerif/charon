@@ -3,7 +3,7 @@ use crate::gast;
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::llbc_ast::*;
-use crate::pretty::fmt_with_ctx;
+use crate::pretty::{fmt_with_ctx, FmtWithCtx};
 use crate::translate_ctx::TranslatedCrate;
 use crate::types::*;
 use crate::ullbc_ast;
@@ -56,6 +56,14 @@ pub trait IntoFormatter {
     type C: AstFormatter;
 
     fn into_fmt(self) -> Self::C;
+}
+
+impl<C: AstFormatter> IntoFormatter for C {
+    type C = Self;
+
+    fn into_fmt(self) -> Self::C {
+        self
+    }
 }
 
 /// We use this trait with the formatter to update the context,
@@ -193,14 +201,6 @@ pub struct FmtCtx<'a> {
     pub type_vars: Option<&'a Vector<TypeVarId, TypeVar>>,
     pub const_generic_vars: Option<&'a Vector<ConstGenericVarId, ConstGenericVar>>,
     pub locals: Option<&'a Vector<VarId, ast::Var>>,
-}
-
-impl<'a> IntoFormatter for FmtCtx<'a> {
-    type C = FmtCtx<'a>;
-
-    fn into_fmt(self) -> Self::C {
-        self
-    }
 }
 
 impl<'a> FmtCtx<'a> {
@@ -434,7 +434,7 @@ impl<'a> Formatter<VarId> for FmtCtx<'a> {
 
 impl<'a> Formatter<&llbc_ast::Statement> for FmtCtx<'a> {
     fn format_object(&self, x: &llbc_ast::Statement) -> String {
-        x.fmt_with_ctx(TAB_INCR, self)
+        x.fmt_with_ctx(self)
     }
 }
 
@@ -470,13 +470,13 @@ impl<'a> Formatter<&llbc_ast::GlobalDecl> for FmtCtx<'a> {
 
 impl<'a> Formatter<&ullbc_ast::ExprBody> for FmtCtx<'a> {
     fn format_object(&self, body: &ullbc_ast::ExprBody) -> String {
-        body.fmt_with_ctx(TAB_INCR, self)
+        body.fmt_with_ctx(self)
     }
 }
 
 impl<'a> Formatter<&llbc_ast::ExprBody> for FmtCtx<'a> {
     fn format_object(&self, body: &llbc_ast::ExprBody) -> String {
-        body.fmt_with_ctx(TAB_INCR, self)
+        body.fmt_with_ctx(self)
     }
 }
 

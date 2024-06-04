@@ -20,11 +20,13 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
+use crate::common::ensure_sufficient_stack;
 use crate::expressions::Place;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_span, Span};
-use crate::translate_ctx::TransformCtx;
+use crate::pretty::FmtWithCtx;
+use crate::transform::TransformCtx;
 use crate::ullbc_ast::FunDeclId;
 use crate::ullbc_ast::{self as src, GlobalDeclId};
 use crate::values as v;
@@ -1505,7 +1507,9 @@ fn translate_child_block(
         GotoKind::ExitBlock => None,
         GotoKind::Goto => {
             // "Standard" goto: just recursively translate
-            translate_block(info, parent_loops, switch_exit_blocks, child_id)
+            ensure_sufficient_stack(|| {
+                translate_block(info, parent_loops, switch_exit_blocks, child_id)
+            })
         }
     }
 }
@@ -1865,7 +1869,9 @@ fn translate_block(
 
         // Add the exit block
         if let Some(exit_block_id) = next_block {
-            let next_exp = translate_block(info, parent_loops, switch_exit_blocks, exit_block_id);
+            let next_exp = ensure_sufficient_stack(|| {
+                translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
+            });
             combine_expressions(Some(exp), next_exp)
         } else {
             Some(exp)
@@ -1881,7 +1887,9 @@ fn translate_block(
             // doesn't end with `panic`, `return`, etc.).
             assert!(!is_terminal(&exp));
 
-            let next_exp = translate_block(info, parent_loops, switch_exit_blocks, exit_block_id);
+            let next_exp = ensure_sufficient_stack(|| {
+                translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
+            });
             combine_expressions(Some(exp), next_exp)
         } else {
             Some(exp)

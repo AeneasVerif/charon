@@ -1,11 +1,24 @@
 //! The Charon driver, which calls Rustc with callbacks to compile some Rust
 //! crate to LLBC.
+#![feature(rustc_private)]
 
-use charon_lib::cli_options;
-use charon_lib::driver::{
+extern crate rustc_driver;
+extern crate rustc_hir;
+extern crate rustc_interface;
+extern crate rustc_middle;
+extern crate rustc_session;
+extern crate rustc_span;
+
+#[macro_use]
+extern crate charon_lib;
+
+mod driver;
+
+use crate::driver::{
     arg_values, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
     RunCompilerNormallyCallbacks,
 };
+use charon_lib::cli_options;
 use charon_lib::export::CrateData;
 use charon_lib::logger;
 use charon_lib::trace;

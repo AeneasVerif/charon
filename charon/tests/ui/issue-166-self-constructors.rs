@@ -1,4 +1,3 @@
-//@ known-failure
 enum Foo {
     A,
     B(usize),
