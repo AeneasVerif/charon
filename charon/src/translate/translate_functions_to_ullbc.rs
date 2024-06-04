@@ -793,13 +793,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     ) => {
                         trace!("{:?}", rvalue);
 
-                        // Not sure what those two parameters are used for, so
-                        // panicking if they are not none (to catch a use case).
-                        // I'm not even sure that "field_index" is a proper name:
-                        // the documentation seems outdated (it says the 4th parameter
-                        // is a field index, while it makes more sense for it to be
-                        // the 5th, and I don't know how I should use it anyway).
-                        error_assert!(self, span, user_annotation.is_none());
+                        // We ignore type annotations since rustc has already inferred all the
+                        // types we need.
+                        let _ = user_annotation;
+                        // The union field index if specified. We don't handle unions today.
                         error_assert!(self, span, field_index.is_none());
 
                         // Translate the substitution
