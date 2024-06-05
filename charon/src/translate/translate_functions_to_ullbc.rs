@@ -12,6 +12,7 @@ use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::ids::Vector;
+use crate::meta::ItemMeta;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::translate_types;
@@ -1462,7 +1463,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         mut self,
         rust_id: DefId,
         arg_count: usize,
-        item_meta: &crate::meta::ItemMeta,
+        item_meta: &ItemMeta,
     ) -> Result<Option<ExprBody>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         if item_meta.opaque {

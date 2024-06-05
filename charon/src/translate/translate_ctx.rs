@@ -447,13 +447,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let public = self
             .translate_visibility_from_rid(def_id, span.span)
             .unwrap_or(false);
+        let attributes = self.translate_attributes_from_rid(def_id);
         ItemMeta {
             span,
-            attributes: self.translate_attributes_from_rid(def_id),
+            attributes: attributes.clone(),
             inline: self.translate_inline_from_rid(def_id),
             public,
-            opaque: self
-                .translate_attributes_from_rid(def_id)
+            opaque: attributes
                 .iter()
                 .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque"),
         }
