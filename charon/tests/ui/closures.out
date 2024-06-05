@@ -35,12 +35,12 @@ enum core::option::Option<T> =
 |  Some(T)
 
 
-fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> (parents((parents((parents(Self)::[@TraitClause0]))::[@TraitClause3]))::[@TraitClause0])::Output
+fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> (parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])::Output
 
 fn test_crate::map_option<T, F>(@1: core::option::Option<T>, @2: F) -> core::option::Option<T>
 where
     [@TraitClause0]: core::ops::function::Fn<F, (T)>,
-    (parents((parents((parents((parents(@TraitClause0)::[@TraitClause3]))::[@TraitClause0]))::[@TraitClause3]))::[@TraitClause0])::Output = T,
+    (parents((parents(@TraitClause0)::[@TraitClause0]))::[@TraitClause0])::Output = T,
 {
     let @0: core::option::Option<T>; // return
     let x@1: core::option::Option<T>; // arg #1
@@ -554,7 +554,7 @@ fn test_crate::test_array_map::closure<'_0>(@1: &'_0 mut (()), @2: (i32)) -> i32
 fn core::array::{Array<T, const N : usize>#23}::map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
 where
     [@TraitClause0]: core::ops::function::FnMut<F, (T)>,
-    (parents((parents(@TraitClause0)::[@TraitClause3]))::[@TraitClause0])::Output = U,
+    (parents(@TraitClause0)::[@TraitClause0])::Output = U,
 
 fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
 {

@@ -587,7 +587,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | Struct
             | Trait
             | TraitAlias
-            | TyAlias
+            | TyAlias { .. }
             | Union
             | Use => Some(self.tcx.visibility(id).is_public()),
             // These kinds don't have visibility modifiers (which would cause `visibility` to panic).

@@ -1128,14 +1128,14 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         @8 := core::slice::{Slice<T>}::len<u32>(move (@9))
         drop @9
         @6 := move (@7) < move (@8)
-        drop @8
-        drop @7
         if move (@6) {
             nop
         }
         else {
             break 0
         }
+        drop @8
+        drop @7
         @11 := copy (i@3)
         @15 := &*(s@1)
         @16 := @SliceIndexShared<'_, u32>(move (@15), copy (@11))
@@ -1149,6 +1149,8 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         drop @6
         continue 0
     }
+    drop @8
+    drop @7
     @14 := ()
     @4 := move (@14)
     drop @12
@@ -1168,101 +1170,102 @@ fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u
     let sum@3: u32; // local
     let @4: (); // anonymous local
     let @5: bool; // anonymous local
-    let @6: bool; // anonymous local
-    let @7: usize; // anonymous local
-    let @8: &'_ (Slice<u32>); // anonymous local
-    let @9: usize; // anonymous local
-    let @10: &'_ (Slice<u32>); // anonymous local
-    let i@11: usize; // local
+    let @6: usize; // anonymous local
+    let @7: &'_ (Slice<u32>); // anonymous local
+    let @8: usize; // anonymous local
+    let @9: &'_ (Slice<u32>); // anonymous local
+    let i@10: usize; // local
+    let @11: (); // anonymous local
     let @12: (); // anonymous local
-    let @13: (); // anonymous local
-    let @14: bool; // anonymous local
+    let @13: bool; // anonymous local
+    let @14: usize; // anonymous local
     let @15: usize; // anonymous local
-    let @16: usize; // anonymous local
-    let @17: &'_ (Slice<u32>); // anonymous local
+    let @16: &'_ (Slice<u32>); // anonymous local
+    let @17: u32; // anonymous local
     let @18: u32; // anonymous local
-    let @19: u32; // anonymous local
-    let @20: usize; // anonymous local
-    let @21: u32; // anonymous local
-    let @22: usize; // anonymous local
+    let @19: usize; // anonymous local
+    let @20: u32; // anonymous local
+    let @21: usize; // anonymous local
+    let @22: (); // anonymous local
     let @23: (); // anonymous local
     let @24: (); // anonymous local
     let @25: (); // anonymous local
-    let @26: (); // anonymous local
-    let @27: &'_ (Slice<u32>); // anonymous local
-    let @28: &'_ (u32); // anonymous local
-    let @29: &'_ (Slice<u32>); // anonymous local
-    let @30: &'_ (u32); // anonymous local
+    let @26: &'_ (Slice<u32>); // anonymous local
+    let @27: &'_ (u32); // anonymous local
+    let @28: &'_ (Slice<u32>); // anonymous local
+    let @29: &'_ (u32); // anonymous local
 
     sum@3 := const (0 : u32)
     @fake_read(sum@3)
-    @8 := &*(s@1)
-    @7 := core::slice::{Slice<T>}::len<u32>(move (@8))
-    drop @8
-    @10 := &*(s2@2)
-    @9 := core::slice::{Slice<T>}::len<u32>(move (@10))
-    drop @10
-    @6 := move (@7) == move (@9)
-    drop @9
+    @7 := &*(s@1)
+    @6 := core::slice::{Slice<T>}::len<u32>(move (@7))
     drop @7
-    @5 := ~(move (@6))
-    drop @6
+    @9 := &*(s2@2)
+    @8 := core::slice::{Slice<T>}::len<u32>(move (@9))
+    drop @9
+    @5 := move (@6) == move (@8)
     if move (@5) {
         nop
     }
     else {
-        @24 := ()
-        @4 := move (@24)
-        drop @5
-        drop @4
-        i@11 := const (0 : usize)
-        @fake_read(i@11)
-        loop {
-            @15 := copy (i@11)
-            @17 := &*(s@1)
-            @16 := core::slice::{Slice<T>}::len<u32>(move (@17))
-            drop @17
-            @14 := move (@15) < move (@16)
-            drop @16
-            drop @15
-            if move (@14) {
-                nop
-            }
-            else {
-                break 0
-            }
-            @20 := copy (i@11)
-            @29 := &*(s@1)
-            @30 := @SliceIndexShared<'_, u32>(move (@29), copy (@20))
-            @19 := copy (*(@30))
-            @22 := copy (i@11)
-            @27 := &*(s2@2)
-            @28 := @SliceIndexShared<'_, u32>(move (@27), copy (@22))
-            @21 := copy (*(@28))
-            @18 := move (@19) + move (@21)
-            drop @21
-            drop @19
-            sum@3 := copy (sum@3) + move (@18)
-            drop @18
-            drop @22
-            drop @20
-            i@11 := copy (i@11) + const (1 : usize)
-            @26 := ()
-            @13 := move (@26)
-            drop @14
-            continue 0
+        drop @8
+        drop @6
+        panic
+    }
+    drop @8
+    drop @6
+    @23 := ()
+    @4 := move (@23)
+    drop @5
+    drop @4
+    i@10 := const (0 : usize)
+    @fake_read(i@10)
+    loop {
+        @14 := copy (i@10)
+        @16 := &*(s@1)
+        @15 := core::slice::{Slice<T>}::len<u32>(move (@16))
+        drop @16
+        @13 := move (@14) < move (@15)
+        if move (@13) {
+            nop
         }
+        else {
+            break 0
+        }
+        drop @15
+        drop @14
+        @19 := copy (i@10)
+        @28 := &*(s@1)
+        @29 := @SliceIndexShared<'_, u32>(move (@28), copy (@19))
+        @18 := copy (*(@29))
+        @21 := copy (i@10)
+        @26 := &*(s2@2)
+        @27 := @SliceIndexShared<'_, u32>(move (@26), copy (@21))
+        @20 := copy (*(@27))
+        @17 := move (@18) + move (@20)
+        drop @20
+        drop @18
+        sum@3 := copy (sum@3) + move (@17)
+        drop @17
+        drop @21
+        drop @19
+        i@10 := copy (i@10) + const (1 : usize)
         @25 := ()
         @12 := move (@25)
-        drop @23
-        drop @14
-        drop @12
-        @0 := copy (sum@3)
-        drop i@11
-        drop sum@3
-        return
+        drop @13
+        continue 0
     }
-    panic
+    drop @15
+    drop @14
+    @24 := ()
+    @11 := move (@24)
+    drop @22
+    drop @13
+    drop @11
+    @0 := copy (sum@3)
+    drop i@10
+    drop sum@3
+    return
 }
 
 fn test_crate::f0()
@@ -1515,14 +1518,14 @@ fn test_crate::zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
         @7 := copy (i@2)
         @8 := copy (len@3)
         @6 := move (@7) < move (@8)
-        drop @8
-        drop @7
         if move (@6) {
             nop
         }
         else {
             break 0
         }
+        drop @8
+        drop @7
         @9 := copy (i@2)
         @13 := &mut *(a@1)
         @14 := @SliceIndexMut<'_, u8>(move (@13), copy (@9))
@@ -1534,6 +1537,8 @@ fn test_crate::zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
         drop @6
         continue 0
     }
+    drop @8
+    drop @7
     @12 := ()
     @0 := move (@12)
     drop @10
@@ -1569,20 +1574,22 @@ fn test_crate::iter_mut_slice<'_0>(@1: &'_0 mut (Slice<u8>))
         @7 := copy (i@4)
         @8 := copy (len@2)
         @6 := move (@7) < move (@8)
-        drop @8
-        drop @7
         if move (@6) {
             nop
         }
         else {
             break 0
         }
+        drop @8
+        drop @7
         i@4 := copy (i@4) + const (1 : usize)
         @10 := ()
         @5 := move (@10)
         drop @6
         continue 0
     }
+    drop @8
+    drop @7
     @11 := ()
     @0 := move (@11)
     drop @9
@@ -1623,14 +1630,14 @@ fn test_crate::sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
         @8 := core::slice::{Slice<T>}::len<u32>(move (@9))
         drop @9
         @6 := move (@7) < move (@8)
-        drop @8
-        drop @7
         if move (@6) {
             nop
         }
         else {
             break 0
         }
+        drop @8
+        drop @7
         @11 := copy (i@2)
         @15 := &*(a@1)
         @16 := @SliceIndexShared<'_, u32>(move (@15), copy (@11))
@@ -1644,6 +1651,8 @@ fn test_crate::sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
         drop @6
         continue 0
     }
+    drop @8
+    drop @7
     @14 := ()
     @4 := move (@14)
     drop @12
