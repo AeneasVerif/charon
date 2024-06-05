@@ -166,8 +166,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // the parent and item predicates.
         let trait_pred = rustc_middle::ty::TraitPredicate {
             trait_ref,
-            // Not really necessary (dummy value)
-            constness: rustc_middle::ty::BoundConstness::NotConst,
             // Not really necessary
             polarity: rustc_middle::ty::ImplPolarity::Positive,
         };
@@ -237,25 +235,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         Ok(TraitItemName(name.to_string()))
     }
 
-    pub(crate) fn translate_trait_decl(&mut self, rust_id: DefId) -> Result<(), Error> {
-        self.translate_trait_decl_aux(rust_id)
-    }
-
-    /// Auxliary helper to properly handle errors, see [translate_trait_decl].
-    fn translate_trait_decl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
+    pub fn translate_trait_decl(
+        &mut self,
+        def_id: TraitDeclId,
+        rust_id: DefId,
+    ) -> Result<TraitDecl, Error> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
-
-        let def_id = self.register_trait_decl_id(&None, rust_id)?;
-
-        let item_meta = self.translate_item_meta_from_rid(rust_id);
-
-        // We may need to ignore the trait (happens if the trait is a marker
-        // trait like [core::marker::Sized]
-        if def_id.is_none() {
-            return Ok(());
-        }
-        let def_id = def_id.unwrap();
-
         trace!("Trait decl id:\n{:?}", def_id);
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -404,6 +389,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 generic_clauses
             );
         }
+        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
         if item_meta.opaque {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(item_meta.span, format!("The aeneas::opaque or charon::opaque currently has no effect on trait declaration and will be ignored. \n- Declaration name: {}\n", name.fmt_with_ctx(&ctx)))
@@ -411,7 +397,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
         // check those, and lookup the relevant values.
-        let trait_decl = ast::TraitDecl {
+        Ok(ast::TraitDecl {
             def_id,
             is_local: rust_id.is_local(),
             name,
@@ -423,31 +409,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             types,
             required_methods,
             provided_methods,
-        };
-        self.translated.trait_decls.insert(def_id, trait_decl);
-
-        Ok(())
+        })
     }
 
-    pub(crate) fn translate_trait_impl(&mut self, rust_id: DefId) -> Result<(), Error> {
-        self.translate_trait_impl_aux(rust_id)
-    }
-
-    /// Auxliary helper to properly handle errors, see [translate_impl_decl].
-    fn translate_trait_impl_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
+    pub fn translate_trait_impl(
+        &mut self,
+        def_id: TraitImplId,
+        rust_id: DefId,
+    ) -> Result<TraitImpl, Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
+        trace!("Trait impl id:\n{:?}", def_id);
 
-        let def_id = self.register_trait_impl_id(&None, rust_id)?;
         let tcx = self.tcx;
         let span = tcx.def_span(rust_id);
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
-        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
-        // We may need to ignore the trait
-        if def_id.is_none() || item_meta.opaque {
-            return Ok(());
-        }
-        let def_id = def_id.unwrap();
-        trace!("Trait impl id:\n{:?}", def_id);
 
         let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
         let erase_regions = false;
@@ -623,13 +598,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 }
             }
         }
-
+        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
         if item_meta.opaque {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(item_meta.span, format!("The aeneas::opaque or charon::opaque currently has no effect on trait declaration and will be ignored. \n- Declaration name: {}\n", name.fmt_with_ctx(&ctx)))
         }
 
-        let trait_impl = ast::TraitImpl {
+        Ok(ast::TraitImpl {
             def_id,
             is_local: rust_id.is_local(),
             name,
@@ -642,9 +617,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             types,
             required_methods,
             provided_methods,
-        };
-        self.translated.trait_impls.insert(def_id, trait_impl);
-
-        Ok(())
+        })
     }
 }

@@ -75,21 +75,21 @@ fn test_crate::panic4()
     let @3: (); // anonymous local
     let @4: (); // anonymous local
 
-    @2 := ~(const (false))
+    @2 := const (false)
     if move (@2) {
         nop
     }
     else {
-        @3 := ()
-        @1 := move (@3)
-        drop @2
-        drop @1
-        @4 := ()
-        @0 := move (@4)
-        @0 := ()
-        return
+        panic
     }
-    panic
+    @3 := ()
+    @1 := move (@3)
+    drop @2
+    drop @1
+    @4 := ()
+    @0 := move (@4)
+    @0 := ()
+    return
 }
 
 fn test_crate::panic5()

@@ -313,27 +313,27 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let def_id = item.owner_id.to_def_id();
 
         let name = match &item.kind {
-            ItemKind::OpaqueTy(_) => unimplemented!(),
-            ItemKind::Union(_, _) => unimplemented!(),
-            ItemKind::ExternCrate(_) => {
+            ItemKind::OpaqueTy(..) => unimplemented!(),
+            ItemKind::Union(..) => unimplemented!(),
+            ItemKind::ExternCrate(..) => {
                 // We ignore this -
                 // TODO: investigate when extern crates appear, and why
                 Option::None
             }
-            ItemKind::Use(_, _) => Option::None,
-            ItemKind::TyAlias(_, _) => {
+            ItemKind::Use(..) => Option::None,
+            ItemKind::TyAlias(..) => {
                 // We ignore the type aliases - it seems they are inlined
                 Option::None
             }
-            ItemKind::Enum(_, _)
-            | ItemKind::Struct(_, _)
-            | ItemKind::Fn(_, _, _)
-            | ItemKind::Impl(_)
-            | ItemKind::Mod(_)
+            ItemKind::Enum(..)
+            | ItemKind::Struct(..)
+            | ItemKind::Fn(..)
+            | ItemKind::Impl(..)
+            | ItemKind::Mod(..)
             | ItemKind::ForeignMod { .. }
-            | ItemKind::Const(_, _)
-            | ItemKind::Static(_, _, _)
-            | ItemKind::Macro(_, _)
+            | ItemKind::Const(..)
+            | ItemKind::Static(..)
+            | ItemKind::Macro(..)
             | ItemKind::Trait(..) => Option::Some(self.def_id_to_name(def_id)?),
             _ => {
                 unimplemented!("{:?}", item.kind);
