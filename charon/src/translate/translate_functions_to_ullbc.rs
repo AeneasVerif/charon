@@ -1789,14 +1789,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Translate one function.
-    pub(crate) fn translate_function(&mut self, rust_id: DefId) -> Result<(), Error> {
-        self.translate_function_aux(rust_id)
-    }
-
-    /// Auxliary helper to properly handle errors, see [translate_function].
-    pub fn translate_function_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
+    pub fn translate_function(
+        &mut self,
+        def_id: FunDeclId,
+        rust_id: DefId,
+    ) -> Result<FunDecl, Error> {
         trace!("About to translate function:\n{:?}", rust_id);
-        let def_id = self.register_fun_decl_id(&None, rust_id);
         let def_span = self.tcx.def_span(rust_id);
 
         // Compute the meta information
@@ -1836,35 +1834,26 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             None
         };
 
-        // Save the new function
-        self.translated.fun_decls.insert(
+        Ok(FunDecl {
             def_id,
-            FunDecl {
-                def_id,
-                rust_id,
-                item_meta,
-                is_local: rust_id.is_local(),
-                name,
-                signature,
-                kind,
-                body,
-            },
-        );
-
-        Ok(())
+            rust_id,
+            item_meta,
+            is_local: rust_id.is_local(),
+            name,
+            signature,
+            kind,
+            body,
+        })
     }
 
     /// Translate one global.
-    pub(crate) fn translate_global(&mut self, rust_id: DefId) -> Result<(), Error> {
-        self.translate_global_aux(rust_id)
-    }
-
-    /// Auxliary helper to properly handle errors, see [translate_global].
-    pub fn translate_global_aux(&mut self, rust_id: DefId) -> Result<(), Error> {
+    pub fn translate_global(
+        &mut self,
+        def_id: GlobalDeclId,
+        rust_id: DefId,
+    ) -> Result<GlobalDecl, Error> {
         trace!("About to translate global:\n{:?}", rust_id);
         let span = self.tcx.def_span(rust_id);
-
-        let def_id = self.register_global_decl_id(&None, rust_id);
 
         // Compute the meta information
         let item_meta = self.translate_item_meta_from_rid(rust_id);
@@ -1908,23 +1897,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             Err(_) => None,
         };
 
-        // Save the new global
-        self.translated.global_decls.insert(
+        Ok(GlobalDecl {
             def_id,
-            GlobalDecl {
-                def_id,
-                rust_id,
-                item_meta,
-                is_local: rust_id.is_local(),
-                name,
-                generics,
-                preds,
-                ty,
-                kind,
-                body,
-            },
-        );
-
-        Ok(())
+            rust_id,
+            item_meta,
+            is_local: rust_id.is_local(),
+            name,
+            generics,
+            preds,
+            ty,
+            kind,
+            body,
+        })
     }
 }

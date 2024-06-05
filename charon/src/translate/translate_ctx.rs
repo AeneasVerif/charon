@@ -25,7 +25,7 @@ use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::cmp::{Ord, Ordering, PartialOrd};
-use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::fmt;
 
 macro_rules! register_error_or_panic {
@@ -250,9 +250,9 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// Context for tracking and reporting errors.
     pub errors: ErrorCtx<'ctx>,
     /// The declarations we came accross and which we haven't translated yet.
-    /// We use an ordered set to make sure we translate them in a specific
+    /// We use an ordered map to make sure we translate them in a specific
     /// order (this avoids stealing issues when querying the MIR bodies).
-    pub priority_queue: BTreeSet<OrdRustId>,
+    pub priority_queue: BTreeMap<OrdRustId, AnyTransId>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -648,8 +648,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         match self.translated.id_map.get(&rust_id) {
             Some(tid) => *tid,
             None => {
-                // Add the id to the stack of declarations to translate
-                self.priority_queue.insert(id);
                 let trans_id = match id {
                     OrdRustId::Type(_) => AnyTransId::Type(self.translated.type_id_gen.fresh_id()),
                     OrdRustId::TraitDecl(_) => {
@@ -665,6 +663,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         AnyTransId::Fun(self.translated.fun_id_gen.fresh_id())
                     }
                 };
+                // Add the id to the queue of declarations to translate
+                self.priority_queue.insert(id, trans_id);
                 self.translated.id_map.insert(id.get_id(), trans_id);
                 self.translated.reverse_id_map.insert(trans_id, id.get_id());
                 self.translated.all_ids.insert(trans_id);
