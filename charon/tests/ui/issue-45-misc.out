@@ -143,28 +143,10 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn __iterator_get_unchecked
 }
 
-trait core::iter::traits::collect::IntoIterator<Self>
-{
-    type Item
-    type IntoIter
-        where
-            [@TraitClause0]: core::iter::traits::iterator::Iterator<Self::IntoIter>,
-    fn into_iter : core::iter::traits::collect::IntoIterator::into_iter
-}
-
 fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(@1: I) -> I
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
-
-impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<I> : core::iter::traits::collect::IntoIterator<I>
-where
-    [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
-{
-    type Item = @TraitClause0::Item with []
-    type IntoIter = I with [@TraitClause0]
-    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter
-}
 
 trait core::clone::Clone<Self>
 {
@@ -373,10 +355,6 @@ impl core::iter::range::{impl core::iter::range::Step for u8#35} : core::iter::r
     fn backward = core::iter::range::{impl core::iter::range::Step for u8#35}::backward
 }
 
-fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
-
-fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>
-
 fn test_crate::cbd(@1: Array<u8, 33 : usize>)
 {
     let @0: (); // return
@@ -399,14 +377,14 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
     let @17: &'_ mut (u8); // anonymous local
 
     @3 := core::ops::range::Range { start: const (0 : u8), end: const (3 : u8) }
-    @2 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<u8>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<u8>[core::iter::range::{impl core::iter::range::Step for u8#35}]]::into_iter(move (@3))
+    @2 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<u8>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<u8>[core::iter::range::{impl core::iter::range::Step for u8#35}]](move (@3))
     drop @3
     @fake_read(@2)
     iter@4 := move (@2)
     loop {
         @9 := &mut iter@4
         @8 := &two-phase-mut *(@9)
-        @7 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<u8>[core::iter::range::{impl core::iter::range::Step for u8#35}]::next(move (@8))
+        @7 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::next<u8>[core::iter::range::{impl core::iter::range::Step for u8#35}](move (@8))
         drop @8
         @fake_read(@7)
         match @7 {
@@ -552,6 +530,28 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
 fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> (parents(Self)::[@TraitClause0])::Output
 
 fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+trait core::iter::traits::collect::IntoIterator<Self>
+{
+    type Item
+    type IntoIter
+        where
+            [@TraitClause0]: core::iter::traits::iterator::Iterator<Self::IntoIter>,
+    fn into_iter : core::iter::traits::collect::IntoIterator::into_iter
+}
+
+impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<I> : core::iter::traits::collect::IntoIterator<I>
+where
+    [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
+{
+    type Item = @TraitClause0::Item with []
+    type IntoIter = I with [@TraitClause0]
+    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter
+}
+
+fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
+
+fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>
 
 fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::option::Option<usize>
 

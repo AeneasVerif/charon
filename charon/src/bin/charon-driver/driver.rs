@@ -260,14 +260,6 @@ pub fn translate(
         info!("# ULLBC after translation from MIR:\n\n{}\n", ctx);
     }
 
-    // # Reorder the graph of dependencies and compute the strictly
-    // connex components to:
-    // - compute the order in which to extract the definitions
-    // - find the recursive definitions
-    // - group the mutually recursive definitions
-    let reordered_decls = compute_reordered_decls(&mut ctx);
-    ctx.translated.ordered_decls = Some(reordered_decls);
-
     //
     // =================
     // **Micro-passes**:
@@ -280,6 +272,14 @@ pub fn translate(
     for pass in ULLBC_PASSES.iter() {
         pass.transform_ctx(&mut ctx)
     }
+
+    // # Reorder the graph of dependencies and compute the strictly
+    // connex components to:
+    // - compute the order in which to extract the definitions
+    // - find the recursive definitions
+    // - group the mutually recursive definitions
+    let reordered_decls = compute_reordered_decls(&mut ctx);
+    ctx.translated.ordered_decls = Some(reordered_decls);
 
     // # There are two options:
     // - either the user wants the unstructured LLBC, in which case we stop there

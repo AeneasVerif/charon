@@ -497,13 +497,6 @@ global test_crate::_#14  {
     return
 }
 
-global test_crate::div_signed_with_constant::FOO  {
-    let @0: i32; // return
-
-    @0 := const (42 : i32)
-    return
-}
-
 fn test_crate::div_signed_with_constant() -> i32
 {
     let @0: i32; // return
@@ -559,6 +552,13 @@ fn test_crate::div_signed_to_slice<'_0>(@1: &'_0 mut (Slice<i32>), @2: i32)
     @5 := ()
     @0 := move (@5)
     @0 := ()
+    return
+}
+
+global test_crate::div_signed_with_constant::FOO  {
+    let @0: i32; // return
+
+    @0 := const (42 : i32)
     return
 }
 
