@@ -173,13 +173,6 @@ fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>)
     return
 }
 
-global core::num::{usize#11}::MAX  {
-    let @0: usize; // return
-
-    @0 := ~(const (0 : usize))
-    return
-}
-
 fn test_crate::max() -> usize
 {
     let @0: usize; // return
@@ -208,6 +201,13 @@ where
     @0 := move (@2)
     drop _x@1
     @0 := ()
+    return
+}
+
+global core::num::{usize#11}::MAX  {
+    let @0: usize; // return
+
+    @0 := ~(const (0 : usize))
     return
 }
 

@@ -1,7 +1,5 @@
 # Final LLBC before serialization:
 
-global foreign_constant_aux::CONSTANT 
-
 fn test_crate::foo() -> u8
 {
     let @0: u8; // return
@@ -11,6 +9,8 @@ fn test_crate::foo() -> u8
     @0 := move (@1)
     return
 }
+
+global foreign_constant_aux::CONSTANT 
 
 
 
