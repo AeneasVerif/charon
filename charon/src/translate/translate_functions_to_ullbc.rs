@@ -1471,16 +1471,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         mut self,
         rust_id: DefId,
         arg_count: usize,
+        item_meta: &crate::meta::ItemMeta,
     ) -> Result<Option<ExprBody>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
-        let mut this = panic::AssertUnwindSafe(&mut self);
-        let res = panic::catch_unwind(move || this.translate_body_aux(rust_id, arg_count));
-        match res {
-            Ok(Ok(body)) => Ok(body),
-            Ok(Err(e)) => Err(e),
-            Err(_) => {
-                let span = self.t_ctx.tcx.def_span(rust_id);
-                error_or_panic!(self, span, "Thread panicked when extracting body.");
+        if item_meta.opaque {
+            Ok(None)
+        } else {
+            let mut this = panic::AssertUnwindSafe(&mut self);
+            let res = panic::catch_unwind(move || this.translate_body_aux(rust_id, arg_count));
+            match res {
+                Ok(Ok(body)) => Ok(body),
+                Ok(Err(e)) => Err(e),
+                Err(_) => {
+                    let span = self.t_ctx.tcx.def_span(rust_id);
+                    error_or_panic!(self, span, "Thread panicked when extracting body.");
+                }
             }
         }
     }
@@ -1833,10 +1838,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("Translating function signature");
         let signature = bt_ctx.translate_function_signature(rust_id)?;
 
-        let body = if !is_trait_method_decl && !item_meta.opaque {
+        let body = if !is_trait_method_decl {
             // Translate the body. This returns `None` if we can't/decide not to translate this
             // body.
-            match bt_ctx.translate_body(rust_id, signature.inputs.len()) {
+            match bt_ctx.translate_body(rust_id, signature.inputs.len(), &item_meta) {
                 Ok(body) => body,
                 // Error case: we could have a variant for this
                 Err(_) => None,
@@ -1911,14 +1916,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Translate its body like the body of a function. This returns `None` if we can't/decide
         // not to translate this body.
-        let body = if item_meta.opaque {
-            None
-        } else {
-            match bt_ctx.translate_body(rust_id, 0) {
-                Ok(body) => body,
-                // Error case: we could have a specific variant
-                Err(_) => None,
-            }
+        let body = match bt_ctx.translate_body(rust_id, 0, &item_meta) {
+            Ok(body) => body,
+            // Error case: we could have a specific variant
+            Err(_) => None,
         };
         // Save the new global
         self.translated.global_decls.insert(

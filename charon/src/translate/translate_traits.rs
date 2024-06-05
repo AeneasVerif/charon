@@ -251,7 +251,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // We may need to ignore the trait (happens if the trait is a marker
         // trait like [core::marker::Sized]
-        if def_id.is_none() || item_meta.opaque {
+        if def_id.is_none() {
             return Ok(());
         }
         let def_id = def_id.unwrap();
@@ -404,7 +404,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 generic_clauses
             );
         }
-
+        if item_meta.opaque {
+            let ctx = bt_ctx.into_fmt();
+            bt_ctx.t_ctx.errors.session.span_warn(item_meta.span, format!("The aeneas::opaque or charon::opaque currently has no effect on trait declaration and will be ignored. \n- Declaration name: {}\n", name.fmt_with_ctx(&ctx)))
+        }
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
         // check those, and lookup the relevant values.
@@ -412,7 +415,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             def_id,
             is_local: rust_id.is_local(),
             name,
-            item_meta: item_meta, // self.translate_item_meta_from_rid(rust_id),
+            item_meta,
             generics,
             preds,
             parent_clauses,
@@ -621,11 +624,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
         }
 
+        if item_meta.opaque {
+            let ctx = bt_ctx.into_fmt();
+            bt_ctx.t_ctx.errors.session.span_warn(item_meta.span, format!("The aeneas::opaque or charon::opaque currently has no effect on trait declaration and will be ignored. \n- Declaration name: {}\n", name.fmt_with_ctx(&ctx)))
+        }
+
         let trait_impl = ast::TraitImpl {
             def_id,
             is_local: rust_id.is_local(),
             name,
-            item_meta: item_meta,
+            item_meta,
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),
             preds: bt_ctx.get_predicates(),

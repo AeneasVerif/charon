@@ -454,7 +454,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             public,
             opaque: self
                 .translate_attributes_from_rid(def_id)
-                .contains(&(String::from("charon::opaque"))),
+                .iter()
+                .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque"),
         }
     }
 
