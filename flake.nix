@@ -242,6 +242,13 @@
             self.packages.${system}.charon-ml
           ];
         };
+        # The dev-shell we need to run kyber in CI. This doesn't really belong here but it's easier here.
+        devShells.kyber-ci = pkgs.mkShell {
+          packages = [
+            rustToolchain
+            pkgs.clang-tools # For clang-format
+          ];
+        };
         checks = { inherit charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
 
         # Export this function so that users of charon can use it in nix. This

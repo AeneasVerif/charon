@@ -64,6 +64,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: cryspen/libcrux
+          ref: dev
       # Kyber expects Eurydice's sources in `$EURYDICE_HOME`,
       # not the install directory.
       - name: checkout eurydice
@@ -83,4 +84,6 @@ jobs:
           echo FSTAR_HOME=$(pwd)/fstar >> $GITHUB_ENV
           echo KRML_HOME=$(pwd)/karamel >> $GITHUB_ENV
       - name: build kyber
-        run: nix develop github:aeneasverif/charon/${{ github.sha }} --command bash kyber-crate.sh
+        run: |
+          cd libcrux-ml-kem
+          nix develop 'github:aeneasverif/charon/${{ github.sha }}#kyber-ci' --command ./c.sh
