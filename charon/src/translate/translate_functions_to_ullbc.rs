@@ -12,6 +12,7 @@ use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::ids::Vector;
+use crate::meta::ItemMeta;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::translate_types;
@@ -1462,10 +1463,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         mut self,
         rust_id: DefId,
         arg_count: usize,
+        item_meta: &ItemMeta,
     ) -> Result<Option<ExprBody>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut self);
-        let res = panic::catch_unwind(move || this.translate_body_aux(rust_id, arg_count));
+        let res =
+            panic::catch_unwind(move || this.translate_body_aux(rust_id, arg_count, item_meta));
         match res {
             Ok(Ok(body)) => Ok(body),
             Ok(Err(e)) => Err(e),
@@ -1480,9 +1483,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         rust_id: DefId,
         arg_count: usize,
+        item_meta: &ItemMeta,
     ) -> Result<Option<ExprBody>, Error> {
         let tcx = self.t_ctx.tcx;
 
+        if item_meta.opaque {
+            return Ok(None);
+        }
         if !self.t_ctx.id_is_transparent(rust_id)? {
             return Ok(None);
         }
@@ -1825,7 +1832,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let body = if !is_trait_method_decl {
             // Translate the body. This returns `None` if we can't/decide not to translate this
             // body.
-            match bt_ctx.translate_body(rust_id, signature.inputs.len()) {
+            match bt_ctx.translate_body(rust_id, signature.inputs.len(), &item_meta) {
                 Ok(body) => body,
                 // Error case: we could have a variant for this
                 Err(_) => None,
@@ -1891,7 +1898,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Translate its body like the body of a function. This returns `None` if we can't/decide
         // not to translate this body.
-        let body = match bt_ctx.translate_body(rust_id, 0) {
+        let body = match bt_ctx.translate_body(rust_id, 0, &item_meta) {
             Ok(body) => body,
             // Error case: we could have a specific variant
             Err(_) => None,

@@ -389,7 +389,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 generic_clauses
             );
         }
-
+        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
+        if item_meta.opaque {
+            let ctx = bt_ctx.into_fmt();
+            bt_ctx.t_ctx.errors.session.span_warn(
+                item_meta.span,
+                format!(
+                    "The `aeneas::opaque` or `charon::opaque` attribute currently \
+                    has no effect on trait declarations and will be ignored.\
+                    \nDeclaration name: {}\n",
+                    name.fmt_with_ctx(&ctx)
+                ),
+            )
+        }
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
         // check those, and lookup the relevant values.
@@ -397,7 +409,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             def_id,
             is_local: rust_id.is_local(),
             name,
-            item_meta: self.translate_item_meta_from_rid(rust_id),
+            item_meta,
             generics,
             preds,
             parent_clauses,
@@ -594,12 +606,25 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 }
             }
         }
+        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
+        if item_meta.opaque {
+            let ctx = bt_ctx.into_fmt();
+            bt_ctx.t_ctx.errors.session.span_warn(
+                item_meta.span,
+                format!(
+                    "The `aeneas::opaque` or `charon::opaque` attribute currently \
+                    has no effect on trait implementations and will be ignored.\
+                    \nImplementation name: {}\n",
+                    name.fmt_with_ctx(&ctx)
+                ),
+            )
+        }
 
         Ok(ast::TraitImpl {
             def_id,
             is_local: rust_id.is_local(),
             name,
-            item_meta: bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id),
+            item_meta,
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),
             preds: bt_ctx.get_predicates(),

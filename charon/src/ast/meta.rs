@@ -135,6 +135,9 @@ pub struct ItemMeta {
     /// API (this is called "pub-in-priv" items). With or without the `pub use`, we set `public =
     /// true`; computing item reachability is harder.
     pub public: bool,
+    #[serde(skip_serializing)]
+    #[serde(default)]
+    pub opaque: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
