@@ -232,10 +232,10 @@ let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     | Enum variants ->
         List.mapi (fun i v -> (Some (VariantId.of_int i), v.fields)) variants
     | Struct fields -> [ (None, fields) ]
-    | Opaque ->
+    | Alias _ | Opaque ->
         raise
           (Failure
-             ("Can't retrieve the variants of an opaque type: "
+             ("Can't retrieve the variants of an opaque or alias type: "
             ^ show_name def.name))
   in
   List.map

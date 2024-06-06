@@ -149,8 +149,8 @@ impl TypeDecl {
                 assert!(variant_id.is_none());
                 Ok(fields)
             }
-            TypeDeclKind::Opaque => {
-                unreachable!("Opaque type")
+            TypeDeclKind::Alias(..) | TypeDeclKind::Opaque => {
+                unreachable!("Opaque or alias type")
             }
             TypeDeclKind::Error(_) => Err(()),
         }
