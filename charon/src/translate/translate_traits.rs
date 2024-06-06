@@ -395,10 +395,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             bt_ctx.t_ctx.errors.session.span_warn(
                 item_meta.span,
                 format!(
-                    "The 
-            `aeneas::opaque` or `charon::opaque` attribute currently has no 
-            effect on trait declarations and will be ignored.\n- Declaration 
-            name: {}\n",
+                    "The `aeneas::opaque` or `charon::opaque` attribute currently \
+                    has no effect on trait declarations and will be ignored.\
+                    \n- Declaration name: {}\n",
                     name.fmt_with_ctx(&ctx)
                 ),
             )
@@ -613,10 +612,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             bt_ctx.t_ctx.errors.session.span_warn(
                 item_meta.span,
                 format!(
-                    "The 
-            `aeneas::opaque` or `charon::opaque` attribute currently has no 
-            effect on trait implementations and will be ignored.\n- 
-            Declaration name: {}\n",
+                    "The `aeneas::opaque` or `charon::opaque` attribute currently \
+                    has no effect on trait implementations and will be ignored.\
+                    \n- Declaration name: {}\n",
                     name.fmt_with_ctx(&ctx)
                 ),
             )
