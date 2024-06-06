@@ -397,7 +397,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 format!(
                     "The `aeneas::opaque` or `charon::opaque` attribute currently \
                     has no effect on trait declarations and will be ignored.\
-                    \n- Declaration name: {}\n",
+                    \nDeclaration name: {}\n",
                     name.fmt_with_ctx(&ctx)
                 ),
             )
@@ -614,7 +614,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 format!(
                     "The `aeneas::opaque` or `charon::opaque` attribute currently \
                     has no effect on trait implementations and will be ignored.\
-                    \n- Declaration name: {}\n",
+                    \nImplementation name: {}\n",
                     name.fmt_with_ctx(&ctx)
                 ),
             )
