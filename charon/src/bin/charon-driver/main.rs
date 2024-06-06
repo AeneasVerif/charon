@@ -122,18 +122,6 @@ fn main() {
     compiler_args.push("-Copt-level=3".to_string());
     compiler_args.push("-Coverflow-checks=false".to_string());
     compiler_args.push("-Cdebug-assertions=false".to_string());
-    // Add some options to handle the attributes specific to Charon and Aeneas
-    // Note that the clients can also add the following attributes to their crates:
-    // ```
-    // #![feature(register_tool)]
-    // #![register_tool(charon)]
-    // ```
-    compiler_args.push("-Z".to_string());
-    compiler_args.push("crate-attr=feature(register_tool)".to_string());
-    compiler_args.push("-Z".to_string());
-    compiler_args.push("crate-attr=register_tool(charon)".to_string());
-    compiler_args.push("-Z".to_string());
-    compiler_args.push("crate-attr=register_tool(aeneas)".to_string());
 
     // In order to have some flexibility in our tests, we give the possibility
     // of specifying the source (the input file which gives the entry to the
