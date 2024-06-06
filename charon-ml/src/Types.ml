@@ -555,6 +555,8 @@ type type_decl_kind =
 
           See {!Identifiers.Id.mapi} for instance.
        *)
+  | Alias of ty
+      (** A type alias. This only shows up as a top-level item; type aliases are inlined everywhere else. *)
   | Opaque
       (** An opaque type: either a local type marked as opaque, or an external type *)
 [@@deriving show]

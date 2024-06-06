@@ -1306,6 +1306,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                     self.name.fmt_with_ctx(ctx)
                 )
             }
+            TypeDeclKind::Alias(ty) => {
+                format!(
+                    "type {}{params}{preds} = {}",
+                    self.name.fmt_with_ctx(ctx),
+                    ty.fmt_with_ctx(ctx),
+                )
+            }
             TypeDeclKind::Opaque => {
                 format!("opaque type {}{params}{preds}", self.name.fmt_with_ctx(ctx))
             }

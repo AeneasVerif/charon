@@ -321,11 +321,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 Option::None
             }
             ItemKind::Use(..) => Option::None,
-            ItemKind::TyAlias(..) => {
-                // We ignore the type aliases - it seems they are inlined
-                Option::None
-            }
-            ItemKind::Enum(..)
+            ItemKind::TyAlias(..)
+            | ItemKind::Enum(..)
             | ItemKind::Struct(..)
             | ItemKind::Fn(..)
             | ItemKind::Impl(..)

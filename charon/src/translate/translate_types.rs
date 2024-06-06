@@ -510,10 +510,27 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         rust_id: DefId,
     ) -> Result<TypeDeclKind, Error> {
         use rustc_middle::ty::AdtKind;
+        let tcx = self.t_ctx.tcx;
+        let erase_regions = false;
         let is_local = rust_id.is_local();
-        let def_span = self.t_ctx.tcx.def_span(rust_id);
+        let def_span = tcx.def_span(rust_id);
+
+        // Separate path for type aliases because they're not an `AdtDef`.
+        if let Some(local_def_id) = rust_id.as_local() {
+            let hir_id = tcx.hir().local_def_id_to_hir_id(local_def_id);
+            let rustc_hir::Node::Item(item) = tcx.hir().get(hir_id) else {
+                error_or_panic!(self, def_span, "Type is not an item?")
+            };
+            if let rustc_hir::ItemKind::TyAlias(ty, _generics) = &item.kind {
+                // The generics are handled by `translate_generic_params` already.
+                let ty = ty.sinto(&self.hax_state);
+                let ty = self.translate_ty(def_span, erase_regions, &ty)?;
+                return Ok(TypeDeclKind::Alias(ty));
+            }
+        }
+
         // Don't use `hax::AdtDef` because it loses `VariantIdx` information.
-        let adt: rustc_middle::ty::AdtDef = self.t_ctx.tcx.adt_def(rust_id);
+        let adt: rustc_middle::ty::AdtDef = tcx.adt_def(rust_id);
         trace!("{}", trans_id);
 
         // In case the type is external, check if we should consider the type as
@@ -543,13 +560,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // The type is transparent: explore the variants
         let mut variants: Vector<VariantId, Variant> = Default::default();
-        let erase_regions = false;
         for (i, (rust_var_id, var_def)) in adt.variants().iter_enumerated().enumerate() {
             let var_def: hax::VariantDef = var_def.sinto(&self.hax_state);
             trace!("variant {i}: {var_def:?}");
 
             let discriminant = if adt.is_enum() {
-                let discr = adt.discriminant_for_variant(self.t_ctx.tcx, rust_var_id);
+                let discr = adt.discriminant_for_variant(tcx, rust_var_id);
                 let bits = discr.val;
                 let ty = discr.ty.sinto(&self.hax_state);
                 let ty = self.translate_ty(def_span, true, &ty)?;

@@ -21,7 +21,7 @@ let as_ident (e : path_elem) : string =
   match e with PeIdent (s, _) -> s | _ -> raise (Failure "Unexpected")
 
 let type_decl_is_opaque (d : type_decl) : bool =
-  match d.kind with Struct _ | Enum _ -> false | Opaque -> true
+  match d.kind with Opaque -> true | _ -> false
 
 (** Retrieve the list of fields for the given variant of a {!Charon.Types.type_decl}.
 
@@ -44,7 +44,7 @@ let type_decl_get_fields (def : type_decl)
           ^ opt_variant_id))
 
 let type_decl_is_enum (def : type_decl) : bool =
-  match def.kind with Struct _ -> false | Enum _ -> true | Opaque -> false
+  match def.kind with Enum _ -> true | _ -> false
 
 (** Return [true] if a {!type:Charon.Types.ty} is actually [unit] *)
 let ty_is_unit (ty : ty) : bool =

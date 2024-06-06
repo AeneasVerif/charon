@@ -46,7 +46,9 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                     None => None,
                     Some(d) => {
                         match &d.kind {
-                            TypeDeclKind::Struct(_) | TypeDeclKind::Opaque => {
+                            TypeDeclKind::Struct(_)
+                            | TypeDeclKind::Opaque
+                            | TypeDeclKind::Alias(..) => {
                                 // We shouldn't get there
                                 register_error_or_panic!(
                                     self.ctx,
