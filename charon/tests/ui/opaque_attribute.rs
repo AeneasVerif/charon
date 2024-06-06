@@ -1,5 +1,6 @@
 #![feature(register_tool)]
 #![register_tool(charon)]
+#![register_tool(aeneas)]
 
 #[charon::opaque]
 pub trait BoolTrait {
@@ -27,10 +28,10 @@ pub fn test_bool_trait_option<T>(x: Option<T>) -> bool {
 }
 
 #[charon::opaque]
-type test = i32;
+type Test = i32;
 
 #[charon::opaque]
 const SIX_SIX_SIX: u32 = 600 + 60 + 6;
 
 #[aeneas::opaque]
-type test2 = u32;
+type Test2 = u32;

@@ -392,7 +392,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
         if item_meta.opaque {
             let ctx = bt_ctx.into_fmt();
-            bt_ctx.t_ctx.errors.session.span_warn(item_meta.span, format!("The `aeneas::opaque` or `charon::opaque` attribute currently has no effect on trait declarations and will be ignored. \n- Declaration name: {}\n", name.fmt_with_ctx(&ctx)))
+            bt_ctx.t_ctx.errors.session.span_warn(
+                item_meta.span,
+                format!(
+                    "The 
+            `aeneas::opaque` or `charon::opaque` attribute currently has no 
+            effect on trait declarations and will be ignored.\n- Declaration 
+            name: {}\n",
+                    name.fmt_with_ctx(&ctx)
+                ),
+            )
         }
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
@@ -601,7 +610,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
         if item_meta.opaque {
             let ctx = bt_ctx.into_fmt();
-            bt_ctx.t_ctx.errors.session.span_warn(item_meta.span, format!("The `aeneas::opaque` or `charon::opaque` attribute currently has no effect on trait implementations and will be ignored. \n- Declaration name: {}\n", name.fmt_with_ctx(&ctx)))
+            bt_ctx.t_ctx.errors.session.span_warn(
+                item_meta.span,
+                format!(
+                    "The 
+            `aeneas::opaque` or `charon::opaque` attribute currently has no 
+            effect on trait implementations and will be ignored.\n- 
+            Declaration name: {}\n",
+                    name.fmt_with_ctx(&ctx)
+                ),
+            )
         }
 
         Ok(ast::TraitImpl {
