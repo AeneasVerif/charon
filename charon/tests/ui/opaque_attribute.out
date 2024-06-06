@@ -1,0 +1,41 @@
+# Final LLBC before serialization:
+
+trait test_crate::BoolTrait<Self>
+{
+    fn get_bool : test_crate::BoolTrait::get_bool
+    fn ret_true : test_crate::BoolTrait::ret_true
+}
+
+fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (bool); // arg #1
+
+    @0 := copy (*(self@1))
+    return
+}
+
+impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<bool>
+{
+    fn get_bool = test_crate::{impl test_crate::BoolTrait for bool}::get_bool
+}
+
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
+
+
+fn test_crate::test_bool_trait_option<T>(@1: core::option::Option<T>) -> bool
+
+opaque type test_crate::Test
+
+global test_crate::SIX_SIX_SIX 
+
+opaque type test_crate::Test2
+
+fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
+
+fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
+
+
+
