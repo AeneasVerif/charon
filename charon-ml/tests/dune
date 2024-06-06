@@ -1,4 +1,6 @@
 (tests
  (names Tests)
  (modules Tests Test_Deserialize Test_NameMatcher)
- (libraries charon))
+ (deps
+  (glob_files ./serialized/*.llbc))
+ (libraries core charon))
