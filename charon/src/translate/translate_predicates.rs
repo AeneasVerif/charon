@@ -744,52 +744,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            // ImplExprAtom::FnPointer { fn_ty } => {
-            //     let ty = self.translate_ty(span, erase_regions, fn_ty)?;
-            //     let trait_id = TraitInstanceId::FnPointer(Box::new(ty));
-            //     let trait_refs =
-            //         self.translate_trait_impl_exprs(span, erase_regions, &impl_source.args)?;
-            //     let generics = GenericArgs {
-            //         regions: vec![],
-            //         types: vec![],
-            //         const_generics: vec![],
-            //         trait_refs,
-            //     };
-            //     TraitRef {
-            //         trait_id,
-            //         generics,
-            //         trait_decl_ref,
-            //     }
-            // }
-            // ImplExprAtom::Closure {
-            //     closure_def_id,
-            //     parent_substs,
-            //     signature: _,
-            // } => {
-            //     // Remark: a closure is always a function defined locally in the
-            //     // body of the caller, which means it can't be an assumed function
-            //     // (there is a very limited number of assumed functions, and they
-            //     // are all top-level).
-            //     let fn_id = self.register_fun_decl_id(span, DefId::from(closure_def_id));
-            //     let erased_regions = false;
-            //     let (regions, types, const_generics) =
-            //         self.translate_substs(span, erased_regions, None, parent_substs)?;
-            //     let parent_substs = GenericArgs::new(regions, types, const_generics, Vec::new());
-            //     // TODO: translate the signature
-            //     let trait_refs = self.translate_trait_impl_exprs(span, erase_regions, nested)?;
-            //     let trait_id = TraitInstanceId::Closure(fn_id, parent_substs);
-            //     let generics = GenericArgs {
-            //         regions: vec![],
-            //         types: vec![],
-            //         const_generics: vec![],
-            //         trait_refs,
-            //     };
-            //     TraitRef {
-            //         trait_id,
-            //         generics,
-            //         trait_decl_ref,
-            //     }
-            // }
             ImplExprAtom::Todo(msg) => {
                 let error = format!("Error during trait resolution: {}", msg);
                 self.span_err(span, &error);

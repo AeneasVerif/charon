@@ -194,24 +194,6 @@ pub enum TraitInstanceId {
         TraitItemName,
         TraitClauseId,
     ),
-    /// Happens when we use a function pointer as an object implementing a
-    /// trait like `Fn` or `FnMut`.
-    ///
-    /// ```text
-    /// fn incr(x : u32) -> u32 { ... }
-    ///
-    /// Example:
-    /// fn f(a: [u32; 32]) -> [u32; 32] {
-    ///   a.map(incr)
-    /// }
-    /// ```
-    FnPointer(Box<Ty>),
-    /// Similar to [FnPointer], but where we use a closure.
-    ///
-    /// It is important to differentiate the cases, because closures have a
-    /// state. Whenever we create a closure, we actually create an aggregated
-    /// value with a function pointer and a state.
-    Closure(FunDeclId, GenericArgs),
     ///
     /// Self, in case of trait declarations/implementations.
     ///

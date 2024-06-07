@@ -1160,16 +1160,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitInstanceId {
             TraitInstanceId::TraitImpl(id) => ctx.format_object(*id),
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
             TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
-            TraitInstanceId::FnPointer(box ty) => {
-                format!("(fn_ptr:{})", ty.fmt_with_ctx(ctx))
-            }
-            TraitInstanceId::Closure(fid, generics) => {
-                format!(
-                    "(closure:{}{})",
-                    ctx.format_object(*fid),
-                    generics.fmt_with_ctx(ctx)
-                )
-            }
             TraitInstanceId::Unsolved(trait_id, generics) => {
                 format!(
                     "Unsolved({}{})",
