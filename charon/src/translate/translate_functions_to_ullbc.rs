@@ -1714,8 +1714,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
 
-            // Solve the unsolved obligations
-            ctx.solve_trait_obligations_in_trait_clauses(span);
             Ok(())
         })?;
 

@@ -324,10 +324,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         parent_trait_id: Option<TraitDeclId>,
         def_id: DefId,
     ) -> Result<(), Error> {
-        let span = self.t_ctx.tcx.def_span(def_id);
         self.while_registering_trait_clauses(move |ctx| {
             ctx.translate_predicates_of(parent_trait_id, def_id)?;
-            ctx.solve_trait_obligations_in_trait_clauses(span);
             Ok(())
         })
     }
@@ -344,19 +342,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         preds: &Vec<(hax::Predicate, hax::Span)>,
     ) -> Result<(), Error> {
         trace!("Predicates:\n{:?}", preds);
-        // We reorder the trait predicates so that we translate the predicates
-        // which introduce trait clauses *before* translating the other predicates
-        // (because in order to translate the latters we might need to solve
-        // trait parameters which need the formers).
-        use hax::{ClauseKind, PredicateKind};
-        let (preds_traits, preds): (Vec<_>, Vec<_>) = preds.iter().partition(|(pred, _)| {
-            matches!(
-                &pred.kind.value,
-                PredicateKind::Clause(ClauseKind::Trait(_))
-            )
-        });
-        let preds: Vec<_> = preds_traits.into_iter().chain(preds.into_iter()).collect();
-
         for (pred, span) in preds {
             match self.translate_predicate(pred, span)? {
                 None => (),
@@ -403,11 +388,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Returns an [Option] because we may filter clauses about builtin or
     /// auto traits like [core::marker::Sized] and [core::marker::Sync].
-    ///
-    /// TODO: This function is used (among other things) to save trait clauses in the
-    /// context, so that we can use them when solving the trait obligations which depend
-    /// on the trait parameters. In order to make the resolution truly work, we should
-    /// (give the possibility of) normalizing the types.
     pub(crate) fn translate_trait_clause(
         &mut self,
         hspan: &hax::Span,
@@ -855,204 +835,5 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 ))
             }
         }
-    }
-}
-
-struct TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
-    /// The number of unsolved trait instances. This allows us to check whether we reached
-    /// a fixed point or not (so that we don't enter infinite loops if we fail to solve
-    /// some instances).
-    pub unsolved_count: usize,
-    /// The unsolved clauses.
-    pub unsolved: Vec<(TraitDeclId, GenericArgs)>,
-    /// For error messages
-    pub span: rustc_span::Span,
-    /// The current context
-    pub ctx: &'a mut BodyTransCtx<'tcx, 'ctx, 'ctx1>,
-}
-
-impl<'a, 'tcx, 'ctx, 'ctx1> MutTypeVisitor for TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
-    /// If we find an unsolved trait instance id, attempt to solve it
-    fn visit_trait_instance_id(&mut self, id: &mut TraitInstanceId) {
-        if let TraitInstanceId::Unsolved(trait_id, generics) = id {
-            let solved_id = self.ctx.find_trait_clause_for_param(*trait_id, generics);
-
-            if let TraitInstanceId::Unsolved(..) = solved_id {
-                // Failure: increment the unsolved count
-                self.unsolved_count += 1;
-            } else {
-                // Success: replace
-                *id = solved_id;
-            }
-        } else {
-            MutTypeVisitor::default_visit_trait_instance_id(self, id);
-        }
-    }
-}
-
-impl<'a, 'tcx, 'ctx, 'ctx1> SharedTypeVisitor for TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
-    /// If we find an unsolved trait instance id, save it
-    fn visit_trait_instance_id(&mut self, id: &TraitInstanceId) {
-        if let TraitInstanceId::Unsolved(trait_id, generics) = id {
-            self.unsolved.push((*trait_id, generics.clone()))
-        } else {
-            SharedTypeVisitor::default_visit_trait_instance_id(self, id);
-        }
-    }
-}
-
-impl<'a, 'tcx, 'ctx, 'ctx1> TraitInstancesSolver<'a, 'tcx, 'ctx, 'ctx1> {
-    /// Auxiliary function
-    fn visit(&mut self, solve: bool) {
-        //
-        // Explore the trait clauses map
-        //
-
-        // For now we clone the trait clauses map - we will make it more effcicient later
-        let mut trait_clauses: Vec<(TraitInstanceId, NonLocalTraitClause)> = self
-            .ctx
-            .trait_clauses
-            .iter()
-            .map(|(id, c)| (id.clone(), c.clone()))
-            .collect();
-        for (_, clause) in trait_clauses.iter_mut() {
-            if solve {
-                MutTypeVisitor::visit_trait_instance_id(self, &mut clause.clause_id);
-                MutTypeVisitor::visit_generic_args(self, &mut clause.generics);
-            } else {
-                SharedTypeVisitor::visit_trait_instance_id(self, &clause.clause_id);
-                SharedTypeVisitor::visit_generic_args(self, &clause.generics);
-            }
-        }
-
-        // If we are solving: reconstruct the trait clauses map, and replace the one in the context
-        if solve {
-            self.ctx.trait_clauses = im::OrdMap::from(trait_clauses);
-        }
-
-        //
-        // Also explore the other predicates
-        // Remark: we could do this *after* we solved all the trait obligations
-        // in the trait clauses map.
-
-        // Types outlive predicates
-        // TODO: annoying that we have to clone
-        let mut types_outlive = self.ctx.types_outlive.clone();
-        for x in &mut types_outlive {
-            if solve {
-                MutTypeVisitor::visit_type_outlives(self, x);
-            } else {
-                SharedTypeVisitor::visit_type_outlives(self, x);
-            }
-        }
-        // Replace
-        if solve {
-            self.ctx.types_outlive = types_outlive;
-        }
-
-        // Trait type constraints predicates
-        // TODO: annoying that we have to clone
-        let mut trait_type_constraints = self.ctx.trait_type_constraints.clone();
-        for x in &mut trait_type_constraints {
-            if solve {
-                MutTypeVisitor::visit_trait_type_constraint(self, x);
-            } else {
-                SharedTypeVisitor::visit_trait_type_constraint(self, x);
-            }
-        }
-        // Replace
-        if solve {
-            self.ctx.trait_type_constraints = trait_type_constraints;
-        }
-    }
-
-    /// Perform one pass of solving the trait obligations
-    fn solve_one_pass(&mut self) {
-        self.unsolved_count = 0;
-        self.visit(true);
-    }
-
-    fn collect_unsolved(&mut self) {
-        self.unsolved.clear();
-        self.visit(false);
-    }
-
-    /// While there are unsolved trait obligations in the registered trait
-    /// clauses, solve them (unless we get stuck).
-    pub(crate) fn solve_repeat(&mut self) {
-        self.solve_one_pass();
-
-        let mut count = self.unsolved_count;
-        let mut pass_id = 0;
-        while count > 0 {
-            log::trace!("Pass id: {}, unsolved count: {}", pass_id, count);
-            self.solve_one_pass();
-            if self.unsolved_count >= count {
-                // We're stuck: report an error
-
-                // Retraverse the context, collecting the unsolved clauses.
-                self.collect_unsolved();
-
-                let ctx = self.ctx.into_fmt();
-                let unsolved = self
-                    .unsolved
-                    .iter()
-                    .map(|(trait_id, generics)| {
-                        format!(
-                            "{}{}",
-                            ctx.format_object(*trait_id),
-                            generics.fmt_with_ctx(&ctx)
-                        )
-                    })
-                    .collect::<Vec<String>>()
-                    .join("\n");
-                let clauses = self
-                    .ctx
-                    .trait_clauses
-                    .values()
-                    .map(|x| x.fmt_with_ctx(&ctx))
-                    .collect::<Vec<String>>()
-                    .join("\n");
-
-                if !self.ctx.t_ctx.continue_on_failure() {
-                    unreachable!(
-                        "Could not find clauses for trait obligations:{}\n\nAvailable clauses:\n{}\n- context: {:?}",
-                        unsolved, clauses, self.ctx.def_id
-                    );
-                } else {
-                    let msg = format!("Could not find clauses for trait obligations:{}\n\nAvailable clauses:\n{}\n- context: {:?}",
-                        unsolved, clauses, self.ctx.def_id);
-                    self.ctx.span_err(self.span, &msg);
-                }
-
-                return;
-            } else {
-                // We made progress: update the count
-                count = self.unsolved_count;
-                pass_id += 1;
-            }
-        }
-
-        // We're done: check the where clauses which are not trait predicates
-        self.collect_unsolved();
-        assert!(self.unsolved.is_empty());
-    }
-}
-
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    /// Solve the unsolved trait obligations in the trait clauses (some clauses
-    /// may refer to other clauses, meaning that we are not necessarily able
-    /// to solve all the trait obligations when registering a clause, but might
-    /// be able later).
-    /// TODO: doing this in several passes is probably not necessary anymore
-    pub(crate) fn solve_trait_obligations_in_trait_clauses(&mut self, span: rustc_span::Span) {
-        let mut solver = TraitInstancesSolver {
-            unsolved_count: 0,
-            unsolved: Vec::new(),
-            span,
-            ctx: self,
-        };
-
-        solver.solve_repeat()
     }
 }

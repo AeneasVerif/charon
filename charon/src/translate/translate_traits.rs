@@ -446,9 +446,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             // Add the self trait clause
             bt_ctx.add_trait_impl_self_trait_clause(def_id)?;
 
-            //
-            bt_ctx.solve_trait_obligations_in_trait_clauses(span);
-
             Ok(())
         })?;
 
