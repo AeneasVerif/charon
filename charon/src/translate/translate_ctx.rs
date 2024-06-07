@@ -451,12 +451,39 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let opaque = attributes
             .iter()
             .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque");
+        let rename = {
+            let pos = attributes.iter().position(|str| {
+                str.starts_with("charon::rename(") || str.starts_with("aeneas::rename(")
+            });
+            if pos.is_none() {
+                None
+            } else {
+                let str = match attributes
+                    .get(pos.expect("Should not be None, it was checked right before"))
+                {
+                    Some(str) => str,
+                    None => "",
+                };
+                let charon_rename = str.strip_prefix("charon::rename(");
+                let aeneas_rename = str.strip_prefix("aeneas::rename(");
+                let rename = charon_rename
+                    .or(aeneas_rename)
+                    .and_then(|str| str.strip_suffix(")"));
+                if rename.is_some_and(|str| str.is_empty()) {
+                    self.span_err(span, "Attribute `rename` should not be empty");
+                    None
+                } else {
+                    Some(rename.expect("Should not be None").to_string())
+                }
+            }
+        };
         ItemMeta {
             span,
             attributes: attributes,
             inline: self.translate_inline_from_rid(def_id),
             public,
             opaque,
+            rename,
         }
     }
 

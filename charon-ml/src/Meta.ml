@@ -55,5 +55,6 @@ type item_meta = {
   attributes : string list;  (** Attributes (`#[...]`). **)
   inline : inline_attr option;
   public : bool;
+  rename : string option;
 }
 [@@deriving show, ord]
