@@ -146,16 +146,29 @@
           ];
         };
         # The dev-shell we need to run kyber in CI. This doesn't really belong here but it's easier here.
-        devShells.kyber-ci = pkgs.mkShell {
-          packages = [
-            rustToolchain
-            pkgs.clang-tools # For clang-format
-            pkgs.cmake
-            pkgs.ninja
-            pkgs.python3
-            pkgs.mold-wrapped
-          ];
-        };
+        devShells.kyber-ci =
+          let
+            build-kyber = pkgs.writeShellScriptBin "build-kyber" ''
+              ./c.sh
+              cd c
+              cmake \
+                -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
+                -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
+                -G "Ninja Multi-Config" -B build
+              cmake --build build --config Release
+            '';
+          in
+          pkgs.mkShell {
+            packages = [
+              buil-kyber
+              rustToolchain
+              pkgs.clang-tools # For clang-format
+              pkgs.cmake
+              pkgs.ninja
+              pkgs.python3
+              pkgs.mold-wrapped
+            ];
+          };
         checks = { inherit charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
 
         # Export this function so that users of charon can use it in nix. This

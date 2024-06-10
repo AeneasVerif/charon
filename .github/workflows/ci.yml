@@ -86,4 +86,4 @@ jobs:
       - name: build kyber
         run: |
           cd libcrux-ml-kem
-          nix develop github:aeneasverif/charon/${{ github.sha }}#kyber-ci --command ./scripts/ci-build-kyber.sh
+          nix develop github:aeneasverif/charon/${{ github.sha }}#kyber-ci --command build-kyber
