@@ -150,6 +150,9 @@
           packages = [
             rustToolchain
             pkgs.clang-tools # For clang-format
+            pkgs.cmake
+            pkgs.ninja
+            pkgs.python3
           ];
         };
         checks = { inherit charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
