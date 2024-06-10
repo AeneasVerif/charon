@@ -160,7 +160,7 @@
           in
           pkgs.mkShell {
             packages = [
-              buil-kyber
+              build-kyber
               rustToolchain
               pkgs.clang-tools # For clang-format
               pkgs.cmake
