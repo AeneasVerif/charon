@@ -987,9 +987,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         clauses
     }
 
-    pub(crate) fn get_parent_trait_clauses(&self) -> Vector<TraitClauseId, TraitClause> {
-        let clauses: Vector<TraitClauseId, TraitClause> = self
-            .trait_clauses
+    pub(crate) fn get_parent_trait_clauses(&self) -> Vec<TraitClause> {
+        self.trait_clauses
             .iter()
             .filter_map(|(_, x)| match &x.clause_id {
                 TraitInstanceId::ParentClause(box TraitInstanceId::SelfId, _, clause_id) => {
@@ -997,10 +996,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
                 _ => None,
             })
-            .collect();
-        // Sanity check
-        assert!(clauses.iter_indexed_values().all(|(i, c)| c.clause_id == i));
-        clauses
+            .collect()
     }
 
     pub(crate) fn get_predicates(&self) -> Predicates {

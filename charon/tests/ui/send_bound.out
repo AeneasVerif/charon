@@ -4,7 +4,7 @@ trait core::marker::Send<Self>
 
 fn test_crate::foo<M>(@1: M)
 where
-    [@TraitClause0]: core::marker::Send<M>,
+    [@TraitClause1]: core::marker::Send<M>,
 {
     let @0: (); // return
     let _msg@1: M; // arg #1

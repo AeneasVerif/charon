@@ -199,7 +199,7 @@ pub struct TraitDecl {
     /// ```
     /// TODO: actually, as of today, we consider that all trait clauses of
     /// trait declarations are parent clauses.
-    pub parent_clauses: Vector<TraitClauseId, TraitClause>,
+    pub parent_clauses: Vec<TraitClause>,
     /// The associated constants declared in the trait.
     ///
     /// The optional id is for the default value.

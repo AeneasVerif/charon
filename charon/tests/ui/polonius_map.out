@@ -63,12 +63,12 @@ trait core::borrow::Borrow<Self, Borrowed>
 
 fn std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>#2}::get<'_0, '_1, K, V, S, Q>(@1: &'_0 (std::collections::hash::map::HashMap<K, V, S>), @2: &'_1 (Q)) -> core::option::Option<&'_0 (V)>
 where
-    [@TraitClause0]: core::cmp::Eq<K>,
-    [@TraitClause1]: core::hash::Hash<K>,
-    [@TraitClause2]: core::hash::BuildHasher<S>,
-    [@TraitClause3]: core::borrow::Borrow<K, Q>,
-    [@TraitClause4]: core::hash::Hash<Q>,
-    [@TraitClause5]: core::cmp::Eq<Q>,
+    [@TraitClause3]: core::cmp::Eq<K>,
+    [@TraitClause4]: core::hash::Hash<K>,
+    [@TraitClause5]: core::hash::BuildHasher<S>,
+    [@TraitClause6]: core::borrow::Borrow<K, Q>,
+    [@TraitClause7]: core::hash::Hash<Q>,
+    [@TraitClause8]: core::cmp::Eq<Q>,
 
 fn core::borrow::{impl core::borrow::Borrow<T> for T}::borrow<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
 
@@ -79,11 +79,11 @@ impl<T> core::borrow::{impl core::borrow::Borrow<T> for T}<T> : core::borrow::Bo
 
 fn core::hash::impls::{impl core::hash::Hash for u32#11}::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
 where
-    [@TraitClause0]: core::hash::Hasher<H>,
+    [@TraitClause1]: core::hash::Hasher<H>,
 
 fn core::hash::impls::{impl core::hash::Hash for u32#11}::hash_slice<'_0, '_1, H>(@1: &'_0 (Slice<u32>), @2: &'_1 mut (H))
 where
-    [@TraitClause0]: core::hash::Hasher<H>,
+    [@TraitClause1]: core::hash::Hasher<H>,
 
 impl core::hash::impls::{impl core::hash::Hash for u32#11} : core::hash::Hash<u32>
 {
@@ -131,9 +131,9 @@ impl std::collections::hash::map::{impl core::hash::BuildHasher for std::collect
 
 fn std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>#2}::insert<'_0, K, V, S>(@1: &'_0 mut (std::collections::hash::map::HashMap<K, V, S>), @2: K, @3: V) -> core::option::Option<V>
 where
-    [@TraitClause0]: core::cmp::Eq<K>,
-    [@TraitClause1]: core::hash::Hash<K>,
-    [@TraitClause2]: core::hash::BuildHasher<S>,
+    [@TraitClause3]: core::cmp::Eq<K>,
+    [@TraitClause4]: core::hash::Hash<K>,
+    [@TraitClause5]: core::hash::BuildHasher<S>,
 
 trait core::ops::index::Index<Self, Idx>
 {
@@ -144,21 +144,21 @@ trait core::ops::index::Index<Self, Idx>
 fn std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}::index<'_0, '_1, '_2, K, Q, V, S>(@1: &'_1 (std::collections::hash::map::HashMap<K, V, S>), @2: &'_2 (Q)) -> &'_1 (V)
 where
     // Inherited clauses:
-    [@TraitClause0]: core::cmp::Eq<K>,
-    [@TraitClause1]: core::hash::Hash<K>,
-    [@TraitClause2]: core::borrow::Borrow<K, Q>,
-    [@TraitClause3]: core::cmp::Eq<Q>,
-    [@TraitClause4]: core::hash::Hash<Q>,
-    [@TraitClause5]: core::hash::BuildHasher<S>,
+    [@TraitClause3]: core::cmp::Eq<K>,
+    [@TraitClause4]: core::hash::Hash<K>,
+    [@TraitClause5]: core::borrow::Borrow<K, Q>,
+    [@TraitClause6]: core::cmp::Eq<Q>,
+    [@TraitClause7]: core::hash::Hash<Q>,
+    [@TraitClause8]: core::hash::BuildHasher<S>,
 
 impl<'_0, K, Q, V, S> std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}<'_0, K, Q, V, S> : core::ops::index::Index<std::collections::hash::map::HashMap<K, V, S>, &'_0 (Q)>
 where
-    [@TraitClause0]: core::cmp::Eq<K>,
-    [@TraitClause1]: core::hash::Hash<K>,
-    [@TraitClause2]: core::borrow::Borrow<K, Q>,
-    [@TraitClause3]: core::cmp::Eq<Q>,
-    [@TraitClause4]: core::hash::Hash<Q>,
-    [@TraitClause5]: core::hash::BuildHasher<S>,
+    [@TraitClause3]: core::cmp::Eq<K>,
+    [@TraitClause4]: core::hash::Hash<K>,
+    [@TraitClause5]: core::borrow::Borrow<K, Q>,
+    [@TraitClause6]: core::cmp::Eq<Q>,
+    [@TraitClause7]: core::hash::Hash<Q>,
+    [@TraitClause8]: core::hash::BuildHasher<S>,
 {
     type Output = V with []
     fn index = std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}::index
@@ -231,7 +231,7 @@ fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)
 
 fn core::hash::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
-    [@TraitClause0]: core::hash::Hasher<H>,
+    [@TraitClause1]: core::hash::Hasher<H>,
 
 fn core::hash::BuildHasher::build_hasher<'_0, Self>(@1: &'_0 (Self)) -> Self::Hasher
 

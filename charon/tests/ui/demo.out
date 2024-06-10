@@ -394,14 +394,14 @@ fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
 
 fn test_crate::use_counter<'a, T>(@1: &'a mut (T)) -> usize
 where
-    [@TraitClause0]: test_crate::Counter<T>,
+    [@TraitClause1]: test_crate::Counter<T>,
 {
     let @0: usize; // return
     let cnt@1: &'_ mut (T); // arg #1
     let @2: &'_ mut (T); // anonymous local
 
     @2 := &two-phase-mut *(cnt@1)
-    @0 := @TraitClause0::incr(move (@2))
+    @0 := @TraitClause1::incr(move (@2))
     drop @2
     return
 }

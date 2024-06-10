@@ -400,6 +400,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // We translate trait clauses for signatures, etc. so we do not erase the regions
         let erase_regions = false;
 
+        // Compute the current clause id
+        let clause_id = (self.trait_instance_id_gen)();
+
         let trait_ref = &trait_pred.trait_ref;
         let trait_id = self.register_trait_decl_id(span, DefId::from(&trait_ref.def_id))?;
         // We might have to ignore the trait
@@ -414,8 +417,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // There are no trait refs
         let generics = GenericArgs::new(regions, types, const_generics, Vec::new());
 
-        // Compute the current clause id
-        let clause_id = (self.trait_instance_id_gen)();
         let span = self.translate_span_from_rspan(hspan.clone());
 
         // Immediately register the clause (we may need to refer to it in the parent/

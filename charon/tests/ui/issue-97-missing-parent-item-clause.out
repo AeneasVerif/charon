@@ -9,7 +9,7 @@ struct test_crate::AVLTree<T> =
 
 fn test_crate::{test_crate::AVLTree<T>}::insert<'_0, T>(@1: &'_0 mut (test_crate::AVLTree<T>))
 where
-    [@TraitClause0]: test_crate::Ord<T>,
+    [@TraitClause1]: test_crate::Ord<T>,
 {
     let @0: (); // return
     let self@1: &'_ mut (test_crate::AVLTree<T>); // arg #1

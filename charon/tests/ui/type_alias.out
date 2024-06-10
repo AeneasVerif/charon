@@ -48,16 +48,16 @@ impl<T, A> alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Ve
 fn alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>#9}::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> alloc::vec::Vec<T, alloc::alloc::Global>
 where
     // Inherited clauses:
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 
 fn alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>#9}::clone_into<'_0, '_1, T>(@1: &'_0 (Slice<T>), @2: &'_1 mut (alloc::vec::Vec<T, alloc::alloc::Global>))
 where
     // Inherited clauses:
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 
 impl<T> alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>#9}<T> : alloc::borrow::ToOwned<Slice<T>>
 where
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 {
     type Owned = alloc::vec::Vec<T, alloc::alloc::Global> with [alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>#5}<T, alloc::alloc::Global>]
     fn to_owned = alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>#9}::to_owned
@@ -66,7 +66,7 @@ where
 
 type test_crate::Generic2<'a, T>
   where
-      [@TraitClause0]: core::clone::Clone<T>, = alloc::borrow::Cow<'a, Slice<T>, alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>#9}<T>[@TraitClause0]>
+      [@TraitClause1]: core::clone::Clone<T>, = alloc::borrow::Cow<'a, Slice<T>, alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>#9}<T>[@TraitClause1]>
 
 fn alloc::borrow::ToOwned::to_owned<'_0, Self>(@1: &'_0 (Self)) -> Self::Owned
 
