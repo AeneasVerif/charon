@@ -1692,14 +1692,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.while_registering_trait_clauses(move |ctx| {
             // Add the ctx trait clause if it is a trait decl item
             match fun_kind {
-                ItemKind::Regular => (),
+                ItemKind::Regular => {}
                 ItemKind::TraitItemImpl { impl_id, .. } => {
-                    ctx.add_trait_impl_self_trait_clause(*impl_id)?;
+                    ctx.translate_trait_impl_self_trait_clause(*impl_id)?
                 }
                 ItemKind::TraitItemProvided(..) | ItemKind::TraitItemDecl(..) => {
                     // This is a trait decl item
                     let trait_id = tcx.trait_of_item(def_id).unwrap();
-                    ctx.add_self_trait_clause(trait_id)?;
+                    ctx.translate_trait_decl_self_trait_clause(trait_id)?;
                 }
             }
 
@@ -1714,8 +1714,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
 
-            // Solve the unsolved obligations
-            ctx.solve_trait_obligations_in_trait_clauses(span);
             Ok(())
         })?;
 
