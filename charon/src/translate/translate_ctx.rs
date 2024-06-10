@@ -452,28 +452,43 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .iter()
             .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque");
         let rename = {
-            let pos = attributes.iter().position(|str| {
+            let str = attributes.iter().find(|str| {
                 str.starts_with("charon::rename(") || str.starts_with("aeneas::rename(")
             });
-            if pos.is_none() {
+            if str.is_none() {
                 None
             } else {
-                let str = match attributes
-                    .get(pos.expect("Should not be None, it was checked right before"))
-                {
-                    Some(str) => str,
-                    None => "",
-                };
+                let str = str.unwrap();
                 let charon_rename = str.strip_prefix("charon::rename(");
                 let aeneas_rename = str.strip_prefix("aeneas::rename(");
                 let rename = charon_rename
                     .or(aeneas_rename)
                     .and_then(|str| str.strip_suffix(")"));
-                if rename.is_some_and(|str| str.is_empty()) {
-                    self.span_err(span, "Attribute `rename` should not be empty");
-                    None
+                if let Some(str) = rename {
+                    if !str.is_empty() {
+                        let first_char_alphabetic = str
+                            .chars()
+                            .nth(0)
+                            .expect("Attribute `rename` should not be empty")
+                            .is_alphabetic();
+                        let is_identifier = first_char_alphabetic
+                            && str.chars().all(|c| c.is_alphanumeric() || c == '_');
+                        if !is_identifier {
+                            self.span_err(span, "Attribute `rename` should not be empty or should only contains alphanumeric characters and `_` or should start with a letter");
+                            None
+                        } else {
+                            Some(rename.unwrap().to_string())
+                        }
+                    } else {
+                        self.span_err(span, "Attribute `rename` should not be empty");
+                        None
+                    }
                 } else {
-                    Some(rename.expect("Should not be None").to_string())
+                    self.span_err(
+                        span,
+                        "Attribute `rename` should be of the shape `rename(...)`",
+                    );
+                    None
                 }
             }
         };

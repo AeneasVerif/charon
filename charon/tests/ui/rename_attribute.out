@@ -63,9 +63,19 @@ enum test_crate::SimpleEnum =
 |  ThirdVariant()
 
 
-struct test_crate::IdType<T> =
+struct test_crate::Foo =
 {
-  T
+  field1: u32
+}
+
+global test_crate::SIX_SIX_SIX  {
+    let @0: u32; // return
+    let @1: u32; // anonymous local
+
+    @1 := const (600 : u32) + const (60 : u32)
+    @0 := copy (@1) + const (6 : u32)
+    drop @1
+    return
 }
 
 type test_crate::Test2 = u32

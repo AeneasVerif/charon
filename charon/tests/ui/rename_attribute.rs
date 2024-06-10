@@ -37,11 +37,16 @@ enum SimpleEnum {
     ThirdVariant,
 }
 
-#[charon::rename(FieldTest)]
-pub struct IdType<T>(T);
+#[charon::rename(StructTest)]
+struct Foo {
+    #[charon::rename(FieldTest)]
+    field1: u32,
+}
 
-#[aeneas::rename(TypeAeneas)]
+#[charon::rename(Const_Test)]
+const SIX_SIX_SIX: u32 = 600 + 60 + 6;
+
+#[aeneas::rename(TypeAeneas36)]
 type Test2 = u32;
-
 
 
