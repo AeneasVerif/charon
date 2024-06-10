@@ -1,0 +1,74 @@
+# Final LLBC before serialization:
+
+trait test_crate::BoolTrait<Self>
+{
+    fn get_bool : test_crate::BoolTrait::get_bool
+    fn ret_true : test_crate::BoolTrait::ret_true
+}
+
+fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (bool); // arg #1
+
+    @0 := copy (*(self@1))
+    return
+}
+
+impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<bool>
+{
+    fn get_bool = test_crate::{impl test_crate::BoolTrait for bool}::get_bool
+}
+
+fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
+
+fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (Self); // arg #1
+
+    @0 := const (true)
+    return
+}
+
+fn test_crate::test_bool_trait<T>(@1: bool) -> bool
+{
+    let @0: bool; // return
+    let x@1: bool; // arg #1
+    let @2: bool; // anonymous local
+    let @3: &'_ (bool); // anonymous local
+    let @4: &'_ (bool); // anonymous local
+
+    @3 := &x@1
+    @2 := test_crate::{impl test_crate::BoolTrait for bool}::get_bool(move (@3))
+    if move (@2) {
+        drop @3
+        @4 := &x@1
+        @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true(move (@4))
+        drop @4
+    }
+    else {
+        drop @3
+        @0 := const (false)
+    }
+    drop @2
+    return
+}
+
+type test_crate::Test = i32
+
+enum test_crate::SimpleEnum =
+|  FirstVariant()
+|  SecondVariant()
+|  ThirdVariant()
+
+
+struct test_crate::IdType<T> =
+{
+  T
+}
+
+type test_crate::Test2 = u32
+
+
+
