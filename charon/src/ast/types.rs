@@ -291,10 +291,7 @@ pub struct GenericParams {
     pub types: Vector<TypeVarId, TypeVar>,
     pub const_generics: Vector<ConstGenericVarId, ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
-    // Remark: we use a regular [Vec], not a [TraitClauseId::Vector], because due to the
-    // filtering of some trait clauses (for the marker traits for instance) the indexation
-    // is not contiguous (e.g., we may have [clause 0; clause 3; clause 4]).
-    pub trait_clauses: Vec<TraitClause>,
+    pub trait_clauses: Vector<TraitClauseId, TraitClause>,
 }
 
 generate_index_type!(TraitClauseId, "TraitClause");

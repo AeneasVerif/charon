@@ -49,7 +49,7 @@ impl GenericParams {
             regions: Vector::new(),
             types: Vector::new(),
             const_generics: Vector::new(),
-            trait_clauses: Vec::new(),
+            trait_clauses: Vector::new(),
         }
     }
 }

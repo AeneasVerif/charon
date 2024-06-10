@@ -965,7 +965,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Retrieve the *local* trait clauses available in the current environment
     /// (we filter the parent of those clauses, etc.).
-    pub(crate) fn get_local_trait_clauses(&self) -> Vec<TraitClause> {
+    pub(crate) fn get_local_trait_clauses(&self) -> Vector<TraitClauseId, TraitClause> {
         let ClauseTransCtx::Base(clauses) = &self.clause_translation_context else {
             panic!()
         };
@@ -975,7 +975,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .enumerate()
             .all(|(i, c)| c.clause_id.index() == i));
         // Return
-        clauses.iter().cloned().collect()
+        clauses.clone()
     }
 
     pub(crate) fn get_predicates(&self) -> Predicates {

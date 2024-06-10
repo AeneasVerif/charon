@@ -15,6 +15,7 @@ use std::{
 };
 
 /// Indexed vector
+// FIXME: Change the `Vector` API to prevent accidental id reuse because of reentrancy.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Vector<I, T>
 where

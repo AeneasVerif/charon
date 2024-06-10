@@ -34,11 +34,11 @@ impl ClauseTransCtx {
             | ClauseTransCtx::Item(clauses, ..) => clauses,
         }
     }
-    pub(crate) fn into_clauses(self) -> Vec<TraitClause> {
+    pub(crate) fn into_clauses(self) -> Vector<TraitClauseId, TraitClause> {
         match self {
             ClauseTransCtx::Base(clauses, ..)
             | ClauseTransCtx::Parent(clauses, ..)
-            | ClauseTransCtx::Item(clauses, ..) => clauses.into_iter().collect(),
+            | ClauseTransCtx::Item(clauses, ..) => clauses,
         }
     }
     pub(crate) fn generate_instance_id(&mut self) -> (TraitClauseId, TraitInstanceId) {
@@ -222,7 +222,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         trait_decl_id: TraitDeclId,
         f: &mut dyn FnMut(&mut Self) -> Result<(), Error>,
-    ) -> Result<Vec<TraitClause>, Error> {
+    ) -> Result<Vector<TraitClauseId, TraitClause>, Error> {
         let (out, ctx) = self.with_clause_translation_context(
             ClauseTransCtx::Parent(Default::default(), trait_decl_id),
             f,
@@ -236,7 +236,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_decl_id: TraitDeclId,
         item_name: TraitItemName,
         f: &mut dyn FnMut(&mut Self) -> Result<(), Error>,
-    ) -> Result<Vec<TraitClause>, Error> {
+    ) -> Result<Vector<TraitClauseId, TraitClause>, Error> {
         let (out, ctx) = self.with_clause_translation_context(
             ClauseTransCtx::Item(Default::default(), trait_decl_id, item_name),
             f,
