@@ -1,4 +1,5 @@
-use proc_macro::TokenStream;
+use proc_macro::TokenStream as TokenStream1;
+use proc_macro2::TokenStream;
 use std::vec::Vec;
 use syn::punctuated::Punctuated;
 use syn::token::{Add, Comma};
@@ -514,7 +515,7 @@ fn generate_variant_match_patterns(
 
 /// Macro to derive a function `fn variant_name(&self) -> String` printing the
 /// constructor of an enumeration. Only works on enumerations, of course.
-pub fn derive_variant_name(item: TokenStream) -> TokenStream {
+pub fn derive_variant_name(item: TokenStream1) -> TokenStream {
     // Parse the input
     let ast: DeriveInput = parse(item).unwrap();
 
@@ -574,7 +575,7 @@ pub fn derive_variant_name(item: TokenStream) -> TokenStream {
 /// Macro to derive a function `fn variant_index_arity(&self) -> (u32, usize)`
 /// the pair (variant index, variant arity).
 /// Only works on enumerations, of course.
-pub fn derive_variant_index_arity(item: TokenStream) -> TokenStream {
+pub fn derive_variant_index_arity(item: TokenStream1) -> TokenStream {
     // Parse the input
     let ast: DeriveInput = parse(item).unwrap();
 
@@ -634,6 +635,7 @@ pub fn derive_variant_index_arity(item: TokenStream) -> TokenStream {
 pub enum EnumMethodKind {
     EnumIsA,
     EnumAsGetters,
+    EnumAsMutGetters,
     EnumToGetters,
 }
 
@@ -644,6 +646,7 @@ impl EnumMethodKind {
         match self {
             EnumMethodKind::EnumIsA => "EnumIsA".to_string(),
             EnumMethodKind::EnumAsGetters => "EnumAsGetters".to_string(),
+            EnumMethodKind::EnumAsMutGetters => "EnumAsMutGetters".to_string(),
             EnumMethodKind::EnumToGetters => "EnumToGetters".to_string(),
         }
     }
@@ -651,7 +654,8 @@ impl EnumMethodKind {
 
 /// Generic helper for `EnumIsA` and `EnumAsGetters`.
 /// This generates one function per variant.
-pub fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind) -> TokenStream {
+pub fn derive_enum_variant_method(item: TokenStream1, method_kind: EnumMethodKind) -> TokenStream {
+    use EnumMethodKind::*;
     // Parse the input
     let ast: DeriveInput = parse(item).unwrap();
 
@@ -690,15 +694,13 @@ pub fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind
             // so we don't really have to take that case into account...
             let several_variants = data.variants.len() > 1;
             let varbasename = match method_kind {
-                EnumMethodKind::EnumIsA => None,
-                EnumMethodKind::EnumAsGetters | EnumMethodKind::EnumToGetters => {
-                    Some("x".to_string())
-                }
+                EnumIsA => None,
+                EnumAsGetters | EnumAsMutGetters | EnumToGetters => Some("x".to_string()),
             };
             let patterns = generate_variant_match_patterns(&adt_name, data, varbasename.as_ref());
 
             match method_kind {
-                EnumMethodKind::EnumIsA => {
+                EnumIsA => {
                     patterns
                         .iter()
                         .map(|mp| {
@@ -725,26 +727,32 @@ pub fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind
                         })
                         .collect()
                 }
-                EnumMethodKind::EnumAsGetters | EnumMethodKind::EnumToGetters => {
-                    let as_getters = match method_kind {
-                        EnumMethodKind::EnumAsGetters => true,
-                        _ => false,
+                EnumAsGetters | EnumAsMutGetters | EnumToGetters => {
+                    let ref_kind = match method_kind {
+                        EnumAsGetters => "&",
+                        EnumAsMutGetters => "&mut ",
+                        _ => "",
                     };
-
+                    let name_prefix = match method_kind {
+                        EnumIsA => unreachable!(),
+                        EnumAsGetters | EnumAsMutGetters => "as_",
+                        EnumToGetters => "to_",
+                    };
+                    let name_suffix = match method_kind {
+                        EnumAsMutGetters => "_mut",
+                        _ => "",
+                    };
                     patterns
                         .iter()
                         .map(|mp| {
                             // Generate the branch for the target variant
                             let vars = format!("({})", mp.named_args.join(", ")); // return value
                             let variant_pat =
-                                format!("{}{} => {},", THREE_TABS, mp.match_pattern, vars)
-                                    .to_string();
+                                format!("{}{} => {},", THREE_TABS, mp.match_pattern, vars);
                             // Add the otherwise branch, if necessary
                             let complete_pat = if several_variants {
                                 format!(
-                                    "{}\n{}_ => unreachable!(\"{}::{}_{}: Not the proper variant\"),",
-                                    variant_pat, THREE_TABS, adt_name,
-                                    if as_getters { "as" } else { "to" },
+                                    "{variant_pat}\n{THREE_TABS}_ => unreachable!(\"{adt_name}::{name_prefix}{}{name_suffix}: Not the proper variant\"),",
                                     to_snake_case(&mp.variant_id.to_string()),
                                 )
                                 .to_string()
@@ -756,21 +764,23 @@ pub fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind
                             let ret_tys: Vec<String> = mp
                                 .arg_types
                                 .iter()
-                                .map(|ty| format!("{}({})", if as_getters {"&"} else {""},ty.to_string())
+                                .map(|ty| -> String {
+                                    format!("{ref_kind}({ty})")
+                                }
                                 )
                                 .collect();
                             let ret_ty = format!("({})", ret_tys.join(", "));
 
                             // Generate the impl
                             format!(
-                                derive_enum_variant_impl_code!(),
-                                if as_getters { "as_" } else { "to_" },
+                                "    pub fn {name_prefix}{}{name_suffix}({ref_kind}self) -> {ret_ty} {{
+                                    match self {{
+                                        {complete_pat}
+                                    }}
+                                }}",
                                 // TODO: write our own to_snake_case function:
                                 // names like "i32" become "i_32" with this one.
                                 to_snake_case(&mp.variant_id.to_string()),
-                                if as_getters { "&" } else { "" },
-                                ret_ty,
-                                complete_pat
                             )
                             .to_string()
                         })
