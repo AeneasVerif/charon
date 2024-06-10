@@ -85,12 +85,5 @@ jobs:
           echo KRML_HOME=$(pwd)/karamel >> $GITHUB_ENV
       - name: build kyber
         run: |
-          NIX_SHELL="nix develop github:aeneasverif/charon/${{ github.sha }}#kyber-ci --command"
           cd libcrux-ml-kem
-          $NIX_SHELL ./c.sh
-          cd c
-          $NIX_SHELL cmake \
-            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
-            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
-            -G "Ninja Multi-Config" -B build
-          $NIX_SHELL cmake --build build --config Release
+          nix develop github:aeneasverif/charon/${{ github.sha }}#kyber-ci --command ./scripts/ci-build-kyber.sh
