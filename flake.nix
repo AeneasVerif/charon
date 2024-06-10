@@ -153,6 +153,7 @@
             pkgs.cmake
             pkgs.ninja
             pkgs.python3
+            pkgs.mold-wrapped
           ];
         };
         checks = { inherit charon-ml-tests charon-check-fmt charon-ml-check-fmt; };

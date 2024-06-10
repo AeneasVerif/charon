@@ -89,5 +89,8 @@ jobs:
           cd libcrux-ml-kem
           $NIX_SHELL ./c.sh
           cd c
-          $NIX_SHELL cmake -G "Ninja Multi-Config" -B build
+          $NIX_SHELL cmake \
+            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
+            -G "Ninja Multi-Config" -B build
           $NIX_SHELL cmake --build build --config Release
