@@ -17,7 +17,6 @@ use crate::ullbc_ast as ast;
 use crate::values::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
-use im::OrdMap;
 use linked_hash_set::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use rustc_error_messages::MultiSpan;
@@ -319,13 +318,13 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
     pub const_generic_vars_map: MapGenerator<u32, ConstGenericVarId>,
-    /// A generator for trait instance ids.
-    /// We initialize it so that it generates ids for local clauses.
+    /// A context for clause translation. It accumulates translated clauses.
     pub clause_translation_context: ClauseTransCtx,
-    /// All the trait clauses accessible from the current environment
-    /// TODO: we don't need something as generic anymore because most of the
-    /// work of solving the trait obligations is now done in hax.
-    pub trait_clauses: OrdMap<TraitInstanceId, NonLocalTraitClause>,
+    /// All the trait clauses accessible from the current environment. When `hax` gives us a
+    /// `ImplExprAtom::LocalBound`, we use this to recover the specific trait reference it
+    /// corresponds to.
+    /// FIXME: hax should take care of this matching up.
+    pub trait_clauses: HashMap<TraitDeclId, Vec<NonLocalTraitClause>>,
     /// If [true] it means we are currently registering trait clauses in the
     /// local context. As a consequence, we allow not solving all the trait
     /// obligations, because the obligations for some clauses may be solved
@@ -777,8 +776,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             vars_map: MapGenerator::new(),
             const_generic_vars: Vector::new(),
             const_generic_vars_map: MapGenerator::new(),
-            clause_translation_context: ClauseTransCtx::Base(Generator::new()),
-            trait_clauses: OrdMap::new(),
+            clause_translation_context: Default::default(),
+            trait_clauses: Default::default(),
             registering_trait_clauses: false,
             regions_outlive: Vec::new(),
             types_outlive: Vec::new(),
@@ -967,11 +966,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Retrieve the *local* trait clauses available in the current environment
     /// (we filter the parent of those clauses, etc.).
     pub(crate) fn get_local_trait_clauses(&self) -> Vec<TraitClause> {
-        let clauses: Vec<TraitClause> = self
-            .trait_clauses
-            .iter()
-            .filter_map(|(_, x)| x.to_local_trait_clause())
-            .collect();
+        let ClauseTransCtx::Base(clauses) = &self.clause_translation_context else {
+            panic!()
+        };
+        let clauses: Vec<_> = clauses.iter().cloned().flat_map(|c| c).collect();
         // Sanity check
         if !crate::assumed::IGNORE_BUILTIN_MARKER_TRAITS {
             assert!(clauses
@@ -981,18 +979,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
         // Return
         clauses
-    }
-
-    pub(crate) fn get_parent_trait_clauses(&self) -> Vec<TraitClause> {
-        self.trait_clauses
-            .iter()
-            .filter_map(|(_, x)| match &x.clause_id {
-                TraitInstanceId::ParentClause(box TraitInstanceId::SelfId, _, clause_id) => {
-                    Some(x.to_trait_clause_with_id(*clause_id))
-                }
-                _ => None,
-            })
-            .collect()
     }
 
     pub(crate) fn get_predicates(&self) -> Predicates {
@@ -1011,7 +997,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         new_ctx: ClauseTransCtx,
         f: F,
-    ) -> T
+    ) -> (T, ClauseTransCtx)
     where
         F: FnOnce(&mut Self) -> T,
     {
@@ -1024,10 +1010,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let out = f(self);
 
         // Restore
-        self.clause_translation_context = old_ctx;
+        let new_ctx = replace(&mut self.clause_translation_context, old_ctx);
 
         // Return
-        out
+        (out, new_ctx)
     }
 
     /// Set [registering_trait_clauses] to [true], call the continuation, and

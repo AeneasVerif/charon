@@ -44,19 +44,6 @@ pub(crate) struct NonLocalTraitClause {
 }
 
 impl NonLocalTraitClause {
-    pub(crate) fn to_local_trait_clause(&self) -> Option<TraitClause> {
-        if let TraitInstanceId::Clause(id) = &self.clause_id {
-            Some(TraitClause {
-                clause_id: *id,
-                span: self.span,
-                trait_id: self.trait_id,
-                generics: self.generics.clone(),
-            })
-        } else {
-            None
-        }
-    }
-
     pub(crate) fn to_trait_clause_with_id(&self, clause_id: TraitClauseId) -> TraitClause {
         TraitClause {
             clause_id,
@@ -69,7 +56,7 @@ impl NonLocalTraitClause {
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, EnumToGetters)]
 pub(crate) enum Predicate {
-    Trait(NonLocalTraitClause),
+    Trait(TraitClauseId),
     TypeOutlives(TypeOutlives),
     RegionOutlives(RegionOutlives),
     TraitType(TraitTypeConstraint),
@@ -286,6 +273,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let clauses = self
             .trait_clauses
             .values()
+            .flat_map(|x| x)
             .map(|c| c.fmt_with_ctx(&fmt_ctx))
             .collect::<Vec<String>>()
             .join(",\n");
@@ -304,6 +292,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let clauses = self
             .trait_clauses
             .values()
+            .flat_map(|x| x)
             .map(|c| c.fmt_with_ctx(&fmt_ctx))
             .collect::<Vec<String>>()
             .join(",\n");
@@ -390,6 +379,48 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
+    ) -> Result<Option<TraitClauseId>, Error> {
+        let (clause_id, instance_id) = self.clause_translation_context.generate_instance_id();
+        let clause = self.translate_trait_clause_aux(hspan, trait_pred, instance_id)?;
+        if let Some(clause) = clause {
+            let local_clause = clause.to_trait_clause_with_id(clause_id);
+            self.clause_translation_context
+                .as_mut_clauses()
+                .push(Some(local_clause));
+            self.trait_clauses
+                .entry(clause.trait_id)
+                .or_default()
+                .push(clause);
+            Ok(Some(clause_id))
+        } else {
+            // FIXME: don't store `None`
+            self.clause_translation_context.as_mut_clauses().push(None);
+            Ok(None)
+        }
+    }
+
+    /// Returns an [Option] because we may filter clauses about builtin or
+    /// auto traits like [core::marker::Sized] and [core::marker::Sync].
+    pub(crate) fn translate_self_trait_clause(
+        &mut self,
+        span: &hax::Span,
+        trait_pred: &hax::TraitPredicate,
+    ) -> Result<(), Error> {
+        // Save the self clause (and its parent/item clauses)
+        let clause = self.translate_trait_clause_aux(span, &trait_pred, TraitInstanceId::SelfId)?;
+        if let Some(clause) = clause {
+            self.trait_clauses
+                .entry(clause.trait_id)
+                .or_default()
+                .push(clause);
+        }
+        Ok(())
+    }
+
+    pub(crate) fn translate_trait_clause_aux(
+        &mut self,
+        hspan: &hax::Span,
+        trait_pred: &hax::TraitPredicate,
         clause_id: TraitInstanceId,
     ) -> Result<Option<NonLocalTraitClause>, Error> {
         // Note sure what this is about
@@ -415,19 +446,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let span = self.translate_span_from_rspan(hspan.clone());
 
-        // Immediately register the clause (we may need to refer to it in the parent/
-        // item clauses)
-        let trait_clause = NonLocalTraitClause {
+        Ok(Some(NonLocalTraitClause {
             clause_id,
             span: Some(span),
             trait_id,
             generics,
-        };
-        self.trait_clauses
-            .insert(trait_clause.clause_id.clone(), trait_clause.clone());
-
-        // Return
-        Ok(Some(trait_clause))
+        }))
     }
 
     pub(crate) fn translate_predicate(
@@ -449,13 +473,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         match pred_kind {
             PredicateKind::Clause(kind) => {
                 match kind {
-                    ClauseKind::Trait(trait_pred) => {
-                        // Compute the current clause id
-                        let clause_id = self.clause_translation_context.generate_instance_id();
-                        Ok(self
-                            .translate_trait_clause(hspan, trait_pred, clause_id)?
-                            .map(Predicate::Trait))
-                    }
+                    ClauseKind::Trait(trait_pred) => Ok(self
+                        .translate_trait_clause(hspan, trait_pred)?
+                        .map(Predicate::Trait)),
                     ClauseKind::RegionOutlives(p) => {
                         let r0 = self.translate_region(span, erase_regions, &p.lhs)?;
                         let r1 = self.translate_region(span, erase_regions, &p.rhs)?;
@@ -754,28 +774,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                fmt_ctx.format_object(trait_id), generics.fmt_with_ctx(&fmt_ctx),
                fmt_ctx.format_object(clause.trait_id), clause.generics.fmt_with_ctx(&fmt_ctx)
         );
-        // Check if the clause is about the same trait
-        if clause.trait_id != trait_id {
-            trace!("Not the same trait id");
-            false
-        } else {
-            // Ignoring the regions for now
-            let tgt_types = &generics.types;
-            let tgt_const_generics = &generics.const_generics;
+        assert_eq!(clause.trait_id, trait_id);
+        // Ignoring the regions for now
+        let tgt_types = &generics.types;
+        let tgt_const_generics = &generics.const_generics;
 
-            let src_types = &clause.generics.types;
-            let src_const_generics = &clause.generics.const_generics;
+        let src_types = &clause.generics.types;
+        let src_const_generics = &clause.generics.const_generics;
 
-            // We simply check the equality between the arguments:
-            // there are no universally quantified variables to unify.
-            // TODO: normalize the trait clauses (we actually
-            // need to check equality **modulo** equality clauses)
-            // TODO: if we need to unify (later, when allowing universal
-            // quantification over clause parameters), use types_utils::TySubst.
-            let matched = src_types == tgt_types && src_const_generics == tgt_const_generics;
-            trace!("Match successful: {}", matched);
-            matched
-        }
+        // We simply check the equality between the arguments:
+        // there are no universally quantified variables to unify.
+        // TODO: normalize the trait clauses (we actually
+        // need to check equality **modulo** equality clauses)
+        // TODO: if we need to unify (later, when allowing universal
+        // quantification over clause parameters), use types_utils::TySubst.
+        let matched = src_types == tgt_types && src_const_generics == tgt_const_generics;
+        trace!("Match successful: {}", matched);
+        matched
     }
 
     /// Find the trait instance fullfilling a trait obligation.
@@ -792,11 +807,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
 
         // Simply explore the trait clauses
-        for trait_clause in self.trait_clauses.values() {
-            if self.match_trait_clauses(trait_id, generics, trait_clause) {
-                return trait_clause.clause_id.clone();
+        if let Some(clauses_for_this_trait) = self.trait_clauses.get(&trait_id) {
+            for trait_clause in clauses_for_this_trait {
+                if self.match_trait_clauses(trait_id, generics, trait_clause) {
+                    return trait_clause.clause_id.clone();
+                }
             }
-        }
+        };
 
         // Could not find a clause.
         // Check if we are in the registration process, otherwise report an error.
@@ -813,6 +830,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let clauses: Vec<String> = self
                 .trait_clauses
                 .values()
+                .flat_map(|x| x)
                 .map(|x| x.fmt_with_ctx(&fmt_ctx))
                 .collect();
 

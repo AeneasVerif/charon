@@ -69,6 +69,10 @@ where
         self.vector.iter_enumerated()
     }
 
+    pub fn into_iter_indexed_values(self) -> impl Iterator<Item = (I, T)> {
+        self.vector.into_iter_enumerated()
+    }
+
     pub fn iter_indices(&self) -> impl Iterator<Item = I> {
         self.vector.indices()
     }

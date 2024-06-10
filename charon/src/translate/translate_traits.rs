@@ -1,7 +1,7 @@
 use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
-use crate::ids::{Generator, Vector};
+use crate::ids::Vector;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -15,38 +15,55 @@ use std::collections::HashMap;
 /// trait references.
 pub(crate) enum ClauseTransCtx {
     /// We're translating the parent clauses of a trait.
-    Parent(Generator<TraitClauseId>, TraitDeclId),
+    Parent(Vector<TraitClauseId, Option<TraitClause>>, TraitDeclId),
     /// We're translating the item clauses of a trait.
-    Item(Generator<TraitClauseId>, TraitDeclId, TraitItemName),
+    Item(
+        Vector<TraitClauseId, Option<TraitClause>>,
+        TraitDeclId,
+        TraitItemName,
+    ),
     /// We're translating anything else.
-    Base(Generator<TraitClauseId>),
+    Base(Vector<TraitClauseId, Option<TraitClause>>),
 }
 
 impl ClauseTransCtx {
-    pub(crate) fn generate_instance_id(&mut self) -> TraitInstanceId {
+    pub(crate) fn as_mut_clauses(&mut self) -> &mut Vector<TraitClauseId, Option<TraitClause>> {
         match self {
-            ClauseTransCtx::Base(gen) => {
-                let fresh_id = gen.fresh_id();
-                TraitInstanceId::Clause(fresh_id)
-            }
-            ClauseTransCtx::Parent(gen, trait_decl_id) => {
-                let fresh_id = gen.fresh_id();
-                TraitInstanceId::ParentClause(
-                    Box::new(TraitInstanceId::SelfId),
-                    *trait_decl_id,
-                    fresh_id,
-                )
-            }
-            ClauseTransCtx::Item(gen, trait_decl_id, item_name) => {
-                let fresh_id = gen.fresh_id();
-                TraitInstanceId::ItemClause(
-                    Box::new(TraitInstanceId::SelfId),
-                    *trait_decl_id,
-                    item_name.clone(),
-                    fresh_id,
-                )
-            }
+            ClauseTransCtx::Base(clauses, ..)
+            | ClauseTransCtx::Parent(clauses, ..)
+            | ClauseTransCtx::Item(clauses, ..) => clauses,
         }
+    }
+    pub(crate) fn into_clauses(self) -> Vec<TraitClause> {
+        match self {
+            ClauseTransCtx::Base(clauses, ..)
+            | ClauseTransCtx::Parent(clauses, ..)
+            | ClauseTransCtx::Item(clauses, ..) => clauses.into_iter().filter_map(|c| c).collect(),
+        }
+    }
+    pub(crate) fn generate_instance_id(&mut self) -> (TraitClauseId, TraitInstanceId) {
+        let fresh_id = self.as_mut_clauses().next_id();
+        let instance_id = match self {
+            ClauseTransCtx::Base { .. } => TraitInstanceId::Clause(fresh_id),
+            ClauseTransCtx::Parent(_, trait_decl_id) => TraitInstanceId::ParentClause(
+                Box::new(TraitInstanceId::SelfId),
+                *trait_decl_id,
+                fresh_id,
+            ),
+            ClauseTransCtx::Item(_, trait_decl_id, item_name) => TraitInstanceId::ItemClause(
+                Box::new(TraitInstanceId::SelfId),
+                *trait_decl_id,
+                item_name.clone(),
+                fresh_id,
+            ),
+        };
+        (fresh_id, instance_id)
+    }
+}
+
+impl Default for ClauseTransCtx {
+    fn default() -> Self {
+        ClauseTransCtx::Base(Default::default())
     }
 }
 
@@ -127,7 +144,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// an id which is not the id of the item under scrutinee (if the current
     /// id is for an item trait, we need to lookup the trait itself and give
     /// its id).
-    pub(crate) fn add_self_trait_clause(&mut self, def_id: DefId) -> Result<(), Error> {
+    pub(crate) fn translate_trait_decl_self_trait_clause(
+        &mut self,
+        def_id: DefId,
+    ) -> Result<(), Error> {
         trace!("id: {:?}", def_id);
         // The self trait clause is actually the *last* trait predicate given by
         // [TyCtxt::predicates_of].
@@ -148,33 +168,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Convert to a clause
         assert!(clause.kind.bound_vars.is_empty());
-        let self_pred = if let hax::ClauseKind::Trait(trait_pred) = clause.kind.value {
-            if self
-                .register_trait_decl_id(*rspan, DefId::from(&trait_pred.trait_ref.def_id))?
-                .is_some()
-            {
-                trait_pred
-            } else {
-                panic!();
-            }
-        } else {
-            panic!();
+        let hax::ClauseKind::Trait(self_pred) = clause.kind.value else {
+            panic!()
         };
+        assert!(self
+            .register_trait_decl_id(*rspan, DefId::from(&self_pred.trait_ref.def_id))?
+            .is_some());
 
         // Convert
-        let self_clause =
-            self.translate_trait_clause(&span, &self_pred, TraitInstanceId::SelfId)?;
-        trace!(
-            "self clause: {}",
-            self_clause.unwrap().fmt_with_ctx(&self.into_fmt())
-        );
+        self.translate_self_trait_clause(&span, &self_pred)?;
         Ok(())
     }
 
     /// Similar to [add_self_trait_clause] but for trait implementations.
     ///
     /// We call this when translating trait impls and trait impl items.
-    pub(crate) fn add_trait_impl_self_trait_clause(
+    pub(crate) fn translate_trait_impl_self_trait_clause(
         &mut self,
         impl_id: TraitImplId,
     ) -> Result<(), Error> {
@@ -204,31 +213,36 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let trait_pred = trait_pred.sinto(&self.hax_state);
 
         let span = tcx.def_span(def_id).sinto(&self.t_ctx.hax_state);
-        let _ = self.translate_trait_clause(&span, &trait_pred, TraitInstanceId::SelfId)?;
+        // Save the self clause (and its parent/item clauses)
+        self.translate_self_trait_clause(&span, &trait_pred)?;
         Ok(())
     }
 
-    pub(crate) fn with_parent_trait_clauses<T>(
+    pub(crate) fn with_parent_trait_clauses(
         &mut self,
         trait_decl_id: TraitDeclId,
-        f: &mut dyn FnMut(&mut Self) -> T,
-    ) -> T {
-        self.with_clause_translation_context(
-            ClauseTransCtx::Parent(Generator::new(), trait_decl_id),
+        f: &mut dyn FnMut(&mut Self) -> Result<(), Error>,
+    ) -> Result<Vec<TraitClause>, Error> {
+        let (out, ctx) = self.with_clause_translation_context(
+            ClauseTransCtx::Parent(Default::default(), trait_decl_id),
             f,
-        )
+        );
+        out?;
+        Ok(ctx.into_clauses())
     }
 
-    pub(crate) fn with_item_trait_clauses<T>(
+    pub(crate) fn with_item_trait_clauses(
         &mut self,
         trait_decl_id: TraitDeclId,
         item_name: TraitItemName,
-        f: &mut dyn FnMut(&mut Self) -> T,
-    ) -> T {
-        self.with_clause_translation_context(
-            ClauseTransCtx::Item(Generator::new(), trait_decl_id, item_name),
+        f: &mut dyn FnMut(&mut Self) -> Result<(), Error>,
+    ) -> Result<Vec<TraitClause>, Error> {
+        let (out, ctx) = self.with_clause_translation_context(
+            ClauseTransCtx::Item(Default::default(), trait_decl_id, item_name),
             f,
-        )
+        );
+        out?;
+        Ok(ctx.into_clauses())
     }
 }
 
@@ -260,9 +274,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.translate_generic_params(rust_id)?;
 
         // Add the trait clauses
-        bt_ctx.while_registering_trait_clauses(move |bt_ctx| {
+        let parent_clauses = bt_ctx.while_registering_trait_clauses(move |bt_ctx| {
             // Add the self trait clause
-            bt_ctx.add_self_trait_clause(rust_id)?;
+            bt_ctx.translate_trait_decl_self_trait_clause(rust_id)?;
 
             // Translate the predicates.
             bt_ctx.with_parent_trait_clauses(def_id, &mut |s| {
@@ -323,7 +337,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     let item_name = TraitItemName(item.name.to_string());
 
                     // Translating the predicates
-                    {
+                    let item_trait_clauses = {
                         // TODO: this is an ugly manip
                         let bounds = tcx.item_bounds(item.def_id).instantiate_identity();
                         use crate::rustc_middle::query::Key;
@@ -337,26 +351,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         // Register the trait clauses as item trait clauses
                         bt_ctx.with_item_trait_clauses(def_id, item_name.clone(), &mut |s| {
                             s.translate_predicates_vec(&bounds)
-                        })?;
-                    }
-
-                    // Retrieve the trait clauses which are specific to this item
-                    // - we simply need to filter the trait clauses by using their id.
-                    let item_trait_clauses: Vec<_> = bt_ctx
-                        .trait_clauses
-                        .values()
-                        .filter_map(|c| match &c.clause_id {
-                            TraitInstanceId::ItemClause(
-                                box TraitInstanceId::SelfId,
-                                _,
-                                other_name,
-                                clause_id,
-                            ) if other_name == &item_name => {
-                                Some(c.to_trait_clause_with_id(*clause_id))
-                            }
-                            _ => None,
-                        })
-                        .collect();
+                        })?
+                    };
 
                     let ty = if has_default_value {
                         Some(bt_ctx.translate_ty_from_trait_item(item)?)
@@ -374,14 +370,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let generics = bt_ctx.get_generics();
         // TODO: maybe we should do something about the predicates?
 
-        let parent_clauses = bt_ctx.get_parent_trait_clauses();
-
         // Debugging:
         {
             let ctx = bt_ctx.into_fmt();
             let clauses = bt_ctx
                 .trait_clauses
                 .values()
+                .flat_map(|x| x)
                 .map(|c| c.fmt_with_ctx(&ctx))
                 .collect::<Vec<String>>()
                 .join("\n");
@@ -453,7 +448,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             bt_ctx.translate_predicates_of(None, rust_id)?;
 
             // Add the self trait clause
-            bt_ctx.add_trait_impl_self_trait_clause(def_id)?;
+            bt_ctx.translate_trait_impl_self_trait_clause(def_id)?;
 
             Ok(())
         })?;
