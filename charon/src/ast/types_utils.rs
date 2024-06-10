@@ -49,7 +49,7 @@ impl GenericParams {
             regions: Vector::new(),
             types: Vector::new(),
             const_generics: Vector::new(),
-            trait_clauses: Vec::new(),
+            trait_clauses: Vector::new(),
         }
     }
 }
@@ -488,8 +488,6 @@ impl MutTypeVisitor for TraitInstanceIdSelfReplacer {
             TraitInstanceId::TraitImpl(_)
             | TraitInstanceId::Clause(_)
             | TraitInstanceId::BuiltinOrAuto(_)
-            | TraitInstanceId::FnPointer(_)
-            | TraitInstanceId::Closure(..)
             | TraitInstanceId::Unsolved(..)
             | TraitInstanceId::Unknown(_) => (),
         }
@@ -665,13 +663,6 @@ pub trait TypeVisitor {
                 self.visit_trait_decl_id(decl_id);
                 self.visit_trait_clause_id(clause_id)
             },
-            TraitInstanceId::FnPointer(box ty) => {
-                self.visit_ty(ty);
-            }
-            TraitInstanceId::Closure(fid, generics) => {
-                self.visit_fun_decl_id(fid);
-                self.visit_generic_args(generics);
-            }
             TraitInstanceId::Unsolved(trait_id, generics) => {
                 self.visit_trait_decl_id(trait_id);
                 self.visit_generic_args(generics);

@@ -15,6 +15,7 @@ use std::{
 };
 
 /// Indexed vector
+// FIXME: Change the `Vector` API to prevent accidental id reuse because of reentrancy.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Vector<I, T>
 where
@@ -67,6 +68,10 @@ where
 
     pub fn iter_indexed_values(&self) -> impl Iterator<Item = (I, &T)> {
         self.vector.iter_enumerated()
+    }
+
+    pub fn into_iter_indexed_values(self) -> impl Iterator<Item = (I, T)> {
+        self.vector.into_iter_enumerated()
     }
 
     pub fn iter_indices(&self) -> impl Iterator<Item = I> {

@@ -205,7 +205,10 @@ pub struct TraitDecl {
     /// The optional id is for the default value.
     pub consts: Vec<(TraitItemName, (Ty, Option<GlobalDeclId>))>,
     /// The associated types declared in the trait.
-    pub types: Vec<(TraitItemName, (Vec<TraitClause>, Option<Ty>))>,
+    pub types: Vec<(
+        TraitItemName,
+        (Vector<TraitClauseId, TraitClause>, Option<Ty>),
+    )>,
     /// The *required* methods.
     ///
     /// The required methods are the methods declared by the trait but with
