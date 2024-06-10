@@ -969,16 +969,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let ClauseTransCtx::Base(clauses) = &self.clause_translation_context else {
             panic!()
         };
-        let clauses: Vec<_> = clauses.iter().cloned().flat_map(|c| c).collect();
         // Sanity check
-        if !crate::assumed::IGNORE_BUILTIN_MARKER_TRAITS {
-            assert!(clauses
-                .iter()
-                .enumerate()
-                .all(|(i, c)| c.clause_id.index() == i));
-        }
+        assert!(clauses
+            .iter()
+            .enumerate()
+            .all(|(i, c)| c.clause_id.index() == i));
         // Return
-        clauses
+        clauses.iter().cloned().collect()
     }
 
     pub(crate) fn get_predicates(&self) -> Predicates {

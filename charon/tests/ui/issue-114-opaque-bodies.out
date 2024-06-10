@@ -198,7 +198,7 @@ trait core::cmp::PartialEq<Self, Rhs>
 
 fn test_crate::partial_eq<T>(@1: T)
 where
-    [@TraitClause1]: core::cmp::PartialEq<T, T>,
+    [@TraitClause0]: core::cmp::PartialEq<T, T>,
 {
     let @0: (); // return
     let _x@1: T; // arg #1

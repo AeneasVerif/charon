@@ -386,15 +386,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let local_clause = clause.to_trait_clause_with_id(clause_id);
             self.clause_translation_context
                 .as_mut_clauses()
-                .push(Some(local_clause));
+                .push(local_clause);
             self.trait_clauses
                 .entry(clause.trait_id)
                 .or_default()
                 .push(clause);
             Ok(Some(clause_id))
         } else {
-            // FIXME: don't store `None`
-            self.clause_translation_context.as_mut_clauses().push(None);
             Ok(None)
         }
     }

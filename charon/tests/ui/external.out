@@ -90,7 +90,7 @@ trait core::marker::Copy<Self>
 
 fn core::cell::{core::cell::Cell<T>#10}::get<'_0, T>(@1: &'_0 (core::cell::Cell<T>)) -> T
 where
-    [@TraitClause1]: core::marker::Copy<T>,
+    [@TraitClause0]: core::marker::Copy<T>,
 
 fn core::clone::impls::{impl core::clone::Clone for u32#8}::clone<'_0>(@1: &'_0 (u32)) -> u32
 

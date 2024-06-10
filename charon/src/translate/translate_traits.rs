@@ -15,19 +15,19 @@ use std::collections::HashMap;
 /// trait references.
 pub(crate) enum ClauseTransCtx {
     /// We're translating the parent clauses of a trait.
-    Parent(Vector<TraitClauseId, Option<TraitClause>>, TraitDeclId),
+    Parent(Vector<TraitClauseId, TraitClause>, TraitDeclId),
     /// We're translating the item clauses of a trait.
     Item(
-        Vector<TraitClauseId, Option<TraitClause>>,
+        Vector<TraitClauseId, TraitClause>,
         TraitDeclId,
         TraitItemName,
     ),
     /// We're translating anything else.
-    Base(Vector<TraitClauseId, Option<TraitClause>>),
+    Base(Vector<TraitClauseId, TraitClause>),
 }
 
 impl ClauseTransCtx {
-    pub(crate) fn as_mut_clauses(&mut self) -> &mut Vector<TraitClauseId, Option<TraitClause>> {
+    pub(crate) fn as_mut_clauses(&mut self) -> &mut Vector<TraitClauseId, TraitClause> {
         match self {
             ClauseTransCtx::Base(clauses, ..)
             | ClauseTransCtx::Parent(clauses, ..)
@@ -38,7 +38,7 @@ impl ClauseTransCtx {
         match self {
             ClauseTransCtx::Base(clauses, ..)
             | ClauseTransCtx::Parent(clauses, ..)
-            | ClauseTransCtx::Item(clauses, ..) => clauses.into_iter().filter_map(|c| c).collect(),
+            | ClauseTransCtx::Item(clauses, ..) => clauses.into_iter().collect(),
         }
     }
     pub(crate) fn generate_instance_id(&mut self) -> (TraitClauseId, TraitInstanceId) {

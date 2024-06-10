@@ -884,14 +884,14 @@ trait core::iter::traits::collect::IntoIterator<Self>
 fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(@1: I) -> I
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
+    [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
 
 impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<I> : core::iter::traits::collect::IntoIterator<I>
 where
-    [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
+    [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
 {
-    type Item = @TraitClause1::Item with []
-    type IntoIter = I with [@TraitClause1]
+    type Item = @TraitClause0::Item with []
+    type IntoIter = I with [@TraitClause0]
     fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter
 }
 
@@ -939,27 +939,27 @@ trait core::iter::range::Step<Self>
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::next<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>)) -> core::option::Option<A>
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::size_hint<'_0, A>(@1: &'_0 (core::ops::range::Range<A>)) -> (usize, core::option::Option<usize>)
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::count<A>(@1: core::ops::range::Range<A>) -> usize
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::nth<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::option::Option<A>
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::last<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
 
 trait core::cmp::Eq<Self>
 {
@@ -980,21 +980,21 @@ trait core::cmp::Ord<Self>
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::min<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
     // Local clauses:
-    [@TraitClause2]: core::cmp::Ord<A>,
+    [@TraitClause1]: core::cmp::Ord<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::max<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
     // Local clauses:
-    [@TraitClause2]: core::cmp::Ord<A>,
+    [@TraitClause1]: core::cmp::Ord<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::is_sorted<A>(@1: core::ops::range::Range<A>) -> bool
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
 
 enum core::result::Result<T, E> =
 |  Ok(T)
@@ -1006,7 +1006,7 @@ opaque type core::num::nonzero::NonZeroUsize
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZeroUsize>
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
 
 trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
 {
@@ -1014,16 +1014,16 @@ trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
     fn size
 }
 
-unsafe fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::__iterator_get_unchecked<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<A>[@TraitClause1]::Item
+unsafe fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::__iterator_get_unchecked<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<A>[@TraitClause0]::Item
 where
     // Inherited clauses:
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
     // Local clauses:
-    [@TraitClause2]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<core::ops::range::Range<A>>,
+    [@TraitClause1]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<core::ops::range::Range<A>>,
 
 impl<A> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<A> : core::iter::traits::iterator::Iterator<core::ops::range::Range<A>>
 where
-    [@TraitClause1]: core::iter::range::Step<A>,
+    [@TraitClause0]: core::iter::range::Step<A>,
 {
     type Item = A with []
     fn next = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::next
@@ -1613,29 +1613,29 @@ trait core::ops::index::IndexMut<Self, Idx>
     fn index_mut : core::ops::index::IndexMut::index_mut
 }
 
-fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>), @2: I) -> &'_0 (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A>[@TraitClause3]::Output)
+fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>), @2: I) -> &'_0 (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A>[@TraitClause0]::Output)
 where
     // Inherited clauses:
-    [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
+    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 
 impl<T, I, A> alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A> : core::ops::index::Index<alloc::vec::Vec<T, A>, I>
 where
-    [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
+    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
-    type Output = @TraitClause3::Output with []
+    type Output = @TraitClause0::Output with []
     fn index = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}::index
 }
 
-fn alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#13}::index_mut<'_0, T, I, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>), @2: I) -> &'_0 mut (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A>[@TraitClause3]::Output)
+fn alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#13}::index_mut<'_0, T, I, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>), @2: I) -> &'_0 mut (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A>[@TraitClause0]::Output)
 where
     // Inherited clauses:
-    [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
+    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 
 impl<T, I, A> alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#13}<T, I, A> : core::ops::index::IndexMut<alloc::vec::Vec<T, A>, I>
 where
-    [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
+    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A>[@TraitClause3]
+    parent_clause0 = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#12}<T, I, A>[@TraitClause0]
     fn index_mut = alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>#13}::index_mut
 }
 
