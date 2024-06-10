@@ -11,6 +11,7 @@ use crate::names::Name;
 use crate::pretty::FmtWithCtx;
 use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
 use crate::translate_predicates::NonLocalTraitClause;
+use crate::translate_traits::ClauseTransCtx;
 use crate::types::*;
 use crate::ullbc_ast as ast;
 use crate::values::*;
@@ -320,7 +321,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub const_generic_vars_map: MapGenerator<u32, ConstGenericVarId>,
     /// A generator for trait instance ids.
     /// We initialize it so that it generates ids for local clauses.
-    pub trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
+    pub clause_translation_context: ClauseTransCtx,
     /// All the trait clauses accessible from the current environment
     /// TODO: we don't need something as generic anymore because most of the
     /// work of solving the trait obligations is now done in hax.
@@ -763,11 +764,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>) -> Self {
         let hax_state = t_ctx.make_hax_state_with_id(def_id);
-        let mut trait_clauses_counter = Generator::new();
-        let trait_instance_id_gen = Box::new(move || {
-            let id = trait_clauses_counter.fresh_id();
-            TraitInstanceId::Clause(id)
-        });
         BodyTransCtx {
             def_id,
             t_ctx,
@@ -781,7 +777,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             vars_map: MapGenerator::new(),
             const_generic_vars: Vector::new(),
             const_generic_vars_map: MapGenerator::new(),
-            trait_instance_id_gen,
+            clause_translation_context: ClauseTransCtx::Base(Generator::new()),
             trait_clauses: OrdMap::new(),
             registering_trait_clauses: false,
             regions_outlive: Vec::new(),
@@ -1011,9 +1007,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// its parent clauses, etc. in the context. We temporarily replace the
     /// trait instance id generator so that the continuation registers the
     ///
-    pub(crate) fn with_local_trait_clauses<F, T>(
+    pub(crate) fn with_clause_translation_context<F, T>(
         &mut self,
-        new_trait_instance_id_gen: Box<dyn FnMut() -> TraitInstanceId>,
+        new_ctx: ClauseTransCtx,
         f: F,
     ) -> T
     where
@@ -1022,14 +1018,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         use std::mem::replace;
 
         // Save the trait instance id generator
-        let old_trait_instance_id_gen =
-            replace(&mut self.trait_instance_id_gen, new_trait_instance_id_gen);
+        let old_ctx = replace(&mut self.clause_translation_context, new_ctx);
 
         // Apply the continuation
         let out = f(self);
 
         // Restore
-        self.trait_instance_id_gen = old_trait_instance_id_gen;
+        self.clause_translation_context = old_ctx;
 
         // Return
         out

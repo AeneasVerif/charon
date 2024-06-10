@@ -273,11 +273,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Predicates of parent ({:?}): {:?}", parent_id, preds);
 
                 if let Some(trait_id) = parent_trait_id {
-                    self.with_parent_trait_clauses(
-                        TraitInstanceId::SelfId,
-                        trait_id,
-                        &mut |ctx: &mut Self| ctx.translate_predicates(&preds),
-                    )?;
+                    self.with_parent_trait_clauses(trait_id, &mut |ctx: &mut Self| {
+                        ctx.translate_predicates(&preds)
+                    })?;
                 } else {
                     self.translate_predicates(&preds)?;
                 }
@@ -392,6 +390,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
+        clause_id: TraitInstanceId,
     ) -> Result<Option<NonLocalTraitClause>, Error> {
         // Note sure what this is about
         assert!(trait_pred.is_positive);
@@ -399,9 +398,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // We translate trait clauses for signatures, etc. so we do not erase the regions
         let erase_regions = false;
-
-        // Compute the current clause id
-        let clause_id = (self.trait_instance_id_gen)();
 
         let trait_ref = &trait_pred.trait_ref;
         let trait_id = self.register_trait_decl_id(span, DefId::from(&trait_ref.def_id))?;
@@ -453,9 +449,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         match pred_kind {
             PredicateKind::Clause(kind) => {
                 match kind {
-                    ClauseKind::Trait(trait_pred) => Ok(self
-                        .translate_trait_clause(hspan, trait_pred)?
-                        .map(Predicate::Trait)),
+                    ClauseKind::Trait(trait_pred) => {
+                        // Compute the current clause id
+                        let clause_id = self.clause_translation_context.generate_instance_id();
+                        Ok(self
+                            .translate_trait_clause(hspan, trait_pred, clause_id)?
+                            .map(Predicate::Trait))
+                    }
                     ClauseKind::RegionOutlives(p) => {
                         let r0 = self.translate_region(span, erase_regions, &p.lhs)?;
                         let r1 = self.translate_region(span, erase_regions, &p.rhs)?;
