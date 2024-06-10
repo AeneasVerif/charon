@@ -1949,9 +1949,9 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     }
 }
 
-fn translate_function(ctx: &TransformCtx, src_def_id: FunDeclId) -> tgt::FunDecl {
+fn translate_function(ctx: &TransformCtx, src_def_id: FunDeclId) -> Option<tgt::FunDecl> {
     // Retrieve the function definition
-    let src_def = ctx.translated.fun_decls.get(src_def_id).unwrap();
+    let src_def = ctx.translated.fun_decls.get(src_def_id)?;
     let fctx = ctx.into_fmt();
     trace!(
         "# About to reconstruct: {}\n\n{}",
@@ -1960,7 +1960,7 @@ fn translate_function(ctx: &TransformCtx, src_def_id: FunDeclId) -> tgt::FunDecl
     );
 
     // Return the translated definition
-    tgt::FunDecl {
+    Some(tgt::FunDecl {
         def_id: src_def.def_id,
         rust_id: src_def.rust_id,
         item_meta: src_def.item_meta.clone(),
@@ -1972,12 +1972,12 @@ fn translate_function(ctx: &TransformCtx, src_def_id: FunDeclId) -> tgt::FunDecl
             .body
             .as_ref()
             .map(|b| translate_body(ctx.options.no_code_duplication, b)),
-    }
+    })
 }
 
-fn translate_global(ctx: &TransformCtx, global_id: GlobalDeclId) -> tgt::GlobalDecl {
+fn translate_global(ctx: &TransformCtx, global_id: GlobalDeclId) -> Option<tgt::GlobalDecl> {
     // Retrieve the global definition
-    let src_def = ctx.translated.global_decls.get(global_id).unwrap();
+    let src_def = ctx.translated.global_decls.get(global_id)?;
     let fctx = ctx.into_fmt();
     trace!(
         "# About to reconstruct: {}\n\n{}",
@@ -1985,7 +1985,7 @@ fn translate_global(ctx: &TransformCtx, global_id: GlobalDeclId) -> tgt::GlobalD
         fctx.format_object(src_def)
     );
 
-    tgt::GlobalDecl {
+    Some(tgt::GlobalDecl {
         def_id: src_def.def_id,
         rust_id: src_def.rust_id,
         item_meta: src_def.item_meta.clone(),
@@ -1999,25 +1999,30 @@ fn translate_global(ctx: &TransformCtx, global_id: GlobalDeclId) -> tgt::GlobalD
             .body
             .as_ref()
             .map(|b| translate_body(ctx.options.no_code_duplication, b)),
-    }
+    })
 }
 
 /// Translate the functions by reconstructing the control-flow.
 pub fn translate_functions(ctx: &mut TransformCtx) {
-    // Translate the bodies one at a time
-    for (fun_id, _) in ctx.translated.fun_decls.iter_indexed() {
-        let fundecl = translate_function(ctx, *fun_id);
-        ctx.translated.structured_fun_decls.insert(*fun_id, fundecl);
+    // Translate the bodies one at a time. We are careful to keep the same indices for the bodies.
+    for (id, _) in ctx.translated.fun_decls.iter_indexed_all_slots() {
+        let new_id = ctx.translated.structured_fun_decls.reserve_slot();
+        assert_eq!(new_id, id);
+        if let Some(decl) = translate_function(ctx, id) {
+            ctx.translated.structured_fun_decls.set_slot(id, decl);
+        }
     }
-    for (global_id, _) in ctx.translated.global_decls.iter_indexed() {
-        ctx.translated
-            .structured_global_decls
-            .insert(*global_id, translate_global(ctx, *global_id));
+    for (id, _) in ctx.translated.global_decls.iter_indexed_all_slots() {
+        let new_id = ctx.translated.structured_global_decls.reserve_slot();
+        assert_eq!(new_id, id);
+        if let Some(decl) = translate_global(ctx, id) {
+            ctx.translated.structured_global_decls.set_slot(id, decl);
+        }
     }
 
     // Print the functions
     let fmt_ctx = ctx.into_fmt();
-    for (_, fun) in &ctx.translated.structured_fun_decls {
+    for fun in &ctx.translated.structured_fun_decls {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
             fmt_ctx.format_object(&fun.signature),
@@ -2025,7 +2030,7 @@ pub fn translate_functions(ctx: &mut TransformCtx) {
         );
     }
     // Print the global variables
-    for (_, global) in &ctx.translated.structured_global_decls {
+    for global in &ctx.translated.structured_global_decls {
         trace!(
             "# Type:\n{}\n\n# Global definition:\n{}\n",
             fmt_ctx.format_object(&global.ty),

@@ -1,4 +1,4 @@
-use crate::ids::Map;
+use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
 use crate::reorder_decls::DeclarationGroup;
@@ -38,8 +38,8 @@ pub struct GCrateData<FD, GD> {
 impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
     pub fn new(
         ctx: &TransformCtx,
-        fun_decls: &Map<FunDeclId, FD>,
-        global_decls: &Map<GlobalDeclId, GD>,
+        fun_decls: &Vector<FunDeclId, FD>,
+        global_decls: &Vector<GlobalDeclId, GD>,
     ) -> Self {
         // Transform the map file id -> file into a vector.
         // Sort the vector to make the serialized file as stable as possible.
@@ -51,8 +51,6 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
             .map(|id| (id, id_to_file.get(&id).unwrap().clone()))
             .collect();
 
-        // Note that we replace the maps with vectors (the declarations contain
-        // their ids, so it is easy to reconstruct the maps from there).
         let declarations = ctx.translated.ordered_decls.clone().unwrap();
         let types = ctx.translated.type_decls.iter().cloned().collect();
         let functions = fun_decls.iter().cloned().collect();
