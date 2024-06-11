@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.7"
+version = "0.1.8"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
 

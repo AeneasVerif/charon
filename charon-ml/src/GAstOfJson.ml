@@ -453,11 +453,11 @@ let field_of_json (id_to_file : id_to_file_map) (js : json) :
     (field, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("span", span); ("name", name); ("ty", ty) ] ->
-        let* span = span_of_json id_to_file span in
+    | `Assoc [ ("item_meta", item_meta); ("name", name); ("ty", ty) ] ->
+        let* item_meta = item_meta_of_json id_to_file item_meta in
         let* name = option_of_json string_of_json name in
         let* ty = ty_of_json ty in
-        Ok { span; field_name = name; field_ty = ty }
+        Ok { item_meta; field_name = name; field_ty = ty }
     | _ -> Error "")
 
 let variant_of_json (id_to_file : id_to_file_map) (js : json) :
