@@ -380,7 +380,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
     ) -> Result<Option<TraitClauseId>, Error> {
-        // FIXME: once `clause` can't be `None`, use a less error-prone `Vector` API.
+        // FIXME: once `clause` can't be `None`, use |Vector::reserve_slot` to be sure we don't use
+        // the same id twice.
         let (clause_id, instance_id) = self.clause_translation_context.generate_instance_id();
         let clause = self.translate_trait_clause_aux(hspan, trait_pred, instance_id)?;
         if let Some(clause) = clause {

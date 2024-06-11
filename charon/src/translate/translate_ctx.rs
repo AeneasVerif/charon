@@ -185,19 +185,9 @@ pub struct TranslatedCrate {
     pub id_map: HashMap<DefId, AnyTransId>,
     /// The reverse map of ids.
     pub reverse_id_map: HashMap<AnyTransId, DefId>,
-    /// Generator of translated type ids
-    pub type_id_gen: Generator<TypeDeclId>,
-    /// Generator of translated function ids.
-    pub fun_id_gen: Generator<ast::FunDeclId>,
-    /// Generator of translated global ids.
-    pub global_id_gen: Generator<ast::GlobalDeclId>,
-    /// Generator of translated trait decl ids
-    pub trait_decl_id_gen: Generator<ast::TraitDeclId>,
-    /// Generator of translated trait impls ids
-    pub trait_impl_id_gen: Generator<ast::TraitImplId>,
 
     /// The translated type definitions
-    pub type_decls: TypeDecls,
+    pub type_decls: Vector<TypeDeclId, TypeDecl>,
     /// The translated function definitions
     pub fun_decls: ast::FunDecls,
     /// The translated and reconstructed function definitions
@@ -207,9 +197,9 @@ pub struct TranslatedCrate {
     /// The translated and reconstructed global definitions
     pub structured_global_decls: llbc_ast::GlobalDecls,
     /// The translated trait declarations
-    pub trait_decls: ast::TraitDecls,
+    pub trait_decls: Vector<TraitDeclId, TraitDecl>,
     /// The translated trait declarations
-    pub trait_impls: ast::TraitImpls,
+    pub trait_impls: Vector<TraitImplId, TraitImpl>,
     /// The re-ordered groups of declarations, initialized as empty.
     pub ordered_decls: Option<DeclarationsGroups>,
 }
@@ -654,18 +644,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             Some(tid) => *tid,
             None => {
                 let trans_id = match id {
-                    OrdRustId::Type(_) => AnyTransId::Type(self.translated.type_id_gen.fresh_id()),
+                    OrdRustId::Type(_) => {
+                        AnyTransId::Type(self.translated.type_decls.reserve_slot())
+                    }
                     OrdRustId::TraitDecl(_) => {
-                        AnyTransId::TraitDecl(self.translated.trait_decl_id_gen.fresh_id())
+                        AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot())
                     }
                     OrdRustId::TraitImpl(_) => {
-                        AnyTransId::TraitImpl(self.translated.trait_impl_id_gen.fresh_id())
+                        AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
                     }
                     OrdRustId::Global(_) => {
-                        AnyTransId::Global(self.translated.global_id_gen.fresh_id())
+                        AnyTransId::Global(self.translated.global_decls.reserve_slot())
                     }
                     OrdRustId::ConstFun(_) | OrdRustId::Fun(_) => {
-                        AnyTransId::Fun(self.translated.fun_id_gen.fresh_id())
+                        AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
                 };
                 // Add the id to the queue of declarations to translate
@@ -1096,23 +1088,23 @@ impl TranslatedCrate {
         match &self.ordered_decls {
             None => {
                 // We do simple: types, globals, traits, functions
-                for (_, d) in &self.type_decls {
+                for d in &self.type_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.global_decls {
+                for d in &self.global_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.trait_decls {
+                for d in &self.trait_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.trait_impls {
+                for d in &self.trait_impls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.fun_decls {
+                for d in &self.fun_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
             }
@@ -1141,23 +1133,23 @@ impl TranslatedCrate {
         match &self.ordered_decls {
             None => {
                 // We do simple: types, globals, traits, functions
-                for (_, d) in &self.type_decls {
+                for d in &self.type_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in llbc_globals {
+                for d in llbc_globals {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.trait_decls {
+                for d in &self.trait_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in &self.trait_impls {
+                for d in &self.trait_impls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for (_, d) in llbc_funs {
+                for d in llbc_funs {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
             }
