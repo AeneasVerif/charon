@@ -92,6 +92,7 @@
               '' else
                 "";
             propagatedBuildInputs = with ocamlPackages; [
+              core
               ppx_deriving
               visitors
               easy_logging
