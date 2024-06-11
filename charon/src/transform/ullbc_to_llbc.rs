@@ -26,9 +26,8 @@ use crate::formatter::{Formatter, IntoFormatter};
 use crate::gast;
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_span, Span};
-use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::{self as src, GlobalDeclId};
+use crate::ullbc_ast::{self as src};
 use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im::Vector;
@@ -1956,47 +1955,11 @@ fn translate_body(no_code_duplication: bool, body: &mut gast::Body) {
     *body = Structured(tgt_body);
 }
 
-fn translate_global(ctx: &TransformCtx, global_id: GlobalDeclId) -> Option<tgt::GlobalDecl> {
-    // Retrieve the global definition
-    let src_def = ctx.translated.global_decls.get(global_id)?;
-    let fctx = ctx.into_fmt();
-    trace!(
-        "# About to reconstruct: {}\n\n{}",
-        src_def.name.fmt_with_ctx(&fctx),
-        fctx.format_object(src_def)
-    );
-
-    Some(tgt::GlobalDecl {
-        def_id: src_def.def_id,
-        rust_id: src_def.rust_id,
-        item_meta: src_def.item_meta.clone(),
-        is_local: src_def.is_local,
-        name: src_def.name.clone(),
-        generics: src_def.generics.clone(),
-        preds: src_def.preds.clone(),
-        ty: src_def.ty.clone(),
-        kind: src_def.kind.clone(),
-        body: src_def
-            .body
-            .as_ref()
-            .map(|b| translate_body_aux(ctx.options.no_code_duplication, b)),
-    })
-}
-
 /// Translate the functions by reconstructing the control-flow.
 pub fn translate_functions(ctx: &mut TransformCtx) {
     // Translate the bodies one at a time.
     for body in &mut ctx.translated.bodies {
         translate_body(ctx.options.no_code_duplication, body);
-    }
-
-    // Translate the bodies one at a time. We are careful to keep the same indices for the bodies.
-    for (id, _) in ctx.translated.global_decls.iter_indexed_all_slots() {
-        let new_id = ctx.translated.structured_global_decls.reserve_slot();
-        assert_eq!(new_id, id);
-        if let Some(decl) = translate_global(ctx, id) {
-            ctx.translated.structured_global_decls.set_slot(id, decl);
-        }
     }
 
     // Print the functions
@@ -2009,7 +1972,7 @@ pub fn translate_functions(ctx: &mut TransformCtx) {
         );
     }
     // Print the global variables
-    for global in &ctx.translated.structured_global_decls {
+    for global in &ctx.translated.global_decls {
         trace!(
             "# Type:\n{}\n\n# Global definition:\n{}\n",
             fmt_ctx.format_object(&global.ty),

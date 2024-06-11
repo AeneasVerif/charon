@@ -1,11 +1,10 @@
 use crate::formatter::{FmtCtx, IntoFormatter};
-use crate::gast::{Body, BodyId, FunDecl, FunDeclId};
+use crate::gast::{Body, BodyId, FunDecl, FunDeclId, GlobalDecl, GlobalDeclId};
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::names::Name;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::{ErrorCtx, TransOptions, TranslatedCrate};
-use crate::ullbc_ast as ast;
 use crate::ullbc_ast;
 use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
@@ -36,7 +35,7 @@ pub trait UllbcPass: Sync {
     fn transform_function(
         &self,
         ctx: &mut TransformCtx<'_>,
-        _decl: &mut ullbc_ast::FunDecl,
+        _decl: &mut FunDecl,
         body: Option<&mut ullbc_ast::ExprBody>,
     ) {
         if let Some(body) = body {
@@ -45,8 +44,15 @@ pub trait UllbcPass: Sync {
     }
 
     /// Transform a global declaration. This forwards to `transform_body` by default.
-    fn transform_global(&self, ctx: &mut TransformCtx<'_>, decl: &mut ullbc_ast::GlobalDecl) {
-        self.transform_body(ctx, decl.body.as_mut().unwrap())
+    fn transform_global(
+        &self,
+        ctx: &mut TransformCtx<'_>,
+        _decl: &mut GlobalDecl,
+        body: Option<&mut ullbc_ast::ExprBody>,
+    ) {
+        if let Some(body) = body {
+            self.transform_body(ctx, body)
+        }
     }
 
     /// The name of the pass, used for debug logging. The default implementation uses the type
@@ -86,7 +92,7 @@ pub trait LlbcPass: Sync {
     fn transform_function(
         &self,
         ctx: &mut TransformCtx<'_>,
-        _decl: &mut llbc_ast::FunDecl,
+        _decl: &mut FunDecl,
         body: Option<&mut llbc_ast::ExprBody>,
     ) {
         if let Some(body) = body {
@@ -95,8 +101,15 @@ pub trait LlbcPass: Sync {
     }
 
     /// Transform a global declaration. This forwards to `transform_body` by default.
-    fn transform_global(&self, ctx: &mut TransformCtx<'_>, decl: &mut llbc_ast::GlobalDecl) {
-        self.transform_body(ctx, decl.body.as_mut().unwrap())
+    fn transform_global(
+        &self,
+        ctx: &mut TransformCtx<'_>,
+        _decl: &mut GlobalDecl,
+        body: Option<&mut llbc_ast::ExprBody>,
+    ) {
+        if let Some(body) = body {
+            self.transform_body(ctx, body)
+        }
     }
 
     /// The name of the pass, used for debug logging. The default implementation uses the type
@@ -142,15 +155,14 @@ impl TransformPass for dyn UllbcPass {
                         })
                     }
                 });
-                ctx.with_mut_unstructured_global_decls(|ctx, global_decls| {
+                ctx.with_mut_global_decls(|ctx, global_decls| {
                     for decl in global_decls.iter_mut() {
-                        let body = &decl.body;
-                        self.log_before_body(ctx, &decl.name, body.as_ref());
-                        if let Some(_body) = body {
-                            ctx.with_def_id(decl.rust_id, |ctx| {
-                                self.transform_global(ctx, decl);
-                            })
-                        }
+                        let body = bodies.get_mut(decl.body);
+                        let body = body.map(|b| b.as_unstructured_mut()).flatten();
+                        self.log_before_body(ctx, &decl.name, body.as_deref());
+                        ctx.with_def_id(decl.rust_id, |ctx| {
+                            self.transform_global(ctx, decl, body);
+                        })
                     }
                 });
             },
@@ -173,15 +185,14 @@ impl TransformPass for dyn LlbcPass {
                         })
                     }
                 });
-                ctx.with_mut_structured_global_decls(|ctx, global_decls| {
+                ctx.with_mut_global_decls(|ctx, global_decls| {
                     for decl in global_decls.iter_mut() {
-                        let body = &decl.body;
-                        self.log_before_body(ctx, &decl.name, body.as_ref());
-                        if let Some(_body) = body {
-                            ctx.with_def_id(decl.rust_id, |ctx| {
-                                self.transform_global(ctx, decl);
-                            })
-                        }
+                        let body = bodies.get_mut(decl.body);
+                        let body = body.map(|b| b.as_structured_mut()).flatten();
+                        self.log_before_body(ctx, &decl.name, body.as_deref());
+                        ctx.with_def_id(decl.rust_id, |ctx| {
+                            self.transform_global(ctx, decl, body);
+                        })
                     }
                 });
             },
@@ -234,23 +245,13 @@ impl<'ctx> TransformCtx<'ctx> {
         ret
     }
     /// Get mutable access to both the ctx and the global declarations.
-    pub(crate) fn with_mut_unstructured_global_decls<R>(
+    pub(crate) fn with_mut_global_decls<R>(
         &mut self,
-        f: impl FnOnce(&mut Self, &mut ast::GlobalDecls) -> R,
+        f: impl FnOnce(&mut Self, &mut Vector<GlobalDeclId, GlobalDecl>) -> R,
     ) -> R {
         let mut global_decls = std::mem::take(&mut self.translated.global_decls);
         let ret = f(self, &mut global_decls);
         self.translated.global_decls = global_decls;
-        ret
-    }
-    /// Get mutable access to both the ctx and the global declarations.
-    pub(crate) fn with_mut_structured_global_decls<R>(
-        &mut self,
-        f: impl FnOnce(&mut Self, &mut llbc_ast::GlobalDecls) -> R,
-    ) -> R {
-        let mut global_decls = std::mem::take(&mut self.translated.structured_global_decls);
-        let ret = f(self, &mut global_decls);
-        self.translated.structured_global_decls = global_decls;
         ret
     }
 }
@@ -265,6 +266,6 @@ impl<'a> IntoFormatter for &'a TransformCtx<'_> {
 
 impl fmt::Display for TransformCtx<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.translated.fmt_with_ullbc_defs(f)
+        self.translated.fmt(f)
     }
 }

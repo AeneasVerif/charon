@@ -1898,13 +1898,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Translate its body like the body of a function. This returns `None` if we can't/decide
         // not to translate this body.
-        let body = match bt_ctx.translate_body(rust_id, 0, &item_meta) {
-            Ok(Some(Body::Unstructured(body))) => Some(body),
-            Ok(Some(Body::Structured(_))) => unreachable!(),
-            Ok(None) => None,
+        let body_id = bt_ctx.t_ctx.translated.bodies.reserve_slot();
+        match bt_ctx.translate_body(rust_id, 0, &item_meta) {
+            Ok(Some(body)) => {
+                self.translated.bodies.set_slot(body_id, body);
+            }
+            Ok(None) => {}
             // Error case: we could have a specific variant
-            Err(_) => None,
-        };
+            Err(_) => {}
+        }
 
         Ok(GlobalDecl {
             def_id,
@@ -1916,7 +1918,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             preds,
             ty,
             kind,
-            body,
+            body: body_id,
         })
     }
 }

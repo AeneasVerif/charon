@@ -6,14 +6,12 @@ use std::{error::Error, fs::File, io::BufReader, process::Command};
 
 use charon_lib::{
     export::GCrateData,
-    llbc_ast, logger,
+    logger,
     meta::InlineAttr,
     names::{Name, PathElem},
 };
 
-fn translate(
-    code: impl std::fmt::Display,
-) -> Result<GCrateData<llbc_ast::GlobalDecl>, Box<dyn Error>> {
+fn translate(code: impl std::fmt::Display) -> Result<GCrateData, Box<dyn Error>> {
     // Initialize the logger
     logger::initialize_logger();
 
@@ -39,7 +37,7 @@ fn translate(
         .try_success()?;
 
     // Extract the computed crate data.
-    let crate_data: GCrateData<_> = {
+    let crate_data: GCrateData = {
         let file = File::open(output_path)?;
         let reader = BufReader::new(file);
         serde_json::from_reader(reader)?

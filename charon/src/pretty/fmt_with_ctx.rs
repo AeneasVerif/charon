@@ -487,14 +487,13 @@ where
     }
 }
 
-impl<T, C> FmtWithCtx<C> for GGlobalDecl<T>
+impl<C> FmtWithCtx<C> for GlobalDecl
 where
     C: AstFormatter,
     C: for<'a> SetLocals<'a>,
     for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
     for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
-    for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C:
-        AstFormatter + Formatter<&'c T>,
+    for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
 {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         // Update the context with the generics
@@ -513,21 +512,17 @@ where
         // Decl name
         let name = self.name.fmt_with_ctx(ctx);
 
-        // Case disjunction on the presence of a body (transparent/opaque definition)
-        match &self.body {
-            Option::None => {
-                // Put everything together
-                format!("{tab}global {name}{params}{preds}{eq_space}")
-            }
-            Option::Some(body) => {
-                // Body
-                let body_tab = format!("{tab}{TAB_INCR}");
-                let body = body.fmt_with_ctx_and_indent(&body_tab, ctx);
+        // Body
+        // FIXME: pass the indent here somehow
+        let body = ctx.format_object(self.body);
+        let body = if body == "<opaque>" {
+            String::new()
+        } else {
+            format!(" {{\n{body}\n{tab}}}")
+        };
 
-                // Put everything together
-                format!("{tab}global {name}{params}{preds}{eq_space} {{\n{body}\n{tab}}}")
-            }
-        }
+        // Put everything together
+        format!("{tab}global {name}{params}{preds}{eq_space}{body}")
     }
 }
 

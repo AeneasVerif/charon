@@ -4,11 +4,9 @@ use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::ids::{Generator, MapGenerator, Vector};
-use crate::llbc_ast;
 use crate::meta::{self, Attribute, ItemMeta, RawSpan};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Span, VirtualFileId};
 use crate::names::Name;
-use crate::pretty::FmtWithCtx;
 use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
 use crate::translate_predicates::NonLocalTraitClause;
 use crate::translate_traits::ClauseTransCtx;
@@ -191,9 +189,7 @@ pub struct TranslatedCrate {
     /// The translated function definitions
     pub fun_decls: Vector<FunDeclId, FunDecl>,
     /// The translated global definitions
-    pub global_decls: ast::GlobalDecls,
-    /// The translated and reconstructed global definitions
-    pub structured_global_decls: llbc_ast::GlobalDecls,
+    pub global_decls: Vector<GlobalDeclId, GlobalDecl>,
     /// The bodies of functions and constants
     pub bodies: Vector<BodyId, Body>,
     /// The translated trait declarations
@@ -1082,7 +1078,7 @@ impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx, 'ctx> {
 }
 
 impl TranslatedCrate {
-    pub(crate) fn fmt_with_ullbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    pub(crate) fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fmt: FmtCtx = self.into_fmt();
 
         match &self.ordered_decls {
@@ -1125,54 +1121,12 @@ impl TranslatedCrate {
         fmt::Result::Ok(())
     }
 
+    pub(crate) fn fmt_with_ullbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.fmt(f)
+    }
+
     pub(crate) fn fmt_with_llbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let fmt: FmtCtx = self.into_fmt();
-        let llbc_globals = &self.structured_global_decls;
-        match &self.ordered_decls {
-            None => {
-                // We do simple: types, globals, traits, functions
-                for d in &self.type_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
-                }
-
-                for d in llbc_globals {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
-                }
-
-                for d in &self.trait_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
-                }
-
-                for d in &self.trait_impls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
-                }
-
-                for d in &self.fun_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
-                }
-            }
-            Some(ordered_decls) => {
-                for gr in ordered_decls {
-                    use DeclarationGroup::*;
-                    match gr {
-                        Type(gr) => fmt.fmt_decl_group(f, gr)?,
-                        Fun(gr) => fmt.fmt_decl_group(f, gr)?,
-                        Global(gr) => {
-                            for id in gr.get_ids() {
-                                match llbc_globals.get(id) {
-                                    None => writeln!(f, "Unknown decl: {:?}\n", id)?,
-                                    Some(d) => writeln!(f, "{}\n", d.fmt_with_ctx(&fmt))?,
-                                }
-                            }
-                        }
-                        TraitDecl(gr) => fmt.fmt_decl_group(f, gr)?,
-                        TraitImpl(gr) => fmt.fmt_decl_group(f, gr)?,
-                    }
-                }
-            }
-        };
-
-        fmt::Result::Ok(())
+        self.fmt(f)
     }
 }
 

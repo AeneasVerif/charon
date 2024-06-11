@@ -1,12 +1,9 @@
-use crate::gast::{Body, FunDecl};
+use crate::gast::{Body, BodyId, FunDecl, GlobalDecl, TraitDecl, TraitImpl};
 use crate::ids::Vector;
-use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
 use crate::reorder_decls::DeclarationGroup;
 use crate::transform::TransformCtx;
 use crate::types::*;
-use crate::ullbc_ast;
-use crate::ullbc_ast::{GlobalDeclId, TraitDecl, TraitImpl};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::path::Path;
@@ -15,7 +12,7 @@ use std::path::Path;
 /// stable as possible. This is used for both ULLBC and LLBC.
 #[derive(Serialize, Deserialize)]
 #[serde(rename = "Crate")]
-pub struct GCrateData<GD> {
+pub struct GCrateData {
     /// The version of charon currently being used. `charon-ml` inspects this and errors if it is
     /// trying to read an incompatible version (for now we compare versions for equality).
     pub charon_version: String,
@@ -28,8 +25,9 @@ pub struct GCrateData<GD> {
     pub declarations: Vec<DeclarationGroup>,
     pub types: Vec<TypeDecl>,
     pub functions: Vec<FunDecl>,
-    pub globals: Vec<GD>,
-    pub bodies: Vec<Option<Body>>,
+    pub globals: Vec<GlobalDecl>,
+    /// This list is indexable by body ids. Some ids may correspond to a `None` entry.
+    pub bodies: Vector<BodyId, Body>,
     pub trait_decls: Vec<TraitDecl>,
     pub trait_impls: Vec<TraitImpl>,
     #[serde(skip)]
@@ -37,8 +35,8 @@ pub struct GCrateData<GD> {
     pub has_errors: bool,
 }
 
-impl<GD: Serialize + Clone> GCrateData<GD> {
-    pub fn new(ctx: &TransformCtx, global_decls: &Vector<GlobalDeclId, GD>) -> Self {
+impl GCrateData {
+    pub fn new(ctx: &TransformCtx) -> Self {
         // Transform the map file id -> file into a vector.
         // Sort the vector to make the serialized file as stable as possible.
         let id_to_file = &ctx.translated.id_to_file;
@@ -52,8 +50,8 @@ impl<GD: Serialize + Clone> GCrateData<GD> {
         let declarations = ctx.translated.ordered_decls.clone().unwrap();
         let types = ctx.translated.type_decls.iter().cloned().collect();
         let functions = ctx.translated.fun_decls.iter().cloned().collect();
-        let globals = global_decls.iter().cloned().collect();
-        let bodies = ctx.translated.bodies.iter_all_slots().cloned().collect();
+        let globals = ctx.translated.global_decls.iter().cloned().collect();
+        let bodies = ctx.translated.bodies.clone();
         let trait_decls = ctx.translated.trait_decls.iter().cloned().collect();
         let trait_impls = ctx.translated.trait_impls.iter().cloned().collect();
         GCrateData {
@@ -114,20 +112,17 @@ impl<GD: Serialize + Clone> GCrateData<GD> {
 
 /// The two kinds of crate data we construct.
 pub enum CrateData {
-    ULLBC(GCrateData<ullbc_ast::GlobalDecl>),
-    LLBC(GCrateData<llbc_ast::GlobalDecl>),
+    ULLBC(GCrateData),
+    LLBC(GCrateData),
 }
 
 impl CrateData {
     pub fn new_ullbc(ctx: &TransformCtx) -> Self {
-        Self::ULLBC(GCrateData::new(ctx, &ctx.translated.global_decls))
+        Self::ULLBC(GCrateData::new(ctx))
     }
 
     pub fn new_llbc(ctx: &TransformCtx) -> Self {
-        Self::LLBC(GCrateData::new(
-            ctx,
-            &ctx.translated.structured_global_decls,
-        ))
+        Self::LLBC(GCrateData::new(ctx))
     }
 
     /// Export the translated definitions to a JSON file.

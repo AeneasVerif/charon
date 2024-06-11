@@ -326,8 +326,8 @@ impl SharedExprVisitor for Deps {}
 impl SharedAstVisitor for Deps {}
 
 impl Deps {
-    fn visit_body(&mut self, body: Option<&ExprBody>) {
-        if let Some(body) = body {
+    fn visit_body(&mut self, body: Option<&Body>) {
+        if let Some(Body::Unstructured(body)) = body {
             for v in &body.locals {
                 self.visit_ty(&v.ty);
             }
@@ -432,9 +432,8 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
                     graph.visit_ty(&sig.output);
 
                     // Explore the body
-                    if let Some(Body::Unstructured(body)) = ctx.translated.bodies.get(d.body) {
-                        graph.visit_body(Some(body));
-                    }
+                    let body = ctx.translated.bodies.get(d.body);
+                    graph.visit_body(body);
                 } else {
                     // There may have been errors
                     assert!(ctx.has_errors());
@@ -443,7 +442,8 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
             AnyTransId::Global(id) => {
                 if let Some(d) = ctx.translated.global_decls.get(*id) {
                     // Explore the body
-                    graph.visit_body(d.body.as_ref());
+                    let body = ctx.translated.bodies.get(d.body);
+                    graph.visit_body(body);
                 } else {
                     // There may have been errors
                     assert!(ctx.has_errors());

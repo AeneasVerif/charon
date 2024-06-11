@@ -469,18 +469,6 @@ impl<'a> Formatter<&TypeDecl> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<&ullbc_ast::GlobalDecl> for FmtCtx<'a> {
-    fn format_object(&self, def: &ullbc_ast::GlobalDecl) -> String {
-        def.fmt_with_ctx(self)
-    }
-}
-
-impl<'a> Formatter<&llbc_ast::GlobalDecl> for FmtCtx<'a> {
-    fn format_object(&self, def: &llbc_ast::GlobalDecl) -> String {
-        def.fmt_with_ctx(self)
-    }
-}
-
 impl<'a> Formatter<&ullbc_ast::ExprBody> for FmtCtx<'a> {
     fn format_object(&self, body: &ullbc_ast::ExprBody) -> String {
         body.fmt_with_ctx(self)
@@ -495,6 +483,12 @@ impl<'a> Formatter<&llbc_ast::ExprBody> for FmtCtx<'a> {
 
 impl<'a> Formatter<&gast::FunDecl> for FmtCtx<'a> {
     fn format_object(&self, def: &llbc_ast::FunDecl) -> String {
+        def.fmt_with_ctx(self)
+    }
+}
+
+impl<'a> Formatter<&gast::GlobalDecl> for FmtCtx<'a> {
+    fn format_object(&self, def: &llbc_ast::GlobalDecl) -> String {
         def.fmt_with_ctx(self)
     }
 }

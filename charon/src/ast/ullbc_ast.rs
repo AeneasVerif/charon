@@ -19,9 +19,6 @@ pub static START_BLOCK_ID: BlockId = BlockId::ZERO;
 pub type BodyContents = Vector<BlockId, BlockData>;
 pub type ExprBody = GExprBody<BodyContents>;
 
-pub type GlobalDecl = GGlobalDecl<BodyContents>;
-pub type GlobalDecls = Vector<GlobalDeclId, GlobalDecl>;
-
 /// A raw statement: a statement without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize, Deserialize)]
 pub enum RawStatement {

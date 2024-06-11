@@ -127,11 +127,6 @@ let blocks_of_json (id_to_file : id_to_file_map) (js : json) :
   combine_error_msgs js __FUNCTION__
     (list_of_json (block_of_json id_to_file) js)
 
-let global_decl_of_json (id_to_file : id_to_file_map) (js : json) :
-    (global_decl, string) result =
-  combine_error_msgs js __FUNCTION__
-    (gglobal_decl_of_json (blocks_of_json id_to_file) id_to_file js)
-
 let expr_body_of_json (id_to_file : id_to_file_map) (js : json) :
     (expr_body, string) result =
   combine_error_msgs js __FUNCTION__
@@ -183,7 +178,7 @@ let crate_of_json (js : json) : (crate, string) result =
              list_of_json (gfun_decl_of_json bodies id_to_file) functions
            in
            let* globals =
-             list_of_json (global_decl_of_json id_to_file) globals
+             list_of_json (gglobal_decl_of_json bodies id_to_file) globals
            in
            let* trait_decls =
              list_of_json (trait_decl_of_json id_to_file) trait_decls

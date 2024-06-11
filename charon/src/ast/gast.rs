@@ -135,9 +135,9 @@ pub struct FunDecl {
     pub body: BodyId,
 }
 
-/// A global variable definition, either opaque or transparent.
+/// A global variable definition
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GGlobalDecl<T> {
+pub struct GlobalDecl {
     pub def_id: GlobalDeclId,
     #[serde(skip)]
     #[serde(default = "dummy_def_id")]
@@ -153,7 +153,7 @@ pub struct GGlobalDecl<T> {
     pub ty: Ty,
     /// The global kind: "regular" function, trait const declaration, etc.
     pub kind: ItemKind,
-    pub body: Option<GExprBody<T>>,
+    pub body: BodyId,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
