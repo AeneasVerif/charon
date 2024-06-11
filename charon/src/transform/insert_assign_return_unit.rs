@@ -5,7 +5,7 @@
 //! an extra assignment just before returning.
 
 use crate::expressions::*;
-use crate::llbc_ast::{ExprBody, FunDecl, GlobalDecl, RawStatement, Statement};
+use crate::llbc_ast::{ExprBody, FunDecl, GlobalDecl, Opaque, RawStatement, Statement};
 use crate::transform::TransformCtx;
 use crate::types::*;
 use crate::values::*;
@@ -31,14 +31,28 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
 
 pub struct Transform;
 impl LlbcPass for Transform {
-    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
+    fn transform_function(
+        &self,
+        ctx: &mut TransformCtx,
+        decl: &mut FunDecl,
+        body: Result<&mut ExprBody, Opaque>,
+    ) {
         if decl.signature.output.is_unit() {
-            self.transform_body(ctx, decl.body.as_mut().unwrap())
+            if let Ok(body) = body {
+                self.transform_body(ctx, body)
+            }
         }
     }
-    fn transform_global(&self, ctx: &mut TransformCtx, decl: &mut GlobalDecl) {
+    fn transform_global(
+        &self,
+        ctx: &mut TransformCtx,
+        decl: &mut GlobalDecl,
+        body: Result<&mut ExprBody, Opaque>,
+    ) {
         if decl.ty.is_unit() {
-            self.transform_body(ctx, decl.body.as_mut().unwrap())
+            if let Ok(body) = body {
+                self.transform_body(ctx, body)
+            }
         }
     }
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, body: &mut ExprBody) {

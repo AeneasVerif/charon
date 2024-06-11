@@ -111,10 +111,16 @@ and switch_of_json (id_to_file : id_to_file_map) (js : json) :
         Ok (Match (p, tgts, otherwise))
     | _ -> Error "")
 
-let fun_decl_of_json (id_to_file : id_to_file_map) (js : json) :
-    (fun_decl, string) result =
+let expr_body_of_json (id_to_file : id_to_file_map) (js : json) :
+    (expr_body, string) result =
   combine_error_msgs js __FUNCTION__
-    (gfun_decl_of_json (statement_of_json id_to_file) id_to_file js)
+    (match js with
+    | `Assoc [ ("Structured", body) ] ->
+        let* body =
+          gexpr_body_of_json (statement_of_json id_to_file) id_to_file body
+        in
+        Ok body
+    | _ -> Error "")
 
 (** Strict type for the number of function declarations (see {!global_to_fun_id} below) *)
 type global_id_converter = { fun_count : int } [@@deriving show]
@@ -130,13 +136,12 @@ let global_to_fun_id (conv : global_id_converter) (gid : GlobalDeclId.id) :
 (** Deserialize a global declaration, and decompose it into a global declaration
     and a function declaration.
  *)
-let global_decl_of_json (id_to_file : id_to_file_map) (js : json)
-    (gid_conv : global_id_converter) : (global_decl * fun_decl, string) result =
+let global_decl_of_json (bodies : expr_body option list)
+    (id_to_file : id_to_file_map) (js : json) (gid_conv : global_id_converter) :
+    (global_decl * fun_decl, string) result =
   combine_error_msgs js __FUNCTION__
     ((* Deserialize the global declaration *)
-     let* global =
-       gglobal_decl_of_json (statement_of_json id_to_file) id_to_file js
-     in
+     let* global = gglobal_decl_of_json bodies id_to_file js in
      let {
        def_id = global_id;
        item_meta;
@@ -203,6 +208,7 @@ let crate_of_json (js : json) : (crate, string) result =
         ("types", types);
         ("functions", functions);
         ("globals", globals);
+        ("bodies", bodies);
         ("trait_decls", trait_decls);
         ("trait_impls", trait_impls);
       ] ->
@@ -226,8 +232,11 @@ let crate_of_json (js : json) : (crate, string) result =
              list_of_json declaration_group_of_json declarations
            in
            let* types = list_of_json (type_decl_of_json id_to_file) types in
+           let* bodies =
+             list_of_json (option_of_json (expr_body_of_json id_to_file)) bodies
+           in
            let* functions =
-             list_of_json (fun_decl_of_json id_to_file) functions
+             list_of_json (gfun_decl_of_json bodies id_to_file) functions
            in
            (* When deserializing the globals, we split the global declarations
             * between the globals themselves and their bodies, which are simply
@@ -237,7 +246,7 @@ let crate_of_json (js : json) : (crate, string) result =
            let gid_conv = { fun_count = List.length functions } in
            let* globals =
              list_of_json
-               (fun js -> global_decl_of_json id_to_file js gid_conv)
+               (fun js -> global_decl_of_json bodies id_to_file js gid_conv)
                globals
            in
            let globals, global_bodies = List.split globals in

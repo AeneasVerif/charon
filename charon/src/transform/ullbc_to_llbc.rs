@@ -23,12 +23,11 @@
 use crate::common::ensure_sufficient_stack;
 use crate::expressions::Place;
 use crate::formatter::{Formatter, IntoFormatter};
+use crate::gast;
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_span, Span};
-use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::FunDeclId;
-use crate::ullbc_ast::{self as src, GlobalDeclId};
+use crate::ullbc_ast::{self as src};
 use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im::Vector;
@@ -39,8 +38,6 @@ use petgraph::Direction;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
-
-pub type Defs = (tgt::FunDecls, tgt::GlobalDecls);
 
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId, ()>;
@@ -1903,7 +1900,7 @@ fn translate_block(
     }
 }
 
-fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::ExprBody {
+fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
     let cfg_info = build_cfg_partial_info(src_body);
@@ -1949,80 +1946,25 @@ fn translate_body(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::E
     }
 }
 
-fn translate_function(ctx: &TransformCtx, src_def_id: FunDeclId) -> Option<tgt::FunDecl> {
-    // Retrieve the function definition
-    let src_def = ctx.translated.fun_decls.get(src_def_id)?;
-    let fctx = ctx.into_fmt();
-    trace!(
-        "# About to reconstruct: {}\n\n{}",
-        src_def.name.fmt_with_ctx(&fctx),
-        fctx.into_fmt().format_object(src_def)
-    );
-
-    // Return the translated definition
-    Some(tgt::FunDecl {
-        def_id: src_def.def_id,
-        rust_id: src_def.rust_id,
-        item_meta: src_def.item_meta.clone(),
-        is_local: src_def.is_local,
-        name: src_def.name.clone(),
-        signature: src_def.signature.clone(),
-        kind: src_def.kind.clone(),
-        body: src_def
-            .body
-            .as_ref()
-            .map(|b| translate_body(ctx.options.no_code_duplication, b)),
-    })
-}
-
-fn translate_global(ctx: &TransformCtx, global_id: GlobalDeclId) -> Option<tgt::GlobalDecl> {
-    // Retrieve the global definition
-    let src_def = ctx.translated.global_decls.get(global_id)?;
-    let fctx = ctx.into_fmt();
-    trace!(
-        "# About to reconstruct: {}\n\n{}",
-        src_def.name.fmt_with_ctx(&fctx),
-        fctx.format_object(src_def)
-    );
-
-    Some(tgt::GlobalDecl {
-        def_id: src_def.def_id,
-        rust_id: src_def.rust_id,
-        item_meta: src_def.item_meta.clone(),
-        is_local: src_def.is_local,
-        name: src_def.name.clone(),
-        generics: src_def.generics.clone(),
-        preds: src_def.preds.clone(),
-        ty: src_def.ty.clone(),
-        kind: src_def.kind.clone(),
-        body: src_def
-            .body
-            .as_ref()
-            .map(|b| translate_body(ctx.options.no_code_duplication, b)),
-    })
+fn translate_body(no_code_duplication: bool, body: &mut gast::Body) {
+    use gast::Body::{Structured, Unstructured};
+    let Unstructured(src_body) = body else {
+        panic!("Called `ullbc_to_llbc` on an already restructured body")
+    };
+    let tgt_body = translate_body_aux(no_code_duplication, src_body);
+    *body = Structured(tgt_body);
 }
 
 /// Translate the functions by reconstructing the control-flow.
 pub fn translate_functions(ctx: &mut TransformCtx) {
-    // Translate the bodies one at a time. We are careful to keep the same indices for the bodies.
-    for (id, _) in ctx.translated.fun_decls.iter_indexed_all_slots() {
-        let new_id = ctx.translated.structured_fun_decls.reserve_slot();
-        assert_eq!(new_id, id);
-        if let Some(decl) = translate_function(ctx, id) {
-            ctx.translated.structured_fun_decls.set_slot(id, decl);
-        }
-    }
-    for (id, _) in ctx.translated.global_decls.iter_indexed_all_slots() {
-        let new_id = ctx.translated.structured_global_decls.reserve_slot();
-        assert_eq!(new_id, id);
-        if let Some(decl) = translate_global(ctx, id) {
-            ctx.translated.structured_global_decls.set_slot(id, decl);
-        }
+    // Translate the bodies one at a time.
+    for body in &mut ctx.translated.bodies {
+        translate_body(ctx.options.no_code_duplication, body);
     }
 
     // Print the functions
     let fmt_ctx = ctx.into_fmt();
-    for fun in &ctx.translated.structured_fun_decls {
+    for fun in &ctx.translated.fun_decls {
         trace!(
             "# Signature:\n{}\n\n# Function definition:\n{}\n",
             fmt_ctx.format_object(&fun.signature),
@@ -2030,7 +1972,7 @@ pub fn translate_functions(ctx: &mut TransformCtx) {
         );
     }
     // Print the global variables
-    for global in &ctx.translated.structured_global_decls {
+    for global in &ctx.translated.global_decls {
         trace!(
             "# Type:\n{}\n\n# Global definition:\n{}\n",
             fmt_ctx.format_object(&global.ty),

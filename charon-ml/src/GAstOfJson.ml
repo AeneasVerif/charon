@@ -1094,7 +1094,18 @@ let item_kind_of_json (js : json) : (item_kind, string) result =
         Ok (TraitItemProvided (trait_id, item_name))
     | _ -> Error "")
 
-let gfun_decl_of_json (body_of_json : json -> ('body, string) result)
+let maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
+    (js : json) : ('body gexpr_body option, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Ok", body) ] ->
+        let* body_id = BodyId.id_of_json body in
+        let body = List.nth bodies (BodyId.to_int body_id) in
+        Ok body
+    | `Assoc [ ("Err", `Null) ] -> Ok None
+    | _ -> Error "")
+
+let gfun_decl_of_json (bodies : 'body gexpr_body option list)
     (id_to_file : id_to_file_map) (js : json) : ('body gfun_decl, string) result
     =
   combine_error_msgs js __FUNCTION__
@@ -1115,9 +1126,7 @@ let gfun_decl_of_json (body_of_json : json -> ('body, string) result)
         let* name = name_of_json id_to_file name in
         let* signature = fun_sig_of_json id_to_file signature in
         let* kind = item_kind_of_json kind in
-        let* body =
-          option_of_json (gexpr_body_of_json body_of_json id_to_file) body
-        in
+        let* body = maybe_opaque_body_of_json bodies body in
         Ok
           {
             def_id;
@@ -1131,7 +1140,7 @@ let gfun_decl_of_json (body_of_json : json -> ('body, string) result)
           }
     | _ -> Error "")
 
-let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
+let gglobal_decl_of_json (bodies : 'body gexpr_body option list)
     (id_to_file : id_to_file_map) (js : json) :
     ('body gexpr_body option gglobal_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1155,10 +1164,8 @@ let gglobal_decl_of_json (body_of_json : json -> ('body, string) result)
         let* generics = generic_params_of_json id_to_file generics in
         let* preds = predicates_of_json preds in
         let* ty = ty_of_json ty in
-        let* body =
-          option_of_json (gexpr_body_of_json body_of_json id_to_file) body
-        in
         let* kind = item_kind_of_json kind in
+        let* body = maybe_opaque_body_of_json bodies body in
         let global =
           {
             def_id = global_id;
