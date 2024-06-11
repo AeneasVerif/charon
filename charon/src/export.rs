@@ -1,3 +1,4 @@
+use crate::gast::{Body, FunDecl};
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::meta::{FileId, FileName};
@@ -5,7 +6,7 @@ use crate::reorder_decls::DeclarationGroup;
 use crate::transform::TransformCtx;
 use crate::types::*;
 use crate::ullbc_ast;
-use crate::ullbc_ast::{FunDeclId, GlobalDeclId, TraitDecl, TraitImpl};
+use crate::ullbc_ast::{GlobalDeclId, TraitDecl, TraitImpl};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::path::Path;
@@ -14,7 +15,7 @@ use std::path::Path;
 /// stable as possible. This is used for both ULLBC and LLBC.
 #[derive(Serialize, Deserialize)]
 #[serde(rename = "Crate")]
-pub struct GCrateData<FD, GD> {
+pub struct GCrateData<GD> {
     /// The version of charon currently being used. `charon-ml` inspects this and errors if it is
     /// trying to read an incompatible version (for now we compare versions for equality).
     pub charon_version: String,
@@ -26,8 +27,9 @@ pub struct GCrateData<FD, GD> {
     pub id_to_file: Vec<(FileId, FileName)>,
     pub declarations: Vec<DeclarationGroup>,
     pub types: Vec<TypeDecl>,
-    pub functions: Vec<FD>,
+    pub functions: Vec<FunDecl>,
     pub globals: Vec<GD>,
+    pub bodies: Vec<Option<Body>>,
     pub trait_decls: Vec<TraitDecl>,
     pub trait_impls: Vec<TraitImpl>,
     #[serde(skip)]
@@ -35,12 +37,8 @@ pub struct GCrateData<FD, GD> {
     pub has_errors: bool,
 }
 
-impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
-    pub fn new(
-        ctx: &TransformCtx,
-        fun_decls: &Vector<FunDeclId, FD>,
-        global_decls: &Vector<GlobalDeclId, GD>,
-    ) -> Self {
+impl<GD: Serialize + Clone> GCrateData<GD> {
+    pub fn new(ctx: &TransformCtx, global_decls: &Vector<GlobalDeclId, GD>) -> Self {
         // Transform the map file id -> file into a vector.
         // Sort the vector to make the serialized file as stable as possible.
         let id_to_file = &ctx.translated.id_to_file;
@@ -53,8 +51,9 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
 
         let declarations = ctx.translated.ordered_decls.clone().unwrap();
         let types = ctx.translated.type_decls.iter().cloned().collect();
-        let functions = fun_decls.iter().cloned().collect();
+        let functions = ctx.translated.fun_decls.iter().cloned().collect();
         let globals = global_decls.iter().cloned().collect();
+        let bodies = ctx.translated.bodies.iter_all_slots().cloned().collect();
         let trait_decls = ctx.translated.trait_decls.iter().cloned().collect();
         let trait_impls = ctx.translated.trait_impls.iter().cloned().collect();
         GCrateData {
@@ -65,6 +64,7 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
             types,
             functions,
             globals,
+            bodies,
             trait_decls,
             trait_impls,
             has_errors: ctx.has_errors(),
@@ -114,23 +114,18 @@ impl<FD: Serialize + Clone, GD: Serialize + Clone> GCrateData<FD, GD> {
 
 /// The two kinds of crate data we construct.
 pub enum CrateData {
-    ULLBC(GCrateData<ullbc_ast::FunDecl, ullbc_ast::GlobalDecl>),
-    LLBC(GCrateData<llbc_ast::FunDecl, llbc_ast::GlobalDecl>),
+    ULLBC(GCrateData<ullbc_ast::GlobalDecl>),
+    LLBC(GCrateData<llbc_ast::GlobalDecl>),
 }
 
 impl CrateData {
     pub fn new_ullbc(ctx: &TransformCtx) -> Self {
-        Self::ULLBC(GCrateData::new(
-            ctx,
-            &ctx.translated.fun_decls,
-            &ctx.translated.global_decls,
-        ))
+        Self::ULLBC(GCrateData::new(ctx, &ctx.translated.global_decls))
     }
 
     pub fn new_llbc(ctx: &TransformCtx) -> Self {
         Self::LLBC(GCrateData::new(
             ctx,
-            &ctx.translated.structured_fun_decls,
             &ctx.translated.structured_global_decls,
         ))
     }

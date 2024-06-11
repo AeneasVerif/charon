@@ -1464,7 +1464,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         rust_id: DefId,
         arg_count: usize,
         item_meta: &ItemMeta,
-    ) -> Result<Option<ExprBody>, Error> {
+    ) -> Result<Option<Body>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut self);
         let res =
@@ -1484,7 +1484,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         rust_id: DefId,
         arg_count: usize,
         item_meta: &ItemMeta,
-    ) -> Result<Option<ExprBody>, Error> {
+    ) -> Result<Option<Body>, Error> {
         let tcx = self.t_ctx.tcx;
 
         if item_meta.opaque {
@@ -1539,12 +1539,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Create the body
-        Ok(Some(ExprBody {
+        Ok(Some(Body::Unstructured(ExprBody {
             span,
             arg_count,
             locals: mem::take(&mut self.vars),
             body: blocks,
-        }))
+        })))
     }
 
     /// Translate a function's signature, and initialize a body translation context
@@ -1827,17 +1827,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("Translating function signature");
         let signature = bt_ctx.translate_function_signature(rust_id)?;
 
-        let body = if !is_trait_method_decl {
-            // Translate the body. This returns `None` if we can't/decide not to translate this
-            // body.
+        let body_id = bt_ctx.t_ctx.translated.bodies.reserve_slot();
+        if !is_trait_method_decl {
+            // Translate the body. This doesn't store anything if we can't/decide not to translate
+            // this body.
             match bt_ctx.translate_body(rust_id, signature.inputs.len(), &item_meta) {
-                Ok(body) => body,
+                Ok(Some(body)) => {
+                    self.translated.bodies.set_slot(body_id, body);
+                }
+                Ok(None) => {}
                 // Error case: we could have a variant for this
-                Err(_) => None,
+                Err(_) => {}
             }
-        } else {
-            None
-        };
+        }
 
         Ok(FunDecl {
             def_id,
@@ -1847,7 +1849,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             name,
             signature,
             kind,
-            body,
+            body: body_id,
         })
     }
 
@@ -1897,7 +1899,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // Translate its body like the body of a function. This returns `None` if we can't/decide
         // not to translate this body.
         let body = match bt_ctx.translate_body(rust_id, 0, &item_meta) {
-            Ok(body) => body,
+            Ok(Some(Body::Unstructured(body))) => Some(body),
+            Ok(Some(Body::Structured(_))) => unreachable!(),
+            Ok(None) => None,
             // Error case: we could have a specific variant
             Err(_) => None,
         };

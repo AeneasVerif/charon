@@ -1,4 +1,6 @@
 use crate::formatter::{FmtCtx, IntoFormatter};
+use crate::gast::{Body, BodyId, FunDecl, FunDeclId};
+use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::names::Name;
 use crate::pretty::FmtWithCtx;
@@ -31,8 +33,15 @@ pub trait UllbcPass: Sync {
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, _body: &mut ullbc_ast::ExprBody) {}
 
     /// Transform a function declaration. This forwards to `transform_body` by default.
-    fn transform_function(&self, ctx: &mut TransformCtx<'_>, decl: &mut ullbc_ast::FunDecl) {
-        self.transform_body(ctx, decl.body.as_mut().unwrap())
+    fn transform_function(
+        &self,
+        ctx: &mut TransformCtx<'_>,
+        _decl: &mut ullbc_ast::FunDecl,
+        body: Option<&mut ullbc_ast::ExprBody>,
+    ) {
+        if let Some(body) = body {
+            self.transform_body(ctx, body)
+        }
     }
 
     /// Transform a global declaration. This forwards to `transform_body` by default.
@@ -47,13 +56,23 @@ pub trait UllbcPass: Sync {
     }
 
     /// Log that the pass is about to be run on this body.
-    fn log_before_body(&self, ctx: &TransformCtx<'_>, name: &Name, body: &ullbc_ast::ExprBody) {
+    fn log_before_body(
+        &self,
+        ctx: &TransformCtx<'_>,
+        name: &Name,
+        body: Option<&ullbc_ast::ExprBody>,
+    ) {
         let fmt_ctx = &ctx.into_fmt();
+        let body_str = if let Some(body) = body {
+            body.fmt_with_ctx(fmt_ctx)
+        } else {
+            "<opaque>".to_owned()
+        };
         trace!(
             "# About to run pass [{}] on `{}`:\n{}",
             self.name(),
             name.with_ctx(fmt_ctx),
-            body.with_ctx(fmt_ctx),
+            body_str,
         );
     }
 }
@@ -64,8 +83,15 @@ pub trait LlbcPass: Sync {
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, _body: &mut llbc_ast::ExprBody) {}
 
     /// Transform a function declaration. This forwards to `transform_body` by default.
-    fn transform_function(&self, ctx: &mut TransformCtx<'_>, decl: &mut llbc_ast::FunDecl) {
-        self.transform_body(ctx, decl.body.as_mut().unwrap())
+    fn transform_function(
+        &self,
+        ctx: &mut TransformCtx<'_>,
+        _decl: &mut llbc_ast::FunDecl,
+        body: Option<&mut llbc_ast::ExprBody>,
+    ) {
+        if let Some(body) = body {
+            self.transform_body(ctx, body)
+        }
     }
 
     /// Transform a global declaration. This forwards to `transform_body` by default.
@@ -80,13 +106,23 @@ pub trait LlbcPass: Sync {
     }
 
     /// Log that the pass is about to be run on this body.
-    fn log_before_body(&self, ctx: &TransformCtx<'_>, name: &Name, body: &llbc_ast::ExprBody) {
+    fn log_before_body(
+        &self,
+        ctx: &TransformCtx<'_>,
+        name: &Name,
+        body: Option<&llbc_ast::ExprBody>,
+    ) {
         let fmt_ctx = &ctx.into_fmt();
+        let body_str = if let Some(body) = body {
+            body.fmt_with_ctx(fmt_ctx)
+        } else {
+            "<opaque>".to_owned()
+        };
         trace!(
             "# About to run pass [{}] on `{}`:\n{}",
             self.name(),
             name.with_ctx(fmt_ctx),
-            body.with_ctx(fmt_ctx),
+            body_str,
         );
     }
 }
@@ -94,52 +130,62 @@ pub trait LlbcPass: Sync {
 impl TransformPass for dyn UllbcPass {
     /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
-        ctx.with_mut_unstructured_fun_decls(|ctx, fun_decls| {
-            for decl in fun_decls.iter_mut() {
-                if let Some(body) = &decl.body {
-                    self.log_before_body(ctx, &decl.name, body);
-                    ctx.with_def_id(decl.rust_id, |ctx| {
-                        self.transform_function(ctx, decl);
-                    })
-                }
-            }
-        });
-        ctx.with_mut_unstructured_global_decls(|ctx, global_decls| {
-            for decl in global_decls.iter_mut() {
-                if let Some(body) = &decl.body {
-                    self.log_before_body(ctx, &decl.name, body);
-                    ctx.with_def_id(decl.rust_id, |ctx| {
-                        self.transform_global(ctx, decl);
-                    })
-                }
-            }
-        });
+        ctx.with_mut_bodies(
+            |ctx: &mut TransformCtx, bodies: &mut Vector<BodyId, Body>| {
+                ctx.with_mut_fun_decls(|ctx, fun_decls| {
+                    for decl in fun_decls.iter_mut() {
+                        let body = bodies.get_mut(decl.body);
+                        let body = body.map(|b| b.as_unstructured_mut()).flatten();
+                        self.log_before_body(ctx, &decl.name, body.as_deref());
+                        ctx.with_def_id(decl.rust_id, |ctx| {
+                            self.transform_function(ctx, decl, body);
+                        })
+                    }
+                });
+                ctx.with_mut_unstructured_global_decls(|ctx, global_decls| {
+                    for decl in global_decls.iter_mut() {
+                        let body = &decl.body;
+                        self.log_before_body(ctx, &decl.name, body.as_ref());
+                        if let Some(_body) = body {
+                            ctx.with_def_id(decl.rust_id, |ctx| {
+                                self.transform_global(ctx, decl);
+                            })
+                        }
+                    }
+                });
+            },
+        );
     }
 }
 
 impl TransformPass for dyn LlbcPass {
     /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
-        ctx.with_mut_structured_fun_decls(|ctx, fun_decls| {
-            for decl in fun_decls.iter_mut() {
-                if let Some(body) = &decl.body {
-                    self.log_before_body(ctx, &decl.name, body);
-                    ctx.with_def_id(decl.rust_id, |ctx| {
-                        self.transform_function(ctx, decl);
-                    })
-                }
-            }
-        });
-        ctx.with_mut_structured_global_decls(|ctx, global_decls| {
-            for decl in global_decls.iter_mut() {
-                if let Some(body) = &decl.body {
-                    self.log_before_body(ctx, &decl.name, body);
-                    ctx.with_def_id(decl.rust_id, |ctx| {
-                        self.transform_global(ctx, decl);
-                    })
-                }
-            }
-        });
+        ctx.with_mut_bodies(
+            |ctx: &mut TransformCtx, bodies: &mut Vector<BodyId, Body>| {
+                ctx.with_mut_fun_decls(|ctx, fun_decls| {
+                    for decl in fun_decls.iter_mut() {
+                        let body = bodies.get_mut(decl.body);
+                        let body = body.map(|b| b.as_structured_mut()).flatten();
+                        self.log_before_body(ctx, &decl.name, body.as_deref());
+                        ctx.with_def_id(decl.rust_id, |ctx| {
+                            self.transform_function(ctx, decl, body);
+                        })
+                    }
+                });
+                ctx.with_mut_structured_global_decls(|ctx, global_decls| {
+                    for decl in global_decls.iter_mut() {
+                        let body = &decl.body;
+                        self.log_before_body(ctx, &decl.name, body.as_ref());
+                        if let Some(_body) = body {
+                            ctx.with_def_id(decl.rust_id, |ctx| {
+                                self.transform_global(ctx, decl);
+                            })
+                        }
+                    }
+                });
+            },
+        );
     }
 }
 
@@ -167,10 +213,20 @@ impl<'ctx> TransformCtx<'ctx> {
         ret
     }
 
-    /// Get mutable access to both the ctx and the function declarations.
-    pub(crate) fn with_mut_unstructured_fun_decls<R>(
+    /// Get mutable access to both the ctx and the bodies.
+    pub(crate) fn with_mut_bodies<R>(
         &mut self,
-        f: impl FnOnce(&mut Self, &mut ast::FunDecls) -> R,
+        f: impl FnOnce(&mut Self, &mut Vector<BodyId, Body>) -> R,
+    ) -> R {
+        let mut bodies = std::mem::take(&mut self.translated.bodies);
+        let ret = f(self, &mut bodies);
+        self.translated.bodies = bodies;
+        ret
+    }
+    /// Get mutable access to both the ctx and the function declarations.
+    pub(crate) fn with_mut_fun_decls<R>(
+        &mut self,
+        f: impl FnOnce(&mut Self, &mut Vector<FunDeclId, FunDecl>) -> R,
     ) -> R {
         let mut fun_decls = std::mem::take(&mut self.translated.fun_decls);
         let ret = f(self, &mut fun_decls);
@@ -185,16 +241,6 @@ impl<'ctx> TransformCtx<'ctx> {
         let mut global_decls = std::mem::take(&mut self.translated.global_decls);
         let ret = f(self, &mut global_decls);
         self.translated.global_decls = global_decls;
-        ret
-    }
-    /// Get mutable access to both the ctx and the function declarations.
-    pub(crate) fn with_mut_structured_fun_decls<R>(
-        &mut self,
-        f: impl FnOnce(&mut Self, &mut llbc_ast::FunDecls) -> R,
-    ) -> R {
-        let mut fun_decls = std::mem::take(&mut self.translated.structured_fun_decls);
-        let ret = f(self, &mut fun_decls);
-        self.translated.structured_fun_decls = fun_decls;
         ret
     }
     /// Get mutable access to both the ctx and the global declarations.

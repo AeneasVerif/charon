@@ -3,6 +3,7 @@ pub use crate::expressions::*;
 pub use crate::gast_utils::*;
 use crate::generate_index_type;
 use crate::ids::Vector;
+use crate::llbc_ast;
 use crate::meta::{ItemMeta, Span};
 use crate::names::Name;
 pub use crate::types::GlobalDeclId;
@@ -11,9 +12,13 @@ use crate::types::*;
 pub use crate::types::{
     GenericArgs, GenericParams, TraitDeclId, TraitImplId, TraitInstanceId, TraitRef,
 };
+use crate::ullbc_ast;
+use macros::EnumIsA;
+use macros::EnumToGetters;
 use serde::{Deserialize, Serialize};
 
 generate_index_type!(FunDeclId, "Fun");
+generate_index_type!(BodyId, "Body");
 
 /// For use when deserializing.
 fn dummy_def_id() -> rustc_hir::def_id::DefId {
@@ -51,6 +56,16 @@ pub struct GExprBody<T> {
     /// - the remaining locals, used for the intermediate computations
     pub locals: Vector<VarId, Var>,
     pub body: T,
+}
+
+/// The body of a function or a constant.
+#[derive(Debug, Clone, Serialize, Deserialize, EnumIsA, EnumToGetters)]
+pub enum Body {
+    /// Body represented as a CFG. This is what ullbc is made of, and what we get after translating MIR.
+    Unstructured(ullbc_ast::ExprBody),
+    /// Body represented with structured control flow. This is what llbc is made of. We restructure
+    /// the control flow in `ullbc_to_llbc`.
+    Structured(llbc_ast::ExprBody),
 }
 
 /// Item kind kind: "regular" item (not linked to a trait), trait item declaration, etc.
@@ -98,7 +113,7 @@ pub enum ItemKind {
 
 /// A function definition
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GFunDecl<T> {
+pub struct FunDecl {
     pub def_id: FunDeclId,
     #[serde(skip)]
     #[serde(default = "dummy_def_id")]
@@ -117,7 +132,7 @@ pub struct GFunDecl<T> {
     /// The function body, in case the function is not opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.
-    pub body: Option<GExprBody<T>>,
+    pub body: BodyId,
 }
 
 /// A global variable definition, either opaque or transparent.

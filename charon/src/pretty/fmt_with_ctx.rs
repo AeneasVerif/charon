@@ -3,6 +3,7 @@ use crate::{
     assumed::get_name_from_type_id,
     common::TAB_INCR,
     formatter::*,
+    gast,
     ids::Vector,
     llbc_ast::{self as llbc, *},
     names::*,
@@ -63,6 +64,22 @@ impl<C: AstFormatter> FmtWithCtx<C> for BlockData {
 
         // Join the strings
         out.join("")
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        match self {
+            Body::Unstructured(b) => b.fmt_with_ctx(ctx),
+            Body::Structured(b) => b.fmt_with_ctx(ctx),
+        }
+    }
+
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        match self {
+            Body::Unstructured(b) => b.fmt_with_ctx_and_indent(tab, ctx),
+            Body::Structured(b) => b.fmt_with_ctx_and_indent(tab, ctx),
+        }
     }
 }
 
@@ -401,16 +418,14 @@ where
     }
 }
 
-impl<T, C> FmtWithCtx<C> for GFunDecl<T>
+impl<C> FmtWithCtx<C> for FunDecl
 where
     // For the signature
     C: for<'a> SetGenerics<'a>,
     for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
-    for<'a, 'b> <C as SetGenerics<'a>>::C: AstFormatter + Formatter<&'b T>,
     // For the body
     for<'a, 'b> <C as SetGenerics<'a>>::C: SetLocals<'b>,
     for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
-    for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: Formatter<&'c T>,
 {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         // Update the context
@@ -458,23 +473,17 @@ where
             &self.signature.preds,
         );
 
-        // Case disjunction on the presence of a body (transparent/opaque definition)
-        match &self.body {
-            Option::None => {
-                // Put everything together
-                format!("{tab}{unsafe_kw}fn {name}{params}({args}){ret_ty}{preds}")
-            }
-            Option::Some(body) => {
-                // Body
-                let body_tab = format!("{tab}{TAB_INCR}");
-                let body = body.fmt_with_ctx_and_indent(&body_tab, ctx);
+        // Body
+        // FIXME: pass the indent here somehow
+        let body = ctx.format_object(self.body);
+        let body = if body == "<opaque>" {
+            String::new()
+        } else {
+            format!("\n{tab}{{\n{body}\n{tab}}}")
+        };
 
-                // Put everything together
-                format!(
-                    "{tab}{unsafe_kw}fn {name}{params}({args}){ret_ty}{preds}\n{tab}{{\n{body}\n{tab}}}",
-                )
-            }
-        }
+        // Put everything together
+        format!("{tab}{unsafe_kw}fn {name}{params}({args}){ret_ty}{preds}{body}",)
     }
 }
 

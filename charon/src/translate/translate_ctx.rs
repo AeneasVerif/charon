@@ -189,13 +189,13 @@ pub struct TranslatedCrate {
     /// The translated type definitions
     pub type_decls: Vector<TypeDeclId, TypeDecl>,
     /// The translated function definitions
-    pub fun_decls: ast::FunDecls,
-    /// The translated and reconstructed function definitions
-    pub structured_fun_decls: llbc_ast::FunDecls,
+    pub fun_decls: Vector<FunDeclId, FunDecl>,
     /// The translated global definitions
     pub global_decls: ast::GlobalDecls,
     /// The translated and reconstructed global definitions
     pub structured_global_decls: llbc_ast::GlobalDecls,
+    /// The bodies of functions and constants
+    pub bodies: Vector<BodyId, Body>,
     /// The translated trait declarations
     pub trait_decls: Vector<TraitDeclId, TraitDecl>,
     /// The translated trait declarations
@@ -1128,8 +1128,6 @@ impl TranslatedCrate {
     pub(crate) fn fmt_with_llbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fmt: FmtCtx = self.into_fmt();
         let llbc_globals = &self.structured_global_decls;
-        let llbc_funs = &self.structured_fun_decls;
-
         match &self.ordered_decls {
             None => {
                 // We do simple: types, globals, traits, functions
@@ -1149,7 +1147,7 @@ impl TranslatedCrate {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
 
-                for d in llbc_funs {
+                for d in &self.fun_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
             }
@@ -1158,14 +1156,7 @@ impl TranslatedCrate {
                     use DeclarationGroup::*;
                     match gr {
                         Type(gr) => fmt.fmt_decl_group(f, gr)?,
-                        Fun(gr) => {
-                            for id in gr.get_ids() {
-                                match llbc_funs.get(id) {
-                                    None => writeln!(f, "Unknown decl: {:?}\n", id)?,
-                                    Some(d) => writeln!(f, "{}\n", d.fmt_with_ctx(&fmt))?,
-                                }
-                            }
-                        }
+                        Fun(gr) => fmt.fmt_decl_group(f, gr)?,
                         Global(gr) => {
                             for id in gr.get_ids() {
                                 match llbc_globals.get(id) {

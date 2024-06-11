@@ -114,10 +114,8 @@ pub enum Switch {
     ),
 }
 
-pub type ExprBody = GExprBody<Statement>;
+pub type BodyContents = Statement;
+pub type ExprBody = GExprBody<BodyContents>;
 
-pub type FunDecl = GFunDecl<Statement>;
-pub type FunDecls = Vector<FunDeclId, FunDecl>;
-
-pub type GlobalDecl = GGlobalDecl<Statement>;
+pub type GlobalDecl = GGlobalDecl<BodyContents>;
 pub type GlobalDecls = Vector<GlobalDeclId, GlobalDecl>;

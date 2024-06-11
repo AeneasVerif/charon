@@ -1094,7 +1094,7 @@ let item_kind_of_json (js : json) : (item_kind, string) result =
         Ok (TraitItemProvided (trait_id, item_name))
     | _ -> Error "")
 
-let gfun_decl_of_json (body_of_json : json -> ('body, string) result)
+let gfun_decl_of_json (bodies : 'body gexpr_body option list)
     (id_to_file : id_to_file_map) (js : json) : ('body gfun_decl, string) result
     =
   combine_error_msgs js __FUNCTION__
@@ -1115,9 +1115,8 @@ let gfun_decl_of_json (body_of_json : json -> ('body, string) result)
         let* name = name_of_json id_to_file name in
         let* signature = fun_sig_of_json id_to_file signature in
         let* kind = item_kind_of_json kind in
-        let* body =
-          option_of_json (gexpr_body_of_json body_of_json id_to_file) body
-        in
+        let* body_id = BodyId.id_of_json body in
+        let body = List.nth bodies (BodyId.to_int body_id) in
         Ok
           {
             def_id;

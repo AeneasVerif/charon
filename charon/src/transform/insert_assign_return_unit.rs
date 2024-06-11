@@ -31,9 +31,16 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
 
 pub struct Transform;
 impl LlbcPass for Transform {
-    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
+    fn transform_function(
+        &self,
+        ctx: &mut TransformCtx,
+        decl: &mut FunDecl,
+        body: Option<&mut ExprBody>,
+    ) {
         if decl.signature.output.is_unit() {
-            self.transform_body(ctx, decl.body.as_mut().unwrap())
+            if let Some(body) = body {
+                self.transform_body(ctx, body)
+            }
         }
     }
     fn transform_global(&self, ctx: &mut TransformCtx, decl: &mut GlobalDecl) {

@@ -309,7 +309,7 @@ pub fn translate(
         }
 
         trace!("# Final LLBC:\n");
-        for def in &ctx.translated.structured_fun_decls {
+        for def in &ctx.translated.fun_decls {
             trace!("#{}\n", ctx.into_fmt().format_object(def));
         }
 
