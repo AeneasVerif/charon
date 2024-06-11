@@ -252,23 +252,23 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         match trans_id {
             AnyTransId::Type(id) => {
                 let ty = self.translate_type(id, rust_id)?;
-                self.translated.type_decls.insert(id, ty);
+                self.translated.type_decls.set_slot(id, ty);
             }
             AnyTransId::Fun(id) => {
                 let fun_decl = self.translate_function(id, rust_id)?;
-                self.translated.fun_decls.insert(id, fun_decl);
+                self.translated.fun_decls.set_slot(id, fun_decl);
             }
             AnyTransId::Global(id) => {
                 let global_decl = self.translate_global(id, rust_id)?;
-                self.translated.global_decls.insert(id, global_decl);
+                self.translated.global_decls.set_slot(id, global_decl);
             }
             AnyTransId::TraitDecl(id) => {
                 let trait_decl = self.translate_trait_decl(id, rust_id)?;
-                self.translated.trait_decls.insert(id, trait_decl);
+                self.translated.trait_decls.set_slot(id, trait_decl);
             }
             AnyTransId::TraitImpl(id) => {
                 let trait_impl = self.translate_trait_impl(id, rust_id)?;
-                self.translated.trait_impls.insert(id, trait_impl);
+                self.translated.trait_impls.set_slot(id, trait_impl);
             }
         }
         Ok(())

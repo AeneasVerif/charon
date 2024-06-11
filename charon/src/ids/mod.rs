@@ -1,9 +1,7 @@
 pub mod generator;
-pub mod map;
 pub mod vector;
 
 pub use generator::{Generator, MapGenerator};
-pub use map::Map;
 pub use vector::Vector;
 
 /// Generate an `Index` index type. We use it because we need manipulate a lot of different indices

@@ -11,18 +11,20 @@ use index_vec::{Idx, IdxSliceIndex, IndexVec};
 use serde::{Deserialize, Serialize, Serializer};
 use std::{
     iter::{FromIterator, IntoIterator},
-    ops::{Index, IndexMut},
+    ops::{Deref, Index, IndexMut},
 };
 
-/// Indexed vector
-// FIXME: Change the `Vector` API to prevent accidental id reuse because of reentrancy.
+/// Indexed vector.
+/// To prevent accidental id reuse, the vector supports reserving a slot to be filled later.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Vector<I, T>
 where
     I: Idx,
 {
-    vector: IndexVec<I, T>,
+    vector: IndexVec<I, Option<T>>,
 }
+
+pub struct ReservedSlot<I: Idx>(I);
 
 impl<I, T> Vector<I, T>
 where
@@ -35,7 +37,7 @@ where
     }
 
     pub fn get(&self, i: I) -> Option<&T> {
-        self.vector.get(i)
+        self.vector.get(i).map(Option::as_ref).flatten()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -46,32 +48,66 @@ where
         self.vector.len()
     }
 
+    /// Gets the value of the next available id. Avoid if possible; use `reserve_slot` instead.
     pub fn next_id(&self) -> I {
         self.vector.next_idx()
     }
 
+    /// Reserve a spot in the vector.
+    pub fn reserve_slot(&mut self) -> I {
+        // Push a `None` to ensure we don't reuse the id.
+        self.vector.push(None)
+    }
+
+    /// Fill the reserved slot.
+    pub fn set_slot(&mut self, id: I, x: T) {
+        assert!(self.vector[id].is_none());
+        self.vector[id] = Some(x);
+    }
+
     pub fn push(&mut self, x: T) -> I {
-        self.vector.push(x)
+        self.vector.push(Some(x))
     }
 
     pub fn push_with(&mut self, f: impl FnOnce(I) -> T) -> I {
-        self.push(f(self.next_id()))
+        let id = self.reserve_slot();
+        let x = f(id);
+        self.set_slot(id, x);
+        id
     }
 
+    /// Iter over the nonempty slots.
     pub fn iter(&self) -> impl Iterator<Item = &T> {
-        self.vector.iter()
+        self.vector.iter().flat_map(|opt| opt.as_ref())
     }
 
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-        self.vector.iter_mut()
+        self.vector.iter_mut().flat_map(|opt| opt.as_mut())
+    }
+
+    pub fn iter_indexed(&self) -> impl Iterator<Item = (I, &T)> {
+        self.vector
+            .iter_enumerated()
+            .flat_map(|(i, opt)| Some((i, opt.as_ref()?)))
+    }
+
+    pub fn into_iter_indexed(self) -> impl Iterator<Item = (I, T)> {
+        self.vector
+            .into_iter_enumerated()
+            .flat_map(|(i, opt)| Some((i, opt?)))
     }
 
     pub fn iter_indexed_values(&self) -> impl Iterator<Item = (I, &T)> {
-        self.vector.iter_enumerated()
+        self.iter_indexed()
     }
 
     pub fn into_iter_indexed_values(self) -> impl Iterator<Item = (I, T)> {
-        self.vector.into_iter_enumerated()
+        self.into_iter_indexed()
+    }
+
+    /// Iterate over all slots, even empty ones.
+    pub fn iter_indexed_all_slots(&self) -> impl Iterator<Item = (I, &Option<T>)> {
+        self.vector.iter_enumerated()
     }
 
     pub fn iter_indices(&self) -> impl Iterator<Item = I> {
@@ -85,24 +121,31 @@ impl<I: Idx, T> Default for Vector<I, T> {
     }
 }
 
+impl<I: Idx> Deref for ReservedSlot<I> {
+    type Target = I;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl<I, R, T> Index<R> for Vector<I, T>
 where
     I: Idx,
-    R: IdxSliceIndex<I, T>,
+    R: IdxSliceIndex<I, Option<T>, Output = Option<T>>,
 {
-    type Output = R::Output;
+    type Output = T;
     fn index(&self, index: R) -> &Self::Output {
-        &self.vector[index]
+        self.vector[index].as_ref().unwrap()
     }
 }
 
 impl<I, R, T> IndexMut<R> for Vector<I, T>
 where
     I: Idx,
-    R: IdxSliceIndex<I, T>,
+    R: IdxSliceIndex<I, Option<T>, Output = Option<T>>,
 {
     fn index_mut(&mut self, index: R) -> &mut Self::Output {
-        &mut self.vector[index]
+        self.vector[index].as_mut().unwrap()
     }
 }
 
@@ -111,10 +154,10 @@ where
     I: Idx,
 {
     type Item = &'a T;
-    type IntoIter = <&'a IndexVec<I, T> as IntoIterator>::IntoIter;
+    type IntoIter = impl Iterator<Item = &'a T>;
 
-    fn into_iter(self) -> <&'a IndexVec<I, T> as IntoIterator>::IntoIter {
-        (&self.vector).into_iter()
+    fn into_iter(self) -> Self::IntoIter {
+        (&self.vector).into_iter().flat_map(|opt| opt.as_ref())
     }
 }
 
@@ -123,10 +166,10 @@ where
     I: Idx,
 {
     type Item = T;
-    type IntoIter = <IndexVec<I, T> as IntoIterator>::IntoIter;
+    type IntoIter = impl Iterator<Item = T>;
 
-    fn into_iter(self) -> <IndexVec<I, T> as IntoIterator>::IntoIter {
-        self.vector.into_iter()
+    fn into_iter(self) -> Self::IntoIter {
+        self.vector.into_iter().flat_map(|opt| opt)
     }
 }
 
@@ -138,7 +181,7 @@ where
     #[inline]
     fn from_iter<It: IntoIterator<Item = T>>(iter: It) -> Vector<I, T> {
         Vector {
-            vector: IndexVec::from_iter(iter),
+            vector: IndexVec::from_iter(iter.into_iter().map(Some)),
         }
     }
 }
@@ -149,9 +192,7 @@ where
     I: Idx,
 {
     fn from(v: Vec<T>) -> Self {
-        Vector {
-            vector: IndexVec::from(v),
-        }
+        v.into_iter().collect()
     }
 }
 

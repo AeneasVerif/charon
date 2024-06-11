@@ -1,5 +1,5 @@
 pub use crate::gast::{FunDeclId, TraitItemName};
-use crate::ids::{Map, Vector};
+use crate::ids::Vector;
 use crate::meta::{ItemMeta, Span};
 use crate::names::Name;
 pub use crate::types_utils::*;
@@ -457,8 +457,6 @@ pub enum TypeId {
     /// for more uniform treatment throughout the codebase.
     Assumed(AssumedTy),
 }
-
-pub type TypeDecls = Map<TypeDeclId, TypeDecl>;
 
 /// Types of primitive values. Either an integer, bool, char
 #[derive(
