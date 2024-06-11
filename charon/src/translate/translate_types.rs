@@ -3,6 +3,7 @@ use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::ids::Vector;
+use crate::meta::ItemMeta;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -508,6 +509,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         trans_id: TypeDeclId,
         rust_id: DefId,
+        item_meta: ItemMeta,
     ) -> Result<TypeDeclKind, Error> {
         use rustc_middle::ty::AdtKind;
         let tcx = self.t_ctx.tcx;
@@ -601,12 +603,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 };
 
-                // Translate the span information
-                let span = self.translate_span_from_rspan(field_def.span);
-
                 // Store the field
                 let field = Field {
-                    span,
+                    item_meta: item_meta.clone(),
                     name: field_name.clone(),
                     ty,
                 };
@@ -753,7 +752,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let kind = if !is_transparent || item_meta.opaque {
             TypeDeclKind::Opaque
         } else {
-            match bt_ctx.translate_type_body(trans_id, rust_id) {
+            match bt_ctx.translate_type_body(trans_id, rust_id, item_meta.clone()) {
                 Ok(kind) => kind,
                 Err(err) => TypeDeclKind::Error(err.msg),
             }

@@ -68,12 +68,12 @@ struct test_crate::Foo =
   field1: u32
 }
 
-global test_crate::SIX_SIX_SIX  {
+global test_crate::C  {
     let @0: u32; // return
     let @1: u32; // anonymous local
 
-    @1 := const (600 : u32) + const (60 : u32)
-    @0 := copy (@1) + const (6 : u32)
+    @1 := const (100 : u32) + const (10 : u32)
+    @0 := copy (@1) + const (1 : u32)
     drop @1
     return
 }

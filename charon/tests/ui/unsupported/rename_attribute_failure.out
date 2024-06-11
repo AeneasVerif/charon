@@ -1,0 +1,53 @@
+error[E0433]: failed to resolve: use of undeclared crate or module `charon`
+  --> tests/ui/unsupported/rename_attribute_failure.rs:16:3
+   |
+16 | #[charon::rename()]
+   |   ^^^^^^ use of undeclared crate or module `charon`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `charon`
+  --> tests/ui/unsupported/rename_attribute_failure.rs:12:3
+   |
+12 | #[charon::rename("75Test")]
+   |   ^^^^^^ use of undeclared crate or module `charon`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `charon`
+ --> tests/ui/unsupported/rename_attribute_failure.rs:8:3
+  |
+8 | #[charon::rename("Test!976?")]
+  |   ^^^^^^ use of undeclared crate or module `charon`
+
+error[E0433]: failed to resolve: use of undeclared crate or module `charon`
+ --> tests/ui/unsupported/rename_attribute_failure.rs:4:3
+  |
+4 | #[charon::rename("")]
+  |   ^^^^^^ use of undeclared crate or module `charon`
+
+error: Attribute `rename` should be of the shape `rename("...")`
+  --> tests/ui/unsupported/rename_attribute_failure.rs:17:1
+   |
+17 | type TestNotProperShape = i32;
+   | ^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Attribute `rename` should only contains alphanumeric characters and `_` or `-` and should start with a letter
+  --> tests/ui/unsupported/rename_attribute_failure.rs:13:1
+   |
+13 | type TestNotStartingWithLetter = i32;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Attribute `rename` should only contains alphanumeric characters and `_` or `-` and should start with a letter
+ --> tests/ui/unsupported/rename_attribute_failure.rs:9:1
+  |
+9 | type TestNonAlphanumeric = i32;
+  | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Attribute `rename` should not be empty
+ --> tests/ui/unsupported/rename_attribute_failure.rs:5:1
+  |
+5 | type TestEmpty = i32;
+  | ^^^^^^^^^^^^^^
+
+error: aborting due to 8 previous errors
+
+For more information about this error, try `rustc --explain E0433`.
+[ ERROR charon_driver:227] The extraction encountered 4 errors
+Error: Charon driver exited with code 1

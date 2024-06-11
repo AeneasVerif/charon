@@ -455,15 +455,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let str = attributes.iter().find(|str| {
                 str.starts_with("charon::rename(") || str.starts_with("aeneas::rename(")
             });
-            if str.is_none() {
-                None
-            } else {
-                let str = str.unwrap();
-                let charon_rename = str.strip_prefix("charon::rename(");
-                let aeneas_rename = str.strip_prefix("aeneas::rename(");
+            if let Some(str) = str {
+                let charon_rename = str.strip_prefix("charon::rename(\"");
+                let aeneas_rename = str.strip_prefix("aeneas::rename(\"");
                 let rename = charon_rename
                     .or(aeneas_rename)
-                    .and_then(|str| str.strip_suffix(")"));
+                    .and_then(|str| str.strip_suffix("\")"));
                 if let Some(str) = rename {
                     if !str.is_empty() {
                         let first_char_alphabetic = str
@@ -472,9 +469,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                             .expect("Attribute `rename` should not be empty")
                             .is_alphabetic();
                         let is_identifier = first_char_alphabetic
-                            && str.chars().all(|c| c.is_alphanumeric() || c == '_');
+                            && str
+                                .chars()
+                                .all(|c| c.is_alphanumeric() || c == '_' || c == '-');
                         if !is_identifier {
-                            self.span_err(span, "Attribute `rename` should not be empty or should only contains alphanumeric characters and `_` or should start with a letter");
+                            self.span_err(span, "Attribute `rename` should only contains alphanumeric characters and `_` or `-` and should start with a letter");
                             None
                         } else {
                             Some(rename.unwrap().to_string())
@@ -486,10 +485,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 } else {
                     self.span_err(
                         span,
-                        "Attribute `rename` should be of the shape `rename(...)`",
+                        "Attribute `rename` should be of the shape `rename(\"...\")`",
                     );
                     None
                 }
+            } else {
+                None
             }
         };
         ItemMeta {

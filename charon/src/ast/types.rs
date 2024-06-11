@@ -370,7 +370,7 @@ pub struct Variant {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Field {
-    pub span: Span,
+    pub item_meta: ItemMeta,
     pub name: Option<String>,
     pub ty: Ty,
 }
