@@ -5,13 +5,13 @@ use itertools::Itertools;
 use std::{error::Error, fs::File, io::BufReader, process::Command};
 
 use charon_lib::{
-    export::GCrateData,
+    export::CrateData,
     logger,
     meta::InlineAttr,
     names::{Name, PathElem},
 };
 
-fn translate(code: impl std::fmt::Display) -> Result<GCrateData, Box<dyn Error>> {
+fn translate(code: impl std::fmt::Display) -> Result<CrateData, Box<dyn Error>> {
     // Initialize the logger
     logger::initialize_logger();
 
@@ -37,7 +37,7 @@ fn translate(code: impl std::fmt::Display) -> Result<GCrateData, Box<dyn Error>>
         .try_success()?;
 
     // Extract the computed crate data.
-    let crate_data: GCrateData = {
+    let crate_data: CrateData = {
         let file = File::open(output_path)?;
         let reader = BufReader::new(file);
         serde_json::from_reader(reader)?

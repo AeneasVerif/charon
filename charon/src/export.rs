@@ -12,7 +12,7 @@ use std::path::Path;
 /// stable as possible. This is used for both ULLBC and LLBC.
 #[derive(Serialize, Deserialize)]
 #[serde(rename = "Crate")]
-pub struct GCrateData {
+pub struct CrateData {
     /// The version of charon currently being used. `charon-ml` inspects this and errors if it is
     /// trying to read an incompatible version (for now we compare versions for equality).
     pub charon_version: String,
@@ -35,7 +35,7 @@ pub struct GCrateData {
     pub has_errors: bool,
 }
 
-impl GCrateData {
+impl CrateData {
     pub fn new(ctx: &TransformCtx) -> Self {
         // Transform the map file id -> file into a vector.
         // Sort the vector to make the serialized file as stable as possible.
@@ -54,7 +54,7 @@ impl GCrateData {
         let bodies = ctx.translated.bodies.clone();
         let trait_decls = ctx.translated.trait_decls.iter().cloned().collect();
         let trait_impls = ctx.translated.trait_impls.iter().cloned().collect();
-        GCrateData {
+        CrateData {
             charon_version: crate::VERSION.to_owned(),
             name: ctx.translated.crate_name.clone(),
             id_to_file,
@@ -107,30 +107,5 @@ impl GCrateData {
             info!("Generated the file: {}", target_filename.to_str().unwrap());
         }
         Ok(())
-    }
-}
-
-/// The two kinds of crate data we construct.
-pub enum CrateData {
-    ULLBC(GCrateData),
-    LLBC(GCrateData),
-}
-
-impl CrateData {
-    pub fn new_ullbc(ctx: &TransformCtx) -> Self {
-        Self::ULLBC(GCrateData::new(ctx))
-    }
-
-    pub fn new_llbc(ctx: &TransformCtx) -> Self {
-        Self::LLBC(GCrateData::new(ctx))
-    }
-
-    /// Export the translated definitions to a JSON file.
-    #[allow(clippy::result_unit_err)]
-    pub fn serialize_to_file(&self, dest_file: &Path) -> Result<(), ()> {
-        match self {
-            CrateData::ULLBC(crate_data) => crate_data.serialize_to_file(dest_file),
-            CrateData::LLBC(crate_data) => crate_data.serialize_to_file(dest_file),
-        }
     }
 }

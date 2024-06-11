@@ -1,6 +1,5 @@
 use crate::cli_options;
 use charon_lib::export;
-use charon_lib::formatter::{Formatter, IntoFormatter};
 use charon_lib::get_mir::MirLevel;
 use charon_lib::reorder_decls::compute_reordered_decls;
 use charon_lib::transform::ctx::TransformPass;
@@ -254,10 +253,10 @@ pub fn translate(
             Err(_) => return Err(()),
         };
 
-    trace!("# After translation from MIR:\n\n{}\n", ctx);
-
     if options.print_ullbc {
-        info!("# ULLBC after translation from MIR:\n\n{}\n", ctx);
+        info!("# ULLBC after translation from MIR:\n\n{ctx}\n");
+    } else {
+        trace!("# ULLBC after translation from MIR:\n\n{ctx}\n");
     }
 
     // # Reorder the graph of dependencies and compute the strictly
@@ -285,22 +284,13 @@ pub fn translate(
     // - either the user wants the unstructured LLBC, in which case we stop there
     // - or they want the structured LLBC, in which case we reconstruct the
     //   control-flow and apply micro-passes
-
-    let crate_data = if options.ullbc {
-        export::CrateData::new_ullbc(&ctx)
-    } else {
+    if !options.ullbc {
         // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing
         // the control flow.
         ullbc_to_llbc::translate_functions(&mut ctx);
 
         if options.print_built_llbc {
-            let llbc_ctx = charon_lib::translate_ctx::LlbcFmtCtx {
-                translated: &ctx.translated,
-            };
-            info!(
-                "# LLBC resulting from control-flow reconstruction:\n\n{}\n",
-                llbc_ctx
-            );
+            info!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
         }
 
         // Run the micro-passes that clean up bodies.
@@ -308,28 +298,20 @@ pub fn translate(
             pass.transform_ctx(&mut ctx)
         }
 
-        trace!("# Final LLBC:\n");
-        for def in &ctx.translated.fun_decls {
-            trace!("#{}\n", ctx.into_fmt().format_object(def));
-        }
-
-        let llbc_ctx = charon_lib::translate_ctx::LlbcFmtCtx {
-            translated: &ctx.translated,
-        };
-        trace!("# About to export:\n\n{}\n", llbc_ctx);
         if options.print_llbc {
-            println!("# Final LLBC before serialization:\n\n{}\n", llbc_ctx);
+            println!("# Final LLBC before serialization:\n\n{ctx}\n");
+        } else {
+            trace!("# Final LLBC before serialization:\n\n{ctx}\n");
         }
 
         // Display an error report about the external dependencies, if necessary
         ctx.errors.report_external_deps_errors();
+    }
 
-        export::CrateData::new_llbc(&ctx)
-    };
     trace!("Done");
 
     // Update the error count
     internal.error_count = ctx.errors.error_count;
 
-    Ok(crate_data)
+    Ok(export::CrateData::new(&ctx))
 }

@@ -1073,33 +1073,28 @@ impl<'a> FmtCtx<'a> {
 
 impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx, 'ctx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.translated.fmt_with_ullbc_defs(f)
+        self.translated.fmt(f)
     }
 }
 
-impl TranslatedCrate {
-    pub(crate) fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl fmt::Display for TranslatedCrate {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fmt: FmtCtx = self.into_fmt();
-
         match &self.ordered_decls {
             None => {
                 // We do simple: types, globals, traits, functions
                 for d in &self.type_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
-
                 for d in &self.global_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
-
                 for d in &self.trait_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
-
                 for d in &self.trait_impls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
-
                 for d in &self.fun_decls {
                     writeln!(f, "{}\n", fmt.format_object(d))?
                 }
@@ -1116,26 +1111,7 @@ impl TranslatedCrate {
                     }
                 }
             }
-        };
-
+        }
         fmt::Result::Ok(())
-    }
-
-    pub(crate) fn fmt_with_ullbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.fmt(f)
-    }
-
-    pub(crate) fn fmt_with_llbc_defs(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.fmt(f)
-    }
-}
-
-pub struct LlbcFmtCtx<'a> {
-    pub translated: &'a TranslatedCrate,
-}
-
-impl<'a> fmt::Display for LlbcFmtCtx<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.translated.fmt_with_llbc_defs(f)
     }
 }

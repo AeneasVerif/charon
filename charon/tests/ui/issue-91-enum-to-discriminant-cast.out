@@ -6,5 +6,5 @@ error: Unsupported statement kind: intrinsic
 
 error: aborting due to previous error
 
-[ ERROR charon_driver:227] The extraction encountered 1 errors
+[ ERROR charon_driver:231] The extraction encountered 1 errors
 Error: Charon driver exited with code 1
