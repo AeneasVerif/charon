@@ -473,7 +473,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                                 .chars()
                                 .all(|c| c.is_alphanumeric() || c == '_' || c == '-');
                         if !is_identifier {
-                            self.span_err(span, "Attribute `rename` should only contains alphanumeric characters and `_` or `-` and should start with a letter");
+                            self.span_err(span, "Attribute `rename` should only contains alphanumeric characters, `_` and `-` and should start with a letter");
                             None
                         } else {
                             Some(rename.unwrap().to_string())

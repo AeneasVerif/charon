@@ -3,7 +3,6 @@ use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::ids::Vector;
-use crate::meta::ItemMeta;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -509,7 +508,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         trans_id: TypeDeclId,
         rust_id: DefId,
-        item_meta: ItemMeta,
     ) -> Result<TypeDeclKind, Error> {
         use rustc_middle::ty::AdtKind;
         let tcx = self.t_ctx.tcx;
@@ -584,7 +582,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             for (j, field_def) in var_def.fields.into_iter().enumerate() {
                 trace!("variant {i}: field {j}: {field_def:?}");
                 let field_span = field_def.span.rust_span_data.unwrap().span();
-
+                let item_meta = self
+                    .t_ctx
+                    .translate_item_meta_from_rid(DefId::from(&field_def.did));
                 // Translate the field type
                 let ty = self.translate_ty(field_span, erase_regions, &field_def.ty)?;
 
@@ -605,7 +605,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Store the field
                 let field = Field {
-                    item_meta: item_meta.clone(),
+                    item_meta,
                     name: field_name.clone(),
                     ty,
                 };
@@ -752,7 +752,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let kind = if !is_transparent || item_meta.opaque {
             TypeDeclKind::Opaque
         } else {
-            match bt_ctx.translate_type_body(trans_id, rust_id, item_meta.clone()) {
+            match bt_ctx.translate_type_body(trans_id, rust_id) {
                 Ok(kind) => kind,
                 Err(err) => TypeDeclKind::Error(err.msg),
             }
