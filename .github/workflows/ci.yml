@@ -74,16 +74,13 @@ jobs:
           path: eurydice
       - name: setup
         run: |
-          nix build github:aeneasverif/charon/${{ github.sha }} -o charon
           nix build ./eurydice -o eurydice/result --override-input charon github:aeneasverif/charon/${{ github.sha }}
           ln -s $(pwd)/eurydice/result/bin/eurydice $(pwd)/eurydice/eurydice
           nix build github:hacl-star/hacl-nix#fstar -o fstar
           nix build github:hacl-star/hacl-nix#karamel.home -o karamel
-          echo CHARON_HOME=$(pwd)/charon >> $GITHUB_ENV
           echo EURYDICE_HOME=$(pwd)/eurydice >> $GITHUB_ENV
           echo FSTAR_HOME=$(pwd)/fstar >> $GITHUB_ENV
           echo KRML_HOME=$(pwd)/karamel >> $GITHUB_ENV
       - name: build kyber
         run: |
-          cd libcrux-ml-kem
-          nix develop 'github:aeneasverif/charon/${{ github.sha }}#kyber-ci' --command ./c.sh
+          nix develop 'github:aeneasverif/charon/${{ github.sha }}#kyber-ci' --command build-kyber
