@@ -1464,13 +1464,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         rust_id: DefId,
         arg_count: usize,
         item_meta: &ItemMeta,
-    ) -> Result<Option<Body>, Error> {
+    ) -> Result<Result<Body, Opaque>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut self);
         let res =
             panic::catch_unwind(move || this.translate_body_aux(rust_id, arg_count, item_meta));
         match res {
             Ok(Ok(body)) => Ok(body),
+            // Translation error
             Ok(Err(e)) => Err(e),
             Err(_) => {
                 let span = self.t_ctx.tcx.def_span(rust_id);
@@ -1484,24 +1485,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         rust_id: DefId,
         arg_count: usize,
         item_meta: &ItemMeta,
-    ) -> Result<Option<Body>, Error> {
+    ) -> Result<Result<Body, Opaque>, Error> {
         let tcx = self.t_ctx.tcx;
 
         if item_meta.opaque {
-            return Ok(None);
+            return Ok(Err(Opaque));
         }
         if !self.t_ctx.id_is_transparent(rust_id)? {
-            return Ok(None);
+            return Ok(Err(Opaque));
         }
         if !rust_id.is_local() && !self.t_ctx.options.extract_opaque_bodies {
             // We only extract non-local bodies if the `extract_opaque_bodies` option is set.
-            return Ok(None);
+            return Ok(Err(Opaque));
         }
 
-        // Retrive the body
+        // Retrieve the body
         let Some(body) = get_mir_for_def_id_and_level(tcx, rust_id, self.t_ctx.options.mir_level)
         else {
-            return Ok(None);
+            return Ok(Err(Opaque));
         };
 
         // Here, we have to create a MIR state, which contains the body
@@ -1539,7 +1540,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Create the body
-        Ok(Some(Body::Unstructured(ExprBody {
+        Ok(Ok(Body::Unstructured(ExprBody {
             span,
             arg_count,
             locals: mem::take(&mut self.vars),
@@ -1827,19 +1828,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("Translating function signature");
         let signature = bt_ctx.translate_function_signature(rust_id)?;
 
-        let body_id = bt_ctx.t_ctx.translated.bodies.reserve_slot();
-        if !is_trait_method_decl {
+        let body_id = if !is_trait_method_decl {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
             match bt_ctx.translate_body(rust_id, signature.inputs.len(), &item_meta) {
-                Ok(Some(body)) => {
-                    self.translated.bodies.set_slot(body_id, body);
-                }
-                Ok(None) => {}
-                // Error case: we could have a variant for this
-                Err(_) => {}
+                Ok(Ok(body)) => Ok(self.translated.bodies.push(body)),
+                // Opaque declaration
+                Ok(Err(Opaque)) => Err(Opaque),
+                // Translation error. We reserve a slot and leave it empty.
+                // FIXME: handle error cases more explicitly.
+                Err(_) => Ok(self.translated.bodies.reserve_slot()),
             }
-        }
+        } else {
+            Err(Opaque)
+        };
 
         Ok(FunDecl {
             def_id,
@@ -1896,17 +1898,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let generics = bt_ctx.get_generics();
         let preds = bt_ctx.get_predicates();
 
-        // Translate its body like the body of a function. This returns `None` if we can't/decide
+        // Translate its body like the body of a function. This returns `Opaque if we can't/decide
         // not to translate this body.
-        let body_id = bt_ctx.t_ctx.translated.bodies.reserve_slot();
-        match bt_ctx.translate_body(rust_id, 0, &item_meta) {
-            Ok(Some(body)) => {
-                self.translated.bodies.set_slot(body_id, body);
-            }
-            Ok(None) => {}
-            // Error case: we could have a specific variant
-            Err(_) => {}
-        }
+        let body_id = match bt_ctx.translate_body(rust_id, 0, &item_meta) {
+            Ok(Ok(body)) => Ok(self.translated.bodies.push(body)),
+            // Opaque declaration
+            Ok(Err(Opaque)) => Err(Opaque),
+            // Translation error. We reserve a slot and leave it empty.
+            // FIXME: handle error cases more explicitly.
+            Err(_) => Ok(self.translated.bodies.reserve_slot()),
+        };
 
         Ok(GlobalDecl {
             def_id,

@@ -474,12 +474,17 @@ where
         );
 
         // Body
-        // FIXME: pass the indent here somehow
-        let body = ctx.format_object(self.body);
-        let body = if body == "<opaque>" {
-            String::new()
-        } else {
-            format!("\n{tab}{{\n{body}\n{tab}}}")
+        let body = match self.body {
+            Ok(body_id) => {
+                // FIXME: pass the indent here somehow
+                let body = ctx.format_object(body_id);
+                if body == "<error>" {
+                    String::new()
+                } else {
+                    format!("\n{tab}{{\n{body}\n{tab}}}")
+                }
+            }
+            Err(Opaque) => String::new(),
         };
 
         // Put everything together
@@ -513,12 +518,17 @@ where
         let name = self.name.fmt_with_ctx(ctx);
 
         // Body
-        // FIXME: pass the indent here somehow
-        let body = ctx.format_object(self.body);
-        let body = if body == "<opaque>" {
-            String::new()
-        } else {
-            format!(" {{\n{body}\n{tab}}}")
+        let body = match self.body {
+            Ok(body_id) => {
+                // FIXME: pass the indent here somehow
+                let body = ctx.format_object(body_id);
+                if body == "<error>" {
+                    String::new()
+                } else {
+                    format!(" {{\n{body}\n{tab}}}")
+                }
+            }
+            Err(Opaque) => String::new(),
         };
 
         // Put everything together

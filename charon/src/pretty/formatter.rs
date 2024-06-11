@@ -261,9 +261,9 @@ impl<'a> Formatter<ast::FunDeclId> for FmtCtx<'a> {
 impl<'a> Formatter<BodyId> for FmtCtx<'a> {
     fn format_object(&self, id: BodyId) -> String {
         match &self.translated {
-            None => "<opaque>".to_owned(),
+            None => "<error>".to_owned(),
             Some(translated) => match translated.bodies.get(id) {
-                None => "<opaque>".to_owned(),
+                None => "<error>".to_owned(),
                 Some(d) => d.fmt_with_ctx(self),
             },
         }

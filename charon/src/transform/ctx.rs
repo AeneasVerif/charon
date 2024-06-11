@@ -1,5 +1,5 @@
 use crate::formatter::{FmtCtx, IntoFormatter};
-use crate::gast::{Body, BodyId, FunDecl, FunDeclId, GlobalDecl, GlobalDeclId};
+use crate::gast::{Body, BodyId, FunDecl, FunDeclId, GlobalDecl, GlobalDeclId, Opaque};
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::names::Name;
@@ -36,9 +36,9 @@ pub trait UllbcPass: Sync {
         &self,
         ctx: &mut TransformCtx<'_>,
         _decl: &mut FunDecl,
-        body: Option<&mut ullbc_ast::ExprBody>,
+        body: Result<&mut ullbc_ast::ExprBody, Opaque>,
     ) {
-        if let Some(body) = body {
+        if let Ok(body) = body {
             self.transform_body(ctx, body)
         }
     }
@@ -48,9 +48,9 @@ pub trait UllbcPass: Sync {
         &self,
         ctx: &mut TransformCtx<'_>,
         _decl: &mut GlobalDecl,
-        body: Option<&mut ullbc_ast::ExprBody>,
+        body: Result<&mut ullbc_ast::ExprBody, Opaque>,
     ) {
-        if let Some(body) = body {
+        if let Ok(body) = body {
             self.transform_body(ctx, body)
         }
     }
@@ -66,10 +66,10 @@ pub trait UllbcPass: Sync {
         &self,
         ctx: &TransformCtx<'_>,
         name: &Name,
-        body: Option<&ullbc_ast::ExprBody>,
+        body: Result<&ullbc_ast::ExprBody, &Opaque>,
     ) {
         let fmt_ctx = &ctx.into_fmt();
-        let body_str = if let Some(body) = body {
+        let body_str = if let Ok(body) = body {
             body.fmt_with_ctx(fmt_ctx)
         } else {
             "<opaque>".to_owned()
@@ -93,9 +93,9 @@ pub trait LlbcPass: Sync {
         &self,
         ctx: &mut TransformCtx<'_>,
         _decl: &mut FunDecl,
-        body: Option<&mut llbc_ast::ExprBody>,
+        body: Result<&mut llbc_ast::ExprBody, Opaque>,
     ) {
-        if let Some(body) = body {
+        if let Ok(body) = body {
             self.transform_body(ctx, body)
         }
     }
@@ -105,9 +105,9 @@ pub trait LlbcPass: Sync {
         &self,
         ctx: &mut TransformCtx<'_>,
         _decl: &mut GlobalDecl,
-        body: Option<&mut llbc_ast::ExprBody>,
+        body: Result<&mut llbc_ast::ExprBody, Opaque>,
     ) {
-        if let Some(body) = body {
+        if let Ok(body) = body {
             self.transform_body(ctx, body)
         }
     }
@@ -123,10 +123,10 @@ pub trait LlbcPass: Sync {
         &self,
         ctx: &TransformCtx<'_>,
         name: &Name,
-        body: Option<&llbc_ast::ExprBody>,
+        body: Result<&llbc_ast::ExprBody, &Opaque>,
     ) {
         let fmt_ctx = &ctx.into_fmt();
-        let body_str = if let Some(body) = body {
+        let body_str = if let Ok(body) = body {
             body.fmt_with_ctx(fmt_ctx)
         } else {
             "<opaque>".to_owned()
@@ -143,60 +143,32 @@ pub trait LlbcPass: Sync {
 impl TransformPass for dyn UllbcPass {
     /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
-        ctx.with_mut_bodies(
-            |ctx: &mut TransformCtx, bodies: &mut Vector<BodyId, Body>| {
-                ctx.with_mut_fun_decls(|ctx, fun_decls| {
-                    for decl in fun_decls.iter_mut() {
-                        let body = bodies.get_mut(decl.body);
-                        let body = body.map(|b| b.as_unstructured_mut()).flatten();
-                        self.log_before_body(ctx, &decl.name, body.as_deref());
-                        ctx.with_def_id(decl.rust_id, |ctx| {
-                            self.transform_function(ctx, decl, body);
-                        })
-                    }
-                });
-                ctx.with_mut_global_decls(|ctx, global_decls| {
-                    for decl in global_decls.iter_mut() {
-                        let body = bodies.get_mut(decl.body);
-                        let body = body.map(|b| b.as_unstructured_mut()).flatten();
-                        self.log_before_body(ctx, &decl.name, body.as_deref());
-                        ctx.with_def_id(decl.rust_id, |ctx| {
-                            self.transform_global(ctx, decl, body);
-                        })
-                    }
-                });
-            },
-        );
+        ctx.for_each_fun_decl(|ctx, decl, body| {
+            let body = body.map(|body| body.as_unstructured_mut().unwrap());
+            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.transform_function(ctx, decl, body);
+        });
+        ctx.for_each_global_decl(|ctx, decl, body| {
+            let body = body.map(|body| body.as_unstructured_mut().unwrap());
+            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.transform_global(ctx, decl, body);
+        });
     }
 }
 
 impl TransformPass for dyn LlbcPass {
     /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
-        ctx.with_mut_bodies(
-            |ctx: &mut TransformCtx, bodies: &mut Vector<BodyId, Body>| {
-                ctx.with_mut_fun_decls(|ctx, fun_decls| {
-                    for decl in fun_decls.iter_mut() {
-                        let body = bodies.get_mut(decl.body);
-                        let body = body.map(|b| b.as_structured_mut()).flatten();
-                        self.log_before_body(ctx, &decl.name, body.as_deref());
-                        ctx.with_def_id(decl.rust_id, |ctx| {
-                            self.transform_function(ctx, decl, body);
-                        })
-                    }
-                });
-                ctx.with_mut_global_decls(|ctx, global_decls| {
-                    for decl in global_decls.iter_mut() {
-                        let body = bodies.get_mut(decl.body);
-                        let body = body.map(|b| b.as_structured_mut()).flatten();
-                        self.log_before_body(ctx, &decl.name, body.as_deref());
-                        ctx.with_def_id(decl.rust_id, |ctx| {
-                            self.transform_global(ctx, decl, body);
-                        })
-                    }
-                });
-            },
-        );
+        ctx.for_each_fun_decl(|ctx, decl, body| {
+            let body = body.map(|body| body.as_structured_mut().unwrap());
+            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.transform_function(ctx, decl, body);
+        });
+        ctx.for_each_global_decl(|ctx, decl, body| {
+            let body = body.map(|body| body.as_structured_mut().unwrap());
+            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.transform_global(ctx, decl, body);
+        });
     }
 }
 
@@ -253,6 +225,56 @@ impl<'ctx> TransformCtx<'ctx> {
         let ret = f(self, &mut global_decls);
         self.translated.global_decls = global_decls;
         ret
+    }
+    /// Mutably iterate over the function declarations without errors.
+    pub(crate) fn for_each_fun_decl(
+        &mut self,
+        mut f: impl FnMut(&mut Self, &mut FunDecl, Result<&mut Body, Opaque>),
+    ) {
+        self.with_mut_bodies(|ctx, bodies| {
+            ctx.with_mut_fun_decls(|ctx, decls| {
+                for decl in decls.iter_mut() {
+                    let body = match decl.body {
+                        Ok(id) => {
+                            match bodies.get_mut(id) {
+                                Some(body) => Ok(body),
+                                // This body has errored, we skip the item.
+                                None => continue,
+                            }
+                        }
+                        Err(Opaque) => Err(Opaque),
+                    };
+                    ctx.with_def_id(decl.rust_id, |ctx| {
+                        f(ctx, decl, body);
+                    })
+                }
+            })
+        })
+    }
+    /// Mutably iterate over the global declarations without errors.
+    pub(crate) fn for_each_global_decl(
+        &mut self,
+        mut f: impl FnMut(&mut Self, &mut GlobalDecl, Result<&mut Body, Opaque>),
+    ) {
+        self.with_mut_bodies(|ctx, bodies| {
+            ctx.with_mut_global_decls(|ctx, decls| {
+                for decl in decls.iter_mut() {
+                    let body = match decl.body {
+                        Ok(id) => {
+                            match bodies.get_mut(id) {
+                                Some(body) => Ok(body),
+                                // This body has errored, we skip the item.
+                                None => continue,
+                            }
+                        }
+                        Err(Opaque) => Err(Opaque),
+                    };
+                    ctx.with_def_id(decl.rust_id, |ctx| {
+                        f(ctx, decl, body);
+                    })
+                }
+            })
+        })
     }
 }
 

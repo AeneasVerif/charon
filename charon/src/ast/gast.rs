@@ -41,6 +41,10 @@ pub struct Var {
     pub ty: Ty,
 }
 
+/// Marker to indicate that a declaration is opaque (i.e. we don't inspect its body).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Opaque;
+
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
@@ -129,10 +133,10 @@ pub struct FunDecl {
     pub signature: FunSig,
     /// The function kind: "regular" function, trait method declaration, etc.
     pub kind: ItemKind,
-    /// The function body, in case the function is not opaque.
+    /// The function body, unless the function is opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.
-    pub body: BodyId,
+    pub body: Result<BodyId, Opaque>,
 }
 
 /// A global variable definition
@@ -153,7 +157,7 @@ pub struct GlobalDecl {
     pub ty: Ty,
     /// The global kind: "regular" function, trait const declaration, etc.
     pub kind: ItemKind,
-    pub body: BodyId,
+    pub body: Result<BodyId, Opaque>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]

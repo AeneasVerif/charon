@@ -5,7 +5,7 @@
 //! an extra assignment just before returning.
 
 use crate::expressions::*;
-use crate::llbc_ast::{ExprBody, FunDecl, GlobalDecl, RawStatement, Statement};
+use crate::llbc_ast::{ExprBody, FunDecl, GlobalDecl, Opaque, RawStatement, Statement};
 use crate::transform::TransformCtx;
 use crate::types::*;
 use crate::values::*;
@@ -35,10 +35,10 @@ impl LlbcPass for Transform {
         &self,
         ctx: &mut TransformCtx,
         decl: &mut FunDecl,
-        body: Option<&mut ExprBody>,
+        body: Result<&mut ExprBody, Opaque>,
     ) {
         if decl.signature.output.is_unit() {
-            if let Some(body) = body {
+            if let Ok(body) = body {
                 self.transform_body(ctx, body)
             }
         }
@@ -47,10 +47,10 @@ impl LlbcPass for Transform {
         &self,
         ctx: &mut TransformCtx,
         decl: &mut GlobalDecl,
-        body: Option<&mut ExprBody>,
+        body: Result<&mut ExprBody, Opaque>,
     ) {
         if decl.ty.is_unit() {
-            if let Some(body) = body {
+            if let Ok(body) = body {
                 self.transform_body(ctx, body)
             }
         }

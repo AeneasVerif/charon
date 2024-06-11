@@ -431,9 +431,11 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
                     }
                     graph.visit_ty(&sig.output);
 
-                    // Explore the body
-                    let body = ctx.translated.bodies.get(d.body);
-                    graph.visit_body(body);
+                    if let Ok(id) = d.body {
+                        // Explore the body
+                        let body = ctx.translated.bodies.get(id);
+                        graph.visit_body(body);
+                    }
                 } else {
                     // There may have been errors
                     assert!(ctx.has_errors());
@@ -441,9 +443,11 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
             }
             AnyTransId::Global(id) => {
                 if let Some(d) = ctx.translated.global_decls.get(*id) {
-                    // Explore the body
-                    let body = ctx.translated.bodies.get(d.body);
-                    graph.visit_body(body);
+                    if let Ok(id) = d.body {
+                        // Explore the body
+                        let body = ctx.translated.bodies.get(id);
+                        graph.visit_body(body);
+                    }
                 } else {
                     // There may have been errors
                     assert!(ctx.has_errors());

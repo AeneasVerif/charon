@@ -164,9 +164,9 @@ impl LlbcPass for Transform {
         &self,
         ctx: &mut TransformCtx,
         def: &mut FunDecl,
-        body: Option<&mut ExprBody>,
+        body: Result<&mut ExprBody, Opaque>,
     ) {
         // Ignore the errors, which should have been reported
-        let _ = transform_function(ctx, def, body);
+        let _ = transform_function(ctx, def, body.ok());
     }
 }
