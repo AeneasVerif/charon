@@ -438,15 +438,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .iter()
             .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque");
         let rename = {
-            let str = attributes.iter().find(|str| {
-                str.starts_with("charon::rename(") || str.starts_with("aeneas::rename(")
-            });
-            if let Some(str) = str {
-                let charon_rename = str.strip_prefix("charon::rename(\"");
-                let aeneas_rename = str.strip_prefix("aeneas::rename(\"");
-                let rename = charon_rename
-                    .or(aeneas_rename)
-                    .and_then(|str| str.strip_suffix("\")"));
+            let filter_attribute: Vec<&str> = attributes
+                .iter()
+                .filter_map(|str| {
+                    str.strip_prefix("charon::rename(")
+                        .or(str.strip_prefix("aeneas::rename("))
+                        .and_then(|str| str.strip_suffix(")"))
+                })
+                .collect();
+            if let [str] = filter_attribute.as_slice() {
+                let rename = str
+                    .strip_prefix("\"")
+                    .and_then(|str| str.strip_suffix("\""));
                 if let Some(str) = rename {
                     if !str.is_empty() {
                         let first_char_alphabetic = str
@@ -475,6 +478,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     );
                     None
                 }
+            } else if filter_attribute.len() > 1 {
+                self.span_err(
+                    span,
+                    "There are too many `rename` attributes, please use only one",
+                );
+                None
             } else {
                 None
             }

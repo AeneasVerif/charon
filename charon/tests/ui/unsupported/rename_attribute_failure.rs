@@ -12,6 +12,6 @@ type TestNonAlphanumeric = i32;
 #[charon::rename("75Test")]
 type TestNotStartingWithLetter = i32;
 
-// Errors because rename attribute is not of the proper shape
+// Errors because rename attribute is not of the proper shape (lacks "")
 #[charon::rename()]
 type TestNotProperShape = i32;
