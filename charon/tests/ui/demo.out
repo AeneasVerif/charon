@@ -125,6 +125,15 @@ enum test_crate::CList<T> =
 |  CNil()
 
 
+fn core::panicking::panic_explicit() -> !
+
+fn test_crate::list_nth::panic_cold_explicit() -> !
+{
+    let @0: !; // return
+
+    @0 := core::panicking::panic_explicit()
+}
+
 fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (T)
 {
     let @0: &'_ (T); // return
@@ -138,6 +147,7 @@ fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (
     let @8: &'_ (test_crate::CList<T>); // anonymous local
     let @9: u32; // anonymous local
     let @10: u32; // anonymous local
+    let @11: !; // anonymous local
 
     @fake_read(l@1)
     match *(l@1) {
@@ -145,7 +155,7 @@ fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (
             nop
         },
         1 => {
-            panic(core::panicking::panic)
+            @11 := test_crate::list_nth::panic_cold_explicit()
         }
     }
     x@3 := &(*(l@1) as variant @0).0
@@ -174,6 +184,13 @@ fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (
     return
 }
 
+fn test_crate::list_nth_mut::panic_cold_explicit() -> !
+{
+    let @0: !; // return
+
+    @0 := core::panicking::panic_explicit()
+}
+
 fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) -> &'a mut (T)
 {
     let @0: &'_ mut (T); // return
@@ -192,6 +209,7 @@ fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) 
     let @13: &'_ mut (test_crate::CList<T>); // anonymous local
     let @14: u32; // anonymous local
     let @15: u32; // anonymous local
+    let @16: !; // anonymous local
 
     @fake_read(l@1)
     match *(l@1) {
@@ -199,7 +217,7 @@ fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) 
             nop
         },
         1 => {
-            panic(core::panicking::panic)
+            @16 := test_crate::list_nth_mut::panic_cold_explicit()
         }
     }
     x@5 := &mut (*(l@1) as variant @0).0
@@ -238,6 +256,13 @@ fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) 
     return
 }
 
+fn test_crate::list_nth_mut1::panic_cold_explicit() -> !
+{
+    let @0: !; // return
+
+    @0 := core::panicking::panic_explicit()
+}
+
 fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) -> &'a mut (T)
 {
     let @0: &'_ mut (T); // return
@@ -252,9 +277,10 @@ fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32)
     let @9: u32; // anonymous local
     let @10: &'_ mut (test_crate::CList<T>); // anonymous local
     let @11: (); // anonymous local
-    let @12: (); // anonymous local
+    let @12: !; // anonymous local
     let @13: (); // anonymous local
     let @14: (); // anonymous local
+    let @15: (); // anonymous local
 
     loop {
         @fake_read(l@1)
@@ -263,11 +289,7 @@ fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32)
                 nop
             },
             _ => {
-                @12 := ()
-                @3 := move (@12)
-                drop @11
-                drop @3
-                panic(core::panicking::panic)
+                break 0
             }
         }
         x@5 := &mut (*(l@1) as variant @0).0
@@ -279,16 +301,16 @@ fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32)
         }
         else {
             drop @9
-            @13 := ()
-            @7 := move (@13)
+            @14 := ()
+            @7 := move (@14)
             drop @8
             drop @7
             i@2 := copy (i@2) - const (1 : u32)
             @10 := &mut deref_box (*(tl@6))
             l@1 := move (@10)
             drop @10
-            @14 := ()
-            @4 := move (@14)
+            @15 := ()
+            @4 := move (@15)
             drop tl@6
             drop x@5
             continue 0
@@ -302,6 +324,11 @@ fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32)
         drop @3
         return
     }
+    @13 := ()
+    @3 := move (@13)
+    drop @11
+    drop @3
+    @12 := test_crate::list_nth_mut1::panic_cold_explicit()
 }
 
 fn test_crate::i32_id(@1: i32) -> i32

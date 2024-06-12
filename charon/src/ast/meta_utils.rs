@@ -101,7 +101,6 @@ pub fn convert_filename(name: &hax::FileName) -> FileName {
         | hax::FileName::Anon(_)
         | hax::FileName::MacroExpansion(_)
         | hax::FileName::ProcMacroSourceCode(_)
-        | hax::FileName::CfgSpec(_)
         | hax::FileName::CliCrateAttr(_)
         | hax::FileName::Custom(_)
         | hax::FileName::DocTest(..)

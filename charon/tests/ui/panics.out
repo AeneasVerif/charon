@@ -1,10 +1,20 @@
 # Final LLBC before serialization:
 
+fn core::panicking::panic_explicit() -> !
+
+fn test_crate::panic1::panic_cold_explicit() -> !
+{
+    let @0: !; // return
+
+    @0 := core::panicking::panic_explicit()
+}
+
 fn test_crate::panic1()
 {
     let @0: (); // return
+    let @1: !; // anonymous local
 
-    panic(core::panicking::panic)
+    @1 := test_crate::panic1::panic_cold_explicit()
 }
 
 opaque type core::fmt::Arguments<'a>

@@ -839,8 +839,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::Generator(_def_id, _subst, _movability) => {
-                        error_or_panic!(self, span, "Generators are not supported");
+                    hax::AggregateKind::Coroutine(_def_id, _subst, _movability) => {
+                        error_or_panic!(self, span, "Coroutines are not supported");
                     }
                 }
             }
@@ -1245,8 +1245,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             } => {
                 error_or_panic!(self, rustc_span, "Unsupported terminator: yield");
             }
-            TerminatorKind::GeneratorDrop => {
-                error_or_panic!(self, rustc_span, "Unsupported terminator: generator drop");
+            TerminatorKind::CoroutineDrop => {
+                error_or_panic!(self, rustc_span, "Unsupported terminator: coroutine drop");
             }
             TerminatorKind::FalseEdge {
                 real_target,

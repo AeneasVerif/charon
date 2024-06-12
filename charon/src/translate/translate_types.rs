@@ -24,7 +24,7 @@ fn check_region_name(s: Option<String>) -> Option<String> {
 pub fn translate_bound_region_kind_name(kind: &hax::BoundRegionKind) -> Option<String> {
     use hax::BoundRegionKind::*;
     let s = match kind {
-        BrAnon(..) => None,
+        BrAnon => None,
         BrNamed(_, symbol) => Some(symbol.clone()),
         BrEnv => Some("@env".to_owned()),
     };
@@ -38,7 +38,7 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
         ReEarlyBound(r) => Some(r.name.clone()),
         ReLateBound(_, br) => translate_bound_region_kind_name(&br.kind),
         ReFree(r) => match &r.bound_region {
-            BrAnon(..) => None,
+            BrAnon => None,
             BrNamed(_, symbol) => Some(symbol.clone()),
             BrEnv => Some("@env".to_owned()),
         },
@@ -340,9 +340,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 error_or_panic!(self, span, "Dynamic types are not supported yet")
             }
 
-            hax::Ty::Generator(_, _, _) => {
-                trace!("Generator");
-                error_or_panic!(self, span, "Generator types are not supported yet")
+            hax::Ty::Coroutine(_, _, _) => {
+                trace!("Coroutine");
+                error_or_panic!(self, span, "Coroutine types are not supported yet")
             }
 
             hax::Ty::Bound(_, _) => {

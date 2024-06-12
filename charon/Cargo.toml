@@ -54,7 +54,7 @@ tracing = { version = "0.1", features = [ "max_level_trace", "release_max_level_
 walkdir = "2.3.2"
 which = "6.0.1"
 
-hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main" }
+hax-frontend-exporter = { git = "https://github.com/Nadrieril/hax", branch = "update-rustc" }
 # hax-frontend-exporter = { path = "../../hax/frontend/exporter" }
 macros = { path = "./macros" }
 

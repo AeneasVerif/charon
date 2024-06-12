@@ -33,6 +33,13 @@ pub static IGNORED_TRAITS_NAMES: [&[&str]; 6] = [
 pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
 
 // Assumed functions
+pub static PANIC_NAMES: &[&[&str]] = &[
+    &["core", "panicking", "panic"],
+    &["core", "panicking", "panic_fmt"],
+    &["std", "panicking", "begin_panic"],
+    &["std", "rt", "begin_panic"],
+    &["core", "panicking", "assert_failed"],
+];
 // Pointers
 pub static PTR_UNIQUE_NAME: [&str; 3] = ["core", "ptr", "Unique"];
 pub static PTR_NON_NULL_NAME: [&str; 3] = ["core", "ptr", "NonNull"];
@@ -69,12 +76,7 @@ impl BuiltinFun {
 
     /// Parse a name to recognize built-in functions.
     pub(crate) fn parse_name(name: &Name) -> Option<Self> {
-        if name.equals_ref_name(&["core", "panicking", "panic"])
-            || name.equals_ref_name(&["core", "panicking", "panic_fmt"])
-            || name.equals_ref_name(&["std", "panicking", "begin_panic"])
-            || name.equals_ref_name(&["std", "rt", "begin_panic"])
-            || name.equals_ref_name(&["core", "panicking", "assert_failed"])
-        {
+        if PANIC_NAMES.iter().any(|panic| name.equals_ref_name(panic)) {
             Some(BuiltinFun::Panic)
         } else if name.equals_ref_name(&["alloc", "alloc", "box_free"]) {
             Some(BuiltinFun::BoxFree)

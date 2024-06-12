@@ -157,6 +157,8 @@ opaque type core::num::nonzero::NonZeroUsize
 
 fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::advance_by<'_0, T, const N : usize>(@1: &'_0 mut (core::array::iter::IntoIter<T, const N : usize>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZeroUsize>
 
+unsafe fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::__iterator_get_unchecked<'_0, T, const N : usize>(@1: &'_0 mut (core::array::iter::IntoIter<T, const N : usize>), @2: usize) -> core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<T, const N : usize>::Item
+
 impl<T, const N : usize> core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<T, const N : usize> : core::iter::traits::iterator::Iterator<core::array::iter::IntoIter<T, const N : usize>>
 {
     type Item = T with []
@@ -166,6 +168,7 @@ impl<T, const N : usize> core::array::iter::{impl core::iter::traits::iterator::
     fn count = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::count
     fn last = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::last
     fn advance_by = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::advance_by
+    fn __iterator_get_unchecked = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::__iterator_get_unchecked
 }
 
 fn core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter<T, const N : usize>(@1: Array<T, const N : usize>) -> core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}<T, const N : usize>::IntoIter
@@ -229,7 +232,7 @@ where
     [@TraitClause0]: core::ops::function::FnMut<F, (&'_ (T))>,
     (parents(Unsolved(core::ops::function::FnMut<F, (core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}<'_, T>::Item)>))::[@TraitClause0])::Output = bool,
 
-Unknown decl: 38
+Unknown decl: 39
 
 fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}::find_map<'a, '_1, T, B, F>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>), @2: F) -> core::option::Option<B>
 where
@@ -268,7 +271,7 @@ where
 
 unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>), @2: usize) -> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}<'_, T>::Item
 
-Unknown decl: 43
+Unknown decl: 44
 
 impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, T>>
 {
@@ -283,12 +286,12 @@ impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for 
     fn for_each = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}::for_each
     fn all = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}::all
     fn any = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}::any
-    fn find = @Fun38
+    fn find = @Fun39
     fn find_map = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}::find_map
     fn position = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}::position
     fn rposition = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}::rposition
     fn __iterator_get_unchecked = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#181}::__iterator_get_unchecked
-    fn is_sorted_by = @Fun43
+    fn is_sorted_by = @Fun44
 }
 
 trait core::ops::arith::AddAssign<Self, Rhs>

@@ -1729,19 +1729,29 @@ enum test_crate::List<T> =
 |  Nil()
 
 
+fn core::panicking::panic_explicit() -> !
+
+fn test_crate::get_elem_mut::panic_cold_explicit() -> !
+{
+    let @0: !; // return
+
+    @0 := core::panicking::panic_explicit()
+}
+
 fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usize) -> &'_0 mut (usize)
 {
     let @0: &'_ mut (usize); // return
     let ls@1: &'_ mut (test_crate::List<usize>); // arg #1
     let x@2: usize; // arg #2
     let @3: (); // anonymous local
-    let y@4: &'_ mut (usize); // local
-    let tl@5: &'_ mut (alloc::boxed::Box<test_crate::List<usize>>); // local
-    let @6: bool; // anonymous local
-    let @7: usize; // anonymous local
+    let @4: !; // anonymous local
+    let y@5: &'_ mut (usize); // local
+    let tl@6: &'_ mut (alloc::boxed::Box<test_crate::List<usize>>); // local
+    let @7: bool; // anonymous local
     let @8: usize; // anonymous local
-    let @9: &'_ mut (test_crate::List<usize>); // anonymous local
-    let @10: (); // anonymous local
+    let @9: usize; // anonymous local
+    let @10: &'_ mut (test_crate::List<usize>); // anonymous local
+    let @11: (); // anonymous local
 
     loop {
         @fake_read(ls@1)
@@ -1750,39 +1760,47 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
                 nop
             },
             1 => {
-                panic(core::panicking::panic)
+                break 0
             }
         }
-        y@4 := &mut (*(ls@1) as variant @0).0
-        tl@5 := &mut (*(ls@1) as variant @0).1
-        @7 := copy (*(y@4))
-        @8 := copy (x@2)
-        @6 := move (@7) == move (@8)
-        if move (@6) {
+        y@5 := &mut (*(ls@1) as variant @0).0
+        tl@6 := &mut (*(ls@1) as variant @0).1
+        @8 := copy (*(y@5))
+        @9 := copy (x@2)
+        @7 := move (@8) == move (@9)
+        if move (@7) {
             nop
         }
         else {
-            drop @8
-            drop @7
-            @9 := &mut deref_box (*(tl@5))
-            ls@1 := move (@9)
             drop @9
-            @10 := ()
-            @3 := move (@10)
-            drop @6
-            drop tl@5
-            drop y@4
+            drop @8
+            @10 := &mut deref_box (*(tl@6))
+            ls@1 := move (@10)
+            drop @10
+            @11 := ()
+            @3 := move (@11)
+            drop @7
+            drop tl@6
+            drop y@5
             continue 0
         }
+        drop @9
         drop @8
+        @0 := &mut *(y@5)
         drop @7
-        @0 := &mut *(y@4)
-        drop @6
-        drop tl@5
-        drop y@4
+        drop tl@6
+        drop y@5
         nop
         return
     }
+    @4 := test_crate::get_elem_mut::panic_cold_explicit()
+}
+
+fn test_crate::list_nth_mut_loop_with_id::panic_cold_explicit() -> !
+{
+    let @0: !; // return
+
+    @0 := core::panicking::panic_explicit()
 }
 
 fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<T>), @2: u32) -> &'_0 mut (T)
@@ -1798,8 +1816,9 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
     let @8: u32; // anonymous local
     let @9: &'_ mut (test_crate::List<T>); // anonymous local
     let @10: (); // anonymous local
-    let @11: (); // anonymous local
+    let @11: !; // anonymous local
     let @12: (); // anonymous local
+    let @13: (); // anonymous local
 
     loop {
         @fake_read(ls@1)
@@ -1808,11 +1827,7 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
                 nop
             },
             _ => {
-                @11 := ()
-                @3 := move (@11)
-                drop @10
-                drop @3
-                panic(core::panicking::panic)
+                break 0
             }
         }
         x@5 := &mut (*(ls@1) as variant @0).0
@@ -1828,8 +1843,8 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
             ls@1 := move (@9)
             drop @9
             i@2 := copy (i@2) - const (1 : u32)
-            @12 := ()
-            @4 := move (@12)
+            @13 := ()
+            @4 := move (@13)
             drop @7
             drop tl@6
             drop x@5
@@ -1843,6 +1858,11 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
         drop @3
         return
     }
+    @12 := ()
+    @3 := move (@12)
+    drop @10
+    drop @3
+    @11 := test_crate::list_nth_mut_loop_with_id::panic_cold_explicit()
 }
 
 fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::option::Option<usize>
