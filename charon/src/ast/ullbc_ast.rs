@@ -16,13 +16,8 @@ generate_index_type!(BlockId, "Block");
 // The entry block of a function is always the block with id 0
 pub static START_BLOCK_ID: BlockId = BlockId::ZERO;
 
-pub type ExprBody = GExprBody<Vector<BlockId, BlockData>>;
-
-pub type FunDecl = GFunDecl<Vector<BlockId, BlockData>>;
-pub type FunDecls = Vector<FunDeclId, FunDecl>;
-
-pub type GlobalDecl = GGlobalDecl<Vector<BlockId, BlockData>>;
-pub type GlobalDecls = Vector<GlobalDeclId, GlobalDecl>;
+pub type BodyContents = Vector<BlockId, BlockData>;
+pub type ExprBody = GExprBody<BodyContents>;
 
 /// A raw statement: a statement without meta data.
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize, Deserialize)]

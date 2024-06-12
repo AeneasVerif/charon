@@ -218,6 +218,19 @@ let ctx_to_fmt_env (ctx : ctx) : PrintLlbcAst.fmt_env =
     locals = [];
   }
 
+let ctx_from_crate (crate : LlbcAst.crate) : ctx =
+  let {
+    LlbcAst.type_decls;
+    fun_decls;
+    global_decls;
+    trait_decls;
+    trait_impls;
+    _;
+  } =
+    crate
+  in
+  { type_decls; global_decls; trait_decls; fun_decls; trait_impls }
+
 (** Match configuration *)
 type match_config = {
   map_vars_to_vars : bool;

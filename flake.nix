@@ -92,6 +92,7 @@
               '' else
                 "";
             propagatedBuildInputs = with ocamlPackages; [
+              core
               ppx_deriving
               visitors
               easy_logging
@@ -146,12 +147,30 @@
           ];
         };
         # The dev-shell we need to run kyber in CI. This doesn't really belong here but it's easier here.
-        devShells.kyber-ci = pkgs.mkShell {
-          packages = [
-            rustToolchain
-            pkgs.clang-tools # For clang-format
-          ];
-        };
+        devShells.kyber-ci =
+          let
+            build-kyber = pkgs.writeShellScriptBin "build-kyber" ''
+              export RUSTFLAGS="--cfg eurydice"
+              echo "Running charon (sha3) ..."
+              (cd libcrux-sha3 && charon)
+              echo "Running charon (ml-kem) ..."
+              cd libcrux-ml-kem
+              charon
+
+              mkdir -p c
+              cd c
+              echo "Running eurydice ..."
+              $EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+            '';
+          in
+          pkgs.mkShell {
+            packages = [
+              charon
+              build-kyber
+              rustToolchain
+              pkgs.clang-tools # For clang-format
+            ];
+          };
         checks = { inherit charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
 
         # Export this function so that users of charon can use it in nix. This

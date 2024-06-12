@@ -326,16 +326,13 @@ impl SharedExprVisitor for Deps {}
 impl SharedAstVisitor for Deps {}
 
 impl Deps {
-    fn visit_body(&mut self, body: &Option<ExprBody>) {
-        match &body {
-            Option::None => (),
-            Option::Some(body) => {
-                for v in &body.locals {
-                    self.visit_ty(&v.ty);
-                }
-                for block in &body.body {
-                    self.visit_block_data(block);
-                }
+    fn visit_body(&mut self, body: Option<&Body>) {
+        if let Some(Body::Unstructured(body)) = body {
+            for v in &body.locals {
+                self.visit_ty(&v.ty);
+            }
+            for block in &body.body {
+                self.visit_block_data(block);
             }
         }
     }
@@ -434,8 +431,11 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
                     }
                     graph.visit_ty(&sig.output);
 
-                    // Explore the body
-                    graph.visit_body(&d.body);
+                    if let Ok(id) = d.body {
+                        // Explore the body
+                        let body = ctx.translated.bodies.get(id);
+                        graph.visit_body(body);
+                    }
                 } else {
                     // There may have been errors
                     assert!(ctx.has_errors());
@@ -443,8 +443,11 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
             }
             AnyTransId::Global(id) => {
                 if let Some(d) = ctx.translated.global_decls.get(*id) {
-                    // Explore the body
-                    graph.visit_body(&d.body);
+                    if let Ok(id) = d.body {
+                        // Explore the body
+                        let body = ctx.translated.bodies.get(id);
+                        graph.visit_body(body);
+                    }
                 } else {
                     // There may have been errors
                     assert!(ctx.has_errors());

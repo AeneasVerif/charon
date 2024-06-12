@@ -1,10 +1,12 @@
 //! This module contains some macros for Charon. Due to technical reasons, Rust
 //! forces users to define such macros in a separate, dedicated library. Note
 //! that this doesn't apply to `macro_rules`.
+#![feature(non_exhaustive_omitted_patterns_lint)]
 
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
+use quote::quote;
 
 mod enum_helpers;
 mod make_generic_in_borrows;
@@ -13,7 +15,7 @@ use enum_helpers::EnumMethodKind;
 
 #[proc_macro_derive(VariantName)]
 pub fn derive_variant_name(item: TokenStream) -> TokenStream {
-    enum_helpers::derive_variant_name(item)
+    enum_helpers::derive_variant_name(item.into()).into()
 }
 
 /// Macro to derive a function `fn variant_index_arity(&self) -> (u32, usize)`
@@ -21,7 +23,7 @@ pub fn derive_variant_name(item: TokenStream) -> TokenStream {
 /// Only works on enumerations, of course.
 #[proc_macro_derive(VariantIndexArity)]
 pub fn derive_variant_index_arity(item: TokenStream) -> TokenStream {
-    enum_helpers::derive_variant_index_arity(item)
+    enum_helpers::derive_variant_index_arity(item.into()).into()
 }
 
 /// Macro `EnumIsA`
@@ -35,7 +37,7 @@ pub fn derive_variant_index_arity(item: TokenStream) -> TokenStream {
 /// our own code here (which is small) rather than doing PRs for this crate.
 #[proc_macro_derive(EnumIsA)]
 pub fn derive_enum_is_a(item: TokenStream) -> TokenStream {
-    enum_helpers::derive_enum_variant_method(item, EnumMethodKind::EnumIsA)
+    enum_helpers::derive_enum_variant_method(item.into(), EnumMethodKind::EnumIsA).into()
 }
 
 /// Macro `EnumAsGetters`
@@ -45,7 +47,16 @@ pub fn derive_enum_is_a(item: TokenStream) -> TokenStream {
 /// Also see the comments for [crate::derive_enum_is_a]
 #[proc_macro_derive(EnumAsGetters)]
 pub fn derive_enum_as_getters(item: TokenStream) -> TokenStream {
-    enum_helpers::derive_enum_variant_method(item, EnumMethodKind::EnumAsGetters)
+    let by_ref = enum_helpers::derive_enum_variant_method(
+        item.clone().into(),
+        EnumMethodKind::EnumAsGetters,
+    );
+    let by_ref_mut =
+        enum_helpers::derive_enum_variant_method(item.into(), EnumMethodKind::EnumAsMutGetters);
+    quote! {
+        #by_ref #by_ref_mut
+    }
+    .into()
 }
 
 /// Macro `EnumToGetters`
@@ -55,7 +66,7 @@ pub fn derive_enum_as_getters(item: TokenStream) -> TokenStream {
 /// Also see the comments for [crate::derive_enum_is_a]
 #[proc_macro_derive(EnumToGetters)]
 pub fn derive_enum_to_getters(item: TokenStream) -> TokenStream {
-    enum_helpers::derive_enum_variant_method(item, EnumMethodKind::EnumToGetters)
+    enum_helpers::derive_enum_variant_method(item.into(), EnumMethodKind::EnumToGetters).into()
 }
 
 #[proc_macro]

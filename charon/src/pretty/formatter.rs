@@ -171,6 +171,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
     + Formatter<ConstGenericVarId>
     + Formatter<FunDeclId>
     + Formatter<GlobalDeclId>
+    + Formatter<BodyId>
     + Formatter<TraitDeclId>
     + Formatter<TraitImplId>
     + Formatter<TraitClauseId>
@@ -252,6 +253,18 @@ impl<'a> Formatter<ast::FunDeclId> for FmtCtx<'a> {
             Some(translated) => match translated.fun_decls.get(id) {
                 None => id.to_pretty_string(),
                 Some(d) => d.name.fmt_with_ctx(self),
+            },
+        }
+    }
+}
+
+impl<'a> Formatter<BodyId> for FmtCtx<'a> {
+    fn format_object(&self, id: BodyId) -> String {
+        match &self.translated {
+            None => "<error>".to_owned(),
+            Some(translated) => match translated.bodies.get(id) {
+                None => "<error>".to_owned(),
+                Some(d) => d.fmt_with_ctx(self),
             },
         }
     }
@@ -456,18 +469,6 @@ impl<'a> Formatter<&TypeDecl> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<&ullbc_ast::GlobalDecl> for FmtCtx<'a> {
-    fn format_object(&self, def: &ullbc_ast::GlobalDecl) -> String {
-        def.fmt_with_ctx(self)
-    }
-}
-
-impl<'a> Formatter<&llbc_ast::GlobalDecl> for FmtCtx<'a> {
-    fn format_object(&self, def: &llbc_ast::GlobalDecl) -> String {
-        def.fmt_with_ctx(self)
-    }
-}
-
 impl<'a> Formatter<&ullbc_ast::ExprBody> for FmtCtx<'a> {
     fn format_object(&self, body: &ullbc_ast::ExprBody) -> String {
         body.fmt_with_ctx(self)
@@ -480,14 +481,14 @@ impl<'a> Formatter<&llbc_ast::ExprBody> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<&ullbc_ast::FunDecl> for FmtCtx<'a> {
-    fn format_object(&self, def: &ullbc_ast::FunDecl) -> String {
+impl<'a> Formatter<&gast::FunDecl> for FmtCtx<'a> {
+    fn format_object(&self, def: &llbc_ast::FunDecl) -> String {
         def.fmt_with_ctx(self)
     }
 }
 
-impl<'a> Formatter<&llbc_ast::FunDecl> for FmtCtx<'a> {
-    fn format_object(&self, def: &llbc_ast::FunDecl) -> String {
+impl<'a> Formatter<&gast::GlobalDecl> for FmtCtx<'a> {
+    fn format_object(&self, def: &llbc_ast::GlobalDecl) -> String {
         def.fmt_with_ctx(self)
     }
 }

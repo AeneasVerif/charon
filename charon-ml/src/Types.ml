@@ -15,6 +15,7 @@ module RegionId = IdGen ()
 module RegionGroupId = IdGen ()
 module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
+module BodyId = IdGen ()
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).

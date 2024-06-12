@@ -56,7 +56,11 @@ impl MutExprVisitor for ClosureStateAccess {
 
 impl MutAstVisitor for ClosureStateAccess {}
 
-fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Error> {
+fn transform_function(
+    _ctx: &TransformCtx,
+    def: &mut FunDecl,
+    body: Option<&mut ExprBody>,
+) -> Result<(), Error> {
     let FunSig {
         closure_info,
         inputs,
@@ -134,7 +138,7 @@ fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Erro
         // We also update the corresponding field accesses in the body of
         // the function.
 
-        if let Some(body) = &mut def.body {
+        if let Some(body) = body {
             body.arg_count += 1;
 
             // Update the type of the local 1 (which is the closure)
@@ -156,8 +160,13 @@ fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Erro
 
 pub struct Transform;
 impl LlbcPass for Transform {
-    fn transform_function(&self, ctx: &mut TransformCtx, def: &mut FunDecl) {
+    fn transform_function(
+        &self,
+        ctx: &mut TransformCtx,
+        def: &mut FunDecl,
+        body: Result<&mut ExprBody, Opaque>,
+    ) {
         // Ignore the errors, which should have been reported
-        let _ = transform_function(ctx, def);
+        let _ = transform_function(ctx, def, body.ok());
     }
 }

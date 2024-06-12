@@ -55,9 +55,7 @@ walkdir = "2.3.2"
 which = "6.0.1"
 
 hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main" }
-hax-frontend-exporter-options = { git = "https://github.com/hacspec/hax", branch = "main" }
 # hax-frontend-exporter = { path = "../../hax/frontend/exporter" }
-# hax-frontend-exporter-options = { path = "../../hax/frontend/exporter/options" }
 macros = { path = "./macros" }
 
 [dev-dependencies]

@@ -40,6 +40,10 @@ where
         self.vector.get(i).map(Option::as_ref).flatten()
     }
 
+    pub fn get_mut(&mut self, i: I) -> Option<&mut T> {
+        self.vector.get_mut(i).map(Option::as_mut).flatten()
+    }
+
     pub fn is_empty(&self) -> bool {
         self.vector.is_empty()
     }
@@ -106,6 +110,10 @@ where
     }
 
     /// Iterate over all slots, even empty ones.
+    pub fn iter_all_slots(&self) -> impl Iterator<Item = &Option<T>> {
+        self.vector.iter()
+    }
+
     pub fn iter_indexed_all_slots(&self) -> impl Iterator<Item = (I, &Option<T>)> {
         self.vector.iter_enumerated()
     }
@@ -157,7 +165,19 @@ where
     type IntoIter = impl Iterator<Item = &'a T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        (&self.vector).into_iter().flat_map(|opt| opt.as_ref())
+        self.vector.iter().flat_map(|opt| opt.as_ref())
+    }
+}
+
+impl<'a, I, T> IntoIterator for &'a mut Vector<I, T>
+where
+    I: Idx,
+{
+    type Item = &'a mut T;
+    type IntoIter = impl Iterator<Item = &'a mut T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.vector.iter_mut().flat_map(|opt| opt.as_mut())
     }
 }
 

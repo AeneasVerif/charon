@@ -19,7 +19,6 @@ use crate::driver::{
     RunCompilerNormallyCallbacks,
 };
 use charon_lib::cli_options;
-use charon_lib::export::CrateData;
 use charon_lib::logger;
 use charon_lib::trace;
 
@@ -185,19 +184,24 @@ fn main() {
     let errors_as_warnings = options.errors_as_warnings;
     let mut callback = CharonCallbacks::new(options);
     let mut res = callback.run_compiler(compiler_args);
-    if !callback.options.no_serialize {
+    let CharonCallbacks {
+        options,
+        crate_data,
+        error_count,
+        ..
+    } = callback;
+
+    if !options.no_serialize {
         // # Final step: generate the files.
         res = res.and_then(|()| {
             // `crate_data` is set by our callbacks when there is no fatal error.
-            let crate_data = callback.crate_data.as_ref().unwrap();
-            let dest_file = match callback.options.dest_file.clone() {
+            let crate_data = crate_data.unwrap();
+            let dest_file = match options.dest_file.clone() {
                 Some(f) => f,
                 None => {
-                    let mut target_filename = callback.options.dest_dir.clone().unwrap_or_default();
-                    let (crate_name, extension) = match crate_data {
-                        CrateData::ULLBC(d) => (&d.name, "ullbc"),
-                        CrateData::LLBC(d) => (&d.name, "llbc"),
-                    };
+                    let mut target_filename = options.dest_dir.clone().unwrap_or_default();
+                    let crate_name = &crate_data.name;
+                    let extension = if options.ullbc { "ullbc" } else { "llbc" };
                     target_filename.push(format!("{crate_name}.{extension}"));
                     target_filename
                 }
@@ -211,9 +215,9 @@ fn main() {
 
     match res {
         Ok(()) => {
-            if callback.error_count > 0 {
+            if error_count > 0 {
                 assert!(errors_as_warnings);
-                let msg = format!("The extraction generated {} warnings", callback.error_count);
+                let msg = format!("The extraction generated {} warnings", error_count);
                 log::warn!("{}", msg);
             }
         }
@@ -223,7 +227,7 @@ fn main() {
         }
         Err(CharonFailure::RustcError(_) | CharonFailure::Serialize) => {
             assert!(!errors_as_warnings);
-            let msg = format!("The extraction encountered {} errors", callback.error_count);
+            let msg = format!("The extraction encountered {} errors", error_count);
             log::error!("{}", msg);
             std::process::exit(1);
         }

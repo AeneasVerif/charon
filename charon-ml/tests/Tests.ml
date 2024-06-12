@@ -13,4 +13,6 @@ let () =
 
 (* Call the tests *)
 let () = Test_Deserialize.run_tests "../../../tests/serialized"
-let () = Test_NameMatcher.run_tests ()
+
+let () =
+  Test_NameMatcher.run_tests "../../../tests/serialized/name-matcher-tests.llbc"
