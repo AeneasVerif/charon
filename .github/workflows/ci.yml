@@ -41,6 +41,14 @@ jobs:
       - run: nix build -L .#charon-ml
       - run: nix flake check -L
 
+  check-version-number:
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # deep clone in order to get access to other commits
+      - run: nix develop --command ./scripts/ci-check-version-number.sh
+
   aeneas:
     needs: [check_if_skip_duplicate_job, nix]
     if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
