@@ -135,6 +135,7 @@ pub struct ItemMeta {
     /// API (this is called "pub-in-priv" items). With or without the `pub use`, we set `public =
     /// true`; computing item reachability is harder.
     pub public: bool,
+    /// Attribute `charon::rename("...")` (and `aeneas::rename("...")`) to tweak the name of the code extracted by Charon (and Aeneas)
     pub rename: Option<String>,
     #[serde(skip_serializing)]
     #[serde(default)]

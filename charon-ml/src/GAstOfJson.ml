@@ -466,16 +466,16 @@ let variant_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | `Assoc
         [
-          ("span", span);
+          ("item_meta", item_meta);
           ("name", name);
           ("fields", fields);
           ("discriminant", discriminant);
         ] ->
-        let* span = span_of_json id_to_file span in
+        let* item_meta = item_meta_of_json id_to_file item_meta in
         let* name = string_of_json name in
         let* fields = list_of_json (field_of_json id_to_file) fields in
         let* discriminant = scalar_value_of_json discriminant in
-        Ok { span; variant_name = name; fields; discriminant }
+        Ok { item_meta; variant_name = name; fields; discriminant }
     | _ -> Error "")
 
 let type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :

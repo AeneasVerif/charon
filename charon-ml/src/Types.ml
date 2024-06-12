@@ -537,7 +537,7 @@ type field = {
 [@@deriving show]
 
 type variant = {
-  span : span;
+  item_meta : item_meta;
   variant_name : string;
   fields : field list;
       (** The fields can be indexed with {!FieldId.id}.
