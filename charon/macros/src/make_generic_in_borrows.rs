@@ -181,21 +181,21 @@ fn generic_expr_to_mut(e: &mut Expr) {
 /// when defining an implementation generic over the borrow type.
 ///
 /// For instance, if we write:
-/// ```
+/// ```ignore
 /// make_generic_in_borrows! {
 ///   trait AstVisitor : ExprVisitor { ... }
 /// }
 /// ```
 ///
 /// We want to generate two definitions:
-/// ```
+/// ```ignore
 /// make_generic_in_borrows! {
 ///   trait SharedAstVisitor : SharedExprVisitor { ... }
 /// }
 /// ```
 ///
 /// and:
-/// ```
+/// ```ignore
 /// make_generic_in_borrows! {
 ///   trait MutAstVisitor : MutExprVisitor { ... }
 /// }
