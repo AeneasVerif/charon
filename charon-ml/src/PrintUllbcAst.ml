@@ -66,9 +66,10 @@ module Ast = struct
     | Drop (p, bid) ->
         indent ^ "drop " ^ place_to_string env p ^ ";\n" ^ indent ^ "goto "
         ^ block_id_to_string bid
-    | Call (call, bid) ->
+    | Call (call, bid) -> (
         call_to_string env indent call
-        ^ ";\n" ^ indent ^ "goto " ^ block_id_to_string bid
+        ^ ";\n" ^ indent ^ "goto "
+        ^ match bid with Some bid -> block_id_to_string bid | None -> "!")
     | Assert (a, bid) ->
         assertion_to_string env indent a
         ^ ";\n" ^ indent ^ "goto " ^ block_id_to_string bid

@@ -1361,13 +1361,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         Ok(RawTerminator::Panic)
                     }
                     SubstFunIdOrPanic::Fun(fid) => {
-                        let next_block = target.unwrap_or_else(|| {
-                            panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", rust_id, generics, args)
-                        });
-
-                        // Translate the target
                         let lval = self.translate_place(span, destination)?;
-                        let next_block = self.translate_basic_block_id(next_block);
+                        let next_block = target.map(|target| self.translate_basic_block_id(target));
 
                         let call = Call {
                             func: FnOperand::Regular(fid.func),
@@ -1387,12 +1382,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // The function
                 let p = self.translate_place(span, p)?;
 
-                // Translate the target
-                let next_block = target.unwrap_or_else(|| {
-                    panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", p, generics, args)
-                });
                 let lval = self.translate_place(span, destination)?;
-                let next_block = self.translate_basic_block_id(next_block);
+                let next_block = target.map(|target| self.translate_basic_block_id(target));
 
                 // TODO: we may have a problem here because as we don't
                 // know which function is being called, we may not be

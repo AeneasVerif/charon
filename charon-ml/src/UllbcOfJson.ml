@@ -64,7 +64,7 @@ let call_of_json (js : json) : (raw_terminator, string) result =
     (match js with
     | `Assoc [ ("call", call); ("target", target) ] ->
         let* call = call_of_json call in
-        let* target = BlockId.id_of_json target in
+        let* target = option_of_json BlockId.id_of_json target in
 
         Ok (Call (call, target))
     | _ -> Error "")

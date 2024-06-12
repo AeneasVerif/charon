@@ -984,7 +984,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             }
             RawTerminator::Call { call, target } => {
                 let (call_s, _) = fmt_call(ctx, call);
-                format!("{} := {call_s} -> bb{target}", call.dest.fmt_with_ctx(ctx),)
+                let target = if let Some(target) = target {
+                    format!("bb{target}")
+                } else {
+                    format!("!")
+                };
+                format!("{} := {call_s} -> {target}", call.dest.fmt_with_ctx(ctx),)
             }
             RawTerminator::Assert {
                 cond,
