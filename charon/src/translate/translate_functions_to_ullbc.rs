@@ -6,7 +6,7 @@
 use std::mem;
 use std::panic;
 
-use crate::assumed;
+use crate::assumed::BuiltinFun;
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
@@ -874,13 +874,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let name = self.t_ctx.hax_def_id_to_name(def_id)?;
         let is_local = rust_id.is_local();
 
-        // Check if this function is a actually `panic`
-        if name.equals_ref_name(&assumed::PANIC_NAME)
-            || name.equals_ref_name(&assumed::PANIC_FMT_NAME)
-            || name.equals_ref_name(&assumed::BEGIN_PANIC_NAME)
-            || name.equals_ref_name(&assumed::BEGIN_PANIC_RT_NAME)
-            || name.equals_ref_name(&assumed::ASSERT_FAILED_NAME)
-        {
+        let builtin_fun = BuiltinFun::parse_name(&name);
+        if matches!(builtin_fun, Some(BuiltinFun::Panic)) {
             return Ok(SubstFunIdOrPanic::Panic);
         }
 
@@ -888,7 +883,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // sometimes introduces very low-level functions, which we need to
         // catch early - in particular, before we start translating types and
         // arguments, because we won't be able to translate some of them.
-        if name.equals_ref_name(&assumed::BOX_FREE_NAME) {
+        if matches!(builtin_fun, Some(BuiltinFun::BoxFree)) {
             assert!(!is_local);
 
             // This deallocates a box.
@@ -927,14 +922,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         } else {
             // Retrieve the lists of used parameters, in case of non-local
             // definitions
-            let (used_type_args, used_args) = if is_local {
-                (None, None)
+            let (used_type_args, used_args) = if let Some(builtin_fun) = builtin_fun {
+                builtin_fun
+                    .to_fun_info()
+                    .map(|used| (used.used_type_params, used.used_args))
             } else {
-                match assumed::function_to_info(&name) {
-                    None => (None, None),
-                    Some(used) => (Some(used.used_type_params), Some(used.used_args)),
-                }
-            };
+                None
+            }
+            .unzip();
 
             // Translate the type parameters
             let generics = self.translate_substs_and_trait_refs(
@@ -950,14 +945,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 .map(|args| self.translate_arguments(span, used_args, args))
                 .transpose()?;
 
-            // Check if the function is considered primitive: primitive
-            // functions benefit from special treatment.
-            let is_prim = if is_local {
-                false
-            } else {
-                assumed::get_fun_id_from_name(&name).is_some()
-            };
-
             // Trait information
             trace!(
                 "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
@@ -970,7 +957,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_refs
             );
 
-            if is_prim {
+            // Check if the function is considered primitive: primitive
+            // functions benefit from special treatment.
+            if let Some(builtin_fun) = builtin_fun {
                 // Primitive function.
                 //
                 // Note that there are subtleties with regards to the way types parameters
@@ -982,7 +971,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // (the type parameter is not `Box<T>` but `T`).
                 assert!(trait_info.is_none());
 
-                let aid = assumed::get_fun_id_from_name(&name).unwrap();
+                let aid = builtin_fun.to_ullbc_builtin_fun();
 
                 // Note that some functions are actually traits (deref, index, etc.):
                 // we assume that they are called only on a limited set of types

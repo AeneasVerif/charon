@@ -32,19 +32,7 @@ pub static IGNORED_TRAITS_NAMES: [&[&str]; 6] = [
 // Assumed types
 pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
 
-//
 // Assumed functions
-//
-pub static PANIC_NAME: [&str; 3] = ["core", "panicking", "panic"];
-pub static PANIC_FMT_NAME: [&str; 3] = ["core", "panicking", "panic_fmt"];
-pub static BEGIN_PANIC_NAME: [&str; 3] = ["std", "panicking", "begin_panic"];
-pub static BEGIN_PANIC_RT_NAME: [&str; 3] = ["std", "rt", "begin_panic"];
-pub static ASSERT_FAILED_NAME: [&str; 3] = ["core", "panicking", "assert_failed"];
-
-// Boxes - remark: there misses `Box::new` which has an impl block (TODO: remove?)
-// Only Box::free needs to have a special treatment.
-pub static BOX_FREE_NAME: [&str; 3] = ["alloc", "alloc", "box_free"];
-
 // Pointers
 pub static PTR_UNIQUE_NAME: [&str; 3] = ["core", "ptr", "Unique"];
 pub static PTR_NON_NULL_NAME: [&str; 3] = ["core", "ptr", "NonNull"];
@@ -55,14 +43,93 @@ pub static PTR_NON_NULL_NAME: [&str; 3] = ["core", "ptr", "NonNull"];
 ///   to functions: there are thus missing identifiers.
 /// - some of the ids here are actually traits, that we disambiguate later
 /// TODO: merge with the other enum?
-#[derive(EnumIsA)]
-enum FunId {
-    /// `core::panicking::panic`
+#[derive(Copy, Clone, EnumIsA)]
+pub(crate) enum BuiltinFun {
     Panic,
-    /// `std::panicking::begin_panic` - TODO: remove?
-    BeginPanic,
     BoxNew,
     BoxFree,
+}
+
+pub struct FunInfo {
+    pub used_type_params: Vec<bool>,
+    // TODO: rename. "value_args"?
+    pub used_args: Vec<bool>,
+}
+
+impl BuiltinFun {
+    /// Converts to the ullbc equivalent. Panics if `self` is `Panic` as this should be handled
+    /// separately.
+    pub(crate) fn to_ullbc_builtin_fun(self) -> ullbc_ast::AssumedFunId {
+        match self {
+            BuiltinFun::BoxNew => ullbc_ast::AssumedFunId::BoxNew,
+            BuiltinFun::BoxFree => ullbc_ast::AssumedFunId::BoxFree,
+            BuiltinFun::Panic => panic!(),
+        }
+    }
+
+    /// Parse a name to recognize built-in functions.
+    pub(crate) fn parse_name(name: &Name) -> Option<Self> {
+        if name.equals_ref_name(&["core", "panicking", "panic"])
+            || name.equals_ref_name(&["core", "panicking", "panic_fmt"])
+            || name.equals_ref_name(&["std", "panicking", "begin_panic"])
+            || name.equals_ref_name(&["std", "rt", "begin_panic"])
+            || name.equals_ref_name(&["core", "panicking", "assert_failed"])
+        {
+            Some(BuiltinFun::Panic)
+        } else if name.equals_ref_name(&["alloc", "alloc", "box_free"]) {
+            Some(BuiltinFun::BoxFree)
+        } else {
+            // Box::new is peculiar because there is an impl block
+            use PathElem::*;
+            match name.name.as_slice() {
+                [Ident(alloc, _), Ident(boxed, _), Impl(impl_elem), Ident(new, _)] => {
+                    if alloc == "alloc" && boxed == "boxed" && new == "new" {
+                        match &impl_elem.kind {
+                            ImplElemKind::Ty(Ty::Adt(
+                                TypeId::Assumed(AssumedTy::Box),
+                                generics,
+                            )) => {
+                                let GenericArgs {
+                                    regions,
+                                    types,
+                                    const_generics,
+                                    trait_refs,
+                                } = generics;
+                                if regions.is_empty()
+                                    && types.len() == 1
+                                    && const_generics.is_empty()
+                                    && trait_refs.is_empty()
+                                {
+                                    match types.as_slice() {
+                                        [Ty::TypeVar(_)] => Some(BuiltinFun::BoxNew),
+                                        _ => None,
+                                    }
+                                } else {
+                                    None
+                                }
+                            }
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            }
+        }
+    }
+
+    /// See the comments for [type_to_used_params]
+    pub(crate) fn to_fun_info(self) -> Option<FunInfo> {
+        match self {
+            BuiltinFun::Panic => None,
+            BuiltinFun::BoxNew => None,
+            BuiltinFun::BoxFree => Some(FunInfo {
+                used_type_params: vec![true, false],
+                used_args: vec![true, false],
+            }),
+        }
+    }
 }
 
 pub fn is_marker_trait(name: &Name) -> bool {
@@ -97,66 +164,6 @@ pub fn get_name_from_type_id(id: AssumedTy) -> Vec<String> {
     }
 }
 
-fn get_fun_id_from_name_full(name: &Name) -> Option<FunId> {
-    if name.equals_ref_name(&PANIC_NAME) {
-        Some(FunId::Panic)
-    } else if name.equals_ref_name(&BEGIN_PANIC_NAME) || name.equals_ref_name(&BEGIN_PANIC_RT_NAME)
-    {
-        Some(FunId::BeginPanic)
-    } else if name.equals_ref_name(&BOX_FREE_NAME) {
-        Some(FunId::BoxFree)
-    } else {
-        // Box::new is peculiar because there is an impl block
-        use PathElem::*;
-        match name.name.as_slice() {
-            [Ident(alloc, _), Ident(boxed, _), Impl(impl_elem), Ident(new, _)] => {
-                if alloc == "alloc" && boxed == "boxed" && new == "new" {
-                    match &impl_elem.kind {
-                        ImplElemKind::Ty(Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics)) => {
-                            let GenericArgs {
-                                regions,
-                                types,
-                                const_generics,
-                                trait_refs,
-                            } = generics;
-                            if regions.is_empty()
-                                && types.len() == 1
-                                && const_generics.is_empty()
-                                && trait_refs.is_empty()
-                            {
-                                match types.as_slice() {
-                                    [Ty::TypeVar(_)] => Some(FunId::BoxNew),
-                                    _ => None,
-                                }
-                            } else {
-                                None
-                            }
-                        }
-                        _ => None,
-                    }
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        }
-    }
-}
-
-pub fn get_fun_id_from_name(name: &Name) -> Option<ullbc_ast::AssumedFunId> {
-    match get_fun_id_from_name_full(name) {
-        Some(id) => {
-            let id = match id {
-                FunId::Panic | FunId::BeginPanic => unreachable!(),
-                FunId::BoxNew => ullbc_ast::AssumedFunId::BoxNew,
-                FunId::BoxFree => ullbc_ast::AssumedFunId::BoxFree,
-            };
-            Some(id)
-        }
-        None => None,
-    }
-}
-
 /// When translating from MIR to ULLBC, we ignore some type parameters for some
 /// assumed types.
 /// For instance, many types like box or vec are parameterized (in MIR) by an allocator
@@ -179,41 +186,6 @@ pub fn type_to_used_params(name: &Name) -> Option<Vec<bool>> {
                 AssumedTy::Array | AssumedTy::Slice => vec![true],
             };
             Some(id)
-        }
-    }
-}
-
-pub struct FunInfo {
-    pub used_type_params: Vec<bool>,
-    // TODO: rename. "value_args"?
-    pub used_args: Vec<bool>,
-}
-
-/// See the comments for [type_to_used_params]
-pub fn function_to_info(name: &Name) -> Option<FunInfo> {
-    trace!("{:?}", name);
-    match get_fun_id_from_name_full(name) {
-        None => None,
-        Some(id) => {
-            let info = match id {
-                FunId::Panic => FunInfo {
-                    used_type_params: vec![],
-                    used_args: vec![true],
-                },
-                FunId::BeginPanic => FunInfo {
-                    used_type_params: vec![true],
-                    used_args: vec![true],
-                },
-                FunId::BoxNew => FunInfo {
-                    used_type_params: vec![true],
-                    used_args: vec![true],
-                },
-                FunId::BoxFree => FunInfo {
-                    used_type_params: vec![true, false],
-                    used_args: vec![true, false],
-                },
-            };
-            Some(info)
         }
     }
 }
