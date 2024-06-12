@@ -76,13 +76,13 @@ pub fn is_marker_trait(name: &Name) -> bool {
 
 pub fn get_type_id_from_name(name: &Name) -> Option<AssumedTy> {
     if name.equals_ref_name(&BOX_NAME) {
-        Option::Some(AssumedTy::Box)
+        Some(AssumedTy::Box)
     } else if name.equals_ref_name(&PTR_UNIQUE_NAME) {
-        Option::Some(AssumedTy::PtrUnique)
+        Some(AssumedTy::PtrUnique)
     } else if name.equals_ref_name(&PTR_NON_NULL_NAME) {
-        Option::Some(AssumedTy::PtrNonNull)
+        Some(AssumedTy::PtrNonNull)
     } else {
-        Option::None
+        None
     }
 }
 
@@ -99,12 +99,12 @@ pub fn get_name_from_type_id(id: AssumedTy) -> Vec<String> {
 
 fn get_fun_id_from_name_full(name: &Name) -> Option<FunId> {
     if name.equals_ref_name(&PANIC_NAME) {
-        Option::Some(FunId::Panic)
+        Some(FunId::Panic)
     } else if name.equals_ref_name(&BEGIN_PANIC_NAME) || name.equals_ref_name(&BEGIN_PANIC_RT_NAME)
     {
-        Option::Some(FunId::BeginPanic)
+        Some(FunId::BeginPanic)
     } else if name.equals_ref_name(&BOX_FREE_NAME) {
-        Option::Some(FunId::BoxFree)
+        Some(FunId::BoxFree)
     } else {
         // Box::new is peculiar because there is an impl block
         use PathElem::*;
@@ -125,35 +125,35 @@ fn get_fun_id_from_name_full(name: &Name) -> Option<FunId> {
                                 && trait_refs.is_empty()
                             {
                                 match types.as_slice() {
-                                    [Ty::TypeVar(_)] => Option::Some(FunId::BoxNew),
-                                    _ => Option::None,
+                                    [Ty::TypeVar(_)] => Some(FunId::BoxNew),
+                                    _ => None,
                                 }
                             } else {
-                                Option::None
+                                None
                             }
                         }
-                        _ => Option::None,
+                        _ => None,
                     }
                 } else {
-                    Option::None
+                    None
                 }
             }
-            _ => Option::None,
+            _ => None,
         }
     }
 }
 
 pub fn get_fun_id_from_name(name: &Name) -> Option<ullbc_ast::AssumedFunId> {
     match get_fun_id_from_name_full(name) {
-        Option::Some(id) => {
+        Some(id) => {
             let id = match id {
                 FunId::Panic | FunId::BeginPanic => unreachable!(),
                 FunId::BoxNew => ullbc_ast::AssumedFunId::BoxNew,
                 FunId::BoxFree => ullbc_ast::AssumedFunId::BoxFree,
             };
-            Option::Some(id)
+            Some(id)
         }
-        Option::None => Option::None,
+        None => None,
     }
 }
 
@@ -164,8 +164,8 @@ pub fn get_fun_id_from_name(name: &Name) -> Option<ullbc_ast::AssumedFunId> {
 pub fn type_to_used_params(name: &Name) -> Option<Vec<bool>> {
     trace!("{:?}", name);
     match get_type_id_from_name(name) {
-        Option::None => Option::None,
-        Option::Some(id) => {
+        None => None,
+        Some(id) => {
             let id = match id {
                 AssumedTy::Box => {
                     vec![true, false]
@@ -178,7 +178,7 @@ pub fn type_to_used_params(name: &Name) -> Option<Vec<bool>> {
                 }
                 AssumedTy::Array | AssumedTy::Slice => vec![true],
             };
-            Option::Some(id)
+            Some(id)
         }
     }
 }
@@ -193,8 +193,8 @@ pub struct FunInfo {
 pub fn function_to_info(name: &Name) -> Option<FunInfo> {
     trace!("{:?}", name);
     match get_fun_id_from_name_full(name) {
-        Option::None => Option::None,
-        Option::Some(id) => {
+        None => None,
+        Some(id) => {
             let info = match id {
                 FunId::Panic => FunInfo {
                     used_type_params: vec![],
@@ -213,7 +213,7 @@ pub fn function_to_info(name: &Name) -> Option<FunInfo> {
                     used_args: vec![true, false],
                 },
             };
-            Option::Some(info)
+            Some(info)
         }
     }
 }

@@ -37,10 +37,10 @@ impl SharedTypeVisitor for ComputeUsedLocals {}
 impl SharedExprVisitor for ComputeUsedLocals {
     fn visit_var_id(&mut self, vid: &VarId) {
         match self.vars.get_mut(vid) {
-            Option::None => {
+            None => {
                 let _ = self.vars.insert(*vid, 1);
             }
-            Option::Some(cnt) => *cnt += 1,
+            Some(cnt) => *cnt += 1,
         }
     }
 }

@@ -1818,7 +1818,7 @@ fn translate_block(
     } else if is_switch {
         *info.exits_info.owned_switch_exits.get(&block_id).unwrap()
     } else {
-        Option::None
+        None
     };
 
     // If we enter a switch, add the exit block to the set
@@ -1826,8 +1826,8 @@ fn translate_block(
     let nswitch_exit_blocks = if is_switch {
         let mut nexit_blocks = switch_exit_blocks.clone();
         match next_block {
-            Option::None => nexit_blocks,
-            Option::Some(bid) => {
+            None => nexit_blocks,
+            Some(bid) => {
                 nexit_blocks.insert(bid);
                 nexit_blocks
             }

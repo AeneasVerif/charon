@@ -71,7 +71,7 @@ impl<'a> Visitor<'a> {
                 // Push the statement:
                 //`tmp0 = & proj`
                 let buf_borrow_ty = Ty::Ref(Region::Erased, Box::new(buf_ty), ref_kind);
-                let buf_borrow_var = self.fresh_var(Option::None, buf_borrow_ty);
+                let buf_borrow_var = self.fresh_var(None, buf_borrow_ty);
                 let borrow_st = RawStatement::Assign(
                     Place::new(buf_borrow_var),
                     Rvalue::Ref(
@@ -91,7 +91,7 @@ impl<'a> Visitor<'a> {
                 // Push the statement:
                 // `tmp1 = Array{Mut,Shared}Index(move tmp0, copy i)`
                 let elem_borrow_ty = Ty::Ref(Region::Erased, Box::new(elem_ty.clone()), ref_kind);
-                let elem_borrow_var = self.fresh_var(Option::None, elem_borrow_ty);
+                let elem_borrow_var = self.fresh_var(None, elem_borrow_ty);
                 let arg_buf = Operand::Move(Place::new(buf_borrow_var));
                 let index_dest = Place::new(elem_borrow_var);
                 let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
@@ -185,9 +185,9 @@ impl<'a> MutAstVisitor for Visitor<'a> {
 
     fn visit_statement(&mut self, st: &mut Statement) {
         // Retrieve the span information
-        self.span = Option::Some(st.span);
+        self.span = Some(st.span);
         self.visit_raw_statement(&mut st.content);
-        self.span = Option::None;
+        self.span = None;
     }
 
     fn visit_raw_statement(&mut self, st: &mut RawStatement) {
@@ -224,7 +224,7 @@ fn transform_st(locals: &mut Vector<VarId, Var>, s: &mut Statement) -> Option<Ve
     let mut visitor = Visitor {
         locals,
         statements: Vec::new(),
-        span: Option::None,
+        span: None,
     };
     visitor.visit_statement(s);
 

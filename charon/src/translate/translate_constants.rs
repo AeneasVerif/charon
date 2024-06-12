@@ -88,7 +88,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // TODO: the user_ty is not always None
                     .map(|f| self.translate_constant_expr_to_constant_expr(span, f))
                     .try_collect()?;
-                RawConstantExpr::Adt(Option::None, fields)
+                RawConstantExpr::Adt(None, fields)
             }
             ConstantExprKind::TraitConst { impl_expr, name } => {
                 let trait_ref = self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;

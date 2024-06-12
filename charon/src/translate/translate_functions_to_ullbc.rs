@@ -585,9 +585,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         generics,
                     ) => {
                         if aty.is_array() {
-                            Option::Some(generics.const_generics[0].clone())
+                            Some(generics.const_generics[0].clone())
                         } else {
-                            Option::None
+                            None
                         }
                     }
                     _ => unreachable!(),
@@ -808,7 +808,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         use hax::AdtKind;
                         let variant_id = match kind {
-                            AdtKind::Struct => Option::None,
+                            AdtKind::Struct => None,
                             AdtKind::Enum => {
                                 let variant_id = translate_variant_id(*variant_idx);
                                 Some(variant_id)
@@ -928,14 +928,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Retrieve the lists of used parameters, in case of non-local
             // definitions
             let (used_type_args, used_args) = if is_local {
-                (Option::None, Option::None)
+                (None, None)
             } else {
                 match assumed::function_to_info(&name) {
-                    Option::None => (Option::None, Option::None),
-                    Option::Some(used) => (
-                        Option::Some(used.used_type_params),
-                        Option::Some(used.used_args),
-                    ),
+                    None => (None, None),
+                    Some(used) => (Some(used.used_type_params), Some(used.used_args)),
                 }
             };
 
@@ -976,7 +973,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             if !is_prim {
                 // Two cases depending on whether we call a trait method or not
                 match trait_info {
-                    Option::None => {
+                    None => {
                         // "Regular" function call
                         let def_id = self.register_fun_decl_id(span, rust_id);
                         let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
@@ -984,7 +981,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let sfid = SubstFunId { func, args };
                         Ok(SubstFunIdOrPanic::Fun(sfid))
                     }
-                    Option::Some(trait_info) => {
+                    Some(trait_info) => {
                         // Trait method
                         let rust_id = DefId::from(def_id);
                         let impl_expr =
@@ -1437,8 +1434,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         args: &Vec<hax::Operand>,
     ) -> Result<Vec<Operand>, Error> {
         let args: Vec<&hax::Operand> = match used_args {
-            Option::None => args.iter().collect(),
-            Option::Some(used_args) => {
+            None => args.iter().collect(),
+            Some(used_args) => {
                 assert!(args.len() == used_args.len());
                 args.iter()
                     .zip(used_args.into_iter())
