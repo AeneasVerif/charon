@@ -970,42 +970,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_refs
             );
 
-            if !is_prim {
-                // Two cases depending on whether we call a trait method or not
-                match trait_info {
-                    None => {
-                        // "Regular" function call
-                        let def_id = self.register_fun_decl_id(span, rust_id);
-                        let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
-                        let func = FnPtr { func, generics };
-                        let sfid = SubstFunId { func, args };
-                        Ok(SubstFunIdOrPanic::Fun(sfid))
-                    }
-                    Some(trait_info) => {
-                        // Trait method
-                        let rust_id = DefId::from(def_id);
-                        let impl_expr =
-                            self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
-                        // The impl source should be Some(...): trait markers (that we may
-                        // eliminate) don't have methods.
-                        let impl_expr = impl_expr.unwrap();
-
-                        trace!("{:?}", rust_id);
-
-                        let trait_method_fun_id = self.register_fun_decl_id(span, rust_id);
-                        let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
-
-                        let func = FunIdOrTraitMethodRef::Trait(
-                            impl_expr,
-                            method_name,
-                            trait_method_fun_id,
-                        );
-                        let func = FnPtr { func, generics };
-                        let sfid = SubstFunId { func, args };
-                        Ok(SubstFunIdOrPanic::Fun(sfid))
-                    }
-                }
-            } else {
+            if is_prim {
                 // Primitive function.
                 //
                 // Note that there are subtleties with regards to the way types parameters
@@ -1058,6 +1023,41 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
                 let sfid = SubstFunId { func, args };
                 Ok(SubstFunIdOrPanic::Fun(sfid))
+            } else {
+                // Two cases depending on whether we call a trait method or not
+                match trait_info {
+                    None => {
+                        // "Regular" function call
+                        let def_id = self.register_fun_decl_id(span, rust_id);
+                        let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
+                        let func = FnPtr { func, generics };
+                        let sfid = SubstFunId { func, args };
+                        Ok(SubstFunIdOrPanic::Fun(sfid))
+                    }
+                    Some(trait_info) => {
+                        // Trait method
+                        let rust_id = DefId::from(def_id);
+                        let impl_expr =
+                            self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
+                        // The impl source should be Some(...): trait markers (that we may
+                        // eliminate) don't have methods.
+                        let impl_expr = impl_expr.unwrap();
+
+                        trace!("{:?}", rust_id);
+
+                        let trait_method_fun_id = self.register_fun_decl_id(span, rust_id);
+                        let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
+
+                        let func = FunIdOrTraitMethodRef::Trait(
+                            impl_expr,
+                            method_name,
+                            trait_method_fun_id,
+                        );
+                        let func = FnPtr { func, generics };
+                        let sfid = SubstFunId { func, args };
+                        Ok(SubstFunIdOrPanic::Fun(sfid))
+                    }
+                }
             }
         }
     }
