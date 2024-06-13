@@ -140,7 +140,7 @@ impl PartialOrd for OrdRustId {
         } else {
             let id0 = self.get_id();
             let id1 = other.get_id();
-            Option::Some(id0.cmp(&id1))
+            Some(id0.cmp(&id1))
         }
     }
 }
@@ -426,6 +426,62 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.translate_span_from_rspan(rspan)
     }
 
+    fn parse_rename(&mut self, span: Span, attributes: Vec<Attribute>) -> Option<String> {
+        //search for rename attributes
+        let filter_attribute: Vec<&str> = attributes
+            .iter()
+            .filter_map(|str| {
+                str.strip_prefix("charon::rename(")
+                    .or(str.strip_prefix("aeneas::rename("))
+                    .and_then(|str| str.strip_suffix(")"))
+            })
+            .collect();
+        //there should only be one rename attribute, so the vector should only have one element
+        if let [str] = filter_attribute.as_slice() {
+            let rename = str
+                .strip_prefix("\"")
+                .and_then(|str| str.strip_suffix("\""));
+            if let Some(str) = rename {
+                if str.is_empty() {
+                    self.span_err(span, "Attribute `rename` should not be empty");
+                    None
+                } else {
+                    let first_char_alphabetic = str
+                        .chars()
+                        .nth(0)
+                        .expect("Attribute `rename` should not be empty")
+                        .is_alphabetic();
+                    let is_identifier = first_char_alphabetic
+                        && str
+                            .chars()
+                            .all(|c| c.is_alphanumeric() || c == '_' || c == '-');
+                    if !is_identifier {
+                        self.span_err(span, "Attribute `rename` should only contains alphanumeric characters, `_` and `-` and should start with a letter");
+                        None
+                    } else {
+                        Some(rename.unwrap().to_string())
+                    }
+                }
+            } else {
+                self.span_err(
+                    span,
+                    "Attribute `rename` should be of the shape `rename(\"...\")`",
+                );
+                None
+            }
+        // if there are more than one rename attribute, we tell the user there should only be one
+        } else if filter_attribute.len() > 1 {
+            self.span_err(
+                span,
+                "There are too many `rename` attributes, please use only one",
+            );
+            None
+        // there are no rename attributes, so no error to return and rename is then just None
+        } else {
+            None
+        }
+    }
+    
     /// Compute the meta information for a Rust item identified by its id.
     pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
         let span = self.translate_span_from_rid(def_id);
@@ -437,7 +493,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let opaque = attributes
             .iter()
             .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque");
-        let rename = {
+        /* let rename = {
             let filter_attribute: Vec<&str> = attributes
                 .iter()
                 .filter_map(|str| {
@@ -487,7 +543,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             } else {
                 None
             }
-        };
+        }; */
+        let rename = self.parse_rename(span, attributes.clone());
         ItemMeta {
             span,
             attributes: attributes,

@@ -249,67 +249,69 @@ fn rename_attribute() -> Result<(), Box<dyn Error>> {
     )?;
 
     assert_eq!(
-        crate_data.trait_decls[0].item_meta.rename,
-        Some("BoolTest".to_string())
+        crate_data.trait_decls[0].item_meta.rename.as_deref(),
+        Some("BoolTest")
     );
 
     assert_eq!(
-        crate_data.functions[2].item_meta.rename,
-        Some("getTest".to_string())
+        crate_data.functions[2].item_meta.rename.as_deref(),
+        Some("getTest")
     );
 
     assert_eq!(
-        crate_data.functions[3].item_meta.rename,
-        Some("retTest".to_string())
+        crate_data.functions[3].item_meta.rename.as_deref(),
+        Some("retTest")
     );
 
     assert_eq!(
-        crate_data.trait_impls[0].item_meta.rename,
-        Some("BoolImpl".to_string())
+        crate_data.trait_impls[0].item_meta.rename.as_deref(),
+        Some("BoolImpl")
     );
 
     assert_eq!(
-        crate_data.functions[1].item_meta.rename,
-        Some("BoolFn".to_string())
+        crate_data.functions[1].item_meta.rename.as_deref(),
+        Some("BoolFn")
     );
 
     assert_eq!(
-        crate_data.types[0].item_meta.rename,
-        Some("TypeTest".to_string())
+        crate_data.types[0].item_meta.rename.as_deref(),
+        Some("TypeTest")
     );
 
     assert_eq!(
-        crate_data.types[1].item_meta.rename,
-        Some("VariantsTest".to_string())
-    );
-
-    let enumvec = crate_data.types[1].kind.as_enum();
-    let variant = enumvec.get(0.into());
-    assert_eq!(
-        variant.unwrap().item_meta.rename,
-        Some("Variant1".to_string())
+        crate_data.types[1].item_meta.rename.as_deref(),
+        Some("VariantsTest")
     );
 
     assert_eq!(
-        crate_data.types[2].item_meta.rename,
-        Some("StructTest".to_string())
+        crate_data.types[1].kind.as_enum()[0]
+            .item_meta
+            .rename
+            .as_deref(),
+        Some("Variant1")
     );
 
     assert_eq!(
-        crate_data.globals[0].item_meta.rename,
-        Some("Const_Test".to_string())
+        crate_data.types[2].item_meta.rename.as_deref(),
+        Some("StructTest")
     );
 
     assert_eq!(
-        crate_data.types[3].item_meta.rename,
-        Some("Type-Aeneas36".to_string())
+        crate_data.globals[0].item_meta.rename.as_deref(),
+        Some("Const_Test")
     );
 
-    let fieldvec = crate_data.types[2].kind.as_struct();
-    let field = fieldvec.get(0.into());
     assert_eq!(
-        field.unwrap().item_meta.rename,
-        Some("FieldTest".to_string())
+        crate_data.types[3].item_meta.rename.as_deref(),
+        Some("Type-Aeneas36")
+    );
+
+    assert_eq!(
+        crate_data.types[2].kind.as_struct()[0]
+            .item_meta
+            .rename
+            .as_deref(),
+        Some("FieldTest")
     );
     Ok(())
 }
