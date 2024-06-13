@@ -35,9 +35,9 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
     // Compute the region name
     use hax::{BoundRegionKind::*, RegionKind::*};
     let s = match &region.kind {
-        ReEarlyBound(r) => Some(r.name.clone()),
-        ReLateBound(_, br) => translate_bound_region_kind_name(&br.kind),
-        ReFree(r) => match &r.bound_region {
+        ReEarlyParam(r) => Some(r.name.clone()),
+        ReBound(_, br) => translate_bound_region_kind_name(&br.kind),
+        ReLateParam(r) => match &r.bound_region {
             BrAnon => None,
             BrNamed(_, symbol) => Some(symbol.clone()),
             BrEnv => Some("@env".to_owned()),
@@ -65,7 +65,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             match &region.kind {
                 hax::RegionKind::ReErased => Ok(Region::Erased),
                 hax::RegionKind::ReStatic => Ok(Region::Static),
-                hax::RegionKind::ReLateBound(id, br) => {
+                hax::RegionKind::ReBound(id, br) => {
                     // See the comments in [BodyTransCtx.bound_vars]:
                     // - the De Bruijn index identifies the group of variables
                     // - the var id identifies the variable inside the group
@@ -122,7 +122,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     error_assert!(self, span, self.free_region_vars.get(region).is_none());
 
                     for (rk, rid) in self.free_region_vars.iter() {
-                        if let hax::RegionKind::ReEarlyBound(eb) = &rk.kind {
+                        if let hax::RegionKind::ReEarlyParam(eb) = &rk.kind {
                             if eb.index as usize == *re_var {
                                 // Note that the DeBruijn index depends
                                 // on the current stack of bound region groups.

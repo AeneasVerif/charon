@@ -55,7 +55,7 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
             hax::MutBorrowKind::TwoPhaseBorrow => BorrowKind::TwoPhaseMut,
             hax::MutBorrowKind::ClosureCapture => unimplemented!(),
         },
-        hax::BorrowKind::Shallow => BorrowKind::Shallow,
+        hax::BorrowKind::Fake => BorrowKind::Shallow,
     }
 }
 
