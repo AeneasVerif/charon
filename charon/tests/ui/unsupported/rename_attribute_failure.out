@@ -49,5 +49,5 @@ error: Attribute `rename` should not be empty
 error: aborting due to 8 previous errors
 
 For more information about this error, try `rustc --explain E0433`.
-[ ERROR charon_driver:227] The extraction encountered 4 errors
+[ ERROR charon_driver:231] The extraction encountered 4 errors
 Error: Charon driver exited with code 1

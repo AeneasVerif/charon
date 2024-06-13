@@ -632,7 +632,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | TraitAlias
             | TyAlias { .. }
             | Union
-            | Use => Some(self.tcx.visibility(id).is_public()),
+            | Use
+            | Variant => Some(self.tcx.visibility(id).is_public()),
             // These kinds don't have visibility modifiers (which would cause `visibility` to panic).
             Closure | Impl { .. } => None,
             // Kinds we shouldn't be calling this function on.
@@ -647,8 +648,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | InlineConst
             | LifetimeParam
             | OpaqueTy
-            | TyParam
-            | Variant => {
+            | TyParam => {
                 register_error_or_panic!(
                     self,
                     span,
