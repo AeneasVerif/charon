@@ -112,14 +112,10 @@ impl BlockData {
             } => {
                 f(span, &mut nst, cond);
             }
-            RawTerminator::Panic
+            RawTerminator::Abort(..)
             | RawTerminator::Return
-            | RawTerminator::Unreachable
-            | RawTerminator::Goto { target: _ }
-            | RawTerminator::Drop {
-                place: _,
-                target: _,
-            } => {
+            | RawTerminator::Goto { .. }
+            | RawTerminator::Drop { .. } => {
                 // Nothing to do
             }
         };
@@ -229,9 +225,8 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
             Switch { discr, targets } => {
                 self.visit_switch(discr, targets);
             }
-            Panic => self.visit_panic(),
+            Abort(..)  => self.visit_abort(),
             Return => self.visit_return(),
-            Unreachable => self.visit_unreachable(),
             Drop { place, target } => {
                 self.visit_drop(place, target);
             }
@@ -261,11 +256,9 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         self.visit_switch_targets(targets);
     }
 
-    fn visit_panic(&mut self) {}
+    fn visit_abort(&mut self) {}
 
     fn visit_return(&mut self) {}
-
-    fn visit_unreachable(&mut self) {}
 
     fn visit_drop(&mut self, place: &Place, target: &BlockId) {
         self.visit_place(place);

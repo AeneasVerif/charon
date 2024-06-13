@@ -90,9 +90,8 @@ and raw_terminator_of_json (js : json) : (raw_terminator, string) result =
         let* discr = operand_of_json discr in
         let* targets = switch_of_json targets in
         Ok (Switch (discr, targets))
-    | `String "Panic" -> Ok Panic
+    | `Assoc [ ("Abort", _) ] -> Ok Panic
     | `String "Return" -> Ok Return
-    | `String "Unreachable" -> Ok Unreachable
     | `Assoc [ ("Drop", `Assoc [ ("place", place); ("target", target) ]) ] ->
         let* place = place_of_json place in
         let* target = BlockId.id_of_json target in

@@ -12,11 +12,17 @@ fn panic4() {
     assert!(false);
 }
 fn panic5() {
-    unreachable!();
+    assert!(false, "assert failed");
 }
 fn panic6() {
-    todo!();
+    unreachable!();
 }
 fn panic7() {
+    unreachable!("can't reach {}", "this");
+}
+fn panic8() {
+    todo!();
+}
+fn panic9() {
     ::std::rt::begin_panic("explicit panic");
 }

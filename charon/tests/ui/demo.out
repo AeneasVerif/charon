@@ -145,7 +145,7 @@ fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (
             nop
         },
         1 => {
-            panic
+            panic(core::panicking::panic)
         }
     }
     x@3 := &(*(l@1) as variant @0).0
@@ -199,7 +199,7 @@ fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) 
             nop
         },
         1 => {
-            panic
+            panic(core::panicking::panic)
         }
     }
     x@5 := &mut (*(l@1) as variant @0).0
@@ -267,7 +267,7 @@ fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32)
                 @3 := move (@12)
                 drop @11
                 drop @3
-                panic
+                panic(core::panicking::panic)
             }
         }
         x@5 := &mut (*(l@1) as variant @0).0

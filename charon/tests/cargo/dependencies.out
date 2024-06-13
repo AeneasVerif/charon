@@ -121,7 +121,7 @@ fn test_cargo_dependencies::main()
         @20 := &*(right_val@11)
         @19 := &*(@20)
         @21 := core::option::Option::None {  }
-        panic
+        panic(core::panicking::assert_failed)
     }
     drop @14
     drop @13

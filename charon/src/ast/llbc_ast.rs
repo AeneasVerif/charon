@@ -34,8 +34,9 @@ pub enum RawStatement {
     Drop(Place),
     Assert(Assert),
     Call(Call),
-    /// Panic also handles "unreachable"
-    Panic,
+    /// Panic also handles "unreachable". We keep the name of the panicking function that was
+    /// called.
+    Abort(AbortKind),
     Return,
     /// Break to outer loops.
     /// The `usize` gives the index of the outer loop to break to:

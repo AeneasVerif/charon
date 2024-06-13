@@ -60,9 +60,9 @@ pub enum RawTerminator {
         discr: Operand,
         targets: SwitchTargets,
     },
-    Panic,
+    /// Handles panics and impossible cases.
+    Abort(AbortKind),
     Return,
-    Unreachable,
     Drop {
         place: Place,
         target: BlockId,
