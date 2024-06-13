@@ -58,7 +58,7 @@ struct core::ops::range::RangeFrom<Idx> =
   start: Idx
 }
 
-fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> bool
+fn core::option::{core::option::Option<T>}::is_some<'_0, T, const host : bool>(@1: &'_0 (core::option::Option<T>)) -> bool
 
 trait core::slice::index::private_slice_index::Sealed<Self>
 
@@ -139,7 +139,7 @@ fn test_crate::foo()
 
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
-    @1 := core::option::{core::option::Option<T>}::is_some<i32>(move (@2))
+    @1 := core::option::{core::option::Option<T>}::is_some<i32, true>(move (@2))
     drop @2
     @fake_read(@1)
     drop @3

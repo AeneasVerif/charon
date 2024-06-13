@@ -457,7 +457,7 @@ opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
-fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+fn core::slice::{Slice<T>}::len<'_0, T, const host : bool>(@1: &'_0 (Slice<T>)) -> usize
 
 fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
 {
@@ -494,11 +494,11 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     @4 := const (false)
     if move (@4) {
         @9 := &*(lhs@1)
-        @8 := core::slice::{Slice<T>}::len<u8>(move (@9))
+        @8 := core::slice::{Slice<T>}::len<u8, true>(move (@9))
         drop @9
         @7 := &@8
         @12 := &*(rhs@2)
-        @11 := core::slice::{Slice<T>}::len<u8>(move (@12))
+        @11 := core::slice::{Slice<T>}::len<u8, true>(move (@12))
         drop @12
         @10 := &@11
         @6 := (move (@7), move (@10))

@@ -113,8 +113,7 @@ impl Callbacks for CharonCallbacks {
             .unwrap()
             .get_mut()
             .enter(|tcx| {
-                let session = c.session();
-                let crate_data = translate(session, tcx, self)?;
+                let crate_data = translate(&c.sess, tcx, self)?;
                 self.crate_data = Some(crate_data);
                 Ok::<(), ()>(())
             })

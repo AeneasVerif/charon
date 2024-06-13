@@ -596,9 +596,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Returns the attributes (`#[...]`) of this node.
     pub(crate) fn node_attributes(&self, id: DefId) -> &[rustc_ast::Attribute] {
-        let hir = self.tcx.hir();
         id.as_local()
-            .map(|local_def_id| hir.attrs(hir.local_def_id_to_hir_id(local_def_id)))
+            .map(|local_def_id| {
+                self.tcx
+                    .hir()
+                    .attrs(self.tcx.local_def_id_to_hir_id(local_def_id))
+            })
             .unwrap_or_default()
     }
 
@@ -684,7 +687,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | Ctor { .. }
             | ExternCrate
             | ForeignMod
-            | Coroutine
             | GlobalAsm
             | InlineConst
             | LifetimeParam

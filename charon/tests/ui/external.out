@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-fn core::mem::swap<'_0, '_1, T>(@1: &'_0 mut (T), @2: &'_1 mut (T))
+fn core::mem::swap<'_0, '_1, T, const host : bool>(@1: &'_0 mut (T), @2: &'_1 mut (T))
 
 fn test_crate::swap<'a, T>(@1: &'a mut (T), @2: &'a mut (T))
 {
@@ -12,7 +12,7 @@ fn test_crate::swap<'a, T>(@1: &'a mut (T), @2: &'a mut (T))
 
     @3 := &two-phase-mut *(x@1)
     @4 := &two-phase-mut *(y@2)
-    @0 := core::mem::swap<T>(move (@3), move (@4))
+    @0 := core::mem::swap<T, true>(move (@3), move (@4))
     drop @4
     drop @3
     @0 := ()
@@ -26,9 +26,9 @@ enum core::option::Option<T> =
 |  Some(T)
 
 
-fn core::num::nonzero::{core::num::nonzero::NonZeroU32#14}::new(@1: u32) -> core::option::Option<core::num::nonzero::NonZeroU32>
+fn core::num::nonzero::{core::num::nonzero::NonZeroU32#14}::new<const host : bool>(@1: u32) -> core::option::Option<core::num::nonzero::NonZeroU32>
 
-fn core::option::{core::option::Option<T>}::unwrap<T>(@1: core::option::Option<T>) -> T
+fn core::option::{core::option::Option<T>}::unwrap<T, const host : bool>(@1: core::option::Option<T>) -> T
 
 fn test_crate::test_new_non_zero_u32(@1: u32) -> core::num::nonzero::NonZeroU32
 {
@@ -38,9 +38,9 @@ fn test_crate::test_new_non_zero_u32(@1: u32) -> core::num::nonzero::NonZeroU32
     let @3: u32; // anonymous local
 
     @3 := copy (x@1)
-    @2 := core::num::nonzero::{core::num::nonzero::NonZeroU32#14}::new(move (@3))
+    @2 := core::num::nonzero::{core::num::nonzero::NonZeroU32#14}::new<true>(move (@3))
     drop @3
-    @0 := core::option::{core::option::Option<T>}::unwrap<core::num::nonzero::NonZeroU32>(move (@2))
+    @0 := core::option::{core::option::Option<T>}::unwrap<core::num::nonzero::NonZeroU32, true>(move (@2))
     drop @2
     return
 }
