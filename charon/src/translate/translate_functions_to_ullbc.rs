@@ -6,7 +6,7 @@
 use std::mem;
 use std::panic;
 
-use crate::assumed;
+use crate::assumed::BuiltinFun;
 use crate::common::*;
 use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
@@ -585,9 +585,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         generics,
                     ) => {
                         if aty.is_array() {
-                            Option::Some(generics.const_generics[0].clone())
+                            Some(generics.const_generics[0].clone())
                         } else {
-                            Option::None
+                            None
                         }
                     }
                     _ => unreachable!(),
@@ -808,7 +808,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         use hax::AdtKind;
                         let variant_id = match kind {
-                            AdtKind::Struct => Option::None,
+                            AdtKind::Struct => None,
                             AdtKind::Enum => {
                                 let variant_id = translate_variant_id(*variant_idx);
                                 Some(variant_id)
@@ -874,13 +874,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let name = self.t_ctx.hax_def_id_to_name(def_id)?;
         let is_local = rust_id.is_local();
 
-        // Check if this function is a actually `panic`
-        if name.equals_ref_name(&assumed::PANIC_NAME)
-            || name.equals_ref_name(&assumed::PANIC_FMT_NAME)
-            || name.equals_ref_name(&assumed::BEGIN_PANIC_NAME)
-            || name.equals_ref_name(&assumed::BEGIN_PANIC_RT_NAME)
-            || name.equals_ref_name(&assumed::ASSERT_FAILED_NAME)
-        {
+        let builtin_fun = BuiltinFun::parse_name(&name);
+        if matches!(builtin_fun, Some(BuiltinFun::Panic)) {
             return Ok(SubstFunIdOrPanic::Panic);
         }
 
@@ -888,7 +883,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // sometimes introduces very low-level functions, which we need to
         // catch early - in particular, before we start translating types and
         // arguments, because we won't be able to translate some of them.
-        if name.equals_ref_name(&assumed::BOX_FREE_NAME) {
+        if matches!(builtin_fun, Some(BuiltinFun::BoxFree)) {
             assert!(!is_local);
 
             // This deallocates a box.
@@ -927,17 +922,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         } else {
             // Retrieve the lists of used parameters, in case of non-local
             // definitions
-            let (used_type_args, used_args) = if is_local {
-                (Option::None, Option::None)
+            let (used_type_args, used_args) = if let Some(builtin_fun) = builtin_fun {
+                builtin_fun
+                    .to_fun_info()
+                    .map(|used| (used.used_type_params, used.used_args))
             } else {
-                match assumed::function_to_info(&name) {
-                    Option::None => (Option::None, Option::None),
-                    Option::Some(used) => (
-                        Option::Some(used.used_type_params),
-                        Option::Some(used.used_args),
-                    ),
-                }
-            };
+                None
+            }
+            .unzip();
 
             // Translate the type parameters
             let generics = self.translate_substs_and_trait_refs(
@@ -953,14 +945,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 .map(|args| self.translate_arguments(span, used_args, args))
                 .transpose()?;
 
-            // Check if the function is considered primitive: primitive
-            // functions benefit from special treatment.
-            let is_prim = if is_local {
-                false
-            } else {
-                assumed::get_fun_id_from_name(&name).is_some()
-            };
-
             // Trait information
             trace!(
                 "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
@@ -973,42 +957,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_refs
             );
 
-            if !is_prim {
-                // Two cases depending on whether we call a trait method or not
-                match trait_info {
-                    Option::None => {
-                        // "Regular" function call
-                        let def_id = self.register_fun_decl_id(span, rust_id);
-                        let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
-                        let func = FnPtr { func, generics };
-                        let sfid = SubstFunId { func, args };
-                        Ok(SubstFunIdOrPanic::Fun(sfid))
-                    }
-                    Option::Some(trait_info) => {
-                        // Trait method
-                        let rust_id = DefId::from(def_id);
-                        let impl_expr =
-                            self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
-                        // The impl source should be Some(...): trait markers (that we may
-                        // eliminate) don't have methods.
-                        let impl_expr = impl_expr.unwrap();
-
-                        trace!("{:?}", rust_id);
-
-                        let trait_method_fun_id = self.register_fun_decl_id(span, rust_id);
-                        let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
-
-                        let func = FunIdOrTraitMethodRef::Trait(
-                            impl_expr,
-                            method_name,
-                            trait_method_fun_id,
-                        );
-                        let func = FnPtr { func, generics };
-                        let sfid = SubstFunId { func, args };
-                        Ok(SubstFunIdOrPanic::Fun(sfid))
-                    }
-                }
-            } else {
+            // Check if the function is considered primitive: primitive
+            // functions benefit from special treatment.
+            if let Some(builtin_fun) = builtin_fun {
                 // Primitive function.
                 //
                 // Note that there are subtleties with regards to the way types parameters
@@ -1020,7 +971,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // (the type parameter is not `Box<T>` but `T`).
                 assert!(trait_info.is_none());
 
-                let aid = assumed::get_fun_id_from_name(&name).unwrap();
+                let aid = builtin_fun.to_ullbc_builtin_fun();
 
                 // Note that some functions are actually traits (deref, index, etc.):
                 // we assume that they are called only on a limited set of types
@@ -1061,6 +1012,41 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
                 let sfid = SubstFunId { func, args };
                 Ok(SubstFunIdOrPanic::Fun(sfid))
+            } else {
+                // Two cases depending on whether we call a trait method or not
+                match trait_info {
+                    None => {
+                        // "Regular" function call
+                        let def_id = self.register_fun_decl_id(span, rust_id);
+                        let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
+                        let func = FnPtr { func, generics };
+                        let sfid = SubstFunId { func, args };
+                        Ok(SubstFunIdOrPanic::Fun(sfid))
+                    }
+                    Some(trait_info) => {
+                        // Trait method
+                        let rust_id = DefId::from(def_id);
+                        let impl_expr =
+                            self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
+                        // The impl source should be Some(...): trait markers (that we may
+                        // eliminate) don't have methods.
+                        let impl_expr = impl_expr.unwrap();
+
+                        trace!("{:?}", rust_id);
+
+                        let trait_method_fun_id = self.register_fun_decl_id(span, rust_id);
+                        let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
+
+                        let func = FunIdOrTraitMethodRef::Trait(
+                            impl_expr,
+                            method_name,
+                            trait_method_fun_id,
+                        );
+                        let func = FnPtr { func, generics };
+                        let sfid = SubstFunId { func, args };
+                        Ok(SubstFunIdOrPanic::Fun(sfid))
+                    }
+                }
             }
         }
     }
@@ -1375,13 +1361,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         Ok(RawTerminator::Panic)
                     }
                     SubstFunIdOrPanic::Fun(fid) => {
-                        let next_block = target.unwrap_or_else(|| {
-                            panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", rust_id, generics, args)
-                        });
-
-                        // Translate the target
                         let lval = self.translate_place(span, destination)?;
-                        let next_block = self.translate_basic_block_id(next_block);
+                        let next_block = target.map(|target| self.translate_basic_block_id(target));
 
                         let call = Call {
                             func: FnOperand::Regular(fid.func),
@@ -1401,12 +1382,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // The function
                 let p = self.translate_place(span, p)?;
 
-                // Translate the target
-                let next_block = target.unwrap_or_else(|| {
-                    panic!("Expected a next block after the call to {:?}.\n\nSubsts: {:?}\n\nArgs: {:?}:", p, generics, args)
-                });
                 let lval = self.translate_place(span, destination)?;
-                let next_block = self.translate_basic_block_id(next_block);
+                let next_block = target.map(|target| self.translate_basic_block_id(target));
 
                 // TODO: we may have a problem here because as we don't
                 // know which function is being called, we may not be
@@ -1437,8 +1414,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         args: &Vec<hax::Operand>,
     ) -> Result<Vec<Operand>, Error> {
         let args: Vec<&hax::Operand> = match used_args {
-            Option::None => args.iter().collect(),
-            Option::Some(used_args) => {
+            None => args.iter().collect(),
+            Some(used_args) => {
                 assert!(args.len() == used_args.len());
                 args.iter()
                     .zip(used_args.into_iter())

@@ -350,12 +350,12 @@ impl<'a> Formatter<(TypeDeclId, VariantId)> for FmtCtx<'a> {
                 // The definition may not be available yet, especially if we print-debug
                 // while translating the crate
                 match translated.type_decls.get(def_id) {
-                    Option::None => format!(
+                    None => format!(
                         "{}::{}",
                         def_id.to_pretty_string(),
                         variant_id.to_pretty_string()
                     ),
-                    Option::Some(def) => {
+                    Some(def) => {
                         let variants = def.kind.as_enum();
                         let mut name = def.name.fmt_with_ctx(self);
                         let variant_name = &variants.get(variant_id).unwrap().name;
@@ -375,12 +375,12 @@ impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
         let (def_id, opt_variant_id, field_id) = id;
         match &self.translated {
             None => match opt_variant_id {
-                Option::None => format!(
+                None => format!(
                     "{}::{}",
                     def_id.to_pretty_string(),
                     field_id.to_pretty_string()
                 ),
-                Option::Some(variant_id) => format!(
+                Some(variant_id) => format!(
                     "{}::{}::{}",
                     def_id.to_pretty_string(),
                     variant_id.to_pretty_string(),
@@ -392,20 +392,20 @@ impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
             // print-debug while translating the crate
             {
                 match translated.type_decls.get(def_id) {
-                    Option::None => match opt_variant_id {
-                        Option::None => format!(
+                    None => match opt_variant_id {
+                        None => format!(
                             "{}::{}",
                             def_id.to_pretty_string(),
                             field_id.to_pretty_string()
                         ),
-                        Option::Some(variant_id) => format!(
+                        Some(variant_id) => format!(
                             "{}::{}::{}",
                             def_id.to_pretty_string(),
                             variant_id.to_pretty_string(),
                             field_id.to_pretty_string()
                         ),
                     },
-                    Option::Some(gen_def) => match (&gen_def.kind, opt_variant_id) {
+                    Some(gen_def) => match (&gen_def.kind, opt_variant_id) {
                         (TypeDeclKind::Enum(variants), Some(variant_id)) => {
                             let field = variants
                                 .get(variant_id)
@@ -414,15 +414,15 @@ impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
                                 .get(field_id)
                                 .unwrap();
                             match &field.name {
-                                Option::Some(name) => name.clone(),
-                                Option::None => field_id.to_string(),
+                                Some(name) => name.clone(),
+                                None => field_id.to_string(),
                             }
                         }
                         (TypeDeclKind::Struct(fields), None) => {
                             let field = fields.get(field_id).unwrap();
                             match &field.name {
-                                Option::Some(name) => name.clone(),
-                                Option::None => field_id.to_string(),
+                                Some(name) => name.clone(),
+                                None => field_id.to_string(),
                             }
                         }
                         _ => unreachable!(),

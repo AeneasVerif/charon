@@ -218,7 +218,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Retrieve the list of used arguments
                 let used_params = if adt_did.is_local() {
-                    Option::None
+                    None
                 } else {
                     let name = self.t_ctx.def_id_to_name(DefId::from(def_id))?;
                     assumed::type_to_used_params(&name)
@@ -420,8 +420,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("{:?}", substs);
         // Filter the parameters
         let substs: Vec<&hax::GenericArg> = match used_params {
-            Option::None => substs.iter().collect(),
-            Option::Some(used_args) => {
+            None => substs.iter().collect(),
+            Some(used_args) => {
                 error_assert!(self, span, substs.len() == used_args.len());
                 substs
                     .iter()
@@ -487,11 +487,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Retrieve the type name
             let name = self.t_ctx.hax_def_id_to_name(def_id)?;
             match assumed::get_type_id_from_name(&name) {
-                Option::Some(id) => {
+                Some(id) => {
                     // The type has primitive support
                     Ok(TypeId::Assumed(id))
                 }
-                Option::None => {
+                None => {
                     // The type is external
                     Ok(TypeId::Adt(self.register_type_decl_id(span, rust_id)))
                 }
@@ -578,7 +578,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let mut fields: Vector<FieldId, Field> = Default::default();
             /* This is for sanity: check that either all the fields have names, or
              * none of them has */
-            let mut have_names: Option<bool> = Option::None;
+            let mut have_names: Option<bool> = None;
             for (j, field_def) in var_def.fields.into_iter().enumerate() {
                 trace!("variant {i}: field {j}: {field_def:?}");
                 let field_span = field_def.span.rust_span_data.unwrap().span();
@@ -592,13 +592,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let field_name = field_def.name;
                 // Sanity check
                 match &have_names {
-                    Option::None => {
+                    None => {
                         have_names = match &field_name {
-                            Option::None => Some(false),
-                            Option::Some(_) => Some(true),
+                            None => Some(false),
+                            Some(_) => Some(true),
                         }
                     }
-                    Option::Some(b) => {
+                    Some(b) => {
                         error_assert!(self, field_span, *b == field_name.is_some());
                     }
                 };

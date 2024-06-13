@@ -272,9 +272,11 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         self.visit_block_id(target);
     }
 
-    fn visit_call_statement(&mut self, call: &Call, target: &BlockId) {
+    fn visit_call_statement(&mut self, call: &Call, target: &Option<BlockId>) {
         self.visit_call(call);
-        self.visit_block_id(target);
+        if let Some(target) = target {
+            self.visit_block_id(target);
+        }
     }
 
     fn visit_assert(&mut self, cond: &Operand, expected: &bool, target: &BlockId) {

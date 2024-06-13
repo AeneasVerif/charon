@@ -67,11 +67,11 @@ pub enum RawTerminator {
         place: Place,
         target: BlockId,
     },
-    /// Function call.
-    /// For now, we only accept calls to top-level functions.
+    /// Function call. If `target` is `None`, the function is guaranteed to diverge.
+    /// For now, we don't support dynamic calls (i.e. to a function pointer in memory).
     Call {
         call: Call,
-        target: BlockId,
+        target: Option<BlockId>,
     },
     /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
     /// checks, over/underflow checks, div/rem by zero checks, pointer alignement check.

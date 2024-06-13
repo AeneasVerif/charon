@@ -81,12 +81,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // opaque) and inside an opaque module (or sub-module), we ignore it.
         if top_item {
             match self.hir_item_to_name(item)? {
-                Option::None => {
+                None => {
                     // This kind of item is to be ignored
                     trace!("Ignoring {:?} (ignoring item kind)", item.item_id());
                     return Ok(());
                 }
-                Option::Some(item_name) => {
+                Some(item_name) => {
                     if self.is_opaque_name(&item_name) {
                         trace!("Ignoring {:?} (marked as opaque)", item.item_id());
                         return Ok(());

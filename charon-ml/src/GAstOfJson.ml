@@ -363,6 +363,7 @@ let rec ty_of_json (js : json) : (ty, string) result =
         let* inputs = list_of_json ty_of_json inputs in
         let* output = ty_of_json output in
         Ok (TArrow (regions, inputs, output))
+    | `String "Never" -> Ok TNever
     | _ -> Error "")
 
 and trait_ref_of_json (js : json) : (trait_ref, string) result =

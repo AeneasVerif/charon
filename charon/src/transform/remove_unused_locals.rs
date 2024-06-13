@@ -37,10 +37,10 @@ impl SharedTypeVisitor for ComputeUsedLocals {}
 impl SharedExprVisitor for ComputeUsedLocals {
     fn visit_var_id(&mut self, vid: &VarId) {
         match self.vars.get_mut(vid) {
-            Option::None => {
+            None => {
                 let _ = self.vars.insert(*vid, 1);
             }
-            Option::Some(cnt) => *cnt += 1,
+            Some(cnt) => *cnt += 1,
         }
     }
 }
@@ -102,10 +102,6 @@ fn update_locals(
         }
     }
 
-    // Check there are no remaining variables with type `Never`
-    for v in &locals {
-        assert!(!v.ty.contains_never());
-    }
     (locals, vids_map)
 }
 
@@ -119,7 +115,5 @@ impl LlbcPass for Transform {
             UpdateUsedLocals::update_statement(vids_map, &mut b.body);
             b
         });
-        // Check that there are no remaining locals with the type `Never`
-        assert!(b.locals.iter().all(|v| !v.ty.is_never()));
     }
 }
