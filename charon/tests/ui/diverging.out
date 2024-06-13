@@ -1,12 +1,10 @@
 # Final LLBC before serialization:
 
-fn core::panicking::panic_explicit() -> !
-
 fn test_crate::my_panic::panic_cold_explicit() -> !
 {
     let @0: !; // return
 
-    @0 := core::panicking::panic_explicit()
+    panic
 }
 
 fn test_crate::my_panic(@1: u32) -> !

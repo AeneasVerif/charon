@@ -125,13 +125,11 @@ enum test_crate::CList<T> =
 |  CNil()
 
 
-fn core::panicking::panic_explicit() -> !
-
 fn test_crate::list_nth::panic_cold_explicit() -> !
 {
     let @0: !; // return
 
-    @0 := core::panicking::panic_explicit()
+    panic
 }
 
 fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (T)
@@ -188,7 +186,7 @@ fn test_crate::list_nth_mut::panic_cold_explicit() -> !
 {
     let @0: !; // return
 
-    @0 := core::panicking::panic_explicit()
+    panic
 }
 
 fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) -> &'a mut (T)
@@ -260,7 +258,7 @@ fn test_crate::list_nth_mut1::panic_cold_explicit() -> !
 {
     let @0: !; // return
 
-    @0 := core::panicking::panic_explicit()
+    panic
 }
 
 fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) -> &'a mut (T)

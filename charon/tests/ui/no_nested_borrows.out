@@ -382,13 +382,11 @@ fn test_crate::is_cons<'_0, T>(@1: &'_0 (test_crate::List<T>)) -> bool
     return
 }
 
-fn core::panicking::panic_explicit() -> !
-
 fn test_crate::split_list::panic_cold_explicit() -> !
 {
     let @0: !; // return
 
-    @0 := core::panicking::panic_explicit()
+    panic
 }
 
 fn test_crate::split_list<T>(@1: test_crate::List<T>) -> (T, test_crate::List<T>)

@@ -38,6 +38,7 @@ pub static PANIC_NAMES: &[&[&str]] = &[
     &["core", "panicking", "panic_fmt"],
     &["std", "panicking", "begin_panic"],
     &["std", "rt", "begin_panic"],
+    &["core", "panicking", "panic_explicit"],
     &["core", "panicking", "assert_failed"],
 ];
 // Pointers

@@ -1729,13 +1729,11 @@ enum test_crate::List<T> =
 |  Nil()
 
 
-fn core::panicking::panic_explicit() -> !
-
 fn test_crate::get_elem_mut::panic_cold_explicit() -> !
 {
     let @0: !; // return
 
-    @0 := core::panicking::panic_explicit()
+    panic
 }
 
 fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usize) -> &'_0 mut (usize)
@@ -1800,7 +1798,7 @@ fn test_crate::list_nth_mut_loop_with_id::panic_cold_explicit() -> !
 {
     let @0: !; // return
 
-    @0 := core::panicking::panic_explicit()
+    panic
 }
 
 fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<T>), @2: u32) -> &'_0 mut (T)
