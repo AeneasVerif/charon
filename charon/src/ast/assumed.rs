@@ -29,17 +29,19 @@ pub static IGNORED_TRAITS_NAMES: [&[&str]; 6] = [
     &ALLOC_ALLOCATOR,
 ];
 
-// Assumed types
+// Built-in types
 pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
 
-// Assumed functions
+// Built-in functions
+// We treat this one specially in the `inline_local_panic_functions` pass. See there for details.
+pub static EXPLICIT_PANIC_NAME: &[&str] = &["core", "panicking", "panic_explicit"];
 pub static PANIC_NAMES: &[&[&str]] = &[
     &["core", "panicking", "panic"],
     &["core", "panicking", "panic_fmt"],
     &["std", "panicking", "begin_panic"],
     &["std", "rt", "begin_panic"],
-    &["core", "panicking", "panic_explicit"],
     &["core", "panicking", "assert_failed"],
+    EXPLICIT_PANIC_NAME,
 ];
 // Pointers
 pub static PTR_UNIQUE_NAME: [&str; 3] = ["core", "ptr", "Unique"];

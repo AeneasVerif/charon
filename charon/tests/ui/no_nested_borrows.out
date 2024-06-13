@@ -382,12 +382,7 @@ fn test_crate::is_cons<'_0, T>(@1: &'_0 (test_crate::List<T>)) -> bool
     return
 }
 
-fn test_crate::split_list::panic_cold_explicit() -> !
-{
-    let @0: !; // return
-
-    panic
-}
+Unknown decl: 30
 
 fn test_crate::split_list<T>(@1: test_crate::List<T>) -> (T, test_crate::List<T>)
 {
@@ -397,7 +392,6 @@ fn test_crate::split_list<T>(@1: test_crate::List<T>) -> (T, test_crate::List<T>
     let tl@3: alloc::boxed::Box<test_crate::List<T>>; // local
     let @4: T; // anonymous local
     let @5: test_crate::List<T>; // anonymous local
-    let @6: !; // anonymous local
 
     @fake_read(l@1)
     match l@1 {
@@ -405,7 +399,7 @@ fn test_crate::split_list<T>(@1: test_crate::List<T>) -> (T, test_crate::List<T>
             nop
         },
         _ => {
-            @6 := test_crate::split_list::panic_cold_explicit()
+            panic(core::panicking::panic_explicit)
         }
     }
     hd@2 := move ((l@1 as variant @0).0)

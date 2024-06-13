@@ -21,11 +21,6 @@ pub struct TransformCtx<'ctx> {
     pub errors: ErrorCtx<'ctx>,
 }
 
-/// A pass that transforms the crate data.
-pub trait TransformPass: Sync {
-    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>);
-}
-
 /// A pass that modifies ullbc bodies.
 pub trait UllbcPass: Sync {
     /// Transform a body.
@@ -53,6 +48,20 @@ pub trait UllbcPass: Sync {
         if let Ok(body) = body {
             self.transform_body(ctx, body)
         }
+    }
+
+    /// Transform the given context. This forwards to the other methods by default.
+    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
+        ctx.for_each_fun_decl(|ctx, decl, body| {
+            let body = body.map(|body| body.as_unstructured_mut().unwrap());
+            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.transform_function(ctx, decl, body);
+        });
+        ctx.for_each_global_decl(|ctx, decl, body| {
+            let body = body.map(|body| body.as_unstructured_mut().unwrap());
+            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.transform_global(ctx, decl, body);
+        });
     }
 
     /// The name of the pass, used for debug logging. The default implementation uses the type
@@ -112,6 +121,20 @@ pub trait LlbcPass: Sync {
         }
     }
 
+    /// Transform the given context. This forwards to the other methods by default.
+    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
+        ctx.for_each_fun_decl(|ctx, decl, body| {
+            let body = body.map(|body| body.as_structured_mut().unwrap());
+            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.transform_function(ctx, decl, body);
+        });
+        ctx.for_each_global_decl(|ctx, decl, body| {
+            let body = body.map(|body| body.as_structured_mut().unwrap());
+            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.transform_global(ctx, decl, body);
+        });
+    }
+
     /// The name of the pass, used for debug logging. The default implementation uses the type
     /// name.
     fn name(&self) -> &str {
@@ -140,35 +163,20 @@ pub trait LlbcPass: Sync {
     }
 }
 
+/// A pass that transforms the crate data.
+pub trait TransformPass: Sync {
+    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>);
+}
+
 impl TransformPass for dyn UllbcPass {
-    /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
-        ctx.for_each_fun_decl(|ctx, decl, body| {
-            let body = body.map(|body| body.as_unstructured_mut().unwrap());
-            self.log_before_body(ctx, &decl.name, body.as_deref());
-            self.transform_function(ctx, decl, body);
-        });
-        ctx.for_each_global_decl(|ctx, decl, body| {
-            let body = body.map(|body| body.as_unstructured_mut().unwrap());
-            self.log_before_body(ctx, &decl.name, body.as_deref());
-            self.transform_global(ctx, decl, body);
-        });
+        self.transform_ctx(ctx)
     }
 }
 
 impl TransformPass for dyn LlbcPass {
-    /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
-        ctx.for_each_fun_decl(|ctx, decl, body| {
-            let body = body.map(|body| body.as_structured_mut().unwrap());
-            self.log_before_body(ctx, &decl.name, body.as_deref());
-            self.transform_function(ctx, decl, body);
-        });
-        ctx.for_each_global_decl(|ctx, decl, body| {
-            let body = body.map(|body| body.as_structured_mut().unwrap());
-            self.log_before_body(ctx, &decl.name, body.as_deref());
-            self.transform_global(ctx, decl, body);
-        });
+        self.transform_ctx(ctx)
     }
 }
 
@@ -226,6 +234,24 @@ impl<'ctx> TransformCtx<'ctx> {
         self.translated.global_decls = global_decls;
         ret
     }
+
+    /// Mutably iterate over the bodies.
+    // FIXME: this does not set `with_def_id` to track error sources. That would require having a
+    // way to go from the body back to its parent declaration.
+    pub(crate) fn for_each_body(&mut self, mut f: impl FnMut(&mut Self, &mut Body)) {
+        self.with_mut_bodies(|ctx, bodies| {
+            for body in bodies {
+                f(ctx, body)
+            }
+        })
+    }
+    pub(crate) fn for_each_structured_body(
+        &mut self,
+        mut f: impl FnMut(&mut Self, &mut llbc_ast::ExprBody),
+    ) {
+        self.for_each_body(|ctx, body| f(ctx, body.as_structured_mut().unwrap()))
+    }
+
     /// Mutably iterate over the function declarations without errors.
     pub(crate) fn for_each_fun_decl(
         &mut self,
@@ -251,6 +277,7 @@ impl<'ctx> TransformCtx<'ctx> {
             })
         })
     }
+
     /// Mutably iterate over the global declarations without errors.
     pub(crate) fn for_each_global_decl(
         &mut self,
