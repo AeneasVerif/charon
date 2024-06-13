@@ -1188,7 +1188,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 error_or_panic!(self, rustc_span, "Unexpected terminator: UnwindTerminate")
             }
             TerminatorKind::Return => RawTerminator::Return,
-            TerminatorKind::Unreachable => RawTerminator::Unreachable,
+            // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
+            // machine.
+            TerminatorKind::Unreachable => RawTerminator::Abort(AbortKind::UndefinedBehavior),
             TerminatorKind::Drop {
                 place,
                 target,
@@ -1358,7 +1360,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         assert!(target.is_none());
 
                         // We ignore the arguments
-                        Ok(RawTerminator::Panic)
+                        Ok(RawTerminator::Abort(AbortKind::Panic))
                     }
                     SubstFunIdOrPanic::Fun(fid) => {
                         let lval = self.translate_place(span, destination)?;

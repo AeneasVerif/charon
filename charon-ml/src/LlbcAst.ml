@@ -16,6 +16,7 @@ and raw_statement =
   | Drop of place
   | Assert of assertion
   | Call of call
+  (* FIXME: rename to `Abort` *)
   | Panic
   | Return
   | Break of int

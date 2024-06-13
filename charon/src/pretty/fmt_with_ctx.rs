@@ -50,6 +50,15 @@ pub trait FmtWithCtx<C> {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
+    fn fmt_with_ctx_and_indent(&self, tab: &str, _ctx: &C) -> String {
+        match self {
+            AbortKind::Panic => format!("{tab}panic"),
+            AbortKind::UndefinedBehavior => format!("{tab}undefined_behavior"),
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for BlockData {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let mut out: Vec<String> = Vec::new();
@@ -847,7 +856,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 let (call_s, _) = fmt_call(ctx, call);
                 format!("{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx),)
             }
-            RawStatement::Panic => format!("{tab}panic"),
+            RawStatement::Abort(kind) => kind.fmt_with_ctx_and_indent(tab, ctx),
             RawStatement::Return => format!("{tab}return"),
             RawStatement::Break(index) => format!("{tab}break {index}"),
             RawStatement::Continue(index) => format!("{tab}continue {index}"),
@@ -976,9 +985,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     format!("switch {} -> {}", discr.fmt_with_ctx(ctx), maps)
                 }
             },
-            RawTerminator::Panic => "panic".to_string(),
+            RawTerminator::Abort(kind) => kind.fmt_with_ctx(ctx),
             RawTerminator::Return => "return".to_string(),
-            RawTerminator::Unreachable => "unreachable".to_string(),
             RawTerminator::Drop { place, target } => {
                 format!("drop {} -> bb{}", place.fmt_with_ctx(ctx), target)
             }

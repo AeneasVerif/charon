@@ -62,7 +62,6 @@ module Ast = struct
         ^ switch_to_string indent tgts
     | Panic -> indent ^ "panic"
     | Return -> indent ^ "return"
-    | Unreachable -> indent ^ "unreachable"
     | Drop (p, bid) ->
         indent ^ "drop " ^ place_to_string env p ^ ";\n" ^ indent ^ "goto "
         ^ block_id_to_string bid

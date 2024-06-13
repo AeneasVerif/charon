@@ -301,3 +301,12 @@ pub struct Call {
     pub args: Vec<Operand>,
     pub dest: Place,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum AbortKind {
+    /// A builtin panicking function.
+    Panic,
+    /// a MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
+    /// machine.
+    UndefinedBehavior,
+}
