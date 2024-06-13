@@ -4,7 +4,7 @@ fn test_crate::panic1()
 {
     let @0: (); // return
 
-    panic
+    panic(core::panicking::panic)
 }
 
 opaque type core::fmt::Arguments<'a>
@@ -29,7 +29,7 @@ fn test_crate::panic2()
     drop @3
     @1 := core::fmt::{core::fmt::Arguments<'a>#2}::new_const<'_>(move (@2))
     drop @2
-    panic
+    panic(core::panicking::panic_fmt)
 }
 
 opaque type core::fmt::rt::Argument<'a>
@@ -64,7 +64,7 @@ fn test_crate::panic3()
     @1 := core::fmt::{core::fmt::Arguments<'a>#2}::new_v1<'_>(move (@2), move (@6))
     drop @6
     drop @2
-    panic
+    panic(core::panicking::panic_fmt)
 }
 
 fn test_crate::panic4()
@@ -80,7 +80,7 @@ fn test_crate::panic4()
         nop
     }
     else {
-        panic
+        panic(core::panicking::panic)
     }
     @3 := ()
     @1 := move (@3)
@@ -117,7 +117,7 @@ fn test_crate::panic5()
         drop @5
         @3 := core::fmt::{core::fmt::Arguments<'a>#2}::new_const<'_>(move (@4))
         drop @4
-        panic
+        panic(core::panicking::panic_fmt)
     }
     @8 := ()
     @1 := move (@8)
@@ -133,7 +133,7 @@ fn test_crate::panic6()
 {
     let @0: (); // return
 
-    panic
+    panic(core::panicking::panic)
 }
 
 fn test_crate::panic7()
@@ -162,21 +162,21 @@ fn test_crate::panic7()
     @1 := core::fmt::{core::fmt::Arguments<'a>#2}::new_v1<'_>(move (@2), move (@6))
     drop @6
     drop @2
-    panic
+    panic(core::panicking::panic_fmt)
 }
 
 fn test_crate::panic8()
 {
     let @0: (); // return
 
-    panic
+    panic(core::panicking::panic)
 }
 
 fn test_crate::panic9()
 {
     let @0: (); // return
 
-    panic
+    panic(std::panicking::begin_panic)
 }
 
 

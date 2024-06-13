@@ -90,7 +90,7 @@ where
 {
     let @0: core::option::Option<@TraitClause1::S>; // return
 
-    panic
+    panic(core::panicking::panic)
 }
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self

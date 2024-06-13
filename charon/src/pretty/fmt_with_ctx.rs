@@ -51,9 +51,9 @@ pub trait FmtWithCtx<C> {
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
-    fn fmt_with_ctx_and_indent(&self, tab: &str, _ctx: &C) -> String {
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         match self {
-            AbortKind::Panic => format!("{tab}panic"),
+            AbortKind::Panic(name) => format!("{tab}panic({})", name.fmt_with_ctx(ctx)),
             AbortKind::UndefinedBehavior => format!("{tab}undefined_behavior"),
         }
     }

@@ -14,7 +14,7 @@ where
     let @0: (); // return
     let self@1: &'_ mut (test_crate::AVLTree<T>); // arg #1
 
-    panic
+    panic(core::panicking::panic)
 }
 
 impl test_crate::{impl test_crate::Ord for u32#1} : test_crate::Ord<u32>

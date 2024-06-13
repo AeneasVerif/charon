@@ -680,7 +680,7 @@ fn test_crate::test_loops()
     }
     else {
         drop @4
-        panic
+        panic(core::panicking::panic)
     }
     drop @4
     @25 := ()
@@ -696,7 +696,7 @@ fn test_crate::test_loops()
     }
     else {
         drop @8
-        panic
+        panic(core::panicking::panic)
     }
     drop @8
     @26 := ()
@@ -712,7 +712,7 @@ fn test_crate::test_loops()
     }
     else {
         drop @12
-        panic
+        panic(core::panicking::panic)
     }
     drop @12
     @27 := ()
@@ -728,7 +728,7 @@ fn test_crate::test_loops()
     }
     else {
         drop @16
-        panic
+        panic(core::panicking::panic)
     }
     drop @16
     @28 := ()
@@ -744,7 +744,7 @@ fn test_crate::test_loops()
     }
     else {
         drop @20
-        panic
+        panic(core::panicking::panic)
     }
     drop @20
     @29 := ()
@@ -760,7 +760,7 @@ fn test_crate::test_loops()
     }
     else {
         drop @24
-        panic
+        panic(core::panicking::panic)
     }
     drop @24
     @30 := ()
@@ -1750,7 +1750,7 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
                 nop
             },
             1 => {
-                panic
+                panic(core::panicking::panic)
             }
         }
         y@4 := &mut (*(ls@1) as variant @0).0
@@ -1812,7 +1812,7 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
                 @3 := move (@11)
                 drop @10
                 drop @3
-                panic
+                panic(core::panicking::panic)
             }
         }
         x@5 := &mut (*(ls@1) as variant @0).0

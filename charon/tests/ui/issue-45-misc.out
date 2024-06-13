@@ -534,7 +534,7 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
             @23 := &*(right_val@14)
             @22 := &*(@23)
             @24 := core::option::Option::None {  }
-            panic
+            panic(core::panicking::assert_failed)
         }
     }
     else {
