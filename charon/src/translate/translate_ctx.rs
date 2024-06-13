@@ -704,10 +704,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Whether this item is in an `extern { .. }` block, in which case it has no body.
     pub(crate) fn id_is_extern_item(&mut self, id: DefId) -> bool {
-        id.as_local().is_some_and(|local_def_id| {
-            let node = self.tcx.hir().find_by_def_id(local_def_id);
-            matches!(node, Some(HirNode::ForeignItem(_)))
-        })
+        self.tcx
+            .hir()
+            .get_if_local(id)
+            .is_some_and(|node| matches!(node, HirNode::ForeignItem(_)))
     }
 
     pub(crate) fn is_opaque_name(&self, name: &Name) -> bool {

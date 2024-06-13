@@ -903,7 +903,7 @@ trait core::clone::Clone<Self>
     fn clone_from
 }
 
-trait core::cmp::PartialEq<Self, Rhs>
+trait core::cmp::PartialEq<Self, Rhs, const host : bool>
 {
     fn eq : core::cmp::PartialEq::eq
     fn ne
@@ -917,7 +917,7 @@ enum core::cmp::Ordering =
 
 trait core::cmp::PartialOrd<Self, Rhs>
 {
-    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
+    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs, true>
     fn partial_cmp : core::cmp::PartialOrd::partial_cmp
     fn lt
     fn le
@@ -965,7 +965,7 @@ where
 
 trait core::cmp::Eq<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self, true>
     fn assert_receiver_is_total_eq
 }
 
@@ -1047,14 +1047,14 @@ impl core::clone::impls::{impl core::clone::Clone for i32#14} : core::clone::Clo
     fn clone = core::clone::impls::{impl core::clone::Clone for i32#14}::clone
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32#30}::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialEq<i32, const host : bool> for i32#30}::eq<'_0, '_1, const host : bool>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32#30}::ne<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialEq<i32, const host : bool> for i32#30}::ne<'_0, '_1, const host : bool>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32#30} : core::cmp::PartialEq<i32, i32>
+impl<const host : bool> core::cmp::impls::{impl core::cmp::PartialEq<i32, const host : bool> for i32#30}<const host : bool> : core::cmp::PartialEq<i32, i32, const host : bool>
 {
-    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32#30}::eq
-    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32#30}::ne
+    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<i32, const host : bool> for i32#30}::eq
+    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<i32, const host : bool> for i32#30}::ne
 }
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32#72}::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<core::cmp::Ordering>
@@ -1069,7 +1069,7 @@ fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32#72}::gt<'_0, '_1>(
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32#72} : core::cmp::PartialOrd<i32, i32>
 {
-    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32#30}
+    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<i32, const host : bool> for i32#30}<true>
     fn partial_cmp = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32#72}::partial_cmp
     fn lt = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32#72}::lt
     fn le = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32#72}::le
@@ -1115,14 +1115,14 @@ impl core::clone::impls::{impl core::clone::Clone for usize#5} : core::clone::Cl
     fn clone = core::clone::impls::{impl core::clone::Clone for usize#5}::clone
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize#21}::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialEq<usize, const host : bool> for usize#21}::eq<'_0, '_1, const host : bool>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize#21}::ne<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialEq<usize, const host : bool> for usize#21}::ne<'_0, '_1, const host : bool>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize#21} : core::cmp::PartialEq<usize, usize>
+impl<const host : bool> core::cmp::impls::{impl core::cmp::PartialEq<usize, const host : bool> for usize#21}<const host : bool> : core::cmp::PartialEq<usize, usize, const host : bool>
 {
-    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize#21}::eq
-    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize#21}::ne
+    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<usize, const host : bool> for usize#21}::eq
+    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<usize, const host : bool> for usize#21}::ne
 }
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize#54}::partial_cmp<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> core::option::Option<core::cmp::Ordering>
@@ -1137,7 +1137,7 @@ fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize#54}::gt<'_0, '
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize#54} : core::cmp::PartialOrd<usize, usize>
 {
-    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize#21}
+    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<usize, const host : bool> for usize#21}<true>
     fn partial_cmp = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize#54}::partial_cmp
     fn lt = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize#54}::lt
     fn le = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize#54}::le
@@ -1335,14 +1335,14 @@ impl core::clone::impls::{impl core::clone::Clone for u32#8} : core::clone::Clon
     fn clone = core::clone::impls::{impl core::clone::Clone for u32#8}::clone
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32#24}::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialEq<u32, const host : bool> for u32#24}::eq<'_0, '_1, const host : bool>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32#24}::ne<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialEq<u32, const host : bool> for u32#24}::ne<'_0, '_1, const host : bool>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32#24} : core::cmp::PartialEq<u32, u32>
+impl<const host : bool> core::cmp::impls::{impl core::cmp::PartialEq<u32, const host : bool> for u32#24}<const host : bool> : core::cmp::PartialEq<u32, u32, const host : bool>
 {
-    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32#24}::eq
-    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32#24}::ne
+    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<u32, const host : bool> for u32#24}::eq
+    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<u32, const host : bool> for u32#24}::ne
 }
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32#60}::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<core::cmp::Ordering>
@@ -1357,7 +1357,7 @@ fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32#60}::gt<'_0, '_1>(
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32#60} : core::cmp::PartialOrd<u32, u32>
 {
-    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32#24}
+    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u32, const host : bool> for u32#24}<true>
     fn partial_cmp = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32#60}::partial_cmp
     fn lt = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32#60}::lt
     fn le = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32#60}::le
@@ -1862,7 +1862,7 @@ fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>
 
-fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs, const host : bool>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 

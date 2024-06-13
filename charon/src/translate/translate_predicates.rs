@@ -540,6 +540,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             | PredicateKind::Coerce(_)
             | PredicateKind::ConstEquate(_, _)
             | PredicateKind::ObjectSafe(_)
+            | PredicateKind::NormalizesTo(_)
             | PredicateKind::Subtype(_) => error_or_panic!(
                 self,
                 span,

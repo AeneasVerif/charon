@@ -190,7 +190,7 @@ fn test_crate::max() -> usize
     return
 }
 
-trait core::cmp::PartialEq<Self, Rhs>
+trait core::cmp::PartialEq<Self, Rhs, const host : bool>
 {
     fn eq : core::cmp::PartialEq::eq
     fn ne : core::cmp::PartialEq::ne
@@ -198,7 +198,7 @@ trait core::cmp::PartialEq<Self, Rhs>
 
 fn test_crate::partial_eq<T>(@1: T)
 where
-    [@TraitClause0]: core::cmp::PartialEq<T, T>,
+    [@TraitClause0]: core::cmp::PartialEq<T, T, true>,
 {
     let @0: (); // return
     let _x@1: T; // arg #1
@@ -211,9 +211,9 @@ where
     return
 }
 
-fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs, const host : bool>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
-fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs, const host : bool>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1
