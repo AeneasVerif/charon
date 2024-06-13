@@ -397,10 +397,8 @@ pub fn translate<'tcx, 'ctx>(
     let hir = tcx.hir();
     for item_id in hir.root_module().item_ids {
         let item_id = item_id.hir_id();
-        let node = hir.find(item_id).unwrap();
-        let item = match node {
-            rustc_hir::Node::Item(item) => item,
-            _ => unreachable!(),
+        let rustc_hir::Node::Item(item) = tcx.hir_node(item_id) else {
+            unreachable!()
         };
         ctx.register_local_hir_item(true, item)?;
     }

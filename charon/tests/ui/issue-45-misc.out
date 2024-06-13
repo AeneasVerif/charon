@@ -174,7 +174,7 @@ trait core::clone::Clone<Self>
     fn clone_from
 }
 
-trait core::cmp::PartialEq<Self, Rhs>
+trait core::cmp::PartialEq<Self, Rhs, const host : bool>
 {
     fn eq : core::cmp::PartialEq::eq
     fn ne
@@ -188,7 +188,7 @@ enum core::cmp::Ordering =
 
 trait core::cmp::PartialOrd<Self, Rhs>
 {
-    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
+    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs, true>
     fn partial_cmp : core::cmp::PartialOrd::partial_cmp
     fn lt
     fn le
@@ -236,7 +236,7 @@ where
 
 trait core::cmp::Eq<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self, true>
     fn assert_receiver_is_total_eq
 }
 
@@ -318,14 +318,14 @@ impl core::clone::impls::{impl core::clone::Clone for u8#6} : core::clone::Clone
     fn clone = core::clone::impls::{impl core::clone::Clone for u8#6}::clone
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}::eq<'_0, '_1, const host : bool>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::ne<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}::ne<'_0, '_1, const host : bool>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22} : core::cmp::PartialEq<u8, u8>
+impl<const host : bool> core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}<const host : bool> : core::cmp::PartialEq<u8, u8, const host : bool>
 {
-    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::eq
-    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::ne
+    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}::eq
+    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}::ne
 }
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::partial_cmp<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> core::option::Option<core::cmp::Ordering>
@@ -340,7 +340,7 @@ fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::gt<'_0, '_1>(@1
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56} : core::cmp::PartialOrd<u8, u8>
 {
-    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}
+    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}<true>
     fn partial_cmp = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::partial_cmp
     fn lt = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::lt
     fn le = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::le
@@ -565,7 +565,7 @@ fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>
 
-fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs, const host : bool>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
 

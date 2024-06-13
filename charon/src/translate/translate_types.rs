@@ -522,9 +522,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Separate path for type aliases because they're not an `AdtDef`.
-        if let Some(local_def_id) = rust_id.as_local() {
-            let hir_id = tcx.local_def_id_to_hir_id(local_def_id);
-            let rustc_hir::Node::Item(item) = tcx.hir().get(hir_id) else {
+        if let Some(node) = tcx.hir().get_if_local(rust_id) {
+            let rustc_hir::Node::Item(item) = node else {
                 error_or_panic!(self, def_span, "Type is not an item?")
             };
             if let rustc_hir::ItemKind::TyAlias(ty, _generics) = &item.kind {
