@@ -562,11 +562,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Returns the attributes (`#[...]`) of this item.
-    pub(crate) fn item_attributes(&self, id: DefId) -> &[rustc_ast::Attribute] {
-        use rustc_hir::hir_id::HirId;
+    /// Returns the attributes (`#[...]`) of this node.
+    pub(crate) fn node_attributes(&self, id: DefId) -> &[rustc_ast::Attribute] {
+        let hir = self.tcx.hir();
         id.as_local()
-            .map(|local_def_id| self.tcx.hir().attrs(HirId::make_owner(local_def_id)))
+            .map(|local_def_id| hir.attrs(hir.local_def_id_to_hir_id(local_def_id)))
             .unwrap_or_default()
     }
 
@@ -588,7 +588,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_attributes_from_rid(&self, id: DefId) -> Vec<Attribute> {
-        self.item_attributes(id)
+        self.node_attributes(id)
             .iter()
             .filter_map(|attr| self.translate_attribute(attr))
             .collect()
