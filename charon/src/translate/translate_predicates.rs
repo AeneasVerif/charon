@@ -537,7 +537,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             PredicateKind::AliasRelate(..)
             | PredicateKind::Ambiguous
-            | PredicateKind::ClosureKind(_, _, _)
             | PredicateKind::Coerce(_)
             | PredicateKind::ConstEquate(_, _)
             | PredicateKind::ObjectSafe(_)
