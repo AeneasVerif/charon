@@ -274,14 +274,22 @@ impl<'de> Deserialize<'de> for ScalarValue {
                 use serde::de::Error;
                 let (k, v): (String, String) = map.next_entry()?.expect("Malformed ScalarValue");
                 Ok(match k.as_str() {
+                    "Isize" => ScalarValue::Isize(v.parse().unwrap()),
+                    "I8" => ScalarValue::I8(v.parse().unwrap()),
+                    "I16" => ScalarValue::I16(v.parse().unwrap()),
+                    "I32" => ScalarValue::I32(v.parse().unwrap()),
+                    "I64" => ScalarValue::I64(v.parse().unwrap()),
+                    "I128" => ScalarValue::I128(v.parse().unwrap()),
+                    "Usize" => ScalarValue::Usize(v.parse().unwrap()),
+                    "U8" => ScalarValue::U8(v.parse().unwrap()),
+                    "U16" => ScalarValue::U16(v.parse().unwrap()),
                     "U32" => ScalarValue::U32(v.parse().unwrap()),
+                    "U64" => ScalarValue::U64(v.parse().unwrap()),
+                    "U128" => ScalarValue::U128(v.parse().unwrap()),
                     _ => {
                         return Err(A::Error::custom(format!(
-                            "TODO: implement deserialization for ScalarValue::{k}"
-                        )));
-                        // return Err(A::Error::custom(format!(
-                        //     "{k} is not a valid type for a ScalarValue"
-                        // )))
+                            "{k} is not a valid type for a ScalarValue"
+                        )))
                     }
                 })
             }
