@@ -51,7 +51,7 @@ and raw_statement_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc [ ("Call", call) ] ->
         let* call = call_of_json call in
         Ok (Call call)
-    | `String "Panic" -> Ok Panic
+    | `Assoc [ ("Abort", _) ] -> Ok Panic
     | `String "Return" -> Ok Return
     | `Assoc [ ("Break", i) ] ->
         let* i = int_of_json i in

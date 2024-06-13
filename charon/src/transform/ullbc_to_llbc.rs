@@ -70,8 +70,7 @@ fn get_block_targets(body: &src::ExprBody, block_id: src::BlockId) -> Vec<src::B
         }
         src::RawTerminator::Switch { targets, .. } => targets.get_targets(),
         src::RawTerminator::Call { target: None, .. }
-        | src::RawTerminator::Panic
-        | src::RawTerminator::Unreachable
+        | src::RawTerminator::Abort(..)
         | src::RawTerminator::Return => {
             vec![]
         }
@@ -156,7 +155,7 @@ fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     let block = body.body.get(block_id).unwrap();
     use src::RawTerminator::*;
     match &block.terminator.content {
-        Panic | Unreachable => true,
+        Abort(..) => true,
         Goto { .. } | Switch { .. } | Return { .. } | Drop { .. } | Call { .. } | Assert { .. } => {
             false
         }
@@ -1548,9 +1547,10 @@ fn translate_terminator(
     let src_span = terminator.span;
 
     match &terminator.content {
-        src::RawTerminator::Panic | src::RawTerminator::Unreachable => Some(Box::new(
-            tgt::Statement::new(src_span, tgt::RawStatement::Panic),
-        )),
+        src::RawTerminator::Abort(kind) => Some(Box::new(tgt::Statement::new(
+            src_span,
+            tgt::RawStatement::Abort(kind.clone()),
+        ))),
         src::RawTerminator::Return => Some(Box::new(tgt::Statement::new(
             src_span,
             tgt::RawStatement::Return,
@@ -1753,7 +1753,7 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
         | tgt::RawStatement::Call(_)
         | tgt::RawStatement::Nop
         | tgt::RawStatement::Error(_) => false,
-        tgt::RawStatement::Panic | tgt::RawStatement::Return => true,
+        tgt::RawStatement::Abort(..) | tgt::RawStatement::Return => true,
         tgt::RawStatement::Break(index) => *index >= num_loops,
         tgt::RawStatement::Continue(_index) => true,
         tgt::RawStatement::Sequence(st1, st2) => {

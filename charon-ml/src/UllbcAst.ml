@@ -85,9 +85,9 @@ type terminator = {
 and raw_terminator =
   | Goto of block_id
   | Switch of operand * switch
+  (* FIXME: rename to `Abort` *)
   | Panic
   | Return
-  | Unreachable
   | Drop of place * block_id
   | Call of call * block_id option
   | Assert of assertion * block_id

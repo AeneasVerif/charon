@@ -640,7 +640,7 @@ fn test_crate::main()
         @64 := &*(right_val@55)
         @63 := &*(@64)
         @65 := core::option::Option::None {  }
-        panic
+        panic(core::panicking::assert_failed)
     }
     drop @58
     drop @57

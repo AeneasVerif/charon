@@ -164,8 +164,8 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
             RawStatement::Call(c) => {
                 self.visit_call(c);
             }
-            RawStatement::Panic => {
-                self.visit_panic();
+            RawStatement::Abort(..) => {
+                self.visit_abort();
             }
             RawStatement::Return => self.visit_return(),
             RawStatement::Break(i) => {
@@ -207,7 +207,7 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
         self.visit_operand(&a.cond);
     }
 
-    fn visit_panic(&mut self) {}
+    fn visit_abort(&mut self) {}
     fn visit_return(&mut self) {}
     fn visit_break(&mut self, _: &usize) {}
     fn visit_continue(&mut self, _: &usize) {}

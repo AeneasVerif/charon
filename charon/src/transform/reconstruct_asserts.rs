@@ -14,7 +14,7 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
     if let RawStatement::Switch(Switch::If(_, st1, _)) = &mut st.content {
         // Check if the first statement is a panic: if yes, replace
         // the if .. then ... else ... by an assertion.
-        if st1.content.is_panic() {
+        if st1.content.is_abort() {
             // Replace: we need to take the value
             take(&mut st.content, |st| {
                 let (op, st1, st2) = st.to_switch().to_if();

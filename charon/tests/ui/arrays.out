@@ -1210,7 +1210,7 @@ fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u
     else {
         drop @8
         drop @6
-        panic
+        panic(core::panicking::panic)
     }
     drop @8
     drop @6

@@ -200,7 +200,7 @@ impl<'a> MutAstVisitor for Visitor<'a> {
             FakeRead(p) => {
                 self.visit_transform_place(false, p);
             }
-            Assign(..) | SetDiscriminant(..) | Drop(..) | Assert(..) | Call(..) | Panic
+            Assign(..) | SetDiscriminant(..) | Drop(..) | Assert(..) | Call(..) | Abort(..)
             | Return | Break(..) | Continue(..) | Nop | Switch(..) | Loop(..) | Error(..) => {
                 // Explore
                 self.default_visit_raw_statement(st)

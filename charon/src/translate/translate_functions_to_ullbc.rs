@@ -13,6 +13,7 @@ use crate::formatter::{Formatter, IntoFormatter};
 use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::ids::Vector;
 use crate::meta::ItemMeta;
+use crate::names::Name;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::translate_types;
@@ -32,7 +33,7 @@ pub(crate) struct SubstFunId {
 }
 
 pub(crate) enum SubstFunIdOrPanic {
-    Panic,
+    Panic(Name),
     Fun(SubstFunId),
 }
 
@@ -876,7 +877,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let builtin_fun = BuiltinFun::parse_name(&name);
         if matches!(builtin_fun, Some(BuiltinFun::Panic)) {
-            return Ok(SubstFunIdOrPanic::Panic);
+            return Ok(SubstFunIdOrPanic::Panic(name));
         }
 
         // There is something annoying: when going to MIR, the rust compiler
@@ -1188,7 +1189,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 error_or_panic!(self, rustc_span, "Unexpected terminator: UnwindTerminate")
             }
             TerminatorKind::Return => RawTerminator::Return,
-            TerminatorKind::Unreachable => RawTerminator::Unreachable,
+            // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
+            // machine.
+            TerminatorKind::Unreachable => RawTerminator::Abort(AbortKind::UndefinedBehavior),
             TerminatorKind::Drop {
                 place,
                 target,
@@ -1352,13 +1355,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 )?;
 
                 match fid {
-                    SubstFunIdOrPanic::Panic => {
+                    SubstFunIdOrPanic::Panic(name) => {
                         // If the call is `panic!`, then the target is `None`.
                         // I don't know in which other cases it can be `None`.
                         assert!(target.is_none());
 
                         // We ignore the arguments
-                        Ok(RawTerminator::Panic)
+                        Ok(RawTerminator::Abort(AbortKind::Panic(name)))
                     }
                     SubstFunIdOrPanic::Fun(fid) => {
                         let lval = self.translate_place(span, destination)?;
