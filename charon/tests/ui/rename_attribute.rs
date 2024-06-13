@@ -32,6 +32,7 @@ type Test = i32;
 
 #[charon::rename("VariantsTest")]
 enum SimpleEnum {
+    #[charon::rename("Variant1")]
     FirstVariant,
     SecondVariant,
     ThirdVariant,

@@ -136,11 +136,11 @@ impl PartialOrd for OrdRustId {
         let (vid0, _) = self.variant_index_arity();
         let (vid1, _) = other.variant_index_arity();
         if vid0 != vid1 {
-            Some(vid0.cmp(&vid1))
+            Option::Some(vid0.cmp(&vid1))
         } else {
             let id0 = self.get_id();
             let id1 = other.get_id();
-            Some(id0.cmp(&id1))
+            Option::Some(id0.cmp(&id1))
         }
     }
 }
@@ -399,8 +399,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn register_file(&mut self, filename: FileName) -> FileId {
         // Lookup the file if it was already registered
         match self.translated.file_to_id.get(&filename) {
-            Some(id) => *id,
-            None => {
+            Option::Some(id) => *id,
+            Option::None => {
                 // Generate the fresh id
                 let id = match &filename {
                     FileName::Local(_) => {

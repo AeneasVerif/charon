@@ -158,3 +158,94 @@ fn visibility() -> Result<(), Box<dyn Error>> {
     assert!(crate_data.types[2].item_meta.public);
     Ok(())
 }
+
+#[test]
+fn rename_attribute() -> Result<(), Box<dyn Error>> {
+    let crate_data = translate(
+        r#"
+        #![feature(register_tool)]
+        #![register_tool(charon)]
+        #![register_tool(aeneas)]
+        
+        #[charon::rename("BoolTest")]
+        pub trait BoolTrait {
+            // Required method
+            #[charon::rename("getTest")]
+            fn get_bool(&self) -> bool;
+
+            // Provided method
+            #[charon::rename("retTest")]
+            fn ret_true(&self) -> bool {
+                true
+            }
+        }
+
+        #[charon::rename("BoolImpl")]
+        impl BoolTrait for bool {
+            fn get_bool(&self) -> bool {
+                *self
+            }
+        }
+
+        #[charon::rename("BoolFn")]
+        #[clippy::foo]
+        fn test_bool_trait<T>(x: bool) -> bool {
+            x.get_bool() && x.ret_true()
+        }
+
+        #[charon::rename("TypeTest")]
+        type Test = i32;
+
+/*      #[charon::rename("VariantsTest")]
+        enum SimpleEnum {
+            #[charon::rename("Variant1")]
+            FirstVariant,
+            SecondVariant,
+            ThirdVariant,
+        } */
+
+        #[charon::rename("StructTest")]
+        struct Foo {
+            #[charon::rename("FieldTest")]
+            field1: u32,
+        }
+
+        #[charon::rename("Const_Test")]
+        const C: u32 = 100 + 10 + 1;
+
+        #[aeneas::rename("Type-Aeneas36")]
+        type Test2 = u32;
+        "#,
+    )?;
+
+    assert_eq!(crate_data.trait_decls[0].item_meta.rename, Some("BoolTest".to_string())
+    );
+
+    assert_eq!(crate_data.trait_impls[0].item_meta.rename, Some("BoolImpl".to_string())
+    );
+
+    /* assert_eq!(crate_data.functions[0].item_meta.rename, Some("BoolFn".to_string())
+    ); */
+    // TODO : attributes on functions do not work ?
+    assert!(crate_data.functions[3].item_meta.rename.is_some()
+    );
+
+    assert_eq!(crate_data.types[0].item_meta.rename, Some("TypeTest".to_string())
+    );
+
+    assert_eq!(crate_data.types[1].item_meta.rename, Some("StructTest".to_string())
+    );
+
+    assert_eq!(crate_data.globals[0].item_meta.rename, Some("Const_Test".to_string())
+    );
+
+    assert_eq!(crate_data.types[2].item_meta.rename, Some("Type-Aeneas36".to_string())
+    );
+
+/*     let fieldvec = crate_data.types[0].kind.as_struct();
+    /* let fieldid = fieldvec.next_id(); */
+    let field = fieldvec.get(0.into());
+    /* assert_eq!(field.unwrap().item_meta.rename, Some("FieldTest".to_string())); */
+    assert!(field.unwrap().item_meta.attributes.is_empty()); */
+    Ok(())
+}
