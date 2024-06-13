@@ -493,57 +493,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let opaque = attributes
             .iter()
             .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque");
-        /* let rename = {
-            let filter_attribute: Vec<&str> = attributes
-                .iter()
-                .filter_map(|str| {
-                    str.strip_prefix("charon::rename(")
-                        .or(str.strip_prefix("aeneas::rename("))
-                        .and_then(|str| str.strip_suffix(")"))
-                })
-                .collect();
-            if let [str] = filter_attribute.as_slice() {
-                let rename = str
-                    .strip_prefix("\"")
-                    .and_then(|str| str.strip_suffix("\""));
-                if let Some(str) = rename {
-                    if !str.is_empty() {
-                        let first_char_alphabetic = str
-                            .chars()
-                            .nth(0)
-                            .expect("Attribute `rename` should not be empty")
-                            .is_alphabetic();
-                        let is_identifier = first_char_alphabetic
-                            && str
-                                .chars()
-                                .all(|c| c.is_alphanumeric() || c == '_' || c == '-');
-                        if !is_identifier {
-                            self.span_err(span, "Attribute `rename` should only contains alphanumeric characters, `_` and `-` and should start with a letter");
-                            None
-                        } else {
-                            Some(rename.unwrap().to_string())
-                        }
-                    } else {
-                        self.span_err(span, "Attribute `rename` should not be empty");
-                        None
-                    }
-                } else {
-                    self.span_err(
-                        span,
-                        "Attribute `rename` should be of the shape `rename(\"...\")`",
-                    );
-                    None
-                }
-            } else if filter_attribute.len() > 1 {
-                self.span_err(
-                    span,
-                    "There are too many `rename` attributes, please use only one",
-                );
-                None
-            } else {
-                None
-            }
-        }; */
         let rename = self.parse_rename(span, attributes.clone());
         ItemMeta {
             span,
