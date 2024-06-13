@@ -481,7 +481,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             None
         }
     }
-    
+
     /// Compute the meta information for a Rust item identified by its id.
     pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
         let span = self.translate_span_from_rid(def_id);
