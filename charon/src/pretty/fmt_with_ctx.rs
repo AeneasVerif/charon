@@ -126,8 +126,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
 impl<C: AstFormatter> FmtWithCtx<C> for Field {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match &self.name {
-            Option::Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
-            Option::None => self.ty.fmt_with_ctx(ctx),
+            Some(name) => format!("{}: {}", name, self.ty.fmt_with_ctx(ctx)),
+            None => self.ty.fmt_with_ctx(ctx),
         }
     }
 }
@@ -664,8 +664,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
                 // we need the type (which contains the type def id).
                 // Anyway, the printing utilities are mostly for debugging.
                 let variant_id = match variant_id {
-                    Option::Some(id) => format!("Some({id})"),
-                    Option::None => "None".to_string(),
+                    Some(id) => format!("Some({id})"),
+                    None => "None".to_string(),
                 };
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
@@ -984,7 +984,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             }
             RawTerminator::Call { call, target } => {
                 let (call_s, _) = fmt_call(ctx, call);
-                format!("{} := {call_s} -> bb{target}", call.dest.fmt_with_ctx(ctx),)
+                let target = if let Some(target) = target {
+                    format!("bb{target}")
+                } else {
+                    format!("!")
+                };
+                format!("{} := {call_s} -> {target}", call.dest.fmt_with_ctx(ctx),)
             }
             RawTerminator::Assert {
                 cond,

@@ -318,9 +318,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             ItemKind::ExternCrate(..) => {
                 // We ignore this -
                 // TODO: investigate when extern crates appear, and why
-                Option::None
+                None
             }
-            ItemKind::Use(..) => Option::None,
+            ItemKind::Use(..) => None,
             ItemKind::TyAlias(..)
             | ItemKind::Enum(..)
             | ItemKind::Struct(..)
@@ -331,7 +331,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | ItemKind::Const(..)
             | ItemKind::Static(..)
             | ItemKind::Macro(..)
-            | ItemKind::Trait(..) => Option::Some(self.def_id_to_name(def_id)?),
+            | ItemKind::Trait(..) => Some(self.def_id_to_name(def_id)?),
             _ => {
                 unimplemented!("{:?}", item.kind);
             }

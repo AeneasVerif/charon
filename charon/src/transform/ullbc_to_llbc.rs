@@ -60,17 +60,17 @@ fn get_block_targets(body: &src::ExprBody, block_id: src::BlockId) -> Vec<src::B
 
     match &block.terminator.content {
         src::RawTerminator::Goto { target }
-        | src::RawTerminator::Drop { place: _, target }
-        | src::RawTerminator::Call { call: _, target }
-        | src::RawTerminator::Assert {
-            cond: _,
-            expected: _,
-            target,
-        } => {
+        | src::RawTerminator::Drop { target, .. }
+        | src::RawTerminator::Call {
+            target: Some(target),
+            ..
+        }
+        | src::RawTerminator::Assert { target, .. } => {
             vec![*target]
         }
-        src::RawTerminator::Switch { discr: _, targets } => targets.get_targets(),
-        src::RawTerminator::Panic
+        src::RawTerminator::Switch { targets, .. } => targets.get_targets(),
+        src::RawTerminator::Call { target: None, .. }
+        | src::RawTerminator::Panic
         | src::RawTerminator::Unreachable
         | src::RawTerminator::Return => {
             vec![]
@@ -1445,21 +1445,15 @@ fn get_goto_kind(
     next_block_id: src::BlockId,
 ) -> GotoKind {
     // First explore the parent loops in revert order
-    let len = parent_loops.len();
-    for i in 0..len {
-        let loop_id = parent_loops.get(len - i - 1).unwrap();
-
+    for (i, loop_id) in parent_loops.iter().rev().enumerate() {
         // If we goto a loop entry node: this is a 'continue'
         if next_block_id == *loop_id {
             return GotoKind::Continue(i);
         } else {
             // If we goto a loop exit node: this is a 'break'
-            match exits_info.loop_exits.get(loop_id).unwrap() {
-                None => (),
-                Some(exit_id) => {
-                    if *exit_id == next_block_id {
-                        return GotoKind::Break(i);
-                    }
+            if let Some(exit_id) = exits_info.loop_exits.get(loop_id).unwrap() {
+                if next_block_id == *exit_id {
+                    return GotoKind::Break(i);
                 }
             }
         }
@@ -1583,13 +1577,17 @@ fn translate_terminator(
             Some(combine_statement_and_statement(st, opt_child))
         }
         src::RawTerminator::Call { call, target } => {
-            let opt_child = translate_child_block(
-                info,
-                parent_loops,
-                switch_exit_blocks,
-                terminator.span,
-                *target,
-            );
+            let opt_child = if let Some(target) = target {
+                translate_child_block(
+                    info,
+                    parent_loops,
+                    switch_exit_blocks,
+                    terminator.span,
+                    *target,
+                )
+            } else {
+                None
+            };
             let st = tgt::RawStatement::Call(call.clone());
             let st = Box::new(tgt::Statement::new(src_span, st));
             Some(combine_statement_and_statement(st, opt_child))
@@ -1818,7 +1816,7 @@ fn translate_block(
     } else if is_switch {
         *info.exits_info.owned_switch_exits.get(&block_id).unwrap()
     } else {
-        Option::None
+        None
     };
 
     // If we enter a switch, add the exit block to the set
@@ -1826,8 +1824,8 @@ fn translate_block(
     let nswitch_exit_blocks = if is_switch {
         let mut nexit_blocks = switch_exit_blocks.clone();
         match next_block {
-            Option::None => nexit_blocks,
-            Option::Some(bid) => {
+            None => nexit_blocks,
+            Some(bid) => {
                 nexit_blocks.insert(bid);
                 nexit_blocks
             }

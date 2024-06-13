@@ -1,0 +1,31 @@
+# Final LLBC before serialization:
+
+fn test_crate::my_panic(@1: u32) -> !
+{
+    let @0: !; // return
+    let _x@1: u32; // arg #1
+
+    panic
+}
+
+fn test_crate::do_something_else()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+fn test_crate::call_my_panic()
+{
+    let @0: (); // return
+    let @1: !; // anonymous local
+
+    @1 := test_crate::my_panic(const (0 : u32))
+}
+
+
+

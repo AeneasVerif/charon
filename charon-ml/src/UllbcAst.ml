@@ -89,7 +89,7 @@ and raw_terminator =
   | Return
   | Unreachable
   | Drop of place * block_id
-  | Call of call * block_id
+  | Call of call * block_id option
   | Assert of assertion * block_id
 [@@deriving
   show,

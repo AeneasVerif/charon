@@ -216,7 +216,7 @@ impl Deps {
 
     fn set_current_id(&mut self, ctx: &TransformCtx, id: AnyTransId) {
         self.insert_node(id);
-        self.current_id = Option::Some(id);
+        self.current_id = Some(id);
 
         // Add the id of the trait impl trait this item belongs to, if necessary
         use AnyTransId::*;
