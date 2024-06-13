@@ -444,7 +444,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             if let Some(str) = rename {
                 if str.is_empty() {
                     self.span_err(span, "Attribute `rename` should not be empty");
-                    None
+                    return None;
                 } else {
                     let first_char_alphabetic = str
                         .chars()
@@ -457,7 +457,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                             .all(|c| c.is_alphanumeric() || c == '_' || c == '-');
                     if !is_identifier {
                         self.span_err(span, "Attribute `rename` should only contains alphanumeric characters, `_` and `-` and should start with a letter");
-                        None
+                        return None
                     } else {
                         Some(rename.unwrap().to_string())
                     }
@@ -467,7 +467,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     span,
                     "Attribute `rename` should be of the shape `rename(\"...\")`",
                 );
-                None
+                return None;
             }
         // if there are more than one rename attribute, we tell the user there should only be one
         } else if filter_attribute.len() > 1 {
