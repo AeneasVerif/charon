@@ -9,6 +9,8 @@ use charon_lib::{
     logger,
     meta::InlineAttr,
     names::{Name, PathElem},
+    types::TypeDecl,
+    values::ScalarValue,
 };
 
 fn translate(code: impl std::fmt::Display) -> Result<CrateData, Box<dyn Error>> {
@@ -156,5 +158,34 @@ fn visibility() -> Result<(), Box<dyn Error>> {
         "test_crate::private::PubInPriv"
     );
     assert!(crate_data.types[2].item_meta.public);
+    Ok(())
+}
+
+#[test]
+fn discriminants() -> Result<(), Box<dyn Error>> {
+    let crate_data = translate(
+        r#"
+        enum Foo {
+            Variant1,
+            Variant2,
+        }
+        #[repr(u32)]
+        enum Bar {
+            Variant1 = 3,
+            Variant2 = 42,
+        }
+        "#,
+    )?;
+    fn get_enum_discriminants(ty: &TypeDecl) -> Vec<ScalarValue> {
+        ty.kind.as_enum().iter().map(|v| v.discriminant).collect()
+    }
+    assert_eq!(
+        get_enum_discriminants(&crate_data.types[0]),
+        vec![ScalarValue::Isize(0), ScalarValue::Isize(1)]
+    );
+    assert_eq!(
+        get_enum_discriminants(&crate_data.types[1]),
+        vec![ScalarValue::U32(3), ScalarValue::U32(42)]
+    );
     Ok(())
 }
