@@ -125,9 +125,13 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     #[serde(default)]
     pub no_cargo: bool,
     /// Extra flags to pass to rustc.
-    #[clap(long = "rustc-flag")]
+    #[clap(long = "rustc-flag", alias = "rustc-arg")]
     #[serde(default)]
-    pub rustc_flags: Vec<String>,
+    pub rustc_args: Vec<String>,
+    /// Extra flags to pass to cargo. Incompatible with `--no-cargo`.
+    #[clap(long = "cargo-arg")]
+    #[serde(default)]
+    pub cargo_args: Vec<String>,
     /// Panic on the first error. This is useful for debugging.
     #[clap(long = "abort-on-error")]
     #[serde(default)]

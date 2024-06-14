@@ -174,7 +174,7 @@ fn main() {
         }
     }
 
-    for extra_flag in options.rustc_flags.iter().cloned() {
+    for extra_flag in options.rustc_args.iter().cloned() {
         compiler_args.push(extra_flag);
     }
 
