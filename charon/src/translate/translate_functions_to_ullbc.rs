@@ -869,7 +869,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // sometimes introduces very low-level functions, which we need to
         // catch early - in particular, before we start translating types and
         // arguments, because we won't be able to translate some of them.
-        if matches!(builtin_fun, Some(BuiltinFun::BoxFree)) {
+        let sfid = if matches!(builtin_fun, Some(BuiltinFun::BoxFree)) {
             assert!(!is_local);
 
             // This deallocates a box.
@@ -903,8 +903,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 func: FunIdOrTraitMethodRef::mk_assumed(AssumedFunId::BoxFree),
                 generics: GenericArgs::new_from_types(vec![t_ty]),
             };
-            let sfid = SubstFunId { func, args };
-            Ok(SubstFunIdOrPanic::Fun(sfid))
+            SubstFunId { func, args }
         } else {
             // Retrieve the lists of used parameters, in case of non-local
             // definitions
@@ -945,7 +944,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Check if the function is considered primitive: primitive
             // functions benefit from special treatment.
-            if let Some(builtin_fun) = builtin_fun {
+            let func = if let Some(builtin_fun) = builtin_fun {
                 // Primitive function.
                 //
                 // Note that there are subtleties with regards to the way types parameters
@@ -992,22 +991,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 };
 
-                let func = FnPtr {
-                    func: FunIdOrTraitMethodRef::Fun(FunId::Assumed(aid)),
-                    generics,
-                };
-                let sfid = SubstFunId { func, args };
-                Ok(SubstFunIdOrPanic::Fun(sfid))
+                FunIdOrTraitMethodRef::Fun(FunId::Assumed(aid))
             } else {
                 // Two cases depending on whether we call a trait method or not
                 match trait_info {
                     None => {
                         // "Regular" function call
                         let def_id = self.register_fun_decl_id(span, rust_id);
-                        let func = FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id));
-                        let func = FnPtr { func, generics };
-                        let sfid = SubstFunId { func, args };
-                        Ok(SubstFunIdOrPanic::Fun(sfid))
+                        FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id))
                     }
                     Some(trait_info) => {
                         // Trait method
@@ -1023,18 +1014,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let trait_method_fun_id = self.register_fun_decl_id(span, rust_id);
                         let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
 
-                        let func = FunIdOrTraitMethodRef::Trait(
-                            impl_expr,
-                            method_name,
-                            trait_method_fun_id,
-                        );
-                        let func = FnPtr { func, generics };
-                        let sfid = SubstFunId { func, args };
-                        Ok(SubstFunIdOrPanic::Fun(sfid))
+                        FunIdOrTraitMethodRef::Trait(impl_expr, method_name, trait_method_fun_id)
                     }
                 }
+            };
+            SubstFunId {
+                func: FnPtr { func, generics },
+                args,
             }
-        }
+        };
+        Ok(SubstFunIdOrPanic::Fun(sfid))
     }
 
     /// Translate a statement
