@@ -176,6 +176,10 @@ pub fn main() -> anyhow::Result<()> {
     let host = &rustc_version.host;
 
     let exit_status = if options.no_cargo {
+        if !options.cargo_args.is_empty() {
+            bail!("Option `--cargo-arg` is not compatible with `--no-cargo`")
+        }
+
         // Run just the driver.
         let mut cmd = driver_cmd()?;
 
@@ -229,6 +233,10 @@ pub fn main() -> anyhow::Result<()> {
         if options.bin.is_some() {
             cmd.arg("--bin");
             cmd.arg(options.bin.as_ref().unwrap().clone());
+        }
+
+        for arg in &options.cargo_args {
+            cmd.arg(arg);
         }
 
         cmd.spawn()
