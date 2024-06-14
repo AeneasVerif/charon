@@ -47,7 +47,8 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
         //   b := copy x == const 0
         //   assert(move b == false)
         [rest @ .., Statement {
-            content: RawStatement::Assign(is_zero, Rvalue::BinaryOp(BinOp::Eq, _, Operand::Const(_zero))),
+            content:
+                RawStatement::Assign(is_zero, Rvalue::BinaryOp(BinOp::Eq, _, Operand::Const(_zero))),
             ..
         }] if cond == is_zero && *expected == false => rest,
 
@@ -111,17 +112,21 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
         // blocks so we remove them in a later pass.
         [.., Statement {
             content:
-                RawStatement::Assign(result, Rvalue::BinaryOp(BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul, ..)),
+                RawStatement::Assign(
+                    result,
+                    Rvalue::BinaryOp(BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul, ..),
+                ),
             ..
         }] if cond.var_id == result.var_id
             && result.projection.is_empty()
-            && let [ProjectionElem::Field(FieldProjKind::Tuple(2), p_id)] = cond.projection.as_slice()
+            && let [ProjectionElem::Field(FieldProjKind::Tuple(2), p_id)] =
+                cond.projection.as_slice()
             && p_id.index() == 1
             && *expected == false =>
         {
             // We leave this assert intact; it will be silplified in
             // [`remove_arithmetic_overflow_checks`].
-            return
+            return;
         }
 
         _ => {
@@ -129,13 +134,12 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
             // `rustc_middle::mir::AssertKind` variants `ResumedAfterReturn`, `ResumedAfterPanic`
             // and `MisalignedPointerDereference`.
             let fmt_ctx = ctx.into_fmt();
-            let msg = format!("Found an `assert` we don't recognize:\n{}", block.fmt_with_ctx(&fmt_ctx));
-            register_error_or_panic!(
-                ctx,
-                block.terminator.span.span,
-                msg
+            let msg = format!(
+                "Found an `assert` we don't recognize:\n{}",
+                block.fmt_with_ctx(&fmt_ctx)
             );
-            return
+            register_error_or_panic!(ctx, block.terminator.span.span, msg);
+            return;
         }
     };
 

@@ -314,7 +314,9 @@ impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutAstVisitor
 
                 // Transform the current statement
                 let st_seq = (self.tr)(st1);
-                if let Some(seq) = st_seq && !seq.is_empty() {
+                if let Some(seq) = st_seq
+                    && !seq.is_empty()
+                {
                     take(st, |st| chain_statements(seq, st))
                 }
                 // TODO: we might want to apply tr to the whole resulting sequence
@@ -325,7 +327,9 @@ impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutAstVisitor
 
                 // Transform the current statement
                 let st_seq = (self.tr)(st);
-                if let Some(seq) = st_seq && !seq.is_empty() {
+                if let Some(seq) = st_seq
+                    && !seq.is_empty()
+                {
                     take(st, |st| chain_statements(seq, st))
                 }
             }

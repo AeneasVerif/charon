@@ -288,10 +288,11 @@ impl SharedTypeVisitor for Deps {
         // TODO: this is not very satisfying but this is the only way
         // we have of preventing mutually recursive groups between
         // method impls and trait impls in the presence of associated types...
-        if let Some(impl_id) = &self.impl_trait_id && impl_id == id {
+        if let Some(impl_id) = &self.impl_trait_id
+            && impl_id == id
+        {
             // Ignore
-        }
-        else {
+        } else {
             let id = AnyTransId::TraitImpl(*id);
             self.insert_edge(id);
         }

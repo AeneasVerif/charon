@@ -516,7 +516,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .associated_items(implemented_trait_rust_id)
             .in_definition_order()
         {
-            if let AssocKind::Fn = &item.kind && !item.defaultness(tcx).has_value() {
+            if let AssocKind::Fn = &item.kind
+                && !item.defaultness(tcx).has_value()
+            {
                 decl_required_methods.insert(item.name.to_string());
             }
         }
