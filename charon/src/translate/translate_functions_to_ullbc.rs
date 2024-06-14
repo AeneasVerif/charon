@@ -824,7 +824,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::Coroutine(_def_id, _subst, _movability) => {
+                    hax::AggregateKind::Coroutine(..) => {
                         error_or_panic!(self, span, "Coroutines are not supported");
                     }
                 }

@@ -501,7 +501,7 @@ dependencies = [
 [[package]]
 name = "hax-adt-into"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/Nadrieril/hax?branch=update-rustc2#eb689539cd74c4a318b512c5fd20a09ab81615aa"
+source = "git+https://github.com/Nadrieril/hax?branch=update-rustc2#8124bf4174cf656ede51ff68370a432f8eda9b4c"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -512,7 +512,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/Nadrieril/hax?branch=update-rustc2#eb689539cd74c4a318b512c5fd20a09ab81615aa"
+source = "git+https://github.com/Nadrieril/hax?branch=update-rustc2#8124bf4174cf656ede51ff68370a432f8eda9b4c"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -529,7 +529,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/Nadrieril/hax?branch=update-rustc2#eb689539cd74c4a318b512c5fd20a09ab81615aa"
+source = "git+https://github.com/Nadrieril/hax?branch=update-rustc2#8124bf4174cf656ede51ff68370a432f8eda9b4c"
 dependencies = [
  "schemars",
  "serde",

@@ -9,7 +9,6 @@ use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 use rustc_hir::{ForeignItemKind, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
-use rustc_session::Session;
 use std::collections::{HashMap, HashSet};
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
@@ -342,10 +341,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 pub fn translate<'tcx, 'ctx>(
     crate_name: String,
     options: &CliOpts,
-    session: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
-) -> Result<TransformCtx<'ctx>, Error> {
+) -> Result<TransformCtx<'tcx>, Error> {
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -364,7 +362,7 @@ pub fn translate<'tcx, 'ctx>(
         errors: ErrorCtx {
             continue_on_failure: !options.abort_on_error,
             errors_as_warnings: options.errors_as_warnings,
-            session,
+            dcx: tcx.dcx(),
             decls_with_errors: HashSet::new(),
             ignored_failed_decls: HashSet::new(),
             dep_sources: HashMap::new(),

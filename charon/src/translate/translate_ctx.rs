@@ -19,10 +19,10 @@ use hax_frontend_exporter::SInto;
 use linked_hash_set::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use rustc_error_messages::MultiSpan;
+use rustc_errors::DiagCtxt;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
-use rustc_session::Session;
 use serde::{Deserialize, Serialize};
 use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
@@ -251,7 +251,7 @@ pub struct ErrorCtx<'ctx> {
     pub errors_as_warnings: bool,
 
     /// The compiler session, used for displaying errors.
-    pub session: &'ctx Session,
+    pub dcx: &'ctx DiagCtxt,
     /// The ids of the declarations for which extraction we encountered errors.
     pub decls_with_errors: HashSet<DefId>,
     /// The ids of the declarations we completely failed to extract and had to ignore.
@@ -389,9 +389,9 @@ impl ErrorCtx<'_> {
     pub(crate) fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
         let msg = msg.to_string();
         if self.errors_as_warnings {
-            self.session.span_warn(span, msg);
+            self.dcx.span_warn(span, msg);
         } else {
-            self.session.span_err(span, msg);
+            self.dcx.span_err(span, msg);
         }
     }
 
