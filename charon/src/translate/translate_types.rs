@@ -342,7 +342,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 error_or_panic!(self, span, "Dynamic types are not supported yet")
             }
 
-            hax::Ty::Coroutine(_, _, _) => {
+            hax::Ty::Coroutine(..) => {
                 trace!("Coroutine");
                 error_or_panic!(self, span, "Coroutine types are not supported yet")
             }
@@ -436,16 +436,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let mut regions: Vec<Region> = vec![];
         let mut params = vec![];
         let mut cgs = vec![];
+        use hax::GenericArg::*;
         for param in substs.iter() {
             match param {
-                hax::GenericArg::Type(param_ty) => {
+                Type(param_ty) => {
                     let param_ty = self.translate_ty(span, erase_regions, param_ty)?;
                     params.push(param_ty);
                 }
-                hax::GenericArg::Lifetime(region) => {
+                Lifetime(region) => {
                     regions.push(self.translate_region(span, erase_regions, region)?);
                 }
-                hax::GenericArg::Const(c) => {
+                Const(c) => {
                     cgs.push(self.translate_constant_expr_to_const_generic(span, c)?);
                 }
             }

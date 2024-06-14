@@ -36,5 +36,5 @@ error: Error parsing attribute: Unrecognized attribute: `something_else("_Type36
 
 error: aborting due to 6 previous errors
 
-[ ERROR charon_driver:231] The extraction encountered 6 errors
+[ ERROR charon_driver:230] The extraction encountered 6 errors
 Error: Charon driver exited with code 1

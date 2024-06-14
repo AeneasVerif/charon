@@ -145,10 +145,15 @@ struct core::ptr::unique::Unique<T> =
   _marker: core::marker::PhantomData<T>
 }
 
+struct alloc::raw_vec::Cap =
+{
+  usize
+}
+
 struct alloc::raw_vec::RawVec<T, A> =
 {
   ptr: core::ptr::unique::Unique<T>,
-  cap: usize,
+  cap: alloc::raw_vec::Cap,
   alloc: A
 }
 

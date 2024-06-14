@@ -393,7 +393,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
         if item_meta.opacity.is_opaque() {
             let ctx = bt_ctx.into_fmt();
-            bt_ctx.t_ctx.errors.session.span_warn(
+            bt_ctx.t_ctx.errors.dcx.span_warn(
                 item_meta.span,
                 format!(
                     "Trait declarations cannot be \"opaque\"; the trait `{}` will be translated as normal.",
@@ -598,7 +598,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
         if item_meta.opacity.is_opaque() {
             let ctx = bt_ctx.into_fmt();
-            bt_ctx.t_ctx.errors.session.span_warn(
+            bt_ctx.t_ctx.errors.dcx.span_warn(
                 item_meta.span,
                 format!(
                     "Trait implementations cannot be \"opaque\"; the impl `{}` will be translated as normal.",
