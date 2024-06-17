@@ -9,7 +9,6 @@ use proc_macro::TokenStream;
 use quote::quote;
 
 mod enum_helpers;
-mod make_generic_in_borrows;
 
 use enum_helpers::EnumMethodKind;
 
@@ -67,9 +66,4 @@ pub fn derive_enum_as_getters(item: TokenStream) -> TokenStream {
 #[proc_macro_derive(EnumToGetters)]
 pub fn derive_enum_to_getters(item: TokenStream) -> TokenStream {
     enum_helpers::derive_enum_variant_method(item.into(), EnumMethodKind::EnumToGetters).into()
-}
-
-#[proc_macro]
-pub fn make_generic_in_borrows(tokens: TokenStream) -> TokenStream {
-    make_generic_in_borrows::make_generic_in_borrows(tokens)
 }
