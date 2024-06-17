@@ -9,17 +9,16 @@ use crate::transform::TransformCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::{Literal, ScalarValue};
+use derive_visitor::visitor_enter_fn_mut;
+use derive_visitor::DriveMut;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
 use super::ctx::LlbcPass;
 
-struct Visitor<'a, 'ctx> {
-    ctx: &'a mut TransformCtx<'ctx>,
-}
-
-impl<'a, 'ctx> Visitor<'a, 'ctx> {
-    fn update_statement(&mut self, st: &mut Statement) {
+pub struct Transform;
+impl Transform {
+    fn update_statement(ctx: &mut TransformCtx<'_>, st: &mut Statement) {
         match &mut st.content {
             RawStatement::Sequence(
                 box Statement {
@@ -41,7 +40,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                 );
 
                 // Lookup the type of the scrutinee
-                let variants = match self.ctx.translated.type_decls.get(*adt_id) {
+                let variants = match ctx.translated.type_decls.get(*adt_id) {
                     // This can happen if there was an error while extracting the definitions
                     None => None,
                     Some(d) => {
@@ -51,7 +50,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                             | TypeDeclKind::Alias(..) => {
                                 // We shouldn't get there
                                 register_error_or_panic!(
-                                    self.ctx,
+                                    ctx,
                                     st.span.span.rust_span_data.span(),
                                     "Unreachable case"
                                 );
@@ -65,7 +64,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                 let Some(variants) = variants else {
                     // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
                     // `Nop` the whole statement sequence.
-                    assert!(self.ctx.has_errors());
+                    assert!(ctx.has_errors());
                     *st = Statement {
                         content: RawStatement::Nop,
                         span: st.span,
@@ -114,7 +113,7 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
                                             covered_discriminants.insert(discr);
                                             discr_to_id.get(&discr).or_else(|| {
                                                 register_error_or_panic!(
-                                                    self.ctx,
+                                                    ctx,
                                                     st.span.span.rust_span_data.span(),
                                                     "Found incorrect discriminant {discr} for enum {adt_id}"
                                                 );
@@ -187,23 +186,11 @@ impl<'a, 'ctx> Visitor<'a, 'ctx> {
     }
 }
 
-impl<'a, 'ctx> MutTypeVisitor for Visitor<'a, 'ctx> {}
-impl<'a, 'ctx> MutExprVisitor for Visitor<'a, 'ctx> {}
-impl<'a, 'ctx> MutAstVisitor for Visitor<'a, 'ctx> {
-    fn visit_statement(&mut self, st: &mut Statement) {
-        self.update_statement(st);
-
-        // Visit again, to make sure we transform the branches and
-        // the next statement, in case we updated, or to update the
-        // sub-statements, in case we didn't perform any updates.
-        self.default_visit_statement(st);
-    }
-}
-
-pub struct Transform;
 impl LlbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
-        let mut visitor = Visitor { ctx };
-        visitor.visit_statement(&mut b.body);
+        b.body
+            .drive_mut(&mut visitor_enter_fn_mut(|st: &mut Statement| {
+                Transform::update_statement(ctx, st);
+            }));
     }
 }

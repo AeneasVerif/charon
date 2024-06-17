@@ -374,6 +374,7 @@ impl Eq for TraitClause {}
 /// inlined in MIR.
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TypeDecl {
+    #[drive(skip)]
     pub def_id: TypeDeclId,
     /// Meta information associated with the type.
     pub item_meta: ItemMeta,

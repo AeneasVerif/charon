@@ -141,6 +141,7 @@ pub enum ItemKind {
 /// A function definition
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct FunDecl {
+    #[drive(skip)]
     pub def_id: FunDeclId,
     #[serde(skip)]
     #[drive(skip)]
@@ -166,6 +167,7 @@ pub struct FunDecl {
 /// A global variable definition
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GlobalDecl {
+    #[drive(skip)]
     pub def_id: GlobalDeclId,
     #[serde(skip)]
     #[drive(skip)]
@@ -225,6 +227,7 @@ pub struct TraitItemName(pub String);
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TraitDecl {
+    #[drive(skip)]
     pub def_id: TraitDeclId,
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.
@@ -287,6 +290,7 @@ pub struct TraitDecl {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TraitImpl {
+    #[drive(skip)]
     pub def_id: TraitImplId,
     /// [true] if the decl is a local decl, [false] if it comes from
     /// an external crate.

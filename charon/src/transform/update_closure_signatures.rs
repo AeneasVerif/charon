@@ -1,6 +1,8 @@
 //! # Micro-pass: the first local variable of closures is (a borrow to) the
 //! closure itself. This is not consistent with the closure signature,
 //! which ignores this first variable. This micro-pass updates this.
+use derive_visitor::{visitor_enter_fn_mut, DriveMut, VisitorMut};
+
 use crate::common::*;
 use crate::ids::Vector;
 use crate::llbc_ast::*;
@@ -9,15 +11,17 @@ use crate::types::*;
 
 use super::ctx::LlbcPass;
 
+#[derive(VisitorMut)]
+#[visitor(Region(exit), Ty(enter, exit))]
 struct InsertRegions<'a> {
     regions: &'a mut Vector<RegionId, RegionVar>,
-    /// The number of region groups we dived into (we don't count the regions
-    /// at the declaration level). We use this for the DeBruijn indices.
+    // The number of region groups we dived into (we don't count the regions
+    // at the declaration level). We use this for the DeBruijn indices.
     depth: usize,
 }
 
-impl<'a> MutTypeVisitor for InsertRegions<'a> {
-    fn visit_region(&mut self, r: &mut Region) {
+impl<'a> InsertRegions<'a> {
+    fn exit_region(&mut self, r: &mut Region) {
         if r == &Region::Erased {
             // Insert a fresh region
             let index = self
@@ -27,32 +31,18 @@ impl<'a> MutTypeVisitor for InsertRegions<'a> {
         }
     }
 
-    fn enter_region_group(&mut self, _regions: &mut Vector<RegionId, RegionVar>) {
-        self.depth += 1;
+    fn enter_ty(&mut self, ty: &mut Ty) {
+        if let Ty::Arrow(..) = ty {
+            self.depth += 1;
+        }
     }
 
-    fn exit_region_group(&mut self, _regions: &mut Vector<RegionId, RegionVar>) {
-        self.depth -= 1;
-    }
-}
-
-struct ClosureStateAccess {
-    num_fields: usize,
-}
-
-impl MutTypeVisitor for ClosureStateAccess {}
-
-impl MutExprVisitor for ClosureStateAccess {
-    fn visit_projection_elem(&mut self, pe: &mut ProjectionElem) {
-        if let ProjectionElem::Field(pk @ FieldProjKind::ClosureState, _) = pe {
-            *pk = FieldProjKind::Tuple(self.num_fields);
-        } else {
-            self.default_visit_projection_elem(pe)
+    fn exit_ty(&mut self, ty: &mut Ty) {
+        if let Ty::Arrow(..) = ty {
+            self.depth -= 1;
         }
     }
 }
-
-impl MutAstVisitor for ClosureStateAccess {}
 
 fn transform_function(
     _ctx: &TransformCtx,
@@ -105,7 +95,7 @@ fn transform_function(
             regions: &mut generics.regions,
             depth: 0,
         };
-        visitor.visit_ty(&mut state);
+        state.drive_mut(&mut visitor);
 
         // Update the inputs (slightly annoying to push to the front of
         // a vector...).
@@ -146,8 +136,12 @@ fn transform_function(
             state_var.name = Some("state".to_string());
 
             // Update the body, and in particular the accesses to the states
-            let mut visitor = ClosureStateAccess { num_fields };
-            visitor.visit_statement(&mut body.body);
+            body.body
+                .drive_mut(&mut visitor_enter_fn_mut(|pe: &mut ProjectionElem| {
+                    if let ProjectionElem::Field(pk @ FieldProjKind::ClosureState, _) = pe {
+                        *pk = FieldProjKind::Tuple(num_fields);
+                    }
+                }));
         }
 
         Ok(())

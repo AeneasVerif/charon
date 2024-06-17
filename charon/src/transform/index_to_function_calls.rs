@@ -1,6 +1,8 @@
 //! Desugar array/slice index operations to function calls.
 
-use crate::expressions::{BorrowKind, MutExprVisitor, Operand, Place, ProjectionElem, Rvalue};
+use derive_visitor::{DriveMut, VisitorMut};
+
+use crate::expressions::{BorrowKind, Operand, Place, ProjectionElem, Rvalue};
 use crate::gast::{Call, GenericArgs, Var};
 use crate::ids::Vector;
 use crate::llbc_ast::*;
@@ -19,6 +21,17 @@ use super::ctx::LlbcPass;
 /// While we explore the places/operands present in a statement, We temporarily
 /// store the new statements inside the visitor. Once we've finished exploring
 /// the statement, we insert those before the statement.
+#[derive(VisitorMut)]
+#[visitor(
+    Statement(enter, exit),
+    Place(enter),
+    Operand(enter),
+    Call(enter),
+    FnOperand(enter),
+    Rvalue(enter),
+    RawStatement(enter),
+    Switch(enter)
+)]
 struct Visitor<'a> {
     locals: &'a mut Vector<VarId, Var>,
     statements: Vec<Statement>,
@@ -186,10 +199,21 @@ impl<'a> Visitor<'a> {
     fn enter_statement(&mut self, st: &mut Statement) {
         // Retrieve the span information
         self.span = Some(st.span);
+        // As we explore this statement, we may collect extra statements to prepend to it.
+        assert!(self.statements.is_empty());
     }
 
-    fn exit_statement(&mut self, _st: &mut Statement) {
+    fn exit_statement(&mut self, st: &mut Statement) {
         self.span = None;
+
+        // Reparenthesize sequences we messed up while traversing.
+        st.reparenthesize();
+
+        // We potentially collected statements to prepend to this one.
+        let seq = std::mem::take(&mut self.statements);
+        if !seq.is_empty() {
+            take_mut::take(st, |st| chain_statements(seq, st))
+        }
     }
 
     fn enter_raw_statement(&mut self, st: &mut RawStatement) {
@@ -215,104 +239,6 @@ impl<'a> Visitor<'a> {
             }
         }
     }
-}
-
-impl<'a> MutTypeVisitor for Visitor<'a> {}
-
-impl<'a> MutExprVisitor for Visitor<'a> {
-    fn visit_place(&mut self, p: &mut Place) {
-        self.enter_place(p);
-    }
-
-    fn visit_operand(&mut self, op: &mut Operand) {
-        self.enter_operand(op);
-        match op {
-            Operand::Move(p) => {
-                self.visit_place(p);
-            }
-            Operand::Copy(p) => {
-                self.visit_place(p);
-            }
-            Operand::Const(..) => (),
-        }
-    }
-
-    fn visit_call(&mut self, c: &mut Call) {
-        self.enter_call(c);
-        let Call { func, args, dest } = c;
-        self.visit_fn_operand(func);
-        for o in args {
-            self.visit_operand(o);
-        }
-        self.visit_place(dest);
-    }
-
-    fn visit_fn_operand(&mut self, fn_op: &mut FnOperand) {
-        self.enter_fn_operand(fn_op);
-        match fn_op {
-            FnOperand::Regular(func) => self.visit_fn_ptr(func),
-            FnOperand::Move(p) => {
-                self.visit_place(p);
-            }
-        }
-    }
-
-    fn visit_rvalue(&mut self, rv: &mut Rvalue) {
-        self.enter_rvalue(rv);
-        self.default_visit_rvalue(rv)
-    }
-}
-
-impl<'a> MutAstVisitor for Visitor<'a> {
-    fn visit_branch(&mut self, _branch: &mut Statement) {
-        unreachable!()
-    }
-
-    fn visit_statement(&mut self, st: &mut Statement) {
-        self.enter_statement(st);
-        self.visit_raw_statement(&mut st.content);
-        self.exit_statement(st);
-    }
-
-    fn visit_raw_statement(&mut self, st: &mut RawStatement) {
-        self.enter_raw_statement(st);
-        use RawStatement::*;
-        match st {
-            Sequence(..) => {
-                // Do nothing: we don't want to dive
-            }
-            FakeRead(_) | Assign(..) | SetDiscriminant(..) | Drop(..) | Assert(..) | Call(..)
-            | Abort(..) | Return | Break(..) | Continue(..) | Nop | Switch(..) | Loop(..)
-            | Error(..) => {
-                // Explore
-                self.default_visit_raw_statement(st)
-            }
-        }
-    }
-
-    fn visit_switch(&mut self, s: &mut Switch) {
-        self.enter_switch(s);
-        match s {
-            Switch::If(op, ..) | Switch::SwitchInt(op, ..) => self.visit_operand(op),
-            Switch::Match(p, ..) => {
-                self.visit_place(p);
-            }
-        }
-    }
-}
-
-fn transform_st(locals: &mut Vector<VarId, Var>, s: &mut Statement) -> Option<Vec<Statement>> {
-    // Explore the places/operands
-    let mut visitor = Visitor {
-        locals,
-        statements: Vec::new(),
-        place_mutability_stack: Vec::new(),
-        span: None,
-    };
-    visitor.visit_statement(s);
-
-    // Return the statements to insert before the current one
-    Some(visitor.statements)
 }
 
 pub struct Transform;
@@ -377,7 +303,12 @@ pub struct Transform;
 /// ```
 impl LlbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
-        b.body
-            .transform(&mut (|s: &mut Statement| transform_st(&mut b.locals, s)));
+        let mut visitor = Visitor {
+            locals: &mut b.locals,
+            statements: Vec::new(),
+            place_mutability_stack: Vec::new(),
+            span: None,
+        };
+        b.body.drive_mut(&mut visitor);
     }
 }

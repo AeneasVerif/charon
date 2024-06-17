@@ -1,12 +1,13 @@
 //! Implementations for [crate::llbc_ast]
 
 use crate::common::ensure_sufficient_stack;
-use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
+use crate::expressions::{Operand, Place, Rvalue};
 use crate::llbc_ast::{Assert, RawStatement, Statement, Switch};
 use crate::meta;
 use crate::meta::Span;
 use crate::types::*;
 use crate::values::*;
+use derive_visitor::{DriveMut, VisitorMut};
 use macros::make_generic_in_borrows;
 use std::ops::DerefMut;
 use take_mut::take;
@@ -323,25 +324,17 @@ pub trait AstVisitor: crate::expressions::ExprVisitor {
 } // make_generic_in_borrows
 
 /// Helper for [transform_statements]
+#[derive(VisitorMut)]
+#[visitor(Statement(exit))]
 struct TransformStatements<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> {
     tr: &'a mut F,
 }
 
-impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutTypeVisitor
-    for TransformStatements<'a, F>
+impl<'a, F> TransformStatements<'a, F>
+where
+    F: FnMut(&mut Statement) -> Option<Vec<Statement>>,
 {
-}
-impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutExprVisitor
-    for TransformStatements<'a, F>
-{
-}
-
-impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutAstVisitor
-    for TransformStatements<'a, F>
-{
-    fn visit_statement(&mut self, st: &mut Statement) {
-        self.default_visit_raw_statement(&mut st.content);
-
+    fn exit_statement(&mut self, st: &mut Statement) {
         // Reparenthesize sequences we messed up while traversing.
         st.reparenthesize();
 
@@ -367,6 +360,6 @@ impl Statement {
     /// `{ s1_1; s1_2 }; s2`.
     pub fn transform<F: FnMut(&mut Statement) -> Option<Vec<Statement>>>(&mut self, f: &mut F) {
         let mut visitor = TransformStatements { tr: f };
-        visitor.visit_statement(self);
+        self.drive_mut(&mut visitor);
     }
 }
