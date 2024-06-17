@@ -31,6 +31,7 @@ use crate::ullbc_ast::{self as src};
 use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im::Vector;
+use itertools::Itertools;
 use petgraph::algo::floyd_warshall::floyd_warshall;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
@@ -1415,10 +1416,11 @@ fn combine_statements_and_statement(
     statements: Vec<tgt::Statement>,
     next: Option<tgt::Statement>,
 ) -> Option<tgt::Statement> {
-    statements
-        .into_iter()
-        .rev()
-        .fold(next, |seq, st| Some(st.then_opt(seq)))
+    if let Some(st) = tgt::Statement::from_seq(statements) {
+        Some(st.then_opt(next))
+    } else {
+        next
+    }
 }
 
 fn get_goto_kind(
@@ -1797,60 +1799,44 @@ fn translate_block(
         translate_terminator(info, nparent_loops, &nswitch_exit_blocks, &block.terminator);
 
     // Translate the statements inside the block
-    let statements = Vec::from_iter(block.statements.iter().filter_map(translate_statement));
+    let statements = block
+        .statements
+        .iter()
+        .filter_map(translate_statement)
+        .collect_vec();
 
-    // We do different things if this is a loop, a switch (which is not
-    // a loop) or something else.
-    // Note that we need to do different treatments, because we don't
-    // concatenate the exit block the same way for loops and switches.
-    // In particular, for switches, we have to make sure we concatenate
-    // the exit block *before* concatenating the statements preceding
-    // the terminator, in order to avoid generating code of the form:
-    // ```
-    // e_prev; (s1; ...: sn; switch ...); e_switch_exit
-    // ```
+    // Prepend the statements to the terminator.
+    let mut exp = combine_statements_and_statement(statements, terminator);
+
     if is_loop {
-        // Put the statements and the terminator together
-        let exp = combine_statements_and_statement(statements, terminator);
-
         // Put the whole loop body inside a `Loop` wrapper
-        let exp = exp.unwrap().into_box();
-        let exp = tgt::Statement::new(exp.span, tgt::RawStatement::Loop(exp));
-
-        // Add the exit block
-        if let Some(exit_block_id) = next_block {
-            let next_exp = ensure_sufficient_stack(|| {
-                translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
-            });
-            Some(exp.then_opt(next_exp))
-        } else {
-            Some(exp)
+        exp = {
+            let exp = exp.unwrap();
+            Some(tgt::Statement::new(
+                exp.span,
+                tgt::RawStatement::Loop(exp.into_box()),
+            ))
         }
     } else if is_switch {
-        // Use the terminator
-        let exp = terminator.unwrap();
-
-        // Concatenate the exit expression, if needs be
-        let exp = if let Some(exit_block_id) = next_block {
+        if next_block.is_some() {
             // Sanity check: if there is an exit block, this block must be
             // reachable (i.e, there must exist a path in the switch which
             // doesn't end with `panic`, `return`, etc.).
-            assert!(!is_terminal(&exp));
-
-            let next_exp = ensure_sufficient_stack(|| {
-                translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
-            });
-            Some(exp.then_opt(next_exp))
-        } else {
-            Some(exp)
-        };
-
-        // Concatenate the statements
-        combine_statements_and_statement(statements, exp)
+            assert!(!is_terminal(exp.as_ref().unwrap()));
+        }
     } else {
-        // Simply concatenate the statements and the terminator
-        combine_statements_and_statement(statements, terminator)
+        assert!(next_block.is_none());
     }
+
+    // Concatenate the exit expression, if needs be
+    if let Some(exit_block_id) = next_block {
+        let next_exp = ensure_sufficient_stack(|| {
+            translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
+        });
+        exp = Some(exp.unwrap().then_opt(next_exp));
+    }
+
+    exp
 }
 
 fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::ExprBody {

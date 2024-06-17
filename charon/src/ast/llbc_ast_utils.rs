@@ -9,16 +9,11 @@ use take_mut::take;
 /// Goes from e.g. `(A; B; C) ; D` to `(A; (B; (C; D)))`. Statements in `firsts` must not be
 /// sequences.
 pub fn chain_statements(firsts: Vec<Statement>, last: Statement) -> Statement {
-    let mut vec = firsts;
-    vec.append(&mut last.into_sequence());
-    Statement {
-        span: vec[0].span,
-        content: RawStatement::Sequence(vec),
+    if let Some(firsts) = Statement::from_seq(firsts) {
+        firsts.then(last)
+    } else {
+        last
     }
-}
-
-pub fn new_sequence(l: Statement, r: Statement) -> Statement {
-    l.then(r)
 }
 
 /// Combine the span information from a [Switch]
@@ -75,6 +70,22 @@ impl Statement {
         Statement { span, content }
     }
 
+    pub fn from_seq(seq: Vec<Statement>) -> Option<Statement> {
+        if seq.is_empty() {
+            None
+        } else {
+            let span = seq
+                .iter()
+                .map(|st| st.span)
+                .reduce(|a, b| meta::combine_span(&a, &b))
+                .unwrap();
+            Some(Statement {
+                span,
+                content: RawStatement::Sequence(seq),
+            })
+        }
+    }
+
     pub fn into_box(self) -> Box<Self> {
         Box::new(self)
     }
@@ -96,10 +107,11 @@ impl Statement {
         Statement::new(span, RawStatement::Sequence(vec))
     }
 
-    pub fn then_opt(self: Self, other: Option<Statement>) -> Statement {
-        match other {
-            None => self,
-            Some(other) => self.then(other),
+    pub fn then_opt(self, other: Option<Statement>) -> Statement {
+        if let Some(other) = other {
+            self.then(other)
+        } else {
+            self
         }
     }
 
@@ -148,9 +160,9 @@ impl Statement {
                 st.flatten();
 
                 // Transform the current statement
-                let st_seq = f(st);
-                if let Some(seq) = st_seq && !seq.is_empty() {
-                    take_mut::take(st, |st| chain_statements(seq, st))
+                let prefix_seq = f(st);
+                if let Some(prefix_seq) = prefix_seq && !prefix_seq.is_empty() {
+                    take_mut::take(st, |st| chain_statements(prefix_seq, st))
                 }
             }
         }));
