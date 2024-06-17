@@ -7,7 +7,7 @@ use std::{error::Error, fs::File, io::BufReader, process::Command};
 use charon_lib::{
     export::CrateData,
     logger,
-    meta::{FileName, InlineAttr},
+    meta::{FileName, InlineAttr, Span},
     names::{Name, PathElem},
     types::TypeDecl,
     values::ScalarValue,
@@ -59,6 +59,11 @@ fn repr_name(n: &Name) -> String {
         .join("::")
 }
 
+fn repr_span(span: Span) -> String {
+    let raw_span = span.span;
+    format!("{}-{}", raw_span.beg, raw_span.end)
+}
+
 #[test]
 fn type_decl() -> Result<(), Box<dyn Error>> {
     let crate_data = translate(
@@ -90,6 +95,35 @@ fn file_name() -> Result<(), Box<dyn Error>> {
         panic!()
     };
     assert_eq!(file, "/rustc/library/core/src/option.rs");
+    Ok(())
+}
+
+#[test]
+fn spans() -> Result<(), Box<dyn Error>> {
+    let crate_data = translate(
+        "
+        pub fn sum(s: &[u32]) -> u32 {
+            let mut sum = 0;
+            let mut i = 0;
+            while i < s.len() {
+                sum += s[i];
+                i += 1;
+            }
+            sum
+        }
+        ",
+    )?;
+    let function = &crate_data.functions[0];
+    // Span of the function signature.
+    assert_eq!(repr_span(function.item_meta.span), "2:8-2:36");
+    let body_id = function.body.unwrap();
+    let body = &crate_data.bodies[body_id].as_structured().unwrap().body;
+    // The whole function declaration.
+    assert_eq!(repr_span(body.span), "2:8-10:9");
+    let seq = body.clone().sequence_to_vec();
+    let the_loop = seq.iter().find(|st| st.content.is_loop()).unwrap();
+    // That's not a very precise span :/
+    assert_eq!(repr_span(the_loop.span), "4:12-10:9");
     Ok(())
 }
 

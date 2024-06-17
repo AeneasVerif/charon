@@ -6,6 +6,7 @@ use crate::{
     gast,
     ids::Vector,
     llbc_ast::{self as llbc, *},
+    meta::*,
     names::*,
     reorder_decls::*,
     translate_predicates::NonLocalTraitClause,
@@ -1453,6 +1454,12 @@ impl std::fmt::Display for LiteralTy {
             LiteralTy::Char => write!(f, "char"),
             LiteralTy::Bool => write!(f, "bool"),
         }
+    }
+}
+
+impl std::fmt::Display for Loc {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}:{}", self.line, self.col)
     }
 }
 

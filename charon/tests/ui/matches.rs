@@ -31,7 +31,7 @@ pub enum E1 {
 /// especially because it makes the control-flow reconstruction more ad-hoc. The
 /// main problem is that it would be difficult to make the distinction between
 /// a goto we need to ignore, and a "real" goto.
-/// Consequently, whenever branhces are fused, don't use `--no-code-duplication`.
+/// Consequently, whenever branches are fused, don't use `--no-code-duplication`.
 pub fn test1(x: E1) -> bool {
     match x {
         E1::V1 | E1::V2 => true,
@@ -61,6 +61,7 @@ pub fn test2(x: E2) -> u32 {
 
 /// Similar to test2
 pub fn test3(x: E2) -> u32 {
+    let () = (); // Test that we don't assume the match is the first statement.
     let y = match x {
         E2::V1(n) | E2::V2(n) => n,
         E2::V3 => 0,
