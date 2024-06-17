@@ -2,8 +2,6 @@
 //! [`remove_dynamic_checks`]. See comments there for more details.
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
-use derive_visitor::{visitor_enter_fn_mut, DriveMut};
-use take_mut::take;
 
 use super::ctx::LlbcPass;
 
@@ -23,8 +21,7 @@ impl Transform {
     /// ```text
     /// z := x + y;
     /// ```
-    fn update_statement(s: &mut Statement) {
-        let mut seq = s.sequence_to_vec_mut();
+    fn update_statements(seq: &mut [Statement]) {
         if let [Statement {
             content:
                 RawStatement::Assign(
@@ -46,7 +43,7 @@ impl Transform {
         }, Statement {
             content: RawStatement::Assign(final_value, Rvalue::Use(Operand::Move(assigned))),
             ..
-        }, ..] = seq.as_mut_slice()
+        }, ..] = seq
         {
             // assigned should be: binop.0
             // assert_cond should be: binop.1
@@ -70,18 +67,11 @@ impl Transform {
                         BinOp::CheckedMul => BinOp::Mul,
                         _ => unreachable!(),
                     };
-                    // Assign to the correct value in `s0`.
+                    // Assign to the correct value in the first statement.
                     std::mem::swap(binop, final_value);
-                    // Remove `s1` and `s2`.
-                    take(s, |s| {
-                        let (s0, s1) = s.content.to_sequence();
-                        let (_s1, s2) = s1.content.to_sequence();
-                        let (_s2, s3) = s2.content.to_sequence();
-                        Statement {
-                            span: s0.span,
-                            content: s0.then_box(s3).content,
-                        }
-                    });
+                    // Remove the other two statements.
+                    seq[1].content = RawStatement::Nop;
+                    seq[2].content = RawStatement::Nop;
                 }
             }
         }
@@ -90,7 +80,9 @@ impl Transform {
 
 impl LlbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
-        b.body
-            .drive_mut(&mut visitor_enter_fn_mut(Transform::update_statement))
+        b.body.transform_sequences(&mut |seq| {
+            Transform::update_statements(seq);
+            Vec::new()
+        })
     }
 }

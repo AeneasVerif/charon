@@ -15,6 +15,7 @@ use crate::{
     values::*,
 };
 use hax_frontend_exporter as hax;
+use itertools::Itertools;
 
 /// Format the AST type as a string.
 pub trait FmtWithCtx<C> {
@@ -862,11 +863,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             RawStatement::Break(index) => format!("{tab}break {index}"),
             RawStatement::Continue(index) => format!("{tab}continue {index}"),
             RawStatement::Nop => format!("{tab}nop"),
-            RawStatement::Sequence(st1, st2) => format!(
-                "{}\n{}",
-                st1.fmt_with_ctx_and_indent(tab, ctx),
-                st2.fmt_with_ctx_and_indent(tab, ctx)
-            ),
+            RawStatement::Sequence(vec) => vec
+                .iter()
+                .map(|st| st.fmt_with_ctx_and_indent(tab, ctx))
+                .join("\n"),
             RawStatement::Switch(switch) => match switch {
                 Switch::If(discr, true_st, false_st) => {
                     let inner_tab = format!("{tab}{TAB_INCR}");

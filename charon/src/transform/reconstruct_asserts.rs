@@ -25,7 +25,7 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
                         expected: false,
                     }),
                 );
-                st1.into_box().then_box(st2).content
+                st1.then(*st2).content
             });
         }
     }

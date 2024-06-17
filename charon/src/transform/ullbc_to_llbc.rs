@@ -1732,13 +1732,7 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
         tgt::RawStatement::Abort(..) | tgt::RawStatement::Return => true,
         tgt::RawStatement::Break(index) => *index >= num_loops,
         tgt::RawStatement::Continue(_index) => true,
-        tgt::RawStatement::Sequence(st1, st2) => {
-            if is_terminal_explore(num_loops, st1) {
-                true
-            } else {
-                is_terminal_explore(num_loops, st2)
-            }
-        }
+        tgt::RawStatement::Sequence(seq) => seq.iter().any(|st| is_terminal_explore(num_loops, st)),
         tgt::RawStatement::Switch(switch) => switch
             .get_targets()
             .iter()

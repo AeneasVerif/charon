@@ -207,7 +207,7 @@ impl<'a> Visitor<'a> {
         self.span = None;
 
         // Reparenthesize sequences we messed up while traversing.
-        st.reparenthesize();
+        st.flatten();
 
         // We potentially collected statements to prepend to this one.
         let seq = std::mem::take(&mut self.statements);

@@ -3,29 +3,17 @@
 use crate::llbc_ast::{RawStatement, Statement, Switch};
 use crate::meta;
 use crate::meta::Span;
-use derive_visitor::{DriveMut, VisitorMut};
-use std::ops::DerefMut;
+use derive_visitor::{visitor_fn_mut, DriveMut, Event};
 use take_mut::take;
 
-/// Goes from e.g. `(A; B; C) ; D` to `(A; (B; (C; D)))`.
+/// Goes from e.g. `(A; B; C) ; D` to `(A; (B; (C; D)))`. Statements in `firsts` must not be
+/// sequences.
 pub fn chain_statements(firsts: Vec<Statement>, last: Statement) -> Statement {
-    firsts.into_iter().rev().fold(last, |cont, bind| {
-        assert!(!bind.content.is_sequence());
-        bind.then(cont)
-    })
-}
-
-/// Utility function for [new_sequence].
-/// Efficiently appends a new statement at the rightmost place of a well-formed sequence.
-fn append_rightmost(seq: &mut Statement, r: Box<Statement>) {
-    let (_l1, l2) = match &mut seq.content {
-        RawStatement::Sequence(l1, l2) => (l1, l2),
-        _ => unreachable!(),
-    };
-    if l2.content.is_sequence() {
-        append_rightmost(l2, r);
-    } else {
-        take(l2.deref_mut(), move |l2| l2.into_box().then_box(r));
+    let mut vec = firsts;
+    vec.append(&mut last.into_sequence());
+    Statement {
+        span: vec[0].span,
+        content: RawStatement::Sequence(vec),
     }
 }
 
@@ -91,140 +79,114 @@ impl Statement {
         Box::new(self)
     }
 
-    /// Builds a sequence from well-formed statements.
-    /// Ensures that the left statement will not be a sequence in the new sequence:
-    /// Must be used instead of the raw [RawStatement::Sequence] constructor,
-    /// unless you're sure that the left statement is not a sequence.
-    pub fn then(mut self, r: Statement) -> Statement {
+    /// Builds a sequence from well-formed statements. Ensures that we don't incorrectly nest
+    /// sequences. Must be used instead of the raw [RawStatement::Sequence] constructor.
+    pub fn then(self, r: Statement) -> Statement {
         let span = meta::combine_span(&self.span, &r.span);
 
-        let r = Box::new(r);
-        let nst = match self.content {
-            RawStatement::Sequence(_, _) => {
-                append_rightmost(&mut self, r);
-                self.content
-            }
-            _ => RawStatement::Sequence(self.into_box(), r),
+        let vec = if !self.content.is_sequence() && !r.content.is_sequence() {
+            vec![self, r]
+        } else {
+            let mut l = self.into_sequence();
+            let mut r = r.into_sequence();
+            l.append(&mut r);
+            l
         };
 
-        Statement::new(span, nst)
+        Statement::new(span, RawStatement::Sequence(vec))
     }
 
-    pub fn then_box(mut self: Box<Self>, r: Box<Statement>) -> Statement {
-        let span = meta::combine_span(&self.span, &r.span);
-
-        let nst = match self.content {
-            RawStatement::Sequence(_, _) => {
-                append_rightmost(&mut self, r);
-                self.content
-            }
-            _ => RawStatement::Sequence(self, r),
-        };
-
-        Statement::new(span, nst)
-    }
-
+    // FIXME: remove boxes
     pub fn then_opt(self: Box<Self>, other: Option<Box<Statement>>) -> Box<Statement> {
         match other {
-            Some(other) => self.then_box(other).into_box(),
+            Some(other) => self.then(*other).into_box(),
             None => self,
         }
     }
 
-    /// Collect the statements this is made up of into a vec. If `self` is not a sequence, the vec
-    /// will be `vec![self]`.
-    pub fn sequence_to_vec(self) -> Vec<Self> {
-        fn collect_to_vec(x: Statement, vec: &mut Vec<Statement>) {
-            match x.content {
-                RawStatement::Sequence(a, b) => {
-                    assert!(!a.content.is_sequence());
-                    vec.push(*a);
-                    collect_to_vec(*b, vec);
-                }
-                _ => vec.push(x),
-            }
+    /// If `self` is a sequence, return that sequence. Otherwise return `vec![self]`.
+    pub fn into_sequence(self) -> Vec<Self> {
+        match self.content {
+            RawStatement::Sequence(vec) => vec,
+            _ => vec![self],
         }
-        let mut vec = Vec::new();
-        collect_to_vec(self, &mut vec);
-        vec
     }
 
-    /// Collect the statements this is made up of into a vec. If `self` is not a sequence, the vec
-    /// will be `vec![self]`.
-    pub fn sequence_to_vec_mut(&mut self) -> Vec<&mut Self> {
-        fn collect_to_vec<'a>(x: &'a mut Statement, vec: &mut Vec<&'a mut Statement>) {
-            match x {
-                Statement {
-                    content: RawStatement::Sequence(a, b),
-                    ..
-                } => {
-                    assert!(!a.content.is_sequence());
-                    vec.push(&mut **a);
-                    collect_to_vec(&mut **b, vec);
-                    return;
-                }
-                x => vec.push(x),
-            }
+    pub fn as_sequence_slice_mut(&mut self) -> &mut [Self] {
+        match self.content {
+            RawStatement::Sequence(ref mut vec) => vec.as_mut_slice(),
+            _ => std::slice::from_mut(self),
         }
-        let mut vec = Vec::new();
-        collect_to_vec(self, &mut vec);
-        vec
     }
 
-    /// If `self` is a sequence whose first component is a sequence, refold the statements to
-    /// repair the invariant on sequences. All otehr sequences are expected to respect the
-    /// invariant. Use this when mutating a statement in a visitor if needed.
-    pub fn reparenthesize(&mut self) {
-        if let RawStatement::Sequence(st1, _) = &mut self.content {
-            if st1.content.is_sequence() {
-                // We did mess up the parenthesization. Fix it.
-                take(self, |st| {
-                    let (st1, st2) = st.content.to_sequence();
-                    let st1 = st1.sequence_to_vec();
-                    chain_statements(st1, *st2)
+    /// If `self` is a sequence that contains sequences, flatten the nesting. Use this when
+    /// mutating a statement in a visitor if needed.
+    pub fn flatten(&mut self) {
+        if let RawStatement::Sequence(vec) = &self.content {
+            if vec.iter().any(|st| st.content.is_sequence()) {
+                take(&mut self.content, |rawst| {
+                    RawStatement::Sequence(
+                        rawst
+                            .to_sequence()
+                            .into_iter()
+                            .flat_map(|st| st.into_sequence())
+                            .collect(),
+                    )
                 })
             }
         }
     }
-}
 
-/// Helper for [transform_statements]
-#[derive(VisitorMut)]
-#[visitor(Statement(exit))]
-struct TransformStatements<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> {
-    tr: &'a mut F,
-}
-
-impl<'a, F> TransformStatements<'a, F>
-where
-    F: FnMut(&mut Statement) -> Option<Vec<Statement>>,
-{
-    fn exit_statement(&mut self, st: &mut Statement) {
-        // Reparenthesize sequences we messed up while traversing.
-        st.reparenthesize();
-
-        // Transform the current statement
-        let st_seq = (self.tr)(st);
-        if let Some(seq) = st_seq && !seq.is_empty() {
-            take(st, |st| chain_statements(seq, st))
-        }
-    }
-}
-
-impl Statement {
     /// Apply a transformer to all the statements, in a bottom-up manner.
     ///
     /// The transformer should:
     /// - mutate the current statement in place
     /// - return the sequence of statements to introduce before the current statement
-    ///
-    /// We do the transformation in such a way that the
-    /// sequences of statements are properly chained. In particuliar,
-    /// if in `s1; s2` we transform `s1` to the sequence `s1_1; s1_2`,
-    /// then the resulting statement is `s1_1; s1_2; s2` and **not**
-    /// `{ s1_1; s1_2 }; s2`.
     pub fn transform<F: FnMut(&mut Statement) -> Option<Vec<Statement>>>(&mut self, f: &mut F) {
-        let mut visitor = TransformStatements { tr: f };
-        self.drive_mut(&mut visitor);
+        self.drive_mut(&mut visitor_fn_mut(|st: &mut Statement, e: Event| {
+            if matches!(e, Event::Exit) {
+                // Flatten any nested sequences created while traversing this statement..
+                st.flatten();
+
+                // Transform the current statement
+                let st_seq = f(st);
+                if let Some(seq) = st_seq && !seq.is_empty() {
+                    take_mut::take(st, |st| chain_statements(seq, st))
+                }
+            }
+        }));
+    }
+
+    /// Apply a transformer to all the statements, in a bottom-up manner. Compared to `transform`,
+    /// this also gives access to the following statements if any. Statements that are not part of
+    /// a sequence will be traversed as `[st]`. Statements that are will be traversed twice: once
+    /// as `[st]`, and then as `[st, ..]` with the following statements if any.
+    ///
+    /// The transformer should:
+    /// - mutate the current statements in place
+    /// - return the sequence of statements to introduce before the current statements
+    pub fn transform_sequences<F: FnMut(&mut [Statement]) -> Vec<Statement>>(&mut self, f: &mut F) {
+        self.drive_mut(&mut visitor_fn_mut(|st: &mut Statement, e: Event| {
+            if matches!(e, Event::Exit) {
+                // Flatten any nested sequences created while traversing this statement..
+                st.flatten();
+
+                if let RawStatement::Sequence(seq) = &mut st.content {
+                    for i in (0..seq.len()).rev() {
+                        let prefix_to_insert = f(&mut seq[i..]);
+                        if !prefix_to_insert.is_empty() {
+                            // Insert the new elements at index `i`. This only modifies `vec[i..]`
+                            // so we can keep iterating `i` down as if nothing happened.
+                            seq.splice(i..i, prefix_to_insert);
+                        }
+                    }
+                } else {
+                    let prefix_to_insert = f(std::slice::from_mut(st));
+                    if !prefix_to_insert.is_empty() {
+                        take_mut::take(st, |st| chain_statements(prefix_to_insert, st))
+                    }
+                }
+            }
+        }));
     }
 }
