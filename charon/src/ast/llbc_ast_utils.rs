@@ -96,11 +96,10 @@ impl Statement {
         Statement::new(span, RawStatement::Sequence(vec))
     }
 
-    // FIXME: remove boxes
-    pub fn then_opt(self: Box<Self>, other: Option<Box<Statement>>) -> Box<Statement> {
+    pub fn then_opt(self: Self, other: Option<Statement>) -> Statement {
         match other {
-            Some(other) => self.then(*other).into_box(),
             None => self,
+            Some(other) => self.then(other),
         }
     }
 
