@@ -27,13 +27,11 @@ impl<'a> MutTypeVisitor for InsertRegions<'a> {
         }
     }
 
-    fn enter_region_group(
-        &mut self,
-        _regions: &mut Vector<RegionId, RegionVar>,
-        visitor: &mut dyn FnMut(&mut Self),
-    ) {
+    fn enter_region_group(&mut self, _regions: &mut Vector<RegionId, RegionVar>) {
         self.depth += 1;
-        visitor(self);
+    }
+
+    fn exit_region_group(&mut self, _regions: &mut Vector<RegionId, RegionVar>) {
         self.depth -= 1;
     }
 }

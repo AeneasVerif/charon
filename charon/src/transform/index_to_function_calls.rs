@@ -8,7 +8,6 @@ use crate::meta::Span;
 use crate::transform::TransformCtx;
 use crate::types::*;
 use crate::values::VarId;
-use std::mem::replace;
 
 use super::ctx::LlbcPass;
 
@@ -23,7 +22,11 @@ use super::ctx::LlbcPass;
 struct Visitor<'a> {
     locals: &'a mut Vector<VarId, Var>,
     statements: Vec<Statement>,
-    /// Span information of the outer statement
+    // When we encounter a place, we remember when a given place is accessed mutably in this
+    // stack. Unfortunately this requires us to be very careful to catch all the cases where we
+    // see places.
+    place_mutability_stack: Vec<bool>,
+    // Span information of the outer statement
     span: Option<Span>,
 }
 
@@ -32,7 +35,7 @@ impl<'a> Visitor<'a> {
         self.locals.push_with(|index| Var { index, name, ty })
     }
 
-    fn visit_transform_place(&mut self, mut_access: bool, p: &mut Place) {
+    fn transform_place(&mut self, mut_access: bool, p: &mut Place) {
         // Explore the place from the **end** to the beginning
         let mut var_id = p.var_id;
         let mut proj = Vec::new();
@@ -126,82 +129,161 @@ impl<'a> Visitor<'a> {
             projection: proj,
         }
     }
+
+    fn enter_place(&mut self, p: &mut Place) {
+        // We intercept every traversal that would reach a place and push the correct mutability on
+        // the stack. If we missed one this will panic.
+        let mut_access = *self.place_mutability_stack.last().unwrap();
+        self.transform_place(mut_access, p);
+        self.place_mutability_stack.pop();
+    }
+
+    fn enter_operand(&mut self, op: &mut Operand) {
+        match op {
+            Operand::Move(_) => {
+                self.place_mutability_stack.push(true);
+            }
+            Operand::Copy(_) => {
+                self.place_mutability_stack.push(false);
+            }
+            Operand::Const(..) => {}
+        }
+    }
+
+    fn enter_call(&mut self, _c: &mut Call) {
+        self.place_mutability_stack.push(true);
+    }
+
+    fn enter_fn_operand(&mut self, fn_op: &mut FnOperand) {
+        match fn_op {
+            FnOperand::Regular(_) => {}
+            FnOperand::Move(_) => {
+                self.place_mutability_stack.push(true);
+            }
+        }
+    }
+
+    fn enter_rvalue(&mut self, rv: &mut Rvalue) {
+        use Rvalue::*;
+        match rv {
+            Use(_) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..) | Repeat(..) => {}
+            Ref(_, bkind) => match *bkind {
+                BorrowKind::Mut | BorrowKind::TwoPhaseMut => {
+                    self.place_mutability_stack.push(true);
+                }
+                BorrowKind::Shared | BorrowKind::Shallow => {
+                    self.place_mutability_stack.push(false);
+                }
+            },
+            Discriminant(..) | Len(..) => {
+                // We access places, but those places are used to access
+                // elements without mutating them
+                self.place_mutability_stack.push(false);
+            }
+        }
+    }
+
+    fn enter_statement(&mut self, st: &mut Statement) {
+        // Retrieve the span information
+        self.span = Some(st.span);
+    }
+
+    fn exit_statement(&mut self, _st: &mut Statement) {
+        self.span = None;
+    }
+
+    fn enter_raw_statement(&mut self, st: &mut RawStatement) {
+        use RawStatement::*;
+        // The match is explicit on purpose: we want to make sure we intercept changes
+        match st {
+            Sequence(..) | Abort(..) | Return | Break(..) | Continue(..) | Nop | Switch(..)
+            | Loop(..) | Error(..) | Assert(..) | Call(..) => {}
+            FakeRead(_) => {
+                self.place_mutability_stack.push(false);
+            }
+            Assign(..) | SetDiscriminant(..) | Drop(..) => {
+                self.place_mutability_stack.push(true);
+            }
+        }
+    }
+
+    fn enter_switch(&mut self, s: &mut Switch) {
+        match s {
+            Switch::If(..) | Switch::SwitchInt(..) => {}
+            Switch::Match(..) => {
+                self.place_mutability_stack.push(false);
+            }
+        }
+    }
 }
 
 impl<'a> MutTypeVisitor for Visitor<'a> {}
 
 impl<'a> MutExprVisitor for Visitor<'a> {
     fn visit_place(&mut self, p: &mut Place) {
-        // By default, places are used to access elements to mutate them.
-        // We intercept the places where it is not the case.
-        let mut_access = true;
-        self.visit_transform_place(mut_access, p);
+        self.enter_place(p);
     }
 
     fn visit_operand(&mut self, op: &mut Operand) {
+        self.enter_operand(op);
         match op {
-            Operand::Move(p) => self.visit_transform_place(true, p),
-            Operand::Copy(p) => self.visit_transform_place(false, p),
+            Operand::Move(p) => {
+                self.visit_place(p);
+            }
+            Operand::Copy(p) => {
+                self.visit_place(p);
+            }
             Operand::Const(..) => (),
         }
     }
 
-    fn visit_rvalue(&mut self, rv: &mut Rvalue) {
-        use Rvalue::*;
-        match rv {
-            Use(_) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..) | Repeat(..) => {
-                // We don't access places here, only operands
-                self.default_visit_rvalue(rv)
-            }
-            Ref(p, bkind) => {
-                // Ref is special
-                match *bkind {
-                    BorrowKind::Mut | BorrowKind::TwoPhaseMut => {
-                        self.visit_transform_place(true, p)
-                    }
-                    BorrowKind::Shared | BorrowKind::Shallow => {
-                        self.visit_transform_place(false, p)
-                    }
-                }
-            }
-            Discriminant(p, _) | Len(p, _, _) => {
-                // We access places, but those places are used to access
-                // elements without mutating them
-                self.visit_transform_place(false, p);
+    fn visit_call(&mut self, c: &mut Call) {
+        self.enter_call(c);
+        let Call { func, args, dest } = c;
+        self.visit_fn_operand(func);
+        for o in args {
+            self.visit_operand(o);
+        }
+        self.visit_place(dest);
+    }
+
+    fn visit_fn_operand(&mut self, fn_op: &mut FnOperand) {
+        self.enter_fn_operand(fn_op);
+        match fn_op {
+            FnOperand::Regular(func) => self.visit_fn_ptr(func),
+            FnOperand::Move(p) => {
+                self.visit_place(p);
             }
         }
+    }
+
+    fn visit_rvalue(&mut self, rv: &mut Rvalue) {
+        self.enter_rvalue(rv);
+        self.default_visit_rvalue(rv)
     }
 }
 
 impl<'a> MutAstVisitor for Visitor<'a> {
-    fn visit_branch(&mut self, branch: &mut Statement) {
-        #[allow(clippy::mem_replace_with_default)]
-        let statements = replace(&mut self.statements, Vec::new());
-        self.visit_statement(branch);
-        // Make sure we didn't update the vector of statements
-        assert!(self.statements.is_empty());
-        let _ = replace(&mut self.statements, statements);
+    fn visit_branch(&mut self, _branch: &mut Statement) {
+        unreachable!()
     }
 
     fn visit_statement(&mut self, st: &mut Statement) {
-        // Retrieve the span information
-        self.span = Some(st.span);
+        self.enter_statement(st);
         self.visit_raw_statement(&mut st.content);
-        self.span = None;
+        self.exit_statement(st);
     }
 
     fn visit_raw_statement(&mut self, st: &mut RawStatement) {
+        self.enter_raw_statement(st);
         use RawStatement::*;
-        // The match is explicit on purpose: we want to make sure we intercept changes
         match st {
             Sequence(..) => {
                 // Do nothing: we don't want to dive
             }
-            FakeRead(p) => {
-                self.visit_transform_place(false, p);
-            }
-            Assign(..) | SetDiscriminant(..) | Drop(..) | Assert(..) | Call(..) | Abort(..)
-            | Return | Break(..) | Continue(..) | Nop | Switch(..) | Loop(..) | Error(..) => {
+            FakeRead(_) | Assign(..) | SetDiscriminant(..) | Drop(..) | Assert(..) | Call(..)
+            | Abort(..) | Return | Break(..) | Continue(..) | Nop | Switch(..) | Loop(..)
+            | Error(..) => {
                 // Explore
                 self.default_visit_raw_statement(st)
             }
@@ -209,11 +291,11 @@ impl<'a> MutAstVisitor for Visitor<'a> {
     }
 
     fn visit_switch(&mut self, s: &mut Switch) {
+        self.enter_switch(s);
         match s {
             Switch::If(op, ..) | Switch::SwitchInt(op, ..) => self.visit_operand(op),
-            Switch::Match(p, _, _) => {
-                let mut_access = false;
-                self.visit_transform_place(mut_access, p);
+            Switch::Match(p, ..) => {
+                self.visit_place(p);
             }
         }
     }
@@ -224,6 +306,7 @@ fn transform_st(locals: &mut Vector<VarId, Var>, s: &mut Statement) -> Option<Ve
     let mut visitor = Visitor {
         locals,
         statements: Vec::new(),
+        place_mutability_stack: Vec::new(),
         span: None,
     };
     visitor.visit_statement(s);

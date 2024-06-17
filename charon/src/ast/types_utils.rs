@@ -502,13 +502,8 @@ make_generic_in_borrows! {
 // TODO: we should use traits with default implementations to allow overriding
 // the default behavior (that would also prevent problems with naming collisions)
 pub trait TypeVisitor {
-    fn default_enter_region_group(&mut self, regions: &Vector<RegionId, RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
-        visitor(self)
-    }
-
-    fn enter_region_group(&mut self, regions: &Vector<RegionId, RegionVar>, visitor: &mut dyn FnMut(&mut Self)) {
-        self.default_enter_region_group(regions, visitor)
-    }
+    fn enter_region_group(&mut self, regions: &Vector<RegionId, RegionVar>) {}
+    fn exit_region_group(&mut self, regions: &Vector<RegionId, RegionVar>) {}
 
     fn visit_ty(&mut self, ty: &Ty) {
         self.default_visit_ty(ty)
@@ -549,12 +544,12 @@ pub trait TypeVisitor {
         let regions = &(*regions);
         let inputs = &(*inputs);
         let output = &(*output);
-        self.enter_region_group(regions, &mut |ctx| {
-          for ty in inputs.iter() {
-              ctx.visit_ty(ty);
-          }
-          ctx.visit_ty(output);
-        });
+        self.enter_region_group(regions);
+        for ty in inputs.iter() {
+            self.visit_ty(ty);
+        }
+        self.visit_ty(output);
+        self.exit_region_group(regions);
     }
 
     fn visit_ty_adt(
@@ -631,7 +626,6 @@ pub trait TypeVisitor {
         } = tr;
         self.visit_trait_instance_id(trait_id);
         self.visit_generic_args(generics);
-        self.visit_trait_decl_ref(trait_decl_ref);
     }
 
     fn visit_trait_decl_ref(&mut self, tr: &TraitDeclRef) {

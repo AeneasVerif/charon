@@ -109,6 +109,40 @@ impl Statement {
     pub fn new(span: Span, content: RawStatement) -> Self {
         Statement { span, content }
     }
+
+    /// Collect the statements this is made up of into a vec. If `self` is not a sequence, the vec
+    /// will be `vec![self]`.
+    pub fn sequence_to_vec(self) -> Vec<Self> {
+        fn collect_to_vec(x: Statement, vec: &mut Vec<Statement>) {
+            match x.content {
+                RawStatement::Sequence(a, b) => {
+                    assert!(!a.content.is_sequence());
+                    vec.push(*a);
+                    collect_to_vec(*b, vec);
+                }
+                _ => vec.push(x),
+            }
+        }
+        let mut vec = Vec::new();
+        collect_to_vec(self, &mut vec);
+        vec
+    }
+
+    /// If `self` is a sequence whose first component is a sequence, refold the statements to
+    /// repair the invariant on sequences. All otehr sequences are expected to respect the
+    /// invariant. Use this when mutating a statement in a visitor if needed.
+    pub fn reparenthesize(&mut self) {
+        if let RawStatement::Sequence(st1, _) = &mut self.content {
+            if st1.content.is_sequence() {
+                // We did mess up the parenthesization. Fix it.
+                take(self, |st| {
+                    let (st1, st2) = st.content.to_sequence();
+                    let st1 = st1.sequence_to_vec();
+                    chain_statements(st1, *st2)
+                })
+            }
+        }
+    }
 }
 
 // Derive two implementations at once: one which uses shared borrows, and one
@@ -306,29 +340,15 @@ impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutAstVisitor
     for TransformStatements<'a, F>
 {
     fn visit_statement(&mut self, st: &mut Statement) {
-        match &mut st.content {
-            RawStatement::Sequence(st1, st2) => {
-                // Bottom-up
-                self.visit_statement(st2);
-                self.default_visit_raw_statement(&mut st1.content);
+        self.default_visit_raw_statement(&mut st.content);
 
-                // Transform the current statement
-                let st_seq = (self.tr)(st1);
-                if let Some(seq) = st_seq && !seq.is_empty() {
-                    take(st, |st| chain_statements(seq, st))
-                }
-                // TODO: we might want to apply tr to the whole resulting sequence
-            }
-            _ => {
-                // Bottom-up
-                self.default_visit_raw_statement(&mut st.content);
+        // Reparenthesize sequences we messed up while traversing.
+        st.reparenthesize();
 
-                // Transform the current statement
-                let st_seq = (self.tr)(st);
-                if let Some(seq) = st_seq && !seq.is_empty() {
-                    take(st, |st| chain_statements(seq, st))
-                }
-            }
+        // Transform the current statement
+        let st_seq = (self.tr)(st);
+        if let Some(seq) = st_seq && !seq.is_empty() {
+            take(st, |st| chain_statements(seq, st))
         }
     }
 }

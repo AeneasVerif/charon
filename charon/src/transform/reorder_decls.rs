@@ -302,20 +302,6 @@ impl SharedTypeVisitor for Deps {
         self.insert_edge(id);
     }
 
-    /// We override this method to not visit the trait decl.
-    ///
-    /// This is sound because the trait ref itself will either have a dependency
-    /// on the trait decl it implements, or it will refer to a clause which
-    /// will imply a dependency on the trait decl.
-    ///
-    /// The reason why we do this is that otherwise if a trait decl declares
-    /// a method which uses one of its associated types we will conclude that
-    /// the trait decl is recursive, while it isn't.
-    fn visit_trait_ref(&mut self, tr: &TraitRef) {
-        self.visit_trait_instance_id(&tr.trait_id);
-        self.visit_generic_args(&tr.generics);
-    }
-
     fn visit_fun_decl_id(&mut self, id: &FunDeclId) {
         let id = AnyTransId::Fun(*id);
         self.insert_edge(id);
