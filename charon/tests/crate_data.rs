@@ -7,7 +7,7 @@ use std::{error::Error, fs::File, io::BufReader, process::Command};
 use charon_lib::{
     export::CrateData,
     logger,
-    meta::InlineAttr,
+    meta::{FileName, InlineAttr},
     names::{Name, PathElem},
     types::TypeDecl,
     values::ScalarValue,
@@ -68,6 +68,31 @@ fn type_decl() -> Result<(), Box<dyn Error>> {
         ",
     )?;
     assert_eq!(repr_name(&crate_data.types[0].name), "test_crate::Struct");
+    Ok(())
+}
+
+#[test]
+fn file_name() -> Result<(), Box<dyn Error>> {
+    let crate_data = translate(
+        "
+        type Foo = Option<()>;
+        ",
+    )?;
+    assert_eq!(repr_name(&crate_data.types[0].name), "test_crate::Foo");
+    assert_eq!(repr_name(&crate_data.types[1].name), "core::option::Option");
+    let file_id = crate_data.types[1].item_meta.span.span.file_id;
+    let (_, file) = crate_data
+        .id_to_file
+        .iter()
+        .find(|(i, _)| *i == file_id)
+        .unwrap();
+    let FileName::Virtual(file) = file else {
+        panic!()
+    };
+    assert_eq!(
+        file,
+        "/rustc/65ea825f4021eaf77f1b25139969712d65b435a4/library/core/src/option.rs"
+    );
     Ok(())
 }
 
