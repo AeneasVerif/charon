@@ -58,7 +58,7 @@ pub enum RawStatement {
     /// The left statement must NOT be a sequence.
     /// For instance, `(s0; s1); s2` is forbidden and should be rewritten
     /// to the semantically equivalent statement `s0; (s1; s2)`
-    /// To ensure that, use [crate::llbc_ast_utils::new_sequence] to build sequences.
+    /// To ensure that, use [Sequence::then] to build sequences.
     Sequence(Box<Statement>, Box<Statement>),
     Switch(Switch),
     Loop(Box<Statement>),

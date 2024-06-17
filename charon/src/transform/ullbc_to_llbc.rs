@@ -1414,14 +1414,7 @@ fn combine_statement_and_statement(
     statement: Box<tgt::Statement>,
     next_st: Option<Box<tgt::Statement>>,
 ) -> Box<tgt::Statement> {
-    match next_st {
-        Some(next_st) => {
-            let span = combine_span(&statement.span, &next_st.span);
-            let st = tgt::RawStatement::Sequence(statement, next_st);
-            Box::new(tgt::Statement::new(span, st))
-        }
-        None => statement,
-    }
+    statement.then_opt(next_st)
 }
 
 fn combine_statements_and_statement(
@@ -1717,23 +1710,6 @@ fn translate_terminator(
     }
 }
 
-fn combine_expressions(
-    exp1: Option<Box<tgt::Statement>>,
-    exp2: Option<Box<tgt::Statement>>,
-) -> Option<Box<tgt::Statement>> {
-    match exp1 {
-        None => exp2,
-        Some(exp1) => match exp2 {
-            None => Some(exp1),
-            Some(exp2) => {
-                let span = combine_span(&exp1.span, &exp2.span);
-                let st = tgt::RawStatement::Sequence(exp1, exp2);
-                Some(Box::new(tgt::Statement::new(span, st)))
-            }
-        },
-    }
-}
-
 fn is_terminal(exp: &tgt::Statement) -> bool {
     is_terminal_explore(0, exp)
 }
@@ -1867,7 +1843,7 @@ fn translate_block(
             let next_exp = ensure_sufficient_stack(|| {
                 translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
             });
-            combine_expressions(Some(exp), next_exp)
+            Some(exp.then_opt(next_exp))
         } else {
             Some(exp)
         }
@@ -1885,7 +1861,7 @@ fn translate_block(
             let next_exp = ensure_sufficient_stack(|| {
                 translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
             });
-            combine_expressions(Some(exp), next_exp)
+            Some(exp.then_opt(next_exp))
         } else {
             Some(exp)
         };

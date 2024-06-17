@@ -24,7 +24,7 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
         );
         let assign_st = Statement::new(st.span, RawStatement::Assign(ret_place, unit_value));
         let ret_st = Statement::new(st.span, RawStatement::Return);
-        st.content = RawStatement::Sequence(Box::new(assign_st), Box::new(ret_st));
+        st.content = assign_st.then(ret_st).content;
     };
     None
 }

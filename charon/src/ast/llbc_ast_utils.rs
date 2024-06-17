@@ -11,8 +11,7 @@ use take_mut::take;
 pub fn chain_statements(firsts: Vec<Statement>, last: Statement) -> Statement {
     firsts.into_iter().rev().fold(last, |cont, bind| {
         assert!(!bind.content.is_sequence());
-        let span = meta::combine_span(&bind.span, &cont.span);
-        Statement::new(span, RawStatement::Sequence(Box::new(bind), Box::new(cont)))
+        bind.then(cont)
     })
 }
 
@@ -26,30 +25,12 @@ fn append_rightmost(seq: &mut Statement, r: Box<Statement>) {
     if l2.content.is_sequence() {
         append_rightmost(l2, r);
     } else {
-        take(l2.deref_mut(), move |l2| {
-            let span = meta::combine_span(&l2.span, &r.span);
-            Statement::new(span, RawStatement::Sequence(Box::new(l2), r))
-        });
+        take(l2.deref_mut(), move |l2| l2.into_box().then_box(r));
     }
 }
 
-/// Builds a sequence from well-formed statements.
-/// Ensures that the left statement will not be a sequence in the new sequence:
-/// Must be used instead of the raw [RawStatement::Sequence] constructor,
-/// unless you're sure that the left statement is not a sequence.
-pub fn new_sequence(mut l: Statement, r: Statement) -> Statement {
-    let span = meta::combine_span(&l.span, &r.span);
-
-    let r = Box::new(r);
-    let nst = match l.content {
-        RawStatement::Sequence(_, _) => {
-            append_rightmost(&mut l, r);
-            l.content
-        }
-        lc => RawStatement::Sequence(Box::new(Statement::new(l.span, lc)), r),
-    };
-
-    Statement::new(span, nst)
+pub fn new_sequence(l: Statement, r: Statement) -> Statement {
+    l.then(r)
 }
 
 /// Combine the span information from a [Switch]
@@ -106,6 +87,50 @@ impl Statement {
         Statement { span, content }
     }
 
+    pub fn into_box(self) -> Box<Self> {
+        Box::new(self)
+    }
+
+    /// Builds a sequence from well-formed statements.
+    /// Ensures that the left statement will not be a sequence in the new sequence:
+    /// Must be used instead of the raw [RawStatement::Sequence] constructor,
+    /// unless you're sure that the left statement is not a sequence.
+    pub fn then(mut self, r: Statement) -> Statement {
+        let span = meta::combine_span(&self.span, &r.span);
+
+        let r = Box::new(r);
+        let nst = match self.content {
+            RawStatement::Sequence(_, _) => {
+                append_rightmost(&mut self, r);
+                self.content
+            }
+            _ => RawStatement::Sequence(self.into_box(), r),
+        };
+
+        Statement::new(span, nst)
+    }
+
+    pub fn then_box(mut self: Box<Self>, r: Box<Statement>) -> Statement {
+        let span = meta::combine_span(&self.span, &r.span);
+
+        let nst = match self.content {
+            RawStatement::Sequence(_, _) => {
+                append_rightmost(&mut self, r);
+                self.content
+            }
+            _ => RawStatement::Sequence(self, r),
+        };
+
+        Statement::new(span, nst)
+    }
+
+    pub fn then_opt(self: Box<Self>, other: Option<Box<Statement>>) -> Box<Statement> {
+        match other {
+            Some(other) => self.then_box(other).into_box(),
+            None => self,
+        }
+    }
+
     /// Collect the statements this is made up of into a vec. If `self` is not a sequence, the vec
     /// will be `vec![self]`.
     pub fn sequence_to_vec(self) -> Vec<Self> {
@@ -117,6 +142,28 @@ impl Statement {
                     collect_to_vec(*b, vec);
                 }
                 _ => vec.push(x),
+            }
+        }
+        let mut vec = Vec::new();
+        collect_to_vec(self, &mut vec);
+        vec
+    }
+
+    /// Collect the statements this is made up of into a vec. If `self` is not a sequence, the vec
+    /// will be `vec![self]`.
+    pub fn sequence_to_vec_mut(&mut self) -> Vec<&mut Self> {
+        fn collect_to_vec<'a>(x: &'a mut Statement, vec: &mut Vec<&'a mut Statement>) {
+            match x {
+                Statement {
+                    content: RawStatement::Sequence(a, b),
+                    ..
+                } => {
+                    assert!(!a.content.is_sequence());
+                    vec.push(&mut **a);
+                    collect_to_vec(&mut **b, vec);
+                    return;
+                }
+                x => vec.push(x),
             }
         }
         let mut vec = Vec::new();
