@@ -90,10 +90,18 @@ pub fn convert_filename(name: &hax::FileName) -> FileName {
                 RealFileName::Remapped {
                     local_path: _,
                     virtual_name,
-                } =>
-                // We use the virtual name because it is always available
-                {
-                    FileName::Virtual(virtual_name.clone())
+                } => {
+                    // We use the virtual name because it is always available.
+                    // That name normally starts with `/rustc/<hash>/`. For our purposes we hide
+                    // the hash.
+                    if let Some(rest) = virtual_name.strip_prefix("/rustc/")
+                        && let Some((hash, rest)) = rest.split_once("/")
+                        && hash.len() == 40
+                    {
+                        FileName::Virtual(format!("/rustc/{rest}"))
+                    } else {
+                        FileName::Virtual(virtual_name.clone())
+                    }
                 }
             }
         }
