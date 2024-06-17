@@ -12,6 +12,7 @@ use crate::meta::Span;
 use crate::types::*;
 pub use crate::ullbc_ast::{Call, FunDeclId, GlobalDeclId, Var};
 use crate::values::*;
+use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -19,14 +20,16 @@ use serde::{Deserialize, Serialize};
 /// checks, to detect out-of-bounds accesses or divisions by zero for
 /// instance. We eliminate the assertions in [crate::remove_dynamic_checks],
 /// then introduce other dynamic checks in [crate::reconstruct_asserts].
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Assert {
     pub cond: Operand,
     pub expected: bool,
 }
 
 /// A raw statement: a statement without meta data.
-#[derive(Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut,
+)]
 pub enum RawStatement {
     Assign(Place, Rvalue),
     FakeRead(Place),
@@ -62,7 +65,7 @@ pub enum RawStatement {
     Error(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Statement {
     pub span: Span,
     pub content: RawStatement,
@@ -76,6 +79,8 @@ pub struct Statement {
     EnumAsGetters,
     Serialize,
     Deserialize,
+    Drive,
+    DriveMut,
     VariantName,
     VariantIndexArity,
 )]

@@ -13,6 +13,7 @@ pub use crate::types::{
     GenericArgs, GenericParams, TraitDeclId, TraitImplId, TraitInstanceId, TraitRef,
 };
 use crate::ullbc_ast;
+use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::EnumIsA;
 use macros::EnumToGetters;
 use serde::{Deserialize, Serialize};
@@ -30,7 +31,7 @@ fn dummy_def_id() -> rustc_hir::def_id::DefId {
 }
 
 /// A variable
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Var {
     /// Unique index identifying the variable
     pub index: VarId,
@@ -42,7 +43,7 @@ pub struct Var {
 }
 
 /// Marker to indicate that a declaration is opaque (i.e. we don't inspect its body).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Opaque;
 
 /// An expression body.
@@ -62,8 +63,30 @@ pub struct GExprBody<T> {
     pub body: T,
 }
 
+// The derive macro doesn't handle generics well.
+impl<T: Drive> Drive for GExprBody<T> {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.span.drive(visitor);
+        self.arg_count.drive(visitor);
+        self.locals.drive(visitor);
+        self.body.drive(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
+impl<T: DriveMut> DriveMut for GExprBody<T> {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.span.drive_mut(visitor);
+        self.arg_count.drive_mut(visitor);
+        self.locals.drive_mut(visitor);
+        self.body.drive_mut(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
 /// The body of a function or a constant.
-#[derive(Debug, Clone, Serialize, Deserialize, EnumIsA, EnumToGetters)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut, EnumIsA, EnumToGetters)]
 pub enum Body {
     /// Body represented as a CFG. This is what ullbc is made of, and what we get after translating MIR.
     Unstructured(ullbc_ast::ExprBody),
@@ -93,7 +116,7 @@ pub enum Body {
 ///   fn test(...) { ... } // regular
 /// }
 /// ```
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq)]
 pub enum ItemKind {
     /// A "normal" function
     Regular,
@@ -116,10 +139,11 @@ pub enum ItemKind {
 }
 
 /// A function definition
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct FunDecl {
     pub def_id: FunDeclId,
     #[serde(skip)]
+    #[drive(skip)]
     #[serde(default = "dummy_def_id")]
     pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
@@ -140,10 +164,11 @@ pub struct FunDecl {
 }
 
 /// A global variable definition
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GlobalDecl {
     pub def_id: GlobalDeclId,
     #[serde(skip)]
+    #[drive(skip)]
     #[serde(default = "dummy_def_id")]
     pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
@@ -160,7 +185,9 @@ pub struct GlobalDecl {
     pub body: Result<BodyId, Opaque>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq, Hash, PartialOrd, Ord,
+)]
 pub struct TraitItemName(pub String);
 
 /// A trait **declaration**.
@@ -196,7 +223,7 @@ pub struct TraitItemName(pub String);
 /// Of course, this forbids other useful use cases such as visitors implemented
 /// by means of traits.
 #[allow(clippy::type_complexity)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId,
     /// [true] if the decl is a local decl, [false] if it comes from
@@ -258,7 +285,7 @@ pub struct TraitDecl {
 ///   fn baz(...) { ... }
 /// }
 /// ```
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TraitImpl {
     pub def_id: TraitImplId,
     /// [true] if the decl is a local decl, [false] if it comes from
@@ -287,7 +314,7 @@ pub struct TraitImpl {
 /// A function operand is used in function calls.
 /// It either designates a top-level function, or a place in case
 /// we are using function pointers stored in local variables.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub enum FnOperand {
     /// Regular case: call to a top-level function, trait method, etc.
     Regular(FnPtr),
@@ -295,14 +322,14 @@ pub enum FnOperand {
     Move(Place),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Call {
     pub func: FnOperand,
     pub args: Vec<Operand>,
     pub dest: Place,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub enum AbortKind {
     /// A built-in panicking function.
     Panic(Name),
