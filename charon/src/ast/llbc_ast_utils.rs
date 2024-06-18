@@ -1,13 +1,9 @@
 //! Implementations for [crate::llbc_ast]
 
-use crate::common::ensure_sufficient_stack;
-use crate::expressions::{MutExprVisitor, Operand, Place, Rvalue};
-use crate::llbc_ast::{Assert, RawStatement, Statement, Switch};
+use crate::llbc_ast::{RawStatement, Statement, Switch};
 use crate::meta;
 use crate::meta::Span;
-use crate::types::*;
-use crate::values::*;
-use macros::make_generic_in_borrows;
+use derive_visitor::{DriveMut, VisitorMut};
 use std::ops::DerefMut;
 use take_mut::take;
 
@@ -109,226 +105,61 @@ impl Statement {
     pub fn new(span: Span, content: RawStatement) -> Self {
         Statement { span, content }
     }
-}
 
-// Derive two implementations at once: one which uses shared borrows, and one
-// which uses mutable borrows.
-// Generates the traits: `SharedAstVisitor` and `MutAstVisitor`.
-make_generic_in_borrows! {
-
-/// A visitor for the LLBC AST
-///
-/// Remark: we can't call the "super" method when reimplementing a method
-/// (unlike what can be done in, say, OCaml). This makes imlementing visitors
-/// slightly awkward, and is the reason why we split some visit functions in two:
-/// a "standard" version to be overriden, and a "default" version which should
-/// not be overriden and gives access to the "super" method.
-///
-/// TODO: implement macros to automatically derive visitors.
-/// TODO: explore all the types
-pub trait AstVisitor: crate::expressions::ExprVisitor {
-    /// We call this function right after we explored all the branches
-    /// in a branching.
-    fn merge(&mut self) {}
-
-    fn default_visit_statement(&mut self, st: &Statement) {
-        self.visit_span(&st.span);
-        ensure_sufficient_stack(|| {
-            self.visit_raw_statement(&st.content)
-        })
-    }
-
-    fn visit_statement(&mut self, st: &Statement) {
-        self.default_visit_statement(st)
-    }
-
-    fn visit_span(&mut self, st: &Span) {}
-
-    fn default_visit_raw_statement(&mut self, st: &RawStatement) {
-        match st {
-            RawStatement::Assign(p, rv) => {
-                self.visit_assign(p, rv);
-            }
-            RawStatement::FakeRead(p) => {
-                self.visit_fake_read(p);
-            }
-            RawStatement::SetDiscriminant(p, vid) => {
-                self.visit_set_discriminant(p, vid);
-            }
-            RawStatement::Drop(p) => {
-                self.visit_drop(p);
-            }
-            RawStatement::Assert(a) => {
-                self.visit_assert(a);
-            }
-            RawStatement::Call(c) => {
-                self.visit_call(c);
-            }
-            RawStatement::Abort(..) => {
-                self.visit_abort();
-            }
-            RawStatement::Return => self.visit_return(),
-            RawStatement::Break(i) => {
-                self.visit_break(i);
-            }
-            RawStatement::Continue(i) => {
-                self.visit_continue(i);
-            }
-            RawStatement::Nop => self.visit_nop(),
-            RawStatement::Sequence(st1, st2) => self.visit_sequence(st1, st2),
-            RawStatement::Switch(s) => self.visit_switch(s),
-            RawStatement::Loop(lp) => self.visit_loop(lp),
-            RawStatement::Error(s) => self.visit_error(s),
-        }
-    }
-
-    fn visit_raw_statement(&mut self, st: &RawStatement) {
-        self.default_visit_raw_statement(st);
-    }
-
-    fn visit_assign(&mut self, p: &Place, rv: &Rvalue) {
-        self.visit_place(p);
-        self.visit_rvalue(rv)
-    }
-
-    fn visit_fake_read(&mut self, p: &Place) {
-        self.visit_place(p);
-    }
-
-    fn visit_set_discriminant(&mut self, p: &Place, _: &VariantId) {
-        self.visit_place(p);
-    }
-
-    fn visit_drop(&mut self, p: &Place) {
-        self.visit_place(p);
-    }
-
-    fn visit_assert(&mut self, a: &Assert) {
-        self.visit_operand(&a.cond);
-    }
-
-    fn visit_abort(&mut self) {}
-    fn visit_return(&mut self) {}
-    fn visit_break(&mut self, _: &usize) {}
-    fn visit_continue(&mut self, _: &usize) {}
-    fn visit_nop(&mut self) {}
-    fn visit_error(&mut self, _: &String) {}
-
-
-    fn visit_sequence(&mut self, st1: &Statement, st2: &Statement) {
-        self.visit_statement(st1);
-        self.visit_statement(st2);
-    }
-
-    fn default_visit_switch(&mut self, s: &Switch) {
-        match s {
-            Switch::If(scrut, then_branch, else_branch) => {
-                self.visit_if(scrut, then_branch, else_branch)
-            }
-            Switch::SwitchInt(scrut, int_ty, branches, otherwise) => {
-                self.visit_switch_int(scrut, int_ty, branches, otherwise)
-            }
-            Switch::Match(scrut, branches, otherwise) => {
-                self.visit_match(scrut, branches, otherwise)
+    /// Collect the statements this is made up of into a vec. If `self` is not a sequence, the vec
+    /// will be `vec![self]`.
+    pub fn sequence_to_vec(self) -> Vec<Self> {
+        fn collect_to_vec(x: Statement, vec: &mut Vec<Statement>) {
+            match x.content {
+                RawStatement::Sequence(a, b) => {
+                    assert!(!a.content.is_sequence());
+                    vec.push(*a);
+                    collect_to_vec(*b, vec);
+                }
+                _ => vec.push(x),
             }
         }
+        let mut vec = Vec::new();
+        collect_to_vec(self, &mut vec);
+        vec
     }
 
-    fn visit_switch(&mut self, s: &Switch) {
-        self.default_visit_switch(s)
-    }
-
-    /// Generic visitor for branches.
-    fn visit_branch(&mut self, branch: &Statement) {
-        self.visit_statement(branch);
-    }
-
-    fn visit_if(&mut self, scrut: &Operand, then_branch: &Statement, else_branch: &Statement) {
-        self.visit_operand(scrut);
-        self.visit_branch(then_branch);
-        self.visit_branch(else_branch);
-        self.merge();
-    }
-
-    fn visit_switch_int(
-        &mut self,
-        scrut: &Operand,
-        _: &IntegerTy,
-        branches: &Vec<(Vec<ScalarValue>, Statement)>,
-        otherwise: &Statement,
-    ) {
-        self.visit_operand(scrut);
-        for (_, st) in branches {
-            self.visit_branch(st);
+    /// If `self` is a sequence whose first component is a sequence, refold the statements to
+    /// repair the invariant on sequences. All otehr sequences are expected to respect the
+    /// invariant. Use this when mutating a statement in a visitor if needed.
+    pub fn reparenthesize(&mut self) {
+        if let RawStatement::Sequence(st1, _) = &mut self.content {
+            if st1.content.is_sequence() {
+                // We did mess up the parenthesization. Fix it.
+                take(self, |st| {
+                    let (st1, st2) = st.content.to_sequence();
+                    let st1 = st1.sequence_to_vec();
+                    chain_statements(st1, *st2)
+                })
+            }
         }
-        self.visit_branch(otherwise);
-        self.merge();
-    }
-
-    fn visit_match(
-        &mut self,
-        scrut: &Place,
-        branches: &Vec<(Vec<VariantId>, Statement)>,
-        otherwise: &Option<Box<Statement>>,
-    ) {
-        self.visit_place(scrut);
-        for (_, st) in branches {
-            self.visit_branch(st);
-        }
-        if let Some(otherwise) = otherwise {
-            self.visit_branch(otherwise);
-        }
-        self.merge();
-    }
-
-    fn visit_loop(&mut self, lp: &Statement) {
-        self.visit_statement(lp)
     }
 }
-
-} // make_generic_in_borrows
 
 /// Helper for [transform_statements]
+#[derive(VisitorMut)]
+#[visitor(Statement(exit))]
 struct TransformStatements<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> {
     tr: &'a mut F,
 }
 
-impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutTypeVisitor
-    for TransformStatements<'a, F>
+impl<'a, F> TransformStatements<'a, F>
+where
+    F: FnMut(&mut Statement) -> Option<Vec<Statement>>,
 {
-}
-impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutExprVisitor
-    for TransformStatements<'a, F>
-{
-}
+    fn exit_statement(&mut self, st: &mut Statement) {
+        // Reparenthesize sequences we messed up while traversing.
+        st.reparenthesize();
 
-impl<'a, F: FnMut(&mut Statement) -> Option<Vec<Statement>>> MutAstVisitor
-    for TransformStatements<'a, F>
-{
-    fn visit_statement(&mut self, st: &mut Statement) {
-        match &mut st.content {
-            RawStatement::Sequence(st1, st2) => {
-                // Bottom-up
-                self.visit_statement(st2);
-                self.default_visit_raw_statement(&mut st1.content);
-
-                // Transform the current statement
-                let st_seq = (self.tr)(st1);
-                if let Some(seq) = st_seq && !seq.is_empty() {
-                    take(st, |st| chain_statements(seq, st))
-                }
-                // TODO: we might want to apply tr to the whole resulting sequence
-            }
-            _ => {
-                // Bottom-up
-                self.default_visit_raw_statement(&mut st.content);
-
-                // Transform the current statement
-                let st_seq = (self.tr)(st);
-                if let Some(seq) = st_seq && !seq.is_empty() {
-                    take(st, |st| chain_statements(seq, st))
-                }
-            }
+        // Transform the current statement
+        let st_seq = (self.tr)(st);
+        if let Some(seq) = st_seq && !seq.is_empty() {
+            take(st, |st| chain_statements(seq, st))
         }
     }
 }
@@ -347,6 +178,6 @@ impl Statement {
     /// `{ s1_1; s1_2 }; s2`.
     pub fn transform<F: FnMut(&mut Statement) -> Option<Vec<Statement>>>(&mut self, f: &mut F) {
         let mut visitor = TransformStatements { tr: f };
-        visitor.visit_statement(self);
+        self.drive_mut(&mut visitor);
     }
 }

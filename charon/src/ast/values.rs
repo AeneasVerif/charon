@@ -2,6 +2,7 @@
 
 pub use crate::values_utils::*;
 use core::hash::Hash;
+use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -26,6 +27,8 @@ generate_index_type!(VarId, "");
     EnumAsGetters,
     Serialize,
     Deserialize,
+    Drive,
+    DriveMut,
     Hash,
     PartialOrd,
     Ord,
@@ -59,6 +62,8 @@ pub enum Literal {
     Hash,
     PartialOrd,
     Ord,
+    Drive,
+    DriveMut,
 )]
 pub enum ScalarValue {
     /// Using i64 to be safe

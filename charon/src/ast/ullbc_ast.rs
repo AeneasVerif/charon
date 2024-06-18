@@ -7,6 +7,7 @@ pub use crate::types::GlobalDeclId;
 use crate::types::*;
 pub use crate::ullbc_ast_utils::*;
 use crate::values::*;
+use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -20,7 +21,9 @@ pub type BodyContents = Vector<BlockId, BlockData>;
 pub type ExprBody = GExprBody<BodyContents>;
 
 /// A raw statement: a statement without meta data.
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, EnumIsA, EnumAsGetters, VariantName, Serialize, Deserialize, Drive, DriveMut,
+)]
 pub enum RawStatement {
     Assign(Place, Rvalue),
     FakeRead(Place),
@@ -32,14 +35,23 @@ pub enum RawStatement {
     Error(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Statement {
     pub span: Span,
     pub content: RawStatement,
 }
 
 #[derive(
-    Debug, Clone, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Serialize, Deserialize,
+    Debug,
+    Clone,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    VariantIndexArity,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
 )]
 pub enum SwitchTargets {
     /// Gives the `if` block and the `else` block
@@ -51,7 +63,7 @@ pub enum SwitchTargets {
 }
 
 /// A raw terminator: a terminator without meta data.
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut)]
 pub enum RawTerminator {
     Goto {
         target: BlockId,
@@ -82,13 +94,13 @@ pub enum RawTerminator {
     },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Terminator {
     pub span: Span,
     pub content: RawTerminator,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct BlockData {
     pub statements: Vec<Statement>,
     pub terminator: Terminator,

@@ -7,6 +7,7 @@
 //! Note that this data structure is implemented by using persistent vectors.
 //! This makes the clone operation almost a no-op.
 
+use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use index_vec::{Idx, IdxSliceIndex, IndexVec};
 use serde::{Deserialize, Serialize, Serializer};
 use std::{
@@ -233,5 +234,24 @@ impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for Vector<I, T> {
         Ok(Self {
             vector: Deserialize::deserialize(deserializer)?,
         })
+    }
+}
+
+impl<I: Idx, T: Drive> Drive for Vector<I, T> {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        for x in self {
+            x.drive(visitor);
+        }
+        visitor.visit(self, Event::Exit);
+    }
+}
+impl<I: Idx, T: DriveMut> DriveMut for Vector<I, T> {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        for x in &mut *self {
+            x.drive_mut(visitor);
+        }
+        visitor.visit(self, Event::Exit);
     }
 }

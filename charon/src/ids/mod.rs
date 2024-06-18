@@ -18,6 +18,7 @@ macro_rules! generate_index_type {
     };
     ($name:ident, $pretty_name:expr) => {
         index_vec::define_index_type! {
+            #[derive(derive_visitor::Drive, derive_visitor::DriveMut)]
             pub struct $name = usize;
             // Must fit in an u32 for serialization.
             MAX_INDEX = std::u32::MAX as usize;
