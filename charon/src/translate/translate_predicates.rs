@@ -818,41 +818,37 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Could not find a clause.
         // Check if we are in the registration process, otherwise report an error.
         // TODO: we might be registering a where clause.
-        if self.registering_trait_clauses {
-            TraitInstanceId::Unsolved(trait_id, generics.clone())
-        } else {
-            let fmt_ctx = self.into_fmt();
-            let trait_ref = format!(
-                "{}{}",
-                fmt_ctx.format_object(trait_id),
-                generics.fmt_with_ctx(&fmt_ctx)
-            );
-            let clauses: Vec<String> = self
-                .trait_clauses
-                .values()
-                .flat_map(|x| x)
-                .map(|x| x.fmt_with_ctx(&fmt_ctx))
-                .collect();
+        let fmt_ctx = self.into_fmt();
+        let trait_ref = format!(
+            "{}{}",
+            fmt_ctx.format_object(trait_id),
+            generics.fmt_with_ctx(&fmt_ctx)
+        );
+        let clauses: Vec<String> = self
+            .trait_clauses
+            .values()
+            .flat_map(|x| x)
+            .map(|x| x.fmt_with_ctx(&fmt_ctx))
+            .collect();
 
-            if !self.t_ctx.continue_on_failure() {
-                let clauses = clauses.join("\n");
-                unreachable!(
-                    "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
-                    trait_ref, clauses, self.def_id
-                );
-            } else {
-                // Return the UNKNOWN clause
-                log::warn!(
-                    "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
-                    trait_ref, clauses.join("\n"), self.def_id
-                );
-                TraitInstanceId::Unknown(format!(
-                    "Could not find a clause for parameter: {} (available clauses: {}) (context: {:?})",
-                    trait_ref,
-                    clauses.join("; "),
-                    self.def_id
-                ))
-            }
+        if !self.t_ctx.continue_on_failure() {
+            let clauses = clauses.join("\n");
+            unreachable!(
+                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
+                trait_ref, clauses, self.def_id
+            );
+        } else {
+            // Return the UNKNOWN clause
+            log::warn!(
+                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
+                trait_ref, clauses.join("\n"), self.def_id
+            );
+            TraitInstanceId::Unknown(format!(
+                "Could not find a clause for parameter: {} (available clauses: {}) (context: {:?})",
+                trait_ref,
+                clauses.join("; "),
+                self.def_id
+            ))
         }
     }
 }

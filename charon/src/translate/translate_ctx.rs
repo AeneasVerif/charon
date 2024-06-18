@@ -310,7 +310,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// `ImplExprAtom::LocalBound`, we use this to recover the specific trait reference it
     /// corresponds to.
     /// FIXME: hax should take care of this matching up.
-    pub trait_clauses: HashMap<TraitDeclId, Vec<NonLocalTraitClause>>,
+    pub trait_clauses: BTreeMap<TraitDeclId, Vec<NonLocalTraitClause>>,
     /// If [true] it means we are currently registering trait clauses in the
     /// local context. As a consequence, we allow not solving all the trait
     /// obligations, because the obligations for some clauses may be solved

@@ -222,15 +222,7 @@ pub enum TraitInstanceId {
     /// is useful to give priority to the local clauses when solving the trait
     /// obligations which are fullfilled by the trait parameters.
     SelfId,
-    /// Clause which hasn't been solved yet.
-    /// This happens when we register clauses in the context: solving some
-    /// trait obligations/references might require to refer to clauses which
-    /// haven't been registered yet. This variant is purely internal: after we
-    /// finished solving the trait obligations, all the remaining unsolved
-    /// clauses (in case we don't fail hard on error) are converted to [Unknown].
-    Unsolved(TraitDeclId, GenericArgs),
     /// For error reporting.
-    /// Can appear only if the option [CliOpts::continue_on_failure] is used.
     Unknown(String),
 }
 

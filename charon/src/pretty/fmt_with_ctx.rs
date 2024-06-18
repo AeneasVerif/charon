@@ -1188,13 +1188,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitInstanceId {
             TraitInstanceId::TraitImpl(id) => ctx.format_object(*id),
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
             TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
-            TraitInstanceId::Unsolved(trait_id, generics) => {
-                format!(
-                    "Unsolved({}{})",
-                    ctx.format_object(*trait_id),
-                    generics.fmt_with_ctx(ctx),
-                )
-            }
             TraitInstanceId::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
     }
