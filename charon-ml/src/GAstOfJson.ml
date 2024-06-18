@@ -135,12 +135,14 @@ let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
           ("attributes", attributes);
           ("inline", inline);
           ("public", public);
+          ("rename", rename);
         ] ->
         let* span = span_of_json id_to_file span in
         let* attributes = list_of_json string_of_json attributes in
         let* inline = option_of_json inline_attr_of_json inline in
         let* public = bool_of_json public in
-        Ok { span; attributes; inline; public }
+        let* rename = string_option_of_json rename in
+        Ok { span; attributes; inline; public; rename }
     | _ -> Error "")
 
 let type_var_of_json (js : json) : (type_var, string) result =
@@ -452,11 +454,11 @@ let field_of_json (id_to_file : id_to_file_map) (js : json) :
     (field, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("span", span); ("name", name); ("ty", ty) ] ->
-        let* span = span_of_json id_to_file span in
+    | `Assoc [ ("item_meta", item_meta); ("name", name); ("ty", ty) ] ->
+        let* item_meta = item_meta_of_json id_to_file item_meta in
         let* name = option_of_json string_of_json name in
         let* ty = ty_of_json ty in
-        Ok { span; field_name = name; field_ty = ty }
+        Ok { item_meta; field_name = name; field_ty = ty }
     | _ -> Error "")
 
 let variant_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -465,16 +467,16 @@ let variant_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | `Assoc
         [
-          ("span", span);
+          ("item_meta", item_meta);
           ("name", name);
           ("fields", fields);
           ("discriminant", discriminant);
         ] ->
-        let* span = span_of_json id_to_file span in
+        let* item_meta = item_meta_of_json id_to_file item_meta in
         let* name = string_of_json name in
         let* fields = list_of_json (field_of_json id_to_file) fields in
         let* discriminant = scalar_value_of_json discriminant in
-        Ok { span; variant_name = name; fields; discriminant }
+        Ok { item_meta; variant_name = name; fields; discriminant }
     | _ -> Error "")
 
 let type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :

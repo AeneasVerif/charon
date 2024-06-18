@@ -245,3 +245,129 @@ fn discriminants() -> Result<(), Box<dyn Error>> {
     );
     Ok(())
 }
+
+#[test]
+fn rename_attribute() -> Result<(), Box<dyn Error>> {
+    let crate_data = translate(
+        r#"
+        #![feature(register_tool)]
+        #![register_tool(charon)]
+        #![register_tool(aeneas)]
+        
+        #[charon::rename("BoolTest")]
+        pub trait BoolTrait {
+            // Required method
+            #[charon::rename("getTest")]
+            fn get_bool(&self) -> bool;
+
+            // Provided method
+            #[charon::rename("retTest")]
+            fn ret_true(&self) -> bool {
+                true
+            }
+        }
+
+        #[charon::rename("BoolImpl")]
+        impl BoolTrait for bool {
+            fn get_bool(&self) -> bool {
+                *self
+            }
+        }
+
+        #[charon::rename("BoolFn")]
+        fn test_bool_trait<T>(x: bool) -> bool {
+            x.get_bool() && x.ret_true()
+        }
+
+        #[charon::rename("TypeTest")]
+        type Test = i32;
+
+        #[charon::rename("VariantsTest")]
+        enum SimpleEnum {
+            #[charon::rename("Variant1")]
+            FirstVariant,
+            SecondVariant,
+            ThirdVariant,
+        }
+
+        #[charon::rename("StructTest")]
+        struct Foo {
+            #[charon::rename("FieldTest")]
+            field1: u32,
+        }
+
+        #[charon::rename("Const_Test")]
+        const C: u32 = 100 + 10 + 1;
+
+        #[aeneas::rename("_TypeAeneas36")]
+        type Test2 = u32;
+        "#,
+    )?;
+
+    assert_eq!(
+        crate_data.trait_decls[0].item_meta.rename.as_deref(),
+        Some("BoolTest")
+    );
+
+    assert_eq!(
+        crate_data.functions[2].item_meta.rename.as_deref(),
+        Some("getTest")
+    );
+
+    assert_eq!(
+        crate_data.functions[3].item_meta.rename.as_deref(),
+        Some("retTest")
+    );
+
+    assert_eq!(
+        crate_data.trait_impls[0].item_meta.rename.as_deref(),
+        Some("BoolImpl")
+    );
+
+    assert_eq!(
+        crate_data.functions[1].item_meta.rename.as_deref(),
+        Some("BoolFn")
+    );
+
+    assert_eq!(
+        crate_data.types[0].item_meta.rename.as_deref(),
+        Some("TypeTest")
+    );
+
+    assert_eq!(
+        crate_data.types[1].item_meta.rename.as_deref(),
+        Some("VariantsTest")
+    );
+
+    assert_eq!(
+        crate_data.types[1].kind.as_enum()[0]
+            .item_meta
+            .rename
+            .as_deref(),
+        Some("Variant1")
+    );
+
+    assert_eq!(
+        crate_data.types[2].item_meta.rename.as_deref(),
+        Some("StructTest")
+    );
+
+    assert_eq!(
+        crate_data.globals[0].item_meta.rename.as_deref(),
+        Some("Const_Test")
+    );
+
+    assert_eq!(
+        crate_data.types[3].item_meta.rename.as_deref(),
+        Some("_TypeAeneas36")
+    );
+
+    assert_eq!(
+        crate_data.types[2].kind.as_struct()[0]
+            .item_meta
+            .rename
+            .as_deref(),
+        Some("FieldTest")
+    );
+    Ok(())
+}

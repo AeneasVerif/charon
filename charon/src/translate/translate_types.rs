@@ -582,7 +582,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             for (j, field_def) in var_def.fields.into_iter().enumerate() {
                 trace!("variant {i}: field {j}: {field_def:?}");
                 let field_span = field_def.span.rust_span_data.unwrap().span();
-
+                let field_meta = self
+                    .t_ctx
+                    .translate_item_meta_from_rid(DefId::from(&field_def.did));
                 // Translate the field type
                 let ty = self.translate_ty(field_span, erase_regions, &field_def.ty)?;
 
@@ -601,22 +603,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 };
 
-                // Translate the span information
-                let span = self.translate_span_from_rspan(field_def.span);
-
                 // Store the field
                 let field = Field {
-                    span,
+                    item_meta: field_meta,
                     name: field_name.clone(),
                     ty,
                 };
                 fields.push(field);
             }
 
-            let span = self.translate_span_from_rspan(var_def.span);
+            let variant_meta = self
+                .t_ctx
+                .translate_item_meta_from_rid(DefId::from(&var_def.def_id));
             let variant_name = var_def.name;
             variants.push(Variant {
-                span,
+                item_meta: variant_meta,
                 name: variant_name,
                 fields,
                 discriminant,

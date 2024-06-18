@@ -406,7 +406,7 @@ pub enum TypeDeclKind {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Variant {
-    pub span: Span,
+    pub item_meta: ItemMeta,
     pub name: String,
     pub fields: Vector<FieldId, Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
@@ -416,7 +416,8 @@ pub struct Variant {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Field {
-    pub span: Span,
+    /// FIXME: define a more appropriate container for attribute and visibility information.
+    pub item_meta: ItemMeta,
     pub name: Option<String>,
     pub ty: Ty,
 }

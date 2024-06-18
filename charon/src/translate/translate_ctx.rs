@@ -136,7 +136,7 @@ impl PartialOrd for OrdRustId {
         let (vid0, _) = self.variant_index_arity();
         let (vid1, _) = other.variant_index_arity();
         if vid0 != vid1 {
-            Some(vid0.cmp(&vid1))
+            Option::Some(vid0.cmp(&vid1))
         } else {
             let id0 = self.get_id();
             let id1 = other.get_id();
@@ -426,6 +426,71 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.translate_span_from_rspan(rspan)
     }
 
+    fn parse_rename_attribute(&mut self, span: Span, attributes: Vec<Attribute>) -> Option<String> {
+        // Search for rename attributes
+        let attributes: Vec<(&String, &str)> = attributes
+            .iter()
+            .filter_map(|raw_attr| {
+                raw_attr
+                    .strip_prefix("charon::rename(")
+                    .or(raw_attr.strip_prefix("aeneas::rename("))
+                    .and_then(|str| str.strip_suffix(")").and_then(|str| Some((raw_attr, str))))
+            })
+            .collect();
+
+        // Check if there is a rename attribute
+        if attributes.len() == 0 {
+            return None;
+        }
+
+        // We don't allow giving several rename attributes
+        if attributes.len() > 1 {
+            self.span_err(
+                span,
+                "There shouldn't be more than one `charon::rename(\"...\")` or `aeneas::rename(\"...\")` attribute per declaration",
+            );
+            return None;
+        }
+
+        // There is exactly one attribute: retrieve it
+        let (raw_attr, str) = attributes.get(0).unwrap();
+        let str = str
+            .strip_prefix("\"")
+            .and_then(|str| str.strip_suffix("\""));
+
+        // The name should be between quotation marks
+        if str.is_none() {
+            self.span_err(
+                span,
+                &format!("Attribute `{{charon,aeneas}}::rename` should be of the shape `{{charon,aeneas}}::rename(\"...\")`: `{raw_attr}` is not valid"),
+            );
+            return None;
+        }
+        let str = str.unwrap();
+
+        // The name shouldn't be empty
+        if str.is_empty() {
+            self.span_err(
+                span,
+                "Attribute `{charon,aeneas}::rename` should not contain an empty string",
+            );
+            return None;
+        }
+
+        // Check that the name starts with a letter, and only contains alphanumeric
+        // characters or '_'
+        let first_char = str.chars().nth(0).unwrap();
+        let first_char_ok = first_char.is_alphabetic() || first_char == '_';
+        let is_identifier = first_char_ok && str.chars().all(|c| c.is_alphanumeric() || c == '_');
+        if !is_identifier {
+            self.span_err(span, &format!("Attribute `rename` should only contain alphanumeric characters and `_`, and should start with a letter or '_': \"{str}\" is not a valid name"));
+            return None;
+        }
+
+        // Ok: we can return the attribute
+        return Some(str.to_string());
+    }
+
     /// Compute the meta information for a Rust item identified by its id.
     pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
         let span = self.translate_span_from_rid(def_id);
@@ -437,12 +502,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let opaque = attributes
             .iter()
             .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque");
+        let rename = self.parse_rename_attribute(span, attributes.clone());
         ItemMeta {
             span,
-            attributes: attributes,
+            attributes,
             inline: self.translate_inline_from_rid(def_id),
             public,
             opaque,
+            rename,
         }
     }
 
@@ -580,7 +647,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | TraitAlias
             | TyAlias { .. }
             | Union
-            | Use => Some(self.tcx.visibility(id).is_public()),
+            | Use
+            | Variant => Some(self.tcx.visibility(id).is_public()),
             // These kinds don't have visibility modifiers (which would cause `visibility` to panic).
             Closure | Impl { .. } => None,
             // Kinds we shouldn't be calling this function on.
@@ -595,8 +663,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | InlineConst
             | LifetimeParam
             | OpaqueTy
-            | TyParam
-            | Variant => {
+            | TyParam => {
                 register_error_or_panic!(
                     self,
                     span,

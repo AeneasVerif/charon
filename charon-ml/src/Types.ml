@@ -530,11 +530,15 @@ type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
 
 type region_var_groups = region_var_group list [@@deriving show]
 
-type field = { span : span; field_name : string option; field_ty : ty }
+type field = {
+  item_meta : item_meta;
+  field_name : string option;
+  field_ty : ty;
+}
 [@@deriving show]
 
 type variant = {
-  span : span;
+  item_meta : item_meta;
   variant_name : string;
   fields : field list;
       (** The fields can be indexed with {!FieldId.id}.
