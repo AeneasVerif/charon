@@ -811,7 +811,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>) -> Self {
-        let hax_state = t_ctx.make_hax_state_with_id(def_id);
+        let hax_state = hax::State::new_from_state_and_id(&t_ctx.hax_state, def_id);
         BodyTransCtx {
             def_id,
             t_ctx,
