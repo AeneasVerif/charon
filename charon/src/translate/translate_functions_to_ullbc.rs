@@ -66,21 +66,6 @@ fn translate_unaryop_kind(binop: hax::UnOp) -> UnOp {
     }
 }
 
-/// Small utility
-pub(crate) fn check_impl_item(impl_item: &rustc_hir::Impl<'_>) {
-    // TODO: make proper error messages
-    use rustc_hir::{Defaultness, ImplPolarity, Unsafety};
-    assert!(impl_item.unsafety == Unsafety::Normal);
-    // About polarity:
-    // [https://doc.rust-lang.org/beta/unstable-book/language-features/negative-impls.html]
-    // Not sure about what I should do about it. Should I do anything, actually?
-    // This seems useful to enforce some discipline on the user-side, but not
-    // necessary for analysis purposes.
-    assert!(impl_item.polarity == ImplPolarity::Positive);
-    // Not sure what this is about
-    assert!(impl_item.defaultness == Defaultness::Final);
-}
-
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn translate_binaryop_kind(
         &mut self,
