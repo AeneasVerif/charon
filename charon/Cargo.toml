@@ -28,6 +28,7 @@ bumpalo = "3.11.1" # We constrain the version of [bumpalo] because of a vulnerab
 clap = { version = "3.0", features = ["derive", "env"] }
 colored = "2.0.4"
 derivative = "2.2.0"
+derive-visitor = { version = "0.4.0", features = ["std-types-drive"] }
 env_logger = "0.8.4"
 hashlink = "0.7.0"
 heck = "0.3.3"

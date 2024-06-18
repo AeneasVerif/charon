@@ -2,14 +2,14 @@
 //! [`remove_dynamic_checks`]. See comments there for more details.
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
-use crate::types::*;
+use derive_visitor::{visitor_enter_fn_mut, DriveMut};
 use take_mut::take;
 
 use super::ctx::LlbcPass;
 
-struct RemoveDynChecks;
+pub struct Transform;
 
-impl RemoveDynChecks {
+impl Transform {
     /// After `remove_dynamic_checks`, the only remaining dynamic checks are overflow checks. We
     /// couldn't remove them in ullbc because the generated code spans two basic blocks. They are
     /// inserted only in constants since we otherwise compile in release mode. These assertions
@@ -23,7 +23,7 @@ impl RemoveDynChecks {
     /// ```text
     /// z := x + y;
     /// ```
-    fn simplify(&mut self, s: &mut Statement) {
+    fn update_statement(s: &mut Statement) {
         if let RawStatement::Sequence(s0, s1) = &mut s.content {
             if let RawStatement::Sequence(s1, s2) = &mut s1.content {
                 // TODO: the last statement is not necessarily a sequence
@@ -87,21 +87,9 @@ impl RemoveDynChecks {
     }
 }
 
-impl MutTypeVisitor for RemoveDynChecks {}
-impl MutExprVisitor for RemoveDynChecks {}
-
-impl MutAstVisitor for RemoveDynChecks {
-    fn visit_statement(&mut self, s: &mut Statement) {
-        // Simplify this statement.
-        self.simplify(s);
-        // Recurse into subsequent statements.
-        self.default_visit_raw_statement(&mut s.content);
-    }
-}
-
-pub struct Transform;
 impl LlbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
-        RemoveDynChecks.visit_statement(&mut b.body);
+        b.body
+            .drive_mut(&mut visitor_enter_fn_mut(Transform::update_statement))
     }
 }

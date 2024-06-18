@@ -1235,13 +1235,13 @@ fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u
         drop @15
         drop @14
         @19 := copy (i@10)
-        @28 := &*(s@1)
-        @29 := @SliceIndexShared<'_, u32>(move (@28), copy (@19))
-        @18 := copy (*(@29))
+        @26 := &*(s@1)
+        @27 := @SliceIndexShared<'_, u32>(move (@26), copy (@19))
+        @18 := copy (*(@27))
         @21 := copy (i@10)
-        @26 := &*(s2@2)
-        @27 := @SliceIndexShared<'_, u32>(move (@26), copy (@21))
-        @20 := copy (*(@27))
+        @28 := &*(s2@2)
+        @29 := @SliceIndexShared<'_, u32>(move (@28), copy (@21))
+        @20 := copy (*(@29))
         @17 := move (@18) + move (@20)
         drop @20
         drop @18
@@ -1700,15 +1700,15 @@ fn test_crate::slice_pattern_2<'_0, T>(@1: Array<&'_0 mut (T), 3 : usize>)
     let @11: &'_ mut (&'_ mut (T)); // anonymous local
 
     @fake_read(x@1)
-    @10 := &mut x@1
-    @11 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@10), const (0 : usize))
-    _a@2 := move (*(@11))
+    @6 := &mut x@1
+    @7 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@6), const (0 : usize))
+    _a@2 := move (*(@7))
     @8 := &mut x@1
     @9 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@8), const (1 : usize))
     _b@3 := move (*(@9))
-    @6 := &mut x@1
-    @7 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@6), const (2 : usize))
-    _c@4 := move (*(@7))
+    @10 := &mut x@1
+    @11 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@10), const (2 : usize))
+    _c@4 := move (*(@11))
     @5 := ()
     @0 := move (@5)
     drop _c@4

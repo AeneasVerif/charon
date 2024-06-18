@@ -36,14 +36,14 @@ enum alloc::borrow::Cow<'a, B>
 
 opaque type alloc::vec::Vec<T, A>
 
-struct alloc::alloc::Global = {}
-
 fn alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>#5}::borrow<'_0, T, A>(@1: &'_0 (alloc::vec::Vec<T, A>)) -> &'_0 (Slice<T>)
 
 impl<T, A> alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>#5}<T, A> : core::borrow::Borrow<alloc::vec::Vec<T, A>, Slice<T>>
 {
     fn borrow = alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>#5}::borrow
 }
+
+struct alloc::alloc::Global = {}
 
 fn alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>#9}::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> alloc::vec::Vec<T, alloc::alloc::Global>
 where

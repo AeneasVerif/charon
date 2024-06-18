@@ -169,6 +169,7 @@ dependencies = [
  "clap",
  "colored",
  "derivative",
+ "derive-visitor",
  "env_logger",
  "hashlink",
  "hax-frontend-exporter",
@@ -271,6 +272,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6417fe6fc03a8b533fd2177742eeb39a90c7233eedec7bac96d4d6b69a09449"
 
 [[package]]
+name = "convert_case"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
+
+[[package]]
 name = "crossbeam-channel"
 version = "0.5.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -310,6 +317,28 @@ version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fcc3dd5e9e9c0b295d6e1e4d811fb6f157d5ffd784b8d202fc62eac8035a770b"
 dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "derive-visitor"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d47165df83b9707cbada3216607a5d66125b6a66906de0bc1216c0669767ca9e"
+dependencies = [
+ "derive-visitor-macros",
+]
+
+[[package]]
+name = "derive-visitor-macros"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "427b39a85fecafea16b1a5f3f50437151022e35eb4fe038107f08adbf7f8def6"
+dependencies = [
+ "convert_case",
+ "itertools 0.10.5",
  "proc-macro2",
  "quote",
  "syn 1.0.109",

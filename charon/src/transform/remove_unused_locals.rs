@@ -2,71 +2,16 @@
 //! never used in the function bodies.  This is useful to remove the locals with
 //! type `Never`. We actually check that there are no such local variables
 //! remaining afterwards.
-use crate::expressions::{MutExprVisitor, SharedExprVisitor};
 use crate::ids::Vector;
-use crate::llbc_ast::{ExprBody, MutAstVisitor, SharedAstVisitor, Statement};
+use crate::llbc_ast::{ExprBody, Statement};
 use crate::transform::TransformCtx;
-use crate::types::{MutTypeVisitor, SharedTypeVisitor};
 use crate::ullbc_ast::Var;
 use crate::values::*;
+use derive_visitor::{visitor_enter_fn, visitor_enter_fn_mut, Drive, DriveMut};
 use std::collections::{HashMap, HashSet};
 use take_mut::take;
 
 use super::ctx::LlbcPass;
-
-#[derive(Debug, Clone)]
-pub(crate) struct ComputeUsedLocals {
-    vars: im::HashMap<VarId, usize>,
-}
-
-impl ComputeUsedLocals {
-    fn new() -> Self {
-        ComputeUsedLocals {
-            vars: im::HashMap::new(),
-        }
-    }
-
-    pub(crate) fn compute_in_statement(st: &Statement) -> im::HashMap<VarId, usize> {
-        let mut visitor = Self::new();
-        visitor.visit_statement(st);
-        visitor.vars
-    }
-}
-
-impl SharedTypeVisitor for ComputeUsedLocals {}
-impl SharedExprVisitor for ComputeUsedLocals {
-    fn visit_var_id(&mut self, vid: &VarId) {
-        match self.vars.get_mut(vid) {
-            None => {
-                let _ = self.vars.insert(*vid, 1);
-            }
-            Some(cnt) => *cnt += 1,
-        }
-    }
-}
-
-impl SharedAstVisitor for ComputeUsedLocals {}
-
-#[derive(Debug, Clone)]
-struct UpdateUsedLocals {
-    vids_map: HashMap<VarId, VarId>,
-}
-
-impl UpdateUsedLocals {
-    fn update_statement(vids_map: HashMap<VarId, VarId>, st: &mut Statement) {
-        let mut v = UpdateUsedLocals { vids_map };
-        v.visit_statement(st);
-    }
-}
-
-impl MutTypeVisitor for UpdateUsedLocals {}
-impl MutExprVisitor for UpdateUsedLocals {
-    fn visit_var_id(&mut self, vid: &mut VarId) {
-        *vid = *self.vids_map.get(vid).unwrap();
-    }
-}
-
-impl MutAstVisitor for UpdateUsedLocals {}
 
 /// Compute the set of used locals, filter the unused locals and compute a new
 /// mapping from variable index to variable index.
@@ -82,7 +27,15 @@ fn update_locals(
         used_locals.insert(VarId::new(i));
     }
     // Explore the body
-    let used_locals_cnt = ComputeUsedLocals::compute_in_statement(st);
+    let mut used_locals_cnt: im::HashMap<VarId, _> = im::HashMap::default();
+    st.drive(&mut visitor_enter_fn(|vid: &VarId| {
+        match used_locals_cnt.get_mut(vid) {
+            None => {
+                let _ = used_locals_cnt.insert(*vid, 1);
+            }
+            Some(cnt) => *cnt += 1,
+        }
+    }));
     for (vid, cnt) in used_locals_cnt.iter() {
         if *cnt > 0 {
             used_locals.insert(*vid);
@@ -112,7 +65,12 @@ impl LlbcPass for Transform {
             let (locals, vids_map) = update_locals(b.arg_count, b.locals, &b.body);
             b.locals = locals;
             trace!("vids_maps: {:?}", vids_map);
-            UpdateUsedLocals::update_statement(vids_map, &mut b.body);
+
+            // Update all `VarId`s.
+            b.body
+                .drive_mut(&mut visitor_enter_fn_mut(|vid: &mut VarId| {
+                    *vid = *vids_map.get(vid).unwrap();
+                }));
             b
         });
     }
