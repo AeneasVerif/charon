@@ -304,19 +304,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(())
     }
 
-    /// Translate the predicates then solve the unsolved trait obligations
-    /// in the registered trait clauses.
-    pub(crate) fn translate_predicates_solve_trait_obligations_of(
-        &mut self,
-        parent_trait_id: Option<TraitDeclId>,
-        def_id: DefId,
-    ) -> Result<(), Error> {
-        self.while_registering_trait_clauses(move |ctx| {
-            ctx.translate_predicates_of(parent_trait_id, def_id)?;
-            Ok(())
-        })
-    }
-
     pub(crate) fn translate_predicates(
         &mut self,
         preds: &hax::GenericPredicates,

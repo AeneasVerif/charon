@@ -1654,34 +1654,29 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.set_first_bound_regions_group(bvar_names);
         let fun_kind = &self.t_ctx.get_item_kind(&dep_src, def_id)?;
 
-        // Add the trait clauses
-        self.while_registering_trait_clauses(move |ctx| {
-            // Add the ctx trait clause if it is a trait decl item
-            match fun_kind {
-                ItemKind::Regular => {}
-                ItemKind::TraitItemImpl { impl_id, .. } => {
-                    ctx.translate_trait_impl_self_trait_clause(*impl_id)?
-                }
-                ItemKind::TraitItemProvided(..) | ItemKind::TraitItemDecl(..) => {
-                    // This is a trait decl item
-                    let trait_id = tcx.trait_of_item(def_id).unwrap();
-                    ctx.translate_trait_decl_self_trait_clause(trait_id)?;
-                }
+        // Add the ctx trait clause if it is a trait decl item
+        match fun_kind {
+            ItemKind::Regular => {}
+            ItemKind::TraitItemImpl { impl_id, .. } => {
+                self.translate_trait_impl_self_trait_clause(*impl_id)?
             }
-
-            // Translate the predicates (in particular, the trait clauses)
-            match &fun_kind {
-                ItemKind::Regular | ItemKind::TraitItemImpl { .. } => {
-                    ctx.translate_predicates_of(None, def_id)?;
-                }
-                ItemKind::TraitItemProvided(trait_decl_id, ..)
-                | ItemKind::TraitItemDecl(trait_decl_id, ..) => {
-                    ctx.translate_predicates_of(Some(*trait_decl_id), def_id)?;
-                }
+            ItemKind::TraitItemProvided(..) | ItemKind::TraitItemDecl(..) => {
+                // This is a trait decl item
+                let trait_id = tcx.trait_of_item(def_id).unwrap();
+                self.translate_trait_decl_self_trait_clause(trait_id)?;
             }
+        }
 
-            Ok(())
-        })?;
+        // Translate the predicates (in particular, the trait clauses)
+        match &fun_kind {
+            ItemKind::Regular | ItemKind::TraitItemImpl { .. } => {
+                self.translate_predicates_of(None, def_id)?;
+            }
+            ItemKind::TraitItemProvided(trait_decl_id, ..)
+            | ItemKind::TraitItemDecl(trait_decl_id, ..) => {
+                self.translate_predicates_of(Some(*trait_decl_id), def_id)?;
+            }
+        }
 
         // Translate the signature
         trace!("signature of {def_id:?}:\n{:?}", signature);
@@ -1843,7 +1838,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // }
         // ```
         bt_ctx.translate_generic_params(rust_id)?;
-        bt_ctx.translate_predicates_solve_trait_obligations_of(None, rust_id)?;
+        bt_ctx.translate_predicates_of(None, rust_id)?;
 
         let hax_state = &bt_ctx.hax_state;
 

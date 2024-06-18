@@ -311,12 +311,6 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// corresponds to.
     /// FIXME: hax should take care of this matching up.
     pub trait_clauses: BTreeMap<TraitDeclId, Vec<NonLocalTraitClause>>,
-    /// If [true] it means we are currently registering trait clauses in the
-    /// local context. As a consequence, we allow not solving all the trait
-    /// obligations, because the obligations for some clauses may be solved
-    /// by other clauses which have not been registered yet.
-    /// For this reason, we do the resolution in several passes.
-    pub registering_trait_clauses: bool,
     ///
     pub types_outlive: Vec<TypeOutlives>,
     ///
@@ -833,7 +827,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             const_generic_vars_map: MapGenerator::new(),
             clause_translation_context: Default::default(),
             trait_clauses: Default::default(),
-            registering_trait_clauses: false,
             regions_outlive: Vec::new(),
             types_outlive: Vec::new(),
             trait_type_constraints: Vec::new(),
@@ -1066,19 +1059,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Return
         (out, new_ctx)
-    }
-
-    /// Set [registering_trait_clauses] to [true], call the continuation, and
-    /// reset it to [false]
-    pub(crate) fn while_registering_trait_clauses<F, T>(&mut self, f: F) -> T
-    where
-        F: FnOnce(&mut Self) -> T,
-    {
-        assert!(!self.registering_trait_clauses);
-        self.registering_trait_clauses = true;
-        let out = f(self);
-        self.registering_trait_clauses = false;
-        out
     }
 
     pub(crate) fn make_dep_source(&self, span: rustc_span::Span) -> Option<DepSource> {
