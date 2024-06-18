@@ -1,53 +1,28 @@
-error[E0433]: failed to resolve: use of undeclared crate or module `charon`
-  --> tests/ui/rename_attribute_failure.rs:16:3
-   |
-16 | #[charon::rename()]
-   |   ^^^^^^ use of undeclared crate or module `charon`
-
-error[E0433]: failed to resolve: use of undeclared crate or module `charon`
-  --> tests/ui/rename_attribute_failure.rs:12:3
-   |
-12 | #[charon::rename("75Test")]
-   |   ^^^^^^ use of undeclared crate or module `charon`
-
-error[E0433]: failed to resolve: use of undeclared crate or module `charon`
- --> tests/ui/rename_attribute_failure.rs:8:3
+error: Attribute `{charon,aeneas}::rename` should not contain an empty string
+ --> tests/ui/rename_attribute_failure.rs:8:1
   |
-8 | #[charon::rename("Test!976?")]
-  |   ^^^^^^ use of undeclared crate or module `charon`
-
-error[E0433]: failed to resolve: use of undeclared crate or module `charon`
- --> tests/ui/rename_attribute_failure.rs:4:3
-  |
-4 | #[charon::rename("")]
-  |   ^^^^^^ use of undeclared crate or module `charon`
-
-error: Attribute `rename` should be of the shape `rename("...")`
-  --> tests/ui/rename_attribute_failure.rs:17:1
-   |
-17 | type TestNotProperShape = i32;
-   | ^^^^^^^^^^^^^^^^^^^^^^^
-
-error: Attribute `rename` should only contains alphanumeric characters, `_` and `-` and should start with a letter
-  --> tests/ui/rename_attribute_failure.rs:13:1
-   |
-13 | type TestNotStartingWithLetter = i32;
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-error: Attribute `rename` should only contains alphanumeric characters, `_` and `-` and should start with a letter
- --> tests/ui/rename_attribute_failure.rs:9:1
-  |
-9 | type TestNonAlphanumeric = i32;
-  | ^^^^^^^^^^^^^^^^^^^^^^^^
-
-error: Attribute `rename` should not be empty
- --> tests/ui/rename_attribute_failure.rs:5:1
-  |
-5 | type TestEmpty = i32;
+8 | type TestEmpty = i32;
   | ^^^^^^^^^^^^^^
 
-error: aborting due to 8 previous errors
+error: Attribute `rename` should only contain alphanumeric characters and `_`, and should start with a letter or '_': "Test!976?" is not a valid name
+  --> tests/ui/rename_attribute_failure.rs:12:1
+   |
+12 | type TestNonAlphanumeric = i32;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^
 
-For more information about this error, try `rustc --explain E0433`.
+error: Attribute `rename` should only contain alphanumeric characters and `_`, and should start with a letter or '_': "75Test" is not a valid name
+  --> tests/ui/rename_attribute_failure.rs:16:1
+   |
+16 | type TestNotStartingWithLetter = i32;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Attribute `{charon,aeneas}::rename` should be of the shape `{charon,aeneas}::rename("...")`: `charon::rename()` is not valid
+  --> tests/ui/rename_attribute_failure.rs:20:1
+   |
+20 | type TestNotProperShape = i32;
+   | ^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 4 previous errors
+
 [ ERROR charon_driver:231] The extraction encountered 4 errors
 Error: Charon driver exited with code 1

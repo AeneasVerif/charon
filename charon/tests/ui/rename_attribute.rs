@@ -47,5 +47,5 @@ struct Foo {
 #[charon::rename("Const_Test")]
 const C: u32 = 100 + 10 + 1;
 
-#[aeneas::rename("Type-Aeneas36")]
+#[aeneas::rename("_TypeAeneas36")]
 type Test2 = u32;
