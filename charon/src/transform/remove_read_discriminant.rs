@@ -4,7 +4,6 @@
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
 
 use crate::llbc_ast::*;
-use crate::meta::combine_span;
 use crate::transform::TransformCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -19,25 +18,19 @@ use super::ctx::LlbcPass;
 pub struct Transform;
 impl Transform {
     fn update_statement(ctx: &mut TransformCtx<'_>, st: &mut Statement) {
-        match &mut st.content {
-            RawStatement::Sequence(
-                box Statement {
-                    content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
-                    span: span1,
-                },
-                box st2,
-            ) => {
+        let RawStatement::Sequence(seq) = &mut st.content else {
+            return;
+        };
+        // Iterate through the statements.
+        for i in 0..seq.len() {
+            let suffix = &mut seq[i..];
+            if let [Statement {
+                content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
+                span: span1,
+            }, rest @ ..] = suffix
+            {
                 // The destination should be a variable
                 assert!(dest.projection.is_empty());
-
-                // Take st2
-                let st2 = std::mem::replace(
-                    st2,
-                    Statement {
-                        content: RawStatement::Nop,
-                        span: st2.span,
-                    },
-                );
 
                 // Lookup the type of the scrutinee
                 let variants = match ctx.translated.type_decls.get(*adt_id) {
@@ -63,89 +56,69 @@ impl Transform {
                 };
                 let Some(variants) = variants else {
                     // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
-                    // `Nop` the whole statement sequence.
+                    // `Nop` the discriminant read.
                     assert!(ctx.has_errors());
-                    *st = Statement {
-                        content: RawStatement::Nop,
-                        span: st.span,
-                    };
+                    seq[i].content = RawStatement::Nop;
                     return;
                 };
 
                 // We look for a `SwitchInt` just after the discriminant read.
-                // Note that it may be contained in a sequence, of course.
-                let maybe_switch = match st2.content {
-                    RawStatement::Sequence(
-                        box Statement {
-                            content: RawStatement::Switch(switch @ Switch::SwitchInt(..)),
-                            span: span2,
-                        },
-                        box st3,
-                    ) => Ok((span2, switch, Some(st3))),
-                    RawStatement::Switch(switch @ Switch::SwitchInt(..)) => {
-                        Ok((st2.span, switch, None))
-                    }
-                    _ => Err(st2),
-                };
-
-                match maybe_switch {
-                    Ok((span2, switch, st3_opt)) => {
-                        let Switch::SwitchInt(Operand::Move(op_p), _int_ty, targets, otherwise) =
-                            switch
-                        else {
-                            unreachable!()
-                        };
-                        assert!(op_p.projection.is_empty() && op_p.var_id == dest.var_id);
-
+                match rest {
+                    [Statement {
+                        content:
+                            RawStatement::Switch(switch @ Switch::SwitchInt(Operand::Move(_), ..)),
+                        ..
+                    }, ..] => {
                         // Convert between discriminants and variant indices. Remark: the discriminant can
                         // be of any *signed* integer type (`isize`, `i8`, etc.).
                         let discr_to_id: HashMap<ScalarValue, VariantId> = variants
                             .iter_indexed_values()
                             .map(|(id, variant)| (variant.discriminant, id))
                             .collect();
-                        let mut covered_discriminants: HashSet<ScalarValue> = HashSet::default();
-                        let targets = targets
-                            .into_iter()
-                            .map(|(v, e)| {
-                                (
-                                    v.into_iter()
-                                        .filter_map(|discr| {
-                                            covered_discriminants.insert(discr);
-                                            discr_to_id.get(&discr).or_else(|| {
-                                                register_error_or_panic!(
-                                                    ctx,
-                                                    st.span.span.rust_span_data.span(),
-                                                    "Found incorrect discriminant {discr} for enum {adt_id}"
-                                                );
-                                                None
-                                            })
-                                        })
-                                        .copied()
-                                        .collect_vec(),
-                                    e,
-                                )
-                            })
-                            .collect_vec();
-                        // Filter the otherwise branch if it is not necessary.
-                        let covers_all = covered_discriminants.len() == discr_to_id.len();
-                        let otherwise = if covers_all { None } else { Some(otherwise) };
 
-                        let switch =
-                            RawStatement::Switch(Switch::Match(p.clone(), targets, otherwise));
-
-                        // Add the next statement if there is one
-                        st.content = if let Some(st3) = st3_opt {
-                            let span = combine_span(span1, &span2);
-                            let switch = Statement {
-                                span,
-                                content: switch,
+                        take_mut::take(switch, |switch| {
+                            let (Operand::Move(op_p), _, targets, otherwise) =
+                                switch.to_switch_int()
+                            else {
+                                unreachable!()
                             };
-                            new_sequence(switch, st3).content
-                        } else {
-                            switch
-                        };
+                            assert!(op_p.projection.is_empty() && op_p.var_id == dest.var_id);
+
+                            let mut covered_discriminants: HashSet<ScalarValue> =
+                                HashSet::default();
+                            let targets = targets
+                                .into_iter()
+                                .map(|(v, e)| {
+                                    (
+                                        v.into_iter()
+                                            .filter_map(|discr| {
+                                                covered_discriminants.insert(discr);
+                                                discr_to_id.get(&discr).or_else(|| {
+                                                    register_error_or_panic!(
+                                                        ctx,
+                                                        st.span.span.rust_span_data.span(),
+                                                        "Found incorrect discriminant {discr} for enum {adt_id}"
+                                                    );
+                                                    None
+                                                })
+                                            })
+                                            .copied()
+                                            .collect_vec(),
+                                        e,
+                                    )
+                                })
+                                .collect_vec();
+                            // Filter the otherwise branch if it is not necessary.
+                            let covers_all = covered_discriminants.len() == discr_to_id.len();
+                            let otherwise = if covers_all { None } else { Some(otherwise) };
+
+                            // Replace the old switch with a match.
+                            Switch::Match(p.clone(), targets, otherwise)
+                        });
+                        // `Nop` the discriminant read.
+                        seq[i].content = RawStatement::Nop;
                     }
-                    Err(st2) => {
+                    _ => {
                         // The discriminant read is not followed by a `SwitchInt`. This can happen
                         // in optimized MIR. We replace `_x = Discr(_y)` with `match _y { 0 => { _x
                         // = 0 }, 1 => { _x = 1; }, .. }`.
@@ -168,20 +141,11 @@ impl Transform {
                                 (vec![id], statement)
                             })
                             .collect();
-                        let switch = RawStatement::Switch(Switch::Match(p.clone(), targets, None));
-                        let switch = Statement {
-                            span: *span1,
-                            content: switch,
-                        };
-                        st.content = new_sequence(switch, st2).content
+                        seq[i].content =
+                            RawStatement::Switch(Switch::Match(p.clone(), targets, None))
                     }
                 }
             }
-            RawStatement::Assign(_, Rvalue::Discriminant(_, _)) => {
-                // We failed to remove a [Discriminant]
-                unreachable!();
-            }
-            _ => (),
         }
     }
 }

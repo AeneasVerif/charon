@@ -71,38 +71,42 @@ fn test_crate::test3(@1: test_crate::E2) -> u32
 {
     let @0: u32; // return
     let x@1: test_crate::E2; // arg #1
-    let y@2: u32; // local
-    let n@3: u32; // local
-    let z@4: u32; // local
-    let @5: u32; // anonymous local
+    let @2: (); // anonymous local
+    let y@3: u32; // local
+    let n@4: u32; // local
+    let z@5: u32; // local
     let @6: u32; // anonymous local
+    let @7: u32; // anonymous local
 
+    @2 := ()
+    @fake_read(@2)
+    drop @2
     @fake_read(x@1)
     match x@1 {
         0 => {
-            n@3 := copy ((x@1 as variant @0).0)
-            y@2 := copy (n@3)
-            drop n@3
+            n@4 := copy ((x@1 as variant @0).0)
+            y@3 := copy (n@4)
+            drop n@4
         },
         1 => {
-            n@3 := copy ((x@1 as variant @1).0)
-            y@2 := copy (n@3)
-            drop n@3
+            n@4 := copy ((x@1 as variant @1).0)
+            y@3 := copy (n@4)
+            drop n@4
         },
         2 => {
-            y@2 := const (0 : u32)
+            y@3 := const (0 : u32)
         }
     }
-    @fake_read(y@2)
-    z@4 := test_crate::id<u32>(const (3 : u32))
-    @fake_read(z@4)
-    @5 := copy (y@2)
-    @6 := copy (z@4)
-    @0 := move (@5) + move (@6)
+    @fake_read(y@3)
+    z@5 := test_crate::id<u32>(const (3 : u32))
+    @fake_read(z@5)
+    @6 := copy (y@3)
+    @7 := copy (z@5)
+    @0 := move (@6) + move (@7)
+    drop @7
     drop @6
-    drop @5
-    drop z@4
-    drop y@2
+    drop z@5
+    drop y@3
     return
 }
 
