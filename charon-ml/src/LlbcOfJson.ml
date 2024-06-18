@@ -60,10 +60,21 @@ and raw_statement_of_json (id_to_file : id_to_file_map) (js : json) :
         let* i = int_of_json i in
         Ok (Continue i)
     | `String "Nop" -> Ok Nop
-    | `Assoc [ ("Sequence", `List [ st1; st2 ]) ] ->
-        let* st1 = statement_of_json id_to_file st1 in
-        let* st2 = statement_of_json id_to_file st2 in
-        Ok (Sequence (st1, st2))
+    (* We get a list from the rust side, which we fold into our recursive `Sequence` representation. *)
+    | `Assoc [ ("Sequence", `List seq) ] -> (
+        let seq = List.map (statement_of_json id_to_file) seq in
+        match List.rev seq with
+        | [] -> Ok Nop
+        | last :: rest ->
+            let* seq =
+              List.fold_left
+                (fun acc st ->
+                  let* st = st in
+                  let* acc = acc in
+                  Ok { span = st.span; content = Sequence (st, acc) })
+                last rest
+            in
+            Ok seq.content)
     | `Assoc [ ("Switch", tgt) ] ->
         let* switch = switch_of_json id_to_file tgt in
         Ok (Switch switch)
