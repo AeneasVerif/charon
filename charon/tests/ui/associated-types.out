@@ -1,0 +1,125 @@
+# Final LLBC before serialization:
+
+trait core::clone::Clone<Self>
+{
+    fn clone : core::clone::Clone::clone
+    fn clone_from
+}
+
+trait core::marker::Copy<Self>
+{
+    parent_clause_0 : [@TraitClause0]: core::clone::Clone<Self>
+}
+
+trait test_crate::Foo<'a, Self>
+where
+    Self::Item : 'a,
+{
+    parent_clause_0 : [@TraitClause0]: core::marker::Copy<Self>
+    type Item
+        where
+            [@TraitClause0]: core::clone::Clone<Self::Item>,
+    fn use_item : test_crate::Foo::use_item
+}
+
+fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)#3}::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
+
+impl<'_0, T> core::clone::impls::{impl core::clone::Clone for &'_0 (T)#3}<'_0, T> : core::clone::Clone<&'_0 (T)>
+{
+    fn clone = core::clone::impls::{impl core::clone::Clone for &'_0 (T)#3}::clone
+}
+
+impl<'_0, T> core::marker::{impl core::marker::Copy for &'_0 (T)#4}<'_0, T> : core::marker::Copy<&'_0 (T)>
+{
+    parent_clause0 = core::clone::impls::{impl core::clone::Clone for &'_0 (T)#3}<'_, T>
+}
+
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
+
+
+fn core::option::{impl core::clone::Clone for core::option::Option<T>#5}::clone<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> core::option::Option<T>
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::clone::Clone<T>,
+
+fn core::option::{impl core::clone::Clone for core::option::Option<T>#5}::clone_from<'_0, '_1, T>(@1: &'_0 mut (core::option::Option<T>), @2: &'_1 (core::option::Option<T>))
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::clone::Clone<T>,
+
+impl<T> core::option::{impl core::clone::Clone for core::option::Option<T>#5}<T> : core::clone::Clone<core::option::Option<T>>
+where
+    [@TraitClause0]: core::clone::Clone<T>,
+{
+    fn clone = core::option::{impl core::clone::Clone for core::option::Option<T>#5}::clone
+    fn clone_from = core::option::{impl core::clone::Clone for core::option::Option<T>#5}::clone_from
+}
+
+impl<'a, T> test_crate::{impl test_crate::Foo<'a> for &'a (T)}<'a, T> : test_crate::Foo<'a, &'a (T)>
+{
+    parent_clause0 = core::marker::{impl core::marker::Copy for &'_0 (T)#4}<'_, T>
+    type Item = core::option::Option<&'a (T)> with [core::option::{impl core::clone::Clone for core::option::Option<T>#5}<&'_ (T)>[core::clone::impls::{impl core::clone::Clone for &'_0 (T)#3}<'_, T>]]
+}
+
+fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+fn test_crate::external_use_item<'a, T>(@1: @TraitClause0::Item) -> @TraitClause0::Item
+where
+    [@TraitClause0]: test_crate::Foo<'_, T>,
+{
+    let @0: @TraitClause0::Item; // return
+    let x@1: @TraitClause0::Item; // arg #1
+    let @2: &'_ (@TraitClause0::Item); // anonymous local
+
+    @2 := &x@1
+    @0 := (@TraitClause0::Item::[@TraitClause0])::clone(move (@2))
+    drop @2
+    drop x@1
+    return
+}
+
+fn test_crate::call_fn()
+{
+    let @0: (); // return
+    let @1: core::option::Option<&'_ (bool)>; // anonymous local
+    let @2: core::option::Option<&'_ (bool)>; // anonymous local
+    let @3: (); // anonymous local
+
+    @2 := core::option::Option::None {  }
+    @1 := test_crate::external_use_item<'_, &'_ (bool)>[test_crate::{impl test_crate::Foo<'a> for &'a (T)}<'_, bool>](move (@2))
+    drop @2
+    @fake_read(@1)
+    drop @1
+    @3 := ()
+    @0 := move (@3)
+    @0 := ()
+    return
+}
+
+fn test_crate::type_equality<'a, I, J>(@1: @TraitClause0::Item) -> @TraitClause1::Item
+where
+    [@TraitClause0]: test_crate::Foo<'_, I>,
+    [@TraitClause1]: test_crate::Foo<'_, J>,
+    @TraitClause1::Item = @TraitClause0::Item,
+{
+    let @0: @TraitClause0::Item; // return
+    let x@1: @TraitClause0::Item; // arg #1
+
+    @0 := move (x@1)
+    drop x@1
+    return
+}
+
+fn test_crate::Foo::use_item<'a, '_1, Self>(@1: &'_1 (Self::Item)) -> &'_1 (Self::Item)
+{
+    let @0: &'_ (Self::Item); // return
+    let x@1: &'_ (Self::Item); // arg #1
+
+    @0 := copy (x@1)
+    return
+}
+
+
+
