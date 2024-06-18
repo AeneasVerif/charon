@@ -137,6 +137,16 @@ wrap_unwrap_enum!(AnyTransId::Type(TypeDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
 
+/// A translated item.
+#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+pub enum AnyTransItem<'ctx> {
+    Type(&'ctx TypeDecl),
+    Fun(&'ctx FunDecl),
+    Global(&'ctx GlobalDecl),
+    TraitDecl(&'ctx TraitDecl),
+    TraitImpl(&'ctx TraitImpl),
+}
+
 /// We use a special type to store the Rust identifiers in the stack, to
 /// make sure we translate them in a specific order (top-level constants
 /// before constant functions before functions...). This allows us to
@@ -272,6 +282,9 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// We use an ordered map to make sure we translate them in a specific
     /// order (this avoids stealing issues when querying the MIR bodies).
     pub priority_queue: BTreeMap<OrdRustId, AnyTransId>,
+    /// Stack of the translations currently happening. Used to avoid cycles where items need to
+    /// translate themselves transitively.
+    pub translate_stack: Vec<AnyTransId>,
 }
 
 /// A translation context for type/global/function bodies.
