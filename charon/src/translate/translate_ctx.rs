@@ -426,9 +426,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.translate_span_from_rspan(rspan)
     }
 
-    fn parse_rename(&mut self, span: Span, attributes: Vec<Attribute>) -> Option<String> {
-        //search for rename attributes
-        let filter_attribute: Vec<&str> = attributes
+    fn parse_rename_attribute(&mut self, span: Span, attributes: Vec<Attribute>) -> Option<String> {
+        // Search for rename attributes
+        let attributes: Vec<&str> = attributes
             .iter()
             .filter_map(|str| {
                 str.strip_prefix("charon::rename(")
@@ -436,47 +436,55 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     .and_then(|str| str.strip_suffix(")"))
             })
             .collect();
-        //there should only be one rename attribute, so the vector should only have one element
-        if let [str] = filter_attribute.as_slice() {
-            let rename = str
-                .strip_prefix("\"")
-                .and_then(|str| str.strip_suffix("\""));
-            if let Some(str) = rename {
-                if str.is_empty() {
-                    self.span_err(span, "Attribute `rename` should not be empty");
-                    return None;
-                }
-                let first_char_alphabetic = str
-                    .chars()
-                    .nth(0)
-                    .expect("Attribute `rename` should not be empty")
-                    .is_alphabetic();
-                let is_identifier = first_char_alphabetic
-                    && str
-                        .chars()
-                        .all(|c| c.is_alphanumeric() || c == '_' || c == '-');
-                if !is_identifier {
-                    self.span_err(span, "Attribute `rename` should only contains alphanumeric characters, `_` and `-` and should start with a letter");
-                    return None;
-                }
-                return Some(rename.unwrap().to_string());
-            } else {
-                self.span_err(
-                    span,
-                    "Attribute `rename` should be of the shape `rename(\"...\")`",
-                );
-                return None;
-            }
-        // if there are more than one rename attribute, we tell the user there should only be one
-        } else if filter_attribute.len() > 1 {
+
+        // Check if there is a rename attribute
+        if attributes.len() == 0 {
+            return None;
+        }
+
+        // We don't allow giving several rename attributes
+        if attributes.len() > 1 {
             self.span_err(
                 span,
-                "There are too many `rename` attributes, please use only one",
+                "There shouldn't be more than one `charon::rename(\"...\")` or `aeneas::rename(\"...\")` attribute per declaration",
             );
             return None;
-            // there are no rename attributes, so no error to return and rename is then just None
         }
-        None
+
+        // There is exactly one attribute: retrieve it
+        let str0 = attributes.get(0).unwrap();
+        let str = str0
+            .strip_prefix("\"")
+            .and_then(|str| str.strip_suffix("\""));
+
+        // The name should be between quotation marks
+        if str.is_none() {
+            self.span_err(
+                span,
+                "Attribute `rename` should be of the shape `{charon,aeneas}::rename(\"...\")`, parsed: {str0} instead",
+            );
+            return None;
+        }
+        let str = str.unwrap();
+
+        // The name shouldn't be empty
+        if str.is_empty() {
+            self.span_err(span, "Attribute `rename` should not be empty");
+            return None;
+        }
+
+        // Check that the name starts with a letter, and only contains alphanumeric
+        // characters or '_'
+        let first_char = str.chars().nth(0).unwrap();
+        let first_char_ok = first_char.is_alphabetic() || first_char == '_';
+        let is_identifier = first_char_ok && str.chars().all(|c| c.is_alphanumeric() || c == '_');
+        if !is_identifier {
+            self.span_err(span, "Attribute `rename` should only contain alphanumeric characters and `_`, and should start with a letter or '_'; {str} is not a valid name");
+            return None;
+        }
+
+        // Ok: we can return the attribute
+        return Some(str.to_string());
     }
 
     /// Compute the meta information for a Rust item identified by its id.
@@ -490,10 +498,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let opaque = attributes
             .iter()
             .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque");
-        let rename = self.parse_rename(span, attributes.clone());
+        let rename = self.parse_rename_attribute(span, attributes.clone());
         ItemMeta {
             span,
-            attributes: attributes,
+            attributes,
             inline: self.translate_inline_from_rid(def_id),
             public,
             opaque,
