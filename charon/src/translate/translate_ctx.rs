@@ -399,8 +399,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn register_file(&mut self, filename: FileName) -> FileId {
         // Lookup the file if it was already registered
         match self.translated.file_to_id.get(&filename) {
-            Option::Some(id) => *id,
-            Option::None => {
+            Some(id) => *id,
+            None => {
                 // Generate the fresh id
                 let id = match &filename {
                     FileName::Local(_) => {
@@ -445,23 +445,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 if str.is_empty() {
                     self.span_err(span, "Attribute `rename` should not be empty");
                     return None;
-                } else {
-                    let first_char_alphabetic = str
-                        .chars()
-                        .nth(0)
-                        .expect("Attribute `rename` should not be empty")
-                        .is_alphabetic();
-                    let is_identifier = first_char_alphabetic
-                        && str
-                            .chars()
-                            .all(|c| c.is_alphanumeric() || c == '_' || c == '-');
-                    if !is_identifier {
-                        self.span_err(span, "Attribute `rename` should only contains alphanumeric characters, `_` and `-` and should start with a letter");
-                        return None;
-                    } else {
-                        Some(rename.unwrap().to_string())
-                    }
                 }
+                let first_char_alphabetic = str
+                    .chars()
+                    .nth(0)
+                    .expect("Attribute `rename` should not be empty")
+                    .is_alphabetic();
+                let is_identifier = first_char_alphabetic
+                    && str
+                        .chars()
+                        .all(|c| c.is_alphanumeric() || c == '_' || c == '-');
+                if !is_identifier {
+                    self.span_err(span, "Attribute `rename` should only contains alphanumeric characters, `_` and `-` and should start with a letter");
+                    return None;
+                }
+                return Some(rename.unwrap().to_string());
             } else {
                 self.span_err(
                     span,
@@ -475,11 +473,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 span,
                 "There are too many `rename` attributes, please use only one",
             );
-            None
-        // there are no rename attributes, so no error to return and rename is then just None
-        } else {
-            None
+            return None;
+            // there are no rename attributes, so no error to return and rename is then just None
         }
+        None
     }
 
     /// Compute the meta information for a Rust item identified by its id.
