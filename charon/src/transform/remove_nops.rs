@@ -1,22 +1,20 @@
 //! Remove the useless no-ops.
 
 use crate::llbc_ast::{ExprBody, RawStatement, Statement};
-use crate::meta::combine_span;
 use crate::transform::TransformCtx;
 use take_mut::take;
 
 use super::ctx::LlbcPass;
 
 fn transform_st(s: &mut Statement) {
-    if let RawStatement::Sequence(s1, _) = &s.content {
-        if s1.content.is_nop() {
-            take(s, |s| {
-                let (s1, s2) = s.content.to_sequence();
-                Statement {
-                    content: s2.content,
-                    span: combine_span(&s1.span, &s2.span),
-                }
-            })
+    if let RawStatement::Sequence(seq) = &mut s.content {
+        // Remove all the `Nop`s from this sequence.
+        if seq.iter().any(|st| st.content.is_nop()) {
+            seq.retain(|st| !st.content.is_nop())
+        }
+        // Replace an empty sequence with a `Nop`.
+        if seq.is_empty() {
+            take(&mut s.content, |_| RawStatement::Nop)
         }
     }
 }

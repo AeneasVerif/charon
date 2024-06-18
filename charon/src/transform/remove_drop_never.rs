@@ -13,22 +13,13 @@ use super::ctx::LlbcPass;
 /// Filter the statement by replacing it with `Nop` if it is a `Drop(x)` where
 /// `x` has type `Never`. Otherwise leave it unchanged.
 fn transform_st(locals: &Vector<VarId, Var>, st: &mut Statement) {
-    // Shall we filter the statement?
-    let filter = match &mut st.content {
-        RawStatement::Drop(p) => {
-            if p.projection.is_empty() {
-                let var = locals.get(p.var_id).unwrap();
-                var.ty.is_never()
-            } else {
-                false
+    if let RawStatement::Drop(p) = &st.content {
+        if p.projection.is_empty() {
+            let var = locals.get(p.var_id).unwrap();
+            if var.ty.is_never() {
+                st.content = RawStatement::Nop;
             }
         }
-        _ => false,
-    };
-
-    // If we filter the statement, we simply replace it with `nop`
-    if filter {
-        *st = Statement::new(st.span, RawStatement::Nop);
     }
 }
 

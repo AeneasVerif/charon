@@ -43,7 +43,7 @@ pub struct Var {
 }
 
 /// Marker to indicate that a declaration is opaque (i.e. we don't inspect its body).
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Opaque;
 
 /// An expression body.
