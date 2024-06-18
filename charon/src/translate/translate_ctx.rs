@@ -428,12 +428,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     fn parse_rename_attribute(&mut self, span: Span, attributes: Vec<Attribute>) -> Option<String> {
         // Search for rename attributes
-        let attributes: Vec<&str> = attributes
+        let attributes: Vec<(&String, &str)> = attributes
             .iter()
-            .filter_map(|str| {
-                str.strip_prefix("charon::rename(")
-                    .or(str.strip_prefix("aeneas::rename("))
-                    .and_then(|str| str.strip_suffix(")"))
+            .filter_map(|raw_attr| {
+                raw_attr
+                    .strip_prefix("charon::rename(")
+                    .or(raw_attr.strip_prefix("aeneas::rename("))
+                    .and_then(|str| str.strip_suffix(")").and_then(|str| Some((raw_attr, str))))
             })
             .collect();
 
@@ -452,8 +453,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
 
         // There is exactly one attribute: retrieve it
-        let str0 = attributes.get(0).unwrap();
-        let str = str0
+        let (raw_attr, str) = attributes.get(0).unwrap();
+        let str = str
             .strip_prefix("\"")
             .and_then(|str| str.strip_suffix("\""));
 
@@ -461,7 +462,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         if str.is_none() {
             self.span_err(
                 span,
-                "Attribute `rename` should be of the shape `{charon,aeneas}::rename(\"...\")`, parsed: {str0} instead",
+                &format!("Attribute `{{charon,aeneas}}::rename` should be of the shape `{{charon,aeneas}}::rename(\"...\")`: `{raw_attr}` is not valid"),
             );
             return None;
         }
@@ -469,7 +470,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // The name shouldn't be empty
         if str.is_empty() {
-            self.span_err(span, "Attribute `rename` should not be empty");
+            self.span_err(
+                span,
+                "Attribute `{charon,aeneas}::rename` should not contain an empty string",
+            );
             return None;
         }
 
@@ -479,7 +483,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let first_char_ok = first_char.is_alphabetic() || first_char == '_';
         let is_identifier = first_char_ok && str.chars().all(|c| c.is_alphanumeric() || c == '_');
         if !is_identifier {
-            self.span_err(span, "Attribute `rename` should only contain alphanumeric characters and `_`, and should start with a letter or '_'; {str} is not a valid name");
+            self.span_err(span, &format!("Attribute `rename` should only contain alphanumeric characters and `_`, and should start with a letter or '_': \"{str}\" is not a valid name"));
             return None;
         }
 
