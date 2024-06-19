@@ -124,6 +124,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // a definition:
         // - [TyCtxt::predicates_defined_on]: returns exactly the list of predicates
         //   that the user has written on the definition:
+        //   FIXME: today's docs say that these includes `outlives` predicates as well
         // - [TyCtxt::predicates_of]: returns the user defined predicates and also:
         //   - if called on a trait `Foo`, we get an additional trait clause
         //     `Self : Foo` (i.e., the trait requires itself), which is not what we want.
@@ -131,25 +132,32 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         //     information, which the user doesn't have to write by hand (but it doesn't
         //     add those for functions). For instance, below:
         //     ```
-        //     type MutMut<'a, 'b> {
-        //       x : &'a mut &'b mut u32,
+        //     struct MutMut<'a, 'b, T> {
+        //         x: &'a mut &'b mut T,
         //     }
         //     ```
-        //     The rust compiler adds the predicate: `'b : 'a` ('b outlives 'a).
+        //     The rust compiler adds the predicates: `'b: 'a` ('b outlives 'a) and `T: 'b`.
         // For this reason we:
         // - retrieve the trait predicates with [TyCtxt::predicates_defined_on]
         // - retrieve the other predicates with [TyCtxt::predicates_of]
         //
         // Also, we reorder the predicates to make sure that the trait clauses come
-        // *before* the other clauses. This way we are sure that, when translating,
-        // all the trait clauses are in the context if we need them.
+        // *before* the other clauses. This helps, when translating, with having the trait clauses
+        // in the context if we need them.
         //
         // Example:
         // ```
-        // f<T : Foo<S = U::S>, U : Foo>(...)
-        //               ^^^^
-        //        must make sure we have U : Foo in the context
-        //                before translating this
+        // fn f<T: Foo<S = U::S>, U: Foo>(...)
+        //                 ^^^^ must make sure we have U: Foo in the context
+        //                      before translating this
+        // ```
+        // There's no perfect ordering though, as this shows:
+        // ```
+        // fn f<T: Foo<U::S>, U: Foo<T::S>>(...)
+        //                           ^^^^ we'd need to have T: Foo in the context
+        //                                before translating this
+        //             ^^^^ we'd need to have U: Foo in the context
+        //                  before translating this
         // ```
         let tcx = self.t_ctx.tcx;
         let param_env = tcx.param_env(def_id);
