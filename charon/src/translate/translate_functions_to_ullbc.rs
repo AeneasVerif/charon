@@ -1670,11 +1670,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Translate the predicates (in particular, the trait clauses)
         match &fun_kind {
             ItemKind::Regular | ItemKind::TraitItemImpl { .. } => {
-                self.translate_predicates_of(None, def_id)?;
+                self.translate_predicates_of(None, def_id, PredicateOrigin::WhereClauseOnFn)?;
             }
             ItemKind::TraitItemProvided(trait_decl_id, ..)
             | ItemKind::TraitItemDecl(trait_decl_id, ..) => {
-                self.translate_predicates_of(Some(*trait_decl_id), def_id)?;
+                self.translate_predicates_of(
+                    Some(*trait_decl_id),
+                    def_id,
+                    PredicateOrigin::WhereClauseOnFn,
+                )?;
             }
         }
 
@@ -1838,7 +1842,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // }
         // ```
         bt_ctx.translate_generic_params(rust_id)?;
-        bt_ctx.translate_predicates_of(None, rust_id)?;
+        bt_ctx.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnFn)?;
 
         let hax_state = &bt_ctx.hax_state;
 

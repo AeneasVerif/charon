@@ -1,16 +1,13 @@
 #![feature(rustc_private)]
+#![feature(lint_reasons)]
 
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use itertools::Itertools;
+use std::collections::HashMap;
 use std::{error::Error, fs::File, io::BufReader, process::Command};
 
 use charon_lib::{
-    export::CrateData,
-    logger,
-    meta::{FileName, InlineAttr, Span},
-    names::{Name, PathElem},
-    types::TypeDecl,
-    values::ScalarValue,
+    export::CrateData, gast::*, logger, meta::*, names::*, types::*, values::ScalarValue,
 };
 
 fn translate(code: impl std::fmt::Display) -> Result<CrateData, Box<dyn Error>> {
@@ -62,6 +59,81 @@ fn repr_name(n: &Name) -> String {
 fn repr_span(span: Span) -> String {
     let raw_span = span.span;
     format!("{}-{}", raw_span.beg, raw_span.end)
+}
+
+enum ItemKind<'c> {
+    Fun(&'c FunDecl),
+    Global(&'c GlobalDecl),
+    Type(&'c TypeDecl),
+    TraitDecl(&'c TraitDecl),
+    TraitImpl(&'c TraitImpl),
+}
+
+/// A general item, with information shared by all items.
+#[expect(dead_code)]
+struct Item<'c> {
+    name: &'c Name,
+    name_str: String,
+    item_meta: &'c ItemMeta,
+    // Not a ref because we do a little hack.
+    generics: GenericParams,
+    preds: &'c Predicates,
+    kind: ItemKind<'c>,
+}
+
+/// Get all the items for this crate.
+fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
+    crate_data
+        .functions
+        .iter()
+        .map(|x| Item {
+            name: &x.name,
+            name_str: repr_name(&x.name),
+            item_meta: &x.item_meta,
+            generics: x.signature.generics.clone(),
+            preds: &x.signature.preds,
+            kind: ItemKind::Fun(x),
+        })
+        .chain(crate_data.globals.iter().map(|x| Item {
+            name: &x.name,
+            name_str: repr_name(&x.name),
+            item_meta: &x.item_meta,
+            generics: x.generics.clone(),
+            preds: &x.preds,
+            kind: ItemKind::Global(x),
+        }))
+        .chain(crate_data.types.iter().map(|x| Item {
+            name: &x.name,
+            name_str: repr_name(&x.name),
+            item_meta: &x.item_meta,
+            generics: x.generics.clone(),
+            preds: &x.preds,
+            kind: ItemKind::Type(x),
+        }))
+        .chain(crate_data.trait_impls.iter().map(|x| Item {
+            name: &x.name,
+            name_str: repr_name(&x.name),
+            item_meta: &x.item_meta,
+            generics: x.generics.clone(),
+            preds: &x.preds,
+            kind: ItemKind::TraitImpl(x),
+        }))
+        .chain(crate_data.trait_decls.iter().map(|x| {
+            let mut generics = x.generics.clone();
+            // We do a little hack.
+            assert!(generics.trait_clauses.is_empty());
+            generics.trait_clauses = x.parent_clauses.clone();
+            Item {
+                name: &x.name,
+                name_str: repr_name(&x.name),
+                item_meta: &x.item_meta,
+                generics,
+                preds: &x.preds,
+                kind: ItemKind::TraitDecl(x),
+            }
+        }))
+        .map(|item| (item.name_str.clone(), item))
+        .collect()
 }
 
 #[test]
@@ -124,6 +196,106 @@ fn spans() -> Result<(), Box<dyn Error>> {
     let the_loop = seq.iter().find(|st| st.content.is_loop()).unwrap();
     // That's not a very precise span :/
     assert_eq!(repr_span(the_loop.span), "4:12-10:9");
+    Ok(())
+}
+
+#[test]
+fn predicate_origins() -> Result<(), Box<dyn Error>> {
+    use PredicateOrigin::*;
+    let crate_data = translate(
+        "
+        fn top_level_function<T: Clone>() where T: Default {}
+
+        #[derive(Clone)]
+        struct Struct<T: Clone> where T: Default { x: T }
+
+        type TypeAlias<T: Clone> where T: Default = Struct<T>;
+
+        impl<T: Clone> Struct<T> where T: Default {
+            fn inherent_method<U: From<T>>() where T: From<U> {}
+        }
+
+        trait Trait<T: Copy>: Clone where T: Default {
+            type AssocType: Default;
+            fn trait_method<U: From<T>>() where T: From<U>;
+        }
+
+        impl<T: Copy> Trait<T> for Struct<T> where T: Default {
+            type AssocType = ();
+            fn trait_method<U: From<T>>() where T: From<U> {}
+        }
+        ",
+    )?;
+    let expected_function_clause_origins: Vec<(&str, &[_])> = vec![
+        (
+            "test_crate::top_level_function",
+            &[(WhereClauseOnFn, "Clone"), (WhereClauseOnFn, "Default")],
+        ),
+        (
+            "test_crate::Struct",
+            &[(WhereClauseOnType, "Clone"), (WhereClauseOnType, "Default")],
+        ),
+        (
+            "test_crate::TypeAlias",
+            &[(WhereClauseOnType, "Clone"), (WhereClauseOnType, "Default")],
+        ),
+        (
+            "test_crate::<impl>::inherent_method",
+            &[
+                (WhereClauseOnImpl, "Clone"),
+                (WhereClauseOnImpl, "Default"),
+                (WhereClauseOnFn, "From"),
+                (WhereClauseOnFn, "From"),
+            ],
+        ),
+        (
+            "test_crate::Trait",
+            &[
+                (WhereClauseOnTrait, "Clone"),
+                (WhereClauseOnTrait, "Copy"),
+                (WhereClauseOnTrait, "Default"),
+            ],
+        ),
+        // Interesting note: the method definition does not mention the clauses on the trait.
+        (
+            "test_crate::Trait::trait_method",
+            &[(WhereClauseOnFn, "From"), (WhereClauseOnFn, "From")],
+        ),
+        (
+            "test_crate::<impl>",
+            &[(WhereClauseOnImpl, "Copy"), (WhereClauseOnImpl, "Default")],
+        ),
+        (
+            "test_crate::<impl>::trait_method",
+            &[
+                (WhereClauseOnImpl, "Copy"),
+                (WhereClauseOnImpl, "Default"),
+                (WhereClauseOnFn, "From"),
+                (WhereClauseOnFn, "From"),
+            ],
+        ),
+    ];
+    let items_by_name = items_by_name(&crate_data);
+    for (item_name, origins) in expected_function_clause_origins {
+        let Some(item) = items_by_name.get(item_name) else {
+            let keys = items_by_name
+                .keys()
+                .sorted()
+                .map(|k| format!("- `{k}`"))
+                .join("\n");
+            panic!("Item `{item_name}` not found. Available items: \n{keys}")
+        };
+        let clauses = &item.generics.trait_clauses;
+        assert_eq!(origins.len(), clauses.len(), "failed for {item_name}");
+        for (clause, (expected_origin, expected_trait_name)) in clauses.iter().zip(origins) {
+            let implemented_trait = &crate_data.trait_decls[clause.trait_id.index()];
+            let PathElem::Ident(trait_name, _) = implemented_trait.name.name.last().unwrap() else {
+                panic!()
+            };
+            assert_eq!(trait_name, expected_trait_name, "failed for {item_name}");
+            assert_eq!(&clause.origin, expected_origin, "failed for {item_name}");
+        }
+    }
     Ok(())
 }
 

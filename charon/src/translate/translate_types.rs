@@ -739,7 +739,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.translate_generic_params(rust_id)?;
 
         // Translate the predicates
-        bt_ctx.translate_predicates_of(None, rust_id)?;
+        bt_ctx.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnType)?;
 
         // Translate the meta information
         let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);

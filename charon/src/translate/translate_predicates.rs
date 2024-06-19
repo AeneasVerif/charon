@@ -39,6 +39,7 @@ pub(crate) struct NonLocalTraitClause {
     /// [Some] if this is the top clause, [None] if this is about a parent/
     /// associated type clause.
     pub span: Option<Span>,
+    pub origin: PredicateOrigin,
     pub trait_id: TraitDeclId,
     pub generics: GenericArgs,
 }
@@ -47,6 +48,7 @@ impl NonLocalTraitClause {
     pub(crate) fn to_trait_clause_with_id(&self, clause_id: TraitClauseId) -> TraitClause {
         TraitClause {
             clause_id,
+            origin: self.origin.clone(),
             span: self.span,
             trait_id: self.trait_id,
             generics: self.generics.clone(),
@@ -252,6 +254,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         parent_trait_id: Option<TraitDeclId>,
         def_id: DefId,
+        origin: PredicateOrigin,
     ) -> Result<(), Error> {
         trace!("def_id: {:?}", def_id);
         let tcx = self.t_ctx.tcx;
@@ -268,11 +271,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Predicates of parent ({:?}): {:?}", parent_id, preds);
 
                 if let Some(trait_id) = parent_trait_id {
-                    self.with_parent_trait_clauses(trait_id, &mut |ctx: &mut Self| {
-                        ctx.translate_predicates(&preds)
+                    self.with_parent_trait_clauses(trait_id, |ctx: &mut Self| {
+                        // TODO: distinguish where clauses from supertraits.
+                        ctx.translate_predicates(&preds, PredicateOrigin::WhereClauseOnTrait)
                     })?;
                 } else {
-                    self.translate_predicates(&preds)?;
+                    self.translate_predicates(&preds, PredicateOrigin::WhereClauseOnImpl)?;
                 }
             }
         }
@@ -294,7 +298,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // The predicates of the current definition
         let preds = self.get_predicates_of(def_id)?;
         trace!("Local predicates of {:?}:\n{:?}", def_id, preds);
-        self.translate_predicates(&preds)?;
+        self.translate_predicates(&preds, origin)?;
 
         let fmt_ctx = self.into_fmt();
         let clauses = self
@@ -315,17 +319,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn translate_predicates(
         &mut self,
         preds: &hax::GenericPredicates,
+        origin: PredicateOrigin,
     ) -> Result<(), Error> {
-        self.translate_predicates_vec(&preds.predicates)
+        self.translate_predicates_vec(&preds.predicates, origin)
     }
 
     pub(crate) fn translate_predicates_vec(
         &mut self,
         preds: &Vec<(hax::Predicate, hax::Span)>,
+        origin: PredicateOrigin,
     ) -> Result<(), Error> {
         trace!("Predicates:\n{:?}", preds);
         for (pred, span) in preds {
-            match self.translate_predicate(pred, span)? {
+            match self.translate_predicate(pred, span, origin.clone())? {
                 None => (),
                 Some(pred) => match pred {
                     Predicate::Trait(_) => {
@@ -370,15 +376,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Returns an [Option] because we may filter clauses about builtin or
     /// auto traits like [core::marker::Sized] and [core::marker::Sync].
+    ///
+    /// `origin` is where this clause comes from.
     pub(crate) fn translate_trait_clause(
         &mut self,
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
+        origin: PredicateOrigin,
     ) -> Result<Option<TraitClauseId>, Error> {
         // FIXME: once `clause` can't be `None`, use |Vector::reserve_slot` to be sure we don't use
         // the same id twice.
         let (clause_id, instance_id) = self.clause_translation_context.generate_instance_id();
-        let clause = self.translate_trait_clause_aux(hspan, trait_pred, instance_id)?;
+        let clause = self.translate_trait_clause_aux(hspan, trait_pred, instance_id, origin)?;
         if let Some(clause) = clause {
             let local_clause = clause.to_trait_clause_with_id(clause_id);
             self.clause_translation_context
@@ -402,7 +411,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_pred: &hax::TraitPredicate,
     ) -> Result<(), Error> {
         // Save the self clause (and its parent/item clauses)
-        let clause = self.translate_trait_clause_aux(span, &trait_pred, TraitInstanceId::SelfId)?;
+        let clause = self.translate_trait_clause_aux(
+            span,
+            &trait_pred,
+            TraitInstanceId::SelfId,
+            PredicateOrigin::TraitSelf,
+        )?;
         if let Some(clause) = clause {
             self.trait_clauses
                 .entry(clause.trait_id)
@@ -417,6 +431,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
         clause_id: TraitInstanceId,
+        origin: PredicateOrigin,
     ) -> Result<Option<NonLocalTraitClause>, Error> {
         // Note sure what this is about
         assert!(trait_pred.is_positive);
@@ -444,6 +459,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(Some(NonLocalTraitClause {
             clause_id,
             span: Some(span),
+            origin,
             trait_id,
             generics,
         }))
@@ -453,6 +469,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         pred: &hax::Predicate,
         hspan: &hax::Span,
+        origin: PredicateOrigin,
     ) -> Result<Option<Predicate>, Error> {
         trace!("{:?}", pred);
         // Predicates are always used in signatures/type definitions, etc.
@@ -469,7 +486,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             PredicateKind::Clause(kind) => {
                 match kind {
                     ClauseKind::Trait(trait_pred) => Ok(self
-                        .translate_trait_clause(hspan, trait_pred)?
+                        .translate_trait_clause(hspan, trait_pred, origin)?
                         .map(Predicate::Trait)),
                     ClauseKind::RegionOutlives(p) => {
                         let r0 = self.translate_region(span, erase_regions, &p.lhs)?;

@@ -221,7 +221,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn with_parent_trait_clauses(
         &mut self,
         trait_decl_id: TraitDeclId,
-        f: &mut dyn FnMut(&mut Self) -> Result<(), Error>,
+        f: impl FnOnce(&mut Self) -> Result<(), Error>,
     ) -> Result<Vector<TraitClauseId, TraitClause>, Error> {
         let (out, ctx) = self.with_clause_translation_context(
             ClauseTransCtx::Parent(Default::default(), trait_decl_id),
@@ -235,7 +235,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         trait_decl_id: TraitDeclId,
         item_name: TraitItemName,
-        f: &mut dyn FnMut(&mut Self) -> Result<(), Error>,
+        f: impl FnOnce(&mut Self) -> Result<(), Error>,
     ) -> Result<Vector<TraitClauseId, TraitClause>, Error> {
         let (out, ctx) = self.with_clause_translation_context(
             ClauseTransCtx::Item(Default::default(), trait_decl_id, item_name),
@@ -278,8 +278,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.translate_trait_decl_self_trait_clause(rust_id)?;
 
         // Translate the predicates.
-        let parent_clauses = bt_ctx
-            .with_parent_trait_clauses(def_id, &mut |s| s.translate_predicates_of(None, rust_id))?;
+        let parent_clauses = bt_ctx.with_parent_trait_clauses(def_id, |s| {
+            s.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnTrait)
+        })?;
 
         // TODO: move this below (we don't need to perform this function call exactly here)
         let preds = bt_ctx.get_predicates();
@@ -344,10 +345,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                             .map(|x| (x.as_predicate(), span))
                             .collect();
                         let bounds = bounds.sinto(&bt_ctx.hax_state);
+                        let origin = PredicateOrigin::TraitItem(item_name.clone());
 
                         // Register the trait clauses as item trait clauses
-                        bt_ctx.with_item_trait_clauses(def_id, item_name.clone(), &mut |s| {
-                            s.translate_predicates_vec(&bounds)
+                        bt_ctx.with_item_trait_clauses(def_id, item_name.clone(), |s| {
+                            s.translate_predicates_vec(&bounds, origin)
                         })?
                     };
 
@@ -440,7 +442,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.translate_generic_params(rust_id)?;
 
         // Translate the predicates
-        bt_ctx.translate_predicates_of(None, rust_id)?;
+        bt_ctx.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnImpl)?;
 
         // Add the self trait clause
         bt_ctx.translate_trait_impl_self_trait_clause(def_id)?;

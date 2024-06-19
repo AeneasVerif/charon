@@ -5,6 +5,7 @@
 use crate::common::*;
 use crate::names::*;
 use crate::translate_ctx::*;
+use crate::types::PredicateOrigin;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::{Item, ItemKind};
@@ -213,7 +214,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         .sinto(&bt_ctx.hax_state);
 
                     bt_ctx.translate_generic_params(id).unwrap();
-                    bt_ctx.translate_predicates_of(None, id).unwrap();
+                    bt_ctx
+                        .translate_predicates_of(None, id, PredicateOrigin::WhereClauseOnImpl)
+                        .unwrap();
                     let erase_regions = false;
                     // Two cases, depending on whether the impl block is
                     // a "regular" impl block (`impl Foo { ... }`) or a trait
