@@ -3,6 +3,7 @@
 
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use itertools::Itertools;
+use macros::EnumAsGetters;
 use std::collections::HashMap;
 use std::{error::Error, fs::File, io::BufReader, process::Command};
 
@@ -75,6 +76,7 @@ fn trait_name(crate_data: &CrateData, trait_id: TraitDeclId) -> &str {
     trait_name
 }
 
+#[derive(EnumAsGetters)]
 enum ItemKind<'c> {
     Fun(&'c FunDecl),
     Global(&'c GlobalDecl),
@@ -316,6 +318,17 @@ fn predicate_origins() -> Result<(), Box<dyn Error>> {
             assert_eq!(&clause.origin, expected_origin, "failed for {item_name}");
         }
     }
+
+    let my_trait = items_by_name
+        .get("test_crate::Trait")
+        .unwrap()
+        .kind
+        .as_trait_decl();
+    let item_clauses = &(my_trait.types[0].1).0;
+    assert_eq!(
+        item_clauses[0].origin,
+        TraitItem(TraitItemName("AssocType".into()))
+    );
     Ok(())
 }
 
