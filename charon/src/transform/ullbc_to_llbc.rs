@@ -1411,7 +1411,6 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
     exit_info
 }
 
-// FIXME: don't fold
 fn combine_statements_and_statement(
     statements: Vec<tgt::Statement>,
     next: Option<tgt::Statement>,
