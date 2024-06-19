@@ -516,6 +516,7 @@ let trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
         [
           ("clause_id", clause_id);
           ("span", span);
+          ("origin", _);
           ("trait_id", trait_id);
           ("generics", generics);
         ] ->

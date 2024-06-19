@@ -39,6 +39,7 @@ pub(crate) struct NonLocalTraitClause {
     /// [Some] if this is the top clause, [None] if this is about a parent/
     /// associated type clause.
     pub span: Option<Span>,
+    pub origin: PredicateOrigin,
     pub trait_id: TraitDeclId,
     pub generics: GenericArgs,
 }
@@ -47,6 +48,7 @@ impl NonLocalTraitClause {
     pub(crate) fn to_trait_clause_with_id(&self, clause_id: TraitClauseId) -> TraitClause {
         TraitClause {
             clause_id,
+            origin: self.origin.clone(),
             span: self.span,
             trait_id: self.trait_id,
             generics: self.generics.clone(),
@@ -124,6 +126,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // a definition:
         // - [TyCtxt::predicates_defined_on]: returns exactly the list of predicates
         //   that the user has written on the definition:
+        //   FIXME: today's docs say that these includes `outlives` predicates as well
         // - [TyCtxt::predicates_of]: returns the user defined predicates and also:
         //   - if called on a trait `Foo`, we get an additional trait clause
         //     `Self : Foo` (i.e., the trait requires itself), which is not what we want.
@@ -131,25 +134,32 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         //     information, which the user doesn't have to write by hand (but it doesn't
         //     add those for functions). For instance, below:
         //     ```
-        //     type MutMut<'a, 'b> {
-        //       x : &'a mut &'b mut u32,
+        //     struct MutMut<'a, 'b, T> {
+        //         x: &'a mut &'b mut T,
         //     }
         //     ```
-        //     The rust compiler adds the predicate: `'b : 'a` ('b outlives 'a).
+        //     The rust compiler adds the predicates: `'b: 'a` ('b outlives 'a) and `T: 'b`.
         // For this reason we:
         // - retrieve the trait predicates with [TyCtxt::predicates_defined_on]
         // - retrieve the other predicates with [TyCtxt::predicates_of]
         //
         // Also, we reorder the predicates to make sure that the trait clauses come
-        // *before* the other clauses. This way we are sure that, when translating,
-        // all the trait clauses are in the context if we need them.
+        // *before* the other clauses. This helps, when translating, with having the trait clauses
+        // in the context if we need them.
         //
         // Example:
         // ```
-        // f<T : Foo<S = U::S>, U : Foo>(...)
-        //               ^^^^
-        //        must make sure we have U : Foo in the context
-        //                before translating this
+        // fn f<T: Foo<S = U::S>, U: Foo>(...)
+        //                 ^^^^ must make sure we have U: Foo in the context
+        //                      before translating this
+        // ```
+        // There's no perfect ordering though, as this shows:
+        // ```
+        // fn f<T: Foo<U::S>, U: Foo<T::S>>(...)
+        //                           ^^^^ we'd need to have T: Foo in the context
+        //                                before translating this
+        //             ^^^^ we'd need to have U: Foo in the context
+        //                  before translating this
         // ```
         let tcx = self.t_ctx.tcx;
         let param_env = tcx.param_env(def_id);
@@ -244,6 +254,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         parent_trait_id: Option<TraitDeclId>,
         def_id: DefId,
+        origin: PredicateOrigin,
     ) -> Result<(), Error> {
         trace!("def_id: {:?}", def_id);
         let tcx = self.t_ctx.tcx;
@@ -260,11 +271,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Predicates of parent ({:?}): {:?}", parent_id, preds);
 
                 if let Some(trait_id) = parent_trait_id {
-                    self.with_parent_trait_clauses(trait_id, &mut |ctx: &mut Self| {
-                        ctx.translate_predicates(&preds)
+                    self.with_parent_trait_clauses(trait_id, |ctx: &mut Self| {
+                        // TODO: distinguish where clauses from supertraits.
+                        ctx.translate_predicates(&preds, PredicateOrigin::WhereClauseOnTrait)
                     })?;
                 } else {
-                    self.translate_predicates(&preds)?;
+                    self.translate_predicates(&preds, PredicateOrigin::WhereClauseOnImpl)?;
                 }
             }
         }
@@ -286,7 +298,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // The predicates of the current definition
         let preds = self.get_predicates_of(def_id)?;
         trace!("Local predicates of {:?}:\n{:?}", def_id, preds);
-        self.translate_predicates(&preds)?;
+        self.translate_predicates(&preds, origin)?;
 
         let fmt_ctx = self.into_fmt();
         let clauses = self
@@ -304,33 +316,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(())
     }
 
-    /// Translate the predicates then solve the unsolved trait obligations
-    /// in the registered trait clauses.
-    pub(crate) fn translate_predicates_solve_trait_obligations_of(
-        &mut self,
-        parent_trait_id: Option<TraitDeclId>,
-        def_id: DefId,
-    ) -> Result<(), Error> {
-        self.while_registering_trait_clauses(move |ctx| {
-            ctx.translate_predicates_of(parent_trait_id, def_id)?;
-            Ok(())
-        })
-    }
-
     pub(crate) fn translate_predicates(
         &mut self,
         preds: &hax::GenericPredicates,
+        origin: PredicateOrigin,
     ) -> Result<(), Error> {
-        self.translate_predicates_vec(&preds.predicates)
+        self.translate_predicates_vec(&preds.predicates, origin)
     }
 
     pub(crate) fn translate_predicates_vec(
         &mut self,
         preds: &Vec<(hax::Predicate, hax::Span)>,
+        origin: PredicateOrigin,
     ) -> Result<(), Error> {
         trace!("Predicates:\n{:?}", preds);
         for (pred, span) in preds {
-            match self.translate_predicate(pred, span)? {
+            match self.translate_predicate(pred, span, origin.clone())? {
                 None => (),
                 Some(pred) => match pred {
                     Predicate::Trait(_) => {
@@ -375,15 +376,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Returns an [Option] because we may filter clauses about builtin or
     /// auto traits like [core::marker::Sized] and [core::marker::Sync].
+    ///
+    /// `origin` is where this clause comes from.
     pub(crate) fn translate_trait_clause(
         &mut self,
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
+        origin: PredicateOrigin,
     ) -> Result<Option<TraitClauseId>, Error> {
         // FIXME: once `clause` can't be `None`, use |Vector::reserve_slot` to be sure we don't use
         // the same id twice.
         let (clause_id, instance_id) = self.clause_translation_context.generate_instance_id();
-        let clause = self.translate_trait_clause_aux(hspan, trait_pred, instance_id)?;
+        let clause = self.translate_trait_clause_aux(hspan, trait_pred, instance_id, origin)?;
         if let Some(clause) = clause {
             let local_clause = clause.to_trait_clause_with_id(clause_id);
             self.clause_translation_context
@@ -407,7 +411,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_pred: &hax::TraitPredicate,
     ) -> Result<(), Error> {
         // Save the self clause (and its parent/item clauses)
-        let clause = self.translate_trait_clause_aux(span, &trait_pred, TraitInstanceId::SelfId)?;
+        let clause = self.translate_trait_clause_aux(
+            span,
+            &trait_pred,
+            TraitInstanceId::SelfId,
+            PredicateOrigin::TraitSelf,
+        )?;
         if let Some(clause) = clause {
             self.trait_clauses
                 .entry(clause.trait_id)
@@ -422,6 +431,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
         clause_id: TraitInstanceId,
+        origin: PredicateOrigin,
     ) -> Result<Option<NonLocalTraitClause>, Error> {
         // Note sure what this is about
         assert!(trait_pred.is_positive);
@@ -449,6 +459,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(Some(NonLocalTraitClause {
             clause_id,
             span: Some(span),
+            origin,
             trait_id,
             generics,
         }))
@@ -458,6 +469,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         pred: &hax::Predicate,
         hspan: &hax::Span,
+        origin: PredicateOrigin,
     ) -> Result<Option<Predicate>, Error> {
         trace!("{:?}", pred);
         // Predicates are always used in signatures/type definitions, etc.
@@ -474,7 +486,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             PredicateKind::Clause(kind) => {
                 match kind {
                     ClauseKind::Trait(trait_pred) => Ok(self
-                        .translate_trait_clause(hspan, trait_pred)?
+                        .translate_trait_clause(hspan, trait_pred, origin)?
                         .map(Predicate::Trait)),
                     ClauseKind::RegionOutlives(p) => {
                         let r0 = self.translate_region(span, erase_regions, &p.lhs)?;
@@ -818,41 +830,37 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Could not find a clause.
         // Check if we are in the registration process, otherwise report an error.
         // TODO: we might be registering a where clause.
-        if self.registering_trait_clauses {
-            TraitInstanceId::Unsolved(trait_id, generics.clone())
-        } else {
-            let fmt_ctx = self.into_fmt();
-            let trait_ref = format!(
-                "{}{}",
-                fmt_ctx.format_object(trait_id),
-                generics.fmt_with_ctx(&fmt_ctx)
-            );
-            let clauses: Vec<String> = self
-                .trait_clauses
-                .values()
-                .flat_map(|x| x)
-                .map(|x| x.fmt_with_ctx(&fmt_ctx))
-                .collect();
+        let fmt_ctx = self.into_fmt();
+        let trait_ref = format!(
+            "{}{}",
+            fmt_ctx.format_object(trait_id),
+            generics.fmt_with_ctx(&fmt_ctx)
+        );
+        let clauses: Vec<String> = self
+            .trait_clauses
+            .values()
+            .flat_map(|x| x)
+            .map(|x| x.fmt_with_ctx(&fmt_ctx))
+            .collect();
 
-            if !self.t_ctx.continue_on_failure() {
-                let clauses = clauses.join("\n");
-                unreachable!(
-                    "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
-                    trait_ref, clauses, self.def_id
-                );
-            } else {
-                // Return the UNKNOWN clause
-                log::warn!(
-                    "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
-                    trait_ref, clauses.join("\n"), self.def_id
-                );
-                TraitInstanceId::Unknown(format!(
-                    "Could not find a clause for parameter: {} (available clauses: {}) (context: {:?})",
-                    trait_ref,
-                    clauses.join("; "),
-                    self.def_id
-                ))
-            }
+        if !self.t_ctx.continue_on_failure() {
+            let clauses = clauses.join("\n");
+            unreachable!(
+                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
+                trait_ref, clauses, self.def_id
+            );
+        } else {
+            // Return the UNKNOWN clause
+            log::warn!(
+                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
+                trait_ref, clauses.join("\n"), self.def_id
+            );
+            TraitInstanceId::Unknown(format!(
+                "Could not find a clause for parameter: {} (available clauses: {}) (context: {:?})",
+                trait_ref,
+                clauses.join("; "),
+                self.def_id
+            ))
         }
     }
 }

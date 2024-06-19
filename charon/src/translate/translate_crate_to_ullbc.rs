@@ -3,62 +3,16 @@ use crate::common::*;
 use crate::get_mir::{extract_constants_at_top_level, MirLevel};
 use crate::transform::TransformCtx;
 use crate::translate_ctx::*;
-use crate::translate_functions_to_ullbc;
 
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
-use rustc_hir::{Defaultness, ForeignItemKind, ImplItem, ImplItemKind, Item, ItemKind};
+use rustc_hir::{ForeignItemKind, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::collections::{HashMap, HashSet};
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
-    fn register_local_hir_impl_item(&mut self, _top_item: bool, impl_item: &ImplItem) {
-        // TODO: make a proper error message
-        assert!(impl_item.defaultness == Defaultness::Final);
-
-        let def_id = impl_item.owner_id.to_def_id();
-
-        // Match on the impl item kind
-        match &impl_item.kind {
-            ImplItemKind::Const(_, _) => {
-                // Can happen in traits:
-                // ```
-                // trait Foo {
-                //   const C : usize;
-                // }
-                //
-                // impl Foo for Bar {
-                //   const C = 32; // HERE
-                // }
-                // ```
-                let _ = self.register_global_decl_id(&None, def_id);
-            }
-            ImplItemKind::Type(_) => {
-                // Trait type:
-                // ```
-                // trait Foo {
-                //   type T;
-                // }
-                //
-                // impl Foo for Bar {
-                //   type T = bool; // HERE
-                // }
-                // ```
-                //
-                // Do nothing for now: we won't generate a top-level definition
-                // for this, and handle it when translating the trait implementation
-                // this item belongs to.
-                let tcx = self.tcx;
-                assert!(tcx.associated_item(def_id).trait_item_def_id.is_some());
-            }
-            ImplItemKind::Fn(_, _) => {
-                let _ = self.register_fun_decl_id(&None, def_id);
-            }
-        }
-    }
-
     /// General function to register a MIR item. It is called on all the top-level
     /// items. This includes: crate inclusions and `use` instructions (which are
     /// ignored), but also type and functions declarations.
@@ -146,8 +100,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
             ItemKind::Impl(impl_block) => {
                 trace!("impl");
-                // Sanity checks - TODO: remove?
-                translate_functions_to_ullbc::check_impl_item(impl_block);
+                // Sanity checks
+                // TODO: make proper error messages
+                use rustc_hir::{Defaultness, ImplPolarity, Unsafety};
+                assert!(impl_block.unsafety == Unsafety::Normal);
+                // About polarity:
+                // [https://doc.rust-lang.org/beta/unstable-book/language-features/negative-impls.html]
+                // Not sure about what I should do about it. Should I do anything, actually?
+                // This seems useful to enforce some discipline on the user-side, but not
+                // necessary for analysis purposes.
+                assert!(impl_block.polarity == ImplPolarity::Positive);
+                // Not sure what this is about
+                assert!(impl_block.defaultness == Defaultness::Final);
 
                 // If this is a trait implementation, register it
                 if self.tcx.trait_id_of_impl(def_id).is_some() {
@@ -161,7 +125,48 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // we need to look it up
                     let impl_item = hir_map.impl_item(impl_item_ref.id);
 
-                    self.register_local_hir_impl_item(false, impl_item);
+                    // TODO: make a proper error message
+                    assert!(impl_item.defaultness == Defaultness::Final);
+
+                    let def_id = impl_item.owner_id.to_def_id();
+
+                    // Match on the impl item kind
+                    match &impl_item.kind {
+                        ImplItemKind::Const(_, _) => {
+                            // Can happen in traits:
+                            // ```
+                            // trait Foo {
+                            //   const C : usize;
+                            // }
+                            //
+                            // impl Foo for Bar {
+                            //   const C = 32; // HERE
+                            // }
+                            // ```
+                            let _ = self.register_global_decl_id(&None, def_id);
+                        }
+                        ImplItemKind::Type(_) => {
+                            // Trait type:
+                            // ```
+                            // trait Foo {
+                            //   type T;
+                            // }
+                            //
+                            // impl Foo for Bar {
+                            //   type T = bool; // HERE
+                            // }
+                            // ```
+                            //
+                            // Do nothing for now: we won't generate a top-level definition
+                            // for this, and handle it when translating the trait implementation
+                            // this item belongs to.
+                            let tcx = self.tcx;
+                            assert!(tcx.associated_item(def_id).trait_item_def_id.is_some());
+                        }
+                        ImplItemKind::Fn(_, _) => {
+                            let _ = self.register_fun_decl_id(&None, def_id);
+                        }
+                    }
                 }
                 Ok(())
             }

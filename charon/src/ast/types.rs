@@ -222,15 +222,7 @@ pub enum TraitInstanceId {
     /// is useful to give priority to the local clauses when solving the trait
     /// obligations which are fullfilled by the trait parameters.
     SelfId,
-    /// Clause which hasn't been solved yet.
-    /// This happens when we register clauses in the context: solving some
-    /// trait obligations/references might require to refer to clauses which
-    /// haven't been registered yet. This variant is purely internal: after we
-    /// finished solving the trait obligations, all the remaining unsolved
-    /// clauses (in case we don't fail hard on error) are converted to [Unknown].
-    Unsolved(TraitDeclId, GenericArgs),
     /// For error reporting.
-    /// Can appear only if the option [CliOpts::continue_on_failure] is used.
     Unknown(String),
 }
 
@@ -343,6 +335,7 @@ generate_index_type!(TraitClauseId, "TraitClause");
 generate_index_type!(TraitDeclId, "TraitDecl");
 generate_index_type!(TraitImplId, "TraitImpl");
 
+/// A predicate of the form `Type: Trait<Args>`.
 #[derive(Debug, Clone, Serialize, Deserialize, Derivative, Drive, DriveMut)]
 #[derivative(PartialEq)]
 pub struct TraitClause {
@@ -352,12 +345,61 @@ pub struct TraitClause {
     pub clause_id: TraitClauseId,
     #[derivative(PartialEq = "ignore")]
     pub span: Option<Span>,
+    /// Where the predicate was written, relative to the item that requires it.
+    #[derivative(PartialEq = "ignore")]
+    pub origin: PredicateOrigin,
+    /// The trait that is implemented.
     pub trait_id: TraitDeclId,
+    /// The generics applied to the trait. Note: this includes the `Self` type.
     /// Remark: the trait refs list in the [generics] field should be empty.
     pub generics: GenericArgs,
 }
 
 impl Eq for TraitClause {}
+
+/// Where a given predicate came from.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Derivative, Drive, DriveMut)]
+pub enum PredicateOrigin {
+    // Note: we use this for globals too, but that's only available with an unstable feature.
+    // ```
+    // fn function<T: Clone>() {}
+    // fn function<T>() where T: Clone {}
+    // const NONE<T: Copy>: Option<T> = None;
+    // ```
+    WhereClauseOnFn,
+    // ```
+    // struct Struct<T: Clone> {}
+    // struct Struct<T> where T: Clone {}
+    // type TypeAlias<T: Clone> = ...;
+    // ```
+    WhereClauseOnType,
+    // Note: this is both trait impls and inherent impl blocks.
+    // ```
+    // impl<T: Clone> Type<T> {}
+    // impl<T> Type<T> where T: Clone {}
+    // impl<T> Trait for Type<T> where T: Clone {}
+    // ```
+    WhereClauseOnImpl,
+    // The special `Self: Trait` clause which is in scope inside the definition of `Foo` or an
+    // implementation of it.
+    // ```
+    // trait Trait {}
+    // ```
+    TraitSelf,
+    // Note: this also includes supertrait constraings.
+    // ```
+    // trait Trait<T: Clone> {}
+    // trait Trait<T> where T: Clone {}
+    // trait Trait: Clone {}
+    // ```
+    WhereClauseOnTrait,
+    // ```
+    // trait Trait {
+    //     type AssocType: Clone;
+    // }
+    // ```
+    TraitItem(TraitItemName),
+}
 
 /// A type declaration.
 ///
