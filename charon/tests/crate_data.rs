@@ -46,12 +46,18 @@ fn translate(code: impl std::fmt::Display) -> Result<CrateData, Box<dyn Error>> 
 }
 
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
-fn repr_name(n: &Name) -> String {
+fn repr_name(crate_data: &CrateData, n: &Name) -> String {
     n.name
         .iter()
         .map(|path_elem| match path_elem {
-            PathElem::Ident(i, _) => i,
-            PathElem::Impl(_) => "<impl>",
+            PathElem::Ident(i, _) => i.clone(),
+            PathElem::Impl(elem) => match &elem.kind {
+                ImplElemKind::Trait(trait_ref) => {
+                    let trait_name = trait_name(crate_data, trait_ref.trait_id);
+                    format!("<impl for {trait_name}>")
+                }
+                ImplElemKind::Ty(..) => "<impl>".to_string(),
+            },
         })
         .join("::")
 }
@@ -59,6 +65,14 @@ fn repr_name(n: &Name) -> String {
 fn repr_span(span: Span) -> String {
     let raw_span = span.span;
     format!("{}-{}", raw_span.beg, raw_span.end)
+}
+
+fn trait_name(crate_data: &CrateData, trait_id: TraitDeclId) -> &str {
+    let tr = &crate_data.trait_decls[trait_id.index()];
+    let PathElem::Ident(trait_name, _) = tr.name.name.last().unwrap() else {
+        panic!()
+    };
+    trait_name
 }
 
 enum ItemKind<'c> {
@@ -88,7 +102,7 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
         .iter()
         .map(|x| Item {
             name: &x.name,
-            name_str: repr_name(&x.name),
+            name_str: repr_name(crate_data, &x.name),
             item_meta: &x.item_meta,
             generics: x.signature.generics.clone(),
             preds: &x.signature.preds,
@@ -96,7 +110,7 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
         })
         .chain(crate_data.globals.iter().map(|x| Item {
             name: &x.name,
-            name_str: repr_name(&x.name),
+            name_str: repr_name(crate_data, &x.name),
             item_meta: &x.item_meta,
             generics: x.generics.clone(),
             preds: &x.preds,
@@ -104,7 +118,7 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
         }))
         .chain(crate_data.types.iter().map(|x| Item {
             name: &x.name,
-            name_str: repr_name(&x.name),
+            name_str: repr_name(crate_data, &x.name),
             item_meta: &x.item_meta,
             generics: x.generics.clone(),
             preds: &x.preds,
@@ -112,7 +126,7 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
         }))
         .chain(crate_data.trait_impls.iter().map(|x| Item {
             name: &x.name,
-            name_str: repr_name(&x.name),
+            name_str: repr_name(crate_data, &x.name),
             item_meta: &x.item_meta,
             generics: x.generics.clone(),
             preds: &x.preds,
@@ -125,7 +139,7 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
             generics.trait_clauses = x.parent_clauses.clone();
             Item {
                 name: &x.name,
-                name_str: repr_name(&x.name),
+                name_str: repr_name(crate_data, &x.name),
                 item_meta: &x.item_meta,
                 generics,
                 preds: &x.preds,
@@ -144,7 +158,10 @@ fn type_decl() -> Result<(), Box<dyn Error>> {
         fn main() {}
         ",
     )?;
-    assert_eq!(repr_name(&crate_data.types[0].name), "test_crate::Struct");
+    assert_eq!(
+        repr_name(&crate_data, &crate_data.types[0].name),
+        "test_crate::Struct"
+    );
     Ok(())
 }
 
@@ -155,8 +172,14 @@ fn file_name() -> Result<(), Box<dyn Error>> {
         type Foo = Option<()>;
         ",
     )?;
-    assert_eq!(repr_name(&crate_data.types[0].name), "test_crate::Foo");
-    assert_eq!(repr_name(&crate_data.types[1].name), "core::option::Option");
+    assert_eq!(
+        repr_name(&crate_data, &crate_data.types[0].name),
+        "test_crate::Foo"
+    );
+    assert_eq!(
+        repr_name(&crate_data, &crate_data.types[1].name),
+        "core::option::Option"
+    );
     let file_id = crate_data.types[1].item_meta.span.span.file_id;
     let (_, file) = crate_data
         .id_to_file
@@ -262,11 +285,11 @@ fn predicate_origins() -> Result<(), Box<dyn Error>> {
             &[(WhereClauseOnFn, "From"), (WhereClauseOnFn, "From")],
         ),
         (
-            "test_crate::<impl>",
+            "test_crate::<impl for Trait>",
             &[(WhereClauseOnImpl, "Copy"), (WhereClauseOnImpl, "Default")],
         ),
         (
-            "test_crate::<impl>::trait_method",
+            "test_crate::<impl for Trait>::trait_method",
             &[
                 (WhereClauseOnImpl, "Copy"),
                 (WhereClauseOnImpl, "Default"),
@@ -288,11 +311,8 @@ fn predicate_origins() -> Result<(), Box<dyn Error>> {
         let clauses = &item.generics.trait_clauses;
         assert_eq!(origins.len(), clauses.len(), "failed for {item_name}");
         for (clause, (expected_origin, expected_trait_name)) in clauses.iter().zip(origins) {
-            let implemented_trait = &crate_data.trait_decls[clause.trait_id.index()];
-            let PathElem::Ident(trait_name, _) = implemented_trait.name.name.last().unwrap() else {
-                panic!()
-            };
-            assert_eq!(trait_name, expected_trait_name, "failed for {item_name}");
+            let trait_name = trait_name(&crate_data, clause.trait_id);
+            assert_eq!(trait_name, *expected_trait_name, "failed for {item_name}");
             assert_eq!(&clause.origin, expected_origin, "failed for {item_name}");
         }
     }
@@ -375,14 +395,20 @@ fn visibility() -> Result<(), Box<dyn Error>> {
         }
         "#,
     )?;
-    assert_eq!(repr_name(&crate_data.types[0].name), "test_crate::Pub");
+    assert_eq!(
+        repr_name(&crate_data, &crate_data.types[0].name),
+        "test_crate::Pub"
+    );
     assert!(crate_data.types[0].item_meta.public);
-    assert_eq!(repr_name(&crate_data.types[1].name), "test_crate::Priv");
+    assert_eq!(
+        repr_name(&crate_data, &crate_data.types[1].name),
+        "test_crate::Priv"
+    );
     assert!(!crate_data.types[1].item_meta.public);
     // Note how we think `PubInPriv` is public. It kind of is but there is no path to it. This is
     // probably fine.
     assert_eq!(
-        repr_name(&crate_data.types[2].name),
+        repr_name(&crate_data, &crate_data.types[2].name),
         "test_crate::private::PubInPriv"
     );
     assert!(crate_data.types[2].item_meta.public);
