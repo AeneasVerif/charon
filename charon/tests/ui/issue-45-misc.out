@@ -432,22 +432,20 @@ where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::nth<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::option::Option<A>
-where
-    // Inherited clauses:
-    [@TraitClause0]: core::iter::range::Step<A>,
-
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::last<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::min<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26>>
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
-    // Local clauses:
-    [@TraitClause1]: core::cmp::Ord<A>,
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::nth<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::option::Option<A>
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::max<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
 where
@@ -456,12 +454,14 @@ where
     // Local clauses:
     [@TraitClause1]: core::cmp::Ord<A>,
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::is_sorted<A>(@1: core::ops::range::Range<A>) -> bool
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::min<A>(@1: core::ops::range::Range<A>) -> core::option::Option<A>
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
+    // Local clauses:
+    [@TraitClause1]: core::cmp::Ord<A>,
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26>>
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::is_sorted<A>(@1: core::ops::range::Range<A>) -> bool
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
@@ -481,12 +481,12 @@ where
     fn next = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::next
     fn size_hint = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::size_hint
     fn count = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::count
-    fn nth = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::nth
     fn last = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::last
-    fn min = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::min
-    fn max = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::max
-    fn is_sorted = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::is_sorted
     fn advance_by = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::advance_by
+    fn nth = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::nth
+    fn max = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::max
+    fn min = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::min
+    fn is_sorted = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::is_sorted
     fn __iterator_get_unchecked = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>}#6::__iterator_get_unchecked
 }
 
@@ -513,9 +513,9 @@ fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::lt<'_0, '_1>(@1
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::le<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::ge<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
-
 fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::gt<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::ge<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60 : core::cmp::PartialOrd<u8, u8>
 {
@@ -523,8 +523,8 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60 : core::cmp::P
     fn partial_cmp = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::partial_cmp
     fn lt = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::lt
     fn le = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::le
-    fn ge = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::ge
     fn gt = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::gt
+    fn ge = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::ge
 }
 
 fn core::iter::range::{impl core::iter::range::Step for u8}#35::steps_between<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> core::option::Option<usize>
@@ -535,9 +535,9 @@ fn core::iter::range::{impl core::iter::range::Step for u8}#35::backward_checked
 
 fn core::iter::range::{impl core::iter::range::Step for u8}#35::forward(@1: u8, @2: usize) -> u8
 
-fn core::iter::range::{impl core::iter::range::Step for u8}#35::backward(@1: u8, @2: usize) -> u8
-
 unsafe fn core::iter::range::{impl core::iter::range::Step for u8}#35::forward_unchecked(@1: u8, @2: usize) -> u8
+
+fn core::iter::range::{impl core::iter::range::Step for u8}#35::backward(@1: u8, @2: usize) -> u8
 
 unsafe fn core::iter::range::{impl core::iter::range::Step for u8}#35::backward_unchecked(@1: u8, @2: usize) -> u8
 
@@ -549,8 +549,8 @@ impl core::iter::range::{impl core::iter::range::Step for u8}#35 : core::iter::r
     fn forward_checked = core::iter::range::{impl core::iter::range::Step for u8}#35::forward_checked
     fn backward_checked = core::iter::range::{impl core::iter::range::Step for u8}#35::backward_checked
     fn forward = core::iter::range::{impl core::iter::range::Step for u8}#35::forward
-    fn backward = core::iter::range::{impl core::iter::range::Step for u8}#35::backward
     fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for u8}#35::forward_unchecked
+    fn backward = core::iter::range::{impl core::iter::range::Step for u8}#35::backward
     fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for u8}#35::backward_unchecked
 }
 

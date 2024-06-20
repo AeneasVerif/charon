@@ -124,9 +124,9 @@ fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::lt<'_0, '_1>(
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::le<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::ge<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
-
 fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::gt<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
+
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::ge<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64 : core::cmp::PartialOrd<u32, u32>
 {
@@ -134,8 +134,8 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64 : core::cmp:
     fn partial_cmp = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp
     fn lt = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::lt
     fn le = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::le
-    fn ge = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::ge
     fn gt = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::gt
+    fn ge = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::ge
 }
 
 fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>

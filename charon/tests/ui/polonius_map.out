@@ -109,16 +109,16 @@ impl core::cmp::impls::{impl core::cmp::Eq for u32}#43 : core::cmp::Eq<u32>
 
 opaque type std::hash::random::DefaultHasher
 
-fn std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write<'_0, '_1>(@1: &'_0 mut (std::hash::random::DefaultHasher), @2: &'_1 (Slice<u8>))
-
 fn std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::finish<'_0>(@1: &'_0 (std::hash::random::DefaultHasher)) -> u64
+
+fn std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write<'_0, '_1>(@1: &'_0 mut (std::hash::random::DefaultHasher), @2: &'_1 (Slice<u8>))
 
 fn std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write_str<'_0, '_1>(@1: &'_0 mut (std::hash::random::DefaultHasher), @2: &'_1 (Str))
 
 impl std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4 : core::hash::Hasher<std::hash::random::DefaultHasher>
 {
-    fn write = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write
     fn finish = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::finish
+    fn write = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write
     fn write_str = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write_str
 }
 
