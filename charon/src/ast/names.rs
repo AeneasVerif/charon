@@ -20,7 +20,6 @@ pub enum PathElem {
 pub struct ImplElem {
     pub disambiguator: Disambiguator,
     pub generics: GenericParams,
-    pub preds: Predicates,
     pub kind: ImplElemKind,
 }
 

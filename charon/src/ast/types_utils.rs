@@ -34,8 +34,17 @@ impl GenericParams {
             types,
             const_generics,
             trait_clauses,
+            regions_outlive,
+            types_outlive,
+            trait_type_constraints,
         } = self;
-        regions.len() + types.len() + const_generics.len() + trait_clauses.len()
+        regions.len()
+            + types.len()
+            + const_generics.len()
+            + trait_clauses.len()
+            + regions_outlive.len()
+            + types_outlive.len()
+            + trait_type_constraints.len()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -43,23 +52,7 @@ impl GenericParams {
     }
 
     pub fn empty() -> Self {
-        GenericParams {
-            regions: Vector::new(),
-            types: Vector::new(),
-            const_generics: Vector::new(),
-            trait_clauses: Vector::new(),
-        }
-    }
-}
-
-impl Predicates {
-    pub fn is_empty(&self) -> bool {
-        let Predicates {
-            regions_outlive,
-            types_outlive,
-            trait_type_constraints,
-        } = self;
-        regions_outlive.is_empty() && types_outlive.is_empty() && trait_type_constraints.is_empty()
+        Self::default()
     }
 }
 

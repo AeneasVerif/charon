@@ -31,14 +31,14 @@ type var = {
 class ['self] iter_ast_base =
   object (_self : 'self)
     inherit [_] iter_rvalue
-    inherit! [_] iter_predicates
+    inherit! [_] iter_generic_params
   end
 
 (** Ancestor the AST map visitors *)
 class ['self] map_ast_base =
   object (_self : 'self)
     inherit [_] map_rvalue
-    inherit! [_] map_predicates
+    inherit! [_] map_generic_params
   end
 
 (* Below: the types need not be mutually recursive, but it makes it easier
@@ -98,7 +98,6 @@ type fun_sig = {
   is_closure : bool;
   closure_info : closure_info option;
   generics : generic_params;
-  preds : predicates;
   parent_params_info : params_info option;
   inputs : ty list;
   output : ty;
@@ -154,7 +153,6 @@ type trait_decl = {
   is_local : bool;
   name : name;
   generics : generic_params;
-  preds : predicates;
   parent_clauses : trait_clause list;
   consts : (trait_item_name * (ty * global_decl_id option)) list;
   types : (trait_item_name * (trait_clause list * ty option)) list;
@@ -170,7 +168,6 @@ type trait_impl = {
   name : name;
   impl_trait : trait_decl_ref;
   generics : generic_params;
-  preds : predicates;
   parent_trait_refs : trait_ref list;
   consts : (trait_item_name * (ty * global_decl_id)) list;
   types : (trait_item_name * (trait_ref list * ty)) list;
@@ -205,7 +202,6 @@ type 'body gglobal_decl = {
   is_local : bool;
   name : name;
   generics : generic_params;
-  preds : predicates;
   ty : ty;
   kind : item_kind;
   body : 'body;

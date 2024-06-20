@@ -1729,7 +1729,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         Ok(FunSig {
             generics: self.get_generics(),
-            preds: self.get_predicates(),
             is_unsafe,
             is_closure,
             closure_info,
@@ -1860,7 +1859,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .get_item_kind(&DepSource::make(rust_id, span), rust_id)?;
 
         let generics = bt_ctx.get_generics();
-        let preds = bt_ctx.get_predicates();
 
         // Translate its body like the body of a function. This returns `Opaque if we can't/decide
         // not to translate this body.
@@ -1880,7 +1878,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             is_local: rust_id.is_local(),
             name,
             generics,
-            preds,
             ty,
             kind,
             body: body_id,

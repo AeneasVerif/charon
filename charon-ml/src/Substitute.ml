@@ -49,17 +49,7 @@ let st_substitute_visitor (subst : subst) =
       TArrow (regions, inputs, output)
 
     method! visit_TVar (subst : subst) id = subst.ty_subst id
-
-    method! visit_type_var_id _ _ =
-      (* We should never get here because we reimplemented [visit_TypeVar] *)
-      raise (Failure "Unexpected")
-
     method! visit_CgVar _ id = subst.cg_subst id
-
-    method! visit_const_generic_var_id _ _ =
-      (* We should never get here because we reimplemented [visit_Var] *)
-      raise (Failure "Unexpected")
-
     method! visit_Clause (subst : subst) id = subst.tr_subst id
     method! visit_Self (subst : subst) = subst.tr_self
   end
@@ -88,9 +78,10 @@ let generic_args_substitute (subst : subst) (g : generic_args) : generic_args =
   let visitor = st_substitute_visitor subst in
   visitor#visit_generic_args subst g
 
-let predicates_substitute (subst : subst) (p : predicates) : predicates =
+let generic_params_substitute (subst : subst) (p : generic_params) :
+    generic_params =
   let visitor = st_substitute_visitor subst in
-  visitor#visit_predicates subst p
+  visitor#visit_generic_params subst p
 
 let erase_regions_subst : subst =
   {

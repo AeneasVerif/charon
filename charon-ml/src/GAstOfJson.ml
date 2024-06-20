@@ -527,28 +527,6 @@ let trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
         Ok ({ clause_id; span; trait_id; clause_generics } : trait_clause)
     | _ -> Error "")
 
-let generic_params_of_json (id_to_file : id_to_file_map) (js : json) :
-    (generic_params, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("regions", regions);
-          ("types", types);
-          ("const_generics", const_generics);
-          ("trait_clauses", trait_clauses);
-        ] ->
-        let* regions = list_of_json region_var_of_json regions in
-        let* types = list_of_json type_var_of_json types in
-        let* const_generics =
-          list_of_json const_generic_var_of_json const_generics
-        in
-        let* trait_clauses =
-          list_of_json (trait_clause_of_json id_to_file) trait_clauses
-        in
-        Ok { regions; types; const_generics; trait_clauses }
-    | _ -> Error "")
-
 let region_outlives_of_json (js : json) : (region_outlives, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -579,15 +557,28 @@ let trait_type_constraint_of_json (js : json) :
         Ok ({ trait_ref; type_name; ty } : trait_type_constraint)
     | _ -> Error "")
 
-let predicates_of_json (js : json) : (predicates, string) result =
+let generic_params_of_json (id_to_file : id_to_file_map) (js : json) :
+    (generic_params, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
         [
+          ("regions", regions);
+          ("types", types);
+          ("const_generics", const_generics);
+          ("trait_clauses", trait_clauses);
           ("regions_outlive", regions_outlive);
           ("types_outlive", types_outlive);
           ("trait_type_constraints", trait_type_constraints);
         ] ->
+        let* regions = list_of_json region_var_of_json regions in
+        let* types = list_of_json type_var_of_json types in
+        let* const_generics =
+          list_of_json const_generic_var_of_json const_generics
+        in
+        let* trait_clauses =
+          list_of_json (trait_clause_of_json id_to_file) trait_clauses
+        in
         let* regions_outlive =
           list_of_json region_outlives_of_json regions_outlive
         in
@@ -595,7 +586,16 @@ let predicates_of_json (js : json) : (predicates, string) result =
         let* trait_type_constraints =
           list_of_json trait_type_constraint_of_json trait_type_constraints
         in
-        Ok { regions_outlive; types_outlive; trait_type_constraints }
+        Ok
+          {
+            regions;
+            types;
+            const_generics;
+            trait_clauses;
+            regions_outlive;
+            types_outlive;
+            trait_type_constraints;
+          }
     | _ -> Error "")
 
 let impl_elem_kind_of_json (js : json) : (impl_elem_kind, string) result =
@@ -617,14 +617,12 @@ let impl_elem_of_json (id_to_file : id_to_file_map) (js : json) :
         [
           ("disambiguator", disambiguator);
           ("generics", generics);
-          ("preds", preds);
           ("kind", kind);
         ] ->
         let* disambiguator = Disambiguator.id_of_json disambiguator in
         let* generics = generic_params_of_json id_to_file generics in
-        let* preds = predicates_of_json preds in
         let* kind = impl_elem_kind_of_json kind in
-        Ok { disambiguator; generics; preds; kind }
+        Ok { disambiguator; generics; kind }
     | _ -> Error "")
 
 let path_elem_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -656,7 +654,6 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("is_local", is_local);
           ("name", name);
           ("generics", generics);
-          ("preds", preds);
           ("kind", kind);
         ] ->
         let* def_id = TypeDeclId.id_of_json def_id in
@@ -664,9 +661,8 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* is_local = bool_of_json is_local in
         let* name = name_of_json id_to_file name in
         let* generics = generic_params_of_json id_to_file generics in
-        let* preds = predicates_of_json preds in
         let* kind = type_decl_kind_of_json id_to_file kind in
-        Ok { def_id; item_meta; is_local; name; generics; preds; kind }
+        Ok { def_id; item_meta; is_local; name; generics; kind }
     | _ -> Error "")
 
 let var_of_json (js : json) : (var, string) result =
@@ -1010,7 +1006,6 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
           ("is_closure", is_closure);
           ("closure_info", closure_info);
           ("generics", generics);
-          ("preds", preds);
           ("parent_params_info", parent_params_info);
           ("inputs", inputs);
           ("output", output);
@@ -1020,7 +1015,6 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
         let* closure_info = option_of_json closure_info_of_json closure_info in
 
         let* generics = generic_params_of_json id_to_file generics in
-        let* preds = predicates_of_json preds in
         let* parent_params_info =
           option_of_json params_info_of_json parent_params_info
         in
@@ -1032,7 +1026,6 @@ let fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
             is_closure;
             closure_info;
             generics;
-            preds;
             parent_params_info;
             inputs;
             output;
@@ -1156,7 +1149,6 @@ let gglobal_decl_of_json (bodies : 'body gexpr_body option list)
           ("is_local", is_local);
           ("name", name);
           ("generics", generics);
-          ("preds", preds);
           ("ty", ty);
           ("kind", kind);
           ("body", body);
@@ -1166,7 +1158,6 @@ let gglobal_decl_of_json (bodies : 'body gexpr_body option list)
         let* is_local = bool_of_json is_local in
         let* name = name_of_json id_to_file name in
         let* generics = generic_params_of_json id_to_file generics in
-        let* preds = predicates_of_json preds in
         let* ty = ty_of_json ty in
         let* kind = item_kind_of_json kind in
         let* body = maybe_opaque_body_of_json bodies body in
@@ -1178,7 +1169,6 @@ let gglobal_decl_of_json (bodies : 'body gexpr_body option list)
             name;
             body;
             generics;
-            preds;
             ty;
             kind;
           }
@@ -1197,7 +1187,6 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("item_meta", item_meta);
           ("name", name);
           ("generics", generics);
-          ("preds", preds);
           ("parent_clauses", parent_clauses);
           ("consts", consts);
           ("types", types);
@@ -1209,7 +1198,6 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* name = name_of_json id_to_file name in
         let* item_meta = item_meta_of_json id_to_file item_meta in
         let* generics = generic_params_of_json id_to_file generics in
-        let* preds = predicates_of_json preds in
         let* parent_clauses =
           list_of_json (trait_clause_of_json id_to_file) parent_clauses
         in
@@ -1245,7 +1233,6 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
             is_local;
             name;
             generics;
-            preds;
             parent_clauses;
             consts;
             types;
@@ -1266,7 +1253,6 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("item_meta", item_meta);
           ("impl_trait", impl_trait);
           ("generics", generics);
-          ("preds", preds);
           ("parent_trait_refs", parent_trait_refs);
           ("consts", consts);
           ("types", types);
@@ -1279,7 +1265,6 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* name = name_of_json id_to_file name in
         let* impl_trait = trait_decl_ref_of_json impl_trait in
         let* generics = generic_params_of_json id_to_file generics in
-        let* preds = predicates_of_json preds in
         let* parent_trait_refs =
           list_of_json trait_ref_of_json parent_trait_refs
         in
@@ -1308,7 +1293,6 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
              name;
              impl_trait;
              generics;
-             preds;
              parent_trait_refs;
              consts;
              types;

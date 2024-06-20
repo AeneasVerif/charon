@@ -93,7 +93,6 @@ struct Item<'c> {
     item_meta: &'c ItemMeta,
     // Not a ref because we do a little hack.
     generics: GenericParams,
-    preds: &'c Predicates,
     kind: ItemKind<'c>,
 }
 
@@ -107,7 +106,6 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
             name_str: repr_name(crate_data, &x.name),
             item_meta: &x.item_meta,
             generics: x.signature.generics.clone(),
-            preds: &x.signature.preds,
             kind: ItemKind::Fun(x),
         })
         .chain(crate_data.globals.iter().map(|x| Item {
@@ -115,7 +113,6 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
             name_str: repr_name(crate_data, &x.name),
             item_meta: &x.item_meta,
             generics: x.generics.clone(),
-            preds: &x.preds,
             kind: ItemKind::Global(x),
         }))
         .chain(crate_data.types.iter().map(|x| Item {
@@ -123,7 +120,6 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
             name_str: repr_name(crate_data, &x.name),
             item_meta: &x.item_meta,
             generics: x.generics.clone(),
-            preds: &x.preds,
             kind: ItemKind::Type(x),
         }))
         .chain(crate_data.trait_impls.iter().map(|x| Item {
@@ -131,7 +127,6 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
             name_str: repr_name(crate_data, &x.name),
             item_meta: &x.item_meta,
             generics: x.generics.clone(),
-            preds: &x.preds,
             kind: ItemKind::TraitImpl(x),
         }))
         .chain(crate_data.trait_decls.iter().map(|x| {
@@ -144,7 +139,6 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
                 name_str: repr_name(crate_data, &x.name),
                 item_meta: &x.item_meta,
                 generics,
-                preds: &x.preds,
                 kind: ItemKind::TraitDecl(x),
             }
         }))

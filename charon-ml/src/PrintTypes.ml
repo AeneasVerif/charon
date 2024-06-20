@@ -68,7 +68,9 @@ let region_var_id_to_string (env : ('a, 'b) fmt_env) (db_id : region_db_id)
 
 let type_var_id_to_string (env : ('a, 'b) fmt_env) (id : type_var_id) : string =
   (* Note that the types are not necessarily ordered following their indices *)
-  match List.find_opt (fun (x : type_var) -> x.index = id) env.types with
+  match
+    List.find_opt (fun (x : type_var) -> x.index = id) env.generics.types
+  with
   | None -> type_var_id_to_pretty_string id
   | Some x -> type_var_to_string x
 
@@ -78,7 +80,7 @@ let const_generic_var_id_to_string (env : ('a, 'b) fmt_env)
   match
     List.find_opt
       (fun (x : const_generic_var) -> x.index = id)
-      env.const_generics
+      env.generics.const_generics
   with
   | None -> const_generic_var_id_to_pretty_string id
   | Some x -> const_generic_var_to_string x
@@ -261,7 +263,7 @@ and impl_elem_kind_to_string (env : ('a, 'b) fmt_env) (k : impl_elem_kind) :
 
 and impl_elem_to_string (env : ('a, 'b) fmt_env) (e : impl_elem) : string =
   (* Locally replace the generics and the predicates *)
-  let env = fmt_env_update_generics_and_preds env e.generics e.preds in
+  let env = fmt_env_update_generics_and_preds env e.generics in
   let d =
     if e.disambiguator = Disambiguator.zero then ""
     else "#" ^ Disambiguator.to_string e.disambiguator
@@ -289,9 +291,9 @@ let trait_clause_to_string (env : ('a, 'b) fmt_env) (clause : trait_clause) :
   let generics = generic_args_to_string env clause.clause_generics in
   "[" ^ clause_id ^ "]: " ^ trait_id ^ generics
 
-let generic_params_to_string (env : ('a, 'b) fmt_env)
+let generic_params_to_strings (env : ('a, 'b) fmt_env)
     (generics : generic_params) : string list * string list =
-  let { regions; types; const_generics; trait_clauses } : generic_params =
+  let { regions; types; const_generics; trait_clauses; _ } : generic_params =
     generics
   in
   let regions = List.map region_var_to_string regions in
@@ -343,22 +345,23 @@ let clauses_to_string (indent : string) (indent_incr : string)
 (** Helper to format "where" clauses *)
 let predicates_and_trait_clauses_to_string (env : ('a, 'b) fmt_env)
     (indent : string) (indent_incr : string) (params_info : params_info option)
-    (generics : generic_params) (preds : predicates) : string list * string =
-  let params, trait_clauses = generic_params_to_string env generics in
-  let { regions_outlive; types_outlive; trait_type_constraints } = preds in
+    (generics : generic_params) : string list * string =
+  let params, trait_clauses = generic_params_to_strings env generics in
   let region_to_string = region_to_string env in
   let regions_outlive =
     List.map
       (fun (x, y) -> region_to_string x ^ " : " ^ region_to_string y)
-      regions_outlive
+      generics.regions_outlive
   in
   let types_outlive =
     List.map
       (fun (x, y) -> ty_to_string env x ^ " : " ^ region_to_string y)
-      types_outlive
+      generics.types_outlive
   in
   let trait_type_constraints =
-    List.map (trait_type_constraint_to_string env) trait_type_constraints
+    List.map
+      (trait_type_constraint_to_string env)
+      generics.trait_type_constraints
   in
   (* Split between the inherited clauses and the local clauses *)
   let clauses =
@@ -389,11 +392,11 @@ let predicates_and_trait_clauses_to_string (env : ('a, 'b) fmt_env)
 
 let type_decl_to_string (env : ('a, 'b) fmt_env) (def : type_decl) : string =
   (* Locally update the generics and the predicates *)
-  let env = fmt_env_update_generics_and_preds env def.generics def.preds in
+  let env = fmt_env_update_generics_and_preds env def.generics in
   let params, clauses =
     predicates_and_trait_clauses_to_string env "" "  " None def.generics
-      def.preds
   in
+
   let name = name_to_string env def.name in
   let params =
     if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
