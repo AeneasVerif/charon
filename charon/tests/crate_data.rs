@@ -191,7 +191,7 @@ fn file_name() -> Result<(), Box<dyn Error>> {
     let FileName::Virtual(file) = file else {
         panic!()
     };
-    assert_eq!(file, "/rustc/library/core/src/option.rs");
+    assert_eq!(file.to_str().unwrap(), "/rustc/library/core/src/option.rs");
     Ok(())
 }
 

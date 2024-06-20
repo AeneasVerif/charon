@@ -2,6 +2,7 @@
 
 pub use crate::meta_utils::*;
 use derive_visitor::{Drive, DriveMut};
+use hax_frontend_exporter::PathBuf;
 use macros::{EnumAsGetters, EnumIsA};
 use serde::{Deserialize, Serialize};
 
@@ -156,9 +157,11 @@ pub struct FileInfo {}
 )]
 pub enum FileName {
     /// A remapped path (namely paths into stdlib)
-    Virtual(String),
+    #[drive(skip)] // drive is not implemented for `PathBuf`
+    Virtual(PathBuf),
     /// A local path (a file coming from the current crate for instance)
-    Local(String),
+    #[drive(skip)] // drive is not implemented for `PathBuf`
+    Local(PathBuf),
     /// A "not real" file name (macro, query, etc.)
     NotReal(String),
 }
