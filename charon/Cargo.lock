@@ -501,7 +501,7 @@ dependencies = [
 [[package]]
 name = "hax-adt-into"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax?branch=main#3958de40f728a80eb3ebbaf6d3a73e6c86313716"
+source = "git+https://github.com/hacspec/hax?branch=main#d10f891a19f96bcafa9e31b1d78763e4f3cf30b4"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -512,7 +512,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax?branch=main#3958de40f728a80eb3ebbaf6d3a73e6c86313716"
+source = "git+https://github.com/hacspec/hax?branch=main#d10f891a19f96bcafa9e31b1d78763e4f3cf30b4"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -529,7 +529,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax?branch=main#3958de40f728a80eb3ebbaf6d3a73e6c86313716"
+source = "git+https://github.com/hacspec/hax?branch=main#d10f891a19f96bcafa9e31b1d78763e4f3cf30b4"
 dependencies = [
  "schemars",
  "serde",
