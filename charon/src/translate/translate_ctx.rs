@@ -1,18 +1,19 @@
 //! The translation contexts.
 use crate::common::*;
-use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
+use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::ids::{Generator, MapGenerator, Vector};
 use crate::meta::{self, Attribute, ItemMeta, RawSpan};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Span, VirtualFileId};
 use crate::names::Name;
-use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
+use crate::reorder_decls::DeclarationsGroups;
 use crate::translate_predicates::NonLocalTraitClause;
 use crate::translate_traits::ClauseTransCtx;
 use crate::types::*;
 use crate::ullbc_ast as ast;
 use crate::values::*;
+use derive_visitor::{Drive, DriveMut};
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use linked_hash_set::LinkedHashSet;
@@ -22,6 +23,7 @@ use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
+use serde::{Deserialize, Serialize};
 use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::fmt;
@@ -83,6 +85,11 @@ impl DepSource {
 
 /// The id of a translated item.
 #[derive(
+    Copy,
+    Clone,
+    Debug,
+    PartialOrd,
+    Ord,
     PartialEq,
     Eq,
     Hash,
@@ -90,11 +97,10 @@ impl DepSource {
     EnumAsGetters,
     VariantName,
     VariantIndexArity,
-    Copy,
-    Clone,
-    Debug,
-    PartialOrd,
-    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
 )]
 pub enum AnyTransId {
     Type(TypeDeclId),
@@ -103,6 +109,33 @@ pub enum AnyTransId {
     TraitDecl(TraitDeclId),
     TraitImpl(TraitImplId),
 }
+
+/// Implement `TryFrom`  and `From` to convert between an enum and its variants.
+macro_rules! wrap_unwrap_enum {
+    ($enum:ident::$variant:ident($variant_ty:ident)) => {
+        impl TryFrom<$enum> for $variant_ty {
+            type Error = ();
+            fn try_from(x: $enum) -> Result<Self, Self::Error> {
+                match x {
+                    $enum::$variant(x) => Ok(x),
+                    _ => Err(()),
+                }
+            }
+        }
+
+        impl From<$variant_ty> for $enum {
+            fn from(x: $variant_ty) -> Self {
+                $enum::$variant(x)
+            }
+        }
+    };
+}
+
+wrap_unwrap_enum!(AnyTransId::Fun(FunDeclId));
+wrap_unwrap_enum!(AnyTransId::Global(GlobalDeclId));
+wrap_unwrap_enum!(AnyTransId::Type(TypeDeclId));
+wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
+wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
 
 /// We use a special type to store the Rust identifiers in the stack, to
 /// make sure we translate them in a specific order (top-level constants
@@ -1097,22 +1130,6 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
     }
 }
 
-impl<'a> FmtCtx<'a> {
-    fn fmt_decl_group<Id: Copy>(
-        &self,
-        f: &mut fmt::Formatter,
-        gr: &GDeclarationGroup<Id>,
-    ) -> fmt::Result
-    where
-        Self: DeclFormatter<Id>,
-    {
-        for id in gr.get_ids() {
-            writeln!(f, "{}\n", self.format_decl(id))?
-        }
-        fmt::Result::Ok(())
-    }
-}
-
 impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx, 'ctx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.translated.fmt(f)
@@ -1143,13 +1160,8 @@ impl fmt::Display for TranslatedCrate {
             }
             Some(ordered_decls) => {
                 for gr in ordered_decls {
-                    use DeclarationGroup::*;
-                    match gr {
-                        Type(gr) => fmt.fmt_decl_group(f, gr)?,
-                        Fun(gr) => fmt.fmt_decl_group(f, gr)?,
-                        Global(gr) => fmt.fmt_decl_group(f, gr)?,
-                        TraitDecl(gr) => fmt.fmt_decl_group(f, gr)?,
-                        TraitImpl(gr) => fmt.fmt_decl_group(f, gr)?,
+                    for id in gr.get_ids() {
+                        writeln!(f, "{}\n", fmt.format_decl_id(id))?
                     }
                 }
             }
