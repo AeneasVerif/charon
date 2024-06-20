@@ -11,7 +11,7 @@ build-dev:
 # You can use the environment variable "CHARON_LOG" to activate the log.
 # For instance: `CHARON_LOG=1 make tests`.
 .PHONY: tests
-tests: build copy-tests
+tests: copy-tests
 	dune test
 
 # Reformat the code

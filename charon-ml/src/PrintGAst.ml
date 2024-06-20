@@ -36,10 +36,9 @@ let fun_sig_with_name_to_string (env : ('a, 'b) fmt_env) (indent : string)
   let unsafe = if sg.is_unsafe then "unsafe " else "" in
 
   (* Generics and predicates *)
-  let params, trait_clauses = generic_params_to_strings env sg.generics in
-  let clauses =
+  let params, clauses =
     predicates_and_trait_clauses_to_string env indent indent_incr
-      sg.parent_params_info trait_clauses sg.preds
+      sg.parent_params_info sg.generics sg.preds
   in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
@@ -139,10 +138,9 @@ let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
   let name = name_to_string env def.name in
 
   (* Generics and predicates *)
-  let params, trait_clauses = generic_params_to_strings env def.generics in
-  let clauses =
+  let params, clauses =
     predicates_and_trait_clauses_to_string env indent indent_incr None
-      trait_clauses def.preds
+      def.generics def.preds
   in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
@@ -228,10 +226,9 @@ let trait_impl_to_string (env : ('a, 'b) fmt_env) (indent : string)
   let name = name_to_string env def.name in
 
   (* Generics and predicates *)
-  let params, trait_clauses = generic_params_to_strings env def.generics in
-  let clauses =
+  let params, clauses =
     predicates_and_trait_clauses_to_string env indent indent_incr None
-      trait_clauses def.preds
+      def.generics def.preds
   in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"

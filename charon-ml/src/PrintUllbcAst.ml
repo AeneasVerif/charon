@@ -99,9 +99,8 @@ module Ast = struct
       (indent_incr : string) (def : global_decl) : string =
     (* Locally update the generics and the predicates *)
     let env = fmt_env_update_generics_and_preds env def.generics def.preds in
-    let params, trait_clauses = generic_params_to_strings env def.generics in
-    let clauses =
-      predicates_and_trait_clauses_to_string env "" "  " None trait_clauses
+    let params, clauses =
+      predicates_and_trait_clauses_to_string env "" "  " None def.generics
         def.preds
     in
     let params =
