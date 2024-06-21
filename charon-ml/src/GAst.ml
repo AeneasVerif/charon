@@ -9,6 +9,14 @@ module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
+type any_decl_id =
+  | IdFun of FunDeclId.id
+  | IdGlobal of GlobalDeclId.id
+  | IdType of TypeDeclId.id
+  | IdTraitDecl of TraitDeclId.id
+  | IdTraitImpl of TraitImplId.id
+[@@deriving show, ord]
+
 type fun_decl_id = FunDeclId.id [@@deriving show, ord]
 type assumed_fun_id = Expressions.assumed_fun_id [@@deriving show, ord]
 type fun_id = Expressions.fun_id [@@deriving show, ord]
@@ -187,6 +195,8 @@ type fun_declaration_group = FunDeclId.id g_declaration_group [@@deriving show]
 type trait_declaration_group = TraitDeclId.id g_declaration_group
 [@@deriving show]
 
+type mixed_declaration_group = any_decl_id g_declaration_group [@@deriving show]
+
 (** Module declaration. Globals cannot be mutually recursive. *)
 type declaration_group =
   | TypeGroup of type_declaration_group
@@ -194,6 +204,7 @@ type declaration_group =
   | GlobalGroup of GlobalDeclId.id
   | TraitDeclGroup of trait_declaration_group
   | TraitImplGroup of TraitImplId.id
+  | MixedGroup of mixed_declaration_group
 [@@deriving show]
 
 type 'body gglobal_decl = {

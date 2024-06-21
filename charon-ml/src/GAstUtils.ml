@@ -41,29 +41,37 @@ let gexpr_body_get_input_vars (fbody : 'body gexpr_body) : var list =
 let fun_body_get_input_vars (fbody : 'body gexpr_body) : var list =
   gexpr_body_get_input_vars fbody
 
+let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
+  match g with RecGroup ids -> ids | NonRecGroup id -> [ id ]
+
 (** Split a module's declarations between types, functions and globals *)
 let split_declarations (decls : declaration_group list) :
     type_declaration_group list
     * fun_declaration_group list
     * GlobalDeclId.id list
     * trait_declaration_group list
-    * TraitImplId.id list =
+    * TraitImplId.id list
+    * mixed_declaration_group list =
   let rec split decls =
     match decls with
-    | [] -> ([], [], [], [], [])
+    | [] -> ([], [], [], [], [], [])
     | d :: decls' -> (
-        let types, funs, globals, trait_decls, trait_impls = split decls' in
+        let types, funs, globals, trait_decls, trait_impls, mixeds =
+          split decls'
+        in
         match d with
         | TypeGroup decl ->
-            (decl :: types, funs, globals, trait_decls, trait_impls)
+            (decl :: types, funs, globals, trait_decls, trait_impls, mixeds)
         | FunGroup decl ->
-            (types, decl :: funs, globals, trait_decls, trait_impls)
+            (types, decl :: funs, globals, trait_decls, trait_impls, mixeds)
         | GlobalGroup decl ->
-            (types, funs, decl :: globals, trait_decls, trait_impls)
+            (types, funs, decl :: globals, trait_decls, trait_impls, mixeds)
         | TraitDeclGroup decl ->
-            (types, funs, globals, decl :: trait_decls, trait_impls)
+            (types, funs, globals, decl :: trait_decls, trait_impls, mixeds)
         | TraitImplGroup decl ->
-            (types, funs, globals, trait_decls, decl :: trait_impls))
+            (types, funs, globals, trait_decls, decl :: trait_impls, mixeds)
+        | MixedGroup decls ->
+            (types, funs, globals, trait_decls, trait_impls, decls :: mixeds))
   in
   split decls
 
@@ -88,9 +96,11 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
         M.key g_declaration_group M.t =
       List.fold_left add_group M.empty groups
   end in
-  let types, funs, globals, trait_decls, trait_impls =
+  let types, funs, globals, trait_decls, trait_impls, mixed_groups =
     split_declarations decls
   in
+  if List.length mixed_groups <> 0 then
+    raise (Failure "Mixed declaration groups cannot be indexed by declaration");
   let module TG = G (TypeDeclId.Map) in
   let types = TG.create_map types in
   let module FG = G (FunDeclId.Map) in

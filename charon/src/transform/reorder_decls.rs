@@ -38,84 +38,50 @@ pub enum DeclarationGroup {
     TraitDecl(GDeclarationGroup<TraitDeclId>),
     ///
     TraitImpl(GDeclarationGroup<TraitImplId>),
+    /// Anything that doesn't fit into these categories.
+    Mixed(GDeclarationGroup<AnyTransId>),
 }
 
 impl<Id: Copy> GDeclarationGroup<Id> {
-    pub fn get_ids(&self) -> Vec<Id> {
+    pub fn get_ids(&self) -> &[Id] {
         use GDeclarationGroup::*;
         match self {
-            NonRec(id) => vec![*id],
-            Rec(ids) => ids.clone(),
+            NonRec(id) => std::slice::from_ref(id),
+            Rec(ids) => ids.as_slice(),
+        }
+    }
+    pub fn get_any_trans_ids(&self) -> Vec<AnyTransId>
+    where
+        Id: Into<AnyTransId>,
+    {
+        self.get_ids().iter().copied().map(|id| id.into()).collect()
+    }
+    fn make_group(is_rec: bool, gr: impl Iterator<Item = AnyTransId>) -> Self
+    where
+        Id: TryFrom<AnyTransId>,
+        Id::Error: Debug,
+    {
+        let gr: Vec<_> = gr.map(|x| x.try_into().unwrap()).collect();
+        if is_rec {
+            GDeclarationGroup::Rec(gr)
+        } else {
+            assert!(gr.len() == 1);
+            GDeclarationGroup::NonRec(gr[0])
         }
     }
 }
 
 impl DeclarationGroup {
-    fn make_type_group(is_rec: bool, gr: impl Iterator<Item = TypeDeclId>) -> Self {
-        let gr: Vec<_> = gr.collect();
-        if is_rec {
-            DeclarationGroup::Type(GDeclarationGroup::Rec(gr))
-        } else {
-            assert!(gr.len() == 1);
-            DeclarationGroup::Type(GDeclarationGroup::NonRec(gr[0]))
+    pub fn get_ids(&self) -> Vec<AnyTransId> {
+        use DeclarationGroup::*;
+        match self {
+            Type(gr) => gr.get_any_trans_ids(),
+            Fun(gr) => gr.get_any_trans_ids(),
+            Global(gr) => gr.get_any_trans_ids(),
+            TraitDecl(gr) => gr.get_any_trans_ids(),
+            TraitImpl(gr) => gr.get_any_trans_ids(),
+            Mixed(gr) => gr.get_any_trans_ids(),
         }
-    }
-
-    fn make_fun_group(is_rec: bool, gr: impl Iterator<Item = FunDeclId>) -> Self {
-        let gr: Vec<_> = gr.collect();
-        if is_rec {
-            DeclarationGroup::Fun(GDeclarationGroup::Rec(gr))
-        } else {
-            assert!(gr.len() == 1);
-            DeclarationGroup::Fun(GDeclarationGroup::NonRec(gr[0]))
-        }
-    }
-
-    fn make_global_group(is_rec: bool, gr: impl Iterator<Item = GlobalDeclId>) -> Self {
-        let gr: Vec<_> = gr.collect();
-        if is_rec {
-            DeclarationGroup::Global(GDeclarationGroup::Rec(gr))
-        } else {
-            assert!(gr.len() == 1);
-            DeclarationGroup::Global(GDeclarationGroup::NonRec(gr[0]))
-        }
-    }
-
-    fn make_trait_decl_group(
-        _ctx: &TransformCtx,
-        _is_rec: bool,
-        gr: impl Iterator<Item = TraitDeclId>,
-    ) -> Self {
-        let gr: Vec<_> = gr.collect();
-        // Trait declarations often refer to `Self`, like below,
-        // which means they are often considered as recursive by our
-        // analysis. TODO: do something more precise. What is important
-        // is that we never use the "whole" self clause as argument,
-        // but rather projections over the self clause (like `<Self as Foo>::u`,
-        // in the declaration for `Foo`).
-        if gr.len() == 1 {
-            DeclarationGroup::TraitDecl(GDeclarationGroup::NonRec(gr[0]))
-        } else {
-            DeclarationGroup::TraitDecl(GDeclarationGroup::Rec(gr))
-        }
-    }
-
-    fn make_trait_impl_group(
-        ctx: &TransformCtx,
-        is_rec: bool,
-        gr: impl Iterator<Item = TraitImplId>,
-    ) -> Self {
-        let gr: Vec<_> = gr.collect();
-        let ctx = ctx.into_fmt();
-        assert!(
-            !is_rec && gr.len() == 1,
-            "Invalid trait impl group:\n{}",
-            gr.iter()
-                .map(|id| ctx.format_object(*id))
-                .collect::<Vec<String>>()
-                .join("\n")
-        );
-        DeclarationGroup::TraitImpl(GDeclarationGroup::NonRec(gr[0]))
     }
 }
 
@@ -151,6 +117,7 @@ impl Display for DeclarationGroup {
             DeclarationGroup::Global(decl) => write!(f, "{{ Global(s): {decl} }}"),
             DeclarationGroup::TraitDecl(decl) => write!(f, "{{ Trait decls(s): {decl} }}"),
             DeclarationGroup::TraitImpl(decl) => write!(f, "{{ Trait impl(s): {decl} }}"),
+            DeclarationGroup::Mixed(decl) => write!(f, "{{ Mixed items: {decl} }}"),
         }
     }
 }
@@ -446,7 +413,7 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
 }
 
 fn group_declarations_from_scc(
-    ctx: &TransformCtx,
+    _ctx: &TransformCtx,
     graph: Deps<'_, '_>,
     reordered_sccs: SCCs<AnyTransId>,
 ) -> DeclarationsGroups {
@@ -462,19 +429,11 @@ fn group_declarations_from_scc(
         let id0 = *it.next().unwrap();
         let decl = graph.graph.get(&id0).unwrap();
 
-        // The group should consist of only functions, only types or only one global.
-        for id in scc {
-            assert!(
-                id0.variant_index_arity() == id.variant_index_arity(),
-                "Invalid scc:\n{}",
-                scc.iter()
-                    .map(|x| x.fmt_with_ctx(ctx))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
-        }
         if let AnyTransId::Global(_) = id0 {
-            assert!(scc.len() == 1);
+            assert!(
+                scc.len() == 1,
+                "Error: this constant recursively depends on itself, what is happening"
+            );
         }
 
         // If an SCC has length one, the declaration may be simply recursive:
@@ -482,34 +441,40 @@ fn group_declarations_from_scc(
         // its own set of dependencies.
         let is_mutually_recursive = scc.len() > 1;
         let is_simply_recursive = !is_mutually_recursive && decl.contains(&id0);
-
-        // Add the declaration.
-        // Note that we clone the vectors: it is not optimal, but they should
-        // be pretty small.
         let is_rec = is_mutually_recursive || is_simply_recursive;
+
+        let all_same_kind = scc
+            .iter()
+            .all(|id| id0.variant_index_arity() == id.variant_index_arity());
+        let ids = scc.iter().copied();
         let group: DeclarationGroup = match id0 {
-            AnyTransId::Type(_) => DeclarationGroup::make_type_group(
-                is_rec,
-                scc.iter().map(AnyTransId::as_type).copied(),
-            ),
-            AnyTransId::Fun(_) => DeclarationGroup::make_fun_group(
-                is_rec,
-                scc.iter().map(AnyTransId::as_fun).copied(),
-            ),
-            AnyTransId::Global(_) => DeclarationGroup::make_global_group(
-                is_rec,
-                scc.iter().map(AnyTransId::as_global).copied(),
-            ),
-            AnyTransId::TraitDecl(_) => DeclarationGroup::make_trait_decl_group(
-                ctx,
-                is_rec,
-                scc.iter().map(AnyTransId::as_trait_decl).copied(),
-            ),
-            AnyTransId::TraitImpl(_) => DeclarationGroup::make_trait_impl_group(
-                ctx,
-                is_rec,
-                scc.iter().map(AnyTransId::as_trait_impl).copied(),
-            ),
+            _ if !all_same_kind => {
+                DeclarationGroup::Mixed(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            AnyTransId::Type(_) => {
+                DeclarationGroup::Type(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            AnyTransId::Fun(_) => DeclarationGroup::Fun(GDeclarationGroup::make_group(is_rec, ids)),
+            AnyTransId::Global(_) => {
+                DeclarationGroup::Global(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            AnyTransId::TraitDecl(_) => {
+                let gr: Vec<_> = ids.map(|x| x.try_into().unwrap()).collect();
+                // Trait declarations often refer to `Self`, like below,
+                // which means they are often considered as recursive by our
+                // analysis. TODO: do something more precise. What is important
+                // is that we never use the "whole" self clause as argument,
+                // but rather projections over the self clause (like `<Self as Foo>::u`,
+                // in the declaration for `Foo`).
+                if gr.len() == 1 {
+                    DeclarationGroup::TraitDecl(GDeclarationGroup::NonRec(gr[0]))
+                } else {
+                    DeclarationGroup::TraitDecl(GDeclarationGroup::Rec(gr))
+                }
+            }
+            AnyTransId::TraitImpl(_) => {
+                DeclarationGroup::TraitImpl(GDeclarationGroup::make_group(is_rec, ids))
+            }
         };
 
         reordered_decls.push(group);
