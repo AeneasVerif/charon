@@ -282,9 +282,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             s.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnTrait)
         })?;
 
-        // TODO: move this below (we don't need to perform this function call exactly here)
-        let preds = bt_ctx.get_predicates();
-
         // Explore the associated items
         // We do something subtle here: TODO: explain
         let tcx = bt_ctx.t_ctx.tcx;
@@ -414,7 +411,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             name,
             item_meta,
             generics,
-            preds,
             parent_clauses,
             consts,
             types,
@@ -622,7 +618,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             item_meta,
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),
-            preds: bt_ctx.get_predicates(),
             parent_trait_refs,
             consts,
             types,

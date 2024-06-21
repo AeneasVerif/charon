@@ -26,27 +26,16 @@ type ('fun_body, 'global_body) fmt_env = {
           indices, i.e., the region var of index 0 doesn't have to be at index 0,
           etc. We lookup the variables by checking their id, not their position.
       *)
-  types : type_var list;
-  const_generics : const_generic_var list;
-  trait_clauses : trait_clause list;
-  preds : predicates;
+  generics : generic_params;
+      (* We ignore `generics.regions` as they are tracked in `regions` already *)
   locals : (VarId.id * string option) list;
       (** The local variables don't need to be ordered (same as the generics) *)
 }
 
 let fmt_env_update_generics_and_preds (env : ('a, 'b) fmt_env)
-    (generics : generic_params) (preds : predicates) : ('a, 'b) fmt_env =
-  let { regions; types; const_generics; trait_clauses } : generic_params =
-    generics
-  in
-  {
-    env with
-    regions = regions :: env.regions;
-    types;
-    const_generics;
-    trait_clauses;
-    preds;
-  }
+    (generics : generic_params) : ('a, 'b) fmt_env =
+  let { regions; _ } : generic_params = generics in
+  { env with regions = regions :: env.regions; generics }
 
 let fmt_env_push_regions (env : ('a, 'b) fmt_env) (regions : region_var list) :
     ('a, 'b) fmt_env =

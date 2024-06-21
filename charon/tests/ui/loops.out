@@ -873,6 +873,8 @@ trait core::iter::traits::iterator::Iterator<Self>
 }
 
 trait core::iter::traits::collect::IntoIterator<Self>
+where
+    (Self::IntoIter::[@TraitClause0])::Item = Self::Item,
 {
     type Item
     type IntoIter

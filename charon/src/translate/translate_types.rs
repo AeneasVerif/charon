@@ -770,11 +770,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             is_local: rust_id.is_local(),
             name,
             generics,
-            preds: bt_ctx.get_predicates(),
             kind,
         };
-
-        trace!("translate_type: preds: {:?}", &type_def.preds);
 
         trace!(
             "{} -> {}",

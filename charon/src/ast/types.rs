@@ -293,17 +293,6 @@ pub struct TraitTypeConstraint {
     pub ty: Ty,
 }
 
-/// The predicates which apply to a definition
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Drive, DriveMut)]
-pub struct Predicates {
-    /// The first region in the pair outlives the second region
-    pub regions_outlive: Vec<RegionOutlives>,
-    /// The type outlives the region
-    pub types_outlive: Vec<TypeOutlives>,
-    /// Constraints over trait associated types
-    pub trait_type_constraints: Vec<TraitTypeConstraint>,
-}
-
 #[derive(
     Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Drive, DriveMut,
 )]
@@ -322,13 +311,19 @@ pub struct GenericArgs {
 /// be filled. We group in a different place the predicates which are not
 /// trait clauses, because those enforce constraints but do not need to
 /// be filled with witnesses/instances.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericParams {
     pub regions: Vector<RegionId, RegionVar>,
     pub types: Vector<TypeVarId, TypeVar>,
     pub const_generics: Vector<ConstGenericVarId, ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: Vector<TraitClauseId, TraitClause>,
+    /// The first region in the pair outlives the second region
+    pub regions_outlive: Vec<RegionOutlives>,
+    /// The type outlives the region
+    pub types_outlive: Vec<TypeOutlives>,
+    /// Constraints over trait associated types
+    pub trait_type_constraints: Vec<TraitTypeConstraint>,
 }
 
 generate_index_type!(TraitClauseId, "TraitClause");
@@ -425,7 +420,6 @@ pub struct TypeDecl {
     pub is_local: bool,
     pub name: Name,
     pub generics: GenericParams,
-    pub preds: Predicates,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
 }
@@ -809,7 +803,6 @@ pub struct FunSig {
     /// Additional information if this is the signature of a closure.
     pub closure_info: Option<ClosureInfo>,
     pub generics: GenericParams,
-    pub preds: Predicates,
     /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).
     pub parent_params_info: Option<ParamsInfo>,
     pub inputs: Vec<Ty>,

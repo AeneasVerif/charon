@@ -398,9 +398,6 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
                     // Visit the traits referenced in the generics
                     d.generics.drive(&mut graph);
 
-                    // Visit the predicates
-                    d.preds.drive(&mut graph);
-
                     // Visit the parent clauses
                     d.parent_clauses.drive(&mut graph);
 

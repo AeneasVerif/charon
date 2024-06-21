@@ -245,7 +245,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     name.push(PathElem::Impl(ImplElem {
                         disambiguator,
                         generics: bt_ctx.get_generics(),
-                        preds: bt_ctx.get_predicates(),
                         kind,
                     }));
                 }

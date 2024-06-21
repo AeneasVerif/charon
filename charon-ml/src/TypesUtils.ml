@@ -97,10 +97,15 @@ let mk_generic_args_from_types (types : ty list) : generic_args =
   { regions = []; types; const_generics = []; trait_refs = [] }
 
 let empty_generic_params : generic_params =
-  { regions = []; types = []; const_generics = []; trait_clauses = [] }
-
-let empty_predicates : predicates =
-  { regions_outlive = []; types_outlive = []; trait_type_constraints = [] }
+  {
+    regions = [];
+    types = [];
+    const_generics = [];
+    trait_clauses = [];
+    regions_outlive = [];
+    types_outlive = [];
+    trait_type_constraints = [];
+  }
 
 let merge_generic_args (g1 : generic_args) (g2 : generic_args) : generic_args =
   let { regions = r1; types = tys1; const_generics = cgs1; trait_refs = tr1 } =

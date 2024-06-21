@@ -160,7 +160,6 @@ let global_decl_of_json (bodies : expr_body option list)
        is_local;
        name;
        generics;
-       preds;
        ty;
        kind;
      } =
@@ -175,7 +174,6 @@ let global_decl_of_json (bodies : expr_body option list)
          is_closure = false;
          closure_info = None;
          generics;
-         preds;
          parent_params_info = None;
          inputs = [];
          output = ty;
@@ -189,7 +187,6 @@ let global_decl_of_json (bodies : expr_body option list)
          is_local;
          name;
          generics;
-         preds;
          ty;
          kind;
        }

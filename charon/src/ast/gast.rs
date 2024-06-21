@@ -180,7 +180,6 @@ pub struct GlobalDecl {
     pub is_local: bool,
     pub name: Name,
     pub generics: GenericParams,
-    pub preds: Predicates,
     pub ty: Ty,
     /// The global kind: "regular" function, trait const declaration, etc.
     pub kind: ItemKind,
@@ -235,7 +234,6 @@ pub struct TraitDecl {
     pub item_meta: ItemMeta,
     pub name: Name,
     pub generics: GenericParams,
-    pub preds: Predicates,
     /// The "parent" clauses: the supertraits.
     ///
     /// Supertraits are actually regular where clauses, but we decided to have
@@ -302,7 +300,6 @@ pub struct TraitImpl {
     /// clauses.
     pub impl_trait: TraitDeclRef,
     pub generics: GenericParams,
-    pub preds: Predicates,
     /// The trait references for the parent clauses (see [TraitDecl]).
     pub parent_trait_refs: Vector<TraitClauseId, TraitRef>,
     /// The associated constants declared in the trait.

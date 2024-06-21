@@ -643,6 +643,8 @@ trait test_crate::Iterator<Self>
 }
 
 trait test_crate::IntoIterator<Self>
+where
+    (Self::IntoIter::[@TraitClause0])::Item = Self::Item,
 {
     type Item
     type IntoIter

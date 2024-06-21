@@ -1008,6 +1008,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             types: self.type_vars.clone(),
             const_generics: self.const_generic_vars.clone(),
             trait_clauses: self.get_local_trait_clauses(),
+            regions_outlive: self.regions_outlive.clone(),
+            types_outlive: self.types_outlive.clone(),
+            trait_type_constraints: self.trait_type_constraints.clone(),
         }
     }
 
@@ -1024,14 +1027,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .all(|(i, c)| c.clause_id.index() == i));
         // Return
         clauses.clone()
-    }
-
-    pub(crate) fn get_predicates(&self) -> Predicates {
-        Predicates {
-            regions_outlive: self.regions_outlive.clone(),
-            types_outlive: self.types_outlive.clone(),
-            trait_type_constraints: self.trait_type_constraints.clone(),
-        }
     }
 
     /// We use this when exploring the clauses of a predicate, to introduce

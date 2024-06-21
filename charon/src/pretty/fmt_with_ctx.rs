@@ -182,7 +182,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunSig {
         };
 
         // Generic parameters
-        let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        let (params, clauses, _) =
+            self.generics
+                .fmt_with_ctx_with_trait_clauses(ctx, "", &self.parent_params_info);
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
@@ -198,15 +200,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunSig {
         } else {
             format!(" -> {}", ret_ty.fmt_with_ctx(ctx))
         };
-
-        // Clauses
-        let clauses = fmt_where_clauses_with_ctx(
-            ctx,
-            "",
-            &self.parent_params_info,
-            trait_clauses,
-            &self.preds,
-        );
 
         // Put everything together
         format!("{unsafe_kw}fn{params}({args}){ret_ty}{clauses}",)
@@ -307,24 +300,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericArgs {
 }
 
 impl GenericParams {
-    pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C) -> (String, Vec<String>)
+    pub fn fmt_with_ctx_with_trait_clauses<C>(
+        &self,
+        ctx: &C,
+        tab: &str,
+        info: &Option<ParamsInfo>,
+    ) -> (String, String, bool)
     where
         C: AstFormatter,
     {
+        let generics = self;
         let mut params = Vec::new();
-        let GenericParams {
-            regions,
-            types,
-            const_generics,
-            trait_clauses,
-        } = self;
-        for x in regions {
+        for x in &generics.regions {
             params.push(x.to_string());
         }
-        for x in types {
+        for x in &generics.types {
             params.push(x.to_string());
         }
-        for x in const_generics {
+        for x in &generics.const_generics {
             params.push(x.to_string());
         }
         let params = if params.is_empty() {
@@ -333,11 +326,63 @@ impl GenericParams {
             format!("<{}>", params.join(", "))
         };
 
-        let mut clauses = Vec::new();
-        for x in trait_clauses {
-            clauses.push(x.fmt_with_ctx(ctx));
-        }
-        (params, clauses)
+        let mut trait_clauses = generics
+            .trait_clauses
+            .iter()
+            .map(|x| x.fmt_with_ctx(ctx))
+            .collect_vec();
+        let mut types_outlive: Vec<_> = generics
+            .types_outlive
+            .iter()
+            .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
+            .collect();
+        let mut regions_outlive: Vec<_> = generics
+            .regions_outlive
+            .iter()
+            .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
+            .collect();
+        let mut type_constraints: Vec<_> = generics
+            .trait_type_constraints
+            .iter()
+            .map(|x| x.fmt_with_ctx(ctx))
+            .collect();
+        let any_where = !(trait_clauses.is_empty()
+            && types_outlive.is_empty()
+            && regions_outlive.is_empty()
+            && type_constraints.is_empty());
+        let preds = match info {
+            None => {
+                let clauses: Vec<_> = trait_clauses
+                    .into_iter()
+                    .chain(types_outlive.into_iter())
+                    .chain(regions_outlive.into_iter())
+                    .chain(type_constraints.into_iter())
+                    .collect();
+                fmt_where_clauses(tab, 0, clauses)
+            }
+            Some(info) => {
+                // Below: definitely not efficient nor convenient, but it is not really
+                // important
+                let local_clauses: Vec<_> = trait_clauses
+                    .split_off(info.num_trait_clauses)
+                    .into_iter()
+                    .chain(regions_outlive.split_off(info.num_regions_outlive))
+                    .chain(types_outlive.split_off(info.num_types_outlive))
+                    .chain(type_constraints.split_off(info.num_trait_type_constraints))
+                    .collect();
+                let inherited_clauses: Vec<_> = trait_clauses
+                    .into_iter()
+                    .chain(regions_outlive)
+                    .chain(types_outlive)
+                    .chain(type_constraints)
+                    .collect();
+                let num_inherited = inherited_clauses.len();
+                let all_clauses: Vec<_> =
+                    inherited_clauses.into_iter().chain(local_clauses).collect();
+                fmt_where_clauses(tab, num_inherited, all_clauses)
+            }
+        };
+        (params, preds, any_where)
     }
 }
 
@@ -352,6 +397,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericParams {
                 types,
                 const_generics,
                 trait_clauses,
+                regions_outlive: _,
+                types_outlive: _,
+                trait_type_constraints: _,
             } = self;
             for x in regions {
                 params.push(x.to_string());
@@ -453,7 +501,11 @@ where
         let name = self.name.fmt_with_ctx(ctx);
 
         // Generic parameters
-        let (params, trait_clauses) = self.signature.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        let (params, preds, _) = self.signature.generics.fmt_with_ctx_with_trait_clauses(
+            ctx,
+            tab,
+            &self.signature.parent_params_info,
+        );
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
@@ -474,15 +526,6 @@ where
         } else {
             format!(" -> {}", ret_ty.fmt_with_ctx(ctx))
         };
-
-        // Predicates
-        let preds = fmt_where_clauses_with_ctx(
-            ctx,
-            tab,
-            &self.signature.parent_params_info,
-            trait_clauses,
-            &self.signature.preds,
-        );
 
         // Body
         let body = match self.body {
@@ -516,14 +559,15 @@ where
         let ctx = &ctx.set_generics(&self.generics);
 
         // Translate the parameters and the trait clauses
-        let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        let (params, preds, any_where) = self
+            .generics
+            .fmt_with_ctx_with_trait_clauses(ctx, "  ", &None);
         // Predicates
-        let eq_space = if trait_clauses.is_empty() && self.preds.is_empty() {
+        let eq_space = if !any_where {
             " ".to_string()
         } else {
             "\n ".to_string()
         };
-        let preds = fmt_where_clauses_with_ctx(ctx, "  ", &None, trait_clauses, &self.preds);
 
         // Decl name
         let name = self.name.fmt_with_ctx(ctx);
@@ -1029,8 +1073,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
         let ctx = &ctx.set_generics(&self.generics);
 
         let name = self.name.fmt_with_ctx(ctx);
-        let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
+        let (generics, clauses, _) = self
+            .generics
+            .fmt_with_ctx_with_trait_clauses(ctx, "", &None);
 
         let items = {
             let items = self
@@ -1110,8 +1155,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
         let ctx = &ctx.set_generics(&self.generics);
 
         let name = self.name.fmt_with_ctx(ctx);
-        let (generics, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        let clauses = fmt_where_clauses_with_ctx(ctx, "", &None, trait_clauses, &self.preds);
+        let (generics, clauses, _) = self
+            .generics
+            .fmt_with_ctx_with_trait_clauses(ctx, "", &None);
 
         let items = {
             let items = self
@@ -1278,14 +1324,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let ctx = &ctx.set_generics(&self.generics);
 
-        let (params, trait_clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        let (params, preds, any_where) = self
+            .generics
+            .fmt_with_ctx_with_trait_clauses(ctx, "  ", &None);
         // Predicates
-        let eq_space = if trait_clauses.is_empty() && self.preds.is_empty() {
+        let eq_space = if !any_where {
             " ".to_string()
         } else {
             "\n ".to_string()
         };
-        let preds = fmt_where_clauses_with_ctx(ctx, "  ", &None, trait_clauses, &self.preds);
 
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
@@ -1623,71 +1670,6 @@ pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<Stri
         } else {
             let clauses = clauses.join("");
             format!("\n{tab}where{clauses}")
-        }
-    }
-}
-
-pub fn fmt_where_clauses_with_ctx<C>(
-    ctx: &C,
-    tab: &str,
-    info: &Option<ParamsInfo>,
-    mut trait_clauses: Vec<String>,
-    preds: &Predicates,
-) -> String
-where
-    C: AstFormatter,
-{
-    let mut types_outlive: Vec<_> = preds
-        .types_outlive
-        .iter()
-        .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
-        .collect();
-    let mut regions_outlive: Vec<_> = preds
-        .regions_outlive
-        .iter()
-        .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
-        .collect();
-    let mut type_constraints: Vec<_> = preds
-        .trait_type_constraints
-        .iter()
-        .map(|x| x.fmt_with_ctx(ctx))
-        .collect();
-    match info {
-        None => {
-            let clauses: Vec<_> = trait_clauses
-                .into_iter()
-                .chain(types_outlive.into_iter())
-                .chain(regions_outlive.into_iter())
-                .chain(type_constraints.into_iter())
-                .collect();
-            fmt_where_clauses(tab, 0, clauses)
-        }
-        Some(info) => {
-            // Below: definitely not efficient nor convenient, but it is not really
-            // important
-            let local_clauses: Vec<_> = trait_clauses
-                .split_off(info.num_trait_clauses)
-                .into_iter()
-                .chain(regions_outlive.split_off(info.num_regions_outlive))
-                .chain(types_outlive.split_off(info.num_types_outlive).into_iter())
-                .chain(
-                    type_constraints
-                        .split_off(info.num_trait_type_constraints)
-                        .into_iter(),
-                )
-                .collect();
-            let inherited_clauses: Vec<_> = trait_clauses
-                .into_iter()
-                .chain(regions_outlive.into_iter())
-                .chain(types_outlive.into_iter())
-                .chain(type_constraints.into_iter())
-                .collect();
-            let num_inherited = inherited_clauses.len();
-            let all_clauses: Vec<_> = inherited_clauses
-                .into_iter()
-                .chain(local_clauses.into_iter())
-                .collect();
-            fmt_where_clauses(tab, num_inherited, all_clauses)
         }
     }
 }
