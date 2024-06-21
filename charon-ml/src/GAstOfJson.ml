@@ -1345,6 +1345,31 @@ let trait_implementation_group_of_json (js : json) :
      | NonRecGroup id -> Ok id
      | RecGroup _ -> Error "got mutually dependent trait impls")
 
+let any_decl_id_of_json (js : json) : (any_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Fun", id) ] ->
+        let* id = FunDeclId.id_of_json id in
+        Ok (IdFun id)
+    | `Assoc [ ("Global", id) ] ->
+        let* id = GlobalDeclId.id_of_json id in
+        Ok (IdGlobal id)
+    | `Assoc [ ("Type", id) ] ->
+        let* id = TypeDeclId.id_of_json id in
+        Ok (IdType id)
+    | `Assoc [ ("TraitDecl", id) ] ->
+        let* id = TraitDeclId.id_of_json id in
+        Ok (IdTraitDecl id)
+    | `Assoc [ ("TraitImpl", id) ] ->
+        let* id = TraitImplId.id_of_json id in
+        Ok (IdTraitImpl id)
+    | _ -> Error "")
+
+let mixed_group_of_json (js : json) :
+    (any_decl_id g_declaration_group, string) result =
+  combine_error_msgs js __FUNCTION__
+    (g_declaration_group_of_json any_decl_id_of_json js)
+
 let declaration_group_of_json (js : json) : (declaration_group, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1363,6 +1388,9 @@ let declaration_group_of_json (js : json) : (declaration_group, string) result =
     | `Assoc [ ("TraitImpl", decl) ] ->
         let* id = trait_implementation_group_of_json decl in
         Ok (TraitImplGroup id)
+    | `Assoc [ ("Mixed", decl) ] ->
+        let* id = mixed_group_of_json decl in
+        Ok (MixedGroup id)
     | _ -> Error "")
 
 let length_of_json_list (js : json) : (int, string) result =

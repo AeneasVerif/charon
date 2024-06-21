@@ -38,6 +38,8 @@ pub enum DeclarationGroup {
     TraitDecl(GDeclarationGroup<TraitDeclId>),
     ///
     TraitImpl(GDeclarationGroup<TraitImplId>),
+    /// Anything that doesn't fit into these categories.
+    Mixed(GDeclarationGroup<AnyTransId>),
 }
 
 impl<Id: Copy> GDeclarationGroup<Id> {
@@ -78,6 +80,7 @@ impl DeclarationGroup {
             Global(gr) => gr.get_any_trans_ids(),
             TraitDecl(gr) => gr.get_any_trans_ids(),
             TraitImpl(gr) => gr.get_any_trans_ids(),
+            Mixed(gr) => gr.get_any_trans_ids(),
         }
     }
 }
@@ -114,6 +117,7 @@ impl Display for DeclarationGroup {
             DeclarationGroup::Global(decl) => write!(f, "{{ Global(s): {decl} }}"),
             DeclarationGroup::TraitDecl(decl) => write!(f, "{{ Trait decls(s): {decl} }}"),
             DeclarationGroup::TraitImpl(decl) => write!(f, "{{ Trait impl(s): {decl} }}"),
+            DeclarationGroup::Mixed(decl) => write!(f, "{{ Mixed items: {decl} }}"),
         }
     }
 }
@@ -409,7 +413,7 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
 }
 
 fn group_declarations_from_scc(
-    ctx: &TransformCtx,
+    _ctx: &TransformCtx,
     graph: Deps<'_, '_>,
     reordered_sccs: SCCs<AnyTransId>,
 ) -> DeclarationsGroups {
@@ -425,19 +429,11 @@ fn group_declarations_from_scc(
         let id0 = *it.next().unwrap();
         let decl = graph.graph.get(&id0).unwrap();
 
-        // The group should consist of only functions, only types or only one global.
-        for id in scc {
-            assert!(
-                id0.variant_index_arity() == id.variant_index_arity(),
-                "Invalid scc:\n{}",
-                scc.iter()
-                    .map(|x| x.fmt_with_ctx(ctx))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
-        }
         if let AnyTransId::Global(_) = id0 {
-            assert!(scc.len() == 1);
+            assert!(
+                scc.len() == 1,
+                "Error: this constant recursively depends on itself, what is happening"
+            );
         }
 
         // If an SCC has length one, the declaration may be simply recursive:
@@ -445,13 +441,16 @@ fn group_declarations_from_scc(
         // its own set of dependencies.
         let is_mutually_recursive = scc.len() > 1;
         let is_simply_recursive = !is_mutually_recursive && decl.contains(&id0);
-
-        // Add the declaration.
-        // Note that we clone the vectors: it is not optimal, but they should
-        // be pretty small.
         let is_rec = is_mutually_recursive || is_simply_recursive;
+
+        let all_same_kind = scc
+            .iter()
+            .all(|id| id0.variant_index_arity() == id.variant_index_arity());
         let ids = scc.iter().copied();
         let group: DeclarationGroup = match id0 {
+            _ if !all_same_kind => {
+                DeclarationGroup::Mixed(GDeclarationGroup::make_group(is_rec, ids))
+            }
             AnyTransId::Type(_) => {
                 DeclarationGroup::Type(GDeclarationGroup::make_group(is_rec, ids))
             }

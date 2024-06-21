@@ -7,6 +7,14 @@ open PrintUtils
 open PrintTypes
 open PrintExpressions
 
+let any_decl_id_to_string (id : any_decl_id) : string =
+  match id with
+  | IdFun id -> FunDeclId.to_string id
+  | IdGlobal id -> GlobalDeclId.to_string id
+  | IdType id -> TypeDeclId.to_string id
+  | IdTraitDecl id -> TraitDeclId.to_string id
+  | IdTraitImpl id -> TraitImplId.to_string id
+
 let fn_operand_to_string (env : ('a, 'b) fmt_env) (op : fn_operand) : string =
   match op with
   | FnOpRegular func -> fn_ptr_to_string env func

@@ -130,6 +130,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
             Global(g) => format!("Global decls group: {}", g.fmt_with_ctx(ctx)),
             TraitDecl(g) => format!("Trait decls group: {}", g.fmt_with_ctx(ctx)),
             TraitImpl(g) => format!("Trait impls group: {}", g.fmt_with_ctx(ctx)),
+            Mixed(g) => format!("Mixed group: {}", g.fmt_with_ctx(ctx)),
         }
     }
 }
