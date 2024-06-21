@@ -3,7 +3,7 @@
 pub use crate::meta_utils::*;
 use derive_visitor::{Drive, DriveMut};
 use hax_frontend_exporter::PathBuf;
-use macros::{EnumAsGetters, EnumIsA};
+use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 
 generate_index_type!(LocalFileId);
@@ -99,9 +99,6 @@ impl From<Span> for rustc_error_messages::MultiSpan {
     }
 }
 
-/// Attributes (`#[...]`). For now we store just the string representation.
-pub type Attribute = String;
-
 /// `#[inline]` built-in attribute.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum InlineAttr {
@@ -111,6 +108,26 @@ pub enum InlineAttr {
     Never,
     /// `#[inline(always)]`
     Always,
+}
+
+/// Attributes (`#[...]`).
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIsA,
+    EnumAsGetters,
+    EnumToGetters,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
+pub enum Attribute {
+    Opaque,
+    Rename(String),
+    Unknown(String),
 }
 
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).

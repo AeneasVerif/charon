@@ -453,71 +453,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.translate_span_from_rspan(rspan)
     }
 
-    fn parse_rename_attribute(&mut self, span: Span, attributes: Vec<Attribute>) -> Option<String> {
-        // Search for rename attributes
-        let attributes: Vec<(&String, &str)> = attributes
-            .iter()
-            .filter_map(|raw_attr| {
-                raw_attr
-                    .strip_prefix("charon::rename(")
-                    .or(raw_attr.strip_prefix("aeneas::rename("))
-                    .and_then(|str| str.strip_suffix(")").and_then(|str| Some((raw_attr, str))))
-            })
-            .collect();
-
-        // Check if there is a rename attribute
-        if attributes.len() == 0 {
-            return None;
-        }
-
-        // We don't allow giving several rename attributes
-        if attributes.len() > 1 {
-            self.span_err(
-                span,
-                "There shouldn't be more than one `charon::rename(\"...\")` or `aeneas::rename(\"...\")` attribute per declaration",
-            );
-            return None;
-        }
-
-        // There is exactly one attribute: retrieve it
-        let (raw_attr, str) = attributes.get(0).unwrap();
-        let str = str
-            .strip_prefix("\"")
-            .and_then(|str| str.strip_suffix("\""));
-
-        // The name should be between quotation marks
-        if str.is_none() {
-            self.span_err(
-                span,
-                &format!("Attribute `{{charon,aeneas}}::rename` should be of the shape `{{charon,aeneas}}::rename(\"...\")`: `{raw_attr}` is not valid"),
-            );
-            return None;
-        }
-        let str = str.unwrap();
-
-        // The name shouldn't be empty
-        if str.is_empty() {
-            self.span_err(
-                span,
-                "Attribute `{charon,aeneas}::rename` should not contain an empty string",
-            );
-            return None;
-        }
-
-        // Check that the name starts with a letter, and only contains alphanumeric
-        // characters or '_'
-        let first_char = str.chars().nth(0).unwrap();
-        let first_char_ok = first_char.is_alphabetic() || first_char == '_';
-        let is_identifier = first_char_ok && str.chars().all(|c| c.is_alphanumeric() || c == '_');
-        if !is_identifier {
-            self.span_err(span, &format!("Attribute `rename` should only contain alphanumeric characters and `_`, and should start with a letter or '_': \"{str}\" is not a valid name"));
-            return None;
-        }
-
-        // Ok: we can return the attribute
-        return Some(str.to_string());
-    }
-
     /// Compute the meta information for a Rust item identified by its id.
     pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
         let span = self.translate_span_from_rid(def_id);
@@ -526,10 +461,25 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .translate_visibility_from_rid(def_id, span.span)
             .unwrap_or(false);
         let attributes = self.translate_attributes_from_rid(def_id);
-        let opaque = attributes
-            .iter()
-            .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque");
-        let rename = self.parse_rename_attribute(span, attributes.clone());
+        let opaque = attributes.iter().any(|attr| attr.is_opaque());
+
+        let rename = {
+            let mut renames = attributes
+                .iter()
+                .filter(|a| a.is_rename())
+                .map(|a| a.as_rename())
+                .cloned();
+            let rename = renames.next();
+            if renames.next().is_some() {
+                self.span_err(
+                    span,
+                    "There should be at most one `charon::rename(\"...\")` \
+                    or `aeneas::rename(\"...\")` attribute per declaration",
+                );
+            }
+            rename
+        };
+
         ItemMeta {
             span,
             attributes,
@@ -614,24 +564,33 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
-    pub(crate) fn translate_attribute(&self, attr: &rustc_ast::Attribute) -> Option<Attribute> {
+    pub(crate) fn translate_attribute(&mut self, attr: &rustc_ast::Attribute) -> Option<Attribute> {
         use rustc_ast::ast::AttrKind;
         use rustc_ast_pretty::pprust;
         match &attr.kind {
             AttrKind::Normal(normal_attr) => {
-                // Use `pprust` to render the attribute like it is written in the source.
+                // Use `pprust` to render the attribute somewhat like it is written in the source.
+                // WARNING: this can change whitespace, and soetimes even adds newlines. Maybe we
+                // should use spans and SourceMap info instead.
                 use pprust::PrintState;
-                Some(pprust::State::to_string(|s| {
-                    s.print_attr_item(&normal_attr.item, attr.span)
-                }))
+                let s =
+                    pprust::State::to_string(|s| s.print_attr_item(&normal_attr.item, attr.span));
+                match Attribute::parse(s) {
+                    Ok(a) => Some(a),
+                    Err(msg) => {
+                        self.span_err(attr.span, &format!("Error parsing attribute: {msg}"));
+                        None
+                    }
+                }
             }
             AttrKind::DocComment(..) => None,
         }
     }
 
-    pub(crate) fn translate_attributes_from_rid(&self, id: DefId) -> Vec<Attribute> {
-        self.node_attributes(id)
-            .iter()
+    pub(crate) fn translate_attributes_from_rid(&mut self, id: DefId) -> Vec<Attribute> {
+        // Collect to drop the borrow on `self`.
+        let vec = self.node_attributes(id).to_vec();
+        vec.iter()
             .filter_map(|attr| self.translate_attribute(attr))
             .collect()
     }

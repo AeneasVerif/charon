@@ -329,6 +329,15 @@ fn predicate_origins() -> Result<(), Box<dyn Error>> {
 #[test]
 fn attributes() -> Result<(), Box<dyn Error>> {
     // Use the `clippy::` prefix because it's ignored by rustc.
+    let unknown_attrs = |item_meta: &ItemMeta| {
+        item_meta
+            .attributes
+            .iter()
+            .filter(|a| a.is_unknown())
+            .map(|a| a.as_unknown())
+            .cloned()
+            .collect_vec()
+    };
     let crate_data = translate(
         r#"
         #[clippy::foo]
@@ -356,31 +365,32 @@ fn attributes() -> Result<(), Box<dyn Error>> {
         "#,
     )?;
     assert_eq!(
-        crate_data.types[0].item_meta.attributes,
+        unknown_attrs(&crate_data.types[0].item_meta),
         vec!["clippy::foo", "clippy::foo(arg)", "clippy::foo = \"arg\""]
     );
     assert_eq!(
-        crate_data.types[1].item_meta.attributes,
+        unknown_attrs(&crate_data.types[1].item_meta),
         vec!["non_exhaustive"]
     );
     assert_eq!(
-        crate_data.trait_decls[0].item_meta.attributes,
+        unknown_attrs(&crate_data.trait_decls[0].item_meta),
         vec!["clippy::foo"]
     );
     assert_eq!(
-        crate_data.trait_impls[0].item_meta.attributes,
+        unknown_attrs(&crate_data.trait_impls[0].item_meta),
         vec!["clippy::foo"]
     );
     assert_eq!(
-        crate_data.globals[0].item_meta.attributes,
+        unknown_attrs(&crate_data.globals[0].item_meta),
         vec!["clippy::foo"]
     );
     assert_eq!(
-        crate_data.globals[1].item_meta.attributes,
+        unknown_attrs(&crate_data.globals[1].item_meta),
         vec!["clippy::foo"]
     );
+    // We don't parse that attribute ourselves, we let rustc do it.
     assert_eq!(
-        crate_data.functions[0].item_meta.attributes,
+        unknown_attrs(&crate_data.functions[0].item_meta),
         vec!["inline(never)"]
     );
     assert_eq!(

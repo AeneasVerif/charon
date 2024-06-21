@@ -183,3 +183,49 @@ pub fn span_to_string(sess: &Session, span: rustc_span::Span) -> String {
         _ => "<unknown span>".to_string(),
     }
 }
+
+impl Attribute {
+    pub(crate) fn parse(full_attr: String) -> Result<Self, String> {
+        // Parse our custom attributes
+        let Some(charon_attr) = full_attr
+            .strip_prefix("charon::")
+            .or(full_attr.strip_prefix("aeneas::"))
+        else {
+            return Ok(Self::Unknown(full_attr));
+        };
+
+        if charon_attr == "opaque" {
+            Ok(Self::Opaque)
+        } else if let Some(attr) = charon_attr
+            .strip_prefix("rename(")
+            .and_then(|str| str.strip_suffix(")"))
+        {
+            // Rename attribute looks like: `#[charon::rename("new_name")]`.
+            let Some(attr) = attr
+                .strip_prefix("\"")
+                .and_then(|attr| attr.strip_suffix("\""))
+            else {
+                return Err(format!(
+                    "the new name should be between quotes: `rename(\"{attr}\")`."
+                ));
+            };
+
+            if attr.is_empty() {
+                return Err(format!("attribute `rename` should not be empty"));
+            }
+
+            let first_char = attr.chars().nth(0).unwrap();
+            let is_identifier = (first_char.is_alphabetic() || first_char == '_')
+                && attr.chars().all(|c| c.is_alphanumeric() || c == '_');
+            if !is_identifier {
+                return Err(format!(
+                    "attribute `rename` should contain a valid identifier"
+                ));
+            }
+
+            Ok(Self::Rename(attr.to_string()))
+        } else {
+            Err(format!("Unrecognized attribute: `{charon_attr}`"))
+        }
+    }
+}

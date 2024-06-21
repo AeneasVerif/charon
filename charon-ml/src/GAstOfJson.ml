@@ -125,6 +125,18 @@ let inline_attr_of_json (js : json) : (inline_attr, string) result =
     | `String "Always" -> Ok Always
     | _ -> Error "")
 
+let attribute_of_json (js : json) : (attribute, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Opaque" -> Ok AttrOpaque
+    | `Assoc [ ("Rename", rename) ] ->
+        let* rename = string_of_json rename in
+        Ok (AttrRename rename)
+    | `Assoc [ ("Unknown", unknown) ] ->
+        let* unknown = string_of_json unknown in
+        Ok (AttrUnknown unknown)
+    | _ -> Error "")
+
 let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
     (item_meta, string) result =
   combine_error_msgs js __FUNCTION__
@@ -138,7 +150,7 @@ let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
           ("rename", rename);
         ] ->
         let* span = span_of_json id_to_file span in
-        let* attributes = list_of_json string_of_json attributes in
+        let* attributes = list_of_json attribute_of_json attributes in
         let* inline = option_of_json inline_attr_of_json inline in
         let* public = bool_of_json public in
         let* rename = string_option_of_json rename in
