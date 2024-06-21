@@ -1453,7 +1453,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<Result<Body, Opaque>, Error> {
         let tcx = self.t_ctx.tcx;
 
-        if item_meta.opaque {
+        if item_meta.attr_info.opaque {
             return Ok(Err(Opaque));
         }
         if !self.t_ctx.id_is_transparent(rust_id)? {

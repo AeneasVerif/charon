@@ -54,11 +54,12 @@ type inline_attr =
 type attribute = AttrOpaque | AttrRename of string | AttrUnknown of string
 [@@deriving show, ord]
 
-type item_meta = {
-  span : span;
+type attr_info = {
   attributes : attribute list;
   inline : inline_attr option;
-  public : bool;
   rename : string option;
+  public : bool;
 }
 [@@deriving show, ord]
+
+type item_meta = { span : span; attr_info : attr_info } [@@deriving show, ord]

@@ -137,24 +137,31 @@ let attribute_of_json (js : json) : (attribute, string) result =
         Ok (AttrUnknown unknown)
     | _ -> Error "")
 
-let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
-    (item_meta, string) result =
+let attr_info_of_json (js : json) : (attr_info, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
         [
-          ("span", span);
           ("attributes", attributes);
           ("inline", inline);
-          ("public", public);
           ("rename", rename);
+          ("public", public);
         ] ->
-        let* span = span_of_json id_to_file span in
         let* attributes = list_of_json attribute_of_json attributes in
         let* inline = option_of_json inline_attr_of_json inline in
         let* public = bool_of_json public in
         let* rename = string_option_of_json rename in
-        Ok { span; attributes; inline; public; rename }
+        Ok { attributes; inline; public; rename }
+    | _ -> Error "")
+
+let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
+    (item_meta, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("span", span); ("attr_info", attr_info) ] ->
+        let* span = span_of_json id_to_file span in
+        let* attr_info = attr_info_of_json attr_info in
+        Ok { span; attr_info }
     | _ -> Error "")
 
 let type_var_of_json (js : json) : (type_var, string) result =
@@ -466,11 +473,14 @@ let field_of_json (id_to_file : id_to_file_map) (js : json) :
     (field, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("item_meta", item_meta); ("name", name); ("ty", ty) ] ->
-        let* item_meta = item_meta_of_json id_to_file item_meta in
+    | `Assoc
+        [ ("span", span); ("attr_info", attr_info); ("name", name); ("ty", ty) ]
+      ->
+        let* span = span_of_json id_to_file span in
+        let* attr_info = attr_info_of_json attr_info in
         let* name = option_of_json string_of_json name in
         let* ty = ty_of_json ty in
-        Ok { item_meta; field_name = name; field_ty = ty }
+        Ok { span; attr_info; field_name = name; field_ty = ty }
     | _ -> Error "")
 
 let variant_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -479,16 +489,18 @@ let variant_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | `Assoc
         [
-          ("item_meta", item_meta);
+          ("span", span);
+          ("attr_info", attr_info);
           ("name", name);
           ("fields", fields);
           ("discriminant", discriminant);
         ] ->
-        let* item_meta = item_meta_of_json id_to_file item_meta in
+        let* span = span_of_json id_to_file span in
+        let* attr_info = attr_info_of_json attr_info in
         let* name = string_of_json name in
         let* fields = list_of_json (field_of_json id_to_file) fields in
         let* discriminant = scalar_value_of_json discriminant in
-        Ok { item_meta; variant_name = name; fields; discriminant }
+        Ok { span; attr_info; variant_name = name; fields; discriminant }
     | _ -> Error "")
 
 let type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :

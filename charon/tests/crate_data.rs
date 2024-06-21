@@ -331,6 +331,7 @@ fn attributes() -> Result<(), Box<dyn Error>> {
     // Use the `clippy::` prefix because it's ignored by rustc.
     let unknown_attrs = |item_meta: &ItemMeta| {
         item_meta
+            .attr_info
             .attributes
             .iter()
             .filter(|a| a.is_unknown())
@@ -394,7 +395,7 @@ fn attributes() -> Result<(), Box<dyn Error>> {
         vec!["inline(never)"]
     );
     assert_eq!(
-        crate_data.functions[0].item_meta.inline,
+        crate_data.functions[0].item_meta.attr_info.inline,
         Some(InlineAttr::Never)
     );
     Ok(())
@@ -416,19 +417,19 @@ fn visibility() -> Result<(), Box<dyn Error>> {
         repr_name(&crate_data, &crate_data.types[0].name),
         "test_crate::Pub"
     );
-    assert!(crate_data.types[0].item_meta.public);
+    assert!(crate_data.types[0].item_meta.attr_info.public);
     assert_eq!(
         repr_name(&crate_data, &crate_data.types[1].name),
         "test_crate::Priv"
     );
-    assert!(!crate_data.types[1].item_meta.public);
+    assert!(!crate_data.types[1].item_meta.attr_info.public);
     // Note how we think `PubInPriv` is public. It kind of is but there is no path to it. This is
     // probably fine.
     assert_eq!(
         repr_name(&crate_data, &crate_data.types[2].name),
         "test_crate::private::PubInPriv"
     );
-    assert!(crate_data.types[2].item_meta.public);
+    assert!(crate_data.types[2].item_meta.attr_info.public);
     Ok(())
 }
 
@@ -520,66 +521,86 @@ fn rename_attribute() -> Result<(), Box<dyn Error>> {
     )?;
 
     assert_eq!(
-        crate_data.trait_decls[0].item_meta.rename.as_deref(),
+        crate_data.trait_decls[0]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("BoolTest")
     );
 
     assert_eq!(
-        crate_data.functions[2].item_meta.rename.as_deref(),
+        crate_data.functions[2]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("getTest")
     );
 
     assert_eq!(
-        crate_data.functions[3].item_meta.rename.as_deref(),
+        crate_data.functions[3]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("retTest")
     );
 
     assert_eq!(
-        crate_data.trait_impls[0].item_meta.rename.as_deref(),
+        crate_data.trait_impls[0]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("BoolImpl")
     );
 
     assert_eq!(
-        crate_data.functions[1].item_meta.rename.as_deref(),
+        crate_data.functions[1]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("BoolFn")
     );
 
     assert_eq!(
-        crate_data.types[0].item_meta.rename.as_deref(),
+        crate_data.types[0].item_meta.attr_info.rename.as_deref(),
         Some("TypeTest")
     );
 
     assert_eq!(
-        crate_data.types[1].item_meta.rename.as_deref(),
+        crate_data.types[1].item_meta.attr_info.rename.as_deref(),
         Some("VariantsTest")
     );
 
     assert_eq!(
         crate_data.types[1].kind.as_enum()[0]
-            .item_meta
+            .attr_info
             .rename
             .as_deref(),
         Some("Variant1")
     );
 
     assert_eq!(
-        crate_data.types[2].item_meta.rename.as_deref(),
+        crate_data.types[2].item_meta.attr_info.rename.as_deref(),
         Some("StructTest")
     );
 
     assert_eq!(
-        crate_data.globals[0].item_meta.rename.as_deref(),
+        crate_data.globals[0].item_meta.attr_info.rename.as_deref(),
         Some("Const_Test")
     );
 
     assert_eq!(
-        crate_data.types[3].item_meta.rename.as_deref(),
+        crate_data.types[3].item_meta.attr_info.rename.as_deref(),
         Some("_TypeAeneas36")
     );
 
     assert_eq!(
         crate_data.types[2].kind.as_struct()[0]
-            .item_meta
+            .attr_info
             .rename
             .as_deref(),
         Some("FieldTest")

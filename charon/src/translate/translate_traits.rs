@@ -390,7 +390,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             );
         }
         let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
-        if item_meta.opaque {
+        if item_meta.attr_info.opaque {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(
                 item_meta.span,
@@ -600,7 +600,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
         }
         let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
-        if item_meta.opaque {
+        if item_meta.attr_info.opaque {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(
                 item_meta.span,

@@ -4,7 +4,7 @@ use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::ids::{Generator, MapGenerator, Vector};
-use crate::meta::{self, Attribute, ItemMeta, RawSpan};
+use crate::meta::{self, AttrInfo, Attribute, ItemMeta, RawSpan};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Span, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::DeclarationsGroups;
@@ -453,9 +453,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.translate_span_from_rspan(rspan)
     }
 
-    /// Compute the meta information for a Rust item identified by its id.
-    pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
-        let span = self.translate_span_from_rid(def_id);
+    pub(crate) fn translate_attr_info_from_rid(&mut self, def_id: DefId, span: Span) -> AttrInfo {
         // Default to `false` for impl blocks and closures.
         let public = self
             .translate_visibility_from_rid(def_id, span.span)
@@ -480,14 +478,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             rename
         };
 
-        ItemMeta {
-            span,
+        AttrInfo {
             attributes,
             inline: self.translate_inline_from_rid(def_id),
-            public,
             opaque,
+            public,
             rename,
         }
+    }
+
+    /// Compute the meta information for a Rust item identified by its id.
+    pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
+        let span = self.translate_span_from_rid(def_id);
+        let attr_info = self.translate_attr_info_from_rid(def_id, span);
+        ItemMeta { span, attr_info }
     }
 
     pub fn translate_span(&mut self, rspan: hax::Span) -> meta::RawSpan {
