@@ -45,8 +45,8 @@ impl<T, U> Trait<Box<T>> for Option<U> {
 }
 
 // `call[i]` is a hack to be able to refer to `Call` statements inside the function body.
-#[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<i32>")]
-#[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<@T>")]
+#[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<i32, @>")]
+#[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<@T, @>")]
 // Generic arguments are required.
 #[pattern::fail(call[0], "core::option::{core::option::Option<@T>}::is_some")]
 #[pattern::pass(call[1], "ArrayToSliceShared<'_, bool, 1>")]
