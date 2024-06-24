@@ -1,6 +1,7 @@
 open Charon
 open Charon.Expressions
 open Charon.LlbcAst
+open Charon.Meta
 open Logging
 open NameMatcher
 
@@ -153,7 +154,7 @@ module PatternTest = struct
     else if (not test.success) && match_success then (
       log#error "Pattern %s matches function %s but shouldn't\n"
         (pattern_to_string env.print_config test.pattern)
-        (PrintTypes.name_to_string env.fmt_env decl.name);
+        (PrintTypes.name_to_string env.fmt_env decl.item_meta.name);
       false)
     else true
 end
@@ -180,9 +181,12 @@ let annotated_rust_tests test_file =
   let all_pass =
     T.FunDeclId.Map.for_all
       (fun _ (decl : fun_decl) ->
-        let tests =
-          List.filter_map PatternTest.parse decl.item_meta.attributes
+        let attrs =
+          List.filter_map
+            (function AttrUnknown attr -> Some attr | _ -> None)
+            decl.item_meta.attr_info.attributes
         in
+        let tests = List.filter_map PatternTest.parse attrs in
         let test_results =
           List.map (PatternTest.check_fun_decl env decl) tests
         in

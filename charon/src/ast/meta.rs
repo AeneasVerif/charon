@@ -1,9 +1,10 @@
 //! Meta-information about programs (spans, etc.).
 
 pub use crate::meta_utils::*;
+use crate::names::Name;
 use derive_visitor::{Drive, DriveMut};
 use hax_frontend_exporter::PathBuf;
-use macros::{EnumAsGetters, EnumIsA};
+use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 
 generate_index_type!(LocalFileId);
@@ -99,9 +100,6 @@ impl From<Span> for rustc_error_messages::MultiSpan {
     }
 }
 
-/// Attributes (`#[...]`). For now we store just the string representation.
-pub type Attribute = String;
-
 /// `#[inline]` built-in attribute.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum InlineAttr {
@@ -113,14 +111,42 @@ pub enum InlineAttr {
     Always,
 }
 
-/// Meta information about an item (function, trait decl, trait impl, type decl, global).
+/// Attributes (`#[...]`).
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIsA,
+    EnumAsGetters,
+    EnumToGetters,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
+pub enum Attribute {
+    Opaque,
+    Rename(String),
+    Unknown(String),
+}
+
+/// Information about the attributes and visibility of an item, field or variant..
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ItemMeta {
-    pub span: Span,
+pub struct AttrInfo {
     /// Attributes (`#[...]`).
     pub attributes: Vec<Attribute>,
     /// Inline hints (on functions only).
     pub inline: Option<InlineAttr>,
+    /// The name specified with the `#[charon::rename("...")]` attribute, if any. This provides a
+    /// custom name that can be used by consumers of llbc. E.g. Aeneas uses this to rename
+    /// definitions in the extracted code.
+    pub rename: Option<String>,
+    /// Whether there was a `#[charon::opaque]` annotation on this item. An item may be opaque for
+    /// other reasons than this attribute, e.g. if specified on the command line.
+    #[serde(skip_serializing)]
+    #[serde(default)]
+    pub opaque: bool,
     /// Whether this item is declared public. Impl blocks and closures don't have visibility
     /// modifiers; we arbitrarily set this to `false` for them.
     ///
@@ -140,12 +166,17 @@ pub struct ItemMeta {
     /// API (this is called "pub-in-priv" items). With or without the `pub use`, we set `public =
     /// true`; computing item reachability is harder.
     pub public: bool,
-    /// Attribute `charon::rename("...")` (and `aeneas::rename("...")`) to provide a custom
-    /// name that can be used for instance when extracting the code via Aeneas.
-    pub rename: Option<String>,
-    #[serde(skip_serializing)]
-    #[serde(default)]
-    pub opaque: bool,
+}
+
+/// Meta information about an item (function, trait decl, trait impl, type decl, global).
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+pub struct ItemMeta {
+    pub span: Span,
+    pub name: Name,
+    /// Attributes and visibility.
+    pub attr_info: AttrInfo,
+    /// `true` if the type decl is a local type decl, `false` if it comes from an external crate.
+    pub is_local: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Drive, DriveMut)]

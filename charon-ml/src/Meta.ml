@@ -50,11 +50,14 @@ type inline_attr =
   | Always  (** `#[inline(always)]` **)
 [@@deriving show, ord]
 
-type item_meta = {
-  span : span;
-  attributes : string list;  (** Attributes (`#[...]`). **)
+(** Attribute (`#[...]`). **)
+type attribute = AttrOpaque | AttrRename of string | AttrUnknown of string
+[@@deriving show, ord]
+
+type attr_info = {
+  attributes : attribute list;
   inline : inline_attr option;
-  public : bool;
   rename : string option;
+  public : bool;
 }
 [@@deriving show, ord]

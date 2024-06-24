@@ -125,24 +125,33 @@ let inline_attr_of_json (js : json) : (inline_attr, string) result =
     | `String "Always" -> Ok Always
     | _ -> Error "")
 
-let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
-    (item_meta, string) result =
+let attribute_of_json (js : json) : (attribute, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Opaque" -> Ok AttrOpaque
+    | `Assoc [ ("Rename", rename) ] ->
+        let* rename = string_of_json rename in
+        Ok (AttrRename rename)
+    | `Assoc [ ("Unknown", unknown) ] ->
+        let* unknown = string_of_json unknown in
+        Ok (AttrUnknown unknown)
+    | _ -> Error "")
+
+let attr_info_of_json (js : json) : (attr_info, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
         [
-          ("span", span);
           ("attributes", attributes);
           ("inline", inline);
-          ("public", public);
           ("rename", rename);
+          ("public", public);
         ] ->
-        let* span = span_of_json id_to_file span in
-        let* attributes = list_of_json string_of_json attributes in
+        let* attributes = list_of_json attribute_of_json attributes in
         let* inline = option_of_json inline_attr_of_json inline in
         let* public = bool_of_json public in
         let* rename = string_option_of_json rename in
-        Ok { span; attributes; inline; public; rename }
+        Ok { attributes; inline; public; rename }
     | _ -> Error "")
 
 let type_var_of_json (js : json) : (type_var, string) result =
@@ -454,11 +463,14 @@ let field_of_json (id_to_file : id_to_file_map) (js : json) :
     (field, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("item_meta", item_meta); ("name", name); ("ty", ty) ] ->
-        let* item_meta = item_meta_of_json id_to_file item_meta in
+    | `Assoc
+        [ ("span", span); ("attr_info", attr_info); ("name", name); ("ty", ty) ]
+      ->
+        let* span = span_of_json id_to_file span in
+        let* attr_info = attr_info_of_json attr_info in
         let* name = option_of_json string_of_json name in
         let* ty = ty_of_json ty in
-        Ok { item_meta; field_name = name; field_ty = ty }
+        Ok { span; attr_info; field_name = name; field_ty = ty }
     | _ -> Error "")
 
 let variant_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -467,16 +479,18 @@ let variant_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | `Assoc
         [
-          ("item_meta", item_meta);
+          ("span", span);
+          ("attr_info", attr_info);
           ("name", name);
           ("fields", fields);
           ("discriminant", discriminant);
         ] ->
-        let* item_meta = item_meta_of_json id_to_file item_meta in
+        let* span = span_of_json id_to_file span in
+        let* attr_info = attr_info_of_json attr_info in
         let* name = string_of_json name in
         let* fields = list_of_json (field_of_json id_to_file) fields in
         let* discriminant = scalar_value_of_json discriminant in
-        Ok { item_meta; variant_name = name; fields; discriminant }
+        Ok { span; attr_info; variant_name = name; fields; discriminant }
     | _ -> Error "")
 
 let type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -643,6 +657,24 @@ let name_of_json (id_to_file : id_to_file_map) (js : json) :
   combine_error_msgs js __FUNCTION__
     (list_of_json (path_elem_of_json id_to_file) js)
 
+let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
+    (item_meta, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("span", span);
+          ("name", name);
+          ("attr_info", attr_info);
+          ("is_local", is_local);
+        ] ->
+        let* span = span_of_json id_to_file span in
+        let* name = name_of_json id_to_file name in
+        let* attr_info = attr_info_of_json attr_info in
+        let* is_local = bool_of_json is_local in
+        Ok { span; name; attr_info; is_local }
+    | _ -> Error "")
+
 let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
     (type_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -651,18 +683,14 @@ let type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         [
           ("def_id", def_id);
           ("item_meta", item_meta);
-          ("is_local", is_local);
-          ("name", name);
           ("generics", generics);
           ("kind", kind);
         ] ->
         let* def_id = TypeDeclId.id_of_json def_id in
         let* item_meta = item_meta_of_json id_to_file item_meta in
-        let* is_local = bool_of_json is_local in
-        let* name = name_of_json id_to_file name in
         let* generics = generic_params_of_json id_to_file generics in
         let* kind = type_decl_kind_of_json id_to_file kind in
-        Ok { def_id; item_meta; is_local; name; generics; kind }
+        Ok { def_id; item_meta; generics; kind }
     | _ -> Error "")
 
 let var_of_json (js : json) : (var, string) result =
@@ -1111,16 +1139,12 @@ let gfun_decl_of_json (bodies : 'body gexpr_body option list)
         [
           ("def_id", def_id);
           ("item_meta", item_meta);
-          ("is_local", is_local);
-          ("name", name);
           ("signature", signature);
           ("kind", kind);
           ("body", body);
         ] ->
         let* def_id = FunDeclId.id_of_json def_id in
         let* item_meta = item_meta_of_json id_to_file item_meta in
-        let* is_local = bool_of_json is_local in
-        let* name = name_of_json id_to_file name in
         let* signature = fun_sig_of_json id_to_file signature in
         let* kind = item_kind_of_json kind in
         let* body = maybe_opaque_body_of_json bodies body in
@@ -1128,8 +1152,6 @@ let gfun_decl_of_json (bodies : 'body gexpr_body option list)
           {
             def_id;
             item_meta;
-            is_local;
-            name;
             signature;
             kind;
             body;
@@ -1146,8 +1168,6 @@ let gglobal_decl_of_json (bodies : 'body gexpr_body option list)
         [
           ("def_id", def_id);
           ("item_meta", item_meta);
-          ("is_local", is_local);
-          ("name", name);
           ("generics", generics);
           ("ty", ty);
           ("kind", kind);
@@ -1155,23 +1175,12 @@ let gglobal_decl_of_json (bodies : 'body gexpr_body option list)
         ] ->
         let* global_id = GlobalDeclId.id_of_json def_id in
         let* item_meta = item_meta_of_json id_to_file item_meta in
-        let* is_local = bool_of_json is_local in
-        let* name = name_of_json id_to_file name in
         let* generics = generic_params_of_json id_to_file generics in
         let* ty = ty_of_json ty in
         let* kind = item_kind_of_json kind in
         let* body = maybe_opaque_body_of_json bodies body in
         let global =
-          {
-            def_id = global_id;
-            item_meta;
-            is_local;
-            name;
-            body;
-            generics;
-            ty;
-            kind;
-          }
+          { def_id = global_id; item_meta; body; generics; ty; kind }
         in
         Ok global
     | _ -> Error "")
@@ -1183,9 +1192,7 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc
         [
           ("def_id", def_id);
-          ("is_local", is_local);
           ("item_meta", item_meta);
-          ("name", name);
           ("generics", generics);
           ("parent_clauses", parent_clauses);
           ("consts", consts);
@@ -1194,8 +1201,6 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("provided_methods", provided_methods);
         ] ->
         let* def_id = TraitDeclId.id_of_json def_id in
-        let* is_local = bool_of_json is_local in
-        let* name = name_of_json id_to_file name in
         let* item_meta = item_meta_of_json id_to_file item_meta in
         let* generics = generic_params_of_json id_to_file generics in
         let* parent_clauses =
@@ -1230,8 +1235,6 @@ let trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           {
             def_id;
             item_meta;
-            is_local;
-            name;
             generics;
             parent_clauses;
             consts;
@@ -1248,8 +1251,6 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc
         [
           ("def_id", def_id);
-          ("is_local", is_local);
-          ("name", name);
           ("item_meta", item_meta);
           ("impl_trait", impl_trait);
           ("generics", generics);
@@ -1261,8 +1262,6 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
         ] ->
         let* def_id = TraitImplId.id_of_json def_id in
         let* item_meta = item_meta_of_json id_to_file item_meta in
-        let* is_local = bool_of_json is_local in
-        let* name = name_of_json id_to_file name in
         let* impl_trait = trait_decl_ref_of_json impl_trait in
         let* generics = generic_params_of_json id_to_file generics in
         let* parent_trait_refs =
@@ -1289,8 +1288,6 @@ let trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
           ({
              def_id;
              item_meta;
-             is_local;
-             name;
              impl_trait;
              generics;
              parent_trait_refs;

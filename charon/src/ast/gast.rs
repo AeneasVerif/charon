@@ -149,10 +149,6 @@ pub struct FunDecl {
     pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
-    /// [true] if the decl is a local decl, [false] if it comes from
-    /// an external crate.
-    pub is_local: bool,
-    pub name: Name,
     /// The signature contains the inputs/output types *with* non-erased regions.
     /// It also contains the list of region and type parameters.
     pub signature: FunSig,
@@ -175,10 +171,6 @@ pub struct GlobalDecl {
     pub rust_id: rustc_hir::def_id::DefId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
-    /// [true] if the decl is a local decl, [false] if it comes from
-    /// an external crate.
-    pub is_local: bool,
-    pub name: Name,
     pub generics: GenericParams,
     pub ty: Ty,
     /// The global kind: "regular" function, trait const declaration, etc.
@@ -228,11 +220,7 @@ pub struct TraitItemName(pub String);
 pub struct TraitDecl {
     #[drive(skip)]
     pub def_id: TraitDeclId,
-    /// [true] if the decl is a local decl, [false] if it comes from
-    /// an external crate.
-    pub is_local: bool,
     pub item_meta: ItemMeta,
-    pub name: Name,
     pub generics: GenericParams,
     /// The "parent" clauses: the supertraits.
     ///
@@ -290,10 +278,6 @@ pub struct TraitDecl {
 pub struct TraitImpl {
     #[drive(skip)]
     pub def_id: TraitImplId,
-    /// [true] if the decl is a local decl, [false] if it comes from
-    /// an external crate.
-    pub is_local: bool,
-    pub name: Name,
     pub item_meta: ItemMeta,
     /// The information about the implemented trait.
     /// Note that this contains the instantiation of the "parent"

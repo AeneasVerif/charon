@@ -239,7 +239,7 @@ impl<'a> Formatter<TypeDeclId> for FmtCtx<'a> {
             None => id.to_pretty_string(),
             Some(translated) => match translated.type_decls.get(id) {
                 None => id.to_pretty_string(),
-                Some(d) => d.name.fmt_with_ctx(self),
+                Some(d) => d.item_meta.name.fmt_with_ctx(self),
             },
         }
     }
@@ -251,7 +251,7 @@ impl<'a> Formatter<GlobalDeclId> for FmtCtx<'a> {
             None => id.to_pretty_string(),
             Some(translated) => match translated.global_decls.get(id) {
                 None => id.to_pretty_string(),
-                Some(d) => d.name.fmt_with_ctx(self),
+                Some(d) => d.item_meta.name.fmt_with_ctx(self),
             },
         }
     }
@@ -263,7 +263,7 @@ impl<'a> Formatter<ast::FunDeclId> for FmtCtx<'a> {
             None => id.to_pretty_string(),
             Some(translated) => match translated.fun_decls.get(id) {
                 None => id.to_pretty_string(),
-                Some(d) => d.name.fmt_with_ctx(self),
+                Some(d) => d.item_meta.name.fmt_with_ctx(self),
             },
         }
     }
@@ -287,7 +287,7 @@ impl<'a> Formatter<ast::TraitDeclId> for FmtCtx<'a> {
             None => id.to_pretty_string(),
             Some(translated) => match translated.trait_decls.get(id) {
                 None => id.to_pretty_string(),
-                Some(d) => d.name.fmt_with_ctx(self),
+                Some(d) => d.item_meta.name.fmt_with_ctx(self),
             },
         }
     }
@@ -299,7 +299,7 @@ impl<'a> Formatter<ast::TraitImplId> for FmtCtx<'a> {
             None => id.to_pretty_string(),
             Some(translated) => match translated.trait_impls.get(id) {
                 None => id.to_pretty_string(),
-                Some(d) => d.name.fmt_with_ctx(self),
+                Some(d) => d.item_meta.name.fmt_with_ctx(self),
             },
         }
     }
@@ -380,7 +380,7 @@ impl<'a> Formatter<(TypeDeclId, VariantId)> for FmtCtx<'a> {
                     ),
                     Some(def) => {
                         let variants = def.kind.as_enum();
-                        let mut name = def.name.fmt_with_ctx(self);
+                        let mut name = def.item_meta.name.fmt_with_ctx(self);
                         let variant_name = &variants.get(variant_id).unwrap().name;
                         name.push_str("::");
                         name.push_str(variant_name);

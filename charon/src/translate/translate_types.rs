@@ -581,12 +581,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let mut have_names: Option<bool> = None;
             for (j, field_def) in var_def.fields.into_iter().enumerate() {
                 trace!("variant {i}: field {j}: {field_def:?}");
-                let field_span = field_def.span.rust_span_data.unwrap().span();
-                let field_meta = self
-                    .t_ctx
-                    .translate_item_meta_from_rid(DefId::from(&field_def.did));
+                let field_span = self.t_ctx.translate_span_from_rspan(field_def.span);
+                let field_rspan = field_span.span.rust_span_data.span();
                 // Translate the field type
-                let ty = self.translate_ty(field_span, erase_regions, &field_def.ty)?;
+                let ty = self.translate_ty(field_rspan, erase_regions, &field_def.ty)?;
+                let field_attrs = self
+                    .t_ctx
+                    .translate_attr_info_from_rid(DefId::from(&field_def.did), field_span);
 
                 // Retrieve the field name.
                 let field_name = field_def.name;
@@ -599,25 +600,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         }
                     }
                     Some(b) => {
-                        error_assert!(self, field_span, *b == field_name.is_some());
+                        error_assert!(self, field_rspan, *b == field_name.is_some());
                     }
                 };
 
                 // Store the field
                 let field = Field {
-                    item_meta: field_meta,
+                    span: field_span,
+                    attr_info: field_attrs,
                     name: field_name.clone(),
                     ty,
                 };
                 fields.push(field);
             }
 
-            let variant_meta = self
-                .t_ctx
-                .translate_item_meta_from_rid(DefId::from(&var_def.def_id));
+            let variant_span = self.t_ctx.translate_span_from_rspan(var_def.span);
             let variant_name = var_def.name;
+            let variant_attrs = self
+                .t_ctx
+                .translate_attr_info_from_rid(DefId::from(&var_def.def_id), variant_span);
             variants.push(Variant {
-                item_meta: variant_meta,
+                span: variant_span,
+                attr_info: variant_attrs,
                 name: variant_name,
                 fields,
                 discriminant,
@@ -742,7 +746,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnType)?;
 
         // Translate the meta information
-        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
+        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id)?;
 
         // Check if the type has been explicitely marked as opaque.
         // If yes, ignore it, otherwise, dive into the body. Note that for
@@ -751,7 +755,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // For instance, because `core::option::Option` is public, we can
         // manipulate its variants. If we encounter this type, we must retrieve
         // its definition.
-        let kind = if !is_transparent || item_meta.opaque {
+        let kind = if !is_transparent || item_meta.attr_info.opaque {
             TypeDeclKind::Opaque
         } else {
             match bt_ctx.translate_type_body(trans_id, rust_id) {
@@ -761,14 +765,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         };
 
         // Register the type
-        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
         let generics = bt_ctx.get_generics();
 
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
-            is_local: rust_id.is_local(),
-            name,
             generics,
             kind,
         };

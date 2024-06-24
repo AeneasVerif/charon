@@ -109,28 +109,28 @@ and type_decl_id_to_string env def_id =
   (* We don't want the printing functions to crash if the crate is partial *)
   match TypeDeclId.Map.find_opt def_id env.type_decls with
   | None -> type_decl_id_to_pretty_string def_id
-  | Some def -> name_to_string env def.name
+  | Some def -> name_to_string env def.item_meta.name
 
 and fun_decl_id_to_string (env : ('a, 'b) fmt_env) (id : FunDeclId.id) : string
     =
   match FunDeclId.Map.find_opt id env.fun_decls with
   | None -> fun_decl_id_to_pretty_string id
-  | Some def -> name_to_string env def.name
+  | Some def -> name_to_string env def.item_meta.name
 
 and global_decl_id_to_string env def_id =
   match GlobalDeclId.Map.find_opt def_id env.global_decls with
   | None -> global_decl_id_to_pretty_string def_id
-  | Some def -> name_to_string env def.name
+  | Some def -> name_to_string env def.item_meta.name
 
 and trait_decl_id_to_string env id =
   match TraitDeclId.Map.find_opt id env.trait_decls with
   | None -> trait_decl_id_to_pretty_string id
-  | Some def -> name_to_string env def.name
+  | Some def -> name_to_string env def.item_meta.name
 
 and trait_impl_id_to_string env id =
   match TraitImplId.Map.find_opt id env.trait_impls with
   | None -> trait_impl_id_to_pretty_string id
-  | Some def -> name_to_string env def.name
+  | Some def -> name_to_string env def.item_meta.name
 
 and const_generic_to_string (env : ('a, 'b) fmt_env) (cg : const_generic) :
     string =
@@ -397,7 +397,7 @@ let type_decl_to_string (env : ('a, 'b) fmt_env) (def : type_decl) : string =
     predicates_and_trait_clauses_to_string env "" "  " None def.generics
   in
 
-  let name = name_to_string env def.name in
+  let name = name_to_string env def.item_meta.name in
   let params =
     if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
   in
@@ -431,7 +431,7 @@ let adt_variant_to_string (env : ('a, 'b) fmt_env) (def_id : TypeDeclId.id)
       | Struct _ | Alias _ | Opaque -> raise (Failure "Unreachable")
       | Enum variants ->
           let variant = VariantId.nth variants variant_id in
-          name_to_string env def.name ^ "::" ^ variant.variant_name)
+          name_to_string env def.item_meta.name ^ "::" ^ variant.variant_name)
 
 let adt_field_names (env : ('a, 'b) fmt_env) (def_id : TypeDeclId.id)
     (opt_variant_id : VariantId.id option) : string list option =

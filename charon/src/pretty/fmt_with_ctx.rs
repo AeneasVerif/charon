@@ -499,7 +499,7 @@ where
         };
 
         // Function name
-        let name = self.name.fmt_with_ctx(ctx);
+        let name = self.item_meta.name.fmt_with_ctx(ctx);
 
         // Generic parameters
         let (params, preds, _) = self.signature.generics.fmt_with_ctx_with_trait_clauses(
@@ -571,7 +571,7 @@ where
         };
 
         // Decl name
-        let name = self.name.fmt_with_ctx(ctx);
+        let name = self.item_meta.name.fmt_with_ctx(ctx);
 
         // Body
         let body = match self.body {
@@ -1073,7 +1073,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
-        let name = self.name.fmt_with_ctx(ctx);
+        let name = self.item_meta.name.fmt_with_ctx(ctx);
         let (generics, clauses, _) = self
             .generics
             .fmt_with_ctx_with_trait_clauses(ctx, "", &None);
@@ -1155,7 +1155,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
-        let name = self.name.fmt_with_ctx(ctx);
+        let name = self.item_meta.name.fmt_with_ctx(ctx);
         let (generics, clauses, _) = self
             .generics
             .fmt_with_ctx_with_trait_clauses(ctx, "", &None);
@@ -1345,12 +1345,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                     let fields = fields.join(",");
                     format!(
                         "struct {}{params}{preds}{eq_space}=\n{{{fields}\n}}",
-                        self.name.fmt_with_ctx(ctx)
+                        self.item_meta.name.fmt_with_ctx(ctx)
                     )
                 } else {
                     format!(
                         "struct {}{params}{preds}{eq_space}= {{}}",
-                        self.name.fmt_with_ctx(ctx)
+                        self.item_meta.name.fmt_with_ctx(ctx)
                     )
                 }
             }
@@ -1362,23 +1362,26 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                 let variants = variants.join("\n");
                 format!(
                     "enum {}{params}{preds}{eq_space}=\n{variants}\n",
-                    self.name.fmt_with_ctx(ctx)
+                    self.item_meta.name.fmt_with_ctx(ctx)
                 )
             }
             TypeDeclKind::Alias(ty) => {
                 format!(
                     "type {}{params}{preds} = {}",
-                    self.name.fmt_with_ctx(ctx),
+                    self.item_meta.name.fmt_with_ctx(ctx),
                     ty.fmt_with_ctx(ctx),
                 )
             }
             TypeDeclKind::Opaque => {
-                format!("opaque type {}{params}{preds}", self.name.fmt_with_ctx(ctx))
+                format!(
+                    "opaque type {}{params}{preds}",
+                    self.item_meta.name.fmt_with_ctx(ctx)
+                )
             }
             TypeDeclKind::Error(msg) => {
                 format!(
                     "opaque type {}{params}{preds} = ERROR({msg})",
-                    self.name.fmt_with_ctx(ctx),
+                    self.item_meta.name.fmt_with_ctx(ctx),
                 )
             }
         }

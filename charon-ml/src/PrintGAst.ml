@@ -92,7 +92,7 @@ let gfun_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
   let sg = def.signature in
 
   (* Function name *)
-  let name = name_to_string env def.name in
+  let name = name_to_string env def.item_meta.name in
 
   (* We print the declaration differently if it is opaque (no body) or transparent
    * (we have access to a body) *)
@@ -140,7 +140,7 @@ let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
   let ty_to_string = ty_to_string env in
 
   (* Name *)
-  let name = name_to_string env def.name in
+  let name = name_to_string env def.item_meta.name in
 
   (* Generics and predicates *)
   let params, clauses =
@@ -228,7 +228,7 @@ let trait_impl_to_string (env : ('a, 'b) fmt_env) (indent : string)
   let ty_to_string = ty_to_string env in
 
   (* Name *)
-  let name = name_to_string env def.name in
+  let name = name_to_string env def.item_meta.name in
 
   (* Generics and predicates *)
   let params, clauses =

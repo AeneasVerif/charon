@@ -227,7 +227,7 @@ let type_decl_get_instantiated_variants_fields_types (def : type_decl)
         raise
           (Failure
              ("Can't retrieve the variants of an opaque or alias type: "
-            ^ show_name def.name))
+             ^ show_name def.item_meta.name))
   in
   List.map
     (fun (id, fields) ->

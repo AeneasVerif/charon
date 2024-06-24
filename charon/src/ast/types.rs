@@ -1,7 +1,6 @@
 pub use crate::gast::{FunDeclId, TraitItemName};
 use crate::ids::Vector;
-use crate::meta::{ItemMeta, Span};
-use crate::names::Name;
+use crate::meta::{AttrInfo, ItemMeta, Span};
 pub use crate::types_utils::*;
 use crate::values::{Literal, ScalarValue};
 use derivative::Derivative;
@@ -413,12 +412,8 @@ pub enum PredicateOrigin {
 pub struct TypeDecl {
     #[drive(skip)]
     pub def_id: TypeDeclId,
-    /// Meta information associated with the type.
+    /// Meta information associated with the item.
     pub item_meta: ItemMeta,
-    /// [true] if the type decl is a local type decl, [false] if it comes from
-    /// an external crate.
-    pub is_local: bool,
-    pub name: Name,
     pub generics: GenericParams,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
@@ -442,7 +437,8 @@ pub enum TypeDeclKind {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Variant {
-    pub item_meta: ItemMeta,
+    pub span: Span,
+    pub attr_info: AttrInfo,
     pub name: String,
     pub fields: Vector<FieldId, Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
@@ -452,8 +448,8 @@ pub struct Variant {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Field {
-    /// FIXME: define a more appropriate container for attribute and visibility information.
-    pub item_meta: ItemMeta,
+    pub span: Span,
+    pub attr_info: AttrInfo,
     pub name: Option<String>,
     pub ty: Ty,
 }
