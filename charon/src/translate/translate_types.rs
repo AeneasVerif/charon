@@ -8,6 +8,7 @@ use crate::translate_ctx::*;
 use crate::types::*;
 use crate::values::ScalarValue;
 use core::convert::*;
+use hax::Visibility;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
@@ -509,7 +510,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trans_id: TypeDeclId,
         rust_id: DefId,
     ) -> Result<TypeDeclKind, Error> {
-        use rustc_middle::ty::AdtKind;
+        use hax::AdtKind;
         let tcx = self.t_ctx.tcx;
         let erase_regions = false;
         let is_local = rust_id.is_local();
@@ -529,8 +530,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         }
 
-        // Don't use `hax::AdtDef` because it loses `VariantIdx` information.
-        let adt: rustc_middle::ty::AdtDef = tcx.adt_def(rust_id);
+        let adt: hax::AdtDef = self.t_ctx.tcx.adt_def(rust_id).sinto(&self.hax_state);
         trace!("{}", trans_id);
 
         // In case the type is external, check if we should consider the type as
@@ -539,15 +539,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // fields). If it is a structure, we check if all the fields are public.
         let is_transparent = self.t_ctx.options.extract_opaque_bodies
             || is_local
-            || match adt.adt_kind() {
+            || match adt.adt_kind {
                 AdtKind::Enum => true,
                 AdtKind::Struct => {
                     // Check the unique variant
-                    error_assert!(self, def_span, adt.variants().len() == 1);
-                    adt.variants()[rustc_target::abi::FIRST_VARIANT]
+                    error_assert!(self, def_span, adt.variants.len() == 1);
+                    adt.variants[0]
                         .fields
                         .iter()
-                        .all(|f| f.vis.is_public())
+                        .all(|f| matches!(f.vis, Visibility::Public))
                 }
                 AdtKind::Union => {
                     error_or_panic!(self, def_span, "Unions are not supported")
@@ -560,20 +560,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // The type is transparent: explore the variants
         let mut variants: Vector<VariantId, Variant> = Default::default();
-        for (i, (rust_var_id, var_def)) in adt.variants().iter_enumerated().enumerate() {
-            let var_def: hax::VariantDef = var_def.sinto(&self.hax_state);
+        for (i, var_def) in adt.variants.into_iter().enumerate() {
             trace!("variant {i}: {var_def:?}");
-
-            let discriminant = if adt.is_enum() {
-                let discr = adt.discriminant_for_variant(tcx, rust_var_id);
-                let bits = discr.val;
-                let ty = discr.ty.sinto(&self.hax_state);
-                let ty = self.translate_ty(def_span, true, &ty)?;
-                let int_ty = *ty.as_literal().as_integer();
-                ScalarValue::from_bits(int_ty, bits)
-            } else {
-                ScalarValue::Isize(0)
-            };
 
             let mut fields: Vector<FieldId, Field> = Default::default();
             /* This is for sanity: check that either all the fields have names, or
@@ -614,6 +602,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 fields.push(field);
             }
 
+            let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
             let variant_span = self.t_ctx.translate_span_from_rspan(var_def.span);
             let variant_name = var_def.name;
             let variant_attrs = self
@@ -629,7 +618,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Register the type
-        let type_def_kind: TypeDeclKind = match adt.adt_kind() {
+        let type_def_kind: TypeDeclKind = match adt.adt_kind {
             AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
             AdtKind::Enum => TypeDeclKind::Enum(variants),
             AdtKind::Union => {
@@ -638,6 +627,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         };
 
         Ok(type_def_kind)
+    }
+
+    fn translate_discriminant(
+        &mut self,
+        def_span: rustc_span::Span,
+        discr: &hax::DiscriminantValue,
+    ) -> Result<ScalarValue, Error> {
+        let ty = self.translate_ty(def_span, true, &discr.ty)?;
+        let int_ty = *ty.as_literal().as_integer();
+        Ok(ScalarValue::from_bits(int_ty, discr.val))
     }
 
     /// Sanity check: region names are pairwise distinct (this caused trouble
