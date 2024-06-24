@@ -120,11 +120,9 @@ module Ast = struct
   let global_decl_to_string (env : fmt_env) (indent : string)
       (_indent_incr : string) (def : global_decl) : string =
     (* Locally update the generics and the predicates *)
-    let env = fmt_env_update_generics_and_preds env def.generics def.preds in
-    let params, trait_clauses = generic_params_to_strings env def.generics in
-    let clauses =
-      predicates_and_trait_clauses_to_string env "" "  " None trait_clauses
-        def.preds
+    let env = fmt_env_update_generics_and_preds env def.generics in
+    let params, clauses =
+      predicates_and_trait_clauses_to_string env "" "  " None def.generics
     in
     let params =
       if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
@@ -152,10 +150,7 @@ module Crate = struct
       trait_decls = m.trait_decls;
       trait_impls = m.trait_impls;
       regions = [];
-      types = [];
-      const_generics = [];
-      trait_clauses = [];
-      preds = empty_predicates;
+      generics = empty_generic_params;
       locals = [];
     }
 

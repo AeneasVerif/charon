@@ -18,6 +18,7 @@
 #![feature(trait_alias)]
 #![feature(let_chains)]
 #![feature(if_let_guard)]
+#![feature(iter_array_chunks)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(iterator_try_collect)]
 

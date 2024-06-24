@@ -1,22 +1,24 @@
 //! Defines some utilities for the variables
 use crate::types::*;
+use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA};
 use serde::{Deserialize, Serialize};
 
 generate_index_type!(Disambiguator);
 
 /// See the comments for [Name]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, EnumIsA, EnumAsGetters)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, EnumIsA, EnumAsGetters,
+)]
 pub enum PathElem {
     Ident(String, Disambiguator),
     Impl(ImplElem),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ImplElem {
     pub disambiguator: Disambiguator,
     pub generics: GenericParams,
-    pub preds: Predicates,
     pub kind: ImplElemKind,
 }
 
@@ -30,7 +32,7 @@ pub struct ImplElem {
 ///   impl<T> PartialEq for List<T> { ...}
 ///   ```
 /// We distinguish the two.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum ImplElemKind {
     Ty(Ty),
     /// Remark: the first type argument in the trait ref gives the type for
@@ -75,7 +77,7 @@ pub enum ImplElemKind {
 /// name clashes anyway. Still, we might want to be more precise in the future.
 ///
 /// Also note that the first path element in the name is always the crate name.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 #[serde(transparent)]
 pub struct Name {
     pub name: Vec<PathElem>,

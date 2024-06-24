@@ -70,7 +70,11 @@ fn cargo() -> Result<(), Box<dyn Error>> {
     };
     let tests = vec![
         mktest("build-script", root.join("build-script"), &[]),
-        mktest("dependencies", root.join("dependencies"), &[]),
+        mktest(
+            "dependencies",
+            root.join("dependencies"),
+            &["--cargo-arg=--features=test_feature".to_owned()],
+        ),
         mktest("toml", root.join("toml"), &[]),
         mktest(
             "workspace",

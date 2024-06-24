@@ -873,6 +873,8 @@ trait core::iter::traits::iterator::Iterator<Self>
 }
 
 trait core::iter::traits::collect::IntoIterator<Self>
+where
+    (Self::IntoIter::[@TraitClause0])::Item = Self::Item,
 {
     type Item
     type IntoIter
@@ -1782,7 +1784,6 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
         drop @6
         drop tl@5
         drop y@4
-        nop
         return
     }
     panic(core::panicking::panic_explicit)

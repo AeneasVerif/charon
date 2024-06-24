@@ -5,6 +5,7 @@
 use crate::common::*;
 use crate::names::*;
 use crate::translate_ctx::*;
+use crate::types::PredicateOrigin;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::{Item, ItemKind};
@@ -205,26 +206,28 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // a body translation context.
                     let id = cur_id;
 
-                    // Translate to hax types
-                    let s1 = &hax::State::new_from_state_and_id(&self.hax_state, id);
-                    let substs =
-                        rustc_middle::ty::GenericArgs::identity_for_item(tcx, id).sinto(s1);
-                    // TODO: use the bounds
-                    let _bounds: Vec<hax::Clause> = tcx
-                        .predicates_of(id)
-                        .predicates
-                        .iter()
-                        .map(|(x, _)| x.sinto(s1))
-                        .collect();
-                    let ty = tcx.type_of(id).instantiate_identity().sinto(s1);
-
                     // Translate from hax to LLBC
                     let mut bt_ctx = BodyTransCtx::new(id, self);
 
+                    // Translate to hax types
+                    // TODO: use the bounds
+                    let _bounds: Vec<hax::Clause> = bt_ctx
+                        .t_ctx
+                        .tcx
+                        .predicates_of(id)
+                        .predicates
+                        .iter()
+                        .map(|(x, _)| x.sinto(&bt_ctx.hax_state))
+                        .collect();
+                    let ty = tcx
+                        .type_of(id)
+                        .instantiate_identity()
+                        .sinto(&bt_ctx.hax_state);
+
+                    bt_ctx.translate_generic_params(id).unwrap();
                     bt_ctx
-                        .translate_generic_params_from_hax(span, &substs)
+                        .translate_predicates_of(None, id, PredicateOrigin::WhereClauseOnImpl)
                         .unwrap();
-                    bt_ctx.translate_predicates_of(None, id).unwrap();
                     let erase_regions = false;
                     // Two cases, depending on whether the impl block is
                     // a "regular" impl block (`impl Foo { ... }`) or a trait
@@ -253,7 +256,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     name.push(PathElem::Impl(ImplElem {
                         disambiguator,
                         generics: bt_ctx.get_generics(),
-                        preds: bt_ctx.get_predicates(),
                         kind,
                     }));
                 }
@@ -294,23 +296,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         trace!("{:?}", name);
         Ok(Name { name })
-    }
-
-    pub(crate) fn make_hax_state_with_id(
-        &mut self,
-        def_id: DefId,
-    ) -> hax::State<hax::Base<'tcx>, (), (), DefId> {
-        hax::state::State {
-            thir: (),
-            mir: (),
-            owner_id: def_id,
-            base: hax::Base::new(
-                self.tcx,
-                hax::options::Options {
-                    inline_macro_calls: Vec::new(),
-                },
-            ),
-        }
     }
 
     /// Returns an optional name for an HIR item.

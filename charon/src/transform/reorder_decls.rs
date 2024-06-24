@@ -5,6 +5,7 @@ use crate::transform::TransformCtx;
 pub use crate::translate_ctx::AnyTransId;
 use crate::types::*;
 use crate::ullbc_ast::*;
+use derive_visitor::{Drive, Visitor};
 use hashlink::linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
 use macros::{VariantIndexArity, VariantName};
@@ -37,84 +38,50 @@ pub enum DeclarationGroup {
     TraitDecl(GDeclarationGroup<TraitDeclId>),
     ///
     TraitImpl(GDeclarationGroup<TraitImplId>),
+    /// Anything that doesn't fit into these categories.
+    Mixed(GDeclarationGroup<AnyTransId>),
 }
 
 impl<Id: Copy> GDeclarationGroup<Id> {
-    pub fn get_ids(&self) -> Vec<Id> {
+    pub fn get_ids(&self) -> &[Id] {
         use GDeclarationGroup::*;
         match self {
-            NonRec(id) => vec![*id],
-            Rec(ids) => ids.clone(),
+            NonRec(id) => std::slice::from_ref(id),
+            Rec(ids) => ids.as_slice(),
+        }
+    }
+    pub fn get_any_trans_ids(&self) -> Vec<AnyTransId>
+    where
+        Id: Into<AnyTransId>,
+    {
+        self.get_ids().iter().copied().map(|id| id.into()).collect()
+    }
+    fn make_group(is_rec: bool, gr: impl Iterator<Item = AnyTransId>) -> Self
+    where
+        Id: TryFrom<AnyTransId>,
+        Id::Error: Debug,
+    {
+        let gr: Vec<_> = gr.map(|x| x.try_into().unwrap()).collect();
+        if is_rec {
+            GDeclarationGroup::Rec(gr)
+        } else {
+            assert!(gr.len() == 1);
+            GDeclarationGroup::NonRec(gr[0])
         }
     }
 }
 
 impl DeclarationGroup {
-    fn make_type_group(is_rec: bool, gr: impl Iterator<Item = TypeDeclId>) -> Self {
-        let gr: Vec<_> = gr.collect();
-        if is_rec {
-            DeclarationGroup::Type(GDeclarationGroup::Rec(gr))
-        } else {
-            assert!(gr.len() == 1);
-            DeclarationGroup::Type(GDeclarationGroup::NonRec(gr[0]))
+    pub fn get_ids(&self) -> Vec<AnyTransId> {
+        use DeclarationGroup::*;
+        match self {
+            Type(gr) => gr.get_any_trans_ids(),
+            Fun(gr) => gr.get_any_trans_ids(),
+            Global(gr) => gr.get_any_trans_ids(),
+            TraitDecl(gr) => gr.get_any_trans_ids(),
+            TraitImpl(gr) => gr.get_any_trans_ids(),
+            Mixed(gr) => gr.get_any_trans_ids(),
         }
-    }
-
-    fn make_fun_group(is_rec: bool, gr: impl Iterator<Item = FunDeclId>) -> Self {
-        let gr: Vec<_> = gr.collect();
-        if is_rec {
-            DeclarationGroup::Fun(GDeclarationGroup::Rec(gr))
-        } else {
-            assert!(gr.len() == 1);
-            DeclarationGroup::Fun(GDeclarationGroup::NonRec(gr[0]))
-        }
-    }
-
-    fn make_global_group(is_rec: bool, gr: impl Iterator<Item = GlobalDeclId>) -> Self {
-        let gr: Vec<_> = gr.collect();
-        if is_rec {
-            DeclarationGroup::Global(GDeclarationGroup::Rec(gr))
-        } else {
-            assert!(gr.len() == 1);
-            DeclarationGroup::Global(GDeclarationGroup::NonRec(gr[0]))
-        }
-    }
-
-    fn make_trait_decl_group(
-        _ctx: &TransformCtx,
-        _is_rec: bool,
-        gr: impl Iterator<Item = TraitDeclId>,
-    ) -> Self {
-        let gr: Vec<_> = gr.collect();
-        // Trait declarations often refer to `Self`, like below,
-        // which means they are often considered as recursive by our
-        // analysis. TODO: do something more precise. What is important
-        // is that we never use the "whole" self clause as argument,
-        // but rather projections over the self clause (like `<Self as Foo>::u`,
-        // in the declaration for `Foo`).
-        if gr.len() == 1 {
-            DeclarationGroup::TraitDecl(GDeclarationGroup::NonRec(gr[0]))
-        } else {
-            DeclarationGroup::TraitDecl(GDeclarationGroup::Rec(gr))
-        }
-    }
-
-    fn make_trait_impl_group(
-        ctx: &TransformCtx,
-        is_rec: bool,
-        gr: impl Iterator<Item = TraitImplId>,
-    ) -> Self {
-        let gr: Vec<_> = gr.collect();
-        let ctx = ctx.into_fmt();
-        assert!(
-            !is_rec && gr.len() == 1,
-            "Invalid trait impl group:\n{}",
-            gr.iter()
-                .map(|id| ctx.format_object(*id))
-                .collect::<Vec<String>>()
-                .join("\n")
-        );
-        DeclarationGroup::TraitImpl(GDeclarationGroup::NonRec(gr[0]))
     }
 }
 
@@ -150,63 +117,75 @@ impl Display for DeclarationGroup {
             DeclarationGroup::Global(decl) => write!(f, "{{ Global(s): {decl} }}"),
             DeclarationGroup::TraitDecl(decl) => write!(f, "{{ Trait decls(s): {decl} }}"),
             DeclarationGroup::TraitImpl(decl) => write!(f, "{{ Trait impl(s): {decl} }}"),
+            DeclarationGroup::Mixed(decl) => write!(f, "{{ Mixed items: {decl} }}"),
         }
     }
 }
 
-pub struct Deps {
+#[derive(Visitor)]
+#[visitor(
+    TypeDeclId(enter),
+    FunDeclId(enter),
+    GlobalDeclId(enter),
+    TraitImplId(enter),
+    TraitDeclId(enter),
+    BodyId(enter)
+)]
+pub struct Deps<'tcx, 'ctx> {
+    ctx: &'tcx TransformCtx<'ctx>,
     dgraph: DiGraphMap<AnyTransId, ()>,
-    /// Want to make sure we remember the order of insertion
+    // Want to make sure we remember the order of insertion
     graph: LinkedHashMap<AnyTransId, LinkedHashSet<AnyTransId>>,
-    /// We use this when computing the graph
+    // We use this when computing the graph
     current_id: Option<AnyTransId>,
-    /// We use this to track the trait impl block the current item belongs to
-    /// (if relevant).
-    ///
-    /// We use this to ignore the references to the parent impl block.
-    ///
-    /// If we don't do so, when computing our dependency graph we end up with
-    /// mutually recursive trait impl blocks/trait method impls in the presence
-    /// of associated types (the deepest reason is that we don't normalize the
-    /// types we query from rustc when translating the types from function
-    /// signatures - we avoid doing so because as of now it makes resolving
-    /// the trait params harder: if we get normalized types, we have to
-    /// implement a normalizer on our side to make sure we correctly match
-    /// types...).
-    ///
-    ///
-    /// For instance, the problem happens if in Rust we have:
-    /// ```text
-    /// pub trait WithConstTy {
-    ///     type W;
-    ///     fn f(x: &mut Self::W);
-    /// }
-    ///
-    /// impl WithConstTy for bool {
-    ///     type W = u64;
-    ///     fn f(_: &mut Self::W) {}
-    /// }
-    /// ```
-    ///
-    /// In LLBC we get:
-    ///
-    /// ```text
-    /// impl traits::Bool::0 : traits::WithConstTy<bool>
-    /// {
-    ///     type W = u64 with []
-    ///     fn f = traits::Bool::0::f
-    /// }
-    ///
-    /// fn traits::Bool::0::f<@R0>(@1: &@R0 mut (traits::Bool::0::W)) { .. }
-    /// //                                       ^^^^^^^^^^^^^^^
-    /// //                                    refers to the trait impl
-    /// ```
+    // We use this to track the trait impl block the current item belongs to
+    // (if relevant).
+    //
+    // We use this to ignore the references to the parent impl block.
+    //
+    // If we don't do so, when computing our dependency graph we end up with
+    // mutually recursive trait impl blocks/trait method impls in the presence
+    // of associated types (the deepest reason is that we don't normalize the
+    // types we query from rustc when translating the types from function
+    // signatures - we avoid doing so because as of now it makes resolving
+    // the trait params harder: if we get normalized types, we have to
+    // implement a normalizer on our side to make sure we correctly match
+    // types...).
+    //
+    //
+    // For instance, the problem happens if in Rust we have:
+    // ```text
+    // pub trait WithConstTy {
+    //     type W;
+    //     fn f(x: &mut Self::W);
+    // }
+    //
+    // impl WithConstTy for bool {
+    //     type W = u64;
+    //     fn f(_: &mut Self::W) {}
+    // }
+    // ```
+    //
+    // In LLBC we get:
+    //
+    // ```text
+    // impl traits::Bool::0 : traits::WithConstTy<bool>
+    // {
+    //     type W = u64 with []
+    //     fn f = traits::Bool::0::f
+    // }
+    //
+    // fn traits::Bool::0::f<@R0>(@1: &@R0 mut (traits::Bool::0::W)) { .. }
+    // //                                       ^^^^^^^^^^^^^^^
+    // //                                    refers to the trait impl
+    // ```
     impl_trait_id: Option<TraitImplId>,
 }
 
-impl Deps {
-    fn new() -> Self {
+impl<'tcx, 'ctx> Deps<'tcx, 'ctx> {
+    fn new(ctx: &'tcx TransformCtx<'ctx>) -> Self {
         Deps {
+            ctx,
             dgraph: DiGraphMap::new(),
             graph: LinkedHashMap::new(),
             current_id: None,
@@ -272,18 +251,18 @@ impl Deps {
     }
 }
 
-impl SharedTypeVisitor for Deps {
-    fn visit_type_decl_id(&mut self, id: &TypeDeclId) {
+impl Deps<'_, '_> {
+    fn enter_type_decl_id(&mut self, id: &TypeDeclId) {
         let id = AnyTransId::Type(*id);
         self.insert_edge(id);
     }
 
-    fn visit_global_decl_id(&mut self, id: &GlobalDeclId) {
+    fn enter_global_decl_id(&mut self, id: &GlobalDeclId) {
         let id = AnyTransId::Global(*id);
         self.insert_edge(id);
     }
 
-    fn visit_trait_impl_id(&mut self, id: &TraitImplId) {
+    fn enter_trait_impl_id(&mut self, id: &TraitImplId) {
         // If the impl is the impl this item belongs to, we ignore it
         // TODO: this is not very satisfying but this is the only way
         // we have of preventing mutually recursive groups between
@@ -298,60 +277,20 @@ impl SharedTypeVisitor for Deps {
         }
     }
 
-    fn visit_trait_decl_id(&mut self, id: &TraitDeclId) {
+    fn enter_trait_decl_id(&mut self, id: &TraitDeclId) {
         let id = AnyTransId::TraitDecl(*id);
         self.insert_edge(id);
     }
 
-    /// We override this method to not visit the trait decl.
-    ///
-    /// This is sound because the trait ref itself will either have a dependency
-    /// on the trait decl it implements, or it will refer to a clause which
-    /// will imply a dependency on the trait decl.
-    ///
-    /// The reason why we do this is that otherwise if a trait decl declares
-    /// a method which uses one of its associated types we will conclude that
-    /// the trait decl is recursive, while it isn't.
-    fn visit_trait_ref(&mut self, tr: &TraitRef) {
-        self.visit_trait_instance_id(&tr.trait_id);
-        self.visit_generic_args(&tr.generics);
-    }
-
-    fn visit_fun_decl_id(&mut self, id: &FunDeclId) {
+    fn enter_fun_decl_id(&mut self, id: &FunDeclId) {
         let id = AnyTransId::Fun(*id);
         self.insert_edge(id);
     }
-}
 
-impl SharedExprVisitor for Deps {}
-impl SharedAstVisitor for Deps {}
-
-impl Deps {
-    fn visit_body(&mut self, body: Option<&Body>) {
-        if let Some(Body::Unstructured(body)) = body {
-            for v in &body.locals {
-                self.visit_ty(&v.ty);
-            }
-            for block in &body.body {
-                self.visit_block_data(block);
-            }
+    fn enter_body_id(&mut self, id: &BodyId) {
+        if let Some(body) = self.ctx.translated.bodies.get(*id) {
+            body.drive(self);
         }
-    }
-
-    fn visit_generics_and_preds(&mut self, generics: &GenericParams, preds: &Predicates) {
-        // Visit the traits referenced in the generics
-        for clause in &generics.trait_clauses {
-            self.visit_trait_clause(clause);
-        }
-
-        // Visit the predicates
-        self.visit_predicates(preds);
-    }
-
-    /// Lookup a function and visit its signature
-    fn visit_fun_signature_from_trait(&mut self, ctx: &TransformCtx, fid: FunDeclId) {
-        let decl = ctx.translated.fun_decls.get(fid).unwrap();
-        self.visit_fun_sig(&decl.signature);
     }
 }
 
@@ -369,7 +308,7 @@ impl AnyTransId {
     }
 }
 
-impl Deps {
+impl Deps<'_, '_> {
     fn fmt_with_ctx(&self, ctx: &TransformCtx) -> String {
         self.dgraph
             .nodes()
@@ -388,35 +327,14 @@ impl Deps {
     }
 }
 
-fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
-    let mut graph = Deps::new();
+fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps<'tcx, 'ctx> {
+    let mut graph = Deps::new(ctx);
     for id in &ctx.translated.all_ids {
         graph.set_current_id(ctx, *id);
         match id {
             AnyTransId::Type(id) => {
                 if let Some(d) = ctx.translated.type_decls.get(*id) {
-                    use TypeDeclKind::*;
-
-                    // Visit the generics and the predicates
-                    graph.visit_generics_and_preds(&d.generics, &d.preds);
-
-                    // Visit the body
-                    match &d.kind {
-                        Struct(fields) => {
-                            for f in fields {
-                                graph.visit_ty(&f.ty)
-                            }
-                        }
-                        Enum(vl) => {
-                            for v in vl {
-                                for f in &v.fields {
-                                    graph.visit_ty(&f.ty);
-                                }
-                            }
-                        }
-                        Alias(ty) => graph.visit_ty(ty),
-                        Opaque | Error(_) => (),
-                    }
+                    d.drive(&mut graph);
                 } else {
                     // There may have been errors
                     assert!(ctx.has_errors());
@@ -425,18 +343,10 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
             AnyTransId::Fun(id) => {
                 if let Some(d) = ctx.translated.fun_decls.get(*id) {
                     // Explore the signature
-                    let sig = &d.signature;
-                    graph.visit_generics_and_preds(&sig.generics, &sig.preds);
-                    for ty in &sig.inputs {
-                        graph.visit_ty(ty);
-                    }
-                    graph.visit_ty(&sig.output);
-
-                    if let Ok(id) = d.body {
-                        // Explore the body
-                        let body = ctx.translated.bodies.get(id);
-                        graph.visit_body(body);
-                    }
+                    d.signature.drive(&mut graph);
+                    // Skip `d.kind`: we don't want to record a dependency to the impl block this
+                    // belongs to.
+                    d.body.drive(&mut graph);
                 } else {
                     // There may have been errors
                     assert!(ctx.has_errors());
@@ -444,11 +354,8 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
             }
             AnyTransId::Global(id) => {
                 if let Some(d) = ctx.translated.global_decls.get(*id) {
-                    if let Ok(id) = d.body {
-                        // Explore the body
-                        let body = ctx.translated.bodies.get(id);
-                        graph.visit_body(body);
-                    }
+                    // FIXME: shouldn't we visit the generics etc?
+                    d.body.drive(&mut graph);
                 } else {
                     // There may have been errors
                     assert!(ctx.has_errors());
@@ -456,36 +363,22 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
             }
             AnyTransId::TraitDecl(id) => {
                 if let Some(d) = ctx.translated.trait_decls.get(*id) {
-                    // Visit the generics and the predicates
-                    graph.visit_generics_and_preds(&d.generics, &d.preds);
+                    // Visit the traits referenced in the generics
+                    d.generics.drive(&mut graph);
 
                     // Visit the parent clauses
-                    for clause in &d.parent_clauses {
-                        graph.visit_trait_clause(clause);
-                    }
+                    d.parent_clauses.drive(&mut graph);
 
                     // Visit the items
-                    for (_, (ty, c)) in &d.consts {
-                        graph.visit_ty(ty);
-                        if let Some(id) = c {
-                            graph.visit_global_decl_id(id);
-                        }
-                    }
+                    d.consts.drive(&mut graph);
+                    d.types.drive(&mut graph);
 
-                    for (_, (clauses, ty)) in &d.types {
-                        for c in clauses {
-                            graph.visit_trait_clause(c);
-                        }
-                        if let Some(ty) = ty {
-                            graph.visit_ty(ty);
-                        }
-                    }
-
-                    let method_ids = d.required_methods.iter().map(|(_, id)| *id).chain(
-                        d.provided_methods
-                            .iter()
-                            .filter_map(|(_, id)| id.as_ref().copied()),
-                    );
+                    let method_ids = d
+                        .required_methods
+                        .iter()
+                        .map(|(_, id)| id)
+                        .chain(d.provided_methods.iter().filter_map(|(_, id)| id.as_ref()))
+                        .copied();
                     for id in method_ids {
                         // Important: we must ignore the function id, because
                         // otherwise in the presence of associated types we may
@@ -498,7 +391,8 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
                         //   fn f(x : Trait::X);
                         // }
                         // ```
-                        graph.visit_fun_signature_from_trait(ctx, id)
+                        let decl = ctx.translated.fun_decls.get(id).unwrap();
+                        decl.signature.drive(&mut graph);
                     }
                 } else {
                     // There may have been errors
@@ -507,34 +401,7 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
             }
             AnyTransId::TraitImpl(id) => {
                 if let Some(d) = ctx.translated.trait_impls.get(*id) {
-                    // Visit the generics and the predicates
-                    graph.visit_generics_and_preds(&d.generics, &d.preds);
-
-                    // Visit the implemented trait
-                    graph.visit_trait_decl_id(&d.impl_trait.trait_id);
-                    graph.visit_generic_args(&d.impl_trait.generics);
-
-                    // Visit the parent trait refs
-                    for tr in &d.parent_trait_refs {
-                        graph.visit_trait_ref(tr)
-                    }
-
-                    // Visit the items
-                    for (_, (ty, id)) in &d.consts {
-                        graph.visit_ty(ty);
-                        graph.visit_global_decl_id(id);
-                    }
-
-                    for (_, (trait_refs, ty)) in &d.types {
-                        graph.visit_ty(ty);
-                        for trait_ref in trait_refs {
-                            graph.visit_trait_ref(trait_ref);
-                        }
-                    }
-
-                    for (_, id) in d.required_methods.iter().chain(d.provided_methods.iter()) {
-                        graph.visit_fun_decl_id(id)
-                    }
+                    d.drive(&mut graph);
                 } else {
                     // There may have been errors
                     assert!(ctx.has_errors());
@@ -547,8 +414,8 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> Deps {
 }
 
 fn group_declarations_from_scc(
-    ctx: &TransformCtx,
-    graph: Deps,
+    _ctx: &TransformCtx,
+    graph: Deps<'_, '_>,
     reordered_sccs: SCCs<AnyTransId>,
 ) -> DeclarationsGroups {
     let reordered_sccs = &reordered_sccs.sccs;
@@ -563,19 +430,11 @@ fn group_declarations_from_scc(
         let id0 = *it.next().unwrap();
         let decl = graph.graph.get(&id0).unwrap();
 
-        // The group should consist of only functions, only types or only one global.
-        for id in scc {
-            assert!(
-                id0.variant_index_arity() == id.variant_index_arity(),
-                "Invalid scc:\n{}",
-                scc.iter()
-                    .map(|x| x.fmt_with_ctx(ctx))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            );
-        }
         if let AnyTransId::Global(_) = id0 {
-            assert!(scc.len() == 1);
+            assert!(
+                scc.len() == 1,
+                "Error: this constant recursively depends on itself, what is happening"
+            );
         }
 
         // If an SCC has length one, the declaration may be simply recursive:
@@ -583,34 +442,40 @@ fn group_declarations_from_scc(
         // its own set of dependencies.
         let is_mutually_recursive = scc.len() > 1;
         let is_simply_recursive = !is_mutually_recursive && decl.contains(&id0);
-
-        // Add the declaration.
-        // Note that we clone the vectors: it is not optimal, but they should
-        // be pretty small.
         let is_rec = is_mutually_recursive || is_simply_recursive;
+
+        let all_same_kind = scc
+            .iter()
+            .all(|id| id0.variant_index_arity() == id.variant_index_arity());
+        let ids = scc.iter().copied();
         let group: DeclarationGroup = match id0 {
-            AnyTransId::Type(_) => DeclarationGroup::make_type_group(
-                is_rec,
-                scc.iter().map(AnyTransId::as_type).copied(),
-            ),
-            AnyTransId::Fun(_) => DeclarationGroup::make_fun_group(
-                is_rec,
-                scc.iter().map(AnyTransId::as_fun).copied(),
-            ),
-            AnyTransId::Global(_) => DeclarationGroup::make_global_group(
-                is_rec,
-                scc.iter().map(AnyTransId::as_global).copied(),
-            ),
-            AnyTransId::TraitDecl(_) => DeclarationGroup::make_trait_decl_group(
-                ctx,
-                is_rec,
-                scc.iter().map(AnyTransId::as_trait_decl).copied(),
-            ),
-            AnyTransId::TraitImpl(_) => DeclarationGroup::make_trait_impl_group(
-                ctx,
-                is_rec,
-                scc.iter().map(AnyTransId::as_trait_impl).copied(),
-            ),
+            _ if !all_same_kind => {
+                DeclarationGroup::Mixed(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            AnyTransId::Type(_) => {
+                DeclarationGroup::Type(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            AnyTransId::Fun(_) => DeclarationGroup::Fun(GDeclarationGroup::make_group(is_rec, ids)),
+            AnyTransId::Global(_) => {
+                DeclarationGroup::Global(GDeclarationGroup::make_group(is_rec, ids))
+            }
+            AnyTransId::TraitDecl(_) => {
+                let gr: Vec<_> = ids.map(|x| x.try_into().unwrap()).collect();
+                // Trait declarations often refer to `Self`, like below,
+                // which means they are often considered as recursive by our
+                // analysis. TODO: do something more precise. What is important
+                // is that we never use the "whole" self clause as argument,
+                // but rather projections over the self clause (like `<Self as Foo>::u`,
+                // in the declaration for `Foo`).
+                if gr.len() == 1 {
+                    DeclarationGroup::TraitDecl(GDeclarationGroup::NonRec(gr[0]))
+                } else {
+                    DeclarationGroup::TraitDecl(GDeclarationGroup::Rec(gr))
+                }
+            }
+            AnyTransId::TraitImpl(_) => {
+                DeclarationGroup::TraitImpl(GDeclarationGroup::make_group(is_rec, ids))
+            }
         };
 
         reordered_decls.push(group);

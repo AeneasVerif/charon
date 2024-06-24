@@ -7,6 +7,14 @@ open PrintUtils
 open PrintTypes
 open PrintExpressions
 
+let any_decl_id_to_string (id : any_decl_id) : string =
+  match id with
+  | IdFun id -> FunDeclId.to_string id
+  | IdGlobal id -> GlobalDeclId.to_string id
+  | IdType id -> TypeDeclId.to_string id
+  | IdTraitDecl id -> TraitDeclId.to_string id
+  | IdTraitImpl id -> TraitImplId.to_string id
+
 let fn_operand_to_string (env : ('a, 'b) fmt_env) (op : fn_operand) : string =
   match op with
   | FnOpRegular func -> fn_ptr_to_string env func
@@ -36,10 +44,9 @@ let fun_sig_with_name_to_string (env : ('a, 'b) fmt_env) (indent : string)
   let unsafe = if sg.is_unsafe then "unsafe " else "" in
 
   (* Generics and predicates *)
-  let params, trait_clauses = generic_params_to_strings env sg.generics in
-  let clauses =
+  let params, clauses =
     predicates_and_trait_clauses_to_string env indent indent_incr
-      sg.parent_params_info trait_clauses sg.preds
+      sg.parent_params_info sg.generics
   in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
@@ -80,10 +87,7 @@ let gfun_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     (body_to_string : ('a, 'b) fmt_env -> string -> string -> 'body -> string)
     (def : 'body gfun_decl) : string =
   (* Locally update the environment *)
-  let env =
-    fmt_env_update_generics_and_preds env def.signature.generics
-      def.signature.preds
-  in
+  let env = fmt_env_update_generics_and_preds env def.signature.generics in
 
   let sg = def.signature in
 
@@ -131,7 +135,7 @@ let gfun_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
 let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     (indent_incr : string) (def : trait_decl) : string =
   (* Locally update the environment *)
-  let env = fmt_env_update_generics_and_preds env def.generics def.preds in
+  let env = fmt_env_update_generics_and_preds env def.generics in
 
   let ty_to_string = ty_to_string env in
 
@@ -139,10 +143,9 @@ let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
   let name = name_to_string env def.name in
 
   (* Generics and predicates *)
-  let params, trait_clauses = generic_params_to_strings env def.generics in
-  let clauses =
+  let params, clauses =
     predicates_and_trait_clauses_to_string env indent indent_incr None
-      trait_clauses def.preds
+      def.generics
   in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
@@ -220,7 +223,7 @@ let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
 let trait_impl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     (indent_incr : string) (def : trait_impl) : string =
   (* Locally update the environment *)
-  let env = fmt_env_update_generics_and_preds env def.generics def.preds in
+  let env = fmt_env_update_generics_and_preds env def.generics in
 
   let ty_to_string = ty_to_string env in
 
@@ -228,10 +231,9 @@ let trait_impl_to_string (env : ('a, 'b) fmt_env) (indent : string)
   let name = name_to_string env def.name in
 
   (* Generics and predicates *)
-  let params, trait_clauses = generic_params_to_strings env def.generics in
-  let clauses =
+  let params, clauses =
     predicates_and_trait_clauses_to_string env indent indent_incr None
-      trait_clauses def.preds
+      def.generics
   in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"

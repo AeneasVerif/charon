@@ -4,7 +4,7 @@ use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::llbc_ast::*;
 use crate::pretty::{fmt_with_ctx, FmtWithCtx};
-use crate::translate_ctx::TranslatedCrate;
+use crate::translate_ctx::{AnyTransId, TranslatedCrate};
 use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast as ast;
@@ -174,6 +174,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
     + Formatter<BodyId>
     + Formatter<TraitDeclId>
     + Formatter<TraitImplId>
+    + Formatter<AnyTransId>
     + Formatter<TraitClauseId>
     + Formatter<(DeBruijnId, RegionId)>
     + Formatter<VarId>
@@ -212,6 +213,16 @@ impl<'a> FmtCtx<'a> {
             type_vars: None,
             const_generic_vars: None,
             locals: None,
+        }
+    }
+
+    pub fn format_decl_id(&self, id: AnyTransId) -> String {
+        match id {
+            AnyTransId::Type(id) => self.format_decl(id),
+            AnyTransId::Fun(id) => self.format_decl(id),
+            AnyTransId::Global(id) => self.format_decl(id),
+            AnyTransId::TraitDecl(id) => self.format_decl(id),
+            AnyTransId::TraitImpl(id) => self.format_decl(id),
         }
     }
 }
@@ -290,6 +301,18 @@ impl<'a> Formatter<ast::TraitImplId> for FmtCtx<'a> {
                 None => id.to_pretty_string(),
                 Some(d) => d.name.fmt_with_ctx(self),
             },
+        }
+    }
+}
+
+impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
+    fn format_object(&self, id: AnyTransId) -> String {
+        match id {
+            AnyTransId::Type(x) => self.format_object(x),
+            AnyTransId::Fun(x) => self.format_object(x),
+            AnyTransId::Global(x) => self.format_object(x),
+            AnyTransId::TraitDecl(x) => self.format_object(x),
+            AnyTransId::TraitImpl(x) => self.format_object(x),
         }
     }
 }

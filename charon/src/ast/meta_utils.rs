@@ -6,6 +6,7 @@ use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
 use std::cmp::Ordering;
 use std::iter::Iterator;
+use std::path::Component;
 
 /// Retrieve the Rust span from a def id.
 ///
@@ -87,13 +88,25 @@ pub fn convert_filename(name: &hax::FileName) -> FileName {
             use hax::RealFileName;
             match name {
                 RealFileName::LocalPath(path) => FileName::Local(path.clone()),
-                RealFileName::Remapped {
-                    local_path: _,
-                    virtual_name,
-                } =>
-                // We use the virtual name because it is always available
-                {
-                    FileName::Virtual(virtual_name.clone())
+                RealFileName::Remapped { virtual_name, .. } => {
+                    // We use the virtual name because it is always available.
+                    // That name normally starts with `/rustc/<hash>/`. For our purposes we hide
+                    // the hash.
+                    let mut components_iter = virtual_name.components();
+                    if let Some(
+                        [Component::RootDir, Component::Normal(rustc), Component::Normal(hash)],
+                    ) = components_iter.by_ref().array_chunks().next()
+                        && rustc.to_str() == Some("rustc")
+                        && hash.len() == 40
+                    {
+                        let path_without_hash = [Component::RootDir, Component::Normal(rustc)]
+                            .into_iter()
+                            .chain(components_iter)
+                            .collect();
+                        FileName::Virtual(path_without_hash)
+                    } else {
+                        FileName::Virtual(virtual_name.clone())
+                    }
                 }
             }
         }

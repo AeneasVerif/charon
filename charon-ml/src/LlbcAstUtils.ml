@@ -82,5 +82,9 @@ let compute_fun_decl_groups_map (c : crate) : FunDeclId.Set.t FunDeclId.Map.t =
                 Some (List.map (fun id -> (id, idset)) ids)
             | TypeGroup _ | GlobalGroup _ | TraitDeclGroup _ | TraitImplGroup _
               ->
-                None)
+                None
+            | MixedGroup _ ->
+                raise
+                  (Failure
+                     "Mixed declaration groups cannot be indexed by declaration"))
           c.declarations))

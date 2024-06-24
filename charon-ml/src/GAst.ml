@@ -9,6 +9,14 @@ module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
+type any_decl_id =
+  | IdFun of FunDeclId.id
+  | IdGlobal of GlobalDeclId.id
+  | IdType of TypeDeclId.id
+  | IdTraitDecl of TraitDeclId.id
+  | IdTraitImpl of TraitImplId.id
+[@@deriving show, ord]
+
 type fun_decl_id = FunDeclId.id [@@deriving show, ord]
 type assumed_fun_id = Expressions.assumed_fun_id [@@deriving show, ord]
 type fun_id = Expressions.fun_id [@@deriving show, ord]
@@ -31,14 +39,14 @@ type var = {
 class ['self] iter_ast_base =
   object (_self : 'self)
     inherit [_] iter_rvalue
-    inherit! [_] iter_predicates
+    inherit! [_] iter_generic_params
   end
 
 (** Ancestor the AST map visitors *)
 class ['self] map_ast_base =
   object (_self : 'self)
     inherit [_] map_rvalue
-    inherit! [_] map_predicates
+    inherit! [_] map_generic_params
   end
 
 (* Below: the types need not be mutually recursive, but it makes it easier
@@ -98,7 +106,6 @@ type fun_sig = {
   is_closure : bool;
   closure_info : closure_info option;
   generics : generic_params;
-  preds : predicates;
   parent_params_info : params_info option;
   inputs : ty list;
   output : ty;
@@ -154,7 +161,6 @@ type trait_decl = {
   is_local : bool;
   name : name;
   generics : generic_params;
-  preds : predicates;
   parent_clauses : trait_clause list;
   consts : (trait_item_name * (ty * global_decl_id option)) list;
   types : (trait_item_name * (trait_clause list * ty option)) list;
@@ -170,7 +176,6 @@ type trait_impl = {
   name : name;
   impl_trait : trait_decl_ref;
   generics : generic_params;
-  preds : predicates;
   parent_trait_refs : trait_ref list;
   consts : (trait_item_name * (ty * global_decl_id)) list;
   types : (trait_item_name * (trait_ref list * ty)) list;
@@ -190,6 +195,8 @@ type fun_declaration_group = FunDeclId.id g_declaration_group [@@deriving show]
 type trait_declaration_group = TraitDeclId.id g_declaration_group
 [@@deriving show]
 
+type mixed_declaration_group = any_decl_id g_declaration_group [@@deriving show]
+
 (** Module declaration. Globals cannot be mutually recursive. *)
 type declaration_group =
   | TypeGroup of type_declaration_group
@@ -197,6 +204,7 @@ type declaration_group =
   | GlobalGroup of GlobalDeclId.id
   | TraitDeclGroup of trait_declaration_group
   | TraitImplGroup of TraitImplId.id
+  | MixedGroup of mixed_declaration_group
 [@@deriving show]
 
 type 'body gglobal_decl = {
@@ -205,7 +213,6 @@ type 'body gglobal_decl = {
   is_local : bool;
   name : name;
   generics : generic_params;
-  preds : predicates;
   ty : ty;
   kind : item_kind;
   body : 'body;

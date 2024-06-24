@@ -221,7 +221,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn with_parent_trait_clauses(
         &mut self,
         trait_decl_id: TraitDeclId,
-        f: &mut dyn FnMut(&mut Self) -> Result<(), Error>,
+        f: impl FnOnce(&mut Self) -> Result<(), Error>,
     ) -> Result<Vector<TraitClauseId, TraitClause>, Error> {
         let (out, ctx) = self.with_clause_translation_context(
             ClauseTransCtx::Parent(Default::default(), trait_decl_id),
@@ -235,7 +235,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         trait_decl_id: TraitDeclId,
         item_name: TraitItemName,
-        f: &mut dyn FnMut(&mut Self) -> Result<(), Error>,
+        f: impl FnOnce(&mut Self) -> Result<(), Error>,
     ) -> Result<Vector<TraitClauseId, TraitClause>, Error> {
         let (out, ctx) = self.with_clause_translation_context(
             ClauseTransCtx::Item(Default::default(), trait_decl_id, item_name),
@@ -274,18 +274,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.translate_generic_params(rust_id)?;
 
         // Add the trait clauses
-        let parent_clauses = bt_ctx.while_registering_trait_clauses(move |bt_ctx| {
-            // Add the self trait clause
-            bt_ctx.translate_trait_decl_self_trait_clause(rust_id)?;
+        // Add the self trait clause
+        bt_ctx.translate_trait_decl_self_trait_clause(rust_id)?;
 
-            // Translate the predicates.
-            bt_ctx.with_parent_trait_clauses(def_id, &mut |s| {
-                s.translate_predicates_of(None, rust_id)
-            })
+        // Translate the predicates.
+        let parent_clauses = bt_ctx.with_parent_trait_clauses(def_id, |s| {
+            s.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnTrait)
         })?;
-
-        // TODO: move this below (we don't need to perform this function call exactly here)
-        let preds = bt_ctx.get_predicates();
 
         // Explore the associated items
         // We do something subtle here: TODO: explain
@@ -347,10 +342,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                             .map(|x| (x.as_predicate(), span))
                             .collect();
                         let bounds = bounds.sinto(&bt_ctx.hax_state);
+                        let origin = PredicateOrigin::TraitItem(item_name.clone());
 
                         // Register the trait clauses as item trait clauses
-                        bt_ctx.with_item_trait_clauses(def_id, item_name.clone(), &mut |s| {
-                            s.translate_predicates_vec(&bounds)
+                        bt_ctx.with_item_trait_clauses(def_id, item_name.clone(), |s| {
+                            s.translate_predicates_vec(&bounds, origin)
                         })?
                     };
 
@@ -415,7 +411,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             name,
             item_meta,
             generics,
-            preds,
             parent_clauses,
             consts,
             types,
@@ -442,16 +437,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // Translate the generics
         bt_ctx.translate_generic_params(rust_id)?;
 
-        // Add the trait self clauses
-        bt_ctx.while_registering_trait_clauses(move |bt_ctx| {
-            // Translate the predicates
-            bt_ctx.translate_predicates_of(None, rust_id)?;
+        // Translate the predicates
+        bt_ctx.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnImpl)?;
 
-            // Add the self trait clause
-            bt_ctx.translate_trait_impl_self_trait_clause(def_id)?;
-
-            Ok(())
-        })?;
+        // Add the self trait clause
+        bt_ctx.translate_trait_impl_self_trait_clause(def_id)?;
 
         // Retrieve the information about the implemented trait.
         let (
@@ -630,7 +620,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             item_meta,
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),
-            preds: bt_ctx.get_predicates(),
             parent_trait_refs,
             consts,
             types,

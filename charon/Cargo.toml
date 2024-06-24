@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.10"
+version = "0.1.15"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
 
@@ -28,6 +28,7 @@ bumpalo = "3.11.1" # We constrain the version of [bumpalo] because of a vulnerab
 clap = { version = "3.0", features = ["derive", "env"] }
 colored = "2.0.4"
 derivative = "2.2.0"
+derive-visitor = { version = "0.4.0", features = ["std-types-drive"] }
 env_logger = "0.8.4"
 hashlink = "0.7.0"
 heck = "0.3.3"
@@ -54,7 +55,7 @@ tracing = { version = "0.1", features = [ "max_level_trace", "release_max_level_
 walkdir = "2.3.2"
 which = "6.0.1"
 
-hax-frontend-exporter = { git = "https://github.com/Nadrieril/hax", branch = "update-rustc" }
+hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main" }
 # hax-frontend-exporter = { path = "../../hax/frontend/exporter" }
 macros = { path = "./macros" }
 

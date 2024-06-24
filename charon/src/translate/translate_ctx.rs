@@ -1,18 +1,19 @@
 //! The translation contexts.
 use crate::common::*;
-use crate::formatter::{DeclFormatter, FmtCtx, Formatter, IntoFormatter};
+use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::ids::{Generator, MapGenerator, Vector};
 use crate::meta::{self, Attribute, ItemMeta, RawSpan};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Span, VirtualFileId};
 use crate::names::Name;
-use crate::reorder_decls::{DeclarationGroup, DeclarationsGroups, GDeclarationGroup};
+use crate::reorder_decls::DeclarationsGroups;
 use crate::translate_predicates::NonLocalTraitClause;
 use crate::translate_traits::ClauseTransCtx;
 use crate::types::*;
 use crate::ullbc_ast as ast;
 use crate::values::*;
+use derive_visitor::{Drive, DriveMut};
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use linked_hash_set::LinkedHashSet;
@@ -22,6 +23,7 @@ use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
 use rustc_session::Session;
+use serde::{Deserialize, Serialize};
 use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::fmt;
@@ -83,6 +85,11 @@ impl DepSource {
 
 /// The id of a translated item.
 #[derive(
+    Copy,
+    Clone,
+    Debug,
+    PartialOrd,
+    Ord,
     PartialEq,
     Eq,
     Hash,
@@ -90,11 +97,10 @@ impl DepSource {
     EnumAsGetters,
     VariantName,
     VariantIndexArity,
-    Copy,
-    Clone,
-    Debug,
-    PartialOrd,
-    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
 )]
 pub enum AnyTransId {
     Type(TypeDeclId),
@@ -103,6 +109,33 @@ pub enum AnyTransId {
     TraitDecl(TraitDeclId),
     TraitImpl(TraitImplId),
 }
+
+/// Implement `TryFrom`  and `From` to convert between an enum and its variants.
+macro_rules! wrap_unwrap_enum {
+    ($enum:ident::$variant:ident($variant_ty:ident)) => {
+        impl TryFrom<$enum> for $variant_ty {
+            type Error = ();
+            fn try_from(x: $enum) -> Result<Self, Self::Error> {
+                match x {
+                    $enum::$variant(x) => Ok(x),
+                    _ => Err(()),
+                }
+            }
+        }
+
+        impl From<$variant_ty> for $enum {
+            fn from(x: $variant_ty) -> Self {
+                $enum::$variant(x)
+            }
+        }
+    };
+}
+
+wrap_unwrap_enum!(AnyTransId::Fun(FunDeclId));
+wrap_unwrap_enum!(AnyTransId::Global(GlobalDeclId));
+wrap_unwrap_enum!(AnyTransId::Type(TypeDeclId));
+wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
+wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
 
 /// We use a special type to store the Rust identifiers in the stack, to
 /// make sure we translate them in a specific order (top-level constants
@@ -136,7 +169,7 @@ impl PartialOrd for OrdRustId {
         let (vid0, _) = self.variant_index_arity();
         let (vid1, _) = other.variant_index_arity();
         if vid0 != vid1 {
-            Some(vid0.cmp(&vid1))
+            Option::Some(vid0.cmp(&vid1))
         } else {
             let id0 = self.get_id();
             let id1 = other.get_id();
@@ -310,13 +343,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// `ImplExprAtom::LocalBound`, we use this to recover the specific trait reference it
     /// corresponds to.
     /// FIXME: hax should take care of this matching up.
-    pub trait_clauses: HashMap<TraitDeclId, Vec<NonLocalTraitClause>>,
-    /// If [true] it means we are currently registering trait clauses in the
-    /// local context. As a consequence, we allow not solving all the trait
-    /// obligations, because the obligations for some clauses may be solved
-    /// by other clauses which have not been registered yet.
-    /// For this reason, we do the resolution in several passes.
-    pub registering_trait_clauses: bool,
+    pub trait_clauses: BTreeMap<TraitDeclId, Vec<NonLocalTraitClause>>,
     ///
     pub types_outlive: Vec<TypeOutlives>,
     ///
@@ -426,6 +453,71 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.translate_span_from_rspan(rspan)
     }
 
+    fn parse_rename_attribute(&mut self, span: Span, attributes: Vec<Attribute>) -> Option<String> {
+        // Search for rename attributes
+        let attributes: Vec<(&String, &str)> = attributes
+            .iter()
+            .filter_map(|raw_attr| {
+                raw_attr
+                    .strip_prefix("charon::rename(")
+                    .or(raw_attr.strip_prefix("aeneas::rename("))
+                    .and_then(|str| str.strip_suffix(")").and_then(|str| Some((raw_attr, str))))
+            })
+            .collect();
+
+        // Check if there is a rename attribute
+        if attributes.len() == 0 {
+            return None;
+        }
+
+        // We don't allow giving several rename attributes
+        if attributes.len() > 1 {
+            self.span_err(
+                span,
+                "There shouldn't be more than one `charon::rename(\"...\")` or `aeneas::rename(\"...\")` attribute per declaration",
+            );
+            return None;
+        }
+
+        // There is exactly one attribute: retrieve it
+        let (raw_attr, str) = attributes.get(0).unwrap();
+        let str = str
+            .strip_prefix("\"")
+            .and_then(|str| str.strip_suffix("\""));
+
+        // The name should be between quotation marks
+        if str.is_none() {
+            self.span_err(
+                span,
+                &format!("Attribute `{{charon,aeneas}}::rename` should be of the shape `{{charon,aeneas}}::rename(\"...\")`: `{raw_attr}` is not valid"),
+            );
+            return None;
+        }
+        let str = str.unwrap();
+
+        // The name shouldn't be empty
+        if str.is_empty() {
+            self.span_err(
+                span,
+                "Attribute `{charon,aeneas}::rename` should not contain an empty string",
+            );
+            return None;
+        }
+
+        // Check that the name starts with a letter, and only contains alphanumeric
+        // characters or '_'
+        let first_char = str.chars().nth(0).unwrap();
+        let first_char_ok = first_char.is_alphabetic() || first_char == '_';
+        let is_identifier = first_char_ok && str.chars().all(|c| c.is_alphanumeric() || c == '_');
+        if !is_identifier {
+            self.span_err(span, &format!("Attribute `rename` should only contain alphanumeric characters and `_`, and should start with a letter or '_': \"{str}\" is not a valid name"));
+            return None;
+        }
+
+        // Ok: we can return the attribute
+        return Some(str.to_string());
+    }
+
     /// Compute the meta information for a Rust item identified by its id.
     pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
         let span = self.translate_span_from_rid(def_id);
@@ -437,12 +529,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let opaque = attributes
             .iter()
             .any(|attr| attr == "charon::opaque" || attr == "aeneas::opaque");
+        let rename = self.parse_rename_attribute(span, attributes.clone());
         ItemMeta {
             span,
-            attributes: attributes,
+            attributes,
             inline: self.translate_inline_from_rid(def_id),
             public,
             opaque,
+            rename,
         }
     }
 
@@ -580,7 +674,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | TraitAlias
             | TyAlias { .. }
             | Union
-            | Use => Some(self.tcx.visibility(id).is_public()),
+            | Use
+            | Variant => Some(self.tcx.visibility(id).is_public()),
             // These kinds don't have visibility modifiers (which would cause `visibility` to panic).
             Closure | Impl { .. } => None,
             // Kinds we shouldn't be calling this function on.
@@ -595,8 +690,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | InlineConst
             | LifetimeParam
             | OpaqueTy
-            | TyParam
-            | Variant => {
+            | TyParam => {
                 register_error_or_panic!(
                     self,
                     span,
@@ -750,7 +844,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>) -> Self {
-        let hax_state = t_ctx.make_hax_state_with_id(def_id);
+        let hax_state = hax::State::new_from_state_and_id(&t_ctx.hax_state, def_id);
         BodyTransCtx {
             def_id,
             t_ctx,
@@ -766,7 +860,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             const_generic_vars_map: MapGenerator::new(),
             clause_translation_context: Default::default(),
             trait_clauses: Default::default(),
-            registering_trait_clauses: false,
             regions_outlive: Vec::new(),
             types_outlive: Vec::new(),
             trait_type_constraints: Vec::new(),
@@ -948,6 +1041,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             types: self.type_vars.clone(),
             const_generics: self.const_generic_vars.clone(),
             trait_clauses: self.get_local_trait_clauses(),
+            regions_outlive: self.regions_outlive.clone(),
+            types_outlive: self.types_outlive.clone(),
+            trait_type_constraints: self.trait_type_constraints.clone(),
         }
     }
 
@@ -964,14 +1060,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .all(|(i, c)| c.clause_id.index() == i));
         // Return
         clauses.clone()
-    }
-
-    pub(crate) fn get_predicates(&self) -> Predicates {
-        Predicates {
-            regions_outlive: self.regions_outlive.clone(),
-            types_outlive: self.types_outlive.clone(),
-            trait_type_constraints: self.trait_type_constraints.clone(),
-        }
     }
 
     /// We use this when exploring the clauses of a predicate, to introduce
@@ -999,19 +1087,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Return
         (out, new_ctx)
-    }
-
-    /// Set [registering_trait_clauses] to [true], call the continuation, and
-    /// reset it to [false]
-    pub(crate) fn while_registering_trait_clauses<F, T>(&mut self, f: F) -> T
-    where
-        F: FnOnce(&mut Self) -> T,
-    {
-        assert!(!self.registering_trait_clauses);
-        self.registering_trait_clauses = true;
-        let out = f(self);
-        self.registering_trait_clauses = false;
-        out
     }
 
     pub(crate) fn make_dep_source(&self, span: rustc_span::Span) -> Option<DepSource> {
@@ -1055,22 +1130,6 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
     }
 }
 
-impl<'a> FmtCtx<'a> {
-    fn fmt_decl_group<Id: Copy>(
-        &self,
-        f: &mut fmt::Formatter,
-        gr: &GDeclarationGroup<Id>,
-    ) -> fmt::Result
-    where
-        Self: DeclFormatter<Id>,
-    {
-        for id in gr.get_ids() {
-            writeln!(f, "{}\n", self.format_decl(id))?
-        }
-        fmt::Result::Ok(())
-    }
-}
-
 impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx, 'ctx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.translated.fmt(f)
@@ -1101,13 +1160,8 @@ impl fmt::Display for TranslatedCrate {
             }
             Some(ordered_decls) => {
                 for gr in ordered_decls {
-                    use DeclarationGroup::*;
-                    match gr {
-                        Type(gr) => fmt.fmt_decl_group(f, gr)?,
-                        Fun(gr) => fmt.fmt_decl_group(f, gr)?,
-                        Global(gr) => fmt.fmt_decl_group(f, gr)?,
-                        TraitDecl(gr) => fmt.fmt_decl_group(f, gr)?,
-                        TraitImpl(gr) => fmt.fmt_decl_group(f, gr)?,
+                    for id in gr.get_ids() {
+                        writeln!(f, "{}\n", fmt.format_decl_id(id))?
                     }
                 }
             }

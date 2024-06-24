@@ -8,46 +8,17 @@
 //! Which defines a new function each time. This pass recognizes these functions and replaces calls
 //! to them by a `Panic` terminator.
 
+use derive_visitor::{visitor_enter_fn_mut, DriveMut};
 use std::collections::HashSet;
 
 use super::{ctx::LlbcPass, TransformCtx};
 use crate::{
     assumed,
     llbc_ast::{
-        AbortKind, Call, FnOperand, FnPtr, FunDeclId, FunId, FunIdOrTraitMethodRef, MutExprVisitor,
-        RawStatement, Statement,
+        AbortKind, Call, FnOperand, FnPtr, FunId, FunIdOrTraitMethodRef, RawStatement, Statement,
     },
-    llbc_ast_utils::MutAstVisitor,
     names::Name,
-    types_utils::MutTypeVisitor,
 };
-
-struct ReplacePanics<'a> {
-    fns_to_replace: &'a HashSet<FunDeclId>,
-    replace_with_statement: &'a RawStatement,
-}
-
-impl MutTypeVisitor for ReplacePanics<'_> {}
-impl MutAstVisitor for ReplacePanics<'_> {
-    fn visit_statement(&mut self, st: &mut Statement) {
-        match &mut st.content {
-            RawStatement::Call(Call {
-                func:
-                    FnOperand::Regular(FnPtr {
-                        func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
-                        ..
-                    }),
-                ..
-            }) if self.fns_to_replace.contains(fun_id) => {
-                st.content = self.replace_with_statement.clone();
-            }
-            _ => {
-                self.default_visit_raw_statement(&mut st.content);
-            }
-        }
-    }
-}
-impl MutExprVisitor for ReplacePanics<'_> {}
 
 pub struct Transform;
 impl LlbcPass for Transform {
@@ -73,11 +44,21 @@ impl LlbcPass for Transform {
 
         // Replace each call to one such function with a `Panic`.
         ctx.for_each_structured_body(|_ctx, body| {
-            let mut visitor = ReplacePanics {
-                fns_to_replace: &panic_fns,
-                replace_with_statement: &panic_statement,
-            };
-            visitor.visit_statement(&mut body.body);
+            body.body.drive_mut(&mut visitor_enter_fn_mut(
+                |st: &mut Statement| match &mut st.content {
+                    RawStatement::Call(Call {
+                        func:
+                            FnOperand::Regular(FnPtr {
+                                func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
+                                ..
+                            }),
+                        ..
+                    }) if panic_fns.contains(fun_id) => {
+                        st.content = panic_statement.clone();
+                    }
+                    _ => {}
+                },
+            ));
         });
 
         // Remove these functions from the context.

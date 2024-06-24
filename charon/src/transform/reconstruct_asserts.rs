@@ -25,8 +25,7 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
                         expected: false,
                     }),
                 );
-                let st1 = Box::new(st1);
-                RawStatement::Sequence(st1, st2)
+                st1.then(*st2).content
             });
         }
     }

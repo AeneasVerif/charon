@@ -374,8 +374,8 @@ and region =
         polymorphic = false;
       }]
 
-(** Ancestor for iter visitor for {!type: Types.predicates} *)
-class ['self] iter_predicates_base =
+(** Ancestor for iter visitor for {!type: Types.generic_params} *)
+class ['self] iter_generic_params_base =
   object (self : 'self)
     inherit [_] iter_ty
     method visit_span : 'env -> span -> unit = fun _ _ -> ()
@@ -394,8 +394,8 @@ class ['self] iter_predicates_base =
         self#visit_literal_type env ty
   end
 
-(** Ancestor for map visitor for {!type: Types.ty} *)
-class virtual ['self] map_predicates_base =
+(** Ancestor for map visitor for {!type: Types.generic_params} *)
+class virtual ['self] map_generic_params_base =
   object (self : 'self)
     inherit [_] map_ty
     method visit_span : 'env -> span -> span = fun _ x -> x
@@ -449,6 +449,9 @@ and generic_params = {
           because of the way the clauses are resolved in hax (see the comments
           in Charon).
         *)
+  regions_outlive : region_outlives list;
+  types_outlive : type_outlives list;
+  trait_type_constraints : trait_type_constraint list;
 }
 
 (** ('long, 'short) means that 'long outlives 'short *)
@@ -462,29 +465,23 @@ and trait_type_constraint = {
   type_name : trait_item_name;
   ty : ty;
 }
-
-and predicates = {
-  regions_outlive : region_outlives list;
-  types_outlive : type_outlives list;
-  trait_type_constraints : trait_type_constraint list;
-}
 [@@deriving
   show,
     ord,
     visitors
       {
-        name = "iter_predicates";
+        name = "iter_generic_params";
         variety = "iter";
-        ancestors = [ "iter_predicates_base" ];
+        ancestors = [ "iter_generic_params_base" ];
         nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
         concrete = true;
         polymorphic = false;
       },
     visitors
       {
-        name = "map_predicates";
+        name = "map_generic_params";
         variety = "map";
-        ancestors = [ "map_predicates_base" ];
+        ancestors = [ "map_generic_params_base" ];
         nude = true (* Don't inherit {!VisitorsRuntime.map} *);
         concrete = false;
         polymorphic = false;
@@ -499,7 +496,6 @@ type impl_elem_kind = ImplElemTy of ty | ImplElemTrait of trait_decl_ref
 type impl_elem = {
   disambiguator : Disambiguator.id;
   generics : generic_params;
-  preds : predicates;
   kind : impl_elem_kind;
 }
 [@@deriving show, ord]
@@ -530,11 +526,15 @@ type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
 
 type region_var_groups = region_var_group list [@@deriving show]
 
-type field = { span : span; field_name : string option; field_ty : ty }
+type field = {
+  item_meta : item_meta;
+  field_name : string option;
+  field_ty : ty;
+}
 [@@deriving show]
 
 type variant = {
-  span : span;
+  item_meta : item_meta;
   variant_name : string;
   fields : field list;
       (** The fields can be indexed with {!FieldId.id}.
@@ -568,7 +568,6 @@ type type_decl = {
   is_local : bool;
   name : name;
   generics : generic_params;
-  preds : predicates;
   kind : type_decl_kind;
 }
 [@@deriving show]

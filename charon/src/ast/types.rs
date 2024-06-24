@@ -5,6 +5,7 @@ use crate::names::Name;
 pub use crate::types_utils::*;
 use crate::values::{Literal, ScalarValue};
 use derivative::Derivative;
+use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -26,7 +27,7 @@ generate_index_type!(GlobalDeclId, "Global");
 /// Type variable.
 /// We make sure not to mix variables and type variables by having two distinct
 /// definitions.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TypeVar {
     /// Unique index identifying the variable
     pub index: TypeVarId,
@@ -35,7 +36,9 @@ pub struct TypeVar {
 }
 
 /// Region variable.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash, PartialOrd, Ord)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash, PartialOrd, Ord, Drive, DriveMut,
+)]
 pub struct RegionVar {
     /// Unique index identifying the variable
     pub index: RegionId,
@@ -44,7 +47,7 @@ pub struct RegionVar {
 }
 
 /// Const Generic Variable
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ConstGenericVar {
     /// Unique index identifying the variable
     pub index: ConstGenericVarId,
@@ -54,7 +57,20 @@ pub struct ConstGenericVar {
     pub ty: LiteralTy,
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
 #[serde(transparent)]
 pub struct DeBruijnId {
     pub index: usize,
@@ -73,6 +89,8 @@ pub struct DeBruijnId {
     EnumAsGetters,
     Serialize,
     Deserialize,
+    Drive,
+    DriveMut,
 )]
 pub enum Region {
     /// Static region
@@ -113,7 +131,9 @@ pub enum Region {
 /// definition. Note that every path designated by [TraitInstanceId] refers
 /// to a *trait instance*, which is why the [Clause] variant may seem redundant
 /// with some of the other variants.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd, Drive, DriveMut,
+)]
 pub enum TraitInstanceId {
     ///
     /// A specific implementation
@@ -202,24 +222,19 @@ pub enum TraitInstanceId {
     /// is useful to give priority to the local clauses when solving the trait
     /// obligations which are fullfilled by the trait parameters.
     SelfId,
-    /// Clause which hasn't been solved yet.
-    /// This happens when we register clauses in the context: solving some
-    /// trait obligations/references might require to refer to clauses which
-    /// haven't been registered yet. This variant is purely internal: after we
-    /// finished solving the trait obligations, all the remaining unsolved
-    /// clauses (in case we don't fail hard on error) are converted to [Unknown].
-    Unsolved(TraitDeclId, GenericArgs),
     /// For error reporting.
-    /// Can appear only if the option [CliOpts::continue_on_failure] is used.
     Unknown(String),
 }
 
 /// A reference to a trait
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd, Drive, DriveMut,
+)]
 pub struct TraitRef {
     pub trait_id: TraitInstanceId,
     pub generics: GenericArgs,
     /// Not necessary, but useful
+    #[drive(skip)]
     pub trait_decl_ref: TraitDeclRef,
 }
 
@@ -231,7 +246,9 @@ pub struct TraitRef {
 /// ```
 ///
 /// The substitution is: `[String, bool]`.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(
+    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd, Drive, DriveMut,
+)]
 pub struct TraitDeclRef {
     pub trait_id: TraitDeclId,
     pub generics: GenericArgs,
@@ -240,6 +257,24 @@ pub struct TraitDeclRef {
 /// .0 outlives .1
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct OutlivesPred<T, U>(pub T, pub U);
+
+// The derive macro doesn't handle generics well.
+impl<T: Drive, U: Drive> Drive for OutlivesPred<T, U> {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.0.drive(visitor);
+        self.1.drive(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
+impl<T: DriveMut, U: DriveMut> DriveMut for OutlivesPred<T, U> {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.0.drive_mut(visitor);
+        self.1.drive_mut(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
 
 pub type RegionOutlives = OutlivesPred<Region, Region>;
 pub type TypeOutlives = OutlivesPred<Ty, Region>;
@@ -251,25 +286,16 @@ pub type TypeOutlives = OutlivesPred<Ty, Region>;
 /// T : Foo<S = String>
 ///         ^^^^^^^^^^
 /// ```
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Drive, DriveMut)]
 pub struct TraitTypeConstraint {
     pub trait_ref: TraitRef,
     pub type_name: TraitItemName,
     pub ty: Ty,
 }
 
-/// The predicates which apply to a definition
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct Predicates {
-    /// The first region in the pair outlives the second region
-    pub regions_outlive: Vec<RegionOutlives>,
-    /// The type outlives the region
-    pub types_outlive: Vec<TypeOutlives>,
-    /// Constraints over trait associated types
-    pub trait_type_constraints: Vec<TraitTypeConstraint>,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd)]
+#[derive(
+    Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Drive, DriveMut,
+)]
 pub struct GenericArgs {
     pub regions: Vec<Region>,
     pub types: Vec<Ty>,
@@ -285,20 +311,27 @@ pub struct GenericArgs {
 /// be filled. We group in a different place the predicates which are not
 /// trait clauses, because those enforce constraints but do not need to
 /// be filled with witnesses/instances.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericParams {
     pub regions: Vector<RegionId, RegionVar>,
     pub types: Vector<TypeVarId, TypeVar>,
     pub const_generics: Vector<ConstGenericVarId, ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: Vector<TraitClauseId, TraitClause>,
+    /// The first region in the pair outlives the second region
+    pub regions_outlive: Vec<RegionOutlives>,
+    /// The type outlives the region
+    pub types_outlive: Vec<TypeOutlives>,
+    /// Constraints over trait associated types
+    pub trait_type_constraints: Vec<TraitTypeConstraint>,
 }
 
 generate_index_type!(TraitClauseId, "TraitClause");
 generate_index_type!(TraitDeclId, "TraitDecl");
 generate_index_type!(TraitImplId, "TraitImpl");
 
-#[derive(Debug, Clone, Serialize, Deserialize, Derivative)]
+/// A predicate of the form `Type: Trait<Args>`.
+#[derive(Debug, Clone, Serialize, Deserialize, Derivative, Drive, DriveMut)]
 #[derivative(PartialEq)]
 pub struct TraitClause {
     /// We use this id when solving trait constraints, to be able to refer
@@ -307,12 +340,61 @@ pub struct TraitClause {
     pub clause_id: TraitClauseId,
     #[derivative(PartialEq = "ignore")]
     pub span: Option<Span>,
+    /// Where the predicate was written, relative to the item that requires it.
+    #[derivative(PartialEq = "ignore")]
+    pub origin: PredicateOrigin,
+    /// The trait that is implemented.
     pub trait_id: TraitDeclId,
+    /// The generics applied to the trait. Note: this includes the `Self` type.
     /// Remark: the trait refs list in the [generics] field should be empty.
     pub generics: GenericArgs,
 }
 
 impl Eq for TraitClause {}
+
+/// Where a given predicate came from.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Derivative, Drive, DriveMut)]
+pub enum PredicateOrigin {
+    // Note: we use this for globals too, but that's only available with an unstable feature.
+    // ```
+    // fn function<T: Clone>() {}
+    // fn function<T>() where T: Clone {}
+    // const NONE<T: Copy>: Option<T> = None;
+    // ```
+    WhereClauseOnFn,
+    // ```
+    // struct Struct<T: Clone> {}
+    // struct Struct<T> where T: Clone {}
+    // type TypeAlias<T: Clone> = ...;
+    // ```
+    WhereClauseOnType,
+    // Note: this is both trait impls and inherent impl blocks.
+    // ```
+    // impl<T: Clone> Type<T> {}
+    // impl<T> Type<T> where T: Clone {}
+    // impl<T> Trait for Type<T> where T: Clone {}
+    // ```
+    WhereClauseOnImpl,
+    // The special `Self: Trait` clause which is in scope inside the definition of `Foo` or an
+    // implementation of it.
+    // ```
+    // trait Trait {}
+    // ```
+    TraitSelf,
+    // Note: this also includes supertrait constraings.
+    // ```
+    // trait Trait<T: Clone> {}
+    // trait Trait<T> where T: Clone {}
+    // trait Trait: Clone {}
+    // ```
+    WhereClauseOnTrait,
+    // ```
+    // trait Trait {
+    //     type AssocType: Clone;
+    // }
+    // ```
+    TraitItem(TraitItemName),
+}
 
 /// A type declaration.
 ///
@@ -327,8 +409,9 @@ impl Eq for TraitClause {}
 ///
 /// A type can only be an ADT (structure or enumeration), as type aliases are
 /// inlined in MIR.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TypeDecl {
+    #[drive(skip)]
     pub def_id: TypeDeclId,
     /// Meta information associated with the type.
     pub item_meta: ItemMeta,
@@ -337,12 +420,11 @@ pub struct TypeDecl {
     pub is_local: bool,
     pub name: Name,
     pub generics: GenericParams,
-    pub preds: Predicates,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize)]
+#[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut)]
 pub enum TypeDeclKind {
     Struct(Vector<FieldId, Field>),
     Enum(Vector<VariantId, Variant>),
@@ -358,9 +440,9 @@ pub enum TypeDeclKind {
     Error(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Variant {
-    pub span: Span,
+    pub item_meta: ItemMeta,
     pub name: String,
     pub fields: Vector<FieldId, Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
@@ -368,9 +450,10 @@ pub struct Variant {
     pub discriminant: ScalarValue,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Field {
-    pub span: Span,
+    /// FIXME: define a more appropriate container for attribute and visibility information.
+    pub item_meta: ItemMeta,
     pub name: Option<String>,
     pub ty: Ty,
 }
@@ -385,6 +468,8 @@ pub struct Field {
     VariantName,
     Serialize,
     Deserialize,
+    Drive,
+    DriveMut,
     Hash,
     Ord,
     PartialOrd,
@@ -415,6 +500,8 @@ pub enum IntegerTy {
     EnumIsA,
     Serialize,
     Deserialize,
+    Drive,
+    DriveMut,
     Ord,
     PartialOrd,
 )]
@@ -437,6 +524,8 @@ pub enum RefKind {
     EnumIsA,
     Serialize,
     Deserialize,
+    Drive,
+    DriveMut,
     Hash,
     Ord,
     PartialOrd,
@@ -471,6 +560,8 @@ pub enum TypeId {
     VariantIndexArity,
     Serialize,
     Deserialize,
+    Drive,
+    DriveMut,
     Hash,
     Ord,
     PartialOrd,
@@ -493,6 +584,8 @@ pub enum LiteralTy {
     VariantIndexArity,
     Serialize,
     Deserialize,
+    Drive,
+    DriveMut,
     Hash,
     Ord,
     PartialOrd,
@@ -520,6 +613,8 @@ pub enum ConstGeneric {
     VariantIndexArity,
     Serialize,
     Deserialize,
+    Drive,
+    DriveMut,
     Ord,
     PartialOrd,
 )]
@@ -592,6 +687,8 @@ pub enum Ty {
     VariantName,
     Serialize,
     Deserialize,
+    Drive,
+    DriveMut,
     Hash,
     Ord,
     PartialOrd,
@@ -654,7 +751,7 @@ pub enum AssumedTy {
 /// outer block. For this reason, when we need to store the information about
 /// the generics of the outer block(s), we need to do it only for one level
 /// (this definitely makes things simpler).
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ParamsInfo {
     pub num_region_params: usize,
     pub num_type_params: usize,
@@ -665,7 +762,7 @@ pub struct ParamsInfo {
     pub num_trait_type_constraints: usize,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum ClosureKind {
     Fn,
     FnMut,
@@ -674,7 +771,7 @@ pub enum ClosureKind {
 
 /// Additional information for closures.
 /// We mostly use it in micro-passes like [crate::update_closure_signature].
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ClosureInfo {
     pub kind: ClosureKind,
     /// Contains the types of the fields in the closure state.
@@ -692,7 +789,7 @@ pub struct ClosureInfo {
 }
 
 /// A function signature.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct FunSig {
     /// Is the function unsafe or not
     pub is_unsafe: bool,
@@ -706,7 +803,6 @@ pub struct FunSig {
     /// Additional information if this is the signature of a closure.
     pub closure_info: Option<ClosureInfo>,
     pub generics: GenericParams,
-    pub preds: Predicates,
     /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).
     pub parent_params_info: Option<ParamsInfo>,
     pub inputs: Vec<Ty>,
