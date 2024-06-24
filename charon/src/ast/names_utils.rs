@@ -178,18 +178,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     name.push(PathElem::Ident(symbol.to_string(), disambiguator));
                 }
                 DefPathData::ValueNs(symbol) => {
-                    if data.disambiguator != 0 {
-                        // I don't like that
-
-                        // I think this only happens with names introduced by macros
-                        // (though not sure). For instance:
-                        // `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
-                        let s = symbol.to_string();
-                        assert!(s == "_");
-                        name.push(PathElem::Ident(s, disambiguator));
-                    } else {
-                        name.push(PathElem::Ident(symbol.to_string(), disambiguator));
-                    }
+                    // I think `disambiguator != 0` only with names introduced by macros (though
+                    // not sure).
+                    name.push(PathElem::Ident(symbol.to_string(), disambiguator));
                 }
                 DefPathData::CrateRoot => {
                     // Sanity check
