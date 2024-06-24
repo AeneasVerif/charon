@@ -3,6 +3,7 @@ use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::ids::Vector;
+use crate::meta::ItemMeta;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -734,6 +735,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         &mut self,
         trans_id: TypeDeclId,
         rust_id: DefId,
+        item_meta: ItemMeta,
     ) -> Result<TypeDecl, Error> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
@@ -742,9 +744,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Translate the predicates
         bt_ctx.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnType)?;
-
-        // Translate the meta information
-        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id)?;
 
         // Check if the type has been explicitely marked as opaque.
         // If yes, ignore it, otherwise, dive into the body. Note that for

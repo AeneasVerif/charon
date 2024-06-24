@@ -1759,12 +1759,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         &mut self,
         def_id: FunDeclId,
         rust_id: DefId,
+        item_meta: ItemMeta,
     ) -> Result<FunDecl, Error> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_span = self.tcx.def_span(rust_id);
-
-        // Compute the meta information
-        let item_meta = self.translate_item_meta_from_rid(rust_id)?;
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -1815,12 +1813,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         &mut self,
         def_id: GlobalDeclId,
         rust_id: DefId,
+        item_meta: ItemMeta,
     ) -> Result<GlobalDecl, Error> {
         trace!("About to translate global:\n{:?}", rust_id);
         let span = self.tcx.def_span(rust_id);
-
-        // Compute the meta information
-        let item_meta = self.translate_item_meta_from_rid(rust_id)?;
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
