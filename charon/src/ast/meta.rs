@@ -138,11 +138,12 @@ pub struct AttrInfo {
     pub attributes: Vec<Attribute>,
     /// Inline hints (on functions only).
     pub inline: Option<InlineAttr>,
-    /// Attribute `charon::rename("...")` provide a custom name that can be used by consumers of
-    /// llbc. E.g. Aeneas uses this to rename definitions in the extracted code.
+    /// The name specified with the `#[charon::rename("...")]` attribute, if any. This provides a
+    /// custom name that can be used by consumers of llbc. E.g. Aeneas uses this to rename
+    /// definitions in the extracted code.
     pub rename: Option<String>,
-    /// Whether there was a `#[charon::opaque]` annotation on this item. This is different from
-    /// other reasons this may be opaque.
+    /// Whether there was a `#[charon::opaque]` annotation on this item. An item may be opaque for
+    /// other reasons than this attribute, e.g. if specified on the command line.
     #[serde(skip_serializing)]
     #[serde(default)]
     pub opaque: bool,
