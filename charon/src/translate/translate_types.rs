@@ -735,7 +735,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trans_id: TypeDeclId,
         rust_id: DefId,
     ) -> Result<TypeDecl, Error> {
-        let is_transparent = self.id_is_transparent(rust_id)?;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         // Check and translate the generics
@@ -754,7 +753,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // For instance, because `core::option::Option` is public, we can
         // manipulate its variants. If we encounter this type, we must retrieve
         // its definition.
-        let kind = if !is_transparent || item_meta.attr_info.opaque {
+        let kind = if item_meta.opaque {
             TypeDeclKind::Opaque
         } else {
             match bt_ctx.translate_type_body(trans_id, rust_id) {

@@ -142,11 +142,6 @@ pub struct AttrInfo {
     /// custom name that can be used by consumers of llbc. E.g. Aeneas uses this to rename
     /// definitions in the extracted code.
     pub rename: Option<String>,
-    /// Whether there was a `#[charon::opaque]` annotation on this item. An item may be opaque for
-    /// other reasons than this attribute, e.g. if specified on the command line.
-    #[serde(skip_serializing)]
-    #[serde(default)]
-    pub opaque: bool,
     /// Whether this item is declared public. Impl blocks and closures don't have visibility
     /// modifiers; we arbitrarily set this to `false` for them.
     ///
@@ -177,6 +172,16 @@ pub struct ItemMeta {
     pub attr_info: AttrInfo,
     /// `true` if the type decl is a local type decl, `false` if it comes from an external crate.
     pub is_local: bool,
+    /// Whether this item is considered opaque. For function and globals, this means we don't
+    /// translate the body (the code); for ADTs, this means we don't translate the fields/variants.
+    /// For traits and trait impls, this doesn't change anything. For modules, this means we don't
+    /// explore its contents (we still translate any of its items mentioned from somewhere else).
+    ///
+    /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
+    /// declared opaque via a command-line argument.
+    #[serde(skip_serializing)]
+    #[serde(default)]
+    pub opaque: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Drive, DriveMut)]

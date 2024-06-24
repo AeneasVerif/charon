@@ -186,8 +186,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 // to check that all the opaque modules given as arguments actually
                 // exist
                 trace!("{:?}", def_id);
-                let opaque = self.id_is_opaque(def_id)?;
-                if opaque {
+                let item_meta = self.translate_item_meta_from_rid(def_id)?;
+                if item_meta.opaque {
                     // Ignore
                     trace!("Ignoring module [{:?}] because marked as opaque", def_id);
                 } else {

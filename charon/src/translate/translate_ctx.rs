@@ -472,7 +472,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .translate_visibility_from_rid(def_id, span.span)
             .unwrap_or(false);
         let attributes = self.translate_attributes_from_rid(def_id);
-        let opaque = attributes.iter().any(|attr| attr.is_opaque());
 
         let rename = {
             let mut renames = attributes
@@ -494,7 +493,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         AttrInfo {
             attributes,
             inline: self.translate_inline_from_rid(def_id),
-            opaque,
             public,
             rename,
         }
@@ -509,11 +507,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let name = self.def_id_to_name(def_id)?;
         let attr_info = self.translate_attr_info_from_rid(def_id, span);
         let is_local = def_id.is_local();
+        let opaque = self.is_opaque_name(&name)
+            || self.id_is_extern_item(def_id)
+            || attr_info.attributes.iter().any(|attr| attr.is_opaque());
         Ok(ItemMeta {
             span,
             attr_info,
             name,
             is_local,
+            opaque,
         })
     }
 
@@ -697,15 +699,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     pub(crate) fn is_opaque_name(&self, name: &Name) -> bool {
         name.is_in_modules(&self.translated.crate_name, &self.options.opaque_mods)
-    }
-
-    pub(crate) fn id_is_opaque(&mut self, id: DefId) -> Result<bool, Error> {
-        let name = self.def_id_to_name(id)?;
-        Ok(self.is_opaque_name(&name) || self.id_is_extern_item(id))
-    }
-
-    pub(crate) fn id_is_transparent(&mut self, id: DefId) -> Result<bool, Error> {
-        Ok(!(self.id_is_opaque(id)?))
     }
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).

@@ -390,14 +390,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             );
         }
         let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id)?;
-        if item_meta.attr_info.opaque {
+        if item_meta.opaque {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(
                 item_meta.span,
                 format!(
-                    "The `aeneas::opaque` or `charon::opaque` attribute currently \
-                    has no effect on trait declarations and will be ignored.\
-                    \nDeclaration name: {}\n",
+                    "Trait declarations cannot be \"opaque\"; the trait `{}` will be translated as normal.",
                     name.fmt_with_ctx(&ctx)
                 ),
             )
@@ -597,14 +595,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
         }
         let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id)?;
-        if item_meta.attr_info.opaque {
+        if item_meta.opaque {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(
                 item_meta.span,
                 format!(
-                    "The `aeneas::opaque` or `charon::opaque` attribute currently \
-                    has no effect on trait implementations and will be ignored.\
-                    \nImplementation name: {}\n",
+                    "Trait implementations cannot be \"opaque\"; the impl `{}` will be translated as normal.",
                     item_meta.name.fmt_with_ctx(&ctx)
                 ),
             )

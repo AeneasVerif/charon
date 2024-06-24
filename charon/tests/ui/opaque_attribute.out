@@ -56,14 +56,6 @@ fn test_crate::call_fn_in_opaque_module()
     return
 }
 
-fn test_crate::opaque::other_fn_in_opaque_module() -> u32
-{
-    let @0: u32; // return
-
-    @0 := const (42 : u32)
-    return
-}
-
 fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 
 fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
