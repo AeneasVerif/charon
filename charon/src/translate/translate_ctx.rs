@@ -4,7 +4,7 @@ use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::ids::{Generator, MapGenerator, Vector};
-use crate::meta::{self, AttrInfo, Attribute, ItemMeta, RawSpan};
+use crate::meta::{self, AttrInfo, Attribute, ItemMeta, ItemOpacity, RawSpan};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Span, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::DeclarationsGroups;
@@ -136,6 +136,16 @@ wrap_unwrap_enum!(AnyTransId::Global(GlobalDeclId));
 wrap_unwrap_enum!(AnyTransId::Type(TypeDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
+
+/// A translated item.
+#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+pub enum AnyTransItem<'ctx> {
+    Type(&'ctx TypeDecl),
+    Fun(&'ctx FunDecl),
+    Global(&'ctx GlobalDecl),
+    TraitDecl(&'ctx TraitDecl),
+    TraitImpl(&'ctx TraitImpl),
+}
 
 /// We use a special type to store the Rust identifiers in the stack, to
 /// make sure we translate them in a specific order (top-level constants
@@ -272,6 +282,9 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// We use an ordered map to make sure we translate them in a specific
     /// order (this avoids stealing issues when querying the MIR bodies).
     pub priority_queue: BTreeMap<OrdRustId, AnyTransId>,
+    /// Stack of the translations currently happening. Used to avoid cycles where items need to
+    /// translate themselves transitively.
+    pub translate_stack: Vec<AnyTransId>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -459,7 +472,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .translate_visibility_from_rid(def_id, span.span)
             .unwrap_or(false);
         let attributes = self.translate_attributes_from_rid(def_id);
-        let opaque = attributes.iter().any(|attr| attr.is_opaque());
 
         let rename = {
             let mut renames = attributes
@@ -481,7 +493,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         AttrInfo {
             attributes,
             inline: self.translate_inline_from_rid(def_id),
-            opaque,
             public,
             rename,
         }
@@ -496,11 +507,26 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let name = self.def_id_to_name(def_id)?;
         let attr_info = self.translate_attr_info_from_rid(def_id, span);
         let is_local = def_id.is_local();
+
+        let opacity = {
+            let is_opaque = self.is_opaque_name(&name)
+                || self.id_is_extern_item(def_id)
+                || attr_info.attributes.iter().any(|attr| attr.is_opaque());
+            if is_opaque {
+                ItemOpacity::Opaque
+            } else if !is_local && !self.options.extract_opaque_bodies {
+                ItemOpacity::Foreign
+            } else {
+                ItemOpacity::Transparent
+            }
+        };
+
         Ok(ItemMeta {
             span,
             attr_info,
             name,
             is_local,
+            opacity,
         })
     }
 
@@ -684,15 +710,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     pub(crate) fn is_opaque_name(&self, name: &Name) -> bool {
         name.is_in_modules(&self.translated.crate_name, &self.options.opaque_mods)
-    }
-
-    pub(crate) fn id_is_opaque(&mut self, id: DefId) -> Result<bool, Error> {
-        let name = self.def_id_to_name(id)?;
-        Ok(self.is_opaque_name(&name) || self.id_is_extern_item(id))
-    }
-
-    pub(crate) fn id_is_transparent(&mut self, id: DefId) -> Result<bool, Error> {
-        Ok(!(self.id_is_opaque(id)?))
     }
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).

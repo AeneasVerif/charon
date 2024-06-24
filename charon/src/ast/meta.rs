@@ -142,11 +142,6 @@ pub struct AttrInfo {
     /// custom name that can be used by consumers of llbc. E.g. Aeneas uses this to rename
     /// definitions in the extracted code.
     pub rename: Option<String>,
-    /// Whether there was a `#[charon::opaque]` annotation on this item. An item may be opaque for
-    /// other reasons than this attribute, e.g. if specified on the command line.
-    #[serde(skip_serializing)]
-    #[serde(default)]
-    pub opaque: bool,
     /// Whether this item is declared public. Impl blocks and closures don't have visibility
     /// modifiers; we arbitrarily set this to `false` for them.
     ///
@@ -168,6 +163,39 @@ pub struct AttrInfo {
     pub public: bool,
 }
 
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    EnumIsA,
+)]
+pub enum ItemOpacity {
+    /// Translate the item name and signature, but not its contents. For function and globals, this
+    /// means we don't translate the body (the code); for ADTs, this means we don't translate the
+    /// fields/variants. For traits and trait impls, this doesn't change anything. For modules,
+    /// this means we don't explore its contents (we still translate any of its items mentioned
+    /// from somewhere else).
+    ///
+    /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
+    /// declared opaque via a command-line argument.
+    Opaque,
+    /// Translate the item depending on the normal rust visibility of its contents: for types, we
+    /// translate fully if it is a struct with public fields or an enum; for functions and globals
+    /// this is equivalent to `Opaque`; for trait decls and impls this is equivalent to
+    /// `Transparent`.
+    Foreign,
+    /// Translate the item fully.
+    Transparent,
+}
+
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ItemMeta {
@@ -177,6 +205,14 @@ pub struct ItemMeta {
     pub attr_info: AttrInfo,
     /// `true` if the type decl is a local type decl, `false` if it comes from an external crate.
     pub is_local: bool,
+    /// Whether this item is considered opaque. For function and globals, this means we don't
+    /// translate the body (the code); for ADTs, this means we don't translate the fields/variants.
+    /// For traits and trait impls, this doesn't change anything. For modules, this means we don't
+    /// explore its contents (we still translate any of its items mentioned from somewhere else).
+    ///
+    /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
+    /// declared opaque via a command-line argument.
+    pub opacity: ItemOpacity,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Drive, DriveMut)]

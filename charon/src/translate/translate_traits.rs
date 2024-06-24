@@ -2,6 +2,7 @@ use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::ids::Vector;
+use crate::meta::ItemMeta;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -263,6 +264,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         &mut self,
         def_id: TraitDeclId,
         rust_id: DefId,
+        item_meta: ItemMeta,
     ) -> Result<TraitDecl, Error> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
         trace!("Trait decl id:\n{:?}", def_id);
@@ -389,15 +391,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 generic_clauses
             );
         }
-        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id)?;
-        if item_meta.attr_info.opaque {
+        if item_meta.opacity.is_opaque() {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(
                 item_meta.span,
                 format!(
-                    "The `aeneas::opaque` or `charon::opaque` attribute currently \
-                    has no effect on trait declarations and will be ignored.\
-                    \nDeclaration name: {}\n",
+                    "Trait declarations cannot be \"opaque\"; the trait `{}` will be translated as normal.",
                     name.fmt_with_ctx(&ctx)
                 ),
             )
@@ -421,6 +420,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         &mut self,
         def_id: TraitImplId,
         rust_id: DefId,
+        item_meta: ItemMeta,
     ) -> Result<TraitImpl, Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
         trace!("Trait impl id:\n{:?}", def_id);
@@ -596,15 +596,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 }
             }
         }
-        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id)?;
-        if item_meta.attr_info.opaque {
+        if item_meta.opacity.is_opaque() {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(
                 item_meta.span,
                 format!(
-                    "The `aeneas::opaque` or `charon::opaque` attribute currently \
-                    has no effect on trait implementations and will be ignored.\
-                    \nImplementation name: {}\n",
+                    "Trait implementations cannot be \"opaque\"; the impl `{}` will be translated as normal.",
                     item_meta.name.fmt_with_ctx(&ctx)
                 ),
             )

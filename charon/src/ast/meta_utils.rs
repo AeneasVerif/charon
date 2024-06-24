@@ -229,3 +229,19 @@ impl Attribute {
         }
     }
 }
+
+impl ItemOpacity {
+    pub(crate) fn with_content_visibility(self, contents_are_public: bool) -> Self {
+        use ItemOpacity::*;
+        match self {
+            Transparent => Transparent,
+            Foreign if contents_are_public => Transparent,
+            Foreign => Opaque,
+            Opaque => Opaque,
+        }
+    }
+
+    pub(crate) fn with_private_contents(self) -> Self {
+        self.with_content_visibility(false)
+    }
+}

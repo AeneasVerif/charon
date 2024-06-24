@@ -186,8 +186,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 // to check that all the opaque modules given as arguments actually
                 // exist
                 trace!("{:?}", def_id);
-                let opaque = self.id_is_opaque(def_id)?;
-                if opaque {
+                let item_meta = self.translate_item_meta_from_rid(def_id)?;
+                if item_meta.opacity.is_opaque() {
                     // Ignore
                     trace!("Ignoring module [{:?}] because marked as opaque", def_id);
                 } else {
@@ -234,15 +234,34 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn translate_item(&mut self, ord_id: OrdRustId, trans_id: AnyTransId) {
-        let rust_id = ord_id.get_id();
+    pub(crate) fn translate_item(&mut self, rust_id: DefId, trans_id: AnyTransId) {
+        if self.errors.ignored_failed_decls.contains(&rust_id) || self.get_item(trans_id).is_some()
+        {
+            return;
+        }
         self.with_def_id(rust_id, |ctx| {
-            let res = ctx.translate_item_aux(rust_id, trans_id);
-            if res.is_err() {
-                let span = ctx.tcx.def_span(rust_id);
+            let span = ctx.tcx.def_span(rust_id);
+            // Catch cycles
+            let res = if ctx.translate_stack.contains(&trans_id) {
                 ctx.span_err(
                     span,
-                    &format!("Ignoring the following item due to an error: {:?}", rust_id),
+                    &format!(
+                        "Cycle detected while translating {rust_id:?}! Stack: {:?}",
+                        &ctx.translate_stack
+                    ),
+                );
+                Err(())
+            } else {
+                ctx.translate_stack.push(trans_id);
+                let res = ctx.translate_item_aux(rust_id, trans_id);
+                ctx.translate_stack.pop();
+                res.map_err(|_| ())
+            };
+
+            if res.is_err() {
+                ctx.span_err(
+                    span,
+                    &format!("Ignoring the following item due to an error: {rust_id:?}"),
                 );
                 ctx.errors.ignore_failed_decl(rust_id);
             }
@@ -254,29 +273,68 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         rust_id: DefId,
         trans_id: AnyTransId,
     ) -> Result<(), Error> {
+        // Translate the meta information
+        let item_meta = self.translate_item_meta_from_rid(rust_id)?;
         match trans_id {
             AnyTransId::Type(id) => {
-                let ty = self.translate_type(id, rust_id)?;
+                let ty = self.translate_type(id, rust_id, item_meta)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
             AnyTransId::Fun(id) => {
-                let fun_decl = self.translate_function(id, rust_id)?;
+                let fun_decl = self.translate_function(id, rust_id, item_meta)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             AnyTransId::Global(id) => {
-                let global_decl = self.translate_global(id, rust_id)?;
+                let global_decl = self.translate_global(id, rust_id, item_meta)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
             AnyTransId::TraitDecl(id) => {
-                let trait_decl = self.translate_trait_decl(id, rust_id)?;
+                let trait_decl = self.translate_trait_decl(id, rust_id, item_meta)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
             AnyTransId::TraitImpl(id) => {
-                let trait_impl = self.translate_trait_impl(id, rust_id)?;
+                let trait_impl = self.translate_trait_impl(id, rust_id, item_meta)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
         }
         Ok(())
+    }
+
+    fn get_item(&mut self, trans_id: AnyTransId) -> Option<AnyTransItem<'_>> {
+        match trans_id {
+            AnyTransId::Type(id) => self.translated.type_decls.get(id).map(AnyTransItem::Type),
+            AnyTransId::Fun(id) => self.translated.fun_decls.get(id).map(AnyTransItem::Fun),
+            AnyTransId::Global(id) => self
+                .translated
+                .global_decls
+                .get(id)
+                .map(AnyTransItem::Global),
+            AnyTransId::TraitDecl(id) => self
+                .translated
+                .trait_decls
+                .get(id)
+                .map(AnyTransItem::TraitDecl),
+            AnyTransId::TraitImpl(id) => self
+                .translated
+                .trait_impls
+                .get(id)
+                .map(AnyTransItem::TraitImpl),
+        }
+    }
+
+    /// While translating an item you may need the contents of another. Use this to retreive the
+    /// translated version of this item.
+    #[allow(dead_code)]
+    pub(crate) fn get_or_translate(&mut self, id: AnyTransId) -> Result<AnyTransItem<'_>, Error> {
+        let rust_id = *self.translated.reverse_id_map.get(&id).unwrap();
+        // Translate if not already translated.
+        self.translate_item(rust_id, id);
+
+        if self.errors.ignored_failed_decls.contains(&rust_id) {
+            let span = self.tcx.def_span(rust_id);
+            error_or_panic!(self, span, format!("Failed to translate item {id:?}."))
+        }
+        Ok(self.get_item(id).unwrap())
     }
 }
 
@@ -318,6 +376,7 @@ pub fn translate<'tcx, 'ctx>(
             ..TranslatedCrate::default()
         },
         priority_queue: Default::default(),
+        translate_stack: Default::default(),
     };
 
     // First push all the items in the stack of items to translate.
@@ -362,7 +421,7 @@ pub fn translate<'tcx, 'ctx>(
     // from Rust ids to translated ids.
     while let Some((ord_id, trans_id)) = ctx.priority_queue.pop_first() {
         trace!("About to translate id: {:?}", ord_id);
-        ctx.translate_item(ord_id, trans_id);
+        ctx.translate_item(ord_id.get_id(), trans_id);
     }
 
     // Return the context, dropping the hax state and rustc `tcx`.

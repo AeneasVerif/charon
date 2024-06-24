@@ -667,6 +667,7 @@ let item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
           ("name", name);
           ("attr_info", attr_info);
           ("is_local", is_local);
+          ("opacity", _);
         ] ->
         let* span = span_of_json id_to_file span in
         let* name = name_of_json id_to_file name in

@@ -3,6 +3,7 @@ use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;
 use crate::ids::Vector;
+use crate::meta::ItemMeta;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
 use crate::types::*;
@@ -509,12 +510,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         trans_id: TypeDeclId,
         rust_id: DefId,
+        item_meta: &ItemMeta,
     ) -> Result<TypeDeclKind, Error> {
         use hax::AdtKind;
         let tcx = self.t_ctx.tcx;
         let erase_regions = false;
-        let is_local = rust_id.is_local();
         let def_span = tcx.def_span(rust_id);
+
+        if item_meta.opacity.is_opaque() {
+            return Ok(TypeDeclKind::Opaque);
+        }
 
         // Separate path for type aliases because they're not an `AdtDef`.
         if let Some(local_def_id) = rust_id.as_local() {
@@ -537,24 +542,26 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // transparent (i.e., extract its body). If it is an enumeration, then yes
         // (because the variants of public enumerations are public, together with their
         // fields). If it is a structure, we check if all the fields are public.
-        let is_transparent = self.t_ctx.options.extract_opaque_bodies
-            || is_local
-            || match adt.adt_kind {
-                AdtKind::Enum => true,
-                AdtKind::Struct => {
-                    // Check the unique variant
-                    error_assert!(self, def_span, adt.variants.len() == 1);
-                    adt.variants[0]
-                        .fields
-                        .iter()
-                        .all(|f| matches!(f.vis, Visibility::Public))
-                }
-                AdtKind::Union => {
-                    error_or_panic!(self, def_span, "Unions are not supported")
-                }
-            };
+        let contents_are_public = match adt.adt_kind {
+            AdtKind::Enum => true,
+            AdtKind::Struct => {
+                // Check the unique variant
+                error_assert!(self, def_span, adt.variants.len() == 1);
+                adt.variants[0]
+                    .fields
+                    .iter()
+                    .all(|f| matches!(f.vis, Visibility::Public))
+            }
+            AdtKind::Union => {
+                error_or_panic!(self, def_span, "Unions are not supported")
+            }
+        };
 
-        if !is_transparent {
+        if item_meta
+            .opacity
+            .with_content_visibility(contents_are_public)
+            .is_opaque()
+        {
             return Ok(TypeDeclKind::Opaque);
         }
 
@@ -734,8 +741,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         &mut self,
         trans_id: TypeDeclId,
         rust_id: DefId,
+        item_meta: ItemMeta,
     ) -> Result<TypeDecl, Error> {
-        let is_transparent = self.id_is_transparent(rust_id)?;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         // Check and translate the generics
@@ -744,23 +751,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // Translate the predicates
         bt_ctx.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnType)?;
 
-        // Translate the meta information
-        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id)?;
-
-        // Check if the type has been explicitely marked as opaque.
-        // If yes, ignore it, otherwise, dive into the body. Note that for
-        // external types we have to check the body: if the body is
-        // public, we translate it, otherwise we consider the type as opaque.
-        // For instance, because `core::option::Option` is public, we can
-        // manipulate its variants. If we encounter this type, we must retrieve
-        // its definition.
-        let kind = if !is_transparent || item_meta.attr_info.opaque {
-            TypeDeclKind::Opaque
-        } else {
-            match bt_ctx.translate_type_body(trans_id, rust_id) {
-                Ok(kind) => kind,
-                Err(err) => TypeDeclKind::Error(err.msg),
-            }
+        let kind = match bt_ctx.translate_type_body(trans_id, rust_id, &item_meta) {
+            Ok(kind) => kind,
+            Err(err) => TypeDeclKind::Error(err.msg),
         };
 
         // Register the type

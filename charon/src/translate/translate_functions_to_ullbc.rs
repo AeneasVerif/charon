@@ -1453,14 +1453,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<Result<Body, Opaque>, Error> {
         let tcx = self.t_ctx.tcx;
 
-        if item_meta.attr_info.opaque {
-            return Ok(Err(Opaque));
-        }
-        if !self.t_ctx.id_is_transparent(rust_id)? {
-            return Ok(Err(Opaque));
-        }
-        if !rust_id.is_local() && !self.t_ctx.options.extract_opaque_bodies {
-            // We only extract non-local bodies if the `extract_opaque_bodies` option is set.
+        if item_meta.opacity.with_private_contents().is_opaque() {
+            // The bodies of foreign functions are opaque by default.
             return Ok(Err(Opaque));
         }
 
@@ -1762,12 +1756,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         &mut self,
         def_id: FunDeclId,
         rust_id: DefId,
+        item_meta: ItemMeta,
     ) -> Result<FunDecl, Error> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_span = self.tcx.def_span(rust_id);
-
-        // Compute the meta information
-        let item_meta = self.translate_item_meta_from_rid(rust_id)?;
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -1818,12 +1810,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         &mut self,
         def_id: GlobalDeclId,
         rust_id: DefId,
+        item_meta: ItemMeta,
     ) -> Result<GlobalDecl, Error> {
         trace!("About to translate global:\n{:?}", rust_id);
         let span = self.tcx.def_span(rust_id);
-
-        // Compute the meta information
-        let item_meta = self.translate_item_meta_from_rid(rust_id)?;
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
