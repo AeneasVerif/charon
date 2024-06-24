@@ -1,7 +1,6 @@
 pub use crate::gast::{FunDeclId, TraitItemName};
 use crate::ids::Vector;
 use crate::meta::{AttrInfo, ItemMeta, Span};
-use crate::names::Name;
 pub use crate::types_utils::*;
 use crate::values::{Literal, ScalarValue};
 use derivative::Derivative;
@@ -415,10 +414,6 @@ pub struct TypeDecl {
     pub def_id: TypeDeclId,
     /// Meta information associated with the item.
     pub item_meta: ItemMeta,
-    /// [true] if the type decl is a local type decl, [false] if it comes from
-    /// an external crate.
-    pub is_local: bool,
-    pub name: Name,
     pub generics: GenericParams,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,

@@ -61,5 +61,3 @@ type attr_info = {
   public : bool;
 }
 [@@deriving show, ord]
-
-type item_meta = { span : span; attr_info : attr_info } [@@deriving show, ord]

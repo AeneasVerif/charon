@@ -146,8 +146,6 @@ type 'body gexpr_body = {
 type 'body gfun_decl = {
   def_id : FunDeclId.id;
   item_meta : item_meta;
-  is_local : bool;
-  name : name;
   signature : fun_sig;
   kind : item_kind;
   body : 'body gexpr_body option;
@@ -158,8 +156,6 @@ type 'body gfun_decl = {
 type trait_decl = {
   def_id : trait_decl_id;
   item_meta : item_meta;
-  is_local : bool;
-  name : name;
   generics : generic_params;
   parent_clauses : trait_clause list;
   consts : (trait_item_name * (ty * global_decl_id option)) list;
@@ -172,8 +168,6 @@ type trait_decl = {
 type trait_impl = {
   def_id : trait_impl_id;
   item_meta : item_meta;
-  is_local : bool;
-  name : name;
   impl_trait : trait_decl_ref;
   generics : generic_params;
   parent_trait_refs : trait_ref list;
@@ -210,8 +204,6 @@ type declaration_group =
 type 'body gglobal_decl = {
   def_id : GlobalDeclId.id;
   item_meta : item_meta;
-  is_local : bool;
-  name : name;
   generics : generic_params;
   ty : ty;
   kind : item_kind;

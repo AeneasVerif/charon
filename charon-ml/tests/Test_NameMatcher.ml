@@ -154,7 +154,7 @@ module PatternTest = struct
     else if (not test.success) && match_success then (
       log#error "Pattern %s matches function %s but shouldn't\n"
         (pattern_to_string env.print_config test.pattern)
-        (PrintTypes.name_to_string env.fmt_env decl.name);
+        (PrintTypes.name_to_string env.fmt_env decl.item_meta.name);
       false)
     else true
 end

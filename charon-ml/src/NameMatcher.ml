@@ -454,7 +454,7 @@ and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
   | TAdtId id ->
       (* Lookup the type decl and match the name *)
       let d = T.TypeDeclId.Map.find id ctx.type_decls in
-      match_name_with_generics ctx c ~m pid d.name generics
+      match_name_with_generics ctx c ~m pid d.item_meta.name generics
   | TTuple -> false
   | TAssumed id -> (
       match (id, pid) with
@@ -515,7 +515,8 @@ and match_expr_with_trait_decl_ref (ctx : ctx) (c : match_config) (ptr : expr)
   let d = T.TraitDeclId.Map.find tr.trait_decl_id ctx.trait_decls in
   (* Match *)
   match ptr with
-  | EComp pid -> match_name_with_generics ctx c pid d.name tr.decl_generics
+  | EComp pid ->
+      match_name_with_generics ctx c pid d.item_meta.name tr.decl_generics
   | EPrimAdt _ | ERef _ | EVar _ | EArrow _ | ERawPtr _ -> false
 
 and match_trait_ref (ctx : ctx) (c : match_config) (pid : pattern)
@@ -525,7 +526,8 @@ and match_trait_ref (ctx : ctx) (c : match_config) (pid : pattern)
     T.TraitDeclId.Map.find tr.trait_decl_ref.trait_decl_id ctx.trait_decls
   in
   (* Match the trait decl ref *)
-  match_name_with_generics ctx c pid d.name tr.trait_decl_ref.decl_generics
+  match_name_with_generics ctx c pid d.item_meta.name
+    tr.trait_decl_ref.decl_generics
 
 and match_trait_ref_item (ctx : ctx) (c : match_config) (pid : pattern)
     (tr : T.trait_ref) (item_name : string) (generics : T.generic_args) : bool =
@@ -593,7 +595,7 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
   | EComp pat, CgGlobal gid ->
       (* Lookup the decl and match the name *)
       let d = T.GlobalDeclId.Map.find gid ctx.global_decls in
-      match_name ctx c pat d.name
+      match_name ctx c pat d.item_meta.name
   | _ -> false
 
 let assumed_fun_id_to_string (fid : E.assumed_fun_id) : string =
@@ -650,7 +652,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
           match_name_with_generics ctx c p (to_name [ name ]) func.generics)
   | FunId (FRegular fid) ->
       let d = A.FunDeclId.Map.find fid ctx.fun_decls in
-      match_name_with_generics ctx c p d.name func.generics
+      match_name_with_generics ctx c p d.item_meta.name func.generics
   | TraitMethod (tr, method_name, _) ->
       match_trait_ref_item ctx c p tr method_name func.generics
 
@@ -820,7 +822,9 @@ and trait_decl_ref_to_pattern (ctx : ctx) (c : to_pat_config)
   let generics = generic_args_to_pattern ctx c m decl_generics in
   (* Lookup the declaration *)
   let d = T.TraitDeclId.Map.find trait_decl_id ctx.trait_decls in
-  EComp (name_with_generic_args_to_pattern_aux ctx c d.name (Some generics))
+  EComp
+    (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
+       (Some generics))
 
 and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
     (ty : T.ty) : expr =
@@ -832,7 +836,8 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
           (* Lookup the declaration *)
           let d = T.TypeDeclId.Map.find id ctx.type_decls in
           EComp
-            (name_with_generic_args_to_pattern_aux ctx c d.name (Some generics))
+            (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
+               (Some generics))
       | TTuple -> EPrimAdt (TTuple, generics)
       | TAssumed TArray -> EPrimAdt (TArray, generics)
       | TAssumed TSlice -> EPrimAdt (TSlice, generics)
@@ -872,7 +877,9 @@ and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
       T.TraitDeclId.Map.find trait_decl_ref.trait_decl_id ctx.trait_decls
     in
     let g = generic_args_to_pattern ctx c m trait_decl_ref.decl_generics in
-    let name = name_with_generic_args_to_pattern_aux ctx c d.name (Some g) in
+    let name =
+      name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some g)
+    in
     let item_generics = generic_args_to_pattern ctx c m item_generics in
     let name = name @ [ PIdent (item_name, item_generics) ] in
     name
@@ -892,7 +899,7 @@ and const_generic_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
   | CgValue v -> GValue (literal_to_pattern c v)
   | CgGlobal gid ->
       let d = T.GlobalDeclId.Map.find gid ctx.global_decls in
-      let n = name_to_pattern_aux ctx c d.name in
+      let n = name_to_pattern_aux ctx c d.item_meta.name in
       GExpr (EComp n)
 
 and generic_args_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
@@ -988,7 +995,7 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
             [ PIdent (fid, args) ])
     | FunId (FRegular fid) ->
         let d = A.FunDeclId.Map.find fid ctx.fun_decls in
-        name_with_generic_args_to_pattern_aux ctx c d.name (Some args)
+        name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some args)
     | TraitMethod (tr, method_name, _) ->
         trait_ref_item_with_generics_to_pattern ctx c m tr method_name
           func.generics

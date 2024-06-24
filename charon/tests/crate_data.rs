@@ -70,7 +70,7 @@ fn repr_span(span: Span) -> String {
 
 fn trait_name(crate_data: &CrateData, trait_id: TraitDeclId) -> &str {
     let tr = &crate_data.trait_decls[trait_id.index()];
-    let PathElem::Ident(trait_name, _) = tr.name.name.last().unwrap() else {
+    let PathElem::Ident(trait_name, _) = tr.item_meta.name.name.last().unwrap() else {
         panic!()
     };
     trait_name
@@ -102,29 +102,29 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
         .functions
         .iter()
         .map(|x| Item {
-            name: &x.name,
-            name_str: repr_name(crate_data, &x.name),
+            name: &x.item_meta.name,
+            name_str: repr_name(crate_data, &x.item_meta.name),
             item_meta: &x.item_meta,
             generics: x.signature.generics.clone(),
             kind: ItemKind::Fun(x),
         })
         .chain(crate_data.globals.iter().map(|x| Item {
-            name: &x.name,
-            name_str: repr_name(crate_data, &x.name),
+            name: &x.item_meta.name,
+            name_str: repr_name(crate_data, &x.item_meta.name),
             item_meta: &x.item_meta,
             generics: x.generics.clone(),
             kind: ItemKind::Global(x),
         }))
         .chain(crate_data.types.iter().map(|x| Item {
-            name: &x.name,
-            name_str: repr_name(crate_data, &x.name),
+            name: &x.item_meta.name,
+            name_str: repr_name(crate_data, &x.item_meta.name),
             item_meta: &x.item_meta,
             generics: x.generics.clone(),
             kind: ItemKind::Type(x),
         }))
         .chain(crate_data.trait_impls.iter().map(|x| Item {
-            name: &x.name,
-            name_str: repr_name(crate_data, &x.name),
+            name: &x.item_meta.name,
+            name_str: repr_name(crate_data, &x.item_meta.name),
             item_meta: &x.item_meta,
             generics: x.generics.clone(),
             kind: ItemKind::TraitImpl(x),
@@ -135,8 +135,8 @@ fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
             assert!(generics.trait_clauses.is_empty());
             generics.trait_clauses = x.parent_clauses.clone();
             Item {
-                name: &x.name,
-                name_str: repr_name(crate_data, &x.name),
+                name: &x.item_meta.name,
+                name_str: repr_name(crate_data, &x.item_meta.name),
                 item_meta: &x.item_meta,
                 generics,
                 kind: ItemKind::TraitDecl(x),
@@ -155,7 +155,7 @@ fn type_decl() -> Result<(), Box<dyn Error>> {
         ",
     )?;
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[0].name),
+        repr_name(&crate_data, &crate_data.types[0].item_meta.name),
         "test_crate::Struct"
     );
     Ok(())
@@ -169,11 +169,11 @@ fn file_name() -> Result<(), Box<dyn Error>> {
         ",
     )?;
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[0].name),
+        repr_name(&crate_data, &crate_data.types[0].item_meta.name),
         "test_crate::Foo"
     );
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[1].name),
+        repr_name(&crate_data, &crate_data.types[1].item_meta.name),
         "core::option::Option"
     );
     let file_id = crate_data.types[1].item_meta.span.span.file_id;
@@ -414,19 +414,19 @@ fn visibility() -> Result<(), Box<dyn Error>> {
         "#,
     )?;
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[0].name),
+        repr_name(&crate_data, &crate_data.types[0].item_meta.name),
         "test_crate::Pub"
     );
     assert!(crate_data.types[0].item_meta.attr_info.public);
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[1].name),
+        repr_name(&crate_data, &crate_data.types[1].item_meta.name),
         "test_crate::Priv"
     );
     assert!(!crate_data.types[1].item_meta.attr_info.public);
     // Note how we think `PubInPriv` is public. It kind of is but there is no path to it. This is
     // probably fine.
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[2].name),
+        repr_name(&crate_data, &crate_data.types[2].item_meta.name),
         "test_crate::private::PubInPriv"
     );
     assert!(crate_data.types[2].item_meta.attr_info.public);

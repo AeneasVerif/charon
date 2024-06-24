@@ -54,12 +54,12 @@ pub trait UllbcPass: Sync {
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
         ctx.for_each_fun_decl(|ctx, decl, body| {
             let body = body.map(|body| body.as_unstructured_mut().unwrap());
-            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
             self.transform_function(ctx, decl, body);
         });
         ctx.for_each_global_decl(|ctx, decl, body| {
             let body = body.map(|body| body.as_unstructured_mut().unwrap());
-            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
             self.transform_global(ctx, decl, body);
         });
     }
@@ -125,12 +125,12 @@ pub trait LlbcPass: Sync {
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
         ctx.for_each_fun_decl(|ctx, decl, body| {
             let body = body.map(|body| body.as_structured_mut().unwrap());
-            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
             self.transform_function(ctx, decl, body);
         });
         ctx.for_each_global_decl(|ctx, decl, body| {
             let body = body.map(|body| body.as_structured_mut().unwrap());
-            self.log_before_body(ctx, &decl.name, body.as_deref());
+            self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
             self.transform_global(ctx, decl, body);
         });
     }

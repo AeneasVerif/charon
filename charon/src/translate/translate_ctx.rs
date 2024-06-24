@@ -488,10 +488,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Compute the meta information for a Rust item identified by its id.
-    pub(crate) fn translate_item_meta_from_rid(&mut self, def_id: DefId) -> ItemMeta {
+    pub(crate) fn translate_item_meta_from_rid(
+        &mut self,
+        def_id: DefId,
+    ) -> Result<ItemMeta, Error> {
         let span = self.translate_span_from_rid(def_id);
+        let name = self.def_id_to_name(def_id)?;
         let attr_info = self.translate_attr_info_from_rid(def_id, span);
-        ItemMeta { span, attr_info }
+        let is_local = def_id.is_local();
+        Ok(ItemMeta {
+            span,
+            attr_info,
+            name,
+            is_local,
+        })
     }
 
     pub fn translate_span(&mut self, rspan: hax::Span) -> meta::RawSpan {

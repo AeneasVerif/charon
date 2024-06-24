@@ -1,6 +1,7 @@
 //! Meta-information about programs (spans, etc.).
 
 pub use crate::meta_utils::*;
+use crate::names::Name;
 use derive_visitor::{Drive, DriveMut};
 use hax_frontend_exporter::PathBuf;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
@@ -170,7 +171,11 @@ pub struct AttrInfo {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ItemMeta {
     pub span: Span,
+    pub name: Name,
+    /// Attributes and visibility.
     pub attr_info: AttrInfo,
+    /// `true` if the type decl is a local type decl, `false` if it comes from an external crate.
+    pub is_local: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Drive, DriveMut)]

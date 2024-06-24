@@ -389,7 +389,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 generic_clauses
             );
         }
-        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
+        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id)?;
         if item_meta.attr_info.opaque {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(
@@ -407,8 +407,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // check those, and lookup the relevant values.
         Ok(ast::TraitDecl {
             def_id,
-            is_local: rust_id.is_local(),
-            name,
             item_meta,
             generics,
             parent_clauses,
@@ -431,7 +429,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let span = tcx.def_span(rust_id);
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
         let erase_regions = false;
 
         // Translate the generics
@@ -599,7 +596,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 }
             }
         }
-        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
+        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id)?;
         if item_meta.attr_info.opaque {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(
@@ -608,15 +605,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     "The `aeneas::opaque` or `charon::opaque` attribute currently \
                     has no effect on trait implementations and will be ignored.\
                     \nImplementation name: {}\n",
-                    name.fmt_with_ctx(&ctx)
+                    item_meta.name.fmt_with_ctx(&ctx)
                 ),
             )
         }
 
         Ok(ast::TraitImpl {
             def_id,
-            is_local: rust_id.is_local(),
-            name,
             item_meta,
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),

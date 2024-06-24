@@ -106,7 +106,7 @@ module Ast = struct
       if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
     in
 
-    let name = name_to_string env def.name in
+    let name = name_to_string env def.item_meta.name in
     let ty = ty_to_string env def.ty in
 
     (* We print the declaration differently if it is opaque (no body) or transparent

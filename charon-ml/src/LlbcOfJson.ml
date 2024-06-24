@@ -153,18 +153,7 @@ let global_decl_of_json (bodies : expr_body option list)
   combine_error_msgs js __FUNCTION__
     ((* Deserialize the global declaration *)
      let* global = gglobal_decl_of_json bodies id_to_file js in
-     let {
-       def_id = global_id;
-       item_meta;
-       body;
-       is_local;
-       name;
-       generics;
-       ty;
-       kind;
-     } =
-       global
-     in
+     let { def_id = global_id; item_meta; body; generics; ty; kind } = global in
      (* Decompose into a global and a function *)
      let fun_id = global_to_fun_id gid_conv global.def_id in
      let signature : fun_sig =
@@ -180,23 +169,12 @@ let global_decl_of_json (bodies : expr_body option list)
        }
      in
      let global_decl : global_decl =
-       {
-         def_id = global_id;
-         item_meta;
-         body = fun_id;
-         is_local;
-         name;
-         generics;
-         ty;
-         kind;
-       }
+       { def_id = global_id; item_meta; body = fun_id; generics; ty; kind }
      in
      let fun_decl : fun_decl =
        {
          def_id = fun_id;
          item_meta;
-         is_local;
-         name;
          signature;
          kind = RegularKind;
          body;

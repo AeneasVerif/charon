@@ -746,7 +746,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnType)?;
 
         // Translate the meta information
-        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id);
+        let item_meta = bt_ctx.t_ctx.translate_item_meta_from_rid(rust_id)?;
 
         // Check if the type has been explicitely marked as opaque.
         // If yes, ignore it, otherwise, dive into the body. Note that for
@@ -765,14 +765,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         };
 
         // Register the type
-        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
         let generics = bt_ctx.get_generics();
 
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
-            is_local: rust_id.is_local(),
-            name,
             generics,
             kind,
         };

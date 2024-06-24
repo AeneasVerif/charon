@@ -129,7 +129,7 @@ module Ast = struct
     in
 
     (* Global name *)
-    let name = name_to_string env def.name in
+    let name = name_to_string env def.item_meta.name in
 
     (* Type *)
     let ty = ty_to_string env def.ty in

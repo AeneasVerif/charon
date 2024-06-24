@@ -507,6 +507,15 @@ type path_elem = PeIdent of string * Disambiguator.id | PeImpl of impl_elem
 (** A name *)
 type name = path_elem list [@@deriving show, ord]
 
+(** Information about a generic item. *)
+type item_meta = {
+  span : span;
+  name : name;
+  attr_info : attr_info;
+  is_local : bool;
+}
+[@@deriving show, ord]
+
 (** A group of regions.
 
     Results from a lifetime analysis: we group the regions with the same
@@ -567,8 +576,6 @@ type type_decl_kind =
 type type_decl = {
   def_id : TypeDeclId.id;
   item_meta : item_meta;
-  is_local : bool;
-  name : name;
   generics : generic_params;
   kind : type_decl_kind;
 }

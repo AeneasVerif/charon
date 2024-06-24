@@ -1767,13 +1767,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let def_span = self.tcx.def_span(rust_id);
 
         // Compute the meta information
-        let item_meta = self.translate_item_meta_from_rid(rust_id);
+        let item_meta = self.translate_item_meta_from_rid(rust_id)?;
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
-
-        // Translate the function name
-        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
@@ -1810,8 +1807,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             def_id,
             rust_id,
             item_meta,
-            is_local: rust_id.is_local(),
-            name,
             signature,
             kind,
             body: body_id,
@@ -1828,7 +1823,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let span = self.tcx.def_span(rust_id);
 
         // Compute the meta information
-        let item_meta = self.translate_item_meta_from_rid(rust_id);
+        let item_meta = self.translate_item_meta_from_rid(rust_id)?;
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -1844,9 +1839,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnFn)?;
 
         let hax_state = &bt_ctx.hax_state;
-
-        // Translate the global name
-        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         trace!("Translating global type");
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).instantiate_identity();
@@ -1875,8 +1867,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             def_id,
             rust_id,
             item_meta,
-            is_local: rust_id.is_local(),
-            name,
             generics,
             ty,
             kind,
