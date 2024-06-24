@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
+Unknown decl: 9
+
 fn test_crate::panic1()
 {
     let @0: (); // return
 
-    panic(core::panicking::panic)
+    panic(core::panicking::panic_explicit)
 }
 
 opaque type core::fmt::Arguments<'a>

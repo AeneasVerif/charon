@@ -99,8 +99,10 @@ pub fn convert_filename(name: &hax::FileName) -> FileName {
                         && rustc.to_str() == Some("rustc")
                         && hash.len() == 40
                     {
-                        let path_without_hash =
-                            [Component::RootDir, Component::Normal(rustc)].into_iter().chain(components_iter).collect();
+                        let path_without_hash = [Component::RootDir, Component::Normal(rustc)]
+                            .into_iter()
+                            .chain(components_iter)
+                            .collect();
                         FileName::Virtual(path_without_hash)
                     } else {
                         FileName::Virtual(virtual_name.clone())
@@ -112,7 +114,6 @@ pub fn convert_filename(name: &hax::FileName) -> FileName {
         | hax::FileName::Anon(_)
         | hax::FileName::MacroExpansion(_)
         | hax::FileName::ProcMacroSourceCode(_)
-        | hax::FileName::CfgSpec(_)
         | hax::FileName::CliCrateAttr(_)
         | hax::FileName::Custom(_)
         | hax::FileName::DocTest(..)

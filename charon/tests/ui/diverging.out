@@ -1,11 +1,13 @@
 # Final LLBC before serialization:
 
+Unknown decl: 3
+
 fn test_crate::my_panic(@1: u32) -> !
 {
     let @0: !; // return
     let _x@1: u32; // arg #1
 
-    panic(core::panicking::panic)
+    panic(core::panicking::panic_explicit)
 }
 
 fn test_crate::do_something_else()

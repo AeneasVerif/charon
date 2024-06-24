@@ -106,7 +106,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let subst = rust_impl_trait_ref.args;
         let bounds = tcx.item_bounds(decl_item.def_id);
         let param_env = tcx.param_env(trait_impl_def_id);
-        let bounds = tcx.subst_and_normalize_erasing_regions(subst, param_env, bounds);
+        let bounds = tcx.instantiate_and_normalize_erasing_regions(subst, param_env, bounds);
         let erase_regions = false;
 
         // Solve the predicate bounds
@@ -506,7 +506,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .associated_items(implemented_trait_rust_id)
             .in_definition_order()
         {
-            if let AssocKind::Fn = &item.kind && !item.defaultness(tcx).has_value() {
+            if let AssocKind::Fn = &item.kind
+                && !item.defaultness(tcx).has_value()
+            {
                 decl_required_methods.insert(item.name.to_string());
             }
         }

@@ -382,6 +382,8 @@ fn test_crate::is_cons<'_0, T>(@1: &'_0 (test_crate::List<T>)) -> bool
     return
 }
 
+Unknown decl: 30
+
 fn test_crate::split_list<T>(@1: test_crate::List<T>) -> (T, test_crate::List<T>)
 {
     let @0: (T, test_crate::List<T>); // return
@@ -397,7 +399,7 @@ fn test_crate::split_list<T>(@1: test_crate::List<T>) -> (T, test_crate::List<T>
             nop
         },
         _ => {
-            panic(core::panicking::panic)
+            panic(core::panicking::panic_explicit)
         }
     }
     hd@2 := move ((l@1 as variant @0).0)

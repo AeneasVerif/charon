@@ -685,7 +685,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | Ctor { .. }
             | ExternCrate
             | ForeignMod
-            | Generator
+            | Coroutine
             | GlobalAsm
             | InlineConst
             | LifetimeParam

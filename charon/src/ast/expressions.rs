@@ -1,6 +1,5 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
-pub use crate::expressions_utils::*;
 use crate::gast::{FunDeclId, TraitItemName};
 use crate::types::*;
 pub use crate::values::VarId;

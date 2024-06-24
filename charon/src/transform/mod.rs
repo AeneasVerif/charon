@@ -1,6 +1,7 @@
 pub mod ctx;
 pub mod graphs;
 pub mod index_to_function_calls;
+pub mod inline_local_panic_functions;
 pub mod insert_assign_return_unit;
 pub mod ops_to_function_calls;
 pub mod reconstruct_asserts;
@@ -43,6 +44,9 @@ pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
     &remove_arithmetic_overflow_checks::Transform,
     // # Micro-pass: reconstruct the asserts
     &reconstruct_asserts::Transform,
+    // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
+    // those up.
+    &inline_local_panic_functions::Transform,
     // # Micro-pass: replace some unops/binops and the array aggregates with
     // function calls (introduces: ArrayToSlice, etc.)
     &ops_to_function_calls::Transform,

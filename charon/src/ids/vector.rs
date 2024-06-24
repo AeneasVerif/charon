@@ -70,6 +70,11 @@ where
         self.vector[id] = Some(x);
     }
 
+    /// Remove the value from this slot.
+    pub fn remove(&mut self, id: I) {
+        self.vector[id] = None
+    }
+
     pub fn push(&mut self, x: T) -> I {
         self.vector.push(Some(x))
     }

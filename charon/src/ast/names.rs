@@ -1,5 +1,4 @@
 //! Defines some utilities for the variables
-pub use crate::names_utils::*;
 use crate::types::*;
 use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA};

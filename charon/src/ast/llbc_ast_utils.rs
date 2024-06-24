@@ -161,7 +161,9 @@ impl Statement {
 
                 // Transform the current statement
                 let prefix_seq = f(st);
-                if let Some(prefix_seq) = prefix_seq && !prefix_seq.is_empty() {
+                if let Some(prefix_seq) = prefix_seq
+                    && !prefix_seq.is_empty()
+                {
                     take_mut::take(st, |st| chain_statements(prefix_seq, st))
                 }
             }

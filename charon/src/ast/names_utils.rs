@@ -22,6 +22,17 @@ impl PathElem {
 }
 
 impl Name {
+    /// Convert a path like `["std", "alloc", "Box"]` to a name. Needed on occasion when crafting
+    /// names that were not present in the original code.
+    pub(crate) fn from_path(path: &[&str]) -> Name {
+        Name {
+            name: path
+                .iter()
+                .map(|elem| PathElem::Ident(elem.to_string(), Disambiguator::ZERO))
+                .collect(),
+        }
+    }
+
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.name.len()

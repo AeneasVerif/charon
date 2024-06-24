@@ -211,6 +211,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: rustc_span::Span,
         v: &hax::Constant,
     ) -> Result<ConstantExpr, Error> {
-        self.translate_constant_expr_to_constant_expr(span, &v.literal.constant_kind)
+        self.translate_constant_expr_to_constant_expr(span, &v.const_.constant_kind)
     }
 }

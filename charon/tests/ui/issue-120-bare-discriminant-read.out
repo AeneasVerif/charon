@@ -12,6 +12,7 @@ fn test_crate::call_is_some<T>(@1: core::option::Option<T>) -> bool
     let self@2: &'_ (core::option::Option<T>); // local
     let @3: isize; // anonymous local
 
+    self@2 := &opt@1
     match opt@1 {
         0 => {
             @3 := const (0 : isize)
@@ -21,6 +22,7 @@ fn test_crate::call_is_some<T>(@1: core::option::Option<T>) -> bool
         }
     }
     @0 := copy (@3) == const (1 : isize)
+    drop @3
     drop self@2
     drop opt@1
     return
