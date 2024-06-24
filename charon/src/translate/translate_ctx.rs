@@ -4,7 +4,7 @@ use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::gast::*;
 use crate::get_mir::MirLevel;
 use crate::ids::{Generator, MapGenerator, Vector};
-use crate::meta::{self, AttrInfo, Attribute, ItemMeta, RawSpan};
+use crate::meta::{self, AttrInfo, Attribute, ItemMeta, ItemOpacity, RawSpan};
 use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Span, VirtualFileId};
 use crate::names::Name;
 use crate::reorder_decls::DeclarationsGroups;
@@ -507,15 +507,26 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let name = self.def_id_to_name(def_id)?;
         let attr_info = self.translate_attr_info_from_rid(def_id, span);
         let is_local = def_id.is_local();
-        let opaque = self.is_opaque_name(&name)
-            || self.id_is_extern_item(def_id)
-            || attr_info.attributes.iter().any(|attr| attr.is_opaque());
+
+        let opacity = {
+            let is_opaque = self.is_opaque_name(&name)
+                || self.id_is_extern_item(def_id)
+                || attr_info.attributes.iter().any(|attr| attr.is_opaque());
+            if is_opaque {
+                ItemOpacity::Opaque
+            } else if !is_local && !self.options.extract_opaque_bodies {
+                ItemOpacity::Foreign
+            } else {
+                ItemOpacity::Transparent
+            }
+        };
+
         Ok(ItemMeta {
             span,
             attr_info,
             name,
             is_local,
-            opaque,
+            opacity,
         })
     }
 

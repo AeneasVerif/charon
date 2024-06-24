@@ -1453,11 +1453,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<Result<Body, Opaque>, Error> {
         let tcx = self.t_ctx.tcx;
 
-        if item_meta.opaque {
-            return Ok(Err(Opaque));
-        }
-        if !rust_id.is_local() && !self.t_ctx.options.extract_opaque_bodies {
-            // We only extract non-local bodies if the `extract_opaque_bodies` option is set.
+        if item_meta.opacity.with_private_contents().is_opaque() {
+            // The bodies of foreign functions are opaque by default.
             return Ok(Err(Opaque));
         }
 

@@ -163,6 +163,39 @@ pub struct AttrInfo {
     pub public: bool,
 }
 
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    EnumIsA,
+)]
+pub enum ItemOpacity {
+    /// Translate the item name and signature, but not its contents. For function and globals, this
+    /// means we don't translate the body (the code); for ADTs, this means we don't translate the
+    /// fields/variants. For traits and trait impls, this doesn't change anything. For modules,
+    /// this means we don't explore its contents (we still translate any of its items mentioned
+    /// from somewhere else).
+    ///
+    /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
+    /// declared opaque via a command-line argument.
+    Opaque,
+    /// Translate the item depending on the normal rust visibility of its contents: for types, we
+    /// translate fully if it is a struct with public fields or an enum; for functions and globals
+    /// this is equivalent to `Opaque`; for trait decls and impls this is equivalent to
+    /// `Transparent`.
+    Foreign,
+    /// Translate the item fully.
+    Transparent,
+}
+
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ItemMeta {
@@ -179,9 +212,7 @@ pub struct ItemMeta {
     ///
     /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
     /// declared opaque via a command-line argument.
-    #[serde(skip_serializing)]
-    #[serde(default)]
-    pub opaque: bool,
+    pub opacity: ItemOpacity,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Drive, DriveMut)]

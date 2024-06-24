@@ -391,7 +391,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 generic_clauses
             );
         }
-        if item_meta.opaque {
+        if item_meta.opacity.is_opaque() {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(
                 item_meta.span,
@@ -596,7 +596,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 }
             }
         }
-        if item_meta.opaque {
+        if item_meta.opacity.is_opaque() {
             let ctx = bt_ctx.into_fmt();
             bt_ctx.t_ctx.errors.session.span_warn(
                 item_meta.span,

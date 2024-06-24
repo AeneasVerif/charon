@@ -187,7 +187,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 // exist
                 trace!("{:?}", def_id);
                 let item_meta = self.translate_item_meta_from_rid(def_id)?;
-                if item_meta.opaque {
+                if item_meta.opacity.is_opaque() {
                     // Ignore
                     trace!("Ignoring module [{:?}] because marked as opaque", def_id);
                 } else {
@@ -275,7 +275,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     ) -> Result<(), Error> {
         // Translate the meta information
         let item_meta = self.translate_item_meta_from_rid(rust_id)?;
-
         match trans_id {
             AnyTransId::Type(id) => {
                 let ty = self.translate_type(id, rust_id, item_meta)?;
