@@ -35,3 +35,19 @@ const SIX_SIX_SIX: u32 = 600 + 60 + 6;
 
 #[aeneas::opaque]
 type Test2 = u32;
+
+fn call_fn_in_opaque_module() {
+    let _ = opaque::fn_in_opaque_module();
+}
+
+#[charon::opaque]
+mod opaque {
+    // This one will be translated because it is called.
+    pub fn fn_in_opaque_module() -> u32 {
+        42
+    }
+    // This one will be skipped because the module is opaque hence not traversed.
+    pub fn other_fn_in_opaque_module() -> u32 {
+        42
+    }
+}
