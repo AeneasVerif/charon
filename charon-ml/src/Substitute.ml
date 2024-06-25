@@ -52,6 +52,14 @@ let st_substitute_visitor (subst : subst) =
     method! visit_CgVar _ id = subst.cg_subst id
     method! visit_Clause (subst : subst) id = subst.tr_subst id
     method! visit_Self (subst : subst) = subst.tr_self
+
+    method! visit_type_var_id _ _ =
+      (* We should never get here because we reimplemented [visit_TypeVar] *)
+      raise (Failure "Unexpected")
+
+    method! visit_const_generic_var_id _ _ =
+      (* We should never get here because we reimplemented [visit_Var] *)
+      raise (Failure "Unexpected")
   end
 
 (** Substitute types variables and regions in a type.
@@ -78,10 +86,38 @@ let generic_args_substitute (subst : subst) (g : generic_args) : generic_args =
   let visitor = st_substitute_visitor subst in
   visitor#visit_generic_args subst g
 
-let generic_params_substitute (subst : subst) (p : generic_params) :
-    generic_params =
+(** Substitute the predicates (clauses, outlives predicates, etc) inside these
+    generic params. This leaves the list of parameters (regions, types and
+    const_generics) untouched.
+    **IMPORTANT**: this doesn't normalize the types. *)
+let predicates_substitute (subst : subst) (p : generic_params) : generic_params
+    =
   let visitor = st_substitute_visitor subst in
-  visitor#visit_generic_params subst p
+  let {
+    regions;
+    types;
+    const_generics;
+    trait_clauses;
+    regions_outlive;
+    types_outlive;
+    trait_type_constraints;
+  } =
+    p
+  in
+  (* We leave the three lists of parameters untouched *)
+  {
+    regions;
+    types;
+    const_generics;
+    trait_clauses = List.map (visitor#visit_trait_clause subst) trait_clauses;
+    regions_outlive =
+      List.map (visitor#visit_region_outlives subst) regions_outlive;
+    types_outlive = List.map (visitor#visit_type_outlives subst) types_outlive;
+    trait_type_constraints =
+      List.map
+        (visitor#visit_trait_type_constraint subst)
+        trait_type_constraints;
+  }
 
 let erase_regions_subst : subst =
   {
