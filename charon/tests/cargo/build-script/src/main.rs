@@ -1,3 +1,4 @@
+#![allow(unexpected_cfgs)]
 #[cfg(abc)]
 const FOO: u8 = 42;
 

@@ -278,10 +278,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
                 Ok(Ty::Ref(region, Box::new(ty), kind))
             }
-            hax::Ty::RawPtr(ty_and_mut) => {
-                trace!("RawPtr: {:?}", ty_and_mut);
-                let ty = self.translate_ty(span, erase_regions, &ty_and_mut.ty)?;
-                let kind = if ty_and_mut.mutbl {
+            hax::Ty::RawPtr(ty, mutbl) => {
+                trace!("RawPtr: {:?}", (ty, mutbl));
+                let ty = self.translate_ty(span, erase_regions, ty)?;
+                let kind = if *mutbl {
                     RefKind::Mut
                 } else {
                     RefKind::Shared

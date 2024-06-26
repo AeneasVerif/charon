@@ -1,4 +1,4 @@
-error: Unsupported clause: WellFormed(Type(Ref(Region { kind: ReEarlyParam(EarlyParamRegion { def_id: DefId { krate: "test_crate", path: [DisambiguatedDefPathItem { data: ValueNs("get"), disambiguator: 0 }, DisambiguatedDefPathItem { data: LifetimeNs("'a"), disambiguator: 0 }], index: (0, 4) }, index: 0, name: "'a" }) }, Tuple([]), false)))
+error: Unsupported clause: WellFormed(Type(Ref(Region { kind: ReEarlyParam(EarlyParamRegion { index: 0, name: "'a" }) }, Tuple([]), false)))
  --> tests/ui/unsupported/well-formedness-bound.rs:4:5
   |
 4 |     &'a ():,

@@ -58,7 +58,7 @@ impl NonLocalTraitClause {
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, EnumToGetters)]
 pub(crate) enum Predicate {
-    Trait(TraitClauseId),
+    Trait(#[expect(dead_code)] TraitClauseId),
     TypeOutlives(TypeOutlives),
     RegionOutlives(RegionOutlives),
     TraitType(TraitTypeConstraint),

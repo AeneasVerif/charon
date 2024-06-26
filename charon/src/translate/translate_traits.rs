@@ -209,7 +209,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let trait_pred = rustc_middle::ty::TraitPredicate {
             trait_ref,
             // Not really necessary
-            polarity: rustc_middle::ty::ImplPolarity::Positive,
+            polarity: rustc_middle::ty::PredicatePolarity::Positive,
         };
         let trait_pred = trait_pred.sinto(&self.hax_state);
 

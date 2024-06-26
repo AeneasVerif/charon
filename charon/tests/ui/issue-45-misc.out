@@ -154,18 +154,18 @@ where
     fn into_iter : core::iter::traits::collect::IntoIterator::into_iter
 }
 
-fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(@1: I) -> I
+fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I#1}::into_iter<I>(@1: I) -> I
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
 
-impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<I> : core::iter::traits::collect::IntoIterator<I>
+impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I#1}<I> : core::iter::traits::collect::IntoIterator<I>
 where
     [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
 {
     type Item = @TraitClause0::Item with []
     type IntoIter = I with [@TraitClause0]
-    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter
+    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I#1}::into_iter
 }
 
 trait core::clone::Clone<Self>
@@ -174,7 +174,7 @@ trait core::clone::Clone<Self>
     fn clone_from
 }
 
-trait core::cmp::PartialEq<Self, Rhs, const host : bool>
+trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq : core::cmp::PartialEq::eq
     fn ne
@@ -188,7 +188,7 @@ enum core::cmp::Ordering =
 
 trait core::cmp::PartialOrd<Self, Rhs>
 {
-    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs, true>
+    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
     fn partial_cmp : core::cmp::PartialOrd::partial_cmp
     fn lt
     fn le
@@ -236,7 +236,7 @@ where
 
 trait core::cmp::Eq<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self, true>
+    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
     fn assert_receiver_is_total_eq
 }
 
@@ -274,9 +274,63 @@ enum core::result::Result<T, E> =
 |  Err(E)
 
 
-opaque type core::num::nonzero::NonZeroUsize
+trait core::marker::Copy<Self>
+{
+    parent_clause_0 : [@TraitClause0]: core::clone::Clone<Self>
+}
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZeroUsize>
+trait core::num::nonzero::private::Sealed<Self>
+
+trait core::num::nonzero::ZeroablePrimitive<Self>
+{
+    parent_clause_0 : [@TraitClause0]: core::marker::Copy<Self>
+    parent_clause_1 : [@TraitClause1]: core::num::nonzero::private::Sealed<Self>
+    type NonZeroInner
+        where
+            [@TraitClause0]: core::marker::Copy<Self::NonZeroInner>,
+            [@TraitClause1]: core::clone::Clone<Self::NonZeroInner>,
+}
+
+opaque type core::num::nonzero::NonZero<T>
+  where
+      [@TraitClause0]: core::num::nonzero::ZeroablePrimitive<T>,
+
+fn core::clone::impls::{impl core::clone::Clone for usize#5}::clone<'_0>(@1: &'_0 (usize)) -> usize
+
+impl core::clone::impls::{impl core::clone::Clone for usize#5} : core::clone::Clone<usize>
+{
+    fn clone = core::clone::impls::{impl core::clone::Clone for usize#5}::clone
+}
+
+impl core::marker::{impl core::marker::Copy for usize#38} : core::marker::Copy<usize>
+{
+    parent_clause0 = core::clone::impls::{impl core::clone::Clone for usize#5}
+}
+
+impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize#25} : core::num::nonzero::private::Sealed<usize>
+
+opaque type core::num::nonzero::private::NonZeroUsizeInner
+
+fn core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner#26}::clone<'_0>(@1: &'_0 (core::num::nonzero::private::NonZeroUsizeInner)) -> core::num::nonzero::private::NonZeroUsizeInner
+
+impl core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner#26} : core::clone::Clone<core::num::nonzero::private::NonZeroUsizeInner>
+{
+    fn clone = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner#26}::clone
+}
+
+impl core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner#27} : core::marker::Copy<core::num::nonzero::private::NonZeroUsizeInner>
+{
+    parent_clause0 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner#26}
+}
+
+impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize#26} : core::num::nonzero::ZeroablePrimitive<usize>
+{
+    parent_clause0 = core::marker::{impl core::marker::Copy for usize#38}
+    parent_clause1 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize#25}
+    type NonZeroInner = core::num::nonzero::private::NonZeroUsizeInner with [core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner#27}, core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner#26}]
+}
+
+fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize#26}>>
 where
     // Inherited clauses:
     [@TraitClause0]: core::iter::range::Step<A>,
@@ -318,34 +372,34 @@ impl core::clone::impls::{impl core::clone::Clone for u8#6} : core::clone::Clone
     fn clone = core::clone::impls::{impl core::clone::Clone for u8#6}::clone
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}::eq<'_0, '_1, const host : bool>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}::ne<'_0, '_1, const host : bool>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::ne<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-impl<const host : bool> core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}<const host : bool> : core::cmp::PartialEq<u8, u8, const host : bool>
+impl core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22} : core::cmp::PartialEq<u8, u8>
 {
-    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}::eq
-    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}::ne
+    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::eq
+    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}::ne
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::partial_cmp<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> core::option::Option<core::cmp::Ordering>
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}::partial_cmp<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> core::option::Option<core::cmp::Ordering>
 
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::lt<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}::lt<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::le<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}::le<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::ge<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}::ge<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::gt<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}::gt<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56} : core::cmp::PartialOrd<u8, u8>
+impl core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60} : core::cmp::PartialOrd<u8, u8>
 {
-    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u8, const host : bool> for u8#22}<true>
-    fn partial_cmp = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::partial_cmp
-    fn lt = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::lt
-    fn le = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::le
-    fn ge = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::ge
-    fn gt = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}::gt
+    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8#22}
+    fn partial_cmp = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}::partial_cmp
+    fn lt = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}::lt
+    fn le = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}::le
+    fn ge = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}::ge
+    fn gt = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}::gt
 }
 
 fn core::iter::range::{impl core::iter::range::Step for u8#35}::steps_between<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> core::option::Option<usize>
@@ -354,25 +408,25 @@ fn core::iter::range::{impl core::iter::range::Step for u8#35}::forward_checked(
 
 fn core::iter::range::{impl core::iter::range::Step for u8#35}::backward_checked(@1: u8, @2: usize) -> core::option::Option<u8>
 
-unsafe fn core::iter::range::{impl core::iter::range::Step for u8#35}::forward_unchecked(@1: u8, @2: usize) -> u8
-
-unsafe fn core::iter::range::{impl core::iter::range::Step for u8#35}::backward_unchecked(@1: u8, @2: usize) -> u8
-
 fn core::iter::range::{impl core::iter::range::Step for u8#35}::forward(@1: u8, @2: usize) -> u8
 
 fn core::iter::range::{impl core::iter::range::Step for u8#35}::backward(@1: u8, @2: usize) -> u8
 
+unsafe fn core::iter::range::{impl core::iter::range::Step for u8#35}::forward_unchecked(@1: u8, @2: usize) -> u8
+
+unsafe fn core::iter::range::{impl core::iter::range::Step for u8#35}::backward_unchecked(@1: u8, @2: usize) -> u8
+
 impl core::iter::range::{impl core::iter::range::Step for u8#35} : core::iter::range::Step<u8>
 {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u8#6}
-    parent_clause1 = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#56}
+    parent_clause1 = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8#60}
     fn steps_between = core::iter::range::{impl core::iter::range::Step for u8#35}::steps_between
     fn forward_checked = core::iter::range::{impl core::iter::range::Step for u8#35}::forward_checked
     fn backward_checked = core::iter::range::{impl core::iter::range::Step for u8#35}::backward_checked
-    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for u8#35}::forward_unchecked
-    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for u8#35}::backward_unchecked
     fn forward = core::iter::range::{impl core::iter::range::Step for u8#35}::forward
     fn backward = core::iter::range::{impl core::iter::range::Step for u8#35}::backward
+    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for u8#35}::forward_unchecked
+    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for u8#35}::backward_unchecked
 }
 
 fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
@@ -401,7 +455,7 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
     let @17: &'_ mut (u8); // anonymous local
 
     @3 := core::ops::range::Range { start: const (0 : u8), end: const (3 : u8) }
-    @2 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<core::ops::range::Range<u8>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<u8>[core::iter::range::{impl core::iter::range::Step for u8#35}]]::into_iter(move (@3))
+    @2 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I#1}<core::ops::range::Range<u8>>[core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}<u8>[core::iter::range::{impl core::iter::range::Step for u8#35}]]::into_iter(move (@3))
     drop @3
     @fake_read(@2)
     iter@4 := move (@2)
@@ -457,7 +511,7 @@ opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
-fn core::slice::{Slice<T>}::len<'_0, T, const host : bool>(@1: &'_0 (Slice<T>)) -> usize
+fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 
 fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
 {
@@ -494,11 +548,11 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     @4 := const (false)
     if move (@4) {
         @9 := &*(lhs@1)
-        @8 := core::slice::{Slice<T>}::len<u8, true>(move (@9))
+        @8 := core::slice::{Slice<T>}::len<u8>(move (@9))
         drop @9
         @7 := &@8
         @12 := &*(rhs@2)
-        @11 := core::slice::{Slice<T>}::len<u8, true>(move (@12))
+        @11 := core::slice::{Slice<T>}::len<u8>(move (@12))
         drop @12
         @10 := &@11
         @6 := (move (@7), move (@10))
@@ -565,7 +619,7 @@ fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>
 
-fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs, const host : bool>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
 

@@ -15,12 +15,13 @@
 #![feature(box_patterns)]
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
-#![feature(trait_alias)]
-#![feature(let_chains)]
 #![feature(if_let_guard)]
-#![feature(iter_array_chunks)]
 #![feature(impl_trait_in_assoc_type)]
+#![feature(iter_array_chunks)]
 #![feature(iterator_try_collect)]
+#![feature(let_chains)]
+#![feature(lint_reasons)]
+#![feature(trait_alias)]
 
 extern crate rustc_ast;
 extern crate rustc_ast_pretty;

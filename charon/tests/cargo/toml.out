@@ -5,21 +5,19 @@ enum core::option::Option<T> =
 |  Some(T)
 
 
-fn core::option::{core::option::Option<T>}::is_some<'_0, T, const host : bool>(@1: &'_0 (core::option::Option<T>)) -> bool
+fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (core::option::Option<T>); // arg #1
-    let @2: isize; // anonymous local
 
     match *(self@1) {
-        0 => {
-            @2 := const (0 : isize)
-        },
         1 => {
-            @2 := const (1 : isize)
+            @0 := const (true)
+        },
+        0 => {
+            @0 := const (false)
         }
     }
-    @0 := copy (@2) == const (1 : isize)
     return
 }
 
@@ -33,7 +31,7 @@ fn test_cargo_toml::main()
 
     @3 := core::option::Option::Some { 0: const (false) }
     @2 := &@3
-    @1 := core::option::{core::option::Option<T>}::is_some<bool, true>(move (@2))
+    @1 := core::option::{core::option::Option<T>}::is_some<bool>(move (@2))
     drop @2
     @fake_read(@1)
     drop @3

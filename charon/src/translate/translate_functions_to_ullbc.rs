@@ -55,7 +55,9 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
             hax::MutBorrowKind::TwoPhaseBorrow => BorrowKind::TwoPhaseMut,
             hax::MutBorrowKind::ClosureCapture => unimplemented!(),
         },
-        hax::BorrowKind::Fake => BorrowKind::Shallow,
+        hax::BorrowKind::Fake(hax::FakeBorrowKind::Shallow) => BorrowKind::Shallow,
+        // This one is used only in deref patterns.
+        hax::BorrowKind::Fake(hax::FakeBorrowKind::Deep) => unimplemented!(),
     }
 }
 
@@ -63,6 +65,7 @@ fn translate_unaryop_kind(binop: hax::UnOp) -> UnOp {
     match binop {
         hax::UnOp::Not => UnOp::Not,
         hax::UnOp::Neg => UnOp::Neg,
+        hax::UnOp::PtrMetadata => unimplemented!("Unop::PtrMetadata"),
     }
 }
 
@@ -72,27 +75,33 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         span: rustc_span::Span,
         binop: hax::BinOp,
     ) -> Result<BinOp, Error> {
-        match binop {
-            hax::BinOp::BitXor => Ok(BinOp::BitXor),
-            hax::BinOp::BitAnd => Ok(BinOp::BitAnd),
-            hax::BinOp::BitOr => Ok(BinOp::BitOr),
-            hax::BinOp::Eq => Ok(BinOp::Eq),
-            hax::BinOp::Lt => Ok(BinOp::Lt),
-            hax::BinOp::Le => Ok(BinOp::Le),
-            hax::BinOp::Ne => Ok(BinOp::Ne),
-            hax::BinOp::Ge => Ok(BinOp::Ge),
-            hax::BinOp::Gt => Ok(BinOp::Gt),
-            hax::BinOp::Div => Ok(BinOp::Div),
-            hax::BinOp::Rem => Ok(BinOp::Rem),
-            hax::BinOp::Add => Ok(BinOp::Add),
-            hax::BinOp::Sub => Ok(BinOp::Sub),
-            hax::BinOp::Mul => Ok(BinOp::Mul),
-            hax::BinOp::Shl => Ok(BinOp::Shl),
-            hax::BinOp::Shr => Ok(BinOp::Shr),
+        Ok(match binop {
+            hax::BinOp::BitXor => BinOp::BitXor,
+            hax::BinOp::BitAnd => BinOp::BitAnd,
+            hax::BinOp::BitOr => BinOp::BitOr,
+            hax::BinOp::Eq => BinOp::Eq,
+            hax::BinOp::Lt => BinOp::Lt,
+            hax::BinOp::Le => BinOp::Le,
+            hax::BinOp::Ne => BinOp::Ne,
+            hax::BinOp::Ge => BinOp::Ge,
+            hax::BinOp::Gt => BinOp::Gt,
+            hax::BinOp::Div => BinOp::Div,
+            hax::BinOp::Rem => BinOp::Rem,
+            hax::BinOp::Add => BinOp::Add,
+            hax::BinOp::Sub => BinOp::Sub,
+            hax::BinOp::Mul => BinOp::Mul,
+            hax::BinOp::AddWithOverflow => BinOp::CheckedAdd,
+            hax::BinOp::SubWithOverflow => BinOp::CheckedSub,
+            hax::BinOp::MulWithOverflow => BinOp::CheckedMul,
+            hax::BinOp::Shl => BinOp::Shl,
+            hax::BinOp::Shr => BinOp::Shr,
+            hax::BinOp::Cmp => {
+                error_or_panic!(self, span, "Unsupported binary operation: Cmp")
+            }
             hax::BinOp::Offset => {
                 error_or_panic!(self, span, "Unsupported binary operation: offset")
             }
-        }
+        })
     }
 
     pub(crate) fn get_item_kind(
@@ -644,12 +653,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                     (
                         hax::CastKind::PointerCoercion(hax::PointerCoercion::ClosureFnPointer(
-                            unsafety,
+                            safety,
                         )),
                         src_ty @ Ty::Arrow(..),
                         tgt_ty @ Ty::Arrow(..),
                     ) => {
-                        assert!(*unsafety == hax::Unsafety::Normal);
+                        assert!(*safety == hax::Safety::Safe);
                         let src_ty = src_ty.clone();
                         let tgt_ty = tgt_ty.clone();
                         Ok(Rvalue::UnaryOp(
@@ -686,21 +695,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 self.translate_operand(span, left)?,
                 self.translate_operand(span, right)?,
             )),
-            hax::Rvalue::CheckedBinaryOp(binop, (left, right)) => {
-                let binop = match binop {
-                    hax::BinOp::Add => BinOp::CheckedAdd,
-                    hax::BinOp::Sub => BinOp::CheckedSub,
-                    hax::BinOp::Mul => BinOp::CheckedMul,
-                    _ => {
-                        error_or_panic!(self, span, "Only Add, Sub and Mul are supported as checked binary operations, found {binop:?}");
-                    }
-                };
-                Ok(Rvalue::BinaryOp(
-                    binop,
-                    self.translate_operand(span, left)?,
-                    self.translate_operand(span, right)?,
-                ))
-            }
             hax::Rvalue::NullaryOp(nullop, _ty) => {
                 trace!("NullOp: {:?}", nullop);
                 // Nullary operations are very low-level and shouldn't be necessary
@@ -824,7 +818,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::Coroutine(..) => {
+                    hax::AggregateKind::RawPtr(..) => {
+                        error_or_panic!(self, span, "Raw pointers are not supported");
+                    }
+                    hax::AggregateKind::Coroutine(..)
+                    | hax::AggregateKind::CoroutineClosure(..) => {
                         error_or_panic!(self, span, "Coroutines are not supported");
                     }
                 }
@@ -852,7 +850,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         def_id: &hax::DefId,
         substs: &Vec<hax::GenericArg>,
-        args: Option<&Vec<hax::Operand>>,
+        args: Option<&Vec<hax::Spanned<hax::Operand>>>,
         trait_refs: &Vec<hax::ImplExpr>,
         trait_info: &Option<hax::ImplExpr>,
     ) -> Result<SubstFunIdOrPanic, Error> {
@@ -892,7 +890,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // Translate the first argument - note that we use a special
                     // function to translate it: the operand should be of the form:
                     // `move b.0`, and if it is the case it will return `move b`
-                    let arg = &args[0];
+                    let arg = &args[0].node;
                     let t_arg = self.translate_move_box_first_projector_operand(span, arg)?;
                     Ok(vec![t_arg])
                 })
@@ -1297,7 +1295,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: rustc_span::Span,
         fun: &hax::FunOperand,
         generics: &Vec<hax::GenericArg>,
-        args: &Vec<hax::Operand>,
+        args: &Vec<hax::Spanned<hax::Operand>>,
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
         trait_refs: &Vec<hax::ImplExpr>,
@@ -1388,13 +1386,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         used_args: Option<Vec<bool>>,
-        args: &Vec<hax::Operand>,
+        args: &Vec<hax::Spanned<hax::Operand>>,
     ) -> Result<Vec<Operand>, Error> {
+        let unspanned_args = args.iter().map(|x| &x.node);
         let args: Vec<&hax::Operand> = match used_args {
-            None => args.iter().collect(),
+            None => unspanned_args.collect(),
             Some(used_args) => {
                 assert!(args.len() == used_args.len());
-                args.iter()
+                unspanned_args
                     .zip(used_args.into_iter())
                     .filter_map(|(param, used)| if used { Some(param) } else { None })
                     .collect()
@@ -1503,7 +1502,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let tcx = self.t_ctx.tcx;
         let erase_regions = false;
         let span = self.t_ctx.tcx.def_span(def_id);
-        let is_closure = tcx.is_closure(def_id);
+        let is_closure = tcx.is_closure_like(def_id);
         let dep_src = DepSource::make(def_id, span);
 
         // The parameters (and in particular the lifetimes) are split between
@@ -1558,10 +1557,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             trace!("closure.sig_as_fn_ptr_ty: {:?}", closure.sig_as_fn_ptr_ty());
             trace!("closure.kind_ty: {:?}", closure.kind_ty());
-            trace!(
-                "closure.print_as_impl_trait: {:?}",
-                closure.print_as_impl_trait()
-            );
 
             // Sanity check: the parent subst only contains types and generics
             error_assert!(
@@ -1610,9 +1605,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         //
         // Add the *late-bound* parameters (bound in the signature, can only be lifetimes)
         //
-        let is_unsafe = match signature.value.unsafety {
-            hax::Unsafety::Unsafe => true,
-            hax::Unsafety::Normal => false,
+        let is_unsafe = match signature.value.safety {
+            hax::Safety::Unsafe => true,
+            hax::Safety::Safe => false,
         };
         let bvar_names = signature
             .bound_vars

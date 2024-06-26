@@ -30,8 +30,6 @@
 //! deserialize them later and use them to guide the extraction in the
 //! callbacks.
 
-#![cfg_attr(feature = "deny-warnings", deny(warnings))]
-
 // Don't link with the `charon_lib` crate so that the `charon` binary doesn't have to dynamically
 // link to `librustc_driver.so` etc.
 #[path = "../../cli_options.rs"]

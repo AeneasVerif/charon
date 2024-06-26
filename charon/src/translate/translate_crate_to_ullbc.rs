@@ -101,8 +101,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 trace!("impl");
                 // Sanity checks
                 // TODO: make proper error messages
-                use rustc_hir::{Defaultness, ImplPolarity, Unsafety};
-                assert!(impl_block.unsafety == Unsafety::Normal);
+                use rustc_hir::{Defaultness, ImplPolarity, Safety};
+                assert!(impl_block.safety == Safety::Safe);
                 // About polarity:
                 // [https://doc.rust-lang.org/beta/unstable-book/language-features/negative-impls.html]
                 // Not sure about what I should do about it. Should I do anything, actually?
