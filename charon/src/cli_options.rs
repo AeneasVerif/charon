@@ -46,17 +46,17 @@ pub struct CliOpts {
     /// The input file (the entry point of the crate to extract).
     /// This is needed if you want to define a custom entry point (to only
     /// extract part of a crate for instance).
-    #[clap(long = "input", parse(from_os_str))]
+    #[clap(long = "input", value_parser)]
     #[serde(default)]
     pub input_file: Option<PathBuf>,
     /// The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc`,
     /// unless `dest_file` is set. `dest_dir` defaults to the current directory.
-    #[clap(long = "dest", parse(from_os_str))]
+    #[clap(long = "dest", value_parser)]
     #[serde(default)]
     pub dest_dir: Option<PathBuf>,
     /// The destination file. By default `<dest_dir>/<crate_name>.llbc`. If this is set we ignore
     /// `dest_dir`.
-    #[clap(long = "dest-file", parse(from_os_str))]
+    #[clap(long = "dest-file", value_parser)]
     #[serde(default)]
     pub dest_file: Option<PathBuf>,
     /// If activated, use Polonius' non-lexical lifetimes (NLL) analysis.

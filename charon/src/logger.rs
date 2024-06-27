@@ -11,7 +11,7 @@ pub fn initialize_logger() {
             return;
         }
     }
-    use env_logger::fmt::Color;
+    use env_logger::fmt::style;
     use env_logger::{Builder, Env};
     use std::io::Write;
 
@@ -28,26 +28,22 @@ pub fn initialize_logger() {
     // Modify the output format - we add the line number
     builder.format(|buf, record| {
         // Retreive the path (CRATE::MODULE) and the line number
-        let path = record.module_path().unwrap_or("");
-        let line = match record.line() {
-            Some(l) => l.to_string(),
-            None => "".to_string(),
-        };
+        let path = record.module_path().unwrap_or_default();
+        let line = record.line().unwrap_or_default();
 
         // Style for the brackets (change the color)
-        let mut bracket_style = buf.style();
-        bracket_style.set_color(Color::Rgb(120, 120, 120));
+        let brackets_style = style::RgbColor(120, 120, 120).on_default();
+        let level_style = buf.default_level_style(record.level()); // Print the level with colors
 
-        writeln!(
+        write!(buf, "{brackets_style}[{brackets_style:#}")?;
+        write!(
             buf,
-            "{} {} {}:{}{} {}",
-            bracket_style.value("["),
-            buf.default_styled_level(record.level()), // Print the level with colors
-            path,
-            line,
-            bracket_style.value("]"),
-            record.args()
-        )
+            "{level_style}{}{level_style:#} {path}:{line}",
+            record.level(),
+        )?;
+        write!(buf, "{brackets_style}]{brackets_style:#} ")?;
+        writeln!(buf, "{}", record.args())?;
+        Ok(())
     });
 
     builder.init();
