@@ -313,7 +313,7 @@ impl GenericParams {
         let generics = self;
         let mut params = Vec::new();
         for x in &generics.regions {
-            params.push(x.to_string());
+            params.push(ctx.format_object(x));
         }
         for x in &generics.types {
             params.push(x.to_string());
@@ -403,7 +403,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericParams {
                 trait_type_constraints: _,
             } = self;
             for x in regions {
-                params.push(x.to_string());
+                params.push(ctx.format_object(x));
             }
             for x in types {
                 params.push(x.to_string());
@@ -1300,7 +1300,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                         "<{}>",
                         regions
                             .iter()
-                            .map(|r| r.to_string())
+                            .map(|r| ctx.format_object(r))
                             .collect::<Vec<String>>()
                             .join(", ")
                     )
@@ -1570,15 +1570,6 @@ impl std::string::ToString for ConstGenericVar {
 impl std::string::ToString for Field {
     fn to_string(&self) -> String {
         self.fmt_with_ctx(&FmtCtx::new())
-    }
-}
-
-impl std::string::ToString for RegionVar {
-    fn to_string(&self) -> String {
-        match &self.name {
-            Some(name) => name.to_string(),
-            None => format!("'_{}", self.index),
-        }
     }
 }
 

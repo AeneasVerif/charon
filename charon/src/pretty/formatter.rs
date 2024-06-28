@@ -182,6 +182,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
     + Formatter<VarId>
     + Formatter<(TypeDeclId, VariantId)>
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
+    + for<'a> Formatter<&'a RegionVar>
     + for<'a> Formatter<&'a Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>>
     + for<'a> Formatter<&'a llbc_ast::Statement>
     + for<'a> SetGenerics<'a>
@@ -311,11 +312,34 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
 impl<'a> Formatter<(DeBruijnId, RegionId)> for FmtCtx<'a> {
     fn format_object(&self, (grid, id): (DeBruijnId, RegionId)) -> String {
         match self.region_vars.get(grid.index) {
-            None => bound_region_var_to_pretty_string(grid, id),
+            None => Region::BVar(grid, id).to_string(),
             Some(gr) => match gr.get(id) {
-                None => bound_region_var_to_pretty_string(grid, id),
-                Some(v) => v.to_string(),
+                None => {
+                    let region = Region::BVar(grid, id);
+                    log::warn!(
+                        "Found incorrect region `{region}` while pretty-printing. Look for \
+                        \"wrong_region\" in the pretty output"
+                    );
+                    format!("wrong_region({region})")
+                }
+                Some(v) => self.format_object(v),
             },
+        }
+    }
+}
+
+impl<'a> Formatter<&RegionVar> for FmtCtx<'a> {
+    fn format_object(&self, var: &RegionVar) -> String {
+        match &var.name {
+            Some(name) => name.to_string(),
+            None => {
+                let depth = self.region_vars.len() - 1;
+                if depth == 0 {
+                    format!("'_{}", var.index)
+                } else {
+                    format!("'_{depth}_{}", var.index)
+                }
+            }
         }
     }
 }

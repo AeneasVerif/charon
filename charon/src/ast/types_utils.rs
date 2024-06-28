@@ -209,10 +209,6 @@ impl IntegerTy {
     }
 }
 
-pub fn bound_region_var_to_pretty_string(grid: DeBruijnId, rid: RegionId) -> String {
-    format!("'_{}_{}", grid.index, rid.to_string())
-}
-
 impl Ty {
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
