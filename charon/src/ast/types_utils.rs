@@ -2,7 +2,7 @@
 use crate::ids::Vector;
 use crate::types::*;
 use hax_frontend_exporter as hax;
-use im::HashMap;
+use std::collections::HashMap;
 use std::iter::Iterator;
 
 impl DeBruijnId {

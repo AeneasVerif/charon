@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::common::TAB_INCR;
 use crate::gast;
 use crate::ids::Vector;
@@ -90,7 +92,7 @@ impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
         let locals = locals.as_deref();
         FmtCtx {
             translated,
-            region_vars: im::vector![generics.regions.clone()],
+            region_vars: [generics.regions.clone()].into(),
             type_vars: Some(&generics.types),
             const_generic_vars: Some(&generics.const_generics),
             locals,
@@ -196,10 +198,11 @@ pub trait AstFormatter = Formatter<TypeVarId>
 /// clone the generics, because we may dive into different contexts and may
 /// need to update those. We can think of a smarter way of doing this, but
 /// for now it is simple and efficient enough.
+#[derive(Default)]
 pub struct FmtCtx<'a> {
     pub translated: Option<&'a TranslatedCrate>,
     /// The region variables are not an option, because we need to be able to push/pop
-    pub region_vars: im::Vector<Vector<RegionId, RegionVar>>,
+    pub region_vars: VecDeque<Vector<RegionId, RegionVar>>,
     pub type_vars: Option<&'a Vector<TypeVarId, TypeVar>>,
     pub const_generic_vars: Option<&'a Vector<ConstGenericVarId, ConstGenericVar>>,
     pub locals: Option<&'a Vector<VarId, ast::Var>>,
@@ -207,13 +210,7 @@ pub struct FmtCtx<'a> {
 
 impl<'a> FmtCtx<'a> {
     pub fn new() -> Self {
-        FmtCtx {
-            translated: None,
-            region_vars: im::Vector::new(),
-            type_vars: None,
-            const_generic_vars: None,
-            locals: None,
-        }
+        FmtCtx::default()
     }
 
     pub fn format_decl_id(&self, id: AnyTransId) -> String {
@@ -224,12 +221,6 @@ impl<'a> FmtCtx<'a> {
             AnyTransId::TraitDecl(id) => self.format_decl(id),
             AnyTransId::TraitImpl(id) => self.format_decl(id),
         }
-    }
-}
-
-impl<'a> Default for FmtCtx<'a> {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
