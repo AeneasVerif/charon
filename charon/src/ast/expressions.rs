@@ -156,6 +156,12 @@ pub enum CastKind {
     /// Remark: for now we don't support conversions with Char.
     Scalar(LiteralTy, LiteralTy),
     FnPtr(Ty, Ty),
+    /// [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html). This is
+    /// either `[T; N]` -> `[T]` or `T: Trait` -> `dyn Trait` coercions, behind a pointer
+    /// (reference, `Box`, or other type that implements `CoerceUnsized`).
+    ///
+    /// The special case of `&[T; N]` -> `&[T]` coercion is caught by `UnOp::ArrayToSlice`.
+    Unsize(Ty, Ty),
 }
 
 /// Binary operations.

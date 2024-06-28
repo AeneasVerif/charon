@@ -97,9 +97,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
 impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
-            CastKind::Scalar(src, tgt) => format!("cast<{src},{tgt}>"),
+            CastKind::Scalar(src, tgt) => format!("cast<{src}, {tgt}>"),
             CastKind::FnPtr(src, tgt) => {
-                format!("cast<{},{}>", src.fmt_with_ctx(ctx), tgt.fmt_with_ctx(ctx))
+                format!("cast<{}, {}>", src.fmt_with_ctx(ctx), tgt.fmt_with_ctx(ctx))
+            }
+            CastKind::Unsize(src, tgt) => {
+                format!(
+                    "unsize_cast<{}, {}>",
+                    src.fmt_with_ctx(ctx),
+                    tgt.fmt_with_ctx(ctx)
+                )
             }
         }
     }

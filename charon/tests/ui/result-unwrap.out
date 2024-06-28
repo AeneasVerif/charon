@@ -1,0 +1,169 @@
+# Final LLBC before serialization:
+
+enum core::result::Result<T, E> =
+|  Ok(T)
+|  Err(E)
+
+
+enum core::fmt::rt::Alignment =
+|  Left()
+|  Right()
+|  Center()
+|  Unknown()
+
+
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
+
+
+struct core::fmt::Formatter<'a>
+  where
+      'a : 'a,
+ =
+{
+  flags: u32,
+  fill: char,
+  align: core::fmt::rt::Alignment,
+  width: core::option::Option<usize>,
+  precision: core::option::Option<usize>,
+  buf: &'a mut (dyn (exists(TODO)))
+}
+
+struct core::fmt::Error = {}
+
+trait core::fmt::Debug<Self>
+{
+    fn fmt : core::fmt::Debug::fmt
+}
+
+fn core::result::unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 (dyn (exists(TODO)))) -> !
+
+fn core::result::{core::result::Result<T, E>}::unwrap<T, E>(@1: core::result::Result<T, E>) -> T
+where
+    [@TraitClause0]: core::fmt::Debug<E>,
+{
+    let t@0: T; // return
+    let self@1: core::result::Result<T, E>; // arg #1
+    let e@2: E; // local
+    let @3: !; // anonymous local
+    let @4: &'_ (dyn (exists(TODO))); // anonymous local
+    let @5: &'_ (E); // anonymous local
+
+    match self@1 {
+        0 => {
+            nop
+        },
+        1 => {
+            e@2 := move ((self@1 as variant @1).0)
+            @5 := &e@2
+            @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO)))>(move (@5))
+            drop @5
+            @3 := core::result::unwrap_failed(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
+        }
+    }
+    t@0 := move ((self@1 as variant @0).0)
+    return
+}
+
+trait core::fmt::LowerHex<Self>
+{
+    fn fmt : core::fmt::LowerHex::fmt
+}
+
+fn core::fmt::num::{impl core::fmt::LowerHex for u32#60}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+impl core::fmt::num::{impl core::fmt::LowerHex for u32#60} : core::fmt::LowerHex<u32>
+{
+    fn fmt = core::fmt::num::{impl core::fmt::LowerHex for u32#60}::fmt
+}
+
+fn core::fmt::LowerHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+trait core::fmt::Display<Self>
+{
+    fn fmt : core::fmt::Display::fmt
+}
+
+fn core::fmt::num::imp::{impl core::fmt::Display for u32#5}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+impl core::fmt::num::imp::{impl core::fmt::Display for u32#5} : core::fmt::Display<u32>
+{
+    fn fmt = core::fmt::num::imp::{impl core::fmt::Display for u32#5}::fmt
+}
+
+fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+trait core::fmt::UpperHex<Self>
+{
+    fn fmt : core::fmt::UpperHex::fmt
+}
+
+fn core::fmt::num::{impl core::fmt::UpperHex for u32#61}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+impl core::fmt::num::{impl core::fmt::UpperHex for u32#61} : core::fmt::UpperHex<u32>
+{
+    fn fmt = core::fmt::num::{impl core::fmt::UpperHex for u32#61}::fmt
+}
+
+fn core::fmt::UpperHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+fn core::fmt::num::{impl core::fmt::Debug for u32#86}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+{
+    let @0: core::result::Result<(), core::fmt::Error>; // return
+    let self@1: &'_ (u32); // arg #1
+    let f@2: &'_ mut (core::fmt::Formatter<'_>); // arg #2
+    let @3: u32; // anonymous local
+    let @4: u32; // anonymous local
+    let @5: u32; // anonymous local
+    let @6: u32; // anonymous local
+
+    @4 := copy ((*(f@2)).flags)
+    @3 := move (@4) & const (16 : u32)
+    drop @4
+    switch move (@3) {
+        0 : u32 => {
+            drop @3
+            @6 := copy ((*(f@2)).flags)
+            @5 := move (@6) & const (32 : u32)
+            drop @6
+            switch move (@5) {
+                0 : u32 => {
+                    drop @5
+                    @0 := core::fmt::num::imp::{impl core::fmt::Display for u32#5}::fmt(move (self@1), move (f@2))
+                },
+                _ => {
+                    drop @5
+                    @0 := core::fmt::num::{impl core::fmt::UpperHex for u32#61}::fmt(move (self@1), move (f@2))
+                }
+            }
+        },
+        _ => {
+            drop @3
+            @0 := core::fmt::num::{impl core::fmt::LowerHex for u32#60}::fmt(move (self@1), move (f@2))
+        }
+    }
+    return
+}
+
+impl core::fmt::num::{impl core::fmt::Debug for u32#86} : core::fmt::Debug<u32>
+{
+    fn fmt = core::fmt::num::{impl core::fmt::Debug for u32#86}::fmt
+}
+
+fn test_crate::unwrap(@1: core::result::Result<u32, u32>) -> u32
+{
+    let @0: u32; // return
+    let res@1: core::result::Result<u32, u32>; // arg #1
+    let @2: core::result::Result<u32, u32>; // anonymous local
+
+    @2 := copy (res@1)
+    @0 := core::result::{core::result::Result<T, E>}::unwrap<u32, u32>[core::fmt::num::{impl core::fmt::Debug for u32#86}](move (@2))
+    drop @2
+    return
+}
+
+fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+
+

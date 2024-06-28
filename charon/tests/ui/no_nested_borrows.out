@@ -118,7 +118,7 @@ fn test_crate::cast_u32_to_i32(@1: u32) -> i32
     let @2: u32; // anonymous local
 
     @2 := copy (x@1)
-    @0 := cast<u32,i32>(move (@2))
+    @0 := cast<u32, i32>(move (@2))
     drop @2
     return
 }
@@ -130,7 +130,7 @@ fn test_crate::cast_bool_to_i32(@1: bool) -> i32
     let @2: bool; // anonymous local
 
     @2 := copy (x@1)
-    @0 := cast<bool,i32>(move (@2))
+    @0 := cast<bool, i32>(move (@2))
     drop @2
     return
 }

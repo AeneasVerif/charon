@@ -764,6 +764,10 @@ let cast_kind_of_json (js : json) : (cast_kind, string) result =
         let* src_ty = ty_of_json src_ty in
         let* tgt_ty = ty_of_json tgt_ty in
         Ok (CastFnPtr (src_ty, tgt_ty))
+    | `Assoc [ ("Unsize", `List [ src_ty; tgt_ty ]) ] ->
+        let* src_ty = ty_of_json src_ty in
+        let* tgt_ty = ty_of_json tgt_ty in
+        Ok (CastUnsize (src_ty, tgt_ty))
     | _ -> Error "")
 
 let unop_of_json (js : json) : (unop, string) result =
