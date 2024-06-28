@@ -1,0 +1,9 @@
+disabled backtrace
+error[E9999]: Cannot handle error `FulfillmentError` selecting `Binder { value: <<Self as ArraySize>::ArrayType<T> as Foo>, bound_vars: [] }`
+  |
+  = note: ⚠️ This is a bug in Hax's frontend.
+          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+error: aborting due to 1 previous error
+
+Error: Charon driver exited with code 101
