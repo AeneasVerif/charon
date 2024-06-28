@@ -77,6 +77,7 @@ fn trait_name(crate_data: &CrateData, trait_id: TraitDeclId) -> &str {
 }
 
 #[derive(EnumAsGetters)]
+#[expect(dead_code)]
 enum ItemKind<'c> {
     Fun(&'c FunDecl),
     Global(&'c GlobalDecl),

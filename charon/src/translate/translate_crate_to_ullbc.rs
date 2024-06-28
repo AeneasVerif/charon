@@ -9,7 +9,6 @@ use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 use rustc_hir::{ForeignItemKind, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
-use rustc_session::Session;
 use std::collections::{HashMap, HashSet};
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
@@ -102,8 +101,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 trace!("impl");
                 // Sanity checks
                 // TODO: make proper error messages
-                use rustc_hir::{Defaultness, ImplPolarity, Unsafety};
-                assert!(impl_block.unsafety == Unsafety::Normal);
+                use rustc_hir::{Defaultness, ImplPolarity, Safety};
+                assert!(impl_block.safety == Safety::Safe);
                 // About polarity:
                 // [https://doc.rust-lang.org/beta/unstable-book/language-features/negative-impls.html]
                 // Not sure about what I should do about it. Should I do anything, actually?
@@ -342,10 +341,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 pub fn translate<'tcx, 'ctx>(
     crate_name: String,
     options: &CliOpts,
-    session: &'ctx Session,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
-) -> Result<TransformCtx<'ctx>, Error> {
+) -> Result<TransformCtx<'tcx>, Error> {
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -364,7 +362,7 @@ pub fn translate<'tcx, 'ctx>(
         errors: ErrorCtx {
             continue_on_failure: !options.abort_on_error,
             errors_as_warnings: options.errors_as_warnings,
-            session,
+            dcx: tcx.dcx(),
             decls_with_errors: HashSet::new(),
             ignored_failed_decls: HashSet::new(),
             dep_sources: HashMap::new(),
@@ -397,10 +395,8 @@ pub fn translate<'tcx, 'ctx>(
     let hir = tcx.hir();
     for item_id in hir.root_module().item_ids {
         let item_id = item_id.hir_id();
-        let node = hir.find(item_id).unwrap();
-        let item = match node {
-            rustc_hir::Node::Item(item) => item,
-            _ => unreachable!(),
+        let rustc_hir::Node::Item(item) = tcx.hir_node(item_id) else {
+            unreachable!()
         };
         ctx.register_local_hir_item(true, item)?;
     }

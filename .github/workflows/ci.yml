@@ -54,14 +54,20 @@ jobs:
     if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
     runs-on: [self-hosted, linux, nix]
     steps:
-      - run: nix flake check -L github:aeneasverif/aeneas --override-input charon github:aeneasverif/charon/${{ github.sha }}
+      - run: |
+          nix flake check -L github:aeneasverif/aeneas \
+              --override-input charon github:aeneasverif/charon/${{ github.sha }} \
+              --override-input charon/rust-overlay github:oxalica/rust-overlay/master
 
   eurydice:
     needs: [check_if_skip_duplicate_job, nix]
     if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
     runs-on: [self-hosted, linux, nix]
     steps:
-      - run: nix flake check -L github:aeneasverif/eurydice --override-input charon github:aeneasverif/charon/${{ github.sha }}
+      - run: |
+          nix flake check -L github:aeneasverif/eurydice \
+              --override-input charon github:aeneasverif/charon/${{ github.sha }} \
+              --override-input charon/rust-overlay github:oxalica/rust-overlay/master
 
   kyber:
     needs: [check_if_skip_duplicate_job, eurydice]

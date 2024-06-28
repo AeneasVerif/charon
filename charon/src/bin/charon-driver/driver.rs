@@ -9,7 +9,6 @@ use regex::Regex;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
-use rustc_session::Session;
 use std::fmt;
 use std::ops::Deref;
 use std::panic::{self, AssertUnwindSafe};
@@ -101,7 +100,7 @@ impl Callbacks for CharonCallbacks {
     /// possible (i.e., after parsing). See [charon_lib::get_mir].
     fn after_crate_root_parsing<'tcx>(
         &mut self,
-        c: &Compiler,
+        _c: &Compiler,
         queries: &'tcx Queries<'tcx>,
     ) -> Compilation {
         // Set up our own `DefId` debug routine.
@@ -113,8 +112,7 @@ impl Callbacks for CharonCallbacks {
             .unwrap()
             .get_mut()
             .enter(|tcx| {
-                let session = c.session();
-                let crate_data = translate(session, tcx, self)?;
+                let crate_data = translate(tcx, self)?;
                 self.crate_data = Some(crate_data);
                 Ok::<(), ()>(())
             })
@@ -208,11 +206,7 @@ pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize>
 ///
 /// This function is a callback function for the Rust compiler.
 #[allow(clippy::result_unit_err)]
-pub fn translate(
-    sess: &Session,
-    tcx: TyCtxt,
-    internal: &mut CharonCallbacks,
-) -> Result<export::CrateData, ()> {
+pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> Result<export::CrateData, ()> {
     trace!();
     let options = &internal.options;
 
@@ -246,11 +240,10 @@ pub fn translate(
     // # Translate the declarations in the crate.
     // We translate the declarations in an ad-hoc order, and do not group
     // the mutually recursive groups - we do this in the next step.
-    let mut ctx =
-        match translate_crate_to_ullbc::translate(crate_name, options, sess, tcx, mir_level) {
-            Ok(ctx) => ctx,
-            Err(_) => return Err(()),
-        };
+    let mut ctx = match translate_crate_to_ullbc::translate(crate_name, options, tcx, mir_level) {
+        Ok(ctx) => ctx,
+        Err(_) => return Err(()),
+    };
 
     if options.print_ullbc {
         info!("# ULLBC after translation from MIR:\n\n{ctx}\n");

@@ -1,5 +1,6 @@
 //! Utilities to generate error reports about the external dependencies.
 use crate::translate_ctx::*;
+use macros::VariantIndexArity;
 use petgraph::algo::dijkstra::dijkstra;
 use petgraph::graphmap::DiGraphMap;
 use rustc_error_messages::MultiSpan;
@@ -7,11 +8,32 @@ use rustc_hir::def_id::DefId;
 use rustc_span::Span;
 
 /// For error reporting
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, VariantIndexArity)]
 enum Node {
     External(DefId),
     /// We use the span information only for local references
     Local(DefId, Span),
+}
+
+impl Node {
+    /// Value with which we order `Node`s.
+    fn sort_key(&self) -> impl Ord {
+        let (variant_index, _) = self.variant_index_arity();
+        let (Self::External(def_id) | Self::Local(def_id, _)) = self;
+        (variant_index, def_id.index, def_id.krate)
+    }
+}
+
+/// Manual impls because `DefId` is not orderable.
+impl PartialOrd for Node {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for Node {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.sort_key().cmp(&other.sort_key())
+    }
 }
 
 struct Graph {

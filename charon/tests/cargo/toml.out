@@ -9,17 +9,15 @@ fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::opti
 {
     let @0: bool; // return
     let self@1: &'_ (core::option::Option<T>); // arg #1
-    let @2: isize; // anonymous local
 
     match *(self@1) {
-        0 => {
-            @2 := const (0 : isize)
-        },
         1 => {
-            @2 := const (1 : isize)
+            @0 := const (true)
+        },
+        0 => {
+            @0 := const (false)
         }
     }
-    @0 := copy (@2) == const (1 : isize)
     return
 }
 

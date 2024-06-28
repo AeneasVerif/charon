@@ -250,7 +250,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         kind,
                     }));
                 }
-                DefPathData::ImplTrait => {
+                DefPathData::OpaqueTy => {
                     // TODO: do nothing for now
                 }
                 DefPathData::MacroNs(symbol) => {
@@ -263,7 +263,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // instance to filter opaque modules.
                     name.push(PathElem::Ident(symbol.to_string(), disambiguator));
                 }
-                DefPathData::ClosureExpr => {
+                DefPathData::Closure => {
                     // TODO: this is not very satisfactory, but on the other hand
                     // we should be able to extract closures in local let-bindings
                     // (i.e., we shouldn't have to introduce top-level let-bindings).

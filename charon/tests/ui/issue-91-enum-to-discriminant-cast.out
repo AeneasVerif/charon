@@ -4,7 +4,7 @@ error: Unsupported statement kind: intrinsic
 16 |     let _ = x as isize;
    |             ^^^^^^^^^^
 
-error: aborting due to previous error
+error: aborting due to 1 previous error
 
-[ ERROR charon_driver:231] The extraction encountered 1 errors
+[ ERROR charon_driver:230] The extraction encountered 1 errors
 Error: Charon driver exited with code 1

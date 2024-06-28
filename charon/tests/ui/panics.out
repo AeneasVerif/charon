@@ -13,23 +13,20 @@ opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
-fn core::fmt::{core::fmt::Arguments<'a>#2}::new_const<'a>(@1: &'a (Slice<&'static (Str)>)) -> core::fmt::Arguments<'a>
+fn core::fmt::{core::fmt::Arguments<'a>#2}::new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> core::fmt::Arguments<'a>
 
 fn test_crate::panic2()
 {
     let @0: (); // return
     let @1: core::fmt::Arguments<'_>; // anonymous local
-    let @2: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @5: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
 
-    @5 := [const ("O no!"); 1 : usize]
-    @4 := &@5
-    @3 := &*(@4)
-    @2 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@3))
-    drop @3
-    @1 := core::fmt::{core::fmt::Arguments<'a>#2}::new_const<'_>(move (@2))
+    @4 := [const ("O no!"); 1 : usize]
+    @3 := &@4
+    @2 := &*(@3)
+    @1 := core::fmt::{core::fmt::Arguments<'a>#2}::new_const<'_, 1 : usize>(move (@2))
     drop @2
     panic(core::panicking::panic_fmt)
 }
@@ -38,33 +35,27 @@ opaque type core::fmt::rt::Argument<'a>
 
 fn core::fmt::rt::{core::fmt::rt::Argument<'a>#1}::none<'a>() -> Array<core::fmt::rt::Argument<'a>, 0 : usize>
 
-fn core::fmt::{core::fmt::Arguments<'a>#2}::new_v1<'a>(@1: &'a (Slice<&'static (Str)>), @2: &'a (Slice<core::fmt::rt::Argument<'a>>)) -> core::fmt::Arguments<'a>
+fn core::fmt::{core::fmt::Arguments<'a>#2}::new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<core::fmt::rt::Argument<'a>, const A : usize>)) -> core::fmt::Arguments<'a>
 
 fn test_crate::panic3()
 {
     let @0: (); // return
     let @1: core::fmt::Arguments<'_>; // anonymous local
-    let @2: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @5: Array<&'_ (Str), 1 : usize>; // anonymous local
-    let @6: &'_ (Slice<core::fmt::rt::Argument<'_>>); // anonymous local
-    let @7: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
-    let @8: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
-    let @9: Array<core::fmt::rt::Argument<'_>, 0 : usize>; // anonymous local
+    let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @5: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
+    let @6: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
+    let @7: Array<core::fmt::rt::Argument<'_>, 0 : usize>; // anonymous local
 
-    @5 := [const ("O no!"); 1 : usize]
-    @4 := &@5
-    @3 := &*(@4)
-    @2 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@3))
-    drop @3
-    @9 := core::fmt::rt::{core::fmt::rt::Argument<'a>#1}::none<'_>()
-    @8 := &@9
-    @7 := &*(@8)
-    @6 := @ArrayToSliceShared<'_, core::fmt::rt::Argument<'_>, 0 : usize>(move (@7))
-    drop @7
-    @1 := core::fmt::{core::fmt::Arguments<'a>#2}::new_v1<'_>(move (@2), move (@6))
-    drop @6
+    @4 := [const ("O no!"); 1 : usize]
+    @3 := &@4
+    @2 := &*(@3)
+    @7 := core::fmt::rt::{core::fmt::rt::Argument<'a>#1}::none<'_>()
+    @6 := &@7
+    @5 := &*(@6)
+    @1 := core::fmt::{core::fmt::Arguments<'a>#2}::new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
+    drop @5
     drop @2
     panic(core::panicking::panic_fmt)
 }
@@ -100,33 +91,30 @@ fn test_crate::panic5()
     let @1: (); // anonymous local
     let @2: bool; // anonymous local
     let @3: core::fmt::Arguments<'_>; // anonymous local
-    let @4: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @6: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @7: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @6: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @7: (); // anonymous local
     let @8: (); // anonymous local
-    let @9: (); // anonymous local
 
     @2 := const (false)
     if move (@2) {
         nop
     }
     else {
-        @7 := [const ("assert failed"); 1 : usize]
-        @6 := &@7
-        @5 := &*(@6)
-        @4 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@5))
-        drop @5
-        @3 := core::fmt::{core::fmt::Arguments<'a>#2}::new_const<'_>(move (@4))
+        @6 := [const ("assert failed"); 1 : usize]
+        @5 := &@6
+        @4 := &*(@5)
+        @3 := core::fmt::{core::fmt::Arguments<'a>#2}::new_const<'_, 1 : usize>(move (@4))
         drop @4
         panic(core::panicking::panic_fmt)
     }
-    @8 := ()
-    @1 := move (@8)
+    @7 := ()
+    @1 := move (@7)
     drop @2
     drop @1
-    @9 := ()
-    @0 := move (@9)
+    @8 := ()
+    @0 := move (@8)
     @0 := ()
     return
 }
@@ -142,27 +130,21 @@ fn test_crate::panic7()
 {
     let @0: (); // return
     let @1: core::fmt::Arguments<'_>; // anonymous local
-    let @2: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @5: Array<&'_ (Str), 1 : usize>; // anonymous local
-    let @6: &'_ (Slice<core::fmt::rt::Argument<'_>>); // anonymous local
-    let @7: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
-    let @8: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
-    let @9: Array<core::fmt::rt::Argument<'_>, 0 : usize>; // anonymous local
+    let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @5: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
+    let @6: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
+    let @7: Array<core::fmt::rt::Argument<'_>, 0 : usize>; // anonymous local
 
-    @5 := [const ("internal error: entered unreachable code: can't reach this"); 1 : usize]
-    @4 := &@5
-    @3 := &*(@4)
-    @2 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@3))
-    drop @3
-    @9 := core::fmt::rt::{core::fmt::rt::Argument<'a>#1}::none<'_>()
-    @8 := &@9
-    @7 := &*(@8)
-    @6 := @ArrayToSliceShared<'_, core::fmt::rt::Argument<'_>, 0 : usize>(move (@7))
-    drop @7
-    @1 := core::fmt::{core::fmt::Arguments<'a>#2}::new_v1<'_>(move (@2), move (@6))
-    drop @6
+    @4 := [const ("internal error: entered unreachable code: can't reach this"); 1 : usize]
+    @3 := &@4
+    @2 := &*(@3)
+    @7 := core::fmt::rt::{core::fmt::rt::Argument<'a>#1}::none<'_>()
+    @6 := &@7
+    @5 := &*(@6)
+    @1 := core::fmt::{core::fmt::Arguments<'a>#2}::new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
+    drop @5
     drop @2
     panic(core::panicking::panic_fmt)
 }

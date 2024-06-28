@@ -19,12 +19,12 @@ use hax_frontend_exporter::SInto;
 use linked_hash_set::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use rustc_error_messages::MultiSpan;
+use rustc_errors::DiagCtxtHandle;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
-use rustc_session::Session;
 use serde::{Deserialize, Serialize};
-use std::cmp::{Ord, Ordering, PartialOrd};
+use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::fmt;
 
@@ -71,10 +71,29 @@ pub(crate) use error_assert;
 /// dependencies, especially if some external dependencies don't extract:
 /// we use this information to tell the user what is the code which
 /// (transitively) lead to the extraction of those problematic dependencies.
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct DepSource {
     pub src_id: DefId,
     pub span: rustc_span::Span,
+}
+
+impl DepSource {
+    /// Value with which we order `DepSource`s.
+    fn sort_key(&self) -> impl Ord {
+        (self.src_id.index, self.src_id.krate)
+    }
+}
+
+/// Manual impls because `DefId` is not orderable.
+impl PartialOrd for DepSource {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for DepSource {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.sort_key().cmp(&other.sort_key())
+    }
 }
 
 impl DepSource {
@@ -174,23 +193,24 @@ impl OrdRustId {
     }
 }
 
-impl PartialOrd for OrdRustId {
-    fn partial_cmp(&self, other: &OrdRustId) -> Option<Ordering> {
-        let (vid0, _) = self.variant_index_arity();
-        let (vid1, _) = other.variant_index_arity();
-        if vid0 != vid1 {
-            Option::Some(vid0.cmp(&vid1))
-        } else {
-            let id0 = self.get_id();
-            let id1 = other.get_id();
-            Some(id0.cmp(&id1))
-        }
+impl OrdRustId {
+    /// Value with which we order values.
+    fn sort_key(&self) -> impl Ord {
+        let (variant_index, _) = self.variant_index_arity();
+        let def_id = self.get_id();
+        (variant_index, def_id.index, def_id.krate)
     }
 }
 
+/// Manual impls because `DefId` is not orderable.
+impl PartialOrd for OrdRustId {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
 impl Ord for OrdRustId {
-    fn cmp(&self, other: &OrdRustId) -> Ordering {
-        self.partial_cmp(other).unwrap()
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.sort_key().cmp(&other.sort_key())
     }
 }
 
@@ -251,7 +271,7 @@ pub struct ErrorCtx<'ctx> {
     pub errors_as_warnings: bool,
 
     /// The compiler session, used for displaying errors.
-    pub session: &'ctx Session,
+    pub dcx: DiagCtxtHandle<'ctx>,
     /// The ids of the declarations for which extraction we encountered errors.
     pub decls_with_errors: HashSet<DefId>,
     /// The ids of the declarations we completely failed to extract and had to ignore.
@@ -389,9 +409,9 @@ impl ErrorCtx<'_> {
     pub(crate) fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
         let msg = msg.to_string();
         if self.errors_as_warnings {
-            self.session.span_warn(span, msg);
+            self.dcx.span_warn(span, msg);
         } else {
-            self.session.span_err(span, msg);
+            self.dcx.span_err(span, msg);
         }
     }
 
@@ -596,9 +616,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Returns the attributes (`#[...]`) of this node.
     pub(crate) fn node_attributes(&self, id: DefId) -> &[rustc_ast::Attribute] {
-        let hir = self.tcx.hir();
         id.as_local()
-            .map(|local_def_id| hir.attrs(hir.local_def_id_to_hir_id(local_def_id)))
+            .map(|local_def_id| {
+                self.tcx
+                    .hir()
+                    .attrs(self.tcx.local_def_id_to_hir_id(local_def_id))
+            })
             .unwrap_or_default()
     }
 
@@ -684,7 +707,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | Ctor { .. }
             | ExternCrate
             | ForeignMod
-            | Coroutine
             | GlobalAsm
             | InlineConst
             | LifetimeParam
@@ -702,10 +724,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Whether this item is in an `extern { .. }` block, in which case it has no body.
     pub(crate) fn id_is_extern_item(&mut self, id: DefId) -> bool {
-        id.as_local().is_some_and(|local_def_id| {
-            let node = self.tcx.hir().find_by_def_id(local_def_id);
-            matches!(node, Some(HirNode::ForeignItem(_)))
-        })
+        self.tcx
+            .hir()
+            .get_if_local(id)
+            .is_some_and(|node| matches!(node, HirNode::ForeignItem(_)))
     }
 
     pub(crate) fn is_opaque_name(&self, name: &Name) -> bool {

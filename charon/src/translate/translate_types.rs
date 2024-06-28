@@ -278,10 +278,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
                 Ok(Ty::Ref(region, Box::new(ty), kind))
             }
-            hax::Ty::RawPtr(ty_and_mut) => {
-                trace!("RawPtr: {:?}", ty_and_mut);
-                let ty = self.translate_ty(span, erase_regions, &ty_and_mut.ty)?;
-                let kind = if ty_and_mut.mutbl {
+            hax::Ty::RawPtr(ty, mutbl) => {
+                trace!("RawPtr: {:?}", (ty, mutbl));
+                let ty = self.translate_ty(span, erase_regions, ty)?;
+                let kind = if *mutbl {
                     RefKind::Mut
                 } else {
                     RefKind::Shared
@@ -342,7 +342,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 error_or_panic!(self, span, "Dynamic types are not supported yet")
             }
 
-            hax::Ty::Coroutine(_, _, _) => {
+            hax::Ty::Coroutine(..) => {
                 trace!("Coroutine");
                 error_or_panic!(self, span, "Coroutine types are not supported yet")
             }
@@ -436,16 +436,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let mut regions: Vec<Region> = vec![];
         let mut params = vec![];
         let mut cgs = vec![];
+        use hax::GenericArg::*;
         for param in substs.iter() {
             match param {
-                hax::GenericArg::Type(param_ty) => {
+                Type(param_ty) => {
                     let param_ty = self.translate_ty(span, erase_regions, param_ty)?;
                     params.push(param_ty);
                 }
-                hax::GenericArg::Lifetime(region) => {
+                Lifetime(region) => {
                     regions.push(self.translate_region(span, erase_regions, region)?);
                 }
-                hax::GenericArg::Const(c) => {
+                Const(c) => {
                     cgs.push(self.translate_constant_expr_to_const_generic(span, c)?);
                 }
             }
@@ -522,9 +523,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Separate path for type aliases because they're not an `AdtDef`.
-        if let Some(local_def_id) = rust_id.as_local() {
-            let hir_id = tcx.hir().local_def_id_to_hir_id(local_def_id);
-            let rustc_hir::Node::Item(item) = tcx.hir().get(hir_id) else {
+        if let Some(node) = tcx.hir().get_if_local(rust_id) {
+            let rustc_hir::Node::Item(item) = node else {
                 error_or_panic!(self, def_span, "Type is not an item?")
             };
             if let rustc_hir::ItemKind::TyAlias(ty, _generics) = &item.kind {

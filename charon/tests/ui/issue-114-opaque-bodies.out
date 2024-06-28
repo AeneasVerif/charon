@@ -63,23 +63,15 @@ fn core::bool::{bool}::then_some<T>(@1: bool, @2: T) -> core::option::Option<T>
     let self@1: bool; // arg #1
     let t@2: T; // arg #2
     let @3: T; // anonymous local
-    let @4: bool; // anonymous local
 
-    @4 := const (true)
     if copy (self@1) {
-        @4 := const (false)
         @3 := move (t@2)
         @0 := core::option::Option::Some { 0: move (@3) }
         drop @3
     }
     else {
         @0 := core::option::Option::None {  }
-    }
-    if copy (@4) {
         drop t@2
-    }
-    else {
-        nop
     }
     return
 }
@@ -104,7 +96,7 @@ trait core::convert::From<Self, T>
     fn from : core::convert::From::from
 }
 
-fn core::convert::num::{impl core::convert::From<i32> for i64#59}::from(@1: i32) -> i64
+fn core::convert::num::{impl core::convert::From<i32> for i64#83}::from(@1: i32) -> i64
 {
     let @0: i64; // return
     let small@1: i32; // arg #1
@@ -113,9 +105,9 @@ fn core::convert::num::{impl core::convert::From<i32> for i64#59}::from(@1: i32)
     return
 }
 
-impl core::convert::num::{impl core::convert::From<i32> for i64#59} : core::convert::From<i64, i32>
+impl core::convert::num::{impl core::convert::From<i32> for i64#83} : core::convert::From<i64, i32>
 {
-    fn from = core::convert::num::{impl core::convert::From<i32> for i64#59}::from
+    fn from = core::convert::num::{impl core::convert::From<i32> for i64#83}::from
 }
 
 fn core::convert::From::from<Self, T>(@1: T) -> Self
@@ -127,7 +119,7 @@ fn test_crate::convert(@1: i32) -> i64
     let @2: i32; // anonymous local
 
     @2 := copy (x@1)
-    @0 := core::convert::num::{impl core::convert::From<i32> for i64#59}::from(move (@2))
+    @0 := core::convert::num::{impl core::convert::From<i32> for i64#83}::from(move (@2))
     drop @2
     return
 }
@@ -145,10 +137,15 @@ struct core::ptr::unique::Unique<T> =
   _marker: core::marker::PhantomData<T>
 }
 
+struct alloc::raw_vec::Cap =
+{
+  usize
+}
+
 struct alloc::raw_vec::RawVec<T, A> =
 {
   ptr: core::ptr::unique::Unique<T>,
-  cap: usize,
+  cap: alloc::raw_vec::Cap,
   alloc: A
 }
 

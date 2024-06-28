@@ -58,7 +58,7 @@ impl NonLocalTraitClause {
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, EnumToGetters)]
 pub(crate) enum Predicate {
-    Trait(TraitClauseId),
+    Trait(#[expect(dead_code)] TraitClauseId),
     TypeOutlives(TypeOutlives),
     RegionOutlives(RegionOutlives),
     TraitType(TraitTypeConstraint),
@@ -537,10 +537,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             PredicateKind::AliasRelate(..)
             | PredicateKind::Ambiguous
-            | PredicateKind::ClosureKind(_, _, _)
             | PredicateKind::Coerce(_)
             | PredicateKind::ConstEquate(_, _)
             | PredicateKind::ObjectSafe(_)
+            | PredicateKind::NormalizesTo(_)
             | PredicateKind::Subtype(_) => error_or_panic!(
                 self,
                 span,

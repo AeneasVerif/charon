@@ -3,7 +3,7 @@ use crate::meta::*;
 use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
-use rustc_session::Session;
+use rustc_span::source_map::SourceMap;
 use std::cmp::Ordering;
 use std::iter::Iterator;
 use std::path::Component;
@@ -133,11 +133,7 @@ pub fn convert_loc(loc: hax::Loc) -> Loc {
 }
 
 // TODO: remove?
-pub fn span_to_string(sess: &Session, span: rustc_span::Span) -> String {
-    // Retrieve the source map, which contains information about the source file:
-    // we need it to be able to interpret the span.
-    let source_map = sess.source_map();
-
+pub fn span_to_string(source_map: &SourceMap, span: rustc_span::Span) -> String {
     // Convert the span to lines
     let (beg, end) = source_map.is_valid_span(span).unwrap();
 
