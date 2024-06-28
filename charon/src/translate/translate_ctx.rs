@@ -326,7 +326,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The regions.
     /// We use DeBruijn indices, so we have a stack of regions.
     /// See the comments for [Region::BVar].
-    pub region_vars: im::Vector<Vector<RegionId, RegionVar>>,
+    pub region_vars: VecDeque<Vector<RegionId, RegionVar>>,
     /// The map from rust (free) regions to translated region indices.
     /// This contains the early bound regions.
     ///
@@ -349,13 +349,10 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
     /// https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
     ///
-    /// Remark: even though performance is not critical, the use of [im::Vec] allows
-    /// us to push/pop and access indexed elements with very good performance.
-    ///
     /// **Important**:
     /// ==============
     /// We use DeBruijn indices. See the comments for [Region::Var].
-    pub bound_region_vars: im::Vector<im::Vector<RegionId>>,
+    pub bound_region_vars: VecDeque<Box<[RegionId]>>,
     /// The type variables
     pub type_vars: Vector<TypeVarId, TypeVar>,
     /// The map from rust type variable indices to translated type variable
@@ -386,7 +383,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The translated blocks. We can't use `ast::Vector<BlockId, ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
-    pub blocks: im::OrdMap<ast::BlockId, ast::BlockData>,
+    pub blocks: BTreeMap<ast::BlockId, ast::BlockData>,
     /// The map from rust blocks to translated blocks.
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
@@ -861,9 +858,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             def_id,
             t_ctx,
             hax_state,
-            region_vars: im::vector![Vector::new()],
+            region_vars: [Vector::new()].into(),
             free_region_vars: std::collections::BTreeMap::new(),
-            bound_region_vars: im::Vector::new(),
+            bound_region_vars: Default::default(),
             type_vars: Vector::new(),
             type_vars_map: MapGenerator::new(),
             vars: Vector::new(),
@@ -875,7 +872,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             regions_outlive: Vec::new(),
             types_outlive: Vec::new(),
             trait_type_constraints: Vec::new(),
-            blocks: im::OrdMap::new(),
+            blocks: Default::default(),
             blocks_map: MapGenerator::new(),
             blocks_stack: VecDeque::new(),
         }
@@ -973,7 +970,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         assert!(self.bound_region_vars.is_empty());
 
         // Register the variables
-        let var_ids: im::Vector<RegionId> = names
+        let var_ids: Box<[RegionId]> = names
             .into_iter()
             .map(|name| self.region_vars[0].push_with(|index| RegionVar { index, name }))
             .collect();
@@ -997,7 +994,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.region_vars.push_front(Vector::new());
 
         // Register the variables
-        let var_ids: im::Vector<RegionId> = names
+        let var_ids: Box<[RegionId]> = names
             .into_iter()
             .map(|name| self.region_vars[0].push_with(|index| RegionVar { index, name }))
             .collect();
@@ -1120,10 +1117,7 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
     fn into_fmt(self) -> Self::C {
         FmtCtx {
             translated: Some(self),
-            region_vars: im::Vector::new(),
-            type_vars: None,
-            const_generic_vars: None,
-            locals: None,
+            ..Default::default()
         }
     }
 }

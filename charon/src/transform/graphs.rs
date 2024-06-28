@@ -1,5 +1,5 @@
-use im::OrdSet;
 use linked_hash_set::LinkedHashSet;
+use std::collections::BTreeSet as OrdSet;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::vec::Vec;
@@ -149,8 +149,8 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
     // Compute the map from the original SCC ids to the new SCC ids (after
     // reordering).
     let mut old_id_to_new_id: Vec<usize> = reordered_sccs_ids.iter().map(|_| 0).collect();
-    for new_id in 0..reordered_sccs_ids.len() {
-        old_id_to_new_id[reordered_sccs_ids[new_id]] = new_id;
+    for (new_id, dep) in reordered_sccs_ids.iter().enumerate() {
+        old_id_to_new_id[*dep] = new_id;
     }
 
     // Generate the reordered SCCs
@@ -161,10 +161,9 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
 
     // Compute the dependencies with the new indices
     let mut tgt_deps: Vec<OrdSet<usize>> = reordered_sccs.iter().map(|_| OrdSet::new()).collect();
-    for old_id in 0..scc_deps.len() {
+    for (old_id, deps) in scc_deps.iter().enumerate() {
         let new_id = old_id_to_new_id[old_id];
-        tgt_deps[new_id] =
-            OrdSet::from_iter(scc_deps[old_id].iter().map(|old| old_id_to_new_id[*old]));
+        tgt_deps[new_id] = OrdSet::from_iter(deps.iter().map(|old| old_id_to_new_id[*old]));
     }
 
     SCCs {

@@ -27,7 +27,7 @@ fn update_locals(
         used_locals.insert(VarId::new(i));
     }
     // Explore the body
-    let mut used_locals_cnt: im::HashMap<VarId, _> = im::HashMap::default();
+    let mut used_locals_cnt: HashMap<VarId, _> = HashMap::default();
     st.drive(&mut visitor_enter_fn(|vid: &VarId| {
         match used_locals_cnt.get_mut(vid) {
             None => {

@@ -514,6 +514,7 @@ pub fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
 mod tests {
     #[test]
     fn test_reorder_sccs1() {
+        use std::collections::BTreeSet as OrdSet;
         let sccs = vec![vec![0], vec![1, 2], vec![3, 4, 5]];
         let ids = vec![0, 1, 2, 3, 4, 5];
 
@@ -525,8 +526,8 @@ mod tests {
         let reordered = crate::reorder_decls::reorder_sccs(get_deps, &ids, &sccs);
 
         assert!(reordered.sccs == vec![vec![3, 4, 5], vec![0], vec![1, 2],]);
-        assert!(reordered.scc_deps[0] == im::OrdSet::from(vec![]));
-        assert!(reordered.scc_deps[1] == im::OrdSet::from(vec![0]));
-        assert!(reordered.scc_deps[2] == im::OrdSet::from(vec![0, 1]));
+        assert!(reordered.scc_deps[0] == OrdSet::from([]));
+        assert!(reordered.scc_deps[1] == OrdSet::from([0]));
+        assert!(reordered.scc_deps[2] == OrdSet::from([0, 1]));
     }
 }
