@@ -132,12 +132,26 @@
         devShells.default = pkgs.mkShell {
           # Tell charon that the right toolchain is in PATH. It is added to PATH by the `charon` in `inputsFrom`.
           CHARON_TOOLCHAIN_IS_IN_PATH = 1;
+          # To run `cargo outdated` and `cargo udeps`
+          LD_LIBRARY_PATH =
+            pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib pkgs.openssl pkgs.curl pkgs.zlib ];
 
           packages = [
             pkgs.ocamlPackages.ocaml
             pkgs.ocamlPackages.ocamlformat
             pkgs.ocamlPackages.menhir
             pkgs.ocamlPackages.odoc
+          ];
+
+          nativeBuildInputs = [
+            pkgs.pkg-config
+          ];
+
+          # To compile some rust crates that need system dependencies.
+          buildInputs = [
+            pkgs.openssl
+            pkgs.glibc.out
+            pkgs.glibc.static
           ];
 
           inputsFrom = [

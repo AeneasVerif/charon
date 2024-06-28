@@ -2,7 +2,7 @@
 //! shenanigans such as dependencies.
 use anyhow::bail;
 use assert_cmd::prelude::CommandCargoExt;
-use libtest_mimic::{Outcome, Test};
+use libtest_mimic::Trial;
 use std::{error::Error, path::PathBuf, process::Command};
 
 use util::{compare_or_overwrite, Action};
@@ -57,16 +57,17 @@ fn cargo() -> Result<(), Box<dyn Error>> {
     };
 
     let root: PathBuf = PathBuf::from(TESTS_DIR).canonicalize()?;
-    let mktest = |name: &str, dir: PathBuf, charon_args: &[String]| Test {
-        name: name.to_owned(),
-        kind: "".into(),
-        is_ignored: false,
-        is_bench: false,
-        data: Case {
-            dir,
-            expected: root.join(format!("{name}.out")),
-            charon_args: charon_args.to_vec(),
-        },
+    let mktest = |name: &str, dir: PathBuf, charon_args: &[String]| {
+        let charon_args = charon_args.to_vec();
+        let expected = root.join(format!("{name}.out"));
+        Trial::test(name, move || {
+            let case = Case {
+                dir,
+                expected,
+                charon_args,
+            };
+            perform_test(&case, action).map_err(|err| err.into())
+        })
     };
     let tests = vec![
         mktest("build-script", root.join("build-script"), &[]),
@@ -84,11 +85,5 @@ fn cargo() -> Result<(), Box<dyn Error>> {
     ];
 
     let args = libtest_mimic::Arguments::from_args();
-    libtest_mimic::run_tests(&args, tests, move |t| match perform_test(&t.data, action) {
-        Ok(()) => Outcome::Passed,
-        Err(err) => Outcome::Failed {
-            msg: Some(err.to_string()),
-        },
-    })
-    .exit()
+    libtest_mimic::run(&args, tests).exit()
 }

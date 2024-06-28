@@ -7,7 +7,7 @@
 use anyhow::{anyhow, bail};
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use indoc::indoc as unindent;
-use libtest_mimic::{Outcome, Test};
+use libtest_mimic::Trial;
 use std::{
     error::Error,
     fs::read_to_string,
@@ -111,7 +111,7 @@ struct Case {
     magic_comments: MagicComments,
 }
 
-fn setup_test(input_path: PathBuf) -> anyhow::Result<Test<Case>> {
+fn setup_test(input_path: PathBuf, action: Action) -> anyhow::Result<Trial> {
     let name = input_path
         .to_str()
         .unwrap()
@@ -122,17 +122,17 @@ fn setup_test(input_path: PathBuf) -> anyhow::Result<Test<Case>> {
         .to_owned();
     let expected = input_path.with_extension("out");
     let magic_comments = parse_magic_comments(&input_path)?;
-    Ok(Test {
-        name: name.clone(),
-        kind: "".into(),
-        is_ignored: matches!(magic_comments.test_kind, TestKind::Skip),
-        is_bench: false,
-        data: Case {
-            input_path,
-            expected,
-            magic_comments,
-        },
+    let ignore = matches!(magic_comments.test_kind, TestKind::Skip);
+    let case = Case {
+        input_path,
+        expected,
+        magic_comments,
+    };
+    let trial = Trial::test(name, move || {
+        perform_test(&case, action).map_err(|err| err.into())
     })
+    .with_ignored_flag(ignore);
+    Ok(trial)
 }
 
 fn path_to_crate_name(path: &Path) -> Option<String> {
@@ -261,17 +261,11 @@ fn ui() -> Result<(), Box<dyn Error>> {
         })
         .map(|entry| {
             let entry = entry?;
-            let test = setup_test(entry.into_path())?;
+            let test = setup_test(entry.into_path(), action)?;
             anyhow::Result::Ok(test)
         })
         .collect::<anyhow::Result<_>>()?;
 
     let args = libtest_mimic::Arguments::from_args();
-    libtest_mimic::run_tests(&args, tests, move |t| match perform_test(&t.data, action) {
-        Ok(()) => Outcome::Passed,
-        Err(err) => Outcome::Failed {
-            msg: Some(err.to_string()),
-        },
-    })
-    .exit()
+    libtest_mimic::run(&args, tests).exit()
 }
