@@ -125,8 +125,6 @@ enum test_crate::CList<T> =
 |  CNil()
 
 
-Unknown decl: 13
-
 fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (T)
 {
     let @0: &'_ (T); // return
@@ -175,8 +173,6 @@ fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (
     drop x@3
     return
 }
-
-Unknown decl: 14
 
 fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) -> &'a mut (T)
 {
@@ -241,8 +237,6 @@ fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) 
     drop @3
     return
 }
-
-Unknown decl: 15
 
 fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) -> &'a mut (T)
 {
