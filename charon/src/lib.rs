@@ -11,10 +11,12 @@
 //! we reconstructed the control-flow to have `if ... then ... else ...`,
 //! loops, etc. instead of `GOTO`s).
 
+#![expect(incomplete_features)]
 #![feature(rustc_private)]
-#![feature(box_patterns)]
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
+#![feature(box_patterns)]
+#![feature(deref_patterns)]
 #![feature(if_let_guard)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(iter_array_chunks)]

@@ -167,6 +167,7 @@ and ty_to_string (env : ('a, 'b) fmt_env) (ty : ty) : string =
         "(" ^ String.concat ", " (List.map (ty_to_string env) inputs) ^ ") -> "
       in
       inputs ^ ty_to_string env output
+  | TDynTrait _ -> "dyn (TODO)"
 
 and params_to_string (env : ('a, 'b) fmt_env) (is_tuple : bool)
     (generics : generic_args) : string =
@@ -239,6 +240,7 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
       ^ fun_decl_id_to_string env fid
       ^ generic_args_to_string env generics
       ^ ")"
+  | Dyn id -> "dyn(" ^ trait_decl_id_to_string env id ^ ")"
   | Unsolved (decl_id, generics) ->
       "unsolved("
       ^ trait_decl_id_to_string env decl_id

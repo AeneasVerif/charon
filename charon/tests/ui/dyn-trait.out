@@ -1,0 +1,86 @@
+# Final LLBC before serialization:
+
+opaque type core::fmt::Formatter<'a>
+  where
+      'a : 'a,
+
+enum core::result::Result<T, E> =
+|  Ok(T)
+|  Err(E)
+
+
+struct core::fmt::Error = {}
+
+trait core::fmt::Display<Self>
+{
+    fn fmt : core::fmt::Display::fmt
+}
+
+fn test_crate::construct<T>(@1: T) -> alloc::boxed::Box<dyn (exists(TODO))>
+where
+    [@TraitClause0]: core::fmt::Display<T>,
+
+opaque type alloc::string::String
+
+trait alloc::string::ToString<Self>
+{
+    fn to_string : alloc::string::ToString::to_string
+}
+
+fn alloc::string::{impl alloc::string::ToString for T#32}::to_string<'_0, T>(@1: &'_0 (T)) -> alloc::string::String
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::fmt::Display<T>,
+
+impl<T> alloc::string::{impl alloc::string::ToString for T#32}<T> : alloc::string::ToString<T>
+where
+    [@TraitClause0]: core::fmt::Display<T>,
+{
+    fn to_string = alloc::string::{impl alloc::string::ToString for T#32}::to_string
+}
+
+fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
+
+fn test_crate::destruct<'_0>(@1: &'_0 (dyn (exists(TODO)))) -> alloc::string::String
+{
+    let @0: alloc::string::String; // return
+    let x@1: &'_ (dyn (exists(TODO))); // arg #1
+    let @2: &'_ (dyn (exists(TODO))); // anonymous local
+
+    @2 := &*(x@1)
+    @0 := alloc::string::{impl alloc::string::ToString for T#32}<dyn (exists(TODO))>[core::fmt::Display]::to_string(move (@2))
+    drop @2
+    return
+}
+
+fn test_crate::combine()
+
+fn test_crate::foo<'_0, '_1, T>(@1: &'_0 (dyn (exists(TODO))), @2: &'_1 (dyn (exists(TODO))))
+{
+    let @0: (); // return
+    let @1: &'_ (dyn (exists(TODO))); // arg #1
+    let @2: &'_ (dyn (exists(TODO))); // arg #2
+    let @3: (); // anonymous local
+
+    @3 := ()
+    @0 := move (@3)
+    @0 := ()
+    return
+}
+
+fn test_crate::bar<'_0>(@1: &'_0 (dyn (exists(TODO))))
+{
+    let @0: (); // return
+    let @1: &'_ (dyn (exists(TODO))); // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
+fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+
+

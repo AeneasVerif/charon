@@ -97,9 +97,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
 impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
-            CastKind::Scalar(src, tgt) => format!("cast<{src},{tgt}>"),
+            CastKind::Scalar(src, tgt) => format!("cast<{src}, {tgt}>"),
             CastKind::FnPtr(src, tgt) => {
-                format!("cast<{},{}>", src.fmt_with_ctx(ctx), tgt.fmt_with_ctx(ctx))
+                format!("cast<{}, {}>", src.fmt_with_ctx(ctx), tgt.fmt_with_ctx(ctx))
+            }
+            CastKind::Unsize(src, tgt) => {
+                format!(
+                    "unsize_cast<{}, {}>",
+                    src.fmt_with_ctx(ctx),
+                    tgt.fmt_with_ctx(ctx)
+                )
             }
         }
     }
@@ -132,6 +139,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
             TraitImpl(g) => format!("Trait impls group: {}", g.fmt_with_ctx(ctx)),
             Mixed(g) => format!("Mixed group: {}", g.fmt_with_ctx(ctx)),
         }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for ExistentialPredicate {
+    fn fmt_with_ctx(&self, _ctx: &C) -> String {
+        format!("exists(TODO)")
     }
 }
 
@@ -313,7 +326,7 @@ impl GenericParams {
         let generics = self;
         let mut params = Vec::new();
         for x in &generics.regions {
-            params.push(x.to_string());
+            params.push(ctx.format_object(x));
         }
         for x in &generics.types {
             params.push(x.to_string());
@@ -403,7 +416,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericParams {
                 trait_type_constraints: _,
             } = self;
             for x in regions {
-                params.push(x.to_string());
+                params.push(ctx.format_object(x));
             }
             for x in types {
                 params.push(x.to_string());
@@ -1234,7 +1247,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitInstanceId {
             }
             TraitInstanceId::TraitImpl(id) => ctx.format_object(*id),
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
-            TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
+            TraitInstanceId::BuiltinOrAuto(id) | TraitInstanceId::Dyn(id) => ctx.format_object(*id),
             TraitInstanceId::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
     }
@@ -1289,6 +1302,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             Ty::TraitType(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
+            Ty::DynTrait(pred) => format!("dyn ({})", pred.with_ctx(ctx)),
             Ty::Arrow(regions, inputs, box output) => {
                 // Update the bound regions
                 let ctx = &ctx.push_bound_regions(regions);
@@ -1300,7 +1314,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                         "<{}>",
                         regions
                             .iter()
-                            .map(|r| r.to_string())
+                            .map(|r| ctx.format_object(r))
                             .collect::<Vec<String>>()
                             .join(", ")
                     )
@@ -1570,15 +1584,6 @@ impl std::string::ToString for ConstGenericVar {
 impl std::string::ToString for Field {
     fn to_string(&self) -> String {
         self.fmt_with_ctx(&FmtCtx::new())
-    }
-}
-
-impl std::string::ToString for RegionVar {
-    fn to_string(&self) -> String {
-        match &self.name {
-            Some(name) => name.to_string(),
-            None => format!("'_{}", self.index),
-        }
     }
 }
 

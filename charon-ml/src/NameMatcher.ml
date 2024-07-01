@@ -866,6 +866,7 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
       EArrow (inputs, out)
   | TRawPtr (ty, RMut) -> ERawPtr (Mut, ty_to_pattern_aux ctx c m ty)
   | TRawPtr (ty, RShared) -> ERawPtr (Not, ty_to_pattern_aux ctx c m ty)
+  | TDynTrait _ -> raise (Failure "Unimplemented: DynTrait")
   | TNever -> raise (Failure "Unimplemented: Never")
 
 and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)

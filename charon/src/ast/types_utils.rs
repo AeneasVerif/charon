@@ -209,10 +209,6 @@ impl IntegerTy {
     }
 }
 
-pub fn bound_region_var_to_pretty_string(grid: DeBruijnId, rid: RegionId) -> String {
-    format!("'_{}_{}", grid.index, rid.to_string())
-}
-
 impl Ty {
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
@@ -275,25 +271,6 @@ impl Ty {
                 Some(generics.types.get(0).unwrap())
             }
             _ => None,
-        }
-    }
-}
-
-impl Ty {
-    // TODO: reimplement this with visitors
-    pub fn contains_never(&self) -> bool {
-        match self {
-            Ty::Never => true,
-            Ty::Adt(_, args) => {
-                // For the trait type case: we are checking the projected type,
-                // so we don't need to explore the trait ref
-                args.types.iter().any(|ty| ty.contains_never())
-            }
-            Ty::TraitType(..) | Ty::TypeVar(_) | Ty::Literal(_) => false,
-            Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => ty.contains_never(),
-            Ty::Arrow(_, inputs, box output) => {
-                inputs.iter().any(|ty| ty.contains_never()) || output.contains_never()
-            }
         }
     }
 }

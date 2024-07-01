@@ -149,6 +149,7 @@ class ['self] map_constant_expr_base =
 type cast_kind =
   | CastScalar of literal_type * literal_type
   | CastFnPtr of ty * ty
+  | CastUnsize of ty * ty
 
 (* Remark: no `ArrayToSlice` variant: it gets eliminated in a micro-pass. *)
 and unop =

@@ -101,7 +101,7 @@ fn core::convert::num::{impl core::convert::From<i32> for i64#83}::from(@1: i32)
     let @0: i64; // return
     let small@1: i32; // arg #1
 
-    @0 := cast<i32,i64>(copy (small@1))
+    @0 := cast<i32, i64>(copy (small@1))
     return
 }
 
