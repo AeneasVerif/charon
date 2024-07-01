@@ -288,6 +288,7 @@ and ty =
   | TTraitType of trait_ref * string
       (** The string is for the name of the associated type *)
   | TArrow of region_var list * ty list * ty
+  | TDynTrait of unit
 
 and trait_ref = {
   trait_id : trait_instance_id;
@@ -331,6 +332,7 @@ and trait_instance_id =
        *)
   | FnPointer of ty
   | Closure of fun_decl_id * generic_args
+  | Dyn of trait_decl_id
   | Unsolved of trait_decl_id * generic_args
   | UnknownTrait of string
       (** Not present in the Rust version of Charon.

@@ -663,6 +663,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_decl_id = self.register_trait_decl_id(span, def_id)?.unwrap();
 
                 // Retrieve the arguments
+                assert!(nested.is_empty());
                 let generics = self.translate_substs_and_trait_refs(
                     span,
                     erase_regions,
@@ -670,7 +671,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     &trait_ref.generic_args,
                     nested,
                 )?;
-                assert!(generics.trait_refs.is_empty());
 
                 // If we are refering to a trait clause, we need to find the
                 // relevant one.
@@ -734,9 +734,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_decl_ref,
                 }
             }
-            ImplExprAtom::Dyn { .. } => {
-                error_or_panic!(self, span, "Unsupported trait impl source kind: object")
-            }
+            ImplExprAtom::Dyn => TraitRef {
+                trait_id: TraitInstanceId::Dyn(trait_decl_ref.trait_id),
+                generics: GenericArgs::empty(),
+                trait_decl_ref,
+            },
             ImplExprAtom::Builtin { r#trait: trait_ref } => {
                 let def_id = DefId::from(&trait_ref.def_id);
                 // Remark: we already filtered the marker traits when translating

@@ -372,6 +372,7 @@ let rec ty_of_json (js : json) : (ty, string) result =
         let* inputs = list_of_json ty_of_json inputs in
         let* output = ty_of_json output in
         Ok (TArrow (regions, inputs, output))
+    | `Assoc [ ("DynTrait", `Null) ] -> Ok (TDynTrait ())
     | `String "Never" -> Ok TNever
     | _ -> Error "")
 
@@ -450,6 +451,9 @@ and trait_instance_id_of_json (js : json) : (trait_instance_id, string) result =
         let* fid = FunDeclId.id_of_json fid in
         let* generics = generic_args_of_json generics in
         Ok (Closure (fid, generics))
+    | `Assoc [ ("Dyn", id) ] ->
+        let* id = TraitDeclId.id_of_json id in
+        Ok (Dyn id)
     | `Assoc [ ("Unsolved", `List [ decl_id; generics ]) ] ->
         let* decl_id = TraitDeclId.id_of_json decl_id in
         let* generics = generic_args_of_json generics in

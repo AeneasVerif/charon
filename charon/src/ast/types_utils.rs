@@ -275,25 +275,6 @@ impl Ty {
     }
 }
 
-impl Ty {
-    // TODO: reimplement this with visitors
-    pub fn contains_never(&self) -> bool {
-        match self {
-            Ty::Never => true,
-            Ty::Adt(_, args) => {
-                // For the trait type case: we are checking the projected type,
-                // so we don't need to explore the trait ref
-                args.types.iter().any(|ty| ty.contains_never())
-            }
-            Ty::TraitType(..) | Ty::TypeVar(_) | Ty::Literal(_) => false,
-            Ty::Ref(_, ty, _) | Ty::RawPtr(ty, _) => ty.contains_never(),
-            Ty::Arrow(_, inputs, box output) => {
-                inputs.iter().any(|ty| ty.contains_never()) || output.contains_never()
-            }
-        }
-    }
-}
-
 pub struct TySubst {
     pub ignore_regions: bool,
     /// This map is from regions to regions, not from region ids to regions.

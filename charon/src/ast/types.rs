@@ -134,14 +134,9 @@ pub enum Region {
     Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd, Drive, DriveMut,
 )]
 pub enum TraitInstanceId {
-    ///
-    /// A specific implementation
+    /// A specific top-level implementation item.
     TraitImpl(TraitImplId),
-    ///
-    /// A specific builtin trait implementation like [core::marker::Sized] or
-    /// auto trait implementation like [core::marker::Syn].
-    BuiltinOrAuto(TraitDeclId),
-    ///
+
     /// One of the local clauses.
     ///
     /// Example:
@@ -151,7 +146,7 @@ pub enum TraitInstanceId {
     ///                    Clause(0)
     /// ```
     Clause(TraitClauseId),
-    ///
+
     /// A parent clause
     ///
     /// Remark: the [TraitDeclId] gives the trait declaration which is
@@ -179,7 +174,7 @@ pub enum TraitInstanceId {
     /// }
     /// ```
     ParentClause(Box<TraitInstanceId>, TraitDeclId, TraitClauseId),
-    ///
+
     /// A clause bound in a trait item (typically a trait clause in an
     /// associated type).
     ///
@@ -213,7 +208,7 @@ pub enum TraitInstanceId {
         TraitItemName,
         TraitClauseId,
     ),
-    ///
+
     /// Self, in case of trait declarations/implementations.
     ///
     /// Putting [Self] at the end on purpose, so that when ordering the clauses
@@ -221,14 +216,20 @@ pub enum TraitInstanceId {
     /// is useful to give priority to the local clauses when solving the trait
     /// obligations which are fullfilled by the trait parameters.
     SelfId,
+
+    /// A specific builtin trait implementation like [core::marker::Sized] or
+    /// auto trait implementation like [core::marker::Syn].
+    BuiltinOrAuto(TraitDeclId),
+
+    /// The automatically-generated implementation for `dyn Trait`.
+    Dyn(TraitDeclId),
+
     /// For error reporting.
     Unknown(String),
 }
 
 /// A reference to a trait
-#[derive(
-    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd, Drive, DriveMut,
-)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitRef {
     pub trait_id: TraitInstanceId,
     pub generics: GenericArgs,
@@ -245,9 +246,7 @@ pub struct TraitRef {
 /// ```
 ///
 /// The substitution is: `[String, bool]`.
-#[derive(
-    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd, Drive, DriveMut,
-)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitDeclRef {
     pub trait_id: TraitDeclId,
     pub generics: GenericArgs,
@@ -292,9 +291,7 @@ pub struct TraitTypeConstraint {
     pub ty: Ty,
 }
 
-#[derive(
-    Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Ord, PartialOrd, Drive, DriveMut,
-)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Drive, DriveMut)]
 pub struct GenericArgs {
     pub regions: Vec<Region>,
     pub types: Vec<Ty>,
@@ -324,6 +321,12 @@ pub struct GenericParams {
     /// Constraints over trait associated types
     pub trait_type_constraints: Vec<TraitTypeConstraint>,
 }
+
+/// A predicate of the form `exists<T> where T: Trait`.
+///
+/// TODO: store something useful here
+#[derive(Debug, Default, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct ExistentialPredicate;
 
 generate_index_type!(TraitClauseId, "TraitClause");
 generate_index_type!(TraitDeclId, "TraitDecl");
@@ -611,8 +614,6 @@ pub enum ConstGeneric {
     Deserialize,
     Drive,
     DriveMut,
-    Ord,
-    PartialOrd,
 )]
 pub enum Ty {
     /// An ADT.
@@ -655,6 +656,13 @@ pub enum Ty {
     /// }
     /// ```
     TraitType(TraitRef, TraitItemName),
+    /// `dyn Trait`
+    ///
+    /// This carries an existentially quantified list of predicates, e.g. `exists<T> where T:
+    /// Into<u64>`. The predicate must quantify over a single type and no any regions or constants.
+    ///
+    /// TODO: we don't translate this properly yet.
+    DynTrait(ExistentialPredicate),
     /// Arrow type, used in particular for the local function pointers.
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters

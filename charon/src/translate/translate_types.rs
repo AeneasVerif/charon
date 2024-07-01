@@ -337,9 +337,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 error_or_panic!(self, span, "Unsupported type: infer type")
             }
 
-            hax::Ty::Dynamic(_, _, _) => {
+            hax::Ty::Dynamic(_existential_preds, _region, _) => {
+                // TODO: we don't translate the predicates yet because our machinery can't handle
+                // it.
                 trace!("Dynamic");
-                error_or_panic!(self, span, "Dynamic types are not supported yet")
+                Ok(Ty::DynTrait(ExistentialPredicate))
             }
 
             hax::Ty::Coroutine(..) => {

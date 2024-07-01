@@ -135,6 +135,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for ExistentialPredicate {
+    fn fmt_with_ctx(&self, _ctx: &C) -> String {
+        format!("exists(TODO)")
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for Field {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match &self.name {
@@ -1234,7 +1240,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitInstanceId {
             }
             TraitInstanceId::TraitImpl(id) => ctx.format_object(*id),
             TraitInstanceId::Clause(id) => ctx.format_object(*id),
-            TraitInstanceId::BuiltinOrAuto(id) => ctx.format_object(*id),
+            TraitInstanceId::BuiltinOrAuto(id) | TraitInstanceId::Dyn(id) => ctx.format_object(*id),
             TraitInstanceId::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
     }
@@ -1289,6 +1295,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             Ty::TraitType(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
+            Ty::DynTrait(pred) => format!("dyn ({})", pred.with_ctx(ctx)),
             Ty::Arrow(regions, inputs, box output) => {
                 // Update the bound regions
                 let ctx = &ctx.push_bound_regions(regions);
