@@ -125,6 +125,7 @@ pub enum InlineAttr {
     Drive,
     DriveMut,
 )]
+#[charon::variants_prefix("Attr")]
 pub enum Attribute {
     /// Do not translate the body of this item.
     /// Written `#[charon::opaque]`
@@ -222,6 +223,7 @@ pub struct ItemMeta {
     ///
     /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
     /// declared opaque via a command-line argument.
+    #[charon::opaque]
     pub opacity: ItemOpacity,
 }
 
@@ -240,5 +242,6 @@ pub enum FileName {
     #[drive(skip)] // drive is not implemented for `PathBuf`
     Local(PathBuf),
     /// A "not real" file name (macro, query, etc.)
+    #[charon::opaque]
     NotReal(String),
 }

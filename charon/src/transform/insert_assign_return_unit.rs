@@ -8,7 +8,6 @@ use crate::expressions::*;
 use crate::llbc_ast::{ExprBody, FunDecl, GlobalDecl, Opaque, RawStatement, Statement};
 use crate::transform::TransformCtx;
 use crate::types::*;
-use crate::values::*;
 
 use super::ctx::LlbcPass;
 

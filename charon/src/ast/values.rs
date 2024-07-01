@@ -33,6 +33,7 @@ generate_index_type!(VarId, "");
     PartialOrd,
     Ord,
 )]
+#[charon::variants_prefix("V")]
 pub enum Literal {
     Scalar(ScalarValue),
     Bool(bool),

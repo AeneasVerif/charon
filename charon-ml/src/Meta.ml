@@ -56,6 +56,7 @@ type attribute =
   | AttrRename of string
   | AttrUnknown of string
   | AttrVariantsPrefix of string
+  | AttrVariantsSuffix of string
 [@@deriving show, ord]
 
 type attr_info = {

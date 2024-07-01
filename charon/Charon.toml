@@ -1,0 +1,10 @@
+[charon]
+opaque_modules = [
+    "cli_options",
+    "common",
+    "deps_errors",
+    "ids",
+    "logger",
+    "pretty",
+    "translate",
+]

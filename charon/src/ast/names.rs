@@ -10,6 +10,7 @@ generate_index_type!(Disambiguator);
 #[derive(
     Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, EnumIsA, EnumAsGetters,
 )]
+#[charon::variants_prefix("Pe")]
 pub enum PathElem {
     Ident(String, Disambiguator),
     Impl(ImplElem),
@@ -33,6 +34,7 @@ pub struct ImplElem {
 ///   ```
 /// We distinguish the two.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[charon::variants_prefix("ImplElem")]
 pub enum ImplElemKind {
     Ty(Ty),
     /// Remark: the first type argument in the trait ref gives the type for

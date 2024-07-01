@@ -121,6 +121,8 @@ impl DepSource {
     Drive,
     DriveMut,
 )]
+#[charon::rename("AnyDeclId")]
+#[charon::variants_prefix("Id")]
 pub enum AnyTransId {
     Type(TypeDeclId),
     Fun(FunDeclId),

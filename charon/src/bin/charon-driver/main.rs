@@ -224,10 +224,8 @@ fn main() {
             // Standard rust panic error code.
             std::process::exit(101);
         }
-        Err(CharonFailure::RustcError(_) | CharonFailure::Serialize) => {
-            assert!(!errors_as_warnings);
-            let msg = format!("The extraction encountered {} errors", error_count);
-            log::error!("{}", msg);
+        Err(err @ (CharonFailure::RustcError(_) | CharonFailure::Serialize)) => {
+            log::error!("{err}");
             std::process::exit(1);
         }
     }

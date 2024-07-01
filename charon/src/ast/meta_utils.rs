@@ -1,5 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::meta]
 use crate::meta::*;
+use crate::names::{Disambiguator, Name, PathElem};
 use hax_frontend_exporter as hax;
 use rustc_ast::{AttrArgs, NormalAttr};
 use rustc_hir::def_id::DefId;
@@ -287,5 +288,15 @@ impl ItemOpacity {
 
     pub(crate) fn with_private_contents(self) -> Self {
         self.with_content_visibility(false)
+    }
+}
+
+impl ItemMeta {
+    pub fn renamed_name(&self) -> Name {
+        let mut name = self.name.clone();
+        if let Some(rename) = self.attr_info.rename.clone() {
+            *name.name.last_mut().unwrap() = PathElem::Ident(rename, Disambiguator::new(0));
+        }
+        name
     }
 }

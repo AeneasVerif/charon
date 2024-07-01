@@ -24,6 +24,9 @@
 #![feature(let_chains)]
 #![feature(lint_reasons)]
 #![feature(trait_alias)]
+#![feature(register_tool)]
+// For when we use charon on itself :3
+#![register_tool(charon)]
 
 extern crate rustc_ast;
 extern crate rustc_ast_pretty;

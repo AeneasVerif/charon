@@ -393,7 +393,7 @@ impl<'a> Formatter<(TypeDeclId, VariantId)> for FmtCtx<'a> {
                         def_id.to_pretty_string(),
                         variant_id.to_pretty_string()
                     ),
-                    Some(def) => {
+                    Some(def) if def.kind.is_enum() => {
                         let variants = def.kind.as_enum();
                         let mut name = def.item_meta.name.fmt_with_ctx(self);
                         let variant_name = &variants.get(variant_id).unwrap().name;
@@ -401,6 +401,7 @@ impl<'a> Formatter<(TypeDeclId, VariantId)> for FmtCtx<'a> {
                         name.push_str(variant_name);
                         name
                     }
+                    _ => format!("__unknown_variant"),
                 }
             }
         }
@@ -463,7 +464,7 @@ impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
                                 None => field_id.to_string(),
                             }
                         }
-                        _ => unreachable!(),
+                        _ => format!("__unknown_field"),
                     },
                 }
             }

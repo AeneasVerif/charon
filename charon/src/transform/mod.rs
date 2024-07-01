@@ -1,19 +1,35 @@
+#[charon::opaque]
 pub mod ctx;
+#[charon::opaque]
 pub mod graphs;
+#[charon::opaque]
 pub mod index_to_function_calls;
+#[charon::opaque]
 pub mod inline_local_panic_functions;
+#[charon::opaque]
 pub mod insert_assign_return_unit;
+#[charon::opaque]
 pub mod ops_to_function_calls;
+#[charon::opaque]
 pub mod reconstruct_asserts;
+#[charon::opaque]
 pub mod remove_arithmetic_overflow_checks;
+#[charon::opaque]
 pub mod remove_drop_never;
+#[charon::opaque]
 pub mod remove_dynamic_checks;
+#[charon::opaque]
 pub mod remove_nops;
+#[charon::opaque]
 pub mod remove_read_discriminant;
+#[charon::opaque]
 pub mod remove_unused_locals;
 pub mod reorder_decls;
+#[charon::opaque]
 pub mod simplify_constants;
+#[charon::opaque]
 pub mod ullbc_to_llbc;
+#[charon::opaque]
 pub mod update_closure_signatures;
 
 pub use ctx::TransformCtx;

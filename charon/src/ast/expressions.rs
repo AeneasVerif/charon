@@ -54,6 +54,7 @@ pub enum ProjectionElem {
     /// TODO: remove those (we would also need: `DerefPtrUnique`, `DerefPtrNonNull`, etc.)
     /// and only keep a single `Deref` variant?
     /// Or if we keep them, change to: `Deref(DerefKind)`?
+    #[charon::opaque]
     DerefRawPtr,
     /// Projection from ADTs (variants, structures).
     /// We allow projections to be used as left-values and right-values.
@@ -69,6 +70,7 @@ pub enum ProjectionElem {
     /// We also keep the type of the array/slice that we index for convenience purposes
     /// (this is not necessary).
     /// We **eliminate** this variant in a micro-pass.
+    #[charon::opaque]
     Index(Operand, Ty),
 }
 
@@ -85,15 +87,14 @@ pub enum ProjectionElem {
     Drive,
     DriveMut,
 )]
+#[charon::variants_prefix("Proj")]
 pub enum FieldProjKind {
-    #[serde(rename = "ProjAdt")]
     Adt(TypeDeclId, Option<VariantId>),
     /// If we project from a tuple, the projection kind gives the arity of the tuple.
-    #[serde(rename = "ProjTuple")]
     Tuple(usize),
-    #[serde(rename = "ProjClosureState")]
     /// Access to a field in a closure state.
     /// We eliminate this in a micro-pass ([crate::update_closure_signatures]).
+    #[charon::opaque]
     ClosureState,
 }
 
@@ -110,6 +111,7 @@ pub enum FieldProjKind {
     Drive,
     DriveMut,
 )]
+#[charon::variants_prefix("B")]
 pub enum BorrowKind {
     Shared,
     Mut,
@@ -128,6 +130,7 @@ pub enum BorrowKind {
 #[derive(
     Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
 )]
+#[charon::rename("Unop")]
 pub enum UnOp {
     Not,
     /// This can overflow. In practice, rust introduces an assert before
@@ -143,6 +146,7 @@ pub enum UnOp {
     /// *necessary* as we can retrieve them from the context, but storing them here is
     /// very useful. The [RefKind] argument states whethere we operate on a mutable
     /// or a shared borrow to an array.
+    #[charon::opaque]
     ArrayToSlice(RefKind, Ty, ConstGeneric),
 }
 
@@ -151,6 +155,7 @@ pub enum UnOp {
 #[derive(
     Debug, PartialEq, Eq, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
 )]
+#[charon::variants_prefix("Cast")]
 pub enum CastKind {
     /// Conversion between types in {Integer, Bool}
     /// Remark: for now we don't support conversions with Char.
@@ -168,6 +173,7 @@ pub enum CastKind {
 #[derive(
     Debug, PartialEq, Eq, Copy, Clone, EnumIsA, VariantName, Serialize, Deserialize, Drive, DriveMut,
 )]
+#[charon::rename("Binop")]
 pub enum BinOp {
     BitXor,
     BitAnd,
@@ -221,6 +227,7 @@ pub enum Operand {
     Copy(Place),
     Move(Place),
     /// Constant value (including constant and static variables)
+    #[charon::rename("Constant")]
     Const(ConstantExpr),
 }
 
@@ -238,6 +245,7 @@ pub enum Operand {
     Drive,
     DriveMut,
 )]
+#[charon::variants_prefix("F")]
 pub enum FunId {
     /// A "regular" function (function local to the crate, external function
     /// not treated as a primitive one).
@@ -317,10 +325,12 @@ pub enum AssumedFunId {
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut)]
 pub enum FunIdOrTraitMethodRef {
+    #[charon::rename("FunId")]
     Fun(FunId),
     /// If a trait: the reference to the trait and the id of the trait method.
     /// The fun decl id is not really necessary - we put it here for convenience
     /// purposes.
+    #[charon::rename("TraitMethod")]
     Trait(TraitRef, TraitItemName, FunDeclId),
 }
 
@@ -369,6 +379,7 @@ pub struct FnPtr {
     Drive,
     DriveMut,
 )]
+#[charon::variants_prefix("C")]
 pub enum RawConstantExpr {
     Literal(Literal),
     ///
@@ -379,6 +390,7 @@ pub enum RawConstantExpr {
     /// Less frequently: arbitrary ADT values.
     ///
     /// We eliminate this case in a micro-pass.
+    #[charon::opaque]
     Adt(Option<VariantId>, Vec<ConstantExpr>),
     ///
     /// The value is a top-level value.
@@ -399,6 +411,7 @@ pub enum RawConstantExpr {
     ///   let l = V::<N, T>::LEN; // We need to provided a substitution here
     /// }
     /// ```
+    #[charon::opaque]
     Global(GlobalDeclId, GenericArgs),
     ///
     /// A trait constant.
@@ -417,6 +430,7 @@ pub enum RawConstantExpr {
     /// A shared reference to a constant value
     ///
     /// We eliminate this case in a micro-pass.
+    #[charon::opaque]
     Ref(Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericVarId),
@@ -437,6 +451,7 @@ pub struct ConstantExpr {
 )]
 pub enum Rvalue {
     Use(Operand),
+    #[charon::rename("RvRef")]
     Ref(Place, BorrowKind),
     /// Unary operation (not, neg)
     UnaryOp(UnOp, Operand),
@@ -498,10 +513,12 @@ pub enum Rvalue {
     /// [Repeat(x, n)] creates an array where [x] is copied [n] times.
     ///
     /// We desugar this to a function call.
+    #[charon::opaque]
     Repeat(Operand, Ty, ConstGeneric),
 }
 
 #[derive(Debug, Clone, VariantIndexArity, Serialize, Deserialize, Drive, DriveMut)]
+#[charon::variants_prefix("Aggregated")]
 pub enum AggregateKind {
     Adt(TypeId, Option<VariantId>, GenericArgs),
     /// We don't put this with the ADT cas because this is the only assumed type

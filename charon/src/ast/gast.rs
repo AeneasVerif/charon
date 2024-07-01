@@ -39,6 +39,7 @@ pub struct Var {
     /// through desugaring.
     pub name: Option<String>,
     /// The variable type
+    #[charon::rename("var_ty")]
     pub ty: Ty,
 }
 
@@ -50,6 +51,7 @@ pub struct Opaque;
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[charon::rename("GexprBody")]
 pub struct GExprBody<T> {
     pub span: Span,
     /// The number of local variables used for the input arguments.
@@ -119,6 +121,7 @@ pub enum Body {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq)]
 pub enum ItemKind {
     /// A "normal" function
+    #[charon::rename("RegularKind")]
     Regular,
     /// Trait item implementation
     TraitItemImpl {
@@ -300,6 +303,7 @@ pub struct TraitImpl {
 /// It either designates a top-level function, or a place in case
 /// we are using function pointers stored in local variables.
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[charon::variants_prefix("FnOp")]
 pub enum FnOperand {
     /// Regular case: call to a top-level function, trait method, etc.
     Regular(FnPtr),
