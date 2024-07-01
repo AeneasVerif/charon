@@ -62,8 +62,30 @@ impl LlbcPass for Transform {
         });
 
         // Remove these functions from the context.
+        // We first remove them from the translated definitions.
         for id in &panic_fns {
             ctx.translated.fun_decls.remove(*id);
         }
+
+        // We also filter the declaration groups.
+        ctx.translated.ordered_decls = if let Some(groups) = &mut ctx.translated.ordered_decls {
+            Some(
+                groups
+                    .iter()
+                    .filter_map(|gr| {
+                        use crate::reorder_decls::DeclarationGroup::*;
+                        use crate::reorder_decls::GDeclarationGroup::*;
+                        // The panic functions should only appear in singleton groups
+                        // (they are not mutually recursive with any other definition).
+                        match gr {
+                            Fun(NonRec(id)) if panic_fns.contains(id) => Option::None,
+                            _ => Option::Some(gr.clone()),
+                        }
+                    })
+                    .collect(),
+            )
+        } else {
+            None
+        };
     }
 }

@@ -1,7 +1,5 @@
 # Final LLBC before serialization:
 
-Unknown decl: 9
-
 fn test_crate::panic1()
 {
     let @0: (); // return
