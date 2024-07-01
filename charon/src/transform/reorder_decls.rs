@@ -391,8 +391,9 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
                         //   fn f(x : Trait::X);
                         // }
                         // ```
-                        let decl = ctx.translated.fun_decls.get(id).unwrap();
-                        decl.signature.drive(&mut graph);
+                        if let Some(decl) = ctx.translated.fun_decls.get(id) {
+                            decl.signature.drive(&mut graph);
+                        }
                     }
                 } else {
                     // There may have been errors

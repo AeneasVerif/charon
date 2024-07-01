@@ -107,16 +107,10 @@ impl Callbacks for CharonCallbacks {
         rustc_hir::def_id::DEF_ID_DEBUG
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
-        queries
-            .global_ctxt()
-            .unwrap()
-            .get_mut()
-            .enter(|tcx| {
-                let crate_data = translate(tcx, self)?;
-                self.crate_data = Some(crate_data);
-                Ok::<(), ()>(())
-            })
-            .unwrap();
+        queries.global_ctxt().unwrap().get_mut().enter(|tcx| {
+            let crate_data = translate(tcx, self);
+            self.crate_data = Some(crate_data);
+        });
         Compilation::Stop
     }
 }
@@ -205,8 +199,7 @@ pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize>
 /// Translate a crate to LLBC (Low-Level Borrow Calculus).
 ///
 /// This function is a callback function for the Rust compiler.
-#[allow(clippy::result_unit_err)]
-pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> Result<export::CrateData, ()> {
+pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateData {
     trace!();
     let options = &internal.options;
 
@@ -240,10 +233,7 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> Result<export::
     // # Translate the declarations in the crate.
     // We translate the declarations in an ad-hoc order, and do not group
     // the mutually recursive groups - we do this in the next step.
-    let mut ctx = match translate_crate_to_ullbc::translate(crate_name, options, tcx, mir_level) {
-        Ok(ctx) => ctx,
-        Err(_) => return Err(()),
-    };
+    let mut ctx = translate_crate_to_ullbc::translate(crate_name, options, tcx, mir_level);
 
     if options.print_ullbc {
         info!("# ULLBC after translation from MIR:\n\n{ctx}\n");
@@ -305,5 +295,5 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> Result<export::
     // Update the error count
     internal.error_count = ctx.errors.error_count;
 
-    Ok(export::CrateData::new(&ctx))
+    export::CrateData::new(&ctx)
 }

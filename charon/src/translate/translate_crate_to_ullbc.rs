@@ -235,7 +235,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         {
             return;
         }
-        self.with_def_id(rust_id, |ctx| {
+        self.with_def_id(rust_id, |mut ctx| {
             let span = ctx.tcx.def_span(rust_id);
             // Catch cycles
             let res = if ctx.translate_stack.contains(&trans_id) {
@@ -249,9 +249,30 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 Err(())
             } else {
                 ctx.translate_stack.push(trans_id);
-                let res = ctx.translate_item_aux(rust_id, trans_id);
+
+                let res = {
+                    // Stopgap measure because there are still many panics in charon and hax.
+                    let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
+                    std::panic::catch_unwind(move || ctx.translate_item_aux(rust_id, trans_id))
+                };
+                let res = match res {
+                    Ok(Ok(())) => Ok(()),
+                    // Translation error
+                    Ok(Err(_)) => Err(()),
+                    // Panic
+                    Err(_) => {
+                        let span = ctx.tcx.def_span(rust_id);
+                        register_error_or_panic!(
+                            ctx,
+                            span,
+                            "Thread panicked when extracting item {rust_id}."
+                        );
+                        Err(())
+                    }
+                };
+                // let res = ctx.translate_item_aux(rust_id, trans_id);
                 ctx.translate_stack.pop();
-                res.map_err(|_| ())
+                res
             };
 
             if res.is_err() {
@@ -340,7 +361,7 @@ pub fn translate<'tcx, 'ctx>(
     options: &CliOpts,
     tcx: TyCtxt<'tcx>,
     mir_level: MirLevel,
-) -> Result<TransformCtx<'tcx>, Error> {
+) -> TransformCtx<'tcx> {
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -395,7 +416,8 @@ pub fn translate<'tcx, 'ctx>(
         let rustc_hir::Node::Item(item) = tcx.hir_node(item_id) else {
             unreachable!()
         };
-        ctx.register_local_hir_item(true, item)?;
+        // If registration fails we simply skip the item.
+        let _ = ctx.register_local_hir_item(true, item);
     }
 
     trace!(
@@ -418,10 +440,9 @@ pub fn translate<'tcx, 'ctx>(
     }
 
     // Return the context, dropping the hax state and rustc `tcx`.
-    let ctx = TransformCtx {
+    TransformCtx {
         options: ctx.options,
         translated: ctx.translated,
         errors: ctx.errors,
-    };
-    Ok(ctx)
+    }
 }
