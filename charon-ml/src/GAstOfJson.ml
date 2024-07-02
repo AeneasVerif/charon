@@ -132,6 +132,9 @@ let attribute_of_json (js : json) : (attribute, string) result =
     | `Assoc [ ("Rename", rename) ] ->
         let* rename = string_of_json rename in
         Ok (AttrRename rename)
+    | `Assoc [ ("VariantsPrefix", prefix) ] ->
+        let* prefix = string_of_json prefix in
+        Ok (AttrVariantsPrefix prefix)
     | `Assoc [ ("Unknown", unknown) ] ->
         let* unknown = string_of_json unknown in
         Ok (AttrUnknown unknown)

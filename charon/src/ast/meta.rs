@@ -126,8 +126,18 @@ pub enum InlineAttr {
     DriveMut,
 )]
 pub enum Attribute {
+    /// Do not translate the body of this item.
+    /// Written `#[charon::opaque]`
     Opaque,
+    /// Provide a new name that consumers of the llbc can use.
+    /// Written `#[charon::rename("new_name")]`
     Rename(String),
+    /// For enums only: rename the variants by pre-pending their names with the given prefix.
+    /// Written `#[charon::variants_prefix("prefix_")]`.
+    VariantsPrefix(String),
+    /// Same as `VariantsPrefix`, but appends to the name instead of pre-pending.
+    VariantsSuffix(String),
+    /// A non-charon-specific attribute.
     Unknown(String),
 }
 
@@ -138,9 +148,9 @@ pub struct AttrInfo {
     pub attributes: Vec<Attribute>,
     /// Inline hints (on functions only).
     pub inline: Option<InlineAttr>,
-    /// The name specified with the `#[charon::rename("...")]` attribute, if any. This provides a
-    /// custom name that can be used by consumers of llbc. E.g. Aeneas uses this to rename
-    /// definitions in the extracted code.
+    /// The name computed from `charon::rename` and `charon::variants_prefix` attributes, if any.
+    /// This provides a custom name that can be used by consumers of llbc. E.g. Aeneas uses this to
+    /// rename definitions in the extracted code.
     pub rename: Option<String>,
     /// Whether this item is declared public. Impl blocks and closures don't have visibility
     /// modifiers; we arbitrarily set this to `false` for them.

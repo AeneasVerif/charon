@@ -617,13 +617,36 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let variant_attrs = self
                 .t_ctx
                 .translate_attr_info_from_rid(DefId::from(&var_def.def_id), variant_span);
-            variants.push(Variant {
+
+            let mut variant = Variant {
                 span: variant_span,
                 attr_info: variant_attrs,
                 name: variant_name,
                 fields,
                 discriminant,
-            });
+            };
+            // Propagate a `#[charon::variants_prefix(..)]` or `#[charon::variants_suffix(..)]` attribute to the variants.
+            if variant.attr_info.rename.is_none() {
+                let prefix = item_meta
+                    .attr_info
+                    .attributes
+                    .iter()
+                    .find(|a| a.is_variants_prefix())
+                    .map(|attr| attr.as_variants_prefix().as_str());
+                let suffix = item_meta
+                    .attr_info
+                    .attributes
+                    .iter()
+                    .find(|a| a.is_variants_suffix())
+                    .map(|attr| attr.as_variants_suffix().as_str());
+                if prefix.is_some() || suffix.is_some() {
+                    let prefix = prefix.unwrap_or_default();
+                    let suffix = suffix.unwrap_or_default();
+                    let name = &variant.name;
+                    variant.attr_info.rename = Some(format!("{prefix}{name}{suffix}"));
+                }
+            }
+            variants.push(variant);
         }
 
         // Register the type

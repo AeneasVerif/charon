@@ -238,6 +238,32 @@ impl Attribute {
 
                 Ok(Self::Rename(attr.to_string()))
             }
+            // `#[charon::variants_prefix("T")]`
+            "variants_prefix" if let Some(attr) = args => {
+                let Some(attr) = attr
+                    .strip_prefix("\"")
+                    .and_then(|attr| attr.strip_suffix("\""))
+                else {
+                    return Err(format!(
+                        "the name should be between quotes: `variants_prefix(\"{attr}\")`."
+                    ));
+                };
+
+                Ok(Self::VariantsPrefix(attr.to_string()))
+            }
+            // `#[charon::variants_suffix("T")]`
+            "variants_suffix" if let Some(attr) = args => {
+                let Some(attr) = attr
+                    .strip_prefix("\"")
+                    .and_then(|attr| attr.strip_suffix("\""))
+                else {
+                    return Err(format!(
+                        "the name should be between quotes: `variants_suffix(\"{attr}\")`."
+                    ));
+                };
+
+                Ok(Self::VariantsSuffix(attr.to_string()))
+            }
             _ => {
                 let full_attr = rustc_ast_pretty::pprust::State::to_string(|s| {
                     s.print_attr_item(&normal_attr.item, span)
