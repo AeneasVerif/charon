@@ -74,27 +74,8 @@ jobs:
     if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
     runs-on: [self-hosted, linux, nix]
     steps:
-      - name: checkout libcrux
-        uses: actions/checkout@v4
-        with:
-          repository: cryspen/libcrux
-          ref: dev
-      # Kyber expects Eurydice's sources in `$EURYDICE_HOME`,
-      # not the install directory.
-      - name: checkout eurydice
-        uses: actions/checkout@v4
-        with:
-          repository: aeneasverif/eurydice
-          path: eurydice
-      - name: setup
-        run: |
-          nix build ./eurydice -o eurydice/result --override-input charon github:aeneasverif/charon/${{ github.sha }}
-          ln -s $(pwd)/eurydice/result/bin/eurydice $(pwd)/eurydice/eurydice
-          nix build github:hacl-star/hacl-nix#fstar -o fstar
-          nix build github:hacl-star/hacl-nix#karamel.home -o karamel
-          echo EURYDICE_HOME=$(pwd)/eurydice >> $GITHUB_ENV
-          echo FSTAR_HOME=$(pwd)/fstar >> $GITHUB_ENV
-          echo KRML_HOME=$(pwd)/karamel >> $GITHUB_ENV
-      - name: build kyber
-        run: |
-          nix develop 'github:aeneasverif/charon/${{ github.sha }}#kyber-ci' --command build-kyber
+      - run: |
+          nix build -L github:cryspen/libcrux/dev#ml-kem \
+              --override-input charon github:aeneasverif/charon/${{ github.sha }} \
+              --override-input charon/rust-overlay github:oxalica/rust-overlay/master \
+              --override-input eurydice github:aeneasverif/eurydice
