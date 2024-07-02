@@ -215,10 +215,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         .instantiate_identity()
                         .sinto(&bt_ctx.hax_state);
 
-                    bt_ctx.translate_generic_params(id).unwrap();
-                    bt_ctx
-                        .translate_predicates_of(None, id, PredicateOrigin::WhereClauseOnImpl)
-                        .unwrap();
+                    bt_ctx.translate_generic_params(id)?;
+                    bt_ctx.translate_predicates_of(None, id, PredicateOrigin::WhereClauseOnImpl)?;
                     let erase_regions = false;
                     // Two cases, depending on whether the impl block is
                     // a "regular" impl block (`impl Foo { ... }`) or a trait
@@ -226,7 +224,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     let kind = match bt_ctx.t_ctx.tcx.impl_trait_ref(id) {
                         None => {
                             // Inherent impl ("regular" impl)
-                            let ty = bt_ctx.translate_ty(span, erase_regions, &ty).unwrap();
+                            let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
                             ImplElemKind::Ty(ty)
                         }
                         Some(trait_ref) => {

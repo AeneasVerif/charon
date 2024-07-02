@@ -4,6 +4,19 @@ error[E9999]: Cannot handle error `FulfillmentError` selecting `Binder { value: 
   = note: ⚠️ This is a bug in Hax's frontend.
           Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
 
-error: aborting due to 1 previous error
+error: Thread panicked when extracting item {rust_id}.
+ --> tests/ui/unsupported/gat.rs:5:1
+  |
+5 | trait ArraySize {
+  | ^^^^^^^^^^^^^^^
 
-Error: Charon driver exited with code 101
+error: Ignoring the following item due to an error: test_crate::ArraySize
+ --> tests/ui/unsupported/gat.rs:5:1
+  |
+5 | trait ArraySize {
+  | ^^^^^^^^^^^^^^^
+
+error: aborting due to 3 previous errors
+
+[ERROR charon_driver:230] The extraction encountered 2 errors
+Error: Charon driver exited with code 1
