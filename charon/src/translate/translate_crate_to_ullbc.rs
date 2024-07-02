@@ -101,16 +101,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 trace!("impl");
                 // Sanity checks
                 // TODO: make proper error messages
-                use rustc_hir::{Defaultness, ImplPolarity, Safety};
-                assert!(impl_block.safety == Safety::Safe);
+                use rustc_hir::{Defaultness, ImplPolarity};
                 // About polarity:
                 // [https://doc.rust-lang.org/beta/unstable-book/language-features/negative-impls.html]
                 // Not sure about what I should do about it. Should I do anything, actually?
                 // This seems useful to enforce some discipline on the user-side, but not
                 // necessary for analysis purposes.
                 assert!(impl_block.polarity == ImplPolarity::Positive);
-                // Not sure what this is about
-                assert!(impl_block.defaultness == Defaultness::Final);
 
                 // If this is a trait implementation, register it
                 if self.tcx.trait_id_of_impl(def_id).is_some() {
