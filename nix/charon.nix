@@ -1,13 +1,13 @@
-{
-  bintools,
-  cargoLock ? ../charon/Cargo.lock,
-  craneLib,
-  lib,
-  makeWrapper,
-  runCommand,
-  rustToolchain,
-  stdenv,
-  zlib,
+{ bintools
+, cargoLock ? ../charon/Cargo.lock
+, craneLib
+, lib
+, makeWrapper
+, runCommand
+, rustToolchain
+, stdenv
+, zlib
+,
 }:
 
 let
@@ -35,7 +35,7 @@ in
 
 craneLib.buildPackage (
   craneArgs
-  // {
+    // {
     buildInputs = [
       makeWrapper
       zlib
@@ -44,6 +44,11 @@ craneLib.buildPackage (
     nativeBuildInputs = lib.optionals (stdenv.isDarwin) [ bintools ];
     # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
     cargoArtifacts = craneLib.buildDepsOnly craneArgs;
+    postPatch = ''
+      # This file is a symlink outside of the charon directory. We remove it so
+      # that we regenerate a fresh file in its place.
+      rm -f tests/generated-ml/GAstOfJson.ml
+    '';
     # Make sure the toolchain is in $PATH so that `cargo` can work
     # properly. On mac we also have to tell `charon-driver` where to find
     # the rustc_driver dynamic library; this is done automatically on
@@ -60,9 +65,13 @@ craneLib.buildPackage (
       '');
     checkPhaseCargoCommand = ''
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked
+      CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked --test generate-ml -- --include-ignored
       # While running tests we also outputted llbc files. We export them for charon-ml tests.
       mkdir -p $out/tests-llbc
       cp tests/**/*.llbc $out/tests-llbc
+      # While running tests we also generated ocaml files. We export them to later check if they match.
+      mkdir -p $out/generated-ml
+      cp tests/generated-ml/*.ml $out/generated-ml
     '';
 
     passthru.check-fmt = craneLib.cargoFmt craneArgs;
