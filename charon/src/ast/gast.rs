@@ -1,18 +1,14 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
-pub use crate::expressions::*;
-pub use crate::gast_utils::*;
+pub use super::gast_utils::*;
+use crate::expressions::*;
 use crate::generate_index_type;
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::meta::{ItemMeta, Span};
 use crate::names::Name;
-pub use crate::types::GlobalDeclId;
-pub use crate::types::TraitClauseId;
 use crate::types::*;
-pub use crate::types::{
-    GenericArgs, GenericParams, TraitDeclId, TraitImplId, TraitInstanceId, TraitRef,
-};
 use crate::ullbc_ast;
+use crate::values::*;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::EnumIsA;
 use macros::EnumToGetters;

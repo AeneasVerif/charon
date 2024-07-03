@@ -1,9 +1,7 @@
-use crate::ast::krate::{AnyTransId, AnyTransItem};
 use crate::common::*;
 use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::graphs::*;
 use crate::transform::TransformCtx;
-use crate::types::*;
 use crate::ullbc_ast::*;
 use derive_visitor::{Drive, Visitor};
 use hashlink::linked_hash_map::LinkedHashMap;

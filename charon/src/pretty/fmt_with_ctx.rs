@@ -1,16 +1,14 @@
 //! Utilities for pretty-printing (u)llbc.
 use crate::{
-    assumed::get_name_from_type_id,
     common::TAB_INCR,
     formatter::*,
     gast,
     ids::Vector,
     llbc_ast::{self as llbc, *},
     reorder_decls::*,
-    translate_predicates::NonLocalTraitClause,
+    translate::translate_predicates::NonLocalTraitClause,
     ullbc_ast::{self as ullbc, *},
 };
-use crate::ast::*;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
 

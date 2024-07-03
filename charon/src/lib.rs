@@ -53,17 +53,10 @@ pub mod transform;
 pub mod translate;
 
 // Re-export all the ast modules so we can keep the old import structure.
-pub use ast::{
-    assumed, expressions, expressions_utils, gast, gast_utils, llbc_ast, llbc_ast_utils, meta,
-    meta_utils, names, names_utils, types, types_utils, ullbc_ast, ullbc_ast_utils, values,
-    values_utils,
-};
+pub use ast::{assumed, expressions, gast, llbc_ast, meta, names, types, ullbc_ast, values};
 pub use pretty::formatter;
 pub use transform::{graphs, reorder_decls, ullbc_to_llbc};
-pub use translate::{
-    get_mir, translate_constants, translate_crate_to_ullbc, translate_ctx,
-    translate_functions_to_ullbc, translate_predicates, translate_traits, translate_types,
-};
+pub use translate::translate_ctx;
 
 /// The version of the crate, as defined in `Cargo.toml`.
 const VERSION: &str = env!("CARGO_PKG_VERSION");

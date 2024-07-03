@@ -2,10 +2,8 @@
 //! For instance, we desugar ArrayToSlice from an unop to a function call.
 //! This allows a more uniform treatment later on.
 //! TODO: actually transform all the unops and binops to function calls?
-use crate::expressions::{Rvalue, UnOp};
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
-use crate::types::*;
 
 use super::ctx::LlbcPass;
 

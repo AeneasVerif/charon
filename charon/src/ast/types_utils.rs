@@ -406,11 +406,7 @@ impl TySubst {
         Ok(())
     }
 
-    fn unify_args(
-        &mut self,
-        src: &crate::gast::GenericArgs,
-        tgt: &crate::gast::GenericArgs,
-    ) -> Result<(), ()> {
+    fn unify_args(&mut self, src: &GenericArgs, tgt: &GenericArgs) -> Result<(), ()> {
         if !self.ignore_regions {
             self.unify_regions_lists(&src.regions, &tgt.regions)?;
         }
@@ -425,8 +421,8 @@ impl TySubst {
     pub fn unify_args_with_fixed(
         fixed_type_vars: impl std::iter::Iterator<Item = TypeVarId>,
         fixed_const_generic_vars: impl std::iter::Iterator<Item = ConstGenericVarId>,
-        src: &crate::gast::GenericArgs,
-        tgt: &crate::gast::GenericArgs,
+        src: &GenericArgs,
+        tgt: &GenericArgs,
     ) -> Result<Self, ()> {
         let mut s = TySubst::new();
         for v in fixed_type_vars {

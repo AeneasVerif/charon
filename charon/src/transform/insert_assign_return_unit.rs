@@ -4,10 +4,8 @@
 //! For this reason, when the function has return type unit, we insert
 //! an extra assignment just before returning.
 
-use crate::expressions::*;
-use crate::llbc_ast::{ExprBody, FunDecl, GlobalDecl, Opaque, RawStatement, Statement};
+use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
-use crate::types::*;
 
 use super::ctx::LlbcPass;
 

@@ -6,12 +6,8 @@
 //! Also note that we completely break the definitions Statement and Terminator
 //! from MIR to use Statement only.
 
-pub use crate::gast::*;
-pub use crate::llbc_ast_utils::*;
-use crate::meta::Span;
-use crate::types::*;
-pub use crate::ullbc_ast::{Call, FunDeclId, GlobalDeclId, Var};
-use crate::values::*;
+pub use super::llbc_ast_utils::*;
+pub use crate::ast::*;
 use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};

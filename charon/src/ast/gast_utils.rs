@@ -1,9 +1,8 @@
 //! Implementations for [crate::gast]
 
-use crate::gast::*;
+use crate::ast::*;
 use crate::ids::Vector;
 use crate::llbc_ast;
-use crate::types::*;
 use crate::ullbc_ast;
 
 /// Makes a lambda that generates a new variable id, pushes a new variable in

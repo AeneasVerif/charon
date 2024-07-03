@@ -1,3 +1,4 @@
+use crate::ast::krate::*;
 use crate::common::*;
 use crate::formatter::IntoFormatter;
 use crate::gast::*;

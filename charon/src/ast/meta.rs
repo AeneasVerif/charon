@@ -1,6 +1,6 @@
 //! Meta-information about programs (spans, etc.).
 
-pub use crate::meta_utils::*;
+pub use super::meta_utils::*;
 use crate::names::Name;
 use derive_visitor::{Drive, DriveMut};
 use hax_frontend_exporter::PathBuf;

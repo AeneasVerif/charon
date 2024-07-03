@@ -2,7 +2,6 @@
 
 use crate::gast::{FunDeclId, TraitItemName};
 use crate::types::*;
-pub use crate::values::VarId;
 use crate::values::*;
 use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};

@@ -6,20 +6,15 @@
 use std::mem;
 use std::panic;
 
-use crate::assumed::BuiltinFun;
+use super::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
+use super::translate_types;
+use crate::ast::*;
 use crate::common::*;
-use crate::expressions::*;
 use crate::formatter::{Formatter, IntoFormatter};
-use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use crate::ids::Vector;
-use crate::meta::ItemMeta;
-use crate::names::Name;
 use crate::pretty::FmtWithCtx;
 use crate::translate_ctx::*;
-use crate::translate_types;
-use crate::types::*;
 use crate::ullbc_ast::*;
-use crate::values::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;

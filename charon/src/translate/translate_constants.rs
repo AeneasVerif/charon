@@ -1,9 +1,7 @@
 //! Functions to translate constants to LLBC.
+use crate::ast::*;
 use crate::common::*;
-use crate::gast::*;
 use crate::translate_ctx::*;
-use crate::types::*;
-use crate::values::*;
 use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
 
@@ -146,7 +144,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 generics_impls: trait_refs,
                 method_impl: trait_info,
             } => {
-                use crate::translate_functions_to_ullbc::SubstFunIdOrPanic;
+                use super::translate_functions_to_ullbc::SubstFunIdOrPanic;
                 let erase_regions = true; // TODO: not sure
                 let fn_id = self.translate_fun_decl_id_with_args(
                     span,

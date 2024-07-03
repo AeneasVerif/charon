@@ -1,11 +1,11 @@
 //! The translation contexts.
+use super::translate_predicates::NonLocalTraitClause;
+use super::translate_traits::ClauseTransCtx;
 use crate::ast::*;
 use crate::cli_options::TransOptions;
 use crate::common::*;
 use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::ids::{MapGenerator, Vector};
-use crate::translate_predicates::NonLocalTraitClause;
-use crate::translate_traits::ClauseTransCtx;
 use crate::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -20,7 +20,6 @@ use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 
 // Re-export to avoid having to fix imports.
-pub use crate::ast::krate::{AnyTransId, AnyTransItem, TranslatedCrate};
 pub(crate) use crate::deps_errors::{
     error_assert, error_or_panic, register_error_or_panic, DepSource, ErrorCtx,
 };
