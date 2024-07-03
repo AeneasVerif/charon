@@ -3,12 +3,13 @@ use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::graphs::*;
 use crate::transform::TransformCtx;
 pub use crate::translate_ctx::AnyTransId;
+use crate::translate_ctx::AnyTransItem;
 use crate::types::*;
 use crate::ullbc_ast::*;
 use derive_visitor::{Drive, Visitor};
 use hashlink::linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
-use macros::{VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
 use serde::{Deserialize, Serialize};
@@ -17,7 +18,9 @@ use std::vec::Vec;
 
 /// A (group of) top-level declaration(s), properly reordered.
 /// "G" stands for "generic"
-#[derive(Debug, Clone, VariantIndexArity, VariantName, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
+)]
 pub enum GDeclarationGroup<Id> {
     /// A non-recursive declaration
     NonRec(Id),
@@ -26,7 +29,9 @@ pub enum GDeclarationGroup<Id> {
 }
 
 /// A (group of) top-level declaration(s), properly reordered.
-#[derive(Debug, Clone, VariantIndexArity, VariantName, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
+)]
 pub enum DeclarationGroup {
     /// A type declaration group
     Type(GDeclarationGroup<TypeDeclId>),
@@ -219,9 +224,6 @@ impl<'tcx, 'ctx> Deps<'tcx, 'ctx> {
                         // Register the trait decl id
                         self.impl_trait_id = Some(*impl_id)
                     }
-                } else {
-                    // Sanity check
-                    assert!(ctx.has_errors());
                 }
             }
         }
@@ -330,39 +332,24 @@ impl Deps<'_, '_> {
 fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps<'tcx, 'ctx> {
     let mut graph = Deps::new(ctx);
     for id in &ctx.translated.all_ids {
-        graph.set_current_id(ctx, *id);
-        match id {
-            AnyTransId::Type(id) => {
-                if let Some(d) = ctx.translated.type_decls.get(*id) {
+        if let Some(item) = ctx.translated.get_item(*id) {
+            graph.set_current_id(ctx, *id);
+            match item {
+                AnyTransItem::Type(d) => {
                     d.drive(&mut graph);
-                } else {
-                    // There may have been errors
-                    assert!(ctx.has_errors());
                 }
-            }
-            AnyTransId::Fun(id) => {
-                if let Some(d) = ctx.translated.fun_decls.get(*id) {
+                AnyTransItem::Fun(d) => {
                     // Explore the signature
                     d.signature.drive(&mut graph);
                     // Skip `d.kind`: we don't want to record a dependency to the impl block this
                     // belongs to.
                     d.body.drive(&mut graph);
-                } else {
-                    // There may have been errors
-                    assert!(ctx.has_errors());
                 }
-            }
-            AnyTransId::Global(id) => {
-                if let Some(d) = ctx.translated.global_decls.get(*id) {
+                AnyTransItem::Global(d) => {
                     // FIXME: shouldn't we visit the generics etc?
                     d.body.drive(&mut graph);
-                } else {
-                    // There may have been errors
-                    assert!(ctx.has_errors());
                 }
-            }
-            AnyTransId::TraitDecl(id) => {
-                if let Some(d) = ctx.translated.trait_decls.get(*id) {
+                AnyTransItem::TraitDecl(d) => {
                     // Visit the traits referenced in the generics
                     d.generics.drive(&mut graph);
 
@@ -395,21 +382,13 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
                             decl.signature.drive(&mut graph);
                         }
                     }
-                } else {
-                    // There may have been errors
-                    assert!(ctx.has_errors());
                 }
-            }
-            AnyTransId::TraitImpl(id) => {
-                if let Some(d) = ctx.translated.trait_impls.get(*id) {
+                AnyTransItem::TraitImpl(d) => {
                     d.drive(&mut graph);
-                } else {
-                    // There may have been errors
-                    assert!(ctx.has_errors());
                 }
             }
+            graph.unset_current_id();
         }
-        graph.unset_current_id();
     }
     graph
 }

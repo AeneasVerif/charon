@@ -66,20 +66,6 @@ where
     return
 }
 
-trait core::fmt::LowerHex<Self>
-{
-    fn fmt : core::fmt::LowerHex::fmt
-}
-
-fn core::fmt::num::{impl core::fmt::LowerHex for u32#60}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
-
-impl core::fmt::num::{impl core::fmt::LowerHex for u32#60} : core::fmt::LowerHex<u32>
-{
-    fn fmt = core::fmt::num::{impl core::fmt::LowerHex for u32#60}::fmt
-}
-
-fn core::fmt::LowerHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
-
 trait core::fmt::Display<Self>
 {
     fn fmt : core::fmt::Display::fmt
@@ -107,6 +93,20 @@ impl core::fmt::num::{impl core::fmt::UpperHex for u32#61} : core::fmt::UpperHex
 }
 
 fn core::fmt::UpperHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+trait core::fmt::LowerHex<Self>
+{
+    fn fmt : core::fmt::LowerHex::fmt
+}
+
+fn core::fmt::num::{impl core::fmt::LowerHex for u32#60}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+impl core::fmt::num::{impl core::fmt::LowerHex for u32#60} : core::fmt::LowerHex<u32>
+{
+    fn fmt = core::fmt::num::{impl core::fmt::LowerHex for u32#60}::fmt
+}
+
+fn core::fmt::LowerHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
 
 fn core::fmt::num::{impl core::fmt::Debug for u32#86}::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
 {

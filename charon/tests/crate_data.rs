@@ -29,6 +29,7 @@ fn translate(code: impl std::fmt::Display) -> Result<CrateData, Box<dyn Error>> 
     let output_path = tmp_dir.path().join("test_crate.llbc");
     Command::cargo_bin("charon")?
         .arg("--no-cargo")
+        .arg("--rustc-flag=--edition=2021")
         .arg("--input")
         .arg(input_path)
         .arg("--dest-file")
@@ -606,5 +607,22 @@ fn rename_attribute() -> Result<(), Box<dyn Error>> {
             .as_deref(),
         Some("FieldTest")
     );
+    Ok(())
+}
+
+#[test]
+fn declaration_groups() -> Result<(), Box<dyn Error>> {
+    let crate_data = translate(
+        r#"
+        fn foo() {
+            panic!()
+        }
+        "#,
+    )?;
+
+    assert_eq!(crate_data.functions.len(), 1);
+    assert_eq!(crate_data.declarations.len(), 1);
+    assert!(crate_data.declarations[0].as_fun().is_non_rec());
+
     Ok(())
 }

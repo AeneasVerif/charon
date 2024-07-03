@@ -442,6 +442,18 @@ impl ErrorCtx<'_> {
     }
 }
 
+impl TranslatedCrate {
+    pub fn get_item(&self, trans_id: AnyTransId) -> Option<AnyTransItem<'_>> {
+        match trans_id {
+            AnyTransId::Type(id) => self.type_decls.get(id).map(AnyTransItem::Type),
+            AnyTransId::Fun(id) => self.fun_decls.get(id).map(AnyTransItem::Fun),
+            AnyTransId::Global(id) => self.global_decls.get(id).map(AnyTransItem::Global),
+            AnyTransId::TraitDecl(id) => self.trait_decls.get(id).map(AnyTransItem::TraitDecl),
+            AnyTransId::TraitImpl(id) => self.trait_impls.get(id).map(AnyTransItem::TraitImpl),
+        }
+    }
+}
+
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub fn continue_on_failure(&self) -> bool {
         self.errors.continue_on_failure()

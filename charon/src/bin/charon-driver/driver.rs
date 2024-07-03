@@ -241,14 +241,6 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
         trace!("# ULLBC after translation from MIR:\n\n{ctx}\n");
     }
 
-    // # Reorder the graph of dependencies and compute the strictly
-    // connex components to:
-    // - compute the order in which to extract the definitions
-    // - find the recursive definitions
-    // - group the mutually recursive definitions
-    let reordered_decls = compute_reordered_decls(&mut ctx);
-    ctx.translated.ordered_decls = Some(reordered_decls);
-
     //
     // =================
     // **Micro-passes**:
@@ -279,6 +271,14 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
         for pass in LLBC_PASSES.iter() {
             pass.transform_ctx(&mut ctx)
         }
+
+        // # Reorder the graph of dependencies and compute the strictly
+        // connex components to:
+        // - compute the order in which to extract the definitions
+        // - find the recursive definitions
+        // - group the mutually recursive definitions
+        let reordered_decls = compute_reordered_decls(&mut ctx);
+        ctx.translated.ordered_decls = Some(reordered_decls);
 
         if options.print_llbc {
             println!("# Final LLBC before serialization:\n\n{ctx}\n");
