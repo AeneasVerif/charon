@@ -231,7 +231,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_item(&mut self, rust_id: DefId, trans_id: AnyTransId) {
-        if self.errors.ignored_failed_decls.contains(&rust_id) || self.get_item(trans_id).is_some()
+        if self.errors.ignored_failed_decls.contains(&rust_id)
+            || self.translated.get_item(trans_id).is_some()
         {
             return;
         }
@@ -317,28 +318,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         Ok(())
     }
 
-    fn get_item(&mut self, trans_id: AnyTransId) -> Option<AnyTransItem<'_>> {
-        match trans_id {
-            AnyTransId::Type(id) => self.translated.type_decls.get(id).map(AnyTransItem::Type),
-            AnyTransId::Fun(id) => self.translated.fun_decls.get(id).map(AnyTransItem::Fun),
-            AnyTransId::Global(id) => self
-                .translated
-                .global_decls
-                .get(id)
-                .map(AnyTransItem::Global),
-            AnyTransId::TraitDecl(id) => self
-                .translated
-                .trait_decls
-                .get(id)
-                .map(AnyTransItem::TraitDecl),
-            AnyTransId::TraitImpl(id) => self
-                .translated
-                .trait_impls
-                .get(id)
-                .map(AnyTransItem::TraitImpl),
-        }
-    }
-
     /// While translating an item you may need the contents of another. Use this to retreive the
     /// translated version of this item.
     #[allow(dead_code)]
@@ -351,7 +330,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let span = self.tcx.def_span(rust_id);
             error_or_panic!(self, span, format!("Failed to translate item {id:?}."))
         }
-        Ok(self.get_item(id).unwrap())
+        Ok(self.translated.get_item(id).unwrap())
     }
 }
 
