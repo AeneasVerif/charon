@@ -1,6 +1,6 @@
-use crate::cli_options::CliOpts;
+use crate::cli_options::{CliOpts, MirLevel, TransOptions};
 use crate::common::*;
-use crate::get_mir::{extract_constants_at_top_level, MirLevel};
+use crate::get_mir::extract_constants_at_top_level;
 use crate::transform::TransformCtx;
 use crate::translate_ctx::*;
 

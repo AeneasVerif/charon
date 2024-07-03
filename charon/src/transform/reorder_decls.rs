@@ -1,9 +1,8 @@
+use crate::ast::krate::{AnyTransId, AnyTransItem};
 use crate::common::*;
 use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::graphs::*;
 use crate::transform::TransformCtx;
-pub use crate::translate_ctx::AnyTransId;
-use crate::translate_ctx::AnyTransItem;
 use crate::types::*;
 use crate::ullbc_ast::*;
 use derive_visitor::{Drive, Visitor};

@@ -1,18 +1,162 @@
 //! Utilities to generate error reports about the external dependencies.
-use crate::translate_ctx::*;
 use macros::VariantIndexArity;
 use petgraph::algo::dijkstra::dijkstra;
 use petgraph::graphmap::DiGraphMap;
 use rustc_error_messages::MultiSpan;
+use rustc_errors::DiagCtxtHandle;
 use rustc_hir::def_id::DefId;
-use rustc_span::Span;
+use std::cmp::{Ord, PartialOrd};
+use std::collections::{HashMap, HashSet};
 
-/// For error reporting
+macro_rules! register_error_or_panic {
+    ($ctx:expr, $span: expr, $msg: expr) => {{
+        $ctx.span_err($span, &$msg);
+        if !$ctx.continue_on_failure() {
+            panic!("{}", $msg);
+        }
+    }};
+}
+pub(crate) use register_error_or_panic;
+
+/// Macro to either panic or return on error, depending on the CLI options
+macro_rules! error_or_panic {
+    ($ctx:expr, $span:expr, $msg:expr) => {{
+        $crate::deps_errors::register_error_or_panic!($ctx, $span, $msg);
+        let e = crate::common::Error {
+            span: $span,
+            msg: $msg.to_string(),
+        };
+        return Err(e);
+    }};
+}
+pub(crate) use error_or_panic;
+
+/// Custom assert to either panic or return an error
+macro_rules! error_assert {
+    ($ctx:expr, $span: expr, $b: expr) => {
+        if !$b {
+            let msg = format!("assertion failure: {:?}", stringify!($b));
+            $crate::deps_errors::error_or_panic!($ctx, $span, msg);
+        }
+    };
+    ($ctx:expr, $span: expr, $b: expr, $msg: expr) => {
+        if !$b {
+            $crate::deps_errors::error_or_panic!($ctx, $span, $msg);
+        }
+    };
+}
+pub(crate) use error_assert;
+
+/// We use this to save the origin of an id. This is useful for the external
+/// dependencies, especially if some external dependencies don't extract:
+/// we use this information to tell the user what is the code which
+/// (transitively) lead to the extraction of those problematic dependencies.
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+pub struct DepSource {
+    pub src_id: DefId,
+    pub span: rustc_span::Span,
+}
+
+impl DepSource {
+    /// Value with which we order `DepSource`s.
+    fn sort_key(&self) -> impl Ord {
+        (self.src_id.index, self.src_id.krate)
+    }
+}
+
+/// Manual impls because `DefId` is not orderable.
+impl PartialOrd for DepSource {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for DepSource {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.sort_key().cmp(&other.sort_key())
+    }
+}
+
+impl DepSource {
+    pub(crate) fn make(src_id: DefId, span: rustc_span::Span) -> Option<Self> {
+        Some(DepSource { src_id, span })
+    }
+}
+
+/// The context for tracking and reporting errors.
+pub struct ErrorCtx<'ctx> {
+    /// If true, do not abort on the first error and attempt to extract as much as possible.
+    pub continue_on_failure: bool,
+    /// If true, print the errors as warnings, and do not abort.
+    pub errors_as_warnings: bool,
+
+    /// The compiler session, used for displaying errors.
+    pub dcx: DiagCtxtHandle<'ctx>,
+    /// The ids of the declarations for which extraction we encountered errors.
+    pub decls_with_errors: HashSet<DefId>,
+    /// The ids of the declarations we completely failed to extract and had to ignore.
+    pub ignored_failed_decls: HashSet<DefId>,
+    /// Dependency graph with sources. See [DepSource].
+    pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
+    /// The id of the definition we are exploring, used to track the source of errors.
+    pub def_id: Option<DefId>,
+    /// The number of errors encountered so far.
+    pub error_count: usize,
+}
+
+impl ErrorCtx<'_> {
+    pub(crate) fn continue_on_failure(&self) -> bool {
+        self.continue_on_failure
+    }
+    pub(crate) fn has_errors(&self) -> bool {
+        self.error_count > 0
+    }
+
+    /// Report an error without registering anything.
+    pub(crate) fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
+        let msg = msg.to_string();
+        if self.errors_as_warnings {
+            self.dcx.span_warn(span, msg);
+        } else {
+            self.dcx.span_err(span, msg);
+        }
+    }
+
+    /// Report and register an error.
+    pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+        self.span_err_no_register(span, msg);
+        self.error_count += 1;
+        if let Some(id) = self.def_id {
+            let _ = self.decls_with_errors.insert(id);
+        }
+    }
+
+    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
+    pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
+        if let Some(src) = src {
+            if src.src_id != id {
+                match self.dep_sources.get_mut(&id) {
+                    None => {
+                        let _ = self.dep_sources.insert(id, HashSet::from([*src]));
+                    }
+                    Some(srcs) => {
+                        let _ = srcs.insert(*src);
+                    }
+                }
+            }
+        }
+    }
+
+    pub(crate) fn ignore_failed_decl(&mut self, id: DefId) {
+        self.ignored_failed_decls.insert(id);
+    }
+}
+
+/// For tracing error dependencies.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, VariantIndexArity)]
 enum Node {
     External(DefId),
     /// We use the span information only for local references
-    Local(DefId, Span),
+    Local(DefId, rustc_span::Span),
 }
 
 impl Node {
@@ -116,7 +260,7 @@ impl ErrorCtx<'_> {
                 let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
                 trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
-                let reachable: Vec<Span> = reachable
+                let reachable: Vec<rustc_span::Span> = reachable
                     .iter()
                     .filter_map(|(n, _)| match n {
                         Node::External(_) => None,

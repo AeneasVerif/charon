@@ -3,8 +3,9 @@
 //! For now, we have one function per object kind (type, trait, function,
 //! module): many of them could be factorized (will do).
 use crate::common::*;
+use crate::deps_errors::error_or_panic;
 use crate::names::*;
-use crate::translate_ctx::*;
+use crate::translate_ctx::{BodyTransCtx, TranslateCtx};
 use crate::types::PredicateOrigin;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;

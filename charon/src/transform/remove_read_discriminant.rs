@@ -3,11 +3,10 @@
 //! `drop(v)` where `v` has type `Never` (it can happen - this module does the
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
 
+use crate::ast::*;
+use crate::deps_errors::register_error_or_panic;
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
-use crate::translate_ctx::*;
-use crate::types::*;
-use crate::values::{Literal, ScalarValue};
 use derive_visitor::visitor_enter_fn_mut;
 use derive_visitor::DriveMut;
 use itertools::Itertools;

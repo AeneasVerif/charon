@@ -1,10 +1,10 @@
+use crate::ast::*;
+use crate::cli_options::TransOptions;
+use crate::deps_errors::ErrorCtx;
 use crate::formatter::{FmtCtx, IntoFormatter};
-use crate::gast::{Body, BodyId, FunDecl, FunDeclId, GlobalDecl, GlobalDeclId, Opaque};
 use crate::ids::Vector;
 use crate::llbc_ast;
-use crate::names::Name;
 use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::{ErrorCtx, TransOptions, TranslatedCrate};
 use crate::ullbc_ast;
 use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;

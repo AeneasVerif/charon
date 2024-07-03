@@ -6,14 +6,11 @@ use crate::{
     gast,
     ids::Vector,
     llbc_ast::{self as llbc, *},
-    meta::*,
-    names::*,
     reorder_decls::*,
     translate_predicates::NonLocalTraitClause,
-    types::*,
     ullbc_ast::{self as ullbc, *},
-    values::*,
 };
+use crate::ast::*;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
 

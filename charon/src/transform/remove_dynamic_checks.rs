@@ -4,11 +4,11 @@
 //! compiling for release). In our case, we take this into account in the semantics of our
 //! array/slice manipulation and arithmetic functions, on the verification side.
 
+use crate::deps_errors::register_error_or_panic;
 use crate::formatter::IntoFormatter;
 use crate::llbc_ast::{BinOp, FieldProjKind, Operand, ProjectionElem, Rvalue};
 use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
-use crate::translate_ctx::register_error_or_panic;
 use crate::ullbc_ast::{BlockData, ExprBody, RawStatement, RawTerminator, Statement};
 
 use super::ctx::UllbcPass;
