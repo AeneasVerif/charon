@@ -4,7 +4,7 @@
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
 
 use crate::ast::*;
-use crate::deps_errors::register_error_or_panic;
+use crate::errors::register_error_or_panic;
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
 use derive_visitor::visitor_enter_fn_mut;

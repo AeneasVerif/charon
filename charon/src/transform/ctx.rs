@@ -1,9 +1,9 @@
 use crate::ast::*;
-use crate::cli_options::TransOptions;
-use crate::deps_errors::ErrorCtx;
+use crate::errors::ErrorCtx;
 use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::ids::Vector;
 use crate::llbc_ast;
+use crate::options::TransOptions;
 use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
 use rustc_error_messages::MultiSpan;

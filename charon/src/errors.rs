@@ -23,7 +23,7 @@ pub use register_error_or_panic;
 #[macro_export]
 macro_rules! error_or_panic {
     ($ctx:expr, $span:expr, $msg:expr) => {{
-        $crate::deps_errors::register_error_or_panic!($ctx, $span, $msg);
+        $crate::errors::register_error_or_panic!($ctx, $span, $msg);
         let e = $crate::common::Error {
             span: $span,
             msg: $msg.to_string(),
@@ -39,12 +39,12 @@ macro_rules! error_assert {
     ($ctx:expr, $span: expr, $b: expr) => {
         if !$b {
             let msg = format!("assertion failure: {:?}", stringify!($b));
-            $crate::deps_errors::error_or_panic!($ctx, $span, msg);
+            $crate::errors::error_or_panic!($ctx, $span, msg);
         }
     };
     ($ctx:expr, $span: expr, $b: expr, $msg: expr) => {
         if !$b {
-            $crate::deps_errors::error_or_panic!($ctx, $span, $msg);
+            $crate::errors::error_or_panic!($ctx, $span, $msg);
         }
     };
 }

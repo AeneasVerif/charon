@@ -1,7 +1,7 @@
-use crate::cli_options;
 use crate::translate::translate_crate_to_ullbc;
-use charon_lib::cli_options::MirLevel;
 use charon_lib::export;
+use charon_lib::options;
+use charon_lib::options::MirLevel;
 use charon_lib::reorder_decls::compute_reordered_decls;
 use charon_lib::transform::{LLBC_PASSES, ULLBC_PASSES};
 use charon_lib::ullbc_to_llbc;
@@ -15,7 +15,7 @@ use std::panic::{self, AssertUnwindSafe};
 
 /// The callbacks for Charon
 pub struct CharonCallbacks {
-    pub options: cli_options::CliOpts,
+    pub options: options::CliOpts,
     /// This is to be filled during the extraction
     pub crate_data: Option<export::CrateData>,
     pub error_count: usize,
@@ -41,7 +41,7 @@ impl fmt::Display for CharonFailure {
 }
 
 impl CharonCallbacks {
-    pub fn new(options: cli_options::CliOpts) -> Self {
+    pub fn new(options: options::CliOpts) -> Self {
         Self {
             options,
             crate_data: None,

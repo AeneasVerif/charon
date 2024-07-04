@@ -1,8 +1,8 @@
 use super::get_mir::extract_constants_at_top_level;
 use super::translate_ctx::*;
 use charon_lib::ast::krate::*;
-use charon_lib::cli_options::{CliOpts, MirLevel, TransOptions};
 use charon_lib::common::*;
+use charon_lib::options::{CliOpts, MirLevel, TransOptions};
 use charon_lib::transform::TransformCtx;
 
 use hax_frontend_exporter as hax;

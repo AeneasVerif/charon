@@ -35,10 +35,10 @@ pub mod ids;
 #[macro_use]
 pub mod logger;
 pub mod ast;
-pub mod cli_options;
 pub mod common;
-pub mod deps_errors;
+pub mod errors;
 pub mod export;
+pub mod options;
 pub mod pretty;
 pub mod transform;
 

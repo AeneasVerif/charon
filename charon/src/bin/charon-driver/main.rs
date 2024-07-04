@@ -32,8 +32,8 @@ use crate::driver::{
     arg_values, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
     RunCompilerNormallyCallbacks,
 };
-use charon_lib::cli_options;
 use charon_lib::logger;
+use charon_lib::options;
 use charon_lib::trace;
 
 fn main() {
@@ -76,7 +76,7 @@ fn main() {
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
     // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
-    let options: cli_options::CliOpts = match std::env::var(cli_options::CHARON_ARGS) {
+    let options: options::CliOpts = match std::env::var(options::CHARON_ARGS) {
         Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
         Err(_) => {
             // Parse any arguments after `--` as charon arguments.
@@ -84,7 +84,7 @@ fn main() {
                 use clap::Parser;
                 let mut charon_args = compiler_args.split_off(i);
                 charon_args[0] = origin_args[0].clone(); // Replace `--` with the name of the binary
-                cli_options::CliOpts::parse_from(charon_args)
+                options::CliOpts::parse_from(charon_args)
             } else {
                 Default::default()
             }

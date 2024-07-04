@@ -2,10 +2,10 @@
 use super::translate_predicates::NonLocalTraitClause;
 use super::translate_traits::ClauseTransCtx;
 use charon_lib::ast::*;
-use charon_lib::cli_options::TransOptions;
 use charon_lib::common::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
+use charon_lib::options::TransOptions;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -23,7 +23,7 @@ use std::fmt;
 use std::path::Component;
 
 // Re-export to avoid having to fix imports.
-pub(crate) use charon_lib::deps_errors::{
+pub(crate) use charon_lib::errors::{
     error_assert, error_or_panic, register_error_or_panic, DepSource, ErrorCtx,
 };
 
