@@ -8,5 +8,5 @@ error: Nullary operations are not supported
 
 error: aborting due to 1 previous error
 
-[ERROR charon_driver:242] Compilation encountered 1 errors
+[ERROR charon_driver:243] Compilation encountered 1 errors
 Error: Charon driver exited with code 1

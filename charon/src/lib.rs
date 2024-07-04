@@ -17,7 +17,6 @@
 #![feature(box_patterns)]
 #![feature(if_let_guard)]
 #![feature(impl_trait_in_assoc_type)]
-#![feature(iter_array_chunks)]
 #![feature(iterator_try_collect)]
 #![feature(let_chains)]
 #![feature(lint_reasons)]
@@ -28,6 +27,7 @@
 
 extern crate rustc_ast;
 extern crate rustc_ast_pretty;
+extern crate rustc_driver;
 extern crate rustc_error_messages;
 extern crate rustc_errors;
 extern crate rustc_hir;

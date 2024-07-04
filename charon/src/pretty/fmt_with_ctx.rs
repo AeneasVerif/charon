@@ -8,7 +8,6 @@ use crate::{
     reorder_decls::*,
     ullbc_ast::{self as ullbc, *},
 };
-use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
 /// Format the AST type as a string.
@@ -1665,31 +1664,5 @@ pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<Stri
             let clauses = clauses.join("");
             format!("\n{tab}where{clauses}")
         }
-    }
-}
-
-// IntTy is not defined in the current crate
-pub fn intty_to_string(ty: hax::IntTy) -> String {
-    use hax::IntTy::*;
-    match ty {
-        Isize => "isize".to_string(),
-        I8 => "i8".to_string(),
-        I16 => "i16".to_string(),
-        I32 => "i32".to_string(),
-        I64 => "i64".to_string(),
-        I128 => "i128".to_string(),
-    }
-}
-
-// UintTy is not defined in the current crate
-pub fn uintty_to_string(ty: hax::UintTy) -> String {
-    use hax::UintTy::*;
-    match ty {
-        Usize => "usize".to_string(),
-        U8 => "u8".to_string(),
-        U16 => "u16".to_string(),
-        U32 => "u32".to_string(),
-        U64 => "u64".to_string(),
-        U128 => "u128".to_string(),
     }
 }

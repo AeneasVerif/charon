@@ -1,14 +1,12 @@
 //! This file groups everything which is linked to implementations about [crate::meta]
 use crate::meta::*;
 use crate::names::{Disambiguator, Name, PathElem};
-use hax_frontend_exporter as hax;
 use rustc_ast::{AttrArgs, NormalAttr};
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use rustc_span::source_map::SourceMap;
 use std::cmp::Ordering;
 use std::iter::Iterator;
-use std::path::Component;
 
 /// Retrieve the Rust span from a def id.
 ///
@@ -82,56 +80,6 @@ pub fn combine_span_iter<'a, T: Iterator<Item = &'a Span>>(mut ms: T) -> Span {
     }
 
     mc
-}
-
-pub fn convert_filename(name: &hax::FileName) -> FileName {
-    match name {
-        hax::FileName::Real(name) => {
-            use hax::RealFileName;
-            match name {
-                RealFileName::LocalPath(path) => FileName::Local(path.clone()),
-                RealFileName::Remapped { virtual_name, .. } => {
-                    // We use the virtual name because it is always available.
-                    // That name normally starts with `/rustc/<hash>/`. For our purposes we hide
-                    // the hash.
-                    let mut components_iter = virtual_name.components();
-                    if let Some(
-                        [Component::RootDir, Component::Normal(rustc), Component::Normal(hash)],
-                    ) = components_iter.by_ref().array_chunks().next()
-                        && rustc.to_str() == Some("rustc")
-                        && hash.len() == 40
-                    {
-                        let path_without_hash = [Component::RootDir, Component::Normal(rustc)]
-                            .into_iter()
-                            .chain(components_iter)
-                            .collect();
-                        FileName::Virtual(path_without_hash)
-                    } else {
-                        FileName::Virtual(virtual_name.clone())
-                    }
-                }
-            }
-        }
-        hax::FileName::QuoteExpansion(_)
-        | hax::FileName::Anon(_)
-        | hax::FileName::MacroExpansion(_)
-        | hax::FileName::ProcMacroSourceCode(_)
-        | hax::FileName::CliCrateAttr(_)
-        | hax::FileName::Custom(_)
-        | hax::FileName::DocTest(..)
-        | hax::FileName::InlineAsm(_) => {
-            // We use the debug formatter to generate a filename.
-            // This is not ideal, but filenames are for debugging anyway.
-            FileName::NotReal(format!("{name:?}"))
-        }
-    }
-}
-
-pub fn convert_loc(loc: hax::Loc) -> Loc {
-    Loc {
-        line: loc.line,
-        col: loc.col,
-    }
 }
 
 // TODO: remove?

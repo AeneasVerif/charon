@@ -177,12 +177,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         match ty {
             hax::Ty::Bool => Ok(Ty::Literal(LiteralTy::Bool)),
             hax::Ty::Char => Ok(Ty::Literal(LiteralTy::Char)),
-            hax::Ty::Int(int_ty) => Ok(Ty::Literal(LiteralTy::Integer(
-                IntegerTy::rust_int_ty_to_integer_ty(*int_ty),
-            ))),
-            hax::Ty::Uint(int_ty) => Ok(Ty::Literal(LiteralTy::Integer(
-                IntegerTy::rust_uint_ty_to_integer_ty(*int_ty),
-            ))),
+            hax::Ty::Int(int_ty) => {
+                use hax::IntTy;
+                Ok(Ty::Literal(LiteralTy::Integer(match int_ty {
+                    IntTy::Isize => IntegerTy::Isize,
+                    IntTy::I8 => IntegerTy::I8,
+                    IntTy::I16 => IntegerTy::I16,
+                    IntTy::I32 => IntegerTy::I32,
+                    IntTy::I64 => IntegerTy::I64,
+                    IntTy::I128 => IntegerTy::I128,
+                })))
+            }
+            hax::Ty::Uint(int_ty) => {
+                use hax::UintTy;
+                Ok(Ty::Literal(LiteralTy::Integer(match int_ty {
+                    UintTy::Usize => IntegerTy::Usize,
+                    UintTy::U8 => IntegerTy::U8,
+                    UintTy::U16 => IntegerTy::U16,
+                    UintTy::U32 => IntegerTy::U32,
+                    UintTy::U64 => IntegerTy::U64,
+                    UintTy::U128 => IntegerTy::U128,
+                })))
+            }
             hax::Ty::Float(_) => {
                 trace!("Float");
                 error_or_panic!(self, span, "Floats are not supported yet")

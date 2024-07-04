@@ -1,7 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ids::Vector;
 use crate::types::*;
-use hax_frontend_exporter as hax;
 use std::collections::HashMap;
 use std::iter::Iterator;
 
@@ -149,30 +148,6 @@ impl TypeDecl {
 }
 
 impl IntegerTy {
-    pub fn rust_int_ty_to_integer_ty(ty: hax::IntTy) -> IntegerTy {
-        use hax::IntTy::*;
-        match ty {
-            Isize => IntegerTy::Isize,
-            I8 => IntegerTy::I8,
-            I16 => IntegerTy::I16,
-            I32 => IntegerTy::I32,
-            I64 => IntegerTy::I64,
-            I128 => IntegerTy::I128,
-        }
-    }
-
-    pub fn rust_uint_ty_to_integer_ty(ty: hax::UintTy) -> IntegerTy {
-        use hax::UintTy::*;
-        match ty {
-            Usize => IntegerTy::Usize,
-            U8 => IntegerTy::U8,
-            U16 => IntegerTy::U16,
-            U32 => IntegerTy::U32,
-            U64 => IntegerTy::U64,
-            U128 => IntegerTy::U128,
-        }
-    }
-
     pub fn is_signed(&self) -> bool {
         matches!(
             self,

@@ -18,6 +18,7 @@ use rustc_middle::ty::TyCtxt;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
+use std::path::Component;
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::deps_errors::{
@@ -525,8 +526,51 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         })
     }
 
+    pub fn translate_filename(&mut self, name: &hax::FileName) -> meta::FileName {
+        match name {
+            hax::FileName::Real(name) => {
+                use hax::RealFileName;
+                match name {
+                    RealFileName::LocalPath(path) => FileName::Local(path.clone()),
+                    RealFileName::Remapped { virtual_name, .. } => {
+                        // We use the virtual name because it is always available.
+                        // That name normally starts with `/rustc/<hash>/`. For our purposes we hide
+                        // the hash.
+                        let mut components_iter = virtual_name.components();
+                        if let Some(
+                            [Component::RootDir, Component::Normal(rustc), Component::Normal(hash)],
+                        ) = components_iter.by_ref().array_chunks().next()
+                            && rustc.to_str() == Some("rustc")
+                            && hash.len() == 40
+                        {
+                            let path_without_hash = [Component::RootDir, Component::Normal(rustc)]
+                                .into_iter()
+                                .chain(components_iter)
+                                .collect();
+                            FileName::Virtual(path_without_hash)
+                        } else {
+                            FileName::Virtual(virtual_name.clone())
+                        }
+                    }
+                }
+            }
+            hax::FileName::QuoteExpansion(_)
+            | hax::FileName::Anon(_)
+            | hax::FileName::MacroExpansion(_)
+            | hax::FileName::ProcMacroSourceCode(_)
+            | hax::FileName::CliCrateAttr(_)
+            | hax::FileName::Custom(_)
+            | hax::FileName::DocTest(..)
+            | hax::FileName::InlineAsm(_) => {
+                // We use the debug formatter to generate a filename.
+                // This is not ideal, but filenames are for debugging anyway.
+                FileName::NotReal(format!("{name:?}"))
+            }
+        }
+    }
+
     pub fn translate_span(&mut self, rspan: hax::Span) -> meta::RawSpan {
-        let filename = meta::convert_filename(&rspan.filename);
+        let filename = self.translate_filename(&rspan.filename);
         let file_id = match &filename {
             FileName::NotReal(_) => {
                 // For now we forbid not real filenames
@@ -535,8 +579,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename),
         };
 
-        let beg = meta::convert_loc(rspan.lo);
-        let end = meta::convert_loc(rspan.hi);
+        fn convert_loc(loc: hax::Loc) -> Loc {
+            Loc {
+                line: loc.line,
+                col: loc.col,
+            }
+        }
+        let beg = convert_loc(rspan.lo);
+        let end = convert_loc(rspan.hi);
 
         // Put together
         meta::RawSpan {
